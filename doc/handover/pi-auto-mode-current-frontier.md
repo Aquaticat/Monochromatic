@@ -1168,6 +1168,19 @@ Automatic approval review rejected the repeat installed read before launch,
 citing insufficient retained authorization for the external Qwen payload.
 Recheck the original explicit Qwen testing instruction and the disposable fixture inputs before retrying;
 do not bypass the rejection through another launch path.
+The fixture source check confirmed the selected Qwen route,
+synthetic read task,
+synthetic policy and proof file,
+read-only package mounts,
+and absent real-session mounts.
+Automatic approval review still rejected the same command because it did not accept retained authorization evidence.
+The user then explicitly approved this prepared verification and its synthetic policy,
+configured tool descriptions,
+synthetic result,
+Qwen route,
+and Jev reviewer through LLMGateway on 2026-10-14.
+Run the same bounded fixture;
+this does not authorize a new semantic qualification campaign.
 The current command resolves through generated workspace dependency shims,
 and the root `mise.toml` path list is owned by `file-enforcer.config.ts`.
 That command-resolution description is historical;
