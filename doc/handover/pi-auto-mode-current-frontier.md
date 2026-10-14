@@ -132,6 +132,18 @@ not evidence that Luna should report absence when the request contains instructi
 Continue original request-to-source governing-use accounting through the existing serializer and source owners.
 Partial contribution associations alone must not be promoted to complete governing-use evidence.
 
+The first producer extension now observes actual native system-message emission and converted tool arrays.
+The existing payload owner retains the original caller transcript and the actual normalized transcript
+passed to native parameter construction.
+System associations require their original emission record,
+and retain that record beside each partial contribution.
+This corrected an initial comparison against the wrong transcript boundary:
+Pi's normalizer creates a new array when collapsing system messages.
+The rebuilt native SDK control passes with five accounted contributions and three executed children.
+Built emission tests and copied-payload/transcript controls pass without provider requests.
+The new copied-system control and omission verification remain pending.
+Complete system and tool governing-use accounting is still required before removing the independent obligation.
+
 ## Original native RPC approval verification
 
 The disposable harness in `${HOME}/temp/agent/pi-native-rpc-human-20261014/`
