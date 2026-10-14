@@ -5,10 +5,8 @@
  */
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import {
-  readSessionDisposalState,
-  wrapToolDefinition
-} from './bootstrap-dependencies.ts';
+import { wrapToolDefinition } from './bootstrap-dependencies.ts';
+import { readSessionDisposalState } from './session-disposal.mjs';
 import type {
   NativeHostSessionInput,
   NativePolicyDesignation

@@ -83,15 +83,4 @@ export const wrapToolDefinition: NativeForwardedFunction = await readNativeFunct
   name: 'wrapToolDefinition'
 });
 
-/**
- Native cleanup receives the original generated private-state reader.
- */
-export const readSessionDisposalState: NativeForwardedFunction = await readNativeFunction({
-  url: new URL(
-    '../native-batch/generated/agent-session.mjs',
-    import.meta.url
-  ),
-  name: 'readSessionDisposalState'
-});
-
 //endregion The bootstrap forwards original functions without claiming their opaque result shapes
