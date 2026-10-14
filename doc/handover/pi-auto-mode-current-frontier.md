@@ -864,8 +864,26 @@ Its generated-consumer assertion received `later queued mutation` instead of `or
 Commit `b80cb3cd8a` moves synchronous return retention directly after the original native await.
 The changed source passes scoped lint,
 package types,
-and the owned native build;
-final consumer verification of that correction is next.
+and the owned native build.
+The rebuilt generated-consumer scheduling assertion and both return suites now pass.
+The repeated disposable return omissions also pass their sensitivity checks,
+with original controls passing and every targeted omission failing its intended assertion.
+Their final artifact directory is `${HOME}/temp/agent/pi-native-return-omissions-eiEqn9`.
+The parsed staging controls and their independent parse,
+uniqueness,
+URL-identity,
+and file-identity omissions pass;
+the retained artifact directory is `${HOME}/temp/agent/pi-native-staged-omissions-IxFVXJ`.
+Production artifacts were not mutated for those omission checks.
+The final native SDK stream accounts for five original contributions and executes all three prepared children.
+Native approval-context Allow,
+Deny,
+Stop,
+cancellation,
+and post-reload Allow checks pass with fixture presentation and zero provider requests.
+The syntax task parses all 185 maintained native modules.
+The complete package unit task passes after the native return changes;
+its log is `${HOME}/temp/agent/pi-auto-mode-unit-after-native-return-20261014.log`.
 This checkpoint is not full-package lint success or production activation.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths

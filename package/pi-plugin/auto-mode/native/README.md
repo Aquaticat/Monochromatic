@@ -96,6 +96,28 @@ and private-member replacements share ordered parser-owned source spans.
 The owned JavaScript runtime still needs type and lint completion.
 Private destination names are checked against the consuming JavaScript grammar before source edits are assembled.
 Result conversion extraction retains the original helper dependency order and rejects changed declaration membership.
+The native return consumer now has typed slot,
+invocation,
+conversion,
+and live-access contracts.
+It captures conversion in the original native settlement continuation,
+retains completed results after parent retirement,
+and separately guards script-value access by current ownership and prepared-member completion.
+`test:native:return` exercises the generated JavaScript consumer,
+including copied returns,
+synchronous reentry,
+UTF-8 bounds,
+ordinary conversion failures,
+and later queued result mutation.
+Native staging erases TypeScript annotations before generating JavaScript
+and selects imports through parsed named declarations while retaining original-file checks.
+`test:native:staged-import` covers formatted and escaped imports,
+comment and string decoys,
+replacement encoding,
+duplicate declarations,
+separate URL identities,
+and foreign files.
+Disposable omissions establish the sensitivity of both sets of guard assertions.
 Complete lint verification,
 installed host activation,
 production semantic qualification,
