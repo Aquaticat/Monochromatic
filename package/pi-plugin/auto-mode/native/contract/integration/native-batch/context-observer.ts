@@ -14,6 +14,7 @@ import type {
   NativeContextInput,
   NativeContextKind,
   NativeContextSnapshot,
+  NativeContextSlot,
   NativeContextStage,
   NativeContextObserver,
   NativeContextObserverState
@@ -158,11 +159,9 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
     /**
      Captured positions retain extension and handler identity in native order.
      */
-    const slots = snapshot.flatMap(function captureOriginalSlots({
-      ext,
-      handlers
-    }) {
-      if (handlers.length > MAX_CONTEXT_HANDLERS) throw new NativeContextContractError('Native context handlers exceed the original 256-position profile');
+    const slots: NativeContextSlot[] = [];
+    for (const {ext,handlers} of snapshot) {
+      if ((slots.length + handlers.length) > MAX_CONTEXT_HANDLERS) throw new NativeContextContractError('Native context handlers exceed the original 256-position profile');
       /**
        Read original extension metadata without invoking an accessor.
        */
@@ -180,15 +179,14 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
        Narrowed path remains stable after extension callbacks begin.
        */
       const capturedPath: string = path.value;
-      return handlers.map(function captureOriginalHandler(handler) {
-        return Object.freeze({
+      for (const handler of handlers) {
+        slots.push(Object.freeze({
           extension:ext,
           handler,
           path:capturedPath
-        });
-      });
-    });
-    if (slots.length > MAX_CONTEXT_HANDLERS) throw new NativeContextContractError('Combined context handlers exceed the original 256-position profile');
+        }));
+      }
+    }
     state.stage = {
       kind,
       slots:Object.freeze(slots),
