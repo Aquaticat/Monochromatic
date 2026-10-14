@@ -65,17 +65,28 @@ export type NativeContextCompletion = {
   readonly handlers: number;
 };
 
-/** Mutable emission state remains private to the observer factory. */
+/**
+ Mutable emission state remains private to the observer factory.
+ */
 export type NativeContextObserverState = {
  readonly kinds: NativeContextKind[];
  stage?: NativeContextStage;
  handlers: number;
  completed: boolean;
 };
-/** Generated native dispatch uses only these synchronous observation boundaries. */
+/**
+ Generated native dispatch uses only these synchronous observation boundaries.
+ */
 export type NativeContextObserver = {
- readonly begin: (input: {readonly kind: NativeContextKind; readonly snapshot: NativeContextSnapshot}) => void;
- readonly before: (input: {readonly extension: object; readonly handler: NativeContextHandler; readonly event: unknown}) => void;
+ readonly begin: (input: {
+   readonly kind: NativeContextKind;
+   readonly snapshot: NativeContextSnapshot
+ }) => void;
+ readonly before: (input: {
+   readonly extension: object;
+   readonly handler: NativeContextHandler;
+   readonly event: unknown
+ }) => void;
  readonly returned: (result: unknown) => void;
  readonly failed: (error: unknown) => void;
  readonly end: (kind: NativeContextKind) => void;

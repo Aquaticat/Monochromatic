@@ -26,9 +26,13 @@ import type {
  */
 const l = tagged({tag:'auto-mode-native-context-observer'});
 
-/** Original extension count remains inside the existing native source profile. */
+/**
+ Original extension count remains inside the existing native source profile.
+ */
 const MAX_CONTEXT_EXTENSIONS=64;
-/** Original callback traversal keeps the existing native handler limit. */
+/**
+ Original callback traversal keeps the existing native handler limit.
+ */
 const MAX_CONTEXT_HANDLERS=256;
 
 /**
@@ -44,10 +48,21 @@ const MAX_CONTEXT_HANDLERS=256;
  ```
  */
 export function createNativeContextObserver(capture: (input: NativeContextInput) => void): NativeContextObserver {
-  /** Original traversal state belongs only to this invocation. */
-  const state: NativeContextObserverState = {kinds:[],handlers:0,completed:false};
-  /** Bound source capture is never replaced by returned handler data. */
-  const rl=tagged({tag:createNativeContextObserver.name,l});
+  /**
+   Original traversal state belongs only to this invocation.
+   */
+  const state: NativeContextObserverState = {
+    kinds:[],
+    handlers:0,
+    completed:false
+  };
+  /**
+   Bound source capture is never replaced by returned handler data.
+   */
+  const rl=tagged({
+    tag:createNativeContextObserver.name,
+    l
+  });
   rl.debug('created original context observer');
 
   /**
@@ -70,7 +85,9 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
     readonly phase: NativeContextInput['phase'];
     readonly value: unknown;
   }): void {
-    /** Only the original active event can settle or receive source capture. */
+    /**
+     Only the original active event can settle or receive source capture.
+     */
     const {active} = stage;
     if (!active) throw new NativeContextContractError('Native context capture has no original callback');
     try {
@@ -94,7 +111,9 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
    @throws NativeContextContractError when settlement loses its original input
    */
   function settle(stage: NativeContextStage): void {
-    /** Only the original active event can settle or receive source capture. */
+    /**
+     Only the original active event can settle or receive source capture.
+     */
     const {active} = stage;
     if (!active) throw new NativeContextContractError('Native context settlement has no original input');
     record({
@@ -136,13 +155,17 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
         .length]))
       throw new NativeContextContractError('Native context stages must enter once in their original order');
     if (snapshot.length > MAX_CONTEXT_EXTENSIONS) throw new NativeContextContractError('Native context extensions exceed the original 64-source profile');
-    /** Captured positions retain extension and handler identity in native order. */
+    /**
+     Captured positions retain extension and handler identity in native order.
+     */
     const slots = snapshot.flatMap(function captureOriginalSlots({
       ext,
       handlers
     }) {
       if (handlers.length > MAX_CONTEXT_HANDLERS) throw new NativeContextContractError('Native context handlers exceed the original 256-position profile');
-      /** Read original extension metadata without invoking an accessor. */
+      /**
+       Read original extension metadata without invoking an accessor.
+       */
       const path = Object.getOwnPropertyDescriptor(
         ext,
         'path'
@@ -153,7 +176,9 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
       ))
         || ((typeof path.value) !== 'string'))
         throw new NativeContextContractError('Native context extension requires its original data path');
-      /** Narrowed path remains stable after extension callbacks begin. */
+      /**
+       Narrowed path remains stable after extension callbacks begin.
+       */
       const capturedPath: string = path.value;
       return handlers.map(function captureOriginalHandler(handler) {
         return Object.freeze({
@@ -196,9 +221,13 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
       l
     })
       .debug('capturing original context callback input');
-    /** Current original traversal supplies the callback position. */
-    const stage = state.stage;
-    /** Expected callback identity comes from the retained native snapshot. */
+    /**
+     Current original traversal supplies the callback position.
+     */
+    const {stage} = state;
+    /**
+     Expected callback identity comes from the retained native snapshot.
+     */
     const slot = stage?.slots[stage.next];
     if ((!stage) || stage.active
       || (!slot)
@@ -229,8 +258,10 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
       l
     })
       .debug('capturing original context callback result');
-    /** Current original traversal supplies the callback position. */
-    const stage = state.stage;
+    /**
+     Current original traversal supplies the callback position.
+     */
+    const {stage} = state;
     if (!stage?.active) throw new NativeContextContractError('Native context result has no active callback');
     if (result !== undefined) record({
       stage,
@@ -254,8 +285,10 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
       l
     })
       .debug('native context callback or result processing threw; original native reporting retains its caught value');
-    /** Current original traversal supplies the callback position. */
-    const stage = state.stage;
+    /**
+     Current original traversal supplies the callback position.
+     */
+    const {stage} = state;
     try {
       if (stage?.active) settle(stage);
     } catch (captureError) {
@@ -277,8 +310,10 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
       l
     })
       .debug('closing original context traversal');
-    /** Current original traversal supplies the callback position. */
-    const stage = state.stage;
+    /**
+     Current original traversal supplies the callback position.
+     */
+    const {stage} = state;
     if ((!stage) || (stage.kind !== kind)
       || stage.active
       || (stage.next
@@ -316,7 +351,14 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
     });
   }
 
-  return Object.freeze({begin,before,returned,failed,end,complete});
+  return Object.freeze({
+    begin,
+    before,
+    returned,
+    failed,
+    end,
+    complete
+  });
 }
 
 //endregion One observer owns one complete native context emission

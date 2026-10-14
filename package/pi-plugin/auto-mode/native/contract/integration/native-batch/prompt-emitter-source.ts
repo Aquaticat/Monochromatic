@@ -244,7 +244,9 @@ function prepareContextEmitter(source: string): string {
   Each original stage has its own native extension-error reporting catch.
   */
  const catchSite='                catch (err) {';
- /** Two exact callback sites divide source text into three fragments. */
+ /**
+  Two exact callback sites divide source text into three fragments.
+  */
  const expectedFragments=3;
  if((context.split(resultSite)
    .length
