@@ -45,7 +45,7 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
     .length
     >0,'The normal SDK route must retain original native serializer contributions');
   assert.ok(review.requestSourceAssociationUses
-    .every(function matchesExpectedContributionState(use) { return (use.state===(receiptControl?'unresolved':'accounted')); }),inspect(
+    .every(function matchesExpectedContributionState(use) { return (use.state===((receiptControl==='copied-system'?use.location.ordinal===0:receiptControl)?'unresolved':'accounted')); }),inspect(
     review.requestSourceAssociationUses,
     {depth:3}
   ));
@@ -120,10 +120,12 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
      executions,
      0
    );
-   assert.ok(review.inputs
+   const failedContributions=review.inputs
      .requestObservation
      .sourceContributions
-     .every(function namesMissingSerializerOccurrence(value) { return (value.reason?.includes('original native serializer occurrence')); }),inspect(
+     .filter(function selectedContribution(value){return receiptControl!=='copied-system'||value.location.ordinal===0;});
+   assert.ok(failedContributions.length>0);
+   assert.ok(failedContributions.every(function namesMissingSerializerOccurrence(value) { return (value.reason?.includes(receiptControl==='copied-system'?'original native rendering and message emission':'original native serializer occurrence')); }),inspect(
      review.inputs.requestObservation.sourceContributions,
      {depth:3}
    ));
