@@ -30,9 +30,9 @@ type NativeStateBuild = {
  @throws Error when the native build artifact lacks a required callable
  */
 function assertNativeStateBuild(value: unknown): asserts value is NativeStateBuild {
-  if (typeof value !== 'object' || value === null || !('NativeStateBuildError' in value)
-    || typeof value.NativeStateBuildError !== 'function' || !('assertNativeMessageAssignment' in value)
-    || typeof value.assertNativeMessageAssignment !== 'function') throw new Error('Built native state module lacks its callable exports');
+  if (((typeof value) !== 'object') || (value === null) || (!('NativeStateBuildError' in value))
+    || ((typeof value.NativeStateBuildError) !== 'function') || (!('assertNativeMessageAssignment' in value))
+    || ((typeof value.assertNativeMessageAssignment) !== 'function')) throw new Error('Built native state module lacks its callable exports');
 }
 
 /**
@@ -82,7 +82,7 @@ await describe({
               expect(assertNativeMessageAssignment({ source, owner })).toBeUndefined();
             },
           }),
-          ...['.messages', '.mes\\u0073ages', '["messages"]'].map(function assignmentSpelling(leaf) {
+          ...['.messages', String.raw`.mes\u0073ages`, '["messages"]'].map(function assignmentSpelling(leaf) {
             return it({
               name: `retains decoded executable assignment ${leaf}`,
               fn: async function decodedAssignment() {

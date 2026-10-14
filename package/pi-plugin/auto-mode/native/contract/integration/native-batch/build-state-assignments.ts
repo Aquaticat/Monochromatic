@@ -31,55 +31,83 @@ const l = tagged({ tag: 'auto-mode-native-build-state-assignments' });
  Only the readonly member chain is needed from the parser's wider mutable node types.
  */
 type NativeTarget = {
-  /** Original discriminant distinguishes an access from the owning instance. */
+  /**
+   Original discriminant distinguishes an access from the owning instance.
+   */
   readonly type: string;
-  /** Member receiver is another readonly node in the same original tree. */
+  /**
+   Member receiver is another readonly node in the same original tree.
+   */
   readonly object?: NativeTarget;
-  /** Computed access requires decoding its literal property. */
+  /**
+   Computed access requires decoding its literal property.
+   */
   readonly computed?: boolean;
-  /** Member identity alone is observed; no parser field is changed. */
+  /**
+   Member identity alone is observed; no parser field is changed.
+   */
   readonly property?: {
-    /** Distinguish original literal and identifier properties. */
+    /**
+     Distinguish original literal and identifier properties.
+     */
     readonly type: string;
-    /** Literal values remain unknown until compared with a qualified property name. */
+    /**
+     Literal values remain unknown until compared with a qualified property name.
+     */
     readonly value?: unknown;
-    /** Identifier spelling has already been decoded by the parser. */
+    /**
+     Identifier spelling has already been decoded by the parser.
+     */
     readonly name?: string;
   };
 };
 
 /**
- Match property access from its leaf back to the original native instance.
+ Match a decoded property without mutating original parser nodes.
 
  @param node - original assignment target whose access chain is checked
 
- @param properties - expected names ordered from leaf to instance
+ @param name - qualified original member name
 
- @returns original owning expression when every property matches, or undefined for another target
+ @returns whether the original access selects that named member
  */
-function findNativeTargetOwner({
+function hasNativeMember({
   node,
-  properties
+  name
 }: {
   readonly node: NativeTarget;
-  readonly properties: readonly string[];
-}): NativeTarget | undefined {
+  readonly name: string;
+}): boolean {
+  if (node.type !== 'MemberExpression') return false;
+  if (node.computed === true) return node.property?.type === 'Literal' && node.property.value === name;
+  return node.property?.type === 'Identifier' && node.property.name === name;
+}
+
+/**
+ Identify the fixed original message path belonging to the native class.
+
+ @param node - original executable assignment target
+
+ @param owner - native class whose instance owns the message state
+
+ @returns whether the original access terminates at that native instance
+ */
+function isNativeMessageTarget({ node, owner }: {
+  readonly node: NativeTarget;
+  readonly owner: 'Agent' | 'Session';
+}): boolean {
+  if (!hasNativeMember({ node, name: 'messages' }) || node.object === undefined) return false;
   /**
-   Only this cursor changes; the original assignment nodes remain unchanged.
+   The original message receiver is checked without following unrelated parser fields.
    */
-  let current: NativeTarget | undefined = node;
-  for (const property of properties) {
-    if (current?.type !== 'MemberExpression') return undefined;
-    /**
-     Source escapes and literal computed access have the same decoded member identity.
-     */
-    const name = current.computed
-      ? current.property?.type === 'Literal' ? current.property.value : undefined
-      : current.property?.type === 'Identifier' ? current.property.name : undefined;
-    if (name !== property) return undefined;
-    current = current.object;
-  }
-  return current;
+  const state = node.object;
+  if (owner === 'Agent') return hasNativeMember({ node: state, name: '_state' }) && state.object?.type === 'ThisExpression';
+  if (!hasNativeMember({ node: state, name: 'state' }) || state.object === undefined) return false;
+  /**
+   Sessions reach their state through the original Agent instance field.
+   */
+  const agent = state.object;
+  return hasNativeMember({ node: agent, name: 'agent' }) && agent.object?.type === 'ThisExpression';
 }
 
 /**
@@ -87,21 +115,27 @@ function findNativeTargetOwner({
 
  @param root - original parsed tree
 
- @param properties - qualified member sequence from message leaf to native instance
+ @param owner - native class selecting its qualified message path
 
  @returns number of executable assignments to that original instance path
  */
-function countNativeMessageAssignments({ root, properties }: {
+function countNativeMessageAssignments({
+  root,
+  owner
+}: {
   readonly root: Node;
-  readonly properties: readonly string[];
+  readonly owner: 'Agent' | 'Session';
 }): number {
   /**
    Assignment membership is measured once across the original syntax.
    */
   let assignments = 0;
   for (const node of walkNativeSyntax(root)) {
-    if (node.type === 'AssignmentExpression'
-      && findNativeTargetOwner({ node: node.left, properties })?.type === 'ThisExpression') assignments++;
+    if ((node.type === 'AssignmentExpression')
+      && isNativeMessageTarget({
+        node: node.left,
+        owner
+      })) assignments++;
   }
   return assignments;
 }
@@ -146,20 +180,12 @@ export function assertNativeMessageAssignment({
     .length
     > 0) throw new NativeStateBuildError(`Cannot parse native ${owner} assignment source`);
   /**
-   Native Agent and Session expose different original instance paths.
-   */
-  const properties = owner === 'Agent' ? [
-    'messages',
-    '_state'
-  ] : [
-    'messages',
-    'state',
-    'agent'
-  ];
-  /**
    One linear traversal counts executable writes without matching comments or string contents.
    */
-  const assignments = countNativeMessageAssignments({ root: parsed.program, properties });
+  const assignments = countNativeMessageAssignments({
+    root: parsed.program,
+    owner
+  });
   if (assignments !== 1) throw new NativeStateBuildError(`Revalidate native ${owner} message assignments: expected 1, observed ${assignments}`);
   rl.debug(`qualified original ${owner} message assignment`);
 }
