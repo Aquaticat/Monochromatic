@@ -191,6 +191,8 @@ export type ContributionRunCarrier = {
  Original serialized contribution's source association.
  */
 export type SourceContributionAssociation = {
+  /** Original manager system publication authenticated at native serialization. */
+  readonly systemInputPublication?: ContributionPublication;
   /**
    Original manager declaration publication authenticated at native serialization.
    */
