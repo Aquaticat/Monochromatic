@@ -19,7 +19,9 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   moment; the user saved it a few minutes later and it now reads 100% at 61 degrees (30%/45%/60% at 40/50/60).
 - Tone-down rule from the user: if the system gets bad, lower the cap 2 threads at a time.
 - IO pressure is non-actionable (the user's drives are slow) and is not watched.
-- The temperature alert limit is 95 degrees Celsius (raised from 90 by the user).
+- The temperature alert is a throttling alert (user choice, 2026-10-13): Tctl at or above 95 degrees Celsius and the
+  average clock at least 100 MHz below the boost-off clock of 4490 MHz. Plain 95 degrees no longer alerts, because
+  Zen 4 regulates itself to 95 by design. The earlier plain limit of 95 was raised from 90 by the user.
 - No deliberate stress tests: the user needs the machine to work. Temperatures are judged from real work.
 - Boost and PBO stay off. The user disabled them (`/sys/devices/system/cpu/cpufreq/boost` is 0).
 - Commit eagerly.
@@ -38,7 +40,9 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   Claude Code creates that cgroup anew in every boot and has no CPU limit setting, so a service has to do it.
   The thread count is read from `~/.config/claude-cpu-cap/threads` every 2 seconds
   (28 now, lowered from 30 at 20:15:53 after the 95.3 degree alert).
-- The watcher alerts on CPU pressure 40, memory pressure 10, scheduler lag 250 ms and temperature 95.
+- The watcher alerts on CPU pressure 40, memory pressure 10, scheduler lag 250 ms and thermal throttling (100 MHz).
+  The 20:15 episode (before this change) showed a clock shortfall of 60 to 180 MHz at 95 degrees, so 100 MHz can
+  still fire during normal 95 degree regulation; the limit is `CPU_WATCH_LIMIT_THROTTLE_MHZ`.
   The pressure limit of 40 was a first guess and is uncalibrated.
 - It logs a sample every 10 seconds to `~/.local/share/claude-cpu-cap/samples/<date>.csv` (14 days kept):
   temperatures, package watts, per-chiplet watts, clock, pressure, load, Corsair fan RPMs and probe,
