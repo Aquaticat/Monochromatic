@@ -2,10 +2,9 @@ import { statSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
-  sdk,
-  maintainedRoot
+  sdk
 } from '../current-sdk/paths.ts';
-import { createNativeMarkdownParser } from '../../native-index/native-parser.mjs';
+import { createNativeMarkdownParser } from '../../native-index/native-parser.ts';
 import { bindNativePolicyRuntime } from '../native-batch/runtime.mjs';
 import { readSessionDisposalState } from '../native-batch/generated/agent-session.mjs';
 import {
@@ -21,7 +20,6 @@ import { tagged } from '@monochromatic-dev/module-logger/ts';
 //region The candidate CLI binds custody without adopting an unqualified semantic policy.
 
 const parser = await createNativeMarkdownParser({
-  repositoryRoot: maintainedRoot,
   expectedVersion: '0.10.5'
 });
 const { wrapToolDefinition } = await import(pathToFileURL(join(

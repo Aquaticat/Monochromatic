@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import {
-  sdk as currentSdk,
-  maintainedRoot
+  sdk as currentSdk
 } from '../current-sdk/paths.ts';
 import {
   mkdtempSync,
@@ -14,7 +13,7 @@ import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createResourceInputOwner} from "../../collector/rule-relevance-sdk-copy/input/resource-owner.mjs";
 import {createGoverningPolicyLoader} from '../policy-source/system-slot.mjs';
-import {createNativeMarkdownParser} from '../../native-index/native-parser.mjs';
+import {createNativeMarkdownParser} from '../../native-index/native-parser.ts';
 
 /** One isolated fixture process; the provider and global network paths never dispatch. */
 export async function createEnvironment({
@@ -35,7 +34,6 @@ export async function createEnvironment({
    .PI_NATIVE_BATCH_FIXTURE
    ==='1')throw new Error('Nested native-batch fixture is forbidden');
  process.umask(0o077);
- const repositoryRoot=maintainedRoot;
  const pkg=currentSdk;
  const fixtureParent=join(
    homedir(),
@@ -251,7 +249,6 @@ export async function createEnvironment({
  });
  await policyInput.reload();
  const parser=await createNativeMarkdownParser({
-   repositoryRoot,
    expectedVersion:'0.10.5'
  });
  return {

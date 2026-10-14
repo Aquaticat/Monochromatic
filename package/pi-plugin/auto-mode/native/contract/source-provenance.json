@@ -930,6 +930,8 @@
     {
       "original": "native-index/native-parser.mjs",
       "maintained": "native-index/native-parser.mjs",
+      "currentMaintained": "native-index/native-parser.ts",
+      "movedOn": "2026-10-14",
       "sha256": "9f2921cda36dfdbcdf08299e217d41590cee9b1abfd6a704fb0e4cbb37ef55fa",
       "origin": "authored-source",
       "relocatedLiterals": 0
