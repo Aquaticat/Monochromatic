@@ -6,13 +6,12 @@ import { createNativeMarkdownParser } from '../../native-index/native-parser.mjs
 import { bindNativePolicyRuntime } from '../native-batch/runtime.mjs';
 import { readSessionDisposalState } from '../native-batch/generated/agent-session.mjs';
 import { createNativeCliHost, NativeCliHostError } from './host.mjs';
-import { maintainedPolicyEntry } from '../maintained-policy.mjs';
+import { askUser, VERDICT_ENTRY_TYPE } from '../maintained-policy.mjs';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 
 //region The candidate CLI binds custody without adopting an unqualified semantic policy.
 
 const parser = await createNativeMarkdownParser({ repositoryRoot: maintainedRoot, expectedVersion: '0.10.5' });
-const { askUser, VERDICT_ENTRY_TYPE } = await import(maintainedPolicyEntry);
 const { wrapToolDefinition } = await import(pathToFileURL(join(sdk, 'dist/core/tools/tool-definition-wrapper.js')).href);
 const log = tagged({ tag: 'auto-mode-native-host' });
 
