@@ -637,6 +637,9 @@ class SearchPageWiringTest {
         assertEquals(851f / 2f + halfCrease + 16f, circle.left.value, PANE_ROUNDING_DP)
         assertEquals(72f, circle.top.value - boundsOf(SEARCH_DIVIDER_TAG).bottom.value, 0.01f)
         assertEquals(scheme.secondaryContainer.toArgb(), pixelOf(SEARCH_STATUS_CIRCLE_TAG, x = 20, y = 108))
+        // The header and the divider of the right pane are the canvas and the soft divider too.
+        assertEquals(scheme.surfaceContainerLowest.toArgb(), pixelOf(SEARCH_HEADER_TAG, x = 1200, y = 20))
+        assertEquals(scheme.outlineVariant.toArgb(), pixelOf(SEARCH_DIVIDER_TAG, x = 400, y = 1))
     }
 
     // What:     `@Test fun glyphsAreDrawnInOnSecondaryContainer()` checks the glyph tint in both circles.
