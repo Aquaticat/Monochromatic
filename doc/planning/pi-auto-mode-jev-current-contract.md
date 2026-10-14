@@ -204,6 +204,26 @@ No result authorizes a represented action or changes the production provider,
 cutoff,
 or deadline.
 
+Both frozen requests were dispatched once.
+The serving control returned HTTP 200 in 1,357.310 ms,
+with the requested model,
+333 reported input tokens,
+and the literal `permission` label at `1`.
+This is a serving and parser control,
+not semantic qualification.
+The complete shared state with only `head_0` returned HTTP 400 `max_tokens_exceeded` in 731.176 ms.
+Merely splitting that unchanged shared-state request therefore cannot solve its capacity rejection.
+The exact token count and which provider bound fired remain unavailable.
+
+Local inspection identifies a representation-specific contributor worth measuring:
+the prototype stores every original question's instructions inside `state.root.questionInstructions`.
+Those instructions are required by the assessment,
+but their placement inside shared state is an experimental encoding choice.
+The next local candidate moves each original encoded instruction back into its own question
+while preserving the complete governing state and shared-content dictionary.
+It must round-trip exactly before any separate provider experiment.
+This is not permission to remove questions or source occurrences.
+
 [models]: https://docs.typesafe.ai/models
 [api]: https://docs.typesafe.ai/api
 [limitations]: https://docs.typesafe.ai/model-jaggedness/jev-1.13

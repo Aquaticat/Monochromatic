@@ -207,6 +207,15 @@ No classifier definition,
 operating cutoff,
 or instruction-source membership changed.
 
+The latest Jev capacity diagnostic confirms that the 125,822-byte shared state fails
+even with one original question:
+HTTP 400 `max_tokens_exceeded` after 731.176 ms.
+Its literal-label serving control succeeded first.
+Splitting the same shared-state input is therefore insufficient.
+The next local representation check moves original question instructions out of shared state
+and back into their respective question entries,
+retaining all governing content and shared values with exact reconstruction checks.
+
 ## Restart checkpoint after installing automatic Codex shell limits
 
 The user restarted the session and resumed work on 2026-10-13.
