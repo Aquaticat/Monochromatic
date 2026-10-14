@@ -110,6 +110,10 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --unsupported-clause",
 ]
 
+[tasks."test:native:unconfigured-policy"]
+description = "Verify absent semantic consumers withhold native execution without assessment or fallback"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --sdk-stream --unconfigured-policies"
+
 [tasks."dependencies:install"]
 description = "Install declared native parsers and regenerate the workspace lock without lifecycle scripts"
 run = "pnpm install --ignore-scripts"

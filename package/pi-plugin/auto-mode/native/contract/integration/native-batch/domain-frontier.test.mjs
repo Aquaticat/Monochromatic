@@ -43,6 +43,8 @@ assert.ok(!nextDecision||observedProgress,'Next-decision receipt controls requir
 const throwingContext=process.argv.includes('--throwing-context');
 const httpTransport=process.argv.includes('--http-transport');
 const operatingPolicy=process.argv.includes('--operating-policy');
+const unconfiguredPolicies=process.argv.includes('--unconfigured-policies');
+assert.ok(!(operatingPolicy&&unconfiguredPolicies),'Unconfigured-policy verification cannot also select operating policies');
 const singleCall=process.argv.find(argument=>argument.startsWith('--single-call='))?.slice('--single-call='.length);
 assert.ok(singleCall===undefined||['direct','binding'].includes(singleCall));
 const expectedExecutions=singleCall===undefined?3:1;
@@ -190,12 +192,13 @@ const runtime=bindNativePolicyRuntime({
   wrapToolDefinition:env.wrapToolDefinition,
   readSessionDisposalState:env.readSessionDisposalState,
   trace(){return undefined;},
-  ...(operatingPolicy?createNativeSemanticOperatingPolicies():{
+  ...(unconfiguredPolicies?{}:operatingPolicy?createNativeSemanticOperatingPolicies():{
    semanticAdmissionPolicy:policy('clause_operation_relation'),
    requestMaterialAdmissionPolicy:policy('request_instruction_content'),
    headingContextAdmissionPolicy:policy('heading_instruction_content')
   }),
   sendWire:sendAssessment,
+  ...(unconfiguredPolicies?{send(){observations.assessments++;throw new Error('An unconfigured semantic consumer must not dispatch an assessment');}}:{}),
   originalStream:sdkStream?function stream(model,context,options){return controlledSdkStream({model,context,options});}:nativeOpenAIStream,
   async terminalFetch(input,init){
    observations.requests++;
@@ -209,6 +212,21 @@ await using cleanup={async [Symbol.asyncDispose](){await changeControl.drain();s
 try{
  await session.prompt('Exercise the original request-specific policy domain.');
  const current=runtime.inspect();
+ if(unconfiguredPolicies){
+  const review=current.lastReview;
+  assert.ok(review,'The original native operation must reach policy review');
+  assert.equal(review.outcome.state,'unresolved');
+  assert.equal(review.semanticAdmission.state,'not-configured');
+  assert.equal(review.requestMaterialAdmission.state,'not-configured');
+  assert.equal(review.headingContextAdmission.state,'not-configured');
+  assert.equal(review.unitAdoptionAdmission.state,'not-configured');
+  assert.equal(observations.assessments,0);
+  assert.equal(observations.httpCalls,0);
+  assert.equal(observations.executions,0);
+  assert.ok(current.lastJudgment.inspect().finalRecord,'The unconfigured original judgment must close');
+  console.log(JSON.stringify({complete:true,unconfiguredPolicies:true,outcome:review.outcome,assessments:observations.assessments,httpCalls:observations.httpCalls,executions:observations.executions}));
+  return;
+ }
  if(approvedChange==='policy'||approvedChange==='cancel'){
   changeControl.verify({judgment:current.lastJudgment,observations});
   return;
