@@ -11,7 +11,8 @@ import org.junit.Test
  * Pins the rule for a tap or Enter on a track row (D124): the current row toggles play and pause, and any other row
  * is only selected, loaded paused, and stops what was playing. Every case reads the playing flag the deck and the
  * rows are drawn from, through an engine that reports playing changes the way the real one does. The cases where a
- * load fails live in `PlayerControllerRowFailureTest`, because the controller logs a failure through `android.util.Log`.
+ * load fails live in `PlayerControllerRowFailureTest`, because the controller logs a failure through
+ * `android.util.Log`.
  */
 class PlayerControllerRowTest {
     /** Engine double that reports playing changes and load failures. */
@@ -28,7 +29,8 @@ class PlayerControllerRowTest {
     private fun openTwoFolders() {
         /** The three tracks of each folder, in load order. */
         val tracks: List<Track> =
-            (0 until 3).map { number -> trackOf("Alpha", number) } + (0 until 3).map { number -> trackOf("Beta", number) }
+            (0 until 3).map { number -> trackOf("Alpha", number) } +
+                (0 until 3).map { number -> trackOf("Beta", number) }
         controller.openLibrary(tracks)
     }
 
@@ -51,7 +53,10 @@ class PlayerControllerRowTest {
         openTwoFolders()
         controller.playIndex(0)
         assertTrue(controller.uiState.playing)
+        /** Pause requests so far, to see that selecting asks the engine to stop before its asynchronous load. */
+        val pausesBefore: Int = engine.pauseCount
         controller.activateRow(2)
+        assertTrue(engine.pauseCount > pausesBefore)
         assertEquals(2, controller.uiState.currentIndex)
         assertFalse(controller.uiState.playing)
         assertFalse(engine.playing)
@@ -66,6 +71,17 @@ class PlayerControllerRowTest {
         controller.activateRow(1)
         assertTrue(controller.uiState.playing)
         assertEquals(1, engine.loads.size)
+    }
+
+    /** Selecting a row tells the engine owner which track was loaded, as playing it does. */
+    @Test
+    fun selectingARowReportsTheLoadedTrack() {
+        openTwoFolders()
+        /** URIs reported as loaded, in order. */
+        val reported: MutableList<String> = mutableListOf()
+        controller.onTrackLoaded = { uri -> reported += uri }
+        controller.activateRow(4)
+        assertEquals(listOf(uriAt(4)), reported)
     }
 
     /** The playing row pauses on a tap and keeps its place, with no new load. */
@@ -116,7 +132,7 @@ class PlayerControllerRowTest {
         assertEquals(1, engine.loads.size)
     }
 
-    /** With another folder on screen, the current track's index still toggles, and a row of the shown folder selects. */
+    /** With another folder shown, the current track's index still toggles, and a row of the shown folder selects. */
     @Test
     fun theRuleFollowsTheLibraryIndexWhateverFolderIsShown() {
         openTwoFolders()

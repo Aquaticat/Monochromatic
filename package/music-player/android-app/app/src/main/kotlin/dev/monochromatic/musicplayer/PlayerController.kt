@@ -927,7 +927,7 @@ class PlayerController(private val engine: AudioEngine) {
     //   this.onTrackLoaded?.(this.uris[index]); this.refresh(true);
     // }
     // ```
-    /** Selects the track at [index] and loads it paused, stopping any playing track; an unknown index changes nothing. */
+    /** Selects the track at [index] and loads it paused, stopping a playing track; an unknown index does nothing. */
     fun selectIndex(index: Int) {
         if (queue.playIndex(index) == null) {
             return
@@ -946,9 +946,11 @@ class PlayerController(private val engine: AudioEngine) {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // activateRow(index: number): void { if (this.queue.currentIndex() === index) this.togglePlay(); else this.selectIndex(index); }
+    // activateRow(index: number): void {
+    //   if (this.queue.currentIndex() === index) this.togglePlay(); else this.selectIndex(index);
+    // }
     // ```
-    /** Handles a tap or Enter on the row of [index]: toggles play and pause on the current row, else selects the row. */
+    /** Handles a tap or Enter on the row of [index]: toggles play on the current row, else selects the row. */
     fun activateRow(index: Int) {
         if (queue.currentIndex() == index) {
             togglePlay()

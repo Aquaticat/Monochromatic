@@ -3,11 +3,15 @@ package dev.monochromatic.musicplayer.wiring
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isNotSelected
 import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.pressKey
 import dev.monochromatic.musicplayer.FeedbackHostState
 import dev.monochromatic.musicplayer.PlayerController
 import dev.monochromatic.musicplayer.ReportingAudioEngine
@@ -84,7 +88,7 @@ class RowTapWiringTest {
         assertEquals(listOf("content://invented/alpha/2" to false), engine.loads)
     }
 
-    /** Select, start, pause, resume by tapping the same row, then a tap on another row selects it and stops playback. */
+    /** Select, start, pause and resume by tapping one row, then a tap on another row selects it and stops playback. */
     @Test(timeout = CASE_LIMIT_MS)
     fun theSameRowThenAnotherRowFollowTheRule() {
         controller.openLibrary(alpha(count = 6))
@@ -116,6 +120,45 @@ class RowTapWiringTest {
         tap(3)
         assertFalse(engine.playing)
         row(3).assertIsSelected()
+        assertEquals(1, engine.loads.size)
+    }
+
+    /** Moves the ring onto the track list with Alt+2, then onto a row with Down, and presses Enter [times] times. */
+    private fun enterOnTheRingedRow(times: Int) {
+        composeTestRule.onRoot().performKeyInput {
+            keyDown(Key.AltLeft)
+            pressKey(Key.Two)
+            keyUp(Key.AltLeft)
+            pressKey(Key.DirectionDown)
+        }
+        composeTestRule.waitForIdle()
+        repeat(times) {
+            composeTestRule.onRoot().performKeyInput { pressKey(Key.Enter) }
+            composeTestRule.waitForIdle()
+        }
+    }
+
+    /** Enter on the ringed row selects it and leaves it paused, as a tap does. */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun enterOnAnUnselectedRowSelectsItAndPlaysNothing() {
+        controller.openLibrary(alpha(count = 6))
+        showHost()
+        enterOnTheRingedRow(times = 1)
+        assertTrue("Enter selected a track", controller.uiState.currentIndex != null)
+        assertFalse(engine.playing)
+        assertEquals(false, engine.loads.single().second)
+    }
+
+    /** A second and a third Enter on the same row start it and pause it, with no reload. */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun enterOnTheSelectedRowTogglesPlayAndPause() {
+        controller.openLibrary(alpha(count = 6))
+        showHost()
+        enterOnTheRingedRow(times = 2)
+        assertTrue("the second Enter started the selected row", engine.playing)
+        composeTestRule.onRoot().performKeyInput { pressKey(Key.Enter) }
+        composeTestRule.waitForIdle()
+        assertFalse("the third Enter paused it", engine.playing)
         assertEquals(1, engine.loads.size)
     }
 }
