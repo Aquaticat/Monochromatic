@@ -189,11 +189,20 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
     discrete GPU read 48 to 52 degrees at 28 to 32 W while idle (it was not under load at the check); the integrated
     graphics read 2.2 W and 53 degrees (a 16 W reading appeared once earlier). The GPU is not logged under CPU load yet.
   - Heat load: 133 W at 4.4 GHz is within what the chip is built for (TechPowerUp quotes a 170 W TDP and a 230 W
-    limit), so the chip is not producing unusual heat. Package power minus the two chiplets (85.4 W) leaves about 48 W for
+    limit), so the chip is not producing unusual heat. Package power minus the two chiplets (85.4 W) leaves about
+    48 W for
     the IO die, SoC and fabric at the plateau, and about 30 to 35 W at idle; no reference was found for what is normal.
-  - Not visible from here: no voltage sensor exists (`k10temp` and `zenergy` expose none), so CPU core and SoC voltage,
-    EXPO memory profile and load-line settings need the BIOS or a tool the user runs.
-  - The probe on top of the heatsink stayed within 0.3 degrees of its idle value while the CPU sat at 95. If the heatsink
+  - Not visible from here: no voltage sensor exists (`k10temp` and `zenergy` expose none), so CPU core and SoC voltage
+    and load-line settings need the BIOS or a tool the user runs. The user first said memory overclocking was enabled,
+    then corrected it to disabled (about 20:58 EDT), so EXPO is off. AMD capped the SoC voltage at 1.3 V in an AGESA
+    update after burnout reports tied to EXPO on some boards, and a Hardware Busters test showed idle power spikes
+    of 109 to 130 W on early BIOS versions (Notebookcheck report); with EXPO off that route to extra IO die heat is
+    closed. The BIOS version was not read (the user declined that command).
+  - Nothing measured says the motherboard is defective: the heat load is normal for the chip, and the motherboard
+    does not carry heat from the chip to the cooler. A board fault would show as odd voltages, instability or odd
+    sensor readings; none was observed or reported.
+  - The probe on top of the heatsink stayed within 0.3 degrees of its idle value while the CPU sat at 95.
+    If the heatsink
     were passing the heat to the air well, its top should warm, so this fits a bottleneck between the chip and the
     heatsink; the probe's contact is weak (its tape cannot bend), so this is a hint and not a measurement.
   - Four new sample columns log the GPU temperature and power and the integrated graphics, so the next load shows
