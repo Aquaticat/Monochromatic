@@ -5,7 +5,7 @@ import {pathToFileURL} from 'node:url';
 import {sessionStateSource} from './agent-state-source.ts';
 import {sessionToolDescriptionSource} from './tool-description-source.ts';
 import {managerSource,sessionSource} from './root-source.ts';
-import {promptSessionSource,promptEmitterSource} from './prompt-source.mjs';
+import {promptSessionSource,promptEmitterSource} from './prompt-source.ts';
 import {promptBuilderSource} from './builder-source.ts';
 import {handlerMessageSource,handlerProviderSource} from './message-source.ts';
 import {programSessionSource} from './program-source.ts';

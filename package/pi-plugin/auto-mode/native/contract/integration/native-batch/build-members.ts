@@ -51,7 +51,8 @@ function privateMemberName(name: string): string {
   /**
    Additional declarations or fields cannot be accepted as identifier text.
    */
-  const [declaration] = parsed.program.body;
+  const [declaration] = parsed.program
+    .body;
   if ((parsed.diagnostics
     .length
     > 0) || (parsed.program
@@ -67,7 +68,8 @@ function privateMemberName(name: string): string {
   /**
    The exact decoded name rejects initializers, methods, and source-escaped alternate spellings.
    */
-  const [field] = declaration.body.body;
+  const [field] = declaration.body
+    .body;
   if ((field?.type !== 'PropertyDefinition') || (field.key
     .type
     !== 'PrivateIdentifier')

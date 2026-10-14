@@ -542,7 +542,9 @@
       "maintained": "integration/native-batch/prompt-source.mjs",
       "sha256": "85336470177207853dcb6a63adf433171763e9260496b68eacec5ed00f62ed9a",
       "origin": "authored-source",
-      "relocatedLiterals": 0
+      "relocatedLiterals": 0,
+      "currentMaintained": "integration/native-batch/prompt-source.ts",
+      "movedOn": "2026-10-14"
     },
     {
       "original": "integration/native-batch/root-source.mjs",
