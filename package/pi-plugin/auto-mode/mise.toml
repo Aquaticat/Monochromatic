@@ -35,6 +35,23 @@ extends = "lint"
 [tasks."lint:types"]
 extends = "lint:types"
 
+[tasks."lint:native:syntax"]
+description = "Check every maintained native module with the consuming Node parser"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { readdir } = await import('node:fs/promises')
+const { join } = await import('node:path')
+const { default: spawn } = await import('nano-spawn')
+const paths = await readdir('native', { recursive: true })
+const modules = paths.filter(function isModule(path) {
+  return path.endsWith('.mjs') || path.endsWith('.ts')
+})
+for (const path of modules) {
+  await spawn(process.execPath, ['--check', join('native', path)], { stdio: 'inherit' })
+}
+console.log(JSON.stringify({ complete: true, parsedNativeModules: modules.length }))
+"""
+
 # Preserve the inherited package configuration while accepting an explicit
 # file subset for resource-bounded verification. No arguments still covers all files.
 [tasks."lint:oxlint"]
