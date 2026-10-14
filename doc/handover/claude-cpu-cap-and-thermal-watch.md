@@ -589,8 +589,9 @@ posts mostly from 2023, so BIOS-dated), which read as follows in the first pages
 - Its most-cited recommendation is the ASRock X670E Taichi (one poster, "IMHO", after comparing the group dumps seen).
   A later poster summed the thread up as the ASUS ProArt B650-Creator and the ASRock B650E Taichi (non-lite) having
   the best groups.
-- ASUS ProArt X670E-Creator and ROG Crosshair X670E Extreme: networking, Thunderbolt and some SATA/USB controllers sit in
-  one group; a Proxmox poster found dual-GPU passthrough impossible on the ProArt X670E and then bought the ProArt X870E.
+- ASUS ProArt X670E-Creator and ROG Crosshair X670E Extreme: networking, Thunderbolt and some SATA/USB controllers
+  sit in one group; a Proxmox poster found dual-GPU passthrough impossible on the ProArt X670E and then bought the
+  ProArt X870E.
 - ASRock B650E PG Riptide: the GPU and the chipset devices sit in separate groups in the posted dump.
 - Gigabyte: the Aorus Master appears in the group comparison, but the X870E and B650 Gaming X AX V2 reports are the
   "1:1 IOMMU mapping" refusals recorded in "VFIO and 24/7 evidence".
