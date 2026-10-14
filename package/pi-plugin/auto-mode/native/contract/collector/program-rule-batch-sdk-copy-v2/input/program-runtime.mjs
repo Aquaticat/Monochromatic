@@ -1,5 +1,5 @@
 import {createReachedGroupRun} from "./program-collector.mjs";
-import {NativeScriptValueGuardError} from "./script-value-guard.mjs";
+import {NativeScriptValueGuardError} from "./script-value-guard.ts";
 export class ReachedProgramRuntimeError extends Error {constructor(message){super(message);this.name=this.constructor.name;}}
 
 /** Program guard category survives script errors and closes later native release. */

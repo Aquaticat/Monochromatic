@@ -104,7 +104,9 @@
       "maintained": "collector/program-rule-batch-sdk-copy-v2/input/script-value-guard.mjs",
       "sha256": "8756925bf068f4605c3cbc06d33d3b7a9f79c38a161e4a8023d0548f7e93c72e",
       "origin": "previous-generated-input",
-      "relocatedLiterals": 0
+      "relocatedLiterals": 0,
+      "currentMaintained": "collector/program-rule-batch-sdk-copy-v2/input/script-value-guard.ts",
+      "movedOn": "2026-10-14"
     },
     {
       "original": "collector/request-producer-group-consumer/request.mjs",

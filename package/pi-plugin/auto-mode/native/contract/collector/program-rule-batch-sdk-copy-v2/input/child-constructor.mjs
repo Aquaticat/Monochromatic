@@ -2,7 +2,7 @@ import {createGoverningRuleBindings} from "../../../lifecycle/governing-rule-can
 import {declareResultProgram} from "./program-profile-reviewed.mjs";
 import {materializePattern} from "./result-pattern.mjs";
 import {createNativeReturnConsumer} from "./native-return-consumer.mjs";
-import {NativeScriptValueGuardError,scriptValueGuard} from "./script-value-guard.mjs";
+import {NativeScriptValueGuardError,scriptValueGuard} from "./script-value-guard.ts";
 import {createJudgmentBudget} from "../../../lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs";
 import {createQuestionSelection} from "../../../lifecycle/claim-evidence-batch-selection/selection.mjs";
 import {createDependencyFacade} from "../../../lifecycle/native-text-read-contract/dependencies.mjs";

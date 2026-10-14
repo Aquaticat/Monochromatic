@@ -1,4 +1,4 @@
-import {scriptValueGuard} from "./script-value-guard.mjs";
+import {scriptValueGuard} from "./script-value-guard.ts";
 import {toScriptValue} from "./native-script-value.mjs";
 export class NativeReturnContractError extends Error {constructor(message){super(message);this.name=this.constructor.name;}}
 export class UnsupportedScriptBindingError extends Error {constructor(kind){super('Native script conversion returned '+kind+'; this result-binding profile requires a bounded string');this.name=this.constructor.name;}}
