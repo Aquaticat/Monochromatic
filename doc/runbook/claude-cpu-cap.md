@@ -39,7 +39,9 @@ Tone down 2 threads at a time while the user explores the CPU, as they asked.
 
 ## What the watch reports
 
-The service prints a line only for an event, never for routine samples.
+The service logs a line only for an event, never for routine samples.
+Every line goes through the tagged logger, so it starts with `[level] [timestamp] [tag]` before the event name;
+alerts are `warn`, recoveries and starts are `info`.
 Read them with `journalctl --user --unit=claude-cpu-watch --follow --lines=0 --output=cat`.
 
 - `ALERT <metric>=<value>`: the metric stayed at or above its limit for 3 samples (6 seconds).

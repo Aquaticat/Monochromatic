@@ -696,11 +696,10 @@ The day-one checks under "Checks before buying" still decide it.
 
 The watcher, summarizer, episode analyzer and unit moved into `package/dev-script/claude-cpu-cap` at the user's
 request ("Make (almost) everything live in the repo"); the running service starts from that checkout.
-The code was copied unchanged, so `mise run //package/dev-script/claude-cpu-cap:lint:oxlint` reports
-251 errors and 266 warnings (mostly missing TSDoc, sync calls, arrow functions, module-level `let`, magic numbers),
-and the package has no tests; `lint:types` passes.
-Making it lint-clean means rewriting the watcher into several modules with tagged loggers and tests,
-which was not asked for yet. Host state stays outside the repo: the `threads` file, `cc-token` and the sample log.
+It was first copied unchanged, then rewritten (2026-10-13, about 22:40 EDT) into small modules with injectable paths,
+unit tests on disposable fixtures (all passing), and zero lint errors and warnings; the live service runs the rewrite.
+Event lines now carry the tagged logger prefix.
+Host state stays outside the repo: the `threads` file, `cc-token` and the sample log.
 
 ## Commits so far
 
