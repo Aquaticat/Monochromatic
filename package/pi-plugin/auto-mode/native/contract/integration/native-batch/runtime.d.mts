@@ -3,7 +3,11 @@
 
  @module
  */
-import type { NativePolicyRuntime, NativePolicyRuntimeInput } from './runtime-types.ts';
+import type {
+  NativePolicyRuntime,
+  NativePolicyRuntimeInput
+} from './runtime-types.ts';
+
 export { NativePolicyRuntimeError } from '../maintained-policy.mjs';
 
 /**

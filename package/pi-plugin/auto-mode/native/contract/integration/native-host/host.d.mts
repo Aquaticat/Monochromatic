@@ -13,12 +13,12 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import type { ManagerConstructors } from '../../lifecycle/runtime-custody/manager-types.ts';
 import type { NativePolicyRuntime } from '../native-batch/runtime-types.ts';
-import type { NativeHostSessionInput, NativePolicyDesignation } from './bootstrap-types.ts';
+import type {
+  NativeHostSessionInput,
+  NativePolicyDesignation
+} from './bootstrap-types.ts';
 
-/**
- Original ownership implementation reports configuration and lifecycle failures.
- */
-export class NativeCliHostError extends Error {}
+export { NativeCliHostError } from './host-error.ts';
 
 /**
  Fixed native host retains the original manager constructors, resources, and session cleanup.
@@ -35,7 +35,10 @@ export type NativeCliHost = {
   /**
    Reload uses the same native resource owner and trust resolver.
    */
-  readonly reloadResource: (loader: ResourceLoader, options?: Parameters<ResourceLoader['reload']>[0]) => Promise<void>;
+  readonly reloadResource: (
+    loader: ResourceLoader,
+    options?: Parameters<ResourceLoader['reload']>[0]
+  ) => Promise<void>;
   /**
    Construction requires this host's original manager and resource loader.
    */

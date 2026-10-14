@@ -3,8 +3,14 @@
 
  @module
  */
-import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
-import type { askUser, createAssessmentSender } from '../maintained-policy.mjs';
+import type {
+  ExtensionAPI,
+  ExtensionContext
+} from '@earendil-works/pi-coding-agent';
+import type {
+  askUser,
+  createAssessmentSender
+} from '../maintained-policy.mjs';
 import type { SemanticAdmissionPolicy } from '../../../../src/semantic-admission-types.ts';
 import type { NativeMarkdownParser } from '../../native-index/native-parser-types.ts';
 import type { NativeHostSessionInput } from '../native-host/bootstrap-types.ts';

@@ -14,7 +14,8 @@ import {
   reloadHostResource
 } from './resource-reload.mjs';
 
-export class NativeCliHostError extends Error {}
+import { NativeCliHostError } from './host-error.ts';
+export { NativeCliHostError } from './host-error.ts';
 
 //region One bootstrap owns CLI managers, resources, construction, and terminal cleanup.
 

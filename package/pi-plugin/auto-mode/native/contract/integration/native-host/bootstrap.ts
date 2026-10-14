@@ -9,8 +9,14 @@ import {
   readSessionDisposalState,
   wrapToolDefinition
 } from './bootstrap-dependencies.ts';
-import type { NativeHostSessionInput, NativePolicyDesignation } from './bootstrap-types.ts';
-import type { NativeApprovalHost, NativePolicyRuntime } from '../native-batch/runtime-types.ts';
+import type {
+  NativeHostSessionInput,
+  NativePolicyDesignation
+} from './bootstrap-types.ts';
+import type {
+  NativeApprovalHost,
+  NativePolicyRuntime
+} from '../native-batch/runtime-types.ts';
 import { createNativeMarkdownParser } from '../../native-index/native-parser.ts';
 import { bindNativePolicyRuntime } from '../native-batch/runtime.mjs';
 import {
@@ -70,7 +76,10 @@ async function designatePolicy({cwd}: {readonly cwd:string}): Promise<NativePoli
   /**
    File inspection has a separate diagnostic boundary.
    */
-  const l = tagged({tag: designatePolicy.name, l: log});
+  const l = tagged({
+    tag: designatePolicy.name,
+    l: log
+  });
   l.debug('capturing original governing policy designation');
   /**
    The existing host policy convention selects the project agent instructions.
@@ -152,7 +161,10 @@ function bindSession({
   /**
    Session binding retains its own diagnostic scope.
    */
-  const l = tagged({tag: bindSession.name, l:log});
+  const l = tagged({
+    tag: bindSession.name,
+    l:log
+  });
   l.debug('binding original native session to maintained policy runtime');
   /**
    The selected model supplies the observed main-request endpoint.
