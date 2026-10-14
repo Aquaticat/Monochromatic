@@ -9,6 +9,24 @@ Updated 2026-10-14.
 
 ## Typed native session construction
 
+The next owned dependency is being ported from `runtime-factory-scopes/scopes.mjs`
+to `scopes.ts` and `construction.ts`.
+The maintained SDK caller now imports its real typed interface directly.
+The original callback and manager captures,
+exact prepared-result identity,
+factory-wide exclusion,
+and retryable failed cleanup remain explicit requirements.
+The unused legacy result-preparer default is removed:
+the maintained caller already supplies `prepareSdkResult`,
+and the typed interface now requires that callback.
+The historical provenance records the old path and October 14 move date.
+Built-artifact checks for input replacement,
+publication,
+failed cleanup,
+and reentrancy are committed but not yet verified.
+The first type-check attempt emitted Go `newosproc` and is invalid despite its wrapper returning exit zero.
+Serial verification with bounded compiler concurrency is pending.
+
 The maintained constructor now lives in `native-batch/session-root.ts`,
 with typed native readers,
 SDK result fields,

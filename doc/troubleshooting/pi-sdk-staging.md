@@ -6519,6 +6519,24 @@ There is nothing to file upstream from this observation.
 
 ### Session-construction port verification on 2026-10-14
 
+The subsequent factory-scope port type-check attempt stopped in TypeScript Go with:
+
+```text
+# pi-factory-scopes-types-20261014.log
+runtime: failed to create new OS thread (have 140 already; errno=11)
+runtime: may need to increase max user processes (ulimit -u)
+fatal error: newosproc
+```
+
+The source formatter was also running.
+No immediately preceding task-counter sample attributes the failure to that overlap.
+The wrapper returned exit zero despite retaining this panic;
+this is not a successful type check.
+The separate log is `${HOME}/temp/agent/pi-factory-scopes-types-20261014.log`.
+The retry will run serially with `TSC_SINGLE_THREADED=1` and `GOMAXPROCS=2`.
+These controls reduce compiler concurrency without changing TypeScript checks or resource ceilings.
+No successful retry is recorded yet.
+
 After the typed session-construction port,
 the approval-context `allow` case failed with
 `JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
