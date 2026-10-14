@@ -377,6 +377,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 [tasks."test:native:cli-process"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-host/process.test.mjs"
 
+[tasks."test:native:process-network"]
+description = "Verify that native dispatcher setup preserves the isolated CLI fixture fetch blocker"
+run = "node src/native-process-network.unit.test.ts"
+
 [tasks."test:native:serializer-receipts"]
 run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-payload",
