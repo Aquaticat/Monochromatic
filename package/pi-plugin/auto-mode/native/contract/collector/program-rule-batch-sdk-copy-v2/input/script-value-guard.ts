@@ -31,10 +31,9 @@ const l = tagged({ tag: 'auto-mode-native-script-value-guard' });
  */
 export class NativeScriptValueGuardError extends AggregateError {
   /**
-   Preserve the original constructor-based category, including derived guard classes.
+   Stable native error category; derived error classes declare their own diagnostic name.
    */
-  override readonly name: string = this.constructor
-    .name;
+  override readonly name: string = 'NativeScriptValueGuardError';
 
   /**
    Owned frozen list retains every original caught value, including nullish and primitive throws.

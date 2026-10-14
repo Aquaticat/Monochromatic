@@ -98,7 +98,7 @@ await describe({
       name: 'names the original call with JSON quoting and keeps the program fallback diagnostic',
       fn: async function callDiagnostics() {
         /** Quotes, newlines, and source-like text remain literal diagnostic metadata. */
-        const call = { name: 'tool"\n${literal}', id: 'call\\"\n' };
+        const call = { name: `tool"\n\${literal}`, id: 'call\\"\n' };
         /** Native call metadata does not replace the retained failure value. */
         const callGuard = scriptValueGuard({ error: false, call });
         expect(callGuard.message).toBe(`Native result binding for tool ${JSON.stringify(call.name)} call ${JSON.stringify(call.id)} was rejected. Resolve the original source, lifetime, ownership or supported-value failure; do not replace its judgment with a fresh budget.`);
@@ -108,12 +108,15 @@ await describe({
     it({
       name: 'propagates existing guards and derived guards without wrapping or relabeling them',
       fn: async function originalGuardIdentity() {
-        /** Subclasses retain the original constructor-based diagnostic category. */
-        class DerivedGuard extends NativeScriptValueGuardError {}
+        /** Derived error classes declare their own diagnostic category. */
+        class DerivedGuardError extends NativeScriptValueGuardError {
+          /** The category names this derived occurrence without replacing its identity. */
+          override readonly name = 'DerivedGuardError';
+        }
         /** Distinct original guard occurrences remain distinguishable. */
-        const guards = [new NativeScriptValueGuardError({ errors: [false] }), new DerivedGuard({ errors: [undefined] })];
+        const guards = [new NativeScriptValueGuardError({ errors: [false] }), new DerivedGuardError({ errors: [undefined] })];
         for (const error of guards) expect(scriptValueGuard({ error, call: { name: 'later', id: 'later' } })).toBe(error);
-        expect(guards[1]?.name).toBe('DerivedGuard');
+        expect(guards[1]?.name).toBe('DerivedGuardError');
       },
     }),
     ...[undefined, null, false, 0, 'original', {}, new Error('native failure')].map(function caughtValue(error, index) {
