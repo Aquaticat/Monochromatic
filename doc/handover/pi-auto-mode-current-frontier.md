@@ -149,9 +149,15 @@ and fails the native assertion;
 records the unchanged artifact hash.
 Scoped TypeScript lint and package types pass.
 The actual isolated Qwen CLI process also passes with zero provider requests and clean shutdown.
-The next original-owner link is from serialized tools to their host input receipts:
-the new serializer receipt identifies actual declaration objects,
-but those objects do not yet carry their original source occurrences through native declaration copying.
+The next original-owner link is from serialized tools to their host input receipts.
+Commit `4187ef7e13` extends the existing manager input publication through the incumbent message alias index,
+using the declaration metadata already retained by the original append call.
+The new typed owner propagates tool object identity only at observed native copy sites;
+equal replacements and cross-publication reuse do not receive membership.
+The original source still has no permission.
+Built native-manager tests now cover these boundaries;
+their first verification is in progress,
+and serialized tool contribution consumption is still pending.
 Complete system and tool governing-use accounting is still required before removing the independent obligation.
 
 ## Original native RPC approval verification

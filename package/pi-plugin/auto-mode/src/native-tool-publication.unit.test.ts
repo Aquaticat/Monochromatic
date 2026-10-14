@@ -49,10 +49,12 @@ function assertPublicationModule(value: unknown): asserts value is PublicationMo
 }
 
 /** Native staging emits these exact modules for the host and serializer. */
-const managerModule: unknown = await import(new URL(
+const managerNamespace: unknown = await import(new URL(
   '../dist/native/contract/integration/native-batch/generated/session-manager.mjs', import.meta.url,
 ).href);
-assertManagerModule(managerModule);
+assertManagerModule(managerNamespace);
+/** Function declarations retain this explicitly established native contract. */
+const managerModule: ManagerModule = managerNamespace;
 /** The source owner and native manager share their original alias module. */
 const publicationModule: unknown = await import(new URL(
   '../dist/native/contract/collector/run-prompt-custody-v3/handler-publication.mjs', import.meta.url,
@@ -78,10 +80,10 @@ function fixture() {
   /** Native defensive copies must preserve the same original source publication. */
   const context = manager.buildSessionContext();
   /** Require the real system projection before exercising mutation controls. */
-  const copied = context.messages[0];
+  const [copied] = context.messages;
   /** Exactly one original source must exist for this append. */
-  const origin = origins[0];
-  if (copied === undefined || origin === undefined) throw new Error('Native system tool fixture did not publish its input');
+  const [origin] = origins;
+  if ((copied === undefined) || (origin === undefined)) throw new Error('Native system tool fixture did not publish its input');
   return { manager, message, copied, origin, origins };
 }
 
@@ -110,7 +112,7 @@ await describe({ name: '', children: [
       /** Each branch begins with a proven original publication. */
       const input = fixture();
       /** Keep the originally published object to detect retirement of old aliases. */
-      const original = input.copied.toolsAdded[0];
+      const [original] = input.copied.toolsAdded;
       if (original === undefined) throw new Error('Native copied declaration is missing');
       expect(publicationModule.readOriginalToolPublication(original)).toBe(input.origin.publication);
       /** An accessor must never execute during integrity inspection. */
@@ -138,7 +140,9 @@ await describe({ name: '', children: [
     /** A third manager cannot appropriate the first original tool object. */
     const conflicting = managerModule.SessionManager.inMemory();
     conflicting.appendMessage({ ...first.message });
-    expect(function conflictingCapture() { managerModule.assertNativeSessionInputCapture(conflicting); })
+    expect(function conflictingCapture() {
+      managerModule.assertNativeSessionInputCapture(conflicting);
+    })
       .toThrow('Original session inputs exceed the supported source capture profile');
     expect(publicationModule.readOriginalToolPublication(first.message.toolsAdded[0])).toBe(first.origin.publication);
     expect(publicationModule.readOriginalToolPublication(second.message.toolsAdded[0])).toBe(second.origin.publication);
