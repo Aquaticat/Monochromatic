@@ -878,7 +878,8 @@
     },
     {
       "original": "lifecycle/root-lifecycle-retirement-entry/root-reader.mjs",
-      "maintained": "lifecycle/root-lifecycle-retirement-entry/root-reader.mjs",
+      "maintained": "lifecycle/root-lifecycle-retirement-entry/root-reader.ts",
+      "movedOn": "2026-10-14",
       "sha256": "6c61bf24b23388f9e301c0dae77b8016b4fb10d3abaf3d27d7a4e85c660cbbf2",
       "origin": "authored-source",
       "relocatedLiterals": 0
