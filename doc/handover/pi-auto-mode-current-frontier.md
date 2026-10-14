@@ -461,8 +461,16 @@ prohibition,
 and unspecified fixtures pass after connection.
 Scoped lint for the import test and typed rewrite/mapping helpers reports zero warnings and zero errors.
 Native SDK stream,
-approval-context,
-and host-lifecycle regressions are running against this artifact.
+all approval-context cases,
+and host-lifecycle regressions also pass against this artifact.
+Removing the parser diagnostic guard in a disposable copied module makes the committed invalid-source test fail;
+the original copied module passes,
+and the production artifact remains unchanged.
+Node parses all 163 modules after the split.
+The seven connected JavaScript preparation files report 565 warnings and zero errors.
+Warnings still fail the shared `denyWarnings` lint policy;
+this is not a passing package lint result.
+The staged-import helper is now being ported to TypeScript with its original file-identity checks retained.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.

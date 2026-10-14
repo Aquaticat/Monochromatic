@@ -566,6 +566,8 @@
     {
       "original": "integration/native-batch/staged-import.mjs",
       "maintained": "integration/native-batch/staged-import.mjs",
+      "currentMaintained": "integration/native-batch/staged-import.ts",
+      "movedOn": "2026-10-14",
       "sha256": "a24135e9f2b77f650bc9ce59e8054d886d415d3f33d11e032ccb7209543f8d62",
       "origin": "authored-source",
       "relocatedLiterals": 0
