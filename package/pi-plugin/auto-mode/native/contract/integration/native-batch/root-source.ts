@@ -33,7 +33,10 @@ function prepareManagerSource(source: string): string {
  /**
   Content preparation keeps a diagnostic boundary separate from native lifetime protection.
   */
- const rl = tagged({ tag: prepareManagerSource.name, l });
+ const rl = tagged({
+   tag: prepareManagerSource.name,
+   l
+ });
  rl.debug('preparing original native manager content ownership');
  /**
   The fixed original copy sites retain their native input and result identities.
@@ -157,7 +160,9 @@ function prepareManagerSource(source: string): string {
  /**
   Original class field spelling must remain one exact qualified source block.
   */
- const before=`export class SessionManager {\n${declarations.map(function emitPublicRootField(item): string { return (`    ${item};\n`); })
+ const before=`export class SessionManager {\n${declarations.map(function emitPublicRootField(item): string {
+   return `    ${item};\n`;
+ })
    .join('')}`;
  /**
   Native private fields and observer closures retain their original occurrence and input owners.
@@ -213,7 +218,10 @@ export function managerSource(source: string): string {
  /**
   Final manager source composition retains a separate diagnostic scope.
   */
- const rl = tagged({ tag: managerSource.name, l });
+ const rl = tagged({
+   tag: managerSource.name,
+   l
+ });
  rl.debug('composing original native manager ownership');
  /**
   Input and copy observation is installed before native lifetime protection.
@@ -275,7 +283,10 @@ export function sessionSource(source: string): string {
  /**
   Session source composition retains a separate diagnostic from manager construction.
   */
- const rl = tagged({ tag: sessionSource.name, l });
+ const rl = tagged({
+   tag: sessionSource.name,
+   l
+ });
  rl.debug('composing original Session lifetime and completion');
  return generateCompletion(generateSession(source));
 }
