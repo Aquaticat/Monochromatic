@@ -21,7 +21,7 @@
 use super::support::{
     Fixture, fixture, git, porcelain, remove, repository, wrapped,
 };
-use git_policy_cli::owner_lock::{SilentWait, acquire_owner_lock};
+use git_policy_cli::owner_lock::{SilentWait, acquire_owner_lock_for};
 use git_policy_cli::transaction_registry::ensure_transaction_root;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Output, Stdio};
@@ -40,10 +40,11 @@ fn hold_landing(repo: &Path) -> git_policy_cli::owner_lock::OwnerLock {
     ensure_transaction_root(registry.as_path()).expect("registry");
     // `mut` is required by the notice interface; this wait is silent, as the incumbent's.
     let mut silent: SilentWait = SilentWait;
-    return acquire_owner_lock(
+    return acquire_owner_lock_for(
         registry.join("landing.lock").as_path(),
         Duration::from_millis(5),
         &mut silent,
+        Duration::from_secs(20),
     )
     .expect("the test holds the landing lock");
 }

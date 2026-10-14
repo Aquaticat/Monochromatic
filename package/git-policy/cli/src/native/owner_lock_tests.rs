@@ -664,7 +664,7 @@ fn a_slow_wait_sends_one_slow_notice() {
         lock_directory.as_path(),
         Duration::from_millis(5),
         &mut counter,
-        Some(Duration::from_millis(400)),
+        Duration::from_millis(400),
         Duration::from_millis(100),
     );
     sleeper.kill().expect("kill");
@@ -682,7 +682,7 @@ fn a_slow_wait_sends_one_slow_notice() {
         root.join("free.lock").as_path(),
         Duration::from_millis(5),
         &mut quick,
-        Some(Duration::from_secs(5)),
+        Duration::from_secs(5),
         Duration::from_millis(100),
     )
     .expect("free");

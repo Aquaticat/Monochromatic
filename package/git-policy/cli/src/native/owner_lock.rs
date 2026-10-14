@@ -678,11 +678,10 @@ impl WaitNotice for SilentWait {
 /// What:
 ///  Acquire a lock,
 ///  waiting at most `limit` while a live owner holds it,
-///  or without bound when `limit` is `None`,
 ///  and telling `notice.slow` once the wait has lasted `slow_after`.
 /// Why:
-///   One loop serves every contract,
-///  so the bounded and the unbounded wait cannot drift apart.
+///   No acquisition can wait forever,
+///  so a holder that is alive but stuck fails its waiters instead of stalling them.
 ///  The elapsed time is measured on a clock that never goes backwards,
 ///  and tests choose a short `slow_after` instead of waiting out `SLOW_WAIT`.
 ///
@@ -694,7 +693,7 @@ pub fn acquire_within(
     lock_directory: &Path,
     poll_delay: Duration,
     notice: &mut dyn WaitNotice,
-    limit: Option<Duration>,
+    limit: Duration,
     slow_after: Duration,
 ) -> Result<OwnerLock, OwnerLockError> {
     let record: OwnerLockRecord = current_owner_record(None)?;
@@ -714,9 +713,7 @@ pub fn acquire_within(
             slow_noticed = true;
             notice.slow(started.elapsed());
         }
-        if let Some(allowed) = limit
-            && started.elapsed() >= allowed
-        {
+        if started.elapsed() >= limit {
             let holder_pid: Option<i64> = match read_owner(lock_directory) {
                 Ok(PublishedOwner::Owner(published)) => Some(published.owner_pid),
                 Ok(PublishedOwner::Busy) | Err(_) => None,
@@ -732,29 +729,33 @@ pub fn acquire_within(
 }
 
 /// What:
-///  Acquire a lock,
-///  waiting without bound while a live owner holds it.
+///  Acquire a lock in a test,
+///  waiting at most `TEST_ACQUIRE_LIMIT` while a live owner holds it.
 ///       `notice` is told once,
 ///  when the first attempt finds the lock busy;
 ///       `&mut dyn WaitNotice` lends any value implementing that interface.
 /// Why:
-///   The wait is unbounded by contract while the owner lives;
-///  a dead owner's lock is
-///       retired on the next attempt.
-///  One process record is used for every attempt.
-///  Callers that must never hang use `acquire_owner_lock_for`.
+///   Tests take locks to set up or to prove a release;
+///  a lock a mutant never releases must fail the test within the limit,
+///  not hang it until the mutation run's timeout.
+///  A dead owner's lock is retired on the next attempt.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// async function acquireOwnerLock({ lockDirectory, pollDelayMs = 20, onWait }): Promise<OwnerLock>;
 /// ```
+#[cfg(test)]
 pub fn acquire_owner_lock(
     lock_directory: &Path,
     poll_delay: Duration,
     notice: &mut dyn WaitNotice,
 ) -> Result<OwnerLock, OwnerLockError> {
-    return acquire_within(lock_directory, poll_delay, notice, None, SLOW_WAIT);
+    return acquire_within(lock_directory, poll_delay, notice, TEST_ACQUIRE_LIMIT, SLOW_WAIT);
 }
+
+/// How long a test waits for a lock before failing.
+#[cfg(test)]
+const TEST_ACQUIRE_LIMIT: Duration = Duration::from_secs(20);
 
 /// What:
 ///  Acquire a lock,
@@ -775,7 +776,7 @@ pub fn acquire_owner_lock_for(
     notice: &mut dyn WaitNotice,
     limit: Duration,
 ) -> Result<OwnerLock, OwnerLockError> {
-    return acquire_within(lock_directory, poll_delay, notice, Some(limit), SLOW_WAIT);
+    return acquire_within(lock_directory, poll_delay, notice, limit, SLOW_WAIT);
 }
 
 /// Lock contention,
