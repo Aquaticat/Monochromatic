@@ -213,7 +213,7 @@ fn ink_of(role: u32, dark: bool) -> Vec<[u8; 3]> {
         .paint(&view, colors, 0.0)
         .expect("paint a styled word");
     let mut found = Vec::new();
-    for pixel in pixels.bytes.chunks_exact(4) {
+    for pixel in pixels.bytes.as_chunks::<4>().0 {
         // The raster is premultiplied; faint edge pixels carry too little color to compare.
         if pixel[3] >= 128 {
             let alpha = u32::from(pixel[3]);
