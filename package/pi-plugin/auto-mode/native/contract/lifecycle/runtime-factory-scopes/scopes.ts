@@ -42,14 +42,14 @@ export function createRuntimeFactoryScopes(definition: FactoryScopeDefinition): 
   const { lifecycle, readManager, prepareResult, assertRuntimeResult, disposeSession } = definition;
   /** Each occurrence retains the same callback identities selected at bootstrap. */
   const bindings = Object.freeze({ lifecycle, readManager, prepareResult, assertRuntimeResult, disposeSession });
-  if (((typeof definition.lifecycle
+  if (((typeof bindings.lifecycle
     ?.beginConstruction) !== 'function')
-    || ((typeof definition.lifecycle
+    || ((typeof bindings.lifecycle
       ?.abandonConstruction) !== 'function')
-    || ((typeof definition.readManager) !== 'function')
-    || ((typeof definition.assertRuntimeResult) !== 'function')
-    || ((typeof definition.disposeSession) !== 'function')
-    || ((typeof definition.prepareResult) !== 'function'))
+    || ((typeof bindings.readManager) !== 'function')
+    || ((typeof bindings.assertRuntimeResult) !== 'function')
+    || ((typeof bindings.disposeSession) !== 'function')
+    || ((typeof bindings.prepareResult) !== 'function'))
     throw new RuntimeOperationError('Construction lifecycle, native readers and native disposal are required');
   /**
    Cleanup callbacks retain exact failed construction occurrences until successful disposal.
