@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 
 use super::*;
-use crate::unplayable_notification_bus_support::PrivateBus;
+use crate::unplayable_notification_bus_support::{Behavior, PrivateBus};
 
 fn identity() -> Identity {
     return Identity {
@@ -87,16 +87,26 @@ fn a_new_file_after_an_earlier_report_posts_a_second_notification_for_that_file_
 }
 
 #[test]
-fn a_bus_without_a_notification_service_fails_quietly_and_a_later_service_still_gets_later_reports() {
-    let bus = PrivateBus::start("thread_late");
+fn a_refused_post_is_not_retried_and_a_later_report_still_reaches_the_service() {
+    let bus = PrivateBus::start("thread_refused");
+    let (_service, calls) = bus.serve_notifications_with(Behavior { delay: Duration::ZERO, refuse_first: 1 });
     let notifier = UnplayableNotifier::spawn(config_for(&bus, Duration::from_secs(3)));
     notifier.report(&files(&["early.wav"]));
-    // The service appears after the first report failed; the next report reaches it.
-    let (_service, calls) = bus.serve_notifications(Duration::ZERO);
     notifier.report(&files(&["late.wav"]));
     notifier.shutdown();
     let bodies: Vec<String> = calls.lock().expect("not poisoned").iter().map(|call| return call.body.clone()).collect();
-    assert_eq!(bodies, vec!["late.wav can't be played.".to_string()], "the failed early file is not retried");
+    assert_eq!(bodies, vec!["late.wav can't be played.".to_string()], "the refused early file is not told again");
+}
+
+#[test]
+fn a_bus_with_no_notification_service_ends_quietly_and_shows_nothing_to_wait_for() {
+    let bus = PrivateBus::start("thread_none");
+    let notifier = UnplayableNotifier::spawn(config_for(&bus, Duration::from_secs(3)));
+    let started = Instant::now();
+    notifier.report(&files(&["a.wav"]));
+    notifier.report(&files(&["b.wav", "c.wav"]));
+    notifier.shutdown();
+    assert!(started.elapsed() < Duration::from_secs(2), "a missing service answers at once with an error, so nothing waits");
 }
 
 #[test]

@@ -45,9 +45,18 @@ fn record(body: NotifyBody) -> Call {
     return Call { app_name, replaces_id, app_icon, summary, body: text, actions, hint_names, urgency, desktop_entry, expire_timeout };
 }
 
+/// How a recording service misbehaves: a delay before every reply (a wedged service when long), and a number of calls at
+/// the start that it refuses with an error reply and does not record.
+#[derive(Clone, Copy, Debug, Default)]
+pub(crate) struct Behavior {
+    pub delay: Duration,
+    pub refuse_first: usize,
+}
+
 /// Answers `Notify` calls on `connection` until the bus goes away, recording each and replying with the call count
-/// after `delay`, which simulates a wedged service when it is long.
-fn answer_notify_calls(connection: &Connection, calls: &Calls, delay: Duration) {
+/// after the delay of `behavior`; the first `refuse_first` calls get an error reply instead.
+fn answer_notify_calls(connection: &Connection, calls: &Calls, behavior: Behavior) {
+    let mut refused = 0;
     for received in MessageIterator::from(connection) {
         let Ok(message) = received else {
             return;
@@ -59,7 +68,14 @@ fn answer_notify_calls(connection: &Connection, calls: &Calls, delay: Duration) 
         let Ok(body) = message.body().deserialize::<NotifyBody>() else {
             continue;
         };
-        std::thread::sleep(delay);
+        std::thread::sleep(behavior.delay);
+        if refused < behavior.refuse_first {
+            refused += 1;
+            if connection.reply_error(&header, "org.freedesktop.DBus.Error.Failed", &("refused on purpose",)).is_err() {
+                return;
+            }
+            continue;
+        }
         let id = {
             let mut recorded = calls.lock().expect("the recorded calls lock is not poisoned");
             recorded.push(record(body));
@@ -119,6 +135,11 @@ impl PrivateBus {
 
     /// Starts a recording notification service on this bus and returns its connection and calls.
     pub(crate) fn serve_notifications(&self, delay: Duration) -> (Connection, Calls) {
+        return self.serve_notifications_with(Behavior { delay, refuse_first: 0 });
+    }
+
+    /// Starts a recording notification service that misbehaves as `behavior` says.
+    pub(crate) fn serve_notifications_with(&self, behavior: Behavior) -> (Connection, Calls) {
         let calls: Calls = Arc::new(Mutex::new(Vec::new()));
         let connection = zbus::blocking::connection::Builder::address(self.address.as_str())
             .and_then(|builder| return builder.name("org.freedesktop.Notifications"))
@@ -126,7 +147,7 @@ impl PrivateBus {
             .expect("the recording notification service starts");
         let serving = connection.clone();
         let recorded = Arc::clone(&calls);
-        std::thread::spawn(move || answer_notify_calls(&serving, &recorded, delay));
+        std::thread::spawn(move || answer_notify_calls(&serving, &recorded, behavior));
         return (connection, calls);
     }
 }
