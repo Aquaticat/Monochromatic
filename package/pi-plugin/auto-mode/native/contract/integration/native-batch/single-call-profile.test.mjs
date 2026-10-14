@@ -11,7 +11,7 @@ const argument=JSON.stringify(literal);
 const accepted=[
   `return await tools.read(${argument});`,
   `const result = await tools.read(${argument}); return result;`,
-  `/* source comment */ return await tools.re\u0061d(${argument});`,
+  String.raw`/* source comment */ return await tools.re\u0061d(${argument});`,
 ];
 for(const source of accepted){
   const declaration=declareResultProgram({source,toolNames:['read']});

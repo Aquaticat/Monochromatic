@@ -24,6 +24,7 @@ export {
   SemanticAdmissionPolicyError,
   copySemanticAdmissionPolicy,
   inspectSemanticAdmissionScope,
+  matchesSemanticProgramProfile,
   consumeHeadingContexts,
   consumeUnitAdoptions,
   selectUnitAdoptionPairs,
