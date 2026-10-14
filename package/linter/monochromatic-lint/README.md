@@ -144,6 +144,40 @@ Select the rule explicitly in the ordered JSONC configuration:
 
 `mise run //package/linter/monochromatic-lint:test:rust-style` verifies this rule.
 
+## Rust test sidecars
+
+`rust/tests-in-sidecars` requires unit tests to live in sidecar files.
+It reports a module that has an inline body under a `cfg` that selects test builds
+(`cfg(test)`, `cfg(all(test, ...))`, `cfg(any(test, ...))`),
+once per outermost module,
+and a function marked `#[test]` or a runtime's `#[...::test]` outside a sidecar file.
+A `#[cfg(test)] mod name;` declaration that loads a file is the sidecar form and is never reported.
+A `cfg(not(test))` module and a key-value `cfg(feature = "test")` are not test configurations.
+
+A rule sees one parsed file and cannot see which file declares it,
+so a sidecar is recognized by its name:
+a file named `*_tests.rs` or `tests.rs`,
+or any file under a `tests` directory.
+Each finding names the sidecar to create, such as `thing_tests.rs` for `thing.rs`,
+and the declaration to write:
+`#[cfg(test)] #[path = "thing_tests.rs"] mod tests;`.
+Test-only helper functions without `#[test]`, doc tests and virtual files in embedded sources are not checked.
+
+Exempt a crate whose whole purpose is testing, such as a fuzz sidecar crate, with `ignores`:
+
+```jsonc
+// monochromatic-lint.config.jsonc
+[
+  {
+    "files": ["**/*.rs"],
+    "ignores": ["**/*.fuzz/**"],
+    "rules": {
+      "rust/tests-in-sidecars": { "severity": "error" }
+    }
+  }
+]
+```
+
 ## Explicit Rust types
 
 `rust/require-explicit-types` uses resolved Rust declarations and inferred types,

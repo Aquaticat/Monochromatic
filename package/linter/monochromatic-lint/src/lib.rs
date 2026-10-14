@@ -227,6 +227,9 @@ pub mod rust_semantic_session;
 /// Internal shared Rust parse and code-line indexing.
 #[doc(hidden)]
 pub mod rust_source;
+/// Internal syntax-only requirement that unit tests live in sidecar files.
+#[doc(hidden)]
+pub mod rust_tests_in_sidecars;
 /// Read-only compiler and installed rust-src discovery.
 #[doc(hidden)]
 pub mod rust_toolchain;
