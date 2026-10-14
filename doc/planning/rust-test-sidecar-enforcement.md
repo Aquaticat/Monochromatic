@@ -1,7 +1,7 @@
 # Enforcing Rust test sidecars
 
-Status: proposal, not accepted.
-Nothing in this document is implemented, and no existing file was changed for it.
+Status: accepted by the user on 2026-10-14 ("Lets enforce rust test sidecars"), option A.
+Implementation: branch `feat/lint-tests-in-sidecars`; the record of what shipped is at the end of this document.
 
 ## Purpose
 
@@ -85,42 +85,41 @@ E beats D because a check can fail a commit and a written rule cannot.
 D beats C because it exists today while C needs upstream agreement.
 C beats B because B cannot detect the case at all.
 
-## Decisions the rule needs before it is built
+## Decisions adopted
 
-These are the questions to settle; each has a proposed answer.
+The two open questions were settled by what a rule can see, and the carve-outs follow the measured repository.
 
-- Doctests live in doc comments and are not sidecars.
-  Proposed: out of scope for the rule.
-- Integration tests under `tests/` are separate targets, not unit tests.
-  Proposed: allowed, because they cannot reach private items and the rule is about unit tests.
-- Sidecar crates named `<pkg>.fuzz`, `<pkg>.bench` and `<pkg>.conformance`
-  (the sidecar naming of the repository) hold smoke tests in `src`.
-  Proposed: exempt them by crate name, since the whole crate is the sidecar.
-- The probe under `doc/troubleshooting` is a recorded reproduction, not package source.
-  Proposed: out of scope by path.
-- Generated code and macro-expanded tests, such as the `cxx-qt` bindings in `file-manager-qt`.
-  Open: whether `cxxqt_object.rs` can move its tests to a sidecar without the bridge macro hiding the module path.
-  Measure by moving it before accepting the rule.
-- The rule's severity at introduction.
-  Proposed: `error`, after the four inline modules are migrated, so the rule never lands red.
+- A rule receives one parsed file and cannot see which file declares it,
+  so a sidecar is recognized by its name: `*_tests.rs`, `tests.rs`, or any file under a `tests` directory.
+  Measured over the tracked tree, every sidecar already follows this name, and the rule reported no false positive
+  among the more than five hundred sidecar files.
+- Exemptions use the existing configuration, not crate-name logic:
+  a later block sets `rust/tests-in-sidecars` to `off` for the `*.fuzz` crates and `doc/troubleshooting`,
+  in the same style as the existing `rust-exemptions` block, which leaves their other rules selected.
+- Doctests live in doc comments and are out of scope, as are virtual files of embedded sources.
+- Integration tests under `tests/` are allowed.
+- Test-only helper functions without `#[test]` are not reported.
+- Severity is `error` from the start, enabled only after the four inline modules were migrated.
 
 ## Migration
 
-Move the four inline modules to `<name>_tests.rs` sidecars with the `#[path]` declaration,
-one commit each, verifying each package's tests still pass.
-No other file needs to change under the proposed carve-outs.
+Done on the branch, one commit per package: the inline test modules of
+`package/cli/nested-wayland-session/src/notification_mode.rs`,
+`package/desktop-app/file-manager-qt/src/cxxqt_object.rs`,
+`package/desktop-app/ide/src/selection_paint.rs`
+and `package/linter/monochromatic-lint/src/markdown_block_start.rs`
+moved to `<name>_tests.rs` sidecars declared with `#[cfg(test)] #[path = "<name>_tests.rs"] mod tests;`.
+Not compiled here: `file-manager-qt` (needs the Qt libraries) and, until the container run, `ide` and
+`nested-wayland-session`; the moved bodies are byte-for-byte the old ones with one level of indentation removed.
 
-## Risks
+## Measurement
 
-- The rule must not flag a sidecar file itself (its `#[test]` functions sit at the top level of the loaded file).
-  It needs the declaration lookup across files, which the linter's per-file model may not provide.
-  Measure this first; if per-file analysis cannot see the declaring file,
-  the rule would have to infer sidecars from the `_tests.rs` file name,
-  which is a weaker but simpler contract.
-- A new rule changes lint output for every package, so it needs the linter's normal gates:
-  container tests, scoped mutation and a short fuzz smoke run.
+The rule, built from the branch, was run over the whole repository with a scratch configuration.
+Before the migration it reported 18 findings: the 4 inline modules, 9 test functions in the `monochromatic-lint.fuzz`
+crate and 5 in the `doc/troubleshooting` probe, and nothing else.
+After the migration, without exemptions, 15 findings remained (the fuzz crate gained one control test);
+with the two exemptions, none, and the run exited 0.
 
-## Open questions for the user
+## Record of what shipped
 
-- Is the `_tests.rs` file name acceptable as the sidecar contract, or must the rule follow the `mod` declaration?
-- Should the `<pkg>.fuzz` exemption be by crate name, as proposed, or by an allow-list in the configuration?
+Filled in at release time.
