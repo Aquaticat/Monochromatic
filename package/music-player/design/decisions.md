@@ -3386,9 +3386,9 @@ Copy and the Rust page model do not change.
   circular state layers and 24 glyphs at the same x as before.
 - Divider: 1 high, full pane width, directly under the header (y = 72), role `outline-variant` (was `outline`).
 - Result row, flat on the canvas at rest, minimum height 72:
-  the row's rounded shape spans from 8 after the pane's start inset origin to 8 before the pane's end inset
-  (x from `content-start-x - 8` to `width - end-inset + 8`), corner radius 21.3 on all four corners, and the row
-  content is padded 8 on each side so every glyph and title keeps its D58 x.
+  the row's rounded shape spans x from `content-start-x - 8` to `width - end-inset + 8` (8 before the content on
+  each side), corner radius 21.3 on all four corners, and the row content is padded 8 on each side so every glyph
+  and title keeps its D58 x.
   On the inner panel `content-start-x` already holds half the crease plus 16, so the shape starts 8 after the crease
   clear zone and never inside it.
 - Row icon: a 48 wide slot at the content start holding a 40 circle, centered in the slot (4 inside its edge), filled
