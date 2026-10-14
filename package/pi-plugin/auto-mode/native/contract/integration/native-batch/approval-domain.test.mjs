@@ -12,6 +12,8 @@ import {maintainedPolicyEntry} from '../maintained-policy.mjs';
 const {askUser,VERDICT_ENTRY_TYPE,flushPolicyDiagnostics}=await import(maintainedPolicyEntry);
 await flushPolicyDiagnostics();
 const mode=process.argv[2]??'allow';
+const useNativeContext=process.argv.includes('--native-context');
+const reloadContext=process.argv.includes('--reload-context');
 assert(['allow','deny','stop','missing','unsupported','unresolved','satisfied','bare','prohibited','retired'].includes(mode));
 const permission=mode==='bare'?'Use sentence case in the final response.':mode==='prohibited'?'The complete proposed operation is prohibited.':'The complete proposed operation is permitted.';
 const policyText='RUL:\n '+permission+'\n\nCNF:\n Require the original session Allow confirmation for this prepared group.\n';
@@ -34,6 +36,7 @@ const ctx={hasUI:true,ui:{async select(title,options){
  if(mode==='retired')activeAuthorization=false;
  return mode==='deny'?'Deny':mode==='stop'?'Stop':'Allow';
 }},abort(){abortTask=session.abort();}};
+if(useNativeContext)await session.bindExtensions({uiContext:{...session.extensionRunner.createContext().ui,select:ctx.ui.select}});
 const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInput,endpoint:'https://fixture.invalid/v1/chat/completions',rootDirectory:env.options.cwd,parsePolicy:env.parser.parse,files:[],wrapToolDefinition:env.wrapToolDefinition,readSessionDisposalState:env.readSessionDisposalState,trace(){},
  semanticAdmissionPolicy:policy('clause_operation_relation'),requestMaterialAdmissionPolicy:policy('request_instruction_content'),headingContextAdmissionPolicy:policy('heading_instruction_content'),effectOwnerFor:()=>undefined,
  // This fixture's code owns its confirmation requirement. It does not infer existing human grants from prose.
@@ -53,7 +56,7 @@ const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInpu
    judgment.assertDependenciesCurrent();
   }});
  },
- approvalHost:{pi:nativePi,ctx,askUser,verdictEntryType:VERDICT_ENTRY_TYPE,trace(){},async notificationInvoker(){notifications++;}},
+ approvalHost(){return {pi:nativePi,ctx:useNativeContext?session.extensionRunner.createContext():ctx,askUser,verdictEntryType:VERDICT_ENTRY_TYPE,trace(){},async notificationInvoker(){notifications++;}};},
  async sendWire({body}){
   assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,originalBody);
   const answers=Object.fromEntries(Object.entries(wire.questions).map(([slot,question])=>{
@@ -70,6 +73,12 @@ let handlerFailure;
 const handler=session.agent.executeToolBatch;
 session.agent.executeToolBatch=async input=>{try{return await handler(input);}catch(error){handlerFailure=error;throw error;}};
 try{
+ if(reloadContext){
+  assert(useNativeContext,'Reload fixture requires the native extension context');
+  const originalContext=session.extensionRunner.createContext();
+  await session.reload();
+  assert.throws(()=>originalContext.ui,/invalidated|active|valid|retired/i);
+ }
  await session.prompt('Exercise native prerequisite and original approval routing.');
  if(abortTask)await abortTask;
  const {lastReview:review,lastJudgment:judgment}=runtime.inspect();
@@ -92,7 +101,7 @@ try{
  const entries=session.sessionManager.getEntries().filter(entry=>entry.type==='custom'&&entry.customType===VERDICT_ENTRY_TYPE);
  assert.equal(entries.length,selections);
  if(entries.length)assert.equal(entries[0].data.verdict,['deny','stop'].includes(mode)?'user-deny':'user-approve');
- console.log(JSON.stringify({complete:true,mode,selections,notifications,authorizationCaptures,executions,assessments,originalNativeVerdictEntries:entries.length,canonicalPolicyHandler:true,actualAskUser:true,presentationIsFixture:true,authoredIndependentRequirementFacts:true,genuineHumanApprovals:0,providerRequests:0}));
+ console.log(JSON.stringify({complete:true,mode,selections,notifications,authorizationCaptures,executions,assessments,originalNativeVerdictEntries:entries.length,canonicalPolicyHandler:true,actualAskUser:true,nativeContext:useNativeContext,reloadedNativeContext:reloadContext,presentationIsFixture:true,authoredIndependentRequirementFacts:true,genuineHumanApprovals:0,providerRequests:0}));
 }finally{
  session.agent.executeToolBatch=handler;
  session.dispose();await session.agent.waitForIdle();runtime.detach();await env.drain();await flushPolicyDiagnostics();
