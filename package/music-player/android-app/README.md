@@ -147,7 +147,7 @@ Robolectric loads its framework jar for that API from `app/build/robolectric-run
 which Gradle fills from the `robolectricRuntime` configuration (`org.robolectric:android-all-instrumented`),
 so a run needs the network only once, to fill the Gradle cache, and works with `--offline` afterwards.
 The test JVM also gets Robolectric's documented `--add-opens` flags (see `app/build.gradle.kts`).
-The wiring cases add about 8 s to the 1,167-test run.
+The wiring cases add about 13 s to the 1,202-test run (measured from the result files of the last full run).
 
 ## Lint and clean
 
