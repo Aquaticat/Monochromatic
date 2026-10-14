@@ -28,7 +28,7 @@ async function expectQualificationFailure({ parserModule, expectedVersion = '0.1
     await parserModule.createNativeMarkdownParser({ expectedVersion });
   } catch (error) {
     expect(error).toBeInstanceOf(parserModule.NativePolicyParserError);
-    if (!(error instanceof Error)) throw error;
+    if (!(Error.isError(error,))) throw error;
     expect(error.message).toContain(message);
     return;
   }
@@ -78,6 +78,28 @@ await describe({
     //endregion The actual installed parser preserves the native consumer behavior
 
     //region Disposable dependency variants exercise explicit qualification failures
+
+    it({
+      name: 'accepts a disposable dependency matching the identity and coordinate controls',
+      fn: async function checkFixturePositiveControl() {
+        /**
+         This synthetic tree proves the disposable package graph can reach successful qualification.
+         */
+        const tree = {
+          type: 'root',
+          children: [{ type: 'paragraph', children: [{ type: 'text', value: 'x' }], position: { start: { offset: 4 }, end: { offset: 5 } } }],
+        };
+        /**
+         The copied adapter retains the real entry and manifest qualification logic.
+         */
+        const parserModule = await createNativeParserFixture({ tree });
+        /**
+         Success distinguishes input-specific rejection from a broken fixture loader.
+         */
+        const parser = await parserModule.createNativeMarkdownParser({ expectedVersion: '0.10.5' });
+        expect(parser.parse({ source: '🚀\n\nx\n', mdx: false })).toEqual(tree);
+      },
+    }),
 
     ...[
       { name: 'missing package name', manifest: { name: undefined } },
