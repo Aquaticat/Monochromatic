@@ -4,7 +4,11 @@
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { createAssessmentHttpSender, type AssessmentTransportInput, AssessmentTransportError, } from './assessment-transport.ts';
+import {
+  createAssessmentHttpSender,
+  type AssessmentTransportInput,
+  AssessmentTransportError,
+} from './assessment-transport.ts';
 import { encodeDecisionRequest, } from './decision-request.ts';
 import { decodeDecisionResponse, } from './decision-response.ts';
 
@@ -12,6 +16,11 @@ import { decodeDecisionResponse, } from './decision-response.ts';
  Conversion lifecycle logs exclude credentials and assessment content.
  */
 const l = tagged({ tag: 'auto-mode-assessment-sender', },);
+
+/**
+ Original preparation-inclusive budget and byte limit also bound conversion.
+ */
+const conversionLimits = { durationMs: 5_000, requestBytes: 1_048_576 } as const;
 
 //region Conversion consumes the original judgment deadline and one original attempt
 
@@ -31,7 +40,11 @@ const l = tagged({ tag: 'auto-mode-assessment-sender', },);
  const send = createAssessmentSender({ fetchImpl: fetch, now: performance.now.bind(performance), readCredential });
  ```
  */
-export function createAssessmentSender({ fetchImpl, now, readCredential, }: {
+export function createAssessmentSender({
+  fetchImpl,
+  now,
+  readCredential,
+}: {
   readonly fetchImpl: typeof fetch;
   readonly now: () => number;
   readonly readCredential: () => unknown;
@@ -39,12 +52,19 @@ export function createAssessmentSender({ fetchImpl, now, readCredential, }: {
   /**
    The same dependencies govern conversion and HTTP dispatch.
    */
-  const rl = tagged({ tag: createAssessmentSender.name, l, },);
+  const rl = tagged({
+    tag: createAssessmentSender.name,
+    l,
+  },);
   rl.debug('binding original assessment to Luna Decisions',);
   /**
    HTTP retains its byte, credential, cancellation, and attempt guards.
    */
-  const sendHttp = createAssessmentHttpSender({ fetchImpl, now, readCredential, },);
+  const sendHttp = createAssessmentHttpSender({
+    fetchImpl,
+    now,
+    readCredential,
+  },);
 
   /**
    Conversion cannot restart or outlive the original assessment.
@@ -54,12 +74,20 @@ export function createAssessmentSender({ fetchImpl, now, readCredential, }: {
    @throws AssessmentTransportError for an invalid or exhausted lifetime
    */
   function assertLifetime(input: AssessmentTransportInput,): void {
-    tagged({ tag: assertLifetime.name, l: rl, },).debug('checking original conversion lifetime',);
+    tagged({
+      tag: assertLifetime.name,
+      l: rl,
+    },)
+      .debug('checking original conversion lifetime',);
     /**
      The deadline includes native preparation and every conversion step.
      */
     const remaining = input.deadlineAt - now();
-    if (input.signal.aborted || (!Number.isFinite(remaining,)) || (remaining < 1) || (remaining > 5_000))
+    if (input.signal
+      .aborted
+      || (!Number.isFinite(remaining,))
+      || (remaining < 1)
+      || (remaining > conversionLimits.durationMs))
       throw new AssessmentTransportError('Luna conversion exceeded the original assessment lifetime',);
   }
 
@@ -75,9 +103,13 @@ export function createAssessmentSender({ fetchImpl, now, readCredential, }: {
    @throws DecisionWireError for unsupported request or response data
    */
   async function send(input: AssessmentTransportInput,): Promise<string> {
-    tagged({ tag: send.name, l: rl, },).debug('converting original assessment for Luna',);
+    tagged({
+      tag: send.name,
+      l: rl,
+    },)
+      .debug('converting original assessment for Luna',);
     assertLifetime(input,);
-    if (Buffer.byteLength(input.body,) > 1_048_576)
+    if (Buffer.byteLength(input.body,) > conversionLimits.requestBytes)
       throw new AssessmentTransportError('Original assessment exceeds 1048576 bytes before Luna conversion',);
     /**
      The HTTP sender checks the converted request's bytes before reading credentials.
@@ -86,12 +118,18 @@ export function createAssessmentSender({ fetchImpl, now, readCredential, }: {
     /**
      Attempt number, cancellation, and deadline pass through unchanged.
      */
-    const raw = await sendHttp({ ...input, body: encoded.body, },);
+    const raw = await sendHttp({
+      ...input,
+      body: encoded.body,
+    },);
     assertLifetime(input,);
     /**
      Response identity and vocabulary checks do not supply policy admission.
      */
-    const decoded = decodeDecisionResponse({ raw, questions: encoded.questions, },);
+    const decoded = decodeDecisionResponse({
+      raw,
+      questions: encoded.questions,
+    },);
     assertLifetime(input,);
     return decoded;
   }

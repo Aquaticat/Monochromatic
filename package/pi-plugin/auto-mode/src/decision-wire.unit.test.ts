@@ -20,17 +20,21 @@ await describe({
     it({ name: 'preserves every state value, question, criterion, and syntax delimiter', fn: async () => {
       const original = decisionFixtureRequest();
       const encoded = encodeDecisionRequest(JSON.stringify(original,),);
-      const parsed = JSON.parse(encoded.body,);
-      expect(parsed.model,).toBe('openai/gpt-6-luna-decisions',);
-      expect(JSON.parse(parsed.input,),).toEqual(original.state,);
-      expect(parsed.questions.map((question: { name: string }) => question.name,),).toEqual(['head_0', 'head_1',],);
-      expect(JSON.parse(parsed.questions[0].instructions,),).toEqual(original.questions.head_0.instructions,);
-      expect(Object.fromEntries(parsed.questions[0].choices.map((choice: { value: string; description?: string }) => [choice.value, choice.description ?? null,],),),)
-        .toEqual(original.questions.head_0.criteria,);
-      expect(parsed.questions[1].type,).toBe('predicate',);
-      expect(JSON.parse(parsed.questions[1].instructions,),).toEqual({
-        instructions: original.questions.head_1.instructions, criteria: original.questions.head_1.criteria,
-      },);
+      const parsed: unknown = JSON.parse(encoded.body,);
+      expect(parsed).toEqual({
+        model: 'openai/gpt-6-luna-decisions',
+        input: JSON.stringify(original.state),
+        questions: [
+          { name: 'head_0', type: 'choice', instructions: JSON.stringify(original.questions.head_0.instructions),
+            choices: [
+              { value: 'permission', description: 'Explicit permission for the complete operation.' },
+              { value: 'none' }, { value: 'unknown', description: 'Missing premises.' },
+            ] },
+          { name: 'head_1', type: 'predicate', instructions: JSON.stringify({
+            instructions: original.questions.head_1.instructions, criteria: original.questions.head_1.criteria,
+          }) },
+        ],
+      });
       expect(encoded.questions,).toEqual([
         { name: 'head_0', type: 'choice', labels: ['permission', 'none', 'unknown',], },
         { name: 'head_1', type: 'noul', labels: [], },
@@ -48,7 +52,9 @@ await describe({
       { name: 'numeric description', body: JSON.stringify({ ...decisionFixtureRequest(), questions: { head_0: { type: 'choice', instructions: {}, criteria: { yes: 1, no: null, }, }, }, },), },
     ].map(function invalidRequest({ name, body, },) {
       return it({ name: `rejects ${name} without returning a reduced request`, fn: async () => {
-        expect(function encodeInvalidRequest() { encodeDecisionRequest(body,); },).toThrow();
+        expect(function encodeInvalidRequest() {
+          encodeDecisionRequest(body,);
+        },).toThrow();
       }, },);
     },),
     it({ name: 'accepts 200 questions and rejects 201 without truncation', fn: async () => {
@@ -71,12 +77,19 @@ await describe({
   name: decodeDecisionResponse.name,
   children: [
     it({ name: 'preserves probabilities without substituting confidence or rounding', fn: async () => {
-      const encoded = encodeDecisionRequest(JSON.stringify(decisionFixtureRequest(),),);
-      const result = JSON.parse(decodeDecisionResponse({ raw: JSON.stringify(decisionFixtureResponse(),), questions: encoded.questions, },),);
-      expect(result.answers.head_0,).toEqual({ type: 'choice', choice: 'permission', confidence: 0.61,
-        probabilities: { permission: 0.8, none: 0.1, unknown: 0.1, }, },);
-      expect(result.answers.head_1,).toEqual({ type: 'noul', noul: 0.9, },);
-      expect(result.usage,).toEqual({ input_tokens: 123, output_tokens: 0, total_tokens: 123, },);
+      const encoded = encodeDecisionRequest(
+        JSON.stringify(decisionFixtureRequest(),),
+      );
+      const result: unknown = JSON.parse(decodeDecisionResponse({ raw: JSON.stringify(decisionFixtureResponse(),), questions: encoded.questions, },),);
+      expect(result).toEqual({
+        model: 'openai/gpt-6-luna-decisions',
+        answers: {
+          head_0: { type: 'choice', choice: 'permission', confidence: 0.61,
+            probabilities: { permission: 0.8, none: 0.1, unknown: 0.1 } },
+          head_1: { type: 'noul', noul: 0.9 },
+        },
+        usage: { input_tokens: 123, output_tokens: 0, total_tokens: 123 },
+      });
     }, },),
     ...[
       { name: 'wrong model', response: { ...decisionFixtureResponse(), model: 'gpt-6-luna', }, },
@@ -98,7 +111,9 @@ await describe({
       },),
     ].map(function invalidResponse({ name, response, },) {
       return it({ name: `rejects ${name} before returning estimates`, fn: async () => {
-        const encoded = encodeDecisionRequest(JSON.stringify(decisionFixtureRequest(),),);
+        const encoded = encodeDecisionRequest(
+          JSON.stringify(decisionFixtureRequest(),),
+        );
         expect(function decodeInvalidResponse() {
           decodeDecisionResponse({ raw: JSON.stringify(response,), questions: encoded.questions, },);
         },).toThrow();
@@ -118,22 +133,24 @@ await describe({
       const calls: string[] = [];
       const send = createAssessmentSender({ now: () => 0, readCredential: () => assessmentFixtureKey,
         fetchImpl: async function localDecision(url, options,) {
-          calls.push(String(url,),);
-          const body = JSON.parse(String(options?.body,),);
-          expect(body.model,).toBe('openai/gpt-6-luna-decisions',);
-          expect(body.questions[0].type,).toBe('choice',);
-          expect(body.questions[1].type,).toBe('predicate',);
-          return new Response(JSON.stringify(decisionFixtureResponse(),),);
+          expect(url).toBe('https://api.llmgateway.io/v1/decisions');
+          calls.push('request');
+          expect(options?.body).toBe(encodeDecisionRequest(JSON.stringify(decisionFixtureRequest())).body);
+          return Response.json(decisionFixtureResponse());
         }, },);
-      const result = JSON.parse(await send({ ...assessmentInput(), body: JSON.stringify(decisionFixtureRequest(),), },),);
-      expect(calls,).toEqual(['https://api.llmgateway.io/v1/decisions',],);
-      expect(result.answers.head_0.probabilities.permission,).toBe(0.8,);
+      const result: unknown = JSON.parse(await send({ ...assessmentInput(), body: JSON.stringify(decisionFixtureRequest(),), },),);
+      expect(calls,).toEqual(['request',],);
+      expect(result).toHaveProperty('answers.head_0.probabilities.permission', 0.8);
     }, },),
     it({ name: 'withholds invalid original input before reading a credential', fn: async () => {
       const reads: number[] = [];
-      const send = createAssessmentSender({ now: () => 0, readCredential() { reads.push(1,); return assessmentFixtureKey; },
+      const send = createAssessmentSender({ now: () => 0, readCredential() {
+      reads.push(1,);
+      return assessmentFixtureKey; },
         fetchImpl: async function unexpectedHttp() { throw new Error('Unexpected HTTP',); }, },);
-      await assessmentFailure(async function invalidOriginal() { return await send({ ...assessmentInput(), body: '{}', },); },);
+      await assessmentFailure(async function invalidOriginal() {
+        return await send({ ...assessmentInput(), body: '{}', },);
+      },);
       expect(reads,).toHaveLength(0,);
     }, },),
     it({ name: 'does not reset an expired original deadline for conversion', fn: async () => {
