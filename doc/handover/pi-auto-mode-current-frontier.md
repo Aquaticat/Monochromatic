@@ -500,8 +500,21 @@ and source coordinates.
 Every omission fails its intended consumer assertion,
 while the original copied module passes;
 neither the production artifact nor installed dependencies were changed by those controls.
-The native host source-preparation module is now being typed;
-its real CLI and lifecycle consumers are the next verification step.
+Commits `0da2d65bcd`,
+`7f3630185d`,
+and `68b047682a` type native host source preparation and its file boundary.
+The finite upstream inputs are captured before source transformation;
+validated generated modules are written independently after every original call-site check succeeds.
+The original constructor,
+reload,
+Codemode,
+and paired disposal edits are preserved.
+Both typed preparation files report zero lint diagnostics.
+Package types,
+the owned native build,
+and host lifecycle replacement and cleanup pass.
+The separate CLI process and approval-context checks are running against this artifact.
+Remaining preparation generators and the JavaScript runtime still need lint and type completion.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
