@@ -74,9 +74,9 @@ export function summarizeBatch({
   plan
 }) {
   return plan.diagnosticBands
-    .map(band=>{
+    .map(function evaluateDiagnosticBand(band) {
     const rows=Object.entries(plan.expectedBooleans)
-      .map(([id,expected])=>{
+      .map(function classifyDiagnosticAnswer([id,expected]) {
       const value=parsed.scalars[id];
       const predicted=value>=band.high?true:value<=band.low?false:null;
       return {
@@ -89,11 +89,11 @@ export function summarizeBatch({
     });
     return {
       ...band,
-      correct:rows.filter(r=>r.outcome==='correct')
+      correct:rows.filter(function isCorrectDiagnosticAnswer(r) { return (r.outcome==='correct'); })
         .length,
-      wrong:rows.filter(r=>r.outcome==='wrong')
+      wrong:rows.filter(function isWrongDiagnosticAnswer(r) { return (r.outcome==='wrong'); })
         .length,
-      unresolved:rows.filter(r=>r.outcome==='unresolved')
+      unresolved:rows.filter(function isUnresolvedDiagnosticAnswer(r) { return (r.outcome==='unresolved'); })
         .length,
       rows,
       productionThresholdAdopted:false

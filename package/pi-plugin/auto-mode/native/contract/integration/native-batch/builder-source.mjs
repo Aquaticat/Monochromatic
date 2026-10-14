@@ -50,10 +50,10 @@ export function promptBuilderSource({
  let literalRules=0;
  value=value.replaceAll(
    /addRule\(("[^"\n]+")\);/g,
-   (
+   function instrumentLiteralRule(
    _,
    literal
- )=>{literalRules++;return `addBuiltInRule(${literal});`;}
+ ) {literalRules++;return `addBuiltInRule(${literal});`;}
  );
  assert.equal(
    literalRules,

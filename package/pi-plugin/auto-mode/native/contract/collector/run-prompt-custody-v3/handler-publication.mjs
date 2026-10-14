@@ -38,18 +38,18 @@ function dense(value){
      +1))
    &&Array.from(
      {length:value.length},
-     (
+     function readArrayDescriptor(
        _,
        index
-     )=>Object.getOwnPropertyDescriptor(
+     ) { return (Object.getOwnPropertyDescriptor(
        value,
        String(index)
-     )
+     )); }
    )
-   .every(property=>property?.enumerable&&Object.hasOwn(
+   .every(function isEnumerableDataProperty(property) { return (property?.enumerable&&Object.hasOwn(
      property,
      'value'
-   ));
+   )); });
 }
 function textPart(value){
  return ordinary(value)&&(Reflect.ownKeys(value)
@@ -95,16 +95,16 @@ function createMessagePublication({
   if((kind==='custom')||(kind==='entry')){
    if((typeof raw)==='string')return value===raw;
    return dense(value)&&(value.length===partCount)
-     &&value.every((
+     &&value.every(function matchesOriginalTextPart(
        part,
        index
-     )=>textPart(part)&&(part.text===textAt(index)));
+     ) { return (textPart(part)&&(part.text===textAt(index))); });
   }
   if((!dense(value))||(!value.every(textPart)))return false;
-  if(kind==='llm')return (value.length===partCount)&&value.every((
+  if(kind==='llm')return (value.length===partCount)&&value.every(function matchesPublishedText(
     part,
     index
-  )=>part.text===textAt(index));
+  ) { return (part.text===textAt(index)); });
   if(kind==='payload'){
    let ordinal=0;
    for(let index=0;index<partCount;index++){
@@ -151,10 +151,10 @@ function createMessagePublication({
       kind
     })))return undefined;
   const parts=Array.isArray(content.value)?Object.freeze(content.value
-    .map((
+    .map(function captureTextPartDescriptors(
       part,
       index
-    )=>Object.freeze({
+    ) { return (Object.freeze({
       part,
       index:flags(Object.getOwnPropertyDescriptor(
         content.value,
@@ -168,7 +168,7 @@ function createMessagePublication({
         part,
         'text'
       ))
-    }))):undefined;
+    })); })):undefined;
   return Object.freeze({
     label:flags(label),
     content:flags(content),
@@ -210,10 +210,10 @@ function createMessagePublication({
     ===expected.parts
     .length)
     &&actual.parts
-    .every((
+    .every(function matchesCapturedPart(
     part,
     index
-  )=>{
+  ) {
    const original=expected.parts[index];
    return (part.part===original.part)&&isDeepStrictEqual(
      part.index,
@@ -484,17 +484,17 @@ export function recordMessageInputProjection({
 /** The native projection's existing sourceEntry/message relation is the bridge, never an entry ID match. */
 export function recordHandlerProjection(projection){
  const edited=new Set(projection.entries
-   .filter(row=>field(
+   .filter(function isContextEditEntry(row) { return (field(
      row.sourceEntry,
      'type'
    )
      ?.value
-     ==='context_edit')
-   .map(row=>field(
+     ==='context_edit'); })
+   .map(function readContextEditTarget(row) { return (field(
      row.sourceEntry,
      'targetId'
    )
-     ?.value));
+     ?.value); }));
  for(const {
    sourceEntry,
    messages

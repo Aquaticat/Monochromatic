@@ -57,10 +57,10 @@ export function assertManagerOriginsAppended({
 }){
  const previous=origins(before);
  const current=origins(after);
- if((current.length<previous.length)||previous.some((
+ if((current.length<previous.length)||previous.some(function differsFromOriginalOrigin(
    origin,
    index
- )=>origin!==current[index]))throw new SourceCollectionError('Manager source growth cannot remove, replace or reorder original occurrences');
+ ) { return (origin!==current[index]); }))throw new SourceCollectionError('Manager source growth cannot remove, replace or reorder original occurrences');
  const seen=new Set();
  for(const [index,origin] of current.entries()){
   frozenRecord(origin);frozenRecord(origin.source);frozenRecord(origin.publication);
@@ -96,13 +96,13 @@ export function assertRunManagerGrowth({
  frozenRecord(before);frozenRecord(after);
  if(before===after)return;
  const oldKeys=Reflect.ownKeys(before)
-   .filter(key=>key!=='retainedMessageOrigins');
+   .filter(function retainBeforeManagerField(key) { return (key!=='retainedMessageOrigins'); });
  const newKeys=Reflect.ownKeys(after)
-   .filter(key=>key!=='retainedMessageOrigins');
- if((oldKeys.length!==newKeys.length)||oldKeys.some(key=>(!Object.hasOwn(
+   .filter(function retainAfterManagerField(key) { return (key!=='retainedMessageOrigins'); });
+ if((oldKeys.length!==newKeys.length)||oldKeys.some(function differsFromManagerField(key) { return ((!Object.hasOwn(
    after,
    key
- ))||(before[key]!==after[key])))throw new SourceCollectionError('Manager source growth cannot replace original run material');
+ ))||(before[key]!==after[key])); }))throw new SourceCollectionError('Manager source growth cannot replace original run material');
  assertManagerOriginsAppended({
    before:before.retainedMessageOrigins,
    after:after.retainedMessageOrigins
@@ -144,16 +144,16 @@ export function assertCollectedManagerGrowth({
  ]){
   if((Reflect.ownKeys(snapshot)
     .length
-    !==keys.length)||keys.some(key=>!Object.hasOwn(
+    !==keys.length)||keys.some(function isMissingSnapshotField(key) { return (!Object.hasOwn(
     snapshot,
     key
-  )))throw new SourceCollectionError('Manager source growth requires the exact collected material profile');
+  )); }))throw new SourceCollectionError('Manager source growth requires the exact collected material profile');
  }
- if(identities.some(key=>before[key]!==after[key]))throw new SourceCollectionError('Manager source growth cannot replace original resource, base or policy identity');
- if(copied.some(key=>!isDeepStrictEqual(
+ if(identities.some(function differsFromCapturedIdentity(key) { return (before[key]!==after[key]); }))throw new SourceCollectionError('Manager source growth cannot replace original resource, base or policy identity');
+ if(copied.some(function differsFromCapturedValue(key) { return (!isDeepStrictEqual(
    before[key],
    after[key]
- )))throw new SourceCollectionError('Manager source growth cannot change original collected material');
+ )); }))throw new SourceCollectionError('Manager source growth cannot change original collected material');
  assertRunManagerGrowth({
    before:before.nativeRunComposition,
    after:after.nativeRunComposition

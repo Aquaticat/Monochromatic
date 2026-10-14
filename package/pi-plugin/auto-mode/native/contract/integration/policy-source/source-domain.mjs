@@ -56,23 +56,23 @@ export function inspectNativeSourceDomain({
  });}
  if((prior.length
    !==snapshot.retainedRunInputs
-   .length)||prior.some((
+   .length)||prior.some(function differsFromRetainedRunInput(
    origin,
    index
- )=>(origin.source
+ ) { return ((origin.source
    !==snapshot.retainedRunInputs[index]
    .source)||(origin.publication
      !==snapshot.retainedRunInputs[index]
-     .publication)))missing('Original retained run sources differ from the native current-root history.');
+     .publication)); }))missing('Original retained run sources differ from the native current-root history.');
  const expected=[
-   ...prior.map(origin=>origin.source),
+   ...prior.map(function readRetainedRunSource(origin) { return (origin.source); }),
    snapshot.hostGoverningPolicy,
    ...snapshot.resourceReceiptInputs,
    ...(snapshot.hostPromptInput?[snapshot.hostPromptInput]:[]),
    ...(snapshot.resourceSystemInput?[snapshot.resourceSystemInput]:[]),
    ...snapshot.appendPromptInputs,
    ...snapshot.contextPromptInputs
-     .filter(source=>source.carrier===undefined),
+     .filter(function isIndependentContextInput(source) { return (source.carrier===undefined); }),
    ...(snapshot.forcedPromptInput?[snapshot.forcedPromptInput]:[]),
    ...(snapshot.promptGuidelineInputs??[]),
    ...(snapshot.toolGuidelineInputs??[]),
@@ -82,7 +82,7 @@ export function inspectNativeSourceDomain({
    ...collectNativeMessageInputs(snapshot),
    ...snapshot.builtInPromptInputs,
    ...snapshot.nativeResourceToolInputs
-     .map(origin=>origin.source)
+     .map(function readNativeToolSource(origin) { return (origin.source); })
  ];
  const original=new Set(expected);
  if(original.has(undefined)||(original.size!==expected.length))missing('The original host source publications contain a missing or repeated occurrence.');
@@ -90,19 +90,19 @@ export function inspectNativeSourceDomain({
    .length
    !==original.size)
    ||snapshot.governingSources
-   .some(source=>!original.has(source)))missing('The governing collection omits or substitutes an original host source publication.');
- const bound=new Map(instructionSources.map(view=>[
+   .some(function lacksOriginalMembership(source) { return (!original.has(source)); }))missing('The governing collection omits or substitutes an original host source publication.');
+ const bound=new Map(instructionSources.map(function indexSourceView(view) { return ([
    view.source,
    view
- ]));
- if((bound.size!==original.size)||[...original].some(source=>bound.get(source)
+ ]); }));
+ if((bound.size!==original.size)||[...original].some(function hasDifferentBoundOccurrence(source) { return (bound.get(source)
    ?.sourceOccurrence
-   !==source?.occurrence))missing('Original host sources do not all have their own request-bound instruction views.');
- const indexed=new Map(sourceCoverage.map(coverage=>[
+   !==source?.occurrence); }))missing('Original host sources do not all have their own request-bound instruction views.');
+ const indexed=new Map(sourceCoverage.map(function indexSourceCoverage(coverage) { return ([
    coverage.sourceOccurrence,
    coverage
- ]));
- if((indexed.size!==original.size)||[...original].some(source=>!indexed.has(source?.occurrence)))missing('Original host source occurrences do not all have their own structural source-unit inspection.');
+ ]); }));
+ if((indexed.size!==original.size)||[...original].some(function lacksIndexedOccurrence(source) { return (!indexed.has(source?.occurrence)); }))missing('Original host source occurrences do not all have their own structural source-unit inspection.');
  for(const coverage of sourceCoverage){
   if(coverage.stale||coverage.failure
     ||(!Array.isArray(coverage.instructionCandidates))
@@ -110,7 +110,7 @@ export function inspectNativeSourceDomain({
     ||(!Array.isArray(coverage.unclassified)))missing('An original source-unit inspection is stale, failed or missing its retained units.');
  }
  const currentReceipts=snapshot.resourceReceiptInputs
-   .filter(source=>source.resourceInputOccurrence===frame.occurrence);
+   .filter(function belongsToResourceFrame(source) { return (source.resourceInputOccurrence===frame.occurrence); });
  for(const [ordinal,phase] of frame.stages
    .entries()){
   for(const [boundary,value] of [
@@ -125,7 +125,7 @@ export function inspectNativeSourceDomain({
   ]){
    if(value===undefined)continue;
    const content=(typeof value)==='string'?value:JSON.stringify(value);
-   if(!currentReceipts.some(source=>{
+   if(!currentReceipts.some(function matchesResourceBoundaryInput(source) {
     const position=JSON.parse(source.inputLocation
       .metadataJSON);
     return (position.ordinal===ordinal)&&(position.phase===phase.kind)

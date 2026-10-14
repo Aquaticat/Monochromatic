@@ -223,30 +223,30 @@ export function createRequestProducerOwner({
   return Object.freeze({
     bindConsumer,
     bindJudgmentConsumer,
-    fromAgentLoop:({
+    fromAgentLoop:function invokeMainAgentStream({
       stream,
       model,
       context,
       options
-    })=>invoke({
+    }) { return (invoke({
       kind:'main-agent',
       stream,
       model,
       context,
       options
-    }),
-    fromAuxiliarySummary:({
+    })); },
+    fromAuxiliarySummary:function invokeAuxiliarySummaryStream({
       stream,
       model,
       context,
       options
-    })=>invoke({
+    }) { return (invoke({
       kind:'auxiliary-summary',
       stream,
       model,
       context,
       options
-    }),
+    })); },
     describeResponse,
     assertMainAgentResponse,
     beginJudgment,

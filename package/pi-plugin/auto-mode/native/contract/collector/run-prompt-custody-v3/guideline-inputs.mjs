@@ -9,10 +9,10 @@ export function createGuidelineInputs({
   renderOccurrence
 }){
  const prompt=options.promptGuidelines
-   .map((
+   .map(function capturePromptGuideline(
      content,
      ordinal
-   )=>({
+   ) { return (({
      kind:'native-run-prompt-guideline-input',
      content,
      ordinal,
@@ -24,14 +24,14 @@ export function createGuidelineInputs({
      renderOccurrence,
      registration:undefined,
      permission:false
-   }));
+   })); });
  const byTool=new Map();
  const tools=Object.entries(options.toolGuidelines)
-   .flatMap(([toolName,entries])=>{
-  const sources=entries.map((
+   .flatMap(function captureToolGuidelineGroup([toolName,entries]) {
+  const sources=entries.map(function captureToolGuideline(
     content,
     ordinal
-  )=>({
+  ) { return (({
     kind:'native-run-tool-guideline-input',
     content,
     inputLocation:Object.freeze({
@@ -47,7 +47,7 @@ export function createGuidelineInputs({
     renderOccurrence,
     registration:undefined,
     permission:false
-  }));
+  })); });
   byTool.set(
     toolName,
     sources
@@ -61,12 +61,12 @@ export function createGuidelineInputs({
     ||(Object.getPrototypeOf(value)!==Object.prototype))throw new SourceCollectionError('Guideline insertion requires an ordinary native observation');
   const fields=Object.getOwnPropertyDescriptors(value);
   const keys=Reflect.ownKeys(fields);
-  if(keys.some(key=>((typeof key)!=='string')||(!fields[key]
+  if(keys.some(function isUnsupportedDescriptor(key) { return (((typeof key)!=='string')||(!fields[key]
     .enumerable)
     ||(!Object.hasOwn(
     fields[key],
     'value'
-  ))))throw new SourceCollectionError('Guideline insertion requires native data fields');
+  ))); }))throw new SourceCollectionError('Guideline insertion requires native data fields');
   const field=fields.field
     ?.value;
     const ordinal=fields.ordinal
@@ -86,7 +86,7 @@ export function createGuidelineInputs({
     'nativeRuleInsertion'
   ]:[];
   if((expected.length === 0)||(keys.length!==expected.length)
-    ||keys.some(key=>!expected.includes(key))
+    ||keys.some(function isUnexpectedOptionField(key) { return (!expected.includes(key)); })
     ||(!Number.isSafeInteger(ordinal))
     ||(ordinal<0)
     ||((typeof content)!=='string')

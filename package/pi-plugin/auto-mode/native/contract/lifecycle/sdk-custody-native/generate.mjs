@@ -28,7 +28,7 @@ export function generate(source){
     source.includes('#rootOccurrence'),
     false
   );
-  const helpers=[...source.matchAll(/^ {4}(_[A-Za-z]+)\(/gm)].map(value=>value[1]);assert.deepEqual(
+  const helpers=[...source.matchAll(/^ {4}(_[A-Za-z]+)\(/gm)].map(function readNativeFieldName(value) { return (value[1]); });assert.deepEqual(
     [...helpers].sort(),
     [...internalMethods].sort()
   );

@@ -142,7 +142,7 @@ export function createRequestObservationOwner({
       let sources;
       validate(
         scope,
-        ()=>{
+        function captureCurrentJudgmentSources() {
         if((typeof collector.captureJudgmentSources)==='function')sources=collector.captureJudgmentSources({
           original:scope.sources,
           signal:scope.signal
@@ -154,7 +154,7 @@ export function createRequestObservationOwner({
       );
       validate(
         scope,
-        ()=>collector.assertObservedFresh(sources)
+        function checkCapturedJudgmentSources() { return (collector.assertObservedFresh(sources)); }
       );
       scope.judgmentBinding=Object.freeze({
         request:scope.receipt,
@@ -230,10 +230,10 @@ export function createRequestObservationOwner({
           bodySHA256:hash(init.body),
           bytes:Buffer.byteLength(init.body)
         });
-        scope.sourceContributions=Object.freeze((sourceAssociation?.seal(parsed)??[]).map(value=>Object.freeze({
+        scope.sourceContributions=Object.freeze((sourceAssociation?.seal(parsed)??[]).map(function bindObservedContribution(value) { return (Object.freeze({
           ...value,
           request:scope.request
-        })));
+        })); }));
         return await terminalFetch(
           input,
           init

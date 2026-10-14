@@ -20,7 +20,7 @@ function readGaps(source){
    ||(!Array.isArray(metadata.selectedFields)))throw new PolicyInputBindingError('Original tool declaration source metadata differs from its captured profile');
  const gaps=metadata.unobservedMetadata??[];
  if((!Array.isArray(gaps))||(gaps.length>4_096))throw new PolicyInputBindingError('Original tool declaration metadata gaps exceed their captured profile');
- return Object.freeze(gaps.map(gap=>{
+ return Object.freeze(gaps.map(function validateToolMetadataGap(gap) {
   if((!gap)||Array.isArray(gap)
     ||(Object.keys(gap)
       .length
@@ -62,7 +62,7 @@ export function inspectToolMetadataPremises(source){
    kind:'tool-metadata-observation-gap',
    source,
    gaps,
-   reason:`Original tool declaration metadata was not captured: ${gaps.map(gap=>`entry ${gap.ordinal} field ${JSON.stringify(gap.key)} (${gap.reason})`)
+   reason:`Original tool declaration metadata was not captured: ${gaps.map(function describeToolMetadataGap(gap) { return (`entry ${gap.ordinal} field ${JSON.stringify(gap.key)} (${gap.reason})`); })
      .join(', ')}. Interpretations of captured text cannot account for these fields. Restoring the declaration does not repair its original receipt; a supported original-input observation is required.`
  })]);
 }

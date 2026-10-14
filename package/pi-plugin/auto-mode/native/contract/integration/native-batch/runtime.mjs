@@ -47,7 +47,7 @@ export function bindNativePolicyRuntime({
   wrapToolDefinition,
   readSessionDisposalState,
   trace,
-  now=()=>performance.now(),
+  now=function readJudgmentClock() { return (performance.now()); },
   originalStream=root.session
     .agent
     .streamFunction,
@@ -96,8 +96,8 @@ export function bindNativePolicyRuntime({
    observer,
    collector,
    rootAdapter:Object.freeze({
-     prepare:()=>lifecycle.capture(root),
-     finalize:lease=>lifecycle.assertActive(lease)
+     prepare:function captureOriginalRootLease() { return (lifecycle.capture(root)); },
+     finalize:function checkOriginalRootLease(lease) { return (lifecycle.assertActive(lease)); }
    }),
    rootDirectory,
    files,
@@ -108,20 +108,20 @@ export function bindNativePolicyRuntime({
      .digest('hex'),
    trace,
    send:configuredSemanticUse?sendAttributedAssessment:send,
-   isRetryableTransportFailure:()=>false
+   isRetryableTransportFailure:function declineUnqualifiedClaim() { return (false); }
  });
  let lastJudgment;
  let lastReview;
  const stream=producerOwner.bindJudgmentConsumer({
-  handle:({
+  handle:function observeOriginalMainRequest({
     model,
     context,
     options
-  })=>observer.streamFunction(
+  }) { return (observer.streamFunction(
     model,
     context,
     options
-  ),
+  )); },
   construct(input){lastJudgment=construct(input);return lastJudgment;}
  });
  const previousStream=agent.streamFunction;
@@ -159,22 +159,22 @@ export function bindNativePolicyRuntime({
    previousStream,
    observedStream,
    executeToolBatch,
-   invalidateObserver:()=>{ observer.invalidate(); },
-   registerJudgmentStart:()=>registerOriginalJudgmentStart({
+   invalidateObserver:function invalidateRequestObservation() { observer.invalidate(); },
+   registerJudgmentStart:function registerOriginalJudgment() { return (registerOriginalJudgmentStart({
      agent,
      producerOwner,
      stream
-   }),
-   registerExecutionTools:()=>registerOwnedExecutionTools({
+   })); },
+   registerExecutionTools:function registerOriginalExecutionTools() { return (registerOwnedExecutionTools({
      session,
      producerOwner,
      stream,
      wrapToolDefinition
-   }),
-   isSessionDisposed:()=>readSessionDisposalState(session)
+   })); },
+   isSessionDisposed:function hasCompletedNativeDisposal() { return (readSessionDisposalState(session)
      .completed
-     ===true,
-   onDetached:()=>trace('policy-runtime.detached')
+     ===true); },
+   onDetached:function traceRuntimeDetachment() { return (trace('policy-runtime.detached')); }
  });
  function inspect(){return Object.freeze({
    lastJudgment,

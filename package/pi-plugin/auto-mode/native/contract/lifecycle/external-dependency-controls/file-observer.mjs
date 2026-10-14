@@ -41,10 +41,10 @@ function sameStability({
 }) {
   const leftValues = stability(left);
   const rightValues = stability(right);
-  return leftValues.every((
+  return leftValues.every(function matchesObservedFileIdentity(
     value,
     index
-  ) => value === rightValues[index]);
+  ) { return ( value === rightValues[index]); });
 }
 /** Only initial ENOENT becomes a missing-path finding; other native I/O failures propagate. */
 function initialStat(path) {
@@ -63,8 +63,8 @@ function scopedPath({
   relativePath
 }) {
   const parts = relativePath.split('/');
-  if (isAbsolute(relativePath) || parts.some(part => (part === '') || (part === '.')
-    || (part === '..'))) throw new ObservedFileScopeError(relativePath);
+  if (isAbsolute(relativePath) || parts.some(function isForbiddenPathSegment(part) { return ( (part === '') || (part === '.')
+    || (part === '..')); })) throw new ObservedFileScopeError(relativePath);
   let parent = root;
   for (const part of [
     '',

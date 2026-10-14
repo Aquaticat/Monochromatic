@@ -27,7 +27,7 @@ import {
 export class RunPromptCustodyError extends AggregateError {
   constructor(failures){
     super(
-      failures.map(item=>item.error),
+      failures.map(function readRecordedError(item) { return (item.error); }),
       'Native run prompt derivation is incomplete or no longer current. Inspect its recorded source, handler, publication or session failure before using it.'
     );
     this.name=this.constructor
@@ -50,7 +50,7 @@ export function createRunPromptOwner({
   if(((readSessionInput!==undefined)||(assertSessionInputs!==undefined))&&(![
     readSessionInput,
     assertSessionInputs
-  ].every(value=>(typeof value)==='function')))throw new SourceCollectionError('Native session inputs require their fixed origin and capture readers');
+  ].every(function isCallableReader(value) { return ((typeof value)==='function'); })))throw new SourceCollectionError('Native session inputs require their fixed origin and capture readers');
   const scopes=new WeakMap();
     const issuedErrors=new WeakMap();
     const history=[];
@@ -212,7 +212,7 @@ export function createRunPromptOwner({
     try{return phase({
       scope,
       at:'base-entry',
-      run:()=>{
+      run:function captureEmitterSeed() {
       check(scope);scope.base=base();scope.runner=runner;scope.seed=copyPromptOptions(scope.base
         .options);
       if(!runner)throw new SourceCollectionError('Native run requires its actual extension runner');
@@ -248,7 +248,7 @@ export function createRunPromptOwner({
     const scope=known(handle);return phase({
       scope,
       at:'native-entry',
-      run:()=>{
+      run:function beginOriginalDispatch() {
       check(scope);
       if((active!==scope)||(scope.state!=='created')
         ||(runner!==scope.runner)
@@ -326,7 +326,7 @@ export function createRunPromptOwner({
     const slot=phase({
       scope,
       at:'handler-entry',
-      run:()=>{
+      run:function enterOriginalHandler() {
       check(scope);const item=scope.slots[scope.next];
       if((active!==scope)||(scope.state!=='dispatching')
         ||scope.running
@@ -396,7 +396,7 @@ export function createRunPromptOwner({
     return phase({
       scope,
       at:'handler-completion',
-      run:()=>{ check(scope); }
+      run:function checkAfterHandler() { check(scope); }
     });
   }
   function leaveNative({
@@ -408,7 +408,7 @@ export function createRunPromptOwner({
     const scope=known(handle);return phase({
       scope,
       at:'native-return',
-      run:()=>{
+      run:function completeOriginalDispatch() {
       check(scope);
       if((active!==scope)||(scope.state!=='dispatching')
         ||(runner!==scope.runner)
@@ -429,14 +429,14 @@ export function createRunPromptOwner({
         runOccurrence:scope.handle
       });
       scope.handlerPublications=Object.freeze(scope.handlerMessageInputs
-        .map((
+        .map(function captureHandlerPublication(
           source,
           ordinal
-        )=>createHandlerPublication({
+        ) { return (createHandlerPublication({
           source,
           input:scope.emitted
             .messages[ordinal]
-        })));
+        })); }));
       // The native session receives its own mutable reconciliation copy before any subsequent await.
       scope.delivery=copyPromptOptions(working);
       scope.result=Object.freeze({
@@ -559,10 +559,10 @@ export function createRunPromptOwner({
         return true;
       }
     });
-    scope.captureContextClone=({
+    scope.captureContextClone=function retainNativePersistenceInputs({
       before,
       after
-    })=>{
+    }) {
       // Failed provenance must not prevent native persistence of the failure itself.
       if(retirementError)return;
       for(const [index,original] of before.entries()){
@@ -609,7 +609,7 @@ export function createRunPromptOwner({
     for(const scope of history){
       if(scope.rootOccurrence!==root)continue;
       if(scope.slots
-        .some(slot=>slot.before!==undefined)
+        .some(function hasObservedInput(slot) { return (slot.before!==undefined); })
         &&(scope.handlerOptionOrigins===undefined))throw new SourceCollectionError('Original callback input history has no completed source publication');
       for(const origin of scope.handlerOptionOrigins??[]){
         if(origins.length>=64)throw new SourceCollectionError('Original callback input history exceeds the 64-source profile');
@@ -617,10 +617,10 @@ export function createRunPromptOwner({
       }
     }
     if(readRoot()!==root)throw new SourceCollectionError('Native root changed while reading original callback input history');
-    if((origins.length!==handlerInputView.length)||origins.some((
+    if((origins.length!==handlerInputView.length)||origins.some(function differsFromRetainedHandlerInput(
       origin,
       index
-    )=>origin!==handlerInputView[index]))handlerInputView=Object.freeze(origins);
+    ) { return (origin!==handlerInputView[index]); }))handlerInputView=Object.freeze(origins);
     return handlerInputView;
   }
   /** Preserve native manager handoff ordering while adding stable original run-input references, not copied content. */
@@ -645,10 +645,10 @@ export function createRunPromptOwner({
     return Object.freeze({
       count:managerUsage.count+origins.length,
       bytes:managerUsage.bytes+origins.reduce(
-        (
+        function sumSourceBytes(
           bytes,
           origin
-        )=>bytes+Buffer.byteLength(JSON.stringify(origin.source)),
+        ) { return (bytes+Buffer.byteLength(JSON.stringify(origin.source))); },
         0
       )
     });
@@ -662,10 +662,10 @@ export function createRunPromptOwner({
       ?.view
       ===publication;
     const ordinal=original.handlerPublications
-      ?.findIndex(value=>value.view===publication)
+      ?.findIndex(function matchesPublicationView(value) { return (value.view===publication); })
       ??(-1);
     const option=original.handlerOptionOrigins
-      ?.find(origin=>origin.publication===publication);
+      ?.find(function matchesOriginPublication(origin) { return (origin.publication===publication); });
     if(option)return readRoot&&(original.rootOccurrence===readRoot())?option:undefined;
     const source=expanded?original.expandedPromptInput:original.handlerMessageInputs?.[ordinal];
     if((!source)||(source.occurrence!==publication.sourceOccurrence))return undefined;
@@ -721,10 +721,10 @@ export function createRunPromptOwner({
     const publication=readOriginalMessagePublication(entry)??readOriginalMessagePublication(entry.type==='message'?entry.message:entry);
     const origin=originalMessageInput(publication);
     const origins=previous?.origins??[];
-    if((!origin)||origins.some(value=>value.source
+    if((!origin)||origins.some(function matchesSourceOccurrence(value) { return (value.source
       .occurrence
       ===origin.source
-      .occurrence))return;
+      .occurrence); }))return;
     const next=origins.length>=64
       ?Object.freeze({
         rootOccurrence,
@@ -783,13 +783,13 @@ export function createRunPromptOwner({
     return phase({
       scope,
       at:'retained-context-inputs',
-      run:()=>{
+      run:function captureRetainedMessageOrigins() {
       check(scope);assertSessionInputs?.();
       const activeOccurrences=new Set([
         scope.handle,
         ...scope.view
           .ancestors
-          .map(value=>value.occurrence)
+          .map(function readAncestorOccurrence(value) { return (value.occurrence); })
       ]);
       const seen=new Set();
         const origins=[];
@@ -819,10 +819,10 @@ export function createRunPromptOwner({
       if(scope.view
         .retainedMessageOrigins
         &&(origins.length===previous.length)
-        &&origins.every((
+        &&origins.every(function matchesPreviousOrigin(
           origin,
           index
-        )=>origin===previous[index])){check(scope);scope.constructedInputs=constructedInputs;return;}
+        ) { return (origin===previous[index]); })){check(scope);scope.constructedInputs=constructedInputs;return;}
       const retainedMessageOrigins=charge({
         scope,
         value:Object.freeze(origins)
@@ -866,7 +866,7 @@ export function createRunPromptOwner({
     return phase({
       scope,
       at:'expanded-prompt-publication',
-      run:()=>{check(scope);scope.expandedPromptPublication
+      run:function captureExpandedPrompt() {check(scope);scope.expandedPromptPublication
         .capture(message);check(scope);}
     });
   }
@@ -887,7 +887,7 @@ export function createRunPromptOwner({
     return phase({
       scope,
       at:'handler-message-publication',
-      run:()=>{check(scope);scope.handlerPublications[ordinal]
+      run:function captureHandlerMessageCallback() {check(scope);scope.handlerPublications[ordinal]
         .capture(message);check(scope);}
     });
   }
@@ -904,7 +904,7 @@ export function createRunPromptOwner({
     return phase({
       scope,
       at:'forced-message-publication',
-      run:()=>{check(scope);scope.forcedPublication
+      run:function captureForcedMessageCallback() {check(scope);scope.forcedPublication
         .capture(message);check(scope);}
     });
   }
@@ -933,22 +933,22 @@ export function createRunPromptOwner({
     });check(scope);
     if(active!==scope)throw new SourceCollectionError('Run source occurrence changed before publication');
     const observations=Object.freeze(scope.slots
-      .map(slot=>Object.freeze({
+      .map(function snapshotHandlerSlot(slot) { return (Object.freeze({
         ordinal:slot.ordinal,
         path:slot.path,
         state:slot.state,
         before:slot.before,
         after:slot.after,
         failures:Object.freeze(slot.failures
-          .map((
+          .map(function snapshotHandlerFailure(
             failure,
             ordinal
-          )=>Object.freeze({
+          ) { return (Object.freeze({
             occurrence:failure.identity,
             ordinal,
             at:failure.at
-          })))
-      })));
+          })); }))
+      })); }));
     const handlerOptionInputs=charge({
       scope,
       value:captureHandlerOptionInputs({
@@ -956,21 +956,21 @@ export function createRunPromptOwner({
         runOccurrence:scope.handle
       })
     });
-    const handlerOptionPublications=Object.freeze(handlerOptionInputs.map((
+    const handlerOptionPublications=Object.freeze(handlerOptionInputs.map(function captureHandlerOptionPublication(
       source,
       index
-    )=>{
+    ) {
       const publication=createInputOnlyPublication(source);publication.capture(observations[index]
         .before);return publication.view;
     }));
-    scope.handlerOptionOrigins=Object.freeze(handlerOptionInputs.map((
+    scope.handlerOptionOrigins=Object.freeze(handlerOptionInputs.map(function linkHandlerOptionOrigin(
       source,
       index
-    )=>Object.freeze({
+    ) { return (Object.freeze({
       source,
       publication:handlerOptionPublications[index],
       runOccurrence:scope.handle
-    })));
+    })); }));
     const forcedPromptInput=options.forceSystemPrompt===undefined?undefined:Object.freeze({
       kind:'native-run-forced-prompt-input',
       content:options.forceSystemPrompt,
@@ -996,8 +996,8 @@ export function createRunPromptOwner({
     const mappedPromptInputs=Object.freeze([
       'toolSnippets',
       'sections'
-    ].flatMap(field=>Object.entries(options[field])
-      .map(([key,content])=>Object.freeze({
+    ].flatMap(function captureMappedPromptField(field) { return (Object.entries(options[field])
+      .map(function captureMappedPromptEntry([key,content]) { return (Object.freeze({
         kind:'native-run-mapped-prompt-input',
         content,
         inputLocation:Object.freeze({
@@ -1011,15 +1011,15 @@ export function createRunPromptOwner({
         runOccurrence:scope.handle,
         registration:undefined,
         permission:false
-      }))));
+      })); })); }));
     const skillDescriptionInputs=Object.freeze(options.skills
-      .map((
+      .map(function captureSkillDescription(
         {
           description,
           ...metadata
         },
         ordinal
-      )=>Object.freeze({
+      ) { return (Object.freeze({
         kind:'native-run-skill-description-input',
         content:description,
         inputLocation:Object.freeze({
@@ -1035,12 +1035,12 @@ export function createRunPromptOwner({
         registration:undefined,
         pathToRawFileIdentity:'not-established',
         permission:false
-      })));
+      })); }));
     const handlerMessageInputs=scope.handlerMessageInputs??captureMessageInputs({
       messages:[],
       runOccurrence:scope.handle
     });
-    const handlerPublications=Object.freeze((scope.handlerPublications??[]).map(publication=>publication.view));
+    const handlerPublications=Object.freeze((scope.handlerPublications??[]).map(function readPublicationView(publication) { return (publication.view); }));
     scope.node=Object.freeze({
       retainedOnly:true,
       expandedPromptInput:scope.expandedPromptInput,
@@ -1097,7 +1097,7 @@ export function createRunPromptOwner({
     const scope=known(handle);return phase({
       scope,
       at:'publication',
-      run:()=>{
+      run:function publishOriginalRun() {
       check(scope);
       if((active!==scope)||(scope.state!=='emitted')
         ||(result!==scope.result)
@@ -1116,7 +1116,7 @@ export function createRunPromptOwner({
     try{return phase({
       scope,
       at:'next-turn-refresh',
-      run:()=>{
+      run:function refreshOriginalRun() {
       check(scope);if(parent)check(parent);
       if(previousOptions===undefined?parent!==undefined:(!parent)||(parent.view
         .options
@@ -1157,7 +1157,7 @@ export function createRunPromptOwner({
     return phase({
       scope,
       at:'current-read',
-      run:()=>{
+      run:function capturePriorRunHistory() {
       check(scope);assertSessionInputs?.();
       if(readRoot){
         const root=readRoot();
@@ -1172,10 +1172,10 @@ export function createRunPromptOwner({
         const previous=scope.view
           .priorRuns;
         if((!previous)||(previous.length!==prior.length)
-          ||prior.some((
+          ||prior.some(function differsFromPriorOrigin(
           value,
           index
-        )=>value!==previous[index])){
+        ) { return (value!==previous[index]); })){
           const view=Object.freeze({
             ...scope.view,
             priorRuns:Object.freeze(prior)
@@ -1201,21 +1201,21 @@ export function createRunPromptOwner({
       retainedOnly:true,
       pending:active!==undefined,
       currentOrdinal:current?.ordinal,
-      history:Object.freeze(history.map(scope=>Object.freeze({
+      history:Object.freeze(history.map(function snapshotRunDiagnostics(scope) { return (Object.freeze({
         ordinal:scope.ordinal,
         kind:scope.kind,
         state:scope.state,
         view:scope.view,
         failures:Object.freeze([...scope.failures]),
         slots:Object.freeze(scope.slots
-          .map(slot=>Object.freeze({
+          .map(function snapshotSlotDiagnostics(slot) { return (Object.freeze({
             ordinal:slot.ordinal,
             state:slot.state,
             before:slot.before,
             after:slot.after,
             failures:Object.freeze([...slot.failures])
-          })))
-      })))
+          })); }))
+      })); }))
     });
   }
   return Object.freeze({

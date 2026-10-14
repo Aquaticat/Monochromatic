@@ -76,9 +76,9 @@ export async function createNativeMarkdownParser({
     mdx: false
   });
   const target = tree.children
-    .find(node => (node.type === 'paragraph')
+    .find(function isParserControlParagraph(node) { return ( (node.type === 'paragraph')
       && node.children
-      ?.some(child => (child.type === 'text') && (child.value === 'x')));
+      ?.some(function isParserControlText(child) { return ( (child.type === 'text') && (child.value === 'x')); })); });
   assert.ok(
     target,
     'Missing coordinate self-check target'

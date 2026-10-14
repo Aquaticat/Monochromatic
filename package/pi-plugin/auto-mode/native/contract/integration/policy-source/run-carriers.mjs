@@ -14,7 +14,7 @@ export function linkRunInputCarriers({
  const base=run.inputBase;
  if(base.resourceFrame!==input.frame)throw new SourceCollectionError('Run base carriers require this original resource frame');
  return Object.freeze(run.baseInputCarriers
-   .map(carrier=>{
+   .map(function linkOriginalRunCarrier(carrier) {
   if((carrier.runOccurrence!==run.occurrence)||(carrier.baseOccurrence!==base.occurrence))throw new SourceCollectionError('Run carrier differs from its original run or base occurrence');
   const {
     field,
@@ -33,7 +33,7 @@ export function linkRunInputCarriers({
    sources=[source];
   }else if(field==='appendSystemPrompt'){
    sources=input.appendInputs;
-   const joined=sources.map(source=>source.content)
+   const joined=sources.map(function readCarrierSourceContent(source) { return (source.content); })
      .join('\n\n');
    if((base.options
      .appendSystemPrompt
@@ -60,7 +60,7 @@ export function linkRunInputCarriers({
     kind:'governing-run-input-carrier',
     carrier,
     occurrence:carrier.occurrence,
-    sourceOccurrences:Object.freeze(sources.map(source=>source.occurrence)),
+    sourceOccurrences:Object.freeze(sources.map(function readCarrierSourceOccurrence(source) { return (source.occurrence); })),
     authenticatesDisplacedInput:false,
     permission:false
   });

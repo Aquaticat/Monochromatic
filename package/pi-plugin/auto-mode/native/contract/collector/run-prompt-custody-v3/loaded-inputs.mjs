@@ -126,7 +126,7 @@ function assertSystemInput(input){
    &&(((typeof sections)!=='object')
      ||Array.isArray(sections)
      ||Object.values(sections)
-     .some(value=>(value!==null)&&((typeof value)!=='string'))))throw new SourceCollectionError('Loaded system sections require named text or null values');
+     .some(function isUnsupportedScalar(value) { return ((value!==null)&&((typeof value)!=='string')); })))throw new SourceCollectionError('Loaded system sections require named text or null values');
 }
 
 /** One prompt-call array shares one copier budget; borrowed arrays and messages receive no publication or mutation. */
@@ -346,7 +346,7 @@ function createInputPool({
          'sections',
          'toolsAdded',
          'toolsRemoved'
-       ].filter(field=>value[field]!==undefined)
+       ].filter(function hasLoadedInputField(field) { return (value[field]!==undefined); })
      ];
      retainConstructedInput({
        ...input,

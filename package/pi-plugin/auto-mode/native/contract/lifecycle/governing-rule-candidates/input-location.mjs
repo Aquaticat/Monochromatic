@@ -22,7 +22,7 @@ export function sourceInputLocation(source){
    ||(Object.getPrototypeOf(location)!==Object.prototype))throw new SourceInputLocationError('Source input location requires an ordinary record');
  const keys=Reflect.ownKeys(location);
  if((keys.length === 0)||(keys.length>3)
-   ||keys.some(key=>(typeof key)!=='string'))throw new SourceInputLocationError('Source input location requires supported named slot fields');
+   ||keys.some(function isNonStringLocationKey(key) { return ((typeof key)!=='string'); }))throw new SourceInputLocationError('Source input location requires supported named slot fields');
  for(const key of keys){
   if(!Object.hasOwn(
     Object.getOwnPropertyDescriptor(

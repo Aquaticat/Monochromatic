@@ -58,10 +58,10 @@ export function republishBaseInputs({
   });
  }
  options.contextFiles=options.contextFiles
-   .map((
+   .map(function retainOriginalContextEntry(
      entry,
      ordinal
-   )=>{
+   ) {
   const original=base.options
     .contextFiles[ordinal];
   if(original&&(entry.path===original.path)

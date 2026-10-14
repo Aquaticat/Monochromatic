@@ -36,7 +36,7 @@ const env=await createEnvironment({
   policyText:'RUL:\n '+text+'\n',
   hostPrompt:'Fixture background.',
   useNativeProvider:sdkStream,
-  extensionFactories:unobservedContext?[pi=>{pi.on('context',()=>{contextCalls++;});}]:[]
+  extensionFactories:unobservedContext?[function registerUnobservedContextHandler(pi) {pi.on('context',function countUnobservedContextCall() {contextCalls++;});}]:[]
 });
 let assessments=0,executions=0,originalBody,requests=0;
 const leaf={
@@ -52,10 +52,10 @@ const {
 }=await createRootSessionFactory(env)
   .create({options:{...env.options,tools:['codemode','fixture_value'],customTools:[createOwnedCodemodeDefinition(),leaf]}});
 session.agent
-  .getApiKey=()=>process.env
-  .FIXTURE_API_KEY;
+  .getApiKey=function readDomainFixtureApiKey() { return (process.env
+  .FIXTURE_API_KEY); };
 const code='const value = await tools.fixture_value({path:"seed"});\nreturn await Promise.allSettled([tools.fixture_value({path:value}),tools.fixture_value({path:"second"})]);',programProfile='awaited-string-result-then-literal-parallel';
-function policy(definitionId) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:()=>true}; }
+function policy(definitionId) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:function acceptAuthoredDomainRelation() { return (true); }}; }
 const originalSdkStream=session.agent
   .streamFunction;
 function controlledSdkStream(
@@ -95,13 +95,13 @@ const runtime=bindNativePolicyRuntime({
   semanticAdmissionPolicy:policy('clause_operation_relation'),
   requestMaterialAdmissionPolicy:policy('request_instruction_content'),
   headingContextAdmissionPolicy:policy('heading_instruction_content'),
-  effectOwnerFor:()=>undefined,
+  effectOwnerFor:function omitDomainAuthorizationOwner() { return (undefined); },
   async sendWire({body}){
   assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,originalBody);
-  const answers=Object.fromEntries(Object.entries(wire.questions).map(([slot,question])=>{
+  const answers=Object.fromEntries(Object.entries(wire.questions).map(function answerAuthoredDomainQuestion([slot,question]) {
    const choice=question.instructions.selectedMaterial==='originalRequestBody'?requestRelation:question.instructions.selectedRule?.id==='RUL'?relation:'none';
    assert(Object.hasOwn(question.criteria,choice));
-   return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(label=>[label,label===choice?1:0]))}];
+   return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(function scoreAuthoredDomainChoice(label) { return ([label,label===choice?1:0]); }))}];
   }));
   return JSON.stringify({model:wire.model,answers,usage:{input_tokens:100,output_tokens:10}});
  },
@@ -130,21 +130,21 @@ try{
    requestRelation
  );
  assert.ok(review.clauseInterpretations
-   .every(clause=>clause.admission==='admitted'));
+   .every(function isAdmittedClause(clause) { return (clause.admission==='admitted'); }));
  assert.ok(review.headingContextInterpretations
-   .every(heading=>heading.admission==='admitted'&&heading.relation==='none'));
+   .every(function isAdmittedNonInstructionHeading(heading) { return (heading.admission==='admitted'&&heading.relation==='none'); }));
  if(sdkStream){
   assert.ok(review.requestSourceAssociationUses
     .length
     >0,'The normal SDK route must retain original native serializer contributions');
   assert.ok(review.requestSourceAssociationUses
-    .every(use=>use.state===(receiptControl?'unresolved':'accounted')),inspect(
+    .every(function matchesExpectedContributionState(use) { return (use.state===(receiptControl?'unresolved':'accounted')); }),inspect(
     review.requestSourceAssociationUses,
     {depth:3}
   ));
  }
  const issues=review.premiseIssues
-   .map(issue=>({premise:issue.premise,kind:issue.kind,reason:issue.reason}));
+   .map(function describeUnresolvedIssue(issue) { return (({premise:issue.premise,kind:issue.kind,reason:issue.reason})); });
  const result={
    complete:true,
    relation,
@@ -153,7 +153,7 @@ try{
    issues,
    sources:review.inputs.instructionSources.length,
    clauses:review.clauseInterpretations.length,
-   requestUses:review.requestSourceAssociationUses.map(use=>use.state),
+   requestUses:review.requestSourceAssociationUses.map(function readContributionState(use) { return (use.state); }),
    requests,
    assessments,
    executions,
@@ -161,12 +161,12 @@ try{
    productionPolicyAdopted:false
  };
  const domainIssue=review.premiseIssues
-   .find(issue=>issue.kind==='request-source-domain');
+   .find(function isNativeDomainIssue(issue) { return (issue.kind==='request-source-domain'); });
  if(unobservedContext){
   assert.ok(contextCalls>0,'The native context callback must actually run');
   assert.ok(domainIssue?.sourceDomain
     .gaps
-    .some(gap=>gap.reason.includes('"context"')));
+    .some(function namesUnobservedContext(gap) { return (gap.reason.includes('"context"')); }));
   assert.equal(
     review.outcome.state,
     'unresolved'
@@ -192,7 +192,7 @@ try{
    assert.ok(review.inputs
      .requestObservation
      .sourceContributions
-     .every(value=>value.reason?.includes('original native serializer occurrence')),inspect(
+     .every(function namesMissingSerializerOccurrence(value) { return (value.reason?.includes('original native serializer occurrence')); }),inspect(
      review.inputs.requestObservation.sourceContributions,
      {depth:3}
    ));
@@ -205,7 +205,7 @@ try{
      0
    );
    assert.ok(review.premiseIssues
-     .some(issue=>issue.kind==='request-material-instruction-use'));
+     .some(function isRequestInstructionIssue(issue) { return (issue.kind==='request-material-instruction-use'); }));
   }else{
    assert.equal(
      review.outcome.state,
@@ -216,7 +216,7 @@ try{
      relation==='permission'?'approve':'deny'
    );
    if(executions!==(relation==='permission'?3:0))console.log(inspect(
-     {toolResults:session.messages.filter(message=>message.role==='toolResult'),judgment:judgment?.inspect()},
+     {toolResults:session.messages.filter(function isToolResultMessage(message) { return (message.role==='toolResult'); }),judgment:judgment?.inspect()},
      {depth:6}
    ));
    assert.equal(

@@ -78,6 +78,6 @@ export function assertManagerMessageContent(content){
    });
   }else throw new SourceCollectionError('Native manager message content has an unsupported block type');
   if(Object.keys(part)
-    .some(key=>!keys.includes(key)))throw new SourceCollectionError('Native manager content block has unsupported fields');
+    .some(function isUnexpectedMessageField(key) { return (!keys.includes(key)); }))throw new SourceCollectionError('Native manager content block has unsupported fields');
  }
 }

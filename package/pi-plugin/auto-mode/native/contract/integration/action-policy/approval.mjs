@@ -38,10 +38,10 @@ export function captureApprovalHost(input){
   )))throw new PolicyApprovalError('Native approval host requires data properties, not accessors');
   values[key]=field.value;
  }
- if(required.some(key=>!Object.hasOwn(
+ if(required.some(function isMissingApprovalCapability(key) { return (!Object.hasOwn(
    values,
    key
- )))throw new PolicyApprovalError('Native approval host requires Pi, context, askUser, verdict entry type and trace capabilities');
+ )); }))throw new PolicyApprovalError('Native approval host requires Pi, context, askUser, verdict entry type and trace capabilities');
  if((!values.pi)||((typeof values.pi)!=='object')
    ||(!values.ctx)
    ||((typeof values.ctx)!=='object')

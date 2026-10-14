@@ -60,17 +60,17 @@ export function bindRuleRelevanceCache({
     .length
     >512))throw new RuleRelevanceCacheError('Policy index differs from the current source or exceeds the relevance batch bound');
   const sharedContext=index.unclassified
-    .map(node=>({
+    .map(function describeRelevanceContextNode(node) { return (({
       type:node.type,
       text:node.text,
       headings:node.headings
-        .map(heading=>heading.text)
-    }));
+        .map(function readRelevanceHeadingText(heading) { return (heading.text); })
+    })); });
   const contextKey=digest(JSON.stringify(sharedContext));
   const rules=index.records
-    .map(rule=>{
+    .map(function bindRelevanceRuleKey(rule) {
    const context=Object.freeze(rule.headings
-     .map(heading=>heading.text));
+     .map(function readRuleHeadingText(heading) { return (heading.text); }));
    const key=digest(JSON.stringify({
      profileKey,
      scope:policyScope,
@@ -163,17 +163,17 @@ export function bindRuleRelevanceCache({
     sourceSHA256:source.sha256,
     namespaceKey:store.namespaceKey,
     profileKey,
-    rules:Object.freeze(rules.map(rule=>Object.freeze({
+    rules:Object.freeze(rules.map(function attachRetainedProbability(rule) { return (Object.freeze({
       ...rule,
       probability:entries.get(rule.id)
         .probability,
       qualification:'not-established'
-    }))),
-    requestedRuleIds:Object.freeze(missing.map(rule=>rule.id)),
+    })); })),
+    requestedRuleIds:Object.freeze(missing.map(function readRelevantRuleId(rule) { return (rule.id); })),
     structuralCoverage:index.structuralCoverage,
     unclassifiedNodes:index.unclassified
       .length,
-    candidateRuleIds:Object.freeze(rules.map(rule=>rule.id)),
+    candidateRuleIds:Object.freeze(rules.map(function readRemainingRuleId(rule) { return (rule.id); })),
     exclusionsAdmitted:false,
     permission:false
   });

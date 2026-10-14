@@ -56,7 +56,7 @@ export function registerOwnedExecutionTools({
     if(schemaProperties>10_000)throw new ExecutionContextOwnershipError('Original request tool schemas exceed the 10000-property profile');
     if((prototype!==null)&&(prototype!==Object.prototype)
       &&(prototype!==Array.prototype))throw new ExecutionContextOwnershipError(`${label} requires ordinary schema records or arrays`);
-    const entries=keys.map(key=>{
+    const entries=keys.map(function copySchemaProperty(key) {
      const descriptor=Object.getOwnPropertyDescriptor(
        node,
        key
@@ -87,10 +87,10 @@ export function registerOwnedExecutionTools({
     } of nodes){
      const currentKeys=Reflect.ownKeys(node);
      if((Object.getPrototypeOf(node)!==prototype)||(currentKeys.length!==keys.length)
-       ||currentKeys.some((
+       ||currentKeys.some(function differsFromSchemaKey(
        key,
        index
-     )=>key!==keys[index]))throw new ExecutionContextOwnershipError(`${label} changed after request preparation`);
+     ) { return (key!==keys[index]); }))throw new ExecutionContextOwnershipError(`${label} changed after request preparation`);
      for(const {
        key,
        descriptor
@@ -115,9 +115,9 @@ export function registerOwnedExecutionTools({
    };
   }
   function createProgramRun(input){
-   const programTools=Object.freeze(callableTools.filter(tool=>tool.name
+   const programTools=Object.freeze(callableTools.filter(function hasDifferentDefinitionName(tool) { return (tool.name
      !==input.definition
-     .name));
+     .name); }));
    return createOwnedProgramRun({
      session,
      input:{
@@ -183,11 +183,11 @@ export function registerOwnedExecutionTools({
     const declaration=declareResultProgram({
       source:prepared.input
         .code,
-      toolNames:callableTools.filter(tool=>tool.name!==name)
-        .map(tool=>tool.name)
+      toolNames:callableTools.filter(function hasDifferentToolName(tool) { return (tool.name!==name); })
+        .map(function readOriginalToolName(tool) { return (tool.name); })
     });
     const dependencies=[...new Set(declaration.sites
-      .map(site=>site.name))].map(childName=>{
+      .map(function readPreparedSiteName(site) { return (site.name); }))].map(function resolveOriginalChildDefinition(childName) {
      const binding=ownedTools.get(childName);
      if(!binding)throw new ExecutionContextOwnershipError('Inspected program names an unavailable original callable');
      return binding.current;
@@ -218,7 +218,7 @@ export function registerOwnedExecutionTools({
      }
    );return wrapped;
   }
-  const tools=Object.freeze((context.tools??[]).map(tool=>{
+  const tools=Object.freeze((context.tools??[]).map(function retainProjectedToolDefinition(tool) {
    // The native loadout projects descriptions without changing the registered executable definition.
    const wrapped=wrapTool(tool.name);
      const projected=Object.freeze({

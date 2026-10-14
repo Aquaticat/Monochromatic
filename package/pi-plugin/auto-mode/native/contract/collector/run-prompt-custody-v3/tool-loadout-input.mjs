@@ -19,7 +19,7 @@ export function snapshotToolLoadoutInput(input){
  ];
  const keys=Reflect.ownKeys(input);
  if((keys.length!==(views.length
-   +capabilities.length))||keys.some(key=>((typeof key)!=='string')||((!views.includes(key))&&(!capabilities.includes(key)))))throw new SourceCollectionError('Native loadout argument fields differ from the supported processing profile');
+   +capabilities.length))||keys.some(function isUnexpectedLoadoutField(key) { return (((typeof key)!=='string')||((!views.includes(key))&&(!capabilities.includes(key)))); }))throw new SourceCollectionError('Native loadout argument fields differ from the supported processing profile');
  const fields=Object.getOwnPropertyDescriptors(input);
  for(const key of keys){
   const field=fields[key];

@@ -16,12 +16,12 @@ export function prepareProgramInputs({
    ||state.preparationFailed
    ||(state.finalRecord!==undefined)
    ||state.memberExecutions
-   .some(member=>member.state!=='unentered'))throw new NativeBatchBindingError('Program inspection requires an open judgment with complete unentered prepared membership');
+   .some(function hasEnteredPreparedMember(member) { return (member.state!=='unentered'); }))throw new NativeBatchBindingError('Program inspection requires an open judgment with complete unentered prepared membership');
  try{
   for(const {id} of state.memberExecutions){
    const member=judgment.memberFor(id);
      const {prepared} = judgment.preparedMemberFor(member);
-   const tool=tools.find(value=>value.name===prepared.name);
+   const tool=tools.find(function matchesPreparedDefinition(value) { return (value.name===prepared.name); });
    tool?.capturePreparedProgram?.({
      judgment,
      member
@@ -105,7 +105,7 @@ export function createNativeBatchHandler({
   }
   const dispatched=await dispatchPreparedBatch({
     calls:assistantMessage.content
-      .filter(part=>part.type==='toolCall'),
+      .filter(function isPreparedToolCall(part) { return (part.type==='toolCall'); }),
     tools:context.tools??[],
     assistantMessage,
     context,
@@ -116,10 +116,10 @@ export function createNativeBatchHandler({
     onStart,
     onFinish,
     onUpdate,
-    prepare:async hook=>await beforeToolCall?.(
+    prepare:async function invokeOriginalBeforeToolCall(hook) { return (await beforeToolCall?.(
       hook,
       signal
-    ),
+    )); },
     after:afterToolCall,
     assertFresh,
     async assess({members}){

@@ -50,21 +50,21 @@ export function collectRunMessageInputs(run){
    ...run.ancestors
      .toReversed(),
    run
- ].flatMap(publication=>[
+ ].flatMap(function collectHandlerInputs(publication) { return ([
    ...(publication.expandedPromptInput?[publication.expandedPromptInput]:[]),
    ...publication.handlerMessageInputs,
    ...(publication.handlerOptionInputs??[])
- ]);
+ ]); });
  return Object.freeze([
    ...active,
-   ...(run.retainedMessageOrigins??[]).map(origin=>origin.source)
+   ...(run.retainedMessageOrigins??[]).map(function readRetainedSource(origin) { return (origin.source); })
  ]);
 }
 
 /** Reuse manager-owned original references before a native run exists, never mint an emitting run. */
 export function collectNativeMessageInputs(sources){
  if(sources.nativeRunComposition)return collectRunMessageInputs(sources.nativeRunComposition);
- return Object.freeze((sources.nativeConstructedInputs??[]).map(origin=>origin.source));
+ return Object.freeze((sources.nativeConstructedInputs??[]).map(function readConstructedSource(origin) { return (origin.source); }));
 }
 
 /** Only inclusion in the original run publication authenticates these constructed records. */
@@ -72,10 +72,10 @@ export function captureMessageInputs({
   messages,
   runOccurrence
 }){
- return Object.freeze(messages.map((
+ return Object.freeze(messages.map(function captureEmitterMessage(
    message,
    ordinal
- )=>{
+ ) {
   const {
     content,
     contentFormat,

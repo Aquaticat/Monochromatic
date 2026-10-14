@@ -36,7 +36,7 @@ export function createExecutionWrappers({wrapToolDefinition}) {
       params,
       signal,
       onUpdate
-    }){return operation(()=>{
+    }){return operation(function bindNativeProgramContext() {
       const origin=readOrigin(carrier);
       if((origin.prepared
         .id
@@ -74,7 +74,7 @@ export function createExecutionWrappers({wrapToolDefinition}) {
         ); const descriptors=Object.getOwnPropertyDescriptors(base);
         if((typeof descriptors.executeTool
           ?.value)!=='function')throw new ExecutionContextOwnershipError('Native context factory omitted executeTool');
-        function assertParentCurrent(){return operation(()=>{
+        function assertParentCurrent(){return operation(function requireRunningParent() {
           if(record.state!=='running')throw new ExecutionContextOwnershipError('Parent native execution is not active for a declared program');
           current(record);
         });}
@@ -84,13 +84,13 @@ export function createExecutionWrappers({wrapToolDefinition}) {
             ...descriptors,
             executeTool:{
               ...descriptors.executeTool,
-              value:async()=>{assertParentCurrent();throw new NestedGroupSupportError();}
+              value:async function rejectUnsupportedNestedGroup() {assertParentCurrent();throw new NestedGroupSupportError();}
             },
             createDeclaredProgram:{
               enumerable:true,
               configurable:false,
               writable:false,
-              value:({code})=>{
+              value:function retainOriginalProgramRun({code}) {
             try{
               assertParentCurrent();
               if(code
@@ -132,7 +132,7 @@ export function createExecutionWrappers({wrapToolDefinition}) {
       onUpdate,
       context
     ){
-      const record=operation(()=>{
+      const record=operation(function beginNativeProgramExecution() {
       const currentContext=contexts.get(context);
       if((!currentContext)||(currentContext.receiver!==receiver)
         ||(currentContext.context!==context)
@@ -190,12 +190,12 @@ export function createExecutionWrappers({wrapToolDefinition}) {
     runner,
     readOrigin,
     createProgramRun
-  ){return registeredTools.map(tool=>wrapRegisteredTool(
+  ){return registeredTools.map(function wrapOriginalProgramTool(tool) { return (wrapRegisteredTool(
     tool,
     runner,
     readOrigin,
     createProgramRun
-  ));}
+  )); });}
   return Object.freeze({
     wrapRegisteredTool,
     wrapRegisteredTools

@@ -14,23 +14,23 @@ export function bindRunMessageSources({governing}){
  const expected=collectNativeMessageInputs(snapshot);
  const sources=snapshot.runMessageInputs;
  if((!Array.isArray(sources))||(sources.length!==expected.length)
-   ||sources.some((
+   ||sources.some(function differsFromExpectedMessageSource(
    source,
    index
- )=>source!==expected[index]))throw new GoverningPolicyBindingError('Message inputs are not these original run publications');
+ ) { return (source!==expected[index]); }))throw new GoverningPolicyBindingError('Message inputs are not these original run publications');
  const publications=new Map((run?[
    ...run.ancestors,
    run
- ]:[]).map(value=>[
+ ]:[]).map(function indexRunPublication(value) { return ([
    value.occurrence,
    value
- ]));
- return sources.map(source=>{
+ ]); }));
+ return sources.map(function bindOriginalRunMessage(source) {
   const publication=publications.get(source.runOccurrence);
     const expanded=source.kind==='native-run-expanded-prompt-input';
     const handlerOptions=source.kind==='native-run-handler-options-input';
   const retained=(run?.retainedMessageOrigins??snapshot.nativeConstructedInputs
-    ??[]).find(origin=>origin.source===source);
+    ??[]).find(function matchesOriginalMessageSource(origin) { return (origin.source===source); });
     const toolDescription=source.kind==='native-tool-description-input';
     const loadoutOutput=source.kind==='native-tool-loadout-output';
     const loadoutInput=source.kind==='native-tool-loadout-input';

@@ -24,11 +24,11 @@ function guardContext({
     ...descriptors,
     executeTool:{
       ...descriptor,
-      value:async(
+      value:async function executeWithinParentCancellation(
         name,
         args,
         options
-      )=>{
+      ) {
       if(!isActive())throw new NestedContextClosedError(toolCallId);
       let effectiveOptions=options;
       if(signal!==undefined){
@@ -73,7 +73,7 @@ export function createRegisteredWrappers({wrapToolDefinition}) {
       const guarded=guardContext({
         context,
         toolCallId,
-        isActive:()=>active,
+        isActive:function isParentExecutionActive() { return (active); },
         signal
       });
       try {return await definition.execute(
@@ -88,22 +88,22 @@ export function createRegisteredWrappers({wrapToolDefinition}) {
     };
     return wrapToolDefinition(
       guardedDefinition,
-      (
+      function createOriginalToolContext(
         toolCallId,
         signal
-      )=>runner.createToolContext(
+      ) { return (runner.createToolContext(
         toolCallId,
         signal
-      )
+      )); }
     );
   }
   function wrapRegisteredTools(
     registeredTools,
     runner
-  ){return registeredTools.map(tool=>wrapRegisteredTool(
+  ){return registeredTools.map(function wrapOriginalCancellationTool(tool) { return (wrapRegisteredTool(
     tool,
     runner
-  ));}
+  )); });}
   return Object.freeze({
     wrapRegisteredTool,
     wrapRegisteredTools

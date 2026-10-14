@@ -7,10 +7,10 @@ const original='Original instruction from an earlier run within this same native
 let originalSource;
   let requests=0;
   let runs=0;
-const env=await createEnvironment({extensionFactories:[pi=>{
+const env=await createEnvironment({extensionFactories:[function registerHistoricalPromptHandler(pi) {
  pi.on(
    'before_agent_start',
-   event=>{
+   function varyOriginalPromptInput(event) {
   runs++;
   if(runs===1)event.systemPromptOptions
     .sections
@@ -32,12 +32,12 @@ const collector=bindPolicySessionCollector({
   session
 });
 session.agent
-  .streamFunction=async model=>{
+  .streamFunction=async function observeHistoricalRunStream(model) {
  requests++;
  const snapshot=collector.capture();collector.assertObservedFresh(snapshot);
  if(requests===1){
   originalSource=snapshot.governingSources
-    .find(source=>(source.kind==='native-run-mapped-prompt-input')&&(source.content===original));
+    .find(function matchesOriginalMappedPrompt(source) { return ((source.kind==='native-run-mapped-prompt-input')&&(source.content===original)); });
   assert.ok(
     originalSource,
     'Positive control: the first run must collect its original mapped prompt source'

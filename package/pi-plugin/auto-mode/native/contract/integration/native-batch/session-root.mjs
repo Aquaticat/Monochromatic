@@ -140,7 +140,7 @@ export function createRootSessionFactory({
  }
  async function create({
    options,
-   createManager=constructors=>constructors.inMemory(options.cwd)
+   createManager=function createDefaultMemoryManager(constructors) { return (constructors.inMemory(options.cwd)); }
  }){
   return await createFromManager({
     options,

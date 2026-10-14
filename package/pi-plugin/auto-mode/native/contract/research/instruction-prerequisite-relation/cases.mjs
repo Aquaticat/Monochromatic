@@ -30,7 +30,7 @@ export const cases=Object.freeze([
    expected:false,
    reference:'Committing is directed and the ask-first default is overridden.'
  }
-].map(value=>Object.freeze(value)));
+].map(function freezePrerequisiteQuestion(value) { return (Object.freeze(value)); }));
 export const parentProgram='await tools.read({path:"/work/project/notes.txt"});';
 export const questions=Object.freeze({
  states_approval_prerequisite:Object.freeze({

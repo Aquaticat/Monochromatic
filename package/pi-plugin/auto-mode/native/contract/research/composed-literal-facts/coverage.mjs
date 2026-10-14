@@ -13,10 +13,10 @@ export function assertSourceCoverage({
   const intervals = [
     ...statements,
     ...comments
-  ].toSorted((
+  ].toSorted(function compareComposedSpans(
     left,
     right
-  ) => (left.start - right.start) || (right.end - left.end));
+  ) { return ( (left.start - right.start) || (right.end - left.end)); });
   let cursor = 0;
   for (const interval of intervals) {
     const {

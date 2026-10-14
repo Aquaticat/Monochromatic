@@ -23,7 +23,7 @@ let replacementCallbacks = 0;
 function observeExtensions(pi) {
   pi.on(
     'session_before_switch',
-    () => ({ cancel: cancelReplacement })
+    function chooseFixtureCancellation() { return ( ({ cancel: cancelReplacement })); }
   );
 }
 async function createRuntime({
@@ -94,8 +94,8 @@ try {
     resource.policyInput.readCurrent(),
     previousInput
   );
-  assert.throws(() => resource.policyInput
-    .assertCurrent(previousInput));
+  assert.throws(function inspectRetiredPolicyInput() { return ( resource.policyInput
+    .assertCurrent(previousInput)); });
   nativeHost.lifecycle
     .assertActive(initialLease);
 
@@ -124,8 +124,8 @@ try {
     env.readSessionDisposalState(initialSession).completed,
     true
   );
-  assert.throws(() => nativeHost.lifecycle
-    .assertActive(initialLease));
+  assert.throws(function inspectRetiredHostLease() { return ( nativeHost.lifecycle
+    .assertActive(initialLease)); });
   assert.equal(
     replacementCallbacks,
     1
@@ -200,10 +200,10 @@ try {
   const closing = runtime.session;
   const disconnect = closing._disconnectFromAgent;
   const failure = new Error('Native CLI fixture disposal remains incomplete');
-  closing._disconnectFromAgent = () => { throw failure; };
+  closing._disconnectFromAgent = function failHostDisconnection()  { throw failure; };
   await assert.rejects(
-    () => nativeHost.disposeSession(closing),
-    error => error === failure
+    function disposeHostFixtureSession() { return ( nativeHost.disposeSession(closing)); },
+    function matchesHostDisposalFailure(error) { return ( error === failure); }
   );
   assert.equal(
     env.readSessionDisposalState(closing).completed,
@@ -211,7 +211,7 @@ try {
   );
   try {
     await assert.rejects(
-      async () => {
+      async function rejectConstructionDuringCleanup()  {
       const unexpected = await nativeHost.createSession({ ...env.options,
         resourceLoader: runtime.services.resourceLoader,
         sessionManager: nativeHost.managers.inMemory(env.options.cwd), noTools: true });

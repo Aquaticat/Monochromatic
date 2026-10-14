@@ -42,7 +42,7 @@ export function bindOrdinaryContext(context) {
   bindings.set(
     token,
     {
-      render: () => context.getSystemPrompt(),
+      render: function readContextPrompt() { return ( context.getSystemPrompt()); },
       owner: undefined,
       kind: 'ordinary-context'
     }
@@ -62,11 +62,11 @@ export function bindConstructionOwner({
     'getAppendSystemPrompt',
     'getAppendSystemPromptSources'
   ];
-  if (!names.every(name => (typeof owner?.[name]) === 'function')) throw new SourceCollectionError('Construction owner does not expose the required readers');
+  if (!names.every(function hasOwnerCapability(name) { return ( (typeof owner?.[name]) === 'function'); })) throw new SourceCollectionError('Construction owner does not expose the required readers');
   bindings.set(
     token,
     {
-      render: () => context.getSystemPrompt(),
+      render: function readCapturedPrompt() { return ( context.getSystemPrompt()); },
       owner,
       kind: 'construction-owner'
     }
@@ -83,7 +83,7 @@ function inventory(owner) {
   if ((!Array.isArray(agents)) || (agents.length > limits.files)) throw new SourceCollectionError('Resource file inventory exceeds its profile');
   if ((!Array.isArray(appendTexts)) || (appendTexts.length > limits.appendTexts)) throw new SourceCollectionError('Append text inventory exceeds its profile');
   if ((!Array.isArray(appendSources)) || (appendSources.length > limits.appendTexts)) throw new SourceCollectionError('Append path inventory exceeds its profile');
-  const files = Object.freeze(agents.map(file => {
+  const files = Object.freeze(agents.map(function captureResourceFile(file)  {
     const content = text(
       file.content,
       'Resource file'
@@ -109,11 +109,11 @@ function inventory(owner) {
     availability: 'observed',
     files,
     inline,
-    appendTexts: Object.freeze(appendTexts.map(value => text(
+    appendTexts: Object.freeze(appendTexts.map(function validateAppendText(value) { return ( text(
       value,
       'Append text'
-    ))),
-    appendSourcePaths: Object.freeze(appendSources.map(value => path(value))),
+    )); })),
+    appendSourcePaths: Object.freeze(appendSources.map(function validateSkillPath(value) { return ( path(value)); })),
     appendTextPathLinks: 'not-established',
   });
 }
@@ -179,7 +179,7 @@ export function createCollector({
       || Array.isArray(options)) throw new SourceCollectionError('Collection options must contain only cancellation');
     if ((options.signal !== undefined) && (!(options.signal instanceof AbortSignal))) throw new SourceCollectionError('Cancellation requires an AbortSignal');
     if (Object.keys(options)
-      .some(key => key !== 'signal')) throw new SourceCollectionError('Caller cannot supply source authority, inventory or completeness');
+      .some(function isUnexpectedCaptureOption(key) { return ( key !== 'signal'); })) throw new SourceCollectionError('Caller cannot supply source authority, inventory or completeness');
     const {
       data,
       fingerprint

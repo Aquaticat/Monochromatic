@@ -82,7 +82,7 @@ export async function createEnvironment({
    .FIXTURE_API_KEY='synthetic-local-fixture-only';
  let networkAttempts=0;
    let providerCalls=0;
- globalThis.fetch=async()=>{networkAttempts++;throw new Error('Network is disabled in the native-batch fixture');};
+ globalThis.fetch=async function rejectFixtureNetwork() {networkAttempts++;throw new Error('Network is disabled in the native-batch fixture');};
  const {createAgentSession}=await import("./generated/sdk.mjs");
  const {
    DefaultResourceLoader,

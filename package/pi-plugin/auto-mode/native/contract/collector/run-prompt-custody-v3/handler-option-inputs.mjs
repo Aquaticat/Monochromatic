@@ -10,7 +10,7 @@ export function captureHandlerOptionInputs({
   runOccurrence
 }){
  if(observations.length>64)throw new SourceCollectionError('Original callback option sources exceed the governing 64-source profile');
- return Object.freeze(observations.map(observation=>{
+ return Object.freeze(observations.map(function captureHandlerOptions(observation) {
   const content=JSON.stringify(observation.before
     .options);
   if(Buffer.byteLength(content)>65_536)throw new SourceCollectionError('Original callback option input exceeds the source byte bound');

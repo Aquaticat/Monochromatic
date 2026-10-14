@@ -49,7 +49,7 @@ export function createGoverningRuleBindings({
     ...index.records,
     ...index.unclassified
   ])for(const heading of record.headings??[])referencedHeadings.add(heading);
-  const orphanHeadings=(index.headings??[]).filter(heading=>!referencedHeadings.has(heading));
+  const orphanHeadings=(index.headings??[]).filter(function isUnreferencedHeading(heading) { return (!referencedHeadings.has(heading)); });
   if((index.records
     .length
     +index.unclassified
@@ -88,7 +88,7 @@ export function createGoverningRuleBindings({
       textSHA256:createHash('sha256')
         .update(record.text)
         .digest('hex'),
-      headings:Object.freeze((record.headings??[]).map(value=>value.text)),
+      headings:Object.freeze((record.headings??[]).map(function readHeadingContextText(value) { return (value.text); })),
       authorityEstablishedByIndex:false,
       semanticQualification:'not-established'
     });
@@ -126,7 +126,7 @@ export function createGoverningRuleBindings({
   // Context exposure is retained separately from an independently consumed normative interpretation.
   let ancestry=[];
   for(const heading of index.headings??[]){
-    ancestry=ancestry.filter(parent=>parent.depth<heading.depth);
+    ancestry=ancestry.filter(function hasShallowerHeadingDepth(parent) { return (parent.depth<heading.depth); });
     if(referencedHeadings.has(heading))contextualHeadings.push(Object.freeze({
       start:heading.start,
       end:heading.end,
@@ -173,17 +173,17 @@ export function createGoverningRuleBindings({
   );
   const headingCandidates=Object.freeze(headingContextCandidate?[headingContextCandidate]:[]);
   const candidateHandles=Object.freeze([...byCode.values()]);
-  const instructionHandles=Object.freeze(allHandles.toSorted((
+  const instructionHandles=Object.freeze(allHandles.toSorted(function compareOriginalRecordOffsets(
     left,
     right
-  )=>records.get(left)
+  ) { return (records.get(left)
     .start
     -records.get(right)
-    .start));
-  const retainedUnclassified=Object.freeze(unclassified.toSorted((
+    .start); }));
+  const retainedUnclassified=Object.freeze(unclassified.toSorted(function compareSourceSpanOffsets(
     left,
     right
-  )=>left.start-right.start));
+  ) { return (left.start-right.start); }));
   current();
   /** All structurally indexed original rules remain candidates until exclusions are separately qualified. */
   function indexedCandidates(){current();return candidateHandles;}

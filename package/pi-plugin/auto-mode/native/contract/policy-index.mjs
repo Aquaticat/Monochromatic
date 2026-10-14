@@ -61,7 +61,7 @@ function literalCode(text) {
     0,
     width
   );
-  return [...candidate].every(character => ((character >= 'A') && (character <= 'Z')) || ((character >= '0') && (character <= '9')))
+  return [...candidate].every(function isInstructionCodeCharacter(character) { return ( ((character >= 'A') && (character <= 'Z')) || ((character >= '0') && (character <= '9'))); })
     ? candidate
     : undefined;
 }
@@ -103,7 +103,7 @@ export function indexPolicyDocument({
       };
       state.headingStack = [
         ...state.headingStack
-          .filter(parent => parent.depth < node.depth),
+          .filter(function isParentHeading(parent) { return ( parent.depth < node.depth); }),
         heading
       ];
       state.headings

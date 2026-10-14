@@ -31,7 +31,7 @@ function dataRecord(value){
    &&(Object.getPrototypeOf(value)===Object.prototype)
    &&(!('toJSON' in value))
    &&Reflect.ownKeys(value)
-   .every(key=>((typeof key)==='string')
+   .every(function isEnumerableOwnDataField(key) { return (((typeof key)==='string')
      &&Object.getOwnPropertyDescriptor(
     value,
     key
@@ -43,7 +43,7 @@ function dataRecord(value){
       key
     ),
     'value'
-  ));
+  )); });
 }
 function denseArray(value){
  return (!types.isProxy(value))
@@ -56,18 +56,18 @@ function denseArray(value){
      +1))
    &&Array.from(
     {length:value.length},
-    (
+    function readContributionIndexDescriptor(
       _,
       index
-    )=>Object.getOwnPropertyDescriptor(
+    ) { return (Object.getOwnPropertyDescriptor(
       value,
       String(index)
-    )
+    )); }
   )
-   .every(item=>item?.enumerable&&Object.hasOwn(
+   .every(function isOwnDataDescriptor(item) { return (item?.enumerable&&Object.hasOwn(
     item,
     'value'
-  ));
+  )); });
 }
 
 /** Native custom sections replace only truthy addendum or project-context fields. */
@@ -112,13 +112,13 @@ function messageOrigin({
  const emittingRun=[
    run,
    ...run.ancestors
- ].find(value=>(value.occurrence===publication.runOccurrence)&&((value.expandedPromptPublication===publication)
+ ].find(function matchesRunPublication(value) { return ((value.occurrence===publication.runOccurrence)&&((value.expandedPromptPublication===publication)
    ||value.handlerPublications
-   ?.includes(publication)));
+   ?.includes(publication))); });
  const expanded=emittingRun?.expandedPromptPublication===publication;
- const retained=(run.retainedMessageOrigins??[]).find(origin=>origin.publication===publication);
+ const retained=(run.retainedMessageOrigins??[]).find(function matchesConstructedPublication(origin) { return (origin.publication===publication); });
  const source=expanded?emittingRun.expandedPromptInput:emittingRun?.handlerMessageInputs
-   .find(value=>value.occurrence===publication.sourceOccurrence)
+   .find(function matchesOriginalSourceOccurrence(value) { return (value.occurrence===publication.sourceOccurrence); })
    ??retained?.source;
  if((!source)||(!sources.governingSources
    .includes(source)))return undefined;
@@ -151,7 +151,7 @@ function originalContributions({
  });
  if(unsupported)return {reason:unsupported};
  const system=context.messages
-   .filter(message=>message.role==='system');
+   .filter(function isSystemMessage(message) { return (message.role==='system'); });
  if(run.options
    .forceSystemPrompt
    !==undefined){
@@ -174,8 +174,8 @@ function originalContributions({
   })])};
  }
  if(!publication?.complete)return {reason:'No original full sections publication in this run'};
- if(system.some(message=>(message.content!=='')&&(message.content!==undefined)))return {reason:'Independent system content remains outside this sections-only association profile'};
- const represented=system.filter(message=>message.sections!==undefined);
+ if(system.some(function hasSystemMessageContent(message) { return ((message.content!=='')&&(message.content!==undefined)); }))return {reason:'Independent system content remains outside this sections-only association profile'};
+ const represented=system.filter(function hasSystemMessageSections(message) { return (message.sections!==undefined); });
  if(represented.length!==1)return {reason:'The serializer input does not contain one sections publication'};
  if(!dataRecord(represented[0]
    .sections))return {reason:'Serializer sections require ordinary data fields for source association'};
@@ -183,12 +183,12 @@ function originalContributions({
    .sections))return {reason:'The serializer input sections are not the original published object'};
  if(Object.values(represented[0]
    .sections)
-   .some(text=>((typeof text)!=='string')||(!text.isWellFormed())))return {reason:'Section text requires an unsupported serializer transformation'};
+   .some(function isUnsupportedSystemText(text) { return (((typeof text)!=='string')||(!text.isWellFormed())); }))return {reason:'Section text requires an unsupported serializer transformation'};
  const byOccurrence=new Map(sources.governingSources
-   .map(source=>[
+   .map(function indexSourceByOccurrence(source) { return ([
      source.occurrence,
      source
-   ]));
+   ]); }));
    const origins=[];
  for(const runCarrier of sources.runInputCarriers){
   if(runCarrier.carrier
@@ -218,7 +218,7 @@ function originalContributions({
      .length
      ===0)continue;
    const carrier=field==='contextFiles'?sources.governingContextCarriers
-     .find(value=>(value.ordinal===ordinal)&&(value.source===source)):undefined;
+     .find(function matchesContextCarrier(value) { return ((value.ordinal===ordinal)&&(value.source===source)); }):undefined;
    origins.push(Object.freeze({
      source,
      runCarrier,
@@ -285,7 +285,7 @@ function originalContributions({
  // Hidden readers still support native indirect skill loading; declaration visibility is not availability here.
  const hasSkillReader=run.options
    .selectedTools
-   .some(name=>(name==='read')||(name==='bash'));
+   .some(function isNativeReadOrBash(name) { return ((name==='read')||(name==='bash')); });
  for(const source of run.skillDescriptionInputs){
   if((source.runOccurrence!==run.occurrence)||(byOccurrence.get(source.occurrence)!==source))throw new NativeSourceAssociationError('Skill description is not this original captured source');
   const skill=run.options
@@ -422,7 +422,7 @@ export function prepareNativeSourceAssociation({
      if(!association)continue;
      // These new text containers are owned snapshots, not aliases held by a payload callback.
      const content=Object.freeze(message.content
-       .map(part=>Object.freeze({...part})));
+       .map(function freezeContributionPart(part) { return (Object.freeze({...part})); }));
      candidates.push({
        original:message,
        content,
@@ -446,10 +446,10 @@ export function prepareNativeSourceAssociation({
     const retained=[];
   for(const candidate of candidates){
    const positions=ordinary?selected.messages
-     .flatMap((
+     .flatMap(function findOriginalMessageIndex(
        message,
        index
-     )=>message===candidate.original?[index]:[]):[];
+     ) { return (message===candidate.original?[index]:[]); }):[];
    const {original} = candidate;
    // Observe known message aliases even when their descriptor shape no longer qualifies for a copy.
    const handlerCurrent=candidate.system||(candidate.associations[0]
@@ -486,15 +486,15 @@ export function prepareNativeSourceAssociation({
   }
   owned=retained;
   if(retained.length === 0)return replacement;
-  const replacements=new Map(retained.map(record=>[
+  const replacements=new Map(retained.map(function indexMessageReplacement(record) { return ([
     record.ordinal,
     record.message
-  ]));
+  ]); }));
   const messages=Object.freeze(selected.messages
-    .map((
+    .map(function applyMessageReplacement(
       message,
       index
-    )=>replacements.get(index)??message));
+    ) { return (replacements.get(index)??message); }));
   return Object.freeze({
     ...selected,
     messages
@@ -526,7 +526,7 @@ export function prepareNativeSourceAssociation({
      permission:false
    }));
   }
-  const system=expected.find(record=>record.system);
+  const system=expected.find(function readSystemReceipt(record) { return (record.system); });
     const systemOrdinal=system?.ordinal??0;
     const systemMessage=parsed.messages?.[systemOrdinal];
   if(systemMessage&&[

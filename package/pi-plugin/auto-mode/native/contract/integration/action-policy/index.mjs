@@ -58,6 +58,6 @@ export async function assessAndDecide({
  }
  return decideAndClose({
   judgment,
-  readProgram:()=>readProgram({evidence})
+  readProgram:function readOriginalProgram() { return (readProgram({evidence})); }
  });
 }

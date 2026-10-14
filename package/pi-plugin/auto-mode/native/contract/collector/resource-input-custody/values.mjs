@@ -12,7 +12,7 @@ function fields({
       null
     ].includes(Object.getPrototypeOf(value))))throw new SourceCollectionError(`${label} requires an ordinary record`);
   const actual=Reflect.ownKeys(value);
-  if((actual.length!==keys.length)||actual.some(key=>((typeof key)!=='string')||(!keys.includes(key))))throw new SourceCollectionError(`${label} has unsupported fields`);
+  if((actual.length!==keys.length)||actual.some(function isUnexpectedField(key) { return (((typeof key)!=='string')||(!keys.includes(key))); }))throw new SourceCollectionError(`${label} has unsupported fields`);
   for(const key of keys){const property=Object.getOwnPropertyDescriptor(
     value,
     key
@@ -65,7 +65,7 @@ export function snapshotInput({
       label:'Context files',
       maximum:64
     });
-    copy=Object.freeze({agentsFiles:Object.freeze(files.map(file=>{
+    copy=Object.freeze({agentsFiles:Object.freeze(files.map(function copyContextFile(file) {
       fields({
         value:file,
         keys:[
@@ -94,10 +94,10 @@ export function snapshotInput({
     label:'Append input',
     maximum:32
   })
-    .map(value=>text({
+    .map(function copyAppendText(value) { return (text({
       value,
       label:'Append text'
-    })));
+    })); }));
   else throw new SourceCollectionError('Unknown resource input kind');
   if(Buffer.byteLength(JSON.stringify({value:copy}))>524_288)throw new SourceCollectionError('Resource input exceeds total byte bound');
   return copy;

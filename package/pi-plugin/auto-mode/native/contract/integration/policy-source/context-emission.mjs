@@ -34,10 +34,10 @@ export function createGoverningContextEmitter({
   if(readSource()!==source)throw new GoverningContextEmissionError('Selected policy changed during the context callback');
   const links=[];
   const replaced=result.agentsFiles
-    .map((
+    .map(function retainOriginalGoverningEntry(
       entry,
       ordinal
-    )=>{
+    ) {
    if((entry.path!==source.identity)||(entry.content!==source.content))return entry;
    const emitted=Object.freeze({
      path:entry.path,
@@ -93,7 +93,7 @@ export function createGoverningContextEmitter({
   return Object.freeze({
    prior:emission.prior,
    carriers:Object.freeze(emission.links
-     .map(link=>Object.freeze({
+     .map(function captureGoverningContextCarrier(link) { return (Object.freeze({
        kind:'governing-policy-context-carrier',
        occurrence:Object.freeze({}),
        ordinal:link.ordinal,
@@ -103,7 +103,7 @@ export function createGoverningContextEmitter({
          .occurrence,
        authenticatesDisplacedRead:false,
        permission:false
-     }))),
+     })); })),
    assertCurrent(){assertPublished({
      ...input,
      emission

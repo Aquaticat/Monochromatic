@@ -12,10 +12,10 @@ export function fixtureResponse({
  ].includes(programs))throw new Error('Fixture program count must remain bounded');
  const programCalls=Array.from(
    {length:programs},
-   (
+   function createPreparedToolCall(
      _,
      index
-   )=>({
+   ) { return (({
      index,
      id:index===0?'program':`program-${index}`,
      type:'function',
@@ -23,7 +23,7 @@ export function fixtureResponse({
        name:'codemode',
        arguments:JSON.stringify({code})
      }
-   })
+   })); }
  );
  const toolCalls=[
    ...programCalls,

@@ -25,14 +25,14 @@ export async function capturePolicyInputs({
    sourceBinding,
    ...sourceBinding.additionalSources
  ]:[];
- const instructionSources=Object.freeze(sources.map(source=>source.view));
+ const instructionSources=Object.freeze(sources.map(function readSourceView(source) { return (source.view); }));
  const instructionCarriers=sourceBinding?.instructionCarriers??Object.freeze([]);
  const requestObservation=sourceBinding?.view
    .request;
  const requestSourceContributions=requestObservation?.sourceContributions??Object.freeze([]);
  const runInstructionCarriers=sourceBinding?.runInstructionCarriers??Object.freeze([]);
- const instructionAuthorities=Object.freeze(sources.filter(source=>source.authority)
-   .map(source=>source.authority));
+ const instructionAuthorities=Object.freeze(sources.filter(function hasSourceAuthority(source) { return (source.authority); })
+   .map(function readSourceAuthority(source) { return (source.authority); }));
  const candidates=judgment.indexedRuleCandidates();
  const instructionCandidates=judgment.indexedInstructionCandidates?.()??candidates;
  const headingContextCandidates=judgment.indexedHeadingContextCandidates?.()??Object.freeze([]);
@@ -68,7 +68,7 @@ export async function capturePolicyInputs({
  }
  const states=judgment.inspect()
    .memberExecutions;
- if(states.some(value=>value.state!=='unentered'))throw new PolicyInputBindingError('Policy facts must be captured before the prepared group starts');
+ if(states.some(function hasEnteredMember(value) { return (value.state!=='unentered'); }))throw new PolicyInputBindingError('Policy facts must be captured before the prepared group starts');
  const members=[];
  for(const {id} of states){
   const member=judgment.memberFor(id);

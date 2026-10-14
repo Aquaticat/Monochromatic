@@ -101,11 +101,11 @@ function imports({
   path,
   overrides={}
 }){
- return source.replaceAll(/^(import[^\n]+from|export \* from) "([^"\n]+)";/gm,(
+ return source.replaceAll(/^(import[^\n]+from|export \* from) "([^"\n]+)";/gm,function rebaseNativeImport(
    original,
    prefix,
    specifier
- )=>{
+ ) {
   if(specifier.startsWith('node:')||[
     'crypto',
     'fs',
@@ -168,10 +168,10 @@ extensionLoader=extensionLoader.replaceAll(
   'import.meta.url',
   JSON.stringify(pathToFileURL(extensionLoaderPath).href)
 );
-extensionLoader=extensionLoader.replaceAll(/import\("(\.[^"]+)"\)/g,(
+extensionLoader=extensionLoader.replaceAll(/import\("(\.[^"]+)"\)/g,function rebaseNativeDynamicImport(
   _match,
   specifier
-)=>`import(${JSON.stringify(new URL(specifier,pathToFileURL(extensionLoaderPath)).href)})`);
+) { return (`import(${JSON.stringify(new URL(specifier,pathToFileURL(extensionLoaderPath)).href)})`); });
 writeFileSync(
   join(output,'extension-loader.mjs'),
   imports({source:extensionLoader,path:extensionLoaderPath}),

@@ -10,10 +10,10 @@ export function inspectPolicyPremises(inputs){
  inputs.assertCurrent();
  const issues=[];
  const authorities=new Map(inputs.instructionAuthorities
-   .map(authority=>[
+   .map(function indexKnownAuthority(authority) { return ([
      authority.sourceOccurrence,
      authority
-   ]));
+   ]); }));
  if(inputs.instructionSources
    .length
    ===0){
@@ -39,9 +39,9 @@ export function inspectPolicyPremises(inputs){
   }
  }
  const sourceCoverage=inputs.ruleSourceCoverage;
- const unclassified=Object.freeze((sourceCoverage??[]).filter(source=>source.unclassified
+ const unclassified=Object.freeze((sourceCoverage??[]).filter(function hasUnclassifiedSourceText(source) { return (source.unclassified
    .length
-   >0));
+   >0); }));
  const sourceDomain=inputs.inspectSourceDomain?.();
  // Only original native owner publications can discharge structural domain accounting.
  if((!sourceDomain)||(sourceDomain.gaps
@@ -56,7 +56,7 @@ export function inspectPolicyPremises(inputs){
    unclassified,
    reason:sourceDomain?.gaps
      .length?sourceDomain.gaps
-       .map(gap=>gap.reason)
+       .map(function readDomainGapReason(gap) { return (gap.reason); })
        .join(' '):sourceCoverage===undefined?'No original rule-source coverage inspection or original-request material accounting is available.'
    :'Original request material outside the represented source units has no established governing-source accounting; source-local interpretation does not establish that domain or delegation.'
  }));
@@ -132,7 +132,7 @@ export function inspectPolicyPremises(inputs){
         .name}) has a scoped member fact, not complete operation coverage. No admitted inspected-form estimate supplies the remaining coverage.`
   }));
  }
- const missingPremises=Object.freeze([...new Set(issues.map(issue=>issue.premise))]);
+ const missingPremises=Object.freeze([...new Set(issues.map(function readUnresolvedPremise(issue) { return (issue.premise); }))]);
  inputs.assertCurrent();
  return Object.freeze({
    issues:Object.freeze(issues),

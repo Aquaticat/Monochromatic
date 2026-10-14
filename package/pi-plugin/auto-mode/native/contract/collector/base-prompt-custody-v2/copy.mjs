@@ -11,10 +11,10 @@ export function copyPromptOptions(input){
     if((!value)||((typeof value)!=='object')
       ||(Object.getPrototypeOf(value)!==Object.prototype))throw new SourceCollectionError('Prompt input requires an ordinary record');
     const keys=Reflect.ownKeys(value);
-    if(keys.some(key=>((typeof key)!=='string')||((!required.includes(key))&&(!optional.includes(key))))||required.some(key=>!Object.hasOwn(
+    if(keys.some(function isUnsupportedField(key) { return (((typeof key)!=='string')||((!required.includes(key))&&(!optional.includes(key)))); })||required.some(function isMissingRequiredField(key) { return (!Object.hasOwn(
       value,
       key
-    )))throw new SourceCollectionError('Prompt input has missing or unsupported fields');
+    )); }))throw new SourceCollectionError('Prompt input has missing or unsupported fields');
     for(const key of keys){const item=Object.getOwnPropertyDescriptor(
       value,
       key

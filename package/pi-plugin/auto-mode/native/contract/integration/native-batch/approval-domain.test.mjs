@@ -40,7 +40,7 @@ let nativePi;
 const env=await createEnvironment({
   policyText,
   hostPrompt:'Fixture background.',
-  extensionFactories:[pi=>{nativePi=pi;}]
+  extensionFactories:[function captureNativePiApi(pi) {nativePi=pi;}]
 });
 // This direct-SDK fixture registers the original policy reload boundary used by native host services.
 // It does not acquire the CLI host's private resource membership or session-construction ownership.
@@ -63,12 +63,12 @@ const {
 }=await createRootSessionFactory(env)
   .create({options:{...env.options,tools:['codemode','fixture_value'],customTools:[createOwnedCodemodeDefinition(),leaf]}});
 session.agent
-  .getApiKey=()=>process.env
-  .FIXTURE_API_KEY;
+  .getApiKey=function readFixtureApiKey() { return (process.env
+  .FIXTURE_API_KEY); };
 assert.ok(nativePi&&(typeof nativePi.appendEntry)==='function');
 const programProfile='awaited-string-result-then-literal-parallel';
 const code='const value = await tools.fixture_value({path:"seed"});\nreturn await Promise.allSettled([tools.fixture_value({path:value}),tools.fixture_value({path:"second"})]);';
-function policy(definitionId) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:()=>true}; }
+function policy(definitionId) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:function acceptAuthoredFixtureRelation() { return (true); }}; }
 const ctx={
   hasUI:true,
   ui:{async select(title,options){
@@ -103,7 +103,7 @@ const runtime=bindNativePolicyRuntime({
   semanticAdmissionPolicy:policy('clause_operation_relation'),
   requestMaterialAdmissionPolicy:policy('request_instruction_content'),
   headingContextAdmissionPolicy:policy('heading_instruction_content'),
-  effectOwnerFor:()=>undefined,
+  effectOwnerFor:function omitFixtureAuthorizationOwner() { return (undefined); },
   authorizationOwnerFor({judgment,rule,source,request}){
   if(mode==='missing'||judgment.readRuleCandidate(rule).code!=='CNF')return undefined;
   assert.equal(source.source.content,policyText);
@@ -112,7 +112,7 @@ const runtime=bindNativePolicyRuntime({
   const evidence=Object.freeze({judgment,rule,source,request,authorization});
   return Object.freeze({capture(){
    authorizationCaptures++;
-   assert(judgment.inspect().memberExecutions.every(member=>member.state==='unentered'));
+   assert(judgment.inspect().memberExecutions.every(function isUnenteredPreparedMember(member) { return (member.state==='unentered'); }));
    return evidence;
   },assertCurrent(value){
    assert.equal(value,evidence);
@@ -123,11 +123,11 @@ const runtime=bindNativePolicyRuntime({
   approvalHost(){approvalCaptures++;return {pi:nativePi,ctx:useNativeContext?session.extensionRunner.createContext():ctx,askUser,verdictEntryType:VERDICT_ENTRY_TYPE,trace(){},async notificationInvoker(){notifications++;}};},
   async sendWire({body}){
   assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,originalBody);
-  const answers=Object.fromEntries(Object.entries(wire.questions).map(([slot,question])=>{
+  const answers=Object.fromEntries(Object.entries(wire.questions).map(function answerAuthoredApprovalQuestion([slot,question]) {
    const id=question.instructions.selectedRule?.id;
    const choice=question.instructions.selectedMaterial==='originalRequestBody'?'none':id==='CNF'?'prerequisite':id==='RUL'?(mode==='bare'?'none':mode==='prohibited'?'prohibition':'permission'):'none';
    assert(Object.hasOwn(question.criteria,choice));
-   return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(label=>[label,label===choice?1:0]))}];
+   return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(function scoreAuthoredApprovalChoice(label) { return ([label,label===choice?1:0]); }))}];
   }));
   return JSON.stringify({model:wire.model,answers,usage:{input_tokens:100,output_tokens:10}});
  },
@@ -138,7 +138,7 @@ let handlerFailure;
 const handler=session.agent
   .executeToolBatch;
 session.agent
-  .executeToolBatch=async input=>{try{return await handler(input);}catch(error){handlerFailure=error;throw error;}};
+  .executeToolBatch=async function retainHandlerFailure(input) {try{return await handler(input);}catch(error){handlerFailure=error;throw error;}};
 try{
  assert.equal(
    approvalCaptures,
@@ -157,7 +157,7 @@ try{
     'Native reload must recapture the actual extension API'
   );
   assert.throws(
-    ()=>originalContext.ui,
+    function accessRetiredNativeUi() { return (originalContext.ui); },
     /This extension ctx is stale after session replacement or reload/u
   );
  }
@@ -207,7 +207,7 @@ try{
     {depth:5}
   ));
   assert.equal(
-    review.premiseIssues.some(issue=>issue.kind==='request-source-domain'),
+    review.premiseIssues.some(function isRequestDomainIssue(issue) { return (issue.kind==='request-source-domain'); }),
     false
   );
   assert.equal(
@@ -235,7 +235,7 @@ try{
  }
  const entries=session.sessionManager
    .getEntries()
-   .filter(entry=>entry.type==='custom'&&entry.customType===VERDICT_ENTRY_TYPE);
+   .filter(function isOriginalVerdictEntry(entry) { return (entry.type==='custom'&&entry.customType===VERDICT_ENTRY_TYPE); });
  assert.equal(
    entries.length,
    selections

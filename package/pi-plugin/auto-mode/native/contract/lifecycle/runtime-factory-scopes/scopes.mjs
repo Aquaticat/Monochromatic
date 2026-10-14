@@ -62,10 +62,10 @@ export function createRuntimeFactoryScopes({
       phase='abandoned';pendingCleanup.add(cleanup);cleanup();
     }
     return Object.freeze({
-      registerSession:session=>exclusive(()=>{ registerSession(session); }),
-      accept:result=>exclusive(()=>accept(result)),
-      publish:result=>exclusive(()=>publish(result)),
-      abort:()=>exclusive(abort)
+      registerSession:function registerExclusiveSession(session) { return (exclusive(function registerConstructedSession() { registerSession(session); })); },
+      accept:function acceptExclusiveResult(result) { return (exclusive(function acceptConstructedResult() { return (accept(result)); })); },
+      publish:function publishExclusiveResult(result) { return (exclusive(function publishConstructedResult() { return (publish(result)); })); },
+      abort:function abortExclusiveConstruction() { return (exclusive(abort)); }
     });
   }
   function retryCleanup(){
@@ -77,9 +77,9 @@ export function createRuntimeFactoryScopes({
     );
   }
   return Object.freeze({
-    begin:input=>exclusive(()=>begin(input)),
-    retryCleanup:()=>exclusive(retryCleanup),
-    diagnostics:()=>Object.freeze({pendingCleanup:pendingCleanup.size})
+    begin:function beginExclusiveFactoryScope(input) { return (exclusive(function beginFactoryOccurrence() { return (begin(input)); })); },
+    retryCleanup:function retryExclusiveCleanup() { return (exclusive(retryCleanup)); },
+    diagnostics:function inspectPendingCleanup() { return (Object.freeze({pendingCleanup:pendingCleanup.size})); }
   });
 }
 //endregion

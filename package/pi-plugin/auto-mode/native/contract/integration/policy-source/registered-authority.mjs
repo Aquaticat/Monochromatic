@@ -143,9 +143,9 @@ function bindAppendPromptSources({
  const nativeBaseLinked=Boolean(base&&(base.resourceFrame===link.frame)
    &&(base.options
      .appendSystemPrompt
-     ===sources.map(source=>source.content)
+     ===sources.map(function readAppendPromptContent(source) { return (source.content); })
      .join('\n\n')));
- return sources.map(source=>{
+ return sources.map(function bindOriginalAppendPrompt(source) {
   const view=Object.freeze({
     kind:'original-append-prompt-view',
     source,
@@ -193,16 +193,16 @@ function bindContextPromptSources({
      .contextFiles;
  const nativeBaseLinked=Boolean(base&&(base.resourceFrame===link.frame)
    &&(files.length===sources.length)
-   &&sources.every((
+   &&sources.every(function matchesContextFileInput(
      source,
      index
-   )=>(files[index]
+   ) { return ((files[index]
      .path
      ===source.path)&&(files[index]
        .content
-       ===source.content)));
- return sources.filter(source=>source.carrier===undefined)
-   .map(source=>{
+       ===source.content)); }));
+ return sources.filter(function lacksGoverningCarrier(source) { return (source.carrier===undefined); })
+   .map(function bindOriginalContextPrompt(source) {
   const view=Object.freeze({
     kind:'original-context-prompt-view',
     source,
@@ -279,7 +279,7 @@ function bindRunGuidelineSources({governing}){
  return [
    ...(sources??[]),
    ...(toolSources??[])
- ].map(source=>{
+ ].map(function bindOriginalGuidelineInput(source) {
   const tool=source.kind==='native-run-tool-guideline-input';
   const content=tool?run.options
     .toolGuidelines[source.inputLocation
@@ -326,7 +326,7 @@ function bindMappedPromptSources({governing}){
  return [
    ...(sources??[]),
    ...(replacements??[])
- ].map(source=>{
+ ].map(function bindOriginalMappedInput(source) {
   const {
     field,
     key,
@@ -370,7 +370,7 @@ function bindSkillDescriptionSources({governing}){
  if(request.sources
    .skillDescriptionInputs
    !==sources)throw new GoverningPolicyBindingError('Skill descriptions are not this original run publication');
- return (sources??[]).map(source=>{
+ return (sources??[]).map(function bindOriginalSkillInput(source) {
   const {
     description,
     ...metadata
@@ -414,10 +414,10 @@ function bindBuiltInPromptSources({governing}){
  if(request.sources
    .builtInPromptInputs
    !==sources)throw new GoverningPolicyBindingError('Built-in fragments are not this original run publication');
- return (sources??[]).map((
+ return (sources??[]).map(function bindOriginalBuiltInFragment(
    source,
    ordinal
- )=>{
+ ) {
   if((!run.renderOccurrence)||(source.renderOccurrence!==run.renderOccurrence)
     ||(source.runOccurrence!==run.occurrence)
     ||(source.inputLocation
@@ -454,7 +454,7 @@ function bindResourceToolSources({governing}){
      .sources
      ??request.sources;
  governing.assertCurrent(governing.view);
- return (snapshot.nativeResourceToolInputs??[]).map(origin=>{
+ return (snapshot.nativeResourceToolInputs??[]).map(function bindOriginalResourceToolInput(origin) {
   const {
     source,
     publication,

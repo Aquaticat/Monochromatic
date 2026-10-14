@@ -36,17 +36,17 @@ export function bindOriginalTuiApproval({
   if((closure?.status!=='evidence-closed')||(judgment.inspect().accounting.finished!==true))throw new OriginalTuiApprovalError('TUI approval requires closed original assessment evidence');
   const states=judgment.inspect()
     .memberExecutions;
-  if((states.length===0)||states.some(value=>value.state!=='unentered'))throw new OriginalTuiApprovalError('TUI approval must precede entry of the prepared group');
-  const members=states.map(({id})=>{const handle=judgment.memberFor(id);return Object.freeze({
+  if((states.length===0)||states.some(function hasEnteredApprovalMember(value) { return (value.state!=='unentered'); }))throw new OriginalTuiApprovalError('TUI approval must precede entry of the prepared group');
+  const members=states.map(function captureOriginalPreparedMember({id}) {const handle=judgment.memberFor(id);return Object.freeze({
     handle,
     ...judgment.preparedMemberFor(handle)
   });});
   const {ui} = ctx,{select} = ui,{appendEntry} = pi,{abort} = ctx;
   if((typeof select)!=='function'||(typeof appendEntry)!=='function'||(typeof abort)!=='function')throw new OriginalTuiApprovalError('Native TUI selection, verdict append and abort capabilities are required');
-  const signal=AbortSignal.any(members.map(value=>value.signal));
+  const signal=AbortSignal.any(members.map(function readPreparedSignal(value) { return (value.signal); }));
   const scope=JSON.stringify({
     parentProgram:JSON.parse(closure.parentJSON),
-    preparedGroup:members.map(value=>value.prepared)
+    preparedGroup:members.map(function readPreparedOperation(value) { return (value.prepared); })
   });
   const action=`Complete prepared group:\n${scope}`;
   const approvalFingerprint=sha(JSON.stringify({

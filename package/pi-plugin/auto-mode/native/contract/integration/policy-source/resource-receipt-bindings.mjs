@@ -13,7 +13,7 @@ export function bindResourceReceiptSources({
    ??request.sources; const sources=input.resourceReceiptInputs;
  governing.assertCurrent(governing.view);
  if(snapshot.resourceReceiptInputs!==sources)throw new GoverningPolicyBindingError('Resource receipts are not the original loader-owned collection');
- return sources.map(source=>{
+ return sources.map(function bindOriginalResourceReceipt(source) {
   if((source.kind!=='native-resource-received-input')||(source.resourceInputOccurrence===undefined)
     ||(!snapshot.governingSources
       .includes(source)))throw new GoverningPolicyBindingError('Resource receipt differs from its original governing-source membership');

@@ -82,10 +82,10 @@ export function readRelationEstimate({
       .length
       !==labels.length)
     ||Object.keys(probabilities)
-    .some(label=>!Object.hasOwn(
+    .some(function lacksDeclaredCriterion(label) { return (!Object.hasOwn(
     definition.criteria,
     label
-  )))throw new QuestionSelectionError('Choice probabilities differ from the original option set');
+  )); }))throw new QuestionSelectionError('Choice probabilities differ from the original option set');
   let largest=0;
     let total=0;
   for(const label of labels){
@@ -148,7 +148,7 @@ export function createQuestionSelection({
       .join(',')
       !=='criteria,instructions,type')throw new QuestionSelectionError('Question definition has undeclared fields');
     const criteria=Object.entries(value.criteria);
-    if(criteria.some(([label,rubric])=>(!text(label))||(!text(rubric))))throw new QuestionSelectionError('Question options require named text rubrics');
+    if(criteria.some(function hasInvalidCriterionText([label,rubric]) { return ((!text(label))||(!text(rubric))); }))throw new QuestionSelectionError('Question options require named text rubrics');
     if((value.type==='noul')&&(Object.keys(value.criteria)
       .toSorted()
       .join(',')
@@ -176,7 +176,7 @@ export function createQuestionSelection({
     let declaredCount=0;
     let locked=false;
   function retainedOperation(operation){if(locked)throw new QuestionSelectionError('Question binding operations cannot reenter');locked=true;try{return operation();}finally{locked=false;}}
-  function atomic(operation){return retainedOperation(()=>{budget.checkpoint();return operation();});}
+  function atomic(operation){return retainedOperation(function runWithinQuestionBudget() {budget.checkpoint();return operation();});}
   function resolve(handle){
     const binding=resolveBinding(handle);
     if((!object(binding))||(!Object.isFrozen(binding))
@@ -195,7 +195,7 @@ export function createQuestionSelection({
   function declare({
     definitionId,
     bindingHandle
-  }){return atomic(()=>{
+  }){return atomic(function selectOriginalClaim() {
     const definition=definitions.get(definitionId);if(!definition)throw new QuestionSelectionError('Selected question definition is not in the pinned catalog');
     const binding=resolve(bindingHandle);
       const canonical=byDefinition.get(definitionId);
@@ -217,7 +217,7 @@ export function createQuestionSelection({
       handle
     );declaredCount+=1;return handle;
   });}
-  function issue(input){return atomic(()=>{
+  function issue(input){return atomic(function constructOriginalQuestionBatch() {
     if((!Array.isArray(input))||(Object.getPrototypeOf(input)!==Array.prototype)
       ||(input.length===0)
       ||(input.length>512)
@@ -242,16 +242,16 @@ export function createQuestionSelection({
     const request=Object.freeze({
       envelope,
       catalogSHA256:digest,
-      questions:Object.freeze(selected.map((
+      questions:Object.freeze(selected.map(function describeSelectedClaim(
         claim,
         index
-      )=>Object.freeze({
+      ) { return (Object.freeze({
         id:`q${index}`,
         definitionId:claim.definitionId,
         definition:claim.definition,
         binding:claim.binding
           .projection
-      }))),
+      })); })),
       semanticQualification:'not-established',
       instructionAuthority:'not-established'
     });
@@ -267,12 +267,12 @@ export function createQuestionSelection({
       }
     );batchCount+=1;return handle;
   });}
-  function requestFor(handle){return atomic(()=>{const batch=knownBatch(handle);if(batch.settled)throw new QuestionSelectionError('Question batch is terminal; it cannot be dispatched again');for(const claim of batch.selected)current(claim);budget.checkpoint();return batch.request;});}
+  function requestFor(handle){return atomic(function retainOriginalBatchRequest() {const batch=knownBatch(handle);if(batch.settled)throw new QuestionSelectionError('Question batch is terminal; it cannot be dispatched again');for(const claim of batch.selected)current(claim);budget.checkpoint();return batch.request;});}
   function settle({
     batch:handle,
     answerText,
     model
-  }){return retainedOperation(()=>{
+  }){return retainedOperation(function settleOriginalQuestionBatch() {
     const batch=knownBatch(handle);if(batch.settled)throw new QuestionSelectionError('Question batch already has a terminal response');
     const retainedRaw=((typeof answerText)==='string')&&(Buffer.byteLength(answerText)<=65_536)?answerText:undefined;
     try {
@@ -285,10 +285,10 @@ export function createQuestionSelection({
       const answers=JSON.parse(answerText);if((!Array.isArray(answers))||(answers.length
         !==batch.selected
         .length))throw new QuestionSelectionError('Answer membership differs from the issued question batch');
-      values=answers.map((
+      values=answers.map(function validateOriginalAnswer(
         answer,
         index
-      )=>{
+      ) {
         if((!object(answer))||Array.isArray(answer)
           ||(answer.id!==(`q${
             index}`)))throw new QuestionSelectionError('Answer identity differs from the issued question');
@@ -314,7 +314,7 @@ export function createQuestionSelection({
         throw new QuestionSelectionError('Answer is neither a bounded estimate nor an explicit unresolved result');
       });
     }catch(error){failure=error;values=batch.selected
-      .map(()=>Object.freeze({status:'malformed'}));}
+      .map(function createMalformedAnswer() { return (Object.freeze({status:'malformed'})); });}
     budget.checkpoint();
     for(const [index,claim] of batch.selected
       .entries()){claim.answer=values[index];if((failure===undefined)&&(model!==undefined))claim.model=model;}
@@ -330,7 +330,7 @@ export function createQuestionSelection({
     });return batch.record;
     } catch(error) {
       const values=batch.selected
-        .map(()=>Object.freeze({status:'discarded'}));
+        .map(function createDiscardedAnswer() { return (Object.freeze({status:'discarded'})); });
       for(const [index,claim] of batch.selected
         .entries())claim.answer=values[index];
       batch.settled=true;batch.record=Object.freeze({
@@ -345,12 +345,12 @@ export function createQuestionSelection({
       throw error;
     }
   });}
-  function answerFor(handle){return atomic(()=>{const claim=knownClaim(handle);current(claim);budget.checkpoint();return Object.freeze({
+  function answerFor(handle){return atomic(function inspectCurrentClaim() {const claim=knownClaim(handle);current(claim);budget.checkpoint();return Object.freeze({
     issued:claim.issued,
     answer:claim.answer,
     semanticQualification:'not-established'
   });});}
-  function resultFor(handle){return atomic(()=>{const batch=knownBatch(handle);if(!batch.settled)throw new QuestionSelectionError('Question batch has no terminal response');for(const claim of batch.selected)current(claim);budget.checkpoint();return batch.record;});}
+  function resultFor(handle){return atomic(function readCurrentBatchRecord() {const batch=knownBatch(handle);if(!batch.settled)throw new QuestionSelectionError('Question batch has no terminal response');for(const claim of batch.selected)current(claim);budget.checkpoint();return batch.record;});}
   /** Build only from validated owner-local immutable records; callers still own publication currentness. */
   function canonicalEvidence(claim){
     if(!claim.evidence)claim.evidence=Object.freeze({
@@ -368,26 +368,26 @@ export function createQuestionSelection({
     return claim.evidence;
   }
   /** Authenticate and check terminal phase only, never dependency eligibility. */
-  function assertCapturableBatch(handle){return retainedOperation(()=>{
+  function assertCapturableBatch(handle){return retainedOperation(function assertCompleteRelationBatch() {
     const batch=knownBatch(handle);
     if((!batch.settled)
       ||batch.selected
-      .some(claim=>(!claim.issued)||(![
+      .some(function lacksUsableClaimAnswer(claim) { return ((!claim.issued)||(![
         'estimate',
         'unresolved'
       ].includes(claim.answer
-        ?.status))))throw new QuestionSelectionError('Original batch has no complete usable relation evidence');
+        ?.status))); }))throw new QuestionSelectionError('Original batch has no complete usable relation evidence');
   });}
   /** Capture every claim from the exact internally issued batch, with no borrowed claim arrays. */
-  function captureBatchEvidence(handle){return atomic(()=>{
+  function captureBatchEvidence(handle){return atomic(function retainCompleteRelationEvidence() {
     const batch=knownBatch(handle);
     if((!batch.settled)
       ||batch.selected
-      .some(claim=>(!claim.issued)||(![
+      .some(function lacksRetainedClaimAnswer(claim) { return ((!claim.issued)||(![
         'estimate',
         'unresolved'
       ].includes(claim.answer
-        ?.status))))throw new QuestionSelectionError('Original batch has no complete usable relation evidence');
+        ?.status))); }))throw new QuestionSelectionError('Original batch has no complete usable relation evidence');
     for(const claim of batch.selected)current(claim);
     budget.checkpoint();
     if(!batch.evidence){batch.evidence=Object.freeze(batch.selected
@@ -398,12 +398,12 @@ export function createQuestionSelection({
     budget.checkpoint();return batch.evidence;
   });}
   /** Canonical batch identity only; original judgment must separately check dependencies. */
-  function assertCapturedBatchIdentity(evidence){return retainedOperation(()=>{
+  function assertCapturedBatchIdentity(evidence){return retainedOperation(function assertOriginalBatchEvidence() {
     const batch=object(evidence)?batchByEvidence.get(evidence):undefined;
     if((!batch)||(batch.evidence!==evidence))throw new QuestionSelectionError('Relation evidence is not an original captured batch from this judgment');
   });}
   /** Capture the original settled relation before evidence closure; no truth or permission is inferred. */
-  function captureEvidence(handle){return atomic(()=>{
+  function captureEvidence(handle){return atomic(function retainOriginalClaimEvidence() {
     const claim=knownClaim(handle);current(claim);
     if((!claim.issued)||(![
       'estimate',
@@ -417,7 +417,7 @@ export function createQuestionSelection({
   function assertCapturedIdentity({
     claim:handle,
     evidence
-  }){return retainedOperation(()=>{
+  }){return retainedOperation(function assertOriginalClaimEvidence() {
     const claim=knownClaim(handle);
     if((!claim.evidence)||(claim.evidence!==evidence))throw new QuestionSelectionError('Relation evidence is not the canonical record for this original claim');
   });}
@@ -425,8 +425,8 @@ export function createQuestionSelection({
   function discard({
     batch:handle,
     error
-  }){return retainedOperation(()=>{const batch=knownBatch(handle);if(batch.settled)throw new QuestionSelectionError('Question batch already has a terminal response');const values=batch.selected
-    .map(()=>Object.freeze({status:'discarded'}));for(const [index,claim] of batch.selected
+  }){return retainedOperation(function discardOriginalQuestionBatch() {const batch=knownBatch(handle);if(batch.settled)throw new QuestionSelectionError('Question batch already has a terminal response');const values=batch.selected
+    .map(function createDiscardedClaimAnswer() { return (Object.freeze({status:'discarded'})); });for(const [index,claim] of batch.selected
       .entries())claim.answer=values[index];batch.settled=true;batch.record=Object.freeze({
     answers:Object.freeze(values),
     raw:undefined,
@@ -437,13 +437,13 @@ export function createQuestionSelection({
     instructionAuthority:'not-established'
   });return batch.record;});}
   /** Diagnostic retention does not revalidate sources, the deadline, or permission. */
-  function inspectClaim(handle){return retainedOperation(()=>{const claim=knownClaim(handle);return Object.freeze({
+  function inspectClaim(handle){return retainedOperation(function inspectHistoricalClaim() {const claim=knownClaim(handle);return Object.freeze({
     retainedOnly:true,
     issued:claim.issued,
     answer:claim.answer
   });});}
   /** Retained late/stale records never become usable evidence through this inspection path. */
-  function inspectBatch(handle){return retainedOperation(()=>{const batch=knownBatch(handle);return Object.freeze({
+  function inspectBatch(handle){return retainedOperation(function inspectHistoricalBatch() {const batch=knownBatch(handle);return Object.freeze({
     retainedOnly:true,
     settled:batch.settled,
     record:batch.record

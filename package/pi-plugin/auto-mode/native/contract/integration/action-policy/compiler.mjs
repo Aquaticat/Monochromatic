@@ -26,7 +26,7 @@ function compilation({
    ...issues,
    ...sourceUses.issues
  ];
- const missingPremises=Object.freeze([...new Set(issues.map(issue=>issue.premise))]);
+ const missingPremises=Object.freeze([...new Set(issues.map(function readIssuePremise(issue) { return (issue.premise); }))]);
  const program=Object.freeze({
    premises:missingPremises.length > 0?'incomplete':'complete',
    rules:Object.freeze(rules),
@@ -111,9 +111,9 @@ export function compileBoundClauseProgram({
    'sequential'
  ].includes(groupExecutionMode)
    &&inputs.effects
-   .every(effect=>effect.prepared
+   .every(function matchesGroupExecutionMode(effect) { return (effect.prepared
      .groupExecutionMode
-     ===groupExecutionMode);
+     ===groupExecutionMode); });
  const singleLegacy=(inputs.effects
    .length
    ===1)&&(groupExecutionMode===undefined);
@@ -124,16 +124,16 @@ export function compileBoundClauseProgram({
      >0)
    &&(scheduled||singleLegacy)
    &&inputs.effects
-   .every(effect=>(effect.owner===undefined)&&(effect.programInspection
+   .every(function matchesUnownedProgramProfile(effect) { return ((effect.owner===undefined)&&(effect.programInspection
      ?.declaration
      .profile
-     ===policy.programProfile))
+     ===policy.programProfile)); })
   ?Object.freeze({
     preparedOperations:inputs.effects,
     groupExecutionMode
   }):undefined;
  const issues=clauseEnabled?base.issues
-   .filter(issue=>(issue.premise!=='qualified-rule-interpretation')&&(!(operation&&(issue.premise==='complete-operation-coverage')))):[...base.issues];
+   .filter(function retainIndependentPremise(issue) { return ((issue.premise!=='qualified-rule-interpretation')&&(!(operation&&(issue.premise==='complete-operation-coverage')))); }):[...base.issues];
  function unresolvedOperationUse({
    rule,
    evidence
@@ -148,15 +148,15 @@ export function compileBoundClauseProgram({
   }));
  }
  const sources=new Map(inputs.instructionSources
-   .map(source=>[
+   .map(function indexSourceOccurrence(source) { return ([
      source.sourceOccurrence,
      source
-   ]));
+   ]); }));
  const authorities=new Map(inputs.instructionAuthorities
-   .map(authority=>[
+   .map(function indexAuthorityOccurrence(authority) { return ([
      authority.sourceOccurrence,
      authority
-   ]));
+   ]); }));
  const sourceNeedsAuthority=new Map();
  for(const [index,record] of clauseEvidence.entries()){
   if((record.definitionId!==policy.definitionId)||(record.definition
@@ -304,8 +304,8 @@ export function compileBoundClauseProgram({
  for(const issue of base.issues){
   if((!clauseEnabled)||(issue.premise!=='qualified-rule-interpretation'))continue;
   const unclassified=Object.freeze(issue.unclassified
-    .filter(source=>source.unclassified
-      .some(span=>!interpreted.has(span.candidate))));
+    .filter(function hasUninterpretedSpan(source) { return (source.unclassified
+      .some(function isUninterpretedCandidate(span) { return (!interpreted.has(span.candidate)); })); }));
   if((unclassified.length > 0)||(inputs.instructionSources
     .length
     ===0)){
@@ -331,14 +331,14 @@ export function compileBoundClauseProgram({
    candidates:headingCandidates,
    policy:headingPolicy
  }):Object.freeze([]);
- const headingUses=new Map(headingContextInterpretations.map(interpretation=>[
+ const headingUses=new Map(headingContextInterpretations.map(function indexCandidateInterpretation(interpretation) { return ([
    interpretation.candidate,
    interpretation
- ]));
+ ]); }));
  // Policy callbacks cannot publish a program after changing the original inputs or exhausting their budget.
  inputs.assertCurrent();authorizationInputs?.assertCurrent();judgment.assertBatchEvidence(evidence);
  // Only consumed none relationships are tier-independent. This does not close the governing-source inventory.
- const requiredIssues=issues.filter(issue=>{
+ const requiredIssues=issues.filter(function retainUnresolvedAdoptionIssue(issue) {
   if(adopted.adopters
     .has(issue.rule)
     &&[
@@ -353,12 +353,12 @@ export function compileBoundClauseProgram({
   const heading=issue.kind==='source-heading-context'?headingUses.get(issue.candidate):undefined;
   if((heading?.admission==='admitted')&&(heading.relation==='none'))return false;
   if(issue.kind==='source-local-instruction-use')return !issue.candidates
-    .every(candidate=>interpreted.has(candidate));
+    .every(function hasCandidateInterpretation(candidate) { return (interpreted.has(candidate)); });
   return (issue.premise!=='instruction-authority-and-scope')||(!issue.source)
     ||(sourceNeedsAuthority.get(issue.source
       .sourceOccurrence)!==false);
  });
- const headingIssues=requiredIssues.map(issue=>{
+ const headingIssues=requiredIssues.map(function attachHeadingInterpretation(issue) {
   const interpretation=issue.kind==='source-heading-context'?headingUses.get(issue.candidate):undefined;
   return interpretation?Object.freeze({
     ...issue,
@@ -374,9 +374,9 @@ export function compileBoundClauseProgram({
    issues:finalIssues,
    rules,
    authorizationRequirements,
-   clauses:clauses.map(clause=>adopted.updates
+   clauses:clauses.map(function applyAdoptedClauseUpdate(clause) { return (adopted.updates
      .get(clause.rule)
-     ??clause),
+     ??clause); }),
    scope,
    requestMaterialInterpretation,
    headingContextInterpretations,

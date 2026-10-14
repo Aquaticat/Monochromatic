@@ -78,7 +78,7 @@ export function programSessionSource(source){
 /** Bind the existing decoder's declaration to the original prepared member before policy review. */
 export function programJudgmentSource(source){
  const importLine=source.split('\n')
-   .find(line=>line.startsWith('import {declareResultProgram} '));
+   .find(function isResultProgramImport(line) { return (line.startsWith('import {declareResultProgram} ')); });
  assert.ok(
    importLine,
    'Original program decoder import is unavailable'
@@ -232,12 +232,12 @@ export function nativeScriptValueSource({
  return `${[
    'textOf',
    'toScriptValue'
- ].map(name=>{
+ ].map(function prepareNativeValueFunctionEdit(name) {
   const nodes=parsed.program
     .body
-    .filter(node=>(node.type==='FunctionDeclaration')&&(node.id
+    .filter(function isNamedFunctionDeclaration(node) { return ((node.type==='FunctionDeclaration')&&(node.id
       ?.name
-      ===name));
+      ===name)); });
   assert.equal(
     nodes.length,
     1,

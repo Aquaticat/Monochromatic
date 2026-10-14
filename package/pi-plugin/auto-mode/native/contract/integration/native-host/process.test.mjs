@@ -62,7 +62,7 @@ child.stderr
 child.stderr
   .on(
     'data',
-    chunk => diagnostics.push(chunk)
+    function retainChildStderr(chunk) { return ( diagnostics.push(chunk)); }
   );
 
 async function readNativeState() {

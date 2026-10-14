@@ -122,12 +122,12 @@ export function copyToolMetadata(input){return copyBoundedData({
 export function assertTextMessageContent(content){
   if((content!==undefined)&&(content!==null)
     &&((typeof content)!=='string')){
-    if((!Array.isArray(content))||content.some(part=>(!part)
+    if((!Array.isArray(content))||content.some(function isUnsupportedMessagePart(part) { return ((!part)
       ||((typeof part)!=='object')
       ||(part.type!=='text')
       ||((typeof part.text)!=='string')
       ||Object.keys(part)
-      .some(key=>(key!=='type')&&(key!=='text'))))throw new SourceCollectionError('Run message profile supports text content only');
+      .some(function isUnexpectedTextPartField(key) { return ((key!=='type')&&(key!=='text')); })); }))throw new SourceCollectionError('Run message profile supports text content only');
   }
 }
 /** Message paths/types are data; no role, customType or display flag grants authority. */
@@ -152,12 +152,12 @@ export function snapshotRunMessages(messages){
       ||Array.isArray(value)
       ||((typeof value)!=='object')
       ||Reflect.ownKeys(value)
-      .some(key=>![
+      .some(function isUnexpectedCustomMessageField(key) { return (![
       'customType',
       'content',
       'display',
       'details'
-    ].includes(key))
+    ].includes(key)); })
       ||((typeof value.customType)!=='string')
       ||((typeof value.display)!=='boolean'))throw new SourceCollectionError('Run custom message differs from its declared native shape');
     assertTextMessageContent(value.content);

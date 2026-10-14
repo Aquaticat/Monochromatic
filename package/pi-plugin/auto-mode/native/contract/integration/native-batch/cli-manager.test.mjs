@@ -23,10 +23,10 @@ const foreignManager=env.SessionManager
   .inMemory(env.options
     .cwd);
 await assert.rejects(
-  ()=>factory.createFromManager({
+  function constructForeignManagerSession() { return (factory.createFromManager({
     options:env.options,
     manager:foreignManager
-  }),
+  })); },
   /not returned by this declared constructor owner/
 );
 assert.equal(
@@ -64,8 +64,8 @@ assert.equal(
 );
 factory.lifecycle
   .completeRetirement(transition);
-assert.throws(()=>factory.lifecycle
-  .assertActive(oldLease));
+assert.throws(function inspectRetiredLease() { return (factory.lifecycle
+  .assertActive(oldLease)); });
 manager.newSession();
 const second=await factory.createFromManager({
   options:env.options,
@@ -96,11 +96,11 @@ const disconnect=second.session
   ._disconnectFromAgent;
 const disposalFailure=new Error('Fixture disposal has not completed');
 second.session
-  ._disconnectFromAgent=()=>{throw disposalFailure;};
+  ._disconnectFromAgent=function failIncompleteDisposal() {throw disposalFailure;};
 assert.throws(
-  ()=>second.session
-    .dispose(),
-  error=>error===disposalFailure
+  function disposeIncompleteSession() { return (second.session
+    .dispose()); },
+  function matchesDisposalFailure(error) { return (error===disposalFailure); }
 );
 assert.equal(
   env.readSessionDisposalState(second.session)
@@ -108,10 +108,10 @@ assert.equal(
   false
 );
 assert.throws(
-  ()=>attachNativeContextCopies(
+  function attachConflictingObserver() { return (attachNativeContextCopies(
     manager,
-    ()=>{}
-  ),
+    function unusedConflictingObserver() {}
+  )); },
   /already has a context-copy owner/
 );
 second.session
@@ -135,14 +135,14 @@ assert.equal(
   3
 );
 second.session
-  ._disconnectFromAgent=()=>{throw new Error('Completed disposal must not enter old cleanup again');};
-assert.doesNotThrow(()=>second.session
-  .dispose());
+  ._disconnectFromAgent=function rejectRepeatedCleanup() {throw new Error('Completed disposal must not enter old cleanup again');};
+assert.doesNotThrow(function repeatCompletedDisposal() { return (second.session
+  .dispose()); });
 assert.throws(
-  ()=>attachNativeContextCopies(
+  function attachObserverAfterOldDisposal() { return (attachNativeContextCopies(
     manager,
-    ()=>{}
-  ),
+    function unusedReplacementObserver() {}
+  )); },
   /already has a context-copy owner/
 );
 factory.lifecycle

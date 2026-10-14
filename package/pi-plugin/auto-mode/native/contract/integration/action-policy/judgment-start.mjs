@@ -25,7 +25,7 @@ export function registerOriginalJudgmentStart({
     stream
   });
   if(!response.content
-    .some(part=>part.type==='toolCall'))return;
+    .some(function isToolCallPart(part) { return (part.type==='toolCall'); }))return;
   producerOwner.beginJudgment({
     response,
     stream,

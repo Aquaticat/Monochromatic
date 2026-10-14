@@ -37,7 +37,7 @@ export function createExecutionWrappers({
       params,
       signal,
       onUpdate
-    }){return operation(()=>{
+    }){return operation(function bindNativeExecutionContext() {
       const origin=readOrigin(carrier);
       if((origin.prepared
         .id
@@ -81,12 +81,12 @@ export function createExecutionWrappers({
             ...descriptors,
             executeTool:{
               ...descriptors.executeTool,
-              value:async(
+              value:async function executeOriginalNestedGroup(
                 childName,
                 args,
                 options
-              )=>{
-          const input=operation(()=>{
+              ) {
+          const input=operation(function captureNestedInvocationInput() {
             if(record.state!=='running')throw new ExecutionContextOwnershipError('Parent native execution is not active for another nested invocation');
             current(record);
             if((typeof executeNestedGroup)!=='function')throw new NestedGroupSupportError();
@@ -116,7 +116,7 @@ export function createExecutionWrappers({
       onUpdate,
       context
     ){
-      const record=operation(()=>{
+      const record=operation(function beginNativeContextExecution() {
       const currentContext=contexts.get(context);
       if((!currentContext)||(currentContext.receiver!==receiver)
         ||(currentContext.context!==context)
@@ -153,11 +153,11 @@ export function createExecutionWrappers({
     registeredTools,
     runner,
     readOrigin
-  ){return registeredTools.map(tool=>wrapRegisteredTool(
+  ){return registeredTools.map(function wrapOriginalExecutionTool(tool) { return (wrapRegisteredTool(
     tool,
     runner,
     readOrigin
-  ));}
+  )); });}
   return Object.freeze({
     wrapRegisteredTool,
     wrapRegisteredTools

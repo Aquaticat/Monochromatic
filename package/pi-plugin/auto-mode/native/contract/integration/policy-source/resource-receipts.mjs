@@ -10,7 +10,7 @@ export function createResourceReceiptInputs({
  if((!frame)||(!Object.isFrozen(frame))
    ||(!Array.isArray(frame.stages))
    ||(frame.stages
-     .map(stage=>stage.kind)
+     .map(function readResourceStageKind(stage) { return (stage.kind); })
      .join(',')
      !=='context,system,append'))throw new SourceCollectionError('Resource receipts require the original complete native phase sequence');
  const inputs=[];

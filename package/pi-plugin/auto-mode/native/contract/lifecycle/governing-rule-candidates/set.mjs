@@ -12,7 +12,7 @@ export function createGoverningRuleSet({
  if((!Array.isArray(sources))||(!Object.isFrozen(sources))
    ||(sources.length===0)
    ||(sources.length>64))throw new GoverningRuleBindingError('Original governing sources require a bounded immutable source list');
- if(new Set(sources.map(source=>source.occurrence)).size!==sources.length)throw new GoverningRuleBindingError('Original governing source occurrence is repeated');
+ if(new Set(sources.map(function readGoverningSourceOccurrence(source) { return (source.occurrence); })).size!==sources.length)throw new GoverningRuleBindingError('Original governing source occurrence is repeated');
  let failure;
  let retired=false;
  function current(){
@@ -97,15 +97,15 @@ export function createGoverningRuleSet({
  }
  function inspect(){
   current();
-  return Object.freeze(indexes.map((
+  return Object.freeze(indexes.map(function snapshotOriginalSourceIndex(
     index,
     sourceOrdinal
-  )=>Object.freeze({
+  ) { return (Object.freeze({
     ...index.inspect(),
     sourceOrdinal,
     sourceOccurrence:sources[sourceOrdinal]
       .occurrence
-  })));
+  })); }));
  }
  return Object.freeze({
    indexedCandidates,

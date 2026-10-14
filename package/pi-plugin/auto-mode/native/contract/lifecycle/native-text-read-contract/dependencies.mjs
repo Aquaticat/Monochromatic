@@ -22,14 +22,14 @@ export function createDependencyFacade({
   rootDirectory,
   files,
   trace,
-  now = () => performance.now()
+  now = function readDependencyClock() { return ( performance.now()); }
 }) {
   if (((typeof now) !== 'function') || (!Number.isFinite(deadlineAt))) throw new DependencyDeadlineError();
   if (((typeof rootDirectory) !== 'string') || (!isAbsolute(rootDirectory))
     || (!Array.isArray(files))
     || ((typeof trace) !== 'function')) throw new DependencyConfigurationError();
   const handles = new WeakMap();
-  const profile = Object.freeze(files.map(file => {
+  const profile = Object.freeze(files.map(function validateDeclaredFileInput(file)  {
     const maxBytes = file.maxBytes ?? 65_536;
     if (((typeof file.relativePath) !== 'string') || (!Number.isInteger(file.requiredMode))
       || (file.requiredMode < 0)
@@ -80,11 +80,11 @@ export function createDependencyFacade({
     const sources = collector.capture({ signal });
     trace('prepare.collector.return');
     checkpoint(signal);
-    const observed = profile.map(file => observe({
+    const observed = profile.map(function observePreparedFile(file) { return ( observe({
       stage: 'prepare',
       file,
       signal
-    }));
+    })); });
     checkpoint(signal);
     const handle = Object.freeze({});
     handles.set(
@@ -162,10 +162,10 @@ export function createDependencyFacade({
     const prepared = handles.get(handle);
     if (!prepared) throw new DependencyHandleOwnershipError();
     checkpoint(prepared.signal);
-    const index = profile.findIndex(file => join(
+    const index = profile.findIndex(function matchesDeclaredAbsolutePath(file) { return ( join(
       rootDirectory,
       file.relativePath
-    ) === absolutePath);
+    ) === absolutePath); });
     if (index === (-1)) return Object.freeze({ kind: 'undeclared-file' });
     const file = profile[index];
     const observation = prepared.observed[index];

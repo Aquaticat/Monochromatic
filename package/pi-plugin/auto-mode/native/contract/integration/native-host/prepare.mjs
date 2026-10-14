@@ -33,17 +33,17 @@ function rebase({
 }) {
   return source.replaceAll(
     /(from |import\()(["'])(\.[^"']+)\2/gu,
-    (
+    function resolveNativeRelativeSpecifier(
       _match,
       prefix,
       quote,
       specifier
-    ) => prefix + quote
+    ) { return ( prefix + quote
       + new URL(
         specifier,
         original
       ).href
-      + quote
+      + quote); }
   );
 }
 

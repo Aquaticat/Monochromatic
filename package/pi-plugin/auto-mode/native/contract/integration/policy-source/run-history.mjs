@@ -46,7 +46,7 @@ export function bindRetainedRunSources({governing}){
    .sources
    ??request.sources;
  governing.assertCurrent(governing.view);
- return (snapshot.retainedRunInputs??[]).map(origin=>{
+ return (snapshot.retainedRunInputs??[]).map(function bindOriginalRetainedRun(origin) {
   const {
     source,
     publication

@@ -87,7 +87,7 @@ export function bindRuleAssessmentWire(request){
      target
    ]){
     const source=sources[unit.sourceOrdinal];
-    if((!source)||(unit.sourceSHA256!==source.sha256)||(!Number.isSafeInteger(unit.start))||(!Number.isSafeInteger(unit.end))||(unit.start<0)||(unit.end<=unit.start)||(unit.end>source.content.length)||(source.content.slice(unit.start,unit.end)!==unit.text)||(sha(unit.text)!==unit.textSHA256)||(!Array.isArray(unit.headings))||(!unit.headings.every(heading=>typeof heading==='string')))throw new RuleAssessmentWireError('Adoption unit differs from its original source span');
+    if((!source)||(unit.sourceSHA256!==source.sha256)||(!Number.isSafeInteger(unit.start))||(!Number.isSafeInteger(unit.end))||(unit.start<0)||(unit.end<=unit.start)||(unit.end>source.content.length)||(source.content.slice(unit.start,unit.end)!==unit.text)||(sha(unit.text)!==unit.textSHA256)||(!Array.isArray(unit.headings))||(!unit.headings.every(function isHeadingText(heading) { return (typeof heading==='string'); })))throw new RuleAssessmentWireError('Adoption unit differs from its original source span');
    }
    const key=head.definitionId+':'
      +adopter.sourceOrdinal
@@ -103,7 +103,7 @@ export function bindRuleAssessmentWire(request){
    questions[slot]={
      type:definition.type,
      instructions:{predicate:'Use unitAdoptionDefinition in shared state for the complete adopter and exact quoted target. Authority and scope eligibility are code-owned.',memberOrdinal:binding.memberOrdinal,selectedAdopter:project(adopter),selectedTarget:project(target)},
-     criteria:Object.fromEntries(Object.keys(definition.criteria).map(label=>[label,null]))
+     criteria:Object.fromEntries(Object.keys(definition.criteria).map(function initializeAdoptionChoice(label) { return ([label,null]); }))
    };
    pairs.push({
      slot,
@@ -120,7 +120,7 @@ export function bindRuleAssessmentWire(request){
    questions[slot]={
      type:definition.type,
      instructions:{predicate:'Use requestInstructionDefinition in shared state to assess the complete exact originalRequestBody for this proposal; this is not source authority or governing completeness.',selectedMaterial:'originalRequestBody'},
-     criteria:Object.fromEntries(Object.keys(definition.criteria).map(label=>[label,null]))
+     criteria:Object.fromEntries(Object.keys(definition.criteria).map(function initializeRequestChoice(label) { return ([label,null]); }))
    };
    pairs.push({
      slot,
@@ -146,7 +146,7 @@ export function bindRuleAssessmentWire(request){
    questions[slot]={
      type:definition.type,
      instructions:{predicate:'Use headingInstructionDefinition in shared state for the complete selected source-local heading group; this is not directive lowering or global coverage.',selectedHeadingContext:{sourceOrdinal:ordinal,headings:group.headings}},
-     criteria:Object.fromEntries(Object.keys(definition.criteria).map(label=>[label,null]))
+     criteria:Object.fromEntries(Object.keys(definition.criteria).map(function initializeHeadingChoice(label) { return ([label,null]); }))
    };
    pairs.push({
      slot,
@@ -162,7 +162,7 @@ export function bindRuleAssessmentWire(request){
   const source=sources[ordinal];
   const unclassified=rule.kind==='unclassified-source-span';
   if(unclassified?((rule.code!==undefined)||(head.definitionId!=='clause_operation_relation')||(typeof rule.nodeType)!=='string'||(!rule.nodeType)):((typeof rule.code)!=='string'||(!/^[A-Z0-9]{3}$/.test(rule.code))))throw new RuleAssessmentWireError('Selected instruction candidate has no supported original classification');
-  if((rule.sourceSHA256!==source.sha256)||(!Number.isSafeInteger(rule.start))||(!Number.isSafeInteger(rule.end))||(rule.start<0)||(rule.end<=rule.start)||(rule.end>source.content.length)||(source.content.slice(rule.start,rule.end)!==rule.text)||(sha(rule.text)!==rule.textSHA256)||(!Array.isArray(rule.headings))||(!rule.headings.every(value=>typeof value==='string')))throw new RuleAssessmentWireError('Selected clause differs from its complete source');
+  if((rule.sourceSHA256!==source.sha256)||(!Number.isSafeInteger(rule.start))||(!Number.isSafeInteger(rule.end))||(rule.start<0)||(rule.end<=rule.start)||(rule.end>source.content.length)||(source.content.slice(rule.start,rule.end)!==rule.text)||(sha(rule.text)!==rule.textSHA256)||(!Array.isArray(rule.headings))||(!rule.headings.every(function isRuleHeadingText(value) { return (typeof value==='string'); })))throw new RuleAssessmentWireError('Selected clause differs from its complete source');
   const candidateKey=ordinal+':'
     +(unclassified?'span:'+rule.start+':'+rule.end:'code:'+rule.code);
   const key=head.definitionId+':'
@@ -195,7 +195,7 @@ export function bindRuleAssessmentWire(request){
   questions[slot]={
     type:definition.type,
     instructions,
-    criteria:categorical?Object.fromEntries(Object.keys(definition.criteria).map(label=>[label,null])):definition.criteria
+    criteria:categorical?Object.fromEntries(Object.keys(definition.criteria).map(function initializeClauseChoice(label) { return ([label,null]); })):definition.criteria
   };
   pairs.push({
     slot,
@@ -207,7 +207,7 @@ export function bindRuleAssessmentWire(request){
    fullPolicy:sources[0].content,
    policySourceSHA256:sources[0].sha256,
    policyInputLocation:sourceInputLocation(sources[0]).inputLocation,
-   additionalPolicies:sources.slice(1).map((source,index)=>({sourceOrdinal:index+1,content:source.content,sourceSHA256:source.sha256,...sourceInputLocation(source)})),
+   additionalPolicies:sources.slice(1).map(function describeAdditionalPolicy(source,index) { return (({sourceOrdinal:index+1,content:source.content,sourceSHA256:source.sha256,...sourceInputLocation(source)})); }),
    parentProgram:envelope.parentJSON,
    preparedProgram:envelope.preparedJSON,
    originalRequestBody:envelope.requestBody,
@@ -234,19 +234,19 @@ export function bindRuleAssessmentWire(request){
     raw,
     plan:{model,questions}
   });
-  return JSON.stringify(pairs.map(({
+  return JSON.stringify(pairs.map(function projectOriginalAnswer({
     slot,
     id,
     type
-  })=>({
+  }) { return (({
     id,
     status:'estimate',
     value:type==='choice'?parsed.choices[slot]:parsed.scalars[slot]
-  })));
+  })); }));
  }
  return Object.freeze({
    body,
-   originalQuestionIDs:Object.freeze(pairs.map(pair=>pair.id)),
+   originalQuestionIDs:Object.freeze(pairs.map(function readOriginalQuestionId(pair) { return (pair.id); })),
    answerText
  });
 }

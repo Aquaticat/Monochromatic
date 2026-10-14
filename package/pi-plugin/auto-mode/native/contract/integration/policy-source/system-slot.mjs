@@ -141,7 +141,7 @@ function createPolicyLoader({
  let retainedResourceReceipts=Object.freeze([]);
  const contextEmitter=systemSlot?undefined:createGoverningContextEmitter({
    callback:options.agentsFilesOverride,
-   readSource:()=>owner.captureGoverningPolicy(loader)
+   readSource:function captureDesignatedPolicy() { return (owner.captureGoverningPolicy(loader)); }
  });
  function systemPromptOverride(previous){
   const source=owner.captureGoverningPolicy(loader);
@@ -177,7 +177,7 @@ function createPolicyLoader({
    if(hostPrompt){
     const system=binding.frame
       .stages
-      .find(stage=>stage.kind==='system');
+      .find(function isCapturedSystemStage(stage) { return (stage.kind==='system'); });
     if((system?.before!==hostPrompt.content)||(system?.after!==hostPrompt.content))throw new PolicySlotBindingError('Native custom prompt does not retain the explicitly registered host text');
    }
   }catch(error){failure={cause:error};throw error;}
@@ -193,14 +193,14 @@ function createPolicyLoader({
   if(systemSlot){
    if((!emission)||(owner.captureGoverningPolicy(loader)!==emission.source))throw new PolicySlotBindingError('System input did not retain its selected policy capture');
    const system=frame.stages
-     .find(value=>value.kind==='system');
+     .find(function isReloadedSystemStage(value) { return (value.kind==='system'); });
    if(system?.after
      !==emission.source
      .content)throw new PolicySlotBindingError('Published system input differs from the owner-captured policy');
   }
   const source=systemSlot?emission.source:owner.captureGoverningPolicy(loader);
   const system=frame.stages
-    .find(value=>value.kind==='system');
+    .find(function isResourceSystemStage(value) { return (value.kind==='system'); });
   const resourceSystemInput=systemSlot||hostPrompt
     ||system.after===undefined?undefined:Object.freeze({
     kind:'native-resource-system-input',
@@ -217,28 +217,28 @@ function createPolicyLoader({
     source
   });
   const contextCarriers=contextPublication?.carriers??Object.freeze([]);
-  const carrierByOrdinal=new Map(contextCarriers.map(carrier=>[
+  const carrierByOrdinal=new Map(contextCarriers.map(function indexContextCarrier(carrier) { return ([
     carrier.ordinal,
     carrier
-  ]));
+  ]); }));
   const context=frame.stages
-    .find(value=>value.kind==='context'),append=frame.stages
-    .find(value=>value.kind==='append');
+    .find(function isResourceContextStage(value) { return (value.kind==='context'); }),append=frame.stages
+    .find(function isResourceAppendStage(value) { return (value.kind==='append'); });
   const singleCarrier=systemSlot&&context?.after.agentsFiles.length===0
     &&append?.after.length===0;
   const appendInputs=Object.freeze(append.after
-    .map((content,ordinal)=>Object.freeze({
+    .map(function captureResourceAppendInput(content,ordinal) { return (Object.freeze({
    kind:'native-resource-append-input',content,ordinal,
    sha256:createHash('sha256').update(content).digest('hex'),occurrence:Object.freeze({}),
    registration:undefined,pathToRawFileIdentity:'not-established'
-  })));
+  })); }));
   const contextInputs=Object.freeze(context.after
     .agentsFiles
-    .map((entry,ordinal)=>Object.freeze({
+    .map(function captureResourceContextInput(entry,ordinal) { return (Object.freeze({
    kind:'native-resource-context-input',content:entry.content,path:entry.path,ordinal,entry,carrier:carrierByOrdinal.get(ordinal),
    sha256:createHash('sha256').update(entry.content).digest('hex'),occurrence:Object.freeze({}),
    registration:undefined,pathToRawFileIdentity:'not-established'
-  })));
+  })); }));
   retainedResourceReceipts=retainResourceReceiptInputs({
     previous:retainedResourceReceipts,
     current:createResourceReceiptInputs({frame,priorContext:contextPublication?.prior})
@@ -282,7 +282,7 @@ function createPolicyLoader({
     bytes:0
   };
   const receiptBytes=retainedResourceReceipts.reduce(
-    (bytes,source)=>bytes+Buffer.byteLength(JSON.stringify(source)),
+    function sumReceiptInputBytes(bytes,source) { return (bytes+Buffer.byteLength(JSON.stringify(source))); },
     0
   );
   assertOriginalInputBudget({
@@ -317,7 +317,7 @@ function createPolicyLoader({
    assertCurrent(input);assertInputBudget(session);
    if(original.resourceInputObservation!==input.frame)throw new PolicySlotBindingError('Native collector belongs to another policy input resource frame');
    const independentContext=input.contextInputs
-     .filter(source=>source.carrier===undefined);
+     .filter(function lacksContextCarrier(source) { return (source.carrier===undefined); });
    const forcedPromptInput=original.nativeRunComposition
      ?.forcedPromptInput;
    const promptGuidelineInputs=original.nativeRunComposition
@@ -349,7 +349,7 @@ function createPolicyLoader({
      represented:runMessageInputs
    });
    const governingSources=Object.freeze([
-     ...(retainedRunInputs??[]).map(origin=>origin.source),
+     ...(retainedRunInputs??[]).map(function readHistoricalRunSource(origin) { return (origin.source); }),
      input.source,
      ...input.resourceReceiptInputs,
      ...(hostPrompt?[hostPrompt]:[]),
@@ -364,7 +364,7 @@ function createPolicyLoader({
      ...(skillDescriptionInputs??[]),
      ...runMessageInputs,
      ...(builtInPromptInputs??[]),
-     ...(nativeResourceToolInputs??[]).map(origin=>origin.source)
+     ...(nativeResourceToolInputs??[]).map(function readResourceToolSource(origin) { return (origin.source); })
    ]);
    const snapshot=Object.freeze({
      ...original,

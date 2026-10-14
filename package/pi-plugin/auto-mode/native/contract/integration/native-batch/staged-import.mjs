@@ -59,7 +59,7 @@ export function replaceStagedImport({
  const prefix=`import {${binding
    }} from `;
  const lines=source.split('\n')
-   .filter(line=>line.startsWith(prefix));
+   .filter(function matchesStagedImportPrefix(line) { return (line.startsWith(prefix)); });
  if((lines.length!==1)||(!lines[0]
    .endsWith(';')))throw new StagedImportError(`Expected one generated import for ${binding}`);
  const [line]=lines;
