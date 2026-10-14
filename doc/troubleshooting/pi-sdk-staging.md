@@ -7042,3 +7042,118 @@ The source checkout remains a build input only.
   an upstream patch is neither needed nor proposed.
 
 There is nothing to file upstream from this owned build recovery.
+
+## Pi 1.2.0 progress delivery invalidates the migration's frozen source snapshot
+
+### Symptom
+
+The maintained `test:native:progress-events` fixture approves a complete Codemode operation,
+then enters no child tool.
+One `tool_execution_update` callback returns no value and leaves its event unchanged.
+The migration emits `PolicySlotBindingError: Native extension event callbacks changed after source capture`.
+The ordinary trace has a pending callback;
+a diagnostic that awaits it reaches the same error after the callback completes.
+
+### Root cause
+
+Upstream source tag `v1.2.0`,
+commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`,
+constructs its progress callback in `packages/coding-agent/src/extensions/codemode/execute.ts:460`:
+
+```ts
+// packages/coding-agent/src/extensions/codemode/execute.ts
+const publish = () => onUpdate?.({ content: [], details: snapshot() });
+publish();
+```
+
+The migration's native group boundary returns asynchronous event delivery in
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/boundary.ts:38`:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-batch/boundary.ts
+onUpdate:async (partial,call) => emit({
+  type:"tool_execution_update",toolCallId:call.id,
+  toolName:call.name,args:call.arguments,partialResult:partial
+})
+```
+
+The migration's observer changes its publication when an emission begins and completes.
+The update helper in `package/pi-plugin/auto-mode/native/contract/integration/native-batch/event-observer.ts:112`
+invalidates the original cached object:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-batch/event-observer.ts
+state.revision++;
+delete state.view;
+```
+
+The source collector rejects any later publication in
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/system-slot.mjs:418`:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/policy-source/system-slot.mjs
+if(nativeDomain?.observation!==snapshot.nativeDomainEventObservation)
+  throw new PolicySlotBindingError(
+    `Native extension event callbacks changed after source capture: ${JSON.stringify({
+      before:snapshot.nativeDomainEventObservation,after:nativeDomain?.observation
+    })}`
+  );
+```
+
+The initial progress delivery therefore changes the judgment's source observation.
+Its complete input and settled input remain retained by the native manager.
+This is a consumer integration failure;
+the source trace alone does not establish an upstream defect.
+
+### Verification
+
+The normal permission consumer without a progress callback passes with three child executions.
+The maintained reduced callback fixture fails with one authored assessment,
+one callback invocation,
+and zero child executions:
+
+```sh
+# Repository root
+mise run //package/pi-plugin/auto-mode:build:native:owned
+mise run //package/pi-plugin/auto-mode:test:native:progress-events
+```
+
+The ordinary failure moves the native observation from revision zero,
+pending zero,
+to revision one,
+pending one.
+A private Node load hook changed only the first `publish()` to `await publish()` in memory.
+Its application assertion confirmed the selected callsite.
+That run moved to revision two,
+pending zero,
+and still produced zero child executions with the same source-identity diagnostic.
+Neither diagnostic used external provider inference or changed an artifact file.
+
+The first diagnostic-loader attempt failed before the callback because it expected Node's module source to be text.
+Installed Node `ModuleSource` also permits bytes.
+Decoding that representation allowed the intended await contrast to run;
+the failed loader attempt is not evidence about event settlement.
+
+### Workarounds and rejected approaches
+
+No production workaround is established.
+Waiting for callback completion alone does not preserve the selected source identity.
+Removing the callback would alter the user's configured extension behavior.
+Ignoring source changes without an adopted timing rule would silently change the governing-domain contract.
+The concrete timing proposal is in
+`doc/planning/pi-auto-mode-governing-domain-closure.md`.
+
+### Upstream filing decision
+
+- The failing source-identity guard belongs to this migration.
+- Upstream could change progress scheduling,
+  but the measured await contrast does not solve this consumer failure.
+- Native extension progress delivery is present;
+  no upstream promise about this migration's frozen snapshots is established.
+- No external contribution is proposed,
+  so contribution-policy research is unnecessary.
+- No maintainer disposition is inferred.
+- No upstream fix is claimed or proposed;
+  the remaining receipt-timing choice belongs to the consumer.
+
+There is nothing to file upstream from this diagnosis.

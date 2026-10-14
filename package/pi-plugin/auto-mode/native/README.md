@@ -172,6 +172,25 @@ capture,
 error-propagation,
 and inherited bound checks have passing original controls and failing disposable omissions.
 Other unobserved native events remain explicit source-domain gaps.
+`test:native:event-receipts` exercises the original generic,
+boundary,
+message,
+tool result,
+tool call,
+and user Bash dispatch methods.
+It retains complete callback inputs,
+defined results,
+and settled mutations in bounded source chunks.
+Native error identity,
+overlapping callbacks,
+empty dispatch,
+capture failure,
+and the existing source bounds are covered.
+`test:native:progress-events` currently reproduces a delivery blocker:
+an unchanged progress callback invalidates the approved program's source snapshot before any child executes.
+Awaiting its completion alone does not fix that failure.
+The receipt-timing proposal and measured contrasts are recorded in
+`doc/planning/pi-auto-mode-governing-domain-closure.md` and `doc/troubleshooting/pi-sdk-staging.md`.
 Complete lint verification,
 installed host activation,
 and genuine human approval remain outstanding.
