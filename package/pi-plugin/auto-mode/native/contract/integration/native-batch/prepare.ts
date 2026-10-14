@@ -155,8 +155,17 @@ await prepareAgent({
   entry,
   imports
 });
-await prepareSession({output,entry,imports,providerPath,openaiRoot});
-await prepareProgram({output,imports});
+await prepareSession({
+  output,
+  entry,
+  imports,
+  providerPath,
+  openaiRoot
+});
+await prepareProgram({
+  output,
+  imports
+});
 await copyFile(
   join(
     import.meta.dirname,

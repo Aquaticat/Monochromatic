@@ -3,19 +3,37 @@
 
  @module
  */
-import {readFile,writeFile} from 'node:fs/promises';
+import {
+  readFile,
+  writeFile
+} from 'node:fs/promises';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
-import {sdk,ai} from '../current-sdk/paths.ts';
+import {
+  sdk,
+  ai
+} from '../current-sdk/paths.ts';
 import {sessionStateSource} from './agent-state-source.ts';
 import {sessionToolDescriptionSource} from './tool-description-source.ts';
-import {managerSource,sessionSource} from './root-source.ts';
-import {promptSessionSource,promptEmitterSource} from './prompt-source.ts';
+import {
+  managerSource,
+  sessionSource
+} from './root-source.ts';
+import {
+  promptSessionSource,
+  promptEmitterSource
+} from './prompt-source.ts';
 import {promptBuilderSource} from './builder-source.ts';
-import {handlerMessageSource,handlerProviderSource} from './message-source.ts';
+import {
+  handlerMessageSource,
+  handlerProviderSource
+} from './message-source.ts';
 import {programSessionSource} from './program-source.ts';
-import {helperUrl,replaceOnce} from './build-rebase.ts';
+import {
+  helperUrl,
+  replaceOnce
+} from './build-rebase.ts';
 import type {NativePreparationInput} from './prepare-types.ts';
 
 //region Native Session and serializer preparation preserves original module and input identities
@@ -45,11 +63,23 @@ const l=tagged({tag:'auto-mode-native-prepare-session'});
  await prepareSession({output,entry,imports,providerPath,openaiRoot});
  ```
  */
-export async function prepareSession({output,entry,imports,providerPath,openaiRoot}: NativePreparationInput & {readonly providerPath:string;readonly openaiRoot:string}): Promise<void> {
+export async function prepareSession({
+  output,
+  entry,
+  imports,
+  providerPath,
+  openaiRoot
+}: NativePreparationInput & {
+  readonly providerPath:string;
+  readonly openaiRoot:string
+}): Promise<void> {
  /**
   This original native preparation phase retains its own diagnostic boundary.
   */
- const rl=tagged({tag:prepareSession.name,l});
+ const rl=tagged({
+   tag:prepareSession.name,
+   l
+ });
  rl.debug('preparing original native Session and serializer modules');
 /**
  Original SessionManager source retains native history and root ownership.
@@ -160,7 +190,7 @@ const sessionCore=imports({
 /**
  Generated Session imports connect the existing manager, input, and prompt ownership modules.
  */
-const session=`import {assertNativeAgentStateAssignment} from "./agent.mjs";\n`+`import {attachNativeContextCopies,readRootOccurrence,readNativeSessionInputOrigin,assertNativeSessionInputCapture,readNativeConstructedInputOrigins,readNativeSessionInputUsage,captureNativeQueuedInput,captureNativeCustomMessageInput,captureNativeInputEvent,observeNativeUninterceptedInput,observeNativeTransformedInput,captureNativeCommandInput,captureNativeCallInput,createNativeHandlerResultObserver} from "./session-manager.mjs";\n`
+const session=`import {assertNativeAgentStateAssignment} from "./agent.mjs";\nimport {attachNativeContextCopies,readRootOccurrence,readNativeSessionInputOrigin,assertNativeSessionInputCapture,readNativeConstructedInputOrigins,readNativeSessionInputUsage,captureNativeQueuedInput,captureNativeCustomMessageInput,captureNativeInputEvent,observeNativeUninterceptedInput,observeNativeTransformedInput,captureNativeCommandInput,captureNativeCallInput,createNativeHandlerResultObserver} from "./session-manager.mjs";\n`
   +`import {createBaseCompositionOwner} from ${helperUrl("../../collector/rule-relevance-sdk-copy/input/base-owner.mjs")};\n`
   +`import {createRunPromptOwner} from ${helperUrl('../../collector/run-prompt-custody-v3/owner.mjs')};\n`
   +`import {copyPromptOptions} from ${helperUrl('../../collector/base-prompt-custody-v2/copy.mjs')};\n`
