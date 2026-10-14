@@ -78,8 +78,9 @@ The project's drag harness measured the build with the new debug lines against t
 (sha1 `9c60b963`), four sessions each per file in the 16 ms drag, the installed 0.4.0 compositor, no dropped frame,
 one-minute load 4.7 to 8.2 at the start:
 frames that did not fit were 76 to 77 against 75 to 77 on `code50k.txt` and 76 to 77 against 73 to 77 on
-`long2000.txt` (new build against earlier build), the longest gap 17.0 to 17.7 ms in all sessions but one pair (33.3 ms in the fourth `long2000.txt`
-session of both builds).
+`long2000.txt` (new build against earlier build),
+the longest gap 17.0 to 17.7 ms in all sessions but one pair
+(33.3 ms in the fourth `long2000.txt` session of both builds).
 The logging changes no measured number.
 
 ## What the application contributes
