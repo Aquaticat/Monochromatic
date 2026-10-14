@@ -16,8 +16,11 @@ Both supplied resources passed synthetic access checks with exact returned model
 Microsoft returned the expected label at 0.998989 in 1,805.284 ms;
 Luna returned it at 0.99 in 991.616 ms.
 Automatic approval review blocked the complete private assessment requests before execution,
-and the explicit permission question is pending.
-The already authorized Liquid shared-content probe and Jev row-envelope correction continue independently.
+then the user explicitly authorized both prepared complete-input probes.
+Each runs once with the original frozen input and a five-second deadline,
+reusing the successful synthetic control.
+The corrected Jev row encoder independently passes envelope and exact-reconstruction checks;
+its 117,254-byte complete candidate has a separate one-call capacity plan.
 No provider replacement or admission-policy change is adopted.
 
 ## SubQ authorization and compatibility check

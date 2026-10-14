@@ -327,6 +327,11 @@ Preserve each question's envelope and encode only its instruction payload;
 preflight the unchanged type and criteria against the original request.
 No token-fit conclusion follows from that rejected row request.
 
+The corrected offline prototype rejects that captured malformed input,
+then proves unchanged outer question fields and exact original reconstruction for every corrected candidate.
+The combined representation is 117,254 bytes with 87,989 state bytes.
+Its frozen one-call provider check remains separate from these offline proofs.
+
 ## Source identity
 
 Repository:

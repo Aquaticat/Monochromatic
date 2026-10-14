@@ -62,8 +62,10 @@ its complete request is 584,007 bytes with SHA-256
 Automatic approval review rejected the original combined launch before execution:
 it treated model enablement as permission to test access,
 without permission to export the complete private assessment to the new model destinations.
-A concrete permission question for both prepared complete inputs is pending.
-No complete native input was sent.
+A concrete permission question named both prepared complete inputs.
+The user answered `Authorize both complete-input probes`.
+Separate `-complete` directories now dispatch each original frozen complete request once,
+reusing the successful controls rather than repeating them.
 
 Separate synthetic-only directories append `-access` before the date.
 Their preflight asserts the literal fixture and single question before dispatch.
