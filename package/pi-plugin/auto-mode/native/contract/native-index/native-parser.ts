@@ -180,21 +180,30 @@ export async function createNativeMarkdownParser({ expectedVersion }: {
    */
   const target = tree.children
     .find(function isParserControlParagraph(node: {
-      /** Only the node kind participates in coordinate target selection. */
+      /**
+       Only the node kind participates in coordinate target selection.
+       */
       readonly type: string;
-      /** Coordinate selection borrows text fields without retaining mutable parser nodes. */
+      /**
+       Coordinate selection borrows text fields without retaining mutable parser nodes.
+       */
       readonly children?: readonly {
-        /** Text nodes alone can match the control value. */
+        /**
+         Text nodes alone can match the control value.
+         */
         readonly type: string;
-        /** Other node content is irrelevant to this control. */
+        /**
+         Other node content is irrelevant to this control.
+         */
         readonly value?: unknown;
       }[];
     }): boolean {
     return (node.type === 'paragraph')
       && (node.children
-      ?.some(function isParserControlText(child): boolean {
+        ?.some(function isParserControlText(child): boolean {
       return (child.type === 'text') && (child.value === 'x');
-    }) ?? false);
+    })
+        ?? false);
   });
   if ((target?.position
     ?.start
