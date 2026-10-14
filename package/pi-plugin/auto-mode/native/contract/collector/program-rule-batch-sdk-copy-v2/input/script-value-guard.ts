@@ -33,7 +33,8 @@ export class NativeScriptValueGuardError extends AggregateError {
   /**
    Preserve the original constructor-based category, including derived guard classes.
    */
-  override readonly name: string = this.constructor.name;
+  override readonly name: string = this.constructor
+    .name;
 
   /**
    Owned frozen list retains every original caught value, including nullish and primitive throws.
@@ -47,7 +48,10 @@ export class NativeScriptValueGuardError extends AggregateError {
 
    @param call - original native call when the failure is bound to a particular invocation
    */
-  constructor({ errors, call }: {
+  constructor({
+    errors,
+    call
+  }: {
     readonly errors: readonly unknown[];
     readonly call?: GuardedResultCall;
   }) {
@@ -55,7 +59,10 @@ export class NativeScriptValueGuardError extends AggregateError {
      Only original call metadata enters the diagnostic; captured result content stays separate.
      */
     const input = call ? `tool ${JSON.stringify(call.name)} call ${JSON.stringify(call.id)}` : 'original program result';
-    super(errors, `Native result binding for ${input} was rejected. Resolve the original source, lifetime, ownership or supported-value failure; do not replace its judgment with a fresh budget.`);
+    super(
+      errors,
+      `Native result binding for ${input} was rejected. Resolve the original source, lifetime, ownership or supported-value failure; do not replace its judgment with a fresh budget.`
+    );
     // AggregateError owns this copied array and its original non-enumerable property descriptor.
     Object.freeze(this.errors);
   }
@@ -75,20 +82,29 @@ export class NativeScriptValueGuardError extends AggregateError {
  const guard = scriptValueGuard({ error: caught, call: { name: 'read', id: 'original-call' } });
  ```
  */
-export function scriptValueGuard({ error, call }: {
+export function scriptValueGuard({
+  error,
+  call
+}: {
   readonly error: unknown;
   readonly call?: GuardedResultCall;
 }): NativeScriptValueGuardError {
   /**
    Distinguish original guard propagation from newly caught result failures.
    */
-  const rl = tagged({ tag: scriptValueGuard.name, l });
+  const rl = tagged({
+    tag: scriptValueGuard.name,
+    l
+  });
   if (error instanceof NativeScriptValueGuardError) {
     rl.debug('retaining original result-binding guard');
     return error;
   }
   rl.debug('binding original caught value to a native result guard');
-  return new NativeScriptValueGuardError({ errors: [error], ...(call === undefined ? {} : { call }) });
+  return new NativeScriptValueGuardError({
+    errors: [error],
+    ...(call === undefined ? {} : { call })
+  });
 }
 
 //endregion Result-binding guards remain distinct from ordinary native tool failures
