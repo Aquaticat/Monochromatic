@@ -1015,6 +1015,10 @@ Evidence in `doc/handover/cli-git-native-content-policies.md`.
   The delegate read the decision brief, which still listed it as open,
   rather than the adoption in this document;
   the brief now has an `Outcome` section saying where the answers are.
+  Note, 2026-10-14:
+  the `pathBytes` gate trailed the cutover and ran as its own lane on branch `feat/cli-git-native-pathbytes`;
+  the commit path, the replay conflict event and the journals now carry the exact bytes,
+  and `doc/handover/cli-git-native-pathbytes.md` has the evidence.
 - The fuzz seeds of `final-newline` were given a final newline by the installed wrapper when committed;
   the target's generated input still reaches both cases.
 
@@ -1614,7 +1618,8 @@ that is verification, not a decision for the user.
   the old-and-new wrapper interop matrix (one-direction fixtures where the incumbent writes and native reads stay);
   the long fuzz campaigns (fuzz targets, planted-defect controls and a short smoke run stay in the gate);
   mutation campaigns on non-core modules (hooks plumbing, auto-push, automatic maintenance, signals);
-  and the `pathBytes` field for non-UTF-8 paths in events.
+  and the `pathBytes` field for non-UTF-8 paths in events
+  (run on branch `feat/cli-git-native-pathbytes`, awaiting merge: `doc/handover/cli-git-native-pathbytes.md`).
   Locks, journal, capture, shadow repository, preparation, policies, landing, replay, recovery and the worktree copy
   keep full mutation gating.
   Features do not trail: signals, automatic maintenance and the linked-worktree copy are part of the cutover.
@@ -1626,7 +1631,7 @@ that is verification, not a decision for the user.
   Trailing is not stopping (user, 2026-10-10): the cutover does not end the work.
   Right after it, without a pause, the queue continues with these gates in the order listed
   (the interop matrix and the old-format fixtures first, then fuzz campaigns, non-core mutation,
-  the `pathBytes` field, the Windows checks and the release-artifact performance gates),
+  the Windows checks and the release-artifact performance gates; the `pathBytes` field has run on its branch),
   each recorded and closed like any other gate,
   and then the retirement of the old TypeScript implementation is verified complete.
 - [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands
@@ -1635,8 +1640,11 @@ that is verification, not a decision for the user.
 - [x] Merge the candidate content layer into `main` (`c6cab0800`).
 - [x] Content policies over candidates for `git add` and the direct commands:
   `final-newline`, `security/forbidden-strings` and `mono/forbidden-root-context` (`83463b49a`).
-- [ ] `markdown/autofix` through the native linter executable,
-  and the `pathBytes` event field adopted for non-UTF-8 paths.
+- [x] `markdown/autofix` through the native linter executable (merge `b89b38252`).
+- [ ] The `pathBytes` event field for non-UTF-8 paths:
+  done for `git add`, `check` and `fix` events through merge `b89b38252`;
+  the commit path, replay conflicts and journals are done on branch `feat/cli-git-native-pathbytes`
+  and wait for the merge (`doc/handover/cli-git-native-pathbytes.md`).
 - [x] `mono/dependent-version-bump`: landed on `main` (`doc/handover/cli-git-native-dependent-version.md`).
 - [x] This repository's translated configuration lists all four optional policies and sets `rulesFile` (`cli-git.config.jsonc`, `doc/handover/cli-git-native-config.md`).
 - [ ] Manual-push listings for the content policies, with the push lifecycle.
