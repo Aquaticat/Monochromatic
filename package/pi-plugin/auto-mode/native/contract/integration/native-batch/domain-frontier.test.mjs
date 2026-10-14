@@ -45,7 +45,7 @@ try{
  assert(review.headingContextInterpretations.every(heading=>heading.admission==='admitted'&&heading.relation==='none'));
  if(sdkStream){
   assert(review.requestSourceAssociationUses.length>0,'The normal SDK route must retain original native serializer contributions');
-  assert(review.requestSourceAssociationUses.every(use=>use.state==='accounted'));
+  assert(review.requestSourceAssociationUses.every(use=>use.state==='accounted'),inspect(review.requestSourceAssociationUses,{depth:3}));
  }
  const issues=review.premiseIssues.map(issue=>({premise:issue.premise,kind:issue.kind,reason:issue.reason}));
  const result={complete:true,relation,requestRelation,outcome:review.outcome,issues,sources:review.inputs.instructionSources.length,clauses:review.clauseInterpretations.length,requestUses:review.requestSourceAssociationUses.map(use=>use.state),requests,assessments,executions,providerRequests:0,productionPolicyAdopted:false};
