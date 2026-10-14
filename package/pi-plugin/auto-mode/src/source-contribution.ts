@@ -6,6 +6,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { PolicyInputBindingError, } from './policy-input-binding-error.ts';
 import { inspectMessageContribution, } from './source-contribution-message.ts';
+import { inspectToolContribution } from './source-contribution-tool.ts';
 import { inspectRunContribution, } from './source-contribution-run.ts';
 import type {
   SourceContributionIssue,
@@ -121,13 +122,15 @@ export function consumeSourceAssociations(inputs: SourceContributionInputs,): So
         source,
         run,
       },);
-    /**
-     Exact source identity is required independently of any supporting link.
-     */
+    /** Original manager tool inputs have their own input-only publication membership. */
+    const toolLinked = (source !== undefined) && (run !== undefined)
+      && (association !== undefined)
+      && inspectToolContribution({ association, source, run });
+    /** Exact source identity is required independently of any supporting link. */
     const accounted = (source !== undefined) && (association !== undefined)
       && (association.source === source.source)
       && (base || runLinked
-        || messageLinked);
+        || messageLinked || toolLinked);
     uses.push(Object.freeze({
       contribution: contribution.contribution,
       request: contribution.request,
