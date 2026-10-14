@@ -7,6 +7,44 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-14.
 
+## Original native RPC approval verification
+
+The disposable harness in `${HOME}/temp/agent/pi-native-rpc-human-20261014/`
+now constructs the original native SDK session,
+selects its installed `qwen-token-plan-individual/qwen3.8-flash` model record,
+and runs Pi's original RPC mode.
+Its complete proposed program is `return await tools.fixture_value({path:"seed"});`.
+The tool returns fixed inert text.
+All stream responses,
+semantic answers,
+and independent prerequisite facts are authored fixture inputs.
+No provider request is allowed.
+The direct SDK host facade supports only its original disposable session;
+this is not the production CLI host's authorization owner.
+
+The initial Allow control passed with one assessment,
+one original verdict entry,
+one tool execution,
+zero external provider requests,
+exit zero,
+and empty child stderr.
+The controller preserves the complete pending native dialog and response transcript.
+Deny also passed with no tool execution and empty stderr.
+Stop retained its original `user-deny` entry,
+executed no tool,
+and exited zero,
+but failed the controller's unconditional empty-stderr assertion.
+The source trace identifies deliberate request cancellation during assessment,
+which the existing approval-domain test already expects as a handler failure.
+This is not evidence of a disposal failure.
+The controller is being corrected to capture execution and disposal stderr separately,
+retain both without filtering,
+and require empty disposal output.
+Cancellation,
+delayed Allow,
+and an unrelated response identifier remain pending.
+No genuine human response has been supplied yet.
+
 ## Typed native session construction
 
 The next owned dependency is now ported from `runtime-factory-scopes/scopes.mjs`
