@@ -121,8 +121,6 @@ import dev.monochromatic.musicplayer.core.PlaybackMode
 import dev.monochromatic.musicplayer.core.buildLibrary
 /** Stable page identity distinguishes duplicate displayed labels. */
 import dev.monochromatic.musicplayer.core.pageIdentity
-import dev.monochromatic.musicplayer.core.playbackEntryIds
-import dev.monochromatic.musicplayer.core.trackTitleFor
 
 // What:     `import dev.monochromatic.musicplayer.core.TrackMeasure` imports the per-track duration and peak value.
 // Why:      The controller publishes the measures the library rows read.
@@ -358,6 +356,9 @@ class PlayerController(private val engine: AudioEngine) {
 
     /** Artist tags read so far by track URI, kept for the few tracks that played, for the media notification. */
     private val trackArtists: MutableMap<String, String> = LinkedHashMap()
+
+    /** Timeline rows of the playback snapshot, kept between snapshots so a track change does not rebuild the queue. */
+    private val snapshotItems: SnapshotItemCache = SnapshotItemCache()
 
     /** Called with the URI of each track that is loaded, so the service can read its tags off the main thread. */
     var onTrackLoaded: ((String) -> Unit)? = null
@@ -1461,53 +1462,22 @@ class PlayerController(private val engine: AudioEngine) {
          * source and use.
          */
         val display: List<String> = queue.displayPaths()
-        // What:     `val entryIds: List<Long> = playbackEntryIds(order)` gives each history position its own id.
-        // Why:      A shuffle history repeats tracks, and the media timeline rejects two entries with one id.
+        // What:     `snapshotItems.itemsFor(...)` returns the timeline rows from a cache that rebuilds only what changed.
+        // Why:      Building a row per queue position on every media session refresh made a track change cost time
+        //           proportional to the queue size; the order, display and URI lists are replaced when they change,
+        //           so identical instances mean identical rows, and an artist tag patches only its own rows.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const entryIds: bigint[] = playbackEntryIds(order);
+        // const items = this.snapshotItems.itemsFor({ order, display, uris: this.uris, artists: this.trackArtists });
         // ```
-        /** One timeline id per playback position; repeats of a track get distinct ids. */
-        val entryIds: List<Long> = playbackEntryIds(order)
-        // What:     `val items: List<SnapshotItem> = order.mapIndexed { position, loadIndex -> SnapshotItem(...) }`
-        //           builds the timeline rows. `order.map { ... }` transforms each element;
-        //           the trailing lambda names its parameter `loadIndex` (a load-order index)
-        //           before `->`. `SnapshotItem(uri = ..., title = ..., loadIndex = ...)` is a
-        //           constructor call with NAMED arguments: `uris[loadIndex]` is the playback
-        //           URI, `display[loadIndex]` the title, `loadIndex` the index itself.
-        // Why:      Produce one `SnapshotItem` per scope track for the session timeline.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const items: SnapshotItem[] = order.map((loadIndex) => ({
-        //   uri: this.uris[loadIndex],
-        //   title: display[loadIndex],
-        //   loadIndex,
-        // }));
-        // ```
-        /**
-         * Defines items value for this music-player component; the TypeScript-oriented notes above explain its
-         * source and use.
-         */
-        val items: List<SnapshotItem> = order.mapIndexed { position, loadIndex ->
-            // What:     `SnapshotItem(uri = ..., title = ..., loadIndex = ..., entryId = entryIds[position])`
-            //           constructs one timeline item (no `new`) with named args. It is the
-            //           lambda's tail expression, so it is the value `map` collects.
-            // Why:      One scope track described for the session.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // ({ uri: this.uris[loadIndex], title: display[loadIndex], loadIndex })
-            // ```
-            SnapshotItem(
-                uri = uris[loadIndex],
-                title = trackTitleFor(display[loadIndex]),
-                loadIndex = loadIndex,
-                entryId = entryIds[position],
-                artist = trackArtists[uris[loadIndex]],
-            )
-        }
+        /** Timeline rows in playback order, shared with the previous snapshot where nothing changed. */
+        val items: List<SnapshotItem> = snapshotItems.itemsFor(
+            order = order,
+            display = display,
+            uris = uris,
+            artists = trackArtists,
+        )
         // What:     `return PlaybackSnapshot( ... )` constructs and returns the snapshot with
         //           NAMED arguments. Two of them convert seconds to milliseconds:
         //           `(durationSec() * MILLIS_PER_SEC).toLong()` multiplies a `Double` by the
