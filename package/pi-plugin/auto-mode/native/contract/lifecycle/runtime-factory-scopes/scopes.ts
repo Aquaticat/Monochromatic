@@ -38,6 +38,10 @@ const l = tagged({ tag: 'auto-mode-runtime-factory-scopes' });
  ```
  */
 export function createRuntimeFactoryScopes(definition: FactoryScopeDefinition): FactoryScopes {
+  /** Capture original capabilities once before callers can replace option properties. */
+  const { lifecycle, readManager, prepareResult, assertRuntimeResult, disposeSession } = definition;
+  /** Each occurrence retains the same callback identities selected at bootstrap. */
+  const bindings = Object.freeze({ lifecycle, readManager, prepareResult, assertRuntimeResult, disposeSession });
   if (((typeof definition.lifecycle
     ?.beginConstruction) !== 'function')
     || ((typeof definition.lifecycle
@@ -97,7 +101,7 @@ export function createRuntimeFactoryScopes(definition: FactoryScopeDefinition): 
     })
       .debug('starting owned factory construction');
     return createConstructionScope({
-      definition,
+      definition: bindings,
       input,
       pendingCleanup,
       exclusive

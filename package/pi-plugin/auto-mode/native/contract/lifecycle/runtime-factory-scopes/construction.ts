@@ -58,8 +58,9 @@ export function createConstructionScope({
   /**
    Lifecycle remains the sole issuer of construction identity.
    */
-  const token = definition.lifecycle
-    .beginConstruction(input);
+  const { manager, transition } = input;
+  /** Caller-owned input containers do not remain authoritative after construction begins. */
+  const token = definition.lifecycle.beginConstruction({ manager, ...(transition === undefined ? {} : { transition }) });
   /**
    Mutable progress records effects without replacing lifecycle identity.
    */
@@ -126,7 +127,7 @@ export function createConstructionScope({
     const value = definition.prepareResult(result);
     if ((progress.registered === undefined) || (value.session !== progress.registered))
       throw new RuntimeOperationError('Factory result is not the exact session registered by this construction');
-    if (definition.readManager(value.session) !== input.manager)
+    if (definition.readManager(value.session) !== manager)
       throw new RuntimeOperationError('Factory result session has another manager');
     definition.assertRuntimeResult(value);
     progress.prepared = value;
@@ -153,7 +154,7 @@ export function createConstructionScope({
     if ((prepared === undefined) || (result !== prepared))
       throw new RuntimeOperationError('Publication requires this factory scope\'s exact prepared result');
     definition.assertRuntimeResult(prepared);
-    if (definition.readManager(prepared.session) !== input.manager)
+    if (definition.readManager(prepared.session) !== manager)
       throw new RuntimeOperationError('Prepared factory session changed its manager');
     /**
      Publication is irreversible once the incumbent lifecycle returns its lease.
