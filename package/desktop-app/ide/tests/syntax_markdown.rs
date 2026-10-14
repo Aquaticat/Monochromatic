@@ -195,6 +195,6 @@ fn fenced_code_has_no_block_color() {
     assert!(
         all.iter()
             .all(|(role, _)| return !role.starts_with("markup")),
-        "painted intervals: {all:?}"
+        "a fenced block is painted with a block color; painted intervals: {all:?}"
     );
 }

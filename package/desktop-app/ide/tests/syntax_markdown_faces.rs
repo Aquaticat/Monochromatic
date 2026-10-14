@@ -5,12 +5,14 @@
 use ide_app::{
     document::Document,
     font_asset::{CODE_ITALIC, CODE_ROMAN},
+    selection_ink::contrast,
     shaped_text::{TextShaper, Viewport},
     source_style::{
         BOLD_ROLE, HEADING_ROLE, ITALIC_ROLE, LINK_ROLE, LINK_URL_ROLE, LIST_ROLE, QUOTE_ROLE,
         RAW_INLINE_ROLE, STRIKETHROUGH_ROLE, StyleSpan,
     },
     syntax::SCOPES,
+    text_raster::{CodeColors, TextRaster},
 };
 /// Actual font runs expose the selected font bytes and normalized variation coordinates.
 use parley::PositionedLayoutItem;
@@ -171,6 +173,96 @@ fn faces_leave_every_caret_position_and_break_where_they_were() {
                 styled.caret_x(position, 1.0),
                 plain.caret_x(position, 1.0),
                 "caret x at {position}, wrap {wrap:?}"
+            );
+        }
+    }
+}
+
+/// The hue each Markdown role is painted in,
+///  as the dark and the light scheme's ink.
+const HUES: [(u32, [u8; 3], [u8; 3]); 9] = [
+    (HEADING_ROLE, [130, 190, 235], [20, 86, 127]),
+    (BOLD_ROLE, [225, 212, 157], [113, 83, 16]),
+    (ITALIC_ROLE, [199, 146, 234], [118, 54, 164]),
+    (STRIKETHROUGH_ROLE, [160, 168, 176], [85, 92, 101]),
+    (RAW_INLINE_ROLE, [168, 204, 140], [50, 101, 32]),
+    (LINK_ROLE, [130, 190, 235], [20, 86, 127]),
+    (LINK_URL_ROLE, [240, 188, 122], [139, 77, 4]),
+    (LIST_ROLE, [240, 188, 122], [139, 77, 4]),
+    (QUOTE_ROLE, [160, 168, 176], [85, 92, 101]),
+];
+
+/// Every pixel a styled word draws with real coverage,
+///  as its straight (not premultiplied) color,
+///  in the given scheme.
+fn ink_of(role: u32, dark: bool) -> Vec<[u8; 3]> {
+    let source = "Markdown";
+    let document = Document::new(source);
+    let styles = [span(source, source, role)];
+    let view = TextShaper::new().prepare(&document, viewport(None), &styles);
+    let colors = CodeColors {
+        foreground: if dark {
+            [240, 240, 240, 255]
+        } else {
+            [20, 20, 20, 255]
+        },
+        selected: [255, 255, 255, 255],
+        dark,
+    };
+    let pixels = TextRaster::new()
+        .paint(&view, colors, 0.0)
+        .expect("paint a styled word");
+    let mut found = Vec::new();
+    for pixel in pixels.bytes.chunks_exact(4) {
+        // The raster is premultiplied; faint edge pixels carry too little color to compare.
+        if pixel[3] >= 128 {
+            let alpha = u32::from(pixel[3]);
+            let straight =
+                |value: u8| return ((u32::from(value) * 255 + alpha / 2) / alpha).min(255) as u8;
+            found.push([straight(pixel[0]), straight(pixel[1]), straight(pixel[2])]);
+        }
+    }
+    return found;
+}
+
+/// Each role draws its word in its own hue in both schemes,
+///  and the hues stay legible on the scheme's background.
+/// The backgrounds are assumed to be near black (32) in the dark scheme and white in the light scheme;
+///  the window's palette decides the real ones.
+#[test]
+fn markdown_roles_are_painted_in_their_hue_in_both_schemes() {
+    for (role, dark_hue, light_hue) in HUES {
+        for (dark, hue, background) in [
+            (true, dark_hue, [32, 32, 32, 255]),
+            (false, light_hue, [255, 255, 255, 255]),
+        ] {
+            let scheme = if dark { "dark" } else { "light" };
+            let found = ink_of(role, dark);
+            assert!(
+                !found.is_empty(),
+                "role {role}, {scheme}: nothing was drawn"
+            );
+            let off = found
+                .iter()
+                .filter(|color| {
+                    return color.iter().zip(hue).any(|(drawn, wanted)| {
+                        return drawn.abs_diff(wanted) > 4;
+                    });
+                })
+                .count();
+            assert_eq!(
+                off,
+                0,
+                "role {role}, {scheme}: {off} of {} pixels are not the hue {hue:?}",
+                found.len()
+            );
+            let ratio = contrast([hue[0], hue[1], hue[2], 255], background);
+            eprintln!(
+                "role {role}, {scheme}: hue {hue:?} has contrast {ratio:.2} on {background:?}"
+            );
+            assert!(
+                ratio >= 4.5,
+                "role {role}, {scheme}: contrast {ratio:.2} is below 4.5"
             );
         }
     }
