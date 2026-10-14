@@ -147,7 +147,7 @@ const plantedControls = [
     file: 'src/native/index_lock_wait.rs',
     from: 'effects.sleep(backoff_ms.min(cap));',
     to: 'effects.sleep(backoff_ms);',
-    failing: 'index_lock_wait::tests::a_proven_pid_file_owner_is_waited_for_without_limit',
+    failing: 'index_lock_wait::tests::a_proven_pid_file_owner_is_waited_for_beyond_the_unproven_budget',
   },
   {
     name: 'evidence gathering is not counted toward the unproven budget',
