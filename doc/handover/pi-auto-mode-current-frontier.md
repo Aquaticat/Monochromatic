@@ -409,9 +409,19 @@ Commit `ff0a34feaf` names 407 callbacks across 74 maintained modules.
 The preparatory parser comparison preserved all comments and normalized executable syntax,
 apart from converting the arrow declarations to named functions.
 It rejected lexical-binding hazards and avoided introducing names that shadow existing identifiers.
-The Node parser,
-owned rebuild,
-and complete native lint count are being rerun on that change.
+The Node parser and owned rebuild pass on that change.
+Native SDK execution,
+all current approval-context cases,
+and host lifecycle replacement and cleanup also pass.
+The complete native lint run now reports 14,790 warnings and 538 errors across 157 modules.
+The original generated input snapshots remain included in that check.
+No lint rule or admission condition was changed.
+The next implementation step replaces build-time synchronous filesystem operations.
+The new `native/contract/integration/native-batch/build-entries.ts`
+captures package manifests asynchronously before exposing a pure entry selector.
+It is not connected to native preparation yet;
+its package type check and scoped lint pass,
+with zero lint diagnostics.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.

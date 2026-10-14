@@ -33,7 +33,7 @@ const l = tagged({ tag: 'auto-mode-native-build-entries' });
  @returns whether property lookup is supported
  */
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return typeof value === 'object' && value !== null;
+  return ((typeof value) === 'object') && (value !== null);
 }
 
 /**
@@ -71,25 +71,45 @@ export async function createImportEntryReader({ roots }: {
   /**
    Preparation diagnostics identify asynchronous manifest capture.
    */
-  const rl = tagged({ tag: createImportEntryReader.name, l });
+  const rl = tagged({
+    tag: createImportEntryReader.name,
+    l
+  });
   rl.debug('reading qualified package manifests');
   /**
    Manifests are captured once before any import rewrite callback runs.
    */
-  const manifests = new Map<string, unknown>(await Promise.all(roots.map(
-    async function readManifest(root: string): Promise<readonly [string, unknown]> {
+  const manifests = new Map<string, unknown>(
+    await Promise.all(roots.map(
+    async function readManifest(root: string): Promise<readonly [
+      string,
+      unknown
+    ]> {
       /**
        Each package read has a separate diagnostic boundary.
        */
-      const readLog = tagged({ tag: readManifest.name, l: rl });
+      const readLog = tagged({
+        tag: readManifest.name,
+        l: rl
+      });
       readLog.debug(`reading package manifest: ${root}`);
       /**
        JSON remains untrusted until the exact selected export is checked.
        */
-      const metadata: unknown = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
-      return [root, metadata] as const;
+      const metadata: unknown = JSON.parse(await readFile(
+        join(
+          root,
+          'package.json'
+        ),
+        'utf8'
+      ));
+      return [
+        root,
+        metadata
+      ] as const;
     },
-  )));
+  )),
+  );
 
   /**
    Select one original entry without rereading files inside synchronous replacement callbacks.
@@ -102,11 +122,17 @@ export async function createImportEntryReader({ roots }: {
 
    @throws NativeBatchBuildError when the manifest or selected entry is unavailable
    */
-  function entry({ root, subpath = '.' }: Parameters<ImportEntryReader>[0]): string {
+  function entry({
+    root,
+    subpath = '.'
+  }: Parameters<ImportEntryReader>[0]): string {
     /**
      Entry selection retains both preparation and callback diagnostic tags.
      */
-    const entryLog = tagged({ tag: entry.name, l: rl });
+    const entryLog = tagged({
+      tag: entry.name,
+      l: rl
+    });
     /**
      Missing captures cannot silently fall back to another installed package.
      */
@@ -115,22 +141,26 @@ export async function createImportEntryReader({ roots }: {
     /**
      Root string exports and the historical main field retain their original meaning.
      */
-    const exports = metadata.exports;
+    const {exports} = metadata;
     /**
      Conditional subpath exports are selected only from captured object properties.
      */
-    const value = subpath === '.' && exports === undefined ? metadata.main
-      : subpath === '.' && typeof exports === 'string' ? exports
+    const value = (subpath === '.') && (exports === undefined) ? metadata.main
+      : (subpath === '.') && ((typeof exports) === 'string') ? exports
       : isRecord(exports) ? exports[subpath] : undefined;
     /**
      The qualified source supports string, import, and default entries.
      */
-    const selected = typeof value === 'string' ? value
-      : isRecord(value) && typeof value.import === 'string' ? value.import
+    const selected = (typeof value) === 'string' ? value
+      : isRecord(value) && ((typeof value.import) === 'string') ? value.import
       : isRecord(value) ? value.default : undefined;
-    if (typeof selected !== 'string') throw new NativeBatchBuildError(`Installed import entry is unavailable: ${root} ${subpath}`);
+    if ((typeof selected) !== 'string') throw new NativeBatchBuildError(`Installed import entry is unavailable: ${root} ${subpath}`);
     entryLog.debug(`selected original package entry: ${root} ${subpath}`);
-    return pathToFileURL(join(root, selected)).href;
+    return pathToFileURL(join(
+      root,
+      selected
+    ))
+      .href;
   }
   return entry;
 }
