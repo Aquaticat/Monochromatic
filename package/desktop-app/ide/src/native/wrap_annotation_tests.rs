@@ -18,7 +18,7 @@ use super::overscan_tile_tests::{counts, reset};
 /// The most lines the window thread brings in for one new width.
 use super::rewrap::REWRAP_LINES;
 /// Window sizing for exact text widths.
-use super::sidebar_tests::{TEXT_LEFT, resize};
+use super::sidebar_tests::{TEXT_LEFT, minimap_beside, resize};
 /// The worker's build gate.
 use super::tile_build::{BUILD_GATE, PASS_GATE};
 /// Wrapped fixtures, the open reader, and bounded waits.
@@ -240,7 +240,7 @@ fn a_new_window_width_breaks_the_block_again() {
     let before = rows_at(&opened);
     reset(&opened.source);
     let packed = opened.source.borrow().annotations.work().packed;
-    resize(window, TEXT_LEFT + 300.0, 660.0);
+    resize(window, TEXT_LEFT + 300.0 + minimap_beside(300.0), 660.0);
     until("the narrow width did not reach the state", || {
         return opened.source.borrow().width < wide;
     });
@@ -283,7 +283,11 @@ fn a_new_window_width_breaks_the_block_again() {
     let current = opened.source.borrow();
     assert_eq!(current.row_map.block_height(LINE), narrow.2);
     drop(current);
-    resize(window, TEXT_LEFT + wide + 2.0, 660.0);
+    resize(
+        window,
+        TEXT_LEFT + wide + 2.0 + minimap_beside(wide + 2.0),
+        660.0,
+    );
     until("the wide width did not return", || {
         return opened.source.borrow().width > narrow_width;
     });
@@ -309,7 +313,7 @@ fn a_new_width_left_to_the_worker_keeps_the_displayed_tile_until_the_workers_til
     let before = block(&opened, LINE).expect("block").messages.len();
     reset(&opened.source);
     opened.source.borrow_mut().rewrap_deferred = 0;
-    resize(window, TEXT_LEFT + 300.0, 660.0);
+    resize(window, TEXT_LEFT + 300.0 + minimap_beside(300.0), 660.0);
     until("the narrow width did not reach the state", || {
         return opened.source.borrow().width < wide;
     });
@@ -368,7 +372,7 @@ fn a_tile_discarded_while_the_window_waits_for_one_is_asked_for_again() {
     *PASS_GATE.lock().expect("pass gate") = Some(pass_gate);
     let (release, gate) = std::sync::mpsc::channel();
     *BUILD_GATE.lock().expect("build gate") = Some(gate);
-    resize(window, TEXT_LEFT + 700.0, 660.0);
+    resize(window, TEXT_LEFT + 650.0 + minimap_beside(650.0), 660.0);
     until_build_started("the worker did not start the held build");
     assert!(
         opened.source.borrow().width < wide,
@@ -451,7 +455,11 @@ fn hints_far_from_the_view_are_packed_again_when_the_view_comes_near() {
     let wide_near = block(&opened, LINE).expect("near block").hints[0].x;
     let wide = opened.source.borrow().width;
     let packed = opened.source.borrow().annotations.work().packed;
-    resize(&opened.window, TEXT_LEFT + 300.0, 660.0);
+    resize(
+        &opened.window,
+        TEXT_LEFT + 300.0 + minimap_beside(300.0),
+        660.0,
+    );
     until("the narrow width did not reach the state", || {
         return opened.source.borrow().width < wide;
     });
