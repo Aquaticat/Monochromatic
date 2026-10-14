@@ -6,6 +6,7 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { sdk } from '../current-sdk/paths.ts';
+import { rewriteNativeImports } from '../native-batch/build-imports.ts';
 
 export class NativeHostBuildError extends Error {}
 
@@ -31,20 +32,13 @@ function rebase({
   source,
   original
 }) {
-  return source.replaceAll(
-    /(from |import\()(["'])(\.[^"']+)\2/gu,
-    function resolveNativeRelativeSpecifier(
-      _match,
-      prefix,
-      quote,
-      specifier
-    ) { return ( prefix + quote
-      + new URL(
-        specifier,
-        original
-      ).href
-      + quote); }
-  );
+  return rewriteNativeImports({
+    source,
+    path:original.href,
+    select:function resolveNativeRelativeSpecifier({specifier}) {
+      return specifier.startsWith('.')?new URL(specifier,original).href:specifier;
+    }
+  });
 }
 
 export async function prepareNativeHost({ output }) {

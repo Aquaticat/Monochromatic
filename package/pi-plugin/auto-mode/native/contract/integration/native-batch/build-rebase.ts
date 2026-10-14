@@ -35,6 +35,11 @@ const l = tagged({ tag: 'auto-mode-native-build-rebase' });
  @returns source containing the replacement
 
  @throws NativeBatchBuildError when the original site is absent or duplicated
+
+ @example
+ ```ts
+ replaceOnce({ source: 'original();', from: 'original()', to: 'owned()' });
+ ```
  */
 export function replaceOnce({
   source,
@@ -74,6 +79,11 @@ export function replaceOnce({
  @param relative - sibling build input resolved against this integration directory
 
  @returns quoted module URL for generated source
+
+ @example
+ ```ts
+ helperUrl('./build-imports.ts');
+ ```
  */
 export function helperUrl(relative: string): string {
   return JSON.stringify(new URL(
@@ -110,6 +120,12 @@ type NativeRebaseInput = {
  @param entry - pure reader of already captured package manifests
 
  @returns source transformer preserving the qualified static import profile
+
+ @example
+ ```ts
+ const imports = createNativeImportRewriter({ entry });
+ imports({ source, path });
+ ```
  */
 export function createNativeImportRewriter({ entry }: {
   readonly entry: ImportEntryReader;
