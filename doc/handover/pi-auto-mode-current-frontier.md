@@ -591,6 +591,19 @@ The typed Session lifetime and disposal-completion generators pass scoped lint,
 package types,
 and the owned build.
 Comparisons retain identical generated native Session bytes after both transformations.
+Native host lifecycle,
+original CLI manager custody,
+and every approval-context case pass after the typed lifetime and disposal port.
+The native manager custody generator is now being typed.
+The maintained reference search finds only `root-source.mjs` importing its `generate` export;
+the copied standalone `withBranchFailure`,
+`mutate`,
+and `replaceOne` fixture exports had no maintained callers and were removed.
+The production root-occurrence,
+method-membership,
+instance-freeze,
+and original transition-site checks remain in the generator.
+Original private qualification artifacts remain unchanged.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
