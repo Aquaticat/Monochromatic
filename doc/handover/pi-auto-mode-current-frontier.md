@@ -1067,7 +1067,18 @@ replacement cancellation,
 fork,
 resume,
 and incomplete-disposal retry cases.
-The separate-process CLI and final syntax checks remain next.
+The separate-process CLI also passes with the selected Qwen model,
+zero external provider requests,
+and empty shutdown stderr.
+All 193 maintained native modules pass the final parser sweep.
+The native README and bootstrap checkpoint were checked in rendered output.
+The remaining host ownership modules were measured separately:
+`host.mjs`,
+`resources.mjs`,
+and `resource-reload.mjs` report 111 warnings and one error.
+The error is the positional `reloadHostResource` interface;
+most warnings concern their untyped ownership and generated dependency boundaries.
+Their maintained interfaces remain the next independent package-quality work.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
