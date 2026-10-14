@@ -67,9 +67,9 @@ function fileArguments(glob) {
  */
 const scopes = new Map([
   ['--rust-style', {
-    description: 'the anonymous-function rule against its own tests',
-    select: fileArguments('src/rust_no_anonymous_functions.rs'),
-    run: ['--cargo-test-arg=rust_no_anonymous_functions'],
+    description: 'the anonymous-function and sidecar test rules against their own tests',
+    select: ['src/rust_no_anonymous_functions.rs', 'src/rust_tests_in_sidecars.rs'].flatMap(fileArguments),
+    run: ['--', '--', 'rust_no_anonymous_functions', 'rust_tests_in_sidecars'],
   }],
   // This is scoped evidence, not a replacement for full-rule mutation. The baseline still runs.
   // Every test the `markdown` filter selects is a library test: the baseline at c184147f ran 136 library tests
