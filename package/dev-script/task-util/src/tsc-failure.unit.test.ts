@@ -4,8 +4,7 @@
  @module
  */
 import { describe, expect, it } from '@monochromatic-dev/module-test/ts';
-import { runCompilerFailureCase } from './tsc-failure-fixture.ts';
-import type { CompilerFailureCase } from './tsc-failure-fixture.ts';
+import { runCompilerFailureCase, type CompilerFailureCase } from './tsc-failure-fixture.ts';
 
 /** Ordinary successful output proves the disposable executable is actually used. */
 const success = 'fixture compiler version 1\n';
@@ -45,7 +44,7 @@ const cases: readonly CompilerFailureCase[] = [
 await describe({ name: '', concurrency: 1, children: cases.map(function compilerFailureCase(input) {
   return it({ name: input.name, fn: async function compilerExitBoundary() {
     /** The result belongs to the built wrapper and its actual disposable compiler child. */
-    const result = runCompilerFailureCase(input);
+    const result = await runCompilerFailureCase(input);
     expect(result.status).toBe(input.expectedCode);
     expect(result.stdout).toBe(input.expectedStdout);
     expect(result.stderr).toBe(input.expectedStderr);
