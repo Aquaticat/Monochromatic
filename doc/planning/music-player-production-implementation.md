@@ -343,8 +343,10 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   had clipped the rail cell ring. Folder names and menu rows keep the outside ring. Verified: detekt, 1044 unit tests,
   lintDebug, eleven mutations killed, before and after captures on the Fold emulator. Not verified: the Compose
   call-site wiring has no unit test; the template field ring was never seen on the device; dark scheme, cover display,
-  the menu popup's keyboard ring, TalkBack and a real keyboard; the Android gallery PNGs predate this change (the
-  first row of a list sits 3 dp higher now) and were not retaken. That emulator ran with `-no-window` on the host GPU, which the rule below bans.
+  the menu popup's keyboard ring, TalkBack and a real keyboard; the Android gallery was retaken headful on
+  2026-10-14 from `e02e74edec` (only the track menu image changed visibly and was replaced; the other seven differ by
+  4 to 7 px row offsets and were kept; see `doc/handover/music-player-readme-and-gallery.md`). The ring capture
+  emulator ran with `-no-window` on the host GPU, which the rule below bans.
 - Stale docs: none known. The README gallery and the Android page-control text were rewritten on 2026-10-13, and the
   peak-sweep start path in `android-app/HANDOVER.peak-sweep-optimization.md` and
   `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
