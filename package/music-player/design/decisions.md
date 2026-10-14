@@ -3429,7 +3429,9 @@ proposal compared the Search page with the stock Search screen of Android Settin
   and a second `lan` typed after `Ctrl+F` landed between the two because `Ctrl+F` on an open Search page only refocuses
   the field (`focusSearch`), and the field's caret restarts at the beginning of the text whenever the page rebuilds the
   header for the other panel (`BasicTextField(value: String)` keeps its selection in a `remember` that the layout
-  switch drops). Both are consequences of earlier designs, not violations of D66, so they are reported and left open.
+  switch drops). The emulator reproduced both: `lan` survived a fold, and `lan` typed again after `Ctrl+F` gave
+  `lanlan`, then `x` gave `lanxlan`, which places the caret at index 0. Both are consequences of earlier designs, not
+  violations of D66, so they are reported and left open.
 
 What stays: D58 columns (Back center and result glyph center share one x, query start and title start share one x),
 D59 highlight, D63 to D80 focus and keyboard behavior, D66 and D70 copy, D76 (not a focus trap), D50 and D51 layout
