@@ -612,7 +612,7 @@ export function createRunPromptOwner({
         .some(function hasObservedInput(slot) { return (slot.before!==undefined); })
         &&(scope.handlerOptionOrigins===undefined))throw new SourceCollectionError('Original callback input history has no completed source publication');
       for(const origin of scope.handlerOptionOrigins??[]){
-        if(origins.length>=64)throw new SourceCollectionError('Original callback input history exceeds the 64-source profile');
+        if(origins.length>=128)throw new SourceCollectionError('Original callback input history exceeds the 128-source profile');
         origins.push(origin);
       }
     }
@@ -632,7 +632,7 @@ export function createRunPromptOwner({
       ...handlerInputs,
       ...managerInputs
     ]);
-    if(value.length>64)throw new SourceCollectionError('Combined original callback and manager inputs exceed the 64-source profile');
+    if(value.length>128)throw new SourceCollectionError('Combined original callback and manager inputs exceed the 128-source profile');
     combinedInputView={
       managerInputs,
       handlerInputs,
@@ -725,11 +725,11 @@ export function createRunPromptOwner({
       .occurrence
       ===origin.source
       .occurrence); }))return;
-    const next=origins.length>=64
+    const next=origins.length>=128
       ?Object.freeze({
         rootOccurrence,
         origins,
-        failure:new SourceCollectionError('Retained native message sources exceed the original 64-source profile')
+        failure:new SourceCollectionError('Retained native message sources exceed the original 128-source profile')
       })
       :Object.freeze({
         rootOccurrence,
@@ -763,7 +763,7 @@ export function createRunPromptOwner({
         const origin=originalMessageInput(original);
         if((!origin)||seen.has(origin.source
           .occurrence))continue;
-        if(origins.length>=64)throw new SourceCollectionError('Retained native message sources exceed the original 64-source profile');
+        if(origins.length>=128)throw new SourceCollectionError('Retained native message sources exceed the original 128-source profile');
         seen.add(origin.source
           .occurrence);origins.push(origin);
       }
@@ -800,7 +800,7 @@ export function createRunPromptOwner({
         if((!origin)||activeOccurrences.has(origin.runOccurrence)
           ||seen.has(origin.source
             .occurrence))return;
-        if(origins.length>=64)throw new SourceCollectionError('Retained native message sources exceed the original 64-source profile');
+        if(origins.length>=128)throw new SourceCollectionError('Retained native message sources exceed the original 128-source profile');
         seen.add(origin.source
           .occurrence);origins.push(origin);
       }

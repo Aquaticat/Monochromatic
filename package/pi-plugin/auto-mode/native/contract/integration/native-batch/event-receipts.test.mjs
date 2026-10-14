@@ -163,7 +163,10 @@ await using cleanup={async [Symbol.asyncDispose](){await env.drain();}};
  await oversized.runner.emit({type:'turn_start',text:'x'.repeat(65_536)});
  assert.throws(function requireCompleteCapture(){assertNativeSessionInputCapture(oversized.manager);},function captureProfile(error){return error.message.includes('supported source capture profile');});
  const exhausted=fixture({kind:'turn_start',handlers:[function observe(){return undefined;}]});
- for(let ordinal=0;ordinal<65;ordinal++)await exhausted.runner.emit({type:'turn_start',ordinal});
+ for(let ordinal=0;ordinal<128;ordinal++)await exhausted.runner.emit({type:'turn_start',ordinal});
+ assertNativeSessionInputCapture(exhausted.manager);
+ assert.equal(readNativeSessionInputUsage(exhausted.manager).count,128);
+ await exhausted.runner.emit({type:'turn_start',ordinal:128});
  assert.throws(function requireCountBound(){assertNativeSessionInputCapture(exhausted.manager);},function captureProfile(error){return error.message.includes('supported source capture profile');});
 
  // Capture never invokes a result accessor to discover its apparent data.

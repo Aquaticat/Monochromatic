@@ -50,7 +50,7 @@ export function bindRuleAssessmentWire(request){
    'requestBody'
  ])if((typeof envelope[field])!=='string')throw new RuleAssessmentWireError(`Original complete operation field is missing: ${field}`);
  const sources=envelope.governingSources;
- if((!Array.isArray(sources))||(sources.length<1)||(sources.length>64)||(Reflect.ownKeys(sources).length!==sources.length+1))throw new RuleAssessmentWireError('Complete governing source list is unavailable');
+ if((!Array.isArray(sources))||(sources.length<1)||(sources.length>128)||(Reflect.ownKeys(sources).length!==sources.length+1))throw new RuleAssessmentWireError('Complete governing source list is unavailable');
  for(let index=0;index<sources.length;index++){
   const field=Object.getOwnPropertyDescriptor(
     sources,

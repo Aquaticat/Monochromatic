@@ -29,7 +29,7 @@ function origins(value){
  if(types.isProxy(value)||(!Array.isArray(value))
    ||(Object.getPrototypeOf(value)!==Array.prototype)
    ||(!Object.isFrozen(value))
-   ||(value.length>64)
+   ||(value.length>128)
    ||(Reflect.ownKeys(value)
      .length
      !==(value.length

@@ -25,13 +25,13 @@ await describe({
         expect(function boundary() {
           assertOriginalInputBudget({
             resource: { count: 1, bytes: 1_048_576, },
-            session: { count: 63, bytes: 3_145_728, },
+            session: { count: 127, bytes: 3_145_728, },
           },);
         },).not.toThrow();
       },
     },),
     ...[
-      { resource: { count: 32, bytes: 0, }, session: { count: 33, bytes: 0, }, },
+      { resource: { count: 64, bytes: 0, }, session: { count: 65, bytes: 0, }, },
       { resource: { count: 1, bytes: 1_048_576, }, session: { count: 1, bytes: 3_145_729, }, },
       { resource: { count: Number.MAX_SAFE_INTEGER, bytes: 0, }, session: { count: Number.MAX_SAFE_INTEGER, bytes: 0, }, },
     ].map(function excessiveUsage(input, index,) {

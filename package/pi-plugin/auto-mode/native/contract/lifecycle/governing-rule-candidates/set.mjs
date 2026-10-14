@@ -11,7 +11,7 @@ export function createGoverningRuleSet({
  const sources=readSources();
  if((!Array.isArray(sources))||(!Object.isFrozen(sources))
    ||(sources.length===0)
-   ||(sources.length>64))throw new GoverningRuleBindingError('Original governing sources require a bounded immutable source list');
+   ||(sources.length>128))throw new GoverningRuleBindingError('Original governing sources require a bounded immutable source list');
  if(new Set(sources.map(function readGoverningSourceOccurrence(source) { return (source.occurrence); })).size!==sources.length)throw new GoverningRuleBindingError('Original governing source occurrence is repeated');
  let failure;
  let retired=false;

@@ -1295,8 +1295,12 @@ The prepared capacity patch increases combined and session receipt counts to 128
 preserving the resource-local 64-receipt cap and every byte bound.
 Automatic approval review rejected its commit because this resource and policy-boundary change requires
 explicit user authorization.
-The user has been asked to approve 128 receipts or retain 64;
-the patch remains uncommitted and dependent verification is pending that answer.
+The user explicitly approved the prepared increase to 128 receipts on 2026-10-14.
+Commit and rebuild the approved change,
+then verify the configured consumer without the diagnostic hook.
+The original assessment budget,
+resource-local 64-receipt cap,
+and byte bounds remain unchanged.
 The malformed traversal controls pass,
 including omitted positions and forged observation identity.
 Removing either of those guards in a disposable in-memory module causes its control to fail.

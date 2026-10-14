@@ -220,6 +220,7 @@ function bashInput(message){
  */
 function createInputPool({
   entries,
+  maximumInputs,
   maximumSnapshotBytes,
   InputCaptureError
 }){
@@ -231,7 +232,7 @@ function createInputPool({
    let failure;
    let constructedInputs=Object.freeze([]);
  function reserve(){
-  if((++count)>64)throw new SourceCollectionError('Loaded session inputs exceed the original 64-source profile');
+  if((++count)>maximumInputs)throw new SourceCollectionError(`Original input receipts exceed the ${maximumInputs}-source profile`);
  }
  function retain({
    carrier,
@@ -1198,6 +1199,7 @@ function createInputPool({
 /** Keep all existing Session input paths on their original shared four-MiB record budget. */
 export function captureLoadedInputs(entries){return createInputPool({
   entries,
+  maximumInputs:128,
   maximumSnapshotBytes:4_194_304,
   InputCaptureError:SessionInputCaptureError
 });}
@@ -1214,6 +1216,7 @@ export class ResourceToolInputCaptureError extends AggregateError {
 /** Extend resource-owned receipts under the existing one-MiB resource budget, using the same store and publisher. */
 export function captureResourceToolInputs(){return createInputPool({
   entries:[],
+  maximumInputs:64,
   maximumSnapshotBytes:1_048_576,
   InputCaptureError:ResourceToolInputCaptureError
 });}

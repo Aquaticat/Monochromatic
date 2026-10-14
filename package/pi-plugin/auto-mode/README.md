@@ -643,7 +643,9 @@ This is not a maintained host launcher or installed judge cutover.
 ## Migration input accounting
 
 `assertOriginalInputBudget` validates resource and Session receipt counters,
-then enforces their shared 64-occurrence/four-MiB serialized-record limit.
+then enforces their shared 128-occurrence/four-MiB serialized-record limit.
+The user approved this occurrence limit on 2026-10-14 after the configured extension fixture retained 81 receipts.
+Resource-local capture remains limited to 64 receipts.
 It preserves the original counter profile without invoking accessors,
 reflecting on proxies,
 or freezing borrowed records.
