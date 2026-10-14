@@ -2,9 +2,10 @@ import {
   isDeepStrictEqual,
   types
 } from 'node:util';
-import {readHandlerPayloadPublication,readOriginalToolPublication} from '../../collector/run-prompt-custody-v3/handler-publication.mjs';
+import {readHandlerPayloadPublication,readOriginalToolPublication,readOriginalSystemPublication} from '../../collector/run-prompt-custody-v3/handler-publication.mjs';
 import {copyMessageData} from '../../collector/run-prompt-custody/messages.mjs';
 import {prepareNativeToolAssociation} from './tool-source-association.ts';
+import {captureNativeSystemDerivation} from './system-source-derivation.ts';
 import {
   streamSimple,
   readNativeSerializedPayload,
@@ -378,6 +379,9 @@ export function prepareNativeSourceAssociation({
    context,
    options
  })===undefined;
+ const capturedSystemDerivation=messageEligible?captureNativeSystemDerivation({sources,messages:context.messages,
+  dataRecord,denseArray,readSystemPublication:readOriginalSystemPublication}):undefined;
+ const systemDerivation=(capturedSystemDerivation!==undefined&&typeof capturedSystemDerivation!=='symbol')?capturedSystemDerivation:undefined;
  const previous=options?.onPayload;
  const originalMessages=context.messages;
  const toolAssociation=prepareNativeToolAssociation({sources,dataRecord,denseArray,copyToolData:copyMessageData,
@@ -421,7 +425,8 @@ export function prepareNativeSourceAssociation({
       original,
       content:original.content,
       role:original.role,
-      associations:origins,
+      associations:systemDerivation?.matches()?Object.freeze([...origins,...systemDerivation.associations]):origins,
+      derivation:systemDerivation?.matches()?systemDerivation:undefined,
       serialization:systemSerialization,
       system:true
     });
@@ -466,10 +471,10 @@ export function prepareNativeSourceAssociation({
      ) { return (message===candidate.original?[index]:[]); }):[];
    const {original} = candidate;
    // Observe known message aliases even when their descriptor shape no longer qualifies for a copy.
-   const handlerCurrent=candidate.system||(candidate.associations[0]
+   const handlerCurrent=(candidate.system?(candidate.derivation?.matches()??true):(candidate.associations[0]
      .handlerPublication
      ??candidate.associations[0]
-     .expandedPromptPublication).matchesPayload(original);
+     .expandedPromptPublication).matchesPayload(original));
    const unchanged=handlerCurrent&&(positions.length===1)
      &&dataRecord(original)
      &&(original.role===candidate.role)
@@ -496,6 +501,7 @@ export function prepareNativeSourceAssociation({
      }),
      associations:candidate.associations,
      serialization:candidate.serialization,
+     derivation:candidate.derivation,
      system:candidate.system
    });
   }
@@ -526,7 +532,8 @@ export function prepareNativeSourceAssociation({
     ordinal,
     associations,
     why,
-    serialization
+    serialization,
+    derivation
   }){
    const location=Object.freeze({
      field:'messages',
@@ -538,6 +545,7 @@ export function prepareNativeSourceAssociation({
      location,
      association,
      ...(serialization?{serialization}:{}),
+     ...(derivation?{systemDerivation:derivation}:{}),
      reason:why,
      coverage:'partial-original-prompt-input-contribution',
      permission:false
@@ -561,6 +569,7 @@ export function prepareNativeSourceAssociation({
      ordinal:systemOrdinal,
      associations:associated?system.associations:[undefined],
      serialization:associated?system.serialization:undefined,
+     derivation:associated?system.derivation:undefined,
      why:associated?undefined:payloadOriginFailure??reason
        ??'The payload callback replaced or changed the original native contribution'
    });
