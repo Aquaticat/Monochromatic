@@ -22,9 +22,9 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
-import dev.monochromatic.musicplayer.FakeAudioEngine
 import dev.monochromatic.musicplayer.FeedbackHostState
 import dev.monochromatic.musicplayer.PlayerController
+import dev.monochromatic.musicplayer.ReportingAudioEngine
 import dev.monochromatic.musicplayer.SearchHost
 import dev.monochromatic.musicplayer.SessionStore
 import dev.monochromatic.musicplayer.SweepProgress
@@ -60,8 +60,8 @@ class PlayerHostWiringTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    /** Fake engine, so no native library or audio device is involved; it records what the controller asks of it. */
-    private val engine = FakeAudioEngine()
+    /** Test engine, so no native library or audio device is involved; it records loads and reports play changes. */
+    private val engine = ReportingAudioEngine()
 
     /** Controller over [engine]. */
     private val controller = PlayerController(engine)
@@ -284,15 +284,18 @@ class PlayerHostWiringTest {
         composeTestRule.waitForIdle()
     }
 
-    // What:     `@Test fun aSearchResultSelectsAnotherTrackAndTheSecondActivationStartsIt()` runs D127 through the host.
+    // What:     `@Test fun aSearchResultSelectsAnotherTrackAndTheSecondActivationStartsIt()` runs D127 via the host.
     // Why:      `openSearchResult` maps the activation to a controller call; a pure test of the decision cannot see a
     //           host that still starts the track at once, which is the behavior D127 removes.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("search result selects", () => { searchAndTap("Track 05"); expect(paused(5)); searchAndTap("Track 05"); expect(playing(5)); });
+    // test("search result selects", () => {
+    //   searchAndTap("Track 05"); expect(paused(5));
+    //   searchAndTap("Track 05"); expect(playing(5));
+    // });
     // ```
-    /** Tapping the result of another track loads it paused as the current track, and tapping its result again plays it. */
+    /** Tapping the result of another track loads it paused as the current track; tapping its result again plays it. */
     @Test(timeout = CASE_LIMIT_MS)
     fun aSearchResultSelectsAnotherTrackAndTheSecondActivationStartsIt() {
         controller.searchHost = SearchHost()
@@ -303,12 +306,16 @@ class PlayerHostWiringTest {
         activateSearchResultTitled(titleOf(5))
         assertEquals("the result's track is the current track", 5, controller.uiState.currentIndex)
         assertFalse("selecting a result does not play it and stops the playing track", controller.uiState.playing)
-        assertEquals("content://invented/alpha/5", engine.loadedUri)
-        assertFalse("the engine was cued paused", engine.playWhenReadyValue)
+        assertEquals(
+            "the engine was cued with the track, paused",
+            "content://invented/alpha/5" to false,
+            engine.loads.last(),
+        )
+        assertFalse(engine.playing)
         activateSearchResultTitled(titleOf(5))
         assertEquals(5, controller.uiState.currentIndex)
         assertTrue("the result of the current track starts it", controller.uiState.playing)
-        assertTrue(engine.playWhenReadyValue)
+        assertTrue(engine.playing)
     }
 
     /** Template of the track rows that shows only the file extension, so every row has a line without a measure. */

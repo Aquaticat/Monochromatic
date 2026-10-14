@@ -453,7 +453,7 @@ new IME work and native accessibility acceptance.
   the broad debug unavailable wording was rejected.
   D72 to D74 settle the desired Search result effects:
   folder hits open their folder without autoplay,
-  other track hits start playback,
+  other track hits start playback (changed by D127 on 2026-10-14: they select the track paused, as a row click does),
   already-current track hits toggle play/pause,
   and successful track actions return to player.
   See `evidence/search-result-activation-frontier.md` and the archived

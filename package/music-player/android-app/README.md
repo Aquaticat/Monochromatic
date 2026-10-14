@@ -133,6 +133,12 @@ They cover the Compose call sites that no pure function can reach:
   The host cannot draw a press ripple into a capture, so the shape of the indication is checked with Material's focus
   layer instead; a press on a device is part of the emulator pass.
 
+- the Search field caret, in `SearchFieldCaretWiringTest`: typing after a layout change that rebuilds the header lands
+  after the kept query, `Ctrl+F` on an open page puts the caret at the end without selecting, a caret the person placed
+  in the middle is kept, and it comes back after the state is saved and restored,
+- a tap on a Search result through the real host, in `PlayerHostWiringTest`: the first tap selects the track paused,
+  the second starts it (D127).
+
 The waits for a scroll or for a background measure pass use `waitUntil` with a wall-clock limit,
 and every `@Test` has a `timeout`,
 so a mutant that stops a scroll or a frame should fail fast instead of hanging the run.
@@ -304,8 +310,10 @@ On a row that is not the current track it only selects the row:
 `selectIndex` makes it current, pauses the engine, and loads the track paused, so the deck shows it and nothing plays.
 On the current track, playing or paused, it toggles play and pause through `togglePlay`, the call of the deck's Play
 button, so a track restored from the saved session starts, and a track whose last load failed is loaded again.
-The explicit Play row of the track menu and a Search result still start a track that is not current at once
-(`playIndex`; D73).
+The explicit Play row of the track menu still starts a track that is not current at once (`playIndex`).
+A Search result for a track follows the same rule (D127): `PlayerHost.openSearchResult` selects a result that is not
+the current track with `selectIndex` (`SearchActivation.SelectTrack`) and toggles with `togglePlay` for the current
+one; `wiring/PlayerHostWiringTest` taps a result through the real host.
 The desktop app follows the same rule.
 `PlayerControllerRowTest`, `PlayerControllerRowFailureTest` and `wiring/RowTapWiringTest` pin it.
 
@@ -352,6 +360,15 @@ which re-answers in place:
 the query, the caret and the scroll position stay,
 and results are keyed by track so a row the user is about to tap does not move.
 While a scan runs an empty answer reads "Still looking through your library" and the Search button stays enabled.
+
+### Search field caret
+
+The host keeps the query across a fold change (`rememberSaveable` next to the route), and D66 empties it for a new visit.
+The field in `searchHeader` is fed a `TextFieldValue`, not a bare `String`, so its caret is part of the value:
+a header rebuilt for the other panel starts with the caret at the end of the kept query,
+a value that still holds the query keeps the caret the person placed (also across an activity recreation),
+and `Ctrl+F` on an open Search page puts the caret at the end and selects nothing (`searchFieldValue`; D126).
+`SearchFieldValueTest` pins the rule and `wiring/SearchFieldCaretWiringTest` pins the rendered field.
 
 ### Search page style
 

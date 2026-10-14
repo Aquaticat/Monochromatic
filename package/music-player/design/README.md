@@ -380,7 +380,8 @@ The [activation evidence](evidence/search-result-activation-frontier.md)
 and [archived Stay/Return logic comparison](questions/archive/search-result-activation-before-return.html)
 explain the choice;
 `questions/current.html` shows only the selected action goals.
-No Search result tap handler has been tested or implemented.
+No Search result tap handler had been tested or implemented when D72 to D74 were written;
+D127 (2026-10-14) later changed the other-track result from "start" to "select, paused", as for a track row.
 D75 to D80 adopt query-first accessibility entry,
 contiguous Search reading order,
 single-action rows,

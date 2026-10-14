@@ -2109,12 +2109,15 @@ file-error path,
 scroll-to-row or accessibility focus has been implemented or verified
 by this design decision.
 
+Amended by D127 (2026-10-14): a result for a different track no longer starts that track.
+It selects it, as a row click does (D124); the current-track toggle in this decision stands.
+
 ### D74. Successful track result activation returns to player (2026-09-29)
 
 After the source-backed track-action defaults were presented,
 the user chose **Return** over **Stay** for the track-navigation
 consequence.
-A successful other-track start leaves Search and presents the ordinary
+A successful other-track start (since D127, an other-track select) leaves Search and presents the ordinary
 player view with the selected owning page;
 a successful current-track play/pause action likewise returns to player,
 without inventing a playhead restart or changing the selected page solely
@@ -3375,14 +3378,14 @@ Android, played it at once.
 - A click, a tap or Enter on the current track toggles play and pause, whether it is playing or paused.
   Android calls the deck's `togglePlay`, so a current track that was restored from the saved session and never started
   starts, and a current track whose load failed is loaded again on the next tap.
-  Desktop differs on a failed load: its `load_current` skips an unreadable file and reports it, so selecting such a row
-  moves the selection to the next playable file (pinned by a controller test); whether desktop should keep the
-  unreadable row selected like Android is an open question.
+  Desktop first differed on a failed load: its `load_current` skipped an unreadable file and reported it, so selecting
+  such a row moved the selection to the next playable file. The human ruled otherwise the same day, and D128 makes
+  desktop keep the unreadable row selected like Android.
   Android's `PlayerController.activateRow` holds the whole rule, and the host only forwards the tap.
 - The Play item of the track menu keeps starting a track at once (desktop `play_row_now`, Android `playIndex`);
   it is an explicit Play, not a row click.
-  Search results keep their D73 behavior (a track that is not current starts at once; the current track toggles); the
-  human has not been asked about Search under this rule, so that stays open.
+  Search results were left open when this decision was taken; the human ruled the same day that they follow this rule
+  (D127).
 - The folder and letter rails, long press and the right click are not track-row selects and are unchanged.
 - A tap during the first library load keeps its choice as before, because `selectIndex` loads the track, and the
   loaded track is what `finishLoad` keeps.
@@ -3431,7 +3434,14 @@ proposal compared the Search page with the stock Search screen of Android Settin
   header for the other panel (`BasicTextField(value: String)` keeps its selection in a `remember` that the layout
   switch drops). The emulator reproduced both: `lan` survived a fold, and `lan` typed again after `Ctrl+F` gave
   `lanlan`, then `x` gave `lanxlan`, which places the caret at index 0. Both are consequences of earlier designs, not
-  violations of D66, so they are reported and left open.
+  violations of D66, so they were reported and left open.
+- Update, 2026-10-14, same day: the human asked for the caret to be fixed. The query stays kept by the host across a
+  fold change and D66 still empties it for a new visit. The field is now fed a `TextFieldValue` (the text and its
+  selection) instead of a bare `String`: a header rebuilt for the other panel starts the field with the caret at the end
+  of the kept query, a value that still holds the query keeps the caret the person placed (also across an activity
+  recreation, through `rememberSaveable`), and `Ctrl+F` on an open Search page puts the caret at the end and selects
+  nothing. `searchFieldValue` in `SearchPage.kt` holds the rule, and `SearchFieldCaretWiringTest` pins it. The desktop
+  query field was not examined or changed.
 
 What stays: D58 columns (Back center and result glyph center share one x, query start and title start share one x),
 D59 highlight, D63 to D80 focus and keyboard behavior, D66 and D70 copy, D76 (not a focus trap), D50 and D51 layout
@@ -3480,6 +3490,69 @@ Verification of the Android side, with the commit's tests: pixel and geometry ca
 and status strip pixels equal the canvas in both schemes, divider pixel is `outlineVariant`, the 40 and 72 circles,
 the keyboard inset, D58 columns on both panels, the ring inside the rounded row) and `SearchLayoutTest`, and a
 headful emulator pass on the Fold (cover, inner panel, light, dark, keyboard open, Tab focus, 200 percent text).
+
+### D127. Search results follow the row click rule (2026-10-14)
+
+The human decided this on 2026-10-14, through the question tool, after D124 had left Search open: Search results follow
+the same rule as the track rows.
+
+- Activating a Search result that names a track, by a click, a tap or `Enter` on the ringed result, and that is not the
+  current track, only selects the track.
+  It becomes the current track, the deck shows it, it is loaded paused at its start, and any playing track stops.
+  The browser still jumps to the track's page as before (D74: the page returns to the player with the owning page
+  selected), and the Search query still ends on the return (D66).
+- Activating the result of the current track toggles play and pause, as a click on the current row does.
+  Starting a track from Search therefore takes two activations, the first to select and the second to play, as for a
+  row.
+- This changes D73's first paragraph, which said a result for a different track starts that track at once.
+  D73's current-track toggle, D72 (a folder result opens its folder without autoplay) and D74's return to the player
+  stand.
+- The explicit Play item of the track menu stays play-at-once on both platforms (desktop `play_row_now`, Android
+  `playIndex`).
+  It is an explicit Play, not a click on a row or a result.
+- The spoken action of a result for a track that is not current was "Play track" (D77), which no longer describes the
+  action.
+  It is now "Select track" on both platforms; the current track keeps "Pause track" while it plays and "Play track"
+  while it is paused.
+  This follows from the ruling and is the implementer's reading, open to a veto.
+- Code: Android `SearchActivation.PlayTrack` became `SelectTrack` and `PlayerHost.openSearchResult` calls
+  `PlayerController.selectIndex` (the current-track case still calls `togglePlay`); desktop
+  `ui_search::activate_result` calls `ui_wire::play_row`, the click rule, and `play_row_now` serves the menu Play only.
+- Tests: `PlayerHostModelTest` (the decision), `PlayerHostWiringTest` (a tap on a result through the real host selects
+  paused, the second tap plays), `ui_search_activation_tests.rs` and the Enter case of `ui_keys_window_tests.rs`
+  (the commands the desktop sends).
+
+### D128. An explicit select keeps an unreadable row selected on desktop (2026-10-14)
+
+The human decided this on 2026-10-14, through the question tool, after D124 had left it open: desktop behaves like
+Android when the file of a clicked row cannot be opened.
+
+- A click, `Enter`, a Search result or the menu Play on a row whose file cannot be opened makes that row the current
+  row.
+  It stays selected and paused, nothing is loaded (a playing track stops and its decoder is dropped, so a later toggle
+  cannot resume it), and the window is told the row is current with no length.
+- The failure is reported once through the existing path: the row's "Can't be played" mark (D113) and the system
+  notification of D122, which already posts once per file for a run of the app.
+  A retry that fails again reports nothing more and leaves the mark where it is.
+- The next click on that current row sends the toggle (the window knows the row is current), and the toggle loads the
+  row again.
+  If the file decodes now, it loads and plays, and the mark goes when a peak is measured for it (D113).
+  The Play button does the same when a row is selected and nothing is loaded.
+- Only explicit selects stay on the chosen row.
+  Playback-driven moves keep walking past unreadable files and report them: the natural end of a track, Next and
+  Previous.
+  A launch or a folder open that preselects a file, the restore of the last session, the stop at the end of a folder,
+  and a Play with nothing selected (the first track of the shown page) also keep the walk, because none of them is a
+  choice of one row.
+- Code: `Controller::load_selected` (`controller_flow.rs`) opens only the current row's file; `Command::SelectIndex`
+  and `start_playing` with a selected row use it, and `load_current` is unchanged.
+- Known gap, not changed: the controller forgets a file's report only when a sweep measures a peak for it
+  (`forget_reports_of_decoded`), not when the playing path measures one.
+  A file that was reported, is replaced by a readable one through a retry, and breaks again later is therefore not
+  announced a second time in the same run.
+- Tests: `controller_flow_tests.rs` (an unreadable select stays and drops the old decoder, the second click retries and
+  reports nothing more, a readable file loads and plays and gets its peak, the Play button stays on the row, Next,
+  Previous and the natural end still skip).
 
 ## Pending after the theme picks (2026-09-04)
 

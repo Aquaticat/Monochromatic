@@ -119,7 +119,7 @@ class SearchFieldCaretWiringTest {
     // ```ts
     // test("caret after fold", () => { type("lan"); fold(); type("x"); expect(query).toBe("lanx"); });
     // ```
-    /** After the header is rebuilt for the cover, the next typed character lands after "lan", and the caret follows it. */
+    /** After the header is rebuilt for the cover, the next typed character lands after "lan" and the caret follows. */
     @Test(timeout = CASE_LIMIT_MS)
     fun typingAfterAFoldChangeContinuesAfterTheKeptQuery() {
         show()
@@ -139,9 +139,12 @@ class SearchFieldCaretWiringTest {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("ctrl+f caret", () => { type("lan"); setCaret(0); pressSearchShortcut(); type("x"); expect(query).toBe("lanx"); });
+    // test("ctrl+f caret", () => {
+    //   type("lan"); setCaret(0); pressSearchShortcut(); type("x");
+    //   expect(query).toBe("lanx");
+    // });
     // ```
-    /** After a caret at the start and a Search shortcut, the next typed character lands after "lan" and replaces nothing. */
+    /** After a caret at the start and a Search shortcut, the next typed character lands after "lan" and replaces none. */
     @Test(timeout = CASE_LIMIT_MS)
     fun theSearchShortcutOnAnOpenPagePutsTheCaretAtTheEndAndSelectsNothing() {
         show()
@@ -201,7 +204,10 @@ class SearchFieldCaretWiringTest {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("recreation keeps the caret", () => { type("lan"); setCaret(1); recreate(); type("x"); expect(query).toBe("lxan"); });
+    // test("recreation keeps the caret", () => {
+    //   type("lan"); setCaret(1); recreate(); type("x");
+    //   expect(query).toBe("lxan");
+    // });
     // ```
     /** With the caret at offset 1 and the state saved and restored, the next typed character lands at offset 1. */
     @Test(timeout = CASE_LIMIT_MS)
