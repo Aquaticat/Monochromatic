@@ -57,8 +57,16 @@ The domain acceptance then found that its historical Markdown parser owner,
 was removed by the repository's Rust linter migration.
 Private `f411f9da` declares the previously qualified `satteri@0.10.5` directly in the fixture workspace.
 Its installation uses `pnpm install --ignore-scripts`.
-The current acceptance result is still pending;
-source preparation alone does not establish decision behavior.
+Private `ba4ecadd` records the generated parser lockfile.
+The current acceptance reaches the native policy reviewer with zero provider calls.
+Pi 1.2.0's `reachesTools` callback initially produced an unsupported tool-metadata gap.
+Required-red `2fe40907` and correction `27d713a7` establish its executable-field handling;
+the metadata owner controls pass.
+The permission domain-resolution case now reports only `request-source-domain`
+and fails its required closure assertion.
+It inspected 26 original sources and retained zero native executions.
+The next change must make domain accounting decision-specific through the existing owners.
+The strict TypeScript check for the source staging helper also passes.
 Domain closure,
 maintained delivery,
 and installed approval verification remain unfinished.
