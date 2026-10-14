@@ -41,6 +41,14 @@ not ignored.
 Built wire,
 transport,
 and admission tests pass.
+Additional wire tests cover nullable request shapes,
+the 255-choice boundary,
+predicate bounds,
+independent confidence,
+and usage counts;
+their final lint,
+type,
+and built-consumer runs also pass.
 Native authored HTTP cases verify permission at `0.80`,
 prohibition,
 unspecified policy,
