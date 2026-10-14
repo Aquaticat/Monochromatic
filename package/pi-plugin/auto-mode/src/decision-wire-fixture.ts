@@ -34,7 +34,10 @@ const originalRequest: {
     readonly head_1: {
       readonly type: 'noul';
       readonly instructions: { readonly predicate: string };
-      readonly criteria: { readonly true: string; readonly false: string };
+      readonly criteria: {
+        readonly true: string;
+        readonly false: string;
+      };
     };
   };
 } = {
