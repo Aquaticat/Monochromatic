@@ -7342,3 +7342,76 @@ The tradeoff is an explicit generated-module dependency on the runner's captured
 - The maintained generator correction and actual CLI regression provide local verification.
 
 There is nothing to file upstream from this consumer initialization failure.
+
+## Pi 1.2.0 installed policy capture calls an absent optional effect owner
+
+### Symptom
+
+The installed Qwen check emits the supported program `return await tools.read({path:"proof.txt"});`.
+The owned dispatcher returns `Complete group preparation or assessment failed`.
+The retained lifecycle cause is `TypeError: effectOwnerFor is not a function`.
+No file content is returned.
+This is separate from the preceding rejection of unsupported single-call syntax.
+
+### Root cause
+
+The runtime contract permits omission of the implementation-fact callback:
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/runtime-types.ts:47` declares:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-batch/runtime-types.ts
+readonly effectOwnerFor?: NativeForwardedFunction;
+```
+
+The installed bootstrap omits that callback.
+The original collector nevertheless called it unconditionally.
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/inputs.mjs:77`
+now retains the intended absence:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/inputs.mjs
+const owner = effectOwnerFor?.({ judgment, member, prepared });
+```
+
+The existing absent-owner branch retains `unresolved-effect` evidence.
+The correction supplies no implementation fact or execution permission.
+The native domain fixture previously supplied a callback returning `undefined`,
+so it did not exercise the installed host's omitted property.
+
+### Verification and correction
+
+Pi 1.2.0 uses the qualified source revision `06a466935536f8c9bcacb2d5efc0fc021be1bdff`.
+The failed live log is `${HOME}/temp/agent/pi-single-call-installed-live-20261014.log`.
+Removing the fixture's dummy callback reproduces the exact TypeError locally,
+without provider requests,
+in `${HOME}/temp/agent/pi-missing-effect-owner-red-test-20261014.log`.
+
+```bash
+# Run from repository root after rebuilding maintained and native artifacts.
+mise run //package/pi-plugin/auto-mode:test:native:single-call
+```
+
+With the optional call in commit `b3581b0be0`,
+both single-call forms execute one child and return its original result.
+Prohibition executes no child.
+Copied declarations and unsupported syntax still reject.
+The passing log is `${HOME}/temp/agent/pi-optional-effect-native-test-20261014.log`.
+The provider-backed installed check must still be repeated.
+
+Supplying a dummy callback only in the fixture is rejected as verification of omitted configuration.
+Changing the semantic threshold,
+inventing effect facts,
+or attributing this error to Qwen is unnecessary and unsupported.
+The tradeoff is explicit absence handling at the collector;
+all existing unresolved-fact obligations remain.
+
+### Upstream filing decision
+
+- The unconditional call belongs to the owned policy collector.
+- The consumer fixes it without changing Pi or provider code.
+- No upstream contract for this owned callback is asserted.
+- No external contribution or contribution-policy claim is proposed.
+- No maintainer disposition is inferred.
+- The committed correction passes the actual omitted-property regression locally.
+
+There is nothing to file upstream for this owned callback mismatch.

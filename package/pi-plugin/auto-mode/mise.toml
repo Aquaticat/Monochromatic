@@ -84,6 +84,7 @@ description = "Verify the built direct HTTP sender without provider requests"
 run = [
   "node src/assessment-transport.unit.test.ts",
   "node src/assessment-http.unit.test.ts",
+  "node src/assessment-http-failure.unit.test.ts",
 ]
 
 [tasks."test:native:assessment-transport"]
@@ -138,6 +139,15 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 [tasks."test:native:progress-events"]
 description = "Exercise unchanged native progress callbacks through the original prepared program"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --observed-progress"
+
+[tasks."test:native:single-call"]
+description = "Verify adopted single-call syntax, original native results, and denied operations"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/single-call-profile.test.mjs",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --single-call=direct",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --single-call=binding",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution --sdk-stream --http-transport --operating-policy --single-call=direct",
+]
 
 [tasks."test:native:next-decision-receipts"]
 description = "Retain new progress input and result instructions for the next original decision"

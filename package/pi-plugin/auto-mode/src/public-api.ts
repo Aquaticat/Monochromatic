@@ -128,7 +128,10 @@ export {
 
 export { SemanticAdmissionPolicyError, } from './semantic-admission-error.ts';
 export { copySemanticAdmissionPolicy, } from './semantic-admission-policy.ts';
-export { inspectSemanticAdmissionScope, } from './semantic-admission-scope.ts';
+export {
+  inspectSemanticAdmissionScope,
+  matchesSemanticProgramProfile,
+} from './semantic-admission-scope.ts';
 export type {
   SemanticAcceptance,
   SemanticAdmissionDefinition,

@@ -25,6 +25,12 @@ not observations of model substitution or private-data retention in the hosted s
 
 ## Full-rule request rejected with `max_tokens_exceeded`
 
+The [2026-10-14 contract and workaround assessment](../planning/pi-auto-mode-jev-current-contract.md)
+updates the current operating scope and vendor documentation.
+Historical statements that production adoption was pending are superseded by the
+[adopted semantic operating rule](../decision/pi-auto-mode-semantic-admission.md).
+The source and live results in this record retain their original scope.
+
 ### Symptom and retained scope
 
 On 2026-10-05,
@@ -176,6 +182,91 @@ No upstream issue or comment is warranted.
 [typesafe-model-limits]: https://docs.typesafe.ai/models
 [typesafe-question-schema]: https://docs.typesafe.ai/api
 [typesafe-jaggedness]: https://docs.typesafe.ai/model-jaggedness/jev-1.13
+
+## Installed Jev request returns HTTP 400 without retained provider detail
+
+On 2026-10-14,
+the approved disposable Qwen host test reached the Jev route through LLM Gateway.
+Its retained cause was `AssessmentTransportError: Assessment request returned HTTP 400`.
+The raw provider error was not retained in
+`${HOME}/temp/agent/pi-native-installed-live-NB6KVz/host-stderr.txt`.
+The governed file read did not complete successfully.
+
+The owned transport explains the missing detail,
+not the upstream rejection.
+`package/pi-plugin/auto-mode/src/assessment-transport.ts:238` contains:
+
+```ts
+// package/pi-plugin/auto-mode/src/assessment-transport.ts
+if (response.status !== limits.successfulStatus)
+  throw new AssessmentTransportError(`Assessment request returned HTTP ${response.status}`,);
+```
+
+The complete bounded response was consumed before this branch,
+then replaced with a status-only diagnostic.
+Unlike the historical overflow controls,
+this observation contains no `max_tokens_exceeded` code.
+The separate installed run at `${HOME}/temp/agent/pi-native-installed-live-9wruOV/host-stderr.txt`
+stopped at the owned `RuleAssessmentWireError: Complete mixed assessment exceeds the one MiB bound`
+before provider inference.
+Neither incident proves the other's cause.
+
+Historical accepted 205-answer requests provide working provider controls,
+but do not reproduce this current installed payload.
+No current-request workaround is verified.
+The proposed diagnostic correction is to retain recognized error codes only,
+without echoing provider free text or input content.
+Blind retries,
+raising the local byte guard,
+or treating the unknown HTTP 400 as a confirmed context overflow are not established remedies.
+
+The existing upstream filing decision remains unchanged:
+upstream fault and fixability are unestablished,
+typed questions are documented,
+no contribution or willingness inquiry was made,
+and no hosted-source fix can be prototyped from this status-only evidence.
+No issue or external message is drafted or sent.
+
+### Recognized capacity diagnostic verified on 2026-10-14
+
+The user resumed implementation after the Jev assessment.
+The built sender regression reproduced the loss of the exact
+`{"detail":{"error_type":"max_tokens_exceeded"}}` envelope.
+Commit `7f0c910ee4` retains the failing test;
+`520cfe39ca` adds the diagnostic correction.
+The scoped transport tests and TypeScript check pass after rebuilding.
+Scoped lint reports zero warnings and zero errors on the changed files.
+
+`package/pi-plugin/auto-mode/src/assessment-http-failure.ts:63` now recognizes only this exact code:
+
+```ts
+// package/pi-plugin/auto-mode/src/assessment-http-failure.ts
+if (detail.error_type === 'max_tokens_exceeded') {
+  rl.debug('recognized provider token capacity failure',);
+  return `${message}; provider code max_tokens_exceeded`;
+}
+```
+
+Malformed JSON,
+unknown codes,
+wrong types,
+lookalikes,
+and codes outside the recognized envelope retain the status-only diagnostic.
+Provider free text is excluded;
+the existing credential-echo check runs before classification.
+This improves diagnosis without changing the request or admission result.
+
+The approved installed disposable rerun at
+`${HOME}/temp/agent/pi-native-installed-live-pygBoi/host-stderr.txt:75`
+then reported
+`AssessmentTransportError: Assessment request returned HTTP 400; provider code max_tokens_exceeded`.
+Qwen proposed `return await tools.read({path:"proof.txt", offset:1, limit:2000});`.
+The governed read remained withheld.
+This establishes a capacity rejection for this rerun,
+without retroactively recovering the discarded body from the previous run.
+No payload reduction or capacity workaround is yet verified for the installed host.
+The next local check measures the complete native assessment and reversible representation changes.
+The upstream filing decision remains unchanged because a documented capacity rejection is not an established bug.
 
 ## Source identity
 

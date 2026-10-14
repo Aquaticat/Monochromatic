@@ -12,8 +12,19 @@ No further paid qualification is authorized by this decision.
 
 ## Scope
 
-The policy fixes `typesafe/jev-1.13.0`
-and the existing `awaited-string-result-then-literal-parallel` program inspection profile.
+The policy fixes `typesafe/jev-1.13.0`.
+The original scope was `awaited-string-result-then-literal-parallel`.
+On 2026-10-14,
+the user also adopted `awaited-literal-single-call`:
+a returned awaited tool call with a literal argument object,
+or an immutable binding of that call followed by its direct return.
+The fixed bootstrap scope `native-inspected-programs-v2` contains exactly these two decoder profiles.
+Neither the scope identifier itself nor another program shape is an inspected operation.
+Both profiles retain the same cutoff and independent authority,
+source,
+argument,
+result,
+and cancellation checks.
 It applies separately to clause relationships,
 whole-request content,
 source-local heading content,

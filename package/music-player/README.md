@@ -437,12 +437,14 @@ The on-screen keyboard was closed before the capture so that the results fill th
 
 The menu was opened on the playing row with the `Menu` key,
 after `Alt+2` had focused the track list.
-A ring around the row and a ring around Start shuffle from here show keyboard focus,
+A ring just inside the edges of the row and a ring around Start shuffle from here show keyboard focus,
 which the `Down` and `Up` keys move through the six rows.
+Rings appear only while the keyboard drives focus,
+and no other capture in this Android section shows one.
 Each row has an underlined access letter,
 and Move to trash has a red label and a trash icon.
 
-![Track menu opened with the keyboard on the cover display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/d1b1acaf10655d3e57fdbdb10695db9940578131b9cd7d742eabb2376ef6aa1a/package/music-player/asset/readme/android-cover-menu-dark.png)
+![Track menu opened with the keyboard on the cover display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/98007d69d82c56fdf7d154d21279e0a020ab660e29cf49f16d8049ffb2b834e8/package/music-player/asset/readme/android-cover-menu-dark.png)
 
 On the cover display Settings is a single pane.
 It lists the two templates,

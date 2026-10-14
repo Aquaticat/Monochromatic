@@ -27,6 +27,120 @@ not a semantic quality comparison.
 The [troubleshooting record](../troubleshooting/drex-model-route-label.md)
 separates the owned schema mismatch from the unexplained hosted question limit.
 
+### Reopened contract check on 2026-10-14
+
+The user reiterated that Drex looks more promising.
+The [current contract recheck](../planning/pi-auto-mode-drex-current-contract.md)
+finds changed published context limits and an explicit no-fallback statement for Drex 2.0.
+The observed 16-question rejection remains unexplained despite the published 512-question allowance.
+The old context and fallback description is historical;
+the current published limits are 131,072 state tokens and 262,144 state-plus-longest-question tokens.
+No model replacement or new semantic qualification is adopted.
+
+A prepared private fixture at `${HOME}/temp/agent/drex-question-boundary-20261014/probe.ts`
+uses only the public synthetic state `The card is green.`
+and repeated text-only `Is the card green?` questions.
+Its `mise run check` passed with zero provider calls:
+the 16-question request is 2,246 bytes and the 17-question request is 2,383 bytes.
+The frozen request hashes are
+`9f57a20c7564b0ac0868a834f2ed56d4d809d78e4e530dd4388e5857b29247b5`
+and `6b46f9af796187cae0e937b7df5f38c01bbea0a844e229c433d832f845194711`.
+The live schedule pins `drex-v2.0`,
+caps each request at five seconds,
+performs no retries,
+and refuses to overwrite a started experiment.
+The user explicitly approved these two synthetic probes on 2026-10-14.
+The unchanged `mise run probe` schedule then started.
+No policy or session content enters either request.
+Both approved probes completed with HTTP 200 and `model: drex-v2.0`.
+All original question IDs and typed finite Noul answers were present:
+16 answers for the control and 17 for the boundary request.
+The result disproves a universal 16-question cap on this route at this time.
+It does not establish acceptance of the complete native assessment or semantic qualification.
+The [result record](../planning/pi-auto-mode-drex-current-contract.md#approved-synthetic-boundary-results)
+retains timings,
+token usage,
+and probability ranges without treating them as calibration.
+The user then explicitly requested more calls to establish actual Drex limits.
+The completed extended phase made 23 sequential synthetic requests with no retries:
+12 returned HTTP 200,
+10 returned HTTP 422,
+and the final combined input returned HTTP 529.
+Every attempt and response is retained in `${HOME}/temp/agent/drex-request-limits-20261014`.
+The measured boundaries are 512 questions,
+4,194,304 counted body bytes,
+the server's named 131,072-token state boundary,
+and an effective backend row limit of 139,264 despite the published 262,144 allowance.
+The 244-question case with 65,536 repeated-text units succeeded in 25,155.119 ms;
+the near-maximum state with 244 questions returned `overloaded` after 33,331.147 ms.
+The frozen stop condition ended the schedule without retry.
+These measurements reopen Drex's question-count compatibility but do not qualify the complete native assessment,
+establish reliable five-second latency,
+or adopt a new production route.
+
+The latest approved installed Qwen/Jev verification is separately incomplete:
+`${HOME}/temp/agent/pi-native-installed-live-NB6KVz/host-stderr.txt`
+retains `AssessmentTransportError: Assessment request returned HTTP 400`.
+The transport discards upstream error detail,
+so the cause is not established and must not be inferred from historical token-limit failures.
+The installed command emitted the supported literal single-call program,
+but no successful governed file read was observed.
+Package types and scoped lint of the five changed semantic interfaces pass;
+`${HOME}/temp/agent/pi-single-call-clean-scope-lint-20261014.log`
+reports zero warnings and zero errors.
+
+### Jev workaround assessment on 2026-10-14
+
+The user asked which Jev problems were encountered and whether they can be worked around.
+The [current assessment](../planning/pi-auto-mode-jev-current-contract.md)
+separates reproduced token-limit failures,
+earlier semantic binding errors and repeat variability,
+owned host defects,
+the latest unclassified HTTP 400,
+and historical gateway-source limitations.
+One shared-guidance representation returned all 205 estimates within its original budget,
+but no universal capacity remedy or current categorical semantic qualification follows.
+The current `0.99` operating rule and independent source/authority guards remain unchanged.
+The refreshed vendor documentation also warns about Choice option order;
+the present clause label list puts permission first,
+so provider order-sensitivity remains an explicit untested boundary.
+LLM Gateway now announces that System One will be deprecated in favor of Decisions,
+without a retirement date in the inspected page.
+That is maintenance evidence,
+not an explanation for the observed HTTP 400 or a tested capacity workaround.
+No new provider request or product change follows from this deliberation request.
+
+The user subsequently said to keep working.
+The transport now preserves the recognized `max_tokens_exceeded` code while excluding upstream free text.
+Its regression failed before the fix and passes after rebuilding;
+the transport suite,
+package types,
+and scoped changed-file lint pass.
+The approved installed rerun at `${HOME}/temp/agent/pi-native-installed-live-pygBoi`
+reached Jev with Qwen's supported literal read and returned
+`Assessment request returned HTTP 400; provider code max_tokens_exceeded`.
+The governed read did not execute successfully.
+The next step is local measurement of the complete native assessment and lossless encoding opportunities;
+the adopted provider,
+policy,
+source membership,
+and admission cutoff remain unchanged.
+
+Local replay captured 73 source occurrences and 84 questions in 504,946 bytes.
+Exact reconstruction checks preserved the complete state and every question in experimental encodings.
+The shared-content candidate measured 165,373 bytes,
+but its one frozen Jev request still returned `max_tokens_exceeded` in 1,269.832 ms.
+It is not installed or a verified workaround.
+The complete original request was then prepared for Drex with text-encoded question instructions,
+round-tripped exactly,
+and measured 541,947 bytes.
+The user explicitly approved this request after automatic approval review rejected recorded historical consent.
+The approved five-second call ended with `TimeoutError` after 5,005.129 ms and no usable response.
+No retry or production route change occurred.
+The user then renewed standing authorization to send anything needed to Drex and Jev and use credits freely.
+The next diagnostic observes complete-request completion beyond the production deadline;
+late results cannot authorize an action.
+
 ## Restart checkpoint after installing automatic Codex shell limits
 
 The user restarted the session and resumed work on 2026-10-13.
@@ -1130,12 +1244,67 @@ but its ordinary single-call read was blocked before assessment.
 The existing program decoder requires an awaited producer followed by a returned parallel successor group.
 The diagnostic repeat's `try` block also failed that profile;
 local tagged diagnostics now expose the retained `ResultProgramProfileError`.
-The [single-call proposal](../planning/pi-auto-mode-governing-domain-closure.md#live-host-program-profile-extension-proposal)
+The [adopted single-call profile](../planning/pi-auto-mode-governing-domain-closure.md#adopted-live-host-single-call-program-profile)
 adds only a returned literal tool call or an immutable binding followed by its return,
 preserving the existing producer/successor profile and every budget.
-User adoption is pending because this changes the explicitly named program-inspection and semantic-admission profile.
+The user adopted this extension on 2026-10-14.
+Implement its two stated forms,
+preserving existing guards,
+budgets,
+and the 0.99 admission rule,
+then repeat the installed governed read.
 Live logs are `${HOME}/temp/agent/pi-native-installed-live-20261014.log`
 and `${HOME}/temp/agent/pi-native-installed-live-diagnostic-20261014.log`.
+The adopted single-call implementation is committed in `00f8f1fe67`,
+`9e99064bbc`,
+`8997d1568d`,
+and `66e0f358ce`.
+The decoder and compiled-source reconstruction preserve both single-call forms,
+and the fixed semantic scope includes only those forms and the existing producer/successor profile.
+The unchanged native group owner receives one reached group for a single call.
+Model-visible loadout guidance now states the supported forms and preserves native nested-tool declarations.
+Both maintained and owned native builds pass.
+The first native consumer check exposed an omitted export in the maintained bridge,
+then in its generated bridge.
+Commits `41ab9e575b` and `fb1d7f4361` connect that export without changing profile matching.
+The rebuilt `test:native:single-call` passes:
+both forms return the original native result with one assessment and one child call;
+prohibition executes no child;
+26 unsupported syntax cases reject;
+copied declarations reject;
+both existing parallel combinators retain their profile.
+Its log is `${HOME}/temp/agent/pi-single-call-generated-bridge-test-20261014.log`.
+Package types,
+scoped lint,
+guard omission,
+and the installed provider-backed read remain to be verified.
+Automatic approval review rejected the repeat installed read before launch,
+citing insufficient retained authorization for the external Qwen payload.
+Recheck the original explicit Qwen testing instruction and the disposable fixture inputs before retrying;
+do not bypass the rejection through another launch path.
+The fixture source check confirmed the selected Qwen route,
+synthetic read task,
+synthetic policy and proof file,
+read-only package mounts,
+and absent real-session mounts.
+Automatic approval review still rejected the same command because it did not accept retained authorization evidence.
+The user then explicitly approved this prepared verification and its synthetic policy,
+configured tool descriptions,
+synthetic result,
+Qwen route,
+and Jev reviewer through LLMGateway on 2026-10-14.
+Run the same bounded fixture;
+this does not authorize a new semantic qualification campaign.
+The approved installed run now emits a supported single-call program,
+but exposed `TypeError: effectOwnerFor is not a function` before assessment.
+The host omits this optional implementation-fact callback;
+the fixture had hidden that path with a callback returning `undefined`.
+The local omitted-property regression reproduced the same failure.
+Commit `b3581b0be0` uses the existing absent-owner branch without supplying facts or permission.
+Both single-call results and prohibition pass after rebuilding with the callback genuinely absent.
+The [callback incident](../troubleshooting/pi-sdk-staging.md#pi-120-installed-policy-capture-calls-an-absent-optional-effect-owner)
+retains the separate diagnosis and logs.
+Repeat the same approved installed verification after this wiring correction.
 The current command resolves through generated workspace dependency shims,
 and the root `mise.toml` path list is owned by `file-enforcer.config.ts`.
 That command-resolution description is historical;

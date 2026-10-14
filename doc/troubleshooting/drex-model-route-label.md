@@ -1,6 +1,125 @@
 # Drex API full-policy routing and request compatibility
 
+## Drex 2.0 backend rejects rows below its published context limit
+
+### Symptom
+
+On 2026-10-14,
+the pinned hosted `drex-v2.0` route rejected a synthetic question with HTTP 422:
+`question requires 262122 branch tokens; backend row limit is 139264 including state`.
+The [current model reference](https://console.nace.ai/docs/drex/reference/models)
+advertises a 262,144-token state-plus-longest-question limit.
+The separately named state limit is 131,072 tokens.
+This incident is distinct from the historical question-count rejection:
+the current synthetic controls accept 512 questions and reject 513.
+
+### Cause and source boundary
+
+The observable boundary is a disagreement between the published row limit and the backend's returned limit.
+The public runtime checkout remains `be8ba7c8157241b9393862e9fcec104d0dc5caff`.
+Its `kev/model.py:153` checks available row capacity while encoding a branch:
+
+```python
+# nace-ai/drex-decision-models, kev/model.py
+if len(br) > max_branch - len(S):
+    raise ContextOverflow(f"branch too long: {len(br)} tokens with a {len(S)}-token state (row limit {max_branch})")
+```
+
+This is relevant comparable code,
+not proof of the hosted guard's implementation.
+An uncapped `rg --hidden --no-ignore` search across the complete checkout found none of
+`question requires`,
+`backend row limit`,
+or `Request schema or context limit is invalid`.
+The inspected runtime's diagnostic differs from the returned hosted diagnostic.
+No hosted configuration or serving-weight identity was available for inspection.
+Matching Drex 1.5's published row number does not prove fallback:
+successful controls explicitly report `model: drex-v2.0`.
+
+### Verification
+
+The private fixture is `${HOME}/temp/agent/drex-request-limits-20261014/probe.ts`.
+Its create-new evidence files retain payload hashes,
+raw responses,
+answer sets,
+reported models,
+and elapsed times.
+The [request-limit report](../planning/pi-auto-mode-drex-current-contract.md)
+records the user's authorization,
+resource boundaries,
+and complete schedule.
+The historical invocation is:
+
+```bash
+# Run from ${HOME}/temp/agent/drex-request-limits-20261014; retained destinations refuse a repeat.
+mise run probe row
+mise run probe row 139236
+mise run probe row 139237
+```
+
+Working cases use the same short state and one binary question:
+131,072 and 139,236 repetitions of `x ` in its instructions return HTTP 200 and `drex-v2.0`.
+The latter reports 139,264 input tokens and returns the original question's answer.
+
+Failing cases retain distinct error variants:
+
+- 139,237 repetitions return `Request schema or context limit is invalid`.
+- 262,100 repetitions return the explicit backend limit of 139,264.
+- 262,140,
+  262,144,
+  and 262,145 repetitions return the separately worded 262,144-token row-limit error.
+
+The adjacent accepted/rejected inputs establish the exact boundary for this fixture family.
+They do not expose the hidden tokenizer count independently.
+
+### Handling and rejected interpretations
+
+No production workaround is installed.
+The successful shorter fixture is a boundary control,
+not permission to shorten the complete policy or discard source receipts.
+The report separates service acceptance from the unchanged five-second production assessment budget.
+
+The following interpretations are unsupported:
+
+- Assuming the published 262,144-token row size is currently usable.
+- Inferring a Drex 1.5 fallback solely from the backend limit number.
+- Replacing state-token accounting with billed input-token totals.
+- Treating HTTP 200 on synthetic inputs as semantic qualification or native-request fidelity.
+
+### Upstream filing decision
+
+No issue,
+comment,
+or external message is drafted or sent.
+
+1.  Upstream fault: a contract discrepancy is reproduced;
+    its hosted code or configuration cause is not established.
+2.  Fixability: unknown without the deciding implementation;
+    no impossibility or effort estimate is asserted.
+3.  Supported use: the current hosted model and limits references advertise the tested row boundary.
+4.  Contribution policy: not investigated because no external contribution is proposed.
+5.  Maintainer willingness: unknown;
+    no communication was sent.
+6.  Prototype: controlled consumer requests reproduce the boundary;
+    no source-grounded hosted patch can be built from the different public runtime.
+
 ## Drex 2.0 rejects the complete native question batch
+
+### Current contract recheck on 2026-10-14
+
+The [current factual recheck](../planning/pi-auto-mode-drex-current-contract.md)
+finds changed published Drex 2.0 context limits and an explicit no-fallback statement.
+The hosted 512-question documentation still conflicts with the retained 16-question rejection.
+Public source remains at `be8ba7c8157241b9393862e9fcec104d0dc5caff`
+and does not contain the deciding hosted guard.
+Its local `requests` batch envelope does not establish support on the hosted route.
+The user separately approved the prepared 16/17-question synthetic controls.
+Both returned HTTP 200 with `model: drex-v2.0` and every expected answer.
+The [result record](../planning/pi-auto-mode-drex-current-contract.md#approved-synthetic-boundary-results)
+disproves a universal 16-question limit at the observed time;
+it does not explain the historical rejection or verify the complete native request.
+No workaround or production model replacement is established.
+The existing upstream filing decision remains unchanged.
 
 ### Symptom
 
