@@ -139,6 +139,7 @@ pub(super) fn reader(root: &Path, name: &str) -> Reader {
     window.set_file_label(SharedString::from(path.display().to_string()));
     bind_pointer(&window, &source);
     bind_viewport(&window, &source);
+    super::minimap::bind(&window, &source);
     bind_keys(&window, &source);
     bind_appearance(&window, &source);
     let refresh = reload::bind(&window, &source).expect("source refresh");

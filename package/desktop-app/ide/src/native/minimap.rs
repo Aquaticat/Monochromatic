@@ -88,7 +88,7 @@ pub(super) struct MinimapState {
     /// Number of the last request posted.
     next_id: u64,
     /// Number of the request whose picture is on screen.
-    shown_id: u64,
+    pub(super) shown_id: u64,
     /// Number of the request whose final picture is awaited, or zero.
     awaited: u64,
     /// The drag in progress.
@@ -342,7 +342,7 @@ fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
 /// ```ts
 /// function apply(window: AppWindow, state: Shared<State>, reply: Reply): void;
 /// ```
-fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: Reply) {
+pub(super) fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: Reply) {
     let mut current = state.borrow_mut();
     if reply.id == current.minimap.awaited && reply.last {
         current.minimap.awaited = 0;

@@ -216,6 +216,9 @@ export component AppWindow inherits Window {
     // Native code builds the picture of the whole file; the box and the track follow the scroll live, from the text's
     // height, the view's height, and the scroll offset alone (`ide_app::minimap::Geometry` holds the same formulas).
     in property <image> minimap-image;
+    // Whether the pointer is over the minimap, and whether its left button is down on it.
+    out property <bool> minimap-hovered: minimap.hovered;
+    out property <bool> minimap-pressed: minimap.pressed;
     private property <length> minimap-content: max(root.content-extent * 1px, 1px);
     private property <float> minimap-scale: min(4.0 / 24.0, scroll.height / root.minimap-content);
     out property <length> minimap-track: min(root.minimap-content * root.minimap-scale, scroll.height);
