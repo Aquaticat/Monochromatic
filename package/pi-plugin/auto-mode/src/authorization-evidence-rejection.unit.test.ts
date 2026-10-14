@@ -80,10 +80,10 @@ await describe({
         },
       },);
     },),
-    it({
-      name: 'rejects extra, missing and non-callable owner or record fields',
-      fn: async function checkRecordShapes() {
-        for (const mode of ['extra-evidence', 'missing-evidence', 'extra-owner', 'non-callable', 'null-owner',]) {
+    ...(['extra-evidence', 'missing-evidence', 'extra-owner', 'non-callable', 'null-owner',] as const).map(function recordShapeCase(mode,) {
+      return it({
+        name: `rejects unsupported record shape ${mode}`,
+        fn: async function checkRecordShapes() {
           const f = createAuthorizationEvidenceFixture();
           if (mode === 'extra-evidence')
             Reflect.set(f.evidence, 'permission', true,);
@@ -99,14 +99,14 @@ await describe({
           },);
           expect(failures,).toHaveLength(1,);
           expect(failures[0],).toBeInstanceOf(AuthorizationEvidenceError,);
-        }
-      },
+        },
+      },);
     },),
-    it({
-      name: 'does not invoke evidence or owner getters, with positive getter controls',
-      fn: async function checkAccessors() {
-        const counts = { reads: 0, };
-        for (const mode of ['evidence', 'owner',]) {
+    ...(['evidence', 'owner',] as const).map(function accessorCase(mode,) {
+      return it({
+        name: `does not invoke ${mode} getters, with a positive getter control`,
+        fn: async function checkAccessors() {
+          const counts = { reads: 0, };
           const f = createAuthorizationEvidenceFixture();
           const target = mode === 'owner' ? f.owner : f.evidence;
           const field = mode === 'owner' ? 'capture' : 'authorization';
@@ -122,8 +122,8 @@ await describe({
           expect(counts.reads,).toBe(before,);
           Reflect.get(target, field,);
           expect(counts.reads,).toBe(before + 1,);
-        }
-      },
+        },
+      },);
     },),
     it({
       name: 'rejects proxy owners before reflection, with a positive trap control',

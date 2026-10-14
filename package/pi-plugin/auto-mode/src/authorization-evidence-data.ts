@@ -38,6 +38,7 @@ const l = tagged({ tag: 'auto-mode-authorization-evidence-data', },);
  @returns copied values requiring domain-specific validation
  
  @throws AuthorizationEvidenceError for missing, extra or non-data fields
+ 
  @example
  ```ts
  const values = readAuthorizationRecord({ input: evidence, fields: ['rule'] });
@@ -69,7 +70,10 @@ export function readAuthorizationRecord(
       fields,
     },);
     if (fields.some(function absent(field,) {
-      return !Object.hasOwn(record, field,);
+      return !Object.hasOwn(
+        record,
+        field,
+      );
     },))
       throw new AuthorizationEvidenceError('Authorization evidence has missing fields',);
     return record;
@@ -101,6 +105,7 @@ function isEvidenceMethod(input: unknown,): input is EvidenceMethod {
  @returns original capture and freshness methods
  
  @throws AuthorizationEvidenceError for unsupported owner methods
+ 
  @example
  ```ts
  const methods = readAuthorizationOwner(originalOwner);
