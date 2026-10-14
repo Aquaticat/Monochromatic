@@ -3,11 +3,13 @@
 
  @module
  */
-import { execFile } from 'node:child_process';
+import spawn, { SubprocessError } from 'nano-spawn';
 import {
   chmod,
   mkdir,
   mkdtemp,
+  open,
+  readFile,
   rm,
   writeFile
 } from 'node:fs/promises';
@@ -16,12 +18,11 @@ import {
   delimiter,
   join
 } from 'node:path';
-import { promisify } from 'node:util';
 
-/** Owner-only permissions apply to the private fixture directory and executable. */
+/**
+ Owner-only permissions apply to the private fixture directory and executable.
+ */
 const PRIVATE_MODE = 0o700;
-/** Node's native process API preserves the wrapper's exact output bytes. */
-const execute = promisify(execFile);
 
 /**
  Controlled compiler output distinguishes suppressed diagnostics from process failure.
@@ -86,7 +87,13 @@ export async function runCompilerFailureCase(input: CompilerFailureCase): Promis
    */
   await using fixture = {
     async [Symbol.asyncDispose](): Promise<void> {
-      await rm(directory, { recursive: true, force: true });
+      await rm(
+        directory,
+        {
+          recursive: true,
+          force: true
+        }
+      );
     },
   };
   /**
@@ -118,39 +125,27 @@ export async function runCompilerFailureCase(input: CompilerFailureCase): Promis
     'node',
     'tsc-filter.mjs'
   );
-  /**
-   Only this child sees the disposable compiler ahead of the ambient executable search path.
-   */
+  /** Output files retain exact wrapper bytes independently of subprocess-library normalization. */
+  const stdoutPath = join(directory, 'stdout.txt');
+  /** Error output remains separate from ordinary compiler metadata. */
+  const stderrPath = join(directory, 'stderr.txt');
+  /** The child borrows these descriptors until its process has completely exited. */
+  await using stdoutFile = await open(stdoutPath, 'w');
+  /** Descriptor disposal follows the completed subprocess and output readback. */
+  await using stderrFile = await open(stderrPath, 'w');
+  /** A nonzero wrapper status is observed test data, not a fixture startup failure. */
+  const outcome = { status: 0 };
   try {
-  const result = await execute(
-    process.execPath,
-    [
-      entry,
-      '--version'
-    ],
-    {
-    cwd: directory,
-    encoding: 'utf8',
-    env: {
-      ...process.env,
-      PATH: `${directory}${delimiter}${process.env
-        .PATH
-        ?? ''}`
-    },
-    timeout: 10_000,
-    maxBuffer: 1_048_576,
-  }
-  );
-  return {
-    status: 0,
-    stdout: result.stdout,
-    stderr: result.stderr
-  };
+    await spawn(process.execPath, [entry, '--version'], {
+      cwd: directory,
+      stdout: stdoutFile.fd,
+      stderr: stderrFile.fd,
+      env: { PATH: `${directory}${delimiter}${process.env.PATH ?? ''}` },
+      timeout: 10_000,
+    });
   } catch (error) {
-    if ((error instanceof Error) && ('code' in error) && (typeof error.code === 'number')
-      && ('stdout' in error) && (typeof error.stdout === 'string')
-      && ('stderr' in error) && (typeof error.stderr === 'string'))
-      return { status: error.code, stdout: error.stdout, stderr: error.stderr };
-    throw error;
+    if (!(error instanceof SubprocessError) || error.exitCode === undefined) throw error;
+    outcome.status = error.exitCode;
   }
+  return { status: outcome.status, stdout: await readFile(stdoutPath, 'utf8'), stderr: await readFile(stderrPath, 'utf8') };
 }
