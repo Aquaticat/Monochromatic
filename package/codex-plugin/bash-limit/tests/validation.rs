@@ -1,7 +1,10 @@
 //! Refusal paths and initialization through the native executable.
 
-/// What: `mod` includes the shared fixture module; `use` imports standard-library names.
-/// Why: Native tests share disposable setup without using a TypeScript harness.
+/// What:
+/// `mod` includes the shared fixture module;
+/// `use` imports standard-library names.
+/// Why:
+/// Native tests share disposable setup without using a TypeScript harness.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -9,11 +12,18 @@
 /// import * as fs from 'node:fs';
 /// ```
 mod support;
-/// Import file operations, errors, and captured subprocess output.
+/// Import file operations,
+/// errors,
+/// and captured subprocess output.
 use std::{fs, io, process::Output};
 
-/// What: `fn` declares a function; `&Output` borrows captured data from its owner.
-/// Why: Every denial must have a blocking exit, an empty success stream, and a diagnostic.
+/// What:
+/// `fn` declares a function;
+/// `&Output` borrows captured data from its owner.
+/// Why:
+/// Every denial must have a blocking exit,
+/// an empty success stream,
+/// and a diagnostic.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -32,8 +42,11 @@ fn denied(output: &Output) {
     assert!(!output.stderr.is_empty(), "{output:?}");
 }
 
-/// What: `#[test]` registers a nextest case; `Result<()>` carries success or a setup error.
-/// Why: CLI and JSON validation must be exercised through the executable entry point.
+/// What:
+/// `#[test]` registers a nextest case;
+/// `Result<()>` carries success or a setup error.
+/// Why:
+/// CLI and JSON validation must be exercised through the executable entry point.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

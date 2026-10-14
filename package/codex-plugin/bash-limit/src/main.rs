@@ -1,27 +1,42 @@
-//! Native Codex hook entry point; stdout contains only the host's JSON protocol.
+//! Native Codex hook entry point;
+//! stdout contains only the host's JSON protocol.
 
-/// What: `mod` loads sibling source files, like TypeScript module imports.
-/// Why: Separate resource checks from JSON and shell encoding.
-/// TypeScript equivalent: `import * as limits from './limits';`
+/// What:
+/// `mod` loads sibling source files,
+/// like TypeScript module imports.
+/// Why:
+/// Separate resource checks from JSON and shell encoding.
+/// TypeScript equivalent:
+/// `import * as limits from './limits';`
 mod limits;
 /// Load the sibling protocol implementation.
 mod protocol;
 
-/// What: `use` imports a standard-library name; `::` separates module names.
-/// Why: Report failures without an additional error-handling dependency.
-/// TypeScript equivalent: `import { Error } from 'node:io';`
+/// What:
+/// `use` imports a standard-library name;
+/// `::` separates module names.
+/// Why:
+/// Report failures without an additional error-handling dependency.
+/// TypeScript equivalent:
+/// `import { Error } from 'node:io';`
 use std::io;
 /// Import the trait that adds byte-writing methods to stdout and stderr.
 use std::io::Write;
-/// Import owned paths, unlike borrowed `Path` references.
+/// Import owned paths,
+/// unlike borrowed `Path` references.
 use std::path::PathBuf;
 /// Import the native process exit-status value.
 use std::process::ExitCode;
 
-/// What: `fn` declares a function; `Result<String>` carries text or an I/O error.
-/// Why: Keep failures out of the success JSON stream.
-/// `String` owns text; its sibling `&str` only borrows existing text.
-/// TypeScript equivalent: `function run(): string { /* may throw */ }`
+/// What:
+/// `fn` declares a function;
+/// `Result<String>` carries text or an I/O error.
+/// Why:
+/// Keep failures out of the success JSON stream.
+/// `String` owns text;
+/// its sibling `&str` only borrows existing text.
+/// TypeScript equivalent:
+/// `function run(): string { /* may throw */ }`
 fn run() -> io::Result<String> {
     // What: `mut` permits the argument iterator to advance.
     // Why: Consume the mode and parent path without a CLI framework.
@@ -73,9 +88,14 @@ fn run() -> io::Result<String> {
     return protocol::response(&input, &parent);
 }
 
-/// What: `main` returns `ExitCode`, the operating system's exit status.
-/// Why: Codex treats hook exit status 2 as a blocked call, including encoding failures.
-/// TypeScript equivalent: `try { stdout.write(run()); } catch (error) { process.exitCode = 2; }`
+/// What:
+/// `main` returns `ExitCode`,
+/// the operating system's exit status.
+/// Why:
+/// Codex treats hook exit status 2 as a blocked call,
+/// including encoding failures.
+/// TypeScript equivalent:
+/// `try { stdout.write(run()); } catch (error) { process.exitCode = 2; }`
 fn main() -> ExitCode {
     // What: `match` separates the success and failure variants of `Result`.
     // Why: Rust reports ordinary failures as values instead of throwing exceptions.

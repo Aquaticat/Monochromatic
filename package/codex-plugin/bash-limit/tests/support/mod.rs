@@ -1,7 +1,13 @@
 //! Disposable files and native process helpers shared by integration tests.
 
-/// What: `use` imports names; `::` separates module names.
-/// Why: Tests need files, paths, errors, and child processes without a test framework dependency.
+/// What:
+/// `use` imports names;
+/// `::` separates module names.
+/// Why:
+/// Tests need files,
+/// paths,
+/// errors,
+/// and child processes without a test framework dependency.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -10,9 +16,13 @@
 /// ```
 use std::{fs, io, io::Write, path::PathBuf, process::{Command, Output, Stdio}};
 
-/// What: `pub fn` exports a function; `Result<PathBuf>` carries a path or an I/O error.
-/// `PathBuf` owns its filename; sibling `&Path` borrows an existing filename.
-/// Why: Each test needs its own directory that remains usable after this function returns.
+/// What:
+/// `pub fn` exports a function;
+/// `Result<PathBuf>` carries a path or an I/O error.
+/// `PathBuf` owns its filename;
+/// sibling `&Path` borrows an existing filename.
+/// Why:
+/// Each test needs its own directory that remains usable after this function returns.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -69,8 +79,10 @@ pub fn fixture() -> io::Result<PathBuf> {
     return Ok(parent);
 }
 
-/// Borrow an argument list and stdin text, returning the actual binary's captured output.
-/// `&[&str]` borrows a variable-size list; `[T; N]` fixes its length and `Vec<T>` owns it.
+/// Borrow an argument list and stdin text,
+/// returning the actual binary's captured output.
+/// `&[&str]` borrows a variable-size list;
+/// `[T; N]` fixes its length and `Vec<T>` owns it.
 /// Borrowing avoids copying caller-owned command arguments.
 pub fn invoke(arguments: &[&str], input: &str) -> io::Result<Output> {
     // What: `env!` embeds Cargo's executable path at compile time; `mut` permits writing stdin.
@@ -93,7 +105,8 @@ pub fn invoke(arguments: &[&str], input: &str) -> io::Result<Output> {
     return child.wait_with_output();
 }
 
-/// Encode a command event through serde_json, borrowing the original shell text.
+/// Encode a command event through serde_json,
+/// borrowing the original shell text.
 pub fn event(command: &str) -> io::Result<String> {
     // Serialize the command at the JSON boundary, preserving every shell character.
     let encoded = serde_json::to_string(command).map_err(io::Error::other)?;

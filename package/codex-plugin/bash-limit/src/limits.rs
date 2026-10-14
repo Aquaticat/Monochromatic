@@ -1,20 +1,29 @@
 //! Parent cgroup verification and once-per-session child creation.
 
-/// What: `use` imports standard-library modules; `::` separates module names.
-/// Why: Read Linux's actual resource controls rather than trusting hook input.
-/// TypeScript equivalent: `import * as fs from 'node:fs';`
+/// What:
+/// `use` imports standard-library modules;
+/// `::` separates module names.
+/// Why:
+/// Read Linux's actual resource controls rather than trusting hook input.
+/// TypeScript equivalent:
+/// `import * as fs from 'node:fs';`
 use std::fs;
 /// Import the standard I/O error and result types.
 use std::io;
-/// Import borrowed paths, unlike the owning `PathBuf` type.
+/// Import borrowed paths,
+/// unlike the owning `PathBuf` type.
 use std::path::Path;
 /// Import the subprocess builder used only for session initialization.
 use std::process::Command;
 
-/// What: `pub` exposes a function to sibling modules; `&Path` borrows an existing path.
-/// Why: Every command must observe the aggregate limits that actually apply.
+/// What:
+/// `pub` exposes a function to sibling modules;
+/// `&Path` borrows an existing path.
+/// Why:
+/// Every command must observe the aggregate limits that actually apply.
 /// `Result<()>` carries success without data or an I/O error.
-/// TypeScript equivalent: `export function verify(parent: string): void { /* may throw */ }`
+/// TypeScript equivalent:
+/// `export function verify(parent: string): void { /* may throw */ }`
 pub fn verify(parent: &Path) -> io::Result<()> {
     // Iterate fixed memory, swap, and task controls without changing them.
     for (file, expected) in [
@@ -72,7 +81,8 @@ pub fn verify(parent: &Path) -> io::Result<()> {
 }
 
 /// Initialize the user-owned slice and child before per-command hooks run.
-/// TypeScript equivalent: `export function initialize(parent: string): void { /* may throw */ }`
+/// TypeScript equivalent:
+/// `export function initialize(parent: string): void { /* may throw */ }`
 pub fn initialize(parent: &Path) -> io::Result<()> {
     if !parent.exists() {
         // Extract the slice name from the trusted configuration path.

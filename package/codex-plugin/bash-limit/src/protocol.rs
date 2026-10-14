@@ -1,19 +1,28 @@
 //! Encode a native Bash hook rewrite without parsing or re-encoding shell source.
 
-/// What: `use` imports a name; `::` separates module names.
-/// Why: Represent the host's JSON without generated structs or a CLI framework.
-/// TypeScript equivalent: `type Value = JsonValue;`
+/// What:
+/// `use` imports a name;
+/// `::` separates module names.
+/// Why:
+/// Represent the host's JSON without generated structs or a CLI framework.
+/// TypeScript equivalent:
+/// `type Value = JsonValue;`
 use serde_json::Value;
 /// Import filesystem checks for the previously initialized worker group.
 use std::fs;
 /// Import the standard error and result types.
 use std::io;
-/// Import a borrowed filesystem path, rather than its owning `PathBuf` sibling.
+/// Import a borrowed filesystem path,
+/// rather than its owning `PathBuf` sibling.
 use std::path::Path;
 
-/// What: `fn` declares a function; `&str` borrows text while `String` owns its result.
-/// Why: Only the cgroup filename crosses a shell-quotation boundary.
-/// TypeScript equivalent: `function shellQuote(value: string): string { ... }`
+/// What:
+/// `fn` declares a function;
+/// `&str` borrows text while `String` owns its result.
+/// Why:
+/// Only the cgroup filename crosses a shell-quotation boundary.
+/// TypeScript equivalent:
+/// `function shellQuote(value: string): string { ... }`
 fn shell_quote(value: &str) -> String {
     // What: `mut` permits appending to an owned buffer; `String::from` copies the literal.
     // Why: Build the escaped path in one linear pass.
@@ -30,9 +39,13 @@ fn shell_quote(value: &str) -> String {
     return output;
 }
 
-/// What: `pub` exposes this function to the entry point; `Result` carries output or an I/O error.
-/// Why: Reject invalid hook events and resource controls before proposing a command.
-/// TypeScript equivalent: `export function response(input: string, parent: string): string { ... }`
+/// What:
+/// `pub` exposes this function to the entry point;
+/// `Result` carries output or an I/O error.
+/// Why:
+/// Reject invalid hook events and resource controls before proposing a command.
+/// TypeScript equivalent:
+/// `export function response(input: string, parent: string): string { ... }`
 pub fn response(input: &str, parent: &Path) -> io::Result<String> {
     // What: The `Value` annotation selects serde_json's general JSON representation.
     // `map_err` converts parser errors to the entry point's I/O error type; `?` propagates them.

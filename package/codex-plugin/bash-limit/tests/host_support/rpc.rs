@@ -1,7 +1,10 @@
 //! Line-oriented client for the installed Codex app-server protocol.
 
-/// What: `use` imports standard I/O and JSON types; `::` separates their modules.
-/// Why: Exercise the real host without another SDK or provider dependency.
+/// What:
+/// `use` imports standard I/O and JSON types;
+/// `::` separates their modules.
+/// Why:
+/// Exercise the real host without another SDK or provider dependency.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -11,14 +14,18 @@ use std::{io::{self, BufRead, BufReader, Write}, process::{ChildStdin, ChildStdo
 /// Import a dynamically shaped JSON value without panic-generating construction macros.
 use serde_json::Value;
 
-/// Decode a fixed JSON fixture, preserving parse failures as test errors.
+/// Decode a fixed JSON fixture,
+/// preserving parse failures as test errors.
 pub fn parse(input: &str) -> io::Result<Value> {
     return serde_json::from_str(input).map_err(io::Error::other);
 }
 
-/// What: `pub fn` exports a function; `&mut` lends exclusive write access to the pipe.
+/// What:
+/// `pub fn` exports a function;
+/// `&mut` lends exclusive write access to the pipe.
 /// `Result<()>` carries success without data or an I/O error.
-/// Why: Send one complete protocol message without interleaving writes.
+/// Why:
+/// Send one complete protocol message without interleaving writes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,7 +44,8 @@ pub fn send(pipe: &mut ChildStdin, value: Value) -> io::Result<()> {
     return pipe.flush();
 }
 
-/// Read and decode one host message, rejecting EOF instead of spinning.
+/// Read and decode one host message,
+/// rejecting EOF instead of spinning.
 pub fn receive(reader: &mut BufReader<ChildStdout>) -> io::Result<Value> {
     // What: `String` owns growable text; `&str` would only borrow existing text.
     // Why: read_line fills a buffer whose final length is unknown.
@@ -62,7 +70,8 @@ pub fn receive(reader: &mut BufReader<ChildStdout>) -> io::Result<Value> {
     return serde_json::from_str(&line).map_err(io::Error::other);
 }
 
-/// Send a request and wait for its matching response, allowing intervening notifications.
+/// Send a request and wait for its matching response,
+/// allowing intervening notifications.
 pub fn call(pipe: &mut ChildStdin, reader: &mut BufReader<ChildStdout>, id: u64, method: &str, params: Value) -> io::Result<Value> {
     // Parse fixed syntax, then assign values without interpolating them into JSON source.
     let mut request = parse("{\"id\":0,\"method\":\"\",\"params\":null}")?;

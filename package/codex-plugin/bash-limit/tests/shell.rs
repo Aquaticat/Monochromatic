@@ -1,7 +1,10 @@
 //! Native shell behavior and the attachment failure guard.
 
-/// What: `mod` includes a sibling Rust module; `use` imports names from other modules.
-/// Why: Share fixture setup while keeping shell behavior separate from input validation.
+/// What:
+/// `mod` includes a sibling Rust module;
+/// `use` imports names from other modules.
+/// Why:
+/// Share fixture setup while keeping shell behavior separate from input validation.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -9,11 +12,17 @@
 /// import * as fs from 'node:fs';
 /// ```
 mod support;
-/// Import filesystem, error, filename, and subprocess operations.
+/// Import filesystem,
+/// error,
+/// filename,
+/// and subprocess operations.
 use std::{fs, io, path::Path, process::{Command, Output}};
 
-/// What: `&Path` and `&str` borrow values; `Result<String>` returns owned text or an error.
-/// Why: The caller retains the fixture and original text while receiving a new command.
+/// What:
+/// `&Path` and `&str` borrow values;
+/// `Result<String>` returns owned text or an error.
+/// Why:
+/// The caller retains the fixture and original text while receiving a new command.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,8 +70,11 @@ fn shell(command: &str) -> io::Result<Output> {
     return Command::new("/bin/bash").args(["--noprofile", "--norc", "-c", command]).output();
 }
 
-/// What: `#[test]` registers a native test for nextest; `Result<()>` permits setup failures.
-/// Why: Test shell syntax and exit status at the executable consumer boundary.
+/// What:
+/// `#[test]` registers a native test for nextest;
+/// `Result<()>` permits setup failures.
+/// Why:
+/// Test shell syntax and exit status at the executable consumer boundary.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -95,7 +107,8 @@ fn preserves_shell_source_and_behavior() -> io::Result<()> {
     return Ok(());
 }
 
-/// Register the guard check, including a successful execution as its positive control.
+/// Register the guard check,
+/// including a successful execution as its positive control.
 #[test]
 fn attachment_failure_prevents_payload() -> io::Result<()> {
     let parent = support::fixture()?;

@@ -1,7 +1,13 @@
-//! Deterministic local Responses endpoint; no model or external network calls.
+//! Deterministic local Responses endpoint;
+//! no model or external network calls.
 
-/// What: `use` imports I/O, networking, time, and JSON names.
-/// Why: The native host can execute its real tool loop using fixed test responses.
+/// What:
+/// `use` imports I/O,
+/// networking,
+/// time,
+/// and JSON names.
+/// Why:
+/// The native host can execute its real tool loop using fixed test responses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -13,9 +19,13 @@ use crate::rpc::parse;
 /// JSON scalars own their data independently of the transmitted text.
 use serde_json::Value;
 
-/// What: `pub fn` exports a function; `usize` counts collection sizes and loop iterations.
-/// Siblings u32/u64 fix integer width; i32/i64 also permit negative values.
-/// Why: The fixture exchanges a bounded number of indexed responses.
+/// What:
+/// `pub fn` exports a function;
+/// `usize` counts collection sizes and loop iterations.
+/// Siblings u32/u64 fix integer width;
+/// i32/i64 also permit negative values.
+/// Why:
+/// The fixture exchanges a bounded number of indexed responses.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,7 +1,10 @@
 //! Opt-in verification against an installed Codex host with a local deterministic provider.
 
-/// What: `mod` includes sibling source modules, and `#[path]` chooses their locations.
-/// Why: Keep host transport and response fixture details separate from the test assertions.
+/// What:
+/// `mod` includes sibling source modules,
+/// and `#[path]` chooses their locations.
+/// Why:
+/// Keep host transport and response fixture details separate from the test assertions.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -14,16 +17,27 @@ mod rpc;
 mod server;
 /// Include shared native binary and disposable-control helpers.
 mod support;
-/// Import filesystem, I/O, process, networking, and thread primitives.
+/// Import filesystem,
+/// I/O,
+/// process,
+/// networking,
+/// and thread primitives.
 use std::{fs, io::{self, BufReader}, net::TcpListener, process::{Command, Stdio}, thread};
-/// Import owned JSON values for protocol fields, avoiding panic-generating macros.
+/// Import owned JSON values for protocol fields,
+/// avoiding panic-generating macros.
 use serde_json::Value;
 /// Import the checked parser for fixed protocol templates.
 use rpc::parse;
 
-/// What: `#[test]` registers a nextest case; `#[ignore]` makes host availability opt-in.
+/// What:
+/// `#[test]` registers a nextest case;
+/// `#[ignore]` makes host availability opt-in.
 /// `Result<()>` permits setup and transport failures to fail the test with their causes.
-/// Why: Verify actual hook discovery, trust, command rewriting, and host-reported latency.
+/// Why:
+/// Verify actual hook discovery,
+/// trust,
+/// command rewriting,
+/// and host-reported latency.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

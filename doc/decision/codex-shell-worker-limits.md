@@ -20,9 +20,13 @@ The hook retains native sandbox and approval handling.
 
 The shared `piwork3285273.slice` has these aggregate limits:
 
-- Memory: 4 GiB.
-- Swap: zero.
-- CPU quota: 200%, with explicit user authorization to increase only this limit if needed.
+- Memory:
+  4 GiB.
+- Swap:
+  zero.
+- CPU quota:
+  200%,
+  with explicit user authorization to increase only this limit if needed.
 - Tasks: 256.
 
 Only the slice's `codex` child is writable inside the sandbox.
