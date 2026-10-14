@@ -346,7 +346,8 @@ for VFIO passthrough.
   Dr. Debug display; the X870E Taichi shows it in retail listing text; for the X870E Taichi Lite a spec aggregator
   (MaxMyBuild) lists a POST code display (not ASRock's own page). Lite versus non-Lite (TheFPSReview, PCMag): same
   PCIe, M.2 and USB configuration and the same 24+2+1 power design; the Lite has a plainer look, no onboard RGB
-  and no EZ Release design (graphics card release latch); PCMag priced the Lite at 399.99 US dollars. ASRock pages list the X870E Taichi and Taichi Lite with two CPU PCIe 5.0 x16 slots as x16 or x8/x8, a
+  and no EZ Release design (graphics card release latch); PCMag priced the Lite at 399.99 US dollars.
+  ASRock pages list the X870E Taichi and Taichi Lite with two CPU PCIe 5.0 x16 slots as x16 or x8/x8, a
   Key E socket for the Wi-Fi 7 module (chip not found), and 5 Gb LAN (Taichi: also 2.5 Gb). A Level1Techs post shows
   X870E Taichi Lite IOMMU groups on BIOS 3.20 (called fine, not independently read), and a GitHub guide passes a
   Radeon RX 7900 XTX through on a Taichi Lite with a 7950X under Fedora 41. Prices conflict: 479.99 US dollars
