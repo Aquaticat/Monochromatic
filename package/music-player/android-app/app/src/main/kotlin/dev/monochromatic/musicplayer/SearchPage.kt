@@ -1193,7 +1193,7 @@ private fun searchHeader(
     var fieldValue: TextFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(searchFieldValue(current = null, query = query))
     }
-    /** What the field shows: the kept value while it still holds the query, else the query with the caret at its end. */
+    /** What the field shows: the kept value while it holds the query, else the query with the caret at its end. */
     val shownValue: TextFieldValue = searchFieldValue(current = fieldValue, query = query)
     /** Newest query, for the refocus effect, which outlives the composition that started it. */
     val latestQuery: String by rememberUpdatedState(query)
