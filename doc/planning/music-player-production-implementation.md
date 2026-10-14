@@ -392,6 +392,13 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 
 Read these before repeating them. Each one cost the human a correction.
 
+- The orchestrator told the human the desktop click rule already matched ("an unselected row is selected, the selected
+  row toggles") after reading only `play_row` and the README, which say a click plays at once. The human pointed out the
+  mismatch: `Command::SelectIndex` selects and pauses ("selecting never auto-plays") and `play_row` then sends Play, so
+  a click replaced the playing track and started the new one. The ruling (2026-10-14) is select only, then toggle, on
+  both platforms (D124). Before saying behavior matches a spec, read the engine command the UI sends and the
+  user's words, and run the real binary (QAB, QJ1).
+
 - The wiring-test agent (2026-10-14) committed `55f465c0b3` with no blank line after the subject, so the whole body is
   one long subject line, and an early step test looped forever under a mutant and blocked a mutation run for about 40
   minutes. Commits are never amended, so the message stays; the tests now fail fast with a read limit. Briefs for test

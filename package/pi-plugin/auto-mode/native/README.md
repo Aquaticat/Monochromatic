@@ -37,6 +37,16 @@ Its static bridges preserve original generated constructor and reader identities
 The generated session dependency stays static through `native-host/session-disposal.mjs`;
 awaiting its dynamic import during bootstrap prevented the native lifecycle module graph from settling.
 Declaration companions describe the retained JavaScript owner interfaces without replacing their runtime checks.
+The maintained session constructor is `native-batch/session-root.ts`,
+renamed from `session-root.mjs` on 2026-10-14.
+Its typed static bridge retains the original lifecycle and construction-scope owners.
+`session-root-result.ts` copies each original SDK data descriptor once,
+preserves optional fallback-field presence,
+and freezes only the returned outer record.
+`test:native:session-result` exercises this copied artifact with original data,
+missing fields,
+accessors,
+and descriptor-observation controls.
 It routes native manager selection,
 services,
 session construction,
