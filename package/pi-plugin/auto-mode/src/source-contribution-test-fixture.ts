@@ -3,11 +3,18 @@
 
  @module
  */
-import type { ContributionFixture, ContributionFixtureProfile } from './source-contribution-fixture-types.ts';
+import type {
+  ContributionFixture,
+  ContributionFixtureProfile
+} from './source-contribution-fixture-types.ts';
 import { createContributionFixtureOrigins } from './source-contribution-fixture-origins.ts';
 import { createContributionFixtureRuns } from './source-contribution-fixture-runs.ts';
+
 export { contributionProfiles } from './source-contribution-fixture-types.ts';
-export type { ContributionFixture, ContributionFixtureProfile } from './source-contribution-fixture-types.ts';
+export type {
+  ContributionFixture,
+  ContributionFixtureProfile
+} from './source-contribution-fixture-types.ts';
 
 //region Compose original fixture ownership stages without cloning their references
 
@@ -25,17 +32,36 @@ export type { ContributionFixture, ContributionFixtureProfile } from './source-c
  ```
  */
 export function createContributionFixture(profile: ContributionFixtureProfile): ContributionFixture {
-  /** Original source and publication ownership is established before run composition. */
+  /**
+   Original source and publication ownership is established before run composition.
+   */
   const originals = createContributionFixtureOrigins(profile);
-  /** Existing identities are borrowed by the next composition stage. */
-  const { source, publication, retained, request } = originals;
-  /** Current run and emitting run remain separate for ancestor and retained-history profiles. */
-  const { run, emitting } = createContributionFixtureRuns({ profile, originals });
+  /**
+   Existing identities are borrowed by the next composition stage.
+   */
+  const {
+    source,
+    publication,
+    retained,
+    request
+  } = originals;
+  /**
+   Current run and emitting run remain separate for ancestor and retained-history profiles.
+   */
+  const {
+    run,
+    emitting
+  } = createContributionFixtureRuns({
+    profile,
+    originals
+  });
   /**
    Base input publication uses existing original carrier membership.
    */
   const carrier = { source };
-  /** Original run carrier retains the same source occurrence. */
+  /**
+   Original run carrier retains the same source occurrence.
+   */
   const runCarrier = { sourceOccurrences: [source.occurrence] };
   /**
    Association fields retain originals rather than constructing equal replacements.
@@ -43,7 +69,10 @@ export function createContributionFixture(profile: ContributionFixtureProfile): 
   const association: ContributionFixture['association'] = {
     source,
     sourceOccurrence: source.occurrence,
-    ...(profile.startsWith('base',) ? { runCarrier } : { run, publication }),
+    ...(profile.startsWith('base',) ? { runCarrier } : {
+      run,
+      publication
+    }),
     ...(profile === 'base' ? { carrier } : {}),
     ...(profile === 'forced' ? { forcedPublication: publication } : {}),
     ...(profile.endsWith('handler',) ? { handlerPublication: publication } : {}),
@@ -57,7 +86,10 @@ export function createContributionFixture(profile: ContributionFixtureProfile): 
     request,
     contribution: {},
     association,
-    location: { field: 'messages', ordinal: 0, },
+    location: {
+      field: 'messages',
+      ordinal: 0,
+    },
   };
   /**
    Original request's run snapshot, not a current-state reader.

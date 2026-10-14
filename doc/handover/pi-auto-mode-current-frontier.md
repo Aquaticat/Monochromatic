@@ -780,8 +780,23 @@ Commits `07ce8e0a95`,
 `104e7e7f44`,
 and `af00dfcf6f` retain that work and its statement-layout corrections.
 The rebuilt declaration artifact and package type check pass.
-The fixture's full semantic formatter is still running with the original package resource limits;
-final scoped lint and affected consumer verification remain pending.
+The fixture formatter's first fix child remained active at 829 seconds elapsed,
+then completed and entered the wrapper's separate verification pass.
+The later ten-second profile contains 9,190 of 9,234 samples inside `expressionResultSites`.
+That verification child was stopped deliberately;
+the completed formatter mutations remain in `8cea077432`.
+This incomplete run establishes no lint success.
+Commit `a07329f154` separates original source references,
+run construction,
+shared fixture types,
+and final request associations into explicit construction stages.
+The full formatter and verification pass over those construction stages and native guard files
+reports zero warnings and zero errors across six files,
+with a final lint duration of 3.0 seconds.
+Affected consumer verification remains pending.
+No linter source,
+rule,
+or worker limit changed.
 
 The independent native result-binding guard is also ported to `script-value-guard.ts`.
 Its original caller imports and source provenance now point to that maintained file.
@@ -793,10 +808,13 @@ copied-list freezing,
 call diagnostic quoting,
 existing guard identity,
 and derived guard names.
+The base error category is explicitly named;
+derived error classes declare their own category rather than inheriting constructor-name inference.
+The reference search found no existing native subclass consumer.
 That port's type,
 lint,
 build,
-and native checks are queued behind the contribution fixture formatter.
+and native checks remain pending after the fixture's first incomplete formatting attempt.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.

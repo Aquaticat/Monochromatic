@@ -3,7 +3,10 @@
 
  @module
  */
-import type { ContributionFixtureOrigins, ContributionFixtureProfile } from './source-contribution-fixture-types.ts';
+import type {
+  ContributionFixtureOrigins,
+  ContributionFixtureProfile
+} from './source-contribution-fixture-types.ts';
 
 //region Original source and publication references belong to one fixture invocation
 
@@ -48,12 +51,27 @@ export function createContributionFixtureOrigins(profile: ContributionFixturePro
   /**
    Publication references retain the same original source and run.
    */
-  const publication = { sourceOccurrence: source.occurrence, runOccurrence: occurrence, renderOccurrence };
+  const publication = {
+    sourceOccurrence: source.occurrence,
+    runOccurrence: occurrence,
+    renderOccurrence
+  };
   /**
    Retained history remains a separate origin rather than an active ancestor.
    */
-  const retained = { source, publication, runOccurrence: occurrence };
-  return { request, occurrence, renderOccurrence, source, publication, retained };
+  const retained = {
+    source,
+    publication,
+    runOccurrence: occurrence
+  };
+  return {
+    request,
+    occurrence,
+    renderOccurrence,
+    source,
+    publication,
+    retained
+  };
 }
 
 //endregion Original source and publication references belong to one fixture invocation

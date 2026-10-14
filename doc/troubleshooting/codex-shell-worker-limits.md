@@ -212,6 +212,28 @@ connect that traversal to the automatic push failure,
 or prove that a proposed traversal change preserves every effect result.
 No linter implementation was changed during the migration check.
 
+The later optional-field fixture refactor reproduced the traversal during formatting.
+The first fix child remained active at 829 seconds elapsed;
+it subsequently completed,
+and the wrapper started its separate verification pass.
+That pass's ten-second profile contains 9,190 of 9,234 samples inside `expressionResultSites`
+and 7,064 inside `reachableValueSources`.
+The identified verification child was deliberately stopped with its formatter output retained.
+The log is `${HOME}/temp/agent/pi-contribution-fixture-format-20261014.log`;
+the profile is `pi-fixture-format-20261014.cpuprofile` in the same scratch directory.
+
+Commit `a07329f154` separates the fixture into original-reference construction,
+run composition,
+shared types,
+and final request association.
+The completed full-rule formatter then reports zero warnings and zero errors across those files
+and the native result-guard files,
+with a final verification duration of 3.0 seconds.
+This is successful verification of the new source structure,
+not an unchanged-input benchmark or a linter algorithm fix.
+The split preserves explicit original-reference boundaries;
+consumer tests remain the check for its identity semantics.
+
 ### Upstream filing decision for the task-pressure incident
 
 1.  Upstream fault:

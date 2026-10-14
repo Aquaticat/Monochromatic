@@ -107,10 +107,16 @@ export type ContributionFixture = {
  Original identities and sources shared by independently constructed publication stages.
  */
 export type ContributionFixtureOrigins = Pick<ContributionFixture, 'source' | 'publication' | 'retained'> & {
-  /** Original serialized request identity. */
+  /**
+   Original serialized request identity.
+   */
   readonly request: object;
-  /** Original emitting run identity. */
+  /**
+   Original emitting run identity.
+   */
   readonly occurrence: object;
-  /** Original builder render identity. */
+  /**
+   Original builder render identity.
+   */
   readonly renderOccurrence: object;
 };
