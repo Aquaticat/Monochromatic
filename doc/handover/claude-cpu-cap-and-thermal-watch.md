@@ -143,6 +143,17 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
     So a 95 degree reading under sustained load is expected behavior, and the 95 degree alert fires on it by design.
   - The cap was binding in the 20:11 episode (load average up to 57 on 32 threads) but not in this one
     (load 17 to 23, below the cap), so lowering the cap from 30 to 28 at 20:15 cannot have reduced this heat.
+  - Best reference, same chip: Noctua's chart "Thermal performance AMD Ryzen 9 7950X (180W)" (image fetched and read
+    2026-10-13 from the NH-D15 G2 versus NH-D15 performance data page; the metric is "delta of average core to ambient
+    temperature"). The original NH-D15 (G1, the same heatsink as the D15S) reads 46.4 degrees with the AM5 offset
+    mounting and 48.4 without it; the G2 versions read 44.1 to 44.8 with offset. That is about 0.26 degrees per watt.
+    Here the average of the two CCD temperatures during the plateau is about 91.7 degrees (Tccd1 95, Tccd2 88.5),
+    which is 65.7 over the 26 degree probe at 133 W, about 0.49 degrees per watt. At Noctua's ratio, 133 W would give
+    about 35 over ambient, near 61 degrees. The measured gap is about 30 degrees, for the same chip, the same heatsink
+    and a lower power. It is not a sensor error: the chip also lowers its clock at that temperature.
+    Caveats: Noctua's ambient, fan speeds and paste are its own; the power scaling is linear; the probe is a loose
+    ambient reference. Noctua's own fan-count and G1 versus G2 differences are 1 to 3 degrees each; no source read
+    here puts any of these caveats near 30 degrees.
   - Reference numbers with their limits. GamersNexus (NH-D15 G2 review): the 2023 NH-D15 (the G1 design) ran
     53.3 degrees over ambient at about 198 W with 100% fans, on a Ryzen 9 3950X overclock (not Zen 4; ambient not
     stated). That is about 0.27 degrees per watt. Here: 95.4 minus the probe's 26.0 is 69.4 degrees over ambient at
@@ -195,10 +206,10 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 
 - CPU cooler: a Noctua NH-D15S, the asymmetric single-fan version of the NH-D15 (user correction at about 20:30 EDT
   on 2026-10-13, after first saying G2 and then G1). Noctua's FAQ says the heatsinks are identical and the two-fan
-  NH-D15 is 1 to 3 degrees better; the D15S ships with clips for a second fan on the front stack. How many fans sit
-  on it now is not known.
-- Thermal paste: not Noctua NT-H1 (the user could not find it, about 20:32 EDT). Which paste, how much, and the
-  application pattern are not known yet.
+  NH-D15 is 1 to 3 degrees better. The user later said two fans are fitted, push and pull, so the full two-fan setup
+  is what Noctua compares.
+- Thermal paste: Arctic MX-4, applied as a cross (user, about 20:35 EDT), not Noctua NT-H1 which the user could not
+  find. The amount is not known.
 - Fans: 7 Noctua and 1 Lian Li, some chained, on a Corsair Commander Core XT (5 of 6 ports used; fan3 is empty).
   CoolerControl labels the controller "(broken)" but applies profiles successfully.
 - The Corsair probe sits on top of the air cooler's heatsink. Its tape cannot be bent, so the tip cannot touch the
