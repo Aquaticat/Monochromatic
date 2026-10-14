@@ -421,8 +421,9 @@ and the compositor sets the child's environment from the final choice:
 - An explicit choice,
   or a fallback,
   removes `DRI_PRIME` from the child's environment.
-  With `DRI_PRIME` set the client moved its rendering to the other GPU of the test host
-  while the compositor stayed on its own.
+  With `DRI_PRIME` set in the compositor's environment,
+  the client on the test host held DRM nodes of both GPUs open,
+  while without it the client held only the compositor's node.
   `auto` without a fallback leaves the child's environment exactly as it was.
 
 Measured on a host with an integrated AMD GPU,

@@ -2435,7 +2435,10 @@ const staticScene = [
 ].join('\n')
 // Isolation for the fallback cases: bwrap with an empty /dev/dri in a private mount view hides every render node from the
 // compositor and the hosted client, as on a machine with no GPU. The host's /dev/dri is not changed.
-const noGpu = ['bwrap', '--dev-bind', '/', '/', '--tmpfs', '/dev/dri']
+// Every session also runs in a private network namespace (--unshare-net), so neither the compositor nor the hosted client can
+// reach any network; the Wayland, control and bus sockets are filesystem paths and keep working.
+const isolated = ['bwrap', '--dev-bind', '/', '/', '--unshare-net']
+const noGpu = [...isolated, '--tmpfs', '/dev/dri']
 const children = pid => {
   // Every process whose parent chain leads to pid, read from /proc (the stat parent field follows the closing parenthesis).
   const parents = new Map()
@@ -2460,7 +2463,7 @@ const clientVariable = (pid, name) => {
   const entry = readFileSync('/proc/' + pid + '/environ', 'latin1').split('\0').find(text => text.startsWith(name + '='))
   return entry === undefined ? undefined : entry.slice(name.length + 1)
 }
-const start = ({ name, flags, env, wrap = [] }) => {
+const start = ({ name, flags, env, wrap = isolated }) => {
   const directory = join(evidence, name)
   mkdirSync(directory)
   const socketPath = join(directory, 'control.sock')
@@ -2487,7 +2490,7 @@ const finish = async host => {
   assert.equal(code, 0, 'the compositor exits 0 after quit (got ' + code + ')')
 }
 // Runs a start that must fail and returns its exit code and error text.
-const failingStart = async ({ name, flags, env, wrap = [] }) => {
+const failingStart = async ({ name, flags, env, wrap = isolated }) => {
   const directory = join(evidence, name)
   mkdirSync(directory)
   const command = [...wrap, binary, ...flags, '--size', '400x300', '--socket', join(directory, 'control.sock'), '--', 'slint-viewer', join(evidence, 'static-scene.slint')]
@@ -2552,6 +2555,9 @@ const exerciseSession = async ({ name, flags, env, wrap, expectDevice, expectCho
     if (expectRenderer) assert.equal(answer[4], expectRenderer, 'gpu answer renderer is "' + answer[4] + '", --list-gpus said "' + expectRenderer + '"')
     const pid = await until('the hosted client process', () => viewerPid(host.session.pid))
     const nodes = [...new Set(driNodes(pid))]
+    // The hosted client has no network: its namespace holds the loopback interface only.
+    const interfaces = readFileSync('/proc/' + pid + '/net/dev', 'latin1').split('\n').slice(2).map(line => line.split(':')[0].trim()).filter(Boolean)
+    assert.deepEqual(interfaces, ['lo'], 'the client sees network interfaces besides loopback: ' + interfaces)
     if (expectDevice === 'software') {
       assert.deepEqual(nodes, [], 'the client opened no DRM node while rendering in software')
       assert.equal(clientVariable(pid, 'LIBGL_ALWAYS_SOFTWARE'), '1', 'the client environment has LIBGL_ALWAYS_SOFTWARE=' + clientVariable(pid, 'LIBGL_ALWAYS_SOFTWARE') + ', expected 1')
