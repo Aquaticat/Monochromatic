@@ -12,6 +12,21 @@ await describe({
   name: '',
   children: [
     it({
+      name: 'retains the original collector error constructor across typed resource copies',
+      fn: async function sharedCollectionError() {
+        /** Existing JavaScript consumers retain their original collector import path. */
+        const original: unknown = await import(new URL('../dist/native/contract/collector/collector.mjs', import.meta.url).href);
+        /** Typed consumers share the same original error category. */
+        const current: unknown = await import(new URL('../dist/native/contract/collector/errors.ts', import.meta.url).href);
+        if (((typeof current) !== 'object') || (current === null) || (!('SourceCollectionError' in current)) || ((typeof current.SourceCollectionError) !== 'function')) throw new Error('Missing built collection error constructor');
+        expect(original).toHaveProperty('SourceCollectionError', current.SourceCollectionError);
+        /** Runtime construction retains the original diagnostic name. */
+        const error: unknown = Reflect.construct(current.SourceCollectionError, ['original source']);
+        expect(error).toHaveProperty('name', 'SourceCollectionError');
+        expect(error).toHaveProperty('message', 'original source');
+      },
+    }),
+    it({
       name: 'detaches context files and freezes only the copied source graph',
       fn: async function contextCopy() {
         /** Caller-owned source records must remain mutable. */

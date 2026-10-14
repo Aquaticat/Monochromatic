@@ -11,11 +11,13 @@ import { nativeResourceInput } from './native-resource-input-fixture.ts';
 await describe({
   name: '',
   children: [
-    ...[null, [], Object.create({ inherited: true }) as unknown].map(function invalidRecord(value, ordinal) {
+    ...[null, 1, [], Object.create({ inherited: true }) as unknown].map(function invalidRecord(value, ordinal) {
       return it({
         name: `rejects unsupported constructor record ${ordinal}`,
         fn: async function invalidOptions() {
-          expect(function copyInvalidOptions() { nativeResourceInput.copyOptions(value); }).toThrow('Loader options require an ordinary record');
+          expect(function copyInvalidOptions() {
+            nativeResourceInput.copyOptions(value);
+          }).toThrow('Loader options require an ordinary record');
         },
       });
     }),
@@ -27,7 +29,9 @@ await describe({
       return it({
         name: `rejects changed context field membership ${ordinal}`,
         fn: async function contextFields() {
-          expect(function copyInvalidContext() { nativeResourceInput.snapshotInput({ kind: 'context', value }); }).toThrow('Context input has unsupported fields');
+          expect(function copyInvalidContext() {
+            nativeResourceInput.snapshotInput({ kind: 'context', value });
+          }).toThrow('Context input has unsupported fields');
         },
       });
     }),
@@ -37,16 +41,25 @@ await describe({
         /** An accessor invocation must remain observable even if later copying rejects. */
         const state = { calls: 0 };
         /** This accessor is shared by disposable input descriptors only. */
-        function readUnexpectedValue(): string { state.calls++; return 'unexpected'; }
+        function readUnexpectedValue(): string {
+          state.calls++;
+          return 'unexpected';
+        }
         /** Own accessor options must not be selected as opaque data. */
         const options = Object.defineProperty({}, 'dependency', { enumerable: true, get: readUnexpectedValue });
         /** Context schema membership alone cannot authenticate an accessor value. */
         const context = Object.defineProperty({}, 'agentsFiles', { enumerable: true, get: readUnexpectedValue });
         /** The original array length and own-key count still look dense. */
         const entries = Object.defineProperty(['original'], '0', { enumerable: true, get: readUnexpectedValue });
-        expect(function copyAccessorOptions() { nativeResourceInput.copyOptions(options); }).toThrow('Loader options require named data properties');
-        expect(function copyAccessorContext() { nativeResourceInput.snapshotInput({ kind: 'context', value: context }); }).toThrow('Context input requires data fields');
-        expect(function copyAccessorArray() { nativeResourceInput.snapshotInput({ kind: 'append', value: entries }); }).toThrow('Append input contains a missing or accessor entry');
+        expect(function copyAccessorOptions() {
+            nativeResourceInput.copyOptions(options);
+          }).toThrow('Loader options require named data properties');
+        expect(function copyAccessorContext() {
+            nativeResourceInput.snapshotInput({ kind: 'context', value: context });
+          }).toThrow('Context input requires data fields');
+        expect(function copyAccessorArray() {
+            nativeResourceInput.snapshotInput({ kind: 'append', value: entries });
+          }).toThrow('Append input contains a missing or accessor entry');
         expect(state.calls).toBe(0);
       },
     }),
@@ -58,7 +71,9 @@ await describe({
         /** JSON supplies an own prototype-named field without invoking object-literal prototype syntax. */
         const prototypeField: unknown = JSON.parse('{"__proto__":{"changed":true}}');
         for (const options of [hidden, { [Symbol('dependency')]: 'hidden' }, prototypeField]) {
-          expect(function copyUnsupportedField() { nativeResourceInput.copyOptions(options); }).toThrow('Loader options require named data properties');
+          expect(function copyUnsupportedField() {
+            nativeResourceInput.copyOptions(options);
+          }).toThrow('Loader options require named data properties');
         }
       },
     }),
@@ -70,19 +85,29 @@ await describe({
         /** Additional own properties must not be lost while copying. */
         const extended = Object.defineProperty([], 'extra', { value: 'unexpected', enumerable: true });
         /** An array with a foreign prototype is outside the original profile. */
-        const altered = Object.setPrototypeOf(['text'], null);
+        const altered: unknown = Object.setPrototypeOf(['text'], null);
         for (const value of [sparse, extended, altered, 'text']) {
-          expect(function copyUnsupportedArray() { nativeResourceInput.snapshotInput({ kind: 'append', value }); }).toThrow('Append input requires a bounded ordinary dense array');
+          expect(function copyUnsupportedArray() {
+            nativeResourceInput.snapshotInput({ kind: 'append', value });
+          }).toThrow('Append input requires a bounded ordinary dense array');
         }
       },
     }),
     it({
       name: 'rejects malformed context files, nontext inputs, and unknown source kinds',
       fn: async function inputKinds() {
-        expect(function copyUnknownKind() { nativeResourceInput.snapshotInput({ kind: 'unrecognized', value: '' }); }).toThrow('Unknown resource input kind');
-        expect(function copyNontextSystem() { nativeResourceInput.snapshotInput({ kind: 'system', value: 1 }); }).toThrow('System input requires bounded text');
-        expect(function copyNontextAppend() { nativeResourceInput.snapshotInput({ kind: 'append', value: [1] }); }).toThrow('Append text requires bounded text');
-        expect(function copyMalformedFile() { nativeResourceInput.snapshotInput({ kind: 'context', value: { agentsFiles: [{ path: 'AGENTS.md' }] } }); }).toThrow('Context file has unsupported fields');
+        expect(function copyUnknownKind() {
+            nativeResourceInput.snapshotInput({ kind: 'unrecognized', value: '' });
+          }).toThrow('Unknown resource input kind');
+        expect(function copyNontextSystem() {
+            nativeResourceInput.snapshotInput({ kind: 'system', value: 1 });
+          }).toThrow('System input requires bounded text');
+        expect(function copyNontextAppend() {
+            nativeResourceInput.snapshotInput({ kind: 'append', value: [1] });
+          }).toThrow('Append text requires bounded text');
+        expect(function copyMalformedFile() {
+            nativeResourceInput.snapshotInput({ kind: 'context', value: { agentsFiles: [{ path: 'AGENTS.md' }] } });
+          }).toThrow('Context file has unsupported fields');
       },
     }),
     it({
@@ -93,13 +118,29 @@ await describe({
         /** Complete individual text fits before aggregate accounting. */
         const text = 'a'.repeat(textBytes);
         expect(nativeResourceInput.snapshotInput({ kind: 'system', value: text })).toBe(text);
-        expect(function oversizedText() { nativeResourceInput.snapshotInput({ kind: 'system', value: `${text}a` }); }).toThrow('System input requires bounded text');
-        expect(function multibyteText() { nativeResourceInput.snapshotInput({ kind: 'system', value: '🚀'.repeat(textBytes / 2) }); }).toThrow('System input requires bounded text');
+        expect(function oversizedText() {
+            nativeResourceInput.snapshotInput({ kind: 'system', value: `${text}a` });
+          }).toThrow('System input requires bounded text');
+        expect(function multibyteText() {
+            nativeResourceInput.snapshotInput({ kind: 'system', value: '🚀'.repeat(textBytes / 2) });
+          }).toThrow('System input requires bounded text');
         /** Each file fits separately while their combined complete source exceeds the original budget. */
-        const agentsFiles = Array.from({ length: 9 }, function contextFile() { return { path: 'AGENTS.md', content: text }; });
-        expect(function oversizedSnapshot() { nativeResourceInput.snapshotInput({ kind: 'context', value: { agentsFiles } }); }).toThrow('Resource input exceeds total byte bound');
-        expect(function tooManyAppendEntries() { nativeResourceInput.snapshotInput({ kind: 'append', value: Array.from({ length: 33 }, function emptyText() { return ''; }) }); }).toThrow('Append input requires a bounded ordinary dense array');
-        expect(function tooManyContextFiles() { nativeResourceInput.snapshotInput({ kind: 'context', value: { agentsFiles: Array.from({ length: 65 }, function emptyFile() { return { path: '', content: '' }; }) } }); }).toThrow('Context files requires a bounded ordinary dense array');
+        const agentsFiles = Array.from({ length: 9 }, function contextFile() {
+          return { path: 'AGENTS.md', content: text };
+        });
+        expect(function oversizedSnapshot() {
+            nativeResourceInput.snapshotInput({ kind: 'context', value: { agentsFiles } });
+          }).toThrow('Resource input exceeds total byte bound');
+        expect(function tooManyAppendEntries() {
+            nativeResourceInput.snapshotInput({ kind: 'append', value: Array.from({ length: 33 }, function emptyText() {
+              return '';
+            }) });
+          }).toThrow('Append input requires a bounded ordinary dense array');
+        expect(function tooManyContextFiles() {
+            nativeResourceInput.snapshotInput({ kind: 'context', value: { agentsFiles: Array.from({ length: 65 }, function emptyFile() {
+              return { path: '', content: '' };
+            }) } });
+          }).toThrow('Context files requires a bounded ordinary dense array');
       },
     }),
   ],
