@@ -74,6 +74,7 @@ pub(super) fn update(window: &AppWindow, source: &Rc<RefCell<State>>, navigation
             expanded: row.expanded,
             selected: selected.as_ref() == Some(&row.entry.path),
             recency: SharedString::from(recency),
+            ignored: row.ignored,
         });
         if navigation.reveal.as_ref() == Some(&row.entry.path) {
             reveal_index = Some(index as i32);

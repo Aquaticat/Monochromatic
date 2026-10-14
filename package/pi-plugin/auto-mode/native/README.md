@@ -37,6 +37,26 @@ Its static bridges preserve original generated constructor and reader identities
 The generated session dependency stays static through `native-host/session-disposal.mjs`;
 awaiting its dynamic import during bootstrap prevented the native lifecycle module graph from settling.
 Declaration companions describe the retained JavaScript owner interfaces without replacing their runtime checks.
+The maintained session constructor is `native-batch/session-root.ts`,
+renamed from `session-root.mjs` on 2026-10-14.
+Its typed static bridge retains the original lifecycle owner.
+The construction-scope owner is now `lifecycle/runtime-factory-scopes/scopes.ts`,
+renamed from `scopes.mjs` on 2026-10-14,
+and imported directly through its maintained types.
+It captures original callbacks and manager inputs,
+requires the SDK-specific result preparer,
+and retains failed cleanup before another construction can begin.
+`test:native:factory-scopes` exercises callback replacement,
+exact-result publication,
+disposal retry,
+and synchronous reentrancy against the built artifact.
+`session-root-result.ts` copies each original SDK data descriptor once,
+preserves optional fallback-field presence,
+and freezes only the returned outer record.
+`test:native:session-result` exercises this copied artifact with original data,
+missing fields,
+accessors,
+and descriptor-observation controls.
 It routes native manager selection,
 services,
 session construction,
@@ -56,17 +76,26 @@ and failure identity against the copied native artifact.
 The current CLI bootstrap designates the working directory's `AGENTS.md` with user authority.
 Its semantic admission uses the
 [adopted operating policy](../../../../doc/decision/pi-auto-mode-semantic-admission.md):
-supported selected meanings require a score of at least `0.99` and a unique lead.
+supported selected meanings require a score of at least `0.80` and a unique lead.
 Unknown and unsupported meanings remain unresolved even at `1`.
 This operating cutoff carries no measured accuracy claim.
 Original authority,
 complete coverage,
 and authorization checks remain independent.
-The bootstrap binds the maintained direct HTTP sender for the incumbent Gateway route.
+The bootstrap binds the maintained Luna adapter and direct HTTP sender
+for `openai/gpt-6-luna-decisions` through the Gateway `/v1/decisions` route.
 It reads `AUTO_MODE_LLMGATEWAY_API_KEY` only when an original configured assessment is dispatched,
-retains the original encoded body and deadline,
+preserves every original state value and named question in the Decisions wire format,
+retains the original deadline,
 and performs one HTTP request per client attempt.
 Gateway-internal retries remain separate from client attempt accounting.
+Categorical probabilities and independent confidence metadata remain unchanged.
+Refusals,
+missing or reordered answers,
+wrong serving identities,
+invalid distributions,
+and requests exceeding 200 questions fail without admitting partial estimates.
+`test:decision-wire` checks conversion and the composed sender against authored fixtures.
 `test:assessment-transport` covers isolated and loopback HTTP behavior;
 `test:native:assessment-transport` connects it to original native policy review with authored responses.
 `test:semantic-operating-policy` checks the built policy's fixed scope and admission boundaries.
@@ -74,6 +103,11 @@ Gateway-internal retries remain separate from client attempt accounting.
 prohibition,
 unspecified policy,
 and abstention through original SDK requests and maintained HTTP transport using authored replies.
+The typed `action-policy/semantic-policy.ts` forwards original configuration and scope inputs
+to the maintained consumer without replacing its validation.
+Both the wire and native scope selector import their fixed serving model from `action-policy/assessment-model.ts`.
+`test:native:unconfigured-policy` verifies unresolved native review without assessment or execution
+when every semantic consumer is absent.
 Bootstrap construction makes no provider calls.
 The native lifecycle fixtures exercise actual CLI manager selection,
 services,
@@ -86,6 +120,12 @@ and disposal retry without external provider requests.
 The separate-process RPC fixture starts `dist/native/cli.mjs`,
 checks the selected Qwen model and idle state,
 and requires shutdown without stderr output.
+Its fixture fetch blocker loads Pi's HTTP dispatcher before overriding fetch,
+so native initialization preserves the deliberate override.
+`test:native:process-network` checks initial setup,
+reconfiguration,
+fetch rejection,
+and refusal outside the fixture child.
 `test:native:manager-constructors` exercises every native constructor entry point.
 It checks persisted conversation retention,
 explicit session IDs,
@@ -225,7 +265,7 @@ The decoder accepts `return await tools.name({...})`
 and `const result = await tools.name({...}); return result;`.
 The existing awaited producer followed by `Promise.all` or `Promise.allSettled` remains supported.
 The fixed semantic scope `native-inspected-programs-v2` includes exactly the single-call and producer/successor profiles.
-Its supported-meaning cutoff remains `0.99` with a unique leading score.
+Its supported-meaning cutoff is `0.80` with a unique leading score under the adopted Luna policy.
 
 `test:native:single-call` verifies complete original source,
 escaped identifiers and literal data,

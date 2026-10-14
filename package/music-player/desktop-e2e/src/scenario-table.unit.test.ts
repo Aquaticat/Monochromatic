@@ -110,10 +110,10 @@ await describe({
   name: 'scenario table',
   children: [
     it({
-      name: 'declares 110 checks that run and 1 that is skipped as not injectable',
+      name: 'declares 111 checks that run and 1 that is skipped as not injectable',
       fn: async ({ expect, }) => {
         const declared = await allDeclared();
-        expect(declared.filter((entry,) => !entry.skipped,),).toHaveLength(110,);
+        expect(declared.filter((entry,) => !entry.skipped,),).toHaveLength(111,);
         expect(declared.filter((entry,) => entry.skipped,).map((entry,) => entry.id,).toSorted(),).toEqual([
           'double-shift/repeat',
         ],);

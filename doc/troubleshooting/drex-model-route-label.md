@@ -393,5 +393,111 @@ There is no established hosted-code defect in this bounded observation.
 The task's finite-evidence boundary does not reopen an upstream source-audit branch.
 The durable outcome is the verified caller boundary and its limits.
 
+## Complete native choice distributions and latency
+
+### Symptom and source trace
+
+The complete native request on 2026-10-14 returned HTTP 200,
+`model: drex-v2.0`,
+and all 84 answer IDs during a separate 60-second diagnostic observation.
+The attempt failed local validation at 48,528.415 ms with
+`QuestionSelectionError: Choice answer is not a complete distribution with a highest-probability selected option`.
+The same request's earlier five-second call timed out without a usable result.
+Raw evidence remains in `${HOME}/temp/agent/pi-native-drex-observation-20261014`.
+
+The consumer at
+`package/pi-plugin/auto-mode/native/contract/lifecycle/claim-evidence-batch-selection/selection.mjs:101`
+requires a distribution sum within `0.000001` of one and a highest-probability selected label:
+
+```javascript
+// package/pi-plugin/auto-mode/native/contract/lifecycle/claim-evidence-batch-selection/selection.mjs:101
+if((Math.abs(total-1)>0.000001)||(probabilities[value.choice]!==largest))throw new QuestionSelectionError('Choice answer is not a complete distribution with a highest-probability selected option');
+```
+
+The public Drex source at commit `be8ba7c8157241b9393862e9fcec104d0dc5caff`
+rounds each value independently in `kev/api.py:137` and `kev/api.py:149`:
+
+```python
+# kev/api.py:137 and :149
+def round_prob(x: float) -> float:
+    return round(float(x), 4)
+
+dist = {k: round_prob(v) for k, v in zip(m["keys"], p)}
+```
+
+The hosted response contains four-decimal values consistent with that serializer.
+This is source consistency evidence,
+not independent proof that the hosted deployment runs the inspected revision.
+Of the returned distributions,
+38 exceed the consumer tolerance;
+the largest observed deviation is `0.0002`.
+For example,
+the primary clause probabilities sum to `0.9999`,
+while its selected `none` label is the reported maximum.
+
+### Verification and limits
+
+The unchanged complete request measures 541,947 bytes and has SHA-256
+`3d204aa86fb17dd3de7ad9c320ef2b6db65200badc27dd950b16189750fba410`.
+The [complete-input evidence](../planning/pi-auto-mode-drex-current-contract.md#complete-native-input-on-2026-10-14)
+retains source membership,
+question round-trip checks,
+usage,
+and both observation budgets.
+`mise run check` in the private observation directory verifies the frozen request without inference.
+Its completed `mise run probe` is one-shot and refuses an existing start record.
+Read the retained response for repeated analysis;
+do not replay a paid observation merely to inspect its result.
+
+The working catalog includes original answer-ID membership and model attribution.
+The failing catalog includes rounded distribution sums,
+the five-second production deadline,
+and the current operating cutoff:
+none of the 84 selected scores reaches `0.99`.
+The explicit permission clause receives `none` at `0.3586`.
+This provides no established complete-request suitability.
+
+### Workaround status and upstream filing decision
+
+No production workaround is installed.
+A provider-specific precision adapter could retain raw probabilities and validate a documented rounding interval,
+but that adapter is not implemented or verified.
+Renormalizing the response would change the received values;
+silently broadening the generic consumer tolerance would change other provider contracts.
+Neither fixes the measured interpretation or latency result.
+
+No upstream report is warranted:
+independent rounding is visible in public source,
+the consumer's stricter sum contract explains the local rejection,
+and no hosted implementation defect is established.
+An upstream serializer change is possible but not required by the inspected supported API use.
+Contribution policy and willingness were not investigated because no report or patch is proposed.
+No upstream fix prototype was attempted;
+the retained caller evidence is the reproducible result.
+
+### Representation controls do not establish a semantic workaround
+
+The subsequent [frozen representation diagnostic](../planning/pi-auto-mode-drex-current-contract.md#frozen-representation-diagnostics)
+made five successful requests to the same reported model.
+Its two unchanged isolated-clause controls returned permission probability `0.6906`.
+The same request hash had returned `0.7748` in the previous study.
+Removing pre-assessment status fields returned `0.7468`,
+which does not exceed that observed cross-study baseline range.
+Parsing the program JSON strings returned `0.6533`.
+A deliberately incomplete minimal control returned `0.8576`.
+Every result stays below the adopted `0.99` operating cutoff.
+
+The working catalog is schema-valid response membership and successful serving of these diagnostic subsets.
+The failing catalog is semantic admission under the current rubric and cutoff.
+No production change or verified workaround follows.
+The hosted source of response variation is unknown;
+the public serializer explains precision loss but does not explain these changed distributions.
+The private one-shot runner at `${HOME}/temp/agent/pi-drex-representation-isolation-20261014/probe.mjs`
+retains exact inputs and raw responses.
+Its `mise run check` verifies hashes without inference;
+the completed `mise run probe` refuses to overwrite its start record.
+This additional consumer evidence establishes no upstream implementation defect or actionable upstream patch,
+so the filing decision is unchanged.
+
 [evaluate]: https://drex.nace.ai/docs/api-reference/systemone
 [models]: https://drex.nace.ai/docs/reference/models

@@ -4,7 +4,7 @@
  @module
  */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { AssessmentTransportError, createAssessmentSender, } from '@monochromatic-dev/pi-plugin-auto-mode';
+import { AssessmentTransportError, createAssessmentHttpSender, } from '@monochromatic-dev/pi-plugin-auto-mode';
 import {
   assessmentFailure,
   assessmentFixtureKey,
@@ -15,7 +15,7 @@ import {
 //region Original request and response cross one fixed HTTP boundary unchanged
 
 await describe({
-  name: createAssessmentSender.name,
+  name: createAssessmentHttpSender.name,
   children: [
     it({
       name: 'preserves the exact body, route, headers and raw response across separate original attempts',
@@ -34,7 +34,7 @@ await describe({
         expect(await send({ ...input, attempt: 2, },),).toBe(raw,);
         expect(calls,).toHaveLength(2,);
         for (const call of calls) {
-          expect(call.url,).toBe('https://api.llmgateway.io/v1/systemone',);
+          expect(call.url,).toBe('https://api.llmgateway.io/v1/decisions',);
           expect(call.options?.body,).toBe(input.body,);
           expect(call.options?.method,).toBe('POST',);
           expect(call.options?.redirect,).toBe('error',);

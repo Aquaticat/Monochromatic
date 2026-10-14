@@ -271,6 +271,56 @@ fn a_short_list_has_no_scrollbar() {
     assert!(thumbs.iter().all(|thumb| return box_of(thumb).3 == 0.0 || box_of(thumb).0 < 1180.0), "a list that fits has no thumb to drag");
 }
 
+// ---- D125: the folder picker has no scrollbar ----
+
+/// What: `long_picker_and_long_folder` names 150 one-track folders and one folder of 100 tracks.
+/// Why: with the long folder playing, the picker and the track list both overflow their panes, so a scrollbar on either
+/// would be drawn, and the track list's bar is the positive control that the lookup can see a bar at all.
+fn long_picker_and_long_folder() -> Vec<String> {
+    let mut names = many_folders(150);
+    names.extend(one_folder(100));
+    return names;
+}
+
+#[test]
+fn the_wide_folder_picker_has_no_scrollbar_on_either_input_while_the_track_list_keeps_its_own() {
+    let names = long_picker_and_long_folder();
+    let (app, _host) = window_with(1200.0, 800.0, &names, Some(150));
+    // Pointer input: the only bar is the track list's 12 px column at the right edge (D22); the picker, 600 px wide, has none.
+    let bars = bars_on_screen(&app);
+    assert_eq!(bars.len(), 1, "one bar is drawn, the track list's: {bars:?}");
+    assert_eq!((bars[0].0, bars[0].1), (1188.0, 12.0), "and it is the 12 px column on the right edge of the track pane");
+    // The wheel still scrolls the picker, which overflows its pane, so there was something for a bar to show.
+    wheel_at(&app, 300.0, 300.0, -240.0);
+    assert!(folder_scroll(&app) < -100.0, "the wheel over the names scrolled the picker to {}", folder_scroll(&app));
+    assert_eq!(bars_on_screen(&app).len(), 1, "scrolling the picker draws no bar in it");
+    // Touch input: the track list gets its 4 px fading bar, and the picker still has none.
+    app.global::<LastInput>().set_touch(true);
+    settle();
+    let touch_bars = bars_on_screen(&app);
+    assert_eq!(touch_bars.len(), 1, "one touch bar is drawn, the track list's: {touch_bars:?}");
+    assert_eq!((touch_bars[0].0, touch_bars[0].1), (1196.0, 4.0), "the 4 px bar at the right edge of the track pane");
+}
+
+#[test]
+fn the_folded_folder_picker_has_no_scrollbar_on_either_input_and_its_names_still_scroll() {
+    let names = long_picker_and_long_folder();
+    let (app, _host) = window_with(443.0, 900.0, &names, Some(150));
+    update_state(|state| {
+        state.picker_open = true;
+    });
+    project(&app);
+    advance(100);
+    // The folded layout swaps the track list for the picker, so nothing else on the page can own a bar.
+    assert_eq!(bars_on_screen(&app), Vec::<(f32, f32, f32)>::new(), "the picker draws no bar with the pointer");
+    wheel_at(&app, 300.0, 300.0, -240.0);
+    assert!(folder_scroll(&app) < -100.0, "the wheel over the names scrolled the picker to {}", folder_scroll(&app));
+    assert_eq!(bars_on_screen(&app), Vec::<(f32, f32, f32)>::new(), "scrolling it draws no bar");
+    app.global::<LastInput>().set_touch(true);
+    settle();
+    assert_eq!(bars_on_screen(&app), Vec::<(f32, f32, f32)>::new(), "the picker draws no fading bar for touch either");
+}
+
 // ---- LS7: the track list keeps its position across the 600 px breakpoint ----
 
 #[test]

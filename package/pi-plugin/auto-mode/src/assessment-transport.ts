@@ -31,7 +31,7 @@ export type AssessmentTransportInput = {
 /**
  Fixed private-data route retained from the verified native transport.
  */
-const endpoint = 'https://api.llmgateway.io/v1/systemone';
+const endpoint = 'https://api.llmgateway.io/v1/decisions';
 /**
  Inherited judgment and transport bounds remain fixed at bootstrap.
  */
@@ -62,14 +62,14 @@ const l = tagged({ tag: 'auto-mode-assessment-transport', },);
 
  @example
  ```ts
- const send = createAssessmentSender({
+ const send = createAssessmentHttpSender({
    fetchImpl: fetch,
    now: performance.now.bind(performance),
    readCredential: () => process.env.AUTO_MODE_LLMGATEWAY_API_KEY,
  });
  ```
  */
-export function createAssessmentSender({
+export function createAssessmentHttpSender({
   fetchImpl,
   now,
   readCredential,
@@ -82,7 +82,7 @@ export function createAssessmentSender({
    Factory scope carries through each dispatch diagnostic.
    */
   const rl = tagged({
-    tag: createAssessmentSender.name,
+    tag: createAssessmentHttpSender.name,
     l,
   },);
   rl.debug('binding direct assessment transport',);

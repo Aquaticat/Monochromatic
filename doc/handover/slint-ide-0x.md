@@ -341,6 +341,35 @@ the items after it are the record of 2026-10-05 and older.
     change; reinstalling it changes the real home and needs the user's approval.
     Both flaky tests of the guard runs were fixed in this work: the scroll quiet-time test reads a clock a test can
     hold, and find reveal measures its own line first (it failed 3 of 16 runs at baseline).
+    Markdown and MDX highlighting (branch `feat/ide-markdown-highlight`, worktree `.claude/worktrees/ide-markdown`):
+    a copy of `.agents/skills/choosing-technology/SKILL.md` showed only the YAML frontmatter colored. The language, the
+    `markdown`, `markdown_inline` and `yaml` grammars and the injections all worked; `syntax::SCOPES` had no `markup`
+    entry, so every `markup.*` capture was dropped (357 spans, 2 colored before; 872 spans, 517 colored after; the
+    real bundle logged the same 872). Nine scopes were appended with a second channel (bold, semibold, light, the real
+    italic face; underline and strikethrough are not drawn by the glyph painter), fenced blocks get no block color, and
+    the tab measuring pass now shapes with the roles. MDX stays Markdown (Helix has no JSX-aware language); the README
+    section "Markdown and MDX highlighting" lists what paints. New: the `test:syntax` task, `tests/syntax_markdown.rs`,
+    `tests/syntax_markdown_faces.rs`, and seven `inspect:source-guards` cases (`markup-*`, `fence-language-injection`)
+    that were seen failing. Gate on IDE tree `38f5eec3ba`: lint:rustfmt, lint:clippy, lint:slint, lint:release, test,
+    test:cli, test:native (178 passed), bundle, inspect:bundle (10 of 10), inspect:bundle-guards, and the source (91),
+    sidebar (18), theme (7), find (39) and annotation (65) guards, all status 0. Not guarded: the tab measuring pass
+    (JetBrains Mono advances do not change with weight or italic, so no mutation can fail a test), and the contrast
+    ratios of at least 6.6 were measured against assumed backgrounds. The installed binary is not changed.
+  - Ignored entries dimmed in the tree (branch `feat/ide-ignored-dim`, request of 2026-10-14: "Apply 0.8 opacity to text
+    for gitignored files/dirs"; the user chose the `ignore` crate 0.4.33, the only new package). Before, the tree
+    listed ignored entries at full ink (`Workspace::list` is a plain `read_dir`). The reader thread now decides the
+    ignored names beside each listing from `.gitignore` files (top of the work tree down), `info/exclude` and the
+    global excludes file, with git's precedence and the parent-directory rule (`src/git_ignore.rs`); the answer rides
+    the listing's single-use request, so a stale reply drops it. The name draws at 0.8 opacity (arrow and badge keep
+    full ink, as IntelliJ colors the name only), the row label gains `, ignored by git` (the compositor's `a11y`
+    serves names, not descriptions), and the watcher reports a folder whose `.gitignore` or `info/exclude` is written
+    in place. Measured contrast of the name's strongest pixel: dark 17.04 to 11.16, light 17.01 to 9.19, selected row
+    4.53 to 3.45 (3.92 tinted), which is under WCAG 2's 4.5 and over the 3:1 floor of the selected-ink rule; kept as
+    asked. Not done: git's index is not read, so a tracked file matching a pattern is dimmed (pinned by a test and
+    named in the README); `.git/info/exclude` and the global file are found by the safety sweep, not a watch;
+    the call that turns the changed-rules flag into a reread of every shown folder has no guard of its own, because
+    the safety sweep would also repair the rows within a second. `inspect:ignored-guards` removes 28 guards in a copy
+    and all failed as named.
   - The IDE checks used compositor builds inside each worktree's `target` directory, which were 0.1.1 (no minimized
     launch) in the root checkout and four worktrees, so checks opened visible windows on the user's desktop. Those
     five binaries were replaced with the mise-installed 0.4.0, and the four `bin/inspect-*.mjs` scripts and the `native`

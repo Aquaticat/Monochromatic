@@ -17,7 +17,7 @@
  2. Captures stdout/stderr
  3. Drops diagnostic lines from suppressed sources
  4. Drops continuation lines (indented lines following a dropped diagnostic)
- 5. Exits non-zero only if non-suppressed errors remain
+ 5. Preserves process failure unless known diagnostic suppression fully accounts for it
  
  See `doc/troubleshooting/typescript.md` section
  "JSR packages ship `.ts` source files that `skipLibCheck` cannot skip"
@@ -44,6 +44,7 @@ import {
   SINGLE_THREADED_ENV,
 } from './tsc-args.ts';
 import { filterTscOutput, } from './tsc-output-filter.ts';
+import { isFullySuppressedCompilerFailure } from './tsc-suppressed-failure.ts';
 
 //region Incremental cache cleanup
 
@@ -199,10 +200,13 @@ async function main(): Promise<void> {
             .write('\n',);
       }
 
-      // Exit non-zero only if non-suppressed errors remain
-      if (stdoutResult.hasRemainingErrors
-        || stderrResult
-        .hasRemainingErrors)
+      // A crash or unexplained failure is not a successful type check merely because it has no TS error header.
+      if (!isFullySuppressedCompilerFailure({
+        stdout: subprocessError.stdout ?? '',
+        stderr: subprocessError.stderr ?? '',
+        filteredStdout: stdoutResult.filtered,
+        filteredStderr: stderrResult.filtered,
+      }))
         process.exitCode = subprocessError.exitCode
           ?? 1;
 

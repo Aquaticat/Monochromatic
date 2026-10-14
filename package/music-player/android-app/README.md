@@ -96,6 +96,7 @@ mise run //package/music-player/android-app:test:instrumented:device
 ```
 
 - `test:unit` runs the pure-logic JVM tests without a device or native build.
+  It also runs the Compose wiring tests described below, which need JDK 21 or newer.
 - `test:instrumented:build` builds the app and instrumented-test APKs without running them.
 - `test:instrumented` rebuilds the native libraries and runs all instrumented tests on a connected device.
   Set `ANDROID_SERIAL` when more than one device is attached.
@@ -104,6 +105,29 @@ mise run //package/music-player/android-app:test:instrumented:device
   `PeakSweepWorkerTest` class while retaining app data and grants.
   Android's `am instrument` can exit successfully when a test fails,
   so verify that its output reports `OK (` rather than `FAILURES!!!`.
+
+### Compose wiring tests
+
+`app/src/test/kotlin/dev/monochromatic/musicplayer/wiring` renders the real `trackListPane` and `playerHost`
+on the host JVM with Robolectric 4.17 and the Compose UI test rule (`ui-test-junit4`, version from the Compose BOM;
+`ui-test-manifest` in debug), over a `PlayerController` with `FakeAudioEngine` and invented tracks.
+No emulator is involved.
+They cover the Compose call sites that no pure function can reach:
+
+- which row is selected for a playing index, and how the marker moves on next and previous,
+- where a page opens, what a reveal and a folder reveal scroll to, and that a track change alone never scrolls,
+- that a track added to the shown folder gets its row and supporting line, and a folder change opens its page,
+- that the next measure pass starts at the first visible track, seen through a recording content provider.
+
+The waits for a scroll or for a background measure pass use `waitUntil` with a wall-clock limit,
+and every `@Test` has a `timeout`,
+so a mutant that stops a scroll or a frame should fail fast instead of hanging the run.
+`app/src/test/resources/robolectric.properties` selects API 36 (the app's `targetSdk`) and a bare `Application`.
+Robolectric loads its framework jar for that API from `app/build/robolectric-runtime`,
+which Gradle fills from the `robolectricRuntime` configuration (`org.robolectric:android-all-instrumented`),
+so a run needs the network only once, to fill the Gradle cache, and works with `--offline` afterwards.
+The test JVM also gets Robolectric's documented `--add-opens` flags (see `app/build.gradle.kts`).
+The wiring cases add about 8 s to the 1,167-test run.
 
 ## Lint and clean
 
@@ -258,6 +282,18 @@ and `T` for Move to trash.
 The letter is underlined in the label,
 and pressing it with a hardware keyboard while the menu is open runs the row and closes the menu.
 File details has no key of its own outside the menu.
+
+## Tapping a track row (D124)
+
+A tap, or `Enter` on the row under the focus ring, goes through `PlayerController.activateRow`.
+On a row that is not the current track it only selects the row:
+`selectIndex` makes it current, pauses the engine, and loads the track paused, so the deck shows it and nothing plays.
+On the current track, playing or paused, it toggles play and pause through `togglePlay`, the call of the deck's Play
+button, so a track restored from the saved session starts, and a track whose last load failed is loaded again.
+The explicit Play row of the track menu and a Search result still start a track that is not current at once
+(`playIndex`; D73).
+The desktop app follows the same rule.
+`PlayerControllerRowTest`, `PlayerControllerRowFailureTest` and `wiring/RowTapWiringTest` pin it.
 
 ## The library and the analysis follow the files
 

@@ -16,7 +16,9 @@ The observed 16-question rejection remains unresolved.
 The public source does not expose its deciding hosted guard.
 The current measured question boundary is 512,
 so the historical 16-question observation no longer excludes batching by count alone.
-The complete native assessment remains unverified on Drex 2.0.
+The later complete native assessment returned all question IDs outside the production deadline,
+but failed the existing distribution validator and supplied no answer at the adopted operating cutoff.
+The complete-input results are retained in the corresponding section.
 
 The completed synthetic probes establish:
 
@@ -322,6 +324,146 @@ No production route,
 threshold,
 deadline,
 or source-retention policy changed.
+
+## Complete native input on 2026-10-14
+
+The user explicitly approved the prepared complete-input check,
+then renewed authorization to send anything needed to Drex and Jev and use credits freely.
+The frozen native fixture preserves 73 source occurrences and 84 original questions.
+Only the model and required text encoding of question instructions differ from the captured Jev request.
+JSON round-trip comparisons recover every original question instruction;
+the complete state is unchanged.
+The request measures 541,947 bytes and has SHA-256
+`3d204aa86fb17dd3de7ad9c320ef2b6db65200badc27dd950b16189750fba410`.
+
+The first call at `${HOME}/temp/agent/pi-native-drex-capacity-20261014`
+ended with `TimeoutError` after 5,005.129 ms.
+It made no retry and produced no usable response.
+A separate observation at `${HOME}/temp/agent/pi-native-drex-observation-20261014`
+retained the exact same request bytes and allowed 60 seconds for diagnosis only.
+That attempt reached HTTP 200 and returned `drex-v2.0` with all 84 answer IDs.
+It failed local answer validation at 48,528.415 ms.
+The response reports `evaluation_time_ms: 46615.903`,
+2,418,163 input tokens,
+and 8,381 output tokens.
+These are provider-reported usage values,
+not independently reconciled billing.
+
+The local error is `QuestionSelectionError: Choice answer is not a complete distribution with a highest-probability selected option`.
+The returned distributions include 38 sums outside the consumer's `0.000001` tolerance;
+the largest observed deviation is `0.0002`.
+The [troubleshooting analysis](../troubleshooting/drex-model-route-label.md#complete-native-choice-distributions-and-latency)
+compares that result with the public four-decimal serializer.
+No production validator was relaxed and no reported probability was normalized.
+
+None of the 84 selected scores reaches the adopted `0.99` cutoff.
+The explicit primary clause,
+`RUL: The complete proposed operation may read proof.txt in this directory.`,
+received `none` with probability `0.3586` and permission probability `0.0153`.
+This is an abstaining or incorrect interpretation result for this representation,
+not a basis for loosening the cutoff or declaring general model quality.
+The result establishes request acceptance,
+not suitability for the installed assessment.
+
+A frozen follow-up at `${HOME}/temp/agent/pi-drex-clause-isolation-20261014`
+keeps the complete state and tests only that primary clause.
+Two unchanged baselines measure variability,
+then a third request places the same original definition and option rubrics directly in the question.
+The baseline request hash is
+`fe5885a059a33e43efb1e641cf17ccbbcb11e6bd624506d2dd51d031c726c321`;
+the inline-definition request hash is
+`ff94876634e47353bed80521f979630477fdfdb5c84335c664f36080f0cacac4`.
+There are at most three calls,
+no retries,
+and no production admission or tool execution.
+This diagnostic subset is not a replacement for complete source interpretation.
+
+All three clause-isolation requests returned HTTP 200.
+The unchanged baselines completed in 2,254.570 ms and 1,342.972 ms,
+with server evaluation times of 331.013 ms and 320.696 ms.
+Both returned the identical permission probability `0.7748` and usage of 15,671 input tokens.
+The inline-definition request completed in 1,338.757 ms,
+reported 20,607 input tokens,
+and returned permission probability `0.3473`.
+The direct-definition variant is not a verified improvement.
+Its latency difference from the second baseline is inside the observed unchanged-input spread.
+None of these results reaches `0.99`.
+
+The primary question and complete state are unchanged between the isolated baseline and full batch,
+but the observed primary-clause distributions differ.
+That is a batch-sensitivity hypothesis,
+not an established hosted mechanism or proof of cross-question attention.
+A frozen full-repeat and two-question control were prepared at
+`${HOME}/temp/agent/pi-drex-batch-isolation-20261014`.
+The unchanged full-repeat returned HTTP 529 `overloaded` after 26,134.675 ms.
+The schedule stopped without retry,
+so the two-question control was not dispatched.
+The public source describes isolated branches and separate row chunks;
+its relationship to hosted behavior is unverified.
+
+The next local inspection distinguishes evidence from injected assessment-status fields.
+The current wire includes `permission: false`,
+`authority: "not-established"`,
+and `semanticQualification: "not-established"` before interpretation.
+Those values describe the guard's current status,
+not the permission meaning of the selected clause.
+Whether they confuse the model is untested;
+their mere presence does not prove the cause of the observed estimates.
+No production payload,
+cutoff,
+provider,
+or deadline changes follow from this inspection.
+
+## Frozen representation diagnostics
+
+Standing user authorization covers the next finite diagnostic at
+`${HOME}/temp/agent/pi-drex-representation-isolation-20261014`.
+Its ranked hypotheses are guard-status confusion,
+JSON-string program indirection,
+and inability to apply the existing rubric confidently even to a direct permission.
+The schedule makes at most five sequential calls with no retry and stops on any non-200 response.
+Each call has a 60-second observation ceiling;
+the production deadline remains five seconds.
+
+Two unchanged isolated-clause baselines measure response variability.
+One variant removes only `effectFactCoverage`,
+`authority`,
+`semanticQualification`,
+and `permission` from the shared state.
+Another independently parses `parentProgram` and `preparedProgram` as JSON values,
+with exact reserialization checks against their original strings.
+Both retain every source and the original question unchanged.
+A final minimal control keeps the primary policy,
+programs,
+definition,
+and established effect facts but deliberately removes surrounding source context.
+That control is diagnostic only and cannot authorize an action.
+The manifest freezes every input hash before dispatch.
+No result from this schedule changes the installed provider or operating policy.
+
+All five requests completed with HTTP 200 and `model: drex-v2.0`.
+The unchanged baselines returned identical permission probability `0.6906`
+in 2,069.978 ms and 1,252.905 ms.
+Removing guard-status fields returned `0.7468` in 1,184.061 ms;
+parsing the programs returned `0.6533` in 1,327.715 ms.
+The minimal control returned `0.8576` in 409.473 ms.
+No result reaches the adopted `0.99` cutoff.
+
+The same baseline hash previously returned `0.7748`.
+Its observed cross-study range is therefore `0.0842`,
+larger than the status-removal increase of `0.0562` in this study.
+The within-study repeats alone would miss that variation.
+These observations do not establish a beneficial causal effect from removing status fields,
+a stable semantic encoding remedy,
+or the reason for hosted response variation.
+The parsed-program variant does not improve the observed estimate.
+The minimal control shows that surrounding source volume is not the only obstacle
+to crossing the current cutoff for this rubric.
+All provider work in this schedule is terminal;
+no production request,
+validator,
+provider,
+or operating cutoff changed.
 
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits

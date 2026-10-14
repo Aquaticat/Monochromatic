@@ -15,7 +15,7 @@ const entry = fileURLToPath(new URL(
   import.meta.url
 ));
 const networkGuard = fileURLToPath(new URL(
-  'process-network-guard.mjs',
+  'process-network-guard.ts',
   import.meta.url
 ));
 const child = spawn(

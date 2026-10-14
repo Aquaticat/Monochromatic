@@ -193,6 +193,11 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   fixture of 52 roots (`android-app/app/src/test/resources/theme-roles-vector.txt`) is checked by a test on each side, and
   the Rust drift test fails if either side changes alone.
 
+- A click or tap on a track row selects it paused and, on the selected row, toggles play and pause on both platforms
+  (D124, decided by the human on 2026-10-14; Enter on the focused row follows it; the track menu's Play and Search
+  results still start a track at once). `PlayerController.activateRow` (Android) and `play_row` (desktop) hold the rule;
+  the e2e suite declares one more check for it (111 declared).
+
 - Since then (D113 to D119): library and analysis follow files automatically (D113: no rescan or re-analyze command;
   the watcher names changed paths and a planner edits the list in place; at 1M tracks a replaced file costs 0.12 ms on
   the handler instead of 1.4 s; a replaced playing file is swapped in at the same position; every refresh retries
@@ -204,6 +209,19 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   the `containerCargo` fallback (it mounts `truepeak-core` and the Android fixture); `states/window-title` and
   `states/natural-order` were harness races and pass 20 of 20; nested compositor 0.4.0 is published and installed, and
   the runner checks capability by version with no pin; the e2e suite has 110 checks (110 pass, 1 not injectable).
+
+### On a branch, awaiting merge
+
+- Desktop unplayable-file notification (2026-10-14, branch `feat/desktop-unplayable-notification`, not merged; D122): the
+  in-window "`name` can't be played." message is gone and the report is one freedesktop notification on Linux
+  (`src/unplayable_notification*.rs`, own thread and connection, title `Cannot play a file`, normal urgency, default
+  expiry, no buttons, each file told once per run, which is the implementer's reading open to the human's veto); the
+  row mark stays. A failed post logs one warning and shows nothing in the window. macOS and Windows show only the row
+  mark (no notification code there yet). The bus tests start a private `dbus-daemon`, so `:image` must be rebuilt
+  before `:test:container` can run them (the Containerfile now installs it). Open item, not fixed: the e2e suite runs
+  its app in a systemd user unit that inherits the real session bus (`DBUS_SESSION_BUS_ADDRESS` is
+  `unix:path=/run/user/1000/bus`), so `states/refresh-broken-file-once` now posts "d.wav can't be played." on the real
+  desktop on every run, as the analysis indicator already did.
 
 ### Open, not started
 
@@ -227,13 +245,34 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   CPU), below the noise, and is left alone. The mutation pass killed every mutant of the new logic after ten more test
   cases; the unit suite is 1077 tests with no failures, detekt and lintDebug pass.
   Wiring tests (2026-10-14): the page measure refresh effect and the first visible report moved into
-  `core/PageMeasureRefresh.kt` and `core/FirstVisibleTrack.kt`, so JVM tests now kill the mutants for the per-step
-  cancel (`collectLatest`), the start position and the sink index (13 new tests, 1090 in all, no failures; detekt and
-  lintDebug pass). Five mutants still survive because they sit at Compose boundaries: the `LocalPlayingIndex provides`
-  value, the `rowWithPlayingFlag` call in the `LazyColumn` item, and the `currentPositionOf`,
-  `pageEntryScrollTarget` and `remember` key arguments. Killing them needs Robolectric with compose ui-test or an
-  instrumented test, a dependency decision not yet made. No emulator test ran for this change.
-  Still open: the five Compose-boundary mutants; the fourth cost below; the 435 ms `loadTemplate` violation did not
+  `core/PageMeasureRefresh.kt` and `core/FirstVisibleTrack.kt`, so JVM tests killed the mutants for the per-step
+  cancel (`collectLatest`), the start position and the sink index (13 new tests, no failures; detekt and lintDebug
+  pass). The five mutants at Compose boundaries (the `LocalPlayingIndex provides` value, the `rowWithPlayingFlag` call
+  in the `LazyColumn` item, and the `currentPositionOf`, `pageEntryScrollTarget` and `remember` key arguments) are
+  now tested with Robolectric 4.17 and Compose UI test (`ui-test-junit4` from the Compose BOM, `ui-test-manifest` in
+  debug; user-approved test dependency, no emulator): `wiring/TrackListPaneWiringTest` renders the real `trackListPane`
+  and `wiring/PlayerHostWiringTest` the real `playerHost` over a controller with a fake engine and invented tracks.
+  They assert the one selected row for a playing index, the marker moving on next and previous, where a page opens,
+  that a track change alone never scrolls, what a reveal and a folder reveal scroll to, a track added to the shown
+  folder (row and supporting line), a folder change, and, through a recording content provider, that a new measure
+  pass starts at the first visible track. The unit suite went from 1129 to 1149 tests with no failures; the test
+  task costs about 8 s more (Gradle `BUILD SUCCESSFUL in` 40, 42, 42 s before and 50, 48, 50 s after, test task only
+  rerun in a container after a warm-up; summed test time from the XML 28.2 s to 36.4 s, means of three runs).
+  The mutation pass (21 mutants of these sites and their siblings, one at a time, full suite each) killed 17; the
+  four that survive are output-equivalent or need a flow no test drives: the folder title key and the playing-index
+  key and argument of the `rowEntries` `remember` (the rows are built from the entries alone, and
+  `rowWithPlayingFlag` overwrites any flag they carry, so only the cost of rebuilding changes), and the template key
+  of the `rowLines` `remember` (a template changes only through the Settings editor, which no wiring test opens).
+  Robolectric needs the API 36 framework jar: Gradle resolves it as `robolectricRuntime` and copies it to
+  `app/build/robolectric-runtime`, read through `robolectric.dependency.dir`, so a warm Gradle cache runs offline.
+  The podman runner's Java could not reach Maven Central or Google Maven (names resolve only with
+  `/run/systemd/resolve` mounted, and connections from the container's Java then still fail, cause not found), so new
+  dependencies were fetched with a host Gradle run into the shared Gradle home and the container runs offline.
+  Possible flake to watch: `SearchServiceTest.typingDuringASlowScanAnswersFromTheKnownTracks` (p95 under 500 ms)
+  failed in 2 of 21 mutant runs during the wiring work while a host Gradle run competed for the CPU, and passed in
+  every control and final run (p95 3.98 ms); whether the Robolectric sandbox sharing its JVM contributes was not
+  measured. The suite on `main` is 1149 tests, 0 failures, from a forced offline run.
+  Still open: the fourth cost below; the 435 ms `loadTemplate` violation did not
   reproduce, so the template cache in `SessionStore.warmUp` is unproven; the old ANRs did not reproduce in 23 play
   windows (cause unknown); the sweep-under-load case was not exercised; release build not measured.
 - Android playing-queue cost (measured 2026-10-14, partly fixed, on `main` since `90f121edf5`): while tracks changed,
@@ -347,9 +386,20 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   2026-10-14 from `e02e74edec` (only the track menu image changed visibly and was replaced; the other seven differ by
   4 to 7 px row offsets and were kept; see `doc/handover/music-player-readme-and-gallery.md`). The ring capture
   emulator ran with `-no-window` on the host GPU, which the rule below bans.
-- Stale docs: none known. The README gallery and the Android page-control text were rewritten on 2026-10-13, and the
-  peak-sweep start path in `android-app/HANDOVER.peak-sweep-optimization.md` and
-  `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
+- Desktop folder names scrollbar removed (2026-10-14, D125, amends D22): the names list of the folder picker draws no
+  bar on either input; the track list, Search, Settings and the template editor keep theirs. Verified: two window tests
+  (both fail with the bar restored in a throwaway worktree), the whole nextest suite, clippy, `slint-viewer --check`,
+  and release builds of the old and the new commit in the nested compositor on an invented library of 61 folders in a
+  1000 by 800 and a 443 by 900 window (names unchanged in place, wheel offsets identical, track list bar kept). Not
+  verified: macOS, Windows, a real Plasma session, touch input on a real screen (only the window test sets it). Eight
+  committed desktop gallery images still show the old bar and are due a retake: `desktop-two-pane-light.png`,
+  `desktop-two-pane-dark.png`, `desktop-menu-light.png`, `desktop-menu-dark.png`, `desktop-hints-dark.png`,
+  `desktop-search-light.png`, `desktop-search-dark.png` and `desktop-narrow-folders-light.png` in
+  `package/music-player/asset/readme/`. The `desktop-settings-*` images, `desktop-narrow-player-dark.png` and
+  `desktop-empty-light.png` do not show it.
+- Stale docs: the gallery images in the bullet above; otherwise none known. The README gallery and the Android
+  page-control text were rewritten on 2026-10-13, and the peak-sweep start path in
+  `android-app/HANDOVER.peak-sweep-optimization.md` and `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
 - Hygiene: `~/temp/agent/agent-polish2/work/` and `~/temp/agent/agent-refresh-cost/lib-1m` (12 GB) hold scratch libraries
   that can be deleted. A failed decode is retried at every library change, one decode per failed file per change.
 - Rate limit: on 2026-10-12 the Sonnet weekly limit stopped five agents mid-run; a re-login lifted it and they were
@@ -359,6 +409,18 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 ### Mistakes made in this effort, and what corrected them
 
 Read these before repeating them. Each one cost the human a correction.
+
+- The unplayable-notification run (2026-10-14) shipped a test that started a fake notification service after posting
+  the first report, so it raced the notifier thread; it passed in the suite and failed only as the baseline of the
+  mutation run (fixed in `95d573b836`: the fake service now refuses its first call on purpose). The docs commit
+  `2007ce0cb4` says its Containerfile note follows, but that change landed in `b21530ceae`; a corrective commit comment
+  was posted. Tests that wait for "something happens after X" need a deterministic signal, not an order of two threads.
+- The orchestrator told the human the desktop click rule already matched ("an unselected row is selected, the selected
+  row toggles") after reading only `play_row` and the README, which say a click plays at once. The human pointed out the
+  mismatch: `Command::SelectIndex` selects and pauses ("selecting never auto-plays") and `play_row` then sends Play, so
+  a click replaced the playing track and started the new one. The ruling (2026-10-14) is select only, then toggle, on
+  both platforms (D124). Before saying behavior matches a spec, read the engine command the UI sends and the
+  user's words, and run the real binary (QAB, QJ1).
 
 - The wiring-test agent (2026-10-14) committed `55f465c0b3` with no blank line after the subject, so the whole body is
   one long subject line, and an early step test looped forever under a mutant and blocked a mutation run for about 40

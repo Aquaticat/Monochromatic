@@ -9,6 +9,27 @@ It holds twelve PNGs of the desktop app:
 the two-pane window, Search, Settings and the track menu, each in light and dark,
 plus the key hint badges (dark), the narrow player (dark), the narrow folder list (light) and the empty library (light).
 
+On 2026-10-14 eight of the twelve were retaken from a release build of commit `4e71750a22`
+(the branch `feat/desktop-gallery-retake`, which includes D125, the removal of the folders panel scrollbar):
+the two-pane window, the track menu and Search in light and dark, the key hint badges and the narrow folder list.
+Those eight showed the scrollbar on the right edge of the folder list (wide window) or of the folder picker (narrow
+window), and the fresh frames differ from the committed ones only there and in the deck's elapsed time.
+The track list scrollbar is unchanged and still shows.
+The other four stay as committed:
+a fresh Settings capture in light and in dark and a fresh empty-library capture were pixel-identical to the committed
+files (zero differing pixels at a 3 percent color tolerance), which also shows that the regenerated library and the
+method reproduce the first gallery,
+and a fresh narrow player capture in dark differed only in the elapsed time and the seek knob (131 by 44 pixels).
+Playback started from the keyboard this time (`Alt+2`, five `Down` taps, `Enter` on `03 Paper Lanterns`)
+instead of a click on a row, then a click on the seek bar (to about 1:20) and a click on a folder row to move the focus
+ring off the track row, so the two-pane, menu and Search frames carry no ring until the menu key or `Ctrl` brings it
+back, as before.
+The routing proof showed one output stream with one link, to the private null sink.
+The library had to match the first gallery in three places that show on screen:
+the root folder is named `Music`, the nine tracks of `Aster Vale` keep the durations and peaks in the captions
+(for example `03 Paper Lanterns` is 4:03 at 0.703 of full scale for -3.5 dBTP), and the loose tracks `Amber Hour`
+(29 seconds, -1.0 dBTP) and `Lantern Season` (36 seconds, -7.0 dBTP) feed the Settings preview.
+
 The Android gallery holds eight PNGs of the Pixel 9 Pro Fold emulator (API 37, host GPU) with a generated library of
 invented artists:
 the cover display (library light, player dark, Search light, track menu dark, Settings light) and the inner display
@@ -32,6 +53,9 @@ So the eight PNGs do not all come from one commit:
 the menu image is from `e02e74edec` and the rest from `c6a3f9fde2`.
 If a reader-visible difference in row offset ever matters, the same-commit set is a retake of those seven.
 No ring shows on the Search result or on any touch capture, as D117 intends.
+
+All twenty oids in the README were checked against the sha256 of their files after the retake and agree.
+The R2 URL check task has not run, since the objects reach R2 on push.
 
 Last updated: 2026-10-14.
 
@@ -73,13 +97,20 @@ Check the routing once after starting a track.
 ### Sequence
 
 Wide window, 1000 by 800 pixels:
-wait for the player state, wait about four seconds for the analysis to settle, click a track to play it, click a
-folder row, and take the two-pane shot.
+wait for the player state, wait about four seconds for the analysis to settle, play `03 Paper Lanterns` (the first
+gallery clicked its row; the 2026-10-14 retake used `Alt+2`, five `Down` taps and `Enter`, because a click on an
+unselected row is changing to select without playing), click the seek bar at (190, 648) for about 1:20, click the
+folder row at (100, 118) to clear the focus ring, and take the two-pane shot.
+Wait for the intended `ui_state` (`waitState`, or a poll of `last` for the latest line, since `waitState` without
+`after` also matches older lines) before every shot.
 Then `Alt+2`, five `Down` taps and `Menu` for the track menu shot, `Escape`, hold `Ctrl` for 900 ms for the badge shot
 (dark only), `Ctrl+F` and type a short query for Search, `Escape`, and `Ctrl+Alt+S` for Settings.
 
 Narrow window, 443 by 900 pixels:
 play a row for the player shot, then press the folder button for the folder list shot.
+The 2026-10-14 retake played from the keyboard, clicked the seek bar at (172, 748), clicked the folder button at
+(60, 28) for the folder list shot, then clicked the `Aster Vale` row at (110, 118), which closes the picker with no
+focus ring on the track row, for a player frame to compare with the committed one.
 
 Empty library, 1000 by 800 pixels, light only.
 

@@ -7,13 +7,14 @@ import {clauseOperationRelation} from './clause-relation.mjs';
 import {requestInstructionContent} from './request-relation.mjs';
 import {headingInstructionContent} from './heading-relation.mjs';
 import {unitAdoptionRelation} from './unit-adoption-relation.mjs';
+import {ruleAssessmentModel} from './assessment-model.ts';
+
+export {ruleAssessmentModel} from './assessment-model.ts';
 
 export class RuleAssessmentWireError extends Error {
  constructor(message){super(message);this.name=this.constructor
    .name;}
 }
-/** Fixed serving model checked by the existing response parser; not empirical qualification. */
-export const ruleAssessmentModel='typesafe/jev-1.13.0';
 const model=ruleAssessmentModel;
 const definitions=Object.freeze({
  operation_violates_rule:programCatalog.operation_violates_rule,

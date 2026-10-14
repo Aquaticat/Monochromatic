@@ -873,6 +873,9 @@ scrollbar at all** on either input,
  Closes
 the two open sub-points on the scroll-a spec.
 
+Amended by D125 (2026-10-14): the desktop folder names list shows no scrollbar on either input either.
+The track list, Search, Settings and the template editor keep the bars described here.
+
 ### D23. The picker shows no folder counts
 No library total ("1,043 folders") and no per-letter count.
  The picker is a filter
@@ -3322,6 +3325,90 @@ The human answered four questions that had been open as orchestrator adoptions.
   identity until they ask. D112 (in-memory index) stands.
 - Android `targetSdk` stays on 36 with no extra emulator passes for API 33, 34 and 36; D107 on those levels remains
   unverified.
+
+### D122. The report of a file that cannot be played is a system notification, not an overlay (2026-10-14)
+
+The human asked for it: the in-window message "`name` can't be played." appeared at launch for a library file that could
+not be decoded, and it was misplaced on screen.
+The request for the system notification is an owner decision; the bullet marked as the implementer's reading is the
+only part left open to a veto.
+
+- D83's overlay no longer carries the unplayable-file message.
+  The window draws nothing for the report; the row keeps its "Can't be played" mark, which stays as the only in-window
+  sign (D113's mark and its removal when a peak is measured are unchanged).
+- Why: the report happens at launch and during sweeps, not in answer to anything the person just did, so it belongs in
+  the desktop's notification area (D107's reasoning for the analysis indicator) and not on top of the player.
+  D113's rule of one report per file in plain words stands; only the surface changes.
+- Linux sends one `org.freedesktop.Notifications.Notify` call per report: the app's name, icon and desktop entry, the
+  fixed title `Cannot play a file` (it names no file and no folder), the old wording as the text (one file named;
+  several collapse to a count that names the first, D9), normal urgency, the server's default expiry and no action
+  buttons.
+  Files in one engine report give one notification.
+- The implementer's reading, open to the human's veto: each file is announced once for a run of the app, so a repeated
+  report, a folder opened again or a file that decodes and then breaks again posts nothing more, while its row is marked
+  each time. The human asked only that a repeated report not repeat the notification and that the engine's once-per-file
+  rule stay; the engine itself still reports again after a folder is opened again (which re-marks the rows) and after a
+  file decoded once. Without this reading those cases would post the notification again.
+- The call runs on its own thread with its own session bus connection and a bounded wait, so the engine and the window
+  never wait on the bus, and a failure here never disables the analysis indicator (D107) or the other way round.
+- When the notification cannot be posted (no bus, no notification service, any failure) nothing is shown in the window:
+  one warning is logged and the row mark is the only sign.
+  There is no in-window fallback in any case.
+- Platform limit: macOS and Windows have no notification code yet (the analysis indicator has none either, D107 leaves
+  it to a later step), so there the row mark is the only sign and the unplayable-file message is not shown at all.
+  This was not run on either system.
+- What stays an overlay: every other D83 message, including the removed-file message (`file_gone_message`) and the
+  file-action errors.
+- Android is handled in D123.
+### D124. A row click or tap selects, the selected row toggles play (2026-10-14)
+
+The human decided this on 2026-10-14, after asking that clicking a track always select it when it is still unselected,
+and that clicking a selected track toggle play and pause.
+It reverses the earlier README text that said a click on a row other than the playing one, and a tap on any row on
+Android, played it at once.
+
+- A click, a tap or Enter on the focused row of a track that is not the current track only selects it.
+  The row becomes current, the deck shows it, the track is loaded paused at its start, and any playing track stops.
+  The desktop `Command::SelectIndex` always did this; its UI wiring `play_row` followed it with `Play`, and that
+  follow-up is removed.
+  Android gets `PlayerController.selectIndex` (queue cursor, engine pause, paused load).
+- A click, a tap or Enter on the current track toggles play and pause, whether it is playing or paused.
+  Android calls the deck's `togglePlay`, so a current track that was restored from the saved session and never started
+  starts, and a current track whose load failed is loaded again on the next tap.
+  Desktop differs on a failed load: its `load_current` skips an unreadable file and reports it, so selecting such a row
+  moves the selection to the next playable file (pinned by a controller test); whether desktop should keep the
+  unreadable row selected like Android is an open question.
+  Android's `PlayerController.activateRow` holds the whole rule, and the host only forwards the tap.
+- The Play item of the track menu keeps starting a track at once (desktop `play_row_now`, Android `playIndex`);
+  it is an explicit Play, not a row click.
+  Search results keep their D73 behavior (a track that is not current starts at once; the current track toggles); the
+  human has not been asked about Search under this rule, so that stays open.
+- The folder and letter rails, long press and the right click are not track-row selects and are unchanged.
+- A tap during the first library load keeps its choice as before, because `selectIndex` loads the track, and the
+  loaded track is what `finishLoad` keeps.
+### D125. The folder names list shows no scrollbar (2026-10-14)
+
+The human asked that the scrollbar on the folders panel go, because the panel has several other ways to say where the
+user is. This amends D22: the desktop folder names list, the column right of the letter rail, draws no scrollbar on
+either input, neither the always visible draggable bar for the pointer nor the fading bar for touch.
+
+- The panel already shows position without a bar. The selected folder is primary, heavier and carries a 2 px bar on its
+  bottom edge (D31). The letter rail (D17) circles the letter of the current folder's cell, and the names run in rail
+  order under a heading for each cell (D28), so the heading in view says where in the alphabet the list is. The list
+  order is the alphabet itself, and a scrollbar would add a length that D17 and D23 say the user is not meant to care
+  about.
+- What stays for moving the list: the wheel, a touch drag, the keyboard (Up, Down, the page keys, Home and End scroll
+  the ringed folder into view), a rail tap that scrolls to its cell, and the reveal of the selected folder after Search,
+  a shuffle or a folder key chord (D79). None of them changed.
+- The names keep the 16 px right inset of the Android list (`NAMES_END`), so names wrap and end where they did before.
+  Only the 12 px grab zone constant and its comment went.
+- Other lists keep D22: the track list, Search results, Settings and the template editor still draw the always visible
+  12 px bar for the pointer and the fading 4 px bar for touch. The rail already had none.
+- The folder names still record whether the last pointer event was a touch, because the bars of those other lists
+  follow the last input the app saw.
+- Android needed no change: `FolderPickerPane.kt` draws no scrollbar and no scroll indicator on the names.
+- Tests: two window tests in `desktop-app/src/ui_lists_window_tests.rs` assert that the picker has no scrollbar in the
+  wide and the folded layout on both inputs, while the track list keeps its own bar in the wide layout.
 
 ## Pending after the theme picks (2026-09-04)
 

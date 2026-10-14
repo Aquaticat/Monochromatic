@@ -7,6 +7,313 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-14.
 
+## Adopted Luna migration
+
+The user selected `gpt-6-luna-decisions`,
+excluded Perplexity,
+and accepted scores of `0.80` or higher to reduce manual request judgment.
+The agent's earlier `0.99` heuristic was Jev-specific and uncalibrated;
+it must not be imposed as an unchanged Luna requirement.
+The [updated decision](../decision/pi-auto-mode-semantic-admission.md#current-luna-decision)
+preserves unique-leading supported meanings and independent source and authorization guards.
+Only four of the retained 84 Luna answers reach `0.80`,
+including the primary permission answer at `0.83`.
+The migration therefore includes the serving adapter,
+fixed model binding,
+cutoff tests,
+and bounded question-format experiments retaining all input.
+The explicitly authorized Luna format comparison is complete:
+three baseline requests admit four answers each at `0.80`,
+and three requests with existing rubrics repeated beside their questions admit six each.
+Every request returns all 84 answers inside five seconds,
+with identical answer data within each format's repeated runs.
+The primary permission estimate remains `0.83`.
+The [comparison record](../planning/pi-auto-mode-gateway-decisions-current-contract.md)
+retains the overlap in latency ranges and the mixed admission changes.
+The maintained implementation now selects Luna and `0.80`
+and contains the lossless Decisions adapter.
+The package and owned native builds pass.
+Package type checking passes;
+the 16-file changed TypeScript lint scope reports zero warnings and zero errors,
+with subsequent fixture-only changes checked separately.
+The initial formatter diagnostics and fixture declaration-generation failure were corrected,
+not ignored.
+Built wire,
+transport,
+and admission tests pass.
+Additional wire tests cover nullable request shapes,
+the 255-choice boundary,
+predicate bounds,
+independent confidence,
+and usage counts;
+their final lint,
+type,
+and built-consumer runs also pass.
+Native authored HTTP cases verify permission at `0.80`,
+prohibition,
+unspecified policy,
+lower scores,
+unknown meanings,
+and unsupported meanings.
+Every native case makes one local HTTP call and zero provider requests.
+The native lifecycle and actual isolated Qwen CLI also pass with clean shutdown.
+
+Local replay of all six retained provider responses preserves all 504 answer distributions
+and their independent confidence values exactly.
+Re-encoding the retained baseline request preserves its complete parsed JSON value.
+Process-local omission of the model,
+answer identity,
+duplicate-label,
+normalization,
+or question-count guard makes the corresponding behavior assertion fail.
+The first identity omission survived because mixed-kind reordering failed another guard;
+an otherwise valid answer with a changed name now isolates original name attribution.
+The final controls leave the built artifact unchanged.
+Receipts live in `${HOME}/temp/agent/pi-luna-guard-controls-20261014/`
+and the comparison directory's `built-adapter-replay.json`.
+The explicit-rubric variant remains an experiment;
+its mixed results do not establish greater accuracy.
+The production adapter currently uses the verified lossless baseline encoding.
+The installed host's new offline capture retains 73 source occurrences,
+84 questions,
+and 584,007 bytes.
+Compared with the original provider-trial input,
+only event timestamps,
+recorded durations,
+and their validated source hashes differ.
+The first local capture used the smaller authored domain fixture,
+which was not comparable to the installed extension set.
+Its capture path also needed binding before the fixture clears its environment.
+The installed capture uses the existing network-isolated disposable host
+with all 17 configured packages and 37 read-only workspace package mounts.
+`${HOME}/temp/agent/pi-luna-guard-controls-20261014/installed-equivalence.json`
+retains the complete comparison result.
+No new provider request was needed for this check.
+The [next frozen compensation experiment](../planning/pi-auto-mode-gateway-decisions-current-contract.md#question-batch-compensation-experiment)
+partitions the same questions under a shared deadline while preserving complete input.
+Automatic approval review rejected the new nine-call schedule before dispatch;
+the earlier six-call authorization does not cover it according to that review.
+The specific approval question is pending,
+and no new experiment call has run.
+The original native dialog is also pending a genuine human response;
+no automatic answer is permitted.
+
+## Original native RPC approval verification
+
+The disposable harness in `${HOME}/temp/agent/pi-native-rpc-human-20261014/`
+now constructs the original native SDK session,
+selects its installed `qwen-token-plan-individual/qwen3.8-flash` model record,
+and runs Pi's original RPC mode.
+Its complete proposed program is `return await tools.fixture_value({path:"seed"});`.
+The tool returns fixed inert text.
+All stream responses,
+semantic answers,
+and independent prerequisite facts are authored fixture inputs.
+No provider request is allowed.
+The direct SDK host facade supports only its original disposable session;
+this is not the production CLI host's authorization owner.
+
+The initial Allow control passed with one assessment,
+one original verdict entry,
+one tool execution,
+zero external provider requests,
+exit zero,
+and empty child stderr.
+The controller preserves the complete pending native dialog and response transcript.
+Deny also passed with no tool execution and empty stderr.
+Stop retained its original `user-deny` entry,
+executed no tool,
+and exited zero,
+but failed the controller's unconditional empty-stderr assertion.
+The source trace identifies deliberate request cancellation during assessment,
+which the existing approval-domain test already expects as a handler failure.
+This is not evidence of a disposal failure.
+The corrected controller captured every stderr byte with its execution or disposal phase,
+without filtering output.
+Stop's 10,467 diagnostic bytes belong to execution;
+disposal output is empty.
+Stop,
+cancellation,
+Allow after 6,007 ms,
+and an unrelated response identifier followed by Deny now pass.
+The unrelated identifier leaves the original native request pending.
+Every completed control uses one assessment,
+zero provider requests,
+and exit zero.
+Only Allow executes the inert tool.
+No genuine human response has been supplied yet.
+That human boundary remains queued while the user's Luna migration takes priority.
+
+## Typed native session construction
+
+The next owned dependency is now ported from `runtime-factory-scopes/scopes.mjs`
+to `scopes.ts` and `construction.ts`.
+The maintained SDK caller now imports its real typed interface directly.
+The original callback and manager captures,
+exact prepared-result identity,
+factory-wide exclusion,
+and retryable failed cleanup remain explicit requirements.
+The unused legacy result-preparer default is removed:
+the maintained caller already supplies `prepareSdkResult`,
+and the typed interface now requires that callback.
+The historical provenance records the old path and October 14 move date.
+Built-artifact checks for missing capabilities,
+input replacement,
+publication,
+failed cleanup,
+and reentrancy pass.
+The final ten-file lint scope reports zero warnings and zero errors.
+Package type checking passes with `TSC_SINGLE_THREADED=1` and `GOMAXPROCS=2`.
+Native manager constructors,
+host lifecycle,
+and the actual isolated Qwen CLI process pass after the owned rebuild.
+They report zero external provider requests;
+the CLI reports clean shutdown and zero genuine human approvals.
+Process-local omission of reentrancy exclusion or cleanup blocking fails its corresponding assertion.
+Omitting original callback capture invokes the forbidden replacement preparer and fails the test.
+The initial omission auditor incorrectly required all failures to be `AssertionError`;
+the corrected readback verifies each actual failure boundary.
+`${HOME}/temp/agent/pi-factory-scope-controls-20261014/verification.json`
+records those controls and the emitted scope file's exact match with maintained source afterward.
+The first type-check attempt emitted Go `newosproc` and is invalid despite its wrapper returning exit zero.
+That masked compiler failure was reproduced and repaired separately in `dev-script/task-util`.
+The built wrapper now preserves failed process status unless the existing known-diagnostic filter
+fully accounts for the failure.
+Original failing-before cases include a panic,
+silent failure,
+unfamiliar diagnostic,
+and a panic beside suppressed diagnostics.
+The repaired real-process fixture and existing output-filter tests pass.
+The [wrapper incident record](../troubleshooting/typescript.md#task-tsc-002-converted-compiler-process-failures-into-successful-checks)
+retains the initial success-control newline mistake and its source-backed correction.
+Final wrapper lint reports zero warnings and zero errors across four changed files;
+its package type check and all declared process cases pass.
+Pi's real `lint:types` task also passes through the repaired wrapper.
+The broader native quality queue and genuine approval verification remain open.
+
+The next approval preparation uses the existing native RPC dialog boundary.
+The emitted Pi 1.2.0 `rpc-mode.js` creates the original extension selector request
+and resolves only its pending response identifier.
+A direct SDK fixture can retain authored prerequisite premises and local model responses
+while allowing a genuine human to answer the actual pending native request.
+This would verify that human response boundary only.
+The production CLI still lacks an independent authorization-requirement owner;
+unknown requirements must remain unresolved and must not be converted into UI requests.
+No genuine human response or production authorization-owner integration is claimed yet.
+
+The maintained constructor now lives in `native-batch/session-root.ts`,
+with typed native readers,
+SDK result fields,
+registration,
+and publication.
+Its static bridge keeps the incumbent lifecycle and factory-scope owners.
+The old `session-root.mjs` consumer imports were updated together;
+provenance retains the historical path and records the move date.
+The original scoped measurement was 56 warnings and two errors in that module.
+The seven typed implementation and bridge files now pass scoped lint with zero diagnostics,
+and package type checking passes with the new tests included.
+
+`test:native:session-result` exercises the built descriptor-copy helper.
+Its original artifact passes;
+a process-local omission of only the own-data-descriptor guard makes the accessor cases fail.
+The omission marker and failure are retained in
+`${HOME}/temp/agent/pi-session-result-guard-omission-20261014.log`.
+The real artifact is byte-for-byte unchanged by that control.
+Native manager construction and host lifecycle tests pass,
+including foreign managers,
+retirement,
+failed disposal,
+and cleanup retry.
+The actual Qwen CLI process fixture also passes with clean shutdown and no external requests.
+
+The first approval-context run hit `JudgmentDeadlineError` while other verification was running.
+An unchanged isolated repeat passed Allow,
+Deny,
+Stop,
+cancellation,
+and Allow after resource reload.
+`${HOME}/temp/agent/pi-session-root-approval-isolated-20261014.log`
+retains every completed mode with zero provider requests and zero genuine human approvals.
+The repeat establishes recovery,
+not the deadline failure's cause or a permanent timing fix.
+Full native lint completion and genuine approval-boundary verification remain outstanding.
+
+The subsequent full package lint measured 14,368 warnings and 458 errors across 389 files.
+Its log is `${HOME}/temp/agent/pi-native-full-lint-after-session-root-20261014.log`.
+This broader file set differs from the earlier 368-file baseline;
+the totals are not a controlled before/after comparison.
+The verified construction port's scoped files remain clean.
+Remaining findings include historical build inputs and maintained runtime owners;
+do not silently exclude the former or rewrite their provenance to obtain a passing count.
+The next directly used construction dependency is `lifecycle/runtime-factory-scopes/scopes.mjs`,
+which this full run reports with seven errors.
+
+The [decision-model trial priorities](../planning/pi-auto-mode-decision-model-trial-order.md)
+retain the user's requested candidate recommendation and separate trial order from adoption.
+
+## Newly enabled Gateway decision models
+
+The user enabled `microsoft-decision-1` and `gpt-6-luna-decisions` on the existing Gateway key.
+The [frozen compatibility plan](../planning/pi-auto-mode-gateway-decisions-current-contract.md)
+uses the documented `/v1/decisions` route and an exactly invertible wire conversion.
+Both supplied resources passed synthetic access checks with exact returned model names.
+Microsoft returned the expected label at 0.998989 in 1,805.284 ms;
+Luna returned it at 0.99 in 991.616 ms.
+Automatic approval review blocked the complete private assessment requests before execution,
+then the user explicitly authorized both prepared complete-input probes.
+Each runs once with the original frozen input and a five-second deadline,
+reusing the successful synthetic control.
+The corrected Jev row encoder independently passes envelope and exact-reconstruction checks;
+its 117,254-byte complete candidate has a separate one-call capacity plan.
+No provider replacement or admission-policy change is adopted.
+
+Both explicitly authorized complete-input probes are now terminal.
+Microsoft returned HTTP 422 in 2,221.452 ms,
+with `invalid TypeSafe request` and an estimated 145,150 tokens against a named 64,000-token limit.
+No returned Microsoft model identity establishes which layer owns that limit.
+Luna returned all 84 answers in 2,087.943 ms with the exact requested model name and no refusals.
+None met the unchanged 0.99 unique-maximum admission rule;
+the primary permission answer was 0.83.
+The corrected Jev request independently returned HTTP 400 `max_tokens_exceeded` in 997.329 ms.
+These phases are complete without retries.
+The remaining authorized work includes maintained native quality checks and genuine approval-boundary verification;
+provider capacity success alone does not supply semantic admission.
+
+## SubQ authorization and compatibility check
+
+The user authorized sending anything needed to `subq.ai`
+using `AUTO_MODE_SUBQ_API_KEY`.
+The models endpoint returned HTTP 200 with `subq-snap-preview`,
+but the credential-loader correction invalidates the original claim of authenticated key verification.
+The [current contract check](../planning/pi-auto-mode-subq-current-contract.md)
+records the documented 16-question limit and a frozen 16/17-question synthetic boundary probe.
+No production provider or assessment-budget change is adopted.
+The pending Jev row-encoding correction remains tracked independently.
+
+The user also authorized sending anything needed to `liquid.ai`
+and added `AUTO_MODE_LIQUID_API_KEY`.
+The [Liquid contract check](../planning/pi-auto-mode-liquid-current-contract.md)
+records its documented hosted `d1` route and the initial public serving control.
+Both provider keys are present in the ignored local configuration.
+The first controls mistakenly sent SOPS ciphertext:
+Liquid returned 401 and SubQ returned 403.
+Those are not evidence against the actual keys or models.
+Mise now resolves both decrypted keys in memory.
+Fresh controls succeeded for both providers:
+Liquid returned one valid answer in 591.486 ms;
+SubQ returned 16 valid answers in 845.179 ms.
+SubQ then rejected 17 questions with HTTP 422 `validation_error`:
+`questions: must NOT have more than 16 properties`.
+That measured cap cannot carry 84 questions within three calls.
+Liquid's complete-input probe preserved every original state field and question,
+changing only its model name.
+The 504,929-byte request returned HTTP 422 in 1,098.969 ms,
+naming a 65,536-token or 250,000-text-byte limit for `head_0`.
+The exactly reconstructable shared-content candidate was 140,601 bytes.
+Its single attempt ended with client `TimeoutError` after 5,005.097 ms without a response.
+Liquid therefore has no completed full-assessment result within the production deadline.
+No retry or production adoption occurred.
+
 ## Drex 2.0 release check
 
 The user requested the best next action after reporting Drex 2.0.
@@ -140,6 +447,97 @@ No retry or production route change occurred.
 The user then renewed standing authorization to send anything needed to Drex and Jev and use credits freely.
 The next diagnostic observes complete-request completion beyond the production deadline;
 late results cannot authorize an action.
+
+The longer complete-input observation returned `drex-v2.0` with 84 answers,
+then failed local distribution validation at 48,528.415 ms.
+It reported 2,418,163 input tokens.
+The four-decimal probabilities explain a separate precision mismatch with the consumer's `0.000001` sum tolerance;
+no validator was loosened.
+None of the selected scores reaches `0.99`.
+The primary explicit permission clause received `none` at `0.3586`.
+
+The completed clause-isolation study preserves the complete state and selects only the primary clause.
+Unchanged baselines give identical permission probability `0.7748`
+at 2,254.570 ms and 1,342.972 ms.
+Inlining the same definition and rubrics gives permission `0.3473` at 1,338.757 ms.
+It is not a verified remedy.
+A further full-batch repeat returned HTTP 529 `overloaded` after 26,134.675 ms;
+its frozen stop condition prevented the planned two-question control.
+All provider jobs have finished.
+The subsequent fixed representation study completed five HTTP 200 responses.
+Its unchanged primary-clause baselines returned permission `0.6906`;
+removing pre-assessment guard-status fields returned `0.7468`,
+and parsing the program JSON strings returned `0.6533`.
+A deliberately incomplete minimal control reached `0.8576`.
+None reaches `0.99`.
+The unchanged baseline previously returned `0.7748`,
+so cross-study variation exceeds the observed status-removal gain.
+These are not demonstrated remedies.
+No production semantics or provider choice has changed.
+Provider experiments are terminal;
+the remaining authorized mechanical queue includes native runtime lint/type completion
+and verification of the genuine human approval boundary.
+Successful installed governed execution remains blocked by the provider capacity and semantic evidence gates.
+
+The independent maintained CLI fixture check reproduced replacement of its fetch blocker by Pi 1.2.0 setup.
+The typed `native-host/process-network-guard.ts` now imports the dispatcher before overriding fetch.
+The required-red regression fails on the original blocker identity and passes after rebuilding.
+Initial setup,
+reconfiguration,
+data-URL rejection,
+and use outside the fixture are covered.
+The real CLI process check retains the expected Qwen model and clean shutdown.
+Both changed TypeScript files pass scoped lint with zero warnings and zero errors;
+package types pass.
+The final owned rebuild,
+network-guard regressions,
+and real CLI process check pass.
+The rendered troubleshooting record retains the failing and passing evidence.
+
+The native semantic-policy forwarding is now TypeScript and consumes the maintained consumer's original types.
+`action-policy/assessment-model.ts` supplies the unchanged fixed model to both the wire and scope selector.
+Absent configuration stays at bootstrap selection;
+the typed copier receives present configuration only.
+The measured bridge scope changed from 11 warnings to zero warnings and zero errors,
+and package types pass.
+The rebuilt operating-policy and domain suites pass with authored responses and no provider requests.
+The unconfigured-policy SDK control reaches an unresolved review with all four consumers unconfigured,
+zero assessments,
+and zero tool executions.
+A process-local omission of the bootstrap absence guard fails at the expected policy-copier diagnostic;
+`${HOME}/temp/agent/pi-native-policy-absence-omission-second-20261014.log`
+retains the result and the harness verifies unchanged maintained artifact bytes.
+The first omission log lacked the final diagnostic after retaining 65,934 bytes;
+it was not accepted as a verified omission result.
+The second capture records the original exception before Node prints the bundled source context.
+No classifier definition,
+operating cutoff,
+or instruction-source membership changed.
+
+The latest Jev capacity diagnostic confirms that the 125,822-byte shared state fails
+even with one original question:
+HTTP 400 `max_tokens_exceeded` after 731.176 ms.
+Its literal-label serving control succeeded first.
+Splitting the same shared-state input is therefore insufficient.
+The placement experiment moved original question instructions out of shared state
+and back into their respective question entries with exact reconstruction checks.
+The 105,339-byte state still failed:
+the complete batch returned HTTP 400 `max_tokens_exceeded` in 1,049.183 ms,
+and its single-question control returned the same code in 518.147 ms.
+Both calls are terminal with no model answers.
+The offline structure comparison reconstructs every source and question exactly.
+Inlining single-use references reduces state to 95,749 bytes;
+combining that with shared ordered field lists reduces it to 88,015 bytes.
+The next frozen capacity schedule sends the complete inlined request first,
+then the combined representation only after recognized `max_tokens_exceeded`.
+Each call has a five-second deadline;
+there are no retries or production admissions.
+
+The inlined request returned `max_tokens_exceeded` in 1,233.578 ms.
+The combined row prototype instead failed gateway `invalid_union_discriminator` validation:
+it wrapped required question-envelope fields in rows.
+That owned encoding defect invalidates the combined candidate as a capacity measurement.
+The next local correction preserves the envelopes and adds a failing/passing envelope preflight.
 
 ## Restart checkpoint after installing automatic Codex shell limits
 

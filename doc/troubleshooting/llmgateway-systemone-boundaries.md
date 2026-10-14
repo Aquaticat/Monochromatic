@@ -265,8 +265,74 @@ The governed read remained withheld.
 This establishes a capacity rejection for this rerun,
 without retroactively recovering the discarded body from the previous run.
 No payload reduction or capacity workaround is yet verified for the installed host.
-The next local check measures the complete native assessment and reversible representation changes.
+The local replay and representation checks are recorded in the capacity subsection.
 The upstream filing decision remains unchanged because a documented capacity rejection is not an established bug.
+
+### Complete native state and lossless representation checks
+
+The network-isolated replay at `${HOME}/temp/agent/pi-native-installed-live-UFBJsm`
+captured 73 source occurrences,
+84 questions,
+and a 504,946-byte request.
+The state occupied 251,214 bytes and questions occupied 253,679 bytes.
+There were 51 distinct source texts;
+the repeated source-text array occupied 216,561 bytes versus 174,262 for distinct texts.
+These are serialized byte measurements,
+not token counts.
+Native JSON receipts also repeat values within their original records.
+
+Private local prototypes recovered every original state field and every question instruction by exact deep comparison.
+The explicit-node graph measured 194,593 bytes.
+The shared-content representation measured 165,373 bytes,
+including 125,822 bytes of state and 39,498 bytes of questions.
+A simpler source-record representation measured 305,929 bytes.
+All retained every original source occurrence and question;
+none was installed.
+Exact reconstruction does not establish equivalent model interpretation.
+
+The frozen shared-content Jev request at
+`${HOME}/temp/agent/pi-capacity-shared-check-20261014`
+has SHA-256 `4b0f35e9721c53aba83b905b9332df8d742e06e903b723311f16e123d78aa16b`.
+Its single five-second request returned HTTP 400 with `max_tokens_exceeded` after 1,269.832 ms.
+No retry occurred.
+This tested representation is therefore not a capacity workaround.
+Dropping source occurrences,
+relaxing the adopted cutoff,
+or assuming byte reduction proves token fit remains unjustified.
+
+The separate state-fit diagnostic at `${HOME}/temp/agent/pi-jev-shared-state-fit-20261014`
+first passed a literal-label serving control with HTTP 200.
+The identical shared state with only one original question then returned HTTP 400 `max_tokens_exceeded`
+in 731.176 ms.
+That failure rules out splitting the unchanged shared-state request as a sufficient remedy.
+The server did not identify a tokenizer count or which limit fired.
+The next local candidate moves all original question instructions back to their respective question entries;
+exact reconstruction passes for the original state and every original question.
+Its state is 105,339 bytes and the complete request is 140,618 bytes.
+The complete placement candidate returned HTTP 400 `max_tokens_exceeded` in 1,049.183 ms.
+Its single-question control retained the entire candidate state and failed with the same code in 518.147 ms.
+Both calls are terminal;
+neither returned answers or established semantic behavior.
+Moving instructions alone is therefore not a capacity workaround.
+
+The subsequent single-use-reference inlining candidate also returned HTTP 400 `max_tokens_exceeded`
+in 1,233.578 ms.
+The experimental row-encoding candidate failed earlier in gateway schema validation:
+`invalid_union_discriminator`,
+`Invalid discriminator value. Expected 'noul' | 'choice' | 'score'`,
+at the questions' `type` fields.
+Its encoder had wrapped whole question envelopes in `{$row: ...}` objects.
+Exact reconstruction does not prove that a request satisfies the API wire schema.
+Preserve each question's envelope and encode only its instruction payload;
+preflight the unchanged type and criteria against the original request.
+No token-fit conclusion follows from that rejected row request.
+
+The corrected offline prototype rejects that captured malformed input,
+then proves unchanged outer question fields and exact original reconstruction for every corrected candidate.
+The combined representation is 117,254 bytes with 87,989 state bytes.
+Its frozen one-call provider check then returned HTTP 400 `max_tokens_exceeded` in 997.329 ms.
+This valid envelope still did not fit;
+no semantic answers were returned.
 
 ## Source identity
 

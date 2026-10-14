@@ -68,14 +68,15 @@ fn toggling_the_folder_picker_of_an_empty_library_opens_nothing() {
 }
 
 #[test]
-fn an_unplayable_file_is_named_in_a_message_and_marked_on_its_row() {
+fn an_unplayable_file_shows_no_message_in_the_window_and_is_marked_on_its_row() {
     let (app, _host) = fresh_window_at(850.0, 900.0);
     load_library(&app);
     let broken = PathBuf::from("/nonexistent-library").join(crate::ui_test_support::LIBRARY[2]);
     crate::ui_screen::apply_update(&app, &Update::Unplayable(vec![broken]));
     settle();
-    let name = crate::ui_test_support::LIBRARY[2].rsplit('/').next().expect("a library name has a file part");
-    assert_eq!(feedback_texts(&app), vec![format!("{name} can't be played.")]);
+    // D122: the words about the file go to the desktop as a system notification (see unplayable_notification_logic_tests.rs
+    // for the notification request); the window draws no message of any kind for it.
+    assert_eq!(feedback_texts(&app), Vec::<String>::new(), "no message is drawn in the window for an unplayable file");
     let marked: Vec<String> = app
         .get_track_rows()
         .iter()
