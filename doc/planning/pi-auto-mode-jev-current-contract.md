@@ -240,6 +240,14 @@ There are at most two calls,
 no retries,
 and no production admission.
 
+Both placement requests completed with HTTP 400 `max_tokens_exceeded`.
+The complete batch took 1,049.183 ms;
+the single-question control took 518.147 ms.
+Neither returned model answers.
+Moving the instructions is insufficient even for one question with the complete shared state.
+The private directory retains both original responses and result records.
+No further request is scheduled by this experiment.
+
 [models]: https://docs.typesafe.ai/models
 [api]: https://docs.typesafe.ai/api
 [limitations]: https://docs.typesafe.ai/model-jaggedness/jev-1.13
