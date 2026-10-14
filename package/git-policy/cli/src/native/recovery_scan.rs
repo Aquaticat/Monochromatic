@@ -121,12 +121,44 @@ pub fn recover_inspected_entry(
                 );
                 return Ok(RecoveryAction::StagingRetained);
             }
-            return recover_dead_transaction(
+            return recover_dead_transaction_unless_vanished(
                 place,
                 path,
                 inspected.entry.transaction_id.as_str(),
                 record.owner_pid,
             );
+        }
+    }
+}
+
+/// What:
+///  `recover_dead_transaction`, answering "vanished" when the failure came from a transaction directory that is gone.
+/// Why:
+///   Another recoverer of the same dead transaction may finish and remove it after this recoverer inspected it;
+///  the incumbent treats a directory that disappeared between listing and reading as finished,
+///  whereas a failure with the directory still present is real.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// try { return await recoverDeadTransaction(request); } catch (e) { if (!(await pathExists(directory))) return 'vanished'; throw e; }
+/// ```
+fn recover_dead_transaction_unless_vanished(
+    place: &RecoveryPlace,
+    directory: &Path,
+    transaction_id: &str,
+    owner_pid: i64,
+) -> Result<RecoveryAction, RecoveryError> {
+    match recover_dead_transaction(place, directory, transaction_id, owner_pid) {
+        Ok(action) => return Ok(action),
+        Err(error) => {
+            if directory.exists() {
+                return Err(error);
+            }
+            debug(
+                "recoverInspectedEntry",
+                format!("transaction finished while recovery recovered it: {}", directory.display()).as_str(),
+            );
+            return Ok(RecoveryAction::Vanished);
         }
     }
 }
@@ -217,7 +249,7 @@ pub fn recover_dead_landings(
             "recoverDeadLandings",
             format!("recovering dead landing {}", item.entry.path.display()).as_str(),
         );
-        let action: RecoveryAction = recover_dead_transaction(
+        let action: RecoveryAction = recover_dead_transaction_unless_vanished(
             place,
             item.entry.path.as_path(),
             item.entry.transaction_id.as_str(),

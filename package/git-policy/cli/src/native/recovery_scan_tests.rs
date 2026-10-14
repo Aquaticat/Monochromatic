@@ -220,6 +220,24 @@ fn a_transaction_a_peer_removed_after_inspection_needs_no_landing_lock() {
     scene.finish();
 }
 
+/// A dead transaction that another recoverer finished after this one inspected it is reported as vanished,
+///  not as a failed listing of its removed directory;
+///  a failure with the directory still present stays a failure.
+#[test]
+fn a_dead_transaction_a_peer_finished_after_inspection_is_vanished() {
+    let scene: Scene = Scene::new("recovery-scan-finished-by-peer", false);
+    scene.capture();
+    let entries: Vec<RegistryEntry> = list_transaction_entries(scene.registry.as_path()).expect("listing");
+    let inspected: InspectedEntry = inspect_registry_entry(&entries[0]).expect("inspected");
+    assert!(inspected.dead_owner().is_some());
+    std::fs::remove_dir_all(scene.directory.as_path()).expect("the peer finishes the transaction");
+    assert_eq!(
+        recover_inspected_entry(&scene.place(), &inspected).expect("a finished transaction is not a failure"),
+        RecoveryAction::Vanished
+    );
+    scene.finish();
+}
+
 /// A failure stops recovery at that transaction and keeps its directory.
 #[test]
 fn failures_keep_their_directory() {
