@@ -142,6 +142,49 @@ original assessment deadline,
 and semantic decision remain the next compatibility boundary.
 No production route changed.
 
+## Authorized request-limit exploration
+
+The user requested more Drex requests to establish actual limits on 2026-10-14.
+The next phase uses synthetic data only and makes sequential requests to the same pinned model and route.
+It tests independent question-count,
+state-length,
+longest-question,
+and serialized-body boundaries.
+It does not test account concurrency or rate limits by saturating the service.
+
+Question probes begin at 32,
+128,
+244,
+512,
+and 513 questions sharing the same short public state.
+State probes repeat `x ` with one unchanged short question.
+Longest-question probes keep the state short and vary only repeated `x ` in question instructions.
+Body probes use exactly 4,194,304 and 4,194,305 serialized `state` plus `questions` bytes,
+with whitespace padding to distinguish byte validation from ordinary text length.
+Any earlier token rejection remains a separate boundary;
+whitespace padding is not evidence of ordinary-text capacity.
+
+The runner retains every attempted payload hash,
+byte count,
+status,
+raw response,
+returned model,
+answer coverage,
+reported token usage,
+and elapsed time.
+An observed transport timeout is not interpreted as a server size limit.
+Large-input requests have a 60-second observation ceiling to reach the documented 55-second server timeout;
+each result separately records whether it met the unchanged five-second production budget.
+No production timeout or resource limit changes.
+The finite exploration ceiling is 32 requests,
+one in flight,
+with no automatic retry and a stop on authentication,
+credit,
+rate,
+or service-capacity failure.
+The existing worker bounds are 4 GiB memory and two CPUs;
+the Node heap is additionally limited to 128 MiB.
+
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits
 [evaluate]: https://console.nace.ai/docs/drex/api-reference/systemone
