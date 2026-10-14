@@ -138,6 +138,42 @@ pub fn parent_stalled(recording: bool, since_presented: Duration) -> bool {
     return since_presented >= STALL_THRESHOLD;
 }
 
+/// Decide whether a new screen size or scale must send frame callbacks to the hosted clients at once.
+///
+/// What:
+///      `pub fn resize_needs_early_callbacks(recording: bool, geometry_changed: bool) -> bool`.
+///           A pure function of two plain values,
+///  so tests need no display or clock.
+/// Why:
+///       While recording,
+///  the recorder tick is the only sender of frame callbacks,
+///  and winit holds a
+///           client's redraw back until the callback of its previous frame arrives.
+///           A client whose size event lands between two ticks would draw only after the next
+///           capture and be captured one tick later,
+///  with the output mode already at the new size.
+///           Sending the callbacks right after the new configure lets it draw and commit within the
+///           same tick.
+///  Outside a recording the live redraw path sends them after every presentation,
+///           and a command that changes nothing has no new size to draw.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function resizeNeedsEarlyCallbacks(recording: boolean, geometryChanged: boolean): boolean {
+///   return recording && geometryChanged;
+/// }
+/// ```
+///
+/// @example
+/// ```ts
+/// resizeNeedsEarlyCallbacks(true, true); // => true
+/// resizeNeedsEarlyCallbacks(true, false); // => false
+/// resizeNeedsEarlyCallbacks(false, true); // => false
+/// ```
+pub fn resize_needs_early_callbacks(recording: bool, geometry_changed: bool) -> bool {
+    return recording && geometry_changed;
+}
+
 /// When the parent last presented,
 ///  and whether the fallback is currently pacing the client.
 ///

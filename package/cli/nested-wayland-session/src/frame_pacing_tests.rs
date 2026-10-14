@@ -30,6 +30,17 @@ fn recorder_keeps_ownership_of_the_frame_cadence() {
     assert!(!parent_stalled(true, Duration::from_secs(3600)));
 }
 
+/// Only a recording that sees a real change of size or scale sends the callbacks early.
+#[test]
+fn early_callbacks_follow_a_geometry_change_while_recording() {
+    assert!(resize_needs_early_callbacks(true, true));
+    // The live redraw path already answers the client after every presentation.
+    assert!(!resize_needs_early_callbacks(false, true));
+    // A command that leaves the geometry as it was gives the client nothing new to draw.
+    assert!(!resize_needs_early_callbacks(true, false));
+    assert!(!resize_needs_early_callbacks(false, false));
+}
+
 /// The fallback starts once the parent goes silent and stops when the parent presents again.
 #[test]
 fn fallback_follows_parent_presentation() {
