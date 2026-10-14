@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["../../../file-enforcer.config.ts"],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./.cache/typescript/repository.tsbuildinfo"
+  }
+}
