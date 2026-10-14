@@ -76,78 +76,80 @@ for (const [original, generated] of Object.entries({
  Native hooks own the callback shape dictated by Node's synchronous module interface.
  */
 const hooks = {
-/**
- Resolve each original Pi package through the matching emitted upstream package exports.
-
- @param specifier - original import whose module identity must remain consistent
-
- @param context - native resolution context retained for unmodified imports
-
- @param nextResolve - original host resolver preserving package export semantics
- */
-resolve(
-  specifier: string,
-  context: ForeignBorrowed<ResolveHookContext>,
-  nextResolve: Parameters<ResolveHookSync>[2],
-): ResolveFnOutput {
   /**
-   Resolver diagnostics retain their function boundary.
+   Resolve each original Pi package through the matching emitted upstream package exports.
+
+   @param specifier - original import whose module identity must remain consistent
+
+   @param context - native resolution context retained for unmodified imports
+
+   @param nextResolve - original host resolver preserving package export semantics
+
+   @returns original resolver result for the selected module identity
    */
-  const rl = tagged({
-    tag: hooks.resolve.name,
-    l
-  });
-  if (specifier.startsWith('@earendil-works/')) {
+  resolve(
+    specifier: string,
+    context: ForeignBorrowed<ResolveHookContext>,
+    nextResolve: Parameters<ResolveHookSync>[2],
+  ): ResolveFnOutput {
     /**
-     Known scoped package names route through their qualified dependency roots.
+     Resolver diagnostics retain their function boundary.
      */
-    const [, packageName] = specifier.split('/');
+    const rl = tagged({
+      tag: hooks.resolve.name,
+      l
+    });
+    if (specifier.startsWith('@earendil-works/')) {
+      /**
+       Known scoped package names route through their qualified dependency roots.
+       */
+      const [, packageName] = specifier.split('/');
+      /**
+       Missing or unrelated names preserve the native resolver's diagnostic behavior.
+       */
+      const root = packageName === undefined ? undefined : installedRoots.get(packageName);
+      if (root !== undefined) {
+        rl.debug('resolving a qualified native package through its original exports');
+        return nextResolve(
+          specifier,
+          {
+            ...context,
+            parentURL: pathToFileURL(join(
+              root,
+              'package.json'
+            ))
+              .href
+          }
+        );
+      }
+    }
     /**
-     Missing or unrelated names preserve the native resolver's diagnostic behavior.
+     Original resolution identifies files before selecting an instrumented counterpart.
      */
-    const root = packageName === undefined ? undefined : installedRoots.get(packageName);
-    if (root !== undefined) {
-      rl.debug('resolving a qualified native package through its original exports');
+    const resolved = nextResolve(
+      specifier,
+      context
+    );
+    if (resolved.url === providerSource) {
+      rl.debug('selecting the native provider serializer');
       return nextResolve(
-        specifier,
-        {
-          ...context,
-          parentURL: pathToFileURL(join(
-            root,
-            'package.json'
-          ))
-            .href
-        }
+        observedProvider,
+        context
       );
     }
+    /**
+     Only explicitly qualified original host files are replaced.
+     */
+    const hostModule = hostModules.get(resolved.url);
+    if (hostModule !== undefined) {
+      rl.debug('selecting a maintained native host module');
+      return nextResolve(
+        hostModule,
+        context
+      );
+    }
+    return resolved;
   }
-  /**
-   Original resolution identifies files before selecting an instrumented counterpart.
-   */
-  const resolved = nextResolve(
-    specifier,
-    context
-  );
-  if (resolved.url === providerSource) {
-    rl.debug('selecting the native provider serializer');
-    return nextResolve(
-      observedProvider,
-      context
-    );
-  }
-  /**
-   Only explicitly qualified original host files are replaced.
-   */
-  const hostModule = hostModules.get(resolved.url);
-  if (hostModule !== undefined) {
-    rl.debug('selecting a maintained native host module');
-    return nextResolve(
-      hostModule,
-      context
-    );
-  }
-  return resolved;
-}
 
 };
 
