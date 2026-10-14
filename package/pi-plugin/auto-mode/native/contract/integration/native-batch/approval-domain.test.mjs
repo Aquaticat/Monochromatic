@@ -90,7 +90,7 @@ try{
  if(abortTask)await abortTask;
  const {lastReview:review,lastJudgment:judgment}=runtime.inspect();
  const eligible=['allow','deny','stop','cancelled','retired'].includes(mode);
- assert.equal(selections,eligible?1:0,'Only an otherwise-permitted operation with independent scoped-channel evidence reaches the original selector: '+inspect({authorizationCaptures,handlerFailure,outcome:review?.outcome,issues:review?.premiseIssues},{depth:5}));
+ assert.equal(selections,eligible?1:0,'Only an otherwise-permitted operation with independent scoped-channel evidence reaches the original selector: '+inspect({authorizationCaptures,handlerFailure,requests,assessments,lastMessage:session.messages.at(-1),outcome:review?.outcome,issues:review?.premiseIssues},{depth:5}));
  assert.equal(notifications,selections);
  assert.equal(authorizationCaptures,mode==='missing'?0:1);
  assert.equal(approvalCaptures,1,'Each review captures its current native capabilities once');
