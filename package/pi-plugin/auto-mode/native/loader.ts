@@ -96,7 +96,8 @@ const hooks = {
      Resolver diagnostics retain their function boundary.
      */
     const rl = tagged({
-      tag: hooks.resolve.name,
+      tag: hooks.resolve
+        .name,
       l
     });
     if (specifier.startsWith('@earendil-works/')) {
