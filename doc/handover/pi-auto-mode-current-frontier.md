@@ -594,8 +594,16 @@ Comparisons retain identical generated native Session bytes after both transform
 Native host lifecycle,
 original CLI manager custody,
 and every approval-context case pass after the typed lifetime and disposal port.
-The native manager custody generator is now being typed.
-The maintained reference search finds only `root-source.mjs` importing its `generate` export;
+The typed native manager custody generator passes scoped lint,
+package types,
+and the owned build.
+Its generated module remains byte-identical to the prior implementation.
+Every original manager constructor,
+CLI manager custody,
+and host lifecycle fixture passes.
+The maintained reference search found only `root-source.mjs`
+(now `root-source.ts`,
+moved on 2026-10-14) importing its `generate` export;
 the copied standalone `withBranchFailure`,
 `mutate`,
 and `replaceOne` fixture exports had no maintained callers and were removed.
@@ -604,6 +612,17 @@ method-membership,
 instance-freeze,
 and original transition-site checks remain in the generator.
 Original private qualification artifacts remain unchanged.
+The typed root composition also passes scoped lint,
+package types,
+and the owned build;
+both manager and Session generated modules remain byte-identical.
+The first following lifecycle invocation stopped before its fixture ran:
+Node reported `EROFS` while creating the designated disposable home directory.
+The rerun grants access to that same disposable fixture location.
+The generated-byte comparison separately encountered `spawnSync git EPERM`
+despite a populated successful Git result;
+capturing the prior source through a direct Git invocation completed the comparison.
+These command-boundary failures do not establish a native runtime failure.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
