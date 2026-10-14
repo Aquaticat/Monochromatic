@@ -14,6 +14,7 @@ import android.content.Context
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isNotSelected
 import androidx.compose.ui.test.isSelected
@@ -275,8 +276,8 @@ class PlayerHostWiringTest {
         composeTestRule.onNodeWithContentDescription(SEARCH_BUTTON_LABEL).performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).performTextInput(title)
-        /** Matches a tappable result row whose text holds [title]. */
-        val resultRow = hasClickAction() and hasText(title, substring = true)
+        /** Matches a tappable result row whose text holds [title]; the query field also holds it and is not a row. */
+        val resultRow = hasClickAction() and hasText(title, substring = true) and !hasSetTextAction()
         composeTestRule.waitUntil(timeoutMillis = WAIT_LIMIT_MS) {
             composeTestRule.onAllNodes(resultRow).fetchSemanticsNodes().isNotEmpty()
         }
