@@ -4,10 +4,10 @@
  @module
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import { NativeEventContractError } from './event-observer-errors.ts';
+import { NativeEventCaptureError, NativeEventContractError } from './event-observer-errors.ts';
 import { createNativeEventTraversal } from './event-traversal.ts';
 import type {
-  NativeEventInput,
+  NativeEventCapture,
   NativeEventObservation,
   NativeEventObserver,
   NativeEventSlot,
@@ -39,10 +39,10 @@ export function isNativeEventObservation(value: unknown): value is NativeEventOb
 /**
  Retain original callback traversal across concurrent or nested native emissions.
 
- @param capture - manager-owned bounded input capture fixed at runner construction
+ @param createCapture - manager-owned bounded emission capture fixed at runner construction
  @returns original traversal and immutable observation publication boundaries
  */
-export function createNativeEventObserver(capture: (input: NativeEventInput) => void): NativeEventObserver {
+export function createNativeEventObserver(createCapture: () => NativeEventCapture): NativeEventObserver {
   /** Runner occurrence and pending emissions remain private capabilities. */
   const occurrence=Object.freeze({});
   /** Separate emission tokens permit native nested and overlapping callbacks. */
@@ -92,6 +92,8 @@ export function createNativeEventObserver(capture: (input: NativeEventInput) => 
     }
     /** Original emission token cannot be supplied by callback code. */
     const emission=Object.freeze({});
+    /** The manager snapshots every phase immediately and publishes one complete emission source. */
+    const {capture,complete}=createCapture();
     // Empty native dispatch visits no callback and adds no governing source material.
     if(slots.length>0){pending.add(emission);changed();}
     /** Remove only the emission owned by this original traversal. */
@@ -99,6 +101,7 @@ export function createNativeEventObserver(capture: (input: NativeEventInput) => 
       tagged({tag:retire.name,l:rl}).debug('closing original native event occurrence');
       if(slots.length>0){
         if(!pending.delete(emission))throw new NativeEventContractError('Native event occurrence was already retired');
+        try{complete();}catch(error){invalidate();throw new NativeEventCaptureError(error);}
         changed();
       }
     }

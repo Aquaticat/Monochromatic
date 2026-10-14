@@ -24,6 +24,12 @@ export type NativeEventInput = {
   readonly value: unknown;
 };
 
+/** One manager-owned emission groups complete callback values under one source allowance. */
+export type NativeEventCapture = {
+  readonly capture: (input: NativeEventInput) => void;
+  readonly complete: () => void;
+};
+
 /** One copied position retains the original extension and callback. */
 export type NativeEventSlot = {
   readonly extension: object;
