@@ -9,6 +9,7 @@ import {
   captureAuthorizationInputs,
   captureAuthorizationOwnerFactory,
   flushPolicyDiagnostics,
+  MISSING_AUTHORIZATION_EVIDENCE,
 } from '../dist/final/node/index.mjs';
 import {
   authorizationCaptureFailures,
@@ -23,12 +24,11 @@ await describe({
       name: captureAuthorizationOwnerFactory.name,
       children: [
         it({
-          name: 'keeps callable identity and absence while rejecting unsupported configuration',
+          name: 'keeps callable identity while rejecting unsupported configuration',
           fn: async function checkFactory() {
             const f = createAuthorizationEvidenceFixture();
             expect(captureAuthorizationOwnerFactory(f.options.ownerFor,),).toBe(f.options.ownerFor,);
-            expect(captureAuthorizationOwnerFactory(undefined,),).toBeUndefined();
-            for (const input of [null, {}, true, 1, 'owner',]) {
+            for (const input of [undefined, null, {}, true, 1, 'owner',]) {
               expect(function invoke() { captureAuthorizationOwnerFactory(input,); },)
                 .toThrow(AuthorizationEvidenceError,);
             }
@@ -67,12 +67,13 @@ await describe({
             name: `retains unknown prerequisite facts for ${mode}`,
             fn: async function checkAbsence() {
               const f = createAuthorizationEvidenceFixture();
+              const { instructionCandidates, ...legacyInputs } = f.inputs;
               const captured = await captureAuthorizationInputs({
-                ...f.options,
-                inputs: { ...f.inputs, instructionCandidates: mode === 'legacy-candidates' ? undefined : [f.rule,], },
-                ownerFor: mode === 'absent-factory' ? undefined : function absentOwner() { return undefined; },
+                judgment: f.judgment,
+                inputs: mode === 'legacy-candidates' ? legacyInputs : { ...legacyInputs, instructionCandidates, },
+                ...(mode === 'absent-factory' ? {} : { ownerFor: function absentOwner() { return undefined; }, }),
               },);
-              expect(captured.forClause(f.rule,),).toBeUndefined();
+              expect(captured.forClause(f.rule,),).toBe(MISSING_AUTHORIZATION_EVIDENCE,);
               expect(captured.records,).toEqual([],);
               expect(f.controls.captures,).toBe(0,);
             },

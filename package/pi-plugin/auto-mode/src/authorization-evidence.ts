@@ -4,8 +4,9 @@
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { captureOriginalAuthorizationBinding, } from './authorization-evidence-binding.ts';
+import { captureOriginalAuthorizationBindings, } from './authorization-evidence-capture.ts';
 import { AuthorizationEvidenceError, } from './authorization-evidence-data.ts';
+import { MISSING_AUTHORIZATION_EVIDENCE, } from './authorization-evidence-types.ts';
 import type {
   AuthorizationEvidenceBinding,
   AuthorizationEvidenceInputs,
@@ -38,11 +39,16 @@ function isAuthorizationOwnerFactory(input: unknown,): input is AuthorizationOwn
 
  @param input - factory supplied by trusted host bootstrap
  
- @returns same callable, or absence when no owner is configured
+ @returns same callable; native bootstrap handles unconfigured absence before calling
  
  @throws AuthorizationEvidenceError for unsupported configured values
+ 
+ @example
+ ```ts
+ const ownerFor = captureAuthorizationOwnerFactory(configuredFactory);
+ ```
  */
-export function captureAuthorizationOwnerFactory(input: unknown,): AuthorizationOwnerFactory | undefined {
+export function captureAuthorizationOwnerFactory(input: unknown,): AuthorizationOwnerFactory {
   /**
    Startup validation is distinct from request-local evidence capture.
    */
@@ -51,8 +57,6 @@ export function captureAuthorizationOwnerFactory(input: unknown,): Authorization
     l,
   },);
   rl.debug('checking bootstrap prerequisite owner factory',);
-  if (input === undefined)
-    return undefined;
   if (!isAuthorizationOwnerFactory(input,))
     throw new AuthorizationEvidenceError('Authorization owner factory must be a bootstrap callable when supplied',);
   return input;
@@ -74,6 +78,13 @@ export function captureAuthorizationOwnerFactory(input: unknown,): Authorization
  @throws AuthorizationEvidenceError for unsupported, mismatched or stale evidence
  
  @throws original failure from the source or fact owner
+ 
+ @example
+ ```ts
+ const evidence = await captureAuthorizationInputs({ judgment, inputs, ownerFor });
+ const facts = evidence.forClause(originalClause);
+ // MISSING_AUTHORIZATION_EVIDENCE preserves the unresolved prerequisite.
+ ```
  */
 export async function captureAuthorizationInputs(
   {
@@ -83,7 +94,7 @@ export async function captureAuthorizationInputs(
   }: {
     readonly judgment: object;
     readonly inputs: AuthorizationInputSources;
-    readonly ownerFor?: AuthorizationOwnerFactory | undefined;
+    readonly ownerFor?: AuthorizationOwnerFactory;
   },
 ): Promise<AuthorizationEvidenceInputs> {
   /**
@@ -105,53 +116,17 @@ export async function captureAuthorizationInputs(
   /**
    Failure wrappers preserve falsy original thrown values.
    */
-  let failure: { readonly error: unknown } | undefined;
+  const state: { failure?: { readonly error: unknown } } = {};
   if (ownerFor !== undefined) {
-    inputs.assertCurrent();
-    /**
-     Reuse captured views instead of rescanning every source for each candidate.
-     */
-    const sources = new Map(inputs.instructionSources
-      .map(function sourcePair(source,) {
-      return [
-        source.sourceOccurrence,
-        source,
-      ] as const;
-    },),);
-    for (const rule of candidates) {
-      /**
-       The original candidate reader supplies source occurrence identity.
-       */
-      const source = sources.get(inputs.readRule(rule,)
-        .sourceOccurrence,);
-      /**
-       Missing original requests remain explicit until a fact owner is selected.
-       */
-      const request = inputs.requestObservation;
-      /**
-       The fixed bootstrap factory cannot select another judgment or request.
-       */
-      const context = Object.freeze({
-        judgment,
-        rule,
-        source,
-        request,
-      },);
-      /**
-       Factory absence is not evidence that a condition is satisfied.
-       */
-      const owner = ownerFor(context,);
-      if (owner !== undefined) {
-        bindings.set(
-          rule,
-          await captureOriginalAuthorizationBinding({
-            context,
-            inputs,
-            owner,
-          },),
-        );
-      }
-    }
+    for await (const binding of captureOriginalAuthorizationBindings({
+      judgment,
+      inputs,
+      ownerFor,
+    },))
+      bindings.set(
+        binding.rule,
+        binding,
+      );
   }
 
   /**
@@ -170,10 +145,11 @@ export async function captureAuthorizationInputs(
       l: rl,
     },);
     cl.debug('checking prerequisite evidence collection eligibility',);
-    if (failure !== undefined)
+    if (state.failure !== undefined)
       throw new AuthorizationEvidenceError(
         'Original authorization evidence lost eligibility',
-        { cause: failure.error, },
+        { cause: state.failure
+          .error, },
       );
     try {
       inputs.assertCurrent();
@@ -181,7 +157,7 @@ export async function captureAuthorizationInputs(
         binding.current();
     }
     catch (error) {
-      failure = { error, };
+      state.failure = { error, };
       throw error;
     }
   }
@@ -195,7 +171,7 @@ export async function captureAuthorizationInputs(
    
    @throws AuthorizationEvidenceError for foreign candidates or retired evidence
    */
-  function forClause(rule: object,): AuthorizationFacts | undefined {
+  function forClause(rule: object,): AuthorizationFacts | typeof MISSING_AUTHORIZATION_EVIDENCE {
     /**
      Lookup diagnostics do not expose clause content.
      */
@@ -208,7 +184,8 @@ export async function captureAuthorizationInputs(
     if (!candidates.includes(rule,))
       throw new AuthorizationEvidenceError('Authorization lookup requires an original indexed clause',);
     return bindings.get(rule,)
-      ?.authorization;
+      ?.authorization
+      ?? MISSING_AUTHORIZATION_EVIDENCE;
   }
 
   assertCurrent();
@@ -216,6 +193,9 @@ export async function captureAuthorizationInputs(
    Diagnostic records omit the private binding's live capability.
    */
   const records = [...bindings.values(),].map(function diagnosticRecord(binding,): AuthorizationEvidenceRecord {
+    /**
+     The retained record excludes its live freshness capability.
+     */
     const {
       rule,
       source,

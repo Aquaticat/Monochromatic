@@ -45,12 +45,13 @@ await describe({
         name: `rejects an original fact owner with ${mode}`,
         fn: async function checkSourceBinding() {
           const f = createAuthorizationEvidenceFixture();
+          const { requestObservation, ...remainingInputs } = f.inputs;
           const failures = await authorizationCaptureFailures({
             ...f.options,
             inputs: {
-              ...f.inputs,
+              ...remainingInputs,
               instructionSources: mode === 'source-absent' ? [] : [f.source,],
-              requestObservation: mode === 'request-absent' ? undefined : mode === 'request-mismatch' ? {} : f.request,
+              ...(mode === 'request-absent' ? {} : { requestObservation: mode === 'request-mismatch' ? {} : requestObservation, }),
             },
           },);
           expect(failures,).toHaveLength(1,);

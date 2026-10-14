@@ -13,6 +13,11 @@ import type { AuthorizationRequirement, } from './authorization-requirement.ts';
 export type AuthorizationFacts = Pick<AuthorizationRequirement, 'satisfaction' | 'channel'>;
 
 /**
+ No original owner supplied evidence for this clause; its prerequisite remains unresolved.
+ */
+export const MISSING_AUTHORIZATION_EVIDENCE: unique symbol = Symbol('missing original prerequisite evidence',);
+
+/**
  Original request-bound view already authenticated by its source owner.
  */
 export type AuthorizationSourceView = {
@@ -41,11 +46,11 @@ export type AuthorizationOwnerContext = {
   /**
    Missing source bindings cannot support authorization evidence.
    */
-  readonly source: AuthorizationSourceView | undefined;
+  readonly source?: AuthorizationSourceView;
   /**
    Missing original requests cannot support authorization evidence.
    */
-  readonly request: object | undefined;
+  readonly request?: object;
 };
 
 /**
@@ -55,7 +60,7 @@ export type AuthorizationInputSources = {
   /**
    Complete original indexed instruction candidate set when available.
    */
-  readonly instructionCandidates?: readonly object[] | undefined;
+  readonly instructionCandidates?: readonly object[];
   /**
    Legacy original rule candidates used only when the complete set is absent.
    */
@@ -67,7 +72,7 @@ export type AuthorizationInputSources = {
   /**
    Original request observation remains absent when its owner is unavailable.
    */
-  readonly requestObservation?: object | undefined;
+  readonly requestObservation?: object;
   /**
    Native reader authenticates the candidate before exposing its source occurrence.
    */
@@ -126,7 +131,7 @@ export type AuthorizationEvidenceInputs = {
   /**
    Missing owner evidence stays absent instead of becoming a satisfied condition.
    */
-  readonly forClause: (rule: object) => AuthorizationFacts | undefined;
+  readonly forClause: (rule: object) => AuthorizationFacts | typeof MISSING_AUTHORIZATION_EVIDENCE;
   /**
    Revalidate original dependencies and every captured fact owner.
    */
