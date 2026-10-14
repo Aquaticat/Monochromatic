@@ -142,7 +142,10 @@ run = "node src/native-script-guard.unit.test.ts"
 
 [tasks."test:native:return"]
 description = "Verify generated native return ownership, retention, conversion, and live-use guards"
-run = "node src/native-return.unit.test.ts"
+run = [
+  "node src/native-return.unit.test.ts",
+  "node src/native-return-rejection.unit.test.ts",
+]
 
 [tasks."test:native:approval"]
 description = "Verify original approval routing and independent prerequisite evidence with fixture presentation"
