@@ -400,7 +400,8 @@ export function prepareNativeSourceAssociation({
     &&denseArray(payload.messages)){
    const original=payload.messages[0];
    const systemSerialization=readNativeSystemPayload(original);
-   const originalSystem=(systemSerialization?.messages===originalMessages)
+   const originalSystem=(systemSerialization!==undefined)
+     &&(systemSerialization.messages===origin.normalizedMessages)
      &&(systemSerialization.text===original?.content);
    if(origins&&!originalSystem)payloadOriginFailure??='System content lacks its original native rendering and message emission';
    if(origins&&dataRecord(original)
