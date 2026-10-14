@@ -366,7 +366,7 @@ import androidx.compose.runtime.mutableStateOf
 // ```ts
 // const [value, setValue] = useSessionState(...);
 // ```
-import androidx.compose.runtime.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveable
 
 // What:     `import androidx.compose.runtime.rememberUpdatedState` gives a long-lived effect the newest query.
 // Why:      The refocus effect outlives recompositions, and must put the caret at the end of the query as it is then.

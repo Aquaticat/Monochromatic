@@ -131,7 +131,7 @@ fn root_track_semantics_names_no_library_root() {
     let semantics: SearchRowSemantics =
         search_row_semantics(&track_result("Night", None, 0), None, None);
     assert_eq!(semantics.kind_label, "Track");
-    assert_eq!(semantics.action_label, "Play track");
+    assert_eq!(semantics.action_label, "Select track");
     assert_eq!(semantics.state_label, None);
 }
 
@@ -191,12 +191,12 @@ fn folder_action_opens_without_autoplay() {
 }
 
 // What:     `#[test]` marks the next function as a test case.
-// Why:      A different track starts playing (D73), so its label is Play track.
+// Why:      A different track is only selected (D127), so its label is Select track and not Play track.
 #[test]
-fn other_track_action_plays() {
+fn other_track_action_selects() {
     assert_eq!(
         search_row_action_label(&track_result("Night", Some("Live"), 1), Some(2), Some(true)),
-        "Play track"
+        "Select track"
     );
 }
 
