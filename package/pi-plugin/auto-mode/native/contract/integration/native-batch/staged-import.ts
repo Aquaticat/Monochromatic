@@ -10,7 +10,7 @@ import {
 import { fileURLToPath } from 'node:url';
 import { stripTypeScriptTypes } from 'node:module';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import { parse } from 'yuku-parser';
+import { type ImportDeclaration, parse } from 'yuku-parser';
 import {
   NativeImportBuildError,
   rewriteNativeImports
@@ -65,7 +65,8 @@ export async function readStagedInput(sourceUrl: URL): Promise<string> {
   );
   try {
     return rewriteNativeImports({
-      source: sourceUrl.pathname.endsWith('.ts') ? stripTypeScriptTypes(source) : source,
+      source: sourceUrl.pathname
+        .endsWith('.ts') ? stripTypeScriptTypes(source) : source,
       path: sourceUrl.href,
       select: function retainOriginalStaticImport({
         specifier,
@@ -132,18 +133,33 @@ export async function replaceStagedImport({
   /**
    Select the original executable import rather than its formatting or comments.
    */
-  const parsed = parse(source, { sourceType: 'module' });
-  if (parsed.diagnostics.length > 0) throw new StagedImportError('Cannot parse the original generated import');
+  const parsed = parse(
+    source,
+    { sourceType: 'module' }
+  );
+  if (parsed.diagnostics
+    .length
+    > 0) throw new StagedImportError('Cannot parse the original generated import');
   /**
    Ambiguous imports cannot be selected by position or first match.
    */
-  const declarations = parsed.program.body.filter(function matchesStagedBinding(node) {
-    if ((node.type !== 'ImportDeclaration') || (node.specifiers.length !== 1)) return false;
-    /** Only the original named binding can select this generated dependency. */
+  const declarations: ImportDeclaration[] = [];
+  for (const node of parsed.program.body) {
+    if ((node.type !== 'ImportDeclaration') || (node.specifiers.length !== 1)) continue;
+    /**
+     Only the original named binding can select this generated dependency.
+     */
     const [specifier] = node.specifiers;
-    return (specifier?.type === 'ImportSpecifier') && (specifier.local.name === binding)
-      && (specifier.imported.type === 'Identifier') && (specifier.imported.name === binding);
-  });
+    if ((specifier?.type === 'ImportSpecifier') && (specifier.local
+      .name
+      === binding)
+      && (specifier.imported
+        .type
+        === 'Identifier')
+      && (specifier.imported
+        .name
+        === binding)) declarations.push(node);
+  }
   /**
    Capture the sole candidate before narrowing it for JSON decoding.
    */
@@ -153,7 +169,8 @@ export async function replaceStagedImport({
     /**
      The parser supplies the decoded original module value.
      */
-    const specifier = declaration.source.value;
+    const specifier = declaration.source
+      .value;
     /**
      Query strings and fragments select separate module identities.
      */
@@ -167,7 +184,13 @@ export async function replaceStagedImport({
     );
   }
   rl.debug(`verified original generated import: ${binding}`);
-  return source.slice(0, declaration.source.start) + JSON.stringify(replacement) + source.slice(declaration.source.end);
+  return source.slice(
+    0,
+    declaration.source
+      .start
+  ) + JSON.stringify(replacement)
+    + source.slice(declaration.source
+      .end);
 }
 
 //endregion Generated import replacement verifies the original filesystem identity
