@@ -20,7 +20,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - Tone-down rule from the user: if the system gets bad, lower the cap 2 threads at a time.
 - IO pressure is non-actionable (the user's drives are slow) and is not watched.
 - The temperature alert is a throttling alert (user choice, 2026-10-13): Tctl at or above 95 degrees Celsius and the
-  average clock at least 100 MHz below the boost-off clock of 4490 MHz. Plain 95 degrees no longer alerts, because
+  average clock at least 300 MHz below the boost-off clock of 4490 MHz (first 100 MHz as chosen, raised to 300 the same
+  evening at the user's request after 100 flapped). Plain 95 degrees no longer alerts, because
   Zen 4 regulates itself to 95 by design. The earlier plain limit of 95 was raised from 90 by the user.
 - No deliberate stress tests: the user needs the machine to work. Temperatures are judged from real work.
 - Boost and PBO stay off. The user disabled them (`/sys/devices/system/cpu/cpufreq/boost` is 0).
@@ -40,9 +41,10 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   Claude Code creates that cgroup anew in every boot and has no CPU limit setting, so a service has to do it.
   The thread count is read from `~/.config/claude-cpu-cap/threads` every 2 seconds
   (28 now, lowered from 30 at 20:15:53 after the 95.3 degree alert).
-- The watcher alerts on CPU pressure 40, memory pressure 10, scheduler lag 250 ms and thermal throttling (100 MHz).
-  The 20:15 episode (before this change) showed a clock shortfall of 60 to 180 MHz at 95 degrees, so 100 MHz can
-  still fire during normal 95 degree regulation; the limit is `CPU_WATCH_LIMIT_THROTTLE_MHZ`.
+- The watcher alerts on CPU pressure 40, memory pressure 10, scheduler lag 250 ms and thermal throttling (300 MHz).
+  The limit is `CPU_WATCH_LIMIT_THROTTLE_MHZ`, default 300 in `cpu-watch.ts`. The user asked for a better value after
+  100 MHz flapped. Among 125 samples at Tctl 95 or more (an 8 minute plateau at 133 W) the shortfall was median 83,
+  p95 183, p99 221, max 255 MHz, and 0 percent reached 300, so 300 sits above normal regulation.
   The pressure limit of 40 was a first guess and is uncalibrated.
 - It logs a sample every 10 seconds to `~/.local/share/claude-cpu-cap/samples/<date>.csv` (14 days kept):
   temperatures, package watts, per-chiplet watts, clock, pressure, load, Corsair fan RPMs and probe,
@@ -59,7 +61,7 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   check that ends the watch if nothing weird happened. Its job id changes at every push, so read it with CronList;
   this file records the rule, not each id. The first setting was 21:19 EDT; since then it moved after the alerts at
   18:02:37 (CPU pressure), 19:16:45 (memory pressure), 20:11:41 (CPU pressure), 20:15:27 (temperature) and 20:24:45
-  (throttle), and the throttle alert flaps, so more pushes follow. After the alert at 20:28:24 it stands at 00:31 EDT
+  (throttle), and the throttle alert flapped at 100 MHz. After the alert at 20:30:18 it stands at 00:34 EDT
   on 2026-10-14 (the latest weird event so far).
 - The 20:11:41 CPU pressure alert (46.1, limit 40) came at cap 30 and 130 W. It was the first sustained load in the
   log: about 55 seconds at 125 to 136 W, load average up to 57 on 32 threads, pressure up to 67.8, and it cleared at
@@ -191,8 +193,12 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 
 ## Hardware facts
 
-- CPU cooler: a dual-tower Noctua NH-D15 G1 (the original). The user first said G2, then confirmed at about 20:17 EDT
-  on 2026-10-13 that it is the G1.
+- CPU cooler: a Noctua NH-D15S, the asymmetric single-fan version of the NH-D15 (user correction at about 20:30 EDT
+  on 2026-10-13, after first saying G2 and then G1). Noctua's FAQ says the heatsinks are identical and the two-fan
+  NH-D15 is 1 to 3 degrees better; the D15S ships with clips for a second fan on the front stack. How many fans sit
+  on it now is not known.
+- Thermal paste: not Noctua NT-H1 (the user could not find it, about 20:32 EDT). Which paste, how much, and the
+  application pattern are not known yet.
 - Fans: 7 Noctua and 1 Lian Li, some chained, on a Corsair Commander Core XT (5 of 6 ports used; fan3 is empty).
   CoolerControl labels the controller "(broken)" but applies profiles successfully.
 - The Corsair probe sits on top of the air cooler's heatsink. Its tape cannot be bent, so the tip cannot touch the
@@ -247,8 +253,9 @@ so the findings come from reading the readable source strings inside the binary 
 
 ## Open questions
 
-- The cooler is the NH-D15 G1 (answered). Is it mounted correctly? The numbers in the evidence section say the heat
-  path is far weaker than references; the G1 itself does not explain it. The user tightened the screws until they
+- The cooler is the NH-D15S (answered). Is it mounted correctly? The numbers in the evidence section say the heat
+  path is far weaker than references; the model difference (1 to 3 degrees for one fan instead of two) does not
+  explain it, and the paste is not the Noctua NT-H1 the checklist assumes. The user tightened the screws until they
   could not turn them with a normal screwdriver and little force, which matches Noctua's instruction (below).
   Noctua's NH-D15 manual and torque FAQ (fetched 2026-10-13) give this checklist, with the user's answers pending:
   - Tighten the heatsink screws 2 to 3 turns each in turn, then repeat, "gently until they stop"; maximum torque
