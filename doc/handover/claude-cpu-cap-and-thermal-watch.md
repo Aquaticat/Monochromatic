@@ -436,6 +436,33 @@ because its display is confirmed and it is current. Out: ProArt B850 Neo, ProArt
 only), ASRock Steel Legend and Pro RS (status LEDs only, per the FAQ table), MSI Carbon (IVRS report on that board),
 Gigabyte boards (IVRS reports).
 
+### VFIO and 24/7 evidence (searched about 23:30 EDT, forum and guide text only)
+
+Passthrough layout that matters: only the RTX 3080 (CPU slot, with its audio function) must sit in a clean IOMMU group;
+the RX 7600 stays on the host, so its group does not matter. The AMD reset bug (a card failing to reset after a VM
+stops) is described for the AMD card being passed through, which is not this layout.
+
+- Taichi Lite: a Level1Techs member posted its IOMMU groups on BIOS 3.20 (list not read in full); a GitHub guide runs a
+  Fedora 41 host with a 7950X on a Taichi Lite and passes an RX 7900 XTX through; an r/VFIO thread names the Taichi
+  and Taichi Lite as the E-ATX x8/x8 choices. No IVRS report for ASRock found (one query only).
+- Hero: no VFIO report for this board was found. ASUS X870E evidence comes from the ProArt: CPU slots in separate
+  groups, but both Ethernet controllers, a USB controller and the SATA controller share one chipset group (ACS patch
+  needed to split SATA); one ProArt owner runs an RTX 4090 and 5090 at x8/x8, another in the same thread says to avoid
+  the board (reasons not read). A Proxmox post on an ASUS X870E says an RTX 5090 link fell to x8 after a function-level
+  reset until a cold boot (5090 only; forcing Gen3 did not change it).
+- Nova: no VFIO report found; its RX 7600 slot hangs off the chipset in either case.
+- RTX 3080: Ampere cards appear in several working passthrough guides; nothing on a 3080 on these boards was found.
+- Riser: no source read; a riser rated for PCIe 4.0 matters because the slot can run Gen5 and x8 lanes.
+- ECC: ASRock lists DDR5 ECC and non-ECC unbuffered support; a Level1Techs thread summarizing a Hardware Unboxed test
+  says ECC worked on Gigabyte and ASRock boards, an ASUS ROG board posted without working ECC, and an MSI board did
+  not post. ECC DIMMs cost more and the user has memory errors at EXPO, so this is an option, not a requirement.
+- 24/7: no uptime or failure-rate data was found for any candidate. ASUS ProArt pages carry a "24/7 Reliability"
+  marketing line; the Hero and Taichi are consumer boards. A Level1Techs post planning a 24/7 server on a Taichi asks
+  about 3 to 5 minute AM5 boots from memory training. USB4 controllers (ASM4242) appear in freeze and 0x9F reports on
+  ProArt, TUF and MSI X870 boards, with one report of disabling USB4 in the BIOS curing freezes; which USB4 controller
+  the Lite or Hero uses was not checked. Server-class boards (ASRock Rack, Supermicro) were ruled out earlier by slots
+  and Wi-Fi.
+
 ### Checks before buying
 
 - Open the Corsair 4000D Airflow specification page and read the supported motherboard sizes. If E-ATX is not
