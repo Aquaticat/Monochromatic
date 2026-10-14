@@ -96,6 +96,7 @@ mise run //package/music-player/android-app:test:instrumented:device
 ```
 
 - `test:unit` runs the pure-logic JVM tests without a device or native build.
+  It also runs the Compose wiring tests described below, which need JDK 21 or newer.
 - `test:instrumented:build` builds the app and instrumented-test APKs without running them.
 - `test:instrumented` rebuilds the native libraries and runs all instrumented tests on a connected device.
   Set `ANDROID_SERIAL` when more than one device is attached.
@@ -104,6 +105,28 @@ mise run //package/music-player/android-app:test:instrumented:device
   `PeakSweepWorkerTest` class while retaining app data and grants.
   Android's `am instrument` can exit successfully when a test fails,
   so verify that its output reports `OK (` rather than `FAILURES!!!`.
+
+### Compose wiring tests
+
+`app/src/test/kotlin/dev/monochromatic/musicplayer/wiring` renders the real `trackListPane` and `playerHost`
+on the host JVM with Robolectric 4.17 and the Compose UI test rule (`ui-test-junit4`, version from the Compose BOM;
+`ui-test-manifest` in debug), over a `PlayerController` with `FakeAudioEngine` and invented tracks.
+No emulator is involved.
+They cover the Compose call sites that no pure function can reach:
+
+- which row is selected for a playing index, and how the marker moves on next and previous,
+- where a page opens, what a reveal and a folder reveal scroll to, and that a track change alone never scrolls,
+- that a track added to the shown folder gets its row and supporting line, and a folder change opens its page,
+- that the next measure pass starts at the first visible track, seen through a recording content provider.
+
+Each case waits with `waitUntil` and a wall-clock limit, and each `@Test` has a `timeout`,
+so a mutant that stops a scroll or a frame fails fast instead of hanging the run.
+`app/src/test/resources/robolectric.properties` selects API 36 (the app's `targetSdk`) and a bare `Application`.
+Robolectric loads its framework jar for that API from `app/build/robolectric-runtime`,
+which Gradle fills from the `robolectricRuntime` configuration (`org.robolectric:android-all-instrumented`),
+so a run needs the network only once, to fill the Gradle cache, and works with `--offline` afterwards.
+The test JVM also gets Robolectric's documented `--add-opens` flags (see `app/build.gradle.kts`).
+The wiring cases add about 8 s to the 1,149-test run.
 
 ## Lint and clean
 

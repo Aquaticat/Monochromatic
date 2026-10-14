@@ -227,13 +227,28 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   CPU), below the noise, and is left alone. The mutation pass killed every mutant of the new logic after ten more test
   cases; the unit suite is 1077 tests with no failures, detekt and lintDebug pass.
   Wiring tests (2026-10-14): the page measure refresh effect and the first visible report moved into
-  `core/PageMeasureRefresh.kt` and `core/FirstVisibleTrack.kt`, so JVM tests now kill the mutants for the per-step
-  cancel (`collectLatest`), the start position and the sink index (13 new tests, 1090 in all, no failures; detekt and
-  lintDebug pass). Five mutants still survive because they sit at Compose boundaries: the `LocalPlayingIndex provides`
-  value, the `rowWithPlayingFlag` call in the `LazyColumn` item, and the `currentPositionOf`,
-  `pageEntryScrollTarget` and `remember` key arguments. Killing them needs Robolectric with compose ui-test or an
-  instrumented test, a dependency decision not yet made. No emulator test ran for this change.
-  Still open: the five Compose-boundary mutants; the fourth cost below; the 435 ms `loadTemplate` violation did not
+  `core/PageMeasureRefresh.kt` and `core/FirstVisibleTrack.kt`, so JVM tests killed the mutants for the per-step
+  cancel (`collectLatest`), the start position and the sink index (13 new tests, no failures; detekt and lintDebug
+  pass). The five mutants at Compose boundaries (the `LocalPlayingIndex provides` value, the `rowWithPlayingFlag` call
+  in the `LazyColumn` item, and the `currentPositionOf`, `pageEntryScrollTarget` and `remember` key arguments) are
+  now tested with Robolectric 4.17 and Compose UI test (`ui-test-junit4` from the Compose BOM, `ui-test-manifest` in
+  debug; user-approved test dependency, no emulator): `wiring/TrackListPaneWiringTest` renders the real `trackListPane`
+  and `wiring/PlayerHostWiringTest` the real `playerHost` over a controller with a fake engine and invented tracks.
+  They assert the one selected row for a playing index, the marker moving on next and previous, where a page opens,
+  that a track change alone never scrolls, what a reveal and a folder reveal scroll to, a track added to the shown
+  folder (row and supporting line), a folder change, and, through a recording content provider, that a new measure
+  pass starts at the first visible track. The unit suite went from 1129 to 1149 tests with no failures; the test
+  task costs about 8 s more (42.8 s to 50.5 s per container run, 28.2 s to 36.4 s of summed test time, means of three
+  runs after a warm-up). The mutation pass (21 mutants of these sites and their siblings, one at a time, full suite
+  each) killed 17; the four that survive are output-equivalent or need a flow no test drives: the folder title key and
+  the playing-index key and argument of the `rowEntries` `remember` (the rows are built from the entries alone, and
+  `rowWithPlayingFlag` overwrites any flag they carry, so only the cost of rebuilding changes), and the template key of
+  the `rowLines` `remember` (a template changes only through the Settings editor, which no wiring test opens).
+  Robolectric needs the API 36 framework jar: Gradle resolves it as `robolectricRuntime` and copies it to
+  `app/build/robolectric-runtime`, read through `robolectric.dependency.dir`, so a warm Gradle cache runs offline.
+  The podman runner's Java could not resolve names (the host `/usr` mount breaks the `nss-resolve` module without
+  `/run/systemd/resolve`), so new dependencies were fetched with a host Gradle run into the shared Gradle home.
+  Still open: the fourth cost below; the 435 ms `loadTemplate` violation did not
   reproduce, so the template cache in `SessionStore.warmUp` is unproven; the old ANRs did not reproduce in 23 play
   windows (cause unknown); the sweep-under-load case was not exercised; release build not measured.
 - Android playing-queue cost (measured 2026-10-14, partly fixed, on `main` since `90f121edf5`): while tracks changed,
