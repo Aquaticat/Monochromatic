@@ -308,9 +308,40 @@ for VFIO passthrough.
   ASRock X870E Taichi (manual snippet): two PCIe 5.0 x16 slots, x16 or x8/x8, with lane modes depending on the CPU;
   no price or VFIO report found. ASUS ProArt X670E-Creator: one PCPartPicker build reported easy IOMMU and VFIO setup;
   no price found. MSI MEG X870E ACE MAX: x16, x8 and x4 slots (not x8/x8). Gigabyte X870E Aorus Master: second slot
-  shares lanes with M.2 (forum table, unverified). Gigabyte boards carry the IVRS risk above.
+  shares lanes with M.2 (forum table, unverified).
+- The IVRS risk is not Gigabyte-only. The same "1:1 IOMMU mapping" refusal appears in an LKML reply for a Gigabyte
+  B850 AORUS ELITE WIFI7 (BIOS F11 and F7, RTX 5080) and in an Unraid forum report for an MSI X870E board. A v2 patch
+  series (Christos Longros) applies cleanly on kernel 7.2.8 and fixed the refusal for the B850 reporter; whether it is
+  merged was not checked. No report was found for ASUS or ASRock boards, but that search was one query only, so it
+  proves nothing.
+- Slot layout choice, separate from the board choice. Two boards below give two CPU x16 slots as x8/x8 (the RX 7600
+  and the 3080 each at x8). Cheaper boards give the CPU x16 to one slot and hang a second x16 slot off the chipset at
+  x4: the 3080 would take the CPU slot, and the RX 7600 would sit at Gen4 x4 on the chipset, or be dropped for the
+  7950X integrated graphics. MSI MAG B850 TOMAHAWK MAX WIFI (spec text): PCI_E1 PCIe 5.0 x16 from the CPU, PCI_E3
+  PCIe 4.0 x16 from the chipset at up to x4 (x2 if M.2_3 is used), PCI_E2 PCIe 3.0 x1; Wi-Fi 7 module pre-installed
+  in an M.2 Key E slot; 5 Gb LAN; EZ Debug LED (four LEDs); reviews quote 209.99 to 239 US dollars.
+- Diagnostics per board: ASUS ProArt X870E and B850 Creator list Q-LED (four LEDs for CPU, DRAM, VGA, boot device, no
+  two-digit code; a text search of the saved X870E page found no Q-Code). ASRock X870E
+  Taichi listings show a Dr. Debug LED (a two-digit display) and power and reset buttons (retail listing text, not the
+  ASRock page). MSI Tomahawk: EZ Debug LED, four LEDs. Supermicro H13SAE-MF has IPMI but no Wi-Fi and a two
+  double-width-card limit, so it is out. ASUS ProArt B650-Creator has x8/x8 but no onboard Wi-Fi (empty M.2 Key E).
+- ASUS ProArt B850-CREATOR WIFI NEO (ASUS page): two PCIe 5.0 x16 slots as x16 or x8/x8 (Ryzen 7000/9000), a PCIe 4.0
+  x16 from the chipset at x4 that shares lanes with M.2_3, 14+2+1 power stages, three M.2 slots, Realtek RTL8922AE
+  Wi-Fi 7, dual 5 Gb Ethernet, Q-LED; price not found.
+- ASUS ProArt X870E-CREATOR WIFI (ASUS page): x16, x8/x8 or x8/x4/x4 on the two CPU slots, one chipset x4 slot, Wi-Fi 7
+  module that is either Qualcomm QCNCM865 or MediaTek MT7927 depending on the unit (Linux driver support for
+  either was not checked); prices 471.90 EUR to 586 EUR (ASUS shop) and 379.90 CHF. A ROG forum thread (2026-08-23)
+  reports eight 0x9F bugchecks in 39 days on this board with Windows 11 tied to the ASM4242 USB4 controller;
+  Windows only, cause unconfirmed.
+- Linux Wi-Fi: the RTL8922AE is in the kernel as rtw89_8922ae from 6.10 on (kernel database lists 6.10 to 7.2). The
+  Fedora 44 kernel 7.2.5 works with it per a Fedora forum post. A Bazzite report says the OGC kernel 7.0 and newer
+  lost it through mac80211 API changes; this host runs `7.2.9-ogc3.1.fc44`, an OGC kernel, so it must be tested
+  there before trusting a Realtek Wi-Fi 7 board. Not verified for MT7927 and QCNCM865.
 - Not verified: IOMMU group layouts of any candidate, BIOS stability reports for 2026 firmware, the physical slot
-  spacing against a 3080 and the D15S, and the power supply wattage and case (unknown).
+  spacing against a 3080 and the D15S, the user's 3080 model and case, and the power supply wattage and case.
+- A new board does not prove the memory errors at EXPO 6000 are the board's: the CPU memory controller and the DIMMs
+  are shared with the old setup. Validate EXPO with memtest86+ on the new board before concluding. The thermal gap is
+  a separate problem; a new board does not change heatsink contact.
 
 ## Open questions
 
