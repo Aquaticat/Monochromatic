@@ -50,7 +50,10 @@ Liquid's complete-input probe preserved every original state field and question,
 changing only its model name.
 The 504,929-byte request returned HTTP 422 in 1,098.969 ms,
 naming a 65,536-token or 250,000-text-byte limit for `head_0`.
-The existing exactly reconstructable shared-content candidate is the next frozen Liquid probe.
+The exactly reconstructable shared-content candidate was 140,601 bytes.
+Its single attempt ended with client `TimeoutError` after 5,005.097 ms without a response.
+Liquid therefore has no completed full-assessment result within the production deadline.
+No retry or production adoption occurred.
 
 ## Drex 2.0 release check
 

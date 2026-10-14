@@ -118,4 +118,15 @@ Send it once to Liquid with only the model name changed to `d1`,
 with the same five-second limit and no retry.
 This does not adopt the representation or establish equivalent model interpretation.
 
+The shared-content request was 140,601 bytes with SHA-256
+`e5aeb7b3c3fb7987009f76aeedc80ffdd1713dcfe49cab0bf2e394ba1f091597`.
+The single attempt ended with client `TimeoutError` after 5,005.097 ms,
+without a response or answer map.
+This fails the unchanged deadline for that attempt;
+it does not establish acceptance,
+a capacity limit,
+or semantic quality.
+No retry occurred.
+Artifacts are retained in `${HOME}/temp/agent/pi-liquid-shared-content-20261014`.
+
 [d1]: https://docs.liquid.ai/lfm/models/d1
