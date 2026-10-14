@@ -11,7 +11,8 @@ Updated 2026-10-14.
 
 The user authorized sending anything needed to `subq.ai`
 using `AUTO_MODE_SUBQ_API_KEY`.
-The authenticated models endpoint returned HTTP 200 with `subq-snap-preview`.
+The models endpoint returned HTTP 200 with `subq-snap-preview`,
+but the credential-loader correction invalidates the original claim of authenticated key verification.
 The [current contract check](../planning/pi-auto-mode-subq-current-contract.md)
 records the documented 16-question limit and a frozen 16/17-question synthetic boundary probe.
 No production provider or assessment-budget change is adopted.
@@ -22,6 +23,11 @@ and added `AUTO_MODE_LIQUID_API_KEY`.
 The [Liquid contract check](../planning/pi-auto-mode-liquid-current-contract.md)
 records its documented hosted `d1` route and the initial public serving control.
 Both provider keys are present in the ignored local configuration.
+The first controls mistakenly sent SOPS ciphertext:
+Liquid returned 401 and SubQ returned 403.
+Those are not evidence against the actual keys or models.
+Mise now resolves both decrypted keys in memory;
+fresh real-key controls are the immediate next action.
 
 ## Drex 2.0 release check
 

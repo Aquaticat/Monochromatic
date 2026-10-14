@@ -16,7 +16,17 @@ The documented authenticated `GET https://api.subq.ai/v1/models` returned HTTP 2
 and only `subq-snap-preview`,
 named `SubQ Snap Preview`,
 owned by `subquadratic`.
-This verifies the supplied resource before further evaluation.
+Correction on October 14:
+that call sent the encrypted SOPS value rather than the decrypted credential.
+Its HTTP 200 therefore does not verify the supplied key.
+The later 16-question and one-question probes returned HTTP 403 `permission_error`
+using the same incorrectly loaded value.
+Neither result establishes account access or model capability.
+The user suggested mise might explain the failure;
+inspection confirmed an owned credential-loading mistake.
+`mise env --json` now resolves the real key in memory without printing it.
+The original frozen control will be repeated in a separate directory with the decrypted key
+and a guard rejecting `ENC[` values before dispatch.
 
 ## Candidate and incumbent boundaries
 

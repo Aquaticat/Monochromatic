@@ -64,4 +64,19 @@ and a finite probability in the unit interval.
 This tests access and serving only;
 it is not semantic qualification or complete-input capacity evidence.
 
+## Credential-loading correction
+
+The initial request and one explicit access recheck returned HTTP 401 `invalid_api_key`
+in 704.051 ms and 699.277 ms.
+Both sent the encrypted SOPS value read directly from `.env.local.json`.
+They did not exercise the user's decrypted key.
+The claim that the actual key lacked the documented prefix was also incorrect:
+that check examined ciphertext.
+After the user questioned the result,
+`mise.toml`'s SOPS configuration and `mise env --help` established the correct loading boundary.
+An in-memory `mise env --json` capture resolves a nonempty decrypted Liquid key
+with the documented prefix and a nonempty decrypted SubQ key.
+The real-key control remains required;
+it will run in a separate directory with a guard rejecting encrypted values before dispatch.
+
 [d1]: https://docs.liquid.ai/lfm/models/d1
