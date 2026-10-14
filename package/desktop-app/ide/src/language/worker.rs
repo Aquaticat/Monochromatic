@@ -25,7 +25,7 @@ use super::{diagnostics::DiagnosticsSnapshot, hints::HintsSnapshot, status::Lang
 /// Commands and one-shot replies.
 use super::{
     hints::HintWindow,
-    identity::DocumentStamp,
+    identity::{DocumentStamp, ServerIdentity},
     reply::{LanguageReply, PositionRequest},
     sync::{DocumentOpen, DocumentReload},
 };
@@ -189,6 +189,14 @@ pub(super) enum Internal {
     ),
     /// Gathered file changes may be due for sending.
     ForwardFiles,
+    /// The last standard-error lines of a server whose start failed are complete.
+    EndCause(
+        /// The server process that ended.
+        ServerIdentity,
+        /// Its last standard-error lines,
+        ///  oldest first.
+        Vec<String>,
+    ),
 }
 
 /// The sending ends of every channel the interface thread polls.
@@ -384,6 +392,7 @@ impl Worker {
             // `*ticket` moves the value out of its heap box.
             Internal::Retry(ticket) => request::retry(self, *ticket),
             Internal::ForwardFiles => forward::due(self),
+            Internal::EndCause(server, lines) => attach::end_cause(self, &server, lines),
         }
         self.publish();
     }

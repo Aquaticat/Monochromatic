@@ -5,7 +5,7 @@
 //!  because the kept lines are shared by
 //! the whole test process.
 
-use super::{SETTLE, ended_unexpectedly, stopped_during_start};
+use super::{SETTLE, ended_unexpectedly, ended_unexpectedly_then, stopped_during_start};
 use crate::logging::stderr_tail;
 use std::{
     io::{self, Write},
@@ -91,6 +91,33 @@ fn an_end_waits_for_lines_that_arrive_after_it() {
     assert!(
         text.contains("waited for the end of a server's standard error"),
         "{text}"
+    );
+}
+
+#[test]
+fn the_lines_are_handed_over_complete_and_the_record_still_reports_them() {
+    let server = "report-handover";
+    let handed: Arc<Mutex<Option<Vec<String>>>> = Arc::new(Mutex::new(None));
+    let sink = handed.clone();
+    let text = logged(async {
+        ended_unexpectedly_then(server.to_string(), false, move |lines| {
+            *sink.lock().expect("sink") = Some(lines);
+        });
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        stderr_tail::remember(server, "cannot read the configuration\n");
+        stderr_tail::ended(server);
+        tokio::time::sleep(Duration::from_millis(200)).await;
+    });
+    assert_eq!(
+        handed.lock().expect("sink").clone(),
+        Some(vec!["cannot read the configuration".to_string()]),
+        "the hand-over was not the complete lines:\n{text}"
+    );
+    assert!(
+        text.contains(
+            r#"server=report-handover was_ready=false stderr_tail=["cannot read the configuration"]"#
+        ),
+        "handing the lines over drained them from the log record:\n{text}"
     );
 }
 

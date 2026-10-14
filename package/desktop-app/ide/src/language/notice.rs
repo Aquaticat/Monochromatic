@@ -86,7 +86,8 @@ fn failure_text(failure: &RequestFailure) -> String {
 /// ```
 fn sentence(text: &str) -> String {
     let trimmed = text.trim_end();
-    if trimmed.ends_with('.') {
+    // A text that ends with lines a server wrote is left as it is: a period would join the last of them.
+    if trimmed.ends_with('.') || trimmed.contains('\n') {
         return trimmed.to_string();
     }
     return format!("{trimmed}.");

@@ -19,6 +19,7 @@ use super::identity::ServerIdentity;
 use super::lifecycle::send_did_open;
 /// States reported to the interface thread.
 use super::status::{DocumentState, ServerState};
+use super::worker::Internal;
 /// The worker whose state these steps change.
 use super::worker::Worker;
 /// helix-lsp's key for one server process.
@@ -257,10 +258,19 @@ pub(super) fn exited(worker: &mut Worker, server: LanguageServerId) {
         }
     };
     // The record waits briefly for the server's last standard-error lines; the state does not.
-    report::ended_unexpectedly(
-        worker.session.servers[index].identity.name.clone(),
-        was_ready,
-    );
+    // A start that failed is given those lines afterwards, so its reason can say what the server wrote.
+    let identity = worker.session.servers[index].identity.clone();
+    if was_ready {
+        report::ended_unexpectedly(identity.name.clone(), true);
+    } else {
+        let internal = worker.internal.clone();
+        let name = identity.name.clone();
+        report::ended_unexpectedly_then(name, false, move |lines| {
+            if let Err(error) = internal.send(Internal::EndCause(identity, lines)) {
+                tracing::debug!(%error, "language worker stopped before the cause of a failed start arrived");
+            }
+        });
+    }
     retire(worker, index, state, false);
     if !worker.session.servers[index].attached {
         worker.session.servers.remove(index);
@@ -291,9 +301,88 @@ pub(super) fn start_deadline(worker: &mut Worker, server: LanguageServerId) {
     let seconds = worker.languages.start_timeout(&name);
     tracing::error!(server = %name, seconds, "language server did not answer initialize in time and is stopped");
     let reason = format!("{name} did not answer initialize within {seconds} seconds");
-    report::stopped_during_start(&name);
+    let lines = report::stopped_during_start(&name);
+    let reason = with_lines(reason, &lines);
     retire(worker, index, ServerState::FailedToStart { reason }, true);
     if !worker.session.servers[index].attached {
         worker.session.servers.remove(index);
     }
 }
+
+/// How many of a server's last standard-error lines a reason carries.
+const CAUSE_LINES: usize = 4;
+
+/// How many bytes of one such line a reason carries.
+const CAUSE_LINE_BYTES: usize = 200;
+
+/// What:
+///  Append the last lines a server wrote to standard error to the reason its start failed.
+///  `&[String]` lends the lines,
+///  oldest first.
+/// Why:
+///  "The server process ended before it finished starting" names no cause;
+///  the server usually states it on standard error,
+///  and the log is not where the reader of the window looks.
+///  Only the last lines,
+///  each cut,
+///  are carried;
+///  the log keeps the rest.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function withLines(reason: string, lines: string[]): string
+/// ```
+fn with_lines(reason: String, lines: &[String]) -> String {
+    if lines.is_empty() {
+        return reason;
+    }
+    let first = lines.len().saturating_sub(CAUSE_LINES);
+    let mut text = format!("{reason}; the server wrote this to its standard error:");
+    for line in &lines[first..] {
+        text.push('\n');
+        // The cut stays on a character boundary so the text remains valid.
+        let mut end = line.len().min(CAUSE_LINE_BYTES);
+        while !line.is_char_boundary(end) {
+            end -= 1;
+        }
+        text.push_str(&line[..end]);
+        if end < line.len() {
+            text.push_str(" [cut]");
+        }
+    }
+    return text;
+}
+
+/// What:
+///  The last standard-error lines of a server whose start failed arrived:
+///  state them in the reason.
+/// Why:
+///  They are complete only after the server's standard error ended or `SETTLE` passed,
+///  which is after the state was first published.
+///  A server that was started again meanwhile is another process and keeps its own state.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function endCause(worker: Worker, server: ServerIdentity, lines: string[]): void
+/// ```
+pub(super) fn end_cause(worker: &mut Worker, server: &ServerIdentity, lines: Vec<String>) {
+    let Some(index) = worker.session.index_of_identity(server) else {
+        tracing::debug!(server = %server.name, "the record of a failed start was removed before its cause arrived");
+        return;
+    };
+    let record = &mut worker.session.servers[index];
+    let ServerState::FailedToStart { reason } = &record.state else {
+        return;
+    };
+    if lines.is_empty() {
+        return;
+    }
+    let updated = with_lines(reason.clone(), &lines);
+    tracing::debug!(server = %server.name, lines = lines.len(), "stated the cause of a failed start");
+    record.state = ServerState::FailedToStart { reason: updated };
+}
+
+/// The reason text a failed start carries is built without a server.
+#[cfg(test)]
+#[path = "attach/cause_tests.rs"]
+mod cause_tests;

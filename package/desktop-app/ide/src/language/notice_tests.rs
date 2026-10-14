@@ -123,6 +123,25 @@ fn a_failed_start_and_a_refused_launch_each_give_their_cause() {
 }
 
 #[test]
+fn a_reason_that_ends_with_server_lines_gets_no_period_added() {
+    let reason =
+        "the server process ended before it finished starting; the server wrote this to its standard error:\nmise ERROR not trusted"
+            .to_string();
+    let shown = lines(
+        &status(vec![row(
+            "rust-analyzer",
+            ServerState::FailedToStart { reason },
+            None,
+        )]),
+        &[],
+    );
+    assert_eq!(
+        shown[1],
+        "rust-analyzer failed to start: the server process ended before it finished starting; the server wrote this to its standard error:\nmise ERROR not trusted"
+    );
+}
+
+#[test]
 fn a_server_that_is_still_starting_gives_no_entry() {
     let shown = lines(
         &status(vec![row("typescript-native", ServerState::Starting, None)]),

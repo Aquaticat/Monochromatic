@@ -228,6 +228,20 @@ pub fn is_closed(server: &str) -> bool {
 }
 
 /// What:
+///  Copy a server's kept lines,
+///  oldest first,
+///  and leave them where they are.
+/// Why:
+///  The worker shows why a start failed while the lines are still to be reported once
+///      as the log record of the ended server.
+pub fn lines(server: &str) -> Vec<String> {
+    return tails()
+        .get(server)
+        .filter(|tail| return !tail.retired)
+        .map_or(Vec::new(), |tail| return tail.lines.iter().cloned().collect());
+}
+
+/// What:
 ///  Remove and return a server's kept lines,
 ///  oldest first;
 ///  while its stream is still open,
