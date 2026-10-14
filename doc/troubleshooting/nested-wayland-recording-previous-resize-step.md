@@ -23,8 +23,8 @@ of the real compositor comes from.
 ## Root cause
 
 The delay is in the compositor's capture model and the toolkit's redraw gate, not in the application.
-Four facts decide it (paths under `package/cli/nested-wayland-session/` are identical in the working tree and in the tag
-`monochromatic-nested-wayland-session-v0.4.0`):
+Four facts decide it (paths under `package/cli/nested-wayland-session/`; the line numbers are those of the tag
+`monochromatic-nested-wayland-session-v0.4.0`, and a note after the list gives the current ones):
 
 - `src/screen.rs:209`: the `resize` command calls `set_mode`, so the output mode, which is the size of every recorded
   frame, changes when the command arrives, before the hosted client has seen the new size.
@@ -37,9 +37,12 @@ Four facts decide it (paths under `package/cli/nested-wayland-session/` are iden
   the window's frame callback state is `Requested`, which Slint's renderer sets before every swap through
   `pre_present_notify` (`i-slint-backend-winit` 1.18.1, `renderer/femtovg/glcontext.rs:33`).
 
-Line numbers in this section are those of 0.4.0.
+Note of 2026-10-14: the line numbers in this section are those of 0.4.0.
 After the change below, the `set_mode` call of `apply` is at `src/screen.rs:215`, `tell_surfaces_scale` is at
 `src/screen.rs:220`, and the early callbacks are at `src/screen.rs:241`.
+The call of `capture_into` is at `src/recorder.rs:376`, `render::send_frame_callbacks` at `src/recorder.rs:388`
+and `flush_clients` at `src/recorder.rs:392`, because the module doc of that file grew by three lines.
+`src/render.rs:114` and `src/frame_pacing.rs:135` did not move.
 
 So a size that reaches the application between two ticks is drawn right after the next tick's capture
 (a median of 0.4 ms after the callbacks), committed a few milliseconds later, and first captured one tick later.
@@ -158,8 +161,9 @@ switch), interleaved before and after in the same window of time, 60 fps recordi
 A run counts when it has no dropped frame and the one-minute load at its start is below 20; every run listed counts.
 The window of captures is from the first command to 100 ms after the last reply (82 to 84 captures per run), so the
 percentages differ a little from the earlier ones.
-In every run the frames that did not fit were exactly the captures with a held buffer width that differs from the
-output mode width.
+In every run the number of frames that did not fit equaled the number of captures with a held buffer width that
+differs from the output mode width; the two counts were kept, the frames themselves were not, so the equality of the
+sets was not rechecked.
 
 - Series with the IDE bundle `trace-rewrap` of the verification (8 runs per side, load at start 4.77 to 14.7):
   stale captures before the change 88.1 to 92.7 percent (mean 90.3), after it 45.2 to 56.0 percent in 7 runs (mean 49.5)
@@ -168,14 +172,22 @@ output mode width.
 - Series with the current bundle `package/desktop-app/ide/dist/monochromatic-ide` (4 runs per side, load at start
   8.3 to 11.4): stale captures before 90.5 to 91.7 percent, after 42.9 to 46.4 percent,
   commit delay median 11.5 to 13 ms before and 6 to 7 ms after.
-- Two runs show a slow application: before-r7 (92.7 percent stale, commit delay median 47 ms) and the 91.5 percent run
+- Two runs are slow: before-r7 (92.7 percent stale, commit delay median 47 ms) and the 91.5 percent run
   after the change (commit delay median 34 ms).
   Both recorded 141 frames instead of 143 and neither dropped one.
-  The cause of the slowness was not determined, so they stay in the lists.
+  Whether the application or the host was slow was not determined; both runs meet the gates, so they stay in the lists.
   The 91.5 percent run is the reason the after list has a range and a count instead of one number.
 - The earlier counterfactual probe gave 55.6 to 60.5 percent after.
-  The runs now give 45.2 to 56.0 percent; the differing capture window and the host's load at the time are known
-  differences, and no further cause was measured.
+  The runs now give 45.2 to 56.0 percent; the capture window and the host's load at the time differ, and no cause of
+  the difference was measured.
+
+Method notes:
+
+- The series with the current bundle waited a fixed 8 s after the first drawn frame, because that bundle does not print
+  the measurement-pass line the other series waits for.
+- All 24 runs (16 with `trace-rewrap`, 8 with the current bundle) recorded 141 to 143 frames and dropped none on both
+  sides, so the capture cadence and the drop accounting did not change.
+- The instrumented copies of both sides are of the commits `e751a32` (before) and `2f30a8630a` (after).
 
 The application's own work (the earlier medians were a re-wrap of about 4 ms and a draw of about 3.5 ms) against the
 16.7 ms period is the part that this compositor cannot remove; how the remaining stale captures split between that work
