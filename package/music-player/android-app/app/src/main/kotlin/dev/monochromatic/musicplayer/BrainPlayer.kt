@@ -302,8 +302,11 @@ class BrainPlayer(
      */
     private val handler: Handler = Handler(looper)
 
-    /** Whether an invalidation is already posted and not yet run. */
-    private var invalidatePending: Boolean = false
+    /** Posts one state refresh per burst of brain changes onto the main looper. */
+    private val invalidateTrigger: CoalescedTrigger = CoalescedTrigger(
+        schedule = { task -> handler.post { task() } },
+        action = { invalidateState() },
+    )
 
     // What:     `init { ... }` is Kotlin's INITIALIZER BLOCK: code that runs as
     //           part of constructing every instance, after the primary
@@ -342,15 +345,7 @@ class BrainPlayer(
         //   handler.post(() => this.invalidateState());
         // };
         // ```
-        controller.onStateChanged = {
-            if (!invalidatePending) {
-                invalidatePending = true
-                handler.post {
-                    invalidatePending = false
-                    invalidateState()
-                }
-            }
-        }
+        controller.onStateChanged = { invalidateTrigger.request() }
     }
 
     // What:     `override fun getState(): State` declares a method named
@@ -581,8 +576,12 @@ class BrainPlayer(
     /** Returns the timeline rows of [snapshot] and remembers them for the next pull. */
     private fun playlistFor(snapshot: PlaybackSnapshot): List<MediaItemData> {
         /** Positions whose row can differ although their item is unchanged: the previous and the new current track. */
-        val currentChanged: Boolean = snapshot.currentIndex != rowsCurrent || snapshot.durationMs != rowsDurationMs
-        val rebuilt: Set<Int> = if (currentChanged) setOfNotNull(rowsCurrent, snapshot.currentIndex) else emptySet()
+        val rebuilt: Set<Int> = currentRowPositions(
+            previousCurrent = rowsCurrent,
+            previousDurationMs = rowsDurationMs,
+            current = snapshot.currentIndex,
+            durationMs = snapshot.durationMs,
+        )
         val next: List<MediaItemData> = reuseRows(
             previousItems = rowItems,
             previousRows = rows,

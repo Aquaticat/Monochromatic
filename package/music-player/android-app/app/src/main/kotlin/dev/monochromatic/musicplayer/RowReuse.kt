@@ -72,3 +72,20 @@ fun <Item : Any, Row : Any> reuseRows(
     }
     return rows
 }
+
+/**
+ * Finds the positions whose row differs although their item is the same instance: the track that stopped being
+ * current and the one that became current, because only the current row reports a duration.
+ *
+ * @param previousCurrent position of the current track when the rows were last built, or null
+ * @param previousDurationMs duration of the current track in milliseconds when the rows were last built
+ * @param current position of the current track now, or null
+ * @param durationMs duration of the current track in milliseconds now
+ * @return no positions when neither the current track nor its duration changed
+ */
+fun currentRowPositions(previousCurrent: Int?, previousDurationMs: Long, current: Int?, durationMs: Long): Set<Int> {
+    if (current == previousCurrent && durationMs == previousDurationMs) {
+        return emptySet()
+    }
+    return setOfNotNull(previousCurrent, current)
+}

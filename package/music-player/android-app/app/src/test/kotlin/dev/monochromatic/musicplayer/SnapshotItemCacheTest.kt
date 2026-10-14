@@ -137,6 +137,45 @@ class SnapshotItemCacheTest {
         assertTrue(changedTagUris(applied = applied, current = applied).isEmpty())
     }
 
+    @Test
+    fun newDisplayPathsAloneRebuildTheTitles() {
+        val cache = SnapshotItemCache()
+        val order = listOf(0, 1)
+        val uris = uris(2)
+        cache.itemsFor(order = order, display = display(2), uris = uris, artists = emptyMap())
+        val after = cache.itemsFor(
+            order = order,
+            display = listOf("x/first.mp3", "x/second.mp3"),
+            uris = uris,
+            artists = emptyMap(),
+        )
+        assertEquals(listOf("first", "second"), after.map { item -> item.title })
+    }
+
+    @Test
+    fun newUrisAloneRebuildTheUris() {
+        val cache = SnapshotItemCache()
+        val order = listOf(0, 1)
+        val display = display(2)
+        cache.itemsFor(order = order, display = display, uris = uris(2), artists = emptyMap())
+        val after = cache.itemsFor(order = order, display = display, uris = listOf("n0", "n1"), artists = emptyMap())
+        assertEquals(listOf("n0", "n1"), after.map { item -> item.uri })
+    }
+
+    @Test
+    fun aRebuildAfterANewLibraryAppliesTheTagsOnRecord() {
+        val cache = SnapshotItemCache()
+        val order = listOf(0, 1)
+        val display = display(2)
+        cache.itemsFor(order = order, display = display, uris = uris(2), artists = emptyMap())
+        val renamed = listOf("n0", "n1")
+        val tags = mapOf("n1" to "Ada")
+        val after = cache.itemsFor(order = order, display = display, uris = renamed, artists = tags)
+        assertEquals(listOf(null, "Ada"), after.map { item -> item.artist })
+        val same = cache.itemsFor(order = order, display = display, uris = renamed, artists = tags)
+        assertSame(after, same)
+    }
+
     /** Asserts [expected] and [actual] differ; JUnit's own assertNotEquals needs another import for one use. */
     private fun assertNotEquals(expected: Long, actual: Long) {
         assertTrue("both were $expected", expected != actual)
