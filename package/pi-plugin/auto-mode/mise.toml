@@ -61,3 +61,14 @@ extends = "test:unit"
 [tasks."dependencies:install"]
 description = "Install declared native parsers and regenerate the workspace lock without lifecycle scripts"
 run = "pnpm install --ignore-scripts"
+
+[tasks."build:native"]
+description = "Build the qualified native Pi source and owned runtime without private integration imports"
+run = "node native/build.ts"
+
+[tasks."test:native:domain"]
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution",
+]

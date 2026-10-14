@@ -1,5 +1,4 @@
 import {copyFileSync,mkdirSync,readFileSync,realpathSync,writeFileSync} from 'node:fs';
-import {homedir} from 'node:os';
 import {createRequire} from 'node:module';
 import {dirname,join} from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -8,7 +7,7 @@ import {agentInputSource} from './agent-input-source.mjs';
 import {agentStateSource,sessionStateSource} from './agent-state-source.mjs';
 import {sessionToolDescriptionSource} from './tool-description-source.mjs';
 import {extensionToolSource,resourceToolSource} from './extension-tool-source.mjs';
-import {replaceStagedImport} from './staged-import.mjs';
+import {readStagedInput,replaceStagedImport} from './staged-import.mjs';
 import {judgmentSource} from './judgment-source.mjs';
 import {managerSource,sessionSource} from './root-source.mjs';
 import {promptSessionSource,promptEmitterSource} from './prompt-source.mjs';
@@ -18,9 +17,8 @@ import {preparedDispatcherSource,programSessionSource,programJudgmentSource,prog
 import {parse} from "../../collector/program-rule-batch-sdk-copy-v2/input/parser.mjs";
 
 class NativeBatchBuildError extends Error {}
-const maintainedRoot=realpathSync(join(homedir(),'Monochromatic/package/pi-plugin/auto-mode'));
-import {sdk,core,ai,codemode,tui} from '../current-sdk/paths.mjs';
-const output=join(import.meta.dirname,'.sdk-private');
+import {sdk,core,ai,codemode,tui,maintainedRoot} from '../current-sdk/paths.mjs';
+const output=join(import.meta.dirname,'generated');
 mkdirSync(output,{recursive:true,mode:0o700});
 function entry({root,subpath='.'}){
  const metadata=JSON.parse(readFileSync(join(root,'package.json'),'utf8'));
@@ -121,18 +119,18 @@ const executor=imports({source:programExecutorSource(executorSource),path:execut
 writeFileSync(join(output,'program-executor.mjs'),executor,{mode:0o600});
 writeFileSync(join(output,'native-script-value.mjs'),nativeScriptValueSource({source:executorSource,parse}),{mode:0o600});
 writeFileSync(join(output,'program-definition.mjs'),programDefinitionSource({nativeToolUrl:pathToFileURL(join(sdk,'dist/extensions/codemode/tool.js')).href,executorUrl:pathToFileURL(join(output,'program-executor.mjs')).href}),{mode:0o600});
-const programRunner=programRunnerSource(readFileSync(new URL("../../collector/program-rule-batch-sdk-copy-v2/input/program-runner.mjs",import.meta.url),'utf8'));
+const programRunner=programRunnerSource(readStagedInput(new URL("../../collector/program-rule-batch-sdk-copy-v2/input/program-runner.mjs",import.meta.url)));
 writeFileSync(join(output,'program-runner.mjs'),programRunner,{mode:0o600});
 const runnerShim='import {NestedToolCallRunner as NativeRunner,NestedCallRecorder} from '+JSON.stringify(pathToFileURL(join(sdk,'dist/core/nested-tool-calls.js')).href)+';\n'
  +'import {createReachedRunnerClass} from "./program-runner.mjs";\n'
  +'import {dispatchPreparedBatch} from '+helperUrl("../../collector/result-program-sdk-copy-guarded/input/child-prepared-dispatch.mjs")+';\n'
  +'export const NestedToolCallRunner=createReachedRunnerClass({NestedToolCallRunner:NativeRunner,NestedCallRecorder,dispatchPreparedBatch});\n';
 writeFileSync(join(output,'program-native-runner.mjs'),runnerShim,{mode:0o600});
-const returnConsumer=replaceStagedImport({source:readFileSync(new URL("../../collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.mjs",import.meta.url),'utf8'),binding:'toScriptValue',expected:new URL("../../collector/program-rule-batch-sdk-copy-v2/input/native-script-value.mjs",import.meta.url),replacement:pathToFileURL(join(output,'native-script-value.mjs')).href});
+const returnConsumer=replaceStagedImport({source:readStagedInput(new URL("../../collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.mjs",import.meta.url)),binding:'toScriptValue',expected:new URL("../../collector/program-rule-batch-sdk-copy-v2/input/native-script-value.mjs",import.meta.url),replacement:pathToFileURL(join(output,'native-script-value.mjs')).href});
 writeFileSync(join(output,'native-return-consumer.mjs'),returnConsumer,{mode:0o600});
 const dispatcherUrl=new URL("../../collector/program-rule-batch-sdk-copy-v2/input/prepared-dispatch.mjs",import.meta.url);
-writeFileSync(join(output,'prepared-dispatch.mjs'),preparedDispatcherSource({source:readFileSync(dispatcherUrl,'utf8'),originalUrl:dispatcherUrl.href}),{mode:0o600});
-const originalJudgment=replaceStagedImport({source:readFileSync(new URL("../../collector/program-rule-batch-sdk-copy-v2/input/child-constructor.mjs",import.meta.url),'utf8'),binding:'createNativeReturnConsumer',expected:new URL("../../collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.mjs",import.meta.url),replacement:pathToFileURL(join(output,'native-return-consumer.mjs')).href});
+writeFileSync(join(output,'prepared-dispatch.mjs'),preparedDispatcherSource({source:readStagedInput(dispatcherUrl),originalUrl:dispatcherUrl.href}),{mode:0o600});
+const originalJudgment=replaceStagedImport({source:readStagedInput(new URL("../../collector/program-rule-batch-sdk-copy-v2/input/child-constructor.mjs",import.meta.url)),binding:'createNativeReturnConsumer',expected:new URL("../../collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.mjs",import.meta.url),replacement:pathToFileURL(join(output,'native-return-consumer.mjs')).href});
 const judgment=programJudgmentSource(judgmentSource({source:originalJudgment,indexUrl:new URL('../../lifecycle/governing-rule-candidates/set.mjs',import.meta.url).href}));
 writeFileSync(join(output,'judgment.mjs'),judgment,{mode:0o600});
 writeFileSync(join(output,'agent-loop.mjs'),loop,{mode:0o600});

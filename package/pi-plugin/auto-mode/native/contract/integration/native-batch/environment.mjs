@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {sdk as currentSdk} from '../current-sdk/paths.mjs';
+import {sdk as currentSdk,maintainedRoot} from '../current-sdk/paths.mjs';
 import {mkdtempSync,mkdirSync,realpathSync,writeFileSync} from 'node:fs';
 import {homedir} from 'node:os';
 import {join} from 'node:path';
@@ -12,7 +12,7 @@ import {createNativeMarkdownParser} from '../../native-index/native-parser.mjs';
 export async function createEnvironment({agentsFilesOverride,appendSystemPromptOverride,promptTemplateText,extensionModuleText,extensionFactories=[],customPromptAuthority,discoveredSystemText,omitHostPrompt=false,hostPrompt='Native batch fixture host',appendPrompts=['Keep host context'],policyText='# Policy\n\nLN7:\n Never loosen lint rules without prior approval.\n'}={}){
  if(process.env.PI_NATIVE_BATCH_FIXTURE==='1')throw new Error('Nested native-batch fixture is forbidden');
  process.umask(0o077);
- const repositoryRoot=join(homedir(),'Monochromatic');
+ const repositoryRoot=maintainedRoot;
  const pkg=currentSdk;
  const root=mkdtempSync(join(import.meta.dirname,'fixture-private-')),cwd=join(root,'workspace'),home=join(root,'home'),agentDir=join(root,'agent');
  for(const path of [cwd,home,agentDir])mkdirSync(path,{mode:0o700});
