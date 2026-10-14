@@ -81,7 +81,10 @@ extends = "test:unit"
 
 [tasks."test:assessment-transport"]
 description = "Verify the built direct HTTP sender without provider requests"
-run = "node src/assessment-transport.unit.test.ts"
+run = [
+  "node src/assessment-transport.unit.test.ts",
+  "node src/assessment-http.unit.test.ts",
+]
 
 [tasks."test:native:assessment-transport"]
 description = "Exercise the maintained HTTP sender through original native policy review with authored responses"

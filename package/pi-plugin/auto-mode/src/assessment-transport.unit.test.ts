@@ -24,7 +24,7 @@ await describe({
         const raw = '{"model":"jev-1.13.0","answers":{}}';
         const send = assessmentSender({
           fetchImpl: async function captureRequest(url, options) {
-            if (typeof url !== 'string') throw new Error('Assessment endpoint must be a fixed string',);
+            if ((typeof url) !== 'string') throw new Error('Assessment endpoint must be a fixed string',);
             calls.push({ url, ...(options === undefined ? {} : { options, }), },);
             return new Response(raw,);
           },

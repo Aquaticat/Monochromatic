@@ -39,14 +39,18 @@ export function assessmentInput(): AssessmentTransportInput {
 
  @returns unchanged preparation start
  */
-function initialClock(): number { return 0; }
+function initialClock(): number {
+  return 0;
+}
 
 /**
  Synthetic credential avoids consulting ambient provider configuration.
 
  @returns isolated known credential
  */
-function fixtureCredential(): string { return assessmentFixtureKey; }
+function fixtureCredential(): string {
+  return assessmentFixtureKey;
+}
 
 /**
  Bind the built sender to test-local HTTP and clock capabilities.

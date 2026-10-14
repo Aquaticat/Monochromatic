@@ -982,6 +982,21 @@ and does not activate the installed plugin.
 The unobserved-event regression now uses a native `turn_start` callback;
 historical `--unobserved-context` commands retain their original meaning and are superseded by `--unobserved-event`.
 
+The production bootstrap now binds the maintained direct HTTP assessment sender.
+It retains the incumbent Jev route,
+original encoded body,
+preparation-inclusive deadline,
+client-attempt accounting,
+and inherited byte limits from the private transport.
+Credentials are read lazily from `AUTO_MODE_LLMGATEWAY_API_KEY`.
+The sender performs one HTTP request per original attempt and does not adopt semantic admission.
+The first 28 isolated transport cases pass;
+native-review and actual loopback HTTP verification are in progress.
+No external provider request was made.
+The package JavaScript fanout task stopped at `spawnSync mise EPERM` while listing tasks;
+the explicit `build:js:node` task succeeds.
+This failure has not been equated with the historical `ENOBUFS` incident.
+
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
 Private `f3d40d82` retains the measured repository dependency root in the staging manifest;
