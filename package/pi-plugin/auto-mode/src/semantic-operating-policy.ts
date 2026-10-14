@@ -5,7 +5,10 @@
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { CLAUSE_RELATIONS, } from './clause-lowering.ts';
-import type { SemanticAdmissionDefinition, SemanticAdmissionPolicy, } from './semantic-admission-types.ts';
+import type {
+  SemanticAdmissionDefinition,
+  SemanticAdmissionPolicy,
+} from './semantic-admission-types.ts';
 import { admitsOperatingChoice, } from './semantic-operating-choice.ts';
 
 /**
@@ -13,9 +16,22 @@ import { admitsOperatingChoice, } from './semantic-operating-choice.ts';
  */
 const labelsByDefinition: Readonly<Record<SemanticAdmissionDefinition, readonly string[]>> = Object.freeze({
   clause_operation_relation: CLAUSE_RELATIONS,
-  request_instruction_content: Object.freeze(['none', 'potential-instruction', 'unknown',],),
-  heading_instruction_content: Object.freeze(['none', 'potential-instruction', 'unknown',],),
-  unit_adoption: Object.freeze(['adopts', 'none', 'unsupported', 'unknown',],),
+  request_instruction_content: Object.freeze([
+    'none',
+    'potential-instruction',
+    'unknown',
+  ],),
+  heading_instruction_content: Object.freeze([
+    'none',
+    'potential-instruction',
+    'unknown',
+  ],),
+  unit_adoption: Object.freeze([
+    'adopts',
+    'none',
+    'unsupported',
+    'unknown',
+  ],),
 },);
 /**
  Configuration logs contain no source material or assessment values.
@@ -74,7 +90,10 @@ function operatingPolicy(definitionId: SemanticAdmissionDefinition,): SemanticAd
      @throws InstructionResolutionInputError for unsupported record shapes
      */
     accepts(value: unknown,): boolean {
-      return admitsOperatingChoice({ value, labels, },);
+      return admitsOperatingChoice({
+        value,
+        labels,
+      },);
     },
   },);
 }
@@ -97,7 +116,10 @@ export function createNativeSemanticOperatingPolicies(): NativeSemanticOperating
   /**
    Record policy construction without inspecting any assessment or credentials.
    */
-  const rl = tagged({ tag: createNativeSemanticOperatingPolicies.name, l, },);
+  const rl = tagged({
+    tag: createNativeSemanticOperatingPolicies.name,
+    l,
+  },);
   rl.debug('constructing the adopted native semantic operating policies',);
   return Object.freeze({
     semanticAdmissionPolicy: operatingPolicy('clause_operation_relation',),

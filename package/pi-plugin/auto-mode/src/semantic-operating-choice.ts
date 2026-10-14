@@ -35,32 +35,39 @@ const l = tagged({ tag: 'auto-mode-semantic-operating-choice', },);
 
  @throws InstructionResolutionInputError for unsupported record shapes
  */
-function readScores({ value, labels, }: {
+function readScores({
+  value,
+  labels,
+}: {
   readonly value: unknown;
   readonly labels: readonly string[];
 },): Readonly<Record<string, number>> {
   /**
    Structural validation copies only own data properties.
    */
-  const record = readPolicyRecord({ input: value, fields: labels, },);
+  const record = readPolicyRecord({
+    input: value,
+    fields: labels,
+  },);
   /**
    Scores belong to this invocation, never the submitted estimate.
    */
   const scores: Record<string, number> = {};
   /**
-   Accumulate the bounded vocabulary once to verify normalization.
+   Accumulate the bounded vocabulary without exposing mutable bindings to later checks.
    */
-  let total = 0;
-  for (const label of labels) {
+  const total = labels.reduce(function addScore(sum, label,) {
     /**
      Missing members fail the same numeric check as malformed scores.
      */
     const score = record[label];
-    if ((typeof score !== 'number') || !Number.isFinite(score,) || (score < 0) || (score > 1))
+    if (((typeof score) !== 'number') || (!Number.isFinite(score,))
+      || (score < 0)
+      || (score > 1))
       throw new SemanticAdmissionPolicyError('Semantic admission requires every configured score between zero and one',);
     scores[label] = score;
-    total += score;
-  }
+    return sum + score;
+  }, 0,);
   if (Math.abs(total - 1,) > distributionTolerance)
     throw new SemanticAdmissionPolicyError('Semantic admission requires a complete normalized distribution',);
   return Object.freeze(scores,);
@@ -80,43 +87,68 @@ function readScores({ value, labels, }: {
  @throws SemanticAdmissionPolicyError for malformed choice or distribution values
 
  @throws InstructionResolutionInputError for unsupported record shapes
+
+ @example
+ ```ts
+ admitsOperatingChoice({ value: decodedEstimate, labels: fixedDefinitionLabels });
+ ```
  */
-export function admitsOperatingChoice({ value, labels, }: {
+export function admitsOperatingChoice({
+  value,
+  labels,
+}: {
   readonly value: unknown;
   readonly labels: readonly string[];
 },): boolean {
   /**
    Keep the acceptance boundary visible without logging borrowed content.
    */
-  const rl = tagged({ tag: admitsOperatingChoice.name, l, },);
+  const rl = tagged({
+    tag: admitsOperatingChoice.name,
+    l,
+  },);
   rl.debug('checking the adopted categorical operating policy',);
   /**
    Metadata cannot replace the original choice and probability fields.
    */
-  const record = readPolicyRecord({ input: value, fields: ['choice', 'probabilities',], },);
+  const record = readPolicyRecord({
+    input: value,
+    fields: [
+      'choice',
+      'probabilities',
+    ],
+  },);
   /**
    Selected labels remain untrusted until checked against this exact definition.
    */
   const { choice, } = record;
-  if ((typeof choice !== 'string') || !labels.includes(choice,))
+  if (((typeof choice) !== 'string') || (!labels.includes(choice,)))
     throw new SemanticAdmissionPolicyError('Semantic admission choice differs from the configured question vocabulary',);
   /**
    Validate the complete distribution even for an unresolved selected meaning.
    */
-  const scores = readScores({ value: record.probabilities, labels, },);
+  const scores = readScores({
+    value: record.probabilities,
+    labels,
+  },);
   /**
    Exact vocabulary validation guarantees presence without a non-null assertion.
    */
   const selectedScore = scores[choice];
-  if ((selectedScore === undefined) || (choice === 'unknown') || (choice === 'unsupported')
-    || (selectedScore < minimumSelectedScore)) {
-    rl.debug('retaining unresolved or lower-scoring categorical meaning',);
+  if ((selectedScore === undefined) || (choice === 'unknown')
+    || (choice === 'unsupported')) {
+    rl.debug('retaining unresolved categorical meaning',);
     return false;
   }
-  if (Object.entries(scores,).some(function matchesOrExceedsSelected([label, score,],) {
+  if (Object.entries(scores,)
+    .some(function matchesOrExceedsSelected([label, score,],) {
     return (label !== choice) && (score >= selectedScore);
   },)) {
     rl.debug('retaining a categorical estimate without a unique leading choice',);
+    return false;
+  }
+  if (selectedScore < minimumSelectedScore) {
+    rl.debug('retaining a lower-scoring categorical meaning',);
     return false;
   }
   rl.debug('admitting a supported categorical estimate under the operating cutoff',);
