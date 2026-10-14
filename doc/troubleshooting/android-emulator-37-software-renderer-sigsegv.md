@@ -421,6 +421,17 @@ on the same 10 000-track library, during the cold start of the second trial of a
 (`__strlen_evex` under `TextureResize::TextureResize` under `EmulationGl::createColorBuffer`), the core 1.2 GB, and the
 trial that was running was lost (its child hit the 20 minute timeout).
 The two later launches from fresh copies ran 70 and 28 minutes without a crash.
+A fifth came on 2026-10-14 at 08:30:17 (local time), 10 minutes after the launch and 2 minutes into the first run on that
+copy (the `pm clear`, install and cold start of a second variant); the stack was again `__strlen_evex` under
+`TextureResize::TextureResize` under `EmulationGl::createColorBuffer`, the core 1.3 GB, and the journal showed
+`glGenTextures ... error null ctx` lines from the backend two minutes earlier.
+The relaunch from a fresh copy then ran about 1 hour 40 minutes (a 10 003-file push, 17 interleaved play windows, four
+simpleperf runs and the controller checks) without a crash and shut down gracefully.
+
+Two facts about the owned AVD copy found in the same session: the sdcard of the owned AVD already holds
+`/sdcard/Music/RealAppTest` (private names), so delete it before pushing a library and before the volume scan, not
+after; and on this emulator `content query ... --projection` takes columns separated by a colon (`_data:duration`), a
+comma is rejected with `Invalid column`.
 
 Recovery that worked: discard that AVD copy, make a fresh reflink copy of the owned AVD, relaunch headful, reinstall and
 re-push the invented library.

@@ -248,24 +248,70 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   147 to 165 after; GC thread 10.4 to 11.5 s before and 1.7 to 2.0 s after; frame p99 200 to 250 ms before and 101 to
   117 ms after; `getState` 42% of main-thread samples before and 5% after. A 3-track queue is unchanged (21 to 22 ms
   per change), the control that the probe sees no difference where none is expected.
-  Not fixed: 69 ms against 21 ms per change still depends on the playing queue or on the page that shows it, and the
-  two could not be separated (a 10 000 queue with the small page shown flipped back to the big page within seconds).
-  About 22 ms of it (the profile share of 32%) is inside media3 1.11.1:
-  `MediaSessionLegacyStub.ControllerLegacyCbForBroadcast.updateQueue` converts the whole timeline to `QueueItem`s and
-  calls `MediaSession.setQueue` on every timeline change, and the current row's duration makes the timeline change
-  about 1.5 times per track change in the logs. Removing it needs a different published queue (a window around the
-  playing track, or no legacy queue), which changes what the session shows; it was not done.
+  Residual media3 cost, removed on `feat/android-no-legacy-queue` (owner's choice: remove the system queue, not window
+  it): `MediaSessionLegacyStub.ControllerLegacyCbForBroadcast.updateQueue` converted the whole timeline to `QueueItem`s
+  and called `MediaSession.setQueue` on every timeline change (32 to 35% of main-thread samples, `setQueue` 22 to 24%).
+  It returns early with `setQueue(null)` when `isQueueEnabled()` is false, and that is false when the platform
+  session's commands lack `COMMAND_GET_TIMELINE`
+  (`MediaSessionLegacyStub.java` lines 1263 to 1266 and 1635 to 1638 in media3 1.11.1). The platform session takes its
+  commands only from the media notification controller's connection result
+  (`MediaSessionImpl.updateLegacySessionConfigurationOnConnectOnHandler`, line 1019). `PlatformSessionCallback`
+  (`onConnectAsync`) therefore gives that one controller the default commands minus `COMMAND_GET_TIMELINE`
+  (rule `keepsPlatformCommand`, plain Kotlin); every other controller keeps the defaults. In 1.11.1 the platform
+  commands' timeline entry gates only the queue and its title (`isQueueEnabled`);
+  `convertCommandToPlaybackStateActions` maps it to no action, so the actions mask is unchanged. The active queue
+  item id,
+  position, duration, metadata and the media keys read the player wrapper's own commands, not the platform commands.
+  The notification controller now receives a one-window timeline (`PlayerInfo.filterByAvailableCommands`), which the
+  notification manager only tests for emptiness.
+  Measured on the headful Fold emulator, invented 10 000-track library, Next every 400 ms for 40 s from a clean
+  reinstall, variant before = main (`7fa1465197`, built in a throwaway worktree) and after = `b1c23e653d`; one 5-trial
+  block of the unchanged variant first, then three ABBA blocks; host load at the end of every window was 3 to 31 and no
+  window reached 40, so none was excluded. Main-thread CPU per track change: before 69 ms (65 to 94, 11 runs; the five
+  runs of the spread block 68 to 77), after 44 ms (40 to 48, 6 runs). Main-thread CPU per window 10 980 ms
+  (10 060 to 13 670) before and 7 230 ms (6 720 to 7 650) after; track changes per window 159 (145 to 161) before and
+  165
+  (161 to 169) after; GC thread 1 980 ms (1 840 to 2 230) before and 1 045 ms (990 to 1 070) after; all threads 14
+  740 ms
+  before and 9 905 ms after; frame p99 117 ms (101 to 200) before and 48 ms (42 to 81) after. The two slowest before
+  runs (94 and 85 ms) were the last trial of an ABBA block, at load 31 and 21. Control: playing a 3-track queue
+  (the small window, split by which queue the log shows playing): before 21.0 ms per change (18.8 to 22.7, 8 runs),
+  after 20.1 ms (19.3 to 20.9, 2 runs), no difference. simpleperf (13 s, dwarf call graph, 2 runs each), share of
+  main-thread samples: `updateQueue` 32.1 and 34.7% before, 0.1 and 0.1% after; `setQueue` 23.9 and 22.4% before, 0.1
+  and
+  0.1% after; `invalidateState` 35.5 and 38.7% before, 8.9 and 11.8% after; the thread's sample count fell from 6 298
+  and 5 591 to 3 210 and 3 781. The remaining 23 ms against the 3-track queue (44 against 21 ms) is now spread over
+  `Choreographer.doFrame` (44 to 45% of main samples), recomposition (19%), `mediaButton` (9 to 14%) and `getState`
+  (8%); whether it depends on the queue length or on the page that shows the big list was not separated.
+  What a platform controller sees (`dumpsys media_session` after cold start, Next, Next, pause, resume, Previous; and
+  `funcdiff.ts`): state, speed, the actions mask 21426 (21428 while paused), metadata title and the notification
+  actions (previous, pause or play, next) are the same before and after; `queueTitle` is null in both; the queue size
+  is 10 000 before and 0 after at every step, also during the first 90 s of a cold start (the notification controller
+  connects before the library loads, so the full queue is never published). `activeQueueItemId` still reports the item
+  index in the after variant although no queue is published. A 120 s invented tone showed the same wavy progress
+  card and moved the same way when the scrubber in the notification shade was tapped or dragged in both variants
+  (the first interaction after a cold start moved the position in 1 of 5 before and 1 of 4 after attempts, every later
+  one did; the driver was not reliable, so seeking from the shade is checked in both variants, not shown identical
+  on every attempt). No screen lock is set on the emulator, so the lock screen card was not seen.
+  What this removes for other apps (not testable here, derived from the source): every controller that reads the
+  platform queue (`MediaControllerCompat.getQueue`, `MediaController.getQueue`) gets none. Android Auto and Wear OS
+  media
+  UIs and car head units that list the Up Next or Now Playing queue from the platform session lose that list;
+  `ACTION_SKIP_TO_QUEUE_ITEM` is still advertised, with no queue to pick from. Media3 controllers that connect through
+  the session token (not the platform session) still read the full timeline.
   Three emulator crashes (SEGV in `libgfxstream_backend.so`, `TextureResize`) happened headful, the latest 25 minutes
   after a launch; the notes are in `doc/troubleshooting`. Verified only on the debug build and the emulator; the
   artist-tag patch of the rows has JVM tests but no device run (no artist tag arrived in the measured runs).
-  Mutation check of the new code: 36 of 40 mutants killed, the four survivors are output-equivalent (a redundant guard
-  or an extra pass). No JVM test reaches the `BrainPlayer` wiring (`playlistFor`, `stateWith`, `rowOf`, base-state
-  reuse); shuffle and repeat were not driven on a device; the platform session's queue content was not compared
-  between variants. The unit suite on the merged tree is 1122 tests, 0 failures; detekt and lintDebug pass.
-  Open choice for the residual media3 cost, ranked by the agent: window the published queue around the playing track
-  (partial session queue, Next and Previous mapped by `seekCommand`, needs device tests), then remove the legacy queue
-  by taking `COMMAND_GET_TIMELINE` from the platform session's controller (Android Auto and Wear lose the queue),
-  then debounce (saves about a third, still O(queue)). Nothing chosen yet.
+  Mutation check of the queue-cost code: 36 of 40 mutants killed, the four survivors are output-equivalent (a redundant
+  guard or an extra pass). Mutation check of `keepsPlatformCommand` (throwaway worktree): 11 of 11 mutants killed (the
+  removal dropped, applied to every controller, to none, to every controller but the notification one, another command
+  removed, two commands removed, comparison inverted, range comparisons), plus 2 wiring mutants in
+  `PlatformSessionCallback` that survive because no JVM test can build `Player.Commands` (it needs an Android runtime):
+  the call to the rule and the notification-controller test are covered only by the device checks above.
+  No JVM test reaches the `BrainPlayer` wiring (`playlistFor`, `stateWith`, `rowOf`, base-state reuse); shuffle and
+  repeat were not driven on a device. The unit suite on the branch is 1129 tests, 0 failures (7 new); detekt and
+  lintDebug pass. Verified only on the debug build and the emulator (Android 17, API 37); the lock screen, Android
+  Auto, Wear OS and a car head unit were not seen.
 - Review findings left open: look-alike letters (rail hairlines address it), red accent against the error roles, cold
   restore scroll, scroll anchoring when rows above change height, `project()` about 120 ms at 100k rows, the 117 px
   phantom view on the Android idle deck.
