@@ -3,111 +3,50 @@
 
  @module
  */
-import {
-  cp,
-  mkdir,
-  readdir,
-} from 'node:fs/promises';
-import { join, } from 'node:path';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import {
-  NativeSourceBuildError,
-  nativeBuildLog,
-} from './build-contract.ts';
+import { cp, lstat } from 'node:fs/promises';
+import { tagged } from '@monochromatic-dev/module-logger/ts';
+import { nativeBuildLog } from './build-contract.ts';
 
-//region An explicit work stack traverses directories without recursion
+//region Native directory copying retains assets and excludes source files
 
 /**
- Asset traversal diagnostics retain their module boundary.
+ Asset-copy diagnostics retain their module boundary.
  */
-const l = tagged({
-  tag: 'build-assets',
-  l: nativeBuildLog,
-},);
-
-/**
- Source and destination directory pair retained during traversal.
- */
-type AssetDirectory = {
-  /**
-   Original upstream directory containing assets and source files.
-   */
-  readonly source: string;
-  /**
-   Emitted directory receiving only the non-TypeScript assets.
-   */
-  readonly target: string;
-};
+const l = tagged({ tag: 'build-assets', l: nativeBuildLog });
 
 /**
  Preserve source assets while leaving the compiler's JavaScript output intact.
 
- @param source - original source directory to traverse
+ @param source - original source directory containing adjacent assets
 
  @param target - emitted module directory receiving adjacent assets
 
- @throws NativeSourceBuildError when traversal loses its pending directory
+ @example
+ ```ts
+ await copyAssets({ source: sourceDirectory, target: emittedDirectory });
+ ```
  */
-export async function copyAssets({
-  source,
-  target,
-}: AssetDirectory,): Promise<void> {
+export async function copyAssets({ source, target }: {
+  readonly source: string;
+  readonly target: string;
+}): Promise<void> {
   /**
    Name asset-copy activity independently of upstream compilation.
    */
-  const rl = tagged({
-    tag: copyAssets.name,
-    l,
-  },);
-  /**
-   Pending directory work is bounded by the observed source tree.
-   */
-  const pending = [{
-    source,
-    target,
-  },];
-  rl.debug('copying upstream non-TypeScript assets',);
-  while (pending.length > 0) {
-    /**
-     Remove one directory so every observed subtree is traversed once.
-     */
-    const current = pending.pop();
-    if (current === undefined)
-      throw new NativeSourceBuildError('Asset traversal lost its pending directory',);
-    await mkdir(
-      current.target,
-      { recursive: true, },
-    );
-    for (const item of await readdir(
-      current.source,
-      { withFileTypes: true, },
-    )) {
+  const rl = tagged({ tag: copyAssets.name, l });
+  rl.debug('copying upstream non-TypeScript assets');
+  await cp(source, target, {
+    recursive: true,
+    async filter(path) {
+      if (!path.endsWith('.ts')) return true;
       /**
-       Original path retains upstream asset naming and content.
+       A directory suffix never suppresses its non-TypeScript descendants.
        */
-      const sourcePath = join(
-        current.source,
-        item.name,
-      );
-      /**
-       Corresponding emitted path remains inside the package artifact.
-       */
-      const targetPath = join(
-        current.target,
-        item.name,
-      );
-      if (item.isDirectory()) pending.push({
-        source: sourcePath,
-        target: targetPath,
-      },);
-      else if (!item.name
-        .endsWith('.ts',)) await cp(
-        sourcePath,
-        targetPath,
-      );
-    }
-  }
-  rl.debug('upstream asset copy completed',);
+      const metadata = await lstat(path);
+      return metadata.isDirectory();
+    },
+  });
+  rl.debug('upstream asset copy completed');
 }
 
-//endregion An explicit work stack traverses directories without recursion
+//endregion Native directory copying retains assets and excludes source files

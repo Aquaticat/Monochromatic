@@ -21,11 +21,11 @@ if (process.env
   .PI_AUTO_MODE_NATIVE_BUILD
   === '1')
   throw new NativeSourceBuildError('Recursive native host build is forbidden',);
-if ((process.argv
-  .length
-  > 3) || ((process.argv
-    .length
-    === 3) && (process.argv[2] !== '--owned')))
+/**
+ User arguments exclude the runtime executable and script location.
+ */
+const arguments_ = process.argv.slice(2);
+if ((arguments_.length > 1) || ((arguments_.length === 1) && (arguments_[0] !== '--owned')))
   throw new NativeSourceBuildError('Native build accepts only the optional --owned flag',);
 
 /**
@@ -43,7 +43,7 @@ await mkdir(
   output,
   { recursive: true, },
 );
-if (process.argv[2] !== '--owned') await buildPiSource({
+if (arguments_[0] !== '--owned') await buildPiSource({
   packageRoot,
   output,
 },);

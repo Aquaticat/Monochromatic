@@ -31,6 +31,11 @@ const l = tagged({
 },);
 
 /**
+ Source checkouts remain readable and writable only by their owning user.
+ */
+const PRIVATE_SCRATCH_MODE = 0o700;
+
+/**
  Read package metadata without assuming the parsed JSON shape.
 
  @param directory - package whose declared version gates source admission
@@ -38,6 +43,11 @@ const l = tagged({
  @returns declared package version
 
  @throws NativeSourceBuildError when the package has no string version
+
+ @example
+ ```ts
+ const version = await packageVersion(packageRoot);
+ ```
  */
 export async function packageVersion(directory: string,): Promise<string> {
   /**
@@ -73,6 +83,11 @@ export async function packageVersion(directory: string,): Promise<string> {
  @returns original checkout containing the qualified immutable source revision
 
  @throws NativeSourceBuildError when the source revision differs from the qualified release
+
+ @example
+ ```ts
+ const checkout = await sourceCheckout(packageRoot);
+ ```
  */
 export async function sourceCheckout(packageRoot: string,): Promise<string> {
   /**
@@ -93,12 +108,12 @@ export async function sourceCheckout(packageRoot: string,): Promise<string> {
     scratch,
     {
       recursive: true,
-      mode: 0o700,
+      mode: PRIVATE_SCRATCH_MODE,
     },
   );
   await chmod(
     scratch,
-    0o700,
+    PRIVATE_SCRATCH_MODE,
   );
   /**
    Explicit source overrides affect the build input only, never runtime resolution.
