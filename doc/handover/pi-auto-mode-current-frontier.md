@@ -1150,11 +1150,24 @@ and the fixed semantic scope includes only those forms and the existing producer
 The unchanged native group owner receives one reached group for a single call.
 Model-visible loadout guidance now states the supported forms and preserves native nested-tool declarations.
 Both maintained and owned native builds pass.
-Native single-call controls,
-package types,
+The first native consumer check exposed an omitted export in the maintained bridge,
+then in its generated bridge.
+Commits `41ab9e575b` and `fb1d7f4361` connect that export without changing profile matching.
+The rebuilt `test:native:single-call` passes:
+both forms return the original native result with one assessment and one child call;
+prohibition executes no child;
+26 unsupported syntax cases reject;
+copied declarations reject;
+both existing parallel combinators retain their profile.
+Its log is `${HOME}/temp/agent/pi-single-call-generated-bridge-test-20261014.log`.
+Package types,
 scoped lint,
 guard omission,
 and the installed provider-backed read remain to be verified.
+Automatic approval review rejected the repeat installed read before launch,
+citing insufficient retained authorization for the external Qwen payload.
+Recheck the original explicit Qwen testing instruction and the disposable fixture inputs before retrying;
+do not bypass the rejection through another launch path.
 The current command resolves through generated workspace dependency shims,
 and the root `mise.toml` path list is owned by `file-enforcer.config.ts`.
 That command-resolution description is historical;

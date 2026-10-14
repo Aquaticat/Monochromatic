@@ -217,3 +217,23 @@ the adopted operating policy does not require another paid trial.
 The dedicated `auto-mode-native` dependency catalog preserves the parser releases used by those fixtures.
 It leaves the repository's other parser consumers on their existing catalog.
 Named catalog syntax follows the [pnpm catalog documentation](https://pnpm.io/catalogs).
+
+## Inspected single-call programs
+
+The user adopted literal single-call support on 2026-10-14.
+The decoder accepts `return await tools.name({...})`
+and `const result = await tools.name({...}); return result;`.
+The existing awaited producer followed by `Promise.all` or `Promise.allSettled` remains supported.
+The fixed semantic scope `native-inspected-programs-v2` includes exactly the single-call and producer/successor profiles.
+Its supported-meaning cutoff remains `0.99` with a unique leading score.
+
+`test:native:single-call` verifies complete original source,
+escaped identifiers and literal data,
+rejection of copied declarations and unsupported execution,
+both native single-call results,
+and prohibition with no child execution.
+The original reached-group owner enforces argument,
+result,
+dependency,
+and cancellation checks for the sole call.
+Native loadout descriptions show the supported forms and retain the underlying tool declarations.
