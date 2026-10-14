@@ -419,6 +419,29 @@ Sizes map the way they do on a desktop with a scaled output:
   the way a window keeps its size when it moves to an output with another scale.
   `resize` keeps the scale.
 
+A `resize` or `scale` that changes the screen while a recording runs also answers the frame requests of the hosted
+client at once.
+It sends the frame callbacks, and flushes, right after the new configure and the new scale,
+so the client can draw and commit the new size before the next capture instead of one capture later.
+Without it the recorder tick was the only sender of frame callbacks while recording,
+and a toolkit on winit (Slint, for one) holds its redraw until the callback of its previous frame arrives,
+so a size that reached the client between two ticks was drawn after the next capture.
+That capture then showed the previous buffer on a canvas of the new size.
+A command that changes nothing, such as `scale` to the scale already set, sends no callbacks.
+Each callback is answered once, so the following tick finds none until the client asks again.
+Outside a recording nothing changes: the live path already sends them after every presentation.
+Measured with the Slint IDE hosted and a 16 ms `resize` drag (1100 to 600 to 1100 pixels, two sweeps) recorded at
+60 fps, with no dropped frame and a load below 20 at the start,
+the share of captures whose held buffer was not the width of the output mode fell
+from 88.1 to 92.7 percent (8 runs) to 45.2 to 56.0 percent (7 of 8 runs; one run with a slow application stayed
+at 91.5 percent).
+In the runs without a slow application, the median delay from the command to the commit of that width fell
+from 11 to 13 ms to 6 to 7 ms.
+What remains is the application's own work against a 16.7 ms tick.
+The runs and the method are in
+[`doc/troubleshooting/nested-wayland-recording-previous-resize-step.md`](
+../../../doc/troubleshooting/nested-wayland-recording-previous-resize-step.md).
+
 Scales run from 0.5 to 3 in steps of 1/120,
 which covers the 50 % to 300 % in 5 % steps that KDE's display settings offer.
 A value between two steps is refused with the two nearest steps named,
@@ -507,6 +530,18 @@ and that a click at a logical point reaches that point.
 It also requires that no scale switch resized the client,
 and that a frame recorded after a switch made during a recording has the new size and the client's drawing.
 It prints the directory holding its evidence.
+
+Use `mise run //package/cli/nested-wayland-session:inspect:resize-callbacks` to verify the early callbacks
+on the built release binary.
+The task needs `slint-viewer`.
+It hosts an animating Slint scene, records at 2 fps, and makes four resizes, each 150 ms after a recorder tick.
+From the client's own `WAYLAND_DEBUG` protocol log it requires that the first frame callback follows
+the configure within 100 ms (a callback left for the next tick comes about 350 ms later),
+that the callbacks come together in one burst,
+and that no request is answered twice.
+It also requires that the first frame recorded after each command has the new size
+and the client's drawing at the right edge.
+It prints the directory holding its evidence and the client's protocol log.
 
 ### Observe taskbar progress
 
@@ -1409,6 +1444,8 @@ It also checks that `title` and `app-id` follow the client's own title change.
   keeping the output scale,
   and applies it before answering `ok`.
   Odd and even sizes are exact in the client and in captures.
+  While a recording runs, the client's pending frame callbacks are answered right after the new configure;
+  see [Change the output scale](#change-the-output-scale).
 - `scale SCALE` sets the output scale,
   keeping the logical size.
   It answers `ok changed` once the window and the output have the new scale
@@ -1530,6 +1567,9 @@ holds even when the hosted app is laggy or greedy.
    Frame callbacks still go out at the capture rate,
    so an animating app keeps
   drawing.
+   A `resize` or `scale` that changes the screen sends them once more right away,
+   so the client can draw the new size before the next capture
+  (see [Change the output scale](#change-the-output-scale)).
    The recorder never calls `submit`,
    so the parent compositor's vsync cannot
   throttle the capture (the visible window is intentionally frozen while recording).
@@ -1656,6 +1696,12 @@ and why.
   text ranges,
   and change events:
   `a11y` reads the tree only.
+
+## Changes after 0.4.0
+
+- A `resize` or `scale` that changes the screen while a recording runs answers the client's pending frame callbacks
+  right after the new configure and scale, so the client draws and commits the new size before the next capture.
+  See [Change the output scale](#change-the-output-scale).
 
 ## Changes in 0.4.0
 
