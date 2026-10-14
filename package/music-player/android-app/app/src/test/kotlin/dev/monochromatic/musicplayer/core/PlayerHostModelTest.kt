@@ -281,32 +281,32 @@ class PlayerHostModelTest {
         }
     }
 
-    // What:     `fun searchActivationPlaysAnotherTrack()` checks that a track other than the playing one starts.
-    // Why:      A different track starts from its load index (D73).
+    // What:     `fun searchActivationSelectsAnotherTrack()` checks that a track other than the current one is selected.
+    // Why:      A different track is selected from its load index and does not start (D124, D127).
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("other track plays", () => expect(activation(track(3), 1)).toEqual(playTrack(3)));
+    // test("other track is selected", () => expect(activation(track(3), 1)).toEqual(selectTrack(3)));
     // ```
-    /** A track result for a track other than the playing one plays that track. */
+    /** A track result for a track other than the current one selects that track. */
     @Test
-    fun searchActivationPlaysAnotherTrack() {
-        /** Track result naming load index 3 while track 1 plays. */
+    fun searchActivationSelectsAnotherTrack() {
+        /** Track result naming load index 3 while track 1 is current. */
         val result = trackResult(indexInLibrary = 3)
         assertEquals(
-            SearchActivation.PlayTrack(indexInLibrary = 3),
+            SearchActivation.SelectTrack(indexInLibrary = 3),
             PlayerHostModel.searchActivationFor(result = result, pageLabels = listOf("A"), currentIndex = 1),
         )
     }
 
-    // What:     `fun searchActivationTogglesTheCurrentTrack()` checks that the playing track's result toggles playback.
-    // Why:      Playing the current track again would restart it, so its result pauses or resumes instead (D73).
+    // What:     `fun searchActivationTogglesTheCurrentTrack()` checks that the current track's result toggles playback.
+    // Why:      Selecting the current track again would restart it, so its result pauses or starts it instead (D127).
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // test("current track toggles", () => expect(activation(trackResult(2), 2)).toEqual({ kind: "togglePlayback" }));
     // ```
-    /** A track result for the playing track toggles playback and does not start the track again. */
+    /** A track result for the current track toggles playback and does not select the track again. */
     @Test
     fun searchActivationTogglesTheCurrentTrack() {
         /** Track result naming the playing load index. */

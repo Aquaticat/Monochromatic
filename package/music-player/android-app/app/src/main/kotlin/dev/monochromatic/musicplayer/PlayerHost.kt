@@ -751,7 +751,8 @@ fun playerHost(
             currentIndex = state.currentIndex,
         )
         when (activation) {
-            is SearchActivation.PlayTrack -> controller.playIndex(activation.indexInLibrary)
+            // D127: a result follows the row rule, so a track that is not current is only selected (paused at 0).
+            is SearchActivation.SelectTrack -> controller.selectIndex(activation.indexInLibrary)
             SearchActivation.TogglePlayback -> controller.togglePlay()
             is SearchActivation.OpenFolder -> {
                 controller.selectPage(activation.page)

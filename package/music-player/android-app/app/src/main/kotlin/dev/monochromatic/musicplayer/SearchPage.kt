@@ -341,6 +341,51 @@ import androidx.compose.runtime.LaunchedEffect
 // ```
 import androidx.compose.runtime.remember
 
+// What:     `import androidx.compose.runtime.getValue` lets the header read its field state with `by`.
+// Why:      The field value is a delegated property, so the read operator must be in scope.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const [value, setValue] = useState(...); // the read half
+// ```
+import androidx.compose.runtime.getValue
+
+// What:     `import androidx.compose.runtime.mutableStateOf` holds the field value, selection included.
+// Why:      The caret is part of the value, and a `String` keeps none.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const [value, setValue] = useState({ text, selectionStart, selectionEnd });
+// ```
+import androidx.compose.runtime.mutableStateOf
+
+// What:     `import androidx.compose.runtime.rememberSaveable` keeps the field value across an activity recreation.
+// Why:      The query survives a recreation in the host, and the caret should survive it with the query.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const [value, setValue] = useSessionState(...);
+// ```
+import androidx.compose.runtime.rememberSaveable
+
+// What:     `import androidx.compose.runtime.rememberUpdatedState` gives a long-lived effect the newest query.
+// Why:      The refocus effect outlives recompositions, and must put the caret at the end of the query as it is then.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const latest = useRef(query); latest.current = query;
+// ```
+import androidx.compose.runtime.rememberUpdatedState
+
+// What:     `import androidx.compose.runtime.setValue` lets the header write its field state with `by`.
+// Why:      The field reports every edit and every caret move into the delegated property.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const [value, setValue] = useState(...); // the write half
+// ```
+import androidx.compose.runtime.setValue
+
 // What:     `import androidx.compose.ui.Alignment` centers the header row and the empty-state content.
 // Why:      Icons and text sit on the vertical center line of their rows.
 //
@@ -476,6 +521,15 @@ import androidx.compose.ui.text.AnnotatedString
 // ```
 import androidx.compose.ui.text.SpanStyle
 
+// What:     `import androidx.compose.ui.text.TextRange` names a caret or a selection by character offsets.
+// Why:      The field value is rebuilt with its caret at the end of the kept query.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const caretAtEnd = { start: query.length, end: query.length };
+// ```
+import androidx.compose.ui.text.TextRange
+
 // What:     `import androidx.compose.ui.text.buildAnnotatedString` builds the annotated title and detail.
 // Why:      The builder appends the unchanged text first, then adds one style per range.
 //
@@ -502,6 +556,15 @@ import androidx.compose.ui.text.font.FontWeight
 // // enterKeyHint = "search"
 // ```
 import androidx.compose.ui.text.input.ImeAction
+
+// What:     `import androidx.compose.ui.text.input.TextFieldValue` is a field's text together with its selection.
+// Why:      A field fed a bare `String` keeps its caret in state that a rebuilt header loses (D126).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type TextFieldValue = { text: string; selectionStart: number; selectionEnd: number };
+// ```
+import androidx.compose.ui.text.input.TextFieldValue
 
 // What:     `import androidx.compose.ui.text.style.TextAlign` centers the cover status copy.
 // Why:      The cover status is centered under its glyph, as in the reviewed capture.
@@ -1078,6 +1141,25 @@ private fun searchInnerPage(
     }
 }
 
+// What:     `internal fun searchFieldValue(current: TextFieldValue?, query: String): TextFieldValue` decides the field
+//           value to show for the kept [query].
+// Why:      The query lives in the host and survives a fold change, while the field's own state does not; a value that
+//           still holds the query keeps its caret, and any other value is replaced by the query with the caret at its
+//           end, which is where a person continues typing (D126).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const searchFieldValue = (current: FieldValue | null, query: string) =>
+//   current?.text === query ? current : { text: query, caret: query.length };
+// ```
+/** Returns [current] when it already holds [query], else [query] with the caret placed after its last character. */
+internal fun searchFieldValue(current: TextFieldValue?, query: String): TextFieldValue {
+    if (current != null && current.text == query) {
+        return current
+    }
+    return TextFieldValue(text = query, selection = TextRange(query.length))
+}
+
 // What:     `@Composable private fun searchHeader(...)` draws the Back, query field, and Clear row.
 // Why:      One header holds all three controls (D48), and the field takes focus and the keyboard on entry (D63).
 //
@@ -1085,7 +1167,13 @@ private fun searchInnerPage(
 // ```ts
 // function Header(props): UIElement { return <div><button /><input /><button /></div>; }
 // ```
-/** Draws the integrated Search header, requesting focus for the field when the page opens. */
+/**
+ * Draws the integrated Search header, requesting focus for the field when the page opens.
+ *
+ * The field keeps its caret as part of a [TextFieldValue]: a header rebuilt for the other panel (a fold change) starts
+ * the field with the caret at the end of the kept query, and the Search shortcut on an open page puts it there too, so
+ * typing continues after the text instead of before it (D126).
+ */
 @Composable
 private fun searchHeader(
     query: String,
@@ -1101,7 +1189,20 @@ private fun searchHeader(
     val reportFieldFocus: (Boolean) -> Unit = HostKeyLocalSearchField.current
     /** Software keyboard controller, or null when the platform offers none. */
     val keyboard = LocalSoftwareKeyboardController.current
+    /** Field text with its caret, kept across an activity recreation and made anew, caret at the end, on a rebuild. */
+    var fieldValue: TextFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(searchFieldValue(current = null, query = query))
+    }
+    /** What the field shows: the kept value while it still holds the query, else the query with the caret at its end. */
+    val shownValue: TextFieldValue = searchFieldValue(current = fieldValue, query = query)
+    /** Newest query, for the refocus effect, which outlives the composition that started it. */
+    val latestQuery: String by rememberUpdatedState(query)
+    /** Token that the page was first composed with; a larger one is a Search shortcut on the open page. */
+    val firstFocusToken: Int = remember { focusToken }
     LaunchedEffect(focusToken) {
+        if (focusToken != firstFocusToken) {
+            fieldValue = searchFieldValue(current = null, query = latestQuery)
+        }
         focusRequester.requestFocus()
         keyboard?.show()
     }
@@ -1120,8 +1221,11 @@ private fun searchHeader(
             Icon(imageVector = SEARCH_BACK_ICON, contentDescription = SEARCH_BACK_LABEL)
         }
         BasicTextField(
-            value = query,
-            onValueChange = actions.onQueryChange,
+            value = shownValue,
+            onValueChange = { edited ->
+                fieldValue = edited
+                actions.onQueryChange(edited.text)
+            },
             modifier = Modifier
                 .weight(1f)
                 .height(SEARCH_TOUCH_TARGET)
