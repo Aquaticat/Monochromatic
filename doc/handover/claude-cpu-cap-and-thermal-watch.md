@@ -243,7 +243,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   Treat it as the ambient reference (about 25.8 degrees in the first window) when comparing Tctl against watts.
 - The `fan1` reading in `sensors` belongs to the GPU, not a CPU fan. An early claim based on it was wrong.
 - Motherboard: Gigabyte B650 GAMING X AX rev 1.3. The six `gigabyte_wmi` readings are unlabeled and no source maps them.
-  Early data: only the third one tracked CPU load.
+  Early data: only the third one tracked CPU load. BIOS updated in July 2026 (user, about 21:00 EDT on 2026-10-13;
+  the exact version was not read), memory overclocking disabled.
 
 ## Rejected or withdrawn
 
