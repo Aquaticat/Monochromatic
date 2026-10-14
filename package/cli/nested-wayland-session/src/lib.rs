@@ -48,6 +48,14 @@ pub mod backend_parts;
 /// Surfaceless EGL initialisation for the opt-in headless mode.
 pub mod backend_headless;
 
+/// The `--gpu` choice,
+///  the order `auto` tries devices in,
+///  and the hosted child's matching environment.
+pub mod gpu_choice;
+
+/// Opening the chosen render device and listing the devices a host offers.
+pub mod gpu_device;
+
 /// The nested window and surfaceless renderers behind one handle.
 pub mod render_backend;
 

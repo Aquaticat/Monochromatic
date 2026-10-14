@@ -431,6 +431,8 @@ pub enum Command {
     ),
     /// Name the cursor the hosted client asked for.
     Cursor,
+    /// Report the device the compositor renders on.
+    Gpu,
     /// Read the hosted application's accessibility tree.
     Accessibility,
     /// Answer the Wayland socket name hosted clients connect to.
@@ -666,6 +668,7 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
         "windows" => return no_arguments(&mut tokens, "windows", Command::Windows),
         "display" => return no_arguments(&mut tokens, "display", Command::Display),
         "cursor" => return no_arguments(&mut tokens, "cursor", Command::Cursor),
+        "gpu" => return no_arguments(&mut tokens, "gpu", Command::Gpu),
         "a11y" => return no_arguments(&mut tokens, "a11y", Command::Accessibility),
         "close" => return session::parse_close(&mut tokens),
         "record" => return record::parse(&mut tokens),

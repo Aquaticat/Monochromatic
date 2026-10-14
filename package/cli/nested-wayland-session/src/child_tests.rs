@@ -32,6 +32,7 @@ fn child_environment_isolates_wayland_and_private_bus() {
         &mut command,
         OsStr::new("wayland-nested"),
         Some("unix:path=/tmp/private-bus"),
+        &[],
     );
     assert_eq!(
         environment_change(&command, "WAYLAND_DISPLAY"),
@@ -60,7 +61,7 @@ fn child_environment_removes_host_x11_fallback() {
     let mut command = Command::new("app");
     command.env("DISPLAY", ":host");
     command.env("XAUTHORITY", "/fixture/host-authority");
-    configure_child_environment(&mut command, OsStr::new("wayland-nested"), None);
+    configure_child_environment(&mut command, OsStr::new("wayland-nested"), None, &[]);
     // Some(None) means explicitly removed, not merely absent from the override map.
     assert_eq!(environment_change(&command, "DISPLAY"), Some(None));
     assert_eq!(environment_change(&command, "XAUTHORITY"), Some(None));
@@ -70,7 +71,7 @@ fn child_environment_removes_host_x11_fallback() {
 #[test]
 fn child_environment_without_override_keeps_session_bus_inherited() {
     let mut command = Command::new("app");
-    configure_child_environment(&mut command, OsStr::new("wayland-nested"), None);
+    configure_child_environment(&mut command, OsStr::new("wayland-nested"), None, &[]);
     assert_eq!(environment_change(&command, "DBUS_SESSION_BUS_ADDRESS"), None);
     assert_eq!(environment_change(&command, "DBUS_STARTER_ADDRESS"), None);
     assert_eq!(environment_change(&command, "DBUS_STARTER_BUS_TYPE"), None);

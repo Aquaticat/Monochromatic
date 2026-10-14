@@ -1,5 +1,5 @@
 //! Headless backend initialisation:
-//!  surfaceless EGL on the DRM render node,
+//!  an EGL display on the chosen device,
 //!  its GLES renderer,
 //!  the output,
 //!  and the dmabuf protocol state.
@@ -10,29 +10,22 @@
 //!  and never opens a window on a desktop.
 //! The nested window path inherits the parent compositor's EGL device;
 //!  this path has no parent to inherit from,
-//!  so it asks EGL (`EGL_MESA_platform_surfaceless`) for the default render device,
-//!  reads the DRM render node of that same display,
-//!  and advertises exactly the format and modifier pairs that display can import.
+//!  so `--gpu` decides (see `gpu_device.rs`):
+//!  Mesa's default render node,
+//!  a named render node,
+//!  or the software rasterizer.
+//! The dmabuf global advertises exactly the format and modifier pairs that display can import,
+//!  and names its render node as the default feedback main device when it has one.
 //!  A client therefore allocates its dmabufs on the GPU that imports them.
 
 /// Error context for the EGL setup steps,
 /// and the result type of `init_headless_backend`.
-use anyhow::{Context, Result};
-/// The surfaceless EGL display,
-/// device,
-/// and context,
-/// the GLES renderer,
+use anyhow::Result;
+/// The renderer trait that binds the legacy `wl_drm` path,
 /// and the display handle.
-use smithay::{
-    backend::{
-        egl::{native::EGLSurfacelessDisplay, EGLContext, EGLDevice, EGLDisplay},
-        renderer::{gles::GlesRenderer, ImportEgl},
-    },
-    reexports::wayland_server::DisplayHandle,
-};
-/// Log which device the surfaceless display opened on,
-/// and warn about a software rasterizer.
-use tracing::{info, warn};
+use smithay::{backend::renderer::ImportEgl, reexports::wayland_server::DisplayHandle};
+/// Log the legacy acceleration path.
+use tracing::info;
 
 /// The shared output and dmabuf builders,
 /// the config,
@@ -41,20 +34,20 @@ use tracing::{info, warn};
 use crate::{
     backend_parts::{build_dmabuf, build_output},
     cli::Config,
+    gpu_device::open_gpu,
     render_backend::{HeadlessBackend, RenderBackend},
     screen_geometry::ScreenGeometry,
     state::BackendPieces,
 };
 
-/// Build the surfaceless renderer,
+/// Build the headless renderer,
 ///  the output,
 ///  and the dmabuf state.
 ///
 /// What:
 ///      `pub fn init_headless_backend(display_handle: &DisplayHandle, config: &Config) ->
 ///           Result<BackendPieces>`.
-///  Opens `EGLDisplay::new(EGLSurfacelessDisplay)`,
-///  makes a GLES context on it,
+///  Opens the device `config.gpu` names,
 ///  and builds the same output and dmabuf global the nested path builds.
 /// Why:
 ///       The only difference from the nested path is where the pixels go:
@@ -72,31 +65,13 @@ pub fn init_headless_backend(display_handle: &DisplayHandle, config: &Config) ->
     };
     let (physical_width, physical_height) = geometry.physical_size();
 
-    // What:     `EGLDisplay::new(EGLSurfacelessDisplay)` asks Mesa for the surfaceless platform
-    //           display, which needs neither a window system nor a parent session. It is `unsafe`
-    //           because the native display value must outlive the display; the unit type does.
-    // Why:      The issue's required render path: offscreen rendering with no parent display.
-    let egl_display = unsafe { EGLDisplay::new(EGLSurfacelessDisplay) }
-        .context("opening the surfaceless EGL display failed (is a DRM render node available?)")?;
-
-    // What:     `EGLDevice::device_for_display(..)` names the device behind the display;
-    //           `is_software()` is true for a CPU rasterizer such as llvmpipe.
-    // Why:      The mode exists to render on the real GPU; say so when it does not.
-    let device = EGLDevice::device_for_display(&egl_display).context("querying the EGL device failed")?;
-    if device.is_software() {
-        warn!("headless: the EGL device is a software rasterizer, not a GPU; clients render on the CPU");
-    }
-    info!(
-        render_node = ?device.render_device_path().ok(),
-        drm_node = ?device.drm_device_path().ok(),
-        "headless: surfaceless EGL display opened on this device",
-    );
-
-    let context = EGLContext::new(&egl_display).context("creating the EGL context failed")?;
-    // What:     `GlesRenderer::new(context)` is `unsafe` because the context must not be current
-    //           on another thread; this thread creates it and is the only user.
-    // Why:      The same renderer type the nested path uses, so import and readback code is shared.
-    let mut renderer = unsafe { GlesRenderer::new(context) }.context("creating the GLES renderer failed")?;
+    // What:     `open_gpu(&config.gpu)` opens the EGL display and GLES renderer on the device `--gpu` names:
+    //           Mesa's default render node (`auto`, falling back to other nodes and then software),
+    //           one render node, or the software rasterizer. An explicit choice never falls back.
+    // Why:      Headless has no parent compositor to inherit a device from. The report and the child
+    //           environment it returns keep the control answer and the hosted client on the same device.
+    let opened = open_gpu(&config.gpu)?;
+    let mut renderer = opened.renderer;
 
     let output = build_output(display_handle, geometry);
     let (dmabuf_state, dmabuf_global, dmabuf_feedback) = build_dmabuf(display_handle, &mut renderer)?;
@@ -112,6 +87,8 @@ pub fn init_headless_backend(display_handle: &DisplayHandle, config: &Config) ->
         backend: RenderBackend::Headless(Box::new(HeadlessBackend::new(
             renderer,
             (physical_width, physical_height).into(),
+            opened.report,
+            opened.child_environment,
         ))),
         output,
         dmabuf_state,
