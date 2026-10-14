@@ -290,6 +290,18 @@ Any other response ends the experiment.
 This ordering tests reduced indirection before introducing row decoding.
 Acceptance requires separate answer validation and never authorizes execution.
 
+The inlined complete request returned HTTP 400 `max_tokens_exceeded` in 1,233.578 ms.
+The combined request returned HTTP 400 in 297.736 ms with gateway validation code
+`invalid_union_discriminator` at each question's `type` field.
+The row prototype incorrectly encoded the API question envelope as a row,
+hiding the required discriminator.
+Its exact reconstruction check did not validate the provider-facing envelope.
+This is an owned prototype defect,
+not evidence about combined-encoding token fit or model behavior.
+The frozen schedule stopped without retry.
+The correction must leave each question envelope unchanged and encode only its instruction payload;
+a preflight must reject the captured malformed input before accepting the corrected one.
+
 Automatic approval review again rejected the documentation commit's existing cgroup attachment.
 The user renewed authorization for that attachment with unchanged limits;
 commit `07987fab66` then completed.

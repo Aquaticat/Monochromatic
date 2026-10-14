@@ -315,6 +315,18 @@ Both calls are terminal;
 neither returned answers or established semantic behavior.
 Moving instructions alone is therefore not a capacity workaround.
 
+The subsequent single-use-reference inlining candidate also returned HTTP 400 `max_tokens_exceeded`
+in 1,233.578 ms.
+The experimental row-encoding candidate failed earlier in gateway schema validation:
+`invalid_union_discriminator`,
+`Invalid discriminator value. Expected 'noul' | 'choice' | 'score'`,
+at the questions' `type` fields.
+Its encoder had wrapped whole question envelopes in `{$row: ...}` objects.
+Exact reconstruction does not prove that a request satisfies the API wire schema.
+Preserve each question's envelope and encode only its instruction payload;
+preflight the unchanged type and criteria against the original request.
+No token-fit conclusion follows from that rejected row request.
+
 ## Source identity
 
 Repository:

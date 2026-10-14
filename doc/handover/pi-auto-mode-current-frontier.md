@@ -226,6 +226,12 @@ then the combined representation only after recognized `max_tokens_exceeded`.
 Each call has a five-second deadline;
 there are no retries or production admissions.
 
+The inlined request returned `max_tokens_exceeded` in 1,233.578 ms.
+The combined row prototype instead failed gateway `invalid_union_discriminator` validation:
+it wrapped required question-envelope fields in rows.
+That owned encoding defect invalidates the combined candidate as a capacity measurement.
+The next local correction preserves the envelopes and adds a failing/passing envelope preflight.
+
 ## Restart checkpoint after installing automatic Codex shell limits
 
 The user restarted the session and resumed work on 2026-10-13.
