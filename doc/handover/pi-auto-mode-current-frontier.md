@@ -66,7 +66,25 @@ and the comparison directory's `built-adapter-replay.json`.
 The explicit-rubric variant remains an experiment;
 its mixed results do not establish greater accuracy.
 The production adapter currently uses the verified lossless baseline encoding.
-Current-request capture and genuine human approval are the next consumer checks.
+The installed host's new offline capture retains 73 source occurrences,
+84 questions,
+and 584,007 bytes.
+Compared with the original provider-trial input,
+only event timestamps,
+recorded durations,
+and their validated source hashes differ.
+The first local capture used the smaller authored domain fixture,
+which was not comparable to the installed extension set.
+Its capture path also needed binding before the fixture clears its environment.
+The installed capture uses the existing network-isolated disposable host
+with all 17 configured packages and 37 read-only workspace package mounts.
+`${HOME}/temp/agent/pi-luna-guard-controls-20261014/installed-equivalence.json`
+retains the complete comparison result.
+No new provider request was needed for this check.
+The [next frozen compensation experiment](../planning/pi-auto-mode-gateway-decisions-current-contract.md#question-batch-compensation-experiment)
+partitions the same questions under a shared deadline while preserving complete input.
+The original native dialog is also pending a genuine human response;
+no automatic answer is permitted.
 
 ## Original native RPC approval verification
 

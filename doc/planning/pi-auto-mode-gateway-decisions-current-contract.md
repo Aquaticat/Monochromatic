@@ -57,7 +57,38 @@ This formatting change alone does not resolve the complete assessment.
 It is not yet adopted in the maintained adapter,
 which currently implements the original lossless conversion.
 
-## Scope and authorization
+## Question-batch compensation experiment
+
+The next frozen diagnostic tests whether grouping the same questions changes Luna's uncertainty.
+It preserves the exact baseline input in every request
+and partitions the original ordered 84 questions into consecutive groups of 28.
+Concatenating the groups reconstructs every original question exactly.
+No instruction,
+criterion,
+source,
+or complete operation text is removed from the original assessment.
+The three request bodies measure 331,684,
+439,618,
+and 393,323 bytes.
+Their hashes and offline reconstruction receipt live in
+`${HOME}/temp/agent/pi-luna-question-batches-20261014/manifest.json`.
+
+The schedule contains three repetitions of one complete assessment.
+Each repetition sends its three groups concurrently under one shared five-second deadline,
+with no retries and at most nine calls across the schedule.
+Any refusal,
+transport failure,
+invalid answer,
+or expired deadline cancels sibling calls and ends the remaining schedule.
+The built adapter validates every named answer before the groups are combined.
+The offline preflight already decodes the matching slices of retained real Luna responses.
+No represented operation executes.
+This is a diagnostic;
+the production judgment still owns its original attempt accounting,
+and no hidden subrequests have been added to the maintained sender.
+Higher admission counts alone cannot establish greater accuracy.
+
+## Historical initial scope and authorization
 
 On October 14,
 2026,
@@ -65,9 +96,9 @@ the user enabled `microsoft-decision-1` and `gpt-6-luna-decisions` on the existi
 Exercise that supplied access before resuming other work.
 These are compatibility probes for the existing migration,
 not production provider adoption.
-The five-second deadline,
+The initial probe retained its five-second deadline,
 three-call ceiling,
-and 0.99 unique-maximum admission threshold remain unchanged.
+and historical 0.99 unique-maximum admission threshold.
 
 ## Current contract
 
