@@ -27,7 +27,9 @@ await describe({name:'',children:[
       /**
        Native optional arguments are forwarded without copying or interpretation.
        */
-      const options={resolveProjectTrust:async function trust(){return true;}};
+      const options={resolveProjectTrust:async function trust(){
+        return true;
+      }};
       /**
        Capture the native receiver and options independently of the tested return path.
        */
@@ -63,9 +65,13 @@ await describe({name:'',children:[
     expect(nativeResourceReload.readHostResource(loader)).toBe(record);
     expect(Object.isFrozen(record)).toBe(true);
     expect(Object.isFrozen(loader)).toBe(false);
-    expect(function duplicate(){nativeResourceReload.registerHostResource({...record});}).toThrow('Resource loader already has a native host owner');
+    expect(function duplicate(){
+      nativeResourceReload.registerHostResource({...record});
+    }).toThrow('Resource loader already has a native host owner');
     expect(nativeResourceReload.readHostResource(loader)).toBe(record);
-    expect(function copied(){nativeResourceReload.readHostResource({...loader});}).toThrow('Session resource loader was not created by this native host');
+    expect(function copied(){
+      nativeResourceReload.readHostResource({...loader});
+    }).toThrow('Session resource loader was not created by this native host');
   }}),
   ...[false,true].flatMap(function originalFailureRoute(registered) {
     /**
@@ -77,7 +83,9 @@ await describe({name:'',children:[
         /**
          Original callback failure must pass through without wrapping or replacement.
          */
-        const selected: ReloadFixture={async reload(){throw error;}};
+        const selected: ReloadFixture={async reload(){
+          throw error;
+        }};
         /**
          Registered resources route only through their original policy method.
          */
@@ -87,8 +95,11 @@ await describe({name:'',children:[
          A populated array distinguishes an undefined rejection from successful completion.
          */
         const caught:unknown[]=[];
-        try {await nativeResourceReload.reloadHostResource({loader});}
-        catch(value){caught.push(value);}
+        try {
+          await nativeResourceReload.reloadHostResource({loader});
+        } catch(value) {
+          caught.push(value);
+        }
         expect(caught).toHaveLength(1);
         expect(caught[0]).toBe(error);
       }});

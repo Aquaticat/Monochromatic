@@ -23,7 +23,10 @@ export type ReloadRecord = {
 type ReloadModule = {
   readonly registerHostResource: (input: ReloadRecord) => void;
   readonly readHostResource: (loader: ReloadFixture) => ReloadRecord;
-  readonly reloadHostResource: (input: {readonly loader: ReloadFixture; readonly options?: unknown}) => Promise<unknown>;
+  readonly reloadHostResource: (input: {
+    readonly loader: ReloadFixture;
+    readonly options?: unknown
+  }) => Promise<unknown>;
 };
 
 /**
@@ -31,13 +34,18 @@ type ReloadModule = {
 
  @param value - copied native module namespace
 
+ @returns assertion narrowing to the independently exercised consumer contract
+
  @throws Error when an expected native export is unavailable
  */
 function assertReloadModule(value: unknown): asserts value is ReloadModule {
   if ((value === null) || ((typeof value) !== 'object')
-    || (!('registerHostResource' in value)) || ((typeof value.registerHostResource) !== 'function')
-    || (!('readHostResource' in value)) || ((typeof value.readHostResource) !== 'function')
-    || (!('reloadHostResource' in value)) || ((typeof value.reloadHostResource) !== 'function'))
+    || (!('registerHostResource' in value))
+    || ((typeof value.registerHostResource) !== 'function')
+    || (!('readHostResource' in value))
+    || ((typeof value.readHostResource) !== 'function')
+    || (!('reloadHostResource' in value))
+    || ((typeof value.reloadHostResource) !== 'function'))
     throw new Error('Built native resource reload exports are unavailable');
 }
 

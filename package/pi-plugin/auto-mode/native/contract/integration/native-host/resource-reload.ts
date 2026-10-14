@@ -4,7 +4,11 @@
  @module
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import type { NativeHostReloadInput, NativeHostResource, NativeReloadable } from './resource-types.ts';
+import type {
+  NativeHostReloadInput,
+  NativeHostResource,
+  NativeReloadable
+} from './resource-types.ts';
 
 //region Original host resource owners keep reloads inside their policy capture boundary.
 
@@ -44,7 +48,10 @@ export function registerHostResource(input: NativeHostResource): void {
   /**
    Registration logs identify the ownership boundary without serializing source content.
    */
-  const rl=tagged({tag:registerHostResource.name,l});
+  const rl=tagged({
+    tag:registerHostResource.name,
+    l
+  });
   rl.debug('registering original native resource loader');
   /**
    Exact loader identity selects this record throughout native reload and session construction.
@@ -75,7 +82,10 @@ export function readHostResource(loader: NativeReloadable): NativeHostResource {
   /**
    Lookups retain their own diagnostic scope.
    */
-  const rl=tagged({tag:readHostResource.name,l});
+  const rl=tagged({
+    tag:readHostResource.name,
+    l
+  });
   rl.debug('reading original native resource record');
   /**
    Equal-shaped replacement loaders cannot select another loader's record.
@@ -108,17 +118,22 @@ export async function reloadHostResource({
   /**
    Reload diagnostics identify whether the original policy record owns this operation.
    */
-  const rl=tagged({tag:reloadHostResource.name,l});
+  const rl=tagged({
+    tag:reloadHostResource.name,
+    l
+  });
   /**
    The existing registry controls routing without assigning new source or session authority.
    */
   const input = owners.get(loader);
-  if (input === undefined) {
-    rl.debug('reloading standalone native SDK resources');
-    return await loader.reload(options);
-  }
-  rl.debug('reloading original policy-owned native resources');
-  return await input.policyInput.reload(options);
+  /**
+   The selected original object remains the receiver for its own reload method.
+   */
+  const reloadOwner = input === undefined ? loader : input.policyInput;
+  rl.debug(input === undefined
+    ? 'reloading standalone native SDK resources'
+    : 'reloading original policy-owned native resources');
+  return await reloadOwner.reload(options);
 }
 
 //endregion

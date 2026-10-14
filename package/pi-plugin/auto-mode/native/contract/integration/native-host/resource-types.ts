@@ -3,7 +3,10 @@
 
  @module
  */
-import type { ExtensionAPI, ResourceLoader } from '@earendil-works/pi-coding-agent';
+import type {
+  ExtensionAPI,
+  ResourceLoader
+} from '@earendil-works/pi-coding-agent';
 
 /**
  Resource reload forwards Pi's existing trust-resolution options unchanged.
