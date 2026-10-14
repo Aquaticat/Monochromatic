@@ -1181,6 +1181,16 @@ Qwen route,
 and Jev reviewer through LLMGateway on 2026-10-14.
 Run the same bounded fixture;
 this does not authorize a new semantic qualification campaign.
+The approved installed run now emits a supported single-call program,
+but exposed `TypeError: effectOwnerFor is not a function` before assessment.
+The host omits this optional implementation-fact callback;
+the fixture had hidden that path with a callback returning `undefined`.
+The local omitted-property regression reproduced the same failure.
+Commit `b3581b0be0` uses the existing absent-owner branch without supplying facts or permission.
+Both single-call results and prohibition pass after rebuilding with the callback genuinely absent.
+The [callback incident](../troubleshooting/pi-sdk-staging.md#pi-120-installed-policy-capture-calls-an-absent-optional-effect-owner)
+retains the separate diagnosis and logs.
+Repeat the same approved installed verification after this wiring correction.
 The current command resolves through generated workspace dependency shims,
 and the root `mise.toml` path list is owned by `file-enforcer.config.ts`.
 That command-resolution description is historical;
