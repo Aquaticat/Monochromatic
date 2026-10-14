@@ -793,7 +793,19 @@ and final request associations into explicit construction stages.
 The full formatter and verification pass over those construction stages and native guard files
 reports zero warnings and zero errors across six files,
 with a final lint duration of 3.0 seconds.
-Affected consumer verification remains pending.
+The final plain lint covers all ten changed contribution and guard source files
+with zero warnings and zero errors.
+The rebuilt declarations,
+package types,
+and all contribution consumer suites pass.
+Original profile references,
+absent fields,
+malformed nullish associations,
+copied publications,
+retained history,
+and exact caught values retain their assertions.
+The normal native SDK stream accounts for five original contributions and executes three prepared children.
+Copied-payload and copied-transcript controls remain unresolved with zero executions.
 No linter source,
 rule,
 or worker limit changed.
@@ -811,10 +823,16 @@ and derived guard names.
 The base error category is explicitly named;
 derived error classes declare their own category rather than inheriting constructor-name inference.
 The reference search found no existing native subclass consumer.
-That port's type,
-lint,
-build,
-and native checks remain pending after the fixture's first incomplete formatting attempt.
+That port passes package types,
+scoped lint,
+the owned native build,
+and its built consumer tests.
+Disposable identity-propagation and error-list-freezing omissions each fail the intended consumer assertion;
+the unchanged copied artifact passes.
+The guard tests retain ordinary caught primitives and objects without changing their values,
+and confirm the native non-enumerable aggregate descriptor.
+The native syntax sweep parses all 182 maintained modules.
+No provider request or production semantic policy adoption is involved.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.

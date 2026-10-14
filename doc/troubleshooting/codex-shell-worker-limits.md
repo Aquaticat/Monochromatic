@@ -231,8 +231,14 @@ and the native result-guard files,
 with a final verification duration of 3.0 seconds.
 This is successful verification of the new source structure,
 not an unchanged-input benchmark or a linter algorithm fix.
-The split preserves explicit original-reference boundaries;
-consumer tests remain the check for its identity semantics.
+The split preserves explicit original-reference boundaries.
+All contribution consumer suites subsequently pass,
+including original membership,
+copied-reference rejection,
+retained-history separation,
+and absent-association controls.
+The native SDK stream and copied payload/transcript controls also pass.
+The final plain lint covers ten changed files with zero warnings and zero errors.
 
 ### Upstream filing decision for the task-pressure incident
 
