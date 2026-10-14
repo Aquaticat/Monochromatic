@@ -221,6 +221,26 @@ Its 8,632.385 ms elapsed time exceeded the unchanged five-second production budg
 The rejected control returned in 3,342.758 ms.
 Single-run durations do not establish reliable latency or comparative performance.
 
+### Measured state-length boundary
+
+`mise run probe state` kept one short question fixed and varied only the string state `x `.repeat(n).
+Repetition counts 8,192,
+65,536,
+and 131,070 returned HTTP 200 with `model: drex-v2.0` and the original answer.
+Counts 131,071,
+131,072,
+and 131,073 returned HTTP 422 naming `exceeds the 131,072-token state limit`.
+The accepted 131,070 repetitions and rejected 131,071 repetitions establish adjacent bounds for this exact input family.
+They are not independently measured tokenizer counts.
+
+The largest accepted state contained 262,140 unquoted UTF-8 bytes;
+its complete request occupied 262,320 bytes.
+It returned in 2,729.279 ms and reported 133,978 input tokens.
+That reported usage is not the state-only limit counter:
+it exceeds the named state limit even though this request was accepted.
+Do not substitute billing usage or a repetition count for the server's state-token accounting.
+Every request in this phase completed within five seconds in its individual observation.
+
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits
 [evaluate]: https://console.nace.ai/docs/drex/api-reference/systemone
