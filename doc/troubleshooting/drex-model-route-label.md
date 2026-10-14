@@ -1,4 +1,113 @@
-# Drex API v1.1 full-policy requests report v1.0
+# Drex API full-policy routing and request compatibility
+
+## Drex 2.0 rejects the complete native question batch
+
+### Symptom
+
+On 2026-10-13,
+the hosted `POST https://console.nace.ai/v1/systemone` endpoint returned 422 for a disposable native Pi request
+containing the complete current policy and 244 questions.
+The requested model was `drex-v2.0`.
+The original wire failed with `questions.head_0.instructions: must be a string`.
+Its issue list reports the same instruction-type failure for every question.
+After lossless conversion of instruction objects to JSON text,
+the response was `too many questions (244); limit is 16`.
+Neither rejected response reported a serving model.
+
+### Cause and source boundary
+
+The owned Jev adapter supplies structured instruction objects.
+The current [hosted question schema](https://console.nace.ai/docs/drex/guides/questions)
+requires strings.
+The first error is therefore an adapter incompatibility.
+
+The second error conflicts with the current
+[hosted limits](https://console.nace.ai/docs/drex/reference/limits),
+which document 512 questions.
+The deciding hosted implementation is not published in the inspected source checkout.
+The read-only `nace-ai/drex-decision-models` checkout at
+`be8ba7c8157241b9393862e9fcec104d0dc5caff` contains a different local request schema.
+At `kev/api.py:51`:
+
+```python
+# nace-ai/drex-decision-models, kev/api.py:51
+    questions: dict[str, Question] = Field(min_length=1)
+```
+
+A repository-wide hidden and ignored-file search for the exact diagnostic,
+question-limit identifiers,
+and the documented limit found no hosted guard.
+The local schema is not evidence for the cause of the hosted limit.
+The observation establishes rejection of this request,
+not a universal model limit or a model-quality result.
+
+### Verification
+
+The private qualification repository retains `contract/research/drex-2.0-recheck`:
+request manifests,
+create-new runners,
+and results.
+The [release audit](../audit/tech-pi-auto-mode-drex-2-release-vet-2026-10-13.md)
+records source hashes,
+explicit payload consent,
+execution bounds,
+and exact returned labels.
+
+The frozen original phase ran `mise run probe` once.
+The separately frozen schema follow-up ran `mise run probe:text` once.
+These tasks need fresh result destinations before a separately authorized repeat;
+the retained runners refuse to overwrite evidence.
+Both use five-second deadlines and no retries.
+
+Working controls:
+
+- The constant-state API control returned 200 and `model: drex-v2.0`.
+- The complete 32,553-byte policy supplied once returned 200 and `model: drex-v2.0`.
+- Local round-trip assertions recovered all original instruction objects from the converted strings,
+  with unchanged state,
+  criteria,
+  questions,
+  and original provider request.
+
+Failing controls:
+
+- The complete native wire with structured instructions returned the field-type 422.
+- The converted 692,952-byte wire retained all 244 questions and returned the question-limit 422.
+
+### Verified handling and rejected approaches
+
+Keep the incumbent route while completing native integration.
+This avoids adopting a model whose complete native request did not pass the serving gate;
+it does not establish new semantic-quality evidence for the incumbent.
+
+`JSON.stringify` on each instruction object resolves the observed field-type rejection,
+as verified by the next response reaching the question-limit check.
+It does not make the complete request accepted or qualify the text representation semantically.
+
+Splitting 244 questions into groups of 16 requires 16 calls,
+exceeding the accepted three-call ceiling.
+No such dispatch was made.
+Removing policy,
+dropping sources,
+or omitting questions would change the required assessment and was not attempted.
+
+### Upstream filing decision
+
+Nothing is filed or drafted for the bounded release check.
+
+1.  Upstream fault: the field-type error belongs to the owned adapter;
+    the question-limit response differs from hosted documentation,
+    but its deciding code is unavailable.
+2.  Upstream fixability: unknown without that code;
+    no impossibility or fix-size claim is made.
+3.  Supported use: hosted documentation covers text instructions and question batches up to 512.
+4.  Contribution policy: not investigated because no external report is proposed.
+5.  Willingness to change: unknown;
+    no maintainer communication was sent.
+6.  Prototype: the owned conversion was executed and retained;
+    no source-justified hosted patch can be built from the inspected local runtime.
+
+## Historical Drex v1.1 full-policy responses report v1.0
 
 ## Symptom
 

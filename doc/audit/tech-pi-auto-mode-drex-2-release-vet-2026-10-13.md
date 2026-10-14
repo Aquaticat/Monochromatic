@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Status: in progress; release compatibility gate.
+- Status: complete; immediate replacement excluded by native request rejection.
 - Started and last updated: 2026-10-13.
 - Owner: current Pi auto-mode migration session.
 - Governing skill commit: `37117e36397e30233062828581a5e38217da9458`.
@@ -91,7 +91,7 @@ there is no full finalist score or production adoption from this phase.
 
 Managed service candidate,
 with incumbent-replacement and sensitive-data overlays.
-Screening is pending the native request probe.
+Screening failed the native request compatibility gate.
 The public model page and exact account registry identify the candidate.
 
 #### Drex 1.5 direct API
@@ -254,4 +254,21 @@ The exact returned question-limit diagnostic is absent from that checkout.
 The local runtime is therefore not evidence of the hosted guard's implementation.
 Source and hosted-contract discrepancy investigation remains bounded to this failure.
 Scores and sensitivity remain inapplicable before the serving-model hard gate.
-No release recommendation is made yet.
+Keep the incumbent route for the ongoing native integration.
+Drex 2.0 is not adopted on this evidence.
+A changed hosted contract or separately accepted assessment design can reopen this gate;
+no further provider calls are queued.
+
+### Ranking for the current delivery
+
+1.  Keep the incumbent: preserves the current native wire and accepted call ceiling;
+    it supplies no new quality claim and retains existing qualification requirements.
+2.  Direct Drex 2.0 replacement: the exact-version control works,
+    but the complete native request is rejected.
+3.  Split Drex requests into batches of 16: preserves question membership in principle,
+    but needs 16 calls and violates the accepted assessment ceiling.
+
+Ranking: keep the incumbent > direct replacement > split batching,
+because keeping the route avoids a demonstrated request failure,
+and direct replacement preserves the accepted call budget whereas split batching does not.
+The failed alternatives are not implementation choices currently available within the constraints.

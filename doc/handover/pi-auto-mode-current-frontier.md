@@ -7,6 +7,26 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-13.
 
+## Drex 2.0 release check
+
+The user requested the best next action after reporting Drex 2.0.
+The bounded [compatibility audit](../audit/tech-pi-auto-mode-drex-2-release-vet-2026-10-13.md)
+retains the completed authorized provider evidence.
+Both the constant-state control and complete-policy-once request returned `drex-v2.0`.
+The complete native request failed first on structured question instructions,
+then,
+after lossless JSON-text conversion,
+with `too many questions (244); limit is 16`.
+The original policy,
+sources,
+question membership,
+and three-call assessment ceiling remain unchanged.
+Keep the incumbent route and continue native integration;
+this is a failed replacement compatibility gate,
+not a semantic quality comparison.
+The [troubleshooting record](../troubleshooting/drex-model-route-label.md)
+separates the owned schema mismatch from the unexplained hosted question limit.
+
 ## Restart checkpoint after installing automatic Codex shell limits
 
 The user restarted the session and resumed work on 2026-10-13.
@@ -105,9 +125,12 @@ and potential-request-instruction contrasts still pass.
 Private `b8a8d705` also charges resource receipt records to the shared input count and byte budget.
 Historical comparison controls read retained immutable evidence;
 they do not reopen live eligibility after the provider request advances.
-Original approval-request routing,
-a targeted guard omission check,
-and maintained integration are next.
+The targeted guard omission check also passed:
+removing only the unobserved-native-event guard in a disposable worktree made the real `context` callback
+case fail its required-domain-gap assertion.
+Restoring the guard made both domain-gap cases pass.
+The worktree was inspected and removed without deleting shared fixture targets.
+Original approval-request routing and maintained integration are next.
 
 The approval trace found a separate concrete gap:
 `compileBoundClauseProgram` lowers prerequisite relations without authorization satisfaction or channel facts.
