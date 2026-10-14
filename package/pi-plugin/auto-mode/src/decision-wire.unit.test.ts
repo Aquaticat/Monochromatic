@@ -43,9 +43,13 @@ await describe({
     ...[
       { name: 'unparseable source', body: '{ private invalid JSON', },
       { name: 'non-object root', body: '[]', },
+      { name: 'null root', body: 'null' },
+      { name: 'null state', body: JSON.stringify({ ...decisionFixtureRequest(), state: null }) },
+      { name: 'array questions', body: JSON.stringify({ ...decisionFixtureRequest(), questions: [] }) },
       { name: 'wrong serving identity', body: JSON.stringify({ ...decisionFixtureRequest(), model: 'typesafe/jev-1.13.0', },), },
       { name: 'extra root obligation', body: JSON.stringify({ ...decisionFixtureRequest(), omitted: 'must not disappear', },), },
       { name: 'empty questions', body: JSON.stringify({ ...decisionFixtureRequest(), questions: {}, },), },
+      { name: 'empty question name', body: JSON.stringify({ ...decisionFixtureRequest(), questions: { '': decisionFixtureRequest().questions.head_0 } }) },
       { name: 'unsupported kind', body: JSON.stringify({ ...decisionFixtureRequest(), questions: { head_0: { type: 'score', instructions: '', criteria: {}, }, }, },), },
       { name: 'missing instructions', body: JSON.stringify({ ...decisionFixtureRequest(), questions: { head_0: { type: 'choice', criteria: {}, }, }, },), },
       { name: 'empty choices', body: JSON.stringify({ ...decisionFixtureRequest(), questions: { head_0: { type: 'choice', instructions: {}, criteria: {}, }, }, },), },
@@ -66,6 +70,20 @@ await describe({
         encodeDecisionRequest(JSON.stringify({ ...original, questions: Object.fromEntries(entries,), },),);
       },).toThrow('one through 200',);
     }, },),
+    it({ name: 'accepts 255 criteria and rejects 256 without dropping labels', fn: async () => {
+      const original = decisionFixtureRequest();
+      const criteria = Array.from({ length: 256 }, (_, index) => [`choice_${String(index)}`, null] as const);
+      const question = original.questions.head_0;
+      const accepted = encodeDecisionRequest(JSON.stringify({ ...original, questions: {
+        head_0: { ...question, criteria: Object.fromEntries(criteria.slice(0, 255)) },
+      } }));
+      expect(accepted.questions[0]?.labels).toHaveLength(255);
+      expect(function excessiveVocabulary() {
+        encodeDecisionRequest(JSON.stringify({ ...original, questions: {
+          head_0: { ...question, criteria: Object.fromEntries(criteria) },
+        } }));
+      }).toThrow('two through 255');
+    } }),
   ],
 },);
 
@@ -101,6 +119,30 @@ await describe({
       { name: 'refusal', response: { ...decisionFixtureResponse(), answers: [{ type: 'refusal', name: 'head_0', }, decisionFixtureResponse().answers[1],], }, },
       { name: 'duplicate answer', response: { ...decisionFixtureResponse(), answers: [decisionFixtureResponse().answers[0], decisionFixtureResponse().answers[0],], }, },
       { name: 'invalid usage', response: { ...decisionFixtureResponse(), usage: { input_tokens: -1, output_tokens: 0, }, }, },
+      { name: 'fractional usage', response: { ...decisionFixtureResponse(), usage: { input_tokens: 1.5, output_tokens: 0 } } },
+      { name: 'unsafe usage count', response: { ...decisionFixtureResponse(), usage: { input_tokens: Number.MAX_SAFE_INTEGER + 1, output_tokens: 0 } } },
+      { name: 'missing usage', response: { ...decisionFixtureResponse(), usage: undefined } },
+      ...[
+        { name: 'wrong predicate type', type: 'choice', probability: 0.9 },
+        { name: 'negative predicate', type: 'predicate', probability: -0.1 },
+        { name: 'excessive predicate', type: 'predicate', probability: 1.1 },
+        { name: 'missing predicate value', type: 'predicate', probability: undefined },
+      ].map(function malformedPredicate({ name, type, probability }) {
+        return { name, response: { ...decisionFixtureResponse(), answers: [
+          decisionFixtureResponse().answers[0], { name: 'head_1', type, probability },
+        ] } };
+      }),
+      ...[
+        { name: 'missing confidence', confidence: undefined },
+        { name: 'nonfinite confidence', confidence: Number.POSITIVE_INFINITY },
+        { name: 'excessive confidence', confidence: 1.1 },
+        { name: 'foreign selected choice', choice: 'unrelated' },
+        { name: 'missing probability list', probabilities: undefined },
+      ].map(function malformedCategorical({ name, ...changes }) {
+        return { name, response: { ...decisionFixtureResponse(), answers: [
+          { ...decisionFixtureResponse().answers[0], ...changes }, decisionFixtureResponse().answers[1],
+        ] } };
+      }),
       ...[
         { name: 'duplicate probability', probabilities: [{ value: 'permission', probability: 0.8, }, { value: 'none', probability: 0.1, }, { value: 'none', probability: 0.1, },], },
         { name: 'extra probability', probabilities: [{ value: 'permission', probability: 0.8, }, { value: 'none', probability: 0.1, }, { value: 'unknown', probability: 0.1, }, { value: 'other', probability: 0, },], },
