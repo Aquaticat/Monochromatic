@@ -14,20 +14,9 @@ type EmissionModule = {
     readonly onPayload: (payload: { readonly messages: readonly { readonly content: string }[];
       readonly tools?: readonly object[] }, model: object) => void;
   }) => { readonly result: () => Promise<{ readonly stopReason: string }> };
-  readonly readNativeSerializedPayload: (value: unknown) => {
-    readonly model: object;
-    readonly messages: readonly object[];
-    readonly normalizedMessages: readonly object[];
-  } | undefined;
-  readonly readNativeSystemPayload: (value: unknown) => {
-    readonly messages: readonly object[];
-    readonly message: object;
-    readonly text: string;
-  } | undefined;
-  readonly readNativeToolPayload: (value: unknown) => {
-    readonly messages: readonly object[];
-    readonly tools: readonly object[];
-  } | undefined;
+  readonly readNativeSerializedPayload: (value: unknown) => unknown;
+  readonly readNativeSystemPayload: (value: unknown) => unknown;
+  readonly readNativeToolPayload: (value: unknown) => unknown;
 };
 
 /**
@@ -45,6 +34,18 @@ function assertEmissionModule(value: unknown): asserts value is EmissionModule {
   }
 }
 
+/**
+ Require an actual emission record before inspecting its runtime fields.
+
+ @param value - original native reader result
+ @returns assertion exposing original observation fields for independent checks
+ @throws Error when a required original emission is absent
+ */
+function assertEmission(value: unknown): asserts value is Record<string, unknown> {
+  if ((value === null) || ((typeof value) !== 'object') || Array.isArray(value))
+    throw new Error('Original native emission record is missing');
+}
+
 /** Native staging preserves the actual provider implementation around the observed emissions. */
 const built: unknown = await import(new URL(
   '../dist/native/contract/integration/native-batch/generated/openai-stream.mjs', import.meta.url,
@@ -53,8 +54,7 @@ assertEmissionModule(built);
 
 //region Original emission membership does not follow equal values or copied containers
 
-await describe({ name: '', children: [
-  ...[false, true].map(function toolCase(withTool) {
+await describe({ name: '', children: [false, true].map(function toolCase(withTool) {
     return it({ name: `retains normalized system emission with ${withTool ? 'original tool declarations' : 'no tools'}`,
       fn: async function originalEmissions() {
         /** No provider credential or network request is involved. */
@@ -63,7 +63,7 @@ await describe({ name: '', children: [
           input: ['text'], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
           contextWindow: 64_000, maxTokens: 64 };
         /** Delimiters and escaped text must survive the original JSON and transcript grammar. */
-        const tool = { name: 'fixture_value', description: 'Original "quoted" tool\n</system> ${value}',
+        const tool = { name: 'fixture_value', description: `Original "quoted" tool\n</system> \${value}`,
           parameters: { type: 'object', properties: { path: { type: 'string', description: '\\boundary\\' } } } };
         /** A later system update forces native normalization to create an intermediate transcript. */
         const context = { messages: [
@@ -86,7 +86,7 @@ await describe({ name: '', children: [
             calls.payload += 1;
             /** Only the exact native payload owns this original-to-normalized input edge. */
             const origin = built.readNativeSerializedPayload(payload);
-            if (origin === undefined) throw new Error('Original payload emission is missing');
+            assertEmission(origin);
             expect(origin.model).toBe(model);
             expect(selectedModel).toBe(model);
             expect(origin.messages).toBe(context.messages);
@@ -95,7 +95,7 @@ await describe({ name: '', children: [
             expect(built.readNativeSerializedPayload({ ...payload })).toBeUndefined();
             /** The system message points to the original normalized serializer invocation. */
             const system = built.readNativeSystemPayload(payload.messages[0]);
-            if (system === undefined) throw new Error('Original system emission is missing');
+            assertEmission(system);
             expect(system.messages).toBe(origin.normalizedMessages);
             expect(system.text).toBe(payload.messages[0]?.content);
             expect(system.text).toContain('First system input');
@@ -108,9 +108,10 @@ await describe({ name: '', children: [
             /** A converted tool list retains its actual declaration objects, never names as identity. */
             const tools = built.readNativeToolPayload(payload.tools);
             if (withTool) {
-              if (tools === undefined) throw new Error('Original tool emission is missing');
+              assertEmission(tools);
               expect(tools.messages).toBe(origin.normalizedMessages);
               expect(tools.tools).toEqual([tool]);
+              if (!Array.isArray(tools.tools)) throw new Error('Original tool emission has no declarations');
               expect(tools.tools[0]).toBe(tool);
               expect(Object.isFrozen(tools)).toBe(true);
               expect(built.readNativeToolPayload([...(payload.tools ?? [])])).toBeUndefined();
@@ -123,7 +124,6 @@ await describe({ name: '', children: [
         expect(Object.isFrozen(context.messages)).toBe(false);
         expect(Object.isFrozen(tool)).toBe(false);
       } });
-  }),
-] });
+  }) });
 
 //endregion Original emission membership does not follow equal values or copied containers
