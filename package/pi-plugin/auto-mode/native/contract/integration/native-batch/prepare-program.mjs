@@ -5,7 +5,7 @@ import {sdk} from '../current-sdk/paths.ts';
 import {parse} from '../../collector/program-rule-batch-sdk-copy-v2/input/parser.mjs';
 import {helperUrl} from './build-rebase.ts';
 import {readStagedInput,replaceStagedImport} from './staged-import.ts';
-import {judgmentSource} from './judgment-source.mjs';
+import {judgmentSource} from './judgment-source.ts';
 import {preparedDispatcherSource,programJudgmentSource,programExecutorSource,programRunnerSource,programDefinitionSource,nativeScriptValueSource} from './program-source.ts';
 
 /** Prepare the original native prepareProgram modules with qualified source edits. */

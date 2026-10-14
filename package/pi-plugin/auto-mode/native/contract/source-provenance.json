@@ -501,7 +501,9 @@
       "maintained": "integration/native-batch/judgment-source.mjs",
       "sha256": "de4942ff9e88cee56f9322083f3a17a9e1d4f8825f5575fa0804265ec399a78d",
       "origin": "authored-source",
-      "relocatedLiterals": 0
+      "relocatedLiterals": 0,
+      "currentMaintained": "integration/native-batch/judgment-source.ts",
+      "movedOn": "2026-10-14"
     },
     {
       "original": "integration/native-batch/loadout-query-observer.mjs",
