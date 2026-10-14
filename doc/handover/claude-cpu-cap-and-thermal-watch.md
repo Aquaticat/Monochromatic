@@ -230,8 +230,21 @@ so the findings come from reading the readable source strings inside the binary 
 
 ## Open questions
 
-- The cooler is the NH-D15 G1 (answered). Is it mounted correctly (pressure, paste, AM5 bracket)? The numbers in the
-  evidence section say the heat path is far weaker than references; the G1 itself does not explain it.
+- The cooler is the NH-D15 G1 (answered). Is it mounted correctly? The numbers in the evidence section say the heat
+  path is far weaker than references; the G1 itself does not explain it. The user tightened the screws until they
+  could not turn them with a normal screwdriver and little force, which matches Noctua's instruction (below).
+  Noctua's NH-D15 manual and torque FAQ (fetched 2026-10-13) give this checklist, with the user's answers pending:
+  - Tighten the heatsink screws 2 to 3 turns each in turn, then repeat, "gently until they stop"; maximum torque
+    0.6 Nm for the spring-loaded screws and for the NM-ALS1 screws on the AMD mounting bars. The manual gives no force
+    in newtons.
+  - Remove the plastic protection cover from the heatsink base before mounting (the manual lists it before the
+    heatsink is placed on the CPU).
+  - On AM5 use the -7 mm offset hole position of the NM-AMB12 mounting bars "to ensure optimal contact quality";
+    the standard position (0) is for compatibility problems.
+  - NM-AMB12a ("NORTH") on the top side of the socket, NM-AMB12b ("SOUTH") on the bottom side, "CPU" arrows toward the
+    CPU, plastic spacers on the stock AMD backplate, which stays in place.
+  - Paste: 5 dots of NT-H1 (four of about 2 mm near the corners, one of 3 to 4 mm in the centre); too much lowers
+    conductivity.
 - How hard is the cooler-to-die path really? The 20:11 plateau gives 88.8 degrees at 130 W with 26 degree ambient,
   about 0.48 degrees per watt over ambient. Compare it with the 0.32 degrees per watt implied by the one online
   NH-D15 G2 report (87 degrees at 200 W, assuming a 23 degree ambient that the report does not state, so it is
