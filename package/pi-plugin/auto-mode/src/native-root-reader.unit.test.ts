@@ -47,14 +47,20 @@ await describe({ name: '', children: [
     const calls: unknown[] = [];
     /** Bootstrap callbacks retain their original references. */
     const callbacks = {
-      readActiveSessionManager(value: object) { calls.push(['session', value]); return manager; },
-      readManagerOccurrence(value: object) { calls.push(['occurrence', value]); return state.occurrence; },
+      readActiveSessionManager(value: object) { calls.push(['session', value]);
+      return manager; },
+      readManagerOccurrence(value: object) { calls.push(['occurrence', value]);
+      return state.occurrence; },
     };
     /** Construction must not inspect current native state. */
     const read = built.createSessionRootReader(callbacks);
     expect(calls).toHaveLength(0);
-    callbacks.readActiveSessionManager = function replacedSessionReader() { throw new Error('Replacement reader must not run'); };
-    callbacks.readManagerOccurrence = function replacedOccurrenceReader() { throw new Error('Replacement reader must not run'); };
+    callbacks.readActiveSessionManager = function replacedSessionReader() {
+      throw new Error('Replacement reader must not run');
+    };
+    callbacks.readManagerOccurrence = function replacedOccurrenceReader() {
+      throw new Error('Replacement reader must not run');
+    };
     expect(read({ session, manager })).toBe(state.occurrence);
     state.occurrence = Object.freeze({});
     expect(read({ session, manager })).toBe(state.occurrence);
@@ -76,11 +82,14 @@ await describe({ name: '', children: [
     /** Native private state is checked on each read. */
     const read = built.createSessionRootReader({
       readActiveSessionManager() { return state.manager; },
-      readManagerOccurrence(value: object) { calls.push(value); return occurrence; },
+      readManagerOccurrence(value: object) { calls.push(value);
+      return occurrence; },
     });
     expect(read({ session, manager })).toBe(occurrence);
     state.manager = {};
-    expect(function foreignManager() { return read({ session, manager }); }).toThrow('SDK session is not bound to this exact manager');
+    expect(function foreignManager() {
+      return read({ session, manager });
+    }).toThrow('SDK session is not bound to this exact manager');
     expect(calls).toEqual([manager]);
   } }),
 
@@ -94,7 +103,10 @@ await describe({ name: '', children: [
         /** Neither callback may run before both capabilities are validated. */
         const calls: string[] = [];
         /** A valid companion isolates each side of the guard. */
-        function companion() { calls.push('invoked'); return {}; }
+        function companion() {
+          calls.push('invoked');
+          return {};
+        }
         expect(function constructInvalid() {
           return built.createSessionRootReader({
             readActiveSessionManager: role === 'session' ? value : companion,
@@ -106,7 +118,8 @@ await describe({ name: '', children: [
     });
   }),
   ...['session', 'occurrence'].map(function failureRole(role) {
-    return it({ name: `preserves the original ${role} reader failure`, fn: async function nativeFailure() {
+    return it({ name: `preserves the original ${role} reader failure`, fn: async function nativeFailure(ctx) {
+      ctx.expect.assertions(2);
       /** The adapter must preserve the exact thrown value. */
       const failure = new TypeError('Native private-state reader failed');
       /** Authentication succeeds whenever its callback completes. */
@@ -115,15 +128,20 @@ await describe({ name: '', children: [
       const calls: string[] = [];
       /** Original callbacks retain their own failure contract. */
       const read = built.createSessionRootReader({
-        readActiveSessionManager() { calls.push('session'); if (role === 'session') throw failure; return manager; },
-        readManagerOccurrence() { calls.push('occurrence'); throw failure; },
+        readActiveSessionManager() { calls.push('session');
+        if (role === 'session') throw failure;
+        return manager; },
+        readManagerOccurrence() { calls.push('occurrence');
+        throw failure; },
       });
-      /** Identity comparison avoids mistaking a replacement error for preservation. */
-      let caught: unknown;
-      try { read({ session: {}, manager }); }
-      catch (error) { caught = error; }
-      expect(caught).toBe(failure);
-      expect(calls).toEqual(role === 'session' ? ['session'] : ['session', 'occurrence']);
+      // Required assertion count distinguishes a thrown failure from a returned value.
+      try {
+        read({ session: {}, manager });
+      }
+      catch (error) {
+        ctx.expect(error).toBe(failure);
+      }
+      ctx.expect(calls).toEqual(role === 'session' ? ['session'] : ['session', 'occurrence']);
     } });
   }),
 

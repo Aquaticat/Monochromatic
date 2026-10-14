@@ -3,7 +3,10 @@
 
  @module
  */
-import type { AgentSession, SessionManager } from '@earendil-works/pi-coding-agent';
+import type {
+  AgentSession,
+  SessionManager
+} from '@earendil-works/pi-coding-agent';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { RootLeaseOwnershipError } from './lifecycle.mjs';
 
@@ -54,7 +57,10 @@ export function createSessionRootReader({
   /**
    Construction and later reads share the original reader's diagnostic context.
    */
-  const fl = tagged({ tag: createSessionRootReader.name, l });
+  const fl = tagged({
+    tag: createSessionRootReader.name,
+    l
+  });
   fl.debug('capturing original native session and manager readers');
   if (((typeof readActiveSessionManager) !== 'function') || ((typeof readManagerOccurrence) !== 'function'))
     throw new RootLeaseOwnershipError('Native session and manager readers are required');
@@ -69,11 +75,17 @@ export function createSessionRootReader({
 
    @throws RootLeaseOwnershipError when the original session reports another manager
    */
-  return function readRootOccurrence({ session, manager }): object {
+  return function readRootOccurrence({
+    session,
+    manager
+  }): object {
     /**
      Each live identity read has its own diagnostic boundary.
      */
-    const rl = tagged({ tag: readRootOccurrence.name, l: fl });
+    const rl = tagged({
+      tag: readRootOccurrence.name,
+      l: fl
+    });
     rl.debug('checking original native session-manager identity');
     if (readActiveSessionManager(session) !== manager)
       throw new RootLeaseOwnershipError('SDK session is not bound to this exact manager');
