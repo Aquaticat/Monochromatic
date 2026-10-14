@@ -29,10 +29,31 @@ export type NativeHostSessionInput = {
    */
   readonly resource: {
     readonly policyInput: unknown;
-    readonly nativeApi: { readonly current: ExtensionAPI | undefined };
+    readonly nativeApi: { readonly current?: ExtensionAPI };
   };
   /**
    Original constructor options retain the dependency working directory.
    */
   readonly options: { readonly cwd: string };
+};
+
+/**
+ Native policy loading retains the designated file and its original authority scope.
+ */
+export type NativePolicyDesignation = {
+  /**
+   Existing loader verifies original path, file mode, and source content.
+   */
+  readonly policy: {
+    readonly root: string;
+    readonly relativePath: string;
+    readonly requiredMode: number;
+  };
+  /**
+   Designation supplies source authority separately from semantic interpretation.
+   */
+  readonly authority: {
+    readonly tier: 'user';
+    readonly scope: 'original-request';
+  };
 };

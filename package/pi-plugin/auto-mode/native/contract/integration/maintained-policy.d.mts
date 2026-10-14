@@ -39,9 +39,9 @@ export {
 /**
  Original built package entry selected before disposable fixture homes are installed.
  */
-export const maintainedPolicyEntry: string;
+export declare const maintainedPolicyEntry: string;
 
 /**
  Original package root owns runtime dependency resolution.
  */
-export const maintainedPackageRoot: string;
+export declare const maintainedPackageRoot: string;
