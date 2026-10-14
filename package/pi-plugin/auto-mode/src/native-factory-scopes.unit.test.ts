@@ -15,6 +15,31 @@ assertScopeModule(built);
 //region Original input capture and publication identity remain distinct from caller containers
 
 await describe({ name: '', children: [
+  ...['lifecycle', 'readManager', 'prepareResult', 'assertRuntimeResult', 'disposeSession'].map(function missingCapability(field) {
+    return it({ name: `rejects missing original ${field} capability`, fn: async function rejectMissingCapability() {
+      /** Each missing callback is tested against otherwise valid original capabilities. */
+      const fixture = createScopeFixture();
+      expect(function missingOriginalCallback() {
+        built.createRuntimeFactoryScopes({ ...fixture.definition, [field]: undefined });
+      }).toThrow('Construction lifecycle, native readers and native disposal are required');
+    } });
+  }),
+  it({ name: 'requires abandonment and acceptance before publication', fn: async function requiredLifecycle() {
+    /** Missing abandonment is independent of an available construction issuer. */
+    const fixture = createScopeFixture();
+    expect(function missingAbandonment() {
+      built.createRuntimeFactoryScopes({ ...fixture.definition,
+        lifecycle: { ...fixture.definition.lifecycle, abandonConstruction: undefined } });
+    }).toThrow('Construction lifecycle, native readers and native disposal are required');
+    /** A valid original scope must still accept its result before publication. */
+    const scopes = built.createRuntimeFactoryScopes(fixture.definition);
+    /** No registered session or accepted result exists for this scope. */
+    const scope = scopes.begin({ manager: fixture.manager });
+    expect(function unacceptedPublication() {
+      scope.publish({ session: { manager: fixture.manager } });
+    }).toThrow('exact prepared result');
+    scope.abort();
+  } }),
   it({ name: 'retains original callbacks and manager after caller container replacement', fn: async function originalCapture() {
     /** Every capability in this fixture belongs only to this test. */
     const fixture = createScopeFixture();
