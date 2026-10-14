@@ -114,6 +114,24 @@ The candidate remains experimental.
 Further representation-only trials on this same input are deferred;
 continue the source-boundary investigation and native quality work.
 
+The whole-request interpretation has a separate missing consumer,
+independent of the low-scoring clause answers.
+The retained baseline's `head_83` selects `potential-instruction` at `0.96`;
+the readable-selection variant selects it at `0.97`.
+A fresh built native contrast changes only the authored whole-request relation:
+with every clause admitted,
+`none` executes three prepared children,
+whereas `potential-instruction` executes zero and retains `request-material-instruction-use`.
+Both runs have 33 original sources,
+five accounted partial source contributions,
+one local HTTP assessment,
+and zero provider requests.
+The log is `${HOME}/temp/agent/pi-luna-request-use-control-20261014.log`.
+This is an implementation boundary,
+not evidence that Luna should report absence when the request contains instructions.
+Continue original request-to-source governing-use accounting through the existing serializer and source owners.
+Partial contribution associations alone must not be promoted to complete governing-use evidence.
+
 ## Original native RPC approval verification
 
 The disposable harness in `${HOME}/temp/agent/pi-native-rpc-human-20261014/`
@@ -182,10 +200,22 @@ The SDK constructor now imports that typed interface directly.
 The reader retains the original callbacks and exact returned occurrence,
 and rejects a manager mismatch before invoking the occurrence reader.
 The incumbent lifecycle still owns its original error constructors.
-Built-artifact branch checks,
-native host regression checks,
-lint,
-and type verification are pending for this port.
+The owned native build and package type check pass.
+The five changed TypeScript files pass scoped lint with zero warnings and errors.
+Built-artifact checks pass for exact arguments,
+original callback capture,
+live manager changes,
+missing callbacks,
+and unchanged thrown values.
+Native manager constructors,
+host lifecycle,
+and the actual isolated Qwen CLI process pass with zero provider requests.
+Process-local removal of either callback validation or the manager-identity guard
+makes the corresponding behavior assertion fail.
+`${HOME}/temp/agent/pi-root-reader-controls-20261014/verification.json`
+retains those controls and the unchanged built-artifact hash.
+The first formatter run identified a test-local root `let` and incomplete ambient constructor declarations;
+both were corrected without suppressions.
 
 The next owned dependency is now ported from `runtime-factory-scopes/scopes.mjs`
 to `scopes.ts` and `construction.ts`.

@@ -24,6 +24,29 @@ Neither batching invariance nor repeated identical answer data proves caching,
 independent model evaluation,
 or a provider implementation defect.
 
+There is also a separate missing native consumer for an admitted whole-request
+`potential-instruction` answer.
+The baseline selects that answer at `0.96`.
+An actual built native contrast admits all clause meanings and changes only the authored whole-request relation:
+`none` executes three prepared children;
+`potential-instruction` executes zero.
+Both runs retain five accounted partial source associations and 33 original sources.
+Each uses one local HTTP response and zero provider requests.
+`${HOME}/temp/agent/pi-luna-request-use-control-20261014.log` retains the complete contrast.
+
+The owned consumer in `package/pi-plugin/auto-mode/src/request-material-obligations.ts:65`
+keeps that governing-use obligation:
+
+```ts
+// package/pi-plugin/auto-mode/src/request-material-obligations.ts:65
+if ((interpretation.admission === 'admitted') && (interpretation.relation === 'potential-instruction')) {
+```
+
+Its emitted issue at line 69 is `request-material-instruction-use`.
+Existing partial source contributions do not supply the missing complete interpretation.
+That gap must be implemented through original source ownership;
+prompting the model to report absence would not repair it.
+
 The fresh read-only Gateway clone is
 `${HOME}/temp/agent/llmgateway-decisions-20261014/`,
 revision `8d7a6f3a65af6a11d7646cc3e927a0acd0a2b961`.
