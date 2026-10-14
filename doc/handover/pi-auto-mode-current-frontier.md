@@ -17,6 +17,12 @@ records the documented 16-question limit and a frozen 16/17-question synthetic b
 No production provider or assessment-budget change is adopted.
 The pending Jev row-encoding correction remains tracked independently.
 
+The user also authorized sending anything needed to `liquid.ai`
+and added `AUTO_MODE_LIQUID_API_KEY`.
+The [Liquid contract check](../planning/pi-auto-mode-liquid-current-contract.md)
+records its documented hosted `d1` route and the initial public serving control.
+Both provider keys are present in the ignored local configuration.
+
 ## Drex 2.0 release check
 
 The user requested the best next action after reporting Drex 2.0.
