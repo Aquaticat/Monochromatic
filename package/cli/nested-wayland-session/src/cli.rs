@@ -125,6 +125,7 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
         accessibility: matches.get_flag("accessibility"),
         repeat_rate,
         repeat_delay,
+        headless: matches.get_flag("headless"),
     });
 }
 

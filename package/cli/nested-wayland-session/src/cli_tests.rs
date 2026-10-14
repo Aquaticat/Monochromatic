@@ -240,6 +240,30 @@ fn accent_color_option_takes_six_hex_digits() {
     }
 }
 
+/// Headless is off by default and turns on only with the flag, before the child command.
+#[test]
+fn headless_flag_is_off_by_default_and_opt_in() {
+    assert!(!parse_args(&args(&["app"])).unwrap().headless);
+    assert!(!parse_args(&args(&["--size", "800x600", "--", "app"])).unwrap().headless);
+    let config = parse_args(&args(&["--headless", "--size", "800x600", "app"])).unwrap();
+    assert!(config.headless);
+    assert_eq!(config.child_command, ["app"]);
+}
+
+/// The flag belongs to the parent only until the child command begins, with or without the separator.
+#[test]
+fn headless_after_the_child_command_is_forwarded_to_the_child() {
+    let config = parse_args(&args(&["app", "--headless"])).unwrap();
+    assert!(!config.headless);
+    assert_eq!(config.child_command, ["app", "--headless"]);
+    let separated = parse_args(&args(&["--", "app", "--headless"])).unwrap();
+    assert!(!separated.headless);
+    assert_eq!(separated.child_command, ["app", "--headless"]);
+    let both = parse_args(&args(&["--headless", "--", "app", "--headless"])).unwrap();
+    assert!(both.headless);
+    assert_eq!(both.child_command, ["app", "--headless"]);
+}
+
 /// The new options leave the child command alone, like every other parent option.
 #[test]
 fn new_options_stop_at_the_child_command() {

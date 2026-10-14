@@ -42,6 +42,11 @@ pub mod appearance_portal;
 /// ```
 pub mod backend;
 
+/// Which render backend a session uses:
+///  the nested window by default,
+///  headless only when asked.
+pub mod backend_select;
+
 /// What:
 ///      `pub mod child;`.
 ///  Declares the hosted-client lifecycle module.
