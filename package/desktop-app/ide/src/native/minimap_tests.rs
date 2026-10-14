@@ -301,6 +301,8 @@ fn dragging_the_box_scrolls_continuously_and_release_ends_it() {
     );
     lift(&opened, over(window, 10.0, -400.0));
     travel(&opened, over(window, 10.0, 60.0));
+    // A drag report that arrives after the release, as a toolkit may deliver one, is ignored by the native side too.
+    window.invoke_minimap_drag(shape.track() * 0.9);
     assert_eq!(
         offset(&opened),
         0.0,
