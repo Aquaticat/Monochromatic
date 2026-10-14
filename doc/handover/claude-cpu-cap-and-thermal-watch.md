@@ -337,8 +337,21 @@ for VFIO passthrough.
   Fedora 44 kernel 7.2.5 works with it per a Fedora forum post. A Bazzite report says the OGC kernel 7.0 and newer
   lost it through mac80211 API changes; this host runs `7.2.9-ogc3.1.fc44`, an OGC kernel, so it must be tested
   there before trusting a Realtek Wi-Fi 7 board. Not verified for MT7927 and QCNCM865.
-- Not verified: IOMMU group layouts of any candidate, BIOS stability reports for 2026 firmware, the physical slot
-  spacing against a 3080 and the D15S, the user's 3080 model and case, and the power supply wattage and case.
+- User answers (about 21:50 EDT): four coarse status LEDs do not count as diagnostics ("just like my current board"),
+  so a two-digit POST code display (or a BMC) is required. Either slot layout is acceptable (x8/x8, or the 3080 on
+  the CPU slot with the RX 7600 on the chipset x4 slot). The RX 7600 drives four 4K 60 Hz displays. The 3080 will sit
+  on a riser. The case is a Corsair 4000D Airflow (slot count and cooler height limit not verified here).
+- With the two-digit display required, ProArt B850 Neo, ProArt X870E and MSI Tomahawk are out. The ASRock Taichi
+  family remains: OCinside reviews of the B650E Taichi, B650E Taichi Lite and X670E Taichi Carrara name a 7-segment
+  Dr. Debug display; the X870E Taichi shows it in retail listing text; whether the X870E Taichi Lite has it was not
+  confirmed. ASRock pages list the X870E Taichi and Taichi Lite with two CPU PCIe 5.0 x16 slots as x16 or x8/x8, a
+  Key E socket for the Wi-Fi 7 module (chip not found), and 5 Gb LAN (Taichi: also 2.5 Gb). A Level1Techs post shows
+  X870E Taichi Lite IOMMU groups on BIOS 3.20 (called fine, not independently read), and a GitHub guide passes a
+  Radeon RX 7900 XTX through on a Taichi Lite with a 7950X under Fedora 41. Prices conflict: 479.99 US dollars
+  (CGMagazine review) against about 329 (a Funky Kit article for the 10th Anniversary edition). Possible other leads
+  with a code display, not researched: ASUS ROG Crosshair X670E Hero (Q-Code, from memory).
+- Not verified: IOMMU group layouts of any candidate on the user's CPU and kernel, BIOS stability reports for 2026
+  firmware, the 4000D's expansion slot count and cooler height limit against the NH-D15S, and the power supply.
 - A new board does not prove the memory errors at EXPO 6000 are the board's: the CPU memory controller and the DIMMs
   are shared with the old setup. Validate EXPO with memtest86+ on the new board before concluding. The thermal gap is
   a separate problem; a new board does not change heatsink contact.
