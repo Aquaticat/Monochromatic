@@ -312,6 +312,13 @@ The wrapper keeps its state beside the repository's Git data under `cli-git*` pa
 Delete nothing there while a Git command is running.
 The next invocation recovers what an interrupted one left.
 
+The ignored-state copy into a new linked worktree stages its files in a `.cli-git-worktree-copy-*` directory
+beside the new worktree, which can hold gigabytes.
+The wrapper records that directory's name in the common Git directory before it creates it,
+so a copy that was killed while staging cannot leak it:
+the next invocation in the repository removes the directory and says so on stderr.
+Delete a `.cli-git-worktree-copy-*` directory by hand only when no `git` command is running in that repository.
+
 ## Development
 
 The commands below run in the repository that holds the crate,
