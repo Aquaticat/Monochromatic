@@ -48,7 +48,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   The pressure limit of 40 was a first guess and is uncalibrated.
 - It logs a sample every 10 seconds to `~/.local/share/claude-cpu-cap/samples/<date>.csv` (14 days kept):
   temperatures, package watts, per-chiplet watts, clock, pressure, load, Corsair fan RPMs and probe,
-  motherboard readings, and a burst flag (2-second samples for 90 seconds after a 25 watt step).
+  motherboard readings, a burst flag (2-second samples for 90 seconds after a 25 watt step), and since 20:55 EDT the
+  discrete GPU and integrated graphics temperature and watts.
 - The fan profile "CPU Cooler (Silent)" in CoolerControl was replaced by this session with:
   30% at 40 degrees and below, 45% at 50, 60% at 60, 85% at 70, 100% at 75 and above, from Tctl, no smoothing.
   The previous version (which already had the user's own 75-degree to 100% edit) is saved at
@@ -183,6 +184,20 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   2 to 3 degrees by Noctua and about 1 degree by GamersNexus, small next to the measured gap.
   The zero-cost next step is to lift the cooler and inspect the paste imprint and the base;
   no purchase decision is made.
+- Other components as a cause (the user asked at about 20:50 EDT whether they could be the problem):
+  - Case air: the probe on the heatsink top stayed at 26.0 degrees at 133 W, so intake and case air are not hot. The
+    discrete GPU read 48 to 52 degrees at 28 to 32 W while idle (it was not under load at the check); the integrated
+    graphics read 2.2 W and 53 degrees (a 16 W reading appeared once earlier). The GPU is not logged under CPU load yet.
+  - Heat load: 133 W at 4.4 GHz is within what the chip is built for (TechPowerUp quotes a 170 W TDP and a 230 W
+    limit), so the chip is not producing unusual heat. Package power minus the two chiplets (85.4 W) leaves about 48 W for
+    the IO die, SoC and fabric at the plateau, and about 30 to 35 W at idle; no reference was found for what is normal.
+  - Not visible from here: no voltage sensor exists (`k10temp` and `zenergy` expose none), so CPU core and SoC voltage,
+    EXPO memory profile and load-line settings need the BIOS or a tool the user runs.
+  - The probe on top of the heatsink stayed within 0.3 degrees of its idle value while the CPU sat at 95. If the heatsink
+    were passing the heat to the air well, its top should warm, so this fits a bottleneck between the chip and the
+    heatsink; the probe's contact is weak (its tape cannot bend), so this is a hint and not a measurement.
+  - Four new sample columns log the GPU temperature and power and the integrated graphics, so the next load shows
+    whether the GPU heats the case.
 - Memory pressure, measured at 19:30 EDT (the user asked why tasks stall with so much memory in total):
   - The host is not short of memory: `MemAvailable` 45 GiB of 62 GiB, `user-1000.slice` peaked at 46 GB against a
     `memory.high` of 59.8 GB that it never reached (0 high events).

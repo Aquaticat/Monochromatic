@@ -67,7 +67,9 @@ The fan values come from the local CoolerControl API with an access token kept i
 `~/.config/claude-cpu-cap/cc-token` (owner-only permissions).
 The remaining columns judge how well the CPU hands heat to the cooler:
 package watts split between the first chiplet (cores 0 to 7) and the second (cores 8 to 15),
-the six motherboard readings of the `gigabyte_wmi` driver, the ACPI zone, the NVMe temperature, and a `burst` flag.
+the six motherboard readings of the `gigabyte_wmi` driver, the ACPI zone, the NVMe temperature, a `burst` flag,
+and, from 20:55 EDT on 2026-10-13, the discrete graphics card and the integrated graphics (temperature and watts each;
+older rows of that day lack these four columns).
 No source names what the six motherboard readings measure on the B650 GAMING X AX (the driver reads six numbered
 firmware channels), so they are logged raw;
 the third one (`board3_c`) follows the CPU temperature, the fifth moves by about 3 degrees with load,
