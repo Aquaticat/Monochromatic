@@ -3333,9 +3333,10 @@ user is. This amends D22: the desktop folder names list, the column right of the
 either input, neither the always visible draggable bar for the pointer nor the fading bar for touch.
 
 - The panel already shows position without a bar. The selected folder is primary, heavier and carries a 2 px bar on its
-  bottom edge (D31). The letter rail circles the letter of the current folder's cell (D28), and the names run in rail
-  order under a heading for each cell, so the heading in view says where in the alphabet the list is. The list order is
-  the alphabet itself, and a scrollbar would add a length that D17 and D23 say the user is not meant to care about.
+  bottom edge (D31). The letter rail (D17) circles the letter of the current folder's cell, and the names run in rail
+  order under a heading for each cell (D28), so the heading in view says where in the alphabet the list is. The list
+  order is the alphabet itself, and a scrollbar would add a length that D17 and D23 say the user is not meant to care
+  about.
 - What stays for moving the list: the wheel, a touch drag, the keyboard (Up, Down, the page keys, Home and End scroll
   the ringed folder into view), a rail tap that scrolls to its cell, and the reveal of the selected folder after Search,
   a shuffle or a folder key chord (D79). None of them changed.
