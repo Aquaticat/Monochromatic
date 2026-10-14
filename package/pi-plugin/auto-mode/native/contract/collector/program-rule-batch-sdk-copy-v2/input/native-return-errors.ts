@@ -6,15 +6,23 @@
 
 //region Return ownership and supported modalities have separate diagnostics
 
-/** Original invocation or return association is missing or inconsistent. */
+/**
+ Original invocation or return association is missing or inconsistent.
+ */
 export class NativeReturnContractError extends Error {
-  /** Stable category identifies the native custody boundary. */
+  /**
+   Stable category identifies the native custody boundary.
+   */
   override readonly name = 'NativeReturnContractError';
 }
 
-/** Native conversion succeeded but its result cannot bind the declared string profile. */
+/**
+ Native conversion succeeded but its result cannot bind the declared string profile.
+ */
 export class UnsupportedScriptBindingError extends Error {
-  /** Stable category identifies the unsupported converted modality. */
+  /**
+   Stable category identifies the unsupported converted modality.
+   */
   override readonly name = 'UnsupportedScriptBindingError';
 
   /**

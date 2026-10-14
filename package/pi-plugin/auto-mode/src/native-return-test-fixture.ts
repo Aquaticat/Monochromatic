@@ -3,25 +3,20 @@
 
  @module
  */
-import type {
-  NativeReturnConsumer,
-  NativeReturnOwner,
-  NativeReturnSlot
-} from '../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/native-return-types.ts';
-import type { createNativeReturnConsumer, NativeReturnContractError, UnsupportedScriptBindingError } from '../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.ts';
+import type { NativeReturnConsumer, NativeReturnOwner, NativeReturnSlot } from './native-return-test-types.ts';
 
 //region The built runtime supplies every behavior under test
 
 /**
- Type-only source contract supplies no executable behavior to these consumers.
+ Tests declare only the generated consumer interface they exercise.
  */
 type NativeReturnModule = {
   /** Generated consumer retains the copied source contract. */
-  readonly createNativeReturnConsumer: typeof createNativeReturnConsumer;
+  readonly createNativeReturnConsumer: (owner: NativeReturnOwner) => NativeReturnConsumer;
   /** Original native custody error identity. */
-  readonly NativeReturnContractError: typeof NativeReturnContractError;
+  readonly NativeReturnContractError: new(message: string) => Error;
   /** Original unsupported-binding error identity. */
-  readonly UnsupportedScriptBindingError: typeof UnsupportedScriptBindingError;
+  readonly UnsupportedScriptBindingError: new(kind: string) => Error;
 };
 
 /**
