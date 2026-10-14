@@ -405,6 +405,10 @@ run = "node src/native-manager-registry.unit.test.ts"
 description = "Verify original factory captures, exact publication, failed cleanup retry, and reentrancy recovery"
 run = "node src/native-factory-scopes.unit.test.ts"
 
+[tasks."test:native:tool-publication"]
+description = "Verify original tool input membership through native manager copies"
+run = "node --import ./dist/native/loader.mjs src/native-tool-publication.unit.test.ts"
+
 [tasks."test:native:serializer-receipts"]
 run = [
   "node --import ./dist/native/loader.mjs src/native-tool-publication.unit.test.ts",
