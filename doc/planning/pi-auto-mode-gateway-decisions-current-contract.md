@@ -1,5 +1,39 @@
 # LLM Gateway Decisions candidate checks
 
+## Luna adoption and first compensation experiment
+
+The user subsequently selected Luna and accepted an inclusive `0.80` operating cutoff.
+Perplexity is excluded from further trials.
+The historical `0.99` gate retained in the initial probe record is no longer the Luna operating requirement.
+
+The first frozen comparison uses
+`${HOME}/temp/agent/pi-luna-explicit-rubrics-20261014/`.
+It makes three unchanged baseline observations,
+then three observations with existing definition instructions placed directly in each question
+and existing criterion text supplied through each choice's `description`.
+This follows the documented
+[OpenAI choice schema](https://developers.openai.com/api/reference/resources/decisions/methods/create).
+The exact shared input,
+original question binding JSON,
+question order,
+choice labels,
+and all original rubric text remain present.
+No normative definition is rewritten and no source is removed.
+
+The baseline body is 584,007 bytes with SHA-256
+`59611db7d2fc22abc491db6bb41fe69bac90769f78c23d1f1409799fa78d4350`.
+The explicit-rubric body is 910,146 bytes with SHA-256
+`bd4f709f705d7ad1a4f035bd796229897a655ceadf68c252afd84245b626e15e`.
+Each independent observation makes one request with a five-second deadline.
+Transport failure,
+refusal,
+malformed answer,
+or late completion ends the remaining schedule without retry.
+The schedule measures unchanged-input spread before comparing formats;
+it does not stop early when a score crosses the cutoff.
+Higher admission counts alone do not establish correctness.
+No represented tool operation executes during this study.
+
 ## Scope and authorization
 
 On October 14,
