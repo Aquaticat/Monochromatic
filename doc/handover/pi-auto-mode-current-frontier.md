@@ -7,6 +7,16 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-14.
 
+## SubQ authorization and compatibility check
+
+The user authorized sending anything needed to `subq.ai`
+using `AUTO_MODE_SUBQ_API_KEY`.
+The authenticated models endpoint returned HTTP 200 with `subq-snap-preview`.
+The [current contract check](../planning/pi-auto-mode-subq-current-contract.md)
+records the documented 16-question limit and a frozen 16/17-question synthetic boundary probe.
+No production provider or assessment-budget change is adopted.
+The pending Jev row-encoding correction remains tracked independently.
+
 ## Drex 2.0 release check
 
 The user requested the best next action after reporting Drex 2.0.
