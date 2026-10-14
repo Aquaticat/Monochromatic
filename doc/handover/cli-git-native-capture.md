@@ -96,6 +96,9 @@ The brief asked for tests first, so this is a deviation recorded here.
   `commit_preparation::tests::a_hook_sees_the_shadow_head_upstream_include_and_git_dir`.
   The incumbent's own hook records the same four values through `native-interop/capture-differential.mjs`
   (`hook head=base upstream=origin/main onbranch=onbranch gitdir=.../cli-git/shadow/<transaction>`).
+  Note (2026-10-13): deleted at the user's request and readable at commit `5d61d7b442`:
+  The driver `native-interop/capture-differential.mjs`.
+  The results are in `doc/handover/cli-git-native-interop.md`.
 - A failing `commit-msg` hook propagates Git's exit code and leaves no shadow repository:
   `commit_preparation::tests::a_failing_commit_msg_hook_propagates_the_exit_code_and_removes_the_shadow`.
 - Differential private index per selection mode:
@@ -104,6 +107,9 @@ The brief asked for tests first, so this is a deviation recorded here.
   The expected trees are the incumbent's committed trees, recorded by
   `native-interop/capture-differential.mjs` in the interop image (Git 2.56.0), and the native tests pass
   on the host Git 2.55.0 and in the container gate.
+  Note (2026-10-13): deleted at the user's request and readable at commit `5d61d7b442`:
+  The driver `native-interop/capture-differential.mjs`.
+  The results are in `doc/handover/cli-git-native-interop.md`.
   Seven selections match: explicit path, index plain, tracked (`-a`), include (`-i`),
   pathspec file with newline records, pathspec file with NUL records, and pathspec file from standard input.
   Each expected tree is `4f40a1ec2c64780454051d9d363c6870a6ef2f6e` (one file) or
@@ -162,6 +168,9 @@ They were not run in this lane:
 - The full old-and-new wrapper interop matrix.
   Only the one-direction differential (the incumbent writes, the native private index reads)
   was run, through `native-interop/capture-differential.mjs`.
+  Note (2026-10-13): deleted at the user's request and readable at commit `5d61d7b442`:
+  The driver `native-interop/capture-differential.mjs`.
+  The results are in `doc/handover/cli-git-native-interop.md`.
 - Long fuzz campaigns.
   This lane adds no fuzz target; the existing targets are not extended.
 - The non-UTF-8 path field gate.

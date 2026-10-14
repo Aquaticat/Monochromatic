@@ -53,6 +53,9 @@ Modules, all under `package/git-policy/cli/src/native/`:
 - `hook_dispatch.rs` (with `hook_dispatch_tests.rs`):
   `dispatch_target_for_start_name`, `dispatch_environment`, `run_hook_dispatch`, `run_executable`,
   and the ignored `interop_probe` test used by `native-interop/hook-dispatch.mjs`.
+  Note (2026-10-13): deleted at the user's request and readable at commit `5d61d7b442`:
+  The ignored `interop_probe` test and `native-interop/hook-dispatch.mjs`.
+  The results are in `doc/handover/cli-git-native-interop.md`.
 - `main.rs` passes `argv[0]` to `hook_dispatch::run_executable`, which runs before any wrapper logic.
 - `binary_hook_tests.rs`, registered in `binary_tests.rs` as the `hook` module (six controls).
 
@@ -121,6 +124,9 @@ so it now clamps the normal exit path.
 ## Interoperability
 
 `native-interop/hook-dispatch.mjs` is written and syntax-checked, but it has not been run.
+Note (2026-10-13): deleted at the user's request and readable at commit `5d61d7b442`:
+The driver `native-interop/hook-dispatch.mjs`.
+The results are in `doc/handover/cli-git-native-interop.md`.
 See `Trailing gates`.
 
 ## Fuzz
@@ -160,6 +166,9 @@ The user moved these gates after the cutover, so they are not part of this lane'
   The driver `native-interop/hook-dispatch.mjs` covers four scenarios with positive controls (native holds and
   incumbent waits, the reverse, incumbent nested in native with a tampered-lease control, and native validator
   nested in incumbent with a tampered-lease control). It has not been run.
+  Note (2026-10-13): deleted at the user's request and readable at commit `5d61d7b442`:
+  The driver `native-interop/hook-dispatch.mjs`.
+  The results are in `doc/handover/cli-git-native-interop.md`.
 - The cargo-mutants campaign (`native:mutation:scoped`) over `hook_dispatch*.rs`, `hook_dispatch_plan.rs`,
   `hook_dispatch_entries.rs` and `binary_hook_tests.rs`. Not run. Its planted phase is the eight controls above.
 - Long fuzz campaigns: none named for slice 4.
