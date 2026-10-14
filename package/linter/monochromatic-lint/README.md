@@ -163,16 +163,22 @@ and the declaration to write:
 `#[cfg(test)] #[path = "thing_tests.rs"] mod tests;`.
 Test-only helper functions without `#[test]`, doc tests and virtual files in embedded sources are not checked.
 
-Exempt a crate whose whole purpose is testing, such as a fuzz sidecar crate, with `ignores`:
+Exempt a crate whose whole purpose is testing, such as a fuzz sidecar crate,
+by turning the rule off in a later block, which leaves its other rules selected:
 
 ```jsonc
 // monochromatic-lint.config.jsonc
 [
   {
     "files": ["**/*.rs"],
-    "ignores": ["**/*.fuzz/**"],
     "rules": {
       "rust/tests-in-sidecars": { "severity": "error" }
+    }
+  },
+  {
+    "files": ["**/*.fuzz/**/*.rs"],
+    "rules": {
+      "rust/tests-in-sidecars": { "severity": "off" }
     }
   }
 ]
