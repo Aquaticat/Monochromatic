@@ -319,9 +319,20 @@ export function programDefinitionSource({
    l
  });
  rl.debug('preparing original native program source');
+ /**
+  Model-visible examples describe exactly the adopted inspected programs.
+  Nested tool declarations remain supplied by the original native loadout.
+  */
+ const programGuidance='Use exactly one of these JavaScript forms with literal JSON argument objects and an available tools.name identifier:\n'
+   +'return await tools.name({key:"value"});\n'
+   +'const result = await tools.name({key:"value"}); return result;\n'
+   +'const result = await tools.name({key:"value"}); return await Promise.allSettled([tools.other({key:result}),tools.other({key:"literal"})]);\n'
+   +'Promise.all is also supported for the successor array. Only the successor arguments may refer to the preceding string result. Return the result directly. Extra statements, try/catch, loops, conditionals, computed tool names, discovery globals, models, text, image, store, load, and console calls are unsupported. Tool failures propagate to the caller.';
  return `import {createCodemodeToolDefinition} from ${JSON.stringify(nativeToolUrl)};\n`
   +`const definitions=new WeakSet();\n`
-   +`export function createOwnedCodemodeDefinition(options={}){const fixedOptions=Object.freeze({...options});const original=createCodemodeToolDefinition(fixedOptions);const definition=Object.freeze({...original,defaultActive:false,execute:async(...args)=>(await import(${JSON.stringify(executorUrl)})).executeCodemode(...args,fixedOptions)});definitions.add(definition);return definition;}\n`
+   +`const guidance=${JSON.stringify(programGuidance)};\n`
+   +`function describeInspectedPrograms(description){const index=description.indexOf('\\n\\nNested tools:');return guidance+(index<0?'':description.slice(index));}\n`
+   +`export function createOwnedCodemodeDefinition(options={}){const fixedOptions=Object.freeze({...options});const original=createCodemodeToolDefinition(fixedOptions);const definition=Object.freeze({...original,description:describeInspectedPrograms(original.description),promptSnippet:'Run an inspected tool call or producer-and-successor program',promptGuidelines:[guidance],prepareLoadout(loadout){const prepared=original.prepareLoadout(loadout);return {...prepared,descriptions:{...prepared.descriptions,codemode:describeInspectedPrograms(prepared.descriptions.codemode)}};},defaultActive:false,execute:async(...args)=>(await import(${JSON.stringify(executorUrl)})).executeCodemode(...args,fixedOptions)});definitions.add(definition);return definition;}\n`
    +`export function isOwnedProgramDefinition(definition){return definitions.has(definition);}\n`;
 }
 
