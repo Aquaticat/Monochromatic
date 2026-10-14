@@ -7,6 +7,22 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-14.
 
+## SubQ authorization and compatibility check
+
+The user authorized sending anything needed to `subq.ai`
+using `AUTO_MODE_SUBQ_API_KEY`.
+The authenticated models endpoint returned HTTP 200 with `subq-snap-preview`.
+The [current contract check](../planning/pi-auto-mode-subq-current-contract.md)
+records the documented 16-question limit and a frozen 16/17-question synthetic boundary probe.
+No production provider or assessment-budget change is adopted.
+The pending Jev row-encoding correction remains tracked independently.
+
+The user also authorized sending anything needed to `liquid.ai`
+and added `AUTO_MODE_LIQUID_API_KEY`.
+The [Liquid contract check](../planning/pi-auto-mode-liquid-current-contract.md)
+records its documented hosted `d1` route and the initial public serving control.
+Both provider keys are present in the ignored local configuration.
+
 ## Drex 2.0 release check
 
 The user requested the best next action after reporting Drex 2.0.
@@ -186,6 +202,51 @@ The final owned rebuild,
 network-guard regressions,
 and real CLI process check pass.
 The rendered troubleshooting record retains the failing and passing evidence.
+
+The native semantic-policy forwarding is now TypeScript and consumes the maintained consumer's original types.
+`action-policy/assessment-model.ts` supplies the unchanged fixed model to both the wire and scope selector.
+Absent configuration stays at bootstrap selection;
+the typed copier receives present configuration only.
+The measured bridge scope changed from 11 warnings to zero warnings and zero errors,
+and package types pass.
+The rebuilt operating-policy and domain suites pass with authored responses and no provider requests.
+The unconfigured-policy SDK control reaches an unresolved review with all four consumers unconfigured,
+zero assessments,
+and zero tool executions.
+A process-local omission of the bootstrap absence guard fails at the expected policy-copier diagnostic;
+`${HOME}/temp/agent/pi-native-policy-absence-omission-second-20261014.log`
+retains the result and the harness verifies unchanged maintained artifact bytes.
+The first omission log lacked the final diagnostic after retaining 65,934 bytes;
+it was not accepted as a verified omission result.
+The second capture records the original exception before Node prints the bundled source context.
+No classifier definition,
+operating cutoff,
+or instruction-source membership changed.
+
+The latest Jev capacity diagnostic confirms that the 125,822-byte shared state fails
+even with one original question:
+HTTP 400 `max_tokens_exceeded` after 731.176 ms.
+Its literal-label serving control succeeded first.
+Splitting the same shared-state input is therefore insufficient.
+The placement experiment moved original question instructions out of shared state
+and back into their respective question entries with exact reconstruction checks.
+The 105,339-byte state still failed:
+the complete batch returned HTTP 400 `max_tokens_exceeded` in 1,049.183 ms,
+and its single-question control returned the same code in 518.147 ms.
+Both calls are terminal with no model answers.
+The offline structure comparison reconstructs every source and question exactly.
+Inlining single-use references reduces state to 95,749 bytes;
+combining that with shared ordered field lists reduces it to 88,015 bytes.
+The next frozen capacity schedule sends the complete inlined request first,
+then the combined representation only after recognized `max_tokens_exceeded`.
+Each call has a five-second deadline;
+there are no retries or production admissions.
+
+The inlined request returned `max_tokens_exceeded` in 1,233.578 ms.
+The combined row prototype instead failed gateway `invalid_union_discriminator` validation:
+it wrapped required question-envelope fields in rows.
+That owned encoding defect invalidates the combined candidate as a capacity measurement.
+The next local correction preserves the envelopes and adds a failing/passing envelope preflight.
 
 ## Restart checkpoint after installing automatic Codex shell limits
 
