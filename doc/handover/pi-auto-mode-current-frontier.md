@@ -587,6 +587,10 @@ owned build,
 and all three built transformation suites pass.
 Disposable parser and reserved-private-name omission controls fail their intended assertions;
 the original copied module passes.
+The typed Session lifetime and disposal-completion generators pass scoped lint,
+package types,
+and the owned build.
+Comparisons retain identical generated native Session bytes after both transformations.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.

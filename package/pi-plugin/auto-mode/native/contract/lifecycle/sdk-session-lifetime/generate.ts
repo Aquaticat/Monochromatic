@@ -33,7 +33,10 @@ export function generateSession(source: string): string {
   /**
    Each lifetime preparation retains a separate diagnostic scope.
    */
-  const rl = tagged({ tag: generateSession.name, l });
+  const rl = tagged({
+    tag: generateSession.name,
+    l
+  });
   rl.debug('preparing original native Session lifetime ownership');
   if (source.includes('#custodyDisposed')) throw new NativeBatchBuildError('Native Session lifetime ownership is already installed');
   /**
@@ -72,7 +75,10 @@ export class AgentSession {
   /**
    Only original direct instance references acquire private member syntax.
    */
-  const referenceSource = privatizeNativeMembers({ source: fieldSource, members: ['sessionManager'] });
+  const referenceSource = privatizeNativeMembers({
+    source: fieldSource,
+    members: ['sessionManager']
+  });
   /**
    The original constructor assignment remains the unique capability installation site.
    */
@@ -97,7 +103,7 @@ export class AgentSession {
     from:'    dispose() {\n        try {',
     to:'    dispose() { return this.#disposeNative(); }\n    #disposeNative() {\n        this.#custodyDisposed = true;\n        try {'
   });
-  return disposalSource + '\n// Protect the native disposal route without freezing unrelated mutable session state.\nObject.defineProperty(AgentSession.prototype, "dispose", { writable: false, configurable: false });\n';
+  return `${disposalSource  }\n// Protect the native disposal route without freezing unrelated mutable session state.\nObject.defineProperty(AgentSession.prototype, "dispose", { writable: false, configurable: false });\n`;
 }
 
 //endregion Original Session lifetime remains private to the native constructor

@@ -32,7 +32,10 @@ export function generateCompletion(source: string): string {
  /**
   Each generated completion boundary retains its original transformation diagnostic.
   */
- const rl = tagged({ tag: generateCompletion.name, l });
+ const rl = tagged({
+   tag: generateCompletion.name,
+   l
+ });
  rl.debug('preparing native disposal completion observations');
  /**
   Shared immutable states retain the native disposal reader's original result identities.
@@ -85,7 +88,7 @@ export function readSessionDisposalState(session) { return readDisposalState(ses
    '\n    }\n',
    start
  );
- if (start === -1 || end <= start) throw new NativeBatchBuildError('Native disposal method boundary is unavailable');
+ if ((start === (-1)) || (end <= start)) throw new NativeBatchBuildError('Native disposal method boundary is unavailable');
  /**
   Original native cleanup remains intact inside the completion wrapper.
   */
@@ -93,7 +96,7 @@ export function readSessionDisposalState(session) { return readDisposalState(ses
    start+marker.length,
    end
  );
- if (!body.startsWith('        this.#custodyDisposed = true;') || !body.includes('cleanupSessionResources(this.sessionId);')) throw new NativeBatchBuildError('Native disposal body no longer matches its original lifetime and cleanup boundaries');
+ if ((!body.startsWith('        this.#custodyDisposed = true;')) || (!body.includes('cleanupSessionResources(this.sessionId);'))) throw new NativeBatchBuildError('Native disposal body no longer matches its original lifetime and cleanup boundaries');
  /**
   Completion is published only after the outermost original native cleanup finishes successfully.
   */
