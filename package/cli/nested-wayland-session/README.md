@@ -93,13 +93,13 @@ alternative considered are recorded in
 - Keeps the hosted app drawing when its own window is hidden or the host session is locked,
   so screenshots show the app's current frame.
 - Renders with no display at all when `--headless` is given,
-  through surfaceless EGL on the GPU render node,
+  through EGL on a GPU render node you choose with `--gpu` or on Mesa's software rasterizer,
   with the same control commands,
   screenshots,
   recordings,
   and input.
   The nested window stays the default;
-  see [Headless mode](#headless-mode).
+  see [Headless mode](#headless-mode) and [Choosing the GPU](#choosing-the-gpu).
 - Answers every control command with a plain machine-readable `ok`/`err` line.
 
 ## Requirements
@@ -125,8 +125,14 @@ At run time (present on virtually every Linux desktop):
  and either a running parent session
 (the default is a nested winit client of an existing compositor)
 or, with `--headless`,
-a DRM render node that Mesa's `EGL_MESA_platform_surfaceless` platform can open
-(a readable `/dev/dri/renderD*`).
+a DRM render node that Mesa's EGL can open
+(a readable `/dev/dri/renderD*`)
+or Mesa's software rasterizer (`llvmpipe`, the `EGL_MESA_device_software` device),
+which is part of the standard Mesa packages.
+With `--headless --gpu software`,
+and with `--gpu auto` on a machine where no GPU can be opened,
+the software rasterizer is the only requirement;
+`--list-gpus` shows whether this host has it.
 
 ## Install
 
@@ -161,7 +167,8 @@ monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
     [--scale SCALE] [--color-scheme dark|light] [--accent-color RRGGBB]
     [--notifications none|freedesktop|kde] [--launcher-log] [--accessibility]
     [--repeat-rate PER_SECOND] [--repeat-delay MS] [--isolate]
-    [--app-cpu-quota PCT] [--app-cpu-weight N] [--headless] [--] COMMAND [ARG...]
+    [--app-cpu-quota PCT] [--app-cpu-weight N] [--headless [--gpu auto|software|NODE]] [--] COMMAND [ARG...]
+monochromatic-nested-wayland-session --list-gpus
 ```
 
 - `--socket PATH` enables the control API on a Unix socket at `PATH`.
@@ -236,6 +243,21 @@ monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
   and no window appears anywhere.
   It is never chosen automatically;
   see [Headless mode](#headless-mode).
+- `--gpu GPU` chooses the device a headless session renders on,
+  and is valid only together with `--headless`.
+  `auto` (the default) is today's behavior with a safety net:
+  Mesa's default render node,
+  then the other render nodes,
+  then software rendering.
+  `software` is Mesa's CPU rasterizer.
+  A path such as `/dev/dri/renderD128` names one render node.
+  An explicit choice never falls back to another device.
+  The nested window renders on the GPU of its parent compositor,
+  which this tool cannot choose,
+  so `--gpu` without `--headless` is an error that says so;
+  see [Choosing the GPU](#choosing-the-gpu).
+- `--list-gpus` prints the devices `--gpu` accepts and exits,
+  with no client command and no display needed.
 - `COMMAND [ARG...]` is the single client to host.
    Everything after `--` (or the first
   non-flag token) is the command,
@@ -304,14 +326,12 @@ the compositor strips `WAYLAND_SOCKET`,
 `DISPLAY`,
 and `XAUTHORITY` from the app's environment and points `WAYLAND_DISPLAY` at its own socket.
 
-Which GPU renders is Mesa's default choice of render node for the surfaceless platform,
+Which device renders is chosen with `--gpu`;
+without it Mesa's default render node is used as before,
 and the log line `headless: surfaceless EGL display opened` names the node.
-On a host with several GPUs the default may not be the display GPU.
-When the EGL device is a software rasterizer (such as `llvmpipe`) the log says so,
-and the app is then drawn on the CPU.
-The client allocates its buffers on that same node,
-because the compositor advertises the format and modifier pairs of its own EGL display
-as `zwp_linux_dmabuf_v1` version 4 default feedback.
+See [Choosing the GPU](#choosing-the-gpu) for the other choices,
+the software rasterizer,
+and what happens on a machine with no usable GPU.
 
 Use `mise run //package/cli/nested-wayland-session:inspect:headless` to verify the built release binary.
 The task removes every parent display variable from the compositor's environment,
@@ -323,6 +343,102 @@ the frame callback rate,
 that a decoy parent socket receives no connection,
 and that a start with no display and no flag fails with a message naming `--headless`.
 It needs `slint-viewer`.
+
+### Choosing the GPU
+
+A headless session has no parent compositor whose GPU it could inherit,
+so `--gpu` names the device:
+
+```sh
+# List what this host offers, then pick one.
+monochromatic-nested-wayland-session --list-gpus
+monochromatic-nested-wayland-session --headless --gpu /dev/dri/renderD128 --socket /tmp/nws.sock -- my-app
+monochromatic-nested-wayland-session --headless --gpu software --socket /tmp/nws.sock -- my-app
+```
+
+`--list-gpus` prints one line per device.
+Each line starts with the value to pass to `--gpu`,
+then the PCI id and kernel driver from sysfs and the Mesa renderer string,
+for example `/dev/dri/renderD128 pci=1002:7480 driver=amdgpu renderer=AMD Radeon RX 7600 (radeonsi, ...)`,
+and `software renderer=llvmpipe (LLVM 22.1.8, 256 bits)`.
+A device Mesa lists but cannot open shows `unusable:` and the reason.
+The last line names the device `auto` uses on this host.
+
+The three choices are:
+
+- `auto` is the default and, on a machine with a usable GPU, behaves as headless did before the option existed.
+  Mesa's default render node is tried first.
+  If it cannot be opened or initialized,
+  or if Mesa answers with its CPU rasterizer because it found no node it can use,
+  the other render nodes are tried in path order,
+  and software rendering is the last resort.
+  Only `auto` falls back.
+  When it does,
+  the log says so at info level with every attempt and why it failed:
+  `headless: auto fell back because earlier devices could not be used`,
+  followed by `headless: rendering on this device`.
+- `software` renders with Mesa's `llvmpipe` on the CPU and opens no GPU.
+  It starts only if Mesa lists a software device;
+  otherwise the start fails and says so.
+- A render node path such as `/dev/dri/renderD128` renders on that GPU.
+  The path is matched to EGL's devices by device number,
+  so a `/dev/dri/by-path/...-render` symlink works.
+  A primary node such as `/dev/dri/card0` is refused with the render node to use instead.
+  If the node cannot be used,
+  the start fails with a message that names the node,
+  the reason,
+  and the devices this host offers.
+  An explicit choice never falls back to another device,
+  so a script that asks for one GPU never silently renders on another or on the CPU.
+
+When every attempt of `auto` fails,
+the start fails and lists each attempt in order with its reason.
+The `gpu` control command answers which device is in use:
+`ok device=/dev/dri/renderD129 choice=auto fallback=no renderer=...`,
+where `device` is a render node path or `software`,
+`fallback` is `yes` when `auto` used a later attempt than the first,
+and the renderer string comes last because it contains spaces.
+The nested window answers `device=parent choice=parent`.
+
+The hosted client renders on the same device as the compositor.
+A client that uses EGL on Wayland follows the `zwp_linux_dmabuf_v1` default feedback,
+which names the compositor's render node,
+so it allocates its buffers on that GPU.
+Two environment variables of the caller would pull it elsewhere,
+and the compositor sets the child's environment from the final choice:
+
+- `software` sets `LIBGL_ALWAYS_SOFTWARE=1` for the child.
+  A software device has no render node to name,
+  so the compositor advertises `zwp_linux_dmabuf_v1` version 3 without feedback,
+  and the client's Mesa draws on the CPU into `wl_shm` buffers,
+  which the compositor composites like any other client buffer.
+  The software device lacks `EGL_WL_bind_wayland_display`,
+  so the legacy `wl_drm` global is not offered either,
+  and no client is pointed at a DRM node.
+- An explicit choice,
+  or a fallback,
+  removes `DRI_PRIME` from the child's environment.
+  With `DRI_PRIME` set the client moved its rendering to the other GPU of the test host
+  while the compositor stayed on its own.
+  `auto` without a fallback leaves the child's environment exactly as it was.
+
+Measured on a host with an integrated AMD GPU (`renderD129`, PCI `1002:164e`),
+a discrete AMD GPU (`renderD128`, PCI `1002:7480`),
+and Mesa 26.2:
+each node rendered offscreen and imported a Slint client's dmabufs,
+the client held open only the chosen node,
+and the software device rendered the same client into `wl_shm` buffers with no DRM node open.
+`inspect:headless-gpu` repeats this for every device the host lists.
+
+Limits:
+
+- A client that picks its own Vulkan adapter (a `wgpu` or Vulkan renderer) is not steered by these variables,
+  and this was not measured.
+  A client that uses EGL or OpenGL on Wayland follows the compositor.
+- `LIBGL_ALWAYS_SOFTWARE=1` in the compositor's own environment makes Mesa list only the software device,
+  so a GPU choice then fails and the message says why.
+- The listing and the choice cover the devices Mesa's EGL lists.
+  A GPU without a Mesa driver does not appear.
 
 ### Isolated clipboard
 
@@ -1583,6 +1699,8 @@ It also checks that `title` and `app-id` follow the client's own title change.
   see [Cursor shape](#cursor-shape).
 - `a11y` reads the accessibility tree started by `--accessibility`;
   see [Read the accessibility tree](#read-the-accessibility-tree).
+- `gpu` answers the device the compositor renders on;
+  see [Choosing the GPU](#choosing-the-gpu).
 - `quit` stops the compositor.
 
 Payloads are passed through verbatim:
@@ -1780,6 +1898,20 @@ Tasks fall back to the host automatically when the development libraries are pre
   a decoy parent socket that must receive no connection,
   and the failure message of a start with no display and no flag.
   It needs `slint-viewer` and takes the binary from `NWS_BINARY` like `inspect:input`.
+- `mise run //package/cli/nested-wayland-session:inspect:headless-gpu` runs a hosted Slint session once per device
+  that `--list-gpus` reports (each render node and `software` on this host).
+  For each it checks that the client's frames reach the screenshot,
+  that a click changes the screenshot,
+  that the `gpu` answer names the device,
+  and that the hosted client opened only that device's DRM node (none for software).
+  It then hides `/dev/dri` from the compositor with `bwrap` in a private mount view,
+  which changes nothing on the host,
+  and checks that `auto` falls back to software and logs why,
+  that `--gpu software` works there,
+  that an explicit render node fails instead of falling back,
+  that a start with no usable device lists every attempt,
+  and that bad `--gpu` values fail with messages that name the way forward.
+  It needs `slint-viewer` and `bwrap`.
 - `mise run //package/cli/nested-wayland-session:verify:container` is the reference build
   that builds,
    clippys,
@@ -1801,12 +1933,12 @@ with no display at all,
 What a person can do that this tool cannot,
 and why.
 
-- Choosing the GPU in headless mode:
-  the render node is Mesa's default for `EGL_MESA_platform_surfaceless`,
-  and there is no option to name another one.
-  A host without a render node,
-  or without Mesa's surfaceless platform,
-  fails to start with `--headless` and says why.
+- Choosing the GPU of the nested window:
+  it renders on the GPU of its parent compositor,
+  which this tool cannot choose,
+  so `--gpu` is accepted only with `--headless`.
+- Steering a client that picks its own Vulkan adapter:
+  the compositor sets only the variables Mesa's EGL and OpenGL read in the client.
 - Watching a headless session:
   it has no window to restore.
   Use `screenshot` or `record`,
@@ -1835,6 +1967,28 @@ and why.
   text ranges,
   and change events:
   `a11y` reads the tree only.
+
+## Changes in the next version
+
+- New `--gpu auto|software|NODE` option picks the device of a headless session;
+  it is valid only together with `--headless`.
+  Without it the behavior is `auto`,
+  which starts on Mesa's default render node as before.
+- `auto` now falls back instead of failing or silently rendering in software:
+  Mesa's default render node,
+  then the other render nodes,
+  then Mesa's software rasterizer,
+  with a log line that lists what failed.
+  An explicit `--gpu` choice never falls back.
+- New `--list-gpus` option prints the render nodes and the software renderer this host offers,
+  and the one `auto` uses.
+- New `gpu` control command answers the device in use.
+- A headless session sets the hosted child's environment from the final choice:
+  `LIBGL_ALWAYS_SOFTWARE=1` for software,
+  and no `DRI_PRIME` for an explicit choice or a fallback.
+- The nested window is unchanged,
+  and `--gpu` without `--headless` is an error.
+- New `inspect:headless-gpu` task.
 
 ## Changes in 0.5.0
 
