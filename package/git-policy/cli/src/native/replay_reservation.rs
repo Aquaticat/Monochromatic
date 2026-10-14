@@ -13,6 +13,8 @@
 //! await reservation.reserve(lostRaces);
 //! ```
 
+/// The backstop every wait on a live process is bounded by.
+use super::live_lock::{LIVE_WAIT_VARIABLE, live_wait_limit};
 /// Owner-lock records and their liveness.
 use super::owner_lock::{OwnerLock, OwnerLockError, try_acquire_owner_lock};
 use super::owner_lock_record::{
@@ -27,8 +29,8 @@ use super::private_storage::{sync_directory, write_private_file};
 use super::recovery_error::RecoveryError;
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
-/// Delay between reservation checks.
-use std::time::Duration;
+/// Delay between reservation checks, and the clock a wait is measured on.
+use std::time::{Duration, Instant};
 
 /// Name of the request file inside a transaction directory.
 pub const RESERVATION_REQUEST_FILENAME: &str = "reservation-request";
@@ -58,6 +60,36 @@ pub enum ReservationError {
     Identity(String),
     /// A request file or its directory could not be written.
     Write(std::io::Error),
+    /// A live reservation holder or an older live requester kept the slot until the wait limit ran out.
+    WaitTimedOut {
+        /// How long this transaction waited.
+        waited: Duration,
+        /// The reservation holder's process, when one holds it and its record could be read.
+        holder_pid: Option<i64>,
+    },
+}
+
+/// Text of each failure:
+///  the debug form for the failures that carry another error, a sentence for a refused wait.
+impl std::fmt::Display for ReservationError {
+    /// Writes the diagnostic text of the failure.
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        return match self {
+            Self::WaitTimedOut { waited, holder_pid } => {
+                let who: String = match holder_pid {
+                    Some(pid) => format!("process {pid} holds the reservation"),
+                    None => String::from("an older live landing request holds the next slot"),
+                };
+                write!(
+                    formatter,
+                    "gave up after waiting {} seconds for the next landing slot because {who}; \
+                     {LIVE_WAIT_VARIABLE} sets how long to wait, and nothing was taken from that process",
+                    waited.as_secs()
+                )
+            }
+            other => write!(formatter, "{other:?}"),
+        };
+    }
 }
 
 /// What:
@@ -219,10 +251,46 @@ impl LandingReservation {
     /// await reservation.awaitSlot();
     /// ```
     pub fn await_slot(&self) -> Result<(), ReservationError> {
+        return self.await_slot_for(live_wait_limit());
+    }
+
+    /// What:
+    ///  Waits while a live reservation owned by another transaction exists, for at most `limit`.
+    /// Why:
+    ///   Tests and the default wait share one loop; only the limit differs.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// await reservation.awaitSlot({ limitMs });
+    /// ```
+    pub fn await_slot_for(&self, limit: Duration) -> Result<(), ReservationError> {
+        let started: Instant = Instant::now();
         while self.held_by_another()? {
+            self.refuse_after(started, limit)?;
             std::thread::sleep(RESERVATION_POLL);
         }
         return Ok(());
+    }
+
+    /// What:
+    ///  Refuse to keep waiting once `limit` has passed since `started`.
+    /// Why:
+    ///   A live process that never finishes its landing would otherwise hold every other transaction for good;
+    ///  the refusal names it and leaves its lock and request alone.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// if (Date.now() - startedMs >= limitMs) throw new ReservationTimeout(holderPid);
+    /// ```
+    fn refuse_after(&self, started: Instant, limit: Duration) -> Result<(), ReservationError> {
+        let waited: Duration = started.elapsed();
+        if waited < limit {
+            return Ok(());
+        }
+        let holder_pid: Option<i64> = live_holder(self.lock_directory().as_path())?.map(|record| {
+            return record.owner_pid;
+        });
+        return Err(ReservationError::WaitTimedOut { waited, holder_pid });
     }
 
     /// What:
@@ -237,6 +305,19 @@ impl LandingReservation {
     /// await reservation.reserve(lostRaces); // false when already held or not applicable
     /// ```
     pub fn reserve(&mut self, lost_races: u64) -> Result<bool, ReservationError> {
+        return self.reserve_for(lost_races, live_wait_limit());
+    }
+
+    /// What:
+    ///  Writes the request and waits for the grant, for at most `limit`.
+    /// Why:
+    ///   Tests and the default wait share one loop; only the limit differs.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// await reservation.reserve(lostRaces, { limitMs });
+    /// ```
+    pub fn reserve_for(&mut self, lost_races: u64, limit: Duration) -> Result<bool, ReservationError> {
         if self.nested || self.held.is_some() {
             return Ok(false);
         }
@@ -246,6 +327,7 @@ impl LandingReservation {
         )
         .map_err(ReservationError::Write)?;
         sync_directory(self.transaction_directory.as_path()).map_err(ReservationError::Write)?;
+        let started: Instant = Instant::now();
         loop {
             let lock_directory: PathBuf = self.lock_directory();
             let free: bool = live_holder(lock_directory.as_path())?.is_none();
@@ -260,6 +342,7 @@ impl LandingReservation {
                 self.held = Some(lock);
                 return Ok(true);
             }
+            self.refuse_after(started, limit)?;
             std::thread::sleep(RESERVATION_POLL);
         }
     }
