@@ -11,6 +11,9 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
  Transport diagnostics exclude credentials, request content, and upstream response text.
  */
 export class AssessmentTransportError extends Error {
+  /**
+   Identify the transport boundary without retaining borrowed failure causes.
+   */
   override readonly name = 'AssessmentTransportError';
 }
 
@@ -28,6 +31,16 @@ export type AssessmentTransportInput = {
  Fixed private-data route retained from the verified native transport.
  */
 const endpoint = 'https://api.llmgateway.io/v1/systemone';
+/**
+ Inherited judgment and transport bounds remain fixed at bootstrap.
+ */
+const limits = {
+  durationMs: 5_000,
+  attempts: 3,
+  requestBytes: 1_048_576,
+  responseBytes: 65_536,
+  successfulStatus: 200,
+} as const;
 /**
  Transport logs contain lifecycle information only.
  */
@@ -78,13 +91,14 @@ export function createAssessmentSender({
    @throws AssessmentTransportError when cancellation or the original deadline prevents dispatch
    */
   function remaining(input: AssessmentTransportInput): number {
+    tagged({ tag: remaining.name, l: rl, },).debug('checking original assessment lifetime',);
     if (input.signal.aborted)
       throw new AssessmentTransportError('Original assessment was cancelled',);
     /**
      Preparation time has already consumed part of the original five-second budget.
      */
     const left = input.deadlineAt - now();
-    if (!Number.isFinite(left,) || left < 1 || left > 5_000)
+    if (!Number.isFinite(left,) || left < 1 || left > limits.durationMs)
       throw new AssessmentTransportError('Original assessment deadline is expired or outside its five-second budget',);
     return left;
   }
@@ -106,22 +120,22 @@ export function createAssessmentSender({
     readonly response: Response;
     readonly input: AssessmentTransportInput;
   }): Promise<string> {
+    tagged({ tag: readResponse.name, l: rl, },).debug('consuming bounded assessment response',);
     if (response.body === null)
       throw new AssessmentTransportError('Assessment HTTP response has no body',);
     /**
      Retained chunks never exceed the inherited 64-KiB response limit.
      */
-    const chunks: Uint8Array[] = [];
-    let length = 0;
+    const received: {chunks: Uint8Array[]; length: number} = { chunks: [], length: 0, };
     for await (const chunk of response.body) {
       remaining(input,);
-      length += chunk.byteLength;
-      if (length > 65_536)
+      received.length += chunk.byteLength;
+      if (received.length > limits.responseBytes)
         throw new AssessmentTransportError('Assessment HTTP response exceeds 65536 bytes',);
-      chunks.push(chunk,);
+      received.chunks.push(chunk,);
     }
     remaining(input,);
-    return new TextDecoder('utf-8', { fatal: true, },).decode(Buffer.concat(chunks,),);
+    return new TextDecoder('utf-8', { fatal: true, },).decode(Buffer.concat(received.chunks,),);
   }
 
   /**
@@ -141,9 +155,9 @@ export function createAssessmentSender({
     sl.debug('preparing original assessment HTTP attempt',);
     try {
       remaining(input,);
-      if (!Number.isInteger(input.attempt,) || input.attempt < 1 || input.attempt > 3)
+      if (!Number.isInteger(input.attempt,) || input.attempt < 1 || input.attempt > limits.attempts)
         throw new AssessmentTransportError('Assessment HTTP attempt is outside the original three-attempt budget',);
-      if (Buffer.byteLength(input.body,) > 1_048_576)
+      if (Buffer.byteLength(input.body,) > limits.requestBytes)
         throw new AssessmentTransportError('Assessment HTTP request exceeds 1048576 bytes',);
       /**
        Credentials are read only for a dispatch that already has an admissible consumer.
@@ -182,7 +196,7 @@ export function createAssessmentSender({
       const raw = await readResponse({ response, input, },);
       if (raw.includes(key,))
         throw new AssessmentTransportError('Assessment response echoed its Gateway credential and was withheld',);
-      if (response.status !== 200)
+      if (response.status !== limits.successfulStatus)
         throw new AssessmentTransportError(`Assessment request returned HTTP ${response.status}`,);
       signal.throwIfAborted();
       sl.debug('original assessment HTTP response completed',);

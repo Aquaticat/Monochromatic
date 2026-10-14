@@ -24,7 +24,7 @@ await describe({
         const raw = '{"model":"jev-1.13.0","answers":{}}';
         const send = assessmentSender({
           fetchImpl: async function captureRequest(url, options) {
-            calls.push({ url: String(url), options, },);
+            calls.push({ url: String(url), ...(options === undefined ? {} : { options, }), },);
             return new Response(raw,);
           },
         },);
