@@ -205,6 +205,22 @@ The historical 16-question failure no longer excludes this route on question cou
 The deciding historical hosted implementation remains unavailable,
 so this result does not identify when or why that behavior changed.
 
+### Measured serialized-body boundary
+
+`mise run probe bytes` accepted exactly 4,194,304 serialized `state` plus `questions` bytes
+with HTTP 200 and `model: drex-v2.0`.
+Adding one byte returned HTTP 422 with `request body must be at most 4194304 bytes`.
+The complete HTTP body also contains the model field,
+so its corresponding accepted size was 4,194,324 bytes.
+This matches the documented counted-field scope,
+not a limit on the entire HTTP body.
+
+The successful control used whitespace padding and reported 32,795 input tokens.
+It establishes the byte boundary without pretending that ordinary text has the same token density.
+Its 8,632.385 ms elapsed time exceeded the unchanged five-second production budget.
+The rejected control returned in 3,342.758 ms.
+Single-run durations do not establish reliable latency or comparative performance.
+
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits
 [evaluate]: https://console.nace.ai/docs/drex/api-reference/systemone
