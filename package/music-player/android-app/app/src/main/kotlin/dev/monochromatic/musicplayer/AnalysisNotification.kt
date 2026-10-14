@@ -156,15 +156,16 @@ private fun pauseAction(context: Context, paused: Boolean): NotificationCompat.A
     return NotificationCompat.Action.Builder(icon, if (paused) RESUME_LABEL else PAUSE_LABEL, pending).build()
 }
 
-// What:     `private fun openAppIntent(context)` builds the tap target of the notification.
-// Why:      Tapping the notification brings the player back, the way tapping any media notification does.
+// What:     `internal fun openAppIntent(context)` builds the tap target of a notification.
+// Why:      Tapping the notification brings the player back, the way tapping any media notification does; the
+//           analysis-failure notification (D123) uses the same target.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // const openAppIntent = (context) => launchIntentOf(context.packageName);
 // ```
 /** Returns a pending intent that opens the app, or null when the app has no launcher activity. */
-private fun openAppIntent(context: Context): PendingIntent? {
+internal fun openAppIntent(context: Context): PendingIntent? {
     /** Launcher intent of this app, which brings the existing task forward. */
     val launch: Intent = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: return null
     return PendingIntent.getActivity(
