@@ -172,6 +172,16 @@ the remaining authorized mechanical queue includes native runtime lint/type comp
 and verification of the genuine human approval boundary.
 Successful installed governed execution remains blocked by the provider capacity and semantic evidence gates.
 
+The independent maintained CLI fixture check reproduced replacement of its fetch blocker by Pi 1.2.0 setup.
+The typed `native-host/process-network-guard.ts` now imports the dispatcher before overriding fetch.
+The required-red regression fails on the original blocker identity and passes after rebuilding.
+Initial setup,
+reconfiguration,
+data-URL rejection,
+and use outside the fixture are covered.
+The real CLI process check retains the expected Qwen model and clean shutdown.
+Changed-file lint and package types remain pending for this correction.
+
 ## Restart checkpoint after installing automatic Codex shell limits
 
 The user restarted the session and resumed work on 2026-10-13.

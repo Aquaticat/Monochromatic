@@ -61,11 +61,11 @@ The assertion runs before its data-URL probe,
 so this regression makes no external request even in the failing state.
 
 The emitted Pi 1.2.0 dispatcher at
-`package/pi-plugin/auto-mode/dist/native/pi/coding-agent/dist/core/http-dispatcher.js:94`
+`package/pi-plugin/auto-mode/dist/native/pi/coding-agent/dist/core/http-dispatcher.js:90`
 uses the same original-function comparison:
 
 ```javascript
-// Emitted Pi 1.2.0 core/http-dispatcher.js:94
+// Emitted Pi 1.2.0 core/http-dispatcher.js:90
 const shouldInstallGlobals = installedGlobalFetch === undefined
     ? globalThis.fetch === originalGlobalFetch
     : globalThis.fetch === installedGlobalFetch;
@@ -77,7 +77,14 @@ The regression covers initial setup,
 reconfiguration,
 actual fetch rejection,
 and rejection of use outside the explicitly marked fixture child.
-Post-fix verification is pending.
+After `build:native:owned`,
+both `test:native:process-network` cases pass.
+The real `test:native:cli-process` also passes with the expected Qwen model,
+idle RPC state,
+empty stderr,
+and clean shutdown.
+This verifies fetch blocking through the native dispatcher;
+it is not a general network namespace isolation claim.
 
 ## Pi 1.1.0 retained callback options shift an owned source fixture
 
