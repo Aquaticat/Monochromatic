@@ -524,7 +524,7 @@ class SearchPageWiringTest {
         assertEquals(
             "no ring before keyboard focus",
             scheme.surfaceContainerLowest.toArgb(),
-            rowNode.captureToImage().toPixelMap()[1, 108].toArgb(),
+            rowNode.captureToImage().toPixelMap()[4, 108].toArgb(),
         )
         focusFirstRowByKeyboard()
         /** Pixels of the focused row. */
