@@ -1677,6 +1677,25 @@ importers:
         specifier: 'catalog:'
         version: 26.6.4
 
+  package/dev-script/claude-cpu-cap:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.4
+
   package/dev-script/deps-cube:
     dependencies:
       '@deck.gl/core':

@@ -1,18 +1,84 @@
 // Stats for a sustained-load episode: the sample rows between two UTC times, read-only.
 // Usage: node analyze-episode.ts <from-utc> <to-utc> [local-date, default today]
-import { readFileSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { readFile, } from 'node:fs/promises';
+import { join, } from 'node:path';
+import { resolvePaths, } from './paths.ts';
+import { columnStats, } from './sample-stats.ts';
 
-const [from, to] = [process.argv[2]!, process.argv[3]!];
-const day = process.argv[4] ?? new Date().toLocaleDateString('sv');
-const lines = readFileSync(join(homedir(), '.local', 'share', 'claude-cpu-cap', 'samples', `${day}.csv`), 'utf8').trim().split('\n');
-const header = lines[0]!.split(',');
-const rows = lines.slice(1).map((line) => line.split(',')).filter((row) => row[0]! >= from && row[0]! <= to);
-const col = (name: string): number[] => rows.map((row) => Number(row[header.indexOf(name)]));
-const median = (values: number[]): number => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]!;
-console.log('rows', rows.length, from, to);
-for (const name of ['tctl_c', 'tccd1_c', 'tccd2_c', 'package_w', 'average_mhz', 'cpu_pressure_some_avg10', 'load1', 'fan1_rpm', 'fan2_rpm', 'fan4_rpm', 'fan5_rpm', 'fan6_rpm', 'corsair_probe_c', 'chiplet1_w', 'chiplet2_w', 'board3_c', 'board5_c', 'nvme_c']) {
-  const values = col(name);
-  console.log(name.padEnd(24), 'median', median(values), 'min', Math.min(...values), 'max', Math.max(...values));
+/**
+ Columns worth comparing between episodes.
+ */
+const COLUMNS: readonly string[] = [
+  'tctl_c',
+  'tccd1_c',
+  'tccd2_c',
+  'package_w',
+  'average_mhz',
+  'cpu_pressure_some_avg10',
+  'load1',
+  'fan1_rpm',
+  'fan2_rpm',
+  'fan4_rpm',
+  'fan5_rpm',
+  'fan6_rpm',
+  'corsair_probe_c',
+  'chiplet1_w',
+  'chiplet2_w',
+  'board3_c',
+  'board5_c',
+  'nvme_c',
+];
+
+/**
+ Width the column names are padded to in the output.
+ */
+const NAME_WIDTH = 24;
+
+/**
+ Earliest and latest UTC time, from the first two arguments.
+ */
+const [from = '', to = '', day = new Date().toLocaleDateString('sv',),] = process.argv
+  .slice(2,);
+
+/**
+ Directory of the daily sample files.
+ */
+const { sampleDir, } = resolvePaths({
+  env: process.env,
+  uid: process.getuid?.() ?? 0,
+},);
+
+/**
+ Statistics of the requested columns inside the range.
+ */
+const stats = columnStats({
+  csv: await readFile(
+    join(
+      sampleDir,
+      `${day}.csv`,
+    ),
+    'utf8',
+  ),
+  from,
+  to,
+  names: COLUMNS,
+},);
+
+console.log(
+  'rows',
+  stats.rows,
+  from,
+  to,
+);
+for (const column of stats.columns) {
+  console.log(
+    column.name
+      .padEnd(NAME_WIDTH,),
+    'median',
+    column.median,
+    'min',
+    column.min,
+    'max',
+    column.max,
+  );
 }
