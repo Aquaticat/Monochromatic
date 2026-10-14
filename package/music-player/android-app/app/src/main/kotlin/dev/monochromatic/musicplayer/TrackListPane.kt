@@ -103,9 +103,9 @@ import dev.monochromatic.musicplayer.core.TrackRowModel
 import dev.monochromatic.musicplayer.core.currentPositionOf
 import dev.monochromatic.musicplayer.core.entryKeyOf
 import dev.monochromatic.musicplayer.core.isSamePageUpdate
-import dev.monochromatic.musicplayer.core.libraryIndexNear
 import dev.monochromatic.musicplayer.core.pageEntryScrollTarget
 import dev.monochromatic.musicplayer.core.pageIdentityOf
+import dev.monochromatic.musicplayer.core.reportFirstVisibleTrack
 import dev.monochromatic.musicplayer.core.rowWithPlayingFlag
 
 // What:     `private val ROW_MIN_HEIGHT: Dp = 48.dp` is the smallest height of a track row and a header.
@@ -227,16 +227,6 @@ internal val LocalPlayingIndex: ProvidableCompositionLocal<Int?> = compositionLo
 /** Composition local holding the cell the list writes its first visible track's library index to, or null. */
 internal val LocalFirstVisibleTrack: ProvidableCompositionLocal<MutableIntState?> = staticCompositionLocalOf { null }
 
-// What:     `internal const val NO_VISIBLE_TRACK: Int = -1` is the value of the cell while no track is on screen.
-// Why:      A library index is never negative, so -1 cannot be mistaken for a track.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const NO_VISIBLE_TRACK = -1;
-// ```
-/** Value of the first visible track cell before the list has reported, or when the list shows no track. */
-internal const val NO_VISIBLE_TRACK: Int = -1
-
 // What:     `val HostKeyLocalRevealFolder: ProvidableCompositionLocal<Int>` carries the folder reveal count.
 // Why:      The host bumps the count when the deck's folder part is tapped, and the track list scrolls to the playing
 //           track's subfolder header. It sits here, not beside HostKeyLocalReveal, because the list is its only reader.
@@ -317,9 +307,11 @@ fun trackListPane(
     }
     LaunchedEffect(listState, entries, firstVisibleSink) {
         if (firstVisibleSink != null) {
-            snapshotFlow { listState.firstVisibleItemIndex }.collect { position ->
-                firstVisibleSink.intValue = libraryIndexNear(entries, position) ?: NO_VISIBLE_TRACK
-            }
+            reportFirstVisibleTrack(
+                positions = snapshotFlow { listState.firstVisibleItemIndex },
+                entries = entries,
+                report = { index -> firstVisibleSink.intValue = index },
+            )
         }
     }
     /** Count of reveal requests from the host, each of which scrolls to and focuses the playing row. */

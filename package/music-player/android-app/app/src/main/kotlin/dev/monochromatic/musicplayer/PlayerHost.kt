@@ -194,7 +194,8 @@ import dev.monochromatic.musicplayer.core.HostKeyLayout
 import dev.monochromatic.musicplayer.core.HostKeyZone
 import dev.monochromatic.musicplayer.core.adjacentFolderLabel
 import dev.monochromatic.musicplayer.core.rightPaneClearance
-import dev.monochromatic.musicplayer.core.runPassPerStep
+import dev.monochromatic.musicplayer.core.NO_VISIBLE_TRACK
+import dev.monochromatic.musicplayer.core.pageMeasurePasses
 import dev.monochromatic.musicplayer.core.seekTargetSec
 import dev.monochromatic.musicplayer.core.MenuAnchorRect
 import dev.monochromatic.musicplayer.core.PlayingPlace
@@ -597,7 +598,8 @@ fun playerHost(
             controller.uriAt(entry.index)?.let { uri -> Track(uri = uri, displayPath = entry.name) }
         }
     }
-    // What:     `LaunchedEffect(staleMeasures, pageTracks)` reads the page's unmeasured tracks, a pass per sweep step.
+    // What:     `LaunchedEffect(staleMeasures, pageTracks)` hands the page and its reads to `pageMeasurePasses`, which
+    //           reads the unmeasured tracks, a pass per sweep step.
     // Why:      A new page or an invalidated measure restarts the reading. A sweep step (the sweep reports every few
     //           tracks) only asks for another pass after the running one, because restarting at every step cancelled
     //           the batch in flight and began again at the top, so the rows of a 10,000 track page got their
@@ -607,7 +609,7 @@ fun playerHost(
     // ```ts
     // useEffect(() => {
     //   const ctl = new AbortController();
-    //   runPassPerStep(sweepDoneChanges(), () => refreshPage(pageTracks, () => measures, publish), ctl.signal);
+    //   pageMeasurePasses(sweepDoneChanges(), pageTracks, () => measures, firstVisibleUri, read, publish, ctl.signal);
     //   return () => ctl.abort();
     // }, [pageTracks, stale]);
     // ```
@@ -615,19 +617,15 @@ fun playerHost(
     val staleMeasures: Set<String> = MeasureInvalidation.pending
     LaunchedEffect(staleMeasures, pageTracks) {
         controller.dropMeasures(MeasureInvalidation.take())
-        runPassPerStep(steps = snapshotFlow { SweepProgress.snapshot.done }) {
-            TrackMeasures.refreshPage(
-                context = context,
-                tracks = pageTracks,
-                known = { controller.uiState.measures },
-                startAt = {
-                    /** URI of the first track on screen, or null when the list has not reported one. */
-                    val firstUri: String? = controller.uriAt(firstVisibleTrack.intValue)
-                    pageTracks.indexOfFirst { track -> track.uri == firstUri }
-                },
-                publish = { updates -> controller.mergeMeasures(updates) },
-            )
-        }
+        pageMeasurePasses(
+            steps = snapshotFlow { SweepProgress.snapshot.done },
+            tracks = pageTracks,
+            known = { controller.uiState.measures },
+            firstVisibleUri = { controller.uriAt(firstVisibleTrack.intValue) },
+            read = { batch -> TrackMeasures.readMeasures(context, batch) },
+            publish = { updates -> controller.mergeMeasures(updates) },
+            log = { line -> Log.i(MEASURE_TAG, line) },
+        )
     }
     /** Measure of the playing track, read from the library-wide measures so the deck shows it on any folder. */
     val playingMeasure: TrackMeasure? = state.currentIndex

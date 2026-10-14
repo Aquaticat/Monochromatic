@@ -36,7 +36,9 @@
     "@monochromatic-dev/agent-harness-shared-shell-command-analyzer": "workspace:*",
     "@monochromatic-dev/pi-shared-model-review": "workspace:*",
     "@monochromatic-dev/pi-shared-model-selection": "workspace:*",
-    "nano-spawn": "catalog:"
+    "nano-spawn": "catalog:",
+    "satteri": "catalog:auto-mode-native",
+    "yuku-parser": "catalog:auto-mode-native"
   },
   "devDependencies": {
     "@earendil-works/pi-ai": "catalog:",

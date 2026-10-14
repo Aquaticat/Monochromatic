@@ -57,3 +57,7 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...
 
 [tasks."test:unit"]
 extends = "test:unit"
+
+[tasks."dependencies:install"]
+description = "Install declared native parsers and regenerate the workspace lock without lifecycle scripts"
+run = "pnpm install --ignore-scripts"
