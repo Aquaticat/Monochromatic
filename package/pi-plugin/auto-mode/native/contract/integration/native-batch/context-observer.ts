@@ -86,7 +86,10 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
     readonly phase: NativeContextInput['phase'];
     readonly value: unknown;
   }): void {
-    tagged({tag:record.name,l:rl}).debug('retaining original context source value');
+    tagged({
+      tag:record.name,
+      l:rl
+    }).debug('retaining original context source value');
     /**
      Only the original active event can settle or receive source capture.
      */
@@ -113,7 +116,10 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
    @throws NativeContextContractError when settlement loses its original input
    */
   function settle(stage: NativeContextStage): void {
-    tagged({tag:settle.name,l:rl}).debug('retaining settled original callback input');
+    tagged({
+      tag:settle.name,
+      l:rl
+    }).debug('retaining settled original callback input');
     /**
      Only the original active event can settle or receive source capture.
      */

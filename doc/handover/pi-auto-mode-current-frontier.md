@@ -957,7 +957,21 @@ complete result capture,
 and settled input capture.
 Every retained failure log was inspected;
 the production artifact was not modified.
-Affected host and complete package-unit regressions are the next verification step.
+Native syntax checks pass for 188 maintained modules.
+The original Pi approval context passes Allow,
+Deny,
+Stop,
+cancellation,
+and approval after reload with fixture presentation.
+The actual host lifecycle passes reload,
+cancelled replacement,
+in-memory fork,
+persisted resume,
+and disposal retry.
+Those logs are `${HOME}/temp/agent/pi-native-context-syntax-20261014.log`,
+`${HOME}/temp/agent/pi-native-context-approval-20261014.log`,
+and `${HOME}/temp/agent/pi-native-context-host-20261014.log`.
+Complete package-unit regression and the rendered documentation check are next.
 This work adopts no production semantic policy,
 raises no budget,
 and does not activate the installed plugin.
