@@ -105,7 +105,12 @@ fn first_ink(built: &Built, row: usize) -> Option<usize> {
 fn premultiplied(rgb: [u8; 4], class: f32, band: f32) -> [u8; 4] {
     let alpha = (255.0 * IMAGE_ALPHA * class * band).round() as u32;
     let channel = |value: u8| return ((u32::from(value) * alpha + 127) / 255) as u8;
-    return [channel(rgb[0]), channel(rgb[1]), channel(rgb[2]), alpha as u8];
+    return [
+        channel(rgb[0]),
+        channel(rgb[1]),
+        channel(rgb[2]),
+        alpha as u8,
+    ];
 }
 
 /// The minimap is as wide as CodeGlance's 110 pixels, and shrinks to a sixth of a narrow view down to 15.
@@ -180,8 +185,15 @@ fn positions_outside_the_range_are_clamped_at_both_ends() {
     assert_eq!(geometry.y_of(-5.0), 0.0);
     assert_eq!(geometry.y_of(1e9), geometry.track());
     assert_eq!(geometry.drag_offset(500.0, 10.0, -1e6), 0.0);
-    assert_eq!(geometry.drag_offset(500.0, 10.0, 1e6), geometry.max_offset());
-    assert_eq!(geometry.centered(0.0), 0.0, "the first row cannot be centered");
+    assert_eq!(
+        geometry.drag_offset(500.0, 10.0, 1e6),
+        geometry.max_offset()
+    );
+    assert_eq!(
+        geometry.centered(0.0),
+        0.0,
+        "the first row cannot be centered"
+    );
     assert_eq!(geometry.centered(1e9), geometry.max_offset());
     assert_eq!(geometry.centered(1000.0), 700.0);
 }
@@ -189,7 +201,12 @@ fn positions_outside_the_range_are_clamped_at_both_ends() {
 /// A position on the minimap and the text position it shows are each other's inverse.
 #[test]
 fn a_minimap_position_and_its_text_position_are_each_others_inverse() {
-    for (rows, view) in [(100.0, 600.0), (5_000.0, 600.0), (50_000.0, 800.0), (30.0, 900.0)] {
+    for (rows, view) in [
+        (100.0, 600.0),
+        (5_000.0, 600.0),
+        (50_000.0, 800.0),
+        (30.0, 900.0),
+    ] {
         let geometry = Geometry::new(rows * CODE_ROW, view);
         let track = geometry.track();
         for step in 0..=20 {
@@ -297,7 +314,10 @@ fn a_short_text_is_drawn_with_the_first_pixel_of_each_row_empty() {
     for row in 0..10 {
         assert!(!inked(&built, row * 4), "the first pixel row of row {row}");
         for band in 1..4 {
-            assert!(inked(&built, row * 4 + band), "pixel row {band} of row {row}");
+            assert!(
+                inked(&built, row * 4 + band),
+                "pixel row {band} of row {row}"
+            );
         }
     }
     // The first glyph is the ASCII `l` in the default ink at the clean renderer's weights.
@@ -325,9 +345,16 @@ fn glyphs_take_the_syntax_ink_of_the_scheme() {
         let built = picture(&document, &map, &styles, colors, 1.0, 600.0, FULL_WORK);
         assert_eq!(pixel(&built, 0, 1), premultiplied(ink(5, colors), 0.8, 0.6));
         assert_eq!(pixel(&built, 2, 1), premultiplied(ink(5, colors), 0.8, 0.6));
-        assert_eq!(pixel(&built, 4, 1), premultiplied(colors.foreground, 0.8, 0.6));
+        assert_eq!(
+            pixel(&built, 4, 1),
+            premultiplied(colors.foreground, 0.8, 0.6)
+        );
     }
-    assert_ne!(ink(5, DARK), ink(5, LIGHT), "the two schemes have their own ink");
+    assert_ne!(
+        ink(5, DARK),
+        ink(5, LIGHT),
+        "the two schemes have their own ink"
+    );
 }
 
 /// A tab moves four columns, a glyph other than printable ASCII weighs half, and control characters draw nothing.
@@ -337,9 +364,19 @@ fn tabs_move_four_columns_and_other_glyphs_weigh_half() {
     let map = plain_map(&document);
     let built = picture(&document, &map, &[], DARK, 1.0, 600.0, FULL_WORK);
     assert_eq!(first_ink(&built, 1), Some(4), "a tab moves four columns");
-    assert_eq!(pixel(&built, 0, 5), premultiplied(DARK.foreground, 0.4, 0.6));
-    assert_eq!(pixel(&built, 1, 5)[3], 0, "a control character draws nothing");
-    assert_eq!(pixel(&built, 2, 5), premultiplied(DARK.foreground, 0.8, 0.6));
+    assert_eq!(
+        pixel(&built, 0, 5),
+        premultiplied(DARK.foreground, 0.4, 0.6)
+    );
+    assert_eq!(
+        pixel(&built, 1, 5)[3],
+        0,
+        "a control character draws nothing"
+    );
+    assert_eq!(
+        pixel(&built, 2, 5),
+        premultiplied(DARK.foreground, 0.8, 0.6)
+    );
 }
 
 /// A line is cut at the width of the picture, and a line far longer than it costs the build no shaping.
@@ -378,7 +415,10 @@ fn wrapped_lines_draw_one_band_for_each_visual_row() {
     let mut rows = LineRows::plain(lines);
     rows.apply(measured.lines.iter().copied());
     let wrapped = rows.rows(0);
-    assert!(wrapped >= 3, "the fixture wraps to {wrapped} rows at 400 px");
+    assert!(
+        wrapped >= 3,
+        "the fixture wraps to {wrapped} rows at 400 px"
+    );
     let map = RowMap::plain(lines).with_rows(&rows);
     let input = Input {
         document: &document,
@@ -400,7 +440,11 @@ fn wrapped_lines_draw_one_band_for_each_visual_row() {
     }
     // The first row starts after the four blanks of indent; a continuation row one column past them.
     assert_eq!(first_ink(&built, 2), Some(4));
-    assert_eq!(first_ink(&built, 4 + 2), Some(5), "indent 4 plus one for the mark");
+    assert_eq!(
+        first_ink(&built, 4 + 2),
+        Some(5),
+        "indent 4 plus one for the mark"
+    );
 }
 
 /// A block of virtual rows above a line is blank in the picture and the line below it is drawn.
@@ -426,7 +470,11 @@ fn a_long_text_is_sampled_within_the_track_and_the_budget() {
     let lines = document.text().len_lines();
     let mut rows = LineRows::plain(lines);
     // Every third line is wrapped to two rows.
-    rows.apply((0..lines).filter(|line| return line % 3 == 0).map(|line| return (line, 2)));
+    rows.apply(
+        (0..lines)
+            .filter(|line| return line % 3 == 0)
+            .map(|line| return (line, 2)),
+    );
     let map = RowMap::plain(lines).with_rows(&rows);
     let mut shaper = TextShaper::new();
     let input = Input {
@@ -441,7 +489,10 @@ fn a_long_text_is_sampled_within_the_track_and_the_budget() {
     };
     let built = build(&mut shaper, &input, FULL_WORK, &never).expect("a picture");
     assert_eq!(built.height, 1400);
-    assert!(built.stats.lines <= built.stats.pixel_rows, "one line for each pixel row at most");
+    assert!(
+        built.stats.lines <= built.stats.pixel_rows,
+        "one line for each pixel row at most"
+    );
     assert!(built.stats.shaped_lines <= built.stats.lines);
     assert!(built.stats.shaped_lines > 0, "wrapped lines were shaped");
     assert!(built.stats.work <= FULL_WORK);

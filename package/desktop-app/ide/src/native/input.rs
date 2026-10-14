@@ -70,7 +70,7 @@ struct Drag {
 /// ```ts
 /// function pointerPosition(current: State, line: number, x: number, y: number, scale: number): [number, Affinity];
 /// ```
-fn pointer_position(
+pub(super) fn pointer_position(
     current: &mut State,
     line: usize,
     point: (f32, f32),

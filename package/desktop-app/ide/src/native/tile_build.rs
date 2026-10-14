@@ -168,7 +168,7 @@ pub(super) fn build_tile(
 }
 
 /// Whether two typographies make the same glyphs.
-fn same_typography(left: &SourceTypography, right: &SourceTypography) -> bool {
+pub(super) fn same_typography(left: &SourceTypography, right: &SourceTypography) -> bool {
     return left.weight == right.weight
         && left.italic == right.italic
         && left.features == right.features;

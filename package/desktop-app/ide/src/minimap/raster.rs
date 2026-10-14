@@ -226,6 +226,19 @@ impl Spending {
     }
 }
 
+/// What:
+///  Logical width of one source column, which is one space of the source font.
+/// Why:
+///  A click on the minimap names a column by its pixel; the text position it stands for is that many advances in.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function columnAdvance(shaper: TextShaper, scale: number): number;
+/// ```
+pub fn column_advance(shaper: &mut TextShaper, scale: f32) -> f32 {
+    return shaper.space_advance(scale) / scale;
+}
+
 /// Number of characters of `line` without its terminator.
 fn visible_length(document: &Document, line: usize) -> usize {
     let slice = document.text().line(line);
@@ -273,9 +286,10 @@ fn describe(
     let count = input.map.rows_of(line);
     stats.lines += 1;
     let Some(wrap) = input.wrap.filter(|_| return count > 1) else {
+        // One row holds the whole line: a list of one range of char positions.
         return LineRows {
             line,
-            rows: vec![start..start + visible],
+            rows: std::iter::once(start..start + visible).collect(),
             indent,
         };
     };
@@ -377,10 +391,13 @@ fn paint_row(bytes: &mut [u8], width: usize, row: usize, cells: &[Cell], weight:
         };
         let alpha = (255.0 * IMAGE_ALPHA * class * weight).round() as u32;
         let from = ((cell.column as f32) * scale).round() as usize;
-        let to = (((cell.column + 1) as f32) * scale).round().max(from as f32 + 1.0) as usize;
+        let to = (((cell.column + 1) as f32) * scale)
+            .round()
+            .max(from as f32 + 1.0) as usize;
         for pixel in from..to.min(width) {
             for channel in 0..3 {
-                line[pixel * 4 + channel] = ((u32::from(cell.rgb[channel]) * alpha + 127) / 255) as u8;
+                line[pixel * 4 + channel] =
+                    ((u32::from(cell.rgb[channel]) * alpha + 127) / 255) as u8;
             }
             line[pixel * 4 + 3] = alpha as u8;
         }
@@ -423,7 +440,9 @@ pub fn build(
     // Source pixels of the text for each pixel row of the picture, and how many pixel rows a source row gets.
     let per_pixel = geometry.scale() * scale;
     // The small addend keeps four pixels a row at four when the product lands a hair under it.
-    let natural = ((CODE_ROW * geometry.scale() + 0.001).floor().clamp(1.0, 4.0)) as usize;
+    let natural = ((CODE_ROW * geometry.scale() + 0.001)
+        .floor()
+        .clamp(1.0, 4.0)) as usize;
     let mut described: Option<LineRows> = None;
     let mut drawn: Option<(usize, usize, Vec<Cell>)> = None;
     for pixel in 0..height {
@@ -452,7 +471,13 @@ pub fn build(
                 .as_ref()
                 .is_none_or(|rows| return rows.line != place.line)
             {
-                described = Some(describe(shaper, input, place.line, &mut spending, &mut stats));
+                described = Some(describe(
+                    shaper,
+                    input,
+                    place.line,
+                    &mut spending,
+                    &mut stats,
+                ));
             }
             let Some(rows) = described.as_ref() else {
                 continue;

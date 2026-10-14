@@ -7,6 +7,7 @@ import { FindBar } from "find.slint";
 import { LanguagePopup } from "hover.slint";
 import { ReferenceList, ReferenceEntry } from "references.slint";
 import { AnnotationInk } from "annotation.slint";
+import { Minimap } from "minimap.slint";
 import "../asset/font/InterVariable.ttf";
 import "../asset/font/InterVariable-Italic.ttf";
 import "../asset/font/JetBrainsMono-Variable.ttf";
@@ -204,7 +205,29 @@ export component AppWindow inherits Window {
     in property <int> selection-head;
     in-out property <length> scroll-y: 0px;
     out property <float> viewport-height: scroll.height / 1px;
-    out property <float> viewport-width: (scroll.width - root.gutter-width) / 1px;
+    // The text area is what the view leaves beside the gutter and the minimap; every report of the view's size and the
+    // wrap width native code derives from it use this one width.
+    private property <length> text-area-width: scroll.width - root.gutter-width - root.minimap-width;
+    out property <float> viewport-width: root.text-area-width / 1px;
+    // The minimap beside the text: CodeGlance Pro's 110 px, narrower in a narrow view (`ide_app::minimap::width_for`).
+    out property <length> minimap-width: clamp(round(scroll.width / 6px) * 1px, 15px, 110px);
+    // Native code builds the picture of the whole file; the box and the track follow the scroll live, from the text's
+    // height, the view's height, and the scroll offset alone (`ide_app::minimap::Geometry` holds the same formulas).
+    in property <image> minimap-image;
+    private property <length> minimap-content: max(root.content-extent * 1px, 1px);
+    private property <float> minimap-scale: min(4.0 / 24.0, scroll.height / root.minimap-content);
+    out property <length> minimap-track: min(root.minimap-content * root.minimap-scale, scroll.height);
+    out property <length> minimap-box-height: min(root.minimap-track, max(20px, scroll.height * root.minimap-scale));
+    private property <length> minimap-range: max(0px, root.minimap-content - scroll.height);
+    out property <length> minimap-box-top: root.minimap-range > 0px
+        ? max(0px, root.minimap-track - root.minimap-box-height) * clamp(-scroll.content-y / root.minimap-range, 0, 1) : 0px;
+    // A press on the minimap (distance from its top and left edge, Shift, on the box), a drag, a release, a page step
+    // from an assistive tool, and the minimap's size.
+    callback minimap-press(float, float, bool, bool);
+    callback minimap-drag(float);
+    callback minimap-release;
+    callback minimap-step(int);
+    callback minimap-resized(float, float);
     // Height of one code row; where rows are is decided by native code alone.
     private property <length> code-row: 24px;
     // The gutter, from its left edge: 6 px, a cell one letter wide, a 4 px gap, the line-number column, and 12 px
@@ -403,9 +426,9 @@ export component AppWindow inherits Window {
                     accessible-value: self.content-y / 1px;
 
                     // Retain native Flickable physics, including easing for notched wheels.
-                    changed content-y => { root.viewport-changed(-self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
-                    changed height => { root.viewport-changed(-self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
-                    changed width => { root.viewport-changed(-self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
+                    changed content-y => { root.viewport-changed(-self.content-y / 1px, root.text-area-width / 1px, self.height / 1px); }
+                    changed height => { root.viewport-changed(-self.content-y / 1px, root.text-area-width / 1px, self.height / 1px); }
+                    changed width => { root.viewport-changed(-self.content-y / 1px, root.text-area-width / 1px, self.height / 1px); }
 
                     for selection in root.source-selections: Rectangle {
                         x: root.gutter-width + selection.x * 1px;
@@ -545,6 +568,31 @@ export component AppWindow inherits Window {
                             root.pointer-hit(self.mouse-y / 1px,
                                 max(0, (self.mouse-x - root.gutter-width) / 1px), true);
                         }
+                    }
+
+                    // The minimap stands over the right edge of the text area and stays still on screen while the
+                    // content scrolls under it: it is a child of the Flickable on purpose, so a wheel turn over it
+                    // reaches the Flickable (the touch area has no scroll handler) and scrolls exactly as over the text.
+                    minimap := Minimap {
+                        x: scroll.width - self.width;
+                        y: -scroll.content-y;
+                        width: root.minimap-width;
+                        height: scroll.height;
+                        picture: root.minimap-image;
+                        track: root.minimap-track;
+                        box-height: root.minimap-box-height;
+                        box-top: root.minimap-box-top;
+                        offset: -scroll.content-y / 1px;
+                        range: root.minimap-range / 1px;
+                        press(y, x, shift, inside) => {
+                            // Keyboard scrolling keeps working after a press, so the source view keeps the focus.
+                            code-focus.focus();
+                            root.minimap-press(y / 1px, x / 1px, shift, inside);
+                        }
+                        drag(y) => { root.minimap-drag(y / 1px); }
+                        release => { root.minimap-release(); }
+                        step(direction) => { root.minimap-step(direction); }
+                        resized(width, height) => { root.minimap-resized(width / 1px, height / 1px); }
                     }
                 }
             }

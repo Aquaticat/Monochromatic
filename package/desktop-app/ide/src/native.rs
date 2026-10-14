@@ -158,6 +158,13 @@ mod inspect;
 ///  references,
 ///  and hover through the Language module.
 mod language;
+/// The minimap beside the source text: the scroll control, and the picture of the whole text built off-thread.
+mod minimap;
+/// The minimap's worker thread.
+mod minimap_build;
+/// The minimap's geometry, picture, and pointer paths.
+#[cfg(test)]
+mod minimap_tests;
 /// Project tree and asynchronous successful-file navigation.
 mod navigation;
 /// Missing targets and canonical aliases exercise reveal liveness and model identity.
@@ -502,6 +509,8 @@ struct State {
     tile_worker: Option<TileWorker>,
     /// Polls the tile worker's replies on the window thread while a re-center is queued.
     tile_poll: Timer,
+    /// The minimap beside the source text: its size, worker, timers, and the drag in progress.
+    minimap: minimap::MinimapState,
     /// What:
     ///  Calls of `render`, counted in debug builds for the structural tests of the overscan tile.
     /// Why:
@@ -621,6 +630,7 @@ impl State {
             tile_job: None,
             tile_worker: None,
             tile_poll: Timer::default(),
+            minimap: minimap::MinimapState::new(),
             #[cfg(debug_assertions)]
             renders: 0,
             #[cfg(debug_assertions)]
@@ -779,6 +789,7 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     window.set_file_label(SharedString::from(label));
     bind_pointer(&window, &state);
     bind_viewport(&window, &state);
+    minimap::bind(&window, &state);
     frame_trace::bind(&window);
     bind_keys(&window, &state);
     // Retain the timer until window shutdown; its Drop also closes and joins the worker.

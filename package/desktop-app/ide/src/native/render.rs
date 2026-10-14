@@ -107,7 +107,7 @@ fn model_rows(rectangles: &[ReadingRect]) -> Vec<SourceSelection> {
 }
 
 /// The palette of the source glyphs and selection, from the window's current colors.
-fn code_colors(window: &AppWindow) -> CodeColors {
+pub(super) fn code_colors(window: &AppWindow) -> CodeColors {
     // The palette's selection ink follows the color scheme while its selection fill does not,
     // so the ink is chosen from the fill that is actually drawn behind the selected glyphs.
     return CodeColors {
@@ -627,6 +627,8 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     };
     drop(current);
     show(window, state, frame);
+    // The minimap picture follows the text, the wrap width, and the rows; a plain scroll step changes none of them.
+    super::minimap::note(window, state);
     // The whole step the window thread took for a new width, from the allowance to the last setter of the frame.
     if let Some((at, (charged_lines, charged_work), (shaped, rebroken), settled)) = rewrapped {
         tracing::debug!(

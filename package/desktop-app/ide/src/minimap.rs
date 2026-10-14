@@ -15,5 +15,5 @@ pub use geometry::{
     Geometry, MIN_BOX, NARROWEST, PIXELS_PER_ROW, Target, VIEW_SHARE, WIDTH, width_for,
 };
 pub use raster::{
-    Built, FULL_WORK, IMAGE_ALPHA, Input, QUICK_WORK, Stats, TAB_COLUMNS, build,
+    Built, FULL_WORK, IMAGE_ALPHA, Input, QUICK_WORK, Stats, TAB_COLUMNS, build, column_advance,
 };
