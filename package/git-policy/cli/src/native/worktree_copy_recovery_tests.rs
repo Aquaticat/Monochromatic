@@ -8,7 +8,9 @@ use crate::worktree_copy_journal::{
 };
 use crate::worktree_copy_lock::{SETTLEMENT_LOCK_NAME, acquire_worktree_copy_lock};
 use crate::worktree_copy_selection::CopySelection;
-use crate::worktree_copy_stage::stage_ignored_snapshot;
+use crate::worktree_copy_stage::{new_stage_container, stage_ignored_snapshot};
+use crate::worktree_copy_stage_claim::{claim_stage, stage_claims_exist};
+use std::os::unix::fs::PermissionsExt;
 
 /// A repository with an ignored `cache` file and a linked worktree at `topic` that the copy would fill.
 fn linked_source(root: &Path) -> (PathBuf, PathBuf) {
@@ -38,7 +40,7 @@ fn linked_source(root: &Path) -> (PathBuf, PathBuf) {
 fn staged_journal(source: &Path, destination: &Path) -> PendingJournal {
     let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
     let snapshot: StagedSnapshot =
-        stage_ignored_snapshot(&git_context(), source, destination, &[], &CopySelection::Ignored).expect("staged");
+        stage_ignored_snapshot(&git_context(), source, new_stage_container(destination).expect("container").as_path(), &[], &CopySelection::Ignored).expect("staged");
     return create_journal(common.as_path(), destination, &snapshot).expect("journal");
 }
 
@@ -219,6 +221,49 @@ fn pending_check_takes_the_lock_only_for_a_journal() {
         "a live owner keeps the journal for itself"
     );
     held.release().expect("released");
+    remove(root.as_path());
+}
+
+/// A stage left by a copy that died before its journal existed is removed by recovery, with a notice and no count.
+#[cfg(unix)]
+#[test]
+fn recovery_removes_a_stage_no_journal_names() {
+    let root: PathBuf = fixture("recovery-abandoned-stage");
+    let (source, topic) = linked_source(root.as_path());
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    let claim = claim_stage(common.as_path(), topic.as_path()).expect("claim");
+    std::fs::create_dir(claim.container()).expect("stage");
+    std::fs::set_permissions(claim.container(), std::fs::Permissions::from_mode(0o700)).expect("private");
+    std::fs::write(claim.container().join("half"), b"copied so far").expect("partial copy");
+    let report = recover_worktree_copy_transactions(common.as_path()).expect("recovered");
+    assert_eq!(report.recovered, 0);
+    assert_eq!(report.notices.len(), 1);
+    assert!(report.notices[0].contains("removed the stage"), "{:?}", report.notices);
+    assert!(!claim.container().exists());
+    assert!(!stage_claims_exist(common.as_path()).expect("claims"));
+    remove(root.as_path());
+}
+
+/// A forwarded command that creates no worktree reaps an abandoned stage when no live copy holds the lock,
+/// and leaves it alone while one does.
+#[cfg(unix)]
+#[test]
+fn the_pending_check_reaps_abandoned_stages_only_without_a_live_owner() {
+    let root: PathBuf = fixture("recovery-pending-claim");
+    let (source, topic) = linked_source(root.as_path());
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    let claim = claim_stage(common.as_path(), topic.as_path()).expect("claim");
+    std::fs::create_dir(claim.container()).expect("stage");
+    std::fs::set_permissions(claim.container(), std::fs::Permissions::from_mode(0o700)).expect("private");
+    let mut stderr: Vec<u8> = Vec::new();
+    let held = acquire_worktree_copy_lock(common.as_path(), &mut stderr).expect("held by us");
+    recover_pending_worktree_copies(common.as_path(), &mut stderr).expect("held by a live owner");
+    assert!(claim.container().exists(), "a live copy may still be staging");
+    held.release().expect("released");
+    let mut notices: Vec<u8> = Vec::new();
+    recover_pending_worktree_copies(common.as_path(), &mut notices).expect("reaped");
+    assert!(!claim.container().exists());
+    assert!(String::from_utf8_lossy(notices.as_slice()).contains("removed the stage"));
     remove(root.as_path());
 }
 

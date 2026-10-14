@@ -267,18 +267,33 @@ fn names_private_stage(repository_path: &str) -> bool {
 }
 
 /// What:
-///  Stages every selected ignored entry of one source for one destination.
+///  Names a fresh stage container beside a destination worktree, creating nothing.
+/// Why:
+///   The copy records the name durably before it creates the container, so an interrupted copy can be cleaned up.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// join(dirname(destinationRoot), `${STAGE_PREFIX}${randomUUID()}`)
+/// ```
+pub fn new_stage_container(destination_root: &Path) -> Result<PathBuf, WorktreeCopyError> {
+    let destination_parent: &Path = destination_root.parent().unwrap_or(destination_root);
+    let unique: String = random_uuid().map_err(|error| return raw_failure(&error.0))?;
+    return Ok(destination_parent.join(format!("{STAGE_PREFIX}{unique}")));
+}
+
+/// What:
+///  Stages every selected ignored entry of one source into a named stage container.
 /// Why:
 ///   The stage is removed on any failure, so a failed copy leaves nothing behind for a later invocation to replay.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function stageIgnoredSnapshot({ sourceRoot, destinationRoot, registeredRoots, gitPath }): Promise<StagedWorktreeSnapshot>;
+/// async function stageIgnoredSnapshot({ sourceRoot, stageContainer, registeredRoots, gitPath }): Promise<StagedWorktreeSnapshot>;
 /// ```
 pub fn stage_ignored_snapshot(
     context: &GitContext,
     source_root: &Path,
-    destination_root: &Path,
+    stage_container: &Path,
     registered_roots: &[PathBuf],
     selection: &CopySelection,
 ) -> Result<StagedSnapshot, WorktreeCopyError> {
@@ -288,17 +303,13 @@ pub fn stage_ignored_snapshot(
         .cloned()
         .collect();
     let git_selected: Vec<String> = select_roots(context, source_root, nested.as_slice(), selection)?;
-    let destination_parent: &Path = destination_root.parent().unwrap_or(destination_root);
-    let unique: String = random_uuid().map_err(|error| return raw_failure(&error.0))?;
-    let stage_container: PathBuf = destination_parent.join(format!("{STAGE_PREFIX}{unique}"));
-    create_private_directory(stage_container.as_path())
-        .map_err(|error| return raw_failure(&error))?;
+    create_private_directory(stage_container).map_err(|error| return raw_failure(&error))?;
     let stage_root: PathBuf = stage_container.join(PAYLOAD_NAME);
     create_private_tree(stage_root.as_path())?;
     let staged: Result<StagedSnapshot, WorktreeCopyError> = stage_into(
         source_root,
         registered_roots,
-        stage_container.as_path(),
+        stage_container,
         stage_root.as_path(),
         git_selected,
     );
@@ -307,7 +318,7 @@ pub fn stage_ignored_snapshot(
         Ok(snapshot) => return Ok(snapshot),
         Err(error) => {
             // A failed removal replaces the copy failure, as the incumbent's cleanup throws its own error there.
-            std::fs::remove_dir_all(stage_container.as_path())
+            std::fs::remove_dir_all(stage_container)
                 .map_err(|removal| return raw_failure(&removal))?;
             return Err(words_for_source(error, source_root));
         }

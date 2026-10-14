@@ -1,6 +1,8 @@
 //! Journaled installation checks against real Git repositories: completion, failure, and resumption from the log.
 
 use super::*;
+use crate::worktree_copy_stage::new_stage_container;
+use crate::worktree_copy_stage_claim::stage_claims_exist;
 use crate::test_support::{fixture, git, git_context, remove, repository};
 use crate::worktree_copy_install_entry::capture_installed_path;
 use crate::worktree_copy_install_log::{INSTALL_LOG_NAME, open_install_log};
@@ -27,7 +29,7 @@ fn common_of(source: &Path) -> PathBuf {
 
 /// A staged snapshot of the source, as the copy would produce it.
 fn stage(source: &Path, destination: &Path) -> StagedSnapshot {
-    return stage_ignored_snapshot(&git_context(), source, destination, &[], &CopySelection::Ignored).expect("staged");
+    return stage_ignored_snapshot(&git_context(), source, new_stage_container(destination).expect("container").as_path(), &[], &CopySelection::Ignored).expect("staged");
 }
 
 /// Entries of the destination with their content, sorted, for comparison.
@@ -105,6 +107,33 @@ fn completed_synchronization_leaves_no_journal_or_stage() {
         .filter(|name| return name.starts_with(".cli-git-worktree-copy-"))
         .collect();
     assert!(leftovers.is_empty(), "{leftovers:?}");
+    assert!(
+        !stage_claims_exist(common.as_path()).expect("claims"),
+        "a settled copy releases its stage claim"
+    );
+    remove(root.as_path());
+}
+
+/// A copy that fails while staging removes its stage and releases its claim, so nothing is left to reap.
+#[cfg(unix)]
+#[test]
+fn failed_staging_releases_its_claim() {
+    let root: PathBuf = fixture("transaction-staging-failure");
+    let (source, _destination) = ignored_source(root.as_path());
+    let common: PathBuf = common_of(source.as_path());
+    let destination: PathBuf = root.join("absent").join("topic");
+    let failure: WorktreeCopyError = synchronize_created_worktree(
+        &git_context(),
+        common.as_path(),
+        source.as_path(),
+        destination.as_path(),
+        &[],
+        &CopySelection::Ignored,
+    )
+    .expect_err("the stage parent is absent");
+    assert!(!failure.0.is_empty());
+    assert!(!stage_claims_exist(common.as_path()).expect("claims"), "the failed copy released its claim");
+    assert!(read_pending_journals(common.as_path()).expect("pending").is_empty());
     remove(root.as_path());
 }
 

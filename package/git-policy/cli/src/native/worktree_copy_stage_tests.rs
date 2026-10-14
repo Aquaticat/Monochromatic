@@ -45,7 +45,7 @@ fn stage_mirrors_selected_entries_with_modes_and_links() {
     let staged: StagedSnapshot = stage_ignored_snapshot(
         &git_context(),
         source.as_path(),
-        destination.as_path(),
+        new_stage_container(destination.as_path()).expect("container").as_path(),
         &[std::fs::canonicalize(source.as_path()).expect("canonical")],
         &CopySelection::Ignored,
     )
@@ -131,7 +131,7 @@ fn nested_registered_worktree_is_not_copied() {
         std::fs::canonicalize(source.as_path())
             .expect("canonical source")
             .as_path(),
-        destination.as_path(),
+        new_stage_container(destination.as_path()).expect("container").as_path(),
         &[nested_root],
         &CopySelection::Ignored,
     )
@@ -169,7 +169,7 @@ fn failed_copy_removes_its_stage() {
         std::fs::canonicalize(source.as_path())
             .expect("canonical source")
             .as_path(),
-        destination.as_path(),
+        new_stage_container(destination.as_path()).expect("container").as_path(),
         &[],
         &CopySelection::Ignored,
     )
@@ -221,7 +221,7 @@ fn staging_under_a_missing_parent_fails_with_cause() {
         std::fs::canonicalize(source.as_path())
             .expect("canonical source")
             .as_path(),
-        destination.as_path(),
+        new_stage_container(destination.as_path()).expect("container").as_path(),
         &[],
         &CopySelection::Ignored,
     )

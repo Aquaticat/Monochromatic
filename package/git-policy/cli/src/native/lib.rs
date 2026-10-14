@@ -861,6 +861,10 @@ pub mod worktree_copy_rollback;
 #[cfg(unix)]
 pub mod worktree_copy_journal;
 
+/// The durable claim on a stage container's name, and the removal of stages an interrupted copy left behind.
+#[cfg(unix)]
+pub mod worktree_copy_stage_claim;
+
 /// The append-only install log of one stage: per-batch intents and creations, with resumption.
 #[cfg(unix)]
 pub mod worktree_copy_install_log;
