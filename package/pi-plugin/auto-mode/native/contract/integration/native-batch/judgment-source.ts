@@ -15,6 +15,11 @@ import { NativeBatchBuildError } from './build-entries.ts';
  */
 const l = tagged({ tag: 'auto-mode-native-judgment-source' });
 
+/**
+ The original judgment contains separate whole-program relation gates at selection and issuance.
+ */
+const EXPECTED_PROGRAM_RELATION_GUARDS = 2;
+
 
 
 /**
@@ -36,11 +41,17 @@ const l = tagged({ tag: 'auto-mode-native-judgment-source' });
 export function judgmentSource({
   source,
   indexUrl
-}: { readonly source: string; readonly indexUrl: string }): string {
+}: {
+  readonly source: string;
+  readonly indexUrl: string
+}): string {
  /**
   Each original judgment source transformation retains its diagnostic boundary.
   */
- const rl = tagged({ tag: judgmentSource.name, l });
+ const rl = tagged({
+   tag: judgmentSource.name,
+   l
+ });
  rl.debug('preparing original judgment source bindings');
  /**
   The first original declaration is the qualified governing index import site.
@@ -280,7 +291,9 @@ export function judgmentSource({
   Both original whole-program selection gates must retain the same definition contract.
   */
  const programGuard="if(definitionId!=='operation_violates_rule')throw new JudgmentConstructionError('Unsupported whole-program rule relation definition');";
- if (programGuardSource.split(programGuard).length !== 3) throw new NativeBatchBuildError('Original program relation guards must occur exactly twice');
+ if (programGuardSource.split(programGuard)
+   .length - 1
+   !== EXPECTED_PROGRAM_RELATION_GUARDS) throw new NativeBatchBuildError('Original program relation guards must occur exactly twice');
  /**
   The qualified original whole-program gates accept the additional clause relation.
   */
