@@ -34,8 +34,16 @@ function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
  @returns checked record whose fields remain unknown
 
  @throws SourceCollectionError when the input is outside the ordinary record profile
+
+ @example
+ ```ts
+ requireInputRecord({ value: { path: 'AGENTS.md' }, label: 'Context file' });
+ ```
  */
-export function requireInputRecord({ value, label }: {
+export function requireInputRecord({
+  value,
+  label
+}: {
   readonly value: unknown;
   readonly label: string;
 }): Readonly<Record<string, unknown>> {
@@ -55,15 +63,32 @@ export function requireInputRecord({ value, label }: {
  @returns original data value without invoking its accessor
 
  @throws SourceCollectionError when the selected property is missing, hidden, or an accessor
+
+ @example
+ ```ts
+ readInputData({ value: { path: 'AGENTS.md' }, key: 'path', message: 'Missing context path' });
+ ```
  */
-export function readInputData({ value, key, message }: {
+export function readInputData({
+  value,
+  key,
+  message
+}: {
   readonly value: object;
   readonly key: PropertyKey;
   readonly message: string;
 }): unknown {
-  /** Descriptor lookup leaves an accessor's getter uncalled. */
-  const property = Object.getOwnPropertyDescriptor(value, key);
-  if ((property?.enumerable !== true) || (!Object.hasOwn(property, 'value'))) throw new SourceCollectionError(message);
+  /**
+   Descriptor lookup leaves an accessor's getter uncalled.
+   */
+  const property = Object.getOwnPropertyDescriptor(
+    value,
+    key
+  );
+  if ((property?.enumerable !== true) || (!Object.hasOwn(
+    property,
+    'value'
+  ))) throw new SourceCollectionError(message);
   return property.value;
 }
 
@@ -79,20 +104,40 @@ export function readInputData({ value, key, message }: {
  @returns ordinary record with the required data fields
 
  @throws SourceCollectionError when fields differ from the declared native schema
+
+ @example
+ ```ts
+ requireInputFields({ value: { agentsFiles: [] }, keys: ['agentsFiles'], label: 'Context input' });
+ ```
  */
-export function requireInputFields({ value, keys, label }: {
+export function requireInputFields({
+  value,
+  keys,
+  label
+}: {
   readonly value: unknown;
   readonly keys: readonly string[];
   readonly label: string;
 }): Readonly<Record<string, unknown>> {
-  /** The checked record still retains the original native identity. */
-  const record = requireInputRecord({ value, label });
-  /** Symbols and hidden fields remain part of exact schema membership. */
+  /**
+   The checked record still retains the original native identity.
+   */
+  const record = requireInputRecord({
+    value,
+    label
+  });
+  /**
+   Symbols and hidden fields remain part of exact schema membership.
+   */
   const actual = Reflect.ownKeys(record);
   if ((actual.length !== keys.length) || actual.some(function unexpectedField(key) {
     return ((typeof key) !== 'string') || (!keys.includes(key));
   })) throw new SourceCollectionError(`${label} has unsupported fields`);
-  for (const key of keys) readInputData({ value: record, key, message: `${label} requires data fields` });
+  for (const key of keys) readInputData({
+    value: record,
+    key,
+    message: `${label} requires data fields`
+  });
   return record;
 }
 
@@ -106,8 +151,16 @@ export function requireInputFields({ value, keys, label }: {
  @returns complete input text within the original byte ceiling
 
  @throws SourceCollectionError when text is missing or exceeds the original profile
+
+ @example
+ ```ts
+ requireInputText({ value: 'complete source', label: 'System input' });
+ ```
  */
-export function requireInputText({ value, label }: {
+export function requireInputText({
+  value,
+  label
+}: {
   readonly value: unknown;
   readonly label: string;
 }): string {
@@ -138,16 +191,31 @@ function isOrdinaryArray(value: unknown): value is readonly unknown[] {
  @returns original list after every entry descriptor is checked
 
  @throws SourceCollectionError when the list is sparse, extended, or contains accessors
+
+ @example
+ ```ts
+ requireInputList({ value: ['complete source'], label: 'Append input', maximum: 32 });
+ ```
  */
-export function requireInputList({ value, label, maximum }: {
+export function requireInputList({
+  value,
+  label,
+  maximum
+}: {
   readonly value: unknown;
   readonly label: string;
   readonly maximum: number;
 }): readonly unknown[] {
   if ((!isOrdinaryArray(value)) || (value.length > maximum)
-    || (Reflect.ownKeys(value).length !== (value.length + 1))) throw new SourceCollectionError(`${label} requires a bounded ordinary dense array`);
+    || (Reflect.ownKeys(value)
+      .length
+      !== (value.length + 1))) throw new SourceCollectionError(`${label} requires a bounded ordinary dense array`);
   for (let index = 0; index < value.length; index++) {
-    readInputData({ value, key: String(index), message: `${label} contains a missing or accessor entry` });
+    readInputData({
+      value,
+      key: String(index),
+      message: `${label} contains a missing or accessor entry`
+    });
   }
   return value;
 }
