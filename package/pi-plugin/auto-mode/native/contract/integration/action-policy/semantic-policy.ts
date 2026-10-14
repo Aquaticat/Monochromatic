@@ -22,11 +22,11 @@ export {SemanticAdmissionPolicyError} from '../maintained-policy.mjs';
 /**
  Absence is handled at native bootstrap; the maintained copier receives only configured input.
 
- @param input - original bootstrap configuration, or absence of a configured consumer
+ @param input - present original bootstrap configuration selected by the caller
 
  @param definitionId - implemented native consumer selected independently of caller input
 
- @returns captured policy or absent configuration
+ @returns captured policy with the original acceptance callback
 
  @throws SemanticAdmissionPolicyError for configuration outside the selected consumer
  */
@@ -36,8 +36,7 @@ function captureAdmissionPolicy({
 }: {
   readonly input: unknown;
   readonly definitionId: SemanticAdmissionDefinition;
-}): SemanticAdmissionPolicy | undefined {
- if(input===undefined)return undefined;
+}): SemanticAdmissionPolicy {
  return copySemanticAdmissionPolicy({
    input,
    definitionId
@@ -47,42 +46,68 @@ function captureAdmissionPolicy({
 /**
  Fixed native bootstrap selects the implemented clause consumer.
  {@inheritDoc captureAdmissionPolicy}
+
+ @param input - present original clause-consumer configuration
+
+ @returns captured clause-consumer policy
  */
-export function captureSemanticAdmissionPolicy(input: unknown): SemanticAdmissionPolicy | undefined {return captureAdmissionPolicy({
+export function captureSemanticAdmissionPolicy(input: unknown): SemanticAdmissionPolicy {
+return captureAdmissionPolicy({
   input,
   definitionId:'clause_operation_relation'
-});}
+});
+}
 
 /**
  Fix the whole-request content definition independently of directive authority.
  {@inheritDoc captureAdmissionPolicy}
+
+ @param input - present original request-content configuration
+
+ @returns captured request-content policy
  */
-export function captureRequestMaterialAdmissionPolicy(input: unknown): SemanticAdmissionPolicy | undefined {return captureAdmissionPolicy({
+export function captureRequestMaterialAdmissionPolicy(input: unknown): SemanticAdmissionPolicy {
+return captureAdmissionPolicy({
   input,
   definitionId:'request_instruction_content'
-});}
+});
+}
 
 /**
  Fix source-local contextual-heading content use without a coverage assertion.
  {@inheritDoc captureAdmissionPolicy}
+
+ @param input - present original heading-content configuration
+
+ @returns captured heading-content policy
  */
-export function captureHeadingContextAdmissionPolicy(input: unknown): SemanticAdmissionPolicy | undefined {return captureAdmissionPolicy({
+export function captureHeadingContextAdmissionPolicy(input: unknown): SemanticAdmissionPolicy {
+return captureAdmissionPolicy({
   input,
   definitionId:'heading_instruction_content'
-});}
+});
+}
 
 /**
  Fix exact same-source incorporation independently of its target's directive meaning.
  {@inheritDoc captureAdmissionPolicy}
+
+ @param input - present original incorporation configuration
+
+ @returns captured incorporation policy
  */
-export function captureUnitAdoptionAdmissionPolicy(input: unknown): SemanticAdmissionPolicy | undefined {return captureAdmissionPolicy({
+export function captureUnitAdoptionAdmissionPolicy(input: unknown): SemanticAdmissionPolicy {
+return captureAdmissionPolicy({
   input,
   definitionId:'unit_adoption'
-});}
+});
+}
 
 /**
  The native wire contract fixes model identity, never a supplied action field.
  {@inheritDoc inspectSemanticAdmissionScope}
+
+ @returns original scope decision under the fixed native serving model
  */
 export function semanticAdmissionScope({
   policy,
@@ -94,7 +119,7 @@ export function semanticAdmissionScope({
   readonly requireCandidates?: boolean;
 }): SemanticAdmissionScope {
  return inspectSemanticAdmissionScope({
-   policy,
+   ...(policy===undefined?{}:{policy}),
    inputs,
    requireCandidates,
    expectedModel:ruleAssessmentModel

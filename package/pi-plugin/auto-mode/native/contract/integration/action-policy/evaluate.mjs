@@ -170,10 +170,10 @@ export function createBoundPolicyEvaluator({
   unitAdoptionAdmissionPolicy,
   approvalHost
 }={}){
- const policy=captureSemanticAdmissionPolicy(semanticAdmissionPolicy);
- const requestPolicy=captureRequestMaterialAdmissionPolicy(requestMaterialAdmissionPolicy);
- const headingPolicy=captureHeadingContextAdmissionPolicy(headingContextAdmissionPolicy);
- const unitPolicy=captureUnitAdoptionAdmissionPolicy(unitAdoptionAdmissionPolicy);
+ const policy=semanticAdmissionPolicy===undefined?undefined:captureSemanticAdmissionPolicy(semanticAdmissionPolicy);
+ const requestPolicy=requestMaterialAdmissionPolicy===undefined?undefined:captureRequestMaterialAdmissionPolicy(requestMaterialAdmissionPolicy);
+ const headingPolicy=headingContextAdmissionPolicy===undefined?undefined:captureHeadingContextAdmissionPolicy(headingContextAdmissionPolicy);
+ const unitPolicy=unitAdoptionAdmissionPolicy===undefined?undefined:captureUnitAdoptionAdmissionPolicy(unitAdoptionAdmissionPolicy);
  const captureHost=captureApprovalHostSource(approvalHost);
  return async function evaluate({
    judgment,
