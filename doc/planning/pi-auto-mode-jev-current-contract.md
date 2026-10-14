@@ -173,6 +173,37 @@ The announced Decisions migration is maintenance work;
 the current documentation does not establish that it increases Jev's context capacity or repairs semantic errors.
 No production fix or migration is authorized by this analysis alone.
 
+## Implementation follow-up and shared-state fit
+
+The user subsequently requested continued implementation and renewed standing authorization
+for task-relevant Drex and Jev inputs and credit use.
+The transport now retains the recognized `max_tokens_exceeded` code without upstream free text.
+An installed Qwen run reproduced that precise rejection for the complete current native request.
+The captured original contains 73 source occurrences and 84 questions in 504,946 bytes.
+The lossless shared-content prototype reconstructs every original state field and question instruction.
+Its 165,373-byte complete request still returned `max_tokens_exceeded` in 1,269.832 ms.
+It is not installed or semantically qualified.
+
+The frozen follow-up at `${HOME}/temp/agent/pi-jev-shared-state-fit-20261014`
+distinguishes serving availability from the complete shared state's capacity requirement.
+It makes at most two sequential calls,
+each with a five-second deadline,
+and stops on rejection or response-validation failure without retry.
+The first is a 312-byte public literal-label serving control.
+The second retains the exact 125,822-byte shared state and unchanged `head_0` question,
+for a total of 126,345 bytes.
+Its SHA-256 is `287fb871e3b7a8f5ad511dc5355670769bec70b76f8db5261153224a71ec3b3f`.
+The shared state retains the complete original context and all original question instructions;
+only the dispatched question map is narrowed for this diagnostic.
+
+Rejection of this single-question input would rule out merely splitting the same shared-state request
+as a sufficient capacity remedy.
+Acceptance would justify further complete-coverage split tests,
+without proving that every other question fits or establishing semantic equivalence.
+No result authorizes a represented action or changes the production provider,
+cutoff,
+or deadline.
+
 [models]: https://docs.typesafe.ai/models
 [api]: https://docs.typesafe.ai/api
 [limitations]: https://docs.typesafe.ai/model-jaggedness/jev-1.13
