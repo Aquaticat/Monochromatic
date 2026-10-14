@@ -49,7 +49,8 @@ The live schedule pins `drex-v2.0`,
 caps each request at five seconds,
 performs no retries,
 and refuses to overwrite a started experiment.
-Explicit permission for these new billed calls is pending.
+The user explicitly approved these two synthetic probes on 2026-10-14.
+The unchanged `mise run probe` schedule then started.
 No policy or session content enters either request.
 
 The latest approved installed Qwen/Jev verification is separately incomplete:
