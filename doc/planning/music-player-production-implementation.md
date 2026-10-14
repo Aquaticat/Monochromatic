@@ -236,16 +236,19 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   track change (3 tracks: 21 ms) and the GC thread 10.8 s per 40 s. The fix keeps the rows between pulls
   (`SnapshotItemCache`, `reuseRows`), reuses the base state and its timeline, and posts one refresh per burst
   (`CoalescedTrigger`). Measured on the headful Fold emulator with the invented 10 000-track library, Next every 400 ms
-  for 40 s, interleaved ABBA from a clean reinstall: main-thread CPU per track change 135 ms (131 to 140, 9 runs
-  on a quiet host) to 68 ms (66 to 74 in 8 of 10 runs, 96 and 101 in the others); track changes that fit in the
-  window 111 to 119 to 154 to 165; GC thread 10.4 to 11.6 s to 1.7 to 2.1 s; frame p99 200 to 250 ms to 101 to 117 ms;
-  `getState` 42% to 5% of main-thread samples. A 3-track queue is unchanged (21 ms per change), the control that the
-  probe sees no difference where none is expected. Not fixed: an estimated 22 ms per change (32% of 68 ms) remains
-  that grows with the queue, inside media3 1.11.1
-  (`MediaSessionLegacyStub.ControllerLegacyCbForBroadcast.updateQueue`, 32% of main-thread samples, converts the whole
-  timeline to `QueueItem`s and calls `MediaSession.setQueue` on every timeline change, and the current row's duration
-  makes the timeline change about 1.5 times per track change in the logs). Removing it needs a different published
-  queue (a window around the playing track, or no legacy queue), which changes what the session shows; it was not done.
+  for 40 s, interleaved ABBA from a clean reinstall: main-thread CPU per track change 135 ms before (131 to 140, 12
+  runs) and 69 ms after (66 to 101, 10 runs, 8 of them 66 to 74); three before runs taken while another job pushed the
+  host load above 40 (252, 295 and 311 ms) are left out. Track changes that fit in the window 111 to 123 before and
+  147 to 165 after; GC thread 10.4 to 11.5 s before and 1.7 to 2.0 s after; frame p99 200 to 250 ms before and 101 to
+  117 ms after; `getState` 42% of main-thread samples before and 5% after. A 3-track queue is unchanged (21 to 22 ms
+  per change), the control that the probe sees no difference where none is expected.
+  Not fixed: 69 ms against 21 ms per change still depends on the playing queue or on the page that shows it, and the
+  two could not be separated (a 10 000 queue with the small page shown flipped back to the big page within seconds).
+  About 22 ms of it (the profile share of 32%) is inside media3 1.11.1:
+  `MediaSessionLegacyStub.ControllerLegacyCbForBroadcast.updateQueue` converts the whole timeline to `QueueItem`s and
+  calls `MediaSession.setQueue` on every timeline change, and the current row's duration makes the timeline change
+  about 1.5 times per track change in the logs. Removing it needs a different published queue (a window around the
+  playing track, or no legacy queue), which changes what the session shows; it was not done.
   Three emulator crashes (SEGV in `libgfxstream_backend.so`, `TextureResize`) happened headful, the latest 25 minutes
   after a launch; the notes are in `doc/troubleshooting`. Verified only on the debug build and the emulator; the
   artist-tag patch of the rows has JVM tests but no device run (no artist tag arrived in the measured runs).
