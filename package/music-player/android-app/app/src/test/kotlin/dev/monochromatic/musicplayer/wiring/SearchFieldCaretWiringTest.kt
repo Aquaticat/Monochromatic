@@ -1,8 +1,9 @@
 // Wiring cases of the Search query field's caret, rendered for real under Robolectric: the query is kept by the host
-// across a fold change, so the rebuilt header must put the caret after the kept text and typing must continue there.
+// across a fold change, so the rebuilt header must put the caret after the kept text and typing must continue there;
+// the Search shortcut must do the same in its own event, before any later character is read.
 
 // What:     `package ...wiring` groups the Robolectric Compose tests, which share the fixtures of this package.
-// Why:      The cases reach `searchPage` and the focus local of the host keyboard.
+// Why:      The cases reach `searchPage` and the shortcut port of the host keyboard.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -16,21 +17,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextInputSelection
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import dev.monochromatic.musicplayer.HostKeyLocalSearchFocus
+import dev.monochromatic.musicplayer.SearchFocusPort
+import dev.monochromatic.musicplayer.core.SEARCH_CLEAR_LABEL
 import dev.monochromatic.musicplayer.core.SEARCH_FIELD_LABEL
 import dev.monochromatic.musicplayer.core.SearchState
 import dev.monochromatic.musicplayer.searchPage
@@ -49,13 +54,15 @@ private const val COVER_WIDTH_DP: Int = 411
 
 // What:     `class SearchFieldCaretWiringTest` groups the cases of the Search field's caret.
 // Why:      The field was fed a bare `String`, so its caret lived in state that the other panel's header dropped; the
-//           query stayed (it is kept by the host) but typing after a fold change landed before it (D126).
+//           query stayed (it is kept by the host) but typing after a fold change landed before it (D126). The Search
+//           shortcut then moved the caret in an effect two frames later, so a character typed right after the chord
+//           still landed before the query; the shortcut now acts in its own event.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // describe("Search field caret", () => { /* type, rebuild the header, type again, read the text and the caret */ });
 // ```
-/** Renders [searchPage] over a kept query and asserts where typed text lands after a rebuild or a refocus request. */
+/** Renders [searchPage] over a kept query and asserts where typed text lands after a rebuild or a shortcut press. */
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = INNER_PANEL)
 class SearchFieldCaretWiringTest {
@@ -69,14 +76,14 @@ class SearchFieldCaretWiringTest {
     /** Whether the page is given the folded cover width; flipping it rebuilds the header, as a fold change does. */
     private var onCover: Boolean by mutableStateOf(false)
 
-    /** Count of Search shortcut presses that the host provides to the page. */
-    private var focusToken: Int by mutableIntStateOf(0)
+    /** Port that the host presses on a Search shortcut, which the open page registers its field with. */
+    private val shortcutPort: SearchFocusPort = SearchFocusPort()
 
     /** Draws the page over the kept query, with a header that a width change rebuilds. */
     @Composable
     private fun page(keptQuery: String, onQuery: (String) -> Unit) {
         MaterialTheme {
-            CompositionLocalProvider(HostKeyLocalSearchFocus provides focusToken) {
+            CompositionLocalProvider(HostKeyLocalSearchFocus provides shortcutPort) {
                 Box(modifier = if (onCover) Modifier.width(COVER_WIDTH_DP.dp) else Modifier) {
                     searchPage(
                         creaseWidthPx = null,
@@ -103,6 +110,12 @@ class SearchFieldCaretWiringTest {
     /** Types [text] into the field at its caret, as a keyboard does, and waits for the frames. */
     private fun type(text: String) {
         composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).performTextInput(text)
+        composeTestRule.waitForIdle()
+    }
+
+    /** Moves the field's caret to [offset], as a tap does, and waits for the frames. */
+    private fun placeCaret(offset: Int) {
+        composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).performTextInputSelection(TextRange(offset))
         composeTestRule.waitForIdle()
     }
 
@@ -149,18 +162,75 @@ class SearchFieldCaretWiringTest {
     fun theSearchShortcutOnAnOpenPagePutsTheCaretAtTheEndAndSelectsNothing() {
         show()
         type("lan")
-        composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).performTextInputSelection(TextRange(0))
-        composeTestRule.waitForIdle()
+        placeCaret(0)
         assertEquals(TextRange(0), selection())
-        composeTestRule.runOnIdle { focusToken += 1 }
+        composeTestRule.runOnIdle { shortcutPort.press() }
         composeTestRule.waitForIdle()
         assertEquals("the shortcut puts a caret and no selection at the end", TextRange(3), selection())
         type("x")
         assertEquals("lanx", query)
     }
 
+    // What:     `@Test fun aCharacterTypedInTheSameEventAsTheSearchShortcutLandsAfterTheQuery()` is the race case.
+    // Why:      The shortcut used to move the caret in an effect two frames after the chord, so a character typed
+    //           right after it (7 ms later on the emulator) landed before the query ("ylan"). Pressing the port and
+    //           inserting the character in one main-thread block leaves no frame between them: only a caret placed
+    //           synchronously by the shortcut passes.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("chord then char, no frame between", () => {
+    //   type("lan"); setCaret(0);
+    //   inOneEvent(() => { pressSearchShortcut(); insertAtCursor("y"); });
+    //   expect(query).toBe("lany");
+    // });
+    // ```
+    /** With the caret at the start, a shortcut press and a character inserted in the same event give "lany". */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun aCharacterTypedInTheSameEventAsTheSearchShortcutLandsAfterTheQuery() {
+        show()
+        type("lan")
+        placeCaret(0)
+        composeTestRule.runOnUiThread {
+            shortcutPort.press()
+            /** Action that inserts text at the field's caret, as the keyboard does. */
+            val insert = composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).fetchSemanticsNode().config
+                .getOrNull(SemanticsActions.InsertTextAtCursor)?.action
+            checkNotNull(insert) { "the field offers no insert-at-cursor action" }
+            insert(AnnotatedString("y"))
+        }
+        composeTestRule.waitForIdle()
+        assertEquals("lany", query)
+        assertEquals(TextRange(4), selection())
+    }
+
+    // What:     `@Test fun aCharacterTypedBeforeTheNextFrameFollowsTheSearchShortcut()` is the paused-clock case.
+    // Why:      With the frame clock held, the shortcut press and the typing both happen before any composition; the
+    //           typed character must still land after the query.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("chord then char, clock held", () => {
+    //   type("lan"); setCaret(0); holdFrames(); pressSearchShortcut(); type("y"); releaseFrames();
+    //   expect(query).toBe("lany");
+    // });
+    // ```
+    /** With the frame clock held, a shortcut press followed at once by typed text gives "lany". */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun aCharacterTypedBeforeTheNextFrameFollowsTheSearchShortcut() {
+        show()
+        type("lan")
+        placeCaret(0)
+        composeTestRule.mainClock.autoAdvance = false
+        composeTestRule.runOnUiThread { shortcutPort.press() }
+        composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).performTextInput("y")
+        composeTestRule.mainClock.autoAdvance = true
+        composeTestRule.waitForIdle()
+        assertEquals("lany", query)
+    }
+
     // What:     `@Test fun aCaretTheUserPlacedInTheMiddleIsKeptWhileTheQueryIsNotRebuilt()` is the control.
-    // Why:      A field that put the caret at the end on every frame would pass the two cases above and break editing.
+    // Why:      A field that put the caret at the end on every frame would pass the cases above and break editing.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -171,34 +241,34 @@ class SearchFieldCaretWiringTest {
     fun aCaretTheUserPlacedInTheMiddleIsKeptWhileTheQueryIsNotRebuilt() {
         show()
         type("lan")
-        composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).performTextInputSelection(TextRange(1))
-        composeTestRule.waitForIdle()
+        placeCaret(1)
         type("x")
         assertEquals("lxan", query)
         assertEquals(TextRange(2), selection())
     }
 
-    // What:     `@Test fun clearingTheQueryThenTypingStartsAFreshQuery()` checks the reset from outside the field.
-    // Why:      Clear changes the query without the field's help (D66 keeps new visits empty the same way); the field
-    //           must show the empty query and take the next characters from its start.
+    // What:     `@Test fun clearingTheQueryThenTypingStartsAFreshQuery()` checks the Clear control.
+    // Why:      Clear empties the query (D66 keeps new visits empty the same way); the field must show the empty query
+    //           and take the next characters from its start.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // test("clear then type", () => { type("lan"); clear(); type("ab"); expect(query).toBe("ab"); });
     // ```
-    /** After the host clears the query, typing "ab" gives "ab" with the caret after it. */
+    /** After the Clear control is pressed, typing "ab" gives "ab" with the caret after it. */
     @Test(timeout = CASE_LIMIT_MS)
     fun clearingTheQueryThenTypingStartsAFreshQuery() {
         show()
         type("lan")
-        composeTestRule.runOnIdle { query = "" }
+        composeTestRule.onNodeWithContentDescription(SEARCH_CLEAR_LABEL).performClick()
         composeTestRule.waitForIdle()
+        assertEquals("", query)
         type("ab")
         assertEquals("ab", query)
         assertEquals(TextRange(2), selection())
     }
 
-    // What:     `@Test fun aRecreatedActivityKeepsTheCaretTheUserPlaced()` restores the saved field value.
+    // What:     `@Test fun aRecreatedActivityKeepsTheCaretTheUserPlaced()` restores the saved field state.
     // Why:      The query survives a recreation in the host through saved state; the caret should come back with it
     //           instead of jumping to the end.
     //
@@ -221,8 +291,7 @@ class SearchFieldCaretWiringTest {
         }
         composeTestRule.waitForIdle()
         type("lan")
-        composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).performTextInputSelection(TextRange(1))
-        composeTestRule.waitForIdle()
+        placeCaret(1)
         restoration.emulateSavedInstanceStateRestore()
         composeTestRule.waitForIdle()
         assertEquals(TextRange(1), selection())

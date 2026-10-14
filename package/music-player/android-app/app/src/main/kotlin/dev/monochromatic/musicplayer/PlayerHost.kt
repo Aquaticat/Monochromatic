@@ -492,8 +492,8 @@ fun playerHost(
     }
     /** Callback that a list calls after it took focus for the pending request. */
     val clearPendingFocus: () -> Unit = remember { { pendingFocus = null } }
-    /** Count of same-visit Search refocus requests, read by the Search page's query field. */
-    var searchFocusToken: Int by remember { mutableIntStateOf(0) }
+    /** Link that the Search shortcut presses, which refocuses the open Search page's query field in the same event. */
+    val searchFocusPort: SearchFocusPort = remember { SearchFocusPort() }
     /** Count of reveal requests, read by the track list to scroll to and focus the playing row. */
     var revealToken: Int by remember { mutableIntStateOf(0) }
     /** Count of folder reveal requests, read by the track list to scroll to the playing track's folder header. */
@@ -1487,11 +1487,11 @@ fun playerHost(
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // focusSearch(): void { searchFocusToken += 1; }
+        // focusSearch(): void { searchFocusPort.press(); }
         // ```
-        /** Asks the open Search page to refocus its query field, keeping the query text. */
+        /** Refocuses the open Search page's query field and puts its caret at the end, keeping the query text. */
         override fun focusSearch() {
-            searchFocusToken += 1
+            searchFocusPort.press()
         }
 
         // What:     `override fun toggleFolderPicker()` flips the picker flag, as the folder button does.
@@ -1739,7 +1739,7 @@ fun playerHost(
             .hostKeyboard(binding = keyBinding),
     ) {
         CompositionLocalProvider(
-            HostKeyLocalSearchFocus provides searchFocusToken,
+            HostKeyLocalSearchFocus provides searchFocusPort,
             HostKeyLocalReveal provides revealToken,
             HostKeyLocalRevealFolder provides folderRevealToken,
             HostKeyLocalSearchField provides reportSearchFieldFocus,
