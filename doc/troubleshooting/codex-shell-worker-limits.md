@@ -134,6 +134,63 @@ Restarting the session provides the new turn boundary.
 The first post-restart check must use a default sandboxed command and read `/proc/self/cgroup`.
 Do not treat an escalated command's successful attachment as proof that the old sandbox snapshot refreshed.
 
+## Task pressure during Pi package lint
+
+On 2026-10-14,
+the complete Pi auto-mode lint invocation remained active without returning its buffered diagnostics.
+During that invocation,
+a documentation commit succeeded but its automatic push reported:
+
+```text
+# Automatic push output; exact Go subprocess not identified
+failed to create new OS thread (have 10 already; errno=11)
+fatal error: newosproc
+```
+
+The later remote-name diagnostic in the same failed push does not identify the originating failure.
+The observed lint process held 15 threads,
+and its TypeScript workers held 38 and 102 threads.
+The enclosing slice retained `pids.max=256` and reported the cumulative counter `pids.events: max 60`.
+These observations are consistent with task pressure;
+they do not identify the failing allocation or establish an upstream defect.
+The earlier new-reference history fanout incident in
+[`cli-git-tag-push-eagain.md`](cli-git-tag-push-eagain.md)
+is not established as this incident's cause.
+
+The lint process was deliberately terminated with `SIGTERM`.
+The wrapper reported
+`[task-oxlint] failed to execute oxlint: Command was terminated with SIGTERM`.
+That run is incomplete verification,
+not a passed check or proof of a hung linter.
+The slice then reported 23 tasks.
+A separate `git push origin main` succeeded and published the saved commit.
+This verifies push recovery only;
+it does not prove the cause or establish a permanent fix.
+
+Subsequent lint verification uses explicit sequential file groups under the same rules and resource limits.
+The source manifest and each group's result must be retained before claiming complete coverage.
+This approach trades a single invocation for separately auditable results;
+the interrupted invocation supplies no completed lint evidence.
+
+### Upstream filing decision for the task-pressure incident
+
+1.  Upstream fault:
+    not established;
+    the emitting Go subprocess and failing allocation remain unidentified.
+2.  Fixability:
+    no upstream change has been identified or tested.
+3.  Supported use:
+    local worker limits remain the accepted execution boundary.
+4.  Contribution policy:
+    no external filing is proposed from this evidence.
+5.  Maintainer intent:
+    not evaluated because there is no identified upstream defect.
+6.  Prototype:
+    none;
+    successful push recovery does not qualify an upstream patch.
+
+Nothing to file upstream from this incident.
+
 ## Reproduction and verification
 
 ```sh

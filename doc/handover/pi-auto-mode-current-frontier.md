@@ -708,7 +708,8 @@ The enclosing worker slice retains its 256-task limit and reports `pids.events: 
 those cumulative events do not establish the exact failing thread's allocation path.
 After the lint process stopped,
 the slice reported 23 tasks.
-The saved commit's push is being retried separately.
+The separate `git push origin main` completed successfully,
+publishing the saved documentation commit.
 Continue lint verification through an explicit complete source manifest in sequential groups,
 preserving the rules and worker limits.
 
