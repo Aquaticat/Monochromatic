@@ -245,3 +245,47 @@ fn waiter_names_a_live_holder_and_takes_the_lock_after_release() {
     lease.release().expect("released");
     remove(root.as_path());
 }
+
+/// A live holder that never releases ends a blocking acquisition at its limit,
+///  with a refusal naming the holder, and leaves the holder's lock in place.
+#[cfg(unix)]
+#[test]
+fn a_live_holder_past_the_limit_ends_the_wait_and_keeps_its_lock() {
+    let root: PathBuf = fixture("lock-waiter-limit");
+    let common: PathBuf = root.join("common");
+    std::fs::create_dir(common.as_path()).expect("common");
+    let held: WorktreeCopyLease = try_acquire_worktree_copy_lock(common.as_path())
+        .expect("attempt")
+        .expect("free");
+    let holder_pid: i64 = i64::from(std::process::id());
+    let common_for_thread: PathBuf = common.clone();
+    let (sender, receiver) = std::sync::mpsc::channel::<Result<WorktreeCopyLease, WorktreeCopyError>>();
+    std::thread::spawn(move || {
+        let mut stderr: Vec<u8> = Vec::new();
+        let _sent = sender.send(acquire_worktree_copy_lock_for(
+            common_for_thread.as_path(),
+            &mut stderr,
+            Duration::from_millis(200),
+        ));
+    });
+    let outcome: Result<WorktreeCopyLease, WorktreeCopyError> = match receiver.recv_timeout(Duration::from_secs(10)) {
+        Ok(finished) => finished,
+        Err(_) => {
+            // Releasing the lock lets a wait without a limit finish so the failure is raised with the thread done.
+            held.release().expect("released");
+            panic!("the wait did not end at its limit");
+        }
+    };
+    let refusal: WorktreeCopyError = outcome.err().expect("refused");
+    let text: String = refusal.0;
+    assert!(text.starts_with("cli-git: gave up after waiting "), "{text}");
+    assert!(
+        text.contains(&format!("for PID {holder_pid}, which still holds worktree-copy settlement")),
+        "{text}"
+    );
+    assert!(text.contains("CLI_GIT_LOCK_WAIT_SECONDS sets how long cli-git waits"), "{text}");
+    assert!(text.ends_with("cli-git left the lock in place."), "{text}");
+    assert!(lock_of(common.as_path()).exists(), "the holder's lock stays");
+    held.release().expect("released");
+    remove(root.as_path());
+}
