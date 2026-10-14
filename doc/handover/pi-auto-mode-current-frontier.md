@@ -783,6 +783,21 @@ The rebuilt declaration artifact and package type check pass.
 The fixture's full semantic formatter is still running with the original package resource limits;
 final scoped lint and affected consumer verification remain pending.
 
+The independent native result-binding guard is also ported to `script-value-guard.ts`.
+Its original caller imports and source provenance now point to that maintained file.
+The typed declaration retains `AggregateError`'s original copied list and property descriptor;
+an emitted field initializer would have changed descriptor ownership and is not used.
+Built consumer tests are committed for caught primitives,
+object identity,
+copied-list freezing,
+call diagnostic quoting,
+existing guard identity,
+and derived guard names.
+That port's type,
+lint,
+build,
+and native checks are queued behind the contribution fixture formatter.
+
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
 Private `f3d40d82` retains the measured repository dependency root in the staging manifest;
