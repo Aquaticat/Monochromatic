@@ -78,3 +78,19 @@ fn a_folder_result_still_opens_its_folder_without_a_track_command() {
     let (sent, _route) = activate(vec![folder], Some(0), 0);
     assert_eq!(sent, vec!["scope 2".to_string()]);
 }
+
+// What:     A folder result that also carries a library position still opens its folder.
+// Why:      The kind decides, not the position, so a folder never selects a track by accident (found by mutation: the
+//           kind check could be dropped while every other case kept passing).
+#[test]
+fn a_folder_result_with_a_library_position_still_opens_its_folder() {
+    let folder = SearchResult {
+        kind: SearchResultKind::Folder,
+        name: "Beck".to_owned(),
+        folder_name: "Beck".to_owned(),
+        index_in_library: Some(1),
+        ..track_result(0)
+    };
+    let (sent, _route) = activate(vec![folder], Some(0), 0);
+    assert_eq!(sent, vec!["scope 2".to_string()]);
+}
