@@ -89,6 +89,27 @@ Package types and scoped lint of the five changed semantic interfaces pass;
 `${HOME}/temp/agent/pi-single-call-clean-scope-lint-20261014.log`
 reports zero warnings and zero errors.
 
+### Jev workaround assessment on 2026-10-14
+
+The user asked which Jev problems were encountered and whether they can be worked around.
+The [current assessment](../planning/pi-auto-mode-jev-current-contract.md)
+separates reproduced token-limit failures,
+earlier semantic binding errors and repeat variability,
+owned host defects,
+the latest unclassified HTTP 400,
+and historical gateway-source limitations.
+One shared-guidance representation returned all 205 estimates within its original budget,
+but no universal capacity remedy or current categorical semantic qualification follows.
+The current `0.99` operating rule and independent source/authority guards remain unchanged.
+The refreshed vendor documentation also warns about Choice option order;
+the present clause label list puts permission first,
+so provider order-sensitivity remains an explicit untested boundary.
+LLM Gateway now announces that System One will be deprecated in favor of Decisions,
+without a retirement date in the inspected page.
+That is maintenance evidence,
+not an explanation for the observed HTTP 400 or a tested capacity workaround.
+No new provider request or product change follows from this deliberation request.
+
 ## Restart checkpoint after installing automatic Codex shell limits
 
 The user restarted the session and resumed work on 2026-10-13.

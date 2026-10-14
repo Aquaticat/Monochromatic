@@ -96,6 +96,83 @@ Those are different promises.
 No account setting was inspected or changed,
 and the user's accepted retention scope remains settled.
 
+## Encountered failures and practical mitigation
+
+The retained evidence supports different answers for capacity,
+semantic correctness,
+and owned integration defects.
+
+### Capacity has a partial verified workaround
+
+Shared guidance and removal of duplicate bookkeeping produced one accepted complete 205-question input.
+Further representation work must preserve every policy and received source,
+original question meaning,
+and code-owned source identity.
+Moving text into shared state does not establish unchanged model behavior.
+Splitting questions can address the aggregate question budget only if each complete state still fits
+the separate state-plus-longest-question bound and the original call/deadline budget.
+It cannot solve an oversized mandatory state by itself.
+No provider-side context increase is verified.
+
+### Semantic errors can be contained but are not repaired by a cutoff
+
+The [earlier frozen study](pi-auto-mode-jev-qualification.md#observed-binding-errors)
+returned `0.93` for permission to read `.env` contents when the source only permitted listing that pathname
+and reading `README.md`.
+The [instruction-condition study](pi-auto-mode-jev-qualification.md#real-instruction-condition-development-result)
+returned `0.93` and `0.16` for byte-identical unused-configuration input.
+Replaying until a favorable answer appears is therefore not a verified remedy.
+
+Code-owned syntax and effect facts,
+narrow source-language questions,
+explicit criteria,
+and abstention are mitigation mechanisms.
+The [fresh locked test](pi-auto-mode-jev-fresh-qualification.md#counts-and-coverage)
+had zero resolved errors at its 95/05 diagnostic band but left 77 of 216 claims unresolved.
+That result neither erases the earlier false positive nor qualifies the later categorical question definitions.
+The [adopted current cutoff](../decision/pi-auto-mode-semantic-admission.md)
+is `0.99`,
+with unresolved meanings blocking execution.
+It is an operating rule,
+not a measured accuracy guarantee.
+
+The current Choice warning matters to this implementation:
+`package/pi-plugin/auto-mode/src/clause-lowering.ts` places `permission` first in `CLAUSE_RELATIONS`.
+The wire preserves that label order.
+This establishes a concrete order-sensitivity test candidate,
+not a reproduced current false approval.
+The existing unit tests verify admission arithmetic and structure,
+not provider invariance under reordered options.
+No label reorder or additional paid study is adopted by this assessment.
+
+### Current installed failures include owned integration defects
+
+The installed check first rejected ordinary single-call syntax,
+then encountered an omitted optional effect-owner callback.
+Those were owned host defects and were corrected with local regressions;
+they are not Jev model failures.
+A subsequent run hit our one-MiB serialized-request guard before inference.
+Increasing that guard alone cannot establish fit within Jev's independent token bounds.
+
+The latest installed attempt reached LLM Gateway and returned HTTP 400.
+`package/pi-plugin/auto-mode/src/assessment-transport.ts:238`
+replaces non-200 response detail with a status-only error.
+The retained log therefore cannot establish that this particular response was `max_tokens_exceeded`.
+A proposed next diagnostic change is to expose only recognized provider error codes,
+without logging upstream free text,
+credentials,
+or source content.
+It is not implemented by this research task.
+
+### Working order
+
+First retain a recognized cause for the current HTTP 400 and measure the exact current input.
+Then test content-preserving representation changes against both Jev context bounds.
+Semantic mitigation remains a separate concern and must retain abstention and original authority checks.
+The announced Decisions migration is maintenance work;
+the current documentation does not establish that it increases Jev's context capacity or repairs semantic errors.
+No production fix or migration is authorized by this analysis alone.
+
 [models]: https://docs.typesafe.ai/models
 [api]: https://docs.typesafe.ai/api
 [limitations]: https://docs.typesafe.ai/model-jaggedness/jev-1.13
