@@ -9,7 +9,7 @@ use super::find_tests::{chord, key};
 ///  pointer helpers,
 ///  and the pinned layout measurements.
 use super::sidebar_tests::{
-    DIVIDER, GUTTER, HEADER, MINIMUM, SOURCE_MINIMUM, click, fixture, resize, settle,
+    DIVIDER, HEADER, MINIMUM, SOURCE_MINIMUM, click, fixture, resize, settle, text_area,
 };
 /// The shipped window,
 ///  source state,
@@ -170,7 +170,7 @@ fn hidden_project_has_no_divider() {
     );
     assert_eq!(
         window.get_viewport_width(),
-        1100.0 - GUTTER,
+        text_area(1100.0),
         "a hidden divider kept width beside the source"
     );
     // The window's first pixel column is source gutter: the click places the caret on the third line.

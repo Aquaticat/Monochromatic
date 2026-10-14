@@ -327,7 +327,9 @@ fn a_move_to_a_shorter_upper_row_keeps_the_caret_on_it() {
     let filler = "x ".repeat(25);
     let text = format!("{filler}{} tail\n", "w".repeat(60));
     let (_project, reader) = open(&text);
-    arrange(&reader, 1.0, 900.0);
+    // A window 110 px wider than 900 px, because the minimap takes its widest 110 px: the text area, and so the rows,
+    //  are the ones a 900 px window gave before the minimap.
+    arrange(&reader, 1.0, 900.0 + 110.0);
     let window = &reader.window;
     let rows = rows_of(&reader, 0);
     assert!(rows.len() >= 2, "the line wraps");

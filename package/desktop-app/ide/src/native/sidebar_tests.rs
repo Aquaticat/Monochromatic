@@ -50,11 +50,36 @@ pub(super) const MINIMUM: f32 = 160.0;
 pub(super) const DIVIDER: f32 = 1.0;
 /// Pixel columns on each side of the line that also belong to the divider's pointer zone.
 pub(super) const REACH: f32 = 2.0;
-/// Narrowest source column;
+/// Narrowest source column, the gutter, the minimap, and 182 px of text;
 ///  the widest sidebar is the window width minus this and the divider.
-pub(super) const SOURCE_MINIMUM: f32 = 240.0;
+pub(super) const SOURCE_MINIMUM: f32 = 288.0;
 /// Width of the line-number gutter at the left edge of the source column.
 pub(super) const GUTTER: f32 = 58.0;
+
+/// What:
+///  The width of the minimap beside a text area `text` logical pixels wide in a source column that is also
+///  as wide as the gutter and the minimap together need.
+///  The minimap is a sixth of its column, so the answer is the fixed point of that rule.
+/// Why:
+///  Tests ask for a text area of an exact width; the window has to be that wide and the minimap wider.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function minimapBeside(text: number): number;
+/// ```
+pub(super) fn minimap_beside(text: f32) -> f32 {
+    let mut minimap = ide_app::minimap::WIDTH;
+    for _ in 0..8 {
+        minimap = ide_app::minimap::width_for(text + GUTTER + minimap);
+    }
+    return minimap;
+}
+
+/// Width of the text area in a source column `source` logical pixels wide:
+///  what the gutter and the minimap leave.
+pub(super) fn text_area(source: f32) -> f32 {
+    return source - GUTTER - ide_app::minimap::width_for(source);
+}
 /// Width of the tree column every fixture starts with.
 pub(super) const TREE: f32 = 256.0;
 /// What:

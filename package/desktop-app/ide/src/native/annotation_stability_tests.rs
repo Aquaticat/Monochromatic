@@ -35,6 +35,7 @@ use ide_app::language::{
 };
 /// The vertical mapping and the heights virtual rows are built from.
 use ide_app::{
+    minimap::width_for,
     row_map::RowMap,
     virtual_row::{BLOCK_GAP, ROW_HEIGHT},
 };
@@ -162,7 +163,7 @@ fn map(reader: &Reader) -> RowMap {
 }
 
 /// What:
-///  The pixels of window row `y` from the start of the line numbers to the right edge;
+///  The pixels of window row `y` from the start of the line numbers to the minimap;
 ///       `&[Rgba8Pixel]` lends that part of the frame.
 /// Why:
 ///  A line is its number and its text;
@@ -174,8 +175,11 @@ fn map(reader: &Reader) -> RowMap {
 /// ```
 fn band(shown: &SharedPixelBuffer<Rgba8Pixel>, y: f32) -> &[Rgba8Pixel] {
     let width = shown.width() as usize;
-    let start = y as usize * width + (TEXT_LEFT - GUTTER) as usize;
-    let end = (y as usize + 1) * width;
+    let left = (TEXT_LEFT - GUTTER) as usize;
+    // The minimap stands at the right edge of the view and moves its box with the scroll, so it is not text.
+    let minimap = width_for((width - left) as f32) as usize;
+    let start = y as usize * width + left;
+    let end = (y as usize + 1) * width - minimap;
     return &shown.as_slice()[start..end];
 }
 

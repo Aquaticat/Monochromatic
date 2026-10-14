@@ -19,7 +19,7 @@ use super::rewrap::{REWRAP_LINES, REWRAP_RASTER_BYTES, REWRAP_WORK};
 /// The scrolling rule's clock and the check for a map that waits.
 use super::rows::{due, hold_clock};
 /// Window sizing for exact text widths.
-use super::sidebar_tests::TEXT_LEFT;
+use super::sidebar_tests::{TEXT_LEFT, minimap_beside};
 /// The worker's pass gate.
 use super::tile_build::{BUILD_GATE, PASS_GATE};
 /// The wrap width rule.
@@ -103,10 +103,11 @@ fn spent(reader: &Reader) -> Spent {
     };
 }
 
-/// Report a new window width to the toolkit and run the change handlers once: the render the new width causes.
+/// Report the window width that leaves a text area `text_width` wide (the minimap takes its own share) to the toolkit
+///  and run the change handlers once: the render the new width causes.
 fn change_width(reader: &Reader, text_width: f32, height: f32) {
     reader.window.window().dispatch_event(WindowEvent::Resized {
-        size: LogicalSize::new(TEXT_LEFT + text_width, height),
+        size: LogicalSize::new(TEXT_LEFT + text_width + minimap_beside(text_width), height),
     });
     update_timers_and_animations();
 }
@@ -984,7 +985,7 @@ fn a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width() {
     let release = hold_the_pass();
     start_counting(&opened);
     window.window().dispatch_event(WindowEvent::Resized {
-        size: LogicalSize::new(TEXT_LEFT + 420.0, 660.0),
+        size: LogicalSize::new(TEXT_LEFT + 420.0 + minimap_beside(420.0), 660.0),
     });
     // The first thing that happens after the event is the draw: no `update_timers_and_animations` before it.
     let frame = window.window().take_snapshot().expect("a drawn frame");

@@ -517,7 +517,8 @@ fn the_caret_after_a_full_row_stays_inside_the_view() {
     let (_project, opened) = open(&format!("{}\n", "m".repeat(400)));
     let window = &opened.window;
     // A text area of 9 * 70 + 1 = 631 px: without caret room a row would hold the glyphs up to 630 px.
-    resize(window, 946.0, 660.0);
+    // The window is 110 px wider than the 946 px that gave it before the minimap, which takes its widest 110 px.
+    resize(window, 946.0 + 110.0, 660.0);
     until("the wrap width did not follow the resize", || {
         return opened.source.borrow().width == 631.0 - CARET_ROOM;
     });
@@ -627,7 +628,7 @@ fn a_click_at_a_wrap_offset_keeps_the_side_that_was_clicked() {
         "left of the lower row's first glyph the caret is on the lower row"
     );
     click(LogicalPosition::new(
-        TEXT_LEFT + 784.0,
+        TEXT_LEFT + window.get_viewport_width() - 1.0,
         HEADER + 12.0 + window.get_scroll_y(),
     ));
     assert_eq!(

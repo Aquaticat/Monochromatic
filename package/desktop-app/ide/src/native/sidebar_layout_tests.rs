@@ -8,7 +8,7 @@
 ///  and the pinned layout measurements.
 use super::sidebar_tests::{
     DIVIDER, GUTTER, HEADER, MINIMUM, REACH, SOURCE_MINIMUM, click, drag_to, fixture, motion,
-    press, release, resize, settle,
+    press, release, resize, settle, text_area,
 };
 /// Generated window and search row types from the shipped markup,
 ///  and the single rendering boundary.
@@ -54,14 +54,14 @@ fn source_relayouts_and_repaints_after_a_sidebar_resize() {
     // const window = shared.window;
     // ```
     let window = &shared.window;
-    let initial = 1100.0 - 256.0 - DIVIDER - GUTTER;
+    let initial = text_area(1100.0 - 256.0 - DIVIDER);
     assert_eq!(
         window.get_viewport_width(),
         initial,
         "source viewport positive control"
     );
     drag_to(window, MINIMUM);
-    let widened = 1100.0 - MINIMUM - DIVIDER - GUTTER;
+    let widened = text_area(1100.0 - MINIMUM - DIVIDER);
     assert_eq!(
         window.get_viewport_width(),
         widened,
@@ -104,7 +104,7 @@ fn source_relayouts_and_repaints_after_a_sidebar_resize() {
     drag_to(window, 500.0);
     assert_eq!(
         window.get_viewport_width(),
-        1100.0 - 500.0 - DIVIDER - GUTTER,
+        text_area(1100.0 - 500.0 - DIVIDER),
         "the source did not give up the width the sidebar took"
     );
     // The wrap width follows the new text width: the worker builds the tile for it and the picture is swapped in.
@@ -167,7 +167,7 @@ fn window_resize_shrinks_the_sidebar_and_restores_the_request() {
     );
     assert_eq!(
         window.get_viewport_width(),
-        SOURCE_MINIMUM - GUTTER,
+        text_area(SOURCE_MINIMUM),
         "the source lost its minimum width in a narrow window"
     );
     assert_eq!(

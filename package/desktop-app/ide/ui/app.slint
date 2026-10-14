@@ -61,7 +61,9 @@ export component AppWindow inherits Window {
         root.width - root.divider-width - root.source-minimum-width);
     out property <bool> sidebar-divider-has-focus: sidebar-divider.has-focus;
     private property <length> sidebar-minimum-width: 160px;
-    private property <length> source-minimum-width: 240px;
+    // 240 px of gutter and text, as before the minimap, plus the 48 px the minimap takes at this width
+    // (`ide_app::minimap::width_for`), so the minimap never narrows the text below its old minimum.
+    private property <length> source-minimum-width: 288px;
     // The divider's layout cell is only its 1px line. Its pointer zone is the grip placed over the layout,
     // which also covers the tree's last columns and the source column's first ones (`SidebarDividerGrip.reach`).
     private property <length> divider-width: 1px;
