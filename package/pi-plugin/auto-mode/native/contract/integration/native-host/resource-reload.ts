@@ -100,6 +100,7 @@ export function readHostResource(loader: NativeReloadable): NativeHostResource {
  ```ts
  await reloadHostResource({loader,options});
  ```
+ */
 export async function reloadHostResource({
   loader,
   options

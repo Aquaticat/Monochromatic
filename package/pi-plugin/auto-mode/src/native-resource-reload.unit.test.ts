@@ -77,7 +77,7 @@ await describe({name:'',children:[
         /**
          Original callback failure must pass through without wrapping or replacement.
          */
-        const selected={async reload(){throw error;}};
+        const selected: ReloadFixture={async reload(){throw error;}};
         /**
          Registered resources route only through their original policy method.
          */
