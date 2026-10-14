@@ -72,6 +72,28 @@ try {
   assert.equal(trustCalls, 3);
   await nativeHost.disposeSession(beforeFork);
   nativeHost.lifecycle.assertActive(nativeHost.lifecycle.capture({ session: runtime.session, manager: forkManager }));
+
+  const persisted = nativeHost.managers.create(env.options.cwd, join(env.options.agentDir, 'fixture-sessions'));
+  persisted.appendMessage({ role: 'user', content: 'Persisted original input', timestamp: 2 });
+  const persistedPath = persisted.getSessionFile();
+  const beforeResume = runtime.session;
+  assert.deepEqual(await runtime.switchSession(persistedPath), { cancelled: false });
+  assert.notEqual(runtime.session, beforeResume);
+  assert.equal(runtime.session.sessionFile, persistedPath);
+  assert.equal(env.readSessionDisposalState(beforeResume).completed, true);
+
+  const closing = runtime.session;
+  const disconnect = closing._disconnectFromAgent;
+  const failure = new Error('Native CLI fixture disposal remains incomplete');
+  closing._disconnectFromAgent = () => { throw failure; };
+  await assert.rejects(() => nativeHost.disposeSession(closing), error => error === failure);
+  assert.equal(env.readSessionDisposalState(closing).completed, false);
+  closing._disconnectFromAgent = disconnect;
+  await nativeHost.disposeSession(closing);
+  assert.equal(env.readSessionDisposalState(closing).completed, true);
+  await nativeHost.disposeSession(closing);
+  assert.equal(constructions, 4);
+  assert.equal(trustCalls, 4);
 } finally {
   await runtime.dispose();
   await env.drain();
@@ -79,4 +101,5 @@ try {
 console.log(JSON.stringify({ complete: true, nativeCliManagerSelection: true,
   nativeServices: true, nativeRuntimeReplacement: true, constructions, trustCalls,
   reloadRetiresOldPolicyInput: true, cancellationPreservesSession: true,
-  inMemoryForkReusesOriginalManager: true, providerRequests: 0 }));
+  inMemoryForkReusesOriginalManager: true, persistedResume: true,
+  incompleteDisposalRetry: true, providerRequests: 0 }));
