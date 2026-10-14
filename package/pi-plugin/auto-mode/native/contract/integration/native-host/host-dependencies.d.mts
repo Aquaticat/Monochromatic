@@ -5,7 +5,10 @@
  */
 import type { SessionManager } from '@earendil-works/pi-coding-agent';
 import type { NativeForwardedFunction } from '../native-batch/runtime-types.ts';
-import type { NativeHostRegistration, NativeHostSessionFactory } from './host-types.ts';
+import type {
+  NativeHostRegistration,
+  NativeHostSessionFactory
+} from './host-types.ts';
 import type { readSessionDisposalState } from './session-disposal.mjs';
 
 export { SessionManager } from '@earendil-works/pi-coding-agent';

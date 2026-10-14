@@ -3,7 +3,10 @@
 
  @module
  */
-import type { AgentSession, ResourceLoader } from '@earendil-works/pi-coding-agent';
+import type {
+  AgentSession,
+  ResourceLoader
+} from '@earendil-works/pi-coding-agent';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import {
   createRootSessionFactory,
@@ -15,7 +18,10 @@ import {
 import { readSessionDisposalState } from './session-disposal.mjs';
 import { createHostResource } from './resources.ts';
 import { reloadHostResource } from './resource-reload.ts';
-import type { NativeCliResource, NativeResourceOptions } from './resource-construction-types.ts';
+import type {
+  NativeCliResource,
+  NativeResourceOptions
+} from './resource-construction-types.ts';
 import type {
   NativeCliHost,
   NativeHostDefinition,
@@ -26,6 +32,7 @@ import type {
 } from './host-types.ts';
 
 import { NativeCliHostError } from './host-error.ts';
+
 export { NativeCliHostError } from './host-error.ts';
 export type { NativeCliHost } from './host-types.ts';
 
@@ -59,7 +66,10 @@ export function createNativeCliHost({
   /**
    Nested lifecycle callbacks retain this host-construction tag.
    */
-  const hl = tagged({tag:createNativeCliHost.name,l});
+  const hl = tagged({
+    tag:createNativeCliHost.name,
+    l
+  });
   hl.debug('binding native CLI construction and disposal');
   if (((typeof designatePolicy) !== 'function') || ((typeof bindSession) !== 'function'))
     throw new NativeCliHostError('Native CLI bootstrap requires fixed policy designation and session binding');
@@ -97,7 +107,10 @@ export function createNativeCliHost({
     /**
      Registration diagnostics identify this boundary without exposing native objects.
      */
-    const rl = tagged({tag:registerSession.name,l:hl});
+    const rl = tagged({
+      tag:registerSession.name,
+      l:hl
+    });
     rl.debug('registering original native session');
     /**
      Membership returns the original record retained at resource construction.
@@ -175,9 +188,14 @@ export function createNativeCliHost({
     /**
      Resource construction retains its original host diagnostic scope.
      */
-    const rl = tagged({tag:createResourceLoader.name,l:hl});
+    const rl = tagged({
+      tag:createResourceLoader.name,
+      l:hl
+    });
     rl.debug('constructing original host resource loader');
-    // Preserve original outer options while policy designation performs asynchronous file inspection.
+    /**
+     Preserve original outer options while policy designation performs asynchronous file inspection.
+     */
     const capturedOptions = {...options};
     /**
      Designation reads the original file before native resource construction.
@@ -190,7 +208,10 @@ export function createNativeCliHost({
       options: capturedOptions,
       designation
     });
-    resources.set(resource.loader,resource);
+    resources.set(
+      resource.loader,
+      resource
+    );
     return resource.loader;
   }
   /**
@@ -208,7 +229,10 @@ export function createNativeCliHost({
     /**
      Session construction retains its own diagnostic boundary.
      */
-    const sl = tagged({tag:createSession.name,l:hl});
+    const sl = tagged({
+      tag:createSession.name,
+      l:hl
+    });
     sl.debug('constructing original host session');
     if (pendingDisposals.size > 0)
       throw new NativeCliHostError('Native host session cleanup is incomplete; retry disposal before constructing another session');
@@ -247,7 +271,10 @@ export function createNativeCliHost({
     /**
      Terminal cleanup logs decisions without serializing the native session.
      */
-    const dl = tagged({tag:disposeSession.name,l:hl});
+    const dl = tagged({
+      tag:disposeSession.name,
+      l:hl
+    });
     dl.debug('disposing original host session');
     /**
      The host retains disposal progress independently of mutable SDK state.

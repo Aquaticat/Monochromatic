@@ -11,9 +11,15 @@ import type {
   SessionManager
 } from '@earendil-works/pi-coding-agent';
 import type { ManagerConstructors } from '../../lifecycle/runtime-custody/manager-types.ts';
-import type { NativeHostSessionInput, NativePolicyDesignation } from './bootstrap-types.ts';
+import type {
+  NativeHostSessionInput,
+  NativePolicyDesignation
+} from './bootstrap-types.ts';
 import type { NativePolicyRuntime } from '../native-batch/runtime-types.ts';
-import type { NativeCliResource, NativeResourceOptions } from './resource-construction-types.ts';
+import type {
+  NativeCliResource,
+  NativeResourceOptions
+} from './resource-construction-types.ts';
 import type { reloadHostResource } from './resource-reload.ts';
 
 /**
