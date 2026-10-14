@@ -15,7 +15,7 @@ import {
   readActiveSessionDomainEvents,
   readActiveSessionConstructedInputs,
 } from '../native-batch/generated/agent-session.mjs';
-import { registerHostResource } from './resource-reload.mjs';
+import { registerHostResource } from './resource-reload.ts';
 
 //region Native services receive the original loader from its policy owner.
 

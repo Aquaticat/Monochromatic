@@ -13,6 +13,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import type { ManagerConstructors } from '../../lifecycle/runtime-custody/manager-types.ts';
 import type { NativePolicyRuntime } from '../native-batch/runtime-types.ts';
+import type { reloadHostResource } from './resource-reload.ts';
 import type {
   NativeHostSessionInput,
   NativePolicyDesignation
@@ -35,10 +36,7 @@ export type NativeCliHost = {
   /**
    Reload uses the same native resource owner and trust resolver.
    */
-  readonly reloadResource: (
-    loader: ResourceLoader,
-    options?: Parameters<ResourceLoader['reload']>[0]
-  ) => Promise<void>;
+  readonly reloadResource: typeof reloadHostResource;
   /**
    Construction requires this host's original manager and resource loader.
    */

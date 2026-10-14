@@ -8,7 +8,7 @@ import {nativeOpenAIStream} from './source-association.mjs';
 import {fixtureResponse} from './fixture-response.mjs';
 import {ruleAssessmentModel} from '../action-policy/wire.mjs';
 import {maintainedPolicyEntry} from '../maintained-policy.mjs';
-import {registerHostResource} from '../native-host/resource-reload.mjs';
+import {registerHostResource} from '../native-host/resource-reload.ts';
 
 const {
   askUser,

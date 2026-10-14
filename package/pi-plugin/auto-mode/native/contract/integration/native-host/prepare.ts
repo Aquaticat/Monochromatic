@@ -144,7 +144,7 @@ export async function prepareNativeHost({ output }: {readonly output:string}):Pr
    Resource reload retains the original trust and policy-input boundary.
    */
   const reload = JSON.stringify(new URL(
-    'resource-reload.mjs',
+    'resource-reload.ts',
     import.meta.url
   ).href);
   /**
@@ -241,7 +241,7 @@ export async function prepareNativeHost({ output }: {readonly output:string}):Pr
       source = replaceOnce({
         source,
         before: 'await resourceLoader.reload(options.resourceLoaderReloadOptions);',
-        after: 'await reloadHostResource(resourceLoader, options.resourceLoaderReloadOptions);'
+        after: 'await reloadHostResource({loader: resourceLoader, options: options.resourceLoaderReloadOptions});'
       });
     }
     generated.push({

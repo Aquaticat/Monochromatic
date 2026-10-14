@@ -12,7 +12,7 @@ import { createHostResource } from './resources.mjs';
 import {
   readHostResource,
   reloadHostResource
-} from './resource-reload.mjs';
+} from './resource-reload.ts';
 
 import { NativeCliHostError } from './host-error.ts';
 export { NativeCliHostError } from './host-error.ts';

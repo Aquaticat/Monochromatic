@@ -154,7 +154,7 @@ const ownedSession=sessionSource(sessionStateSource(toolObservedSession));
  Native resource reload keeps the host policy input retirement owner.
  */
 const resourceReloadUrl=new URL(
-  '../native-host/resource-reload.mjs',
+  '../native-host/resource-reload.ts',
   import.meta.url
 ).href;
 /**
@@ -163,7 +163,7 @@ const resourceReloadUrl=new URL(
 const promptedSession=`import {reloadHostResource} from ${JSON.stringify(resourceReloadUrl)};\n${replaceOnce({
   source:promptSessionSource(ownedSession),
   from:'        await this.#resourceLoader.reload();',
-  to:'        await reloadHostResource(this.#resourceLoader);'
+  to:'        await reloadHostResource({loader: this.#resourceLoader});'
 })}`;
 /**
  Declared program execution retains the transformed native Session and original imports.

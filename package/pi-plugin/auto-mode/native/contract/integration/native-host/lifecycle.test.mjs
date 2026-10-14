@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createEnvironment } from '../native-batch/environment.mjs';
-import { readHostResource } from './resource-reload.mjs';
+import { readHostResource } from './resource-reload.ts';
 import { isOwnedProgramDefinition } from '../native-batch/generated/program-definition.mjs';
 
 const env = await createEnvironment();
