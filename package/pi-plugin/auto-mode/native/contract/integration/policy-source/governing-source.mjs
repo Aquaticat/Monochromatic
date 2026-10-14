@@ -46,7 +46,7 @@ export function bindGoverningPolicySource({
      response,
      stream
    });
-   const currentSources=judgment.sourceSnapshot??receipt.sources;
+   const currentSources=judgment.readSourceSnapshot?.()??judgment.sourceSnapshot??receipt.sources;
    if(sources===undefined)sources=currentSources;
    else if(sources!==currentSources)throw new GoverningPolicyBindingError('Original judgment source snapshot changed');
    observer.assertFresh(receipt);collector.assertObservedFresh(sources);

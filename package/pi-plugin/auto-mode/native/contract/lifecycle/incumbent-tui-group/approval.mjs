@@ -32,7 +32,7 @@ export function bindOriginalTuiApproval({
   const source=observer.observationFor(response); const closure=judgment.inspect()
     .finalRecord;
   // The original judgment already owns its assessed snapshot; never recapture after evidence closure.
-  const sources=judgment.sourceSnapshot??source.sources;
+  const sources=judgment.readSourceSnapshot?.()??judgment.sourceSnapshot??source.sources;
   if((closure?.status!=='evidence-closed')||(judgment.inspect().accounting.finished!==true))throw new OriginalTuiApprovalError('TUI approval requires closed original assessment evidence');
   const states=judgment.inspect()
     .memberExecutions;
@@ -59,7 +59,7 @@ export function bindOriginalTuiApproval({
     if(phase==='failed')throw failure;
     try{
       if((producerOwner.judgmentFor({response,stream})!==judgment)||(judgment.inspect().finalRecord!==closure))throw new OriginalTuiApprovalError('Original TUI judgment closure changed');
-      if((judgment.sourceSnapshot??source.sources)!==sources)throw new OriginalTuiApprovalError('Original approval judgment source snapshot changed');
+      if((judgment.readSourceSnapshot?.()??judgment.sourceSnapshot??source.sources)!==sources)throw new OriginalTuiApprovalError('Original approval judgment source snapshot changed');
       observer.assertFresh(source);collector.assertObservedFresh(sources);judgment.assertDependenciesCurrent();signal.throwIfAborted();
       if((ctx.ui!==ui)||(ui.select!==select)||(pi.appendEntry!==appendEntry)||(ctx.abort!==abort))throw new OriginalTuiApprovalError('Original native approval capabilities changed');
       for(const member of members)if(judgment.preparedMemberFor(member.handle)

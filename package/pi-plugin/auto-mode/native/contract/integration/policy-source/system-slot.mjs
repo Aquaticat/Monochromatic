@@ -451,6 +451,7 @@ function createPolicyLoader({
      return saved.judgmentSources;
     }
     const previous=saved.judgmentSources===undefined?saved:snapshots.get(saved.judgmentSources);
+    if(previous.failure)throw new PolicySlotBindingError('Original prepared source collection lost eligibility',{cause:previous.failure.cause});
     const previousSnapshot=saved.judgmentSources??original;
     const current=capture({signal}); const next=snapshots.get(current);
     if(next.input!==saved.input)throw new PolicySlotBindingError('Judgment source handoff cannot replace its original policy binding');
