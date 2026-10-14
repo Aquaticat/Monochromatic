@@ -1,5 +1,6 @@
 import { RootLeaseSuspendedError } from './lifecycle.mjs';
 import { createHash } from 'node:crypto';
+import {inspect} from 'node:util';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
 
 const l=tagged({tag:'auto-mode-request-observation'});
@@ -99,7 +100,7 @@ export function createRequestObservationOwner({
         ?.sources
         ??scope.sources);
       assertScopeLifetime(scope);
-    } catch(error){if(error instanceof RootLeaseSuspendedError)throw error;tagged({tag:assertScope.name,l}).error(error);if(!scope.invalidated){scope.invalidated=true;scope.invalidationCause=error;}throw new RequestObservationStaleError(
+    } catch(error){if(error instanceof RootLeaseSuspendedError)throw error;tagged({tag:assertScope.name,l}).error(inspect(error,{depth:6,maxStringLength:2048}));if(!scope.invalidated){scope.invalidated=true;scope.invalidationCause=error;}throw new RequestObservationStaleError(
       'Observed request is no longer current',
       {cause:error}
     );}
