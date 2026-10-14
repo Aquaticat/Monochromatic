@@ -1,5 +1,5 @@
-# What:  image for the cli-git concurrent-commit end-to-end workload replay suite
-#        (`mise run //package/git-policy/cli:test:e2e:concurrent`).
+# What:  base image for the cli-git concurrent-commit end-to-end workload replay suite
+#        (`mise run //package/git-policy/cli:test:e2e:concurrent:native`, which links the native executable into it).
 # Why:   concurrent mutation of shared Git state is only verified against real repositories
 #        (doc/decision/cli-git-concurrent-commits.md, "Container end-to-end verification").
 #        Distribution images ship an older Git, so both Git versions under test build from source:
@@ -10,11 +10,12 @@
 #        A third, 2.39.5 (Debian bookworm's Git), sits below that minimum and proves per-feature
 #        degradation: its merge-tree lacks `--merge-base`, so a commit that needs replay fails fast.
 #        It builds last so the two cached builds above keep their layers.
-# Build context: the directory holding the packed tarball (`dist/pack`), passed as TARBALL.
+# Build context: any directory; nothing is copied from it.
 # Checksums: https://www.kernel.org/pub/software/scm/git/sha256sums.asc.
 # Every RUN uses exec form: no shell logic lives in this file.
 
-# Node matches the package's `engines.node` floor (^24.11.0).
+# Node 24.11.0 is the version this image has always run the suite with (the floor the retired TypeScript wrapper named);
+# the suite is TypeScript run by Node type stripping, so the version is kept as it was.
 FROM docker.io/library/node:24.11.0-slim AS git-build
 
 RUN ["apt-get", "update"]
@@ -51,10 +52,4 @@ RUN ["mkdir", "--parents", "/node_modules/@monochromatic-dev"]
 RUN ["ln", "--symbolic", "/fixture/caught-value", "/node_modules/@monochromatic-dev/module-caught-value"]
 
 # The image deliberately has no /usr/bin/git: each scenario selects its Git through PATH order.
-WORKDIR /opt/cli-git
-RUN ["npm", "init", "--yes"]
-ARG TARBALL
-COPY ${TARBALL} /fixture/cli.tgz
-# Installed at build time because the suite runs with `--network=none`.
-RUN ["npm", "install", "--ignore-scripts", "--no-audit", "--no-fund", "/fixture/cli.tgz"]
 WORKDIR /work

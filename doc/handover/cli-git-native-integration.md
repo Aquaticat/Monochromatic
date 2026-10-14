@@ -1,5 +1,12 @@
 # cli-git native integration
 
+Note,
+ 2026-10-14:
+ the retirement of the TypeScript wrapper deleted the tasks `native:differential:commit` and `native:config:differential`
+ that this record names.
+The record is `doc/handover/cli-git-native-retire.md`;
+the incumbent that this record compares against is the commit `f4fc1fa213ece65672e4314983a75266837892f9`.
+
 ## Purpose and how to respond
 
 This branch integrates the lanes of the native commit path (`package/git-policy/cli/src/native/`) and wires

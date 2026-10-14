@@ -1,5 +1,12 @@
 # cli-git native dependent-version planner
 
+Note,
+ 2026-10-14:
+ the retirement of the TypeScript wrapper deleted the driver `bin/dependent-version-differential.mjs`,
+ its task `native:differential:dependent-version` and the package `git-policy-repository` that this record names.
+The record is `doc/handover/cli-git-native-retire.md`;
+the incumbent that this record compares against is the commit `f4fc1fa213ece65672e4314983a75266837892f9`.
+
 ## Purpose and how to respond
 
 This records the native Rust planning core of `mono/dependent-version-bump`

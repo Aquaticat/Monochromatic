@@ -71,7 +71,7 @@ const HOOK_TRAILER = 'E2E-Hook-Checked: yes';
 const NON_FAST_FORWARD = 'non-fast-forward';
 
 /**
- Note the wrapper prints after every failed auto-push (`PUSH_FAILED_NOTE` in `src/auto-push.ts`).
+ Note the wrapper prints after every failed auto-push (`PUSH_FAILED_NOTE` in `src/native/auto_push.rs`).
  */
 const PUSH_FAILED_NOTE = 'auto-push to origin failed';
 

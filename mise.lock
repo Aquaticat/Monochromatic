@@ -401,14 +401,20 @@ backend = "cargo:fd-find"
 specifiers = ["latest"]
 
 [[tools."cargo:monochromatic-git-policy-cli"]]
-version = "0.1.1"
+version = "0.1.2"
 backend = "cargo:monochromatic-git-policy-cli"
-specifiers = ["0.1.1"]
+specifiers = [
+    "0.1.2",
+    "latest",
+]
 
 [[tools."cargo:monochromatic-lint"]]
-version = "0.1.1"
+version = "0.1.2"
 backend = "cargo:monochromatic-lint"
-specifiers = ["0.1.1"]
+specifiers = [
+    "0.1.2",
+    "latest",
+]
 
 [[tools."cargo:monochromatic-nested-wayland-session"]]
 version = "0.4.0"
@@ -1092,7 +1098,7 @@ url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15
 url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119643"
 
 [[tools.rust]]
-version = "nightly-2026-10-12"
+version = "nightly-2026-10-13"
 backend = "core:rust"
 specifiers = ["nightly"]
 

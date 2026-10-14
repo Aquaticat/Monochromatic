@@ -5,21 +5,21 @@ It is the "Container end-to-end verification" part of
 [`doc/decision/cli-git-concurrent-commits.md`](../../../../doc/decision/cli-git-concurrent-commits.md)
 and slice 8 of
 [`doc/concurrent-commits-implementation-plan.md`](../doc/concurrent-commits-implementation-plan.md).
-Fresh dummy repositories replay realistic concurrent-agent workloads through the packed shadow `git`,
+Fresh dummy repositories replay realistic concurrent-agent workloads through the native `git` wrapper (`src/native/`),
 and an invariant checker judges every run.
 
 ## How to run
 
 ```sh
 # package/git-policy/cli: run from the repository root
-mise run //package/git-policy/cli:test:e2e:concurrent
-mise run //package/git-policy/cli:test:e2e:concurrent --seed 1
-mise run //package/git-policy/cli:test:e2e:concurrent --seed 1 --scenario shared-file-overlapping-hunks --git 2.55.0
+mise run //package/git-policy/cli:test:e2e:concurrent:native --git 2.55.0
+mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1 --git 2.55.0
+mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1 --scenario shared-file-overlapping-hunks --git 2.55.0
 ```
 
-- `test:e2e:concurrent` depends on `test:e2e:concurrent:image`,
-  which depends on `pack:npm`.
-  Every run therefore tests the current build.
+- `test:e2e:concurrent:native` depends on `test:e2e:concurrent:native:image`,
+  which compiles the release executable from the checkout and builds the base image when it does not exist.
+  Every run therefore tests the current source.
 - Every run prints the selected wrapper and the executable it verified,
   its seed and a replay command,
   then one line per scenario and Git version,
@@ -29,27 +29,27 @@ mise run //package/git-policy/cli:test:e2e:concurrent --seed 1 --scenario shared
   `--git` takes comma-separated versions among `2.39.5`,
   `2.40.0`,
   and `2.55.0`.
+- The native executable requires Git 2.55.0 or newer, so the supported run selects `--git 2.55.0`.
+  Without `--git`, the 2.39.5 and 2.40.0 runs fail by design (measured on 2026-10-14, seed 91442351:
+  52 of 114 runs failed, all on those two versions; with `--git 2.55.0` and seed 1, 36 scenarios pass and 2 skip).
 
-The same scenarios run against the native executable (`src/native/`) with the native tasks:
+The TypeScript wrapper that this suite first verified is retired;
+ its last commit is
+`f4fc1fa213ece65672e4314983a75266837892f9`,
+ and the sections that describe measurements say so where they cite it.
 
-```sh
-# package/git-policy/cli: run from the repository root
-mise run //package/git-policy/cli:test:e2e:concurrent:native
-mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1 --scenario baseline-explicit-commit --git 2.55.0
-mise run //package/git-policy/cli:test:e2e:concurrent:native:surface
-```
-
-- `E2E_WRAPPER` (`incumbent` by default, or `native`) selects the directory whose `git` shadows the real Git
+- `E2E_WRAPPER` (empty or `native`,
+   the only wrapper) names the directory whose `git` shadows the real Git
   (`wrapper-selection-fixture.ts`);
-  the consumer checks that this `git` is a script for the incumbent and an ELF executable for the native one,
-  and prints the result first.
-  Scenarios, invariants and the report do not change with the selection.
-- `test:e2e:concurrent:native:surface` sends the non-commit commands the scenarios use through both wrappers
-  (`wrapper-surface-probe.ts`) and compares exit codes and output; it needs no commit path.
+  the consumer checks that this `git` is an ELF executable and prints the result first.
 - `test:e2e:concurrent:native:image` compiles the release `cli-git-native` in `rust:1.97-bookworm`
-  and links it as `/opt/native/bin/git` in a copy of the `cli-git-concurrent-e2e` image;
-  build that image first with `test:e2e:concurrent:image`.
+  and links it as `/opt/native/bin/git` in a copy of the `cli-git-concurrent-e2e` base image.
   `GIT_POLICY_NATIVE_IMAGE_TAG` names the native image's tag, so concurrent worktrees never share one.
+- `test:e2e:concurrent:image` builds the base image alone (Node,
+   the three Git builds,
+   `ssh-keygen`);
+  `GIT_POLICY_E2E_BASE_TAG` names a tag other than `latest`,
+   so a trial build never replaces the image other runs use.
 
 Regenerate the committed trace with real Git on the host.
 It mines this checkout by default;
@@ -66,23 +66,34 @@ mise run //package/git-policy/cli:e2e:concurrent:trace
 `concurrent-commits.Containerfile` builds `cli-git-concurrent-e2e`:
 
 - Node 24.11.0,
-  the floor of `engines.node` in `package.json`;
+  the version the suite has always run with;
 - Git 2.39.5,
   Git 2.40.0,
   and Git 2.55.0,
   built from checksum-pinned kernel.org tarballs,
   installed under `/opt/git/<version>`;
 - no Git on the default `PATH`,
-  so each scenario picks its Git by `PATH` order;
-- the packed tarball installed with npm at build time under `/opt/cli-git`.
+  so each scenario picks its Git by `PATH` order.
 
-Git 2.40.0 is the oldest release with every feature cli-git uses,
+The native image adds `/opt/native/bin/git`,
+ a link to the release executable,
+ on top of this image.
+
+The native executable requires Git 2.55.0 or newer and runs nothing on an older Git
+(`SPEC.md` "Compatibility and degradation"),
+so only the 2.55.0 runs are supported ones.
+The rest of this section describes why the image also carries 2.39.5 and 2.40.0:
+the retired TypeScript wrapper degraded on them,
+ and the suite kept the versions.
+
+For the retired wrapper,
+ Git 2.40.0 was the oldest release with every feature it used,
 because it is the first whose `git merge-tree` accepts `--merge-base`:
 `Documentation/RelNotes/2.40.0.adoc` says "`merge-tree` learns a new `--merge-base` option",
 and `--write-tree` itself arrived in 2.38.0.
 Git 2.39.5,
 Debian bookworm's Git,
-proves that cli-git degrades without that option
+proved that the retired wrapper degraded without that option
 (`SPEC.md` "Compatibility and degradation"):
 a commit that loses a landing race fails fast with `concurrent-commit/head-moved` instead of replaying.
 Git 2.55.0 is the current release;
@@ -119,8 +130,9 @@ Every scenario creates its own repository and local bare remote under `/work/<gi
 Measured image build times on this host:
 255 s for a build that compiles both Git versions
 (base images already pulled),
-and 12 to 19 s for the usual rebuild after `pack:npm`,
-which only replaces the tarball layer.
+measured while the suite still packed the TypeScript wrapper into the image
+(the rebuild after a new pack replaced only the tarball layer;
+ that layer no longer exists).
 
 ## Workloads
 
@@ -331,7 +343,7 @@ which is how scenarios pin interleavings and inject kills.
 
 Landing phases run no hook,
 so the wrapper exposes them through a test-only environment variable
-(`src/policy-engine/commit-transaction-test-phase.ts`,
+(`src/native/transaction_phase.rs`,
 `SPEC.md` "Container end-to-end suite"):
 
 ```sh
@@ -464,7 +476,7 @@ Hook barriers make the pinned interleavings identical on replay;
 free-running starts and the `sigkill-offset` kill still depend on process scheduling,
 so a replay reproduces the workload exactly but can land a free-running race differently.
 
-## Results on the current build
+## Results of the TypeScript wrapper build, 2026-09-26
 
 Seeds 1,
 2,

@@ -38,6 +38,16 @@ Nothing in the real installation was installed,
 What remains is in `Steps that remain`,
  `User-boundary verification` and `Order of the retirement commits`.
 
+Retirement state on 2026-10-14:
+the retirement commits are on the branch `feat/cli-git-native-retire`
+(record,
+ gates,
+ leftovers and the cleanup list for the main checkout:
+ `doc/handover/cli-git-native-retire.md`).
+The sections below describe the plan and the facts that led to it;
+where they say a file "will be deleted" or "stays",
+ the branch is the outcome.
+
 Facts measured on 2026-10-12 carry that date;
  facts measured on 2026-10-13 say so.
 The scout of 2026-10-12 read `main` at `e1890fb471`.
@@ -1270,6 +1280,11 @@ Results for 0.1.1,
    staged control refused).
 
 ### Why the pin is 0.1.1
+
+Update 2026-10-14: the user decided that nothing this repository publishes needs a pin
+("You don't need to pin anything we control"), so `mise.no-env.toml` now says `latest` for the wrapper and the
+linter and `mise.lock` records the resolved version (0.1.2).
+The section below stays as the record of why 0.1.0 must never be installed.
 
 Version 0.1.0 landed a Markdown commit and then exited 2:
  in the throwaway repository with the repository's configuration (which lists `markdown/autofix`),

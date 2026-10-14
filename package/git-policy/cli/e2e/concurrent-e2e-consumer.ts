@@ -1,15 +1,13 @@
 #!/usr/bin/env node
 /**
  Container entry point of the concurrent-commit end-to-end suite.
- Run only through `mise run //package/git-policy/cli:test:e2e:concurrent`
- (packed TypeScript wrapper)
- or `mise run //package/git-policy/cli:test:e2e:concurrent:native` (native executable),
- which start it inside a bounded,
- network-isolated Podman container.
+ Run only through `mise run //package/git-policy/cli:test:e2e:concurrent:native`,
+ which starts it inside a bounded,
+ network-isolated Podman container with the native executable.
 
  Environment:
- `E2E_WRAPPER` selects the wrapper whose `git` shadows the real Git:
- `incumbent` (default) or `native`;
+ `E2E_WRAPPER` names the wrapper whose `git` shadows the real Git:
+ `native` (the default and the only value);
  `E2E_SEED` replays a seed;
  `E2E_SCENARIOS` and `E2E_GIT_VERSIONS` are comma-separated filters.
  Output is terminal report text (AGENTS.md TLG exception):
@@ -157,8 +155,7 @@ async function runSuite(): Promise<void> {
     bin: WRAPPER_BIN,
   },),);
   console.log(`seed=${String(seed,)}${generated ? ' (generated)' : ''}`,);
-  console.log(`replay: mise run //package/git-policy/cli:test:e2e:concurrent${
-    WRAPPER_KIND === 'native' ? ':native' : ''} --seed ${String(seed,)}`,);
+  console.log(`replay: mise run //package/git-policy/cli:test:e2e:concurrent:native --seed ${String(seed,)}`,);
   /**
    Committed trace.
    */

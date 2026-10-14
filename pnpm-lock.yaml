@@ -457,9 +457,6 @@ importers:
       '@monochromatic-dev/dev-script-task-util':
         specifier: workspace:*
         version: link:package/dev-script/task-util
-      '@monochromatic-dev/git-policy-cli':
-        specifier: workspace:*
-        version: link:package/git-policy/cli
       '@monochromatic-dev/module-image-diff':
         specifier: workspace:*
         version: link:package/module/image-diff
@@ -2019,172 +2016,17 @@ importers:
         specifier: 'catalog:'
         version: 26.6.4
 
-  package/git-policy/api:
-    dependencies:
-      '@monochromatic-dev/ownership-marker-foreign-borrowed':
-        specifier: workspace:*
-        version: link:../../ownership-marker/foreign-borrowed
-      valibot:
-        specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
-    devDependencies:
-      '@monochromatic-dev/config-rolldown':
-        specifier: workspace:*
-        version: link:../../config/rolldown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@monochromatic-dev/module-test':
-        specifier: workspace:*
-        version: link:../../module/test
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.4
-
   package/git-policy/cli:
-    dependencies:
-      ignore:
-        specifier: 'catalog:'
-        version: 7.0.12
-      nano-spawn:
-        specifier: 'catalog:'
-        version: 2.1.0
-      rolldown:
-        specifier: 'catalog:'
-        version: 1.2.13
-      type-fest:
-        specifier: 'catalog:'
-        version: 5.10.0
-      typescript:
-        specifier: 'catalog:'
-        version: 7.0.2
-      valibot:
-        specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
-      yuku-ast:
-        specifier: 'catalog:'
-        version: 0.17.0
-      yuku-parser:
-        specifier: 'catalog:'
-        version: 0.17.0
     devDependencies:
-      '@monochromatic-dev/config-rolldown':
-        specifier: workspace:*
-        version: link:../../config/rolldown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@monochromatic-dev/git-executable':
-        specifier: workspace:*
-        version: link:../../git/executable
-      '@monochromatic-dev/git-policy-repository':
-        specifier: workspace:*
-        version: link:../repository
-      '@monochromatic-dev/module-async-time':
-        specifier: workspace:*
-        version: link:../../module/async-time
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
         version: link:../../module/caught-value
-      '@monochromatic-dev/module-fs-id':
-        specifier: workspace:*
-        version: link:../../module/fs-id
-      '@monochromatic-dev/module-fs-path':
-        specifier: workspace:*
-        version: link:../../module/fs-path
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
-      '@monochromatic-dev/module-test':
-        specifier: workspace:*
-        version: link:../../module/test
-      '@monochromatic-dev/ownership-marker-foreign-borrowed':
-        specifier: workspace:*
-        version: link:../../ownership-marker/foreign-borrowed
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.4
-
-  package/git-policy/forbidden-strings:
-    dependencies:
-      '@monochromatic-dev/git-policy-api':
-        specifier: workspace:*
-        version: link:../api
-      '@monochromatic-dev/ownership-marker-foreign-borrowed':
-        specifier: workspace:*
-        version: link:../../ownership-marker/foreign-borrowed
-      nano-spawn:
-        specifier: 'catalog:'
-        version: 2.1.0
-      valibot:
-        specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
-    devDependencies:
-      '@monochromatic-dev/config-rolldown':
-        specifier: workspace:*
-        version: link:../../config/rolldown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@monochromatic-dev/module-or-throw':
-        specifier: workspace:*
-        version: link:../../module/or-throw
-      '@monochromatic-dev/module-test':
-        specifier: workspace:*
-        version: link:../../module/test
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.4
-
-  package/git-policy/markdown-lint:
-    dependencies:
-      '@monochromatic-dev/git-policy-api':
-        specifier: workspace:*
-        version: link:../api
-      '@monochromatic-dev/ownership-marker-foreign-borrowed':
-        specifier: workspace:*
-        version: link:../../ownership-marker/foreign-borrowed
-      ignore:
-        specifier: 'catalog:'
-        version: 7.0.12
-      valibot:
-        specifier: 'catalog:'
-        version: 1.5.0(typescript@7.0.2)
-    devDependencies:
-      '@monochromatic-dev/config-rolldown':
-        specifier: workspace:*
-        version: link:../../config/rolldown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@monochromatic-dev/module-or-throw':
-        specifier: workspace:*
-        version: link:../../module/or-throw
-      '@monochromatic-dev/module-test':
-        specifier: workspace:*
-        version: link:../../module/test
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.4
-
-  package/git-policy/repository:
-    dependencies:
-      '@monochromatic-dev/git-policy-api':
-        specifier: workspace:*
-        version: link:../api
-      '@monochromatic-dev/git-policy-markdown-lint':
-        specifier: workspace:*
-        version: link:../markdown-lint
-      '@monochromatic-dev/ownership-marker-foreign-borrowed':
-        specifier: workspace:*
-        version: link:../../ownership-marker/foreign-borrowed
-    devDependencies:
-      '@monochromatic-dev/config-rolldown':
-        specifier: workspace:*
-        version: link:../../config/rolldown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test

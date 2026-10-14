@@ -82,3 +82,7 @@ mod commit;
 /// The linked-worktree ignored-state copy: the rules file reaches new worktrees, and an interrupted copy recovers.
 #[path = "binary_worktree_copy_tests.rs"]
 mod worktree_copy;
+
+/// The environment of the Git children the auto-push and the manual-push probe start.
+#[path = "binary_push_environment_tests.rs"]
+mod push_environment;

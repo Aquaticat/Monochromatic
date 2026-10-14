@@ -109,6 +109,14 @@ Retired `@narumitw/pi-goal` behavior and migration:
 - cached package files are not active configuration
 - migrate globally to repository-owned `@monochromatic-dev/pi-goal`
 
+### [OpenAI OAuth requests hit Cloudflare 520](openai-api-oauth-cloudflare-520.md)
+
+Why pi's OpenAI models fail while `status.openai.com` reads fully operational:
+
+- valid ChatGPT OAuth tokens get Cloudflare `520` origin errors on `api.openai.com`
+- unauthenticated and invalid-credential requests to the same host still return clean `401` JSON
+- the same model ids answer through the `llmgateway-devpass` provider and through `codex exec`
+
 ### [C-Like Comment Syntax](c-like-comments.md)
 
 Issues with C-style comment syntax that affect multiple programming languages:

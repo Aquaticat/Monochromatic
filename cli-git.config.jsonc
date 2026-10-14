@@ -1,5 +1,5 @@
 // Repository-owned cli-git policy configuration for the native wrapper.
-// Translated from `cli-git.config.ts`; the native wrapper runs the four optional policies only when they are listed.
+// The native wrapper runs the four optional policies only when they are listed.
 // Evidence and the differential check: doc/handover/cli-git-native-config.md
 {
   "policies": {

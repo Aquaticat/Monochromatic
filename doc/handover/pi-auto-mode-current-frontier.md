@@ -5,9 +5,221 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-12.
+Updated 2026-10-13.
 
-## Resumed after the break
+## Restart checkpoint after installing automatic Codex shell limits
+
+The user restarted the session and resumed work on 2026-10-13.
+The first default sandboxed `cat /proc/self/cgroup` returned
+`0::/user.slice/user-1000.slice/user@1000.service/piwork3285273.slice/codex`.
+The parent controls returned `memory.max=4294967296`,
+`memory.swap.max=0`,
+`cpu.max=200000 100000`,
+and `pids.max=256`.
+Automatic attachment is now verified in the ordinary sandbox.
+The agent supplies ordinary commands;
+the installed native hook supplies the attachment prefix.
+Historical manual worker wrappers in this document are superseded for Codex Bash calls.
+The Pi host remains outside the worker slice.
+
+Native RPC reopened session `01a0dc52-0955-77f6-ae77-68a6e15bb12b`
+with `qwen-token-plan-individual/qwen3.8-flash`.
+`get_state` returned the expected session identity,
+no streaming or compaction,
+and no pending messages.
+Closing stdin completed shutdown with exit zero.
+No model prompt was sent.
+
+The next domain-resolution acceptance stopped during preparation:
+Node reported `ERR_MODULE_NOT_FOUND` for the retired `yuku-parser@0.17.0` path.
+The installed parser is now 0.19.0 and Pi is 1.2.0.
+Pi's installed coding-agent package no longer has the expected unbundled JavaScript files.
+The current native integration therefore needs adaptation before its prior results describe the current host.
+The read-only upstream source checkout is Pi tag `v1.2.0`,
+commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`.
+
+Private `contract/integration/current-sdk` now emits separate Agent,
+AI,
+and coding-agent JavaScript using the existing TypeScript 7.0.2 compiler.
+Staging passed without changing installed sources or installing dependencies.
+Commits `2699da6e`,
+`2edd3014`,
+and `52cced2f` retain the staging source and fixture connection.
+The first native patch check reached the changed `emitBeforeAgentStart` call:
+Pi 1.2.0 takes a run trigger and prepares user or custom runs in `_prepareRun`.
+Private commits `dfdbb616` and `1e7824bb` adapt that native boundary.
+`mise run native:prepare` now passes against Pi 1.2.0 and copies 13 instrumented modules.
+The staging loader uses native package export resolution,
+including wildcard subpaths,
+and the source build retains generated model catalogs from the exact installed release.
+The domain acceptance then found that its historical Markdown parser owner,
+`package/cli/markdown-lint`,
+was removed by the repository's Rust linter migration.
+Private `f411f9da` declares the previously qualified `satteri@0.10.5` directly in the fixture workspace.
+Its installation uses `pnpm install --ignore-scripts`.
+The current acceptance result is still pending;
+source preparation alone does not establish decision behavior.
+Domain closure,
+maintained delivery,
+and installed approval verification remain unfinished.
+
+The user resumed this handover on 2026-10-13,
+then prioritized automatic Codex Bash resource limits before further Pi implementation.
+The native Rust implementation is now in `package/codex-plugin/bash-limit`.
+The user approved Rust tests through nextest with default build and test concurrency,
+and the corresponding clarification in `AGENTS.md` and the TypeScript testing skill.
+
+The installed binary is `$HOME/.local/libexec/codex-bash-limit`.
+Trusted user hooks in `$HOME/.codex/hooks.json` initialize the worker child at session start
+and prepend the cgroup attachment before each Bash command.
+The persistent user unit is `$HOME/.config/systemd/user/piwork3285273.slice`.
+The parent limits remain 4 GiB memory,
+zero swap,
+200% CPU,
+and 256 tasks.
+The user authorized raising only the CPU quota if needed;
+that further increase has not been made.
+
+The native fixture suite passes through nextest,
+Clippy passes with warnings denied,
+and two native Codex host runs reported 2 to 4 ms hook duration across 40 commands each.
+The guard test failed as required when its attachment-failure exit was removed in a disposable worktree.
+The [implementation record](../decision/codex-shell-worker-limits.md)
+and [troubleshooting record](../troubleshooting/codex-shell-worker-limits.md)
+contain the installation and native-host evidence.
+
+The daemon accepted the live hook reload.
+Escalated commands now enter the worker cgroup automatically without a manual launcher.
+This already-running turn retained its old sandbox snapshot and blocked default sandboxed commands
+with status 70 before their payloads ran.
+The updated thread policy adds the child cgroup directory while preserving the other workspace-write restrictions.
+The API applies that policy to subsequent turns.
+The user offered to restart the session,
+and the agent requested restart after this checkpoint was saved.
+
+After restart,
+first run a default sandboxed `cat /proc/self/cgroup`.
+Expect a path ending in `/piwork3285273.slice/codex`.
+Read the parent's memory,
+swap,
+CPU,
+and task controls before any build or test.
+If attachment is not active,
+diagnose the exact hook or sandbox failure before doing unrestricted worker work.
+Once verified,
+the manual systemd prefix is unnecessary for Codex Bash calls.
+Keep the Pi host outside the worker slice.
+
+Then resume the finite Pi delivery queue in this handover.
+The user supplied `pi --session 01a0dc52-0955-77f6-ae77-68a6e15bb12b`
+and reported that OpenAI models currently do not work in Pi.
+Use provider `qwen-token-plan-individual` and model `qwen3.8-flash` for Pi testing.
+No Pi implementation or provider inference call was performed while completing the limiter priority.
+No subagents or Advisor calls were introduced.
+
+## Historical CPU-replacement pause
+
+The user requested a safe pause for a CPU change on 2026-10-13.
+That pause ended with the explicit resumption recorded in the restart checkpoint.
+The retained evidence describes the state at the original pause.
+
+At pause intake,
+the process manager reported no running jobs.
+The current handler-result receipt work is a pausing point:
+its required native red,
+implementation,
+owner controls,
+exact failure propagation,
+canonical assessment,
+history/reset behavior,
+shared budget boundary,
+and affected message/option-history regressions are recorded.
+No provider inference call,
+dependency installation,
+or migrated-host activation was performed.
+
+### Current code and evidence
+
+- Maintained source-contribution accounting builds and passes package units and type checks.
+  Latest type/unit verification is `proc_5306`.
+  Native export identity,
+  serializer scenarios,
+  and action-policy results are recorded in
+  "Maintained original source-contribution accounting".
+  The publication test's reviewed formatter-produced declaration splitting was saved in `42baa8e662`.
+- Private handler-result implementation is `7bde6d84`.
+  The required red is `3d06c614` / `proc_0b0c`.
+  Native receipt green is `proc_a410`;
+  owner controls are `proc_2f20`;
+  native exact-failure and canonical review are `proc_0389`;
+  lifecycle is `proc_65b4`.
+  Shared-budget controls passed in `proc_85bf` before its obsolete message-count assertion failed.
+  Fixture correction `eaaea58b` passed message/history regressions in `proc_f0c6`.
+- Source-contribution fixture lint is unresolved.
+  Both formatter and ordinary no-fix lint were stopped without diagnostics.
+  Do not infer a cause,
+  claim zero lint errors,
+  relax rules,
+  or repeat the same unbounded verification loop.
+- `request-source-domain` remains unconditional.
+  Complete decision-specific domain closure,
+  remaining maintained capture/compiler/host integration,
+  installation,
+  and genuine Allow / Deny / Stop and cancellation are unfinished.
+  The historical 219-case input parent predates raw handler-result capture.
+
+### Resume checks and next work
+
+The canonical private progress file is
+`/var/home/user/temp/agent/auto-mode-consumer-contract.mDLkyNoP/contract/lifecycle/runtime-continuation/current-progress.json`.
+It retains the active `deliveryCompletion` queue and this pause.
+The maintained package is `package/pi-plugin/auto-mode`.
+Private SDK generators,
+not installed or generated historical SDK files,
+remain the source of the native changes.
+
+After explicit resumption,
+probe the new CPU and re-establish the authorized worker slice before any build or test.
+Every shell and process launch still uses the restricted launcher:
+shared slice `piwork3285273.slice`,
+4 GiB memory,
+zero swap,
+CPU quota 200%,
+and 256 tasks.
+Runtime-only slice settings may disappear on reboot.
+Do not raise policy,
+source,
+or preparation budgets to match the new hardware.
+The existing cgroup probe needs `EXPECTED_MEMORY_MAX=4294967296`,
+not its historical 2-GiB default.
+Keep the Pi host outside the worker slice.
+
+Check repository status and current process state before editing.
+Preserve concurrent work.
+Inspect recorded terminal logs rather than rerunning completed receipt campaigns.
+Address the unresolved fixture-lint behavior with a bounded diagnostic,
+not another blind formatter run.
+Continue owner-backed domain resolution and maintained host delivery,
+not another helper-only port by default.
+Retain the domain hold until its actual evidence exists.
+
+The user explicitly prohibited introducing the `openai` npm package.
+The Decisions API intake in
+[batched assessment](../planning/pi-auto-mode-batched-assessment.md#decisions-http-contract-intake-on-2026-10-13)
+is documentation only.
+Use direct HTTP if that transport is implemented;
+no new model,
+semantic qualification,
+or paid inference campaign was adopted.
+No subagents or further Advisor calls.
+Do not change the settled `AGENTS.md` / `CLAUDE.md` decision about `PXQ`.
+
+Earlier auto-push and manual push failures are recorded in
+[Git credentials](../troubleshooting/git-credentials.md#native-push-wrapper-loses-the-inherited-environment).
+Local commits were retained.
+Do not infer remote publication solely from a successful local commit.
+
+## Historical resumption after the previous break
 
 The user explicitly resumed implementation on 2026-10-12.
 The requested break was completed;
@@ -21,7 +233,8 @@ no active managed jobs,
 and no additional OOM kills beyond the recorded count of one.
 The maintained kernel files have no intervening package commits since the pause.
 Maintained built-artifact tests and full-package lint have since passed.
-Continue the named native governing-domain and runtime integrations.
+That resumption continued the named native governing-domain and runtime integrations;
+the CPU-replacement pause now supersedes it.
 
 At pause intake,
 the process manager reported no running jobs,
@@ -645,6 +858,64 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Original callback-result receipt
+
+The accepted processing-boundary domain includes the complete original extension result received by the host,
+not just fields selected for native processing.
+Private `3d06c614` adds the separate required acceptance task `test:handler-result-domain`.
+In `proc_0b0c`,
+the native-consumed message positive control passed;
+the untransmitted result-field assertion failed.
+The native run owner had retained processed messages and options,
+not that complete received result.
+
+Private `7bde6d84` captures defined `before_agent_start` results before native field selection.
+The observer binds to the original Session input pool before handler dispatch,
+so manager reset cannot redirect the observation into a replacement pool.
+Original one-argument frames own input-only publications;
+borrowed result objects receive no publication or freeze.
+The metadata copier retains supported non-enumerable data and charges shared references per occurrence.
+The existing source,
+copier,
+Session,
+and resource bounds remain unchanged.
+
+`proc_a410` passed both native receipt assertions.
+`proc_2f20` passed owner controls for identity,
+mutability,
+scalar and empty results,
+metadata copying,
+getter/proxy refusal,
+the shared 64-receipt limit,
+source bytes,
+exact unexpected failures,
+and irreversible retirement.
+`proc_0389` passed exact native false,
+undefined,
+and proxy observation failures,
+with zero proxy traps,
+then passed original-source canonical review with two local requests and one assessment.
+`proc_65b4` passed settlement,
+later borrowed-output edits,
+history,
+root reset,
+old-pool observer binding,
+and profile-refusal parity.
+Native result processing continued without invoking the unread getter.
+
+The budget portion of `proc_85bf` passed the combined resource/Session 64/65 boundary
+both with and without a returned result.
+Its message-history test then exposed the old fixture count,
+`23 !== 18`.
+Private `eaaea58b` explicitly checks each complete original result receipt,
+its metadata,
+identity,
+order,
+and settlement retention instead of dropping those sources.
+`proc_f0c6` passed the message-history and handler-option-lifetime tasks.
+The historical 219-case input parent was not rerun and predates this receipt addition.
+This receipt correction does not close `request-source-domain`.
+
 ## Maintained original source-contribution accounting
 
 Main `2ea68db692` ports `consumeSourceAssociations` and `PolicyInputBindingError`.
@@ -675,7 +946,30 @@ An explicit missing-receipt guard now supplies the required narrowing.
 Built-artifact identity,
 publication,
 and copied-origin controls are written.
-Formatting and final verification remain in progress.
+Main `13f4df97f7` passed build/types `proc_1d88`
+and built-artifact package units `proc_6abf`.
+Exact maintained consumer and error identity passed in `proc_b724`.
+Its serializer parent failed the enumerable-getter case with no completed review.
+The focused unchanged-runtime case passed `proc_0754`;
+the complete serializer parent then passed `proc_55aa` with 16 scenarios,
+empty child stderr,
+and zero providers.
+No cause or fix is inferred from that recovery.
+The complete action-policy parent passed `proc_108b`.
+
+Full lint remains unfinished.
+Formatter runs were stopped without diagnostics,
+including isolated fixture runs.
+Removing unnecessary recursive ancestor types passed build/types `proc_12c4`,
+but did not establish a formatter fix.
+Concrete fixture fields and fixed record shapes likewise have no verified lint result.
+The ordinary no-fix lint `proc_e7e5` also produced no diagnostics
+before being stopped at 426 seconds.
+The fixpoint loop alone does not explain the delay.
+Current fixture shapes passed types and package units in `proc_5306`.
+Stop blind lint reruns;
+the unresolved lint item remains explicit while independent migration work proceeds.
+No lint rule or resource bound was relaxed.
 This increment does not implement decision-domain closure.
 
 ## Maintained bounded unit incorporation

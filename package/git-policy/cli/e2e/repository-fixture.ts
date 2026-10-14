@@ -42,9 +42,7 @@ export type {
 
 /**
  Directory whose `git` shadows the real Git for wrapper runs:
- the packed incumbent by default,
- the native executable when `E2E_WRAPPER=native`
- (see `wrapper-selection-fixture.ts`).
+ the native executable's link (see `wrapper-selection-fixture.ts`).
  */
 export const WRAPPER_BIN: string = WRAPPER_BINS[WRAPPER_KIND];
 

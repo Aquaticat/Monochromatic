@@ -72,13 +72,35 @@ export type RetainedContributionOrigin = {
 };
 
 /**
- Original run composition exposes its existing source memberships without another registry.
+ Flat emitting-run reference used by message accounting; no ancestor traversal is exposed.
  */
-export type ContributionRun = {
+export type ContributionMessageRun = {
   /**
-   Original run identity.
+   Original emitting run identity.
    */
   readonly occurrence: object;
+  /**
+   Original handler message inputs on this run.
+   */
+  readonly handlerMessageInputs?: readonly ContributionSource[] | undefined;
+  /**
+   Original handler message publications on this run.
+   */
+  readonly handlerPublications?: readonly ContributionPublication[] | undefined;
+  /**
+   Original expanded prompt input.
+   */
+  readonly expandedPromptInput?: ContributionSource | undefined;
+  /**
+   Original expanded prompt publication.
+   */
+  readonly expandedPromptPublication?: ContributionPublication | undefined;
+};
+
+/**
+ Original run composition exposes its existing source memberships without another registry.
+ */
+export type ContributionRun = ContributionMessageRun & {
   /**
    Original native builder render.
    */
@@ -122,23 +144,7 @@ export type ContributionRun = {
   /**
    Active original ancestors, excluding retained history.
    */
-  readonly ancestors?: readonly ContributionRun[] | undefined;
-  /**
-   Original handler message inputs on this run.
-   */
-  readonly handlerMessageInputs?: readonly ContributionSource[] | undefined;
-  /**
-   Original handler message publications on this run.
-   */
-  readonly handlerPublications?: readonly ContributionPublication[] | undefined;
-  /**
-   Original expanded prompt input.
-   */
-  readonly expandedPromptInput?: ContributionSource | undefined;
-  /**
-   Original expanded prompt publication.
-   */
-  readonly expandedPromptPublication?: ContributionPublication | undefined;
+  readonly ancestors?: readonly ContributionMessageRun[] | undefined;
   /**
    Existing owner-retained historical message origins.
    */
@@ -204,7 +210,7 @@ export type SourceContributionAssociation = {
   /**
    Original current or ancestor run that emitted a message.
    */
-  readonly emittingRun?: ContributionRun | undefined;
+  readonly emittingRun?: ContributionMessageRun | undefined;
   /**
    Original handler message publication.
    */

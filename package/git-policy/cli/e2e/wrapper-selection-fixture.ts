@@ -1,8 +1,7 @@
 /**
- Selects which wrapper the end-to-end suite puts first on `PATH`:
- the packed TypeScript wrapper (the incumbent) or the native executable.
- The scenarios, the invariant checker, and the report do not change with the selection;
- only the directory whose `git` shadows the real Git differs.
+ Names the wrapper the end-to-end suite puts first on `PATH`: the native executable, the only wrapper there is.
+ The TypeScript wrapper (the incumbent) is retired; its last commit is
+ `f4fc1fa213ece65672e4314983a75266837892f9`.
 
  @module
  */
@@ -13,18 +12,16 @@ import { join, } from 'node:path';
 /**
  Wrapper kinds the suite can drive.
  */
-export type WrapperKind = 'incumbent' | 'native';
+export type WrapperKind = 'native';
 
 /**
  Directory holding the `git` of each wrapper kind inside the end-to-end image.
- The incumbent is the packed npm package installed under `/opt/cli-git`;
- the native directory is created by the native end-to-end image task, which links the release executable
+ The directory is created by the native end-to-end image task, which links the release executable
  as `git` there (the Cargo artifact itself is named `cli-git-native` so it never shadows Git by accident).
  */
-export const WRAPPER_BINS = {
-  incumbent: '/opt/cli-git/node_modules/.bin',
+export const WRAPPER_BINS: Readonly<Record<WrapperKind, string>> = {
   native: '/opt/native/bin',
-} as const satisfies Readonly<Record<WrapperKind, string>>;
+};
 
 /**
  Error raised when `E2E_WRAPPER` names no wrapper kind.
@@ -39,7 +36,7 @@ export class WrapperSelectionError extends Error {
 
    @example
    ```ts
-   throw new WrapperSelectionError('E2E_WRAPPER "x" is not one of incumbent, native');
+   throw new WrapperSelectionError('E2E_WRAPPER "x" is not native');
    ```
    */
   constructor(
@@ -57,27 +54,25 @@ export class WrapperSelectionError extends Error {
 /**
  Parses the `E2E_WRAPPER` value.
 
- @param text - environment value, empty or absent for the incumbent so existing runs keep their meaning
+ @param text - environment value; empty or absent selects the native executable, the only wrapper
 
  @returns the selected kind
 
- @throws {@link WrapperSelectionError} when the text is neither empty, `incumbent`, nor `native`
+ @throws {@link WrapperSelectionError} when the text is neither empty nor `native`, including `incumbent`,
+ the retired TypeScript wrapper
 
  @example
  ```ts
  parseWrapperKind('native'); // => 'native'
- parseWrapperKind(''); // => 'incumbent'
+ parseWrapperKind(''); // => 'native'
  ```
  */
 export function parseWrapperKind(text: string,): WrapperKind {
-  if ((text === '') || (text === 'incumbent')) {
-    return 'incumbent';
-  }
-  if (text === 'native') {
+  if ((text === '') || (text === 'native')) {
     return 'native';
   }
   throw new WrapperSelectionError(
-    `E2E_WRAPPER ${JSON.stringify(text,)} is not one of: incumbent, native (empty selects incumbent)`,
+    `E2E_WRAPPER ${JSON.stringify(text,)} is not native (empty selects native; the TypeScript wrapper is retired)`,
   );
 }
 
@@ -93,14 +88,6 @@ export const WRAPPER_KIND: WrapperKind = parseWrapperKind(process.env
  */
 const ELF_MAGIC: Buffer = Buffer.from(
   '\u007FELF',
-  'latin1',
-);
-
-/**
- First bytes of a script with an interpreter line.
- */
-const SCRIPT_MAGIC: Buffer = Buffer.from(
-  '#!',
   'latin1',
 );
 
@@ -161,10 +148,8 @@ async function readLeadingBytes({
 }
 
 /**
- Confirms that the `git` the scenarios will run is the selected kind of program,
- so a run labelled native can never silently drive the TypeScript wrapper, or the reverse.
- The native `git` resolves to an ELF executable;
- the incumbent's is a Node script that starts with a `#!` line.
+ Confirms that the `git` the scenarios will run is an ELF executable,
+ so a run labelled native can never silently drive a script (for example a stale TypeScript shim).
 
  @param kind - selected wrapper kind
 
@@ -172,7 +157,7 @@ async function readLeadingBytes({
 
  @returns one report line naming the kind and the verified executable
 
- @throws {@link WrapperSelectionError} when `git` is missing there or is the other kind of program
+ @throws {@link WrapperSelectionError} when `git` is missing there or is not an ELF executable
 
  @example
  ```ts
@@ -204,19 +189,8 @@ export async function verifyWrapperExecutable({
    Whether the file starts with the ELF magic.
    */
   const isElf = head.equals(ELF_MAGIC,);
-  /**
-   Whether the file starts with a script line.
-   */
-  const isScript = head.subarray(
-    0,
-    SCRIPT_MAGIC.length,
-  )
-    .equals(SCRIPT_MAGIC,);
-  if ((kind === 'native') && (!isElf)) {
-    throw new WrapperSelectionError(`E2E_WRAPPER selects native, but ${path} is not an ELF executable`,);
+  if (!isElf) {
+    throw new WrapperSelectionError(`E2E_WRAPPER selects ${kind}, but ${path} is not an ELF executable`,);
   }
-  if ((kind === 'incumbent') && (!isScript)) {
-    throw new WrapperSelectionError(`E2E_WRAPPER selects incumbent, but ${path} is not a script`,);
-  }
-  return `wrapper=${kind} ${path} (${kind === 'native' ? 'ELF executable' : 'Node script'})`;
+  return `wrapper=${kind} ${path} (ELF executable)`;
 }

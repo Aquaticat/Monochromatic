@@ -3,9 +3,9 @@
 
  @module
  */
-import { consumeSourceAssociations, flushPolicyDiagnostics, } from '@monochromatic-dev/pi-plugin-auto-mode';
+import { consumeSourceAssociations, flushPolicyDiagnostics, type SourceContributionInputs, } from '@monochromatic-dev/pi-plugin-auto-mode';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { contributionProfiles, createContributionFixture, type ContributionFixture, } from './source-contribution-test-fixture.ts';
+import { contributionProfiles, createContributionFixture, } from './source-contribution-test-fixture.ts';
 
 /**
  Check unresolved origin diagnostics without permitting a directive or hiding the contribution.
@@ -19,7 +19,10 @@ import { contributionProfiles, createContributionFixture, type ContributionFixtu
  expectUnresolved(fixture);
  ```
  */
-function expectUnresolved(fixture: ContributionFixture,): void {
+function expectUnresolved(fixture: {
+  readonly inputs: SourceContributionInputs;
+  readonly contribution: { readonly contribution: object; };
+},): void {
   const result = consumeSourceAssociations(fixture.inputs,);
   expect(result.uses[0]?.state,).toBe('unresolved',);
   expect(result.uses[0]?.permission,).toBe(false,);

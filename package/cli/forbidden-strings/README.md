@@ -115,8 +115,10 @@ mise run //package/cli/forbidden-strings:build
 ```
 
 The release binary lands at `package/cli/forbidden-strings/target/release/forbidden-strings`.
-Root `cli-git.config.ts` gives that path to the bundled `security/forbidden-strings` policy;
-nothing needs to be on `$PATH`.
+The cli-git native wrapper links the scanner in-process,
+ so it does not use this binary and nothing needs to be on
+`$PATH`;
+ `rulesFile` in the root `cli-git.config.jsonc` names the rules file.
 
 ## Setup
 
@@ -785,7 +787,7 @@ and retained survivor limitations.
 
 ### Local cli-git policy
 
-Root `cli-git.config.ts` enables `security/forbidden-strings` at error severity.
+Root `cli-git.config.jsonc` enables `security/forbidden-strings` at error severity.
  The
 PATH-shadowed cli-git wrapper evaluates selected would-be-committed bytes before commit,
 landed commit bytes before automatic push,
@@ -793,20 +795,20 @@ landed commit bytes before automatic push,
 push.
  Native `--no-verify` skips Git hooks but does not skip this policy.
 
-Run an explicit read-only check through the built shim with:
+Run an explicit read-only check through the installed wrapper with:
 
 ```sh
 git cli-git check --policy security/forbidden-strings --all
 ```
 
-The policy invokes the repository-built scanner directly.
+The native wrapper links the scanner crate in-process and invokes no scanner executable.
  Scanner infrastructure failures
 remain distinct exit-2 engine failures;
  findings exit `1`.
 
 ### GitHub Actions
 
-`.github/workflows/forbidden-strings.yml` remains independent of cli-git trust and local
+`.github/workflows/forbidden-strings.yml` remains independent of local
 wrapper state.
  It downloads the release matching the scanner crate version,
  verifies the

@@ -542,6 +542,20 @@ const plantedControls = [
     to: '    checks.markdown.options = PolicyConfig::defaults().markdown_autofix;',
     failing: 'post_commit::tests::the_markdown_options_reach_the_post_commit_policy',
   },
+  {
+    name: 'auto-push Git children drop the invocation environment',
+    file: 'src/native/commit_command.rs',
+    from: 'environment: environment_with_overlay(command.environment, command.context.overlay.as_slice()),',
+    to: 'environment: environment_with_overlay(&command.environment[..0], command.context.overlay.as_slice()),',
+    failing: 'push_environment::an_auto_push_after_a_landed_commit_runs_git_with_the_invocation_environment',
+  },
+  {
+    name: 'manual-push probe Git children drop the invocation environment',
+    file: 'src/native/wrapped_command.rs',
+    from: 'environment: environment_with_overlay(environment, context.overlay.as_slice()),',
+    to: 'environment: environment_with_overlay(&environment[..0], context.overlay.as_slice()),',
+    failing: 'push_environment::a_manual_push_probes_and_pushes_with_the_invocation_environment',
+  },
 ];
 
 /**

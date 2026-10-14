@@ -467,10 +467,11 @@ borrowed sources and publications remain untouched.
 The consumer and `PolicyInputBindingError` now have maintained implementations.
 The private native adapter delegates through the existing artifact link.
 Build,
-type,
-unit,
-lint,
-and native cutover verification are in progress.
+type checks,
+package units,
+native serializer scenarios,
+and action-policy regressions have passed.
+Lint and final delivery verification remain in progress.
 These partial links establish neither complete host receipt nor authority,
 scope,
 delegation,

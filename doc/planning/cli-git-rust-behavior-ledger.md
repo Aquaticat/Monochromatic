@@ -10,6 +10,16 @@ This is the first step of the accepted sequence in
 It is an inventory:
 it changes no accepted decision and proposes no design beyond owner module names.
 
+## Pinned incumbent revision
+
+The TypeScript wrapper this ledger inventories, and the four authoring packages
+(`package/git-policy/{api,forbidden-strings,markdown-lint,repository}`), are deleted from the working tree by the
+retirement commits.
+The last commit that contains them is `f4fc1fa213ece65672e4314983a75266837892f9`.
+Every `src/...ts:NN` and `SPEC.md:NN` citation below resolves in that commit
+(`git show f4fc1fa213ece65672e4314983a75266837892f9:package/git-policy/cli/src/<path>`),
+including the `SPEC.md` sections that the retirement rewrites.
+
 ## Source and conventions
 
 Source:

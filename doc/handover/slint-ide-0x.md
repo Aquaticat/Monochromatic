@@ -300,9 +300,29 @@ the items after it are the record of 2026-10-05 and older.
     and the picture settled 25 to 127 ms after the last resize step; the longest gap in resize runs stayed 17 to 60 ms
     and no frame was blank. Open time at 50,000 lines: first non-flat frame median 1,152 ms (879 to 1,160 below load
     10), whole file measured median 2,710 ms (3 to 15 s at load 30 to 60).
-    Open decision for the user: during a drag resize, either keep the worker-only tile (current, smooth gaps, stale
-    wrapping for up to about a second) or re-break and paint the visible rows on the window thread (IntelliJ's way, no
-    stale frame, costs about 1.6 ms median per tile on the window thread, 23 ms at the worst measured).
+    Resize decision (settled, no question to the user: open decisions follow IntelliJ, which re-wraps at once): a width
+    change re-wraps and paints the visible rows on the window thread within a counted allowance, and the worker keeps
+    the whole-file re-break. The user also said twice that questions IntelliJ already answers must not be asked.
+    PAUSED, not landed: branch `feat/ide-soft-wrap` (worktree `.claude/worktrees/ide-wrap`) holds the work at
+    `ee20bacec8` (IDE tree `95f8d5f12b`), 12 commits after the landed merge, written by a Sonnet subagent that was
+    stopped mid run when the user asked to pause for a CPU change, so its final report never arrived and nothing it
+    claims is verified. What is known: the worktree is clean; the commits add the window-thread re-wrap
+    (`cbefca99f7`), guards for it and a rewrite of the old `resize-stays-on-worker` guard, README and plan text,
+    and a measurement bundle at `~/temp/agent/ide-wrap-s5/bundles/resize-now`. Gate state at that tip: a first gate
+    series (label `final1`, logs in `~/temp/agent/ide-wrap-s6/logs/`) ended with `inspect:annotation-guards` status 1
+    before later commits; a second series (`final2`) was stopped after lint:rustfmt, lint:slint, lint:clippy and
+    lint:release started or finished (their logs show no failure), and test, test:cli, test:native, bundle, the bundle
+    checks and every guard task have not run on `ee20bacec8`. Nothing was measured on the frames yet.
+    To resume: merge main into the branch, rerun the full gate (`gate.mjs` in `~/temp/agent/ide-wrap-s6/` or
+    `gate-args.mjs` in `~/temp/agent/ide-coordinator/`; guard tasks need a plain copy of a Cargo target dir, the
+    copies are `~/temp/agent/ide-wrap-s6/guard-cache` and `cargo-copy`), read the failing annotation guard of
+    `final1-inspect-annotation-guards.log`, confirm each new guard was seen failing (the commit messages name
+    them; reproduce, do not trust), then measure the resize condition against the recorded `final` numbers by load
+    band with the harness in `~/temp/agent/ide-wrap-s5/` (`plan.mjs`, `measure.mjs`, `summarize.mjs`), and land
+    through `.claude/worktrees/ide-land2` (merge, verify tree, fast forward main from the root checkout,
+    `git push origin main`).
+    Other pending small items: remove the worktrees `ide-wrap` and `ide-land2` after landing; delete the large
+    scratch caches `~/temp/agent/ide-wrap-s4/guard-cache`, `ide-wrap-s6/guard-cache`, `ide-wrap-s5/bundles` when done.
     Open: the installed single file at `~/.local/bin/monochromatic-ide` predates stages 1, 2 and soft wrap.
     Both flaky tests of the guard runs were fixed in this work: the scroll quiet-time test reads a clock a test can
     hold, and find reveal measures its own line first (it failed 3 of 16 runs at baseline).
