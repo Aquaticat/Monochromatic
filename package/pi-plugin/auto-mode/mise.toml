@@ -226,7 +226,7 @@ run = [
 ]
 
 [tasks."native:cli"]
-description = "Run the candidate owned native host; semantic admission remains unconfigured"
+description = "Run the candidate owned native host with the adopted semantic operating policy"
 run = "node dist/native/cli.mjs"
 
 [tasks."test:native:host-lifecycle"]
@@ -244,5 +244,5 @@ run = [
 [tasks."docs:render:native"]
 run = [
   "mkdir --parents .cache/native-docs",
-  "pandoc --from=commonmark --to=html --output=.cache/native-docs/integration.html README.md native/README.md ../../../doc/handover/pi-auto-mode-current-frontier.md ../../../doc/troubleshooting/pi-sdk-staging.md",
+  "pandoc --from=commonmark --to=html --output=.cache/native-docs/integration.html README.md native/README.md ../../../doc/handover/pi-auto-mode-current-frontier.md ../../../doc/troubleshooting/pi-sdk-staging.md ../../../doc/decision/pi-auto-mode-semantic-admission.md",
 ]

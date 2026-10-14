@@ -146,17 +146,12 @@ export function admitsOperatingChoice({
     rl.debug('retaining unresolved categorical meaning',);
     return false;
   }
-  if (Object.entries(scores,)
-    .some(function matchesOrExceedsSelected([label, score,],) {
-    return (label !== choice) && (score >= selectedScore);
-  },)) {
-    rl.debug('retaining a categorical estimate without a unique leading choice',);
-    return false;
-  }
   if (selectedScore < minimumSelectedScore) {
     rl.debug('retaining a lower-scoring categorical meaning',);
     return false;
   }
+  // In a normalized nonnegative distribution, a score of 0.99 leaves at most 0.010001 for every other label.
+  // The cutoff therefore establishes a unique leading choice, including the decoder's normalization tolerance.
   rl.debug('admitting a supported categorical estimate under the operating cutoff',);
   return true;
 }

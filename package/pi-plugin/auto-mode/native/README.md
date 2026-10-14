@@ -42,8 +42,14 @@ registration,
 and failure identity against the copied native artifact.
 
 The current CLI bootstrap designates the working directory's `AGENTS.md` with user authority.
-Its semantic admission remains unconfigured,
-so this candidate is not the completed production replacement.
+Its semantic admission uses the
+[adopted operating policy](../../../../doc/decision/pi-auto-mode-semantic-admission.md):
+supported selected meanings require a score of at least `0.99` and a unique lead.
+Unknown and unsupported meanings remain unresolved even at `1`.
+This operating cutoff carries no measured accuracy claim.
+Original authority,
+complete coverage,
+and authorization checks remain independent.
 The bootstrap binds the maintained direct HTTP sender for the incumbent Gateway route.
 It reads `AUTO_MODE_LLMGATEWAY_API_KEY` only when an original configured assessment is dispatched,
 retains the original encoded body and deadline,
@@ -51,7 +57,12 @@ and performs one HTTP request per client attempt.
 Gateway-internal retries remain separate from client attempt accounting.
 `test:assessment-transport` covers isolated and loopback HTTP behavior;
 `test:native:assessment-transport` connects it to original native policy review with authored responses.
-Binding this transport does not configure semantic admission or enable provider calls at startup.
+`test:semantic-operating-policy` checks the built policy's fixed scope and admission boundaries.
+`test:native:semantic-operating-policy` exercises permission,
+prohibition,
+unspecified policy,
+and abstention through original SDK requests and maintained HTTP transport using authored replies.
+Bootstrap construction makes no provider calls.
 The native lifecycle fixtures exercise actual CLI manager selection,
 services,
 reload,
@@ -159,8 +170,9 @@ and inherited bound checks have passing original controls and failing disposable
 Other unobserved native events remain explicit source-domain gaps.
 Complete lint verification,
 installed host activation,
-production semantic qualification,
 and genuine human approval remain outstanding.
+Empirical semantic qualification is not established;
+the adopted operating policy does not require another paid trial.
 
 The dedicated `auto-mode-native` dependency catalog preserves the parser releases used by those fixtures.
 It leaves the repository's other parser consumers on their existing catalog.

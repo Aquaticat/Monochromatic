@@ -1042,7 +1042,20 @@ records its fixed model,
 program profile,
 per-definition meanings,
 and independent authority and coverage obligations.
-Production binding and built-consumer verification are next.
+The maintained factory `createNativeSemanticOperatingPolicies` now supplies all categorical policies
+to the original native bootstrap.
+Its built-package boundary cases pass for every definition and supported meaning.
+The native SDK controls pass through the maintained HTTP sender:
+permission at `0.99` executes its three child calls,
+prohibition denies,
+no instruction stays unspecified,
+and lower-scoring,
+unknown,
+or unsupported clause answers remain unresolved with no child execution.
+Every case retains its original source accounting and makes zero provider requests.
+Final scoped lint,
+guard omissions,
+and actual CLI startup verification are next.
 Independent maintained bootstrap quality work also continues.
 Its scoped lint reports `no-restricted-syntax/no-sync` for `statSync`
 and `no-restricted-syntax/no-regex` for trailing-slash removal,
