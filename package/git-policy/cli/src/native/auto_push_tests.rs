@@ -348,7 +348,7 @@ fn a_stalled_push_is_stopped_and_reported_as_a_failed_push() {
     let (repo, log) = repo_with_remote_and_pre_push(&root, 0);
     let hooks = root.join("hooks");
     let hook = hooks.join("pre-push");
-    std::fs::write(&hook, "#!/bin/sh\necho stalling\nexec sleep 60\n").expect("stalling hook");
+    std::fs::write(&hook, "#!/bin/sh\necho stalling\nexec sleep 8\n").expect("stalling hook");
     std::fs::set_permissions(&hook, std::fs::Permissions::from_mode(0o755)).expect("mode");
     let mut git = push_git(&repo);
     git.environment.push((
@@ -387,7 +387,7 @@ fn a_stalled_push_is_stopped_and_reported_as_a_failed_push() {
 
 /// The default environment of an auto-push gives Git's low-speed abort to the push it runs.
 #[test]
-fn a_push_runs_with_git_s_low_speed_abort_unless_the_person_set_one() {
+fn a_push_runs_with_git_s_low_speed_abort_by_default() {
     let root = fixture("ap-low-speed");
     let (repo, _log) = repo_with_remote_and_pre_push(&root, 0);
     let hook = root.join("hooks").join("pre-push");
@@ -404,5 +404,73 @@ fn a_push_runs_with_git_s_low_speed_abort_unless_the_person_set_one() {
     let (attempted, _err) = run(&repo, &head_oid(&repo));
     assert_eq!(attempted.expect("auto-push").outcome, AutoPushOutcome::Pushed);
     assert_eq!(read_log(&seen), "1000 60\n");
+    remove(&root);
+}
+
+/// A person's own low-speed variables reach the push unchanged,
+///  and the other default still applies.
+#[test]
+fn a_push_keeps_the_low_speed_variables_the_person_set() {
+    let root = fixture("ap-low-speed-set");
+    let (repo, _log) = repo_with_remote_and_pre_push(&root, 0);
+    let hook = root.join("hooks").join("pre-push");
+    let seen = root.join("seen.txt");
+    std::fs::write(
+        &hook,
+        format!(
+            "#!/bin/sh\necho \"$GIT_HTTP_LOW_SPEED_LIMIT $GIT_HTTP_LOW_SPEED_TIME\" > '{}'\n",
+            seen.display()
+        ),
+    )
+    .expect("hook");
+    std::fs::set_permissions(&hook, std::fs::Permissions::from_mode(0o755)).expect("mode");
+    let mut git = push_git(&repo);
+    git.environment.push((
+        OsString::from("GIT_HTTP_LOW_SPEED_LIMIT"),
+        OsString::from("5"),
+    ));
+    let mut err: Vec<u8> = Vec::new();
+    let result = auto_push(&git, &head_oid(&repo), &mut err).expect("auto-push");
+    assert_eq!(result.outcome, AutoPushOutcome::Pushed);
+    assert_eq!(read_log(&seen), "5 60\n");
+    remove(&root);
+}
+
+/// A commit that waits behind a live push says so on the terminal,
+///  naming the pushing process, the branch and the limit.
+#[test]
+fn a_waiting_commit_names_the_process_it_waits_for() {
+    let root = fixture("ap-waiting-notice");
+    let (repo, _log) = repo_with_remote_and_pre_push(&root, 0);
+    let branch_output = git(&repo, &["symbolic-ref", "HEAD"]);
+    let branch = String::from_utf8_lossy(&branch_output.stdout).trim().to_owned();
+    let mut git = push_git(&repo);
+    git.environment.push((
+        OsString::from(crate::bounded_push::LOCK_WAIT_VARIABLE),
+        OsString::from("1"),
+    ));
+    let paths = crate::auto_push_single_flight::resolve_push_coordination_paths(&git, &branch)
+        .expect("paths");
+    let held = crate::owner_lock::acquire_owner_lock(
+        &paths.lock_directory,
+        crate::owner_lock::DEFAULT_POLL_DELAY,
+        &mut crate::owner_lock::SilentWait,
+    )
+    .expect("held");
+    let mut err: Vec<u8> = Vec::new();
+    let result = auto_push(&git, &head_oid(&repo), &mut err).expect("auto-push");
+    let shown = String::from_utf8_lossy(&err).into_owned();
+    assert!(
+        shown.contains(&format!(
+            "cli-git: waiting for process {} to finish pushing {branch}; giving up after 1 seconds \
+             (CLI_GIT_PUSH_LOCK_WAIT_SECONDS changes this). The commit is already saved.",
+            std::process::id()
+        )),
+        "{shown}"
+    );
+    assert_eq!(result.outcome, AutoPushOutcome::Failed);
+    assert!(shown.contains("gave up after waiting 1 seconds"), "{shown}");
+    assert!(shown.contains(PUSH_FAILED_NOTE), "{shown}");
+    drop(held);
     remove(&root);
 }

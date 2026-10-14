@@ -16,12 +16,17 @@
 /// The single-flight coordinator, its Git command builder and its error type.
 use super::auto_push_single_flight::{
     PushAttempt, PushGit, SingleFlightError, SingleFlightKind, SingleFlightOutcome, git_command,
-    run_single_flight_push,
+    resolve_push_coordination_paths, run_single_flight_push,
 };
 /// The deadline-bound push runner and the limits it applies.
-use super::bounded_push::{STOP_GRACE, apply_low_speed_defaults, push_deadline, run_bounded_push};
+use super::bounded_push::{
+    LOCK_WAIT_VARIABLE, STOP_GRACE, apply_low_speed_defaults, lock_wait_limit, push_deadline,
+    run_bounded_push,
+};
 /// The diagnostic log of the wrapper.
 use super::diagnostic_log::debug;
+/// The lock record whose owner the waiting notice names.
+use super::owner_lock_record::{PublishedOwner, read_owner_lock_record};
 /// Owned OS strings for Git arguments.
 use std::ffi::OsString;
 /// `Write` is the stderr sink the terminal lines go to.
@@ -176,6 +181,42 @@ fn run_push_command(git: &PushGit, arguments: &[&str]) -> Result<PushAttempt, Si
 }
 
 /// What:
+///  The stderr line shown when this commit has to wait behind another process's push.
+/// Why:
+///   A silent wait looks like a hang; the line names the process to look at and how long the wait lasts,
+///  and says the commit is already saved.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// `cli-git: waiting for process ${pid} to finish pushing ${branchRef}; giving up after ${seconds} seconds`
+/// ```
+fn waiting_line(git: &PushGit, branch_ref: &str) -> String {
+    let holder: String = match holder_pid(git, branch_ref) {
+        Some(pid) => format!("process {pid}"),
+        None => String::from("another cli-git process"),
+    };
+    return format!(
+        "cli-git: waiting for {holder} to finish pushing {branch_ref}; giving up after {} seconds \
+         ({LOCK_WAIT_VARIABLE} changes this). The commit is already saved.",
+        lock_wait_limit(&git.environment).as_secs()
+    );
+}
+
+/// The process that holds the branch's push lock, when its record can be read.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// (await readOwnerLockRecord(lockDirectory))?.ownerPid
+/// ```
+fn holder_pid(git: &PushGit, branch_ref: &str) -> Option<i64> {
+    let paths = resolve_push_coordination_paths(git, branch_ref).ok()?;
+    return match read_owner_lock_record(&paths.lock_directory) {
+        Ok(PublishedOwner::Owner(record)) => Some(record.owner_pid),
+        Ok(PublishedOwner::Busy) | Err(_) => None,
+    };
+}
+
+/// What:
 ///  Surface a settled single-flight outcome and convert it into the auto-push result.
 /// Why:
 ///   Lines go to `err` exactly as Git printed them, followed by the uncovered note and the failure note,
@@ -287,10 +328,10 @@ pub fn auto_push(
             return run_push_command(git, push_arguments);
         };
         let mut on_wait = || {
-            return debug(
-                TAG,
-                &format!("waiting for the in-flight push of {branch_ref}"),
-            );
+            let line = waiting_line(git, &branch_ref);
+            debug(TAG, &line);
+            // Terminal output error: the notice is advisory; a failed write to stderr must not stop the wait.
+            let _written = writeln!(err, "{line}");
         };
         run_single_flight_push(git, &branch_ref, landed_oid, &mut push, &mut on_wait)
     };

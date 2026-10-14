@@ -217,7 +217,7 @@ fn a_push_ended_by_a_signal_reports_one() {
 fn a_stalled_push_is_stopped_at_its_deadline() {
     let started: Instant = Instant::now();
     let attempt: PushAttempt = run_bounded_push(
-        shell("echo started; exec sleep 60"),
+        shell("echo started; exec sleep 8"),
         Duration::from_millis(300),
         Duration::from_secs(10),
     )
@@ -250,7 +250,7 @@ fn a_stalled_push_is_stopped_at_its_deadline() {
 #[test]
 fn a_silent_stalled_push_reports_only_the_reason() {
     let attempt: PushAttempt = run_bounded_push(
-        shell("exec sleep 60"),
+        shell("exec sleep 8"),
         Duration::from_millis(200),
         Duration::from_secs(10),
     )
@@ -271,7 +271,7 @@ fn a_silent_stalled_push_reports_only_the_reason() {
 fn a_push_that_ignores_the_stop_request_is_killed_after_the_grace() {
     let started: Instant = Instant::now();
     let attempt: PushAttempt = run_bounded_push(
-        shell("trap '' TERM; echo up; exec sleep 60"),
+        shell("trap '' TERM; echo up; exec sleep 8"),
         Duration::from_millis(200),
         Duration::from_millis(400),
     )
@@ -289,7 +289,7 @@ fn a_push_that_ignores_the_stop_request_is_killed_after_the_grace() {
 fn a_push_that_honors_the_stop_request_ends_within_the_grace() {
     let started: Instant = Instant::now();
     let attempt: PushAttempt = run_bounded_push(
-        shell("exec sleep 60"),
+        shell("exec sleep 8"),
         Duration::from_millis(200),
         Duration::from_secs(30),
     )
@@ -308,7 +308,7 @@ fn a_push_that_honors_the_stop_request_ends_within_the_grace() {
 #[test]
 fn a_flooding_push_is_stopped_and_its_output_capped() {
     let attempt: PushAttempt = run_bounded_push(
-        shell("head -c 20000000 /dev/zero; exec sleep 60"),
+        shell("head -c 20000000 /dev/zero; exec sleep 8"),
         Duration::from_secs(60),
         Duration::from_secs(10),
     )

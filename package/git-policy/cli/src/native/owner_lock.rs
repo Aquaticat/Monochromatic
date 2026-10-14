@@ -695,8 +695,8 @@ fn acquire_within(
             notified = true;
             notice.waiting();
         }
-        if let Some(limit) = limit
-            && started.elapsed() >= limit
+        if let Some(allowed) = limit
+            && started.elapsed() >= allowed
         {
             let holder_pid: Option<i64> = match read_owner(lock_directory) {
                 Ok(PublishedOwner::Owner(published)) => Some(published.owner_pid),

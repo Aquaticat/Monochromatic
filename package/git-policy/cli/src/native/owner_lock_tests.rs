@@ -515,14 +515,27 @@ fn a_bounded_wait_gives_up_on_a_live_holder_and_leaves_its_lock() {
     plant(lock_directory.as_path(), pid, identity.as_str(), "foreign");
     let mut counter: WaitCounter = WaitCounter::default();
     let started: Instant = Instant::now();
-    let failure: OwnerLockError = acquire_owner_lock_for(
-        lock_directory.as_path(),
-        Duration::from_millis(5),
-        &mut counter,
-        Duration::from_millis(150),
-    )
-    .expect_err("a live holder keeps the lock");
+    let (finished_tx, finished_rx) = std::sync::mpsc::channel::<()>();
+    let outcome: Result<OwnerLock, OwnerLockError> = std::thread::scope(|scope| {
+        let handle = scope.spawn(|| {
+            let outcome: Result<OwnerLock, OwnerLockError> = acquire_owner_lock_for(
+                lock_directory.as_path(),
+                Duration::from_millis(5),
+                &mut counter,
+                Duration::from_millis(150),
+            );
+            let _sent = finished_tx.send(());
+            return outcome;
+        });
+        if finished_rx.recv_timeout(Duration::from_secs(10)).is_err() {
+            // Ending the holder lets a wait without a limit retire its lock and finish.
+            sleeper.kill().expect("kill");
+            sleeper.wait().expect("reap");
+        }
+        return handle.join().expect("waiter thread");
+    });
     let elapsed: Duration = started.elapsed();
+    let failure: OwnerLockError = outcome.expect_err("a live holder keeps the lock");
     assert!(
         elapsed >= Duration::from_millis(150),
         "waited the whole limit: {elapsed:?}"

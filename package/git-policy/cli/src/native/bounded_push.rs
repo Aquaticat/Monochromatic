@@ -89,7 +89,7 @@ fn seconds_variable(environment: &[(OsString, OsString)], name: &str) -> Option<
         None => None,
     };
     return match seconds {
-        Some(seconds) if seconds > 0 => Some(Duration::from_secs(seconds)),
+        Some(count) if count > 0 => Some(Duration::from_secs(count)),
         Some(_) | None => {
             debug(
                 TAG,
@@ -157,6 +157,8 @@ fn sets(environment: &[(OsString, OsString)], name: &str) -> bool {
 ///   Git ends an HTTP transfer that stays under the limit for the time,
 ///  which also ends its helper processes;
 ///  the push deadline is only the backstop for transports this does not cover.
+///  Git lets these variables override `http.lowSpeedLimit` and `http.lowSpeedTime` from its configuration,
+///  so only a person's environment variables are kept, not their configuration.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

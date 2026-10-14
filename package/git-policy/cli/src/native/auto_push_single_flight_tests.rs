@@ -312,7 +312,14 @@ where
                 },
             );
         });
-        let _waiting = wait_rx.recv();
+        if wait_rx
+            .recv_timeout(Duration::from_secs(10))
+            .is_err()
+        {
+            // Releasing the lock lets the coordinator finish so the scope can end before the failure is raised.
+            drop(held);
+            panic!("the coordinator never reported waiting for the held lock");
+        }
         prepare(&paths.record_path, held.token());
         drop(held);
         return handle
@@ -589,19 +596,37 @@ fn a_lock_held_past_the_wait_limit_is_reported_and_left_in_place() {
     let mut pushes = 0;
     let mut waits = 0;
     let started = std::time::Instant::now();
-    let failure = run_single_flight_push(
-        &git,
-        BRANCH,
-        &landed,
-        &mut || {
-            pushes += 1;
-            return Ok(success());
-        },
-        &mut || {
-            waits += 1;
-        },
-    )
-    .expect_err("the held lock refuses the coordinator");
+    let (result_tx, result_rx) = mpsc::channel::<()>();
+    let (failure, still_held) = std::thread::scope(|scope| {
+        let handle = scope.spawn(|| {
+            let result = run_single_flight_push(
+                &git,
+                BRANCH,
+                &landed,
+                &mut || {
+                    pushes += 1;
+                    return Ok(success());
+                },
+                &mut || {
+                    waits += 1;
+                },
+            );
+            let _sent = result_tx.send(());
+            return result;
+        });
+        let in_time = result_rx.recv_timeout(Duration::from_secs(10)).is_ok();
+        if !in_time {
+            // Releasing the lock lets a coordinator without a limit finish so the scope can end before the failure is raised.
+            drop(held);
+            let _finished = handle.join();
+            panic!("the coordinator kept waiting past its wait limit");
+        }
+        let failure = handle
+            .join()
+            .expect("coordinator thread")
+            .expect_err("the held lock refuses the coordinator");
+        return (failure, held);
+    });
     let elapsed = started.elapsed();
     assert!(elapsed >= Duration::from_secs(1), "{elapsed:?}");
     assert!(elapsed < Duration::from_secs(15), "{elapsed:?}");
@@ -619,9 +644,9 @@ fn a_lock_held_past_the_wait_limit_is_reported_and_left_in_place() {
         failure.to_string().contains("gave up after waiting 1 seconds"),
         "{failure}"
     );
-    assert_eq!(held.directory(), paths.lock_directory.as_path());
+    assert_eq!(still_held.directory(), paths.lock_directory.as_path());
     assert!(paths.lock_directory.exists(), "the holder's lock stays");
-    drop(held);
+    drop(still_held);
     remove(&root);
 }
 
