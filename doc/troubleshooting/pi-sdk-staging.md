@@ -6429,6 +6429,114 @@ or attributing the delay to load without an emitting-process trace would not res
 
 There is nothing to file upstream from this observation.
 
+## Overlapping native verification and Oxlint 1.87.0 stop before completing checks
+
+### Symptoms and separate incident boundaries
+
+On 2026-10-14,
+the native approval task passed through `bare`,
+then Mise reported its Node 26.11.1 `prohibited` child as `killed by SIGABRT`.
+No fatal Node diagnostic was retained for this occurrence.
+The subsequent approval-context and CLI tasks were not reached in that command.
+This is not established as the resource-copy heap incident documented separately in this file.
+
+An overlapping full-package Oxlint 1.87.0 run used `oxlint-tsgolint` 7.0.2003
+and stopped with:
+
+```text
+Error running tsgolint: "exit status: exit status: 2"
+runtime: failed to create new OS thread (have 13 already; errno=11)
+runtime: may need to increase max user processes (ulimit -u)
+fatal error: newosproc
+```
+
+Its full log is `${HOME}/temp/agent/pi-auto-mode-full-lint-after-host-20261014.log`.
+The retained stack places the failure at Go `runtime/os_linux.go:199`,
+through `runtime.newosproc`,
+`runtime.newm1`,
+and `runtime.newm`.
+The installed Go 1.27.2 source at
+`${HOME}/.local/share/mise/installs/go/1.27.2/src/runtime/os_linux.go:194`
+contains the matching diagnostic path:
+
+```go
+// runtime/os_linux.go
+if ret != 0 {
+    print("runtime: failed to create new OS thread (have ", mcount(), " already; errno=", ret, ")\n")
+    if ret == _EAGAIN {
+        println("runtime: may need to increase max user processes (ulimit -u)")
+    }
+    throw("newosproc")
+}
+```
+
+This installed source explains the message;
+its compiler version has not been equated with the linter binary's build version.
+The observed worker parent retained its existing 4 GiB memory,
+zero swap,
+200% CPU,
+and 256-task limits.
+After the failures,
+`pids.events` reported `max 89`,
+while memory OOM and OOM-kill counters remained zero.
+There was no immediately preceding task-counter sample,
+so that cumulative count cannot attribute either process's failure to this particular overlap.
+No causal connection between the native abort and the Go thread failure is established.
+
+### Verification and bounded recovery
+
+Process inspection found neither affected verification process still running before retry.
+Running the native tasks separately from full lint passed every original approval mode,
+the native-context Allow,
+Deny,
+Stop,
+cancellation,
+reload controls,
+and the separate Qwen CLI's RPC state and empty-stderr shutdown:
+
+```bash
+# package/pi-plugin/auto-mode/mise.toml tasks
+mise run //package/pi-plugin/auto-mode:test:native:approval
+mise run //package/pi-plugin/auto-mode:test:native:approval-context
+mise run //package/pi-plugin/auto-mode:test:native:cli-process
+```
+
+Then the unchanged full lint task completed its diagnostic sweep on its own:
+
+```bash
+# package/pi-plugin/auto-mode/mise.toml task
+mise run //package/pi-plugin/auto-mode:lint:oxlint
+```
+
+It reported 13,432 warnings and 454 errors across 368 files.
+Those are outstanding source findings,
+not a passing lint result.
+The complete sequential log is `${HOME}/temp/agent/pi-auto-mode-full-lint-sequential-20261014.log`.
+The parent task-denial count remained `89` after that sweep.
+No memory limit,
+task limit,
+heap bound,
+lint rule,
+or linter configuration changed.
+Separating these verification batches preserves their assertions and removes their execution overlap;
+it does not diagnose the original native abort or prove the overlap caused it.
+
+### Rejected conclusions and upstream filing decision
+
+- The missing native fatal diagnostic prevents attributing `SIGABRT` to the historical heap incident.
+- The Go runtime diagnostic establishes failed OS-thread creation,
+  not an upstream defect or the responsible resource owner.
+- Current evidence does not identify an upstream fix to prototype.
+- Supported-use and contribution-policy claims were not made;
+  no external filing is proposed.
+- No maintainer disposition is inferred from these local failures.
+- The successful sequential checks establish a usable verification arrangement,
+  not a prototype of an upstream correction.
+
+The checked `.out-of-scope/codex-harness.md` applies to harness integration work;
+it is not evidence that either failure originated in the harness.
+There is nothing to file upstream from these observations.
+
 ## Pi 1.1.0 resource-copy diagnostics exhaust the Node 26.11.1 heap
 
 ### Symptom

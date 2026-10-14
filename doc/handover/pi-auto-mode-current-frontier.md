@@ -1091,7 +1091,28 @@ Package types,
 the owned native build,
 original host lifecycle checks,
 and scoped lint of all six changed TypeScript interfaces pass.
-Final native approval and separate-process CLI checks are next.
+Native approval,
+native-context Allow,
+Deny,
+Stop,
+cancellation,
+reload,
+and separate-process Qwen CLI checks pass after the host port.
+An overlapping verification run first stopped at a native `SIGABRT`
+and a separate Go `newosproc` diagnostic from full lint.
+The [staging troubleshooting record](../troubleshooting/pi-sdk-staging.md#overlapping-native-verification-and-oxlint-1870-stop-before-completing-checks)
+retains their separate boundaries and the successful sequential checks.
+The unchanged full lint sweep now completes on its own and reports 13,432 warnings and 454 errors
+across 368 files.
+Its log is `${HOME}/temp/agent/pi-auto-mode-full-lint-sequential-20261014.log`.
+Package-wide lint completion remains unfinished despite the clean changed interfaces.
+All 198 maintained native modules pass parser checking.
+The current host configuration still loads the legacy auto-mode package through the user's global Pi settings;
+installation preparation must replace that legacy activation and route the ordinary `pi` command
+to the maintained host without duplicating guards.
+The current command resolves through generated workspace dependency shims,
+and the root `mise.toml` path list is owned by `file-enforcer.config.ts`.
+No installed settings or command resolution have been changed yet.
 Independent maintained bootstrap quality work also continues.
 Its scoped lint reports `no-restricted-syntax/no-sync` for `statSync`
 and `no-restricted-syntax/no-regex` for trailing-slash removal,
