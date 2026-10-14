@@ -30,6 +30,7 @@ export function readActiveSessionInputUsage(session) { return readInputUsage(ses
 export function readActiveSessionDomainEvents(session) { return readDomainEvents(session); }
 export function emitActiveSessionContext(input) { return emitContext(input); }`});
  value=once({source:value,before:'    #resourceLoader;',after:`    #resourceLoader;
+    #releaseContextCopies;
     #resourceInputBinding;
     #basePromptOwner = createBaseCompositionOwner();
     #runPromptOwner = createRunPromptOwner({
@@ -84,8 +85,11 @@ export function emitActiveSessionContext(input) { return emitContext(input); }`}
         };`});
  value=once({source:value,before:'        this.#resourceLoader = config.resourceLoader;',after:`        this.#resourceLoader = config.resourceLoader;
         this.#resourceInputBinding = config.resourceInputBinding;
-        attachNativeContextCopies(this.sessionManager,value=>this.#runPromptOwner.captureContextClone(value));
+        this.#releaseContextCopies=attachNativeContextCopies(this.sessionManager,value=>this.#runPromptOwner.captureContextClone(value));
         Object.defineProperty(this,"systemPrompt",{get:nativePromptGetter,configurable:false});`});
+ value=once({source:value,before:'            this.#custodyDisposalCompleted = this.#custodyDisposalDepth === 0 && completed;',after:`            const fullyDisposed=this.#custodyDisposalDepth===0&&completed;
+            if(fullyDisposed)this.#releaseContextCopies?.();
+            this.#custodyDisposalCompleted=fullyDisposed;`});
  value=once({source:value,before:'        if (!this.#extensionRunner.hasHandlers("input")) {\n            return { text, images };\n        }',after:'        if (!this.#extensionRunner.hasHandlers("input")) {\n            return observeNativeUninterceptedInput({manager:this.#sessionManager,input:{text,images},source,streamingBehavior});\n        }'});
  value=once({source:value,before:'await this.#extensionRunner.emitInput(text, images, source, streamingBehavior)',after:'await emitOwnedInput({runner:this.#extensionRunner,text,images,source,streamingBehavior,onInput:event=>captureNativeInputEvent({manager:this.#sessionManager,event})})'});
  value=once({source:value,before:'            return { text: inputResult.text, images: inputResult.images ?? images };',after:'            return observeNativeTransformedInput({manager:this.#sessionManager,input:{text:inputResult.text,images:inputResult.images??images},source,streamingBehavior});'});
