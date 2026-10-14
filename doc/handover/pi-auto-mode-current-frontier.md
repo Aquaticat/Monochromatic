@@ -346,7 +346,15 @@ explicit session IDs,
 working-directory overrides,
 recent-session fallback,
 and cross-directory fork inputs;
-their first run is pending.
+`test:native:manager-constructors` passes all five native entry points
+and constructs actual sessions from the recent,
+forked,
+and externally populated in-memory managers.
+The delayed-file-sink positive control detects the logger diagnostic and identifies its pending `mkdir`.
+One unchanged native lifecycle run with that tracer passed without the diagnostic.
+This does not establish the earlier timeout's cause or a fix;
+the result is retained in the
+[logger record](../troubleshooting/pi-sdk-staging.md#native-lifecycle-logger-timeout-on-2026-10-14).
 The refactored build helpers now pass scoped lint with zero warnings and zero errors across six files.
 The package type check,
 complete native build using its default qualified source checkout,

@@ -6377,3 +6377,54 @@ There is nothing to file upstream:
 - No maintainer disposition is inferred.
 - The maintained bridge and native fixture form the local correction;
   an upstream patch prototype is unnecessary.
+
+## Native lifecycle logger timeout on 2026-10-14
+
+The maintained Pi 1.1.0 `test:native:host-lifecycle` command passed its session assertions
+but emitted this `@monochromatic-dev/module-logger` diagnostic:
+
+```text
+logger internal error: sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify
+```
+
+The original invocation did not capture the emitting process or pending verification operation.
+The [logger source trace](cli-git-logger-sink-verify-timeout.md#emitter)
+identifies the reporting path;
+matching diagnostic text does not connect this incident to the earlier Git or synchronous-launcher incidents.
+Its cause remains unknown.
+
+### Verification and limits
+
+The local probe is `${HOME}/temp/agent/pi-native-logger-probe-20261014.ts`,
+with preload `${HOME}/temp/agent/pi-native-logger-trace-20261014.mjs`.
+It preserves warnings and records process identity,
+pending file operations,
+their call stacks,
+and event-loop tick gaps.
+
+The positive control uses a disposable directory with its own `node_modules`
+and delays only the file sink's `mkdir` by 5100 ms.
+The detector captured the exact timeout and pending `mkdir`.
+The subsequent unchanged native lifecycle command passed all assertions without that diagnostic.
+The raw records are `pi-native-logger-control-20261014.json`
+and `pi-native-lifecycle-logger-20261014.json` in the same private scratch directory.
+They contain local paths and need inspection before external sharing.
+
+No workaround is established.
+The successful traced run does not demonstrate a fix,
+and the injected delay proves detection rather than the original cause.
+Suppressing stderr,
+raising the sink deadline,
+or attributing the delay to load without an emitting-process trace would not resolve the incident.
+
+### Upstream filing decision
+
+- Upstream fault is not established; the emitter belongs to this repository.
+- Fixability depends on identifying the delayed operation.
+- No unsupported Pi API use is established by this diagnostic.
+- No external contribution or contribution-policy claim is proposed.
+- No maintainer disposition is inferred.
+- The disposable positive control validates instrumentation,
+  not a candidate fix.
+
+There is nothing to file upstream from this observation.

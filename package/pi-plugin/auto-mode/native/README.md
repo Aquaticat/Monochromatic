@@ -41,6 +41,12 @@ and disposal retry without external provider requests.
 The separate-process RPC fixture starts `dist/native/cli.mjs`,
 checks the selected Qwen model and idle state,
 and requires shutdown without stderr output.
+`test:native:manager-constructors` exercises every native constructor entry point.
+It checks persisted conversation retention,
+explicit session IDs,
+working-directory overrides,
+recent-session fallback,
+and cross-directory forks through actual SDK session construction.
 The built-in Codemode registration retains the original owned definition.
 Native approval presentation now captures Pi's current extension context and original verdict API
 for each original review.
