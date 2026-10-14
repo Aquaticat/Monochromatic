@@ -93,6 +93,9 @@ await describe({
     }, },),
     ...[
       { name: 'wrong model', response: { ...decisionFixtureResponse(), model: 'gpt-6-luna', }, },
+      { name: 'renamed answer with otherwise valid data', response: { ...decisionFixtureResponse(), answers: [
+        { ...decisionFixtureResponse().answers[0], name: 'unrelated_question' }, decisionFixtureResponse().answers[1],
+      ] }, },
       { name: 'missing answer', response: { ...decisionFixtureResponse(), answers: decisionFixtureResponse().answers.slice(0, 1,), }, },
       { name: 'reordered answers', response: { ...decisionFixtureResponse(), answers: decisionFixtureResponse().answers.toReversed(), }, },
       { name: 'refusal', response: { ...decisionFixtureResponse(), answers: [{ type: 'refusal', name: 'head_0', }, decisionFixtureResponse().answers[1],], }, },
