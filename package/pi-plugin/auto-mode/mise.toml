@@ -385,6 +385,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 description = "Verify that native dispatcher setup preserves the isolated CLI fixture fetch blocker"
 run = "node src/native-process-network.unit.test.ts"
 
+[tasks."test:native:session-result"]
+description = "Verify built native SDK result identity, descriptor reads, optional presence, and accessor rejection"
+run = "node src/native-session-result.unit.test.ts"
+
 [tasks."test:native:serializer-receipts"]
 run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-payload",
