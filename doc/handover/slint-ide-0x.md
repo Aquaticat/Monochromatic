@@ -341,6 +341,32 @@ the items after it are the record of 2026-10-05 and older.
     change; reinstalling it changes the real home and needs the user's approval.
     Both flaky tests of the guard runs were fixed in this work: the scroll quiet-time test reads a clock a test can
     hold, and find reveal measures its own line first (it failed 3 of 16 runs at baseline).
+    Minimap landed on branch `feat/ide-minimap` (user request: "Need a minimap also acting as a scrollbar."). The
+    minimap at the right edge of the source view is the scroll control: a press jumps and centers the pressed row
+    (caret moves, Shift extends the selection), a drag of the box scrolls with the box, the wheel scrolls as over the
+    text, and the keys are unchanged. Every open decision follows CodeGlance Pro (`Nasller/CodeGlancePro`, which
+    continues `vektah/CodeGlance`; read from source) and, where it is silent, IntelliJ: width 110 px (a sixth of the
+    source column in a narrow window, at least 15 px), four pixel rows for a row of text, fit mode so a 50,000-line
+    file shows whole, box fill 0.15, 0.25 on the box under the pointer, 0.35 dragged, with a border added as the second
+    channel, and no scroll bar added or hidden (the source view had none). The source column minimum is 288 px (the
+    old 240 plus the minimap). The picture is built on the `ide-minimap` worker from the rope snapshot, the row map,
+    and the shared syntax classes, keyed by everything but the scroll offset, with a work budget bounded by the track
+    height and the accept rule of the tile worker (same text stamp, request not older); the window thread only
+    compares keys and sets an image, and a scroll moves the box in markup alone. The requests have their own pace
+    (`plan` in `src/native/minimap.rs`: at once for a file, palette, or scale, every 250 ms while only the row map
+    changes, 120 ms after the last change otherwise). Measured with the frame harness on release bundles, all runs
+    with zero dropped frames and a start load under 20 (8.3 to 13.8), four runs a side: wheel scrolling and the width
+    drag show the same longest gaps as `main` (16.7 to 17.7 ms; a 33.3 ms gap from the harness's duplicate width
+    slot or one lost slot appears in both builds), the window thread's step for a width is not longer (50,000-line
+    text 2.64 to 2.72 ms against 2.95 to 3.19 ms), and the picture settles 41 ms (50,000 lines) to 243 to 396 ms
+    (2,000 wrapped lines) after the last width. A 50,000-line picture builds in 13 to 15 ms, the first picture of the
+    right size is shown 1.0 to 1.2 s after launch, and the resident size is 5.0 to 5.7 MB above the old `main`
+    after merging the Markdown work (1.0 to 3.0 MB before it). The details and per-condition numbers are in the IDE
+    README section Minimap. Guards: seventeen minimap cases in `bin/inspect-source-guards.mjs` were each seen failing
+    with their test named. Not done, and recorded in the README: marks (find matches, diagnostics, caret line) in the
+    picture, the code preview after 400 ms, and the resizable width.
+    The Markdown highlight work reached `main` during this work and was merged in; the minimap takes its roles through
+    the shared `ink`. The `feat/ide-hints-hover` branch was not touched.
     Markdown and MDX highlighting (branch `feat/ide-markdown-highlight`, worktree `.claude/worktrees/ide-markdown`):
     a copy of `.agents/skills/choosing-technology/SKILL.md` showed only the YAML frontmatter colored. The language, the
     `markdown`, `markdown_inline` and `yaml` grammars and the injections all worked; `syntax::SCOPES` had no `markup`

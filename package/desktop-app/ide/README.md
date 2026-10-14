@@ -2097,9 +2097,11 @@ The minimap at the right edge of the view is its scroll control:
 it shows the whole file as a picture and a box over it that marks what the view shows.
 Pressing, dragging, and turning the wheel on it scroll the view, and the keys that scroll the view work as before.
 Every open detail follows CodeGlance Pro and, where that is silent, IntelliJ IDEA Community.
-The sources read for this work are the `Nasller/CodeGlancePro` repository (the project that continues `Vektah/CodeGlance`;
+The sources read for this work are the `Nasller/CodeGlancePro` repository (the project that continues
+`Vektah/CodeGlance`;
 a repository named `Vektah/CodeGlancePro` does not exist) and the original `vektah/CodeGlance`.
-Its defaults are in `core/.../CodeGlanceConfig.kt`; the behavior is in `render/ScrollState.kt`, `panel/scroll/ScrollBar.kt`,
+Its defaults are in `core/.../CodeGlanceConfig.kt`; the behavior is in `render/ScrollState.kt`,
+`panel/scroll/ScrollBar.kt`,
 `panel/GlancePanel.kt`, `render/BaseMinimap.kt`, and `render/MainMinimap.kt`.
 
 ### What it shows
@@ -2110,7 +2112,8 @@ Its defaults are in `core/.../CodeGlanceConfig.kt`; the behavior is in `render/S
   The rows come from the one vertical mapping (`RowMap`), never from a second estimate of the height.
 - One pixel stands for one source column, a tab for four columns, and a row of text for four pixel rows,
   of which the first stays empty so rows can be told apart (CodeGlance Pro's "clean" renderer:
-  `BaseMinimap.renderClean`, weights 0.8 for printable ASCII and 0.4 for other glyphs, 0.6 for each pixel row of the glyph).
+  `BaseMinimap.renderClean`, weights 0.8 for printable ASCII and 0.4 for other glyphs, 0.6 for each pixel row of the
+  glyph).
   Columns past the minimap's width are not drawn, as in CodeGlance Pro.
   The whole picture is drawn at 0.8 opacity (`srcOver0_8` in `GlancePanel.paintComponent`).
 - A text that fits the view at four pixels a row is drawn at that size and ends above the bottom of the view.
@@ -2133,7 +2136,8 @@ Its defaults are in `core/.../CodeGlanceConfig.kt`; the behavior is in `render/S
 - The minimap is 110 px wide, or a sixth of the source column in a narrow window, down to 15 px
   (CodeGlance Pro uses a twelfth of the editor in a splitter, with the same minimum of 15 px).
   The text area, and so the wrap width, is the source column minus the gutter, the minimap, and the caret room.
-  The source column's minimum is 288 px (the 240 px it had, plus the 48 px the minimap takes at that size), so the minimap
+  The source column's minimum is 288 px (the 240 px it had, plus the 48 px the minimap takes at that size), so the
+  minimap
   never narrows the text below its old minimum.
 
 ### How it scrolls
@@ -2159,12 +2163,15 @@ Its defaults are in `core/.../CodeGlanceConfig.kt`; the behavior is in `render/S
   CodeGlance Pro also hands the wheel to the editor (`MouseEventAdapter.redispatch`).
 - The box follows the scroll live, from the scroll offset and the height of the text alone, in markup bindings.
   Native code does nothing for a scroll step beyond what it did before the minimap.
-- The keys keep working: PageUp, PageDown, the arrows, Home, and End are unchanged, and a press on the minimap leaves the
+- The keys keep working: PageUp, PageDown, the arrows, Home, and End are unchanged, and a press on the minimap leaves
+  the
   keyboard focus on the source view.
-- A drag, a press, and a page step set the offset and paint the tile of the new place before the next frame, the way a caret
+- A drag, a press, and a page step set the offset and paint the tile of the new place before the next frame, the way a
+  caret
   key does, because a tile built by the worker for a place the drag has already left would arrive out of date and leave
   the text blank while the pointer moves over a long file.
-- The minimap is a slider for assistive tools, labelled "Source minimap", with the offset as its value, the scroll range as
+- The minimap is a slider for assistive tools, labelled "Source minimap", with the offset as its value, the scroll
+  range as
   its maximum, and a page up or down as its increment and decrement.
 - The editor's own scroll bar: CodeGlance Pro keeps it by default (`hideOriginalScrollBar = false`).
   This view never had one, so the minimap is the only scroll control and nothing is hidden.
@@ -2187,7 +2194,8 @@ Its defaults are in `core/.../CodeGlanceConfig.kt`; the behavior is in `render/S
   scale, and the size of the minimap, and on nothing else; in particular not on the scroll offset
   (`Key` in `src/native/minimap_build.rs`).
   A render that changes none of these costs a comparison of a few words.
-- A request is posted at once for the first picture of a file, a new palette, and a new scale; at most every 250 ms while
+- A request is posted at once for the first picture of a file, a new palette, and a new scale; at most every 250 ms
+  while
   only the vertical mapping changes, which is how a long file's measurement shows in the picture while it runs;
   and 120 ms after the last change for everything else, such as the size steps of a resize drag.
   The newest request wins: the build of an older one stops at its next look at the flag, every 16 pixel rows,
@@ -2197,21 +2205,74 @@ Its defaults are in `core/.../CodeGlanceConfig.kt`; the behavior is in `render/S
 - The work is bounded by the track, not by the text: at most one source line is read for each pixel row of the track
   (a text with more rows than the track has pixel rows is sampled), and each row reads at most the minimap's width in
   columns, so one line of two hundred thousand characters costs no more than any other.
-  Wrapped lines need their break positions: lines that cost more to shape than the budget allows are cut into rows of equal
-  width instead of shaped, 250,000 units for the first (quick) picture and 5,000,000 for the full one, which follows only
+  Wrapped lines need their break positions: lines that cost more to shape than the budget allows are cut into rows of
+  equal
+  width instead of shaped, 250,000 units for the first (quick) picture and 5,000,000 for the full one, which follows
+  only
   when the quick one left a rough line.
-- The picture is `4 * width * track` bytes at the display scale squared, and the worker's job holds a rope snapshot, the row
+- The picture is `4 * width * track` bytes at the display scale squared, and the worker's job holds a rope snapshot,
+  the row
   map, and the shared syntax classes, not copies of the text.
 
-@@MEASURED@@
+### Measured cost
+
+The numbers are from release bundles of `main` at `be51f5b314` and of this branch merged with `main` at `d972299a30`
+(bundle sha1 `a43d724970b6818ed8bbfcb4378393721d35e788`), on one host, in the nested compositor 0.6.0 with its
+recorder at 60 frames a second and the application isolated in its own cgroup.
+Every run listed has zero frames dropped by the recorder and a one-minute load average below 20 when it started
+(8.3 to 13.8 here; an earlier batch under a load of 20 to 60 from other sessions was set aside and not used).
+The harness is a copy kept outside the repository; each condition has four runs on each side, alternated in order.
+
+- Scrolling a long file by wheel (160 notches down and 80 up, one every 16 ms, 230 recorded slots):
+  the longest gap between painted frames is 16.7 to 17.3 ms in every run of both builds on the 50,000-line plain text at
+  1100 px, the 2,000-line text, and (except one slot) the other two conditions.
+  The exceptions are one run of 33.3 ms (one lost slot) for the minimap build at 600 px, one of 33.3 ms for `main` on
+  the 50,000-line Rust file, and one run of the minimap build on that file whose recorder wrote consecutive frame
+  indices 64 ms apart (the longest by index is 33.3 ms, one slot).
+  Painted frames are 228 of 230 in every other run.
+  The window thread's time to draw a frame has a median of 0.31 to 0.52 ms and a 95th percentile of 2.0 to 4.4 ms in
+  both builds, so a scroll step costs the same with the minimap.
+- Dragging the window's width from 1100 px to 600 px and back in steps of 25 px, one every 16 ms, two sweeps
+  (78 slots): the longest gap is 17.0 to 17.7 ms in all runs of both builds after leaving out the one slot at the
+  junction of the sweeps where the harness commands the same width twice (it appears in 1 of 4 runs of `main` and 0 to 1
+  of 4 of the minimap build; the frames of that slot are identical).
+  Painted frames are 75 to 77 of 78 in both builds, and no gap exceeds 100 ms.
+  The window thread's step for a new width has a median of 2.95 to 3.19 ms for `main` and 2.64 to 2.72 ms with the
+  minimap on the 50,000-line text, and 6.3 to 6.9 ms against 5.4 to 5.8 ms on the 2,000-line text.
+- The picture settles after the last width of a drag: 41 to 42 ms later on the 50,000-line text and 243 to 396 ms
+  later on the 2,000-line text (a debounce of 120 ms and the build), where `main` settles in 24 to 26 ms
+  because it has no picture.
+  The text itself is current at once; only the picture is a step behind, and it is never built on the window thread.
+- The number of frames the harness counts as not fitting the output cannot be compared between the builds: its detector
+  looks for ink in the last two columns of a frame, and the minimap's rows legitimately reach those columns.
+  With a detector that compares the minimap box's border against the width of the frame (an earlier bundle of this
+  branch), the minimap build has 36 to 45 of 102 frames on the 50,000-line text and 55 to 67 on the 2,000-line text,
+  the same as `main`'s 41 to 51 and 66 to 70; these are recorder frames that hold the buffer of the previous width,
+  as recorded in
+  `doc/troubleshooting/nested-wayland-recording-previous-resize-step.md`.
+- A picture of the 50,000-line fixture is built in 13.1 to 15.1 ms (628 pixel rows at the window's height, 212 lines
+  shaped); the pictures before it, drawn while the measurement reaches more lines, take 3.1 to 10 ms.
+  A picture for the transient height at start takes 0.7 to 1.1 ms.
+  The first picture of the right size is on screen 1.0 to 1.2 s after launch, 0.25 to 0.4 s after the first frame of
+  the text; the last, complete one, 2.5 to 2.7 s after launch, when the measurement of the whole file has ended.
+  The Rust file of the same length builds pictures of 3.1 to 15.6 ms as its highlights arrive, the last at 3.6 to 3.8 s.
+  Before the merge, the 2,000-line wrapped text took 94 to 114 ms for the quick picture and 243 to 262 ms for the full
+  one, and a single line of 200,000 characters took 1.1 to 2.5 ms.
+- Memory: the resident size of the minimap bundle on the 50,000-line text is 448.1 MB against 442.4 MB for `main`
+  (median of four), and 593.3 against 588.0 MB for the Rust file, with two or three more threads (the worker among
+  them).
+  Before the merge with `main` the same measurement showed 1.0 to 3.0 MB more than `main`; the rest of the difference
+  comes with the merged Markdown work and was not separated.
 
 ### Limits and follow-ups
 
 - Marks are not drawn.
-  CodeGlance Pro paints the caret line, the selection, the highlighters of the error stripe (find matches and diagnostics),
+  CodeGlance Pro paints the caret line, the selection, the highlighters of the error stripe (find matches and
+  diagnostics),
   and version control marks into the picture, and IntelliJ's error stripe shows find matches and problems on its scroll
   bar.
-  A follow-up can draw them as one-pixel rows of the severity's color at `Geometry::y_of_row`, kept cheap by building them
+  A follow-up can draw them as one-pixel rows of the severity's color at `Geometry::y_of_row`, kept cheap by building
+  them
   with the picture (a diagnostic and a find match each name a source position, so no shaping is needed), and they would
   need a key part for the find and diagnostic snapshots.
 - The code preview after 400 ms, the resizable width, and a drag with the middle button are not implemented.
