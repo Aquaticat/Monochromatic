@@ -5,7 +5,7 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-13.
+Updated 2026-10-14.
 
 ## Drex 2.0 release check
 
@@ -311,6 +311,23 @@ The measured scoped lint run over the new host files and initial helpers reporte
 The build helpers are being refactored to asynchronous file and process operations,
 with tagged diagnostics and explicit types;
 full lint success remains unestablished.
+The refactored build helpers now pass scoped lint with zero warnings and zero errors across six files.
+The package type check,
+complete native build using its default qualified source checkout,
+and separate-process CLI fixture also pass.
+The original approval suite now runs through the maintained `test:native:approval` task.
+Its ten cases pass with original native verdict entries,
+zero external provider requests,
+and fixture selections only.
+Approval context capture is the next native host boundary:
+Pi invalidates its extension runner on reload,
+so each original review must capture the current native capabilities.
+Committed required-red `0b98ee3203` rejects the new fixed bootstrap source before the implementation.
+The maintained source is now connected;
+native Allow,
+Deny,
+Stop,
+and reload verification is in progress.
 The candidate CLI has no adopted semantic admission policy.
 Complete lint,
 installed activation,
