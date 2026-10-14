@@ -676,3 +676,31 @@ fn a_failed_query_names_its_arguments() {
     );
     remove(&root);
 }
+
+/// A Git query that stalls is stopped at the query deadline and reported as a timeout,
+///  so a stuck query cannot hold the commit.
+#[test]
+fn a_stalled_query_is_reported_instead_of_waited_for() {
+    use std::os::unix::fs::PermissionsExt;
+    let root = fixture("sf-stalled-query");
+    let fake = root.join("fake-git");
+    std::fs::write(&fake, "#!/bin/sh\nexec sleep 8\n").expect("fake git");
+    std::fs::set_permissions(&fake, std::fs::Permissions::from_mode(0o755)).expect("mode");
+    let mut git = push_git(&root);
+    git.real_git = fake;
+    git.environment.push((
+        OsString::from(crate::bounded_push::PUSH_DEADLINE_VARIABLE),
+        OsString::from("1"),
+    ));
+    let started = std::time::Instant::now();
+    let failure = git_output(&git, &argv(&["rev-parse", "HEAD"])).expect_err("stalls");
+    assert!(started.elapsed() < Duration::from_secs(7), "{:?}", started.elapsed());
+    assert!(
+        matches!(&failure, SingleFlightError::TimedOut { arguments, seconds }
+            if arguments == "rev-parse HEAD" && *seconds == 1),
+        "{failure}"
+    );
+    let ancestry = tip_contains(&git, "a", "b").expect_err("stalls too");
+    assert!(matches!(ancestry, SingleFlightError::TimedOut { .. }), "{ancestry}");
+    remove(&root);
+}

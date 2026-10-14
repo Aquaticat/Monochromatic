@@ -804,6 +804,9 @@ pub mod auto_push_record;
 /// Waiting for a lock a live process holds: a slow-wait notice naming the holder and a configurable backstop.
 pub mod live_lock;
 
+/// Read-only Git queries of the auto-push, each with a deadline and separate output streams.
+pub mod bounded_query;
+
 /// The auto-push's real `git push` with a deadline, its low-speed abort and the lock wait limit derived from it.
 pub mod bounded_push;
 

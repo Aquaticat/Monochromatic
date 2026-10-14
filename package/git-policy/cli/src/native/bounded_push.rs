@@ -232,7 +232,7 @@ fn ask_to_stop(_child: &Child) {}
 /// ```ts
 /// child.kill('SIGTERM'); await Promise.race([exited, delay(graceMs)]) || child.kill('SIGKILL');
 /// ```
-fn stop_push(child: &mut Child, grace: Duration) {
+pub fn stop_push(child: &mut Child, grace: Duration) {
     ask_to_stop(child);
     let asked: Instant = Instant::now();
     while asked.elapsed() < grace {
@@ -263,8 +263,8 @@ fn read_output(file: &mut File) -> Result<String, SingleFlightError> {
     return Ok(String::from_utf8_lossy(&bytes).into_owned());
 }
 
-/// Why a push was stopped.
-enum StopCause {
+/// Why a push or query was stopped.
+pub enum StopCause {
     /// The deadline passed.
     Deadline,
     /// The output grew past the cap.
@@ -283,9 +283,9 @@ enum StopCause {
 /// ```ts
 /// await Promise.race([exited, deadline, flood]);
 /// ```
-fn wait_until_done(
+pub fn wait_until_done(
     child: &mut Child,
-    output: &File,
+    outputs: &[&File],
     deadline: Duration,
 ) -> Result<Result<ExitStatus, StopCause>, SingleFlightError> {
     let started: Instant = Instant::now();
@@ -293,12 +293,14 @@ fn wait_until_done(
         if let Some(status) = child.try_wait().map_err(SingleFlightError::Start)? {
             return Ok(Ok(status));
         }
-        let size: u64 = match output.metadata() {
-            Ok(metadata) => metadata.len(),
-            Err(_) => u64::MAX,
-        };
-        if size > MAX_PUSH_OUTPUT {
-            return Ok(Err(StopCause::Flood));
+        for output in outputs {
+            let size: u64 = match output.metadata() {
+                Ok(metadata) => metadata.len(),
+                Err(_) => u64::MAX,
+            };
+            if size > MAX_PUSH_OUTPUT {
+                return Ok(Err(StopCause::Flood));
+            }
         }
         let elapsed: Duration = started.elapsed();
         if elapsed >= deadline {
@@ -334,7 +336,7 @@ pub fn run_bounded_push(
         .stderr(Stdio::from(for_stderr));
     let mut child: Child = command.spawn().map_err(SingleFlightError::Start)?;
     drop(command);
-    let ended: Result<ExitStatus, StopCause> = wait_until_done(&mut child, &output, deadline)?;
+    let ended: Result<ExitStatus, StopCause> = wait_until_done(&mut child, &[&output], deadline)?;
     if ended.is_err() {
         stop_push(&mut child, grace);
     }

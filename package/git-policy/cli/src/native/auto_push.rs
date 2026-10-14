@@ -16,7 +16,7 @@
 /// The single-flight coordinator, its Git command builder and its error type.
 use super::auto_push_single_flight::{
     PushAttempt, PushGit, SingleFlightError, SingleFlightKind, SingleFlightOutcome, git_command,
-    resolve_push_coordination_paths, run_single_flight_push,
+    resolve_push_coordination_paths, run_query, run_single_flight_push,
 };
 /// The deadline-bound push runner and the limits it applies.
 use super::bounded_push::{
@@ -31,8 +31,6 @@ use super::owner_lock_record::{PublishedOwner, read_owner_lock_record};
 use std::ffi::OsString;
 /// `Write` is the stderr sink the terminal lines go to.
 use std::io::Write;
-/// `Stdio` connects the child's standard input.
-use std::process::Stdio;
 
 /// Tag used for diagnostics from this module.
 const TAG: &str = "cli-git";
@@ -126,13 +124,7 @@ pub fn filter_push_output(output: &str, exit_code: i64) -> String {
 /// ```
 fn query_succeeds(git: &PushGit, arguments: &[&str]) -> Result<bool, SingleFlightError> {
     let argv: Vec<OsString> = arguments.iter().map(OsString::from).collect();
-    let status = git_command(git, &argv)
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .status()
-        .map_err(SingleFlightError::Start)?;
-    return Ok(status.success());
+    return Ok(run_query(git, &argv)?.code == Some(0));
 }
 
 /// What:
@@ -149,11 +141,8 @@ fn read_symbolic_head(git: &PushGit) -> Result<Option<String>, SingleFlightError
         .iter()
         .map(OsString::from)
         .collect();
-    let output = git_command(git, &argv)
-        .stdin(Stdio::null())
-        .output()
-        .map_err(SingleFlightError::Start)?;
-    if !output.status.success() {
+    let output = run_query(git, &argv)?;
+    if output.code != Some(0) {
         return Ok(None);
     }
     return Ok(Some(

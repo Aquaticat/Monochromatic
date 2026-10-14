@@ -276,7 +276,7 @@ fn a_live_holder_past_the_limit_ends_the_wait_and_keeps_its_lock() {
             panic!("the wait did not end at its limit");
         }
     };
-    let refusal: WorktreeCopyError = outcome.err().expect("refused");
+    let refusal: WorktreeCopyError = outcome.expect_err("refused");
     let text: String = refusal.0;
     assert!(text.starts_with("cli-git: gave up after waiting "), "{text}");
     assert!(
