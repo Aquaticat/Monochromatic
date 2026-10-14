@@ -2627,8 +2627,10 @@ await check('an explicit render node never falls back: with no GPU visible the s
 await check('auto with every device unusable fails and lists every attempt', async () => {
   // GALLIUM_DRIVER names a driver that does not exist, which makes Mesa's software device fail to initialize as well.
   const { code, text } = await failingStart({ name: 'nothing-usable', flags: ['--headless'], env: withoutParent({ ...baseEnvironment, GALLIUM_DRIVER: 'no-such-driver' }), wrap: noGpu })
-  for (const expected of ["Mesa's default render node", 'the software renderer (llvmpipe)', 'never falls back', 'Choices: auto, software']) {
-    assert(text.includes(expected), 'the message lacks "' + expected + '": ' + text.slice(-700))
+  // The error message itself starts at the last "Error: " line; the compositor's own log lines above it name the attempts too.
+  const message = text.slice(text.lastIndexOf('Error: '))
+  for (const expected of ["Mesa's default render node: ", 'the software renderer (llvmpipe): ', 'never falls back', 'Choices: auto, software']) {
+    assert(message.includes(expected), 'the message lacks "' + expected + '": ' + message.slice(-700))
   }
   return 'exit ' + code
 })
