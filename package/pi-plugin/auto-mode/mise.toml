@@ -135,6 +135,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 description = "Exercise original native event dispatch, complete grouped sources, and observation freshness"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/event-receipts.test.mjs"
 
+[tasks."test:native:progress-events"]
+description = "Exercise unchanged native progress callbacks through the original prepared program"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --observed-progress"
+
 [tasks."test:native:configured-extensions"]
 description = "Exercise installed extension paths from a read-only manifest in disposable native state"
 usage = 'arg "<manifest>" help="JSON array of enabled native extension resource records"'

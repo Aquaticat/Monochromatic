@@ -29,6 +29,7 @@ const text={
 const unobservedContext=process.argv
   .includes('--unobserved-event');
 const observedContext=process.argv.includes('--observed-context');
+const observedProgress=process.argv.includes('--observed-progress');
 const throwingContext=process.argv.includes('--throwing-context');
 const httpTransport=process.argv.includes('--http-transport');
 const operatingPolicy=process.argv.includes('--operating-policy');
@@ -48,6 +49,7 @@ const receiptControl=process.argv
 assert.ok((!receiptControl)||sdkStream,'Serializer receipt controls exercise the normal SDK stream');
 let contextCalls=0;
 let lateContextMutations=0;
+let progressCalls=0;
 const env=await createEnvironment({
   policyText:'RUL:\n '+text+'\n',
   hostPrompt:'Fixture background.',
@@ -80,6 +82,8 @@ const env=await createEnvironment({
     contextCalls++;
     return {messages:event.messages,unusedInstruction:'Original unselected system context result'};
    });
+  }]:observedProgress?[function registerObservedProgress(pi){
+   pi.on('tool_execution_update',function observeOriginalProgress(){progressCalls++;});
   }]:[]
 });
 if(extensionManifestArgument!==undefined){
@@ -190,7 +194,7 @@ try{
   catch(error){console.error(inspect(error,{depth:6,maxStringLength:2048}));}
  }
  assert.ok(review,inspect(
-   {requests,assessments,message:session.messages.at(-1),toolErrors:session.messages.filter(function failedTool(message){return message.role==='toolResult'&&message.isError;}),judgment:judgment?.inspect()},
+   {requests,assessments,executions,progressCalls,message:session.messages.at(-1),toolErrors:session.messages.filter(function failedTool(message){return message.role==='toolResult'&&message.isError;}),judgment:judgment?.inspect()},
    {depth:4}
  ));
  assert.equal(
@@ -236,6 +240,7 @@ try{
    assessments,
    httpCalls,
    executions,
+   progressCalls,
    providerRequests:0,
    productionPolicyAdopted:operatingPolicy,
    empiricalQualificationEstablished:false,
@@ -371,6 +376,7 @@ try{
      .length
      >0,'Removing original receipt or membership evidence must keep the domain unresolved');
   }
+  if(observedProgress)assert.ok(progressCalls>0,'The original progress callback must run at the native execution boundary');
  }
  console.log(JSON.stringify({
    ...result,
