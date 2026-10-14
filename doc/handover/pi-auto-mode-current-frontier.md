@@ -155,9 +155,20 @@ using the declaration metadata already retained by the original append call.
 The new typed owner propagates tool object identity only at observed native copy sites;
 equal replacements and cross-publication reuse do not receive membership.
 The original source still has no permission.
-Built native-manager tests now cover these boundaries;
-their first verification is in progress,
-and serialized tool contribution consumption is still pending.
+Built native-manager tests now pass for original append/context copies,
+equal-content separate owners,
+cross-owner reuse,
+array/tool replacement,
+schema mutation,
+and accessor rejection without invocation.
+The process-local array identity omission fails the corresponding assertion while leaving the built artifact unchanged.
+`${HOME}/temp/agent/pi-tool-publication-controls-20261014/verification.json` retains that check.
+The normal SDK fixture and all serializer receipt controls also pass with zero provider requests.
+The test enters through the maintained policy consumer:
+direct generated-manager and generated-SDK imports exposed an existing owned bootstrap cycle,
+documented in `doc/troubleshooting/pi-sdk-staging.md`.
+Removing that coupling remains native-quality work.
+Serialized tool contribution consumption is still pending.
 Complete system and tool governing-use accounting is still required before removing the independent obligation.
 
 ## Original native RPC approval verification

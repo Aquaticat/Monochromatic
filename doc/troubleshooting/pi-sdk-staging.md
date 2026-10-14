@@ -1,5 +1,141 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.2.0 direct generated manager import reaches an uninitialized owned bootstrap constructor
+
+### Symptom
+
+On Node 26.11.1,
+the first `native-tool-publication.unit.test.ts` entry imported the generated manager before the maintained policy entry.
+Node reported `ReferenceError: Cannot access 'SessionManager' before initialization`
+at the owned `native-host/host.ts:160`,
+called from `native-host/bootstrap.ts:236`.
+Importing the generated SDK first produced the same error.
+Neither run reached the publication assertions.
+This is distinct from the earlier `ExtensionRunner` initialization failure.
+
+### Root cause
+
+The owned generator adds a dependency from the manager to the maintained policy entry.
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/root-source.ts:263`
+emits the query-observer import:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-batch/root-source.ts:263
++`import {createLoadoutQueryObserver} from ${JSON.stringify(queryUrl)};\n`
+```
+
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/loadout-query-observer.mjs:1`
+then imports the maintained implementation:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/native-batch/loadout-query-observer.mjs:1
+import {createNativeQueryObservation} from '../maintained-policy.mjs';
+```
+
+The generated maintained-policy module re-exports the package's built entry.
+That entry includes the upstream SDK import from
+`package/pi-plugin/auto-mode/src/visible-context.ts:19`:
+
+```ts
+// package/pi-plugin/auto-mode/src/visible-context.ts:19
+import {
+  sessionEntryToContextMessages,
+  type SessionEntry,
+} from '@earendil-works/pi-coding-agent';
+```
+
+The resolver observations in `${HOME}/temp/agent/pi-tool-publication-controls-20261014/import-edges.json`
+retain the generated host-runtime import of the owned bootstrap during this dependency traversal.
+The bootstrap eagerly constructs the host in
+`package/pi-plugin/auto-mode/native/contract/integration/native-host/bootstrap.ts:236`:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-host/bootstrap.ts:236
+export const nativeHost: NativeCliHost = createNativeCliHost({
+  designatePolicy,
+  bindSession
+});
+```
+
+That constructor reads the still-initializing manager binding in
+`package/pi-plugin/auto-mode/native/contract/integration/native-host/host.ts:158`:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-host/host.ts:158
+const factory = createRootSessionFactory({
+  createAgentSession,
+  SessionManager,
+```
+
+The read-only upstream checkout remains tag `v1.2.0`,
+commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`.
+Its `packages/coding-agent/src/core/session-manager.ts` has no owned query observer or CLI bootstrap import.
+The demonstrated cycle crosses this repository's generated instrumentation and maintained entry.
+No change to the new tool publication's identity checks remedies that import order.
+
+### Verification and supported entry
+
+The direct-manager failure is reproducible with the scratch `import-trace` task:
+
+```sh
+# Run from ${HOME}/temp/agent/pi-tool-publication-controls-20261014
+mise run import-trace
+```
+
+The maintained consumer initializes its policy entry before inspecting manager exports:
+
+```ts
+// package/pi-plugin/auto-mode/src/native-tool-publication.unit.test.ts
+await import(new URL('../dist/native/contract/integration/maintained-policy.mjs', import.meta.url).href);
+```
+
+With that entry order,
+`mise run //package/pi-plugin/auto-mode:test:native:serializer-receipts` passes the new manager publication tests,
+the original serializer emission tests,
+and all copied-system/payload/transcript controls.
+The separate normal SDK fixture still accounts for five contributions and executes three fixture children,
+with zero provider requests.
+The successful entry order verifies the intended consumer;
+it does not fix direct generated-manager or generated-SDK imports.
+Removing this import-order coupling remains native-quality work.
+
+The manager publication tests cover original append and context copies,
+separate equal-content owners,
+cross-owner reuse,
+array replacement,
+tool replacement,
+schema mutation,
+and accessor rejection without invocation.
+The process-local array identity omission makes the array-replacement assertion fail.
+`verification.json` in the same scratch directory retains the unchanged built-artifact hash.
+
+### What does not work
+
+- Importing the manager directly fails before the test body.
+- Importing the generated SDK before the manager produces the same constructor initialization failure.
+- Passing the native SDK scenario does not establish arbitrary submodule import order.
+
+### Upstream filing decision
+
+- Fault: the demonstrated cycle includes owned instrumentation and eager bootstrap construction.
+  An upstream defect has not been established.
+- Fixability: the owned graph can remove its eager dependency;
+  no upstream architectural limitation was found.
+- Supported use: upstream supports native SDK construction,
+  but the failing generated graph is repository-owned.
+- Contribution policy: the checked `CONTRIBUTING.md:43` requires the author's own issue voice;
+  an autonomous generated issue would not meet that requirement.
+- Maintainer direction: searches for `"SessionManager" "initialization"` returned no issues and
+  [PR 10789](https://github.com/earendil-works/pi/pull/10789).
+  Its complete body and comments concern JSONL write coalescing,
+  not this import cycle.
+- Prototype: the verified consumer-entry change is local.
+  No upstream patch is justified by this evidence.
+
+The `.out-of-scope/` catalog was checked;
+`pi-gpt55-long-context.md` concerns a different boundary.
+Nothing to file or add upstream.
+
 ## Pi 1.2.0 transcript normalization invalidates a direct serializer identity comparison
 
 ### Symptom
