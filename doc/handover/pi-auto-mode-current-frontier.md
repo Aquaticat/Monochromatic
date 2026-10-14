@@ -23,6 +23,18 @@ The corrected Jev row encoder independently passes envelope and exact-reconstruc
 its 117,254-byte complete candidate has a separate one-call capacity plan.
 No provider replacement or admission-policy change is adopted.
 
+Both explicitly authorized complete-input probes are now terminal.
+Microsoft returned HTTP 422 in 2,221.452 ms,
+with `invalid TypeSafe request` and an estimated 145,150 tokens against a named 64,000-token limit.
+No returned Microsoft model identity establishes which layer owns that limit.
+Luna returned all 84 answers in 2,087.943 ms with the exact requested model name and no refusals.
+None met the unchanged 0.99 unique-maximum admission rule;
+the primary permission answer was 0.83.
+The corrected Jev request independently returned HTTP 400 `max_tokens_exceeded` in 997.329 ms.
+These phases are complete without retries.
+The remaining authorized work includes maintained native quality checks and genuine approval-boundary verification;
+provider capacity success alone does not supply semantic admission.
+
 ## SubQ authorization and compatibility check
 
 The user authorized sending anything needed to `subq.ai`

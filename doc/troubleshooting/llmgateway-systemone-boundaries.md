@@ -330,7 +330,9 @@ No token-fit conclusion follows from that rejected row request.
 The corrected offline prototype rejects that captured malformed input,
 then proves unchanged outer question fields and exact original reconstruction for every corrected candidate.
 The combined representation is 117,254 bytes with 87,989 state bytes.
-Its frozen one-call provider check remains separate from these offline proofs.
+Its frozen one-call provider check then returned HTTP 400 `max_tokens_exceeded` in 997.329 ms.
+This valid envelope still did not fit;
+no semantic answers were returned.
 
 ## Source identity
 

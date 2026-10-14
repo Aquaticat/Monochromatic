@@ -313,6 +313,12 @@ with all 84 questions,
 a five-second deadline,
 and no retry.
 
+The corrected envelope request returned HTTP 400 `max_tokens_exceeded` in 997.329 ms.
+The negative wire-schema control and corrected preflight passed before dispatch.
+This is now a valid capacity rejection of the corrected representation,
+separate from the malformed earlier candidate.
+No answers or model-quality evidence were returned.
+
 Automatic approval review again rejected the documentation commit's existing cgroup attachment.
 The user renewed authorization for that attachment with unchanged limits;
 commit `07987fab66` then completed.

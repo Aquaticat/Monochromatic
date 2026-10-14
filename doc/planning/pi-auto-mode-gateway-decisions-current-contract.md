@@ -79,5 +79,45 @@ Neither result establishes policy interpretation,
 complete-input capacity,
 or repeated-run latency.
 
+## Complete-input results
+
+The first local preflight incorrectly required six choices for every question.
+The original capture also contains three-choice questions,
+so Node emitted `AssertionError [ERR_ASSERTION]: 3 !== 6` before any dispatch.
+The corrected preflight validates unique choices and reconstructs every original criterion and instruction.
+Both approved request hashes remain unchanged.
+The original preflight source is preserved beside each corrected runner.
+
+Microsoft's single complete-input attempt returned HTTP 422 in 2,221.452 ms:
+`invalid TypeSafe request: request is about 145150 tokens; the limit for the state plus all questions is 64000`.
+The diagnostic names the TypeSafe request representation despite the selected Microsoft route.
+No model answer or returned model identity accompanies it;
+do not treat this response as proof of the underlying Microsoft model's own context limit.
+
+Luna returned HTTP 200 with `openai/gpt-6-luna-decisions`
+and all 84 expected Choice answers in 2,087.943 ms.
+There were no refusals.
+Usage was 126,129 input tokens and zero output tokens.
+Every distribution passed the frozen finite-value,
+label-membership,
+and approximate-sum checks.
+None met the existing 0.99 unique-maximum admission rule.
+The primary permission answer was 0.83 with confidence 0.8.
+Across the complete answer map:
+
+- Seven selected `permission`,
+  with selected probabilities from 0.3 to 0.83.
+- Six selected `unknown`,
+  from 0.33 to 0.51.
+- Seventy selected `none`,
+  from 0.35 to 0.9.
+- One selected `potential-instruction` at 0.96.
+
+The successful response establishes capacity and deadline compliance for this single attempt.
+It does not establish repeated latency,
+calibration,
+or production semantic admission.
+Both approved attempts are complete without retry.
+
 [guide]: https://docs.llmgateway.io/features/decisions
 [reference]: https://docs.llmgateway.io/v1_decisions
