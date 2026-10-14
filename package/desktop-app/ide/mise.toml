@@ -295,6 +295,15 @@ run = """
 runCargo(['test', '--test', 'cli_args', '--test', 'cli_process'])
 """
 
+[tasks."test:ignored"]
+description = "Run the gitignore matching unit tests, the tree tests that carry its answers, and the reader tests"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--lib', 'git_ignore::'])
+runCargo(['test', '--no-default-features', '--test', 'file_tree', '--test', 'file_tree_validation', '--test', 'file_tree_requests', '--test', 'file_tree_ignored', '--test', 'directory_worker', '--test', 'directory_worker_ignored'])
+"""
+
 [tasks."test:tree"]
 description = "Exercise lazy tree snapshots, native names, expansion, and invalid reply rejection"
 shell = "node --input-type=module-typescript -e"
