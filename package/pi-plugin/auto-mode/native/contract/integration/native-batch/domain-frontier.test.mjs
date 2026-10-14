@@ -204,6 +204,12 @@ try{
    assert.ok(receipts.some(function retainsUnusedResult(source) { return source.content.includes('Original unselected context result'); }));
    assert.ok(receipts.some(function retainsUnusedSystemResult(source) { return source.content.includes('Original unselected system context result'); }));
    assert.ok(receipts.every(function leavesContextAuthorityUnestablished(source) { return source.permission===false&&source.registration===undefined; }));
+   const snapshot=review.inputs.instructionSources[0].sources;
+   const input={snapshot,instructionSources:review.inputs.instructionSources,sourceCoverage:review.inputs.ruleSourceCoverage};
+   for(const receipt of [undefined,{...snapshot.nativeRunComposition.contextHandlerReceipt,runOccurrence:Object.freeze({})}]){
+    const gaps=inspectNativeSourceDomain({...input,snapshot:{...snapshot,nativeRunComposition:{...snapshot.nativeRunComposition,contextHandlerReceipt:receipt}}}).gaps;
+    assert.ok(gaps.some(function missingOriginalCompletion(gap){return gap.reason.includes('"context"');}),'Missing or substituted original context completion must keep the source domain unresolved');
+   }
   }
   if(receiptControl){
    assert.equal(

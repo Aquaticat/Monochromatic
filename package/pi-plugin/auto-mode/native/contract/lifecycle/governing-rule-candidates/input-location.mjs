@@ -98,6 +98,7 @@ export function sourceInputLocation(source){
    'toolLoadoutInput',
    'toolLoadoutQuery',
    'handlerResult',
+   'contextHandler',
    'resourceCallback'
  ].includes(location.field)){
   if((shape!=='field,metadataJSON')||((typeof location.metadataJSON)!=='string'))throw new SourceInputLocationError('Constructed message input location requires serialized native metadata');
