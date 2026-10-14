@@ -27,6 +27,8 @@ const cases: readonly CompilerFailureCase[] = [
     expectedCode: 0, expectedStdout: 'fixture compiler version 1', expectedStderr: '' },
   { name: 'permits only known suppressed dependency errors', stdout: suppressed, stderr: '', exitCode: 2,
     expectedCode: 0, expectedStdout: '', expectedStderr: '' },
+  { name: 'permits known suppressed diagnostics on stderr', stdout: '', stderr: suppressed, exitCode: 2,
+    expectedCode: 0, expectedStdout: '', expectedStderr: '' },
   { name: 'preserves a Go panic failure', stdout: '', stderr: panic, exitCode: 2,
     expectedCode: 2, expectedStdout: '', expectedStderr: panic },
   { name: 'preserves a silent compiler failure', stdout: '', stderr: '', exitCode: 2,
@@ -41,6 +43,8 @@ const cases: readonly CompilerFailureCase[] = [
     expectedCode: 2, expectedStdout: emission, expectedStderr: '' },
   { name: 'preserves unexplained stdout beside suppressed errors', stdout: suppressed + unknownFailure, stderr: '', exitCode: 2,
     expectedCode: 2, expectedStdout: unknownFailure, expectedStderr: '' },
+  { name: 'rejects emission metadata without a path', stdout: suppressed + 'TSFILE: \n', stderr: '', exitCode: 2,
+    expectedCode: 2, expectedStdout: 'TSFILE: \n', expectedStderr: '' },
 ];
 
 //region The emitted CLI preserves unsuccessful processes unless every diagnostic was knowingly suppressed
