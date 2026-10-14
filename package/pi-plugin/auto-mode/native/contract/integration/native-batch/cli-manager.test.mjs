@@ -13,7 +13,7 @@ await assert.rejects(()=>factory.createFromManager({options:env.options,manager:
 assert.equal(registrations,0);
 const manager=factory.managers.inMemory(env.options.cwd);
 const first=await factory.createFromManager({options:env.options,manager});
-assert.equal(first.manager,manager);
+assert.equal(first.root.manager,manager);
 assert.equal(registrations,1);
 const oldLease=factory.lifecycle.capture(first.root);
 const transition=factory.lifecycle.begin(oldLease);
@@ -24,7 +24,7 @@ factory.lifecycle.completeRetirement(transition);
 assert.throws(()=>factory.lifecycle.assertActive(oldLease));
 manager.newSession();
 const second=await factory.createFromManager({options:env.options,manager});
-assert.equal(second.manager,manager);
+assert.equal(second.root.manager,manager);
 assert.notEqual(second.session,first.session);
 assert.equal(registrations,2);
 factory.lifecycle.assertActive(factory.lifecycle.capture(second.root));

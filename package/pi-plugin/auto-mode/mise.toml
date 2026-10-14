@@ -66,6 +66,10 @@ run = "pnpm install --ignore-scripts"
 description = "Build the qualified native Pi source and owned runtime without private integration imports"
 run = "node native/build.ts"
 
+[tasks."build:native:owned"]
+description = "Rebuild owned native transformations against the already emitted qualified Pi source"
+run = "node native/build.ts --owned"
+
 [tasks."test:native:domain"]
 run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution",

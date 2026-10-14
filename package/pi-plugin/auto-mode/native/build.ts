@@ -7,11 +7,13 @@ import { buildPiSource, NativeSourceBuildError, } from './build-source.ts';
 
 if (process.env.PI_AUTO_MODE_NATIVE_BUILD === '1')
   throw new NativeSourceBuildError('Recursive native host build is forbidden',);
+if (process.argv.length > 3 || (process.argv.length === 3 && process.argv[2] !== '--owned'))
+  throw new NativeSourceBuildError('Native build accepts only the optional --owned flag',);
 
 const packageRoot = dirname(import.meta.dirname,);
 const output = join(packageRoot, 'dist/native',);
 mkdirSync(output, { recursive: true, },);
-buildPiSource({ packageRoot, output, },);
+if (process.argv[2] !== '--owned') buildPiSource({ packageRoot, output, },);
 cpSync(join(import.meta.dirname, 'contract',), join(output, 'contract',), { recursive: true, },);
 cpSync(join(import.meta.dirname, 'loader.mjs',), join(output, 'loader.mjs',),);
 const loader = join(output, 'loader.mjs',);
