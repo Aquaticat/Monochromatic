@@ -1053,9 +1053,28 @@ and lower-scoring,
 unknown,
 or unsupported clause answers remain unresolved with no child execution.
 Every case retains its original source accounting and makes zero provider requests.
-Final scoped lint,
-guard omissions,
-and actual CLI startup verification are next.
+Package types and scoped lint of all six changed TypeScript implementation and test files pass.
+The full package unit task passes against the rebuilt adopted policy;
+its log is `${HOME}/temp/agent/pi-auto-mode-unit-after-semantic-policy-20261014.log`.
+The disposable source-build campaign at `${HOME}/temp/agent/pi-semantic-operating-omissions-4cV6Sz`
+passes its original baseline and fails all seven intended guard mutations.
+These cover the cutoff,
+unknown and unsupported meanings,
+normalization,
+score bounds,
+selected vocabulary,
+and inclusion of the exact `0.99` boundary.
+The vocabulary control retains a valid distribution to isolate its selected-label check.
+Every failing log was inspected;
+the production artifact was not changed.
+Original host construction and disposal checks pass.
+The separate actual Qwen CLI process passes RPC state and empty-stderr shutdown checks,
+with zero provider requests and no genuine human approval in these fixtures.
+All 196 maintained native modules pass parser checking.
+The native README,
+current handover,
+and admission decision were checked in rendered output.
+The remaining maintained host session/disposal interface work resumes next.
 Independent maintained bootstrap quality work also continues.
 Its scoped lint reports `no-restricted-syntax/no-sync` for `statSync`
 and `no-restricted-syntax/no-regex` for trailing-slash removal,
