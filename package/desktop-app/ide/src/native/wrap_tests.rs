@@ -12,6 +12,8 @@ use super::sidebar_tests::{GUTTER, HEADER, TEXT_LEFT, resize};
 use super::{AppWindow, State};
 /// The wrap width rule and the worker's gates and limits.
 use super::{
+    overscan_tile_tests::reset,
+    rewrap::REWRAP_LINES,
     tile::current_key,
     tile_build::PASS_GATE,
     tile_pass::TAKE_LIMIT,
@@ -47,6 +49,18 @@ pub(super) fn long_line(number: usize) -> String {
 pub(super) fn long_text(count: usize) -> String {
     let mut text = String::new();
     for number in 0..count {
+        text.push_str(&long_line(number));
+        text.push('\n');
+    }
+    return text;
+}
+
+/// Lines that start with a tab and wrap to several rows: a tile of them is more work than the window thread's allowance
+///  covers, so every new width goes to the worker.
+pub(super) fn tabbed_text(count: usize) -> String {
+    let mut text = String::new();
+    for number in 0..count {
+        text.push('\t');
         text.push_str(&long_line(number));
         text.push('\n');
     }
@@ -232,12 +246,13 @@ fn rows_above_the_view_changing_height_move_no_visible_pixel() {
     for number in 300..420 {
         text.push_str(&format!("short {number}\n"));
     }
+    // Hold the pass from the start, before the window exists: a worker that is quick enough measures the first chunks
+    //  of lines while the file opens, and the long stretch would no longer be unmeasured when the view moves into it.
+    let (release, gate) = std::sync::mpsc::channel();
+    *PASS_GATE.lock().expect("pass gate") = Some(gate);
     let (_project, opened) = open(&text);
     let window = &opened.window;
     let scale = window.window().scale_factor();
-    // Hold the pass while the view moves into the long stretch, whose lines are not measured yet.
-    let (release, gate) = std::sync::mpsc::channel();
-    *PASS_GATE.lock().expect("pass gate") = Some(gate);
     let start = 320.0 * 24.0;
     window.set_scroll_y(-start);
     until("the tile for the new view did not arrive", || {
@@ -395,24 +410,21 @@ fn opening_fifty_thousand_lines_never_blocks_the_window_thread() {
     window.hide().expect("close wrap window");
 }
 
-/// A new width breaks the kept rows again on the worker: nothing is shaped again, and the extent follows.
+/// A new width breaks the kept rows again on the worker without shaping them, and the window thread brings in only the
+///  lines of its tile, within its allowance; the extent follows.
 #[test]
 fn a_resize_breaks_kept_rows_again_without_shaping() {
     let (_project, opened) = open(&long_text(1500));
     settled(&opened);
     let window = &opened.window;
     let scale = window.window().scale_factor();
-    let (shaped, rebroken, window_rows, tile_rows, width) = {
+    let (shaped, rebroken, width) = {
         let current = opened.source.borrow();
-        (
-            current.pass_shaped,
-            current.pass_rebroken,
-            current.rows_shaped,
-            current.worker_rows_shaped,
-            current.width,
-        )
+        (current.pass_shaped, current.pass_rebroken, current.width)
     };
     assert!(shaped > 1000, "the first pass shaped the file");
+    reset(&opened.source);
+    opened.source.borrow_mut().rows_rebroken = 0;
     resize(window, 900.0, 660.0);
     until("the new width did not reach the state", || {
         return opened.source.borrow().width != width;
@@ -425,12 +437,13 @@ fn a_resize_breaks_kept_rows_again_without_shaping() {
         "the resize broke only {} kept rows again",
         current.pass_rebroken - rebroken
     );
-    assert_eq!(
-        current.rows_shaped, window_rows,
-        "the window thread shaped lines for the resize"
+    assert!(
+        current.rows_shaped + current.rows_rebroken <= REWRAP_LINES as u64,
+        "the window thread brought in {} lines for the resize",
+        current.rows_shaped + current.rows_rebroken
     );
     assert_eq!(
-        current.worker_rows_shaped, tile_rows,
+        current.worker_rows_shaped, 0,
         "the worker's tile shaped lines for the resize"
     );
     drop(current);

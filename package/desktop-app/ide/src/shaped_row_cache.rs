@@ -23,12 +23,14 @@ use std::collections::BTreeMap;
 /// Why:
 ///  A tile of three view heights holds about a hundred lines at typical sizes,
 ///  so a few hundred lines let a re-centered tile reuse the lines it shares with the previous one.
+///  The window thread also builds a tile at once when the width changes, for as many lines as it may spend work on
+///  (`native::rewrap::REWRAP_LINES`), and a cache smaller than that tile would evict the lines it just broke.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const ROW_CACHE_LINES = 256;
+/// const ROW_CACHE_LINES = 512;
 /// ```
-pub const ROW_CACHE_LINES: usize = 256;
+pub const ROW_CACHE_LINES: usize = 512;
 
 /// What:
 ///  The shaped rows of a text, keyed by line,
