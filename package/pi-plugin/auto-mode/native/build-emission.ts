@@ -5,6 +5,7 @@
  */
 import {
   cp,
+  rm,
   mkdir,
   realpath,
   symlink,
@@ -157,6 +158,8 @@ export async function emitPackage({
       'pi',
       specification.folder,
     );
+    // Source emission owns this generated package tree, including its dependency link.
+    await rm(target, { recursive: true, force: true });
     await mkdir(
       target,
       { recursive: true, },

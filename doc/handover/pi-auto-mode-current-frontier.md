@@ -1119,6 +1119,15 @@ The generated `readActiveSessionDomainEvents` includes every registered handler 
 Other registered kinds remain explicit gaps even if their callbacks were not invoked in that run.
 The no-extension CLI startup fixture does not establish that the installed extension configuration can decide an action.
 Do not silently disable the user's other extensions or treat their unresolved inputs as absent.
+The concurrent dependency refresh in `755685da03` moved installed Pi from `1.1.0` to `1.2.0`.
+The first installed-extension probe stopped before resource loading:
+Node emitted `ERR_MODULE_NOT_FOUND` for `partial-json` because the existing emitted graph's
+dependency links still targeted the removed `1.1.0` package directories.
+The native source input is being updated to upstream tag `v1.2.0`,
+commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`.
+Emission now replaces each owned generated package tree before compiling,
+so obsolete dependency links and source files cannot survive a release change.
+The original migration qualification must pass on that graph before resuming the extension check.
 Independent maintained bootstrap quality work also continues.
 Its scoped lint reports `no-restricted-syntax/no-sync` for `statSync`
 and `no-restricted-syntax/no-regex` for trailing-slash removal,
