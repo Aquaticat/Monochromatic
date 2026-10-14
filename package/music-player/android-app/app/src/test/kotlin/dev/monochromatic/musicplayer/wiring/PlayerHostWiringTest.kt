@@ -77,6 +77,14 @@ class PlayerHostWiringTest {
         Track(uri = "content://invented/alpha/$track", displayPath = "Alpha/${titleOf(track)}.mp3")
     }
 
+    /** Invented tracks of a second folder, `Beta/Other NN.mp3`, whose titles differ from the first folder's. */
+    private fun beta(count: Int): List<Track> = (0 until count).map { track ->
+        Track(
+            uri = "content://invented/beta/$track",
+            displayPath = "Beta/Other " + track.toString().padStart(2, '0') + ".mp3",
+        )
+    }
+
     /** Shows the real host over [controller] and waits until its first frames are composed. */
     private fun showHost() {
         composeTestRule.setContent {
@@ -153,6 +161,33 @@ class PlayerHostWiringTest {
         controller.openLibrary(alpha(count = 60))
         controller.playIndex(40)
         showHost()
+        composeTestRule.waitUntil(timeoutMillis = WAIT_LIMIT_MS) {
+            composeTestRule.onAllNodes(hasText(titleOf(40)) and isSelected()).fetchSemanticsNodes().size == 1
+        }
+        assertEquals(0, countNodesWithText(titleOf(0)))
+    }
+
+    // What:     `@Test fun changingTheFolderMovesTheListToTheNewPage()` checks the page effect through the whole host.
+    // Why:      A folder change builds new rows, which the pane must treat as a new page: the folder without the playing
+    //           track opens at its top, and going back to the playing folder opens on the playing row again.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("page change", () => { render(host, { playing: "Alpha 40" }); selectPage(1); expect(visible("Other 00")).toBe(true); });
+    // ```
+    /** From the playing folder scrolled to its row 40, folder two opens at its top and folder one reopens on row 40. */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun changingTheFolderMovesTheListToTheNewPage() {
+        controller.openLibrary(alpha(count = 60) + beta(count = 60))
+        controller.playIndex(40)
+        showHost()
+        composeTestRule.waitUntil(timeoutMillis = WAIT_LIMIT_MS) {
+            composeTestRule.onAllNodes(hasText(titleOf(40)) and isSelected()).fetchSemanticsNodes().size == 1
+        }
+        change { controller.selectPage(1) }
+        composeTestRule.waitUntil(timeoutMillis = WAIT_LIMIT_MS) { countNodesWithText("Other 00") == 1 }
+        assertEquals(0, countNodesWithText("Other 40"))
+        change { controller.selectPage(0) }
         composeTestRule.waitUntil(timeoutMillis = WAIT_LIMIT_MS) {
             composeTestRule.onAllNodes(hasText(titleOf(40)) and isSelected()).fetchSemanticsNodes().size == 1
         }
