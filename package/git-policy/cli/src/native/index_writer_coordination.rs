@@ -17,7 +17,9 @@
 //! ```
 
 /// Foreign-lock evidence readers used to explain the failure.
-use super::index_lock_wait::{WaitFailure, unproven_owner_message, wait_for_index_lock};
+use super::index_lock_wait::{
+    WaitFailure, live_holder_timeout_message, unproven_owner_message, wait_for_index_lock,
+};
 /// The host side effects of the wait.
 use super::index_lock_wait_host::HostWaitEffects;
 /// Index-writer classification of a resolved command.
@@ -224,6 +226,22 @@ pub fn wait_for_lock(
                 &evidence,
                 &verdict,
                 budget,
+                reason.as_str(),
+            )));
+        }
+        Err(WaitFailure::LiveHolderTimedOut {
+            lock_path,
+            pid,
+            command,
+            waited_ms,
+            consequence: reason,
+            ..
+        }) => {
+            return Err(CoordinationFailure::Stop(live_holder_timeout_message(
+                lock_path.as_path(),
+                pid,
+                command.as_deref(),
+                waited_ms,
                 reason.as_str(),
             )));
         }
