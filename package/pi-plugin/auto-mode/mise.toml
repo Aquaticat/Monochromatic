@@ -339,12 +339,12 @@ const expected = { ...before, packages: ['npm:unrelated-fixture-extension'] }
 const settingsPath = join(agentDir, 'settings.json')
 await writeFile(settingsPath, JSON.stringify(before))
 const env = { ...process.env, HOME: fixture, PI_CODING_AGENT_DIR: agentDir, PI_OFFLINE: '1' }
-await spawn('mise', ['--no-env', '--no-hooks', 'run', '//package/pi-plugin/auto-mode:install:native'], { env, stdio: 'inherit' })
+await spawn('mise', ['--no-env', '--no-hooks', 'run', '--skip-tools', '//package/pi-plugin/auto-mode:install:native'], { env, stdio: 'inherit' })
 assert.deepEqual(JSON.parse(await readFile(settingsPath, 'utf8')), expected)
 assert.equal(await readlink(join(fixture, '.local/bin/pi')), join(packageRoot, 'native/command.ts'))
 const version = await spawn(join(fixture, '.local/bin/pi'), ['--version'], { env })
 assert.equal(version.stdout.trim(), '1.2.0')
-await spawn('mise', ['--no-env', '--no-hooks', 'run', '//package/pi-plugin/auto-mode:install:native'], { env, stdio: 'inherit' })
+await spawn('mise', ['--no-env', '--no-hooks', 'run', '--skip-tools', '//package/pi-plugin/auto-mode:install:native'], { env, stdio: 'inherit' })
 assert.deepEqual(JSON.parse(await readFile(settingsPath, 'utf8')), expected)
 const rejectedHome = await mkdtemp(join(scratch, 'pi-native-install-rejected-'))
 const rejectedAgent = join(rejectedHome, '.pi/agent')
@@ -353,7 +353,7 @@ await mkdir(join(rejectedHome, '.local/bin'), { recursive: true })
 await writeFile(join(rejectedAgent, 'settings.json'), JSON.stringify(before))
 await writeFile(join(rejectedHome, '.local/bin/pi'), 'preserved foreign command')
 let rejected = false
-try { await spawn('mise', ['--no-env', '--no-hooks', 'run', '//package/pi-plugin/auto-mode:install:native'], { env: { ...env, HOME: rejectedHome, PI_CODING_AGENT_DIR: rejectedAgent } }) }
+try { await spawn('mise', ['--no-env', '--no-hooks', 'run', '--skip-tools', '//package/pi-plugin/auto-mode:install:native'], { env: { ...env, HOME: rejectedHome, PI_CODING_AGENT_DIR: rejectedAgent } }) }
 catch (error) { assert.ok(error instanceof Error); rejected = true }
 assert.equal(rejected, true)
 assert.equal(await readFile(join(rejectedHome, '.local/bin/pi'), 'utf8'), 'preserved foreign command')
