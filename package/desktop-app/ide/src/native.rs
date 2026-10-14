@@ -146,6 +146,8 @@ mod focus_tests;
 /// Native font instance changes must repaint rather than reuse stale glyphs.
 #[cfg(test)]
 mod font_tests;
+/// Debug records of the moments a window frame passes through.
+mod frame_trace;
 /// Source selection and keyboard callbacks.
 mod input;
 /// Inspection-only hint and diagnostic injection from a JSON file;
@@ -195,8 +197,6 @@ mod quiet_read_tests;
 mod refresh_latency_tests;
 /// Background source reads apply correspondence to the latest UI reading state.
 mod reload;
-/// Debug records of the moments a window frame passes through.
-mod frame_trace;
 /// Native rendering and input are split by their invalidation boundary.
 mod render;
 /// The window thread's counted step when the wrap width changes.

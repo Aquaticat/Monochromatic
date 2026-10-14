@@ -48,22 +48,20 @@ pub(super) fn bind(window: &AppWindow) {
         });
     let reported = window
         .window()
-        .set_rendering_notifier(|state, _graphics_api| {
-            match state {
-                RenderingState::BeforeRendering => {
-                    tracing::debug!(
-                        target: "monochromatic_ide::native::frame",
-                        "the toolkit began drawing a frame"
-                    );
-                }
-                RenderingState::AfterRendering => {
-                    tracing::debug!(
-                        target: "monochromatic_ide::native::frame",
-                        "the toolkit finished drawing a frame"
-                    );
-                }
-                _ => {}
+        .set_rendering_notifier(|state, _graphics_api| match state {
+            RenderingState::BeforeRendering => {
+                tracing::debug!(
+                    target: "monochromatic_ide::native::frame",
+                    "the toolkit began drawing a frame"
+                );
             }
+            RenderingState::AfterRendering => {
+                tracing::debug!(
+                    target: "monochromatic_ide::native::frame",
+                    "the toolkit finished drawing a frame"
+                );
+            }
+            _ => {}
         });
     if let Err(error) = reported {
         tracing::debug!(
