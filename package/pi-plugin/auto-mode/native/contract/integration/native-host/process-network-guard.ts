@@ -10,6 +10,7 @@
  Report a fixture boundary violation without making a provider request.
  */
 class NativeCliFixtureNetworkError extends Error {
+  /** Distinguish fixture isolation failures from upstream transport failures. */
   override readonly name = 'NativeCliFixtureNetworkError';
 }
 
