@@ -1,3 +1,0 @@
-#!/usr/local/bin/node
-import { dispatch } from "file:///work/scratch/fixture/phase-landing-locked/repository/.git/cli-git-transactions/76f585a5-c12e-4dbf-9864-ebf5b7763d95/hooks/dispatch.mjs";
-await dispatch("pre-commit", process.argv.slice(2));

@@ -1,3 +1,0 @@
-#!/usr/local/bin/node
-import { dispatch } from "file:///work/scratch/fixture/phase-index-installed/repository/.git/cli-git-transactions/046d8b2f-7118-4ba0-8f7b-d33596a358b8/hooks/dispatch.mjs";
-await dispatch("commit-msg", process.argv.slice(2));

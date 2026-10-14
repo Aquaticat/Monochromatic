@@ -1,3 +1,0 @@
-#!/usr/local/bin/node
-import { dispatch } from "file:///work/scratch/fixture/phase-preparation-done/repository/.git/cli-git-transactions/bab6d1dd-f6a5-468e-a44b-10220bee62d8/hooks/dispatch.mjs";
-await dispatch("prepare-commit-msg", process.argv.slice(2));
