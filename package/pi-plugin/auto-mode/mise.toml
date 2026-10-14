@@ -8,7 +8,11 @@ process.env.NODE_OPTIONS = `${process.env.NODE_OPTIONS ?? ''} --max-old-space-si
 """
 
 [tasks.build]
-extends = "build"
+description = "Build maintained exports before the native host consumes them"
+run = [
+  "mise run //package/pi-plugin/auto-mode:build:js",
+  "mise run //package/pi-plugin/auto-mode:build:native",
+]
 
 [tasks."build:js"]
 extends = "build:js"
