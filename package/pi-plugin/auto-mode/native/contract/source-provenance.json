@@ -531,7 +531,9 @@
       "maintained": "integration/native-batch/program-source.mjs",
       "sha256": "175e3230d5c8140800b5fe45b5b6fbe20321ddd6006c6a8c236a9787b940c11f",
       "origin": "authored-source",
-      "relocatedLiterals": 1
+      "relocatedLiterals": 1,
+      "currentMaintained": "integration/native-batch/program-source.ts",
+      "movedOn": "2026-10-14"
     },
     {
       "original": "integration/native-batch/prompt-source.mjs",
