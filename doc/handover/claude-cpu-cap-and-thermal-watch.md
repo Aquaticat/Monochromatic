@@ -420,9 +420,11 @@ WiFi.
 
 ### Ranking and reasons
 
-1. ASRock X870E Taichi Lite, only if the case takes E-ATX. It is E-ATX (12.0 by 10.5 inches, TechPowerUp and
-   Vortez), x8/x8, code display, Wi-Fi 7, 5 Gb LAN, about 399.99 US dollars at launch (PCMag). Corsair sells the
-   4000D Airflow as a mid-tower ATX case; no 4000D page read says E-ATX fits, so this is unresolved.
+1. ASRock X870E Taichi Lite. It is E-ATX (12.0 by 10.5 inches, TechPowerUp and Vortez), x8/x8, code display,
+   Wi-Fi 7, 5 Gb LAN, about 399.99 US dollars at launch (PCMag). Corsair's own 4000D Airflow page (CC-9011200-WW,
+   Tech Specs) lists "E-ATX (305mm x 277mm)", and 10.5 inches is 267 mm, so the board fits the stated size; KitGuru,
+   one UK reseller and two spec aggregators list only ATX, so Corsair's page and the listings that copy it are the
+   source used. Fit with the NH-D15S (160 mm tall, case limit 170 mm) and the board's mounting holes is unchecked.
 2. ASUS ROG Crosshair X870E Hero. It is ATX (ASUS), x8/x8, Q-Code, Wi-Fi 7 (Qualcomm or MediaTek by unit), 456.90 CHF
    to 568.90 EUR in the ASUS shop. It is the only candidate with every requirement checked, including the fit.
 3. ASRock X870E Nova WiFi. It is ATX (12.0 by 9.6 inches), with a Dr. Debug display (retailer spec) and Wi-Fi 7, 5 Gb
@@ -430,9 +432,9 @@ WiFi.
    at PCIe 3.0 x2 (ASRock page) and is disabled when M2_5 is used, so the RX 7600 would get a Gen3 x2 link.
 4. ROG Crosshair X670E Hero: x8/x8 and Wi-Fi 6E, display not confirmed in text read, price not found, older platform.
 
-Pair reasons: the Lite beats the Hero on price and VFIO evidence only if it fits the case; otherwise the Hero is
-first. The Hero beats the Nova because the Nova gives the RX 7600 only a Gen3 x2 slot. The Nova beats the X670E Hero
-because its display is confirmed and it is current. Out: ProArt B850 Neo, ProArt X870E and MSI Tomahawk (status LEDs
+Pair reasons: the Lite beats the Hero on price and VFIO evidence now that the case lists E-ATX; if its fit fails in
+practice, the Hero is first. The Hero beats the Nova because the Nova gives the RX 7600 only a Gen3 x2 slot. The
+Nova beats the X670E Hero because its display is confirmed and it is current. Out: ProArt B850 Neo, ProArt X870E and MSI Tomahawk (status LEDs
 only), ASRock Steel Legend and Pro RS (status LEDs only, per the FAQ table), MSI Carbon (IVRS report on that board),
 Gigabyte boards (IVRS reports).
 
@@ -460,13 +462,13 @@ stops) is described for the AMD card being passed through, which is not this lay
   marketing line; the Hero and Taichi are consumer boards. A Level1Techs post planning a 24/7 server on a Taichi asks
   about 3 to 5 minute AM5 boots from memory training. USB4 controllers (ASM4242) appear in freeze and 0x9F reports on
   ProArt, TUF and MSI X870 boards, with one report of disabling USB4 in the BIOS curing freezes; which USB4 controller
-  the Lite or Hero uses was not checked. Server-class boards (ASRock Rack, Supermicro) were ruled out earlier by slots
-  and Wi-Fi.
+  the Lite or Hero uses was not checked. Server-class boards were ruled out earlier by slots and Wi-Fi; the section
+  "Wi-Fi card allowed" below revisits them.
 
 ### Checks before buying
 
-- Open the Corsair 4000D Airflow specification page and read the supported motherboard sizes. If E-ATX is not
-  listed, drop the Taichi Lite.
+- Done: Corsair's 4000D Airflow page lists E-ATX (305mm x 277mm). Still open: the Taichi Lite's mounting holes against
+  the case standoffs, and cable reach for the 24+2 pin and CPU power on a 267 mm tall board.
 - Read the chosen board's own specification page for the slot table and the code display; the retailer text used
   above can be wrong.
 - Choose the BIOS from the release notes: AGESA 1.3.0.0a or later; ASRock 4.43 has a Reddit title about broken EXPO
@@ -479,7 +481,31 @@ stops) is described for the AMD card being passed through, which is not this lay
 
 Dead-CPU reports exist for ASRock AM5 boards (mostly X3D, a few standard Ryzen), and an ASUS burn-up acknowledgment
 is mentioned in one Reddit comment; neither vendor is clean. Memory training trouble appears on both vendors. No
-IOMMU group list for the user's CPU and kernel was seen. The Taichi Lite's Wi-Fi chip is unconfirmed.
+IOMMU group list for the user's CPU and kernel was seen. The Taichi Lite's Wi-Fi chip is unconfirmed, which no longer
+matters if the user buys a card (next section).
+
+### Wi-Fi card allowed (user decision, about 23:45 EDT)
+
+The user said buying a Wi-Fi card is acceptable, so onboard Wi-Fi is no longer a requirement.
+
+- The ranking does not change. Onboard Wi-Fi was a tie-break and a risk (the Lite's chip unknown, the Hero's chip
+  varying by unit), not what put the Lite, Hero and Nova ahead: the two-digit code display and the slot layout did.
+- The risk shrinks to choosing a card with a mainline Linux driver and testing it on the OGC kernel (7.2.9) before
+  relying on it. The onboard module stays on the board unused. No card model was researched this period; Intel
+  iwlwifi cards are the usual Linux choice, which is unverified here.
+- A card in the board's M.2 Key E 2230 slot keeps every PCIe slot free; a PCIe card would take a slot.
+- Boards that return only because they lack Wi-Fi:
+  - ASUS ProArt B650-Creator: x8/x8, empty Key E slot, 314 to 334 US dollars, code display unconfirmed, and one
+    r/VFIO user warned against the ProArt line.
+  - Supermicro H13SAE-MF (Supermicro and ServeTheHome pages): micro-ATX, B650, two PCIe 5.0 x16 slots (x16/x0 or
+    x8/x8) plus a Gen4 x4 chipset slot, ASPEED BMC with IPMI, ECC UDIMM at 5200 officially, no EXPO, about 502 US
+    dollars at one retailer. A code display is not in its specification. A Reddit thread reports Ryzen 9000 with two
+    48 GB ECC DIMMs failing at 5600 on early BIOS. The CPU socket is rotated 90 degrees for rack airflow, which
+    changes NH-D15S orientation in a tower case (unchecked). No VFIO report found (a Level1Techs thread asks for one).
+  - ASRock Rack B650D4U: one PCIe 5.0 x16 and one x4 slot per retailer text, so no x8/x8 and an unverified second
+    slot; display not checked.
+- Both server boards fail the confirmed code display requirement as far as the pages read show, so none enters the
+  ranking.
 
 ## Open questions
 
