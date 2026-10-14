@@ -24,12 +24,30 @@ extends = "lint:types"
 
 [tasks.'lint:oxlint']
 extends = "lint:oxlint"
+usage = 'arg "[args]" var=#true help="Package-relative source paths; omitted means the entire package"'
+run = """
+{{vars.dispatch_workspace_node}}
+{{vars.parse_usage_args}}
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', parseUsageArgs(process.env.usage_args ?? ''))
+"""
 
 [tasks."format:oxlint"]
 extends = "format:oxlint"
+usage = 'arg "[args]" var=#true help="Package-relative source paths; omitted means the entire package"'
+run = """
+{{vars.dispatch_workspace_node}}
+{{vars.parse_usage_args}}
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...parseUsageArgs(process.env.usage_args ?? '')])
+"""
 
 [tasks.'test:unit']
 extends = "test:unit"
+
+[tasks."test:tsc-failure"]
+description = "Verify built TypeScript wrapper exit handling with disposable compiler processes"
+run = "node src/tsc-failure.unit.test.ts"
 
 [tasks.buildAndTest]
 description = "Build the seven node entries, then run unit tests against the built testing seam"

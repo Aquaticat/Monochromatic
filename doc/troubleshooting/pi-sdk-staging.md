@@ -6533,9 +6533,35 @@ No immediately preceding task-counter sample attributes the failure to that over
 The wrapper returned exit zero despite retaining this panic;
 this is not a successful type check.
 The separate log is `${HOME}/temp/agent/pi-factory-scopes-types-20261014.log`.
-The retry will run serially with `TSC_SINGLE_THREADED=1` and `GOMAXPROCS=2`.
+The retry ran serially with `TSC_SINGLE_THREADED=1` and `GOMAXPROCS=2`.
 These controls reduce compiler concurrency without changing TypeScript checks or resource ceilings.
-No successful retry is recorded yet.
+The complete log at `${HOME}/temp/agent/pi-factory-scopes-types-final-20261014.log`
+contains the successful build-info emission and no fatal compiler diagnostic.
+The final scoped lint separately reports zero warnings and zero errors across ten changed files.
+The owned rebuild,
+factory-scope tests,
+actual SDK host lifecycle,
+manager constructors,
+and isolated Qwen CLI process pass.
+This establishes bounded verification recovery,
+not a diagnosis of the original thread allocation failure.
+
+The incorrect wrapper exit result has a separate owned source explanation:
+`package/dev-script/task-util/src/tsc-filter.ts:203`
+sets a failure code only for recognized retained TypeScript errors:
+
+```ts
+// package/dev-script/task-util/src/tsc-filter.ts
+if (stdoutResult.hasRemainingErrors || stderrResult.hasRemainingErrors)
+  process.exitCode = subprocessError.exitCode ?? 1;
+```
+
+The Go panic is retained as ordinary output without a recognized TypeScript error header.
+The independent signal branch does not cover a compiler that exits with code two.
+This wrapper behavior was subsequently repaired and verified separately.
+The [owned wrapper incident](typescript.md#task-tsc-002-converted-compiler-process-failures-into-successful-checks)
+retains failing-before process fixtures and passing-after evidence.
+The successful serial type-check retry alone did not fix it.
 
 After the typed session-construction port,
 the approval-context `allow` case failed with

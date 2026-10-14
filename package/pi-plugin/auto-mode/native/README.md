@@ -39,7 +39,17 @@ awaiting its dynamic import during bootstrap prevented the native lifecycle modu
 Declaration companions describe the retained JavaScript owner interfaces without replacing their runtime checks.
 The maintained session constructor is `native-batch/session-root.ts`,
 renamed from `session-root.mjs` on 2026-10-14.
-Its typed static bridge retains the original lifecycle and construction-scope owners.
+Its typed static bridge retains the original lifecycle owner.
+The construction-scope owner is now `lifecycle/runtime-factory-scopes/scopes.ts`,
+renamed from `scopes.mjs` on 2026-10-14,
+and imported directly through its maintained types.
+It captures original callbacks and manager inputs,
+requires the SDK-specific result preparer,
+and retains failed cleanup before another construction can begin.
+`test:native:factory-scopes` exercises callback replacement,
+exact-result publication,
+disposal retry,
+and synchronous reentrancy against the built artifact.
 `session-root-result.ts` copies each original SDK data descriptor once,
 preserves optional fallback-field presence,
 and freezes only the returned outer record.

@@ -9,7 +9,7 @@ Updated 2026-10-14.
 
 ## Typed native session construction
 
-The next owned dependency is being ported from `runtime-factory-scopes/scopes.mjs`
+The next owned dependency is now ported from `runtime-factory-scopes/scopes.mjs`
 to `scopes.ts` and `construction.ts`.
 The maintained SDK caller now imports its real typed interface directly.
 The original callback and manager captures,
@@ -20,12 +20,49 @@ The unused legacy result-preparer default is removed:
 the maintained caller already supplies `prepareSdkResult`,
 and the typed interface now requires that callback.
 The historical provenance records the old path and October 14 move date.
-Built-artifact checks for input replacement,
+Built-artifact checks for missing capabilities,
+input replacement,
 publication,
 failed cleanup,
-and reentrancy are committed but not yet verified.
+and reentrancy pass.
+The final ten-file lint scope reports zero warnings and zero errors.
+Package type checking passes with `TSC_SINGLE_THREADED=1` and `GOMAXPROCS=2`.
+Native manager constructors,
+host lifecycle,
+and the actual isolated Qwen CLI process pass after the owned rebuild.
+They report zero external provider requests;
+the CLI reports clean shutdown and zero genuine human approvals.
+Process-local omission of reentrancy exclusion or cleanup blocking fails its corresponding assertion.
+Omitting original callback capture invokes the forbidden replacement preparer and fails the test.
+The initial omission auditor incorrectly required all failures to be `AssertionError`;
+the corrected readback verifies each actual failure boundary.
+`${HOME}/temp/agent/pi-factory-scope-controls-20261014/verification.json`
+records those controls and the emitted scope file's exact match with maintained source afterward.
 The first type-check attempt emitted Go `newosproc` and is invalid despite its wrapper returning exit zero.
-Serial verification with bounded compiler concurrency is pending.
+That masked compiler failure was reproduced and repaired separately in `dev-script/task-util`.
+The built wrapper now preserves failed process status unless the existing known-diagnostic filter
+fully accounts for the failure.
+Original failing-before cases include a panic,
+silent failure,
+unfamiliar diagnostic,
+and a panic beside suppressed diagnostics.
+The repaired real-process fixture and existing output-filter tests pass.
+The [wrapper incident record](../troubleshooting/typescript.md#task-tsc-002-converted-compiler-process-failures-into-successful-checks)
+retains the initial success-control newline mistake and its source-backed correction.
+Final wrapper lint reports zero warnings and zero errors across four changed files;
+its package type check and all declared process cases pass.
+Pi's real `lint:types` task also passes through the repaired wrapper.
+The broader native quality queue and genuine approval verification remain open.
+
+The next approval preparation uses the existing native RPC dialog boundary.
+The emitted Pi 1.2.0 `rpc-mode.js` creates the original extension selector request
+and resolves only its pending response identifier.
+A direct SDK fixture can retain authored prerequisite premises and local model responses
+while allowing a genuine human to answer the actual pending native request.
+This would verify that human response boundary only.
+The production CLI still lacks an independent authorization-requirement owner;
+unknown requirements must remain unresolved and must not be converted into UI requests.
+No genuine human response or production authorization-owner integration is claimed yet.
 
 The maintained constructor now lives in `native-batch/session-root.ts`,
 with typed native readers,
