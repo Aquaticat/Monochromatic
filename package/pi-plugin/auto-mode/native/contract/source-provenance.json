@@ -575,6 +575,8 @@
     {
       "original": "integration/native-batch/tool-description-source.mjs",
       "maintained": "integration/native-batch/tool-description-source.mjs",
+      "currentMaintained": "integration/native-batch/tool-description-source.ts",
+      "movedOn": "2026-10-14",
       "sha256": "90360777ca8127cd804c3b393544364760846bc5411b3192c1431daba82ea173",
       "origin": "authored-source",
       "relocatedLiterals": 0
