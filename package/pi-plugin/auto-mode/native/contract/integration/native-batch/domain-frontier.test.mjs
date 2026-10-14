@@ -43,6 +43,11 @@ assert.ok(!nextDecision||observedProgress,'Next-decision receipt controls requir
 const throwingContext=process.argv.includes('--throwing-context');
 const httpTransport=process.argv.includes('--http-transport');
 const operatingPolicy=process.argv.includes('--operating-policy');
+const unconfiguredPolicies=process.argv.includes('--unconfigured-policies');
+assert.ok(!(operatingPolicy&&unconfiguredPolicies),'Unconfigured-policy verification cannot also select operating policies');
+const singleCall=process.argv.find(argument=>argument.startsWith('--single-call='))?.slice('--single-call='.length);
+assert.ok(singleCall===undefined||['direct','binding'].includes(singleCall));
+const expectedExecutions=singleCall===undefined?3:1;
 const extensionManifestArgument=process.argv.find(function isExtensionManifestArgument(argument){return argument.startsWith('--extension-manifest=');});
 const configuredExtensions=extensionManifestArgument===undefined?[]:JSON.parse(await readFile(extensionManifestArgument.slice('--extension-manifest='.length),'utf8'));
 assert.ok(Array.isArray(configuredExtensions));
@@ -104,8 +109,9 @@ const env=await createEnvironment({
 if(extensionManifestArgument!==undefined){
  const loaded=env.policyInput.loader.getExtensions();
  assert.deepEqual(loaded.errors,[],'Every configured extension must load before its native policy consumer is tested');
- assert.equal(loaded.extensions.length,configuredExtensions.length,'The fixture must retain every configured extension');
- console.log(JSON.stringify({configuredExtensionsLoaded:loaded.extensions.length,eventKinds:[...new Set(loaded.extensions.flatMap(function registeredKinds(extension){return [...extension.handlers.keys()];}))]}));
+ const fixtureExtensionCount=unobservedContext||observedContext||observedProgress?1:0;
+ assert.equal(loaded.extensions.length,configuredExtensions.length+fixtureExtensionCount,'The fixture must retain every configured and control extension');
+ console.log(JSON.stringify({configuredExtensionsLoaded:configuredExtensions.length,fixtureExtensionsLoaded:fixtureExtensionCount,eventKinds:[...new Set(loaded.extensions.flatMap(function registeredKinds(extension){return [...extension.handlers.keys()];}))]}));
 }
 const leaf={
   ...env.createReadToolDefinition(env.options.cwd),
@@ -122,7 +128,7 @@ const {
 session.agent
   .getApiKey=function readDomainFixtureApiKey() { return (process.env
   .FIXTURE_API_KEY); };
-const code='const value = await tools.fixture_value({path:"seed"});\nreturn await Promise.allSettled([tools.fixture_value({path:value}),tools.fixture_value({path:"second"})]);',programProfile='awaited-string-result-then-literal-parallel';
+const code=singleCall==='direct'?'return await tools.fixture_value({path:"seed"});':singleCall==='binding'?'const value = await tools.fixture_value({path:"seed"}); return value;':'const value = await tools.fixture_value({path:"seed"});\nreturn await Promise.allSettled([tools.fixture_value({path:value}),tools.fixture_value({path:"second"})]);',programProfile=singleCall===undefined?'awaited-string-result-then-literal-parallel':'awaited-literal-single-call';
 function policy(definitionId) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:function acceptAuthoredDomainRelation() { return (true); }}; }
 const originalSdkStream=session.agent
   .streamFunction;
@@ -186,13 +192,13 @@ const runtime=bindNativePolicyRuntime({
   wrapToolDefinition:env.wrapToolDefinition,
   readSessionDisposalState:env.readSessionDisposalState,
   trace(){return undefined;},
-  ...(operatingPolicy?createNativeSemanticOperatingPolicies():{
+  ...(unconfiguredPolicies?{}:operatingPolicy?createNativeSemanticOperatingPolicies():{
    semanticAdmissionPolicy:policy('clause_operation_relation'),
    requestMaterialAdmissionPolicy:policy('request_instruction_content'),
    headingContextAdmissionPolicy:policy('heading_instruction_content')
   }),
-  effectOwnerFor:function omitDomainAuthorizationOwner() { return (undefined); },
   sendWire:sendAssessment,
+  ...(unconfiguredPolicies?{send(){observations.assessments++;throw new Error('An unconfigured semantic consumer must not dispatch an assessment');}}:{}),
   originalStream:sdkStream?function stream(model,context,options){return controlledSdkStream({model,context,options});}:nativeOpenAIStream,
   async terminalFetch(input,init){
    observations.requests++;
@@ -206,6 +212,21 @@ await using cleanup={async [Symbol.asyncDispose](){await changeControl.drain();s
 try{
  await session.prompt('Exercise the original request-specific policy domain.');
  const current=runtime.inspect();
+ if(unconfiguredPolicies){
+  const review=current.lastReview;
+  assert.ok(review,'The original native operation must reach policy review');
+  assert.equal(review.outcome.state,'unresolved');
+  assert.equal(review.semanticAdmission.state,'not-configured');
+  assert.equal(review.requestMaterialAdmission.state,'not-configured');
+  assert.equal(review.headingContextAdmission.state,'not-configured');
+  assert.equal(review.unitAdoptionAdmission.state,'not-configured');
+  assert.equal(observations.assessments,0);
+  assert.equal(observations.httpCalls,0);
+  assert.equal(observations.executions,0);
+  assert.ok(current.lastJudgment.inspect().finalRecord,'The unconfigured original judgment must close');
+  console.log(JSON.stringify({complete:true,unconfiguredPolicies:true,outcome:review.outcome,assessments:observations.assessments,httpCalls:observations.httpCalls,executions:observations.executions}));
+  return;
+ }
  if(approvedChange==='policy'||approvedChange==='cancel'){
   changeControl.verify({judgment:current.lastJudgment,observations});
   return;
@@ -217,7 +238,14 @@ try{
    lastJudgment:judgment
  }=first??current;
  const measures=first?.measures??observations;
- assertDomainReview({env,review,judgment,session,originalBody:measures.originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl},measures});
+ assertDomainReview({env,review,judgment,session,originalBody:measures.originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl,expectedExecutions},measures});
+ if(singleCall&&relation==='permission'){
+  const programs=judgment.inspect().rootPrograms;
+  assert.equal(programs.length,1);
+  assert.equal(programs[0].groups.length,1);
+  assert.equal(programs[0].declaration.profile,'awaited-literal-single-call');
+  assert.ok(session.messages.some(message=>message.role==='toolResult'&&!message.isError&&message.content.some(part=>part.type==='text'&&part.text.includes('fixture child value'))),'The original single-call result must reach its consumer');
+ }
  if(approvedChange==='arguments')changeControl.verify({judgment,observations});
  if(nextDecision){
   if(observations.assessments!==2){
@@ -225,7 +253,7 @@ try{
    console.error(JSON.stringify({requests:observations.requests,assessments:observations.assessments,review:current.lastReview?.outcome,judgment:current.lastJudgment?.inspect(),messages:session.messages.slice(-3)}));
   }
   assert.equal(observations.assessments,2,'Each original decision gets one assessment');
-  assert.equal(observations.executions,3,'Later received instructions must prevent the next operation from executing');
+  assert.equal(observations.executions,expectedExecutions,'Later received instructions must prevent the next operation from executing');
   assert.ok(observations.nextInputQuestions>0,'The second assessment must select the later instruction');
   const sources=current.lastReview.inputs.instructionSources.map(function originalText(view){return view.source.content;});
   for(const text of [nextInput,nextResult])assert.ok(sources.some(function retainedText(content){return content.includes(text);}),text);

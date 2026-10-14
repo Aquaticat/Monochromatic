@@ -4,7 +4,8 @@ This directory maintains the native runtime,
 source collectors,
 judgment consumer,
 and Pi source transformations previously exercised in the private integration workspace.
-The package extension entry remains unchanged while native delivery is completed.
+The package extension export remains available for legacy consumers.
+The installed native host replaces its legacy extension declaration to avoid duplicate guards.
 
 `contract/source-provenance.json` records the original relative paths,
 source repository revision,
@@ -20,7 +21,14 @@ The package `build` task builds maintained exports before building this native a
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
-The candidate CLI entry is `dist/native/cli.mjs`.
+The native CLI entry is `dist/native/cli.mjs`.
+`native/command.ts` and `bin/pi` route the ordinary command to that maintained build.
+The `install:native` task retains a private settings backup,
+installs the user-local command,
+removes only the legacy auto-mode declaration,
+and verifies that all other settings remain unchanged.
+`test:native:installation` exercises this transition and repeat installation in disposable homes;
+it also rejects a foreign existing command without changing settings.
 Its TypeScript bootstrap retains the original SDK session interfaces and forwards native owners unchanged.
 The TypeScript host owner retains original session construction,
 resource membership,
@@ -66,6 +74,11 @@ Gateway-internal retries remain separate from client attempt accounting.
 prohibition,
 unspecified policy,
 and abstention through original SDK requests and maintained HTTP transport using authored replies.
+The typed `action-policy/semantic-policy.ts` forwards original configuration and scope inputs
+to the maintained consumer without replacing its validation.
+Both the wire and native scope selector import their fixed serving model from `action-policy/assessment-model.ts`.
+`test:native:unconfigured-policy` verifies unresolved native review without assessment or execution
+when every semantic consumer is absent.
 Bootstrap construction makes no provider calls.
 The native lifecycle fixtures exercise actual CLI manager selection,
 services,
@@ -78,6 +91,12 @@ and disposal retry without external provider requests.
 The separate-process RPC fixture starts `dist/native/cli.mjs`,
 checks the selected Qwen model and idle state,
 and requires shutdown without stderr output.
+Its fixture fetch blocker loads Pi's HTTP dispatcher before overriding fetch,
+so native initialization preserves the deliberate override.
+`test:native:process-network` checks initial setup,
+reconfiguration,
+fetch rejection,
+and refusal outside the fixture child.
 `test:native:manager-constructors` exercises every native constructor entry point.
 It checks persisted conversation retention,
 explicit session IDs,
@@ -201,7 +220,7 @@ resource-local capture remains limited to 64 receipts and all byte bounds remain
 The isolated consumer with all 22 configured extensions passes through three child calls and cleanup.
 Its assessment uses authored replies and makes no provider requests.
 Complete lint verification,
-installed host activation,
+provider-backed governed execution,
 and genuine human approval remain outstanding.
 Empirical semantic qualification is not established;
 the adopted operating policy does not require another paid trial.
@@ -209,3 +228,23 @@ the adopted operating policy does not require another paid trial.
 The dedicated `auto-mode-native` dependency catalog preserves the parser releases used by those fixtures.
 It leaves the repository's other parser consumers on their existing catalog.
 Named catalog syntax follows the [pnpm catalog documentation](https://pnpm.io/catalogs).
+
+## Inspected single-call programs
+
+The user adopted literal single-call support on 2026-10-14.
+The decoder accepts `return await tools.name({...})`
+and `const result = await tools.name({...}); return result;`.
+The existing awaited producer followed by `Promise.all` or `Promise.allSettled` remains supported.
+The fixed semantic scope `native-inspected-programs-v2` includes exactly the single-call and producer/successor profiles.
+Its supported-meaning cutoff remains `0.99` with a unique leading score.
+
+`test:native:single-call` verifies complete original source,
+escaped identifiers and literal data,
+rejection of copied declarations and unsupported execution,
+both native single-call results,
+and prohibition with no child execution.
+The original reached-group owner enforces argument,
+result,
+dependency,
+and cancellation checks for the sole call.
+Native loadout descriptions show the supported forms and retain the underlying tool declarations.

@@ -360,6 +360,8 @@
     {
       "original": "integration/action-policy/semantic-policy.mjs",
       "maintained": "integration/action-policy/semantic-policy.mjs",
+      "current": "integration/action-policy/semantic-policy.ts",
+      "movedOn": "2026-10-14",
       "sha256": "d327da02deef47a55ca334eb5e65077ab6f0c1ea04c939774e5024d1f2efc264",
       "origin": "authored-source",
       "relocatedLiterals": 0

@@ -36,6 +36,19 @@ function inputs(): SemanticAdmissionInputs {
 await describe({
   name: inspectSemanticAdmissionScope.name,
   children: [
+    ...['awaited-literal-single-call', 'awaited-string-result-then-literal-parallel', 'native-inspected-programs-v2', 'arbitrary-javascript',].map(function nativeProfile(profile,) {
+      return it({
+        name: `checks adopted native profile membership for ${profile}`,
+        fn: async function checkNativeProfile() {
+          const scope = inspectSemanticAdmissionScope({
+            policy: { ...policy(), programProfile: 'native-inspected-programs-v2', },
+            inputs: { ...inputs(), effects: [{ programInspection: { declaration: { profile, }, }, },], },
+            expectedModel: 'fixture-model',
+          },);
+          expect(scope.state,).toBe(profile.startsWith('awaited-') ? 'matching' : 'out-of-profile',);
+        },
+      },);
+    },),
     it({
       name: 'matching requires every original operation profile and returns no authority or permission',
       fn: async function checkMatching() {

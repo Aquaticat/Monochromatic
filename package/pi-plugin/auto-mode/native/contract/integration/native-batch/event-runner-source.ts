@@ -323,7 +323,10 @@ export class ExtensionRunner {
     from:'        this.sessionManager = sessionManager;',
     to:'        this.sessionManager = sessionManager;\n        this.#nativeEventObserver = createNativeEventObserver(sessionManager);'
   });
-  return `import {createNativeEventObserver} from "./session-manager.mjs";\n${value}`;
+  return `import {createNativeEventObserver} from "./session-manager.mjs";\n${value}\n`
+    + 'export const nativeCreateContext=ExtensionRunner.prototype.createContext;\n'
+    + 'export const nativeAssertActive=ExtensionRunner.prototype.assertActive;\n'
+    + 'export const nativeEmitError=ExtensionRunner.prototype.emitError;\n';
 }
 
 //endregion Qualified original methods preserve native branching, ordering, and caught values

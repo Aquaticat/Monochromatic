@@ -1,5 +1,7 @@
 import {createHash} from 'node:crypto';
 import {isAbsolute} from 'node:path';
+import {inspect as inspectValue} from 'node:util';
+import {tagged} from '@monochromatic-dev/module-logger/ts';
 import {createRequestProducerOwner} from '../../collector/request-producer-judgment-consumers/owner.mjs';
 import {createRequestObservationOwner} from '../../lifecycle/root-lifecycle-retirement-entry/observer.mjs';
 import {createJudgmentConstructor} from "./generated/judgment.mjs";
@@ -151,8 +153,14 @@ export function bindNativePolicyRuntime({
  });
  async function executeToolBatch(input){
   trace('policy-runtime.batch');
-  const result=await handler(input);
-  lastReview=result.review;trace('policy-runtime.reviewed');return result;
+  const batchLog=tagged({tag:executeToolBatch.name,l:tagged({tag:'auto-mode-native-runtime'})});
+  try{
+   const result=await handler(input);
+   lastReview=result.review;trace('policy-runtime.reviewed');return result;
+  }catch(error){
+   batchLog.error(inspectValue(error,{depth:8,customInspect:false,getters:false}));
+   throw error;
+  }
  }
  const installation=installNativePolicyHooks({
    agent,

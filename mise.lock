@@ -2,6 +2,102 @@
 
 lockfile_version = 3
 
+[conda-packages.linux-arm64."_openmp_mutex-4.5-20_gnu"]
+url = "https://conda.anaconda.org/conda-forge/linux-aarch64/_openmp_mutex-4.5-20_gnu.conda"
+checksum = "sha256:a2527b1d81792a0ccd2c05850960df119c2b6d8f5fdec97f2db7d25dc23b1068"
+
+[conda-packages.linux-arm64."libcap-2.78-hfcc8634_1"]
+url = "https://conda.anaconda.org/conda-forge/linux-aarch64/libcap-2.78-hfcc8634_1.conda"
+checksum = "sha256:6487e7644d062e18d389c11a9a3183e5a71c2652d05fdd88dbd063ad09f7ad4b"
+
+[conda-packages.linux-arm64."libgcc-16.2.0-h205dda4_7"]
+url = "https://conda.anaconda.org/conda-forge/linux-aarch64/libgcc-16.2.0-h205dda4_7.conda"
+checksum = "sha256:eae7a3449d5a3b5351c5427137c076cc3fc826645c7bfc42dc10772b783826f1"
+
+[conda-packages.linux-arm64."libgomp-16.2.0-h8acb6b2_7"]
+url = "https://conda.anaconda.org/conda-forge/linux-aarch64/libgomp-16.2.0-h8acb6b2_7.conda"
+checksum = "sha256:4406fd67c5beeb99b9372f9bf07aa3e40ca141e337eceebac3ff64aa72799494"
+
+[conda-packages.linux-arm64-musl."_openmp_mutex-4.5-20_gnu"]
+url = "https://conda.anaconda.org/conda-forge/linux-aarch64/_openmp_mutex-4.5-20_gnu.conda"
+checksum = "sha256:a2527b1d81792a0ccd2c05850960df119c2b6d8f5fdec97f2db7d25dc23b1068"
+
+[conda-packages.linux-arm64-musl."libcap-2.78-hfcc8634_1"]
+url = "https://conda.anaconda.org/conda-forge/linux-aarch64/libcap-2.78-hfcc8634_1.conda"
+checksum = "sha256:6487e7644d062e18d389c11a9a3183e5a71c2652d05fdd88dbd063ad09f7ad4b"
+
+[conda-packages.linux-arm64-musl."libgcc-16.2.0-h205dda4_7"]
+url = "https://conda.anaconda.org/conda-forge/linux-aarch64/libgcc-16.2.0-h205dda4_7.conda"
+checksum = "sha256:eae7a3449d5a3b5351c5427137c076cc3fc826645c7bfc42dc10772b783826f1"
+
+[conda-packages.linux-arm64-musl."libgomp-16.2.0-h8acb6b2_7"]
+url = "https://conda.anaconda.org/conda-forge/linux-aarch64/libgomp-16.2.0-h8acb6b2_7.conda"
+checksum = "sha256:4406fd67c5beeb99b9372f9bf07aa3e40ca141e337eceebac3ff64aa72799494"
+
+[conda-packages.linux-x64."_openmp_mutex-4.5-20_gnu"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda"
+checksum = "sha256:1dd3fffd892081df9726d7eb7e0dea6198962ba775bd88842135a4ddb4deb3c9"
+
+[conda-packages.linux-x64."libcap-2.78-h084b8d7_1"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/libcap-2.78-h084b8d7_1.conda"
+checksum = "sha256:8cb25174d6b6fac95d31e86cfe41faffc8ee9dacbf2bfd22e6c23377e8f338c1"
+
+[conda-packages.linux-x64."libgcc-16.2.0-ha9f2e26_7"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/libgcc-16.2.0-ha9f2e26_7.conda"
+checksum = "sha256:e031634c3a928f9594eba868bc46ef5230d6571a364a0c63215b06c4563bfcea"
+
+[conda-packages.linux-x64."libgomp-16.2.0-he0feb66_7"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/libgomp-16.2.0-he0feb66_7.conda"
+checksum = "sha256:92a0bb350c7be6a4eedcb4e111c60aefd176018e6b1c009a6e025dbe9bbcd758"
+
+[conda-packages.linux-x64-baseline."_openmp_mutex-4.5-20_gnu"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda"
+checksum = "sha256:1dd3fffd892081df9726d7eb7e0dea6198962ba775bd88842135a4ddb4deb3c9"
+
+[conda-packages.linux-x64-baseline."libcap-2.78-h084b8d7_1"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/libcap-2.78-h084b8d7_1.conda"
+checksum = "sha256:8cb25174d6b6fac95d31e86cfe41faffc8ee9dacbf2bfd22e6c23377e8f338c1"
+
+[conda-packages.linux-x64-baseline."libgcc-16.2.0-ha9f2e26_7"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/libgcc-16.2.0-ha9f2e26_7.conda"
+checksum = "sha256:e031634c3a928f9594eba868bc46ef5230d6571a364a0c63215b06c4563bfcea"
+
+[conda-packages.linux-x64-baseline."libgomp-16.2.0-he0feb66_7"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/libgomp-16.2.0-he0feb66_7.conda"
+checksum = "sha256:92a0bb350c7be6a4eedcb4e111c60aefd176018e6b1c009a6e025dbe9bbcd758"
+
+[conda-packages.linux-x64-musl."_openmp_mutex-4.5-20_gnu"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda"
+checksum = "sha256:1dd3fffd892081df9726d7eb7e0dea6198962ba775bd88842135a4ddb4deb3c9"
+
+[conda-packages.linux-x64-musl."libcap-2.78-h084b8d7_1"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/libcap-2.78-h084b8d7_1.conda"
+checksum = "sha256:8cb25174d6b6fac95d31e86cfe41faffc8ee9dacbf2bfd22e6c23377e8f338c1"
+
+[conda-packages.linux-x64-musl."libgcc-16.2.0-ha9f2e26_7"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/libgcc-16.2.0-ha9f2e26_7.conda"
+checksum = "sha256:e031634c3a928f9594eba868bc46ef5230d6571a364a0c63215b06c4563bfcea"
+
+[conda-packages.linux-x64-musl."libgomp-16.2.0-he0feb66_7"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/libgomp-16.2.0-he0feb66_7.conda"
+checksum = "sha256:92a0bb350c7be6a4eedcb4e111c60aefd176018e6b1c009a6e025dbe9bbcd758"
+
+[conda-packages.linux-x64-musl-baseline."_openmp_mutex-4.5-20_gnu"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda"
+checksum = "sha256:1dd3fffd892081df9726d7eb7e0dea6198962ba775bd88842135a4ddb4deb3c9"
+
+[conda-packages.linux-x64-musl-baseline."libcap-2.78-h084b8d7_1"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/libcap-2.78-h084b8d7_1.conda"
+checksum = "sha256:8cb25174d6b6fac95d31e86cfe41faffc8ee9dacbf2bfd22e6c23377e8f338c1"
+
+[conda-packages.linux-x64-musl-baseline."libgcc-16.2.0-ha9f2e26_7"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/libgcc-16.2.0-ha9f2e26_7.conda"
+checksum = "sha256:e031634c3a928f9594eba868bc46ef5230d6571a364a0c63215b06c4563bfcea"
+
+[conda-packages.linux-x64-musl-baseline."libgomp-16.2.0-he0feb66_7"]
+url = "https://conda.anaconda.org/conda-forge/linux-64/libgomp-16.2.0-he0feb66_7.conda"
+checksum = "sha256:92a0bb350c7be6a4eedcb4e111c60aefd176018e6b1c009a6e025dbe9bbcd758"
+
 [[tools.age]]
 version = "1.3.2"
 backend = "aqua:FiloSottile/age"
@@ -464,6 +560,74 @@ url = "https://cmake.org/files/v4.4/cmake-4.4.4-windows-x86_64.zip"
 
 [tools.cmake."platforms.windows-x64-baseline"]
 url = "https://cmake.org/files/v4.4/cmake-4.4.4-windows-x86_64.zip"
+
+[[tools."conda:bubblewrap"]]
+version = "0.13.1"
+backend = "conda:bubblewrap"
+specifiers = ["latest"]
+
+[tools."conda:bubblewrap".options]
+channel = "conda-forge"
+
+[tools."conda:bubblewrap"."platforms.linux-arm64"]
+checksum = "sha256:4290eb42ec2a0353d6e66096565e3c35d181d1f7f1e98ad729308cbf18a643f8"
+url = "https://conda.anaconda.org/conda-forge/linux-aarch64/bubblewrap-0.13.1-hfe774f5_0.conda"
+conda_deps = [
+    "libgcc-16.2.0-h205dda4_7",
+    "libcap-2.78-hfcc8634_1",
+    "_openmp_mutex-4.5-20_gnu",
+    "libgomp-16.2.0-h8acb6b2_7",
+]
+
+[tools."conda:bubblewrap"."platforms.linux-arm64-musl"]
+checksum = "sha256:4290eb42ec2a0353d6e66096565e3c35d181d1f7f1e98ad729308cbf18a643f8"
+url = "https://conda.anaconda.org/conda-forge/linux-aarch64/bubblewrap-0.13.1-hfe774f5_0.conda"
+conda_deps = [
+    "libgcc-16.2.0-h205dda4_7",
+    "libcap-2.78-hfcc8634_1",
+    "_openmp_mutex-4.5-20_gnu",
+    "libgomp-16.2.0-h8acb6b2_7",
+]
+
+[tools."conda:bubblewrap"."platforms.linux-x64"]
+checksum = "sha256:32ceb8953a90ef961d6111a097ef23b5c9fda051c2e03e2735f40ced2fde7357"
+url = "https://conda.anaconda.org/conda-forge/linux-64/bubblewrap-0.13.1-haf0a511_0.conda"
+conda_deps = [
+    "libgcc-16.2.0-ha9f2e26_7",
+    "libcap-2.78-h084b8d7_1",
+    "_openmp_mutex-4.5-20_gnu",
+    "libgomp-16.2.0-he0feb66_7",
+]
+
+[tools."conda:bubblewrap"."platforms.linux-x64-baseline"]
+checksum = "sha256:32ceb8953a90ef961d6111a097ef23b5c9fda051c2e03e2735f40ced2fde7357"
+url = "https://conda.anaconda.org/conda-forge/linux-64/bubblewrap-0.13.1-haf0a511_0.conda"
+conda_deps = [
+    "libgcc-16.2.0-ha9f2e26_7",
+    "libcap-2.78-h084b8d7_1",
+    "_openmp_mutex-4.5-20_gnu",
+    "libgomp-16.2.0-he0feb66_7",
+]
+
+[tools."conda:bubblewrap"."platforms.linux-x64-musl"]
+checksum = "sha256:32ceb8953a90ef961d6111a097ef23b5c9fda051c2e03e2735f40ced2fde7357"
+url = "https://conda.anaconda.org/conda-forge/linux-64/bubblewrap-0.13.1-haf0a511_0.conda"
+conda_deps = [
+    "libgcc-16.2.0-ha9f2e26_7",
+    "libcap-2.78-h084b8d7_1",
+    "_openmp_mutex-4.5-20_gnu",
+    "libgomp-16.2.0-he0feb66_7",
+]
+
+[tools."conda:bubblewrap"."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:32ceb8953a90ef961d6111a097ef23b5c9fda051c2e03e2735f40ced2fde7357"
+url = "https://conda.anaconda.org/conda-forge/linux-64/bubblewrap-0.13.1-haf0a511_0.conda"
+conda_deps = [
+    "libgcc-16.2.0-ha9f2e26_7",
+    "libcap-2.78-h084b8d7_1",
+    "_openmp_mutex-4.5-20_gnu",
+    "libgomp-16.2.0-he0feb66_7",
+]
 
 [[tools.dprint]]
 version = "0.61.1"
