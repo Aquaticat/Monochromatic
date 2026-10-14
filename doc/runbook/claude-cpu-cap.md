@@ -17,8 +17,11 @@ Claude tool commands: the `claude-code-bash` cgroup under
 Claude Code creates it anew in each boot (it exists because `CLAUDE_CODE_TOOL_MEMORY_LIMIT` is set)
 and has no CPU limit setting, so a user service re-applies `cpu.max` to it.
 
-The service is `claude-cpu-watch.service` (`~/.config/systemd/user/`, enabled, linger on),
-running `~/.local/share/claude-cpu-cap/cpu-watch.ts`.
+The service is `claude-cpu-watch.service` (enabled, linger on); its unit file in `~/.config/systemd/user/`
+is a symlink to
+`package/dev-script/claude-cpu-cap/systemd/claude-cpu-watch.service`,
+which runs `package/dev-script/claude-cpu-cap/src/cpu-watch.ts`.
+The package README has the install commands.
 It reads the thread count from `~/.config/claude-cpu-cap/threads` every 2 seconds
 and writes `<threads * 100000> 100000` into the cgroup's `cpu.max` when the value differs.
 
@@ -36,7 +39,9 @@ Tone down 2 threads at a time while the user explores the CPU, as they asked.
 
 ## What the watch reports
 
-The service prints a line only for an event, never for routine samples.
+The service logs a line only for an event, never for routine samples.
+Every line goes through the tagged logger, so it starts with `[level] [timestamp] [tag]` before the event name;
+alerts are `warn`, recoveries and starts are `info`.
 Read them with `journalctl --user --unit=claude-cpu-watch --follow --lines=0 --output=cat`.
 
 - `ALERT <metric>=<value>`: the metric stayed at or above its limit for 3 samples (6 seconds).
@@ -67,7 +72,9 @@ The fan values come from the local CoolerControl API with an access token kept i
 `~/.config/claude-cpu-cap/cc-token` (owner-only permissions).
 The remaining columns judge how well the CPU hands heat to the cooler:
 package watts split between the first chiplet (cores 0 to 7) and the second (cores 8 to 15),
-the six motherboard readings of the `gigabyte_wmi` driver, the ACPI zone, the NVMe temperature, and a `burst` flag.
+the six motherboard readings of the `gigabyte_wmi` driver, the ACPI zone, the NVMe temperature, a `burst` flag,
+and, from 20:55 EDT on 2026-10-13, the discrete graphics card and the integrated graphics (temperature and watts each;
+older rows of that day lack these four columns).
 No source names what the six motherboard readings measure on the B650 GAMING X AX (the driver reads six numbered
 firmware channels), so they are logged raw;
 the third one (`board3_c`) follows the CPU temperature, the fifth moves by about 3 degrees with load,
@@ -82,7 +89,8 @@ leaves the fan columns empty, and prints `FAN-READ-RECOVERED` once a working tok
 Alert lines carry package watts and the average clock, but not fan speed:
 the only hwmon fan sensor is the GPU's, and the case fans sit behind the Corsair controller.
 
-Read the settled temperature per power bucket with `node ~/.local/share/claude-cpu-cap/summarize-samples.ts <days>`.
+Read the settled temperature per power bucket with
+`node package/dev-script/claude-cpu-cap/src/summarize-samples.ts <days>`.
 A sample counts as settled when the previous 2 minutes stayed in the same 20 watt bucket,
 so alert-time spikes do not hide the steady state.
 No stress test is run for this; it only records what the machine does under real work (user decision, 2026-10-13).

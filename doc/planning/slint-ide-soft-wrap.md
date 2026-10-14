@@ -117,7 +117,8 @@ Option A, shaping every line at the wrap width, is affordable on a worker thread
   and is wider than a row, which is the intended fallback; the test excuses exactly those.
 
 The decision follows from the numbers and from the smoothness requirement:
-shaping and re-breaking run on the worker in chunks, starting at the viewport and spreading outward;
+shaping and re-breaking run on the worker in chunks, starting at the viewport and spreading outward
+(slice 5 below adds a bounded step on the window thread for the lines near the view after a new width);
 lines not yet shaped count as one row (or their last known height) in the vertical map, and each finished chunk
 corrects the map with the existing keep-view-still machinery, so the first full pass of a very large file never
 blocks a frame and the scroll extent settles as the pass completes.
@@ -221,6 +222,21 @@ Status as of 2026-10-12 (the branch `feat/ide-soft-wrap`):
    and scrolling inside a built tile of a wrapped file is counted to do no source work.
    The README (`package/desktop-app/ide/README.md`, "Soft wrap") holds the numbers and the list of known differences
    from IntelliJ.
+8. Slice 5 (2026-10-13), a new width on the window thread: **built.**
+   A new wrap width no longer waits for the worker's tile.
+   The window thread breaks the kept layouts of the lines near the view again (shaping the lines not yet shaped),
+   updates their heights in the row map with the view kept still, and paints the stage 1 tile for the new width in
+   the draw that follows the resize, within an allowance of 384 lines, 24,000 units of work, and a 32 MiB raster
+   (`src/native/rewrap.rs`).
+   A change over the allowance goes to the worker as before, and the whole-file re-break stays on the worker.
+   The earlier guard `resize-stays-on-worker` and its tests are replaced by the opposite structural assertion,
+   with guards for each bound.
+   The measurement of the drag in the nested compositor is in the README ("A new width on the window thread"):
+   the step took a few milliseconds, and the count of frames that do not fit did not change in the 16 ms drag,
+   because the compositor shows the previous step's content at each new size, while a 100 ms drag showed far
+   fewer such frames than the worker-only tile.
+   Open question: whether the remaining one-step lag is in the compositor's configure and commit exchange or in
+   the toolkit's redraw, which was not determined.
 
 ## Not decided here
 

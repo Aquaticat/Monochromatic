@@ -43,7 +43,7 @@ const cases = [
   { name: 'clip-origin', file: 'src/shaped_text.rs', before: 'Some(clip) => (first_top + clip.top, clip.bottom - clip.top),', after: 'Some(clip) => (first_top, clip.bottom - clip.top),', integration: 'wrap_rows', test: 'a_clipped_tile_holds_the_pixels_of_its_band', failure: equality },
   { name: 'clip-rebase', file: 'src/shaped_text/view.rs', before: 'let skip = self.viewport.clip.map_or(0.0, |clip| return clip.top);', after: 'let skip = 0.0;', integration: 'wrap_rows', test: 'a_clipped_tile_holds_the_pixels_of_its_band', failure: equality },
   { name: 'clip-rounding', file: 'src/native/viewport.rs', before: '    cut = cut.min(top + allowed);\n', after: '', native: true, test: 'a_clip_stays_within_the_raster_limit_for_every_window_size', failure: 'passes the limit' },
-  { name: 'wrapped-tile-holds', file: 'src/native/viewport.rs', before: 'if shown.width == width && holds(current, shown, view, height) {', after: 'if false && holds(current, shown, view, height) {', native: true, test: 'scrolling_inside_a_built_tile_of_a_wrapped_file_does_no_source_work', failure: 'entered render' },
+  { name: 'wrapped-tile-holds', file: 'src/native/viewport.rs', before: 'if shown.width == width && holds(current, shown, view, height) {', after: 'if false && holds(current, shown, view, height) {', native: true, test: 'scrolling_inside_a_built_tile_of_a_wrapped_file_does_no_source_work', failure: 'the source tile worker did not finish the re-center' },
   // Tab correction: the passes a line gets fall with its length, so the characters shaped stay near a budget.
   { name: 'tab-budget', file: 'src/tab_layout.rs', before: 'for _ in 0..passes_for(projection.text.len()) {', after: 'for _ in 0..TAB_PASSES {', lib: true, test: 'tab_layout::tests::a_long_tabbed_line_shapes_no_more_passes_than_its_length_allows', failure: 'more than the' },
   { name: 'tab-budget-formula', file: 'src/tab_layout.rs', before: 'return (TAB_BUDGET / length.max(1)).clamp(TAB_MIN_PASSES, TAB_PASSES);', after: 'return TAB_PASSES;', lib: true, test: 'tab_layout::tests::passes_fall_with_the_length_of_the_line', failure: equality },
@@ -89,10 +89,10 @@ const cases = [
   // Soft wrap: the gutter, the measured rows, and the worker that measures them.
   { name: 'gutter-number-on-first-row-only', file: 'src/native/rows.rs', before: 'numbers.push(if visual == 0 {', after: 'numbers.push(if true {', native: true, test: 'the_gutter_numbers_first_rows_and_marks_continuation_rows', failure: 'continuation rows exist' },
   { name: 'pass-take-limit', file: 'src/native/tile.rs', before: 'worker.take_pass(TAKE_LIMIT)', after: 'worker.take_pass(usize::MAX)', native: true, test: 'opening_fifty_thousand_lines_never_blocks_the_window_thread', failure: 'past the bound of' },
-  { name: 'view-kept-still-across-wrapped-rows', file: 'src/native/rows.rs', before: 'return (next.code_top(line) + within).max(0.0);', after: 'return offset;', native: true, test: 'rows_above_the_view_changing_height_move_no_visible_pixel', failure: 'the tile for the new view did not arrive' },
+  { name: 'view-kept-still-across-wrapped-rows', file: 'src/native/rows.rs', before: 'return (next.code_top(line) + within).max(0.0);', after: 'return offset;', native: true, test: 'rows_above_the_view_changing_height_move_no_visible_pixel', failure: 'the line at the top of the view moved on screen' },
   { name: 'rebreak-in-place', file: 'src/shaped_text/pass.rs', before: '&& self.rebreak(&mut stale, request.scale, width)', after: '&& false', integration: 'wrap_rows', test: 'a_new_width_breaks_kept_rows_again_without_shaping', failure: 'no line may be shaped again' },
-  { name: 'pass-again-after-new-width', file: 'src/native/tile.rs', before: '    if current.shown.width != bounds.width {\n        current.pass_posted = None;\n    }', after: '    if false {\n        current.pass_posted = None;\n    }', native: true, test: 'a_drag_resize_leaves_no_stale_heights', failure: 'keep a stale height' },
-  { name: 'tile-heights-merged', file: 'src/native/tile.rs', before: 'rows::absorb(&mut current, built.measured.iter().copied())', after: 'false', native: true, test: 'a_recenter_while_the_pass_runs_is_built_on_the_worker', failure: 'did not finish the re-center within 10s' },
+  { name: 'pass-again-after-new-width', file: 'src/native/tile.rs', before: '    if current.shown.width != bounds.width {\n        current.pass_posted = None;\n    }', after: '    if false {\n        current.pass_posted = None;\n    }', native: true, test: 'a_measurement_applied_before_the_tile_of_a_new_width_leaves_no_stale_heights', failure: 'keep a stale height' },
+  { name: 'tile-heights-merged', file: 'src/native/tile.rs', before: 'rows::absorb(&mut current, built.measured.iter().copied())', after: 'false', native: true, test: 'a_recenter_while_the_pass_runs_is_built_on_the_worker', failure: 'the worker\'s tile was discarded' },
   { name: 'mouse-drag-selects', file: 'ui/app.slint', before: '                    mouse-drag-pan-enabled: false;\n', after: '', native: true, test: 'drag_selects_text_by_characters_and_by_words_without_panning', failure: equality },
   { name: 'left-button-only', file: 'ui/app.slint', before: '                            if !self.pressed { return; }\n', after: '', native: true, test: 'drag_selects_text_by_characters_and_by_words_without_panning', failure: 'a drag with the middle button changed the selection' },
   { name: 'observer-scope-not-a-stop', file: 'ui/app.slint', before: '        focus-on-tab-navigation: false;\n', after: '', native: true, test: 'tab_cycles_tree_divider_and_source_while_find_is_closed', failure: 'Tab must cycle tree, divider, and source only' },
@@ -101,7 +101,15 @@ const cases = [
   // Overscan tile: a view still inside the tile must not reach render, so it spends no tile, row, or image.
   { name: 'overscan-early-return', file: 'src/native/viewport.rs', before: '        if !changed {\n            return;\n        }', after: '        if false {\n            return;\n        }', native: true, test: 'scrolling_inside_the_overscan_tile_does_no_source_work', failure: 'scrolling inside the overscan tile must not enter render' },
   // Scroll re-center: a reader's re-center that the worker should build must not reach the window thread's shaping and painting.
-  { name: 'recenter-on-window-thread', file: 'src/native/viewport.rs', before: '    if changed && current.shown.width > 0.0 {\n        current.scroll_wanted', after: '    if false {\n        current.scroll_wanted', native: true, test: 'leaving_the_overscan_tile_re_centers_on_the_worker_thread', failure: 'the window thread paints no tile for a scroll re-center' },
+  { name: 'recenter-on-window-thread', file: 'src/native/viewport.rs', before: '        if current.shown.width == current.width {\n            current.scroll_wanted', after: '        if false {\n            current.scroll_wanted', native: true, test: 'leaving_the_overscan_tile_re_centers_on_the_worker_thread', failure: 'the window thread paints no tile for a scroll re-center' },
+  // A new wrap width: the window thread paints the tile for it within a counted allowance; what does not fit goes to the worker.
+  { name: 'resize-on-window-thread', file: 'src/native/viewport.rs', before: '            current.rewrap = true;', after: '            current.scroll_wanted = Some(tile::requested(current));', native: true, test: 'the_first_frame_after_a_new_width_is_wrapped_to_it', failure: 'the displayed tile is not for the new width' },
+  { name: 'drawn-frame-after-resize', file: 'src/native/viewport.rs', before: '            current.rewrap = true;', after: '            current.scroll_wanted = Some(tile::requested(current));', native: true, test: 'a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width', failure: 'rows of the drawn frame run to its right edge' },
+  { name: 'rewrap-view-past-cap', file: 'src/native/rewrap.rs', before: 'if requested.count > REWRAP_LINES {', after: 'if false {', also: [{ file: 'src/native/rewrap.rs', before: '                lines: REWRAP_LINES,', after: '                lines: usize::MAX,' }, { file: 'src/native/rewrap.rs', before: 'return columns * rows * 4 <= REWRAP_RASTER_BYTES;', after: 'return true;' }], native: true, test: 'a_view_taller_than_the_clip_cap_is_left_to_the_worker', failure: 'was not left to the worker' },
+  { name: 'rewrap-lines-bound', file: 'src/native/rewrap.rs', before: 'if requested.count > REWRAP_LINES {', after: 'if false {', also: [{ file: 'src/native/rewrap.rs', before: '                lines: REWRAP_LINES,', after: '                lines: usize::MAX,' }], native: true, test: 'a_view_with_more_lines_than_the_allowance_is_left_to_the_worker', failure: 'was not left to the worker' },
+  { name: 'rewrap-work-budget', file: 'src/shaped_text/pass.rs', before: '&& !limit.spend(line_work(document, row))', after: '&& !limit.spend(0)', native: true, test: 'lines_over_the_work_allowance_are_left_to_the_worker', failure: 'was not left to the worker' },
+  { name: 'rewrap-tab-passes', file: 'src/shaped_text/pass.rs', before: '1 + passes_for(length)', after: '1', native: true, test: 'tabbed_lines_are_charged_for_their_corrective_passes_and_left_to_the_worker', failure: 'was not left to the worker' },
+  { name: 'rewrap-raster-bound', file: 'src/native/rewrap.rs', before: 'return columns * rows * 4 <= REWRAP_RASTER_BYTES;', after: 'return true;', native: true, test: 'a_tile_with_a_huge_raster_is_left_to_the_worker', failure: 'was not left to the worker' },
   // Soft wrap keys: Home and End by visual row, Up and Down and paging by visual row, and the side of a wrap offset.
   { name: 'home-row-start', file: 'src/line_boundary.rs', before: 'return downstream(rows[row].start);', after: 'return downstream(line_start);', integration: 'wrap_keys', test: 'home_goes_to_the_row_start_then_the_first_non_blank', failure: 'inside the last row' },
   { name: 'home-continuation-start', file: 'src/line_boundary.rs', before: 'if head > rows[row].start {', after: 'if true {', integration: 'wrap_keys', test: 'home_goes_to_the_row_start_then_the_first_non_blank', failure: 'at a continuation row start: the first non-blank' },
@@ -165,14 +173,17 @@ for (const item of selected) {
     run(item, 'baseline');
     baselined.add(item.test);
   }
-  const path = join(source, item.file);
-  const original = readFileSync(path, 'utf8');
+  // A guard whose rule is enforced at two places names the second place in `also`, and both are removed together.
+  const edits = [item, ...(item.also ?? [])].map(edit => ({ path: join(source, edit.file), original: readFileSync(join(source, edit.file), 'utf8'), edit }));
   try {
-    const changed = replaceOne(original, item.before, item.after, item.occurrence);
-    if (changed === original) throw new Error('Mutation did not change ' + item.file);
-    writeFileSync(path, changed);
+    for (const { path, edit } of edits) {
+      const current = readFileSync(path, 'utf8');
+      const changed = replaceOne(current, edit.before, edit.after, edit.occurrence);
+      if (changed === current) throw new Error('Mutation did not change ' + edit.file);
+      writeFileSync(path, changed);
+    }
     run(item, 'removed');
-  } finally { writeFileSync(path, original); }
+  } finally { for (const { path, original } of edits) writeFileSync(path, original); }
   run(item, 'restored');
 }
 console.log('Source guard controls passed: ' + artifact + ' (' + selected.length + ' of ' + cases.length + ' guards)');

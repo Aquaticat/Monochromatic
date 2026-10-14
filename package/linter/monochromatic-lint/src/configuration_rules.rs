@@ -30,6 +30,7 @@ pub const RULE_IDS: &[&str] = &[
     "rust/require-rustdoc",
     "rust/no-anonymous-functions",
     "rust/require-explicit-types",
+    "rust/tests-in-sidecars",
     "markdown/heading-increment",
     "markdown/commands-show-output",
     "markdown/no-duplicate-heading",

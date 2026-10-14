@@ -6067,6 +6067,85 @@ and shared-value accounting.
 This recognizes a callback field;
 it does not account for material returned by invoking callbacks or close the host domain.
 
+### Isolated codemode worker dependency root
+
+After the owned domain consumer first returned approval,
+Pi's codemode result reported `Script sandbox failed` with `ENOENT` for
+`fixture-private-.../home/Monochromatic`.
+The native result also reported `No tool calls were made.`
+The fixture deliberately changes `HOME` to a disposable directory.
+The inherited test loader then derived its dependency root from that changed home in the worker.
+
+Pi `packages/codemode/src/runtime/host.ts:34` creates the worker:
+
+```typescript
+// packages/codemode/src/runtime/host.ts:34, Pi v1.2.0
+worker = new Worker(workerUrl, { workerData });
+```
+
+The owned `contract/integration/current-sdk/paths.mjs` had recomputed the dependency root:
+
+```javascript
+// Historical private contract/integration/current-sdk/paths.mjs
+const repoRoot = join(homedir(), 'Monochromatic');
+```
+
+Private `f3d40d82` records the original measured dependency root in the staging manifest
+and reads it when the loader runs in a worker.
+It preserves the disposable home and native worker execution.
+After rebuilding through `mise run stage`,
+`mise run test:domain-resolution` passed permission with three native child calls,
+prohibition with zero calls,
+and unspecified policy with zero calls.
+The failing case had reached approval but never entered a child call;
+the corrected case exercised the actual native sandbox.
+This is an owned fixture-loader correction,
+not an upstream sandbox defect.
+
+### Help loads the trust store before printing
+
+Pi 1.2.0 `pi --help` failed in the read-only agent sandbox with
+`EROFS: read-only file system` for `$HOME/.pi/agent/trust.json.lock`.
+The same command outside that filesystem restriction printed help and exited zero.
+The native session RPC probe also succeeded outside that restriction.
+
+`packages/coding-agent/src/main.ts:719` constructs `ProjectTrustStore`.
+At line 749,
+runtime setup can read project trust before the help branch at line 877:
+
+```typescript
+// packages/coding-agent/src/main.ts:749, Pi v1.2.0
+(!hasTrustRequiringResources || trustStore.get(cwd) === true)
+```
+
+`packages/coding-agent/src/core/trust-manager.ts:221` reads entries under the trust lock:
+
+```typescript
+// packages/coding-agent/src/core/trust-manager.ts:221, Pi v1.2.0
+getEntry(cwd: string): ProjectTrustStoreEntry | null {
+  return withTrustFileLock(this.trustPath, () => {
+    const data = readTrustFile(this.trustPath);
+    return findNearestTrustEntry(data, cwd);
+  });
+}
+```
+
+The lock implementation at line 147 uses a lock directory beside the trust file:
+
+```typescript
+// packages/coding-agent/src/core/trust-manager.ts:147, Pi v1.2.0
+return lockfile.lockSync(trustDir, { realpath: false, lockfilePath: `${path}.lock` });
+```
+
+The verification command is `pi --help` from this repository.
+The failing case is the existing user trust directory mounted read-only;
+the working case is the same command with its normal writable trust directory.
+The verified workaround changes the command's filesystem access,
+not its trust decision or project configuration.
+Its tradeoff is that Pi performs normal startup work before returning help.
+The help flag alone does not bypass that startup path.
+No upstream fault or universal sandbox failure follows from this local mount restriction.
+
 ### Upstream filing decision
 
 Nothing is filed or drafted upstream.

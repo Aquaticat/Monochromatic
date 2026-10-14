@@ -72,6 +72,21 @@ export {
 //region Deterministic migration kernel remains separate from native evidence admission
 
 export { type AuthorizationRequirement, } from './authorization-requirement.ts';
+export { AuthorizationEvidenceError, } from './authorization-evidence-data.ts';
+export { MISSING_AUTHORIZATION_EVIDENCE, } from './authorization-evidence-types.ts';
+export {
+  captureAuthorizationInputs,
+  captureAuthorizationOwnerFactory,
+} from './authorization-evidence.ts';
+export type {
+  AuthorizationEvidenceInputs,
+  AuthorizationEvidenceRecord,
+  AuthorizationFacts,
+  AuthorizationInputSources,
+  AuthorizationOwnerContext,
+  AuthorizationOwnerFactory,
+  AuthorizationSourceView,
+} from './authorization-evidence-types.ts';
 export {
   CLAUSE_RELATIONS,
   type ClauseRelation,

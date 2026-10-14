@@ -428,6 +428,26 @@ source,
 judgment,
 and human-approval owners remain required before any result can authorize execution.
 
+## Migration original prerequisite evidence
+
+`captureAuthorizationInputs` collects independent satisfaction and channel facts
+through a factory fixed by trusted bootstrap.
+Each original record must belong to the same judgment,
+clause,
+request-bound source,
+and request.
+Owner methods and primitive facts remain subject to freshness checks;
+the first eligibility failure permanently retires the collection.
+Borrowed owners and records remain mutable.
+
+`MISSING_AUTHORIZATION_EVIDENCE` identifies a clause without captured facts.
+It grants no permission and does not satisfy an approval requirement.
+`captureAuthorizationOwnerFactory` validates configured callables;
+native bootstrap handles absent configuration before calling it.
+The compiler admits clause meaning separately from these facts.
+The private native consumer now delegates to the maintained artifact.
+This evidence API does not supply a production fact owner or install the migrated host.
+
 ## Migration query observation
 
 `createNativeQueryObservation` retains the first unexpected input or output observation failure.
