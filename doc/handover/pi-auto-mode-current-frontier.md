@@ -513,7 +513,9 @@ Both typed preparation files report zero lint diagnostics.
 Package types,
 the owned native build,
 and host lifecycle replacement and cleanup pass.
-The separate CLI process and approval-context checks are running against this artifact.
+The separate CLI process passes with empty shutdown stderr,
+and every approval-context case passes against this artifact,
+including cancellation and approval after reload.
 Remaining preparation generators and the JavaScript runtime still need lint and type completion.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths

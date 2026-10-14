@@ -62,6 +62,7 @@ The build helpers,
 module resolver,
 dependency paths,
 native manager constructor owner,
+native host source preparation,
 import rewriter,
 staged import identity checks,
 and Markdown adapter now pass their scoped type and lint checks.
