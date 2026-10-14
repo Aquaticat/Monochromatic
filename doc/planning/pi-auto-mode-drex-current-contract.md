@@ -5,9 +5,9 @@
 Checked on 2026-10-14 after the user reiterated that `drex.nace.ai` looks promising.
 This is a public documentation and source recheck,
 not a model-adoption decision or an inference experiment.
-No provider assessment,
-account mutation,
-or external message was sent.
+The initial documentation recheck sent no provider assessment.
+The separately approved synthetic boundary test recorded in this document then completed.
+No account setting changed and no external message was sent.
 
 The published Drex 2.0 context contract has changed materially since the
 [release audit](../audit/tech-pi-auto-mode-drex-2-release-vet-2026-10-13.md).
@@ -110,6 +110,37 @@ all independent questions,
 and text instructions with verified round-trip preservation.
 Neither boundary acceptance nor complete-request acceptance alone establishes semantic qualification.
 No provider dispatch is authorized by this document.
+
+## Approved synthetic boundary results
+
+The user explicitly approved the prepared two-call schedule on 2026-10-14.
+`mise run probe` in `${HOME}/temp/agent/drex-question-boundary-20261014`
+sent the fixed public state `The card is green.`
+and repeated `Is the card green?` questions,
+with text criteria,
+five-second deadlines,
+and no retries.
+The local dry run verified 2,246 bytes for 16 questions and 2,383 bytes for 17 questions.
+Create-new start and result files preserve the completed schedule.
+
+Both responses returned HTTP 200 and `model: drex-v2.0`.
+The original question-ID sets matched exactly,
+and every answer had type `noul` with a finite value between zero and one.
+The 16-question control returned 16 answers in 1,258.515 ms and reported 422 input tokens.
+The 17-question control returned 17 answers in 775.390 ms and reported 448 input tokens.
+These single observations establish no latency comparison or reliability estimate.
+All control answers were `0.8236`;
+the boundary answers ranged from `0.8227` to `0.8236`.
+This was a serving-boundary test,
+not calibration or evidence for the `0.99` admission threshold.
+
+The result disproves a universal 16-question cap for this route at the observed time.
+It does not explain the historical rejection or establish acceptance of the retained 244-question native request.
+The complete native input,
+actual returned model,
+original assessment deadline,
+and semantic decision remain the next compatibility boundary.
+No production route changed.
 
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits

@@ -52,6 +52,15 @@ and refuses to overwrite a started experiment.
 The user explicitly approved these two synthetic probes on 2026-10-14.
 The unchanged `mise run probe` schedule then started.
 No policy or session content enters either request.
+Both approved probes completed with HTTP 200 and `model: drex-v2.0`.
+All original question IDs and typed finite Noul answers were present:
+16 answers for the control and 17 for the boundary request.
+The result disproves a universal 16-question cap on this route at this time.
+It does not establish acceptance of the complete native assessment or semantic qualification.
+The [result record](../planning/pi-auto-mode-drex-current-contract.md#approved-synthetic-boundary-results)
+retains timings,
+token usage,
+and probability ranges without treating them as calibration.
 
 The latest approved installed Qwen/Jev verification is separately incomplete:
 `${HOME}/temp/agent/pi-native-installed-live-NB6KVz/host-stderr.txt`
