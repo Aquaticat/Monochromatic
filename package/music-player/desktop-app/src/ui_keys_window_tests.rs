@@ -280,16 +280,16 @@ fn the_track_list_ring_starts_on_the_playing_row_and_moves_with_the_list_keys() 
 }
 
 #[test]
-fn enter_plays_the_row_under_the_ring_and_on_the_playing_row_it_pauses() {
+fn enter_selects_the_row_under_the_ring_and_on_the_selected_row_it_toggles_play() {
     let (app, host) = unfolded();
     chord(&app, &["Alt"], "2");
     tap(&app, "Down");
     tap(&app, "Enter");
-    assert_eq!(host.sent_texts(), ["select 2", "play"]);
+    assert_eq!(host.sent_texts(), ["select 2"], "Enter on another row only selects it (D124)");
     host.clear();
     tap(&app, "Up");
     tap(&app, "Enter");
-    assert_eq!(host.sent_texts(), ["toggle"], "row 1 is the playing row");
+    assert_eq!(host.sent_texts(), ["toggle"], "row 1 is the selected row");
 }
 
 #[test]

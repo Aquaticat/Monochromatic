@@ -412,7 +412,7 @@ fun trackListPane(
 /**
  * Runs one list command of the key table on the track list and reports whether it consumed the key.
  *
- * Movement keys put the focus ring on another row; Enter plays the ringed row, the menu keys open its menu, and a
+ * Movement keys put the focus ring on another row; Enter acts on the ringed row like a tap, the menu keys open its menu, and a
  * row chord runs its menu action, all on the row under the ring.
  *
  * @param command list command that the key resolved to.
@@ -421,7 +421,7 @@ fun trackListPane(
  * @param ringPosition entry the ring is on now, or null.
  * @param page rows that a page key moves by.
  * @param onRing moves the ring to an entry.
- * @param onPlay plays a track by library index.
+ * @param onPlay handles a tap or Enter on a track by library index: select it, or toggle play on the current row.
  * @param refocus gives keyboard focus back to the list, which the host's play path hands to the playback area.
  * @param openMenuAt opens the context menu of the row at an entry position.
  * @param runRowAction runs a menu action for a library index, or null when the host provides none.
@@ -527,7 +527,7 @@ private fun rowWithLine(row: TrackRowModel, lines: TrackRowLineSource?): TrackRo
 }
 
 // What:     `@Composable private fun trackRow(...)` draws one playable track row.
-// Why:      The current row gets the D42 surface background and a bold title, and every row plays on tap.
+// Why:      The current row gets the D42 surface background and a bold title, and a tap selects a row, or toggles play on the current one (D124).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -535,7 +535,7 @@ private fun rowWithLine(row: TrackRowModel, lines: TrackRowLineSource?): TrackRo
 // ```
 /**
  * Draws one track row with its title, optional supporting line, and current-row treatment.
- * Tap plays the row; long press, a secondary-button press, or the menu key opens its context menu.
+ * Tap selects the row, or toggles play and pause on the current row (D124); long press, a secondary-button press, or the menu key opens its context menu.
  */
 @Composable
 private fun trackRow(

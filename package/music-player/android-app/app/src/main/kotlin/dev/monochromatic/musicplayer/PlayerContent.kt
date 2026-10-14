@@ -206,7 +206,7 @@ data class PlayerContentActions(
     val onOpen: () -> Unit,
     /** Opens the settings page, where the settings action is tapped. */
     val onSettings: () -> Unit,
-    /** Plays the track with the given load-order index, where a track row is tapped. */
+    /** Handles a tap on the track row with the given load-order index: selects it, or toggles play on the current row. */
     val onPlay: (Int) -> Unit,
     /** Transport deck callbacks for seek, previous, play or pause, next, and mode selection. */
     val deck: TransportDeckActions,

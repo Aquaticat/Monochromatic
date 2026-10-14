@@ -194,7 +194,7 @@ pub(crate) fn activate_result(window: &AppWindow, engine: &dyn Host, position: u
     };
     match found.index_in_library {
         Some(index) if found.kind == SearchResultKind::Track => {
-            crate::ui_wire::play_row(engine, index);
+            crate::ui_wire::play_row_now(engine, index);
             update_state(|state| {
                 state.route = Route::Player;
             });
