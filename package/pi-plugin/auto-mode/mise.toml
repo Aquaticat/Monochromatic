@@ -407,6 +407,7 @@ run = "node src/native-factory-scopes.unit.test.ts"
 
 [tasks."test:native:serializer-receipts"]
 run = [
+  "node --import ./dist/native/loader.mjs src/native-tool-publication.unit.test.ts",
   "node --import ./dist/native/loader.mjs src/native-serializer-emission.unit.test.ts",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-system",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-payload",
