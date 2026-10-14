@@ -86,7 +86,7 @@ function assertNativeParserModule(value: unknown): asserts value is NativeParser
  const parserModule = await loadNativeParserArtifact();
  ```
  */
-export async function loadNativeParserArtifact(url = new URL(
+export async function loadNativeParserArtifact(url: Readonly<Pick<URL, 'href'>> = new URL(
   '../dist/native/contract/native-index/native-parser.ts',
   import.meta.url
 )): Promise<NativeParserModule> {
