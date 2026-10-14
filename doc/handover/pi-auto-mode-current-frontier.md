@@ -1158,6 +1158,29 @@ all 22 registered event kinds other than the separately captured `before_agent_s
 The actual native review retains its unresolved source-domain issue.
 Complete capture at the original event invocation and settlement boundaries is the next implementation step;
 the existing guard remains in force.
+The maintained native event observer and source generator are now written but not wired into the host.
+The generator selects original parsed `ExtensionRunner` methods:
+`emit`,
+`emitBoundary`,
+`emitMessageEnd`,
+`emitToolResult`,
+`emitToolCall`,
+and `emitUserBash`.
+It retains the native awaits and catches while adding synchronous input,
+complete result,
+settled mutation,
+and traversal-completion observations.
+The observer distinguishes native early returns from missing callbacks,
+tracks overlapping emissions independently,
+and publishes original observation identities with pending and failed state.
+Remaining integration connects its capture callback to the existing manager input pool,
+selects the generated runner through the existing loader,
+and binds original observation freshness into the source snapshot.
+Its unit,
+omission,
+native consumer,
+and package-quality checks remain unfinished.
+The existing source-count and byte bounds have not been raised.
 The fixture and logs are `${HOME}/temp/agent/pi-extension-isolation-20261014.test.ts`
 and `${HOME}/temp/agent/pi-configured-extensions-isolated-20261014.log`.
 Independent maintained bootstrap quality work also continues.
