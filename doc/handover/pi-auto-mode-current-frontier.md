@@ -416,12 +416,25 @@ and host lifecycle replacement and cleanup also pass.
 The complete native lint run now reports 14,790 warnings and 538 errors across 157 modules.
 The original generated input snapshots remain included in that check.
 No lint rule or admission condition was changed.
-The next implementation step replaces build-time synchronous filesystem operations.
-The new `native/contract/integration/native-batch/build-entries.ts`
-captures package manifests asynchronously before exposing a pure entry selector.
-It is not connected to native preparation yet;
-its package type check and scoped lint pass,
-with zero lint diagnostics.
+Commit `fbcd866f88` connects asynchronous package manifest capture to native preparation.
+Source reads,
+generated writes,
+real-path checks,
+and Markdown parser qualification now await their filesystem operations.
+The captured import selector remains synchronous and pure during source rewriting.
+The owned build and permission,
+prohibition,
+and unspecified fixtures pass;
+they execute three,
+zero,
+and zero child calls respectively.
+Node parses all 158 native modules.
+The four changed modules still report 592 warnings and eight lint errors;
+none is a synchronous filesystem finding.
+The typed manifest helper separately passes its type and scoped lint checks.
+The next native preparation fixes address mutable transformation state,
+regular-expression rewriting,
+and source-module size without changing eligibility.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
