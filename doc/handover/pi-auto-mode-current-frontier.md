@@ -886,6 +886,26 @@ The complete package unit task passes after the native return changes;
 its log is `${HOME}/temp/agent/pi-auto-mode-unit-after-native-return-20261014.log`.
 This checkpoint is not full-package lint success or production activation.
 
+The native manager and external-dependency error modules are now TypeScript as well.
+Commits `e330b1306b` and `14297e8e81` retain their original constructor signatures,
+update every native import,
+and record the moved source paths without replacing historical hashes.
+Both modules pass scoped lint,
+package types,
+and the owned native build.
+A direct comparison against the pre-port modules exercised all 18 constructors in 24 cases.
+Original outer messages,
+instance property descriptors,
+constructor arity,
+and cancellation causes match.
+The observation lifecycle aggregate now has the descriptive message
+`Original file observation and closure failures`;
+its copied error list and borrowed failure values retain their native identity and mutability behavior.
+The comparison artifact is `${HOME}/temp/agent/pi-native-error-contracts-9EOJCg`.
+Actual native manager constructor and host lifecycle tests pass after this port,
+with zero provider requests.
+Maintained native runtime lint/type work and production delivery remain in progress.
+
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
 Private `f3d40d82` retains the measured repository dependency root in the staging manifest;

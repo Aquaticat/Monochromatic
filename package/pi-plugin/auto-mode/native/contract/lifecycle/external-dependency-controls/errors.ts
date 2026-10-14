@@ -86,7 +86,10 @@ export class ObservationLifecycleError extends Error {
   constructor(errors: readonly unknown[]) {
     super(
       'Declared file observation or descriptor closure failed',
-      { cause: new AggregateError(errors, 'Original file observation and closure failures') }
+      { cause: new AggregateError(
+        errors,
+        'Original file observation and closure failures'
+      ) }
     );
   }
 }

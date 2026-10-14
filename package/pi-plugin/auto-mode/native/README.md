@@ -71,6 +71,7 @@ Session,
 and main preparation phases,
 import rewriter,
 staged import identity checks,
+native manager and dependency error contracts,
 and Markdown adapter now pass their scoped type and lint checks.
 `test:native:build-imports` exercises the built rewriter with escaped and adversarial module names.
 `test:native:parser` checks the installed parser and disposable package variants;
