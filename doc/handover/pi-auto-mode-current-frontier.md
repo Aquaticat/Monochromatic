@@ -1243,6 +1243,23 @@ It must retain native callback identity,
 complete received results,
 and the same original closed judgment budget.
 No configured-extension consumer success or installed migration completion is claimed.
+The maintained single-callback regression in commit `e8294dd52e` reproduces the same failure
+without loading configured extensions:
+`test:native:progress-events` records one successful authored assessment,
+one unchanged callback,
+and zero child executions.
+A disposable in-memory change that awaits the initial Codemode progress publication still fails:
+the event observation reaches revision two with pending zero,
+but differs from the original revision-zero source snapshot.
+Waiting alone is therefore not the complete remedy.
+The proposed decision-scoped versus continuously expanding receipt timing is recorded in
+`doc/planning/pi-auto-mode-governing-domain-closure.md`.
+The question is being presented to the user;
+neither temporal policy has been adopted by this proposal.
+The existing freshness guards remain unchanged while independent verification continues.
+The user explicitly authorized continued attachment to the existing Codex worker cgroup on 2026-10-14
+after automatic approval review rejected the wrapper's attachment step.
+No resource limit changed.
 The six native adopted-policy contrasts and the native context receipt controls pass after these changes.
 The expanded event receipt controls also pass:
 chunk rollover retains every phase,
