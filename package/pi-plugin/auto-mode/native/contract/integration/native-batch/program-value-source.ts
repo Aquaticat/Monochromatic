@@ -71,16 +71,10 @@ export function nativeScriptValueSource({
     /**
      Only an original top-level function with the exact decoded name can supply the converter.
      */
-    const nodes = parsed.program
-      .body
-      .filter(function namedFunction(node: {
-        readonly type: string;
-        readonly id?: { readonly name: string } | null;
-      }): boolean {
-      return (node.type === 'FunctionDeclaration') && (node.id
-        ?.name
-        === name);
-    });
+    const nodes = [];
+    for (const candidate of parsed.program.body) {
+      if (candidate.type === 'FunctionDeclaration' && candidate.id?.name === name) nodes.push(candidate);
+    }
     if (nodes.length !== 1) throw new NativeBatchBuildError(`Original native result conversion function is unavailable or repeated: ${name}`);
     /**
      Exact membership establishes the original function whose source boundaries are retained.
