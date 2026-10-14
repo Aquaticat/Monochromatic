@@ -88,7 +88,7 @@ const manager=imports({source:managerSource(readFileSync(managerPath,'utf8')),pa
 const toolObservedSession=sessionToolDescriptionSource(readFileSync(sessionPath,'utf8'));
 const ownedSession=sessionSource(sessionStateSource(toolObservedSession));
 const resourceReloadUrl=new URL('../native-host/resource-reload.mjs',import.meta.url).href;
-const promptedSession='import {reloadHostResource} from '+JSON.stringify(resourceReloadUrl)+';\n'+replaceOnce({source:promptSessionSource(ownedSession),from:'        await this._resourceLoader.reload();',to:'        await reloadHostResource(this._resourceLoader);'});
+const promptedSession='import {reloadHostResource} from '+JSON.stringify(resourceReloadUrl)+';\n'+replaceOnce({source:promptSessionSource(ownedSession),from:'        await this.#resourceLoader.reload();',to:'        await reloadHostResource(this.#resourceLoader);'});
 const sessionCore=imports({source:programSessionSource(promptedSession),path:sessionPath,overrides:{
  [resourceReloadUrl]:resourceReloadUrl,
  './session-manager.js':pathToFileURL(join(output,'session-manager.mjs')).href,
