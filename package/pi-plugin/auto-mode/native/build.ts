@@ -16,6 +16,7 @@ mkdirSync(output, { recursive: true, },);
 if (process.argv[2] !== '--owned') buildPiSource({ packageRoot, output, },);
 cpSync(join(import.meta.dirname, 'contract',), join(output, 'contract',), { recursive: true, },);
 cpSync(join(import.meta.dirname, 'loader.mjs',), join(output, 'loader.mjs',),);
+cpSync(join(import.meta.dirname, 'cli.mjs',), join(output, 'cli.mjs',),);
 const loader = join(output, 'loader.mjs',);
 const prepare = join(output, 'contract/integration/native-batch/prepare.mjs',);
 execFileSync(process.execPath, ['--import', loader, prepare,], {

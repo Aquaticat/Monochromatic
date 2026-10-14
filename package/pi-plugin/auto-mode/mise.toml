@@ -83,6 +83,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 [tasks."test:native:sdk-stream"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream"
 
+[tasks."native:cli"]
+description = "Run the candidate owned native host; semantic admission remains unconfigured"
+run = "node dist/native/cli.mjs"
+
 [tasks."docs:render:native"]
 run = [
   "mkdir --parents .cache/native-docs",

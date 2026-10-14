@@ -15,6 +15,7 @@ import {promptBuilderSource} from './builder-source.mjs';
 import {handlerMessageSource,handlerProviderSource} from './message-source.mjs';
 import {preparedDispatcherSource,programSessionSource,programJudgmentSource,programExecutorSource,programRunnerSource,programDefinitionSource,nativeScriptValueSource} from './program-source.mjs';
 import {parse} from "../../collector/program-rule-batch-sdk-copy-v2/input/parser.mjs";
+import {prepareNativeHost} from '../native-host/prepare.mjs';
 
 class NativeBatchBuildError extends Error {}
 import {sdk,core,ai,codemode,tui,maintainedRoot} from '../current-sdk/paths.mjs';
@@ -86,8 +87,10 @@ const queryObserverUrl=new URL('./loadout-query-observer.mjs',import.meta.url).h
 const manager=imports({source:managerSource(readFileSync(managerPath,'utf8')),path:managerPath,overrides:{[publicationUrl]:publicationUrl,[loadedInputsUrl]:loadedInputsUrl,[queryObserverUrl]:queryObserverUrl}});
 const toolObservedSession=sessionToolDescriptionSource(readFileSync(sessionPath,'utf8'));
 const ownedSession=sessionSource(sessionStateSource(toolObservedSession));
-const promptedSession=promptSessionSource(ownedSession);
+const resourceReloadUrl=new URL('../native-host/resource-reload.mjs',import.meta.url).href;
+const promptedSession='import {reloadHostResource} from '+JSON.stringify(resourceReloadUrl)+';\n'+replaceOnce({source:promptSessionSource(ownedSession),from:'        await this._resourceLoader.reload();',to:'        await reloadHostResource(this._resourceLoader);'});
 const sessionCore=imports({source:programSessionSource(promptedSession),path:sessionPath,overrides:{
+ [resourceReloadUrl]:resourceReloadUrl,
  './session-manager.js':pathToFileURL(join(output,'session-manager.mjs')).href,
  './messages.js':pathToFileURL(join(output,'messages.mjs')).href,
  './nested-tool-calls.js':pathToFileURL(join(output,'program-native-runner.mjs')).href,
@@ -146,4 +149,5 @@ const openaiRoot=dirname(createRequire(pathToFileURL(providerPath)).resolve('ope
 const provider=imports({source:handlerProviderSource({source:readFileSync(providerPath,'utf8'),publicationUrl}),path:providerPath,overrides:{openai:entry({root:openaiRoot}),[publicationUrl]:publicationUrl}});
 writeFileSync(join(output,'openai-stream.mjs'),provider,{mode:0o600});
 copyFileSync(join(import.meta.dirname,'PI-LICENSE.txt'),join(output,'LICENSE'));
+prepareNativeHost({output});
 console.log(JSON.stringify({complete:true,SDKVersion:JSON.parse(readFileSync(join(sdk,'package.json'),'utf8')).version,copiedModules:13,installedSourcesModified:false}));
