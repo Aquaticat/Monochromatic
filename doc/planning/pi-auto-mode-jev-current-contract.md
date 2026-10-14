@@ -266,6 +266,30 @@ Each candidate must reconstruct the complete original state and every original q
 No candidate is installed or sent merely because its byte count decreases.
 The provider's documented indirection weakness remains a separate semantic risk.
 
+The offline comparisons at `${HOME}/temp/agent/pi-jev-structure-20261014`
+all reconstruct the original request exactly,
+including 73 source occurrences and 84 questions:
+
+- Shared ordered field lists: 97,605 state bytes and 119,876 complete request bytes.
+- Inlined single-use references: 95,749 state bytes and 131,028 complete request bytes.
+  The dictionary shrinks from 398 entries to 94.
+- Both changes: 88,015 state bytes and 110,286 complete request bytes.
+
+The JSON-string inspection found 49 canonical strings occupying 12,031 serialized bytes,
+versus 10,989 bytes for their parsed values before adding any required encoding tags.
+This measurement does not establish an additional working encoding.
+No provider requests occurred during these comparisons.
+
+The next frozen capacity schedule makes at most two sequential five-second calls without retries.
+First it sends the complete single-use-inlined request,
+SHA-256 `06df855d0647d552e0eae94b9a5a4d95cd18e1bf36eb34176231746a4a025344`.
+Only recognized HTTP 400 `max_tokens_exceeded` permits the second complete request,
+which combines inlining with ordered field lists,
+SHA-256 `1779a9a3c80a2fa61f6a1fd4663d34c503d46dfa8c7ca4fa968ddb81f0b15b6b`.
+Any other response ends the experiment.
+This ordering tests reduced indirection before introducing row decoding.
+Acceptance requires separate answer validation and never authorizes execution.
+
 Automatic approval review again rejected the documentation commit's existing cgroup attachment.
 The user renewed authorization for that attachment with unchanged limits;
 commit `07987fab66` then completed.

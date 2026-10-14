@@ -218,8 +218,13 @@ The 105,339-byte state still failed:
 the complete batch returned HTTP 400 `max_tokens_exceeded` in 1,049.183 ms,
 and its single-question control returned the same code in 518.147 ms.
 Both calls are terminal with no model answers.
-The next local check measures repeated object structure as a potential source of representational overhead.
-It cannot establish token fit or semantic equivalence without separate provider evidence.
+The offline structure comparison reconstructs every source and question exactly.
+Inlining single-use references reduces state to 95,749 bytes;
+combining that with shared ordered field lists reduces it to 88,015 bytes.
+The next frozen capacity schedule sends the complete inlined request first,
+then the combined representation only after recognized `max_tokens_exceeded`.
+Each call has a five-second deadline;
+there are no retries or production admissions.
 
 ## Restart checkpoint after installing automatic Codex shell limits
 
