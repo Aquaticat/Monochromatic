@@ -179,6 +179,12 @@ zig = "0.15.2"
 # the old cargo-git rev/ref path that made mise.lock oscillate.
 "cargo:slint-viewer" = "latest"
 
+# Bubblewrap (`bwrap`), the unprivileged sandbox that package/cli/nested-wayland-session's inspect:headless-gpu uses to
+# hide /dev/dri and the network from a session. There is no aqua, github or cargo release of it, and the distro copy is
+# not on a mise-only machine; the conda-forge build runs unprivileged on user namespaces and needs no setuid. `os = ["linux"]`
+# because bubblewrap uses Linux namespaces and conda-forge has no Windows build.
+"conda:bubblewrap" = { version = "latest", os = ["linux"] }
+
 # AI inference server for local development (package/webapp-productivity/done).
 # Pinned (not "latest") because llama.cpp's release pipeline tags before the
 # Linux build finishes uploading, so any "latest" install run during that
