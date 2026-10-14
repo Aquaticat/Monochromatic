@@ -366,7 +366,9 @@ The last line names the device `auto` uses on this host.
 
 The three choices are:
 
-- `auto` is the default and, on a machine with a usable GPU, behaves as headless did before the option existed.
+- `auto` is the default and,
+  on a machine with a usable GPU,
+  behaves as headless did before the option existed.
   Mesa's default render node is tried first.
   If it cannot be opened or initialized,
   or if Mesa answers with its CPU rasterizer because it found no node it can use,
@@ -422,8 +424,10 @@ and the compositor sets the child's environment from the final choice:
   while the compositor stayed on its own.
   `auto` without a fallback leaves the child's environment exactly as it was.
 
-Measured on a host with an integrated AMD GPU (`renderD129`, PCI `1002:164e`),
-a discrete AMD GPU (`renderD128`, PCI `1002:7480`),
+Measured on a host with an integrated AMD GPU,
+which is `renderD129` with PCI id `1002:164e`,
+a discrete AMD GPU,
+which is `renderD128` with PCI id `1002:7480`,
 and Mesa 26.2:
 each node rendered offscreen and imported a Slint client's dmabufs,
 the client held open only the chosen node,

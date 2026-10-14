@@ -5,7 +5,9 @@
 //!
 //! Everything here is pure data and decisions,
 //!  so the fallback order and the failure text are unit-tested without a GPU.
-//! Opening a device (EGL, sysfs) is in `gpu_device.rs`.
+//! Opening a device,
+//!  through EGL and sysfs,
+//!  is in `gpu_device.rs`.
 
 /// Display for the attempt and failure text.
 use std::fmt;
@@ -130,6 +132,7 @@ pub enum Attempt {
 
 /// Names the attempt in a failure list.
 impl fmt::Display for Attempt {
+    /// Write the attempt as the failure list names it.
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         return match self {
             Self::MesaDefault => write!(formatter, "Mesa's default render node"),
@@ -367,7 +370,8 @@ pub struct GpuReport {
 
 /// The control answer text.
 impl GpuReport {
-    /// One line: `device=D choice=C fallback=yes|no renderer=R`.
+    /// One line:
+    ///  `device=D choice=C fallback=yes|no renderer=R`.
     ///
     /// What:
     ///      `pub fn answer(&self) -> String`.
