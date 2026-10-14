@@ -10,6 +10,8 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
  const {relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl}=settings;
  const {assessments,executions,requests,httpCalls,contextCalls,lateContextMutations,progressCalls}=measures;
  if(!review){
+  try{judgment?.assertDependenciesCurrent();}
+  catch(error){console.error(inspect(error,{depth:8,maxStringLength:2048}));}
   try{assertNativeSessionInputCapture(env.readActiveSessionManager(session));}
   catch(error){console.error(inspect(error,{depth:6,maxStringLength:2048}));}
   try{env.readActiveSessionRunComposition(session);}
