@@ -873,6 +873,9 @@ scrollbar at all** on either input,
  Closes
 the two open sub-points on the scroll-a spec.
 
+Amended by D125 (2026-10-14): the desktop folder names list shows no scrollbar on either input either.
+The track list, Search, Settings and the template editor keep the bars described here.
+
 ### D23. The picker shows no folder counts
 No library total ("1,043 folders") and no per-letter count.
  The picker is a filter
@@ -3357,6 +3360,29 @@ only part left open to a veto.
 - What stays an overlay: every other D83 message, including the removed-file message (`file_gone_message`) and the
   file-action errors.
 - Android is handled in D123.
+### D125. The folder names list shows no scrollbar (2026-10-14)
+
+The human asked that the scrollbar on the folders panel go, because the panel has several other ways to say where the
+user is. This amends D22: the desktop folder names list, the column right of the letter rail, draws no scrollbar on
+either input, neither the always visible draggable bar for the pointer nor the fading bar for touch.
+
+- The panel already shows position without a bar. The selected folder is primary, heavier and carries a 2 px bar on its
+  bottom edge (D31). The letter rail (D17) circles the letter of the current folder's cell, and the names run in rail
+  order under a heading for each cell (D28), so the heading in view says where in the alphabet the list is. The list
+  order is the alphabet itself, and a scrollbar would add a length that D17 and D23 say the user is not meant to care
+  about.
+- What stays for moving the list: the wheel, a touch drag, the keyboard (Up, Down, the page keys, Home and End scroll
+  the ringed folder into view), a rail tap that scrolls to its cell, and the reveal of the selected folder after Search,
+  a shuffle or a folder key chord (D79). None of them changed.
+- The names keep the 16 px right inset of the Android list (`NAMES_END`), so names wrap and end where they did before.
+  Only the 12 px grab zone constant and its comment went.
+- Other lists keep D22: the track list, Search results, Settings and the template editor still draw the always visible
+  12 px bar for the pointer and the fading 4 px bar for touch. The rail already had none.
+- The folder names still record whether the last pointer event was a touch, because the bars of those other lists
+  follow the last input the app saw.
+- Android needed no change: `FolderPickerPane.kt` draws no scrollbar and no scroll indicator on the names.
+- Tests: two window tests in `desktop-app/src/ui_lists_window_tests.rs` assert that the picker has no scrollbar in the
+  wide and the folded layout on both inputs, while the track list keeps its own bar in the wide layout.
 
 ## Pending after the theme picks (2026-09-04)
 

@@ -4,7 +4,12 @@
  @module
  */
 
-/** SDK construction violated the original result, registration, or cleanup contract. */
+/**
+ SDK construction violated the original result, registration, or cleanup contract.
+ */
 export class NativeSessionRootError extends Error {
+  /**
+   Stable diagnostic name identifies the owned construction boundary.
+   */
   override name = 'NativeSessionRootError';
 }

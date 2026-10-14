@@ -3,7 +3,10 @@
 
  @module
  */
-import type { SessionManager, AgentSession } from '@earendil-works/pi-coding-agent';
+import type {
+  SessionManager,
+  AgentSession
+} from '@earendil-works/pi-coding-agent';
 import type { RootSessionSdkFactory } from '../native-batch/session-root-types.ts';
 
 export { SessionManager } from '@earendil-works/pi-coding-agent';

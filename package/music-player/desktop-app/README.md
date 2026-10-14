@@ -394,10 +394,13 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    because the
   breakpointless wrapping `FlexboxLayout` root created a Slint `Flickable` layout-info loop on Slint 1.17;
    see `../../../doc/troubleshooting/slint-flickable-flexbox-layout-loop.md`.
-   Each scroll region is driven by a prominent custom
+   Each scroll region except the folder picker is driven by a prominent custom
   scrollbar in a right-hand gutter,
    since the default
   std-widgets scrollbar is a near-invisible hairline.
+   The folder picker has no scrollbar on either input (D125):
+   the selected folder, the highlighted letter of the rail and the order of the list already say where the user is,
+   and the wheel, a touch drag and the keys still scroll it.
    Scrolling is animated by the
   Flickable itself:
    touchpad and touchscreen gestures fling with momentum,

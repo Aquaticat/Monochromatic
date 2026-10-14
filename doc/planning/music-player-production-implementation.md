@@ -381,9 +381,20 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   2026-10-14 from `e02e74edec` (only the track menu image changed visibly and was replaced; the other seven differ by
   4 to 7 px row offsets and were kept; see `doc/handover/music-player-readme-and-gallery.md`). The ring capture
   emulator ran with `-no-window` on the host GPU, which the rule below bans.
-- Stale docs: none known. The README gallery and the Android page-control text were rewritten on 2026-10-13, and the
-  peak-sweep start path in `android-app/HANDOVER.peak-sweep-optimization.md` and
-  `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
+- Desktop folder names scrollbar removed (2026-10-14, D125, amends D22): the names list of the folder picker draws no
+  bar on either input; the track list, Search, Settings and the template editor keep theirs. Verified: two window tests
+  (both fail with the bar restored in a throwaway worktree), the whole nextest suite, clippy, `slint-viewer --check`,
+  and release builds of the old and the new commit in the nested compositor on an invented library of 61 folders in a
+  1000 by 800 and a 443 by 900 window (names unchanged in place, wheel offsets identical, track list bar kept). Not
+  verified: macOS, Windows, a real Plasma session, touch input on a real screen (only the window test sets it). Eight
+  committed desktop gallery images still show the old bar and are due a retake: `desktop-two-pane-light.png`,
+  `desktop-two-pane-dark.png`, `desktop-menu-light.png`, `desktop-menu-dark.png`, `desktop-hints-dark.png`,
+  `desktop-search-light.png`, `desktop-search-dark.png` and `desktop-narrow-folders-light.png` in
+  `package/music-player/asset/readme/`. The `desktop-settings-*` images, `desktop-narrow-player-dark.png` and
+  `desktop-empty-light.png` do not show it.
+- Stale docs: the gallery images in the bullet above; otherwise none known. The README gallery and the Android
+  page-control text were rewritten on 2026-10-13, and the peak-sweep start path in
+  `android-app/HANDOVER.peak-sweep-optimization.md` and `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
 - Hygiene: `~/temp/agent/agent-polish2/work/` and `~/temp/agent/agent-refresh-cost/lib-1m` (12 GB) hold scratch libraries
   that can be deleted. A failed decode is retried at every library change, one decode per failed file per change.
 - Rate limit: on 2026-10-12 the Sonnet weekly limit stopped five agents mid-run; a re-login lifted it and they were
@@ -399,6 +410,12 @@ Read these before repeating them. Each one cost the human a correction.
   mutation run (fixed in `95d573b836`: the fake service now refuses its first call on purpose). The docs commit
   `2007ce0cb4` says its Containerfile note follows, but that change landed in `b21530ceae`; a corrective commit comment
   was posted. Tests that wait for "something happens after X" need a deterministic signal, not an order of two threads.
+- The orchestrator told the human the desktop click rule already matched ("an unselected row is selected, the selected
+  row toggles") after reading only `play_row` and the README, which say a click plays at once. The human pointed out the
+  mismatch: `Command::SelectIndex` selects and pauses ("selecting never auto-plays") and `play_row` then sends Play, so
+  a click replaced the playing track and started the new one. The ruling (2026-10-14) is select only, then toggle, on
+  both platforms (D124). Before saying behavior matches a spec, read the engine command the UI sends and the
+  user's words, and run the real binary (QAB, QJ1).
 
 - The wiring-test agent (2026-10-14) committed `55f465c0b3` with no blank line after the subject, so the whole body is
   one long subject line, and an early step test looped forever under a mutant and blocked a mutation run for about 40

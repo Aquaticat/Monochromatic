@@ -52,3 +52,19 @@ Mise documents the encrypted-file use case,
 and the corrected consumer invocation works.
 Contribution-policy and maintainer-interest checks are inapplicable without an upstream issue.
 No external report or draft is warranted.
+
+## Proposed guidance tightening
+
+The existing `AGENTS.md` rule `QF1` requires measuring facts and checking configuration before categorical claims.
+The proposed replacement makes the configured resolver explicit:
+
+> Measure facts and cite results.
+> Resolve configuration through its owning tool;
+> reject ciphertext as credentials.
+> Verify categorical claims with a search or configuration read.
+
+The proposal reuses the existing rule's scope and identifier.
+The user chose to keep `QF1` unchanged on October 14,
+2026.
+The proposed rule change is rejected;
+the verified resolver and ciphertext checks remain in this troubleshooting document.

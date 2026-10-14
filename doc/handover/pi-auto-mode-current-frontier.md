@@ -7,6 +7,113 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-14.
 
+## Typed native session construction
+
+The next owned dependency is now ported from `runtime-factory-scopes/scopes.mjs`
+to `scopes.ts` and `construction.ts`.
+The maintained SDK caller now imports its real typed interface directly.
+The original callback and manager captures,
+exact prepared-result identity,
+factory-wide exclusion,
+and retryable failed cleanup remain explicit requirements.
+The unused legacy result-preparer default is removed:
+the maintained caller already supplies `prepareSdkResult`,
+and the typed interface now requires that callback.
+The historical provenance records the old path and October 14 move date.
+Built-artifact checks for missing capabilities,
+input replacement,
+publication,
+failed cleanup,
+and reentrancy pass.
+The final ten-file lint scope reports zero warnings and zero errors.
+Package type checking passes with `TSC_SINGLE_THREADED=1` and `GOMAXPROCS=2`.
+Native manager constructors,
+host lifecycle,
+and the actual isolated Qwen CLI process pass after the owned rebuild.
+They report zero external provider requests;
+the CLI reports clean shutdown and zero genuine human approvals.
+Process-local omission of reentrancy exclusion or cleanup blocking fails its corresponding assertion.
+Omitting original callback capture invokes the forbidden replacement preparer and fails the test.
+The initial omission auditor incorrectly required all failures to be `AssertionError`;
+the corrected readback verifies each actual failure boundary.
+`${HOME}/temp/agent/pi-factory-scope-controls-20261014/verification.json`
+records those controls and the emitted scope file's exact match with maintained source afterward.
+The first type-check attempt emitted Go `newosproc` and is invalid despite its wrapper returning exit zero.
+That masked compiler failure was reproduced and repaired separately in `dev-script/task-util`.
+The built wrapper now preserves failed process status unless the existing known-diagnostic filter
+fully accounts for the failure.
+Original failing-before cases include a panic,
+silent failure,
+unfamiliar diagnostic,
+and a panic beside suppressed diagnostics.
+The repaired real-process fixture and existing output-filter tests pass.
+The [wrapper incident record](../troubleshooting/typescript.md#task-tsc-002-converted-compiler-process-failures-into-successful-checks)
+retains the initial success-control newline mistake and its source-backed correction.
+Final wrapper lint reports zero warnings and zero errors across four changed files;
+its package type check and all declared process cases pass.
+Pi's real `lint:types` task also passes through the repaired wrapper.
+The broader native quality queue and genuine approval verification remain open.
+
+The next approval preparation uses the existing native RPC dialog boundary.
+The emitted Pi 1.2.0 `rpc-mode.js` creates the original extension selector request
+and resolves only its pending response identifier.
+A direct SDK fixture can retain authored prerequisite premises and local model responses
+while allowing a genuine human to answer the actual pending native request.
+This would verify that human response boundary only.
+The production CLI still lacks an independent authorization-requirement owner;
+unknown requirements must remain unresolved and must not be converted into UI requests.
+No genuine human response or production authorization-owner integration is claimed yet.
+
+The maintained constructor now lives in `native-batch/session-root.ts`,
+with typed native readers,
+SDK result fields,
+registration,
+and publication.
+Its static bridge keeps the incumbent lifecycle and factory-scope owners.
+The old `session-root.mjs` consumer imports were updated together;
+provenance retains the historical path and records the move date.
+The original scoped measurement was 56 warnings and two errors in that module.
+The seven typed implementation and bridge files now pass scoped lint with zero diagnostics,
+and package type checking passes with the new tests included.
+
+`test:native:session-result` exercises the built descriptor-copy helper.
+Its original artifact passes;
+a process-local omission of only the own-data-descriptor guard makes the accessor cases fail.
+The omission marker and failure are retained in
+`${HOME}/temp/agent/pi-session-result-guard-omission-20261014.log`.
+The real artifact is byte-for-byte unchanged by that control.
+Native manager construction and host lifecycle tests pass,
+including foreign managers,
+retirement,
+failed disposal,
+and cleanup retry.
+The actual Qwen CLI process fixture also passes with clean shutdown and no external requests.
+
+The first approval-context run hit `JudgmentDeadlineError` while other verification was running.
+An unchanged isolated repeat passed Allow,
+Deny,
+Stop,
+cancellation,
+and Allow after resource reload.
+`${HOME}/temp/agent/pi-session-root-approval-isolated-20261014.log`
+retains every completed mode with zero provider requests and zero genuine human approvals.
+The repeat establishes recovery,
+not the deadline failure's cause or a permanent timing fix.
+Full native lint completion and genuine approval-boundary verification remain outstanding.
+
+The subsequent full package lint measured 14,368 warnings and 458 errors across 389 files.
+Its log is `${HOME}/temp/agent/pi-native-full-lint-after-session-root-20261014.log`.
+This broader file set differs from the earlier 368-file baseline;
+the totals are not a controlled before/after comparison.
+The verified construction port's scoped files remain clean.
+Remaining findings include historical build inputs and maintained runtime owners;
+do not silently exclude the former or rewrite their provenance to obtain a passing count.
+The next directly used construction dependency is `lifecycle/runtime-factory-scopes/scopes.mjs`,
+which this full run reports with seven errors.
+
+The [decision-model trial priorities](../planning/pi-auto-mode-decision-model-trial-order.md)
+retain the user's requested candidate recommendation and separate trial order from adoption.
+
 ## Newly enabled Gateway decision models
 
 The user enabled `microsoft-decision-1` and `gpt-6-luna-decisions` on the existing Gateway key.
