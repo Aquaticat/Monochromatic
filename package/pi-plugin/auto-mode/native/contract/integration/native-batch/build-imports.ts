@@ -10,6 +10,7 @@ import {
   parse
 } from 'yuku-parser';
 import { walkNativeSyntax } from './build-syntax.ts';
+import { applyNativeSourceEdits } from './build-spans.ts';
 
 //region Import locations come from the original parsed module
 
@@ -189,28 +190,8 @@ export function rewriteNativeImports({
       text: JSON.stringify(selected)
     });
   }
-  /**
-   Each original source segment is copied once before the final join.
-   */
-  const fragments = edits.flatMap(function importFragments(
-    edit,
-    index
-  ): readonly string[] {
-    return [
-      source.slice(
-        edits[index - 1]
-          ?.end
-          ?? 0,
-        edit.start
-      ),
-      edit.text
-    ];
-  });
-  fragments.push(source.slice(edits.at(-1)
-    ?.end
-    ?? 0));
   rl.debug(`rewrote ${edits.length} native import literals: ${path}`);
-  return fragments.join('');
+  return applyNativeSourceEdits({ source, edits });
 }
 
 //endregion Token order produces non-overlapping source fragments in one linear pass

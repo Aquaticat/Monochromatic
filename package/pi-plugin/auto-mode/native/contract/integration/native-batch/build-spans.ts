@@ -11,11 +11,17 @@ import { tagged } from '@monochromatic-dev/module-logger/ts';
  Original token order establishes disjoint source spans before this assembly boundary.
  */
 export type NativeSourceEdit = {
-  /** First original UTF-16 code unit replaced by this edit. */
+  /**
+   First original UTF-16 code unit replaced by this edit.
+   */
   readonly start: number;
-  /** First original UTF-16 code unit after this edit. */
+  /**
+   First original UTF-16 code unit after this edit.
+   */
   readonly end: number;
-  /** Replacement already encoded for its destination JavaScript syntax. */
+  /**
+   Replacement already encoded for its destination JavaScript syntax.
+   */
   readonly text: string;
 };
 
@@ -38,22 +44,41 @@ const l = tagged({ tag: 'auto-mode-native-build-spans' });
  applyNativeSourceEdits({ source: 'old();', edits: [{ start: 0, end: 3, text: 'owned' }] });
  ```
  */
-export function applyNativeSourceEdits({ source, edits }: {
+export function applyNativeSourceEdits({
+  source,
+  edits
+}: {
   readonly source: string;
   readonly edits: readonly NativeSourceEdit[];
 }): string {
   /**
    Fragment assembly retains its own diagnostic boundary.
    */
-  const rl = tagged({ tag: applyNativeSourceEdits.name, l });
+  const rl = tagged({
+    tag: applyNativeSourceEdits.name,
+    l
+  });
   rl.debug(`assembling ${edits.length} original source edits`);
   /**
    Each untouched interval and replacement is copied once before the final join.
    */
-  const fragments = edits.flatMap(function sourceFragments(edit, index): readonly string[] {
-    return [source.slice(edits[index - 1]?.end ?? 0, edit.start), edit.text];
+  const fragments = edits.flatMap(function sourceFragments(
+    edit,
+    index
+  ): readonly string[] {
+    return [
+      source.slice(
+        edits[index - 1]
+          ?.end
+          ?? 0,
+        edit.start
+      ),
+      edit.text
+    ];
   });
-  fragments.push(source.slice(edits.at(-1)?.end ?? 0));
+  fragments.push(source.slice(edits.at(-1)
+    ?.end
+    ?? 0));
   return fragments.join('');
 }
 

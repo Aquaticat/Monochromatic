@@ -8,6 +8,7 @@ import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import { parse } from 'yuku-parser';
 import { NativeBatchBuildError } from './build-entries.ts';
 import { walkNativeSyntax } from './build-syntax.ts';
+import { applyNativeSourceEdits, type NativeSourceEdit } from './build-spans.ts';
 
 //region Original call expressions select exact source spans for instrumentation
 
@@ -98,10 +99,7 @@ export function rewriteNativeLiteralRules(source: string): string {
   /**
    Each replacement keeps its original start and end without sorting or accumulated string copies.
    */
-  const edits: {
-    readonly start: number;
-    readonly end: number
-  }[] = [];
+  const edits: NativeSourceEdit[] = [];
   for (let index = 0; index < tokens.length; index++) {
     /**
      The token beginning each original callee supplies its source order.
@@ -113,31 +111,12 @@ export function rewriteNativeLiteralRules(source: string): string {
     const end = calls.get(start);
     if (end !== undefined) edits.push({
       start,
-      end
+      end,
+      text: 'addBuiltInRule'
     });
   }
-  /**
-   Disjoint source fragments copy each untouched code unit once before the final join.
-   */
-  const fragments = edits.flatMap(function ruleFragments(
-    edit,
-    index
-  ): readonly string[] {
-    return [
-      source.slice(
-        edits[index - 1]
-          ?.end
-          ?? 0,
-        edit.start
-      ),
-      'addBuiltInRule'
-    ];
-  });
-  fragments.push(source.slice(edits.at(-1)
-    ?.end
-    ?? 0));
   rl.debug(`instrumented ${edits.length} original literal rule calls`);
-  return fragments.join('');
+  return applyNativeSourceEdits({ source, edits });
 }
 
 //endregion Original call expressions select exact source spans for instrumentation

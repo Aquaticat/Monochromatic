@@ -7,7 +7,10 @@ import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import { parse } from 'yuku-parser';
 import { NativeBatchBuildError } from './build-entries.ts';
-import { applyNativeSourceEdits, type NativeSourceEdit } from './build-spans.ts';
+import {
+  applyNativeSourceEdits,
+  type NativeSourceEdit
+} from './build-spans.ts';
 import { walkNativeSyntax } from './build-syntax.ts';
 
 //region Qualified direct instance references retain original surrounding source text
@@ -33,20 +36,34 @@ const l = tagged({ tag: 'auto-mode-native-build-members' });
  privatizeNativeMembers({ source: 'class A { #state; read() { return this.state; } }', members: ['state'] });
  ```
  */
-export function privatizeNativeMembers({ source, members }: {
+export function privatizeNativeMembers({
+  source,
+  members
+}: {
   readonly source: string;
   readonly members: readonly string[];
 }): string {
   /**
    Each private-member transformation retains a distinct diagnostic scope.
    */
-  const rl = tagged({ tag: privatizeNativeMembers.name, l });
+  const rl = tagged({
+    tag: privatizeNativeMembers.name,
+    l
+  });
   rl.debug('locating original native instance member references');
   /**
    Original parser tokens supply source order without sorting structural nodes.
    */
-  const parsed = parse(source, { sourceType: 'module', tokens: true });
-  if (parsed.diagnostics.length > 0) throw new NativeBatchBuildError('Cannot parse native instance-member source');
+  const parsed = parse(
+    source,
+    {
+      sourceType: 'module',
+      tokens: true
+    }
+  );
+  if (parsed.diagnostics
+    .length
+    > 0) throw new NativeBatchBuildError('Cannot parse native instance-member source');
   /**
    Qualified decoded names select identifiers, never arbitrary replacement text.
    */
@@ -57,13 +74,31 @@ export function privatizeNativeMembers({ source, members }: {
    */
   const spans = new Map<number, NativeSourceEdit>();
   for (const node of walkNativeSyntax(parsed.program)) {
-    if (node.type !== 'MemberExpression' || node.computed || node.object.type !== 'ThisExpression'
-      || node.property.type !== 'Identifier' || !selected.has(node.property.name)) continue;
-    spans.set(node.property.start, {
-      start: node.property.start,
-      end: node.property.end,
-      text: `#${source.slice(node.property.start, node.property.end)}`
-    });
+    if ((node.type !== 'MemberExpression') || node.computed
+      || (node.object
+        .type
+        !== 'ThisExpression')
+      || (node.property
+        .type
+        !== 'Identifier')
+      || (!selected.has(node.property
+        .name))) continue;
+    spans.set(
+      node.property
+        .start,
+      {
+      start: node.property
+        .start,
+      end: node.property
+        .end,
+      text: `#${source.slice(
+        node.property
+          .start,
+        node.property
+          .end
+      )}`
+    }
+    );
   }
   /**
    Token capture was requested from the same parser occurrence as the selected nodes.
@@ -80,7 +115,10 @@ export function privatizeNativeMembers({ source, members }: {
     const edit = spans.get(tokens.start(index));
     if (edit !== undefined) edits.push(edit);
   }
-  return applyNativeSourceEdits({ source, edits });
+  return applyNativeSourceEdits({
+    source,
+    edits
+  });
 }
 
 //endregion Qualified direct instance references retain original surrounding source text
