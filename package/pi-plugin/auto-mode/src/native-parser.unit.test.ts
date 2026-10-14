@@ -53,10 +53,17 @@ await describe({
          Qualification includes the non-BMP coordinate self-check before returning.
          */
         const parser = await parserModule.createNativeMarkdownParser({ expectedVersion: '0.10.5' });
-        expect(parser.parse({ source: '# Policy\n', mdx: false })).toMatchObject({
-          type: 'root',
-          children: [{ type: 'heading', depth: 1, children: [{ type: 'text', value: 'Policy' }] }],
-        });
+        /**
+         Inspect nested fields directly so retained source positions remain part of the actual tree.
+         */
+        const tree = parser.parse({ source: '# Policy\n', mdx: false });
+        expect(tree).toHaveProperty('type', 'root');
+        expect(tree).toHaveProperty('children.length', 1);
+        expect(tree).toHaveProperty('children[0].type', 'heading');
+        expect(tree).toHaveProperty('children[0].depth', 1);
+        expect(tree).toHaveProperty('children[0].children[0].value', 'Policy');
+        expect(tree).toHaveProperty('children[0].position.start.offset', 0);
+        expect(tree).toHaveProperty('children[0].position.end.offset', 8);
         expect(parser.metadata).toMatchObject({
           package: 'satteri@0.10.5',
           features: { gfm: true, frontmatter: true },
