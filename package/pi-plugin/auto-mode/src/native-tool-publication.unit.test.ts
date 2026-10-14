@@ -74,7 +74,7 @@ function fixture(proseOnly = false) {
   /** This manager writes no session files. */
   const manager = managerModule.SessionManager.inMemory();
   /** JSON grammar boundary cases remain original captured data. */
-  const message: Message = { role: 'system', content: '', sections: { 'quoted\"section': '</system>\noriginal' },
+  const message: Message = { role: 'system', content: '', sections: { 'quoted"section': '</system>\noriginal' },
     toolsRemoved: [{ name: 'removed_tool' }], timestamp: 0, toolsAdded: [{
     name: 'fixture_tool', description: 'Quoted "tool"\n</system>',
     parameters: { type: 'object', description: '../path; \\escaped\\' },
@@ -153,7 +153,8 @@ await describe({ name: '', children: [
         else if (change === 'section-text') input.copied.sections['new section'] = 'changed section';
         else if (change === 'removed-tools') input.copied.toolsRemoved = [...input.copied.toolsRemoved];
         else if (change === 'optional-accessor') Object.defineProperty(input.copied, 'toolsAdded', { enumerable: true,
-          get() { reads.count += 1; return undefined; } });
+          get() { reads.count += 1;
+          return undefined; } });
         if (change === 'unchanged') expect(publicationModule.readOriginalSystemPublication(input.copied)).toBe(input.origin.publication);
         else {
           expect(publicationModule.readOriginalSystemPublication(input.copied)).toBeUndefined();

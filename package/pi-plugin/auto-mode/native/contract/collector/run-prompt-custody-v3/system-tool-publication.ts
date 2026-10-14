@@ -2,7 +2,10 @@
  Extend original manager input publications through observed native message copies. @module
  */
 import { isDeepStrictEqual } from 'node:util';
-import { readSystemInputFields, type SystemInputFields } from './system-input-fields.ts';
+import {
+  readSystemInputFields,
+  type SystemInputFields
+} from './system-input-fields.ts';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import type {
   SystemToolAlias,
@@ -97,7 +100,7 @@ export function publishSystemToolInput({
    
    @throws SourceCollectionError when declarations differ from the captured original input
    */
-  function toolsFor(value: object): readonly object[] | undefined {
+  function toolsFor(value: object): { readonly fields: SystemInputFields; readonly tools?: readonly object[] } {
     /**
      Data-profile checks have a distinct diagnostic boundary.
      */
@@ -108,14 +111,22 @@ export function publishSystemToolInput({
     /**
      The copier validates descriptors before any array elements are consumed.
      */
-    const selected = readSystemInputFields({value, InputError});
-    if (!isDeepStrictEqual(copyInput(selected), expected)) {
+    const selected = readSystemInputFields({
+      value,
+      InputError
+    });
+    if (!isDeepStrictEqual(
+      copyInput(selected),
+      expected
+    )) {
       tl.debug('system data differs from its captured input');
       throw new InputError('Native system fields differ from their captured manager input');
     }
-    /** Tool absence is an original input state, not an empty replacement array. */
+    /**
+     Tool absence is an original input state, not an empty replacement array.
+     */
     const tools = selected.toolsAdded;
-    if (tools === undefined) return undefined;
+    if (tools === undefined) return { fields: selected };
     if (!Array.isArray(tools)) throw new InputError('Native system tools require their original declaration array');
     /**
      Explicit narrowing preserves the borrowed array identity without an unsafe element type.
@@ -124,7 +135,7 @@ export function publishSystemToolInput({
     if (!declarations.every(function isDeclaration(item): item is object {
       return (item !== null) && ((typeof item) === 'object');
     })) throw new InputError('Native system tool declarations require original records');
-    return declarations;
+    return { fields: selected, tools: declarations };
   }
 
   /**
@@ -161,9 +172,8 @@ export function publishSystemToolInput({
       /**
        Captured data equality checks integrity only after identity membership.
        */
-      const tools = toolsFor(root);
+      const { fields: selected, tools } = toolsFor(root);
       if (tools !== messageAlias.tools) return retire('Original system tool declaration array was replaced');
-      const selected = readSystemInputFields({value: root, InputError});
       if ((selected.content !== messageAlias.content) || (selected.sections !== messageAlias.sections)
         || (selected.toolsRemoved !== messageAlias.toolsRemoved))
         return retire('Original system field identity was replaced');
@@ -208,18 +218,18 @@ export function publishSystemToolInput({
     /**
      Validate the entire native copy before occupying any alias slot.
      */
-    const tools = toolsFor(value);
-    if ((new Set(tools).size !== (tools?.length ?? 0)) || tools?.some(function alreadyPublished(tool) {
+    const { fields: selected, tools } = toolsFor(value);
+    if ((new Set(tools).size !== (tools?.length ?? 0)) || (tools?.some(function alreadyPublished(tool) {
       return aliases.has(tool);
-    }))
+    }) === true))
       return retire('Native tool declaration already belongs to another original input or position');
     aliases.set(
       value,
       {
         owner,
         kind: 'system-input',
-        tools,
-        ...readSystemInputFields({value, InputError})
+        ...(tools === undefined ? {} : { tools }),
+        ...selected
       }
     );
     for (const [ordinal, tool] of (tools ?? []).entries())
