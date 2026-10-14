@@ -17,7 +17,7 @@ const unknownFailure = 'fixture compiler cannot read its configuration\n';
 /** The configured compiler reports emitted build-info files even when diagnostics were suppressed. */
 const emission = 'TSFILE: /fixture/build-info.tsbuildinfo\n';
 /** Quoted syntax remains literal compiler output when embedded in the disposable executable. */
-const syntaxBoundary = 'quote " slash \\ newline\n*/; process.exit(99); ${value}';
+const syntaxBoundary = `quote " slash \\ newline\n*/; process.exit(99); \${value}`;
 
 /** Each case selects process output independently of the wrapper implementation. */
 const cases: readonly CompilerFailureCase[] = [
@@ -43,7 +43,7 @@ const cases: readonly CompilerFailureCase[] = [
     expectedCode: 2, expectedStdout: emission, expectedStderr: '' },
   { name: 'preserves unexplained stdout beside suppressed errors', stdout: suppressed + unknownFailure, stderr: '', exitCode: 2,
     expectedCode: 2, expectedStdout: unknownFailure, expectedStderr: '' },
-  { name: 'rejects emission metadata without a path', stdout: suppressed + 'TSFILE: \n', stderr: '', exitCode: 2,
+  { name: 'rejects emission metadata without a path', stdout: `${suppressed}TSFILE: \n`, stderr: '', exitCode: 2,
     expectedCode: 2, expectedStdout: 'TSFILE: \n', expectedStderr: '' },
 ];
 
