@@ -88,7 +88,7 @@ ${originalCall}
     emitToolCall:'        return result;',
     emitUserBash:'        return undefined;'
   }[name];
-  value=replaceOnce({source:value,from:tail,to:`        nativeEventObservation.end();\n${tail}`});
+  value=replaceOnce({source:value,from:`\n${tail}`,to:`\n        nativeEventObservation.end();\n${tail}`});
   return `${value}\n        } catch (nativeEventError) {
             nativeEventObservation.aborted(nativeEventError);
             throw nativeEventError;

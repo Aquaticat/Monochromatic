@@ -53,7 +53,7 @@ const env=await createEnvironment({
   useNativeProvider:sdkStream,
   additionalExtensionPaths:configuredExtensions.map(function configuredExtensionPath(resource){return resource.path;}),
   expectedBlockedNetworkUrls:configuredExtensions.some(function syntheticCatalog(resource){return resource.metadata?.source==='npm:@benvargas/pi-synthetic-provider';})?['https://api.synthetic.new/openai/v1/models']:[],
-  extensionFactories:unobservedContext?[function registerUnobservedContextHandler(pi) {pi.on('turn_start',function countUnobservedContextCall() {contextCalls++;});}]:observedContext?[function registerObservedContextHandlers(pi) {
+  extensionFactories:unobservedContext?[function registerUnobservedContextHandler(pi) {pi.on('input',function countUnobservedContextCall() {contextCalls++;});}]:observedContext?[function registerObservedContextHandlers(pi) {
    pi.on('context',function retainOriginalContextInput(event) {
     contextCalls++;
     event.receiptFixture='Original in-place context input';
@@ -183,7 +183,7 @@ try{
    lastJudgment:judgment
  }=runtime.inspect();
  assert.ok(review,inspect(
-   {requests,assessments,message:session.messages.at(-1),judgment:judgment?.inspect()},
+   {requests,assessments,message:session.messages.at(-1),toolErrors:session.messages.filter(function failedTool(message){return message.role==='toolResult'&&message.isError;}),judgment:judgment?.inspect()},
    {depth:4}
  ));
  assert.equal(
@@ -241,7 +241,7 @@ try{
   assert.ok(contextCalls>0,'The native context callback must actually run');
   assert.ok(domainIssue?.sourceDomain
     .gaps
-    .some(function namesUnobservedContext(gap) { return (gap.reason.includes('"turn_start"')); }));
+    .some(function namesUnobservedContext(gap) { return (gap.reason.includes('"input"')); }));
   assert.equal(
     review.outcome.state,
     'unresolved'

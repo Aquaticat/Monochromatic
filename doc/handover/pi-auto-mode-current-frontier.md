@@ -1158,7 +1158,7 @@ all 22 registered event kinds other than the separately captured `before_agent_s
 The actual native review retains its unresolved source-domain issue.
 Complete capture at the original event invocation and settlement boundaries is the next implementation step;
 the existing guard remains in force.
-The maintained native event observer and source generator are now written but not wired into the host.
+The maintained native event observer and source generator are now connected to the generated host.
 The generator selects original parsed `ExtensionRunner` methods:
 `emit`,
 `emitBoundary`,
@@ -1173,9 +1173,19 @@ and traversal-completion observations.
 The observer distinguishes native early returns from missing callbacks,
 tracks overlapping emissions independently,
 and publishes original observation identities with pending and failed state.
-Remaining integration connects its capture callback to the existing manager input pool,
+Commit `a0c220d54f` connects its capture callback to the existing manager input pool,
 selects the generated runner through the existing loader,
 and binds original observation freshness into the source snapshot.
+The first generated build rejected an ambiguous final-return marker;
+anchoring it to the original line resolved that build failure.
+The first native-domain regression then rejected requests after empty event dispatch.
+Empty dispatch now preserves the observation identity because it invokes no callback and adds no source.
+The native permission,
+prohibition,
+and unspecified-policy cases pass again.
+The configured-extension fixture still stops during request observation;
+tagged cause diagnostics are being used to identify the exact freshness failure.
+No configured-extension consumer success is claimed.
 Its unit,
 omission,
 native consumer,
