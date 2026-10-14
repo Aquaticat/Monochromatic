@@ -7140,7 +7140,21 @@ No production workaround is established.
 Waiting for callback completion alone does not preserve the selected source identity.
 Removing the callback would alter the user's configured extension behavior.
 Ignoring source changes without an adopted timing rule would silently change the governing-domain contract.
-The concrete timing proposal is in
+The user adopted decision-scoped timing on 2026-10-14:
+later received inputs govern the next decision.
+The native collector now preserves the assessed source set during approved execution
+while checking original policy,
+resource,
+run,
+and receipt identities.
+Its dependency facade uses that same collection;
+an independently captured facade snapshot initially continued to reject progress.
+The reduced progress consumer now completes three child calls through seven callback invocations
+with one authored assessment.
+The next-decision consumer retains an input mutation and unused callback result,
+then blocks the following operation after its own assessment.
+Selected-policy changes and cancellation still stop the remaining child calls.
+The adopted timing and its measured contrasts are in
 `doc/planning/pi-auto-mode-governing-domain-closure.md`.
 
 ### Upstream filing decision
@@ -7154,6 +7168,31 @@ The concrete timing proposal is in
   so contribution-policy research is unnecessary.
 - No maintainer disposition is inferred.
 - No upstream fix is claimed or proposed;
-  the remaining receipt-timing choice belongs to the consumer.
+  the adopted receipt-timing implementation belongs to the consumer.
 
 There is nothing to file upstream from this diagnosis.
+
+### Configured receipt capacity
+
+After the timing correction,
+the isolated fixture loads all 22 configured extensions and executes three child calls.
+Cleanup then fails with
+`InputReceiptBudgetError: Combined original resource and session receipts exceed the shared 64-input or four-MiB budget`.
+The count boundary is independently isolated by a private Node load hook that changes count limits to 128 in memory,
+keeps byte limits unchanged,
+and records application markers for every transformed module.
+The corrected experiment completes the configured consumer,
+reaching 81 receipts and 347,913 bytes at the last observed check.
+No artifact file changes or provider requests occur in that experiment.
+
+The first hook matched every package ending in `dist/final/node/index.mjs`.
+Its asserted replacement failed on unrelated extension bundles,
+and the resulting fallback reported a missing `compat.js/api/openai-codex-responses` module.
+Scoping the hook to `package/pi-plugin/auto-mode/dist/final/node/index.mjs` fixes that diagnostic mistake.
+That failed import does not establish a configured extension defect.
+
+The prepared 128-receipt capacity patch retains the four-MiB combined byte limit,
+the resource-local count and byte limits,
+and the original assessment budget.
+Automatic approval review rejected the commit pending explicit user authorization for the limit change.
+The implementation and boundary tests remain uncommitted while that permission question is pending.
