@@ -195,6 +195,8 @@ mod quiet_read_tests;
 mod refresh_latency_tests;
 /// Background source reads apply correspondence to the latest UI reading state.
 mod reload;
+/// Debug records of the moments a window frame passes through.
+mod frame_trace;
 /// Native rendering and input are split by their invalidation boundary.
 mod render;
 /// The window thread's counted step when the wrap width changes.
@@ -777,6 +779,7 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     window.set_file_label(SharedString::from(label));
     bind_pointer(&window, &state);
     bind_viewport(&window, &state);
+    frame_trace::bind(&window);
     bind_keys(&window, &state);
     // Retain the timer until window shutdown; its Drop also closes and joins the worker.
     let _reload_timer = reload::bind(&window, &state)?;
