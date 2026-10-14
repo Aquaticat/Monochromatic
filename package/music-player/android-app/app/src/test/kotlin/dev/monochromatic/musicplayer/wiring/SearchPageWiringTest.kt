@@ -535,16 +535,17 @@ class SearchPageWiringTest {
         assertEquals("near ring just inside", scheme.primary.toArgb(), image[4, middle].toArgb())
         assertEquals("bare inside the rings", scheme.surfaceContainerLowest.toArgb(), image[12, middle].toArgb())
         assertEquals("rounded corner stays bare", scheme.surfaceContainerLowest.toArgb(), image[1, 1].toArgb())
-        // A square ring would still cover the top edge 6 dp from the corner, where the curve has left it.
+        // The outer ring is white like the canvas in light, so the near ring (row 4 from the top) is what is probed.
+        // A square ring would still cover the top edge 6 dp from the corner, where the curve has already left it.
         assertEquals(
             "the ring follows the curve, not a square",
             scheme.surfaceContainerLowest.toArgb(),
-            image[(6f * PX_PER_DP).toInt(), 1].toArgb(),
+            image[(6f * PX_PER_DP).toInt(), 4].toArgb(),
         )
         assertEquals(
-            "the straight top edge carries the outer ring",
-            scheme.onPrimary.toArgb(),
-            image[(30f * PX_PER_DP).toInt(), 1].toArgb(),
+            "the straight top edge carries the near ring",
+            scheme.primary.toArgb(),
+            image[(30f * PX_PER_DP).toInt(), 4].toArgb(),
         )
         assertEquals(8f, rowNode.getUnclippedBoundsInRoot().left.value, 0.01f)
     }
