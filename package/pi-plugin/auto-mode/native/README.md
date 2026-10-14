@@ -4,7 +4,8 @@ This directory maintains the native runtime,
 source collectors,
 judgment consumer,
 and Pi source transformations previously exercised in the private integration workspace.
-The package extension entry remains unchanged while native delivery is completed.
+The package extension export remains available for legacy consumers.
+The installed native host replaces its legacy extension declaration to avoid duplicate guards.
 
 `contract/source-provenance.json` records the original relative paths,
 source repository revision,
@@ -20,7 +21,14 @@ The package `build` task builds maintained exports before building this native a
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
-The candidate CLI entry is `dist/native/cli.mjs`.
+The native CLI entry is `dist/native/cli.mjs`.
+`native/command.ts` and `bin/pi` route the ordinary command to that maintained build.
+The `install:native` task retains a private settings backup,
+installs the user-local command,
+removes only the legacy auto-mode declaration,
+and verifies that all other settings remain unchanged.
+`test:native:installation` exercises this transition and repeat installation in disposable homes;
+it also rejects a foreign existing command without changing settings.
 Its TypeScript bootstrap retains the original SDK session interfaces and forwards native owners unchanged.
 The TypeScript host owner retains original session construction,
 resource membership,
@@ -201,7 +209,7 @@ resource-local capture remains limited to 64 receipts and all byte bounds remain
 The isolated consumer with all 22 configured extensions passes through three child calls and cleanup.
 Its assessment uses authored replies and makes no provider requests.
 Complete lint verification,
-installed host activation,
+provider-backed governed execution,
 and genuine human approval remain outstanding.
 Empirical semantic qualification is not established;
 the adopted operating policy does not require another paid trial.

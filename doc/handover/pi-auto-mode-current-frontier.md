@@ -1110,9 +1110,25 @@ All 198 maintained native modules pass parser checking.
 The current host configuration still loads the legacy auto-mode package through the user's global Pi settings;
 installation preparation must replace that legacy activation and route the ordinary `pi` command
 to the maintained host without duplicating guards.
+This historical activation state was superseded on 2026-10-14:
+the maintained launcher is installed at `${HOME}/.local/bin/pi`,
+and `file-enforcer.config.ts` now places the package's `bin` directory before dependency-provided Pi shims.
+The installer removed only the legacy auto-mode package declaration,
+verified every other setting against its original value,
+and retained a private backup at `${HOME}/temp/agent/pi-native-install-4AsZGN/settings.json`.
+The global provider and model defaults remain unchanged.
+Disposable installer controls cover successful activation,
+repeat installation,
+exact preservation of unrelated settings,
+and rejection of a foreign existing command without changing its settings.
+Both configured decisions pass with all 22 installed extensions plus the explicit receipt-control callback.
+The first operation executes three children;
+the second assesses the later input and remains unresolved without more child execution.
+Actual provider-backed governed execution and genuine native approval remain unfinished.
 The current command resolves through generated workspace dependency shims,
 and the root `mise.toml` path list is owned by `file-enforcer.config.ts`.
-No installed settings or command resolution have been changed yet.
+That command-resolution description is historical;
+`mise exec -- which pi` now selects `package/pi-plugin/auto-mode/bin/pi`.
 The next consumer check must exercise the configured extension set in disposable state.
 The generated `readActiveSessionDomainEvents` includes every registered handler kind except `before_agent_start`;
 `inspectNativeSourceDomain` currently accounts only original `context` and `context_with_system` receipts.
