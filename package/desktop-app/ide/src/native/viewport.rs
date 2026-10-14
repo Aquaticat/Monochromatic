@@ -343,6 +343,12 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let reported = weak
             .upgrade()
             .map(|window| return window.window().scale_factor());
+        tracing::debug!(
+            target: "monochromatic_ide::native::frame",
+            viewport_width,
+            height,
+            "the view reported its size"
+        );
         let mut current = state.borrow_mut();
         if let Some(factor) = reported {
             // The size limit of the tile depends on the display scale.

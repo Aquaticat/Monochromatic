@@ -146,6 +146,8 @@ mod focus_tests;
 /// Native font instance changes must repaint rather than reuse stale glyphs.
 #[cfg(test)]
 mod font_tests;
+/// Debug records of the moments a window frame passes through.
+mod frame_trace;
 /// Source selection and keyboard callbacks.
 mod input;
 /// Inspection-only hint and diagnostic injection from a JSON file;
@@ -777,6 +779,7 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     window.set_file_label(SharedString::from(label));
     bind_pointer(&window, &state);
     bind_viewport(&window, &state);
+    frame_trace::bind(&window);
     bind_keys(&window, &state);
     // Retain the timer until window shutdown; its Drop also closes and joins the worker.
     let _reload_timer = reload::bind(&window, &state)?;

@@ -633,6 +633,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
             elapsed_us = at.elapsed().as_micros() as u64,
             first = settled.first,
             count = settled.count,
+            width = settled.width,
             charged_lines,
             charged_work,
             shaped,

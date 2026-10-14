@@ -235,8 +235,8 @@ Status as of 2026-10-12 (the branch `feat/ide-soft-wrap`):
    the step took a few milliseconds, and the count of frames that do not fit did not change in the 16 ms drag,
    because the compositor shows the previous step's content at each new size, while a 100 ms drag showed far
    fewer such frames than the worker-only tile.
-   Open question: whether the remaining one-step lag is in the compositor's configure and commit exchange or in
-   the toolkit's redraw, which was not determined.
+   The remaining one-step lag was measured on 2026-10-13: it is the recorder's capture model and winit's redraw gate,
+   not the application (`doc/troubleshooting/nested-wayland-recording-previous-resize-step.md`).
 
 ## Not decided here
 

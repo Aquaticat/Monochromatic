@@ -324,7 +324,15 @@ the items after it are the record of 2026-10-05 and older.
     frame, and where that delay comes from (compositor configure and commit, or the toolkit's redraw scheduling) is
     not determined. The window-thread step took a median 3 to 7 ms and at most 15 ms at low load; on the earlier CPU
     it reached 91 ms once, so the allowance bounds counted work and not wall time.
-    Open: find the source of the one-step delay in the compositor; the load band 20 to 100 was not measured.
+    Determined 2026-10-13 (branch `feat/ide-resize-frame`,
+    `doc/troubleshooting/nested-wayland-recording-previous-resize-step.md`): the one-step delay is the recorder's capture model plus winit's redraw gate, not the application. The compositor
+    changes the recorded frame size when the `resize` command arrives, captures before it sends frame callbacks, and
+    sends them only from the recorder tick; winit holds the redraw until that callback. 76 to 77 of 81 to 82 captures
+    held a buffer of another width than the output, every frame that did not fit was among them, and no frame whose
+    buffer had the output's width failed to fit. Controls: stopping the application 40 and 80 ms moved the logged size
+    event by that time, and sending the callbacks at the command cut the stale captures from 94 to 56 to 61 percent.
+    No application change was made; the debug lines at the `monochromatic_ide::native::frame` target were added.
+    Open: the live path (no recording) and the load band 20 to 100 were not measured.
     Other pending small items: remove the worktrees `ide-wrap` and `ide-land2` after landing; delete the large
     scratch caches `~/temp/agent/ide-wrap-s4/guard-cache`, `ide-wrap-s6/guard-cache`, `ide-wrap-s5/bundles` when done.
     Open: the installed single file at `~/.local/bin/monochromatic-ide` predates stages 1, 2, soft wrap and this
