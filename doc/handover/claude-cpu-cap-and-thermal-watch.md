@@ -360,7 +360,11 @@ for VFIO passthrough.
   Realtek 5 Gb LAN; 456.90 CHF, 568.90 EUR (list 762 EUR) in the ASUS shop. The Dark Hero also lists Q-Code and x8/x8
   but ships MediaTek MT7927 and 10 Gb LAN. ROG Crosshair X670E Hero: x16 or x8/x8, Wi-Fi 6E, Intel 2.5 Gb; Q-Code
   not seen in the fetched text; price not found.
-  ASRock FAQ page names a Dr. Debug display for the X870E Nova WiFi, X870 Pro RS and X870 Steel Legend WiFi. X870
+  CORRECTION (about 22:40 EDT): an ASRock FAQ table (support FAQ 544) was first read as naming a Dr. Debug display
+  for the X870E Nova WiFi, X870 Pro RS and X870 Steel Legend WiFi. Read again, its first row gives a Dr. Debug code
+  only under the Nova; the Pro RS and Steel Legend columns describe LED behavior (CPU LED solid, DRAM LED blinking),
+  so the Steel Legend most likely has only status LEDs and fails the code display requirement (confirm on the
+  spec page). X870
   Steel Legend WiFi (ASRock page): PCIE1 PCIe 5.0 x16 from the CPU, PCIE2 PCIe 4.0 x16 at x4 from the chipset, Key E
   Wi-Fi socket; no x8/x8. X870E Nova WiFi: one PCIe 5.0 x16, one PCIe 3.0 x16, one x1; no x8/x8. A Reddit VFIO post
   reports passthrough success with good IOMMU groups on a Steel Legend. ASRock forum thread titles (not read) report
@@ -370,6 +374,18 @@ for VFIO passthrough.
   (x8/x8 once the second is used) and a chipset x4 slot, but Gigabyte boards have IVRS reports and its display was
   not confirmed. ASUS X870E reports found: a ProArt Reddit post says CPU slots sit in separate IOMMU groups, and a
   Proxmox post says an RTX 5090 link dropped to x8 after a function-level reset until cold boot (5090 only).
+- Stability reports searched at the user's request (about 22:40 EDT); forum titles and snippets only, with no
+  failure rates, so they cannot rank boards. ASRock Taichi Lite and Taichi: a Reddit title says BIOS 4.43 breaks
+  XMP and EXPO profiles and lengthens boots; an Overclock.net user says changing a fan setting triggers a full memory
+  retrain (code 15); an ASRock forum post reports a 128 GB two-DIMM kit not POSTing in A2 and B2; a Tom's Hardware
+  post reports a Crucial T705 drive vanishing in the BIOS; several Reddit titles report dead 9800X3D, 9950X3D and
+  7800X3D CPUs on ASRock AM5 boards. ASRock shipped AGESA 1.3.0.0a in BIOS 4.07 beta and 4.10 for no-boot behavior;
+  Level1Techs reported that fixed instability on a 9600X (abit.ee summary); a Steel Legend 9950X death was reported
+  after that BIOS (VideoCardz via PauseHardware), which Hardware Unboxed did not reproduce. ASUS Hero: freezes fixed by
+  BIOS 2306 (ROG forum), a once-a-month hang on the DRAM LEDs (Overclock.net), EXPO profiles failing to boot, a code
+  1A after BIOS 2102, code 62 after BIOS 1715, the MediaTek Wi-Fi adapter disappearing after sleep (July 2026), and a
+  Reddit comment that ASUS acknowledged a CPU and board burn-up problem in January 2026 (not verified). Both vendors
+  show memory training trouble, which matches the user's own EXPO errors.
 - Not verified: IOMMU group layouts of any candidate on the user's CPU and kernel, BIOS stability reports for 2026
   firmware, the 4000D's expansion slot count and cooler height limit against the NH-D15S, and the power supply.
 - A new board does not prove the memory errors at EXPO 6000 are the board's: the CPU memory controller and the DIMMs
