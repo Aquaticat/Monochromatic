@@ -804,6 +804,7 @@ what the deck’s subtitle shows when the playing track is not in the visible fo
 
 ## 3b. Scrollbars — SETTLED (D22): desktop bar always visible, letter rail has none
 The per-surface table in candidate scroll-a stands otherwise.
+ Amended by D125 (2026-10-14): the desktop folder names list has none either.
  Original note kept:
 
 ### (history) SPEC PROPOSED, awaiting verdict (candidate scroll-a)

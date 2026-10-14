@@ -922,7 +922,8 @@
     },
     {
       "original": "lifecycle/runtime-factory-scopes/scopes.mjs",
-      "maintained": "lifecycle/runtime-factory-scopes/scopes.mjs",
+      "maintained": "lifecycle/runtime-factory-scopes/scopes.ts",
+      "movedOn": "2026-10-14",
       "sha256": "da525f1538d2fe2d005fc623652634d573563df74ec74c178e0bfd4b66d180cf",
       "origin": "authored-source",
       "relocatedLiterals": 0
