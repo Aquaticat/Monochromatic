@@ -120,9 +120,9 @@ await describe({
           f.view.retainedMessageOrigin = { ...f.retained, };
           expectUnresolved(f,);
           f.view.retainedMessageOrigin = f.retained;
-          f.retained.runOccurrence = undefined;
-          f.source.runOccurrence = undefined;
-          f.publication.runOccurrence = undefined;
+          delete f.retained.runOccurrence;
+          delete f.source.runOccurrence;
+          delete f.publication.runOccurrence;
           expectUnresolved(f,);
         },
       },);
@@ -132,7 +132,8 @@ await describe({
         name: `missing association ${index} retains the original unresolved contribution`,
         fn: async function missingAssociation() {
           const f = createContributionFixture('base',);
-          f.contribution.association = association;
+          /** Malformed JavaScript callers still cannot turn nullish values into source authority. */
+          Reflect.set(f.contribution, 'association', association);
           expectUnresolved(f,);
         },
       },);

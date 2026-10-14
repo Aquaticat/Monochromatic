@@ -40,8 +40,10 @@ await describe({
       name: 'empty or absent contribution selection supplies no completeness assertion',
       fn: async function checkEmpty() {
         const f = createContributionFixture('base',);
-        for (const requestSourceContributions of [[], undefined,]) {
-          const result = consumeSourceAssociations({ ...f.inputs, requestObservation: undefined, requestSourceContributions, },);
+        delete f.inputs.requestObservation;
+        delete f.inputs.requestSourceContributions;
+        for (const input of [f.inputs, { ...f.inputs, requestSourceContributions: [] }]) {
+          const result = consumeSourceAssociations(input);
           expect(result,).toEqual({ uses: [], issues: [], },);
           expect(Object.hasOwn(result, 'complete',),).toBe(false,);
         }
@@ -51,8 +53,11 @@ await describe({
       name: 'foreign request, list and request-bound source view reject',
       fn: async function checkRequestIdentity() {
         const f = createContributionFixture('base',);
+        /** Omitted request identity exercises the ordinary optional-field contract. */
+        const missing = { ...f.inputs };
+        delete missing.requestObservation;
         for (const input of [
-          { ...f.inputs, requestObservation: undefined, },
+          missing,
           { ...f.inputs, requestObservation: { ...f.observation, request: {}, }, },
           { ...f.inputs, requestSourceContributions: [...f.observation.sourceContributions,], },
           { ...f.inputs, instructionSources: [{ ...f.view, request: { ...f.observation, }, },], },

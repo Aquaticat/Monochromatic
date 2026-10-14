@@ -20,10 +20,10 @@ await describe({
           f.association.handlerPublication = { ...f.publication, };
           f.association.expandedPromptPublication = { ...f.publication, };
           expect(consumeSourceAssociations(f.inputs,).uses[0]?.state,).toBe('unresolved',);
-          f.association.publication = undefined;
-          f.association.forcedPublication = undefined;
-          f.association.handlerPublication = undefined;
-          f.association.expandedPromptPublication = undefined;
+          delete f.association.publication;
+          delete f.association.forcedPublication;
+          delete f.association.handlerPublication;
+          delete f.association.expandedPromptPublication;
           expect(consumeSourceAssociations(f.inputs,).uses[0]?.state,).toBe('unresolved',);
         },
       },);
@@ -33,15 +33,16 @@ await describe({
         name: `${profile} requires original render and insertion observations`,
         fn: async function renderIdentity() {
           const f = createContributionFixture(profile,); const render = f.run.renderOccurrence;
+          if (render === undefined) throw new Error('Generated contribution fixture requires its original render');
           f.source.renderOccurrence = {};
           expect(consumeSourceAssociations(f.inputs,).uses[0]?.state,).toBe('unresolved',);
           f.source.renderOccurrence = render;
           f.publication.renderOccurrence = {};
           expect(consumeSourceAssociations(f.inputs,).uses[0]?.state,).toBe('unresolved',);
           f.publication.renderOccurrence = render;
-          f.run.renderOccurrence = undefined;
-          f.source.renderOccurrence = undefined;
-          f.publication.renderOccurrence = undefined;
+          delete f.run.renderOccurrence;
+          delete f.source.renderOccurrence;
+          delete f.publication.renderOccurrence;
           expect(consumeSourceAssociations(f.inputs,).uses[0]?.state,).toBe('unresolved',);
           f.run.renderOccurrence = render;
           f.source.renderOccurrence = render;

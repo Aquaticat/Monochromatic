@@ -84,18 +84,15 @@ export function createContributionFixture(profile: ContributionFixtureProfile,):
   const emitting: ContributionFixture['emitting'] = {
     occurrence, renderOccurrence, systemPublication: publication,
     replacementInputs: profile === 'replacement' ? [source,] : [],
-    forcedPromptInput: profile === 'forced' ? source : undefined,
-    forcedPublication: profile === 'forced' ? publication : undefined,
+    ...(profile === 'forced' ? { forcedPromptInput: source, forcedPublication: publication } : {}),
     mappedPromptInputs: ['section', 'snippet',].includes(profile,) ? [source,] : [],
     builtInPromptInputs: ['default-preamble', 'tool-discovery-guidance', 'documentation-guidance',
       'project-context-introduction', 'skill-usage-guidance', 'default-rule',].includes(profile,) ? [source,] : [],
     skillDescriptionInputs: profile === 'skill' ? [source,] : [],
     promptGuidelineInputs: profile === 'prompt-guideline' ? [source,] : [],
     toolGuidelineInputs: profile === 'tool-guideline' ? [source,] : [],
-    handlerMessageInputs: profile.endsWith('handler',) ? [source,] : undefined,
-    handlerPublications: profile.endsWith('handler',) ? [publication,] : undefined,
-    expandedPromptInput: profile.endsWith('expanded',) ? source : undefined,
-    expandedPromptPublication: profile.endsWith('expanded',) ? publication : undefined,
+    ...(profile.endsWith('handler',) ? { handlerMessageInputs: [source], handlerPublications: [publication] } : {}),
+    ...(profile.endsWith('expanded',) ? { expandedPromptInput: source, expandedPromptPublication: publication } : {}),
   };
   /** Retained histories and active ancestor paths are deliberately disjoint. */
   const run: ContributionFixture['run'] = profile.startsWith('ancestor-',)
@@ -108,15 +105,12 @@ export function createContributionFixture(profile: ContributionFixtureProfile,):
   /** Association fields retain originals rather than constructing equal replacements. */
   const association: ContributionFixture['association'] = {
     source, sourceOccurrence: source.occurrence,
-    runCarrier: profile.startsWith('base',) ? runCarrier : undefined,
-    carrier: profile === 'base' ? carrier : undefined,
-    run: profile.startsWith('base',) ? undefined : run,
-    publication: profile.startsWith('base',) ? undefined : publication,
-    forcedPublication: profile === 'forced' ? publication : undefined,
-    handlerPublication: profile.endsWith('handler',) ? publication : undefined,
-    expandedPromptPublication: profile.endsWith('expanded',) ? publication : undefined,
-    retainedMessageOrigin: profile.startsWith('retained-',) ? retained : undefined,
-    emittingRun: profile.startsWith('retained-',) ? undefined : emitting,
+    ...(profile.startsWith('base',) ? { runCarrier } : { run, publication }),
+    ...(profile === 'base' ? { carrier } : {}),
+    ...(profile === 'forced' ? { forcedPublication: publication } : {}),
+    ...(profile.endsWith('handler',) ? { handlerPublication: publication } : {}),
+    ...(profile.endsWith('expanded',) ? { expandedPromptPublication: publication } : {}),
+    ...(profile.startsWith('retained-',) ? { retainedMessageOrigin: retained } : { emittingRun: emitting }),
   };
   /** Original contribution list and receipt are paired by reference. */
   const contribution = { request, contribution: {}, association, location: { field: 'messages', ordinal: 0, }, };
@@ -125,7 +119,7 @@ export function createContributionFixture(profile: ContributionFixtureProfile,):
   /** Original view optionally authenticates the separate retained-origin reference. */
   const view = {
     source, sourceOccurrence: source.occurrence, request: observation,
-    retainedMessageOrigin: profile.startsWith('retained-',) ? retained : undefined,
+    ...(profile.startsWith('retained-',) ? { retainedMessageOrigin: retained } : {}),
   };
   /** All input containers belong solely to this fixture invocation. */
   const inputs = {
