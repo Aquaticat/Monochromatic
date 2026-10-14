@@ -692,6 +692,16 @@ The day-one checks under "Checks before buying" still decide it.
    needs no cure time (NT-H2 AM5 Edition manual and product page, fetched 2026-10-13). The reseat also resets the
    other checks: base film removed, -7 mm offset, bars NORTH and SOUTH, screws alternately to the stop.
 
+### In-repo CPU cap package (2026-10-13, about 22:15 EDT)
+
+The watcher, summarizer, episode analyzer and unit moved into `package/dev-script/claude-cpu-cap` at the user's
+request ("Make (almost) everything live in the repo"); the running service starts from that checkout.
+The code was copied unchanged, so `mise run //package/dev-script/claude-cpu-cap:lint:oxlint` reports
+251 errors and 266 warnings (mostly missing TSDoc, sync calls, arrow functions, module-level `let`, magic numbers),
+and the package has no tests; `lint:types` passes.
+Making it lint-clean means rewriting the watcher into several modules with tagged loggers and tests,
+which was not asked for yet. Host state stays outside the repo: the `threads` file, `cc-token` and the sample log.
+
 ## Commits so far
 
 - `6bb8cc9a7d`, `25909f463a`, `609b693cf5`, `bc561191bb`, `6c8d57d685`, `59c107b737`: the runbook, in order.
