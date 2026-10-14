@@ -1307,8 +1307,23 @@ adopted-policy contrasts,
 and context receipt controls pass.
 The scoped fixture lint has zero errors and 988 warnings;
 the lint task still fails because of those warnings.
-The new generator and approved-change fixture lint also remains unfinished:
-its initial check reports 99 warnings and one error.
+The new generator and approved-change fixture initially report 99 warnings and one error.
+The fixture now has explicit TypeScript owner interfaces;
+the scoped generator and fixture lint reports zero warnings and zero errors,
+and package type checking passes.
+The existing built artifact still uses the 64-receipt limit.
+Against that artifact,
+all six semantic operating-policy contrasts,
+Allow,
+Deny,
+Stop,
+cancellation,
+approval after reload,
+and native host lifecycle checks pass after the timing change.
+A disposable in-memory omission of the approved-source validator makes the policy-change control fail:
+all three children execute instead of stopping after the first.
+Its application marker and the unchanged built 64-receipt cap are asserted by the driver.
+No product artifact file is changed by that omission control.
 The user explicitly authorized continued attachment to the existing Codex worker cgroup on 2026-10-14
 after automatic approval review rejected the wrapper's attachment step.
 No resource limit changed.

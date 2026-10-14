@@ -7172,12 +7172,44 @@ The adopted timing and its measured contrasts are in
 
 There is nothing to file upstream from this diagnosis.
 
-### Configured receipt capacity
+## Pi 1.2.0 configured operation exceeds migration receipt capacity
+
+### Symptom
 
 After the timing correction,
 the isolated fixture loads all 22 configured extensions and executes three child calls.
 Cleanup then fails with
 `InputReceiptBudgetError: Combined original resource and session receipts exceed the shared 64-input or four-MiB budget`.
+
+### Root cause
+
+This failure is separate from the frozen-source timing failure.
+The shared arithmetic in `package/pi-plugin/auto-mode/src/input-receipt-budget.ts:170`
+checks both source count and serialized bytes:
+
+```ts
+// package/pi-plugin/auto-mode/src/input-receipt-budget.ts
+if (((resourceUsage.count + sessionUsage.count) > INPUT_COUNT_LIMIT)
+  || ((resourceUsage.bytes + sessionUsage.bytes) > INPUT_BYTE_LIMIT)) {
+```
+
+The committed artifact has a count limit of 64 and a byte limit of 4,194,304.
+The proposed working-tree change sets the count limit to 128;
+it has not been activated or committed.
+
+### Verification
+
+The fixture uses the qualified Pi `v1.2.0` source and the same 22 configured extension paths
+as the frozen-source investigation.
+The original 64-count artifact completes the reduced progress fixture,
+but fails the configured fixture during execution cleanup.
+Run the isolated configured fixture with:
+
+```sh
+# Repository root, previously verified private isolated fixture
+node "${HOME}/temp/agent/pi-extension-isolation-20261014.test.ts" extensions
+```
+
 The count boundary is independently isolated by a private Node load hook that changes count limits to 128 in memory,
 keeps byte limits unchanged,
 and records application markers for every transformed module.
@@ -7185,14 +7217,42 @@ The corrected experiment completes the configured consumer,
 reaching 81 receipts and 347,913 bytes at the last observed check.
 No artifact file changes or provider requests occur in that experiment.
 
+```sh
+# Repository root, private count-only diagnostic retaining the isolated fixture
+node "${HOME}/temp/agent/pi-receipt-limit-isolation-20261014.test.ts" extensions
+```
+
+### What does not work
+
 The first hook matched every package ending in `dist/final/node/index.mjs`.
 Its asserted replacement failed on unrelated extension bundles,
 and the resulting fallback reported a missing `compat.js/api/openai-codex-responses` module.
 Scoping the hook to `package/pi-plugin/auto-mode/dist/final/node/index.mjs` fixes that diagnostic mistake.
 That failed import does not establish a configured extension defect.
 
+### Proposed remedy and tradeoff
+
 The prepared 128-receipt capacity patch retains the four-MiB combined byte limit,
 the resource-local count and byte limits,
 and the original assessment budget.
 Automatic approval review rejected the commit pending explicit user authorization for the limit change.
 The implementation and boundary tests remain uncommitted while that permission question is pending.
+The proposed cap permits more source records to be processed within the same byte bounds.
+It does not provide unlimited session history or establish permission for later instructions.
+
+### Upstream filing decision
+
+- The failing count guard belongs to the migration,
+  so this is not an established upstream defect.
+- Pi does not own the migration's count limit;
+  an upstream patch is not the remedy evaluated here.
+- The fixture exercises Pi's existing extension dispatch,
+  without claiming an upstream promise about this consumer's capacity.
+- No external contribution is proposed,
+  so contribution-policy research is unnecessary.
+- No maintainer disposition is inferred.
+- The prototype changes consumer limits only,
+  retains all byte bounds,
+  and does not modify upstream source or installed artifacts.
+
+There is nothing to file upstream from this capacity measurement.
