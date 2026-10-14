@@ -62,7 +62,7 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   check that ends the watch if nothing weird happened. Its job id changes at every push, so read it with CronList;
   this file records the rule, not each id. The first setting was 21:19 EDT; since then it moved after the alerts at
   18:02:37 (CPU pressure), 19:16:45 (memory pressure), 20:11:41 (CPU pressure), 20:15:27 (temperature) and 20:24:45
-  (throttle), and the throttle alert flapped at 100 MHz. After the CPU pressure alert at 20:38:31 it stands at 00:41 EDT
+  (throttle), and the throttle alert flapped at 100 MHz. After the CPU pressure alert at 21:05:27 it stands at 01:08 EDT
   on 2026-10-14 (the latest weird event so far).
 - The 20:11:41 CPU pressure alert (46.1, limit 40) came at cap 30 and 130 W. It was the first sustained load in the
   log: about 55 seconds at 125 to 136 W, load average up to 57 on 32 threads, pressure up to 67.8, and it cleared at
@@ -305,6 +305,10 @@ so the findings come from reading the readable source strings inside the binary 
     with four DIMMs, so EXPO errors can be expected if the kit is above those speeds with that many DIMMs; the DIMM
     count and the EXPO speed are not known yet. A memory test at default settings (no EXPO) would separate faulty
     memory, board or power supply from an over-rated kit.
+    Answers (about 21:12 EDT): the user ran memtest86+ at JEDEC defaults and the memory passed, and two DIMMs are
+    fitted. So the memory is sound at defaults, and two DIMMs are within AMD's DDR5-5200 rating, so EXPO errors at
+    a higher EXPO speed mean the kit is above the processor's rated speed on this board, not that the memory is bad;
+    the EXPO speed was not asked. This does not yet separate a board fault from a kit or memory controller limit.
 - The cooler is the NH-D15S (answered). Is it mounted correctly? The numbers in the evidence section say the heat
   path is far weaker than references; the model difference (1 to 3 degrees for one fan instead of two) does not
   explain it, and the paste is not the Noctua NT-H1 the checklist assumes. The user tightened the screws until they
