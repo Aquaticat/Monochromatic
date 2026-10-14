@@ -552,6 +552,9 @@ Disposable omission controls remove only the corresponding parse or membership g
 Every omitted guard fails its intended consumer assertion,
 while both unchanged copied modules pass.
 The maintained source and production artifact remain unchanged by those omission controls.
+The native SDK stream,
+all approval-context cases,
+and host lifecycle replacement and cleanup pass against the rebuilt artifact.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
