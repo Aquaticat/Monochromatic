@@ -17,7 +17,7 @@ the current synthetic controls accept 512 questions and reject 513.
 
 The observable boundary is a disagreement between the published row limit and the backend's returned limit.
 The public runtime checkout remains `be8ba7c8157241b9393862e9fcec104d0dc5caff`.
-Its `kev/model.py:152` checks available row capacity while encoding a branch:
+Its `kev/model.py:153` checks available row capacity while encoding a branch:
 
 ```python
 # nace-ai/drex-decision-models, kev/model.py

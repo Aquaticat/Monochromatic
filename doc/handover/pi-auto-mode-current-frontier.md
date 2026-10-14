@@ -61,6 +61,22 @@ The [result record](../planning/pi-auto-mode-drex-current-contract.md#approved-s
 retains timings,
 token usage,
 and probability ranges without treating them as calibration.
+The user then explicitly requested more calls to establish actual Drex limits.
+The completed extended phase made 23 sequential synthetic requests with no retries:
+12 returned HTTP 200,
+10 returned HTTP 422,
+and the final combined input returned HTTP 529.
+Every attempt and response is retained in `${HOME}/temp/agent/drex-request-limits-20261014`.
+The measured boundaries are 512 questions,
+4,194,304 counted body bytes,
+the server's named 131,072-token state boundary,
+and an effective backend row limit of 139,264 despite the published 262,144 allowance.
+The 244-question case with 65,536 repeated-text units succeeded in 25,155.119 ms;
+the near-maximum state with 244 questions returned `overloaded` after 33,331.147 ms.
+The frozen stop condition ended the schedule without retry.
+These measurements reopen Drex's question-count compatibility but do not qualify the complete native assessment,
+establish reliable five-second latency,
+or adopt a new production route.
 
 The latest approved installed Qwen/Jev verification is separately incomplete:
 `${HOME}/temp/agent/pi-native-installed-live-NB6KVz/host-stderr.txt`

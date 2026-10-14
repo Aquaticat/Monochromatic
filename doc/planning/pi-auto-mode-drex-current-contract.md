@@ -3,8 +3,9 @@
 ## Scope and result
 
 Checked on 2026-10-14 after the user reiterated that `drex.nace.ai` looks promising.
-This is a public documentation and source recheck,
-not a model-adoption decision or an inference experiment.
+This began as a public documentation and source recheck,
+then expanded into separately authorized synthetic inference probes.
+It is not a model-adoption decision.
 The initial documentation recheck sent no provider assessment.
 The separately approved synthetic boundary test recorded in this document then completed.
 No account setting changed and no external message was sent.
@@ -13,7 +14,21 @@ The published Drex 2.0 context contract has changed materially since the
 [release audit](../audit/tech-pi-auto-mode-drex-2-release-vet-2026-10-13.md).
 The observed 16-question rejection remains unresolved.
 The public source does not expose its deciding hosted guard.
-There is no demonstrated hosted batching alternative preserving the complete assessment within three calls.
+The current measured question boundary is 512,
+so the historical 16-question observation no longer excludes batching by count alone.
+The complete native assessment remains unverified on Drex 2.0.
+
+The completed synthetic probes establish:
+
+- 512 questions accepted;
+  513 rejected.
+- 4,194,304 serialized `state` plus `questions` bytes accepted;
+  one byte more rejected.
+- Adjacent repeated-text states accepted/rejected around the server's named 131,072-token state limit.
+- An effective backend row boundary of 139,264 tokens,
+  despite a published 262,144-token state-plus-longest-question allowance.
+- A 244-question long-state response that succeeds outside the five-second production budget,
+  followed by a larger combined case returning HTTP 529.
 
 ## Current hosted documentation
 
@@ -269,6 +284,44 @@ The remaining bounded investigation adds three combined cases:
 and 131,070.
 These retain synthetic inputs and measure whether independent accepted boundaries combine.
 They make no claim about current native input fidelity or semantic quality.
+
+### Combined inputs and terminal outcome
+
+`mise run probe combined` kept 244 questions and varied the synthetic state length.
+The 8,192-repetition case returned HTTP 200 and every original answer in 4,431.266 ms.
+The 65,536-repetition case returned HTTP 200 and every original answer in 25,155.119 ms.
+Both report `model: drex-v2.0`.
+These are individual observations,
+not an unchanged-input latency distribution or a causal performance comparison.
+The latter successful call does not fit the existing five-second production budget.
+
+The 131,070-repetition case returned HTTP 529 after 33,331.147 ms,
+with `overloaded`,
+`Drex is temporarily unavailable. Retry shortly.`,
+and `retry-after: 2`.
+The frozen terminal-service-failure condition stopped the runner with exit one.
+It did not retry or dispatch any remaining probe.
+This is an observed service failure,
+not a demonstrated permanent input-size limit or proof of the documented 55-second timeout.
+
+The extended phase completed 23 attempts:
+12 HTTP 200 responses,
+10 HTTP 422 responses,
+and one HTTP 529 response.
+Every start record has a retained result record.
+Together with the separately approved 16/17 controls,
+the recheck made 25 provider requests.
+Every successful response reports `drex-v2.0` and passed original answer-ID and Noul-value validation.
+The extended phase reports 738,025 input tokens across successful responses;
+the unsuccessful responses report no usage,
+so no invoice-total claim follows.
+No account-rate,
+concurrency,
+or saturation testing was performed.
+No production route,
+threshold,
+deadline,
+or source-retention policy changed.
 
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits
