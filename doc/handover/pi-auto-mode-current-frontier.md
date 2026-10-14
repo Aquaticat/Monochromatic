@@ -1252,11 +1252,27 @@ A disposable in-memory change that awaits the initial Codemode progress publicat
 the event observation reaches revision two with pending zero,
 but differs from the original revision-zero source snapshot.
 Waiting alone is therefore not the complete remedy.
-The proposed decision-scoped versus continuously expanding receipt timing is recorded in
+The decision-scoped versus continuously expanding receipt timing is recorded in
 `doc/planning/pi-auto-mode-governing-domain-closure.md`.
-The question is being presented to the user;
-neither temporal policy has been adopted by this proposal.
-The existing freshness guards remain unchanged while independent verification continues.
+The user adopted decision-scoped membership on 2026-10-14:
+new inputs govern the next decision.
+Retain every later input while binding the approved operation to its assessed sources and original budget.
+Changes to existing policy or resource dependencies,
+prepared arguments,
+cancellation,
+and execution or result identity must still invalidate execution.
+The next implementation step is to distinguish authenticated appended receipts from changed selected dependencies,
+then exercise both outcomes through native consumers.
+The malformed traversal controls pass,
+including omitted positions and forged observation identity.
+Removing either of those guards in a disposable in-memory module causes its control to fail.
+After the fixture split,
+native build,
+event receipts,
+adopted-policy contrasts,
+and context receipt controls pass.
+The scoped fixture lint has zero errors and 988 warnings;
+the lint task still fails because of those warnings.
 The user explicitly authorized continued attachment to the existing Codex worker cgroup on 2026-10-14
 after automatic approval review rejected the wrapper's attachment step.
 No resource limit changed.

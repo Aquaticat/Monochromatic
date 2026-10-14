@@ -237,11 +237,12 @@ Unknown domain membership does not become automatic approval,
 denial,
 or a new approval request.
 
-## Proposed receipt timing during an approved operation
+## Adopted receipt timing during an approved operation
 
-This timing choice is proposed on 2026-10-14 and is not adopted.
+The user adopted decision-scoped membership on 2026-10-14:
+new inputs govern the next decision.
 The accepted all-host-input domain and processing-boundary capture remain unchanged.
-The open question is which decision a newly received input can govern after execution starts.
+The implementation must retain later receipts without changing the already approved decision's selected sources.
 
 The maintained `test:native:progress-events` fixture has one `tool_execution_update` callback.
 It increments a fixture counter,
@@ -284,6 +285,7 @@ and prove those separate outcomes in native consumers.
 
 ### Continuously expanding membership
 
+This alternative was not selected.
 Every newly received input becomes part of the governing domain for remaining execution steps immediately.
 If its significance cannot be established within the original decision budget,
 stop remaining execution.
@@ -304,4 +306,4 @@ Ranking:
 decision-scoped membership before continuously expanding membership,
 because the former gives the already accepted complete-operation decision a defined lifetime
 and preserves all receipts for subsequent decisions.
-The timing tradeoff requires user acceptance before implementation.
+The user accepted this ranking and authorized the decision-scoped implementation.
