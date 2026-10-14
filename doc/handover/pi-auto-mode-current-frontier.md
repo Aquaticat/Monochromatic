@@ -1001,13 +1001,36 @@ and unspecified-policy contrasts pass through the maintained HTTP sender.
 Each makes one authored HTTP response;
 only permission executes its three prepared child calls.
 Package types and scoped lint of six changed TypeScript files pass.
-Disposable guard sensitivity and native CLI regression are in progress.
+The disposable source-build campaign at `${HOME}/temp/agent/pi-assessment-omissions-7fuLwj`
+passes its original baseline and fails all ten intended omission assertions.
+It covers request and response limits,
+attempt bounds,
+credential withholding in both directions,
+HTTP status,
+original clock and cancellation,
+combined cancellation propagation,
+and invalid UTF-8 rejection.
+Each omitted variant exits one;
+every failure log was inspected and the production artifact was not modified.
+The native CLI process verifies Qwen selection and clean shutdown.
+Host lifecycle checks pass after the transport binding.
+All 188 maintained native modules pass syntax checks.
+The complete package unit task passes,
+including actual loopback HTTP;
+its log is `${HOME}/temp/agent/pi-auto-mode-unit-after-transport-20261014.log`.
+The native README,
+current transport checkpoint,
+and troubleshooting addition were checked in rendered output.
 No external provider request was made.
 The package JavaScript fanout task stopped at `spawnSync mise EPERM` while listing tasks;
 the explicit `build:js:node` task succeeds.
 This failure has not been equated with the historical `ENOBUFS` incident.
 The [staging troubleshooting record](../troubleshooting/pi-sdk-staging.md#node-26111-package-build-fanout-reports-spawnsync-mise-eperm)
 retains the observed reporting path and verified explicit-task workaround.
+The user was asked for the intended production semantic acceptance rule,
+or whether to prepare a concrete proposal from retained evidence.
+No answer or policy adoption is inferred from elapsed time.
+Independent maintained bootstrap quality work continues.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
