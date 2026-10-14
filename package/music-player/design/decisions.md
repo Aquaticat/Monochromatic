@@ -3481,6 +3481,63 @@ and status strip pixels equal the canvas in both schemes, divider pixel is `outl
 the keyboard inset, D58 columns on both panels, the ring inside the rounded row) and `SearchLayoutTest`, and a
 headful emulator pass on the Fold (cover, inner panel, light, dark, keyboard open, Tab focus, 200 percent text).
 
+#### Desktop port (addendum, 2026-10-14)
+
+The Slint Search page (`package/music-player/desktop-app/ui/search.slint`) now copies the specification above, on the
+branch `feat/desktop-search-restyle`.
+The addendum records what was ported and the choices the specification left to the desktop, so no new decision number
+is used.
+
+Ported as specified:
+
+- Header filled with `Theme.canvas` (the `Theme.surface-high` fill is gone), 1 px divider at y = 72 in
+  `Theme.outline-variant`.
+- Each result row is flat on the canvas. A rounded shape (radius 21.3) spans `content-start-x - 8` to the page width
+  minus 8, carries the hover and pressed layer (a `StateLayer` with the same radius), the D117 ring pair (a
+  `FocusRing` with `inside` and the same radius, so the 1 px outer ring is on the shape's edge and the 2 px near ring
+  inside it, following the corners) and the pointer target.
+  The glyph and the title keep their D58 columns (the glyph centered on the Back arrow's x, the title on the query's x).
+- Row icon: a 40 circle in `Theme.secondary-container` centered in the 48 slot, with the 24 glyph in
+  `Theme.on-secondary-container`.
+- The five status states (empty query, no match, scanning, unavailable, empty inventory) share one block that starts 72
+  below the divider's bottom edge on the cover and the inner panel: a 72 circle in `secondary-container` with the 32
+  magnifier in `on-secondary-container`, the title 24 below it (`Theme.title-medium`, weight 500, tracking 0.15 px, a 24
+  line), and the support line (`body-medium`, `on-surface-variant`, a 20 line) 8 below the title on the cover and 12 on
+  the inner panel. The cover centers the block with 16 on each side; the inner panel starts the circle at
+  `content-start-x`.
+- The block sits in a `Flickable` whose content is as tall as the block plus its 72 offset, so a window shorter than
+  that scrolls it with the wheel and a taller one does not move.
+
+Desktop-specific choices and facts:
+
+- The pointer target is the rounded shape's box, as on Android (the 8 px on each side of the shape no longer take the
+  click). The target is a rectangle, so the four corner pixels outside the arc still take a click; the hover layer, the
+  ring and the fill follow the arc.
+- The scrollbar's 12 px zone starts 12 px from the page edge and its 4 px track 8 px from it, which is exactly where
+  the shape ends, so the track never touches the ring at rest. The 8 px thumb of a hovered or dragged bar reaches 2 px
+  into the shape's last pixels and can cover the ring's right edge for the length of the thumb, as it did for the old
+  square ring.
+- The hint badge clause has nothing to keep: the desktop result rows have no key hint badge (`ui/search.slint` has none
+  and the page shows no badge over its rows), so no slot was added. A future badge belongs inside the shape's 8 px end
+  padding.
+- The crease sentence does not apply on desktop as built: `ui/app_window.slint` never sets `content-start-x` on the
+  Search page, so both layouts use the default 16 and the inner panel's page already starts at the pane's left edge (half
+  the window width), after the crease.
+- The status title keeps eliding on one line at a narrow width, as before; Android wraps it. The title weight is the
+  500 instance of the variable Inter font (`ui/fonts/InterVariable.ttf`), and `letter-spacing` is a Slint `Text`
+  property (checked in the `i-slint-compiler` 1.18.1 `builtin_elements.rs`).
+- The result list's scrollbar is drawn for any non-empty result list, scrollable or not, because `search.slint` sets
+  `visible: root.rows.length > 0` on it, which replaces the bar's own `scrollable` rule. This predates the port and was
+  left alone.
+
+Verification: `ui_search_restyle_tests.rs` (thirteen window tests on the software renderer, light and dark, cover and
+inner panel: header and divider pixels, row and circle geometry and roles, the ring pixels in the near band, the hover
+layer clipped to the shape, the block geometry of all five states, scrolling, and the square highlight, columns and
+copy that stay), the updated row case of `ui_focus_ring_pages_tests.rs`, and a before and after capture of the release
+build in the nested compositor (empty, `lan`, no results and the keyboard ring, light and dark, 1000 by 800 and 443 by
+900).
+Not verified: macOS, Windows, a real Plasma session, touch input.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
