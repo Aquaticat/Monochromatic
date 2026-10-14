@@ -105,6 +105,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 description = "Verify original native history, options, and session construction across manager entry points"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/manager-constructors.test.mjs"
 
+[tasks."test:native:build-imports"]
+description = "Verify built native import transformations preserve source and encoding boundaries"
+run = "node src/native-build-imports.unit.test.ts"
+
 [tasks."test:native:approval"]
 description = "Verify original approval routing and independent prerequisite evidence with fixture presentation"
 run = [

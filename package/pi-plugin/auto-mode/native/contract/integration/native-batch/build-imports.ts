@@ -5,7 +5,10 @@
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
-import { type Node, parse } from 'yuku-parser';
+import {
+  type Node,
+  parse
+} from 'yuku-parser';
 
 //region Import locations come from the original parsed module
 
@@ -60,7 +63,9 @@ const l = tagged({ tag: 'auto-mode-native-build-imports' });
  @returns whether the field contains another parsed node
  */
 function isParsedNode(value: unknown): value is Node {
-  return typeof value === 'object' && value !== null && 'type' in value && typeof value.type === 'string';
+  return ((typeof value) === 'object') && (value !== null)
+    && ('type' in value)
+    && ((typeof value.type) === 'string');
 }
 
 /**
@@ -84,14 +89,39 @@ function collectImports(root: Node): ReadonlyMap<number, NativeImportSpan> {
      Pop is valid because the loop establishes a nonempty work stack.
      */
     const node = nonNullishOrThrow(pending.pop());
-    if (node.type === 'ImportDeclaration' || node.type === 'ExportNamedDeclaration' || node.type === 'ExportAllDeclaration') {
+    if ((node.type === 'ImportDeclaration') || (node.type === 'ExportNamedDeclaration')
+      || (node.type === 'ExportAllDeclaration')) {
       /**
        Local export declarations have no module source.
        */
       const literal = node.source;
-      if (literal !== null) imports.set(literal.start, { start: literal.start, end: literal.end, specifier: literal.value, kind: 'static' });
-    } else if (node.type === 'ImportExpression' && node.source.type === 'Literal' && typeof node.source.value === 'string') {
-      imports.set(node.source.start, { start: node.source.start, end: node.source.end, specifier: node.source.value, kind: 'dynamic' });
+      if (literal !== null) imports.set(
+        literal.start,
+        {
+          start: literal.start,
+          end: literal.end,
+          specifier: literal.value,
+          kind: 'static'
+        }
+      );
+    } else if ((node.type === 'ImportExpression') && (node.source
+      .type
+      === 'Literal')
+      && ((typeof node.source
+        .value) === 'string')) {
+      imports.set(
+        node.source
+          .start,
+        {
+          start: node.source
+            .start,
+          end: node.source
+            .end,
+          specifier: node.source
+            .value,
+          kind: 'dynamic'
+        }
+      );
     }
     for (const value of Object.values(node)) {
       if (Array.isArray(value)) {
@@ -124,7 +154,11 @@ function collectImports(root: Node): ReadonlyMap<number, NativeImportSpan> {
  rewriteNativeImports({ source, path, select: function keepImport({ specifier }) { return specifier; } });
  ```
  */
-export function rewriteNativeImports({ source, path, select }: {
+export function rewriteNativeImports({
+  source,
+  path,
+  select
+}: {
   readonly source: string;
   readonly path: string;
   readonly select: (input: NativeImportSelection) => string;
@@ -132,13 +166,24 @@ export function rewriteNativeImports({ source, path, select }: {
   /**
    The original source path remains attached to transformation diagnostics.
    */
-  const rl = tagged({ tag: rewriteNativeImports.name, l });
+  const rl = tagged({
+    tag: rewriteNativeImports.name,
+    l
+  });
   rl.debug(`reading native imports: ${path}`);
   /**
    Tokens provide source order without sorting the structural walk's locations.
    */
-  const parsed = parse(source, { sourceType: 'module', tokens: true });
-  if (parsed.diagnostics.length > 0) throw new NativeImportBuildError(`Cannot parse native import source: ${path}`);
+  const parsed = parse(
+    source,
+    {
+      sourceType: 'module',
+      tokens: true
+    }
+  );
+  if (parsed.diagnostics
+    .length
+    > 0) throw new NativeImportBuildError(`Cannot parse native import source: ${path}`);
   /**
    Token capture was explicitly requested from the qualified parser.
    */
@@ -160,16 +205,35 @@ export function rewriteNativeImports({ source, path, select }: {
     /**
      Resolver output is encoded only at the JavaScript interpolation boundary.
      */
-    const selected = select({ specifier: literal.specifier, kind: literal.kind });
-    if (selected !== literal.specifier) edits.push({ ...literal, text: JSON.stringify(selected) });
+    const selected = select({
+      specifier: literal.specifier,
+      kind: literal.kind
+    });
+    if (selected !== literal.specifier) edits.push({
+      ...literal,
+      text: JSON.stringify(selected)
+    });
   }
   /**
    Each original source segment is copied once before the final join.
    */
-  const fragments = edits.flatMap(function importFragments(edit, index): readonly string[] {
-    return [source.slice(edits[index - 1]?.end ?? 0, edit.start), edit.text];
+  const fragments = edits.flatMap(function importFragments(
+    edit,
+    index
+  ): readonly string[] {
+    return [
+      source.slice(
+        edits[index - 1]
+          ?.end
+          ?? 0,
+        edit.start
+      ),
+      edit.text
+    ];
   });
-  fragments.push(source.slice(edits.at(-1)?.end ?? 0));
+  fragments.push(source.slice(edits.at(-1)
+    ?.end
+    ?? 0));
   rl.debug(`rewrote ${edits.length} native import literals: ${path}`);
   return fragments.join('');
 }
