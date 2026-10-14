@@ -433,11 +433,11 @@ Outside a recording nothing changes: the live path already sends them after ever
 Measured with the Slint IDE hosted and a 16 ms `resize` drag (1100 to 600 to 1100 pixels, two sweeps) recorded at
 60 fps, with no dropped frame and a load below 20 at the start,
 the share of captures whose held buffer was not the width of the output mode fell
-from 88.1 to 92.7 percent (8 runs) to 45.2 to 56.0 percent (7 of 8 runs; one run with a slow application stayed
-at 91.5 percent).
-In the runs without a slow application, the median delay from the command to the commit of that width fell
+from 88.1 to 92.7 percent (8 runs) to 45.2 to 56.0 percent (7 of 8 runs; the eighth stayed at 91.5 percent, with a
+median commit delay of 34 ms and 141 frames recorded instead of 143, cause not determined).
+In the other runs, the median delay from the command to the commit of that width fell
 from 11 to 13 ms to 6 to 7 ms.
-What remains is the application's own work against a 16.7 ms tick.
+What remains was not analyzed further; the application's own work against a 16.7 ms tick is a part of it.
 The runs and the method are in
 [`doc/troubleshooting/nested-wayland-recording-previous-resize-step.md`](
 ../../../doc/troubleshooting/nested-wayland-recording-previous-resize-step.md).
