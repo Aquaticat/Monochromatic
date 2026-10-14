@@ -98,7 +98,7 @@ export function bindRuleAssessmentWire(request){
    if(seen.has(key))throw new RuleAssessmentWireError('Mixed batch repeats an original unit-adoption pair');
    seen.add(key);unitAdoptionCount++;
    if(unitAdoptionCount>64)throw new RuleAssessmentWireError('Unit adoption exceeds the original source bound');
-   function projectunit=>({sourceOrdinal:unit.sourceOrdinal,start:unit.start,end:unit.end,text:unit.text,headings:unit.headings}) { return {sourceOrdinal:unit.sourceOrdinal,start:unit.start,end:unit.end,text:unit.text,headings:unit.headings} }
+   function project(unit) { return {sourceOrdinal:unit.sourceOrdinal,start:unit.start,end:unit.end,text:unit.text,headings:unit.headings}; }
    const slot=`head_${index}`;
    questions[slot]={
      type:definition.type,

@@ -9,7 +9,7 @@ import {observeDeclaredFile} from '../external-dependency-controls/file-observer
 import {ObservedFileMissingError} from '../external-dependency-controls/errors.mjs';
 import {RuleRelevanceCacheError} from './definition.mjs';
 
-export function digestvalue=>createHash('sha256') { return createHash('sha256').update(value).digest('hex') }
+export function digest(value) { return createHash('sha256').update(value).digest('hex'); }
 /** Only application-owned private directories may contain persisted relevance data. */
 function privateDirectory({
   path,

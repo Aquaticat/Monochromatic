@@ -284,7 +284,7 @@ const sessionCore=imports({
  './program-definition.mjs':pathToFileURL(join(output,'program-definition.mjs')).href
 }
 });
-function helperUrlrelative=>JSON.stringify(new URL(relative,import.meta.url).href) { return JSON.stringify(new URL(relative,import.meta.url).href) }
+function helperUrl(relative) { return JSON.stringify(new URL(relative,import.meta.url).href); }
 const session=`import {assertNativeAgentStateAssignment} from "./agent.mjs";\n`+`import {attachNativeContextCopies,readRootOccurrence,readNativeSessionInputOrigin,assertNativeSessionInputCapture,readNativeConstructedInputOrigins,readNativeSessionInputUsage,captureNativeQueuedInput,captureNativeCustomMessageInput,captureNativeInputEvent,observeNativeUninterceptedInput,observeNativeTransformedInput,captureNativeCommandInput,captureNativeCallInput,createNativeHandlerResultObserver} from "./session-manager.mjs";\n`+`import {createBaseCompositionOwner} from ${helperUrl("../../collector/rule-relevance-sdk-copy/input/base-owner.mjs")};\n`
  +`import {createRunPromptOwner} from ${helperUrl('../../collector/run-prompt-custody-v3/owner.mjs')};\n`
  +`import {copyPromptOptions} from ${helperUrl('../../collector/base-prompt-custody-v2/copy.mjs')};\n`

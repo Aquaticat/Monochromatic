@@ -68,7 +68,7 @@ session.agent
 assert.ok(nativePi&&(typeof nativePi.appendEntry)==='function');
 const programProfile='awaited-string-result-then-literal-parallel';
 const code='const value = await tools.fixture_value({path:"seed"});\nreturn await Promise.allSettled([tools.fixture_value({path:value}),tools.fixture_value({path:"second"})]);';
-function policydefinitionId=>({model:ruleAssessmentModel,definitionId,programProfile,accepts:()=>true}) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:()=>true} }
+function policy(definitionId) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:()=>true}; }
 const ctx={
   hasUI:true,
   ui:{async select(title,options){

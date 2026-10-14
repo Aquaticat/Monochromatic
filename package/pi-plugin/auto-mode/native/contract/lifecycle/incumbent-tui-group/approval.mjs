@@ -4,7 +4,7 @@ export class OriginalTuiApprovalError extends Error {
   constructor(message){super(message);this.name=this.constructor
     .name;}
 }
-function shavalue=>createHash('sha256') { return createHash('sha256').update(value).digest('hex') }
+function sha(value) { return createHash('sha256').update(value).digest('hex'); }
 /**
  Reuse the incumbent askUser implementation and fixed native Pi capabilities.
  Bootstrap owns these dependencies; returned labels or copied verdict entries do not establish ownership.

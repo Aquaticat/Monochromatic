@@ -6,7 +6,7 @@ import { readHostResource } from './resource-reload.mjs';
 import { isOwnedProgramDefinition } from '../native-batch/generated/program-definition.mjs';
 
 const env = await createEnvironment();
-function sourcerelative => pathToFileURL(join(env.packageRoot, 'dist', relative)) { return pathToFileURL(join(env.packageRoot, 'dist', relative)).href }
+function source(relative) { return pathToFileURL(join(env.packageRoot, 'dist', relative)).href; }
 const { createSessionManager } = await import(source('main.js'));
 const {
   createAgentSessionServices,

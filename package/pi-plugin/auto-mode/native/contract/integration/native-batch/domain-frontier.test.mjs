@@ -55,7 +55,7 @@ session.agent
   .getApiKey=()=>process.env
   .FIXTURE_API_KEY;
 const code='const value = await tools.fixture_value({path:"seed"});\nreturn await Promise.allSettled([tools.fixture_value({path:value}),tools.fixture_value({path:"second"})]);',programProfile='awaited-string-result-then-literal-parallel';
-function policydefinitionId=>({model:ruleAssessmentModel,definitionId,programProfile,accepts:()=>true}) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:()=>true} }
+function policy(definitionId) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:()=>true}; }
 const originalSdkStream=session.agent
   .streamFunction;
 function controlledSdkStream(
