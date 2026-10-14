@@ -262,3 +262,18 @@ fn a_signed_commit_is_resigned_and_reports_dropped_headers() {
 fn git_raw(repo: &Path, oid: &str) -> Vec<u8> {
     return git(repo, &["cat-file", "commit", oid]).stdout;
 }
+
+/// Of several landed commits that touch the path, the oldest one after the base is the winner.
+#[test]
+fn the_oldest_landed_commit_that_touches_the_path_wins() {
+    let (root, base, current, _prepared) = scenario("replay-merge-oldest", "PREPARED", "line 11");
+    let repo: PathBuf = root.join("repo");
+    std::fs::write(repo.join("c.txt"), lines("LANDED", "LATER")).expect("later");
+    git(repo.as_path(), &["commit", "--quiet", "--all", "--message=later"]);
+    let later: String = rev(repo.as_path(), "HEAD");
+    assert_ne!(later, current);
+    let winner: String = first_commit_touching(&git_context(), repo.as_path(), Some(&base), &later, &[b"c.txt".to_vec()])
+        .expect("winner");
+    assert_eq!(winner, current);
+    remove(root.as_path());
+}

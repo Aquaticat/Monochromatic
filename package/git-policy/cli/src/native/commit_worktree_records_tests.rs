@@ -228,3 +228,30 @@ fn a_changed_mode_or_an_unchanged_blob_gets_no_completion() {
     assert_eq!(records, Vec::<AddedPath>::new());
     remove(root.as_path());
 }
+
+/// A path whose index entries are all unmerged has no settled entry, and a stage-zero entry reports its mode and object.
+#[test]
+fn only_a_stage_zero_entry_is_settled() {
+    let root: PathBuf = fixture("worktree-records-settled");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    std::fs::write(repo.join("a.txt"), b"settled").expect("a");
+    git(repo.as_path(), &["add", "--", "a.txt"]);
+    let blob: String = String::from_utf8_lossy(git(repo.as_path(), &["rev-parse", ":a.txt"]).stdout.as_slice())
+        .trim()
+        .to_string();
+    let entries: String = format!("100644 {blob} 1\tu.txt\n100644 {blob} 2\tu.txt\n100644 {blob} 3\tu.txt\n");
+    let mut child = std::process::Command::new(REAL_GIT)
+        .current_dir(&repo)
+        .args(["update-index", "--index-info"])
+        .stdin(std::process::Stdio::piped())
+        .spawn()
+        .expect("update-index");
+    std::io::Write::write_all(&mut child.stdin.take().expect("stdin"), entries.as_bytes()).expect("write");
+    assert!(child.wait().expect("wait").success());
+    let index: PathBuf = repo.join(".git/index");
+    let settled = settled_entry(&context(), repo.as_path(), index.as_path(), b"a.txt").expect("settled");
+    assert_eq!(settled, Some((String::from("100644"), blob.clone())));
+    let unmerged = settled_entry(&context(), repo.as_path(), index.as_path(), b"u.txt").expect("unmerged");
+    assert_eq!(unmerged, None);
+    remove(root.as_path());
+}
