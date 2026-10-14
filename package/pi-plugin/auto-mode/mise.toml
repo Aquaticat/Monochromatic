@@ -139,6 +139,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 description = "Exercise unchanged native progress callbacks through the original prepared program"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --observed-progress"
 
+[tasks."test:native:next-decision-receipts"]
+description = "Retain new progress input and result instructions for the next original decision"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --observed-progress --next-decision"
+
 [tasks."test:native:configured-extensions"]
 description = "Exercise installed extension paths from a read-only manifest in disposable native state"
 usage = 'arg "<manifest>" help="JSON array of enabled native extension resource records"'

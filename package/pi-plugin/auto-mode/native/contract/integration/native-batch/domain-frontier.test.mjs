@@ -33,6 +33,10 @@ const unobservedContext=process.argv
   .includes('--unobserved-event');
 const observedContext=process.argv.includes('--observed-context');
 const observedProgress=process.argv.includes('--observed-progress');
+const nextDecision=process.argv.includes('--next-decision');
+const nextInput='The later received input prohibits the complete proposed operation.';
+const nextResult='The later received result prohibits the complete proposed operation.';
+assert.ok(!nextDecision||observedProgress,'Next-decision receipt controls require original progress delivery');
 const throwingContext=process.argv.includes('--throwing-context');
 const httpTransport=process.argv.includes('--http-transport');
 const operatingPolicy=process.argv.includes('--operating-policy');
@@ -50,7 +54,7 @@ const receiptControl=process.argv
   .includes('--copied-payload')?'copied-payload':process.argv
   .includes('--copied-transcript')?'copied-transcript':undefined;
 assert.ok((!receiptControl)||sdkStream,'Serializer receipt controls exercise the normal SDK stream');
-const observations={contextCalls:0,lateContextMutations:0,progressCalls:0,assessments:0,executions:0,requests:0,httpCalls:0,originalBody:undefined};
+const observations={contextCalls:0,lateContextMutations:0,progressCalls:0,assessments:0,executions:0,requests:0,httpCalls:0,originalBody:undefined,firstDecision:undefined,nextInputQuestions:0};
 const env=await createEnvironment({
   policyText:'RUL:\n '+text+'\n',
   hostPrompt:'Fixture background.',
@@ -84,7 +88,14 @@ const env=await createEnvironment({
     return {messages:event.messages,unusedInstruction:'Original unselected system context result'};
    });
   }]:observedProgress?[function registerObservedProgress(pi){
-   pi.on('tool_execution_update',function observeOriginalProgress(){observations.progressCalls++;});
+   pi.on('tool_execution_update',function observeOriginalProgress(event){
+    observations.progressCalls++;
+    if(nextDecision&&observations.progressCalls===1){
+     event.laterInstruction=nextInput;
+     return {laterInstruction:nextResult};
+    }
+    return undefined;
+   });
   }]:[]
 });
 if(extensionManifestArgument!==undefined){
@@ -139,7 +150,9 @@ function authoredWireAnswer({body}){
   observations.assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,observations.originalBody);
   const answers=Object.fromEntries(Object.entries(wire.questions).map(function answerAuthoredDomainQuestion([slot,question]) {
    const selectedClause=question.instructions.selectedRule?.id==='RUL';
-   const choice=question.instructions.selectedMaterial==='originalRequestBody'?requestRelation:selectedClause?(unresolvedClause??relation):'none';
+   const laterInstruction=nextDecision&&[nextInput,nextResult].some(function receivedLater(text){return question.instructions.selectedRule?.text.includes(text);});
+   if(laterInstruction){assert.equal(observations.assessments,2,'Later receipts must not revise the first assessment');observations.nextInputQuestions++;}
+   const choice=laterInstruction?'prohibition':question.instructions.selectedMaterial==='originalRequestBody'?requestRelation:selectedClause?(unresolvedClause??relation):'none';
    const score=operatingPolicy?(selectedClause&&lowConfidenceClause?0.989999:choice==='unknown'||choice==='unsupported'?1:0.99):1;
    assert(Object.hasOwn(question.criteria,choice));
    return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(function scoreAuthoredDomainChoice(label) { return ([label,label===choice?score:label==='unknown'?1-score:0]); }))}];
@@ -178,16 +191,38 @@ const runtime=bindNativePolicyRuntime({
   effectOwnerFor:function omitDomainAuthorizationOwner() { return (undefined); },
   sendWire:sendAssessment,
   originalStream:sdkStream?function stream(model,context,options){return controlledSdkStream({model,context,options});}:nativeOpenAIStream,
-  async terminalFetch(input,init){observations.requests++;if(observations.requests===1)observations.originalBody=init.body;return fixtureResponse({proposal:observations.requests===1,code});}
+  async terminalFetch(input,init){
+   observations.requests++;
+   if(nextDecision&&observations.requests===2)observations.firstDecision={...runtime.inspect(),measures:{...observations}};
+   const proposal=observations.requests===1||(nextDecision&&observations.requests===2);
+   if(proposal)observations.originalBody=init.body;
+   return fixtureResponse({proposal,code});
+  }
 });
 await using cleanup={async [Symbol.asyncDispose](){session.dispose();await session.agent.waitForIdle();runtime.detach();await env.drain();}};
 try{
  await session.prompt('Exercise the original request-specific policy domain.');
+ const current=runtime.inspect();
+ const first=nextDecision?observations.firstDecision:undefined;
+ if(nextDecision)assert.ok(first,'The next request must follow a completed original operation');
  const {
    lastReview:review,
    lastJudgment:judgment
- }=runtime.inspect();
- assertDomainReview({env,review,judgment,session,originalBody:observations.originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl},measures:observations});
+ }=first??current;
+ const measures=first?.measures??observations;
+ assertDomainReview({env,review,judgment,session,originalBody:measures.originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl},measures});
+ if(nextDecision){
+  assert.equal(observations.assessments,2,'Each original decision gets one assessment');
+  assert.equal(observations.executions,3,'Later received instructions must prevent the next operation from executing');
+  assert.ok(observations.nextInputQuestions>0,'The second assessment must select the later instruction');
+  const sources=current.lastReview.inputs.instructionSources.map(function originalText(view){return view.source.content;});
+  for(const text of [nextInput,nextResult])assert.ok(sources.some(function retainedText(content){return content.includes(text);}),text);
+  assert.notEqual(current.lastReview.outcome.verdict,'approve');
+  assert.notEqual(current.lastJudgment,judgment);
+  assert.equal(judgment.inspect().accounting.attempts,1);
+  assert.equal(current.lastJudgment.inspect().accounting.attempts,1);
+  console.log(JSON.stringify({nextDecisionReceipts:true,assessments:observations.assessments,executions:observations.executions,nextInputQuestions:observations.nextInputQuestions,outcome:current.lastReview.outcome}));
+ }
 }catch(error){console.error(error);throw error;}
 }
 
