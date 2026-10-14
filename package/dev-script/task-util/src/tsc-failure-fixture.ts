@@ -125,27 +125,68 @@ export async function runCompilerFailureCase(input: CompilerFailureCase): Promis
     'node',
     'tsc-filter.mjs'
   );
-  /** Output files retain exact wrapper bytes independently of subprocess-library normalization. */
-  const stdoutPath = join(directory, 'stdout.txt');
-  /** Error output remains separate from ordinary compiler metadata. */
-  const stderrPath = join(directory, 'stderr.txt');
-  /** The child borrows these descriptors until its process has completely exited. */
-  await using stdoutFile = await open(stdoutPath, 'w');
-  /** Descriptor disposal follows the completed subprocess and output readback. */
-  await using stderrFile = await open(stderrPath, 'w');
-  /** A nonzero wrapper status is observed test data, not a fixture startup failure. */
+  /**
+   Output files retain exact wrapper bytes independently of subprocess-library normalization.
+   */
+  const stdoutPath = join(
+    directory,
+    'stdout.txt'
+  );
+  /**
+   Error output remains separate from ordinary compiler metadata.
+   */
+  const stderrPath = join(
+    directory,
+    'stderr.txt'
+  );
+  /**
+   The child borrows these descriptors until its process has completely exited.
+   */
+  await using stdoutFile = await open(
+    stdoutPath,
+    'w'
+  );
+  /**
+   Descriptor disposal follows the completed subprocess and output readback.
+   */
+  await using stderrFile = await open(
+    stderrPath,
+    'w'
+  );
+  /**
+   A nonzero wrapper status is observed test data, not a fixture startup failure.
+   */
   const outcome = { status: 0 };
   try {
-    await spawn(process.execPath, [entry, '--version'], {
+    await spawn(
+      process.execPath,
+      [
+        entry,
+        '--version'
+      ],
+      {
       cwd: directory,
       stdout: stdoutFile.fd,
       stderr: stderrFile.fd,
-      env: { PATH: `${directory}${delimiter}${process.env.PATH ?? ''}` },
+      env: { PATH: `${directory}${delimiter}${process.env
+        .PATH
+        ?? ''}` },
       timeout: 10_000,
-    });
+    }
+    );
   } catch (error) {
-    if (!(error instanceof SubprocessError) || error.exitCode === undefined) throw error;
+    if ((!(error instanceof SubprocessError)) || (error.exitCode === undefined)) throw error;
     outcome.status = error.exitCode;
   }
-  return { status: outcome.status, stdout: await readFile(stdoutPath, 'utf8'), stderr: await readFile(stderrPath, 'utf8') };
+  return {
+    status: outcome.status,
+    stdout: await readFile(
+      stdoutPath,
+      'utf8'
+    ),
+    stderr: await readFile(
+      stderrPath,
+      'utf8'
+    )
+  };
 }

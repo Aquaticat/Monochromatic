@@ -16,9 +16,13 @@ const panic = 'runtime: failed to create new OS thread (have 140 already; errno=
 const unknownFailure = 'fixture compiler cannot read its configuration\n';
 /** The configured compiler reports emitted build-info files even when diagnostics were suppressed. */
 const emission = 'TSFILE: /fixture/build-info.tsbuildinfo\n';
+/** Quoted syntax remains literal compiler output when embedded in the disposable executable. */
+const syntaxBoundary = 'quote " slash \\ newline\n*/; process.exit(99); ${value}';
 
 /** Each case selects process output independently of the wrapper implementation. */
 const cases: readonly CompilerFailureCase[] = [
+  { name: 'preserves syntax delimiters as literal fixture output', stdout: syntaxBoundary, stderr: '', exitCode: 0,
+    expectedCode: 0, expectedStdout: syntaxBoundary, expectedStderr: '' },
   { name: 'forwards successful compiler output', stdout: success, stderr: '', exitCode: 0,
     expectedCode: 0, expectedStdout: 'fixture compiler version 1', expectedStderr: '' },
   { name: 'permits only known suppressed dependency errors', stdout: suppressed, stderr: '', exitCode: 2,
