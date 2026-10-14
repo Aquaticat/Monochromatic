@@ -973,7 +973,9 @@ Those logs are `${HOME}/temp/agent/pi-native-context-syntax-20261014.log`,
 and `${HOME}/temp/agent/pi-native-context-host-20261014.log`.
 The complete package unit task also passes after the final context diagnostics were built;
 its log is `${HOME}/temp/agent/pi-auto-mode-unit-after-context-20261014.log`.
-The rendered documentation check is next.
+The final observer lint reports zero warnings and errors;
+package types and the owned native build pass after its formatting correction.
+The rendered native documentation and current context-accounting paragraphs were checked.
 This work adopts no production semantic policy,
 raises no budget,
 and does not activate the installed plugin.
