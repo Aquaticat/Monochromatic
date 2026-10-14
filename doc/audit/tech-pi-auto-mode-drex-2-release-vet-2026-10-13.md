@@ -238,6 +238,20 @@ The corrected request is 692,952 bytes with the same 244 questions.
 It retains the same five-second deadline and no-retry policy.
 The completed three-call phase is neither overwritten nor relabeled.
 
-The corrected serving result is pending.
+The corrected request also returned 422,
+with `too many questions (244); limit is 16`.
+No serving model or usage was reported.
+The public limits page advertises 512 questions.
+This discrepancy excludes an immediate replacement on the captured native input;
+it does not establish a universal 2.0 question limit or a model-quality result.
+Splitting this request into groups of 16 would require 16 calls,
+which exceeds the accepted three-call ceiling.
+
+The official public runtime was cloned read-only at
+`nace-ai/drex-decision-models` commit `be8ba7c8157241b9393862e9fcec104d0dc5caff`.
+Its `kev/api.py:51` declares `questions: dict[str, Question] = Field(min_length=1)`.
+The exact returned question-limit diagnostic is absent from that checkout.
+The local runtime is therefore not evidence of the hosted guard's implementation.
+Source and hosted-contract discrepancy investigation remains bounded to this failure.
 Scores and sensitivity remain inapplicable before the serving-model hard gate.
 No release recommendation is made yet.
