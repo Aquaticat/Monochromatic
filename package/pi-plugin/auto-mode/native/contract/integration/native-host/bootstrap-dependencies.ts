@@ -75,7 +75,7 @@ async function readNativeFunction({
 /**
  Native tool registration receives the original qualified SDK wrapper.
  */
-export const wrapToolDefinition = await readNativeFunction({
+export const wrapToolDefinition: NativeForwardedFunction = await readNativeFunction({
   url: pathToFileURL(join(
     sdk,
     'dist/core/tools/tool-definition-wrapper.js'
@@ -86,7 +86,7 @@ export const wrapToolDefinition = await readNativeFunction({
 /**
  Native cleanup receives the original generated private-state reader.
  */
-export const readSessionDisposalState = await readNativeFunction({
+export const readSessionDisposalState: NativeForwardedFunction = await readNativeFunction({
   url: new URL(
     '../native-batch/generated/agent-session.mjs',
     import.meta.url

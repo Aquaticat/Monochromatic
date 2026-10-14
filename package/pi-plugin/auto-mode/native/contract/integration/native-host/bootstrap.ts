@@ -21,6 +21,7 @@ import { createNativeMarkdownParser } from '../../native-index/native-parser.ts'
 import { bindNativePolicyRuntime } from '../native-batch/runtime.mjs';
 import {
   createNativeCliHost,
+  type NativeCliHost,
   NativeCliHostError
 } from './host.mjs';
 import {
@@ -232,25 +233,25 @@ function bindSession({
 /**
  One bootstrap instance owns native CLI construction and terminal cleanup.
  */
-export const nativeHost = createNativeCliHost({
+export const nativeHost: NativeCliHost = createNativeCliHost({
   designatePolicy,
   bindSession
 });
 /**
  Generated CLI code receives only the original host-owned manager constructors.
  */
-export const ownedManagers = nativeHost.managers;
+export const ownedManagers: NativeCliHost['managers'] = nativeHost.managers;
 /**
  Generated services await policy designation before receiving their original resource loader.
  */
-export const createHostResourceLoader = nativeHost.createResourceLoader;
+export const createHostResourceLoader: NativeCliHost['createResourceLoader'] = nativeHost.createResourceLoader;
 /**
  Generated services retain original host-owned session construction.
  */
-export const createHostSession = nativeHost.createSession;
+export const createHostSession: NativeCliHost['createSession'] = nativeHost.createSession;
 /**
  Generated terminal and replacement paths share original host-owned disposal.
  */
-export const disposeHostSession = nativeHost.disposeSession;
+export const disposeHostSession: NativeCliHost['disposeSession'] = nativeHost.disposeSession;
 
 //endregion
