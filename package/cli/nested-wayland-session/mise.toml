@@ -1851,7 +1851,7 @@ run = '''
 const { spawn } = await import('node:child_process')
 const { once } = await import('node:events')
 const { createServer, createConnection } = await import('node:net')
-const { mkdtempSync, mkdirSync, readFileSync, writeFileSync } = await import('node:fs')
+const { mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync } = await import('node:fs')
 const { tmpdir } = await import('node:os')
 const { join } = await import('node:path')
 const { inflateSync } = await import('node:zlib')
@@ -1999,7 +1999,7 @@ const check = async (name, body) => {
   }
 }
 
-await check('static session: GPU dmabuf, two screenshots, input, a changed screenshot, resize and scale', async () => {
+await check('static session: GPU dmabuf, two screenshots, input, a changed screenshot, resize, scale and recording', async () => {
   const env = withoutParent(baseEnvironment)
   const host = start({ name: 'static', flags: ['--headless'], size: '400x300', scene: staticScene, env })
   try {
@@ -2040,6 +2040,15 @@ await check('static session: GPU dmabuf, two screenshots, input, a changed scree
       const image = await host.shot('scale-2')
       return image.width === 640 && image.height === 480 && near(image.pixel(310, 230), YELLOW) && near(image.pixel(330, 250), GREEN)
     })
+    // Recording renders and reads back off screen on its own timer, with no window.
+    const frames = join(host.directory, 'frames')
+    mkdirSync(frames)
+    assert.equal(await control(host.socketPath, 'record ' + frames + ' 20 bmp'), 'ok')
+    await wait(600)
+    const stopped = await control(host.socketPath, 'record stop')
+    assert.match(stopped, /^ok captured=/)
+    const captured = Number(/captured=(\d+)/.exec(stopped)[1])
+    assert(captured >= 6 && readdirSync(frames).length >= 6, 'a 600 ms recording at 20 fps captured ' + captured + ' frames: ' + stopped)
     // The log proves the path: the surfaceless EGL display, v4 feedback, and a client that really allocated dmabufs.
     const log = host.stderr()
     assert(/surfaceless EGL display opened/.test(log), 'no surfaceless EGL line in the log')
@@ -2049,7 +2058,8 @@ await check('static session: GPU dmabuf, two screenshots, input, a changed scree
     assert(!/winit backend init/.test(log), 'the nested window path ran')
     writeFileSync(join(host.directory, 'compositor.log'), log)
     const node = /render_node=Some\("([^"]+)"\)/.exec(log)?.[1] ?? 'unknown'
-    return 'render node ' + node + ', ' + dmabufBuffers + ' client dmabuf buffers, click to changed screenshot in ' + latency + ' ms'
+    return 'render node ' + node + ', ' + dmabufBuffers + ' client dmabuf buffers, click to changed screenshot in ' + latency
+      + ' ms, recording captured ' + captured + ' frames'
   } finally {
     await finish(host).catch(() => host.session.kill())
   }
