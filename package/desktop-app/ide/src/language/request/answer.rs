@@ -144,6 +144,47 @@ fn replied(
     });
 }
 
+/// Which of a server's request kinds a kept failure belongs to.
+#[derive(Clone, Copy)]
+enum Channel {
+    /// Inlay hint requests.
+    Hints,
+    /// Hover requests.
+    Hover,
+}
+
+/// What:
+///  Keep or clear the last failure of one request kind for the server that was asked.
+///  `Option<RequestFailure>` is the failure to keep,
+///  or nothing to clear it.
+/// Why:
+///  A server that is running but fails these requests looks like one without the feature;
+///  the entry the Language module publishes for the displayed file names the failure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function keepTrouble(worker: Worker, ticket: Ticket, channel: Channel, failure?: RequestFailure): void
+/// ```
+fn keep_trouble(
+    worker: &mut Worker,
+    ticket: &Ticket,
+    channel: Channel,
+    failure: Option<RequestFailure>,
+) {
+    let Some(index) = worker.session.index_of_identity(&ticket.server) else {
+        return;
+    };
+    let trouble = &mut worker.session.servers[index].trouble;
+    let slot = match channel {
+        Channel::Hints => &mut trouble.hints,
+        Channel::Hover => &mut trouble.hover,
+    };
+    if *slot != failure {
+        tracing::debug!(server = %ticket.server.name, failure = ?failure, "the failure kept for a request kind changed");
+        *slot = failure;
+    }
+}
+
 /// What:
 ///  Mark whether one server owes the answer to a request the worker made on its own.
 ///       `&Ticket` lends the request;
@@ -211,6 +252,10 @@ fn unanswered(
 ) {
     let Some(delay) = wait else {
         tracing::debug!(server = %ticket.server.name, ask = ?ticket.ask, %error, "request failed; asking again would not change that");
+        if let (Ask::Hints { .. }, Failure::Failed(failure)) = (ticket.ask, classify_error(error))
+        {
+            keep_trouble(worker, &ticket, Channel::Hints, Some(failure));
+        }
         return;
     };
     if ticket.attempt < MAX_RETRIES {
@@ -221,6 +266,9 @@ fn unanswered(
         return;
     }
     tracing::debug!(server = %ticket.server.name, ask = ?ticket.ask, %error, "request was superseded or timed out through all its retries; it is asked again when the server next sends anything");
+    if let (Ask::Hints { .. }, Failure::Failed(failure)) = (ticket.ask, classify_error(error)) {
+        keep_trouble(worker, &ticket, Channel::Hints, Some(failure));
+    }
     record(worker, &ticket, true);
 }
 
@@ -360,6 +408,7 @@ fn hinted(
     match result {
         Ok(found) => {
             record(worker, &ticket, false);
+            keep_trouble(worker, &ticket, Channel::Hints, None);
             let shaped = hints::shape(
                 found.unwrap_or_default(),
                 &ticket.text,
@@ -466,6 +515,15 @@ pub(in crate::language) fn finish(worker: &mut Worker, answer: Answer) {
             replied(worker, ticket, RequestKind::References, outcome);
         }
         Payload::Hover(result) => {
+            // A hover that failed is kept for the entry the displayed file shows; an answer clears it.
+            match &result {
+                Ok(_) => keep_trouble(worker, &ticket, Channel::Hover, None),
+                Err(error) => {
+                    if let Failure::Failed(failure) = classify_error(error) {
+                        keep_trouble(worker, &ticket, Channel::Hover, Some(failure));
+                    }
+                }
+            }
             let outcome = result.map(|found| return hover_outcome(&ticket, found));
             replied(worker, ticket, RequestKind::Hover, outcome);
         }

@@ -11,6 +11,7 @@ use crate::language::config::Unavailable;
 use crate::language::identity::ServerIdentity;
 /// Private directories a launch needs are prepared before the process exists.
 use crate::language::launch::prepare;
+use crate::language::notice::Trouble;
 /// `didOpen` follows readiness.
 use crate::language::lifecycle::send_did_open;
 /// A new process owes no answers yet.
@@ -93,6 +94,7 @@ async fn adopt(worker: &mut Worker, name: String, client: Arc<Client>, view: &Ro
                 progress: Vec::new(),
                 // `Owed::default()` builds the empty record: nothing was asked yet.
                 owed: Owed::default(),
+                trouble: Trouble::default(),
             });
             let seconds = worker.languages.start_timeout(client.name()) + START_MARGIN;
             worker.timer(

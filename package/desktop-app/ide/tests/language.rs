@@ -70,3 +70,9 @@ mod roots;
 ///  forwarded to servers that registered file watchers.
 #[path = "language/watched.rs"]
 mod watched;
+
+/// The entry that says why hover,
+///  hints,
+///  or definitions are missing.
+#[path = "language/notice.rs"]
+mod notice;

@@ -19,7 +19,7 @@ use super::config::{LanguageSetup, Languages};
 use super::watched_files::WatchedFiles;
 /// The steps a command or event is dispatched to,
 ///  and the wait that ends the thread.
-use super::{attach, forward, lifecycle, reap, request, session::Session, traffic};
+use super::{attach, forward, lifecycle, notice, reap, request, session::Session, traffic};
 /// Latest-value results the worker publishes.
 use super::{diagnostics::DiagnosticsSnapshot, hints::HintsSnapshot, status::LanguageStatus};
 /// Commands and one-shot replies.
@@ -283,15 +283,29 @@ impl Worker {
             if **current == status {
                 return false;
             }
-            *current = Arc::new(status);
+            *current = Arc::new(status.clone());
             return true;
         });
         // `as_ref()` borrows the document inside the `Option`; `and_then` continues with it when present.
-        let diagnostics = self
+        // What: The servers' own diagnostics plus, when a feature is missing or failing, the one entry
+        //       that says why (`notice`); `troubles` pairs each attached server with its kept failures.
+        // Why: Nothing else on screen explains a resting pointer or a file without hints.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const diagnostics = withNotice(store.snapshot(text), stamp, status, troubles);
+        // ```
+        let troubles: Vec<_> = self
             .session
-            .document
-            .as_ref()
-            .and_then(|document| return self.session.diagnostics.snapshot(&document.text));
+            .servers
+            .iter()
+            .filter(|record| return record.attached)
+            .map(|record| return (record.identity.clone(), record.trouble.clone()))
+            .collect();
+        let diagnostics = self.session.document.as_ref().and_then(|document| {
+            let stored = self.session.diagnostics.snapshot(&document.text);
+            return notice::with_notice(stored, document.stamp, &status, &troubles);
+        });
         self.outputs.diagnostics.send_if_modified(|current| {
             // `as_deref()` compares the stored snapshot by value instead of by pointer.
             if current.as_deref() == diagnostics.as_ref() {
