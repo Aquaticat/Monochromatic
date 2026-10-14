@@ -50,13 +50,21 @@ type ControlObservations = {
  Native effect inputs retain their actual session and prepared judgment owners.
  */
 type ControlChildInput = {
- /** Cancellation uses the original disposable session. */
+ /**
+  Cancellation uses the original disposable session.
+  */
  readonly session:{readonly abort:()=>Promise<void>};
- /** Policy replacement stays inside the disposable fixture workspace. */
+ /**
+  Policy replacement stays inside the disposable fixture workspace.
+  */
  readonly env:{readonly options:{readonly cwd:string}};
- /** Only the first entered child changes its selected dependency. */
+ /**
+  Only the first entered child changes its selected dependency.
+  */
  readonly executions:number;
- /** The original judgment authenticates the selected prepared member. */
+ /**
+  The original judgment authenticates the selected prepared member.
+  */
  readonly judgment:ControlJudgment;
 };
 
@@ -64,9 +72,13 @@ type ControlChildInput = {
  Final control observations refer to the same judgment and its entered effects.
  */
 type ControlVerificationInput = {
- /** The completed or failed decision retains its original assessment budget. */
+ /**
+  The completed or failed decision retains its original assessment budget.
+  */
  readonly judgment:ControlJudgment;
- /** Observations remain separate from policy evidence. */
+ /**
+  Observations remain separate from policy evidence.
+  */
  readonly observations:ControlObservations;
 };
 
@@ -74,11 +86,17 @@ type ControlVerificationInput = {
  Consumer hooks expose only the selected disposable change and its verification.
  */
 type ApprovedChangeControl = {
- /** Apply the selected change at actual native child execution. */
+ /**
+  Apply the selected change at actual native child execution.
+  */
  readonly beforeChildReturn:(input:ControlChildInput)=>Promise<void>;
- /** Assert the expected consumer-visible result. */
+ /**
+  Assert the expected consumer-visible result.
+  */
  readonly verify:(input:ControlVerificationInput)=>void;
- /** Await original cancellation cleanup before session disposal. */
+ /**
+  Await original cancellation cleanup before session disposal.
+  */
  readonly drain:()=>Promise<void>;
 };
 
@@ -148,7 +166,8 @@ export function createApprovedChangeControl(mode='none'):ApprovedChangeControl{
      .code;
    assert.throws(
      function changeOriginalPreparedCode():void{
-      prepared.input.code='return "different operation";';
+      prepared.input
+        .code='return "different operation";';
      },
      TypeError
    );
