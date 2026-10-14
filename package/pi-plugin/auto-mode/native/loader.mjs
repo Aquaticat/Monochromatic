@@ -13,6 +13,7 @@ const hostModules = new Map([
   ['core/session-manager.js', 'session-manager.mjs'],
   ['core/resource-loader.js', 'resource-loader.mjs'],
   ['core/sdk.js', 'sdk.mjs'],
+  ['extensions/codemode/index.js', 'host-codemode.mjs'],
 ].map(([original, generated]) => [pathToFileURL(join(sdk, 'dist', original)).href,
   new URL('./contract/integration/native-batch/generated/' + generated, import.meta.url).href]));
 

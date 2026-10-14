@@ -6222,7 +6222,52 @@ and repeated completed disposal.
 These are owned integration corrections,
 not evidence of upstream Pi defects.
 
-The actual CLI bootstrap,
-complete package lint,
+The candidate CLI bootstrap now exists in the maintained native graph.
+Its first relocated import emitted Node's `ERR_MODULE_NOT_FOUND` for `chalk`.
+The original `main.js` imports `chalk` from its package dependency root;
+the relocated `host-main.mjs` had no corresponding dependency location.
+The host source transformation now resolves that import from the original emitted Pi package.
+The next import exposed a separate owned staging omission:
+Node reported that `./core/sdk.js` did not export `AgentSessionRuntime`.
+The earlier isolated SDK transform had removed its runtime re-export.
+The complete host graph retains that native export and routes it through the owned runtime module.
+Neither failure changes installed Pi source or demonstrates an upstream defect.
+
+`mise run //package/pi-plugin/auto-mode:test:native:host-lifecycle` passed actual CLI manager selection,
+service creation,
+resource reload,
+cancelled replacement,
+new session,
+in-memory fork,
+persisted resume,
+and completed cleanup retry.
+Its initial resource reload calls the original trust resolver through the policy owner.
+The fixture makes no external provider request.
+The separate-process `test:native:cli-process` check also passes:
+the candidate returns the expected Qwen RPC state and exits without stderr output.
+It uses disposable state,
+synthetic credentials,
+offline mode,
+and a rejecting fetch implementation.
+No model prompt is sent.
+
+The native built-in Codemode extension exposed another ownership loss at registration.
+The upstream extension spreads its tool definition to add `defaultActive: false`.
+The maintained program factory authenticates its original returned definition by identity,
+so that extra object lost the owned-program identity.
+The owned factory now returns the inactive definition directly,
+and the host transformation registers that same object.
+The committed rejection control failed before this change and passes afterward.
+
+The first package type checks excluded the new native helpers through the inherited include list.
+They therefore did not verify those files.
+The package now includes `native/**/*.ts` explicitly.
+An intentional invalid native assignment failed with `TS2322` in a disposable worktree;
+removing it restored a passing check with the same source scope.
+This corrects owned verification configuration,
+not TypeScript behavior.
+
+Complete package lint,
+production semantic admission,
 and genuine human approval remain separate delivery checks.
 No upstream issue or patch is warranted by the verified local staging corrections.

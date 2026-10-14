@@ -15,6 +15,7 @@ export function createNativeCliHost({ designatePolicy, bindSession }) {
     throw new NativeCliHostError('Native CLI bootstrap requires fixed policy designation and session binding');
   const sessions = new WeakMap();
   const resources = new WeakSet();
+  const pendingDisposals = new Set();
   function registerSession({ session, manager, lifecycle, options }) {
     if (!resources.has(options.resourceLoader))
       throw new NativeCliHostError('Session resources belong to another native CLI host');
@@ -42,6 +43,8 @@ export function createNativeCliHost({ designatePolicy, bindSession }) {
     return resource.loader;
   }
   async function createSession(options) {
+    if (pendingDisposals.size)
+      throw new NativeCliHostError('Native host session cleanup is incomplete; retry disposal before constructing another session');
     const { sessionManager: manager, ...sessionOptions } = options;
     if (!resources.has(sessionOptions.resourceLoader))
       throw new NativeCliHostError('Session resources were not constructed by this native CLI host');
@@ -56,6 +59,7 @@ export function createNativeCliHost({ designatePolicy, bindSession }) {
     if (record.completed) return;
     const transition = record.retired ? undefined : factory.lifecycle.beginRetirement(record.lease);
     record.retired = true;
+    pendingDisposals.add(record);
     try {
       await session.abort();
       session.dispose();
@@ -66,6 +70,7 @@ export function createNativeCliHost({ designatePolicy, bindSession }) {
       await record.resource.owner.drain(record.resource.loader);
       if (transition) factory.lifecycle.completeRetirement(transition);
       record.completed = true;
+      pendingDisposals.delete(record);
     } catch (error) {
       if (transition) factory.lifecycle.retireFailed(transition);
       throw error;

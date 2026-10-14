@@ -15,12 +15,38 @@ their original generators and historical results are not retroactively changed.
 The `input` directories preserve those snapshots separately from newly generated Pi modules.
 Imports were relocated to this package graph without changing policy decisions.
 
-The maintained build and CLI integration are in progress.
-These files do not yet establish a runnable installed host,
-complete lint verification,
+The maintained build emits the qualified Pi 1.1.0 source and owned transformations to `dist/native`.
+`mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
+`build:native:owned` rebuilds the owned transformations against an existing source emission.
+The candidate CLI entry is `dist/native/cli.mjs`.
+It routes native manager selection,
+services,
+session construction,
+replacement,
+and disposal through the original owners.
+Resource reload retains its original project-trust resolver and refreshes the policy capture.
+
+The current CLI bootstrap designates the working directory's `AGENTS.md` with user authority.
+Its semantic admission remains unconfigured,
+so this candidate is not the completed production replacement.
+The native lifecycle fixtures exercise actual CLI manager selection,
+services,
+reload,
+cancelled replacement,
+new session,
+in-memory fork,
+persisted resume,
+and disposal retry without external provider requests.
+The separate-process RPC fixture starts `dist/native/cli.mjs`,
+checks the selected Qwen model and idle state,
+and requires shutdown without stderr output.
+The built-in Codemode registration retains the original owned definition.
+The package's TypeScript source set explicitly includes `native/**/*.ts`.
+The owned JavaScript runtime still needs type and lint completion.
+Complete lint verification,
+installed host activation,
 production semantic qualification,
-or genuine human approval.
-The existing native acceptance fixtures are retained for verifying the relocated artifact.
+and genuine human approval remain outstanding.
 
 The dedicated `auto-mode-native` dependency catalog preserves the parser releases used by those fixtures.
 It leaves the repository's other parser consumers on their existing catalog.

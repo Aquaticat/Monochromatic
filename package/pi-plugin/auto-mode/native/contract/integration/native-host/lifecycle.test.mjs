@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createEnvironment } from '../native-batch/environment.mjs';
 import { readHostResource } from './resource-reload.mjs';
+import { isOwnedProgramDefinition } from '../native-batch/generated/program-definition.mjs';
 
 const env = await createEnvironment();
 const source = relative => pathToFileURL(join(env.packageRoot, 'dist', relative)).href;
@@ -10,6 +11,7 @@ const { createSessionManager } = await import(source('main.js'));
 const { createAgentSessionServices, createAgentSessionFromServices } = await import(source('core/agent-session-services.js'));
 const { createAgentSessionRuntime } = await import(source('core/agent-session-runtime.js'));
 const { nativeHost } = await import('./bootstrap.mjs');
+const { createCodemodeExtension } = await import(source('extensions/codemode/index.js'));
 
 let trustCalls = 0;
 let constructions = 0;
@@ -22,13 +24,15 @@ async function createRuntime({ cwd, agentDir, sessionManager, sessionStartEvent 
   const services = await createAgentSessionServices({ cwd, agentDir,
     modelRuntime: env.options.modelRuntime, settingsManager: env.options.settingsManager,
     resourceLoaderOptions: { noExtensions: true, noSkills: true, noPromptTemplates: true,
-      noThemes: true, extensionFactories: [observeExtensions] },
+      noThemes: true, extensionFactories: [observeExtensions, createCodemodeExtension()] },
     resourceLoaderReloadOptions: { async resolveProjectTrust() { trustCalls++; return true; } },
   });
   const result = await createAgentSessionFromServices({ services, sessionManager,
     sessionStartEvent, model: env.options.model, noTools: true });
   constructions++;
   assert.equal(typeof result.session.agent.executeToolBatch, 'function');
+  assert.equal(isOwnedProgramDefinition(result.session.getToolDefinition('codemode')), true,
+    'The native built-in extension must retain the original owned program definition');
   return { ...result, services };
 }
 const initialManager = await createSessionManager({ noSession: true }, env.options.cwd,
@@ -88,13 +92,16 @@ try {
   closing._disconnectFromAgent = () => { throw failure; };
   await assert.rejects(() => nativeHost.disposeSession(closing), error => error === failure);
   assert.equal(env.readSessionDisposalState(closing).completed, false);
-  await assert.rejects(async () => {
-    const unexpected = await nativeHost.createSession({ ...env.options,
-      resourceLoader: runtime.services.resourceLoader,
-      sessionManager: nativeHost.managers.inMemory(env.options.cwd), noTools: true });
-    await nativeHost.disposeSession(unexpected.session);
-  }, /cleanup is incomplete/u);
-  closing._disconnectFromAgent = disconnect;
+  try {
+    await assert.rejects(async () => {
+      const unexpected = await nativeHost.createSession({ ...env.options,
+        resourceLoader: runtime.services.resourceLoader,
+        sessionManager: nativeHost.managers.inMemory(env.options.cwd), noTools: true });
+      await nativeHost.disposeSession(unexpected.session);
+    }, /cleanup is incomplete/u);
+  } finally {
+    closing._disconnectFromAgent = disconnect;
+  }
   await nativeHost.disposeSession(closing);
   assert.equal(env.readSessionDisposalState(closing).completed, true);
   await nativeHost.disposeSession(closing);
