@@ -41,7 +41,10 @@ export function matchesSemanticProgramProfile({
   /**
    Profile matching logs no original program content.
    */
-  const rl = tagged({ tag: matchesSemanticProgramProfile.name, l, },);
+  const rl = tagged({
+    tag: matchesSemanticProgramProfile.name,
+    l,
+  },);
   rl.debug('matching inspected program identifier to fixed semantic scope',);
   if (configured === 'native-inspected-programs-v2') {
     return (inspected === 'awaited-literal-single-call')
