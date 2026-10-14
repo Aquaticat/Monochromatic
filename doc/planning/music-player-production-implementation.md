@@ -204,13 +204,19 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   the `containerCargo` fallback (it mounts `truepeak-core` and the Android fixture); `states/window-title` and
   `states/natural-order` were harness races and pass 20 of 20; nested compositor 0.4.0 is published and installed, and
   the runner checks capability by version with no pin; the e2e suite has 110 checks (110 pass, 1 not injectable).
+
+### On a branch, awaiting merge
+
 - Desktop unplayable-file notification (2026-10-14, branch `feat/desktop-unplayable-notification`, not merged; D122): the
   in-window "`name` can't be played." message is gone and the report is one freedesktop notification on Linux
   (`src/unplayable_notification*.rs`, own thread and connection, title `Cannot play a file`, normal urgency, default
-  expiry, no buttons, each file told once per run); the row mark stays. A failed post logs one warning and shows
-  nothing in the window. macOS and Windows show only the row mark (no notification code there yet). The bus tests
-  start a private `dbus-daemon`, so the container image now installs it. The e2e suite posts these notifications and
-  the analysis indicator to whatever session bus it inherits.
+  expiry, no buttons, each file told once per run, which is the implementer's reading open to the human's veto); the
+  row mark stays. A failed post logs one warning and shows nothing in the window. macOS and Windows show only the row
+  mark (no notification code there yet). The bus tests start a private `dbus-daemon`, so `:image` must be rebuilt
+  before `:test:container` can run them (the Containerfile now installs it). Open item, not fixed: the e2e suite runs
+  its app in a systemd user unit that inherits the real session bus (`DBUS_SESSION_BUS_ADDRESS` is
+  `unix:path=/run/user/1000/bus`), so `states/refresh-broken-file-once` now posts "d.wav can't be played." on the real
+  desktop on every run, as the analysis indicator already did.
 
 ### Open, not started
 
@@ -387,6 +393,12 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 ### Mistakes made in this effort, and what corrected them
 
 Read these before repeating them. Each one cost the human a correction.
+
+- The unplayable-notification run (2026-10-14) shipped a test that started a fake notification service after posting
+  the first report, so it raced the notifier thread; it passed in the suite and failed only as the baseline of the
+  mutation run (fixed in `95d573b836`: the fake service now refuses its first call on purpose). The docs commit
+  `2007ce0cb4` says its Containerfile note follows, but that change landed in `b21530ceae`; a corrective commit comment
+  was posted. Tests that wait for "something happens after X" need a deterministic signal, not an order of two threads.
 
 - The wiring-test agent (2026-10-14) committed `55f465c0b3` with no blank line after the subject, so the whole body is
   one long subject line, and an early step test looped forever under a mutant and blocked a mutation run for about 40

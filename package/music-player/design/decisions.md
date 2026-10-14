@@ -3327,7 +3327,8 @@ The human answered four questions that had been open as orchestrator adoptions.
 
 The human asked for it: the in-window message "`name` can't be played." appeared at launch for a library file that could
 not be decoded, and it was misplaced on screen.
-Owner decision, so there is no veto window.
+The request for the system notification is an owner decision; the bullet marked as the implementer's reading is the
+only part left open to a veto.
 
 - D83's overlay no longer carries the unplayable-file message.
   The window draws nothing for the report; the row keeps its "Can't be played" mark, which stays as the only in-window
@@ -3340,8 +3341,11 @@ Owner decision, so there is no veto window.
   several collapse to a count that names the first, D9), normal urgency, the server's default expiry and no action
   buttons.
   Files in one engine report give one notification.
-  Each file is announced once for a run of the app, so a repeated report, a folder opened again or a file that decodes
-  and then breaks again posts nothing more; its row is marked each time.
+- The implementer's reading, open to the human's veto: each file is announced once for a run of the app, so a repeated
+  report, a folder opened again or a file that decodes and then breaks again posts nothing more, while its row is marked
+  each time. The human asked only that a repeated report not repeat the notification and that the engine's once-per-file
+  rule stay; the engine itself still reports again after a folder is opened again (which re-marks the rows) and after a
+  file decoded once. Without this reading those cases would post the notification again.
 - The call runs on its own thread with its own session bus connection and a bounded wait, so the engine and the window
   never wait on the bus, and a failure here never disables the analysis indicator (D107) or the other way round.
 - When the notification cannot be posted (no bus, no notification service, any failure) nothing is shown in the window:

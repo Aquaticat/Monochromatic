@@ -811,8 +811,9 @@ The refresh sweep shows no progress and decodes no file twice, because the sweep
 the fingerprints they have taken.
 A file that failed to decode has no stored result, so it is tried again at the next library change, whichever file
 changed (every refresh sweep also takes the small set of files recorded as failed), and in every full refresh.
-The person is told once per file (and once more if the file changes and still fails), and the row keeps its mark until
-a peak is measured for it.
+The engine reports each file once until a peak is measured for it (a folder opened again reports it again, which marks
+its row again), and the row keeps its mark until a peak is measured for it.
+The desktop notification is stricter: one per file for a run of the app (D122).
 
 The selected track follows its file (`controller_reload.rs`): when the file that is playing is replaced, the new file is
 opened first and swapped in at the same position (clamped to the new length), the player keeps playing, the peak and the
