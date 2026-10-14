@@ -182,6 +182,10 @@ try{
    lastReview:review,
    lastJudgment:judgment
  }=runtime.inspect();
+ if(!review){
+  try{env.readActiveSessionRunComposition(session);}
+  catch(error){console.error(inspect(error,{depth:6,maxStringLength:2048}));}
+ }
  assert.ok(review,inspect(
    {requests,assessments,message:session.messages.at(-1),toolErrors:session.messages.filter(function failedTool(message){return message.role==='toolResult'&&message.isError;}),judgment:judgment?.inspect()},
    {depth:4}
