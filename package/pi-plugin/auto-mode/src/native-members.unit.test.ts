@@ -18,6 +18,8 @@ type NativeMembers = {
     readonly source: string;
     /** Original decoded member names selected for private ownership. */
     readonly members: readonly string[];
+    /** Decoded private destination names when the original spelling must change. */
+    readonly renames?: Readonly<Record<string, string>>;
   }) => string;
 };
 
@@ -86,6 +88,31 @@ await describe({
         expect(privatizeNativeMembers({ source, members: [] })).toBe(source);
         expect(privatizeNativeMembers({ source, members: ['state; globalThis.injected=true;', '"}\n/*', '../state'] })).toBe(source);
       },
+    }),
+    it({
+      name: 'renames selected instance identifiers without changing textual lookalikes',
+      fn: async function renamedMemberSpans() {
+        /**
+         Original escaped names select the same decoded member without exposing comments or strings to replacement.
+         */
+        const source = 'class State { #state; #π; read(other) { /* this._state */ const text = "this._state"; other._state; this["_state"]; this._st\\u0061te; this._state; this._pi; } }';
+        /**
+         Renamed source contains only grammar-checked private destination identifiers.
+         */
+        const output = privatizeNativeMembers({ source, members: ['_state', '_pi'], renames: { _state: 'state', _pi: 'π' } });
+        expect(output).toBe('class State { #state; #π; read(other) { /* this._state */ const text = "this._state"; other._state; this["_state"]; this.#state; this.#state; this.#π; } }');
+        expect(parse(output, { sourceType: 'module', semanticErrors: true }).diagnostics).toEqual([]);
+      },
+    }),
+    ...['constructor', '1state', 'state; #other', 'state = 1', 'state() {}', 'st\\u0061te', 'state; } globalThis.injected = true; class Other { #state'].map(function invalidDestination(destination) {
+      return it({
+        name: `rejects private destination syntax ${destination}`,
+        fn: async function requireOnePrivateIdentifier() {
+          expect(function rejectInjectedSyntax() {
+            privatizeNativeMembers({ source: 'class State { read() { return this._state; } }', members: ['_state'], renames: { _state: destination } });
+          }).toThrow('Native private destination is not one identifier');
+        },
+      });
     }),
     it({
       name: 'rejects the reserved private constructor name before emitting source',

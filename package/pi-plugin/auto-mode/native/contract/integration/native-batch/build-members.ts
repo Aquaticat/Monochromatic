@@ -21,11 +21,49 @@ import { walkNativeSyntax } from './build-syntax.ts';
 const l = tagged({ tag: 'auto-mode-native-build-members' });
 
 /**
+ Validate a decoded destination name as exactly one uninitialized private field before source interpolation.
+
+ @param name - decoded destination identifier selected by the source generator
+
+ @returns private identifier spelling admitted by the consuming JavaScript grammar
+
+ @throws NativeBatchBuildError when the destination is not exactly one private field name
+ */
+function privateMemberName(name: string): string {
+  /**
+   Destination grammar validation remains distinct from parsing the original module.
+   */
+  const rl = tagged({ tag: privateMemberName.name, l });
+  rl.debug('validating renamed native private identifier');
+  /**
+   The parser checks destination syntax without executing interpolated text.
+   */
+  const parsed = parse(`class NativePrivateName { #${name}; }`, { sourceType: 'module', semanticErrors: true });
+  /**
+   Additional declarations or fields cannot be accepted as identifier text.
+   */
+  const declaration = parsed.program.body[0];
+  if (parsed.diagnostics.length > 0 || parsed.program.body.length !== 1
+    || declaration?.type !== 'ClassDeclaration' || declaration.body.body.length !== 1)
+    throw new NativeBatchBuildError(`Native private destination is not one identifier: ${name}`);
+  /**
+   The exact decoded name rejects initializers, methods, and source-escaped alternate spellings.
+   */
+  const field = declaration.body.body[0];
+  if (field?.type !== 'PropertyDefinition' || field.key.type !== 'PrivateIdentifier'
+    || field.key.name !== name || field.value !== null)
+    throw new NativeBatchBuildError(`Native private destination is not one identifier: ${name}`);
+  return `#${name}`;
+}
+
+/**
  Rewrite selected direct this-member identifiers while preserving comments, strings, and unrelated accesses.
 
  @param source - original source whose matching field declarations are managed by the caller
 
  @param members - decoded member names already qualified for private instance ownership
+
+ @param renames - optional decoded destination names when original public and private spellings differ
 
  @returns source containing private references at original parsed member locations
 
@@ -38,10 +76,12 @@ const l = tagged({ tag: 'auto-mode-native-build-members' });
  */
 export function privatizeNativeMembers({
   source,
-  members
+  members,
+  renames
 }: {
   readonly source: string;
   readonly members: readonly string[];
+  readonly renames?: Readonly<Record<string, string>>;
 }): string {
   /**
    Each private-member transformation retains a distinct diagnostic scope.
@@ -70,6 +110,14 @@ export function privatizeNativeMembers({
   const selected = new Set(members);
   if (selected.has('constructor')) throw new NativeBatchBuildError('Native private member selection cannot include constructor');
   /**
+   Explicit destination names are validated once before any source edit is assembled.
+   */
+  const destinations = new Map<string, string>();
+  if (renames !== undefined) {
+    for (const [original, destination] of Object.entries(renames))
+      destinations.set(original, privateMemberName(destination));
+  }
+  /**
    Each original member identifier supplies its own unique source interval.
    */
   const spans = new Map<number, NativeSourceEdit>();
@@ -91,7 +139,7 @@ export function privatizeNativeMembers({
         .start,
       end: node.property
         .end,
-      text: `#${source.slice(
+      text: destinations.get(node.property.name) ?? `#${source.slice(
         node.property
           .start,
         node.property

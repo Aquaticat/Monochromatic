@@ -291,8 +291,9 @@ export function judgmentSource({
   Both original whole-program selection gates must retain the same definition contract.
   */
  const programGuard="if(definitionId!=='operation_violates_rule')throw new JudgmentConstructionError('Unsupported whole-program rule relation definition');";
- if (programGuardSource.split(programGuard)
-   .length - 1
+ if ((programGuardSource.split(programGuard)
+   .length
+   - 1)
    !== EXPECTED_PROGRAM_RELATION_GUARDS) throw new NativeBatchBuildError('Original program relation guards must occur exactly twice');
  /**
   The qualified original whole-program gates accept the additional clause relation.
