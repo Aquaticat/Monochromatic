@@ -9,6 +9,7 @@ import {assertNativeSessionInputCapture} from './generated/session-manager.mjs';
 export function assertDomainReview({env,review,judgment,session,originalBody,settings,measures}){
  const {relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl}=settings;
  const {assessments,executions,requests,httpCalls,contextCalls,lateContextMutations,progressCalls}=measures;
+ const expectedExecutions=settings.expectedExecutions??3;
  if(!review){
   try{judgment?.assertDependenciesCurrent();}
   catch(error){console.error(inspect(error,{depth:8,maxStringLength:2048}));}
@@ -149,13 +150,13 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
      review.outcome.verdict,
      relation==='permission'?'approve':'deny'
    );
-   if(executions!==(relation==='permission'?3:0))console.log(inspect(
+   if(executions!==(relation==='permission'?expectedExecutions:0))console.log(inspect(
      {toolResults:session.messages.filter(function isToolResultMessage(message) { return (message.role==='toolResult'); }),judgment:judgment?.inspect()},
      {depth:6}
    ));
    assert.equal(
      executions,
-     relation==='permission'?3:0
+     relation==='permission'?expectedExecutions:0
    );
   }
   if(requireResolution){

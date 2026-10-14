@@ -4,6 +4,7 @@
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { assessmentHttpFailure, } from './assessment-http-failure.ts';
 
 //region Transport owns HTTP resources while the judgment owns attempts and admission
 
@@ -236,7 +237,10 @@ export function createAssessmentSender({
       if (raw.includes(key,))
         throw new AssessmentTransportError('Assessment response echoed its Gateway credential and was withheld',);
       if (response.status !== limits.successfulStatus)
-        throw new AssessmentTransportError(`Assessment request returned HTTP ${response.status}`,);
+        throw new AssessmentTransportError(assessmentHttpFailure({
+          raw,
+          status: response.status,
+        },),);
       signal.throwIfAborted();
       sl.debug('original assessment HTTP response completed',);
       return raw;

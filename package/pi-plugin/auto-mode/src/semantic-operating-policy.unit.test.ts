@@ -65,7 +65,7 @@ await describe({
         it({ name: 'fixes the original model, definition, and complete-program profile', fn: async function fixedScope() {
           expect(policy.model,).toBe('typesafe/jev-1.13.0',);
           expect(policy.definitionId,).toBe(definition,);
-          expect(policy.programProfile,).toBe('awaited-string-result-then-literal-parallel',);
+          expect(policy.programProfile,).toBe('native-inspected-programs-v2',);
           expect(Object.isFrozen(policies,),).toBe(true,);
           expect(Object.isFrozen(policy,),).toBe(true,);
         }, },),

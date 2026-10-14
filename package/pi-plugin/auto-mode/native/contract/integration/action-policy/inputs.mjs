@@ -74,7 +74,7 @@ export async function capturePolicyInputs({
   const member=judgment.memberFor(id);
   const {prepared} = judgment.preparedMemberFor(member);
   const programInspection=judgment.preparedProgramFor?.(member);
-  const owner=effectOwnerFor({
+  const owner=effectOwnerFor?.({
     judgment,
     member,
     prepared

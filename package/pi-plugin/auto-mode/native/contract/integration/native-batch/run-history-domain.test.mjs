@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createEnvironment} from './environment.mjs';
-import {createRootSessionFactory} from './session-root.mjs';
+import {createRootSessionFactory} from './session-root.ts';
 import {bindPolicySessionCollector} from '../policy-source/system-slot.mjs';
 
 const original='Original instruction from an earlier run within this same native root.';

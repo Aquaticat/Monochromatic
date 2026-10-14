@@ -24,7 +24,7 @@ use std::path::Path;
 ///  read-only list of borrowed text values.
 ///       Siblings:
 ///  `Vec<String>` (growable,
-///  owned) and `[&str; 13]` (length in the type).
+///  owned) and `[&str; 22]` (length in the type).
 /// Why:
 ///   The engine numbers paint roles as one plus the position in this same ordered list,
 ///       so tests can name a role (`"keyword"`) instead of repeating its number.
@@ -47,6 +47,15 @@ const ROLES: &[&str] = &[
     "attribute",
     "namespace",
     "special",
+    "markup.heading",
+    "markup.bold",
+    "markup.italic",
+    "markup.strikethrough",
+    "markup.raw.inline",
+    "markup.link",
+    "markup.link.url",
+    "markup.list",
+    "markup.quote",
 ];
 
 /// What:
@@ -109,37 +118,52 @@ pub fn assert_reads_as(path: &str, source: &str, language: &str, role: &str, fra
         Some(language),
         "language recognized for {path}"
     );
-    // The first `expect` unwraps the `Result`, the second the `Option` inside it.
-    let spans = engine
-        .highlight(file, &text)
-        .expect("bundled grammar and highlighting rules load")
-        .expect("bundled language is not plain text");
-    // What: `Vec::new()` creates an empty growable list; `mut` allows pushing into it.
-    // Why:  A failure message listing every painted fragment shows what the grammar produced.
+    // What: `painted` runs the engine again and lists every interval as its role name and visible text.
+    // Why:  The failure message below must show what the grammar produced.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const classified: Array<[string, string]> = [];
+    // const classified = painted(path, source);
     // ```
-    let mut classified = Vec::new();
-    let mut found = false;
-    for span in spans.iter() {
-        // What: `text.slice(a..b)` is a borrowed view of characters `a` up to `b`;
-        //       `.to_string()` copies that view into an owned `String`.
-        // Why:  Spans address source characters, so slicing the rope returns the painted text.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const painted = source.slice(span.start, span.end);
-        // ```
-        let painted = text.slice(span.start..span.end).to_string();
-        if span.style == index + 1 && painted == fragment {
-            found = true;
-        }
-        classified.push((ROLES[span.style - 1], painted));
-    }
+    let classified = painted(path, source);
+    let found = classified
+        .iter()
+        .any(|(name, shown)| return ROLES[index] == *name && shown == fragment);
     assert!(
         found,
         "expected {role} on {fragment:?} in {path}; painted fragments: {classified:?}"
     );
+}
+
+/// What:
+///  `pub fn painted(path: &str, source: &str) -> Vec<(&'static str, String)>` returns every painted interval of
+///       one sample as its role name and its text with trailing line ends removed.
+///  `&'static str` is a borrowed name that lives for the whole program, here an entry of `ROLES`.
+/// Why:
+///   Markdown paints whole nodes, and a node can end with its line end,
+///  so tests compare the visible text of an interval.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function painted(path: string, source: string): Array<[string, string]>
+/// ```
+pub fn painted(path: &str, source: &str) -> Vec<(&'static str, String)> {
+    let engine = SyntaxEngine::new().expect("bundled language manifest");
+    let text = Rope::from_str(source);
+    let spans = engine
+        .highlight(Path::new(path), &text)
+        .expect("bundled grammar and highlighting rules load")
+        .expect("bundled language is not plain text");
+    return spans
+        .iter()
+        .map(|span| {
+            return (
+                ROLES[span.style - 1],
+                text.slice(span.start..span.end)
+                    .to_string()
+                    .trim_end_matches(['\n', '\r'])
+                    .to_string(),
+            );
+        })
+        .collect();
 }

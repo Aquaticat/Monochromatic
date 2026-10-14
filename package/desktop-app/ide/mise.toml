@@ -604,6 +604,16 @@ run = """
 runCargo(['fmt'])
 """
 
+[tasks."test:syntax"]
+description = "Check syntax recognition, highlighting, injections, Markdown roles, and their faces: the syntax integration tests"
+usage = 'arg "[filter]" help="Optional test-name filter passed to the test harness"'
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+const filter = process.env.usage_filter ? [process.env.usage_filter] : []
+runCargo(['test', '--no-default-features', '--test', 'syntax', '--test', 'syntax_injection', '--test', 'syntax_inventory', '--test', 'syntax_markdown', '--test', 'syntax_markdown_faces', '--test', 'syntax_provisioning', '--test', 'syntax_shadowing', ...filter, ...(filter.length ? ['--', '--nocapture'] : [])])
+"""
+
 [tasks."test:language"]
 description = "Check the headless Language module: unit rules and scripted-server sessions"
 usage = 'arg "[filter]" help="Optional test-name filter passed to the test harness"'

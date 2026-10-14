@@ -51,6 +51,14 @@ android {
         compose = true
     }
 
+    // Robolectric needs the merged manifest and resources on the unit-test classpath, and ui-test-manifest (below)
+    // adds the empty ComponentActivity that createComposeRule launches; without this the rule finds no activity.
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -71,6 +79,44 @@ android {
 tasks.withType<Test>().configureEach {
     maxHeapSize = "3g"
     jvmArgs("-XX:+UseSerialGC")
+}
+
+// Robolectric runs each wiring test on a real Android framework jar for API 36. By default it downloads that jar
+// itself at test time, outside Gradle, into ~/.m2, which needs the network on every fresh home and bypasses Gradle's
+// dependency cache. This configuration lets Gradle resolve the jar like any other dependency (so an offline run works
+// from a warm Gradle cache), a Sync task copies it under its Maven file name, and the tests read it from there
+// through `robolectric.dependency.dir` (see `LegacyDependencyResolver` at tag robolectric-4.17).
+val robolectricRuntime: Configuration by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
+/** Directory holding the Robolectric framework jar under the file name Robolectric looks for. */
+val robolectricRuntimeDir: Provider<Directory> = layout.buildDirectory.dir("robolectric-runtime")
+
+/** Copies the resolved Robolectric framework jar into [robolectricRuntimeDir]. */
+val syncRobolectricRuntime by tasks.registering(Sync::class) {
+    from(robolectricRuntime)
+    into(robolectricRuntimeDir)
+}
+
+tasks.withType<Test>().configureEach {
+    dependsOn(syncRobolectricRuntime)
+    systemProperty("robolectric.dependency.dir", robolectricRuntimeDir.get().asFile.absolutePath)
+    // Robolectric reaches internal OpenJDK classes (for example jdk.internal.access.SharedSecrets, which the first
+    // run failed on) and the JVM refuses that on Java 17 and later without these flags; the list is the one under
+    // "Running with Java 17 and higher" on robolectric.org/getting-started.
+    jvmArgs(
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens=java.base/java.net=ALL-UNNAMED",
+        "--add-opens=java.base/java.security=ALL-UNNAMED",
+        "--add-opens=java.base/java.text=ALL-UNNAMED",
+        "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+        "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
+        "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    )
 }
 
 dependencies {
@@ -96,6 +142,20 @@ dependencies {
     // Host JVM unit tests for the pure-logic `core` package (ported from the
     // desktop's `_tests.rs` vectors). These run via testDebugUnitTest with no device.
     testImplementation("junit:junit:4.13.2")
+
+    // Host JVM Compose wiring tests (src/test/.../wiring): the real track list pane and player host rendered
+    // under Robolectric with the Compose test rule, so the Compose-boundary wiring that no pure function can
+    // reach is tested without an emulator. Robolectric is pinned to 4.17, the newest release, because its
+    // `DefaultSdkProvider.java` (tag robolectric-4.17) maps API 36, the app's targetSdk, to the runtime jar
+    // android-all-instrumented 16-robolectric-13921718-i7 (JDK 21 or newer) and API 37, the compileSdk, to its sibling.
+    // The Compose test artifacts take their version from the BOM above; ui-test-manifest is debug-only because it
+    // adds a test activity to the manifest that the release APK must not carry.
+    testImplementation("org.robolectric:robolectric:4.17")
+    // The API 36 framework jar of that release, with the exact version string it derives (Android version,
+    // Robolectric build, preinstrumented version 7); resolved through Gradle for the offline-capable run above.
+    "robolectricRuntime"("org.robolectric:android-all-instrumented:16-robolectric-13921718-i7")
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // On-device instrumented tests (the RustEngine and the native decode/true-peak
     // bridge drive real MediaStore content and the native .so, which only exist on a

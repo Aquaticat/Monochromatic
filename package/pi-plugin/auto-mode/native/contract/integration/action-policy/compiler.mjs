@@ -1,7 +1,7 @@
 import {MISSING_AUTHORIZATION_EVIDENCE} from './authorization-inputs.mjs';
 import {lowerEstablishedClause} from './clause-lowering.mjs';
 import {inspectPolicyPremises} from './premises.mjs';
-import {SemanticAdmissionPolicyError} from './semantic-policy.mjs';
+import {SemanticAdmissionPolicyError} from './semantic-policy.ts';
 import {
   consumeRequestMaterial,
   retainRequestMaterialObligations
@@ -9,6 +9,7 @@ import {
 import {consumeHeadingContexts} from './heading-context.mjs';
 import {consumeSourceAssociations} from './source-association.mjs';
 import {consumeUnitAdoptions} from './unit-adoption.mjs';
+import {matchesSemanticProgramProfile} from '../maintained-policy.mjs';
 
 /** Package derived resolver inputs and diagnostics without changing any original estimate or source record. */
 function compilation({
@@ -124,10 +125,7 @@ export function compileBoundClauseProgram({
      >0)
    &&(scheduled||singleLegacy)
    &&inputs.effects
-   .every(function matchesUnownedProgramProfile(effect) { return ((effect.owner===undefined)&&(effect.programInspection
-     ?.declaration
-     .profile
-     ===policy.programProfile)); })
+   .every(function matchesUnownedProgramProfile(effect) { return ((effect.owner===undefined)&&matchesSemanticProgramProfile({configured:policy.programProfile,inspected:effect.programInspection?.declaration.profile})); })
   ?Object.freeze({
     preparedOperations:inputs.effects,
     groupExecutionMode

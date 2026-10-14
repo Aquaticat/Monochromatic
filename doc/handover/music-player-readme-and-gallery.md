@@ -9,8 +9,8 @@ It holds twelve PNGs of the desktop app:
 the two-pane window, Search, Settings and the track menu, each in light and dark,
 plus the key hint badges (dark), the narrow player (dark), the narrow folder list (light) and the empty library (light).
 
-The Android gallery holds eight PNGs retaken on 2026-10-13 from a debug build of commit `c6a3f9fde2` on the
-Pixel 9 Pro Fold emulator (API 37, host GPU) with a generated library of invented artists:
+The Android gallery holds eight PNGs of the Pixel 9 Pro Fold emulator (API 37, host GPU) with a generated library of
+invented artists:
 the cover display (library light, player dark, Search light, track menu dark, Settings light) and the inner display
 (two panes light and dark, two-pane Settings dark).
 Each was cropped to remove the status bar and gesture bar at native width, with demo mode on while capturing.
@@ -18,7 +18,22 @@ Every earlier Android capture was removed because it predated the focus ring, gr
 or showed names from a private corpus and a carrier name.
 Retake the Android gallery after any change to those surfaces, with the facts in "Android captures".
 
-Last updated: 2026-10-13.
+On 2026-10-14 all eight screens were captured again from a debug build of commit `e02e74edec`
+(the list focus ring changes of D117 and D120, which put the first list row 3 dp higher),
+with the same library, key sequences and crops as the first gallery.
+Only `android-cover-menu-dark.png` was replaced, because it is the one image where a reader sees the change:
+the ring on the playing row now sits just inside the row's edges, and the menu's focus ring moved with it.
+The other seven were kept as committed from the first gallery (a debug build of commit `c6a3f9fde2`, 2026-10-13):
+`android-cover-settings-light.png` and `android-inner-settings-dark.png` were pixel-identical to the new captures
+(at a 3 percent color tolerance),
+and the library, player, Search and two-pane captures differ only by rows 4 to 7 pixels higher, the letter rail and
+the playing row's fill reaching the pane edge, with no change in content or rings.
+So the eight PNGs do not all come from one commit:
+the menu image is from `e02e74edec` and the rest from `c6a3f9fde2`.
+If a reader-visible difference in row offset ever matters, the same-commit set is a retake of those seven.
+No ring shows on the Search result or on any touch capture, as D117 intends.
+
+Last updated: 2026-10-14.
 
 ## Goal
 
@@ -101,6 +116,42 @@ These facts held for the earlier gallery and are the starting point for the next
 - The earlier note that unfolded and tabletop looked the same came from an app that ignored the fold.
   The app now reads the fold through WindowManager (D110), so capture both postures again.
 
+### Method of the gallery
+
+These facts held for the 2026-10-13 gallery and its 2026-10-14 retake.
+The scripts were scratch and are not kept, so rebuild them from this description.
+
+- Launch the emulator headful on the host GPU as its own systemd user unit, from a private reflink copy of the owned
+  AVD (never the owned AVD), with its own emulator ports and adb server port.
+  Delete `/sdcard/Music/RealAppTest` from the copy, push the invented library, and rescan with
+  `content call --uri content://media/external_primary --method scan_volume --arg external_primary`.
+  Query MediaStore afterwards: only the 35 invented rows may exist.
+- The library is the generator of the desktop gallery (35 mono WAV tones, `Aster Vale` with `Salt Garden` of six
+  tracks and `Night Ferry` of three, twelve more artist folders, three loose tracks).
+- Build the native engine with `mise run //package/music-player/android-app:build:native` on the host, then
+  `./gradlew :app:assembleDebug --no-daemon` in a capped container.
+  Install the APK, and grant `READ_MEDIA_AUDIO` and `POST_NOTIFICATIONS`.
+- Demo mode: `sysui_demo_allowed 1`, then the `com.android.systemui.demo` broadcasts for a 12:00 clock, full battery,
+  one Wi-Fi icon, no mobile, no notifications.
+  The crop below removes the bars anyway, so demo mode is the second layer.
+- Switch panels with `cmd device_state base-state 2` (inner) or `0` (cover), and the scheme with `cmd uimode night`.
+  Capture each display with `screencap -d <display id>` (inner `4619827259835644672`, cover `4619827551948147201`),
+  force-stop and cold start the app before each screen, and take the capture only after a wait.
+- Per screen: select `Aster Vale` and tap `01 Open Window` to play it;
+  cover library is the folder button after that; track menu is `Alt+2`, `Menu`, `Down` three times and `Up` once,
+  which puts the ring on Start shuffle from here; Search is `Ctrl+F` and the text `lan`, then `Back` to close the
+  keyboard; Settings is the gear.
+- Crops at native width: the cover display `1080x2240+0+125` of the 1080 by 2424 capture and the inner display
+  `1964` high from `+110` of the 2152 capture.
+  The status bar's frame is 136 pixels tall on the inner display and its icons end near row 105;
+  the navigation bar starts at row 2074 on the inner display.
+- Finish with `magick <raw> -crop <geometry> +repage -strip -define png:exclude-chunks=date,time <out>` and confirm
+  that the file has only `IHDR`, `IDAT` and `IEND` chunks.
+- Compare a new capture with the committed one at a 3 percent color tolerance:
+  the deck's elapsed time always differs, so judge by where the differing pixels are.
+- Restore the guest afterwards (demo mode off, night mode and posture back to the recorded values), then `sync`, wait
+  8 seconds, `sync`, `adb emu kill`.
+
 ## Privacy and capture rules
 
 - Use generated names and audio, disposable app state and storage, and never the user's real library.
@@ -127,6 +178,10 @@ The full record is `doc/planning/lfs-readme-image-rendering.md`.
   asserts status 200, an image content type, and the pointer's size.
 - On 2026-10-13 the oid in each of the twelve desktop README image URLs equals the sha256 of its file,
   and so does each of the eight Android ones.
+  On 2026-10-14, after the menu image was replaced, all twenty embedded URLs were checked against their files again.
+  The markdown autofix did not rewrite the link inside the commit, so running
+  `git cli-git fix --policy markdown/autofix -- package/music-player/README.md`
+  wrote the new oid into the working tree, and a second commit recorded it.
 
 ## Next actions
 

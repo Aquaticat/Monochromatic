@@ -87,8 +87,8 @@ pub(crate) fn layout_with_tabs(
             naturals.push(ordinal as f32 * space);
         }
     } else {
-        // Brushes do not change advances, so the measuring pass needs no syntax roles.
-        let measured = shaper.line_layout(&projection.text, scale, &[], &[]);
+        // The roles carry weights and the italic face, which can change an advance, so they are measured too.
+        let measured = shaper.line_layout(&projection.text, scale, roles, &[]);
         for byte in &projection.tabs {
             naturals.push(x_before(&measured, *byte));
         }
