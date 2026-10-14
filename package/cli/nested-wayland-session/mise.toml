@@ -954,13 +954,16 @@ const client = async () => {
       await wait(100)
       const answered = dones().filter(line => line.time >= configure.time)
       const gap = answered[0].time - configure.time
-      const withinWindow = answered.filter(line => line.time - configure.time < 100).length
+      // Mesa's swap throttle and the toolkit's redraw gate each hold a request on the surface, so one
+      // send answers two callbacks together; a second send would answer the requests made after them.
+      const burst = answered.filter(line => line.time - answered[0].time < 20).length
+      const later = answered.filter(line => line.time - answered[0].time >= 20 && line.time - configure.time < 100).length
       const file = join(frames, readdirSync(frames).sort()[recorded])
       const edge = frameGreen(file, width - 10, Math.floor(height / 2))
       console.log('resize ' + width + 'x' + height + ': first callback ' + gap.toFixed(1) + ' ms after the configure, '
-        + withinWindow + ' in the first 100 ms; first frame recorded after it is ' + edge.width + 'x' + edge.height
+        + burst + ' answered together, ' + later + ' more in the first 100 ms; first frame recorded after it is ' + edge.width + 'x' + edge.height
         + ', right edge green ' + edge.green)
-      rows.push({ width, height, gap, withinWindow, edge })
+      rows.push({ width, height, gap, burst, later, edge })
     }
     assert.match(await control(socketPath, 'record stop'), /^ok captured=/)
   } finally {
@@ -968,18 +971,20 @@ const client = async () => {
     if (viewer.exitCode === null && viewer.signalCode === null) await once(viewer, 'exit')
     writeFileSync(join(evidence, 'client-protocol.log'), Buffer.concat(protocol).toString())
   }
-  for (const { width, height, gap, withinWindow, edge } of rows) {
+  for (const { width, height, gap, burst, later, edge } of rows) {
     const name = width + 'x' + height
     // Recorder ticks are 500 ms apart and the command came 150 ms after one, so a callback that
     // waited for the next tick would arrive about 350 ms after the configure.
     assert(gap < 100, name + ': the frame callback came ' + gap.toFixed(1) + ' ms after the configure, not at once')
-    assert.equal(withinWindow, 1, name + ': ' + withinWindow + ' frame callbacks in the first 100 ms after the configure')
+    assert(burst >= 1 && burst <= 2, name + ': ' + burst + ' frame callbacks answered together after the configure')
+    assert.equal(later, 0, name + ': ' + later + ' more frame callbacks in the first 100 ms after the configure')
     assert.deepEqual([edge.width, edge.height], [width, height], name + ': first recorded frame size')
     assert(edge.green > 150, name + ': the first frame recorded after the resize is stale, green ' + edge.green + ' at the right edge')
   }
   const { problems, outstanding } = callbackAccounting()
   assert.deepEqual(problems, [], 'frame callback accounting')
-  assert(outstanding <= 1, outstanding + ' frame callbacks still unanswered')
+  // At the end the swap throttle and the redraw gate each wait for the next tick.
+  assert(outstanding <= 2, outstanding + ' frame callbacks still unanswered')
   console.log('Every frame request was answered once; the log is in ' + join(evidence, 'client-protocol.log'))
 }
 const binary = './target/release/monochromatic-nested-wayland-session'
