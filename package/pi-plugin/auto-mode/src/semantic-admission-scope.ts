@@ -19,16 +19,21 @@ const l = tagged({ tag: 'auto-mode-semantic-admission-scope', },);
  Match exact profiles or the fixed set adopted for the native host.
 
  @param configured - captured bootstrap profile identifier
+ 
  @param inspected - original decoder profile identifier
+ 
  @returns whether the original profile belongs to the configured scope
  */
-export function matchesSemanticProgramProfile({ configured, inspected, }: {
+export function matchesSemanticProgramProfile({
+  configured,
+  inspected,
+}: {
   readonly configured: string;
   readonly inspected: string | undefined;
 },): boolean {
   if (configured === 'native-inspected-programs-v2') {
-    return inspected === 'awaited-literal-single-call'
-      || inspected === 'awaited-string-result-then-literal-parallel';
+    return (inspected === 'awaited-literal-single-call')
+      || (inspected === 'awaited-string-result-then-literal-parallel');
   }
   return inspected === configured;
 }
@@ -96,7 +101,9 @@ export function inspectSemanticAdmissionScope(
     .some(function incomplete(effect,) {
     return !matchesSemanticProgramProfile({
       configured: policy.programProfile,
-      inspected: effect.programInspection?.declaration.profile,
+      inspected: effect.programInspection
+        ?.declaration
+        .profile,
     },);
   },)) {
     return Object.freeze({

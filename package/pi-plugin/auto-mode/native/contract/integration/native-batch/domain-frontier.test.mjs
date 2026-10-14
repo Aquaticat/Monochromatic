@@ -195,7 +195,6 @@ const runtime=bindNativePolicyRuntime({
    requestMaterialAdmissionPolicy:policy('request_instruction_content'),
    headingContextAdmissionPolicy:policy('heading_instruction_content')
   }),
-  effectOwnerFor:function omitDomainAuthorizationOwner() { return (undefined); },
   sendWire:sendAssessment,
   originalStream:sdkStream?function stream(model,context,options){return controlledSdkStream({model,context,options});}:nativeOpenAIStream,
   async terminalFetch(input,init){
