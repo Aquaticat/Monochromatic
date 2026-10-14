@@ -3,10 +3,16 @@
 
  @module
  */
-import { readFile, realpath } from 'node:fs/promises';
+import {
+  readFile,
+  realpath
+} from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import { NativeImportBuildError, rewriteNativeImports } from './build-imports.ts';
+import {
+  NativeImportBuildError,
+  rewriteNativeImports
+} from './build-imports.ts';
 
 //region Staged source reads retain original module bases
 
@@ -43,22 +49,37 @@ export async function readStagedInput(sourceUrl: URL): Promise<string> {
   /**
    Read failures identify the affected original input.
    */
-  const rl = tagged({ tag: readStagedInput.name, l });
+  const rl = tagged({
+    tag: readStagedInput.name,
+    l
+  });
   rl.debug(`reading original native build input: ${sourceUrl.href}`);
   /**
    File bytes are captured before synchronous source transformation.
    */
-  const source = await readFile(sourceUrl, 'utf8');
+  const source = await readFile(
+    sourceUrl,
+    'utf8'
+  );
   try {
     return rewriteNativeImports({
       source,
       path: sourceUrl.href,
-      select: function retainOriginalStaticImport({ specifier, kind }): string {
-        return kind === 'static' && specifier.startsWith('.') ? new URL(specifier, sourceUrl).href : specifier;
+      select: function retainOriginalStaticImport({
+        specifier,
+        kind
+      }): string {
+        return (kind === 'static') && specifier.startsWith('.') ? new URL(
+          specifier,
+          sourceUrl
+        ).href : specifier;
       },
     });
   } catch (error) {
-    if (error instanceof NativeImportBuildError) throw new StagedImportError(`Cannot parse the original native build input: ${sourceUrl.href}`, { cause: error });
+    if (error instanceof NativeImportBuildError) throw new StagedImportError(
+      `Cannot parse the original native build input: ${sourceUrl.href}`,
+      { cause: error }
+    );
     throw error;
   }
 }
@@ -87,7 +108,12 @@ export async function readStagedInput(sourceUrl: URL): Promise<string> {
  await replaceStagedImport({ source, binding: 'run', expected, replacement });
  ```
  */
-export async function replaceStagedImport({ source, binding, expected, replacement }: {
+export async function replaceStagedImport({
+  source,
+  binding,
+  expected,
+  replacement
+}: {
   readonly source: string;
   readonly binding: string;
   readonly expected: URL;
@@ -96,7 +122,10 @@ export async function replaceStagedImport({ source, binding, expected, replaceme
   /**
    Identity checks remain attributable to the original generated binding.
    */
-  const rl = tagged({ tag: replaceStagedImport.name, l });
+  const rl = tagged({
+    tag: replaceStagedImport.name,
+    l
+  });
   rl.debug(`checking original generated import: ${binding}`);
   /**
    The qualified generator emits this exact binding spelling.
@@ -105,20 +134,25 @@ export async function replaceStagedImport({ source, binding, expected, replaceme
   /**
    Ambiguous imports cannot be selected by position or first match.
    */
-  const lines = source.split('\n').filter(function matchesStagedImportPrefix(line): boolean {
+  const lines = source.split('\n')
+    .filter(function matchesStagedImportPrefix(line): boolean {
     return line.startsWith(prefix);
   });
   /**
    Capture the sole candidate before narrowing it for JSON decoding.
    */
   const [line] = lines;
-  if (lines.length !== 1 || line === undefined || !line.endsWith(';')) throw new StagedImportError(`Expected one generated import for ${binding}`);
+  if ((lines.length !== 1) || (line === undefined)
+    || (!line.endsWith(';'))) throw new StagedImportError(`Expected one generated import for ${binding}`);
   try {
     /**
      Parsing remains unknown until the generated module specifier is checked.
      */
-    const specifier: unknown = JSON.parse(line.slice(prefix.length, -1));
-    if (typeof specifier !== 'string') throw new StagedImportError('Generated import must name a file URL');
+    const specifier: unknown = JSON.parse(line.slice(
+      prefix.length,
+      -1
+    ));
+    if ((typeof specifier) !== 'string') throw new StagedImportError('Generated import must name a file URL');
     /**
      Query strings and fragments select separate module identities.
      */
@@ -126,10 +160,16 @@ export async function replaceStagedImport({ source, binding, expected, replaceme
     if (observed.search || observed.hash) throw new StagedImportError('Generated import must not select a separate module URL');
     if ((await realpath(fileURLToPath(observed))) !== (await realpath(fileURLToPath(expected)))) throw new StagedImportError('Generated import differs from its expected local build input');
   } catch (error) {
-    throw new StagedImportError(`Cannot verify generated import for ${binding}`, { cause: error });
+    throw new StagedImportError(
+      `Cannot verify generated import for ${binding}`,
+      { cause: error }
+    );
   }
   rl.debug(`verified original generated import: ${binding}`);
-  return source.replace(line, `${prefix}${JSON.stringify(replacement)};`);
+  return source.replace(
+    line,
+    `${prefix}${JSON.stringify(replacement)};`
+  );
 }
 
 //endregion Generated import replacement verifies the original filesystem identity
