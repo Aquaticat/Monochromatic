@@ -34,6 +34,8 @@ type ContextModule = {readonly createNativeContextObserver: (capture: (input: Co
 
  @param value - built module namespace
 
+ @returns assertion narrowing to the tested consumer interface
+
  @throws Error when the built observer export is absent
  */
 function assertContextModule(value: unknown): asserts value is ContextModule {
@@ -63,6 +65,19 @@ export function contextFailure(run: () => unknown): unknown {
   try { run(); } catch(error) { return error; }
   throw new Error('Expected native context operation to throw');
 }
+/** Mutable message retained by one disposable context callback. */
+type ContextMessage={role:string;content:string};
+/** Original fixture references and copied receipt values remain separately inspectable. */
+type ContextFixture={
+ readonly observer:ContextObserver;
+ readonly records:ContextInput[];
+ readonly extension:{path:string};
+ readonly handler:()=>void;
+ readonly event:{type:string;messages:ContextMessage[]};
+ readonly message:ContextMessage;
+ readonly snapshot:Parameters<ContextObserver['begin']>[0]['snapshot'];
+ readonly position:Parameters<ContextObserver['before']>[0];
+};
 /**
  Construct original callback references and an owned receipt sink.
 
@@ -70,19 +85,19 @@ export function contextFailure(run: () => unknown): unknown {
 
  @returns independent observer and original native positions
  */
-export function contextFixture(capture?: (input: ContextInput) => void) {
+export function contextFixture(capture?: (input: ContextInput) => void): ContextFixture {
   /** Owned snapshots are independent of later callback mutation. */
   const records: ContextInput[] = [];
   /** Distinct native extension identity. */
   const extension = {path:'fixture-context-extension'};
   /** Only identity is consumed by the observer; native dispatch owns invocation. */
-  function handler(): void {}
+  function handler(): void {throw new Error("Observer must not call "+extension.path);}
   /** Exact event remains mutable through native callback settlement. */
   const message={role:'user',content:'original text'};
   /** Native event owns the message array consumed by this fixture. */
   const event = {type:'context',messages:[message]};
   /** Copies are made at capture time, as the existing manager source pool does. */
-  const observer = nativeContext.createNativeContextObserver(capture??function retain(input) { records.push(structuredClone(input)); });
+  const observer = nativeContext.createNativeContextObserver(capture??function retain(input): void { records.push(structuredClone(input)); });
   return {observer,records,extension,handler,event,message,snapshot:[{ext:extension,handlers:[handler]}],position:{extension,handler,event}};
 }
 /**
@@ -92,7 +107,7 @@ export function contextFixture(capture?: (input: ContextInput) => void) {
 
  @returns original immutable completion receipt
  */
-export function completeContext(observer: ContextObserver) {
+export function completeContext(observer: ContextObserver): ReturnType<ContextObserver['complete']> {
   observer.begin({kind:'context_with_system',snapshot:[]});
   observer.end('context_with_system');
   return observer.complete();
