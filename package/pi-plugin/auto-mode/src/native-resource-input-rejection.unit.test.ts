@@ -23,7 +23,7 @@ await describe({
     }),
     ...[
       { agentsFiles: [], extra: true },
-      { agentsFiles: [], [Symbol('extra')]: true },
+      { agentsFiles: [], [Symbol('unexpected symbol field in context input')]: true },
       {},
     ].map(function invalidContext(value, ordinal) {
       return it({
@@ -70,7 +70,7 @@ await describe({
         const hidden = Object.defineProperty({}, 'cwd', { value: '/workspace' });
         /** JSON supplies an own prototype-named field without invoking object-literal prototype syntax. */
         const prototypeField: unknown = JSON.parse('{"__proto__":{"changed":true}}');
-        for (const options of [hidden, { [Symbol('dependency')]: 'hidden' }, prototypeField]) {
+        for (const options of [hidden, { [Symbol('unsupported symbolic loader dependency')]: 'hidden' }, prototypeField]) {
           expect(function copyUnsupportedField() {
             nativeResourceInput.copyOptions(options);
           }).toThrow('Loader options require named data properties');
