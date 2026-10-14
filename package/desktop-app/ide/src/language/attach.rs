@@ -132,7 +132,7 @@ pub(super) async fn attach(worker: &mut Worker) {
     let Some(language) = recognized else {
         return;
     };
-    if let Err(error) = worker.languages.refresh(&language) {
+    if let Err(error) = worker.languages.refresh(&language, Some(&path)) {
         tracing::error!(
             ?error,
             "cannot rebuild the language registry; keeping the previous one"

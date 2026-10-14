@@ -187,6 +187,11 @@ struct Definition {
     ///  and the worker bounds
     /// every request it sends by this value itself.
     timeout: u64,
+    /// Where the server's program was found,
+    ///  before the launch policy;
+    ///  absent when it was not found.
+    ///  A change here is what makes the registry rebuild.
+    resolved: Option<PathBuf>,
     /// The launch the policy produced;
     ///  absent for an unavailable server.
     launch: Option<ServerLaunch>,
@@ -227,20 +232,28 @@ struct Built {
 
 /// What:
 ///  Decide whether a server's program exists,
-///  returning its absolute path or the reason
-///       it is unavailable.
+///  returning its absolute path or the reason it is unavailable.
+///  `Option<&Path>` is the displayed document,
+///  or nothing.
 /// Why:
 ///  The check must see the real server,
 ///  never a wrapper placed in front of it.
+///  The TypeScript server is the project's own copy,
+///  looked up from the document's folder upward.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function locate(server: string, command: string, root: string): string // throws when missing
+/// function locate(server: string, command: string, root: string, document?: string): string // throws when missing
 /// ```
-fn locate(server: &str, command: &str, root: &Path) -> Result<PathBuf, Unavailable> {
+fn locate(
+    server: &str,
+    command: &str,
+    root: &Path,
+    document: Option<&Path>,
+) -> Result<PathBuf, Unavailable> {
     if server == typescript::SERVER {
         // `map_err` wraps the text reason in the `Missing` variant.
-        return typescript::locate(root).map_err(Unavailable::Missing);
+        return typescript::locate(root, document).map_err(Unavailable::Missing);
     }
     // `ok_or_else` turns "nothing" into the error built by the closure.
     return resolve_executable(command, root).ok_or_else(|| {
@@ -266,7 +279,7 @@ fn locate(server: &str, command: &str, root: &Path) -> Result<PathBuf, Unavailab
 /// ```ts
 /// function build(root: string, setup: LanguageSetup): Built
 /// ```
-fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
+fn build(root: &Path, setup: &LanguageSetup, document: Option<&Path>) -> Result<Built> {
     // `Instant::now` reads the monotonic clock; the phases below are logged with their durations.
     let started = Instant::now();
     // The built-in `languages.toml` of the pinned Helix revision, compiled into helix-loader.
@@ -298,7 +311,9 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
     let mut configuration: Configuration = merged
         .try_into()
         .context("Cannot decode the language definitions")?;
-    typescript::apply(&mut configuration, root);
+    // The TypeScript launcher is found once for this document and used by the definition and the check.
+    let typescript_launcher = typescript::locate(root, document);
+    typescript::apply(&mut configuration, root, typescript_launcher.as_deref().ok());
     rust_analyzer::watch_through_client(&mut configuration);
     // What: Helix's spelling of the root, when it differs from the canonical one; `ok()` drops
     //       the refusal, which the start reports on its own.
@@ -320,7 +335,9 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
     // `iter_mut` walks the table handing out modifiable borrows of each definition.
     for (name, definition) in configuration.language_server.iter_mut() {
         let command = definition.command.clone();
-        let outcome = locate(name, &command, root).and_then(|executable| {
+        let located = locate(name, &command, root, document);
+        let resolved = located.as_ref().ok().cloned();
+        let outcome = located.and_then(|executable| {
             let request = LaunchRequest {
                 server: name.clone(),
                 executable,
@@ -353,6 +370,7 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
             Definition {
                 command,
                 timeout: definition.timeout,
+                resolved,
                 launch,
             },
         );
@@ -415,7 +433,7 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
 impl Languages {
     /// Build the registry for one project root.
     pub(super) fn new(root: &Path, setup: LanguageSetup) -> Result<Self> {
-        let built = build(root, &setup)?;
+        let built = build(root, &setup, None)?;
         return Ok(Self {
             // `ArcSwap::from_pointee` wraps the registry for atomic replacement; `Arc::new` shares it.
             loader: Arc::new(ArcSwap::from_pointee(built.loader)),
@@ -485,27 +503,30 @@ impl Languages {
     }
 
     /// What:
-    ///  Rebuild the registry when a language's server programs appeared or disappeared
-    ///       since it was built;
+    ///  Rebuild the registry when a language's server programs appeared,
+    ///  disappeared,
+    ///  or moved since it was built;
     ///  returns true when it was rebuilt.
+    ///  `Option<&Path>` is the document about to be displayed.
     /// Why:
     ///  Programs are resolved when the registry is built,
     ///  so a server installed later (or
     ///      project dependencies installed after start) would otherwise stay "missing" until restart.
+    ///  The TypeScript server is looked up from the document's folder,
+    ///  so a document in another package can need another launcher.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// refresh(language: string): boolean
+    /// refresh(language: string, document?: string): boolean
     /// ```
-    pub(super) fn refresh(&mut self, language: &str) -> Result<bool> {
+    pub(super) fn refresh(&mut self, language: &str, document: Option<&Path>) -> Result<bool> {
         let mut changed = false;
         for name in self.configured(language) {
             let Some(definition) = self.definitions.get(name) else {
                 continue;
             };
-            let found = locate(name, &definition.command, &self.root).is_ok();
-            let was_missing = matches!(self.unavailable.get(name), Some(Unavailable::Missing(_)));
-            if found == was_missing {
+            let found = locate(name, &definition.command, &self.root, document).ok();
+            if found != definition.resolved {
                 changed = true;
             }
         }
@@ -516,7 +537,7 @@ impl Languages {
             language,
             "rebuilding the language registry after a server program changed"
         );
-        let built = build(&self.root, &self.setup)?;
+        let built = build(&self.root, &self.setup, document)?;
         // `store` atomically replaces the registry Helix reads at its next server start.
         self.loader.store(Arc::new(built.loader));
         self.configured = built.configured;
