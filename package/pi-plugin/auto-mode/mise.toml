@@ -136,6 +136,10 @@ run = [
   "node src/native-resource-input-rejection.unit.test.ts",
 ]
 
+[tasks."test:native:script-guard"]
+description = "Verify built native result guard identity, caught values, diagnostics, and aggregate ownership"
+run = "node src/native-script-guard.unit.test.ts"
+
 [tasks."test:native:approval"]
 description = "Verify original approval routing and independent prerequisite evidence with fixture presentation"
 run = [
