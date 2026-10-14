@@ -38,10 +38,26 @@ const l = tagged({ tag: 'auto-mode-runtime-factory-scopes' });
  ```
  */
 export function createRuntimeFactoryScopes(definition: FactoryScopeDefinition): FactoryScopes {
-  /** Capture original capabilities once before callers can replace option properties. */
-  const { lifecycle, readManager, prepareResult, assertRuntimeResult, disposeSession } = definition;
-  /** Each occurrence retains the same callback identities selected at bootstrap. */
-  const bindings = Object.freeze({ lifecycle, readManager, prepareResult, assertRuntimeResult, disposeSession });
+  /**
+   Capture original capabilities once before callers can replace option properties.
+   */
+  const {
+    lifecycle,
+    readManager,
+    prepareResult,
+    assertRuntimeResult,
+    disposeSession
+  } = definition;
+  /**
+   Each occurrence retains the same callback identities selected at bootstrap.
+   */
+  const bindings = Object.freeze({
+    lifecycle,
+    readManager,
+    prepareResult,
+    assertRuntimeResult,
+    disposeSession
+  });
   if (((typeof bindings.lifecycle
     ?.beginConstruction) !== 'function')
     || ((typeof bindings.lifecycle
@@ -71,13 +87,16 @@ export function createRuntimeFactoryScopes(definition: FactoryScopeDefinition): 
    Always release the reentrancy guard, including when a callback throws.
 
    @param body - synchronous operation retaining this factory's exclusion
+   
    @returns original operation result
    */
   function exclusive<Result>(body: () => Result): Result {
     if (activity.busy)
       throw new RuntimeOperationError('Factory scope operations cannot reenter through callbacks');
     activity.busy = true;
-    /** Lexical disposal releases exclusion on both return and throw. */
+    /**
+     Lexical disposal releases exclusion on both return and throw.
+     */
     using reservation = {
       [Symbol.dispose]: function releaseFactoryExclusion(): void {
         activity.busy = false;
@@ -90,6 +109,7 @@ export function createRuntimeFactoryScopes(definition: FactoryScopeDefinition): 
    Reserve a new occurrence only when prior abandoned cleanup has completed.
 
    @param input - original manager and optional owned replacement transition
+   
    @returns original construction capability
    */
   function begin(input: FactoryScopeInput): RootSessionScope {

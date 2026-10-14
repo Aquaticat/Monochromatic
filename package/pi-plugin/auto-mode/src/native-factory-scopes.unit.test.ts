@@ -27,16 +27,26 @@ await describe({ name: '', children: [
     /** Begin captures the original manager before the caller replaces its property. */
     const scope = scopes.begin(input);
     input.manager = {};
-    fixture.definition.readManager = function replacementReader() { throw new Error('Caller replacement reader ran'); };
-    fixture.definition.prepareResult = function replacementPreparer() { throw new Error('Caller replacement preparer ran'); };
+    fixture.definition.readManager = function replacementReader() {
+      throw new Error('Caller replacement reader ran');
+    };
+    fixture.definition.prepareResult = function replacementPreparer() {
+      throw new Error('Caller replacement preparer ran');
+    };
     scope.registerSession(session);
     /** Publication requires the exact newly prepared result, not an equal copy. */
     const prepared = scope.accept({ session });
-    expect(function copiedPublication() { scope.publish({ ...prepared }); }).toThrow('exact prepared result');
+    expect(function copiedPublication() {
+      scope.publish({ ...prepared
+    }); }).toThrow('exact prepared result');
     scope.publish(prepared);
     expect(fixture.events).toEqual(['begin', 'bind', 'publish']);
-    expect(function publishedAbort() { scope.abort(); }).toThrow('cannot be abandoned');
-    expect(function publishedRegistration() { scope.registerSession(session); }).toThrow('no longer preparing');
+    expect(function publishedAbort() {
+      scope.abort();
+    }).toThrow('cannot be abandoned');
+    expect(function publishedRegistration() {
+      scope.registerSession(session);
+    }).toThrow('no longer preparing');
   } }),
   it({ name: 'rejects session substitution, duplicate registration, and manager replacement', fn: async function identityChecks() {
     /** Original manager and session identities are independent test objects. */
@@ -47,18 +57,30 @@ await describe({ name: '', children: [
     const scope = scopes.begin({ manager: fixture.manager });
     /** The original result session remains mutable to simulate native manager replacement. */
     const session = { manager: fixture.manager };
-    expect(function unregisteredResult() { scope.accept({ session }); }).toThrow('exact session registered');
+    expect(function unregisteredResult() {
+      scope.accept({ session
+    }); }).toThrow('exact session registered');
     scope.registerSession(session);
-    expect(function duplicateRegistration() { scope.registerSession(session); }).toThrow('already registered');
-    expect(function foreignResult() { scope.accept({ session: { manager: fixture.manager } }); }).toThrow('exact session registered');
+    expect(function duplicateRegistration() {
+      scope.registerSession(session);
+    }).toThrow('already registered');
+    expect(function foreignResult() {
+      scope.accept({ session: { manager: fixture.manager
+    } }); }).toThrow('exact session registered');
     session.manager = {};
-    expect(function foreignManager() { scope.accept({ session }); }).toThrow('another manager');
+    expect(function foreignManager() {
+      scope.accept({ session
+    }); }).toThrow('another manager');
     session.manager = fixture.manager;
     /** Acceptance stores an exact result for the subsequent manager-change check. */
     const prepared = scope.accept({ session });
-    expect(function duplicateAcceptance() { scope.accept({ session }); }).toThrow('already accepted');
+    expect(function duplicateAcceptance() {
+      scope.accept({ session
+    }); }).toThrow('already accepted');
     session.manager = {};
-    expect(function changedManager() { scope.publish(prepared); }).toThrow('changed its manager');
+    expect(function changedManager() {
+      scope.publish(prepared);
+    }).toThrow('changed its manager');
     session.manager = fixture.manager;
     scope.abort();
     expect(fixture.control.disposeCalls).toBe(1);
@@ -77,10 +99,16 @@ await describe({ name: '', children: [
     const scope = scopes.begin({ manager: fixture.manager });
     scope.registerSession({ manager: fixture.manager });
     fixture.control.failDisposal = true;
-    expect(function failedAbort() { scope.abort(); }).toThrow('Fixture native disposal failed');
+    expect(function failedAbort() {
+      scope.abort();
+    }).toThrow('Fixture native disposal failed');
     expect(scopes.diagnostics().pendingCleanup).toBe(1);
-    expect(function blockedConstruction() { scopes.begin({ manager: fixture.manager }); }).toThrow('cleanup is pending');
-    expect(function failedRetry() { scopes.retryCleanup(); }).toThrow(AggregateError);
+    expect(function blockedConstruction() {
+      scopes.begin({ manager: fixture.manager
+    }); }).toThrow('cleanup is pending');
+    expect(function failedRetry() {
+      scopes.retryCleanup();
+    }).toThrow(AggregateError);
     expect(fixture.control.disposeCalls).toBe(2);
     fixture.control.failDisposal = false;
     scopes.retryCleanup();
@@ -102,9 +130,13 @@ await describe({ name: '', children: [
     /** Reentry occurs during acceptance, after successful registration. */
     const scope = scopes.begin({ manager: fixture.manager });
     scope.registerSession(session);
-    fixture.control.beforeRead = function reenterFactory() { scopes.begin({ manager: fixture.manager }); };
-    expect(function reentrantAcceptance() { scope.accept({ session }); }).toThrow('cannot reenter');
-    fixture.control.beforeRead = undefined;
+    fixture.control.beforeRead = function reenterFactory() {
+      scopes.begin({ manager: fixture.manager
+    }); };
+    expect(function reentrantAcceptance() {
+      scope.accept({ session
+    }); }).toThrow('cannot reenter');
+    delete fixture.control.beforeRead;
     scope.publish(scope.accept({ session }));
     expect(fixture.events).toEqual(['begin', 'bind', 'publish']);
   } }),

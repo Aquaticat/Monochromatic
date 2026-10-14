@@ -58,9 +58,18 @@ export function createConstructionScope({
   /**
    Lifecycle remains the sole issuer of construction identity.
    */
-  const { manager, transition } = input;
-  /** Caller-owned input containers do not remain authoritative after construction begins. */
-  const token = definition.lifecycle.beginConstruction({ manager, ...(transition === undefined ? {} : { transition }) });
+  const {
+    manager,
+    transition
+  } = input;
+  /**
+   Caller-owned input containers do not remain authoritative after construction begins.
+   */
+  const token = definition.lifecycle
+    .beginConstruction({
+      manager,
+      ...(transition === undefined ? {} : { transition })
+    });
   /**
    Mutable progress records effects without replacing lifecycle identity.
    */
@@ -115,6 +124,7 @@ export function createConstructionScope({
    Preserve the validator's exact prepared result for later publication.
 
    @param result - original SDK result requiring descriptor validation
+   
    @returns exact prepared result retained for publication
    */
   function accept(result: CreateAgentSessionResult): Readonly<CreateAgentSessionResult> {
@@ -143,6 +153,7 @@ export function createConstructionScope({
    Publish only the original accepted result while its native manager still matches.
 
    @param result - exact previously accepted result
+   
    @returns original lifecycle publication lease
    */
   function publish(result: Readonly<CreateAgentSessionResult>): object {
