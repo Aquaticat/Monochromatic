@@ -196,6 +196,28 @@ The current tool records remain partial contributions;
 they do not remove `request-material-instruction-use`.
 Complete system and tool governing-use accounting is still required before removing the independent obligation.
 
+The original manager publication now validates its complete selected system input:
+content,
+sections,
+tool declarations,
+and tool removals.
+System inputs without tool declarations receive the same original-owner checks.
+The existing alias index carries these publications through observed native copies;
+no second source inventory or authority registration is added.
+Built manager tests pass for unchanged copies,
+equal replacement messages and sections,
+changed prose and section text,
+replaced removal arrays,
+and accessor rejection without invocation.
+The package type check and four-file scoped lint pass with zero lint diagnostics.
+The rebuilt native SDK and all serializer substitution controls pass with zero provider requests.
+Process-local omission of either the full-field integrity check or field-identity check
+makes its corresponding assertion fail.
+`${HOME}/temp/agent/pi-system-publication-controls-20261014/verification.json`
+records both failures and the unchanged built-artifact hash.
+The serialized system derivation consumer remains the next step;
+these original input publications alone do not establish complete request coverage.
+
 ## Original native RPC approval verification
 
 The disposable harness in `${HOME}/temp/agent/pi-native-rpc-human-20261014/`
