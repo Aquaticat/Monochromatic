@@ -193,7 +193,7 @@ the production authorization-owner integration remains separate work.
 
 ## Typed native session construction
 
-The manager registry port is now pending verification.
+The manager registry port and its verification are complete.
 `root-lifecycle-retirement-entry/registry.mjs` moved to `registry.ts` on 2026-10-14,
 with its input and canonical epoch types in `registry-types.ts`.
 A complete tracked-source search for `createNativeManagerRegistry` found only the maintained SDK factory
@@ -212,11 +212,25 @@ registry-local epochs,
 and the incumbent lifecycle remain.
 The `session-root-dependencies.mjs` bridge and its declaration were removed on the same date;
 the factory imports both the typed registry and typed native reader directly.
-Registry branch controls,
-lint,
-types,
-owned rebuild,
-and native host regression checks remain to run for this port.
+Registry branch controls pass against the rebuilt native artifact:
+one manager shares reservations,
+distinct managers and registries remain independent,
+released reservations reuse canonical state,
+and foreign or revoked ownership fails before canonical accounting changes.
+The returned interface remains frozen without freezing borrowed managers.
+The package type check and scoped lint pass with zero lint warnings and errors.
+The owned rebuild,
+native manager constructors,
+host lifecycle,
+and actual isolated Qwen CLI pass with zero provider requests and clean CLI shutdown.
+Process-local omission of `owner.assertOwned(manager)` makes both foreign and revoked ownership assertions fail.
+`${HOME}/temp/agent/pi-registry-controls-20261014/verification.json`
+records the unchanged built-artifact hash and expected failures.
+Commits `6d5a8642d1`,
+`6260d5d19a`,
+`2ed70ed78a`,
+and `988d7cb453` retain the port and its branch controls.
+The full native lint backlog and original request governing-use consumer remain separate work.
 
 The next maintained dependency is the native session-manager identity reader.
 `root-lifecycle-retirement-entry/root-reader.mjs` moved to `root-reader.ts` on 2026-10-14;
