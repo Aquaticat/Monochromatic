@@ -69,7 +69,7 @@ try{
   assert.equal(domainIssue,undefined,'The original host domain needs code-owned decision-specific accounting, not an unconditional domain hold');
   if(receiptControl){
    assert.equal(review.outcome.state,'unresolved');assert.equal(executions,0);
-   assert(review.requestSourceAssociationUses.every(use=>use.reason?.includes('original native serializer occurrence')),inspect(review.requestSourceAssociationUses,{depth:3}));
+   assert(review.inputs.requestObservation.sourceContributions.every(value=>value.reason?.includes('original native serializer occurrence')),inspect(review.inputs.requestObservation.sourceContributions,{depth:3}));
   }else if(requestRelation!=='none'){
    assert.equal(review.outcome.state,'unresolved');assert.equal(executions,0);
    assert(review.premiseIssues.some(issue=>issue.kind==='request-material-instruction-use'));
