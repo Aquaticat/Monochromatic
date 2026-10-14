@@ -236,15 +236,28 @@ function prepareContextEmitter(source: string): string {
    from:'        for (const { ext, handlers } of snapshotEventHandlers(this.extensions, "context_with_system")) {',
    to:'        observer.end("context");\n        const systemHandlers=snapshotEventHandlers(this.extensions,"context_with_system");\n        observer.begin({kind:"context_with_system",snapshot:systemHandlers});\n        for (const { ext, handlers } of systemHandlers) {'
  });
- /** Both native callback sites retain the same await and catch boundaries. */
+ /**
+  Both native callback sites retain the same await and catch boundaries.
+  */
  const resultSite='                    const handlerResult = (await handler(event, ctx));';
- /** Each original stage has its own native extension-error reporting catch. */
+ /**
+  Each original stage has its own native extension-error reporting catch.
+  */
  const catchSite='                catch (err) {';
- if(context.split(resultSite).length!==3||context.split(catchSite).length!==3)
+ if((context.split(resultSite)
+   .length
+   !==3)||(context.split(catchSite)
+     .length
+     !==3))
    throw new NativeBatchBuildError('Original context callback and error-reporting sites changed');
- context=context.replaceAll(resultSite,
-   '                    observer.before({extension:ext,handler,event});\n'+resultSite+'\n                    observer.returned(handlerResult);')
-   .replaceAll(catchSite,catchSite+'\n                    observer.failed(err);');
+ context=context.replaceAll(
+   resultSite,
+   `                    observer.before({extension:ext,handler,event});\n${resultSite}\n                    observer.returned(handlerResult);`
+ )
+   .replaceAll(
+     catchSite,
+     `${catchSite}\n                    observer.failed(err);`
+   );
  context=context.replaceAll(
    'this.createContext()',
    'Reflect.apply(nativeCreateContext,runner,[])'

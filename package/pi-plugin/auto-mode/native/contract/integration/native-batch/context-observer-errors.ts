@@ -6,12 +6,16 @@
 
 //region Original capture failures cross the native handler catch without being reported as extension errors
 
-/** Traversal no longer matches the original native callback positions. */
+/**
+ Traversal no longer matches the original native callback positions.
+ */
 export class NativeContextContractError extends Error {
   override readonly name = 'NativeContextContractError';
 }
 
-/** Private propagation wrapper retains even primitive and nullish thrown values. */
+/**
+ Private propagation wrapper retains even primitive and nullish thrown values.
+ */
 export class NativeContextCaptureFailure extends Error {
   override readonly name = 'NativeContextCaptureFailure';
   readonly #original: unknown;
@@ -34,7 +38,8 @@ export class NativeContextCaptureFailure extends Error {
    @throws original capture failure when this observer supplied the wrapper
    */
   static rethrow(error: unknown): void {
-    if (error !== null && typeof error === 'object' && #original in error) throw error.#original;
+    if ((error !== null) && ((typeof error) === 'object')
+      && (#original in error)) throw error.#original;
   }
 }
 

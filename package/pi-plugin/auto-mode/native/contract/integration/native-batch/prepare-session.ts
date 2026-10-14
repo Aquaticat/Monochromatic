@@ -116,8 +116,13 @@ const queryObserverUrl=new URL(
   'loadout-query-observer.mjs',
   import.meta.url
 ).href;
-/** Original context observations share the captured native manager input pool. */
-const contextObserverUrl=new URL('context-observer.ts',import.meta.url).href;
+/**
+ Original context observations share the captured native manager input pool.
+ */
+const contextObserverUrl=new URL(
+  'context-observer.ts',
+  import.meta.url
+).href;
 /**
  Qualified native manager edits are rebased onto the original module dependency graph.
  */
