@@ -228,7 +228,13 @@ export function bindRuleAssessmentWire(request){
    state,
    questions
  });
- if(Buffer.byteLength(body)>1_048_576)throw new RuleAssessmentWireError('Complete mixed assessment exceeds the one MiB bound');
+ const bodyBytes=Buffer.byteLength(body);
+ if(bodyBytes>1_048_576){
+  const sourceTexts=sources.map(source=>source.content);
+  const selectedTexts=Object.values(questions).map(value=>value.instructions.selectedRule?.text??'');
+  const sizes={bodyBytes,sourceCount:sources.length,questionCount:input.length,sourceTextBytes:Buffer.byteLength(JSON.stringify(sourceTexts)),uniqueSourceTextBytes:Buffer.byteLength(JSON.stringify([...new Set(sourceTexts)])),selectedRuleTextBytes:Buffer.byteLength(JSON.stringify(selectedTexts)),originalRequestBytes:Buffer.byteLength(state.originalRequestBody)};
+  throw new RuleAssessmentWireError('Complete mixed assessment exceeds the one MiB bound; retained-input byte counts: '+JSON.stringify(sizes));
+ }
  function answerText(raw){
   const parsed=parseBatchAnswer({
     raw,
