@@ -439,7 +439,7 @@ jobs:
         path: |
           package/cli/nested-wayland-session/target
           !package/cli/nested-wayland-session/target/package
-        key: cargo-v2-publish-nws-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/cli/nested-wayland-session/Cargo.lock') }}
+        key: cargo-v2-publish-nws-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-prefix-proof
         restore-keys: |
           cargo-v2-publish-nws-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
 
