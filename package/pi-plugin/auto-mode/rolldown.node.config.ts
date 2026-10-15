@@ -5,7 +5,9 @@
  */
 import { nodeConfig } from '@monochromatic-dev/config-rolldown/.node.ts';
 
-/** Both entries share emitted implementation identities without sharing SDK initialization. */
+/**
+ Both entries share emitted implementation identities without sharing SDK initialization.
+ */
 const config: ReturnType<typeof nodeConfig> = nodeConfig({
   input: {
     index: './src/index.ts',
