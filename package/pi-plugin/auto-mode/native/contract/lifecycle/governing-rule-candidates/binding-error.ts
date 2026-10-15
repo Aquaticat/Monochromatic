@@ -7,7 +7,7 @@
  */
 export class GoverningRuleBindingError extends Error {
   /**
-   Stable original binding diagnostic category.
+   Preserve the original constructor's diagnostic category, including derived construction.
    */
-  override readonly name: string = 'GoverningRuleBindingError';
+  override readonly name: string = this.constructor.name;
 }
