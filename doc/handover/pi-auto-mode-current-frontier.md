@@ -1795,7 +1795,24 @@ its ordering assertion included the preceding issuance events.
 Clear the event record after issuance before asserting closure order.
 All five direct consumer files have zero focused lint diagnostics in
 `${HOME}/temp/agent/pi-lifecycle-tests-lint-final-20261015.log`.
-Final direct-suite verification and guard controls remain pending for this extraction.
+All three direct suites now pass against both the current artifact and the saved original function bodies,
+as recorded in `${HOME}/temp/agent/pi-lifecycle-tests-third-20261015.log`
+and `${HOME}/temp/agent/pi-lifecycle-original-blocks-final-20261015.log`.
+The final type check also passes.
+All 29 process-local guard omissions trigger test failures;
+all six built artifacts retain their original hashes in `typed-lifecycle-omissions.json`.
+The first omission verifier incorrectly required the string `AssertionError` for foreign batch acceptance;
+the rejection helper correctly failed with `Expected original budget operation to reject` instead.
+The corrected verifier accepts that exact failure for that control and completes the full set.
+The full maintained recount covers 633 files and 486 rules:
+zero errors and 11466 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-lifecycle-lint-20261015.log`.
+All ten lifecycle implementation and consumer files have zero diagnostics in the full report.
+`child-constructor.mjs` retains 227 warnings.
+Original lifecycle extraction is qualified at these tested boundaries.
+Continue preparation publication,
+retained inspection,
+and the remaining source/dependency owners.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
