@@ -2320,9 +2320,30 @@ The tests retain immediate queue-tail publication,
 normal and exceptional release,
 idempotent disposal,
 and the original unresolved successor after a predecessor rejection.
-Original-body replay,
-omission controls,
-and final focused formatting remain pending.
+`6d81bcc321` fixes the fixture's constructor inference;
+`634b29b15e` finishes its failure-case formatting.
+All three fixture/consumer files now have zero diagnostics.
+Original-body replay and final package type checking pass.
+Twelve deliberate process-local scope and queue changes fail the intended consumers,
+with both built artifact hashes unchanged in `typed-scope-omissions.json`.
+Six original/current domain comparisons retain identical public outcomes and native execution counts,
+including a permission/prohibition positive control.
+The saved original scope body has SHA-256
+`17dba680086086e2cff55295ecdca30e134bc6afb3ef7311f271ad800230b4f3`.
+Original recorder and queue ownership is qualified at these tested boundaries.
+The last full-package warning count remains the facade report;
+no extrapolated package total is claimed for the subsequent scope migration.
+
+GitHub rejected the automatic push of `634b29b15e` with `GH009`.
+The commit remained local;
+one ordinary retry succeeded,
+and direct remote/local ref reads both confirmed that commit.
+The [incident record](../troubleshooting/github-lfs-integrity-rejection.md)
+keeps the unknown server cause separate from the verified recovery.
+The user's subsequent status request was answered with the completed live host boundary,
+qualified facade and scope work,
+and the still-open maintained quality queue.
+No additional human input is needed for this queue.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
