@@ -208,8 +208,7 @@ const sessionCore=imports({
  Generated Session imports connect the existing manager, input, and prompt ownership modules.
  */
 const session=`import {assertNativeAgentStateAssignment} from "./agent.mjs";\nimport {attachNativeContextCopies,readRootOccurrence,readNativeSessionInputOrigin,assertNativeSessionInputCapture,readNativeConstructedInputOrigins,readNativeSessionInputUsage,captureNativeQueuedInput,captureNativeCustomMessageInput,captureNativeInputEvent,observeNativeUninterceptedInput,observeNativeTransformedInput,captureNativeCommandInput,captureNativeCallInput,createNativeHandlerResultObserver,createNativeContextObserver} from "./session-manager.mjs";\n`
-  +`import {createBaseCompositionOwner} from ${helperUrl("../../collector/rule-relevance-sdk-copy/input/base-owner.mjs")};\n`
-  +`import {createRunPromptOwner} from ${helperUrl('../../collector/run-prompt-custody-v3/owner.mjs')};\n`
+  +`import {createPassiveBaseOwner as createBaseCompositionOwner,createPassiveRunOwner as createRunPromptOwner} from ${helperUrl('./passive-prompt.mjs')};\n`
   +`import {copyPromptOptions} from ${helperUrl('../../collector/base-prompt-custody-v2/copy.mjs')};\n`
   +`import {emitOwnedBeforeAgentStart,emitOwnedContext,emitOwnedInput} from "./run-emitter.mjs";\n`
   +`import {readNativeRunnerDomainEvents} from "./event-runner.mjs";\n`

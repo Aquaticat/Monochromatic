@@ -62,6 +62,7 @@ export function emitActiveSessionContext(input) { return emitContext(input); }`
     #resourceInputBinding;
     #basePromptOwner = createBaseCompositionOwner();
     #runPromptOwner = createRunPromptOwner({
+        readNativeBase:()=>this.#baseSystemPromptOptions,
         requireRenderCapture:true,
         readRoot:()=>readRootOccurrence(this.#sessionManager),
         readSessionInput:publication=>readNativeSessionInputOrigin({manager:this.#sessionManager,publication}),
