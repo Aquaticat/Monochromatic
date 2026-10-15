@@ -255,6 +255,11 @@ before saying it matches, QAB):
   changes beyond the brief are open to the human's veto: the template editor's hairlines now start at the pane edge,
   and its field rows lost 3 dp of ring padding. Search's rounded result shape (D126) was left alone and is a candidate
   if the human asks. Not verified on a device: the keyboard ring on a template field row.
+- Issue 545, fingerprint hash migration, branch `feat/music-player-xxh3-128`, worktree `music-player-xxh3` (agent
+  started 2026-10-15): the human said "just migrate to XXH3-128" and "just `twox-hash`" (the only hash crate, 2.1.4).
+  The fingerprint becomes 128 bits end to end on desktop and Android, the peak caches re-key once, the `+aes` target
+  feature goes away, and the final commit body carries `Closes #545`. Merge procedure as for the others; the Windows
+  agent also edits `desktop-app/.cargo/config.toml`, so expect a trivial conflict.
 - Task 97, existing CI caching, branch `chore/ci-caching`, worktree `ci-caching` (agent started 2026-10-15): restore-keys
   for `cargo-publish.yml`, a pnpm store cache for the three pnpm workflows, `doc/decision/ci-caching.md`, proven by
   dispatching cold and warm runs from the branch (never cargo-publish with dry-run false).
