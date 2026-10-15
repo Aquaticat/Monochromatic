@@ -351,6 +351,13 @@ Commits `25c6a6819f` and `813b9c1b35` separate original program ownership and in
 from the judgment constructor.
 Their owned build and focused lint checks are running;
 their consumer regression verification remains queued before any completion claim.
+The user requested a status update during this cleanup.
+The response distinguished the completed live Hyper/Gemma,
+Luna,
+and genuine Allow check from the unfinished lint and module-splitting work.
+Continue the maintained-package quality queue without reopening the completed live approval.
+Commit `4e7545abda` consolidates one-time original instruction-handle publication;
+its changed source is not part of the currently running pre-cleanup split regression artifact.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
