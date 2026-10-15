@@ -259,7 +259,8 @@ It measures non-current tracks in a background sweep and uses a bounded current-
 
 The desktop build uses Slint with winit on every desktop target.
 Linux targets Wayland and uses PipeWire,
-with no ALSA or PulseAudio backend.
+with no PulseAudio backend.
+The Alpine build also falls back to the default ALSA device when no PipeWire daemon answers.
 macOS targets Apple Silicon and uses CoreAudio.
 Windows targets `x86_64` and uses WASAPI through cpal.
 
@@ -536,7 +537,8 @@ mise run //package/music-player/desktop-app:test
 
 Linux builds use host development libraries when available and otherwise use the package's Fedora container.
 The application itself runs on the host session.
- Linux requires Wayland and PipeWire.
+ Linux requires Wayland and PipeWire; Alpine Linux also runs the player over ALSA
+(see [Alpine Linux](#alpine-linux)).
  macOS builds target Apple
 Silicon,
  and Windows builds target `x86_64`;
@@ -551,6 +553,44 @@ See [`desktop-app/README.md`](desktop-app/README.md) for platform prerequisites,
 session locations,
  build verification,
  and signing work.
+
+### Alpine Linux
+
+The player runs on Alpine Linux (musl libc) on x86_64 and aarch64 as a dynamically linked build;
+a static binary cannot open a window.
+Install the runtime packages, then run it with a runtime directory:
+
+```sh
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client libxkbcommon \
+  mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}"
+mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+music-player path/to/music-folder
+```
+
+Expect these differences from a Fedora desktop:
+
+- A font package is required; with none installed the player panics at startup.
+- Sound uses PipeWire when a daemon runs (`apk add pipewire wireplumber`), otherwise the default ALSA device.
+  With neither, the window says that no sound output is available.
+- "Open folder" needs a desktop portal or `zenity`; without either the window says so, and a folder can be passed on
+  the command line.
+- Notifications and the appearance setting need a D-Bus session bus.
+
+Build from source on Alpine:
+
+```sh
+apk add rust cargo build-base cmake samurai pkgconf linux-headers clang21-libclang \
+  pipewire-dev alsa-lib-dev fontconfig-dev freetype-dev
+cd package/music-player/desktop-app
+SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 cargo build --release --locked --features alsa-fallback
+```
+
+`mise run //package/music-player/desktop-app:test:alpine` runs the unit tests and a smoke test in Alpine containers,
+and a GitHub workflow runs it on both architectures.
+The full list of packages, results and limits is in
+[`desktop-app/README.md`](desktop-app/README.md#alpine-linux) and
+[`doc/decision/music-player-alpine.md`](../../doc/decision/music-player-alpine.md).
 
 ### Android
 

@@ -490,4 +490,8 @@ Read these before repeating them. Each one cost the human a correction.
   (Next, Previous and the end of a track still skip unreadable files); the Android Search field keeps its caret at the
   end of the kept query after a fold change and after `Ctrl+F`. The spoken action of a non-current result is now
   "Select track" (D127, open to the human's veto).
+- [x] Alpine Linux (musl) on x86_64 and aarch64 (2026-10-14, branch `feat/music-player-alpine`): a dynamically linked build
+  with Alpine's own Rust (a static binary cannot link PipeWire or open a window), an opt-in ALSA fallback for machines
+  with no sound server, a window message when no audio output opens, a musl-safe scheduler call, and a CI workflow plus
+  smoke test that runs the app in this repository's compositor (`doc/decision/music-player-alpine.md`).
 - [ ] Release builds, signing and distribution are outside this plan and were not touched.

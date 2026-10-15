@@ -17,7 +17,9 @@ backend differs by target.
 - Output:
    the platform's native stack.
    Linux uses a winit window and PipeWire audio (no
-  ALSA/PulseAudio backends).
+  PulseAudio backend).
+   Builds made with the `alsa-fallback` cargo feature (the Alpine build, see [Alpine Linux](#alpine-linux)) also open
+  the default ALSA device when no PipeWire daemon answers.
    The window runs on Wayland when `WAYLAND_DISPLAY` (or `WAYLAND_SOCKET`) is set and otherwise on X11 when `DISPLAY` is
   set, because the Slint `backend-winit` feature turns on both of winit's Linux window systems;
    with neither variable set, startup fails with winit's error.
@@ -125,6 +127,86 @@ backend differs by target.
   When the measured gain lands,
    future decoded samples swap to it;
    already-buffered fallback-gain samples are not flushed.
+
+## Alpine Linux
+
+The player builds and runs on Alpine Linux (musl libc), on x86_64 and aarch64.
+The decision and every measurement behind it are in [`doc/decision/music-player-alpine.md`](../../../doc/decision/music-player-alpine.md).
+The binary is dynamically linked against Alpine's musl and runs only on musl systems.
+A fully static binary is not possible: the PipeWire, fontconfig and freetype static libraries do not exist on Alpine,
+and a static musl program cannot `dlopen` the Wayland, xkbcommon and EGL libraries a window needs.
+
+### Install the runtime packages
+
+```sh
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client libxkbcommon \
+  mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+```
+
+- `fontconfig` and a font: with no font installed the player panics at startup, so install one (`font-dejavu`
+  is the small one; any font package works).
+- `pipewire-libs`, `libgcc`, `wayland-libs-client`, `libxkbcommon`: libraries the binary links or opens at run time.
+- `mesa-egl`, `mesa-gles`, `mesa-dri-gallium`: the OpenGL ES stack the window draws with
+  (the software rasterizer on a machine with no GPU).
+- `alsa-lib`: the ALSA fallback when no PipeWire daemon runs.
+
+You also need a Wayland compositor, and for sound either PipeWire with a session manager or an ALSA device:
+
+```sh
+apk add pipewire wireplumber
+```
+
+Optional: `dbus` (a session bus, for notifications and the appearance setting), `zenity` (the folder chooser when
+no desktop portal runs), and `xdg-desktop-portal`.
+
+### Run
+
+Alpine does not create `XDG_RUNTIME_DIR` unless `elogind` runs.
+Wayland and PipeWire need it, so create it by hand when it is unset:
+
+```sh
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}"
+mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+music-player path/to/music-folder
+```
+
+### What to expect
+
+- Sound: the player uses PipeWire when a daemon answers, otherwise the default ALSA device (set it in
+  `/etc/asound.conf` or `~/.asoundrc`).
+  With neither, the player starts, shows "No sound output is available, so nothing will be heard. Start a sound server
+  such as PipeWire, or set up an ALSA sound card, then restart the player.", and stays silent.
+- Folder chooser: "Open folder" needs a desktop portal or `zenity`.
+  Without either, the window says "This computer has no folder chooser for the player to open. Install zenity, or start
+  the player with a folder: music-player /path/to/music".
+- Notifications and the appearance setting need a D-Bus session bus.
+  Without one the player logs a warning and runs.
+- Settings, the session and the true-peak cache are written under `$XDG_CONFIG_HOME/musicplayer`
+  (`~/.config/musicplayer` by default).
+- The player needs a CPU with AES acceleration (AES-NI on x86_64, the crypto extension on aarch64), as on every
+  platform; a Raspberry Pi 3 or 4 does not have it.
+
+### Build from source on Alpine
+
+```sh
+apk add rust cargo build-base cmake samurai pkgconf linux-headers clang21-libclang \
+  pipewire-dev alsa-lib-dev fontconfig-dev freetype-dev
+cd package/music-player/desktop-app
+SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 cargo build --release --locked --features alsa-fallback
+```
+
+Unit tests also need `cargo-nextest dbus font-dejavu`:
+
+```sh
+SLINT_EMIT_DEBUG_INFO=1 SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 cargo nextest run --locked --features alsa-fallback
+```
+
+### Checking the Alpine build
+
+`mise run //package/music-player/desktop-app:test:alpine` builds `Containerfile.alpine` with podman, runs the unit
+tests, builds the app and the repository's nested compositor, and runs the app inside that compositor in three
+scenarios (no sound, ALSA, PipeWire), with explicit memory and CPU bounds.
+`.github/workflows/music-player-alpine.yml` runs the same commands on x86_64 and aarch64.
 
 ## Codecs
 
