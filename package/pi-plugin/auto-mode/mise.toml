@@ -79,6 +79,13 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...
 [tasks."test:unit"]
 extends = "test:unit"
 
+[tasks."test:confirmation"]
+description = "Verify built approval decisions and unified stop behavior"
+run = [
+  "node src/ask-user.unit.test.ts",
+  "node src/evaluate.unit.test.ts",
+]
+
 [tasks."test:assessment-transport"]
 description = "Verify the built direct HTTP sender without provider requests"
 run = [

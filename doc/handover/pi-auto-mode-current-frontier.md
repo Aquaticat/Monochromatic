@@ -133,6 +133,21 @@ is prepared to exercise the real configured Hyper CLI's RPC approval dialog with
 without injected authorization facts or external provider requests.
 Run it only after the updated native artifact is built.
 
+### Confirmation rejection stops the run
+
+The user requested identical Stop semantics for denial and cancellation whenever the confirmation dialog is shown.
+Commit `b711afc237` reduces the dialog to `Allow` and `Stop`.
+Every non-Allow result,
+including a legacy `Deny` value or dismissed selector,
+records `user-deny` with reason `user stopped`,
+then invokes the original context's abort capability.
+The obsolete `reflectExplanationOnDeny` option and its callers are removed.
+The separate headless fallback still records the unavailable approval channel.
+
+Built unit and native confirmation checks are pending after this change.
+The configured Hyper RPC fixture now expects `Allow` and `Stop`;
+its synthetic legacy denial and cancellation inputs continue to test the same stop boundary.
+
 ## Current Pi execution model
 
 On 2026-10-14,
