@@ -2518,6 +2518,23 @@ and omission qualification remain pending.
 The status response on 2026-10-15 confirms that the live model and approval verification are already complete,
 failure and lifetime owners are qualified,
 and the maintained-package quality queue remains unfinished without a current user-input blocker.
+The follow-up concern about the warning count prompted a complete structured-report breakdown.
+`warning-distribution-20261015.json` reconciles all 10902 warnings:
+8421 unsafe-value type diagnostics,
+905 multiple-statements-per-line diagnostics,
+504 other formatting diagnostics,
+674 strict-boolean diagnostics,
+and 398 other findings.
+Path classification places 10077 in native implementation files,
+443 in test files,
+and 382 in fixture files.
+The largest individual counts are the policy-input collector (284),
+reached-program runner (266),
+and root lifecycle transitions (231).
+Formatting alone cannot resolve the measured unsafe-value majority.
+Continue the active collector extraction,
+then prioritize the connected dispatch/runtime/runner contracts and remaining high-count native boundaries.
+Status reports must distinguish clean extracted pieces from the still-failing package-wide warning gate.
 
 Auto-pushing `6973251c83` was separately rejected with `GH006` and no detailed requirement.
 The original local signature verified,

@@ -1,9 +1,18 @@
-/** Original collection currentness preserves failure precedence and cancellation observation. @module */
-import type { GroupFailures, GroupFailureState } from './group-failure-types.ts';
+/**
+ Original collection currentness preserves failure precedence and cancellation observation. @module
+ */
+import type {
+  GroupFailures,
+  GroupFailureState
+} from './group-failure-types.ts';
 
-/** Currentness observes retained completion presence without reading native result contents. */
+/**
+ Currentness observes retained completion presence without reading native result contents.
+ */
 type CurrentCompletion = Readonly<{ completion: unknown }>;
-/** Caller-owned original view and callbacks determine collection currentness. */
+/**
+ Caller-owned original view and callbacks determine collection currentness.
+ */
 export type GroupCurrentInput<View> = Readonly<{
   group: object;
   view: View;
@@ -15,9 +24,14 @@ export type GroupCurrentInput<View> = Readonly<{
   recordFailure: GroupFailures['recordFailure'];
   abortOccurrence: GroupFailures['abortOccurrence'];
 }>;
-/** Original cancellation checking throws only after the observed signal is cancelled. */
+/**
+ Original cancellation checking throws only after the observed signal is cancelled.
+ */
 export type GroupCurrent = Readonly<{
-  checkAbort: (input: Readonly<{ observed: AbortSignal; at: string }>) => void;
+  checkAbort: (input: Readonly<{
+    observed: AbortSignal;
+    at: string
+  }>) => void;
   current: () => void;
   onParentAbort: () => void;
 }>;
