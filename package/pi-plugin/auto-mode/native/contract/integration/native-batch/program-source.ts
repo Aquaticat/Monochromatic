@@ -7,10 +7,7 @@ import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { replaceOnce } from './build-rebase.ts';
 import { privatizeNativeMembers } from './build-members.ts';
 
-export { programJudgmentSource } from './program-judgment-source.ts';
 export { nativeScriptValueSource } from './program-value-source.ts';
-export { programRunnerSource } from './program-runner-source.ts';
-export { preparedDispatcherSource } from './prepared-dispatcher-source.ts';
 
 //region Original program source boundaries retain their native execution and judgment owners
 

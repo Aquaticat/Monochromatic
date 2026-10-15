@@ -1,8 +1,3 @@
-import {
-  executeWithOwnedContext,
-  NativeExecutionGuardError
-} from "../../../lifecycle/execution-context-carrier/execute.mjs";
-//region Private prepared-group dispatcher; all executable members wait for one combined judgment.
 export class PreparedBatchContractError extends Error {}
 export class PreparedBatchExecutionError extends Error {
   constructor(
@@ -23,6 +18,15 @@ export class PreparedBatchExecutionError extends Error {
     };
   }
 }
+
+
+import {
+  executeWithOwnedContext,
+  NativeExecutionGuardError
+} from "../../../lifecycle/execution-context-carrier/execute.mjs";
+//region Private prepared-group dispatcher; all executable members wait for one combined judgment.
+
+
 
 /** Seal ordinary JSON-like input trees only after the supplied preparation hooks finish. */
 function sealInput(input) {
@@ -189,7 +193,7 @@ export async function dispatchPreparedBatch({
           active('input-prepared');
           if(ready.has(call.id))throw new PreparedBatchContractError('Member reached preparation twice');
           const sealed=sealInput(hook.args);
-          const member=Object.freeze({
+          const member=Object.freeze({groupExecutionMode:serial?"sequential":"parallel",
             id:call.id,
             name:call.name,
             input:sealInput(structuredClone(sealed))

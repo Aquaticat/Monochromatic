@@ -8,19 +8,20 @@ export function createReachedRunnerClass({
   dispatchPreparedBatch
 }){
   return class ReachedProgramNestedRunner extends NestedToolCallRunner{
-    createDeclaredProgram({
+    createDeclaredProgram({tools,
       origin,
       carrier,
       code,
       assertParentCurrent
     }){
+if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original request tool snapshot is unavailable");
+
       assertParentCurrent();if(code
         !==origin.prepared
         .input
         .code)throw new Error('Declared program differs from original prepared input');
       const {judgment} = origin;
-        const toolNames=this.host
-          .getTools()
+        const toolNames=tools
           .map(tool=>tool.name);
         const program=judgment.openProgram({
         parentToken:carrier.token,
@@ -35,7 +36,7 @@ export function createReachedRunnerClass({
         signal:origin.signal,
         assertParentCurrent,
         dispatchGroup:group=>{
-          const bound=this.#bindGroup({
+          const bound=this.#bindGroup({tools,
             origin,
             carrier,
             group,
@@ -93,7 +94,7 @@ export function createReachedRunnerClass({
       }
       });
     }
-    #bindGroup({
+    #bindGroup({tools,
       origin,
       carrier,
       group,
@@ -134,8 +135,7 @@ export function createReachedRunnerClass({
         call.id,
         index
       ]));
-        const tools=this.host
-          .getTools(); const nativeRun=this.host
+         const nativeRun=this.host
             .runOwnedToolCall;
       const slots=origin.judgment
         .bindProgramCalls({
