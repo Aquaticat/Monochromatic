@@ -117,9 +117,9 @@ await describe({ name: 'original prepared member values', children: [
   it({ name: 'preserves callable preparation results and reads their original block reason once', fn: async function callablePreparation() {
     const fixture = createMemberFixture();
     const reads: string[] = [];
-    const prepared = function blockedNativeResult() {
+    function prepared() {
       return undefined;
-    };
+    }
     Object.defineProperties(prepared, {
       block: { value: true },
       reason: { get() {

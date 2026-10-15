@@ -14,9 +14,16 @@ The dispatcher now delegates original `beforeToolCall` member preparation to
 Native build,
 package type checking,
 and all three built consumer suites pass.
-Original replay,
-domain comparisons,
-and omission controls are pending.
+Original replay and six domain comparisons pass.
+All 46 process-local omissions or substitutions produce assertion failures,
+with both built artifact hashes unchanged.
+The readiness-publication and gate-resolution omissions select the first complete-group consumer,
+which independently completes its gate after observing noncompletion;
+other omissions execute their entire selected consumer suite.
+The first complete recount found `no-restricted-syntax(no-variable-function-expression)`
+in the added callable-result fixture.
+That fixture now uses a function declaration;
+the final recount and consumer verification are pending.
 Consumers cover original hook entry,
 input sealing,
 declaration-ordered manifests,
