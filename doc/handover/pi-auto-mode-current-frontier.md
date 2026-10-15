@@ -2155,7 +2155,20 @@ This is type narrowing for existing native membership outcomes,
 not a new security safeguard.
 `3263cc5c58` adds an independent built consumer comparing those query results with native WeakMap reads.
 The instruction lifetime suite also checks readiness before primitive rejection and subsequent owned-member recovery.
-Built consumer checks and final focused formatting remain pending for those shared capability changes.
+`cf0afe7889` records original readiness ordering and native membership query consumers.
+The rebuild,
+type checking,
+membership and request consumers,
+execution,
+instructions,
+lifecycle,
+dependencies,
+and public API suites pass in
+`${HOME}/temp/agent/pi-composition-membership-consumers-first-20261015.log`.
+All ten focused contract and consumer files have zero diagnostics in
+`${HOME}/temp/agent/pi-composition-membership-format-final-20261015.log`.
+The full maintained count has not been refreshed since the API extraction report.
+Continue typed constructor ownership and the maintained-package quality queue.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
