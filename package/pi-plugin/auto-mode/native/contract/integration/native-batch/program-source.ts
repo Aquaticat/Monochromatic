@@ -9,6 +9,7 @@ import { privatizeNativeMembers } from './build-members.ts';
 
 export { programJudgmentSource } from './program-judgment-source.ts';
 export { nativeScriptValueSource } from './program-value-source.ts';
+export { programRunnerSource } from './program-runner-source.ts';
 
 //region Original program source boundaries retain their native execution and judgment owners
 
@@ -151,69 +152,6 @@ export function programSessionSource(source: string): string {
    to:'    async _executeNestedToolCall(parentToolCallId,name,args,options){return this.#getOwnedProgramRunner().execute(parentToolCallId,name,args,options);}\n    /** Whether `projection`,'
  });
  return `import {isOwnedProgramDefinition} from "./program-definition.mjs";\nconst originalCreateDeclaredProgram=NestedToolCallRunner.prototype.createDeclaredProgram;\nlet openOwnedProgram;\n${nestedEntry}\nexport function createOwnedProgramRun({session,input}){readActiveSessionManager(session);if(!isOwnedProgramDefinition(input.definition))throw new Error("Program definition is not owned by the native factory");return openOwnedProgram(session,input);}\n`;
-}
-
-
-/**
- Use the original request's executable tools, not a later registry lookup, for every reached group.
-
- @param source - qualified original module before program observation
-
- @returns generated source retaining original program ownership boundaries
-
- @throws NativeBatchBuildError when original source qualification changes
-
- @example
- ```ts
- const generated = programRunnerSource(source);
- ```
- */
-export function programRunnerSource(source: string): string {
- /**
-  Each original program transformation retains its own diagnostic boundary.
-  */
- const rl = tagged({
-   tag: programRunnerSource.name,
-   l
- });
- rl.debug('preparing original native program source');
- /**
-  tool snapshot retains its original source occurrence before the next transformation.
-  */
- const toolSnapshot=replaceOnce({
-   source,
-   from:'createDeclaredProgram({origin,carrier,code,assertParentCurrent}){',
-   to:'createDeclaredProgram({origin,carrier,code,assertParentCurrent,tools}){\n      if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original request tool snapshot is unavailable");'
- });
- /**
-  tool names retains its original source occurrence before the next transformation.
-  */
- const toolNames=replaceOnce({
-   source:toolSnapshot,
-   from:'toolNames=this.host.getTools().map(tool=>tool.name)',
-   to:'toolNames=tools.map(tool=>tool.name)'
- });
- /**
-  forwarded tools retains its original source occurrence before the next transformation.
-  */
- const forwardedTools=replaceOnce({
-   source:toolNames,
-   from:'this.#bindGroup({origin,carrier,group,assertParentCurrent})',
-   to:'this.#bindGroup({origin,carrier,group,assertParentCurrent,tools})'
- });
- /**
-  group tools retains its original source occurrence before the next transformation.
-  */
- const groupTools=replaceOnce({
-   source:forwardedTools,
-   from:'    #bindGroup({origin,carrier,group,assertParentCurrent}){',
-   to:'    #bindGroup({origin,carrier,group,assertParentCurrent,tools}){'
- });
- return replaceOnce({
-   source:groupTools,
-   from:',tools=this.host.getTools(),nativeRun=this.host.runOwnedToolCall',
-   to:',nativeRun=this.host.runOwnedToolCall'
- });
 }
 
 
