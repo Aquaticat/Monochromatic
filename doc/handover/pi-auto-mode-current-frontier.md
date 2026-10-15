@@ -2372,7 +2372,18 @@ with the permission/prohibition positive control still distinguishing execution 
 The saved original helper has SHA-256
 `8b74e711ae1f065768149c111463b57b4d5396dec0abd977fe19fe5dcda66612`.
 The original completion owner is qualified at these tested boundaries.
-The full-package recount is running before continuing original group-failure occurrence ownership.
+The full-package recount covers 707 files and 486 rules,
+with zero errors and 10958 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-group-completions-lint-20261015.log`.
+All thirteen changed scope/completion implementation,
+declaration,
+bridge,
+fixture,
+and direct consumer files have zero diagnostics in that report.
+Continue original group-failure occurrence ownership,
+then the remaining collector,
+runtime,
+and reached-program runner composition.
 
 Auto-pushing `6973251c83` was separately rejected with `GH006` and no detailed requirement.
 The original local signature verified,
