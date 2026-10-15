@@ -3,11 +3,13 @@ import {readDomainFixtureSettings} from '../dist/native/contract/integration/nat
 import {createDomainFixtureEnvironment} from '../dist/native/contract/integration/native-batch/domain-fixture-environment.mjs';
 import {createDomainFixtureRuntime} from '../dist/native/contract/integration/native-batch/domain-fixture-runtime.mjs';
 import {createOperationCurrentness} from '../dist/native/contract/integration/native-batch/operation-currentness.mjs';
+import {registerHostResource} from '../dist/native/contract/integration/native-host/resource-reload.ts';
 
 //region New native branches get new decisions while old operations remain stale.
 const settings=await readDomainFixtureSettings();
 const observations={contextCalls:0,lateContextMutations:0,progressCalls:0,assessments:0,executions:0,requests:0,httpCalls:0,warmingUp:true};
 const {env,session,root,lifecycle}=await createDomainFixtureEnvironment({settings,observations,readRuntime(){return runtime;}});
+registerHostResource({loader:env.policyInput.loader,policyInput:env.policyInput});
 const runtime=createDomainFixtureRuntime({settings,observations,env,session,root,lifecycle,code:'return await tools.fixture_value({path:"seed"});',programProfile:'awaited-literal-single-call'});
 await using cleanup={async [Symbol.asyncDispose](){session.dispose();await session.agent.waitForIdle();runtime.detach();await env.drain();}};
 await session.prompt('First ordinary chat.');

@@ -323,13 +323,6 @@
       "relocatedLiterals": 0
     },
     {
-      "original": "integration/action-policy/judgment-start.mjs",
-      "maintained": "integration/action-policy/judgment-start.mjs",
-      "sha256": "2197650408c9fa52bbfa4bb3ba4538db310e6de5b6bcbc636a4ae6b221da78e1",
-      "origin": "authored-source",
-      "relocatedLiterals": 0
-    },
-    {
       "original": "integration/action-policy/premises.mjs",
       "maintained": "integration/action-policy/premises.mjs",
       "sha256": "5de5ae3292270c740caa8edde0491f31b755077196a467f27749f7b64b96032d",
