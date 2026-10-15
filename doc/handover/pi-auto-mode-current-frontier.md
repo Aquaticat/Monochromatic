@@ -2131,8 +2131,11 @@ and single-call checks pass in
 Original request replay passes in `${HOME}/temp/agent/pi-request-original-20261015.log`.
 A process-local stream replacement escaped the initial test's deep equality assertion:
 both stream objects had no properties.
-The consumer now requires exact stream and response identities;
-the identity controls are being rerun before request qualification.
+`a542c28ae7` requires exact stream and response identities.
+All eight process-local handoff changes now cause assertion failures,
+with all three built hashes unchanged in `typed-request-omissions.json`.
+The tightened consumers still pass against the original request body in
+`${HOME}/temp/agent/pi-request-original-identity-20261015.log`.
 
 `2deac389d9` aligns shared constructor capabilities with their actual native operations.
 Original weak membership reads accept foreign values without restricting publication to those values;
@@ -2142,7 +2145,17 @@ Lifecycle dependency handles remain absent until original preparation publishes 
 Retained dependency state accepts both successful and failed closure records.
 Type checking passes in
 `${HOME}/temp/agent/pi-composition-membership-types-first-20261015.log`.
-Built consumer checks and focused formatting remain pending for those shared capability changes.
+Focused lint rejected the method-signature capability under `typescript(method-signature-style)`.
+After `2053573a7c` changed it to the required function-property form,
+TypeScript reported `TS2322` for the wider input assignment.
+The declaration shortcut is rejected.
+`9e94e6e9b7` narrows queries at the original object-keyed membership boundary instead,
+returning native absence for primitive inputs and retaining original record identity for object/function keys.
+This is type narrowing for existing native membership outcomes,
+not a new security safeguard.
+`3263cc5c58` adds an independent built consumer comparing those query results with native WeakMap reads.
+The instruction lifetime suite also checks readiness before primitive rejection and subsequent owned-member recovery.
+Built consumer checks and final focused formatting remain pending for those shared capability changes.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.

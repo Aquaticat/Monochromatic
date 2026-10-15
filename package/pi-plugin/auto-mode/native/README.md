@@ -90,6 +90,15 @@ Guarded calls retain original callback identity and argument count;
 direct calls retain function identity and caller receivers.
 Retained selection inspection resolves the current selection only when called.
 The public surface remains frozen and preserves original property order.
+`test:native:request` checks producer authentication before observer lookup,
+original stream and response identities,
+callback receivers,
+receipt identity,
+and failure recovery.
+`test:native:membership-read` compares the built object-keyed lookup with native WeakMap results
+for owned object/function handles,
+foreign identities,
+and primitive queries.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
