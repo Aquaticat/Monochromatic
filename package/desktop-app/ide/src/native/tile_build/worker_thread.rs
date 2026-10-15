@@ -13,7 +13,8 @@ use crate::native::tile_pass::{PassJob, PassOutput, PassRun};
 use anyhow::Result;
 /// Shaping choices a worker shaper must match.
 use ide_app::shaped_text::TextShaper;
-/// Syntax classifications, compared by shared identity.
+/// Syntax classifications,
+///  compared by shared identity.
 use ide_app::source_style::SourceStyles;
 /// Shaping choices a worker shaper must match.
 use ide_app::source_typography::SourceTypography;

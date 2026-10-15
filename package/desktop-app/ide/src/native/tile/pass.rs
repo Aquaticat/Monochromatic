@@ -7,7 +7,8 @@
 use super::{start_poll, warm};
 /// Applying a pass renders again when a count changed.
 use crate::native::render::render;
-/// The vertical mapping's side of the window: measured rows and keeping the view still.
+/// The vertical mapping's side of the window:
+///  measured rows and keeping the view still.
 use crate::native::rows;
 /// What a background measurement is valid for,
 ///  what it is given,

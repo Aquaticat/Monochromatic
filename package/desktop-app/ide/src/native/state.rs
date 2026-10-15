@@ -7,7 +7,8 @@
 use super::{State, minimap, rows, tile::TileBounds};
 /// Hint and diagnostic snapshots with their position index.
 use ide_app::annotation::Annotations;
-/// Visual rows of every line, as far as measured.
+/// Visual rows of every line,
+///  as far as measured.
 use ide_app::line_rows::LineRows;
 /// The displayed file is reread on change notifications,
 ///  or on the old timer while unwatched.
