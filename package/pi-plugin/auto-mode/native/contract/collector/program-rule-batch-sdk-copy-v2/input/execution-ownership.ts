@@ -2,8 +2,14 @@
  Native execution custody authenticates opaque occurrences independently of current dependencies. @module
  */
 import { JudgmentConstructionError } from './judgment-error.ts';
-import type { ProgramMemberRecord, ProgramExecutionRecord } from './program-state-types.ts';
-import type { JudgmentExecutionContext, JudgmentExecutionOwnership } from './execution-types.ts';
+import type {
+  ProgramMemberRecord,
+  ProgramExecutionRecord
+} from './program-state-types.ts';
+import type {
+  JudgmentExecutionContext,
+  JudgmentExecutionOwnership
+} from './execution-types.ts';
 
 /**
  Narrow records populated exclusively by the original execution reservation boundary.
@@ -28,9 +34,18 @@ function hasExecution(record: ProgramMemberRecord): record is ProgramExecutionRe
 
  @example createExecutionOwnership({ input, executions });
  */
-export function createExecutionOwnership({ input, executions }: JudgmentExecutionContext): JudgmentExecutionOwnership {
-  /** Original membership records are shared with prepared-program publication. */
-  const { bindings, byMember, assertDependenciesCurrent } = input;
+export function createExecutionOwnership({
+  input,
+  executions
+}: JudgmentExecutionContext): JudgmentExecutionOwnership {
+  /**
+   Original membership records are shared with prepared-program publication.
+   */
+  const {
+    bindings,
+    byMember,
+    assertDependenciesCurrent
+  } = input;
   /**
    Authenticate an opaque member without requiring current source eligibility.
 
@@ -41,7 +56,9 @@ export function createExecutionOwnership({ input, executions }: JudgmentExecutio
    @throws JudgmentConstructionError for foreign membership
    */
   function knownMember(member: object): ProgramMemberRecord {
-    /** Original record remains shared with child program ownership. */
+    /**
+     Original record remains shared with child program ownership.
+     */
     const record = bindings.get(member);
     if (!record) throw new JudgmentConstructionError('Execution member handle is not owned by this judgment');
     return record;
@@ -56,9 +73,11 @@ export function createExecutionOwnership({ input, executions }: JudgmentExecutio
    @throws JudgmentConstructionError for foreign execution
    */
   function knownExecution(token: object): ProgramExecutionRecord {
-    /** Only successful reservation publishes into this private map. */
+    /**
+     Only successful reservation publishes into this private map.
+     */
     const record = executions.get(token);
-    if (!record || !hasExecution(record) || record.execution.token !== token) {
+    if ((!record) || (!hasExecution(record)) || (record.execution.token !== token)) {
       throw new JudgmentConstructionError('Execution occurrence is not owned by this judgment');
     }
     return record;
@@ -71,10 +90,11 @@ export function createExecutionOwnership({ input, executions }: JudgmentExecutio
    @throws JudgmentConstructionError when immediate parent has returned
    */
   function parentCurrent(record: ProgramMemberRecord): void {
-    if (record.parent !== undefined && knownExecution(record.parent).execution.state !== 'active') {
+    if ((record.parent !== undefined) && (knownExecution(record.parent).execution.state !== 'active')) {
       throw new JudgmentConstructionError('Immediate parent execution has returned before child entry');
     }
-    record.effectiveSignal?.throwIfAborted();
+    record.effectiveSignal
+      ?.throwIfAborted();
   }
   /**
    Resolve a declared identifier only after current dependency authentication.
@@ -87,11 +107,18 @@ export function createExecutionOwnership({ input, executions }: JudgmentExecutio
    */
   function memberFor(memberId: string): object {
     assertDependenciesCurrent();
-    /** Identifier lookup selects an existing owned occurrence without creating authority. */
+    /**
+     Identifier lookup selects an existing owned occurrence without creating authority.
+     */
     const member = byMember.get(memberId);
     if (!member) throw new JudgmentConstructionError('Execution member was not in the prepared native group');
     return member;
   }
-  return { knownMember, knownExecution, parentCurrent, memberFor };
+  return {
+    knownMember,
+    knownExecution,
+    parentCurrent,
+    memberFor
+  };
 }
 //endregion
