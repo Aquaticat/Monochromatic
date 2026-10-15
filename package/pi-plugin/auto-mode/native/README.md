@@ -11,6 +11,15 @@ The [file-observation contract](file-observation.md)
 documents synchronous policy snapshots,
 descriptor cleanup,
 and the scoped filesystem lint exceptions.
+`test:native:dependency-facade` exercises the typed original dependency owner through its native bridge.
+It verifies opaque handle ownership,
+root and source identity,
+ordered callback failures,
+every file checkpoint,
+and exact retained file bytes in disposable roots.
+Live checks enforce the original deadline;
+retained checks preserve cancellation and freshness after that deadline expires.
+Mechanical projections explicitly withhold instruction authority and human permission.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 

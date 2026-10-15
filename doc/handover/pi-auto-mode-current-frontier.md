@@ -2268,9 +2268,38 @@ the permission/prohibition positive control distinguishes execution from denial.
 The saved original body has SHA-256
 `519ef9a07af42d9749f1235d0c593589b10df5449feffc68b17d5ecd2b4ec339`.
 The focused twelve-file formatting pass has zero warnings and zero errors.
-Deliberate omission controls and the final full-package recount remain pending.
 File consumers now also compare the complete preparation and live revalidation event order,
 so removing an individual file checkpoint cannot hide behind successful observation.
+`b7429f19ad` adds those assertions;
+`490490d960` places the pre-observation clock at its original position.
+The rebuilt strengthened suite and exact original-body replay both pass.
+All 43 process-local changes are detected,
+including every preparation,
+revalidation,
+and file checkpoint,
+original callback identities,
+freshness comparison,
+projection boundaries,
+and configuration guards.
+`typed-facade-omissions.json` retains unchanged hashes for all five built implementation/bridge artifacts.
+The scratch verifier initially required `AssertionError` for every failure;
+the retained-clock control correctly throws the fixture's original callback failure,
+and the profile-capture control correctly throws `ObservedFileMissingError` for the replacement path.
+The verifier now names those exact expected failures;
+completed prefix controls and their original logs were retained.
+Constructor,
+judgment dependency,
+preparation,
+and approved-dependency consumer suites pass in
+`${HOME}/temp/agent/pi-dependency-facade-consumers-20261015.log`.
+The full plain-text lint recount reports 696 files,
+486 rules,
+zero errors,
+and 11045 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-facade-lint-20261015.log`.
+The structured reader correctly rejected that non-JSON output;
+a structured report is being generated to locate the remaining queue.
+The original dependency facade is qualified at these tested boundaries.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
