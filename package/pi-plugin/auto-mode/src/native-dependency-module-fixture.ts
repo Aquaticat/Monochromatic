@@ -1,6 +1,10 @@
-/** Independent built dependency eligibility consumer contracts. @module */
+/**
+ Independent built dependency eligibility consumer contracts. @module
+ */
 
-/** Original dependency operations separate live authentication from retained release. */
+/**
+ Original dependency operations separate live authentication from retained release.
+ */
 export type FixtureDependencyChecks = Readonly<{
   active: () => void;
   ready: () => void;
@@ -10,7 +14,9 @@ export type FixtureDependencyChecks = Readonly<{
   isBindingSegmentActive: () => boolean;
 }>;
 
-/** Shared original preparation and closure remain independently controlled by each test. */
+/**
+ Shared original preparation and closure remain independently controlled by each test.
+ */
 export type DependencyFixtureState = {
   prepared: boolean;
   preparationFailed: boolean;
@@ -21,7 +27,9 @@ export type DependencyFixtureState = {
   handle?: object;
 };
 
-/** Built factory accepts independent capabilities without importing implementation types. */
+/**
+ Built factory accepts independent capabilities without importing implementation types.
+ */
 type DependencyModule = Readonly<{
   createJudgmentDependencyChecks: (input: Readonly<Record<string, unknown>>) => FixtureDependencyChecks;
 }>;
@@ -41,11 +49,15 @@ function assertDependencyModule(value: unknown): asserts value is DependencyModu
     || ((typeof value.createJudgmentDependencyChecks) !== 'function')) throw new Error('Built judgment dependency export is unavailable');
 }
 
-/** Original import exercises the copied artifact consumed by native judgment construction. */
+/**
+ Original import exercises the copied artifact consumed by native judgment construction.
+ */
 const loaded: unknown = await import(new URL(
   '../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/judgment-dependencies.ts',
   import.meta.url,
 ).href);
 assertDependencyModule(loaded);
-/** Fixed factory preserves independent original lifetimes across test cases. */
+/**
+ Fixed factory preserves independent original lifetimes across test cases.
+ */
 export const dependencyModule: DependencyModule = loaded;

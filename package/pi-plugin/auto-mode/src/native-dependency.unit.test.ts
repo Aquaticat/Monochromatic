@@ -26,7 +26,8 @@ await describe({ name: '', children: [
     const f = createDependencyFixture();
     for (const value of [undefined, null, false, 0, Object.freeze({})]) {
       f.events.length = 0;
-      assert.equal(f.owner.dependencyCheck(function readOriginal() { f.events.push('read'); return value; }), value);
+      assert.equal(f.owner.dependencyCheck(function readOriginal() { f.events.push('read');
+      return value; }), value);
       assert.deepEqual(f.events, ['read', 'program:z', 'program:a']);
     }
   } }),

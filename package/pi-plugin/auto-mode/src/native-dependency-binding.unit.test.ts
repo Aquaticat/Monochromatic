@@ -21,7 +21,8 @@ await describe({ name: '', children: [
       f.owner.ready();
       assert.deepEqual(f.events, ['state', 'checkpoint', 'state', 'checkpoint']);
       f.events.length = 0;
-      assert.equal(f.owner.dependencyCheck(function internalRead() { f.events.push('internal'); return value; }), value);
+      assert.equal(f.owner.dependencyCheck(function internalRead() { f.events.push('internal');
+      return value; }), value);
       assert.deepEqual(f.events, ['internal']);
       f.state.onStep = function releasedPostcheck() { assert.equal(f.owner.isBindingSegmentActive(), false); };
       return value;
