@@ -711,6 +711,11 @@ description = "Run Android host JVM tests and lint on Depot CI"
 dir = "{{config_root}}/../../.."
 run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job android-host"
 
+[tasks."trial:depot:snapshot"]
+description = "Prepare and reuse a Depot CI image containing the Node tools and locked dependencies"
+dir = "{{config_root}}/../../.."
+run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job typescript-snapshot --job typescript-snapshot-use"
+
 [tasks."trial:github:build"]
 description = "Measure an identical Alpine build and warm repetitions on a disposable GitHub runner"
 dir = "{{config_root}}/../../.."
