@@ -279,6 +279,48 @@ do not reinterpret this passing live operation as full package completion.
 
 ## Current Pi execution model
 
+### Owned runtime source correction
+
+The October 14 native formatting pass exposed exact-text dependencies in the maintained build.
+`replaceOnce` in `native/contract/integration/native-batch/build-rebase.ts`
+locates a literal substring and rejects absent or repeated matches.
+Formatting owned source therefore broke the runner,
+dispatcher,
+and judgment transformations.
+The user challenged this design.
+The agent acknowledged carrying the brittle prototype mechanism into the maintained package.
+
+The first repair replaced the runner and dispatcher transformations with parsed source selection.
+A subsequent consumer search established that the owned runner,
+dispatcher,
+and judgment inputs had only the native build as their consumer.
+The source-patching requirement was unnecessary for those modules.
+The integrated implementations are now maintained directly in
+`native/contract/collector/program-rule-batch-sdk-copy-v2/input/`.
+The build emits export bridges for them instead of rewriting their bodies.
+The judgment directly imports its generated result converter,
+whose separate installed-Pi adaptation remains unchanged.
+The obsolete judgment transformations and the intermediate runner/dispatcher syntax transformers are removed.
+Historical provenance hashes remain the original import record rather than being rewritten as current hashes.
+
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/owned-program-before/`
+retains the successfully built implementations used for this integration.
+`owned-program-promotion.json` records source and generated hashes.
+Only import locations and the dispatcher's original shared error declarations changed during promotion.
+The new build and type checks are running;
+behavioral regression verification remains required.
+The earlier formatting-only commit is `2728f357f`.
+Its judgment-input formatting was temporarily restored to recover a passing build before this direct integration.
+
+The native JSON lint report before direct integration contains 499 errors.
+The earlier human-readable report did not print every diagnostic counted in its summary;
+use structured diagnostics when allocating cleanup work.
+Most current errors concern arrow functions,
+mutable bindings at function or module scope,
+cleanup using `finally`,
+and file length.
+Do not replace the removed owned-source patch layer with another formatting-sensitive mechanism.
+
 On 2026-10-14,
 the user corrected the requested Pi execution model to `hyper/gemma-4-26b-a4b-it`.
 Use that provider and model for subsequent Pi work and configured-host verification.
