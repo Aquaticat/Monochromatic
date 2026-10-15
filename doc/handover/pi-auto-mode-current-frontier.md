@@ -19,7 +19,19 @@ The [accepted decision](../decision/pi-auto-mode-decision-core.md) fixes impleme
 - [x] Separate explicit bypass from semantic profile admission while retaining native execution checks.
 - [x] Verify prepared-operation identity, freshness, cancellation, deadlines, and configured-host behavior.
 - [x] Verify activation preserves a usable artifact after build failure and record remaining feature scope.
-- [ ] Remove superseded paths, run relevant lint and tests, and update consumer documentation.
+- [x] Remove superseded paths, run relevant lint and tests, and update consumer documentation.
+
+Functional replacement and consumer verification are complete.
+Final package type checking passes.
+Focused Oxlint covers all 40 changed TypeScript and JavaScript files and reports zero errors and 2149 warnings.
+The lint command still exits nonzero for warnings;
+this is not a clean-lint or whole-package warning-count claim.
+Per the user's instruction, this agent stops warning cleanup once Pi is functional.
+The remaining queue belongs to the
+[MiMo v2.6 Pro lint prompt](pi-auto-mode-mimo-lint-prompt.md):
+measure the full maintained scope, then fix and verify its remaining warnings.
+The installed command points to the verified replacement release;
+already-running Pi processes retain their previously loaded release until restarted.
 
 Release activation now stages an immutable native directory and its matching policy bundle,
 loads the generated CLI, then publishes the stable command link.

@@ -38,6 +38,11 @@ zero errors,
 and 10151 warnings.
 Those numbers are a historical reference,
 not a current baseline.
+The replacement's final focused check covered 40 changed files,
+with zero errors and 2149 warnings.
+It exited nonzero for warnings and is not a complete-package count.
+The replacement's type checking and relevant built-consumer regressions passed.
+Live configured-host Luna checks verified scoped Allow, prohibition, and independent external approval requirements.
 
 Read root and package `mise.toml` before selecting commands.
 Existing tasks include `lint:oxlint`,
