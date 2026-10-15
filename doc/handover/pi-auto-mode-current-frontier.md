@@ -2259,7 +2259,18 @@ controlled-reader identity,
 and accepted/rejected declared profile boundaries.
 Primitive handle narrowing preserves the original object-keyed membership outcome;
 it is not a new authorization safeguard.
-The full facade qualification and final formatting remain pending.
+`30096381d2` completes fixture formatting.
+The rebuilt consumer suite and package type check pass in
+`${HOME}/temp/agent/pi-dependency-facade-final-20261015.log`.
+All four consumer files also pass against the exact saved original facade body.
+Six original/current domain comparisons preserve public outcomes and native execution counts;
+the permission/prohibition positive control distinguishes execution from denial.
+The saved original body has SHA-256
+`519ef9a07af42d9749f1235d0c593589b10df5449feffc68b17d5ecd2b4ec339`.
+The focused twelve-file formatting pass has zero warnings and zero errors.
+Deliberate omission controls and the final full-package recount remain pending.
+File consumers now also compare the complete preparation and live revalidation event order,
+so removing an individual file checkpoint cannot hide behind successful observation.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.

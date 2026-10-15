@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { stat, writeFile } from 'node:fs/promises';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
 import { createFacadeFileFixture } from './native-facade-file-fixture.ts';
+import { preparationEvents, finalizationEvents } from './native-facade-fixture.ts';
 
 //region Original file evidence remains inert while live and retained revalidation observe current files.
 await describe({ name: '', children: [
@@ -15,8 +16,13 @@ await describe({ name: '', children: [
     const owner = f.construct();
     /** Original handle retains the file observation independently of later writes. */
     const handle = owner.prepare({ signal: f.controller.signal });
-    assert.ok(f.events.includes('prepare.file:policy.enter'));
-    assert.ok(f.events.includes('prepare.file:policy.return'));
+    assert.deepEqual(f.events, [
+      ...preparationEvents.slice(0, 10),
+      'prepare.file:policy.enter',
+      'prepare.file:policy.return',
+      'clock',
+      ...preparationEvents.slice(9),
+    ]);
     f.events.length = 0;
     /** Original inspection reads the issued record rather than reopening the selected file. */
     const view = owner.originalFile({ handle, absolutePath: f.path });
@@ -26,7 +32,16 @@ await describe({ name: '', children: [
     });
     assert.equal(Object.isFrozen(view), true);
     assert.deepEqual(f.events, ['clock']);
+    f.events.length = 0;
     assert.equal(owner.finalize(handle).decisionDeadlineChecked, true);
+    assert.deepEqual(f.events, [
+      ...finalizationEvents.slice(0, 12),
+      'clock',
+      'finalize.file:policy.enter',
+      'finalize.file:policy.return',
+      'clock',
+      ...finalizationEvents.slice(12),
+    ]);
     assert.equal(owner.checkRetained(handle).decisionDeadlineChecked, false);
     await writeFile(f.path, Buffer.from('changed original file'));
     assert.deepEqual(owner.originalFile({ handle, absolutePath: f.path }), view);
