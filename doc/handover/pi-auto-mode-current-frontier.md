@@ -15,9 +15,9 @@ The user corrected the fallback on 2026-10-15:
 unavailable observation or assessment evidence must fall back to manual approval,
 not withhold the operation outright.
 Implementation and failure-isolation tests must exercise Allow, Stop, and cancellation.
-The existing approval binder currently requires the missing observation itself;
-replace that requirement for this fallback while retaining exact prepared-group identity and native cancellation.
-The primary-chat capture gate described in this section remains pending in parallel with that correction.
+The implemented fallback owns manual approval independently of the unavailable observation,
+while retaining exact prepared-group identity and native cancellation.
+Primary prompt, event, and transport capture now retain failures without rejecting native chat.
 
 The disposable release `native-release-Jx9I6F` verifies manual fallback after missing observation
 and failed assessment: Allow executes one native child; Stop, cancellation, and headless sessions execute none.
@@ -28,8 +28,18 @@ The retry fixture initially set overrides before native resource loading replace
 setting and asserting overrides on the constructed session verifies both agent and provider retries.
 The native prompt callback fixture also passes capture failures before and after callbacks,
 exactly-once invocation, and preservation of original thrown values.
-Package type checking passes; focused lint found remaining errors that are being corrected.
-The combined regression, configured-host, and live checks remain pending before installation.
+Package type checking passes.
+Focused lint on the first 36 changed files reports 2247 warnings and zero errors;
+warnings still fail the lint command and remain assigned to the requested MiMo handoff.
+The combined session, passive-prompt, lifecycle, runtime-hook, policy, and manual-fallback matrix passes
+on disposable release `native-release-JWvYLT`.
+The approval regression then caught a second-dialog bug after established authorization became stale.
+Commit `e9864891ee` prevents an established decision or its approval from becoming evidence-free fallback.
+Release `native-release-LNNqh3` passes the corrected original-approval, native-context,
+fresh-confirmation, and uncertain-review controls.
+The out-of-profile bypass fixture requires the new manual fallback after disabling bypass;
+its scripted Stop response is now explicit instead of accidentally approving the fallback.
+Configured-host and live checks remain pending before installation.
 Scratch multi-task invocations without separators passed later names as arguments;
 only explicit per-task output counts as execution evidence.
 The combined scratch task now sequences independent `mise run` calls.
@@ -52,10 +62,10 @@ and its [consumer matrix](../planning/pi-auto-mode-host-isolation.md).
 The [incident record](../troubleshooting/pi-auto-mode-session-interference.md)
 contains the exact emitters, reproductions, and limitations.
 
-- [ ] Reproduce and fix the connection failure after selecting another provider.
-- [ ] Reproduce and fix retired-root failure after native navigation and retry.
+- [x] Reproduce and fix the connection failure after selecting another provider.
+- [x] Reproduce and fix retired-root failure after native navigation and retry.
 - [x] Resolve the host-isolation design choice and update the accepted integration scope.
-- [ ] Move primary observation failures to tool admission and use operation-scoped native currentness.
+- [x] Move primary observation failures to tool admission and use operation-scoped native currentness.
 - [ ] Verify original host operations, install the corrected artifact, and document the evidence.
 
 Scratch reproductions live under `${HOME}/temp/agent/pi-reported-errors-20261015/`.
@@ -66,22 +76,13 @@ The implementation now removes judgment creation from `message_end` and starts i
 Native branch readers supply operation-local currentness; constructor ownership remains separate.
 Primary observation retains failures for tool admission and preserves native transport retries and callbacks.
 The startup endpoint is no longer an admission condition.
-These changes are committed but are not yet verified or installed.
 Build and consumer checks run in a disposable package so the installed native release remains intact.
-The first type check overlapped the policy build and read its old declaration;
-repeat after the build finishes before treating it as implementation evidence.
-The subsequent package type check passes.
-The disposable native release `native-release-xt65Kl` passes the maintained model-switch,
-tree-navigation, retry, reload, and completed-abort tests.
-Authored permission, prohibition, and unspecified policy consumers also pass through native tool dispatch.
-Broader in-flight, combined-action, failure-isolation, configured-host, and live checks remain pending.
-The expanded native fixture registers a real `session_before_tree` handler.
-Its next prompt fails with `RunPromptCustodyError` because general event capture tries to copy the native `AbortSignal`.
-This demonstrates an additional primary-chat gate in generated prompt preparation,
-outside the transport observer already replaced.
-The acceptance matrix remains failing; do not activate this build.
-Next: remove capture enforcement from native prompt preparation and preserve its original callbacks,
-while retaining capture failures for tool admission.
+The expanded native fixture exposed general event capture rejecting a native `AbortSignal`.
+That failure is now retained only for automatic evidence; native callbacks and subsequent chat complete.
+The source owner can remain unavailable after such a failure, so affected tools require manual review.
+The tests do not claim that automatic evidence recovers after every unsupported event.
+Next: finish exact manual-identity, bypass, configured-host, live, and final lint checks;
+then activate and verify the installed command.
 
 ### Replacement verification before the new report
 
