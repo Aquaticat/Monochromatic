@@ -153,7 +153,8 @@ a complete unchanged release migration is not established.
 
 [Depot container builds][build-docs] retain image layers for subsequent builds.
 Tool installation reuse and reuse of compiled dependencies are separate opportunities to measure.
-No speedup for this repository has been measured on Depot.
+The trial measured cold and warm Depot executions;
+the controlled GitHub comparison is still running.
 
 ## Rate-limit and cache probes
 
@@ -346,17 +347,34 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
     CLI preflight and the real checkout run `kbz7cjc5vt` succeeded.
     The user subsequently connected `depot-managed-runners`,
     verified in the organization installation listing.
-    Actual runner execution remains to be checked.
+    Run `38813764705` started actual jobs on GitHub and Depot runners.
+    Both are executing the same Alpine build definition.
   - Broader checks and deliberate failure detection:
     Run `wjr4cmpjvs` passed logger build/types/unit tests and all 80 shared audio-core tests.
     Its creation-to-finish interval was 152 seconds.
-    Android host tests and lint are running as `3tvq2wvskh`.
+    Android host tests and lint passed as `3tvq2wvskh` in 218 seconds.
+    The Gradle test task executed;
+    its report count still needs inspection to exclude an empty test result.
     Branch `trial/depot-20261015` contains the disposable workflows without release credentials.
     A GitHub reference job uses the identical Alpine build definition and unchanged-source repetitions.
   - Scheduling and rolling budgets:
     preserve the existing policy and test admission separately from execution.
   - Runtime and monthly cost:
     collect bounded-run evidence and retain the USD $200 ceiling.
+  - Non-CI experiments and parallel throughput:
+    the user proposed benchmarking `lld` against `mold` and highlighted unlimited concurrency.
+    Evaluate direct remote execution separately from CI dispatch;
+    preserve identical inputs and hardware for timing comparisons.
+    Depot's container build parallelism documentation says builds in the same project and architecture
+    share a builder by default.
+    Separate benchmark latency from contention and aggregate throughput.
+    No linker benchmark has run yet.
+- Source invalidation build `jbld9m545r` rebuilt the application in 3 minutes 17 seconds.
+  Its exported executable displayed the deliberately changed CLI name,
+  proving the changed source reached the executable.
+  The disposable source marker is being restored after this verification.
+- Prepared-image run `qrjbnf2gbv` finished creating the Node/dependency snapshot;
+  its consumer job is still running.
 - The trial brief and corrected ownership scope are confirmed.
   No interview question is pending.
 - Account-wide spending controls remain unverified;
