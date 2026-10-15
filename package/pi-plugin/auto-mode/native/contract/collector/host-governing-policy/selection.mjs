@@ -3,7 +3,7 @@ import {join} from 'node:path';
 import {
   observeDeclaredFile,
   assertRetainedFile
-} from '../../lifecycle/external-dependency-controls/file-observer.mjs';
+} from '../../lifecycle/external-dependency-controls/file-observer.ts';
 import {SourceCollectionError} from '../collector.mjs';
 
 export class GoverningPolicySelectionError extends SourceCollectionError {}

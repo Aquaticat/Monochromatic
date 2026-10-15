@@ -525,3 +525,11 @@ run = [
 [tasks."test:native:relevance-store"]
 description = "Verify original asynchronous cache publication in disposable directories"
 run = 'node --max-old-space-size=512 src/native-relevance-store.unit.test.ts'
+
+[tasks."test:native:relevance-cache"]
+description = "Verify policy freshness and cancellation through built asynchronous cache refresh"
+run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-relevance-cache.unit.test.ts'
+
+[tasks."test:native:file-observer"]
+description = "Verify descriptor-bound file observations and original cleanup failures"
+run = 'node --max-old-space-size=512 src/native-file-observer.unit.test.ts'

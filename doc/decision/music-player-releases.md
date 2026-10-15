@@ -139,15 +139,26 @@ One release holds, with `<version>` filled in:
   from this project's single Linux machine,
   so an AppImage without them is the archive with a different wrapper and one with them is untested.
   The question can be reopened with a distribution test matrix.
+- Alpine Linux: `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz`,
+  native builds on `ubuntu-24.04` and `ubuntu-24.04-arm` (job `build-desktop-musl`),
+  added on 2026-10-15 as `doc/decision/music-player-alpine.md` specifies.
+  The layout is the glibc archive's:
+  `bin/music-player`, the launcher file, the icon, `LICENSE` and an `INSTALL.txt` that names the Alpine packages
+  (the `apk add` list of the "Runtime packages" section of the Alpine decision, which the release notes repeat)
+  and the requirement of Alpine 3.24 or newer.
+  The glibc archives do not run on Alpine and these do not run on glibc systems, so the two are separate files.
+  The binary is dynamically linked against musl (a static musl binary cannot open a window or link PipeWire, see the
+  Alpine decision) and is built with the `alsa-fallback` feature, so it plays through the default ALSA device when no
+  PipeWire daemon runs.
 - Android: `music-player-<version>-android.apk`, signed with the release key,
   holding the `arm64-v8a` and `x86_64` native libraries.
 - `SHA256SUMS`, produced by a job that runs only after every build succeeded.
 
 ### Build mechanics
 
-- The Rust toolchain is read from `mise.lock` in each job and installed with `rustup`,
+- The Rust toolchain is read from `mise.lock` in each job except the Alpine one and installed with `rustup`,
   so the release never drifts from what the repository builds with,
-  and one mechanism works on every desktop platform.
+  and one mechanism works on every desktop platform that is not Alpine.
   The Android job installs Rust, JDK 21, the Android command-line tools and `cargo-ndk` with mise,
   installs the SDK components with the repository's `prepare:android` task, and builds with the existing
   `build:release` task.
@@ -155,7 +166,8 @@ One release holds, with `<version>` filled in:
   `rustc 1.101.0-nightly (e9bbadf68 2026-10-12)`, which is `nightly-2026-10-13`, the version in the native cache key.
   mise 2026.10 refused to install `cargo-ndk` before Rust was installed through mise
   (`doc/troubleshooting/mise-cargo-backend-needs-rust-installed.md`).
-- The Linux jobs install a package list that builds on the runner images:
+- The glibc Linux jobs install a package list that builds on the runner images
+  (the Alpine job gets its libraries from the packages of `Containerfile.alpine`):
   `pkg-config clang libclang-dev cmake libpipewire-0.3-dev libspa-0.2-dev libfontconfig1-dev libfreetype-dev`.
   It was found by adding packages until the build passed.
   No package was removed to test whether it is needed, so the list may hold more than the minimum.
@@ -184,6 +196,31 @@ One release holds, with `<version>` filled in:
   and cargo and Gradle rebuild whatever their own fingerprints say changed.
   A stale or poisoned cache entry is the new risk: the key names the toolchain and the lock file,
   and a bad entry is cured by changing the `v1` in the keys.
+- The Alpine job (`build-desktop-musl`) builds `Containerfile.alpine` (targets `build` and `runtime`),
+  checks that the toolchain's host triple is `x86_64-alpine-linux-musl` or `aarch64-alpine-linux-musl`
+  (there is no `--target`),
+  runs `cargo build --release --locked --features alsa-fallback` in the build image with the source mounted read-only,
+  and then starts the binary with `--version` in the `runtime` image, which holds only the packages that `INSTALL.txt`
+  lists, so a short list fails the job.
+  Its Rust is Alpine's own `rustc`, not the `mise.lock` nightly, as the Alpine decision explains.
+  The archive is packaged like the glibc one and uploaded as `asset-linux-musl-<arch>`.
+  The dry-run and real-run gates, the attestation and the retention days are the glibc jobs' exactly.
+- The Alpine job caches nothing, decided on 2026-10-15 under `doc/decision/ci-caching.md`
+  (the owner asked for caching in general, so this is a deviation the owner may veto; the repository was at its cap).
+  The release build left 684 MB of `CARGO_HOME` and 2.3 GB of target directory on both architectures before any trim
+  (dry run 38684256021, `du`).
+  The compressed size of a trimmed entry was not measured; the Alpine guard's entries, which hold debug builds, are
+  949 MB and 928 MB, above the 650 MB guide of `doc/decision/ci-caching.md`.
+  The usage of the repository was 9.98 GB of 10 GB, in 12 entries, when the run finished.
+  A release run happens once per version bump, and an entry unread for seven days is evicted,
+  so a cache would often be gone when the next release starts.
+  The most a cache could save is the dependency phase, measured from the log as the time before cargo printed
+  `Compiling music-player`: 9 min 07 s on x86_64 and 5 min 16 s on aarch64.
+  The final crate, 9 min 55 s and 7 min 57 s, is rebuilt in every run, cache or not.
+  A warm run was not measured, because no entry exists to restore.
+  If a later decision adds one, the key must start with `music-player-alpine-release-` and
+  `.github/workflows/cache-prune.yml` needs a matching `FAMILIES` pattern, because the Alpine guard's pattern
+  (`music-player-alpine-<arch>-rustc_`) does not match that prefix.
 - Each desktop binary is started with `--version` on its own runner, and the output must be the product version.
   This is the only run any non-Linux binary gets.
 - `.cargo/config.toml` gained `+aes` entries for `aarch64-unknown-linux-gnu` and `aarch64-pc-windows-msvc`,
@@ -256,6 +293,25 @@ previous entries beside the new ones until GitHub evicts the least recently used
 The repository already held about 5.5 GB before this workflow, so the budget is tight:
 evictions of other workflows' caches are possible, and the sizes should be rechecked after the first runs on `main`.
 
+Dry run 38684256021 on branch `feat/music-player-release-musl`, 2026-10-15, wall time per job.
+The Alpine jobs ran cold, as they do every time;
+the other desktop jobs and the Android job restored their caches by exact key:
+
+- Alpine x86_64 (`ubuntu-24.04`) 20m00s: the image builds 27s, the release build 19m02s
+  (dependencies 9m07s, then the crate 9m55s), and packaging 7s.
+- Alpine aarch64 (`ubuntu-24.04-arm`) 14m07s: the image builds 30s, the release build 13m13s
+  (dependencies 5m16s, then the crate 7m57s), and packaging 4s.
+- Run 38686797998, the same workflow dispatched again 28 minutes later (the Alpine jobs have no cache, so it is a
+  repeat of the cold build, not a warm one): Alpine x86_64 15m18s (release build 14m00s) and aarch64 14m48s,
+  so the repeat differed by 4m42s on x86_64 and 41s on aarch64 with nothing changed.
+  Treat the Alpine job time as 14 to 20 minutes; the spread comes from the runners, not from a cache.
+  The whole second run took 16m09s.
+- Linux x64 3m57s, Linux arm64 3m17s, Android 3m48s, Windows arm64 5m39s, Windows x64 6m05s, macOS arm64 4m28s.
+- The whole run took 20m45s from its creation to the end of the release job.
+  Its longest build had been 7m01s in the warm run above, and the checksum job waits for every build,
+  so the Alpine x86_64 build now sets the length of a release run.
+- The release binaries are 54,189,848 bytes (x86_64) and the tarballs 22,211,539 and 20,855,451 bytes.
+
 ## Consequences
 
 - The first real release of a version is permanent.
@@ -269,6 +325,13 @@ evictions of other workflows' caches are possible, and the sizes should be reche
 - Only the Linux x86_64 build has been run by the project.
   Releases and the README say "built by CI, not yet tested on this platform" for the rest,
   and CI starts each desktop binary with `--version` and nothing more.
+  The Alpine builds have more evidence, though not from hardware:
+  `.github/workflows/music-player-alpine.yml` runs the unit tests and a headless window and sound check in Alpine
+  containers on both architectures, on debug builds and not on the released files.
+  The dry run 38684256021 started the x86_64 release binary in an `alpine:3.24` container after `apk add` of the
+  listed packages and printed `music-player 0.1.1`; the same binary in a bare `alpine:3.24` failed with
+  `Error loading shared library libfontconfig.so.1`, so the check can fail.
+  The aarch64 binary was started with `--version` only by the job, on a native arm64 runner.
 - Losing the Android key means installed copies can no longer be updated.
   The key lives in the repository secrets, which cannot be read back, and in the backup.
   The backup must be copied into the password manager; rotation and loss are covered in the runbook.
@@ -304,7 +367,13 @@ evictions of other workflows' caches are possible, and the sizes should be reche
   fragile SDK linking (`desktop-app-code-signing.md`); native runners exist for every target and are free here.
 - An environment-scoped secret store:
   the owner asked for repository secrets; see the consequences.
-- Cold release builds with no cache: this document's first choice, overruled by the owner on 2026-10-15.
+- Cold release builds with no cache: this document's first choice, overruled by the owner on 2026-10-15
+  for the glibc, Windows, macOS and Android jobs.
+  The Alpine job is cold on purpose (see the build mechanics), and the owner may overrule that too.
+- A static musl binary:
+  rejected by the Alpine decision (a static musl program cannot `dlopen` the windowing libraries, and Alpine ships no
+  static PipeWire, fontconfig or freetype libraries),
+  so the Alpine files are dynamically linked and built with Alpine's own Rust inside the Alpine image.
 - Caching the Android SDK and NDK:
   the owner asked for caching in general, and this entry was part of that.
   It was built and measured, then left out as a deviation the owner may veto:

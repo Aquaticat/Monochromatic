@@ -3,6 +3,7 @@
  @module
  */
 import assert from 'node:assert/strict';
+import {unlinkSync} from 'node:fs';
 import {mkdir,mkdtemp,rm,stat,symlink,writeFile} from 'node:fs/promises';
 import {homedir} from 'node:os';
 import {join} from 'node:path';
@@ -25,7 +26,7 @@ type Store={
   /** Namespace remains available before I/O. */
   readonly namespaceKey:string;
   /** Missing files remain cache misses. */
-  readonly read:(key:string)=>Promise<Entry|undefined>;
+  readonly read:(key:string)=>Promise<unknown>;
   /** Original completed publication wins over later estimates. */
   readonly put:(input:{readonly key:string;readonly probability:number})=>Promise<Entry>;
 };
@@ -47,14 +48,14 @@ type StoreModule={
  @throws Error when required exports are missing
  */
 function assertStoreModule(value:unknown):asserts value is StoreModule{
-  if(value===null||typeof value!=='object'||!('digest' in value)||typeof value.digest!=='function'
-    ||!('createRelevanceStore' in value)||typeof value.createRelevanceStore!=='function'){
+  if((value===null)||((typeof value)!=='object')||(!('digest' in value))||((typeof value.digest)!=='function')
+    ||(!('createRelevanceStore' in value))||((typeof value.createRelevanceStore)!=='function')){
     throw new Error('Built relevance store exports are unavailable');
   }
 }
 /** Original artifact selected through the native consumer's file URL. */
 const loaded:unknown=await import(new URL(
-  '../dist/native/contract/lifecycle/rule-relevance-cache/store.mjs',import.meta.url
+  '../dist/native/contract/lifecycle/rule-relevance-cache/store.ts',import.meta.url
 ).href);
 assertStoreModule(loaded);
 /** Fixed checked callable exports. */
@@ -90,10 +91,14 @@ async function fixture():Promise<Fixture>{
   /** Original cache owner, including its asynchronous initialization lifetime. */
   const store=storeModule.createRelevanceStore({
     directory,namespace:{repository:'fixture',primaryBranch:'main'},profileKey:'fixture-profile',
-    trace:function retainEvent(event){events.push(event.event);},
+    trace:function retainEvent(event){
+      events.push(event.event);
+    },
   });
   return {root,directory,store,events,
-    async [Symbol.asyncDispose](){await rm(root,{recursive:true,force:true});}
+    async [Symbol.asyncDispose](){
+      await rm(root,{recursive:true,force:true});
+    }
   };
 }
 /**
@@ -103,8 +108,12 @@ async function fixture():Promise<Fixture>{
  @throws Error when the operation unexpectedly succeeds
  */
 async function failure(operation:Promise<unknown>):Promise<unknown>{
-  try{await operation;}
-  catch(error){return error;}
+  try{
+    await operation;
+  }
+  catch(error){
+    return error;
+  }
   throw new Error('Cache operation unexpectedly succeeded');
 }
 /**
@@ -122,7 +131,7 @@ await describe({name:'',children:[
   it({name:'publishes private complete entries and preserves the original value',fn:async function originalPublication(){
     await using current=await fixture();
     const key=storeModule.digest('original');
-    assert.equal(await current.store.read(key),undefined);
+    assert.equal(typeof await current.store.read(key),'symbol');
     assert.equal((await stat(current.directory)).mode&0o777,0o700);
     const first=await current.store.put({key,probability:0.25});
     assert.equal(first.qualification,'not-established');
@@ -131,7 +140,9 @@ await describe({name:'',children:[
     assert.deepEqual(await current.store.read(key),first);
     assert.equal((await current.store.put({key,probability:0.75})).probability,0.25);
     assert.equal((await stat(join(current.directory,current.store.namespaceKey,`${key}.json`))).mode&0o777,0o600);
-    assert.equal(current.events.filter(function published(event){return event==='cache-published';}).length,1);
+    assert.equal(current.events.filter(function published(event){
+      return event==='cache-published';
+    }).length,1);
   }}),
   it({name:'joins concurrent same-key publications before reading the original entry',fn:async function sharedPublication(){
     await using current=await fixture();
@@ -143,26 +154,62 @@ await describe({name:'',children:[
     const entries=await Promise.all(pending);
     assert.equal(entries.length,4);
     for(const entry of entries)assert.equal(entry.probability,0.125);
-    assert.equal((await read)?.probability,0.125);
-    assert.equal(current.events.filter(function published(event){return event==='cache-published';}).length,1);
+    assert.deepEqual(await read,entries[0]);
+    assert.equal(current.events.filter(function published(event){
+      return event==='cache-published';
+    }).length,1);
   }}),
   it({name:'rejects symlink cache directories before publication',fn:async function rejectSymlink(){
     await using current=await fixture();
     const target=join(current.root,'target');
     await mkdir(target,{mode:0o700});
     await symlink(target,current.directory);
-    const error=await failure(current.store.read(storeModule.digest('missing')));
+    const error=await failure(
+      current.store.read(storeModule.digest('missing')),
+    );
     assertFailure({error,message:'not a private ordinary directory'});
   }}),
   it({name:'rejects malformed and mismatched persisted entries',fn:async function invalidPersistedEntry(){
     await using current=await fixture();
     const key=storeModule.digest('malformed');
-    assert.equal(await current.store.read(key),undefined);
+    assert.equal(typeof await current.store.read(key),'symbol');
     const path=join(current.directory,current.store.namespaceKey,`${key}.json`);
     await writeFile(path,'{',{mode:0o600});
     assertFailure({error:await failure(current.store.read(key)),message:'incomplete or malformed'});
     await writeFile(path,JSON.stringify({schema:1,key,profileKey:'another-profile',probability:0.5,qualification:'not-established'}));
     assertFailure({error:await failure(current.store.read(key)),message:'different profile or invalid estimate'});
+  }}),
+  ...['null','[]','true','42','"text"','{"schema":1}'].map(function invalidShape(text){
+    return it({name:`rejects parsed cache value ${text}`,fn:async function rejectParsedValue(){
+      await using current=await fixture();
+      const key=storeModule.digest('invalid-shape');
+      const miss=await current.store.read(key);
+      assert.equal(typeof miss,'symbol');
+      assert.equal(await current.store.read(key),miss);
+      await writeFile(join(current.directory,current.store.namespaceKey,`${key}.json`),text,{mode:0o600});
+      assertFailure({error:await failure(current.store.read(key)),message:'different profile or invalid estimate'});
+    }});
+  }),
+  it({name:'rejects existing-entry removal before reuse and releases the failed publication',fn:async function removedExistingEntry(){
+    await using current=await fixture();
+    const key=storeModule.digest('removed-existing-entry');
+    await current.store.put({key,probability:0.25});
+    const events:string[]=[];
+    const second=storeModule.createRelevanceStore({
+      directory:current.directory,namespace:{repository:'fixture',primaryBranch:'main'},profileKey:'fixture-profile',
+      trace:function removeBeforeReuse(event){
+        events.push(event.event);
+        if(event.event==='cache-publication-already-exists'){
+          unlinkSync(join(current.directory,current.store.namespaceKey,`${key}.json`));
+        }
+      },
+    });
+    assertFailure({error:await failure(second.put({key,probability:0.75})),message:'disappeared before reuse'});
+    assert.ok(events.includes('cache-publication-already-exists'));
+    assert.ok(events.includes('cache-miss'));
+    assert.equal(events.includes('cache-published'),false);
+    assert.equal((await second.put({key,probability:0.75})).probability,0.75);
+    assert.deepEqual(await current.store.read(key),await second.read(key));
   }}),
   ...['../escape','A'.repeat(64),'a'.repeat(63),'a'.repeat(65),`${'a'.repeat(64)}\n`].map(function invalidKey(key){
     return it({name:`rejects non-digest filename ${JSON.stringify(key)}`,fn:async function rejectFilename(){

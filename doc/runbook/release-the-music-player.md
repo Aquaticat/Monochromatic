@@ -13,7 +13,8 @@ One release holds one file per platform and a checksum file:
 
 - `music-player-<version>-windows-x64.exe` and `music-player-<version>-windows-arm64.exe`
 - `music-player-<version>-macos-arm64.dmg` (there is no Intel Mac build)
-- `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz`
+- `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz` (glibc)
+- `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz` (Alpine, musl)
 - `music-player-<version>-android.apk`
 - `SHA256SUMS`
 
@@ -65,7 +66,8 @@ The rules the workflow enforces, and fails loudly on:
     The detect job compares the old and new version and starts the build only if the version changed.
 4.  Watch the run:
     `gh run list --workflow music-player-release.yml` and `gh run watch <run id>`.
-    A full run is the desktop builds in parallel with the Android build,
+    A full run is the desktop builds (the two Alpine builds are the slowest, because they are never cached)
+    in parallel with the Android build,
     then a checksum job and the release job.
 5.  Open the release page `https://github.com/Aquaticat/Monochromatic/releases/tag/music-player-v<version>`
     and check that every file listed above and `SHA256SUMS` are attached and that it is marked as a pre-release.
@@ -107,6 +109,24 @@ and the run refuses `dry-run=false`.
 On `main` a dry run signs with the real release key, so the signing path is proven without publishing.
 
 Download a dry run's files with `gh run download <run id> --dir <new empty directory>`.
+Each `asset-*` artifact becomes a subdirectory.
+
+Check the Alpine files of a dry run in a second new empty directory:
+
+```bash
+# Extract the x64 Alpine archive, then print the program interpreter of its binary.
+tar --extract --gzip --file <download dir>/asset-linux-musl-x64/music-player-<version>-linux-musl-x64.tar.gz \
+  --directory <extract dir>
+readelf --program-headers <extract dir>/music-player-<version>-linux-musl-x64/bin/music-player
+```
+
+The interpreter line must read `/lib/ld-musl-x86_64.so.1`,
+and `file` on the arm64 binary must say `ARM aarch64`.
+The job has already started both binaries with `--version` in an Alpine image that holds only the packages of
+`INSTALL.txt`.
+To repeat that by hand,
+mount the binary into `alpine:3.24`, run the `apk add` line of `INSTALL.txt` first,
+and bound the container with `podman run --memory=2g --cpus=2 --rm`.
 
 ## When a job fails
 
@@ -142,6 +162,10 @@ so a run after a small change takes minutes and not tens of minutes.
 Only runs on `main` and manual dispatches save them.
 A changed lock file starts from the previous entry and rebuilds only what changed.
 The entries together are about 4 GB, against the repository's 10 GB cap.
+The two Alpine release jobs (`build-desktop-musl`) cache nothing:
+every run builds them from a clean registry and target directory
+(14 to 20 minutes in the two dry runs measured, which makes them the longest jobs of a release run),
+and the repository's cap is not spent on them.
 
 ```bash
 # List the entries with their sizes.
@@ -223,5 +247,9 @@ Dry runs are not attested.
 The project has run only the Linux x86_64 build and the Android app on emulators.
 The Windows and macOS programs and the Linux arm64 build are built by CI and started with `--version` there,
 and nothing more.
+The Alpine builds are started with `--version` in an Alpine container in the release run;
+a separate workflow (`.github/workflows/music-player-alpine.yml`) runs the unit tests and a headless window and sound
+check in Alpine containers on both architectures, on debug builds and not on the released files.
+No real Alpine machine has run them.
 No build has run on a real Android device.
 A bug report from one of these platforms is the first evidence about it.

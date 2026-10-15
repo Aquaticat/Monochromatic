@@ -1,7 +1,7 @@
 name: music-player-release
 
-# Releases the music player (package/music-player): the desktop app for Windows, macOS and Linux
-# and the Android app, all in one GitHub pre-release. Decision and rationale:
+# Releases the music player (package/music-player): the desktop app for Windows, macOS, Linux (glibc, and
+# Alpine with musl) and the Android app, all in one GitHub pre-release. Decision and rationale:
 # doc/decision/music-player-releases.md. How to cut a release: doc/runbook/release-the-music-player.md.
 #
 # - Trigger: a push to main that changes the product version in
@@ -18,12 +18,13 @@ name: music-player-release
 # - Android is signed with the project release key from repository secrets. The secrets are read
 #   only in the Android job, and only on main; every other ref signs with a throwaway key.
 # - Windows and macOS binaries are not signed with a developer identity.
-# - Caches: each build job restores the cargo registry and the target directory (and the Android job the
-#   Gradle caches) under a key made of the runner, target, toolchain and lock file hash,
+# - Caches: each build job except the Alpine ones restores the cargo registry and the target directory (and
+#   the Android job the Gradle caches) under a key made of the runner, target, toolchain and lock file hash,
 #   with a restore key that drops the lock file hash so a dependency change rebuilds only what changed.
 #   Only runs on main and manual dispatches save caches. The bytes of a release are still the bytes this
 #   run built and attested: cargo and Gradle rebuild whatever their own fingerprints say changed.
 #   Entry sizes and hit rates are recorded in doc/decision/music-player-releases.md.
+#   The Alpine (musl) jobs cache nothing: every run builds them cold, and the decision document says why.
 
 on:
   workflow_dispatch:
@@ -495,6 +496,157 @@ jobs:
         if-no-files-found: error
         retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
 
+  # The Alpine Linux (musl libc) tarballs. Alpine's own Rust builds natively inside the repository's Alpine
+  # image (Containerfile.alpine, the one music-player-alpine.yml tests), so there is no --target: Alpine's host triple
+  # is the musl one. Decision: doc/decision/music-player-alpine.md. Not cached, by decision: doc/decision/music-player-releases.md.
+  build-desktop-musl:
+    needs: detect
+    if: ${{ needs.detect.outputs.should_build == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - { arch: x64, alpine_host: x86_64-alpine-linux-musl, runner: ubuntu-24.04 }
+        - { arch: arm64, alpine_host: aarch64-alpine-linux-musl, runner: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      # Attest build provenance for the files this job uploads.
+      id-token: write
+      attestations: write
+    env:
+      ARCH: ${{ matrix.arch }}
+      ALPINE_HOST: ${{ matrix.alpine_host }}
+      VERSION: ${{ needs.detect.outputs.version }}
+      # Both runners have 4 vCPUs and 16 GB; the bounds leave the runner room for the podman and runner processes.
+      BUILD_MEMORY: 12g
+      BUILD_CPUS: '4'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+        persist-credentials: false
+
+    # The runners ship podman 4.9, and Containerfile.alpine is written for it (no heredoc).
+    # The build stage is the toolchain; the runtime stage holds exactly the apk list the tarball's INSTALL.txt names.
+    - name: Build the Alpine images
+      run: |
+        set -euo pipefail
+        podman --version
+        context="$(mktemp -d)"
+        for target in build runtime; do
+          podman build \
+            --target "$target" \
+            --tag "music-player-alpine-$target" \
+            --file package/music-player/desktop-app/Containerfile.alpine \
+            "$context"
+        done
+
+    - name: Check the toolchain builds for musl natively
+      run: |
+        set -euo pipefail
+        info=$(podman run --rm music-player-alpine-build rustc --version --verbose)
+        echo "$info"
+        host=$(awk '/^host: / { print $2 }' <<< "$info")
+        if [ "$host" != "$ALPINE_HOST" ]; then
+          echo "::error::The Alpine toolchain host is '$host', expected '$ALPINE_HOST'."
+          exit 1
+        fi
+
+    - name: Build the release binary in the Alpine image
+      run: |
+        set -euo pipefail
+        mkdir --parents "$RUNNER_TEMP/cargo" "$RUNNER_TEMP/target"
+        # The source is mounted read-only. The registry and the target directory are fresh for every run, so the
+        # bytes that ship are built from the locked sources by this run alone.
+        podman run --rm \
+          --memory="$BUILD_MEMORY" --cpus="$BUILD_CPUS" --security-opt label=disable \
+          --volume "$GITHUB_WORKSPACE/package/music-player:/src:ro" \
+          --volume "$RUNNER_TEMP/cargo:/cargo" \
+          --volume "$RUNNER_TEMP/target:/target" \
+          --env CARGO_HOME=/cargo --env CARGO_TARGET_DIR=/target \
+          --env SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 \
+          --workdir /src/desktop-app \
+          music-player-alpine-build \
+          cargo build --release --locked --features alsa-fallback
+        ls -l "$RUNNER_TEMP/target/release/music-player"
+        # Recorded so a later decision about caching has the size of what a cache would hold.
+        du --summarize --human-readable "$RUNNER_TEMP/cargo" "$RUNNER_TEMP/target"
+
+    # The runtime image holds only the packages INSTALL.txt lists, so this fails if that list is short.
+    - name: Smoke test the binary in the runtime image (--version)
+      run: |
+        set -euo pipefail
+        out=$(podman run --rm --security-opt label=disable \
+          --volume "$RUNNER_TEMP/target/release/music-player:/usr/local/bin/music-player:ro" \
+          music-player-alpine-runtime music-player --version)
+        echo "$out"
+        if [ "$out" != "music-player ${VERSION}" ]; then
+          echo "::error::Expected 'music-player ${VERSION}' from --version, got '$out'."
+          exit 1
+        fi
+
+    - name: Package (Alpine tarball)
+      id: pkg
+      run: |
+        set -euo pipefail
+        app='package/music-player/desktop-app'
+        stage_name="music-player-${VERSION}-linux-musl-${ARCH}"
+        stage="dist/${stage_name}"
+        mkdir -p "${stage}/bin" "${stage}/share/applications" "${stage}/share/icons/hicolor/scalable/apps"
+        cp "${RUNNER_TEMP}/target/release/music-player" "${stage}/bin/"
+        # The repository's launcher names the generic theme icon; the archive ships its own icon instead.
+        sed 's/^Icon=.*/Icon=music-player/' "${app}/share/applications/monochromatic.music-player.desktop" \
+          > "${stage}/share/applications/monochromatic.music-player.desktop"
+        cp "${app}/asset/icon.svg" "${stage}/share/icons/hicolor/scalable/apps/music-player.svg"
+        cp LICENSE "${stage}/LICENSE"
+        cat > "${stage}/INSTALL.txt" <<'INSTALL'
+        Music Player for Alpine Linux (pre-release, built by CI)
+
+        Install the runtime packages, as root:
+          apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
+            mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+
+        Run it in place (a plain Alpine install creates no runtime directory, which Wayland needs):
+          export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}"
+          mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+          ./bin/music-player /path/to/music-folder
+
+        Install for your user (menu entry and icon):
+          mkdir -p ~/.local/bin ~/.local/share/applications ~/.local/share/icons/hicolor/scalable/apps
+          cp bin/music-player ~/.local/bin/
+          cp share/applications/monochromatic.music-player.desktop ~/.local/share/applications/
+          cp share/icons/hicolor/scalable/apps/music-player.svg ~/.local/share/icons/hicolor/scalable/apps/
+
+        Needs Alpine 3.24 or newer (musl libc) on x86_64 or aarch64, and a Wayland compositor.
+        The X11 path is untested.
+        Sound uses PipeWire when a daemon runs (apk add pipewire wireplumber) and the default ALSA device otherwise.
+        The folder chooser needs a desktop portal or zenity; without either, pass the folder on the command line.
+        INSTALL
+        asset="${stage_name}.tar.gz"
+        # Fixed order, owner and timestamps so the same inputs give the same tar stream.
+        epoch=$(git log -1 --format=%ct)
+        tar --sort=name --owner=0 --group=0 --numeric-owner --mtime="@${epoch}" \
+          --create --file - --directory dist "${stage_name}" | gzip --no-name --best > "dist/${asset}"
+        echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
+        tar --list --verbose --file "dist/${asset}"
+
+    - name: Attest provenance
+      if: ${{ needs.detect.outputs.dry_run == 'false' }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: ${{ steps.pkg.outputs.asset }}
+
+    - name: Upload asset as workflow artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: asset-linux-musl-${{ matrix.arch }}
+        path: ${{ steps.pkg.outputs.asset }}
+        if-no-files-found: error
+        retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
+
   build-android:
     needs: detect
     if: ${{ needs.detect.outputs.should_build == 'true' }}
@@ -754,7 +906,7 @@ jobs:
   # SHA256SUMS covers every asset and is attested like them. It is computed only after every
   # build succeeded, so a partial release cannot get a checksum file.
   checksums:
-    needs: [detect, build-desktop, build-android]
+    needs: [detect, build-desktop, build-desktop-musl, build-android]
     if: ${{ needs.detect.outputs.should_build == 'true' }}
     runs-on: ubuntu-latest
     permissions:
@@ -778,6 +930,8 @@ jobs:
         expected=$(printf '%s\n' \
           "music-player-${VERSION}-android.apk" \
           "music-player-${VERSION}-linux-arm64.tar.gz" \
+          "music-player-${VERSION}-linux-musl-arm64.tar.gz" \
+          "music-player-${VERSION}-linux-musl-x64.tar.gz" \
           "music-player-${VERSION}-linux-x64.tar.gz" \
           "music-player-${VERSION}-macos-arm64.dmg" \
           "music-player-${VERSION}-windows-arm64.exe" \
@@ -847,6 +1001,7 @@ jobs:
         - Windows: `music-player-@VERSION@-windows-x64.exe` and `music-player-@VERSION@-windows-arm64.exe`, one standalone program each.
         - macOS: `music-player-@VERSION@-macos-arm64.dmg`, for Apple silicon Macs only. There is no Intel Mac build; build from source instead.
         - Linux: `music-player-@VERSION@-linux-x64.tar.gz` and `music-player-@VERSION@-linux-arm64.tar.gz`, with the program, a launcher file and an icon.
+        - Alpine Linux: `music-player-@VERSION@-linux-musl-x64.tar.gz` (x86_64) and `music-player-@VERSION@-linux-musl-arm64.tar.gz` (aarch64), for Alpine 3.24 or newer (musl libc), with the same contents as the Linux archives. The Linux archives above do not run on Alpine.
         - Android: `music-player-@VERSION@-android.apk` (Android 8.0 or newer).
         - `SHA256SUMS`: the SHA-256 of every file above.
 
@@ -855,6 +1010,7 @@ jobs:
         The maintainers have run the Linux x86_64 build on Wayland with PipeWire and the Android app on emulators.
         Every other platform is **built by CI, not yet tested on this platform**: CI starts each desktop program with `--version` and nothing more.
         No build has run on a real Android device, on macOS or on Windows.
+        The Alpine builds are the one exception: a separate CI workflow runs the unit tests and a headless window and sound check in Alpine containers on both architectures, but on debug builds and not on real Alpine hardware, and this release starts each Alpine program with `--version` inside an Alpine image.
         Expect problems and report them as issues.
 
         ## Unsigned builds and first launch
@@ -863,6 +1019,11 @@ jobs:
         - **macOS**: the app is not notarized, and carries only an ad-hoc signature with no developer identity. Open the disk image, drag Music Player to Applications, and try to open it once. Then open System Settings, go to Privacy & Security, scroll down and click "Open Anyway", and click "Open" when the warning appears again. macOS remembers the choice. These are the steps in [Apple's guide](https://support.apple.com/en-us/102445).
         - **Android**: the APK is signed with the project release key. Allow installing from your browser or file manager when Android asks. Updates install over this app only when they carry the same key. Certificate SHA-256: `@CERT@`.
         - **Linux**: extract the archive and run `bin/music-player`. `INSTALL.txt` inside shows how to add a menu entry. It needs PipeWire and glibc 2.39 or newer (it is built on Ubuntu 24.04).
+        - **Alpine Linux**: install the runtime packages with this one command, then extract the archive and run `bin/music-player` (`INSTALL.txt` inside shows the rest, including the runtime directory a plain Alpine install lacks). Without PipeWire the player plays through the default ALSA device.
+
+        ```
+        apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+        ```
 
         ## Verify a download
 

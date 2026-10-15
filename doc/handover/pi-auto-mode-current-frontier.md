@@ -919,7 +919,160 @@ the composed-distribution protocol,
 and the descriptor-bound file observer.
 The relevance store now awaits directory validation and file publication during cache operations;
 its constructor still returns the cache owner synchronously.
-This cache change is pending focused concurrency and built-consumer verification.
+Commit `2d804201df` introduces the asynchronous cache filesystem operations;
+`8b97abd75a` joins owner-local same-key publications before reading their completed entry.
+Commit `32d3e551d4` adds built store consumers using disposable directories.
+Those consumers pass private modes,
+original-value retention,
+concurrent publication,
+symlink rejection,
+malformed and mismatched persisted data,
+digest filename boundaries,
+and invalid probability rejection in
+`${HOME}/temp/agent/pi-native-relevance-store-consumer-20261015.log`.
+Package type verification passed.
+The focused lint pass found an inferred absent promise in initialization
+and a nullable test contract.
+Initialization now declares its pending operation;
+the consumer treats read values as unknown and compares them with the original complete entry.
+The built refresh consumers in `99ecff732d` pass reuse across owners,
+changed-rule membership,
+recursive refresh joining,
+source replacement during classification,
+and source replacement or cancellation during cache hits and publication.
+`${HOME}/temp/agent/pi-native-relevance-refresh-consumer-20261015.log`
+retains those results and the initial fixture declaration failure.
+Commit `fb56538d9e` adds the required explicit fixture return type;
+package type verification then passed in
+`${HOME}/temp/agent/pi-native-file-observer-baseline-20261015.log`.
+
+The built file-observer baseline in the same receipt passes completed synchronous observations,
+short reads,
+descriptor cleanup,
+ordered original read and close failures,
+invalid counts,
+byte bounds,
+and selected-path rejection.
+Commit `0df033dd92` replaces its `finally` with a lexical descriptor owner.
+The exact synchronous filesystem calls retain scoped exceptions documented in
+[the file-observation contract](../../package/pi-plugin/auto-mode/native/file-observation.md).
+The rule has no per-call configuration allow-list;
+changing the observer alone to return asynchronously would change the synchronous policy-selection
+and dependency-finalization consumer contracts.
+The package rules and their severities remain unchanged.
+The rebuilt file observer,
+relevance store and refresh,
+source-freshness work,
+approved-dependency integration,
+and package type checks all pass in
+`${HOME}/temp/agent/pi-native-cache-observer-consumer-20261015.log`.
+Process-local omission controls remove descriptor closure or post-await cache freshness checks
+from the copied modules while loading.
+The committed consumer tests fail in both cases,
+and artifact hashes remain unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/cache-observer-omissions.json`
+retains those results.
+Focused lint now has zero errors and 484 warnings across the changed source and fixtures.
+The complete package recount covers 517 files and 486 rules:
+zero errors and 13812 warnings in
+`${HOME}/temp/agent/pi-maintained-cache-observer-lint-20261015.log`.
+Remaining warnings still prevent the strict lint task from passing.
+Untyped native module boundaries and statement formatting remain the largest unfinished groups.
+Commit `bf9eee5abc` moves the selected-file observer from `file-observer.mjs` to `file-observer.ts`,
+with explicit completed-snapshot and bounded-reader contracts in `file-observation-types.ts`.
+Its direct consumers and provenance mapping now select the typed source.
+Commit `a6e2b905a7` names the selected-path revalidation boundary while retaining its original checks and order.
+The typed port passes the rebuilt observer,
+store,
+refresh,
+source-freshness,
+approved-dependency,
+and package type checks in
+`${HOME}/temp/agent/pi-native-typed-observer-consumer-20261015.log`.
+That scratch runner then reached its lint command outside the repository
+and reproduced the documented missing-monorepo-root diagnostic.
+The separate lint task now pins its repository directory;
+its first pass found only a path-condition line-layout warning.
+That layout is corrected;
+final focused lint passes with zero errors and warnings across the typed observer and new cache/observer fixtures in
+`${HOME}/temp/agent/pi-native-typed-observer-complete-lint-20261015.log`.
+The next typed boundary is structural policy indexing.
+Its original copied JavaScript module is retained under
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/policy-index-before-types.mjs`
+for direct comparison with the typed artifact before qualification.
+Commit `f8db05b2ca` moves `policy-index.mjs` to `policy-index.ts`
+and adds explicit structural-index contracts.
+Commit `c1bd9b7bad` passes original coordinate values to the span checker
+and uses a bounded ASCII tag scan instead of spreading source text.
+The formatted index and its contracts pass focused lint with zero errors and warnings in
+`${HOME}/temp/agent/pi-native-typed-index-final-format-20261015.log`.
+The rebuilt relevance-cache,
+domain,
+semantic operating-policy,
+manual-review,
+and package type checks pass in
+`${HOME}/temp/agent/pi-native-typed-index-consumer-20261015.log`.
+The built old/new comparison matches complete index output or original diagnostic fields for
+12 real-parser documents and six invalid parser trees.
+It includes headings,
+unclassified text,
+quoted and fenced examples,
+astral characters,
+literal tag boundaries,
+duplicate tags,
+and invalid source positions.
+A changed-source control produces different rule handles and index output.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-policy-index-comparison.json`
+retains both artifact hashes and the results.
+The complete lint recount after the typed observer and index ports covers 519 files and 486 rules:
+zero errors and 13665 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-observer-index-lint-20261015.log`.
+The strict package gate remains failing on warnings;
+continue typing the remaining native boundaries and resolving their formatting diagnostics.
+Commits `25b8a629f7`,
+`1ee94a2029`,
+and `18725748e3` type the relevance definition,
+persisted-entry admission,
+and asynchronous store owner.
+The original `store.mjs` is now `store.ts` as of 2026-10-15;
+`definition.mjs` is now `definition.ts` on the same date.
+Cache misses now use the explicit `CACHE_ENTRY_MISSING` domain sentinel,
+and the refresh caller narrows that sentinel before reading an entry.
+The persisted schema and fixed classifier wording remain unchanged.
+Parsed non-object values now receive the cache's invalid-entry diagnostic.
+If an existing file disappears between exclusive-publication rejection and reuse,
+publication now rejects with a cache error instead of returning an absent entry.
+Commit `3f4cb12020` covers parsed primitive and array values,
+stable miss identity,
+that removal boundary,
+and publication recovery after the rejection.
+The initial focused formatter reported ten warnings and one missing return-type error;
+`6b0be39a70` documents helper exports,
+names fixed bounds,
+and adds the disposer return type.
+The rebuilt store,
+refresh,
+and domain consumers pass in
+`${HOME}/temp/agent/pi-native-typed-store-consumer-20261015.log`.
+That run's package type check found `TS9010` and `TS9013` on the fixed question export;
+`e88603cef2` adds its explicit contract.
+Type checking then passes in
+`${HOME}/temp/agent/pi-native-typed-store-types-20261015.log`.
+The typed definition,
+store,
+filesystem admission,
+contracts,
+and store consumer tests pass focused lint with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-store-final-format-20261015.log`.
+The final native artifact is rebuilt in
+`${HOME}/temp/agent/pi-native-typed-store-final-build-20261015.log`.
+Removing the new publication guard through a process-local load hook makes the committed removal test fail;
+the artifact hash stays unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-store-publication-omission.json`
+retains that result.
+The complete maintained lint recount covers 521 files and 486 rules:
+zero errors and 13583 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-store-lint-20261015.log`.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
