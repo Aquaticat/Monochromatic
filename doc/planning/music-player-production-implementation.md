@@ -278,9 +278,21 @@ before saying it matches, QAB):
   goes away, the 128-bit width criterion of the issue is waived by the human, and the final commit body carries
   `Closes #545`. If the crate lacks XXH3-64 the agent stops and reports. Merge procedure as for the others; the Windows
   agent also edits `desktop-app/.cargo/config.toml`, so expect a trivial conflict.
-- Task 97, existing CI caching, branch `chore/ci-caching`, worktree `ci-caching` (agent started 2026-10-15): restore-keys
-  for `cargo-publish.yml`, a pnpm store cache for the three pnpm workflows, `doc/decision/ci-caching.md`, proven by
-  dispatching cold and warm runs from the branch (never cargo-publish with dry-run false).
+- Task 97, existing CI caching: MERGED to `main` at `56d268686a` on 2026-10-15 (policy `doc/decision/ci-caching.md`,
+  actionlint clean, the agent's cold and warm dispatch runs recorded there; I did not rerun them). Findings: the
+  `cargo-publish.yml` cache never hit (keys hashed `Cargo.lock`, which every version bump changes), now keyed with a
+  restore-key prefix, `target/` minus `target/package`, `ImageOS` in the key; the mise `cache: true` is inert (the
+  action saves it only with `install: true`, every workflow sets `install: false`), removed only in
+  `cargo-publish.yml`; pnpm store caches measured slower than no cache and reverted; `cli-git-native` is cached in
+  `final-newline.yml` and `npm-release.yml`. Unverified: the `npm-release.yml` version job, a PR restoring a
+  main-scoped entry, release-matrix caching. Repo cache usage went over the cap (11.1 to 11.3 GB). Follow-ups noted by
+  the agent, not done: remove the dead `cache: true` from `npm-release.yml`, `pnpr-publish.yml` and
+  `kotlin-linter-publish.yml`; `kotlin-linter-publish.yml` lacks `MISE_AUTO_INSTALL: false` (472 s install on
+  2026-08-16); `cargo-publish.yml` uses one concurrency group for all refs, so a branch dispatch can replace a pending
+  publish on main; `logger-fuzz.yml` fails its coverage gate (2026-09-24 and now). Held back: a daily
+  `cache-prune.yml` (`actions: write`, deletes superseded cargo cache entries); the auto-mode classifier denied its
+  real delete run and its commit, so it is an untracked file in the worktree `ci-caching` and awaits the human's
+  decision.
 - Task 95, Alpine, branch `feat/music-player-alpine`, worktree `music-player-alp`: the desktop app must run on Alpine
   (musl, dynamic link expected because Slint loads libwayland and libxkbcommon at run time); the real-window proof uses
   our own nested compositor `monochromatic-nested-wayland-session`, never sway or weston; if the compositor needs
@@ -294,10 +306,8 @@ before saying it matches, QAB):
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
-- Evidence behind task 97: `cargo-publish.yml` caches are exact-key only (no `restore-keys`), so any lockfile change
-  rebuilds everything and stores a new 130 to 420 MB entry (28 caches, 5.5 GB of the 10 GB cap on 2026-10-15);
-  `logger-fuzz.yml`, `toml-edit-fuzz.yml` and `readonly-semantic-bridge.yml` run `pnpm install --frozen-lockfile`
-  with no pnpm store cache. The new workflows of tasks 92, 95 and 96 were told to cache properly and prove it.
+- The workflows of tasks 95 and 96 were told to cache properly and prove it; `doc/decision/ci-caching.md` binds them
+  to save only on main and dispatch, under 650 MB per entry, and to delete feature-branch entries after merge.
 - Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
 - Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
 
