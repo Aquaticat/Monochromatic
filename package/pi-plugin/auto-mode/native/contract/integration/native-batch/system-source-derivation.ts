@@ -13,7 +13,9 @@ export type NativeSystemDerivation = {
   readonly matches: () => boolean;
 };
 
-/** Missing input derivation cannot be inferred from equal serialized text. */
+/**
+ Missing input derivation cannot be inferred from equal serialized text.
+ */
 export const NO_ORIGINAL_SYSTEM_DERIVATION: unique symbol = Symbol('system replay lacks original captured inputs');
 
 /**
