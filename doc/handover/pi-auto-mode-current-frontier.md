@@ -1273,8 +1273,16 @@ with the documented absent-property change checked separately.
 A changed-estimate positive control proves the comparison observes answer differences.
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-settlement-comparison.json`
 retains that comparison and artifact hashes.
-The added extra-answer and object-backed-array cases pass focused formatting without diagnostics;
-their final consumer/type run and process-local lifetime and membership omissions are running.
+The added extra-answer and object-backed-array cases pass focused formatting without diagnostics.
+The final settlement consumer and type check pass in
+`${HOME}/temp/agent/pi-native-typed-settlement-final-controls-20261015.log`.
+Removing the final budget checkpoint,
+current-binding check,
+answer membership rejection,
+model-attribution rejection,
+or raw byte bound makes the committed tests fail.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-settlement-omissions.json`
+records those process-local controls and unchanged artifact hashes.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
