@@ -1,5 +1,6 @@
 import {createReachedProgramRun} from "./program-runtime.mjs";
 import {NativeExecutionGuardError} from "../../../lifecycle/execution-context-carrier/execute.mjs";
+import {acquireProgramQueue, requireProgramScope} from './program-runner-scope.mjs';
 
 /** Reuse native scope, queue and recorder objects across reached groups of one program. */
 export function createReachedRunnerClass({
@@ -22,7 +23,7 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
         .code)throw new Error('Declared program differs from original prepared input');
       const {judgment} = origin;
         const toolNames=tools
-          .map(tool=>tool.name);
+          .map(function readToolName(tool) { return tool.name; });
         const program=judgment.openProgram({
         parentToken:carrier.token,
         toolNames
@@ -30,13 +31,14 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
         const nativeGroups=new Map();
         const works=[];
         const failures=[];
+      const runner=this;
       const run=createReachedProgramRun({
         judgment,
         program,
         signal:origin.signal,
         assertParentCurrent,
-        dispatchGroup:group=>{
-          const bound=this.#bindGroup({tools,
+        dispatchGroup(group){
+          const bound=runner.#bindGroup({tools,
             origin,
             carrier,
             group,
@@ -55,14 +57,14 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
             });}
             catch(error){failures.push(error);for(const ticket of bound.tickets)ticket.reject(error);}
           }
-          works.push(settle(this));return bound.tickets
-            .map(ticket=>ticket.promise);
+          works.push(settle(runner));return bound.tickets
+            .map(function readResultTicket(ticket) { return ticket.promise; });
         },
-        scriptValueFor:({
+        scriptValueFor({
           group,
           ordinal,
           outcome
-        })=>{
+        }){
           const bound=nativeGroups.get(group);if(!bound)throw new Error('Native group has no owned result slots');
           return judgment.scriptValueFor({
             group,
@@ -80,8 +82,8 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
         ]);
         const errors=[
           ...failures,
-          ...drained.filter(value=>value.status==='rejected')
-            .map(value=>value.reason)
+          ...drained.filter(function isRejected(value) { return value.status==='rejected'; })
+            .map(function readRejection(value) { return value.reason; })
         ];
         if(errors.length > 0)throw new NativeExecutionGuardError({
           errors,
@@ -102,57 +104,43 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
     }){
       assertParentCurrent();const parentId=origin.prepared
         .id;
-      let scope=this.scopes
-        .get(carrier.token);
-      if(!scope){if(this.scopes
-        .has(parentId))throw new Error('Native root recorder label already belongs to another scope');scope={
-        recorder:new NestedCallRecorder(),
-        nextId:1,
-        holdsQueue:false,
-        owner:carrier.token
-      };this.scopes
-        .set(
-          carrier.token,
-          scope
-        );this.scopes
-          .set(
-            parentId,
-            scope
-          );}
+      const scope=requireProgramScope({runner:this,carrier,parentId,NestedCallRecorder});
       const calls=group.members
-        .map(member=>({
+        .map(function createNativeChildCall(member) { return {
           type:'toolCall',
           id:`${parentId}/${scope.nextId++}`,
           name:member.declaration
             .name,
           arguments:member.declaration
             .args
-        }));
-        const ordinals=new Map(calls.map((
+        }; });
+        const ordinals=new Map(calls.map(function indexNativeCall(
         call,
         index
-      )=>[
+      ){ return [
         call.id,
         index
-      ]));
+      ]; }));
          const nativeRun=this.host
             .runOwnedToolCall;
       const slots=origin.judgment
         .bindProgramCalls({
           group:group.handle,
           calls,
-          tools:calls.map(call=>tools.find(tool=>tool.name===call.name)),
-          runNative:(
+          tools:calls.map(function readNativeDefinition(call) {
+            return tools.find(function matchesCall(tool) { return tool.name===call.name; });
+          }),
+          runNative(
             call,
             options
-          )=>nativeRun(
+          ){ return nativeRun(
             call,
             {
               ...options,
               signal:group.members[ordinals.get(call.id)]
                 .signal
             }
-          )
+          ); }
         });
       return {
         scope,
@@ -160,7 +148,7 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
         ordinals,
         tools,
         slots,
-        tickets:calls.map(()=>Promise.withResolvers())
+        tickets:calls.map(function createResultTicket() { return Promise.withResolvers(); })
       };
     }
     async #executeGroup({
@@ -182,13 +170,12 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
         const records=new Map();
       const exclusive=(!scope.holdsQueue)&&(this.host
         .isSequential()
-        ||calls.some(call=>tools.find(tool=>tool.name===call.name)
+        ||calls.some(function requiresSequentialExecution(call) { return tools.find(function matchesCall(tool) { return tool.name===call.name; })
           ?.executionMode
-          ==='sequential'));
-      let handles;
-        let release;if(exclusive){const previous=this.queueTail;
-        const turn=Promise.withResolvers();this.queueTail=turn.promise;release=turn.resolve;await previous;}
-      try{
+          ==='sequential'; }));
+      const assessment={handles:undefined};
+      const runner=this;
+      using queueTurn=exclusive ? await acquireProgramQueue(runner) : undefined;
         assertParentCurrent();origin.signal
           .throwIfAborted();
         await dispatchPreparedBatch({
@@ -200,38 +187,38 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
           signal:origin.signal,
           executionJudgment:judgment,
           executionMode:exclusive?'sequential':'parallel',
-          memberForExecution:id=>{const member=handles?.[ordinals.get(id)];if(!member)throw new Error('Prepared child has no owned execution handle');return member;},
-          runToolCall:(
+          memberForExecution(id){const member=assessment.handles?.[ordinals.get(id)];if(!member)throw new Error('Prepared child has no owned execution handle');return member;},
+          runToolCall(
             call,
             options
-          )=>judgment.invokeProgramNative({
+          ){ return judgment.invokeProgramNative({
             group:group.handle,
             slot:slots[ordinals.get(call.id)],
             call,
             options
-          }),
-          prepare:hook=>this.host
+          }); },
+          prepare(hook){ return runner.host
             .prepareOwnedToolCall(
               hook,
               parentId
-            ),
-          after:hook=>this.host
+            ); },
+          after(hook){ return runner.host
             .finishOwnedToolCall(
               hook,
               parentId
-            ),
+            ); },
           assertFresh(){assertParentCurrent();judgment.reachedGroupFor(group.handle);},
-          assess:({members})=>{handles=judgment.prepareReachedMembers({
+          assess({members}){assessment.handles=judgment.prepareReachedMembers({
             group:group.handle,
             members,
             nativeSignals:group.members
-              .map(member=>member.signal)
+              .map(function readMemberSignal(member) { return member.signal; })
           });return {block:false};},
-          onStart:async call=>{records.set(
+          async onStart(call){records.set(
             call.id,
             scope.recorder
               .start(call)
-          );await this.host
+          );await runner.host
             .emit({
               type:'tool_execution_start',
               toolCallId:call.id,
@@ -239,10 +226,10 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
               args:call.arguments,
               parentToolCallId:parentId
             });},
-          onUpdate:async(
+          async onUpdate(
             partialResult,
             call
-          )=>{await this.host
+          ){await runner.host
             .emit({
               type:'tool_execution_update',
               toolCallId:call.id,
@@ -251,12 +238,12 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
               partialResult,
               parentToolCallId:parentId
             });},
-          onFinish:async outcome=>{
+          async onFinish(outcome){
             const call=outcome.toolCall;
               const text=(outcome.result
                 .content
-                ??[]).filter(part=>part.type==='text')
-                .map(part=>part.text)
+                ??[]).filter(function isTextPart(part) { return part.type==='text'; })
+                .map(function readTextPart(part) { return part.text; })
                 .join('\n');scope.recorder
                   .finish(
                     records.get(call.id),
@@ -266,7 +253,7 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
                     .usage)scope.recorder
                       .addUsage(outcome.result
                         .usage);
-            await this.host
+            await runner.host
               .emit({
                 type:'tool_execution_end',
                 toolCallId:call.id,
@@ -278,7 +265,6 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
                 .resolve(outcome);
           }
         });
-      }finally{release?.();}
     }
     takeRecord(toolCallId){const scope=this.scopes
       .get(toolCallId); const result=super.takeRecord(toolCallId);if(scope?.owner)this.scopes

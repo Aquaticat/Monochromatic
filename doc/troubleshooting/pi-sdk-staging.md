@@ -10,7 +10,7 @@ for the owned runner,
 prepared dispatcher,
 and judgment constructor.
 The deciding helper in
-`package/pi-plugin/auto-mode/native/contract/integration/native-batch/build-rebase.ts:65`
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/build-rebase.ts:63`
 matches literal source text:
 
 ```ts
@@ -28,7 +28,7 @@ not installed Pi source drift.
 Commit `26994ff789` maintains the integrated runner,
 dispatcher,
 and judgment directly in `native/contract/collector/program-rule-batch-sdk-copy-v2/input/`.
-`native/contract/integration/native-batch/prepare-program.ts:143` now emits an export bridge:
+`native/contract/integration/native-batch/prepare-program.ts:137` now emits an export bridge:
 
 ```ts
 // native/contract/integration/native-batch/prepare-program.ts
