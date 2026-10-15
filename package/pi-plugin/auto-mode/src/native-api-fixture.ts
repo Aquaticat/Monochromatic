@@ -113,7 +113,11 @@ export function createAPIFixture(): APIFixture {
       name,
       result
     );
-    /** Proxy invocation observes the native call argument array without changing caller syntax. */
+    /**
+     Proxy invocation observes the native call argument array without changing caller syntax.
+
+     @returns independently configured original result
+     */
     function originalOwner(): unknown {
       return results.get(name);
     }
