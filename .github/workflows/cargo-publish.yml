@@ -1104,12 +1104,6 @@ jobs:
       working-directory: package/linter/monochromatic-lint
       run: cargo build --release --locked --target ${{ matrix.target }}
 
-    - name: Probe target sizes (temporary)
-      shell: bash
-      run: |
-        du -sh package/linter/monochromatic-lint/target "$HOME/.cargo/registry" || true
-        du -h -d 3 package/linter/monochromatic-lint/target/${{ matrix.target }} | tail -n 12 || true
-
     - name: Package binary archive
       id: pkg
       shell: bash
@@ -1409,12 +1403,6 @@ jobs:
       shell: bash
       working-directory: package/git-policy/cli
       run: cargo build --release --locked --target ${{ matrix.target }} --bin cli-git-native
-
-    - name: Probe target sizes (temporary)
-      shell: bash
-      run: |
-        du -sh package/git-policy/cli/target "$HOME/.cargo/registry" || true
-        du -h -d 3 package/git-policy/cli/target/${{ matrix.target }} | tail -n 12 || true
 
     # The wrapper answers `cli-git --help` without a repository, so a target that links but cannot start fails here.
     - name: Smoke-run the binary
