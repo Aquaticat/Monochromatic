@@ -1,10 +1,10 @@
-import {QuestionSelectionError} from './selection-error.mjs';
-import {object} from './selection-values.mjs';
+import {QuestionSelectionError} from './selection-error.ts';
+import {object} from './selection-values.ts';
 import {readQuestionDefinitions} from './selection-definitions.mjs';
 import {createQuestionSettlement} from './selection-settlement.mjs';
 
-export {QuestionSelectionError} from './selection-error.mjs';
-export {readAssessmentResponse,readRelationEstimate} from './selection-values.mjs';
+export {QuestionSelectionError} from './selection-error.ts';
+export {readAssessmentResponse,readRelationEstimate} from './selection-values.ts';
 
 //region Fixed definition data and judgment-local claim issuance, never semantic qualification or permission.
 /** Enclosing owner supplies one existing budget and a trusted synchronous, side-effect-free binding resolver. */

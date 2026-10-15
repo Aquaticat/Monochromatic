@@ -1,5 +1,5 @@
-import {QuestionSelectionError} from './selection-error.mjs';
-import {object,text,readRelationEstimate} from './selection-values.mjs';
+import {QuestionSelectionError} from './selection-error.ts';
+import {object,text,readRelationEstimate} from './selection-values.ts';
 
 //region Retain terminal original answers or their malformed and discarded diagnostics.
 export function createQuestionSettlement({knownBatch,retainedOperation,budget,current}){

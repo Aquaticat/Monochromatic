@@ -1,6 +1,6 @@
 import {createHash} from 'node:crypto';
-import {QuestionSelectionError} from './selection-error.mjs';
-import {object,text} from './selection-values.mjs';
+import {QuestionSelectionError} from './selection-error.ts';
+import {object,text} from './selection-values.ts';
 
 function parseQuestionCatalog(catalogText){
   try{return JSON.parse(catalogText);}catch(error){throw new QuestionSelectionError(
