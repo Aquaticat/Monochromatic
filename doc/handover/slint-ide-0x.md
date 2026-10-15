@@ -429,10 +429,15 @@ the items after it are the record of 2026-10-05 and older.
     `rust/require-rustdoc` gaps the combined lint found (`annotation.rs`, `shaped_text.rs`, `text_raster.rs`,
     `native.rs`, `native/render.rs`, `native/rows.rs`, `native/tile.rs`, `native/tile_build.rs`; rustdocs in
     `name_order.rs`, `tab_layout.rs`, `text_projection.rs`, `wrap.rs`, `wrap_sign.rs`, `shaped_text.rs`,
-    `native/tile_build.rs`). Next after they land: merge both, rerun every guard task on the combined tree. Not
-    approved and not started: the bulk reformat for 1905 `markdown/semantic-line-breaks` errors and 969
-    `rust/no-anonymous-functions` warnings (ask the user first). Cosmetic and open: hover text shows raw Markdown links
-    (`[Date](file:///...)`).
+    `native/tile_build.rs`). Next after they land: merge both, rerun every guard task on the combined tree.
+    The user approved the bulk reformat on 2026-10-15 ("Yes fix both directly in main."): the repo's pinned linter
+    0.1.3 (`mise which monochromatic-lint`; the PATH of a stale shell finds 0.1.1, which rejects the config) counts
+    2654 `markdown/semantic-line-breaks` errors (1291 in `README.md` and `design/README.md`, the rest in Markdown
+    inside Rust doc comments, which the rule checks too and `--fix` repairs) and 1135 `rust/no-anonymous-functions`
+    warnings (not fixable by the tool) in `package/desktop-app/ide`. Order: after both splits land, run
+    `monochromatic-lint --fix` over the IDE package, gate, commit on `main`; then name the closures in a separate
+    commit after a gate (a Sonnet agent), because both edit the files the splits move. Cosmetic and open: hover text
+    shows raw Markdown links (`[Date](file:///...)`).
     Markdown and MDX highlighting (branch `feat/ide-markdown-highlight`, worktree `.claude/worktrees/ide-markdown`):
     a copy of `.agents/skills/choosing-technology/SKILL.md` showed only the YAML frontmatter colored. The language, the
     `markdown`, `markdown_inline` and `yaml` grammars and the injections all worked; `syntax::SCOPES` had no `markup`
