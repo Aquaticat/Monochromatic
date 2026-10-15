@@ -30,6 +30,7 @@ await describe({
       fn: async function ownLocationMembership() {
         const inherited: unknown = Object.create({ inputLocation: { field: 'customPrompt' } });
         assert.deepEqual(sourceInputLocation({}), {});
+        for (const source of [false, 0, '', 'ordinary text']) assert.deepEqual(sourceInputLocation(source), {});
         assert.deepEqual(sourceInputLocation(inherited), {});
         const location = Object.defineProperty({}, 'field', { value: 'customPrompt' });
         const source = Object.defineProperty({}, 'inputLocation', { value: location });

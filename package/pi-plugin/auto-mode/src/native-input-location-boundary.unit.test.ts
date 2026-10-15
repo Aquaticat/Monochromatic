@@ -10,6 +10,24 @@ await describe({
   children: [
     //region Malformed descriptors never acquire representation validity or invoke accessors.
     it({
+      name: 'retains native descriptor failures for null sources and disappearing proxy properties',
+      fn: async function unavailableDescriptor() {
+        for (const source of [null, undefined]) {
+          assert.throws(function nullSource() {
+            sourceInputLocation(source);
+          }, { name: 'TypeError', message: 'Cannot convert undefined or null to object' });
+        }
+        const inputLocation = new Proxy({ field: 'customPrompt' }, {
+          getOwnPropertyDescriptor() {
+            return undefined;
+          },
+        });
+        assert.throws(function disappearedLocationField() {
+          sourceInputLocation({ inputLocation });
+        }, { name: 'TypeError', message: 'Cannot convert undefined or null to object' });
+      },
+    }),
+    it({
       name: 'rejects a source accessor without reading its value',
       fn: async function sourceAccessor() {
         const control = { reads: 0 };
