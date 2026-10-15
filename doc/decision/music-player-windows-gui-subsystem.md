@@ -101,19 +101,30 @@ jobs `msvc-x64`, `msvc-arm64` and `gnu-x64-ucrt64`.
   (the file held the text 105 to 117 ms after `cmd.exe` returned) all gave `music-player 0.1.3`;
   the 15 second launch check passed and the log file held the `tracing` lines;
   nextest ran 1432 tests with 1432 passed and 1 skipped on each job.
-- The attach branch, run on a real console: a Python process creates a console of its own and starts the program with
-  `CreateProcessW`. With no standard handle, `--version` and a bad argument (exit status 2) appeared in the console
-  screen buffer. With stdout as an inherited file and stderr missing, with and without `STARTF_USESTDHANDLES`,
-  the version stayed in the file with an empty console,
-  and the bad-argument text reached the console with an empty file.
-  This held on all three jobs.
-- On `msvc-arm64` only, in the cases where stdout is a file and stderr is the console,
-  the console held clap's error text with literal ESC characters (shown as left arrows).
-  `anstream` 1.0.0 `AutoStream::always` passes ANSI through
-  without enabling virtual terminal processing when `TERM` is set (the runners set `TERM=xterm-256color`) and stdout is
-  not a console. The x64 jobs print plain text in the same case. That code does not depend on the attach,
-  but no control run of a console-subsystem build covered this exact case.
-
+- The attach branch, run on a real console (runs 38761713560 at `970a1f0b3b` and 38763214487 at `248442611a`,
+  all three jobs passed both): a Python process creates a console of its own and starts the program with
+  `CreateProcessW`, with `RUST_LOG=debug` so the program prints its own attach report on that console.
+  - No standard handle: `--version` and a bad argument (exit status 2) appeared in the console screen buffer;
+    the report was `stdout` Keep and `stderr` Keep (the attach supplied both).
+  - Stdout an inherited file, stderr missing, no `STARTF_USESTDHANDLES`: the report was `stdout` `Restore` with the
+    original handle value and `stderr` Keep. The version stayed in the file with an empty console, and the bad-argument
+    text reached the console with an empty file. This is the case the Microsoft sentence describes
+    ("always replaced with console handles"), and the measurement shows the replacement happened and was undone.
+  - The same with `STARTF_USESTDHANDLES`: the report was Keep and Keep, with the same file and console contents.
+- Double-click start, same runs: the Python parent called `FreeConsole()` and started the program without handle
+  inheritance, so the attach had no console to join. A bad argument exited with status 2 (a panic would give 101).
+  A start without a path and a start on the `fixture` folder were both still running after 15 seconds.
+  A sibling no-path start with both output handles in files logged `music folder candidate accepted` for
+  `C:\Users\runneradmin\Music` and started the folder walk, so the runner takes the normal start path, not the
+  "no saved folder and no music folder" first-run line. Nothing in these cases panicked on a missing standard handle.
+- Escape characters on `msvc-arm64`: the first log line of the program (written by `tracing`, whose ANSI colors
+  `src/logging.rs` leaves on) and clap's error text in the stdout-file cases contained literal ESC characters in the
+  arm64 console screen buffer (shown as left arrows), and the same text was plain on the x64 jobs.
+  The arm64 console does not interpret ANSI sequences that the x64 console interprets; the console mode was not read.
+  `anstream` 1.0.0 `AutoStream::always` passes ANSI through when `TERM` is set (the runners set `TERM=xterm-256color`),
+  and it can enable virtual terminal processing only when stdout is a console,
+  so the stdout-file cases keep the escapes.
+  These writers do not depend on the attach, but no control run of a console-subsystem build covered these cases.
 - Release workflow, dispatch with `dry-run` true from this branch, run 38757804504 at `7e5024d176`: every job passed.
   The detect job printed `dry_run=true`; the step "Package (Windows executable)" printed `subsystem 2` for the x64,
   arm64 and GNU executables of the release profile; the notes carry "The executable opens no console window";
