@@ -676,7 +676,13 @@ Focused lint reports zero errors and 64 warnings for `environment.mjs`.
 The rebuilt domain,
 context-receipt,
 resource-input,
-and approval-context checks are running against this change.
+and approval-context checks pass in
+`${HOME}/temp/agent/pi-native-async-environment-consumer-20261014.log`.
+Commit `a96c4d1da1` scopes the CLI fixture's reader and process cleanup
+and the historical-run fixture's session cleanup with disposal.
+The historical-run fixture now retains its counters and original source in one record.
+The package also exposes that existing fixture as `test:native:run-history`;
+its rebuilt consumer and CLI cleanup checks remain pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

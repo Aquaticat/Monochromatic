@@ -173,6 +173,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 description = "Exercise original native event dispatch, complete grouped sources, and observation freshness"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/event-receipts.test.mjs"
 
+[tasks."test:native:run-history"]
+description = "Verify original run instruction occurrences remain collected after later prompt replacement"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/run-history-domain.test.mjs"
+
 [tasks."test:native:progress-events"]
 description = "Exercise unchanged native progress callbacks through the original prepared program"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --observed-progress"
