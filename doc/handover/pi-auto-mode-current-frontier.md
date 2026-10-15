@@ -9,6 +9,28 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+User-reported regression takes priority over the warning cleanup:
+the native migration lost the Shift+Tab bypass toggle.
+`mise run probe-native-bypass` in `${HOME}/temp/agent/pi-tool-call-scope-20261014`
+reproduces missing registration in the built native bootstrap.
+A control extension registers the same key successfully.
+Installed thinking cycling remains on Ctrl+E;
+the legacy auto-mode extension is absent from installed settings.
+The legacy entry point owns the toggle,
+while native resource construction only captures its API and does not register a replacement.
+The prior blanket statement that Pi is functional is retracted for interactive feature parity.
+The provider and approval checks remain valid within their tested surfaces.
+No bypass restoration has been applied.
+See the Shift+Tab section in `doc/troubleshooting/pi-sdk-staging.md` for reproduction and source evidence.
+The native replacement must preserve explicit bypass behavior,
+the fixed virtual-input guard,
+session restoration,
+visible status,
+and audit entries before this regression can be closed.
+The user also proposed delegating cleanup to a cheaper model;
+Luna with the existing verification gates was recommended,
+but no delegation was launched.
+
 The dispatcher member-lifecycle boundary is complete:
 `prepared-lifecycle.ts` and `prepared-lifecycle-types.ts` now own original member callback sequencing.
 The dispatcher retains shared group state and passes original queue operations through borrowed callbacks.

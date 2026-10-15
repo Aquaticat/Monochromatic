@@ -1,5 +1,111 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.2.0 native migration loses the Shift+Tab bypass toggle
+
+### Symptom
+
+On 2026-10-15 the user reported that the Shift+Tab toggle was missing.
+The previous statement that Pi was functional overstated the verified surface:
+live provider and approval checks did not establish interactive bypass parity.
+This is an owned migration regression,
+not evidence of an upstream keyboard failure.
+
+### Root cause
+
+The legacy extension registers the shortcut in
+`package/pi-plugin/auto-mode/src/index.ts:163`:
+
+```ts
+// package/pi-plugin/auto-mode/src/index.ts
+pi.registerShortcut(
+  BYPASS_SHORTCUT,
+```
+
+`package/pi-plugin/auto-mode/src/bypass.ts:26` defines its key:
+
+```ts
+// package/pi-plugin/auto-mode/src/bypass.ts
+const BYPASS_SHORTCUT = 'shift+tab';
+```
+
+Native installation removes the legacy extension declaration in
+`package/pi-plugin/auto-mode/mise.toml:567`:
+
+```js
+// package/pi-plugin/auto-mode/mise.toml, install:native
+for (const declaration of legacy) {
+  const source = typeof declaration === 'string' ? declaration : declaration.source
+  await spawn(process.execPath, [join(packageRoot, 'dist/native/cli.mjs'), 'remove', source, '--no-approve'], {
+```
+
+The replacement resource factory only captures the extension API in
+`package/pi-plugin/auto-mode/native/contract/integration/native-host/resources.ts:97`:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-host/resources.ts
+nativeApi.current = pi;
+```
+
+Its registered built-in factory list at line 113 contains the caller's factories and `captureApi`.
+The native resource-loader reproduction records no shortcut registration.
+The installed settings contain no legacy auto-mode declaration.
+The user's keybindings still assign `app.thinking.cycle` to `ctrl+e`.
+
+### Verification
+
+The built Pi 1.2.0 native host was probed at repository commit `c81e5308fe`.
+The probe uses disposable agent and workspace directories,
+synthetic provider configuration,
+and blocked networking.
+It calls the actual built bootstrap's resource loader and reads its extension shortcut maps.
+
+```bash
+# Run from ${HOME}/temp/agent/pi-tool-call-scope-20261014
+mise run probe-native-bypass
+```
+
+Working control:
+an injected extension registers `shift+tab`,
+and the same loader probe observes it.
+Failing case:
+the native host without that control registers no shortcuts.
+
+```json
+{"legacyAutoModeConfigured":false,"thinkingCycle":["ctrl+e"]}
+{"positiveControl":["shift+tab"],"currentNativeHost":[]}
+```
+
+The final assertion fails with Node's `AssertionError [ERR_ASSERTION]`:
+`Native host must retain the user-facing Shift+Tab bypass toggle`.
+This verifies missing registration;
+it does not test physical keyboard input in the user's running terminal.
+
+### Workarounds and rejected conclusions
+
+No workaround or restoration has been applied or verified.
+Changing the user's thinking-cycle binding is not supported by the evidence:
+it is already on Ctrl+E.
+Simply displaying a toggle would not restore its execution semantics.
+Re-enabling the entire legacy extension has not been validated with the native runtime.
+The existing bypass requirement in `doc/planning/pi-auto-mode-effect-contract.md`
+retains explicit user control and the fixed virtual-input guard.
+Those behaviors,
+session restoration,
+audit entries,
+and visible status need verification when restoring the feature.
+
+### Upstream filing decision
+
+No upstream filing or draft is appropriate.
+The upstream-fault constraint fails because owned installation removes the registering extension.
+The repair belongs to this repository's replacement host.
+Upstream fixability,
+support policy,
+contribution policy,
+acceptance likelihood,
+and an upstream patch are therefore not applicable to this incident.
+No upstream clone or tracker mutation was needed to establish the owned failure.
+
 ## Sequential native judgment retries in Oxlint 1.88.0
 
 ### Symptom
