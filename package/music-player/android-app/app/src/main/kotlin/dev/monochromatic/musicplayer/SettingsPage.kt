@@ -97,6 +97,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
@@ -194,6 +195,17 @@ private val SETTINGS_ROW_VERTICAL_INSET: Dp = 12.dp
 // ```
 /** Title of the Auto-play on select row, which TalkBack reads as the switch's label. */
 internal const val AUTO_PLAY_ON_SELECT_TITLE: String = "Auto-play on select"
+
+// What:     `internal const val AUTO_PLAY_SWITCH_TAG: String = "auto-play-switch"` names the drawn switch for tests.
+// Why:      The row owns the toggle and merges its children into one node, so a test finds the drawn switch by this
+//           tag in the unmerged tree to see whether it sits beside or under the text.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const AUTO_PLAY_SWITCH_TAG = "auto-play-switch";
+// ```
+/** Test tag of the drawn switch of the Auto-play on select row. */
+internal const val AUTO_PLAY_SWITCH_TAG: String = "auto-play-switch"
 
 // What:     `private val SETTINGS_SWITCH_GAP: Dp = 16.dp` is the space between the row text and the trailing switch.
 // Why:      Material switch rows keep 16 dp between the text column and the 52 dp switch.
@@ -603,6 +615,7 @@ private fun settingsSwitchRow(
 @Composable
 private fun settingsSwitchControl(checked: Boolean) {
     Switch(
+        modifier = Modifier.testTag(AUTO_PLAY_SWITCH_TAG),
         checked = checked,
         onCheckedChange = null,
         thumbContent = {

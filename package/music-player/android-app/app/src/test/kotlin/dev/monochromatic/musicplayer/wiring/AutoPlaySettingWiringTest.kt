@@ -25,6 +25,7 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isNotSelected
 import androidx.compose.ui.test.isSelected
@@ -39,6 +40,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.test.core.app.ApplicationProvider
+import dev.monochromatic.musicplayer.AUTO_PLAY_SWITCH_TAG
 import dev.monochromatic.musicplayer.FeedbackHostState
 import dev.monochromatic.musicplayer.PlayerController
 import dev.monochromatic.musicplayer.ReportingAudioEngine
@@ -352,6 +354,35 @@ class AutoPlaySettingWiringTest {
         composeTestRule.onNode(hasText("Playing track", substring = true) and isSelected() and hasClickAction())
             .assertExists()
         composeTestRule.onAllNodes(hasSetTextAction()).assertCountEquals(1)
+    }
+
+    /** On the cover the switch sits after the text, on 72 dp, and in the narrow list pane it sits under the text. */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun theSwitchSitsAfterTheTextOnTheCoverAndUnderItInTheNarrowListPane() {
+        showHost()
+        openSettings()
+        val coverSwitch = composeTestRule.onNode(hasTestTag(AUTO_PLAY_SWITCH_TAG), useUnmergedTree = true)
+            .getUnclippedBoundsInRoot()
+        val coverLine = composeTestRule.onNode(hasText("Select first, then Play"), useUnmergedTree = true)
+            .getUnclippedBoundsInRoot()
+        assertTrue("beside the text on the cover: $coverSwitch and $coverLine", coverSwitch.left >= coverLine.right)
+        val rowBounds = switchRow().getUnclippedBoundsInRoot()
+        val rowHeight: Float = rowBounds.bottom.value - rowBounds.top.value
+        assertEquals("one line each keeps the 72 dp row", 72f, rowHeight, 0.5f)
+    }
+
+    /** In the list pane of the unfolded screen, narrower than 300 dp of row, the switch moves under the text. */
+    @Test(timeout = CASE_LIMIT_MS)
+    @Config(qualifiers = INNER_PANEL)
+    fun inTheNarrowListPaneTheSwitchSitsUnderTheSupportingLine() {
+        showHost()
+        openSettings()
+        val narrowSwitch = composeTestRule.onNode(hasTestTag(AUTO_PLAY_SWITCH_TAG), useUnmergedTree = true)
+            .getUnclippedBoundsInRoot()
+        val narrowLine = composeTestRule.onNode(hasText("Select first, then Play"), useUnmergedTree = true)
+            .getUnclippedBoundsInRoot()
+        assertTrue("under the line in the pane: $narrowSwitch and $narrowLine", narrowSwitch.top >= narrowLine.bottom)
+        assertTrue("and it starts where the text starts", narrowSwitch.left == narrowLine.left)
     }
 
     //endregion
