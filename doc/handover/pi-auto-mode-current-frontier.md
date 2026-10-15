@@ -9,18 +9,34 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
-Typed pattern decoding is in progress.
-`pattern-decoder.ts` borrows the original private pattern owner and diagnostic constructor.
+Original pattern decoding now delegates to `pattern-decoder.ts` and `pattern-decoder-types.ts`.
+The helper borrows the original private pattern owner and diagnostic constructor.
 Original ownership and materialization stay in `result-pattern.mjs`.
 Native build, package type checking, all built consumers, original replay, and six domain comparisons pass.
 Public syntax consumers also pass.
-The first complete recount covers 814 files with zero errors and 10194 warnings;
+The final complete recount covers 814 files with zero errors and 10194 warnings;
 all six new decoder files have zero diagnostics.
 Omission controls found an overlapping binding guard in the initial fixtures:
 removing the defined-binding check still rejected named identifiers through the name check.
 Added nameless synthetic identifiers isolate the defined-binding guard.
 Positive collection-bound and child-binding tests now assert successful completion explicitly.
-Final verification of those consumer additions and the omission controls is pending.
+Final package type checking, all consumers, and original replay pass after these additions.
+All 42 process-local omissions or substitutions produce assertion failures;
+the built decoder and original pattern-owner artifact hashes remain unchanged.
+Consumers preserve child-before-parent ownership publication,
+literal and key getter ordering,
+partial publication before later child rejection,
+and original sparse synthetic array mapping.
+Arrays and objects both exercise inclusive nesting bounds and overflow rejection.
+The helper retains owner return identity and original diagnostic constructor identity.
+Receipts are `typed-pattern-decoder-comparison.json` and `typed-pattern-decoder-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-pattern-decoder-final-lint-20261015.log`.
+The saved original pattern module has SHA-256
+`94e2d51ff0945655754fd36fbc636b7fdc1aaf75bfc6650d4a6a837a192b7cbd`.
+The remaining pattern module has 40 warnings;
+`program-profile-inspect.mjs` has 101 and is the next native boundary.
 
 The dispatcher now delegates original `beforeToolCall` member preparation to
 `prepared-member.ts` and `prepared-member-types.ts`.
@@ -108,8 +124,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 808 files and 486 rules,
-with zero errors and 10257 warnings.
+The latest complete lint report covers 814 files and 486 rules,
+with zero errors and 10194 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:

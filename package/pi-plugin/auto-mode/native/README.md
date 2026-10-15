@@ -188,6 +188,25 @@ The first shared decision survives a later assessment settlement.
 Assessment validation retains original getter ordering and repeated reads.
 Preparation failures remain retained with their original identity and produce a fresh fallback block.
 Entry-marker publication failures reject before retention begins.
+
+`test:native:pattern-decoder` verifies original finite data,
+exact result bindings,
+ordinary object properties,
+and inclusive collection and nesting limits.
+The decoder borrows the original private pattern owner and diagnostic constructor.
+Child patterns reach that owner before their containing pattern;
+array item lists,
+object entry lists,
+and entry records are frozen before the containing pattern is published.
+The owner supplies every returned pattern by identity.
+Already published children remain observed when a later child fails.
+Literal metadata,
+unary arguments,
+and property keys preserve original getter ordering and repeated reads.
+Original sparse synthetic arrays retain their holes;
+parser-produced array holes remain rejected.
+Nameless synthetic identifiers isolate defined-binding rejection from name mismatch.
+Custom test owners do not grant membership in the production decoder's private ownership set.
 Failures in the retention or blocking owner still reject the native member.
 
 Relevance-cache initialization and publication use asynchronous filesystem operations;
