@@ -1,4 +1,2 @@
-/** Original native source custody failures retain a stable category. */
-export class NativeSourceAssociationError extends Error {
-  name='NativeSourceAssociationError';
-}
+/** Original native source custody failures retain their existing error construction. */
+export class NativeSourceAssociationError extends Error {}
