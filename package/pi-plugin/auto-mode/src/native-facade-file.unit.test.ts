@@ -18,10 +18,11 @@ await describe({ name: '', children: [
     const handle = owner.prepare({ signal: f.controller.signal });
     assert.deepEqual(f.events, [
       ...preparationEvents.slice(0, 10),
+      'clock',
       'prepare.file:policy.enter',
       'prepare.file:policy.return',
       'clock',
-      ...preparationEvents.slice(9),
+      ...preparationEvents.slice(10),
     ]);
     f.events.length = 0;
     /** Original inspection reads the issued record rather than reopening the selected file. */
