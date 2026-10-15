@@ -704,9 +704,24 @@ deadline and cancellation retirement,
 late response rejection,
 classifier failures,
 and stable error names and causes.
-Its built check,
-omission control,
-and final focused lint are pending.
+Its built check passes.
+The process-local omitted overlap guard fails the expected rejection assertion;
+the original built artifact hash is unchanged in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/budget-overlap-omission.json`.
+The final JavaScript subset reports zero errors and 139 warnings,
+mostly in the new consumer.
+The consumer's imported calls remain unchecked despite annotations inside the budget module.
+The inherited TypeScript configuration sets `allowJs: false` and excludes these JavaScript consumers.
+Commit `4f27290d9b` moves the implementation into TypeScript;
+the package type check passes,
+but the still-JavaScript consumer retains its unchecked-call warnings.
+The migration also exposes TypeScript documentation requirements,
+which are addressed in the following ownership and dispatch split.
+Commits `a1f2204eed` and `0fc4da484c` document original ownership
+and separate sequential dispatch from clock lifetime.
+Commit `a4d9d43970` moves the consumer to typed tests using the existing module-test harness
+and built native imports.
+The rebuilt typed consumers and updated focused quality checks are pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
