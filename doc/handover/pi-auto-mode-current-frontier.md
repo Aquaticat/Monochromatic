@@ -636,7 +636,24 @@ The same source-work fixture passes at 9046 policy-file opens.
 `${HOME}/temp/agent/pi-native-dependency-owner-consumer-20261014.log` retains those results.
 Commit `33c1c35cd8` groups runtime publication state and judgment accounting in their respective owners
 and scopes budget cleanup with synchronous disposal.
-Focused lint and rebuilt lifecycle verification remain pending for that change.
+Focused lint reports zero errors and 736 warnings across the constructor,
+dependency owner,
+runtime owner,
+and judgment budget.
+The warning gate remains failing.
+The rebuilt source-work,
+domain,
+host-lifecycle,
+and actual CLI-process checks pass in
+`${HOME}/temp/agent/pi-native-lifecycle-records-consumer-20261014.log`.
+The host-lifecycle fixture includes runtime replacement,
+cancelled replacement,
+persisted resume,
+and incomplete-disposal retry.
+Commit `53defdddad` next scopes native wrapper reentrancy and execution cleanup
+and gives owned wrapper constructors named input fields.
+Native execute callbacks retain their positional SDK signature through a fixed factory.
+The updated wrapper consumer checks are running.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
