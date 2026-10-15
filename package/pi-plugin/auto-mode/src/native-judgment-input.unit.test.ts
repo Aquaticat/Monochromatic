@@ -65,10 +65,12 @@ await describe({
       name: 'rejects an original array hole reached as an undefined value',
       fn: async function sparseJSON() {
         assert.throws(function omittedArrayValue() {
-          requireJSONInput(Array.from({ length: 1 }).map(function createHole() { return undefined; }));
+          requireJSONInput(Array.from({ length: 1 }).map(function createHole() { 
+            return undefined; 
+          }));
         }, { name: 'JudgmentConstructionError' });
         assert.throws(function originalArrayHole() {
-          requireJSONInput(Array(1));
+          requireJSONInput(new Array(1));
         }, { name: 'JudgmentConstructionError' });
       },
     }),
@@ -91,24 +93,35 @@ await describe({
         const input = {
           get value() {
             events.push('get');
-            return { toJSON() { events.push('toJSON'); return 1; } };
+            return { toJSON() { 
+              events.push('toJSON'); 
+              return 1; 
+            } };
           },
         };
         requireJSONInput(input);
         assert.deepEqual(events, ['get', 'toJSON']);
         assert.throws(function callbackReturnsMissing() {
-          requireJSONInput({ toJSON() { return undefined; } });
+          requireJSONInput({ toJSON() { 
+            return undefined; 
+          } });
         }, { name: 'JudgmentConstructionError' });
         const failure = new Error('Original JSON callback failure');
         assert.throws(function callbackThrowsOriginal() {
-          requireJSONInput({ toJSON() { throw failure; } });
-        }, function preservesOriginalFailure(error: unknown) { return error === failure; });
+          requireJSONInput({ toJSON() { 
+            throw failure; 
+          } });
+        }, function preservesOriginalFailure(error: unknown) { 
+          return error === failure; 
+        });
       },
     }),
     it({
       name: 'preserves the existing limited check for non-JSON values owned by earlier structural admission',
       fn: async function unchangedStructuralBoundary() {
-        for (const value of [Symbol('original unsupported JSON input value'), function unadmittedCallable() { return undefined; }]) {
+        for (const value of [Symbol('original unsupported JSON input value'), function unadmittedCallable() { 
+          return undefined; 
+        }]) {
           assert.equal(requireJSONInput(value), undefined);
           assert.equal(requireJSONInput({ value }), undefined);
           assert.equal(requireJSONInput([value]), undefined);

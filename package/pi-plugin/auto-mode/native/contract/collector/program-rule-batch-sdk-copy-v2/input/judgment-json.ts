@@ -26,12 +26,18 @@ export function requireJSONInput(input: unknown): void {
   /**
    Every admission attempt retains a function-specific diagnostic scope.
    */
-  const sl = tagged({ tag: requireJSONInput.name, l });
+  const sl = tagged({
+    tag: requireJSONInput.name,
+    l
+  });
   sl.debug('checking original native JSON value preservation');
-  JSON.stringify(input, function validateNativeJSONValue(_key: string, value: unknown): unknown {
+  JSON.stringify(
+    input,
+    function validateNativeJSONValue(_key: string, value: unknown): unknown {
     if ((value === undefined) || (((typeof value) === 'number')
       && ((!Number.isFinite(value)) || Object.is(value, -0)))) throw new JudgmentConstructionError('Native tool input contains a value not preserved by the declared JSON profile');
     return value;
-  });
+  }
+  );
 }
 //endregion
