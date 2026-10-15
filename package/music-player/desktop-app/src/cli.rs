@@ -79,7 +79,7 @@ use clap::Parser;
 /// ```
 #[derive(Parser, Debug, PartialEq)]
 #[command(
-    name = "music-player-depot-source-probe",
+    name = "music-player",
     version,
     about = "Minimal native music player. Opens one folder (scanned recursively) as the source root, or one file (its parent folder becomes the source root and the file is preselected), loaded PAUSED unless --start-playing is passed."
 )]
