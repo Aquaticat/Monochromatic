@@ -60,13 +60,22 @@ export function inspectProfileCall({
   if ((call?.type !== 'CallExpression') || call.optional || (call.arguments.length !== 1)) {
     throw new ResultProgramProfileError('direct single-argument call required');
   }
+  /**
+   Original callee access follows direct-call admission.
+   */
   const { callee } = call;
   if ((callee.type !== 'MemberExpression') || callee.computed || callee.optional
     || (callee.object.type !== 'Identifier') || (callee.object.name !== 'tools')
     || (callee.property.type !== 'Identifier') || (!allowed.has(callee.property.name))) {
     throw new ResultProgramProfileError('owned tool identifier required');
   }
+  /**
+   Original start excludes the parser wrapper.
+   */
   const start = callee.start - prefix.length;
+  /**
+   Original end retains the original predicate without an added integer check.
+   */
   const end = callee.end - prefix.length;
   if (!(Number.isSafeInteger(start) && start >= 0
     && end > start

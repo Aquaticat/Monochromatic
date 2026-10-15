@@ -13,11 +13,10 @@ import { inspect, parseCall, patterns, syntheticCall } from './native-profile-ca
  @param message - independently expected original profile failure
  */
 function rejects({ input, message }: Readonly<{ input: Readonly<Record<string, unknown>>; message: string }>): void {
-  assert.throws(function rejectedCall() { inspect(input); }, function originalError(error: unknown) {
-    assert.ok(error instanceof patterns.ResultProgramProfileError);
-    assert.equal(error.name, 'ResultProgramProfileError');
-    assert.equal(error.message, `Result-derived program is outside the inspected profile: ${message}`);
-    return true;
+  assert.throws(function rejectedCall() { inspect(input); }, {
+    constructor: patterns.ResultProgramProfileError,
+    name: 'ResultProgramProfileError',
+    message: `Result-derived program is outside the inspected profile: ${message}`,
   });
 }
 
@@ -32,11 +31,14 @@ await describe({ name: 'original profile call admission', children: [
       rejects({ input: { call, readPattern: undefined }, message: 'direct single-argument call required' });
     } });
   }),
-  ...['tool({})', 'tools["tool"]({})', 'tools?.tool({})', 'other.tool({})', 'tools.unknown({})', 'tools.tool.call({})'].map(function invalidMember(source) {
+  ...['tool({})', 'tools["tool"]({})', 'other.tool({})', 'tools.unknown({})', 'tools.tool.call({})'].map(function invalidMember(source) {
     return it({ name: `rejects original callee ${source}`, fn: async function rejectMember() {
       rejects({ input: { call: parseCall(source), source, readPattern: undefined }, message: 'owned tool identifier required' });
     } });
   }),
+  it({ name: 'rejects optional original member access before property reads', fn: async function optionalMember() {
+    rejects({ input: { call: syntheticCall({ optional: true, object: undefined }) }, message: 'owned tool identifier required' });
+  } }),
   it({ name: 'rejects non-identifier member properties before membership lookup', fn: async function property() {
     rejects({ input: { call: syntheticCall({ property: { type: 'PrivateIdentifier', name: 'tool' } }), allowed: undefined }, message: 'owned tool identifier required' });
   } }),

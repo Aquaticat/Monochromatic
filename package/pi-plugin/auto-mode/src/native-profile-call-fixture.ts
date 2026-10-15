@@ -57,6 +57,8 @@ type PatternModule = Readonly<{
 
  @param value - rebuilt call namespace
 
+ @returns narrowed independent call contract
+
  @throws Error for an absent call inspection export
  */
 function assertCallModule(value: unknown): asserts value is CallModule {
@@ -68,6 +70,8 @@ function assertCallModule(value: unknown): asserts value is CallModule {
 
  @param value - rebuilt parser namespace
 
+ @returns narrowed original parser contract
+
  @throws Error for an absent original parser
  */
 function assertParserModule(value: unknown): asserts value is ParserModule {
@@ -77,6 +81,8 @@ function assertParserModule(value: unknown): asserts value is ParserModule {
  Check the original pattern owner and diagnostic exports.
 
  @param value - rebuilt pattern namespace
+
+ @returns narrowed original pattern contract
 
  @throws Error for an absent original pattern contract
  */
@@ -132,13 +138,21 @@ export const patterns: PatternModule = decoded;
  @returns original expression syntax
 
  @throws Error for unexpected parser diagnostics or statement shape
+
+ @example parseCall('tools.tool({})');
  */
 export function parseCall(source: string): unknown {
+  /**
+   Original parser owns the resulting syntax.
+   */
   const result = parser.parse(source);
   assert.deepEqual(
     result.diagnostics,
     []
   );
+  /**
+   Expression fixtures require an original expression statement.
+   */
   const [statement] = result.program
     .body;
   assert.ok(statement?.type === 'ExpressionStatement');
@@ -152,6 +166,8 @@ export function parseCall(source: string): unknown {
  @returns original frozen callsite
 
  @throws Error for unsupported original calls or decoder failures
+
+ @example inspect();
  */
 export function inspect(input: CallInput = {}): CallSite {
   return calls.inspectProfileCall({
@@ -172,6 +188,8 @@ export function inspect(input: CallInput = {}): CallSite {
  @param input - original callee boundary and member overrides
 
  @returns direct call whose argument decoder can be independently substituted
+
+ @example syntheticCall({ end: 0 });
  */
 export function syntheticCall(input: CallInput = {}): object {
   return {

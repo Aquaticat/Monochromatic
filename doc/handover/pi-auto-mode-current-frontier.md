@@ -9,6 +9,11 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+Original call inspection is being extracted to `profile-call.ts` and `profile-call-types.ts`.
+The original pattern decoder and diagnostic constructor remain borrowed from `result-pattern.mjs`.
+Built consumers and original replay are pending;
+the last qualified package recount remains the executable-wrapper report recorded here.
+
 The tool-call scope correction,
 live Hyper/Gemma assessment,
 Luna question execution,
