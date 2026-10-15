@@ -4,14 +4,6 @@ import {snapshotInput} from '../../resource-input-custody/values.ts';
 import {phases} from './resource-methods.mjs';
 /** Publish and retire original native resource reload occurrences. */
 export function createResourceReload({readers,discoveries,nativeReload}){
-  async function invokeNativeReload({scope,record,args}){
-    try{return await Reflect.apply(nativeReload,record.loader,args);}
-    catch(error){
-      if((error instanceof RecordedInputFailure)&&(error.scope===scope)
-        &&scope.failures.includes(error.occurrence))throw error;
-      throw failed({scope,error,at:'native-reload'});
-    }
-  }
   function finishReload({record,scope}){
     record.active=undefined;
     if(scope.pending.length>0){
@@ -147,8 +139,13 @@ async function reload({
     record.current=undefined;record.active=scope;record.history
       .push(scope);
     using reloadActivity={ [Symbol.dispose](){finishReload({record,scope});} };
+    const nativeReturn={value:undefined};
     try{
-      const result=await invokeNativeReload({scope,record,args});
+      try{nativeReturn.value=await Reflect.apply(nativeReload,record.loader,args);}
+      catch(error){
+        if(!((error instanceof RecordedInputFailure)&&(error.scope===scope)
+          &&scope.failures.includes(error.occurrence)))failed({scope,error,at:'native-reload'});
+      }
       if(scope.failures
         .length
         > 0)throw publicFailure(scope);
@@ -181,7 +178,7 @@ async function reload({
         error:new SourceCollectionError('Resource input frame exceeds total byte bound'),
         at:'frame-bound'
       });
-      scope.status='ready';record.current=scope;return result;
+      scope.status='ready';record.current=scope;return nativeReturn.value;
     }catch(error){
       if((!(error instanceof ResourceInputCustodyError))&&(!((error instanceof RecordedInputFailure)
         &&(error.scope===scope)
