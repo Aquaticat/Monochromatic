@@ -278,13 +278,12 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
       })
     },
     assertParentCurrent(): void { step('parent'); },
-    async dispatchPreparedBatch(dispatch): Promise<void> { dispatched.push(dispatch);
+    async dispatchPreparedBatch(prepared): Promise<void> { dispatched.push(prepared);
     step('dispatch');
-    await control.dispatch?.(dispatch);
+    await control.dispatch?.(prepared);
     step('dispatch:done'); }
   };
   /** Invoke the built native execution owner with original fixture input identities.
-   @returns original execution scope completion
    */
   async function execute(): Promise<void> { await executionModule.executeReachedProgramGroup(input); }
   /** Require completed dispatcher entry before a consumer invokes its native callbacks.

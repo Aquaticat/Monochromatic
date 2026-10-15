@@ -67,7 +67,7 @@ export type ExecutionInput = {
       prepareReachedMembers: (input: {
         group: object;
         members: ExecutionMembers;
-        nativeSignals: readonly AbortSignal[]
+        nativeSignals: readonly unknown[]
       }) => readonly object[];
       invokeProgramNative: (input: {
         group: object;
@@ -79,7 +79,7 @@ export type ExecutionInput = {
   };
   group: {
     handle: object;
-    members: readonly Readonly<{ signal: AbortSignal }>[]
+    members: readonly Readonly<{ signal?: AbortSignal }>[]
   };
   bound: EventInput['bound'] & {
     scope: EventInput['bound']['scope'] & { holdsQueue: boolean };

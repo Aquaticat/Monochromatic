@@ -85,7 +85,9 @@ export type ProgramRunnerExecutionInput = Readonly<{
 /**
  Callback creation retains assessment state allocated before original queue acquisition.
  */
-export type ProgramExecutionCallbacksInput = Omit<ProgramRunnerExecutionInput, 'dispatchPreparedBatch'> & Readonly<{
+export type ProgramExecutionCallbacksInput = Pick<ProgramRunnerExecutionInput, 'runner' | 'group' | 'assertParentCurrent'> & Readonly<{
+  judgment: ProgramExecutionOrigin['judgment'];
+  bound: Pick<ProgramRunnerBinding<ProgramEventRecorder>, 'ordinals' | 'slots'>;
   parentId: string;
   assessment: ProgramAssessment;
 }>;

@@ -19,7 +19,7 @@ const l = tagged({ tag: 'auto-mode-program-runner-execution-callbacks' });
 /** Create the original group callbacks over one retained assessment publication.
  @param runner - original host for native preparation and completion hooks
  
- @param origin - original judgment and parent occurrence
+ @param judgment - original judgment captured before host callbacks
  
  @param group - original complete reached member association
  
@@ -37,7 +37,7 @@ const l = tagged({ tag: 'auto-mode-program-runner-execution-callbacks' });
  */
 export function createProgramExecutionCallbacks({
   runner,
-  origin,
+  judgment,
   group,
   bound,
   assertParentCurrent,
@@ -52,10 +52,6 @@ export function createProgramExecutionCallbacks({
     l
   });
   cl.debug('creating original reached-group execution callbacks');
-  /**
-   Original judgment and bound member associations are retained without copying.
-   */
-  const { judgment } = origin;
   /**
    Native identifier lookup selects only original group member ordinals.
    */

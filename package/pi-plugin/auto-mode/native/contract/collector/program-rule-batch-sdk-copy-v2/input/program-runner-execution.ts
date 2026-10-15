@@ -53,6 +53,8 @@ export async function executeReachedProgramGroup({
   const {
     scope,
     calls,
+    ordinals,
+    slots,
     tools
   } = bound;
   /**
@@ -103,9 +105,9 @@ export async function executeReachedProgramGroup({
     executionMode: exclusive ? 'sequential' : 'parallel',
     ...createProgramExecutionCallbacks({
       runner,
-      origin,
+      judgment,
       group,
-      bound,
+      bound: { ordinals, slots },
       assertParentCurrent,
       parentId,
       assessment
