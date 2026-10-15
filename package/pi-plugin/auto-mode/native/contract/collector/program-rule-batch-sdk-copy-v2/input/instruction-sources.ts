@@ -34,14 +34,6 @@ export function createInstructionSources({
     byMember
   } = input;
   /**
-   Initialize original governing sources once under the existing dependency segment.
-   */
-  function ensureRuleBindings() : GoverningRuleSet {
-    ready();
-    if (!state.ruleBindings) {
-      if (((typeof parsePolicy) !== 'function') || (!Boolean(readJudgmentSources().hostGoverningPolicy))) throw new JudgmentConstructionError('Original host-selected policy and qualified parser are required for instruction claims');
-      const parse: NonNullable<InstructionContext['input']['parsePolicy']> = parsePolicy;
-      /**
        Source reads retain the original judgment lifetime check.
        */
       function readGoverningSources() : ReturnType<GoverningSetInput['readSources']> {
@@ -49,15 +41,24 @@ export function createInstructionSources({
         return readJudgmentSources()
           .governingSources;
       }
+/**
+   Initialize original governing sources once under the existing dependency segment.
+   */
+  function ensureRuleBindings() : GoverningRuleSet {
+    ready();
+    if (!state.ruleBindings) {
+      if (((typeof parsePolicy) !== 'function') || (!Boolean(readJudgmentSources().hostGoverningPolicy))) throw new JudgmentConstructionError('Original host-selected policy and qualified parser are required for instruction claims');
+      const parse: NonNullable<InstructionContext['input']['parsePolicy']> = parsePolicy;
+      
       /**
        Capture original source ownership without moving its publication point.
        */
-      function createRuleBindings() : GoverningRuleSet {
+      const createRuleBindings = function createRuleBindings(): GoverningRuleSet {
         return createGoverningRuleSet({
           parse,
           readSources: readGoverningSources
         });
-      }
+      };
       state.ruleBindings = isBindingSegmentActive() ? createRuleBindings() : bindingSegment(createRuleBindings);
     }
     return state.ruleBindings;
@@ -94,12 +95,6 @@ export function createInstructionSources({
   function inspectRuleSources() : readonly GoverningSetSnapshot[] { return ensureRuleBindings()
     .inspect(); }
   /**
-   Select structural opportunities only for the original sole declared member.
-   */
-  function indexedUnitAdoptionPairs() : readonly InstructionAdoptionPair[] {
-    ready();
-    if (!state.unitAdoptionPairs) {
-      /**
        Selection remains inside one original synchronous source boundary.
        */
       function selectAdoptionCandidates() : readonly InstructionAdoptionPair[] {
@@ -109,15 +104,18 @@ export function createInstructionSources({
           member: byMember.get(firstInstructionMemberId(declaredNames[0])),
         }) : Object.freeze([]);
       }
+/**
+   Select structural opportunities only for the original sole declared member.
+   */
+  function indexedUnitAdoptionPairs() : readonly InstructionAdoptionPair[] {
+    ready();
+    if (!state.unitAdoptionPairs) {
+      
       state.unitAdoptionPairs = isBindingSegmentActive() ? selectAdoptionCandidates() : bindingSegment(selectAdoptionCandidates);
     }
     return state.unitAdoptionPairs;
   }
   /**
-   Read related selections inside one synchronous dependency boundary.
-   */
-  function readPolicySelection() : InstructionPolicySelection {
-    /**
      Preserve original selection order before freezing its public aggregate.
      */
     function readOriginalPolicySelection() : InstructionPolicySelection {
@@ -129,6 +127,11 @@ export function createInstructionSources({
         ruleSourceCoverage: inspectRuleSources(),
       });
     }
+/**
+   Read related selections inside one synchronous dependency boundary.
+   */
+  function readPolicySelection() : InstructionPolicySelection {
+    
     return bindingSegment(readOriginalPolicySelection);
   }
   return {
