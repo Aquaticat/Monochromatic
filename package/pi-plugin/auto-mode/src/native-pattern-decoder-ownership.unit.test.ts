@@ -30,7 +30,7 @@ await describe({ name: 'original pattern ownership', children: [
     assert.equal(result, seen[3]);
     assert.ok(result.kind === 'object');
     assert.equal(result.entries[0]?.pattern, seen[2]);
-    const [, , array] = seen;
+    const array = seen.at(2);
     assert.ok(array?.kind === 'array');
     assert.equal(array.items[0], seen[0]);
     assert.equal(array.items[1], seen[1]);
