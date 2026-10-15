@@ -5,7 +5,7 @@ export type EventCall = { type: 'toolCall'; id: string; name: string; arguments:
 /** Native completion content remains deliberately opaque until recorder text extraction. */
 export type EventOutcome = {
   toolCall: EventCall;
-  result: { content?: readonly { type: string; text?: unknown }[] | null; usage?: unknown };
+  result: { content?: unknown; usage?: unknown };
   isError: boolean;
 };
 /** Consumer callback signatures come from the native dispatcher boundary. */

@@ -3,7 +3,7 @@ import type { ProgramNativeCall } from './program-operation-types.ts';
 
 /** Original native content retains opaque text values until JavaScript join coercion. */
 export type ProgramEventResult = Readonly<{
-  content?: readonly Readonly<{ type: string; text?: unknown }>[] | null;
+  content?: readonly Readonly<{ type: string; text?: unknown }>[];
   usage?: unknown;
 }>;
 /** Original completed call is published unchanged after its end event has finished. */
@@ -18,7 +18,7 @@ export type ProgramRunnerEvent = Readonly<{
   toolCallId: string;
   toolName: string;
   parentToolCallId: string;
-  args?: object;
+  args?: unknown;
   partialResult?: unknown;
   result?: ProgramEventResult;
   isError?: boolean;

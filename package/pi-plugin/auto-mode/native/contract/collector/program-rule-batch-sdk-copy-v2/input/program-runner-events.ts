@@ -82,7 +82,9 @@ export function createProgramRunnerEvents({
         return part.text;
       }).join('\n');
       scope.recorder.finish(records.get(call.id), outcome.isError, text);
-      if (Boolean(outcome.result.usage)) scope.recorder.addUsage(outcome.result.usage);
+      /** Original usage truthiness is captured without replacing its second getter read. */
+      const hasUsage = Boolean(outcome.result.usage);
+      if (hasUsage) scope.recorder.addUsage(outcome.result.usage);
       await runner.host.emit({
         type: 'tool_execution_end',
         toolCallId: call.id,
