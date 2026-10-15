@@ -1283,6 +1283,12 @@ model-attribution rejection,
 or raw byte bound makes the committed tests fail.
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-settlement-omissions.json`
 records those process-local controls and unchanged artifact hashes.
+The full maintained lint recount covers 536 files and 486 rules:
+zero errors and 13258 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-settlement-lint-20261015.log`.
+All settlement implementation and consumer files have zero diagnostics in that report.
+The remaining warning gate is still open;
+the next boundary is the original question-selection owner in `selection.mjs`.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
