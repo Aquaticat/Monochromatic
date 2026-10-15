@@ -24,14 +24,20 @@ type CompletionResult = Readonly<{
  Original error diagnostics preserve native outcome and decision identities.
  */
 type ExecutionError = Error & Readonly<{
-  diagnosticRecord: Readonly<{ outcomes: unknown; assessmentDecision: unknown }>;
+  diagnosticRecord: Readonly<{
+    outcomes: unknown;
+    assessmentDecision: unknown
+  }>;
 }>;
 /**
  Original constructor signatures remain independent from the new typed helper.
  */
 type DispatcherModule = Readonly<{
   PreparedBatchContractError: new (message: string) => Error;
-  PreparedBatchExecutionError: new (message: string, input: unknown) => ExecutionError;
+  PreparedBatchExecutionError: new (
+    message: string,
+    input: unknown
+  ) => ExecutionError;
 }>;
 /**
  Built completion receives the original dispatcher constructors.
@@ -50,7 +56,8 @@ type CompletionModule = Readonly<{
  @throws Error when the built completion export is absent
  */
 function assertCompletionModule(value: unknown): asserts value is CompletionModule {
-  if ((value === null) || ((typeof value) !== 'object') || (!('completePreparedBatch' in value))
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('completePreparedBatch' in value))
     || ((typeof value.completePreparedBatch) !== 'function')) throw new Error('Built prepared completion export is unavailable');
 }
 /**
@@ -63,14 +70,19 @@ function assertCompletionModule(value: unknown): asserts value is CompletionModu
  @throws Error when either original error constructor is absent
  */
 function assertDispatcherModule(value: unknown): asserts value is DispatcherModule {
-  if ((value === null) || ((typeof value) !== 'object') || (!('PreparedBatchContractError' in value))
-    || ((typeof value.PreparedBatchContractError) !== 'function') || (!('PreparedBatchExecutionError' in value))
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('PreparedBatchContractError' in value))
+    || ((typeof value.PreparedBatchContractError) !== 'function')
+    || (!('PreparedBatchExecutionError' in value))
     || ((typeof value.PreparedBatchExecutionError) !== 'function')) throw new Error('Built prepared dispatcher errors are unavailable');
 }
 /**
  Completion is consumed only from the rebuilt native artifact.
  */
-const loaded: unknown = await import(new URL('../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/prepared-completion.ts', import.meta.url).href);
+const loaded: unknown = await import(new URL(
+  '../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/prepared-completion.ts',
+  import.meta.url
+).href);
 assertCompletionModule(loaded);
 /**
  Explicit contract preserves callable narrowing across the consumer wrapper.
@@ -79,7 +91,10 @@ const completion: CompletionModule = loaded;
 /**
  Dispatcher independently supplies both original error constructors.
  */
-const dispatcher: unknown = await import(new URL('../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/prepared-dispatch.mjs', import.meta.url).href);
+const dispatcher: unknown = await import(new URL(
+  '../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/prepared-dispatch.mjs',
+  import.meta.url
+).href);
 assertDispatcherModule(dispatcher);
 /**
  Original contract error identity remains available to consumer assertions.
@@ -103,7 +118,12 @@ export const PreparedBatchExecutionError: DispatcherModule['PreparedBatchExecuti
  */
 export function complete(input: CompletionInput = {}): CompletionResult {
   return completion.completePreparedBatch({
-    batchState: { decision: { block: false } }, failures: [], settled: [], snapshots: [],
-    ...input, PreparedBatchContractError, PreparedBatchExecutionError,
+    batchState: { decision: { block: false } },
+    failures: [],
+    settled: [],
+    snapshots: [],
+    ...input,
+    PreparedBatchContractError,
+    PreparedBatchExecutionError,
   });
 }

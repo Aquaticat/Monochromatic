@@ -2,7 +2,10 @@
  Original prepared completion gives retained lifecycle failures precedence over native rejection. @module
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import type { PreparedCompletion, PreparedCompletionInput } from './prepared-completion-types.ts';
+import type {
+  PreparedCompletion,
+  PreparedCompletionInput
+} from './prepared-completion-types.ts';
 
 /**
  Completion diagnostics omit native values, decisions, and opaque failures.
@@ -42,12 +45,19 @@ export function completePreparedBatch({
   /**
    Completion tracing keeps the original dispatcher boundary without reading payloads.
    */
-  const cl = tagged({ tag: completePreparedBatch.name, l });
+  const cl = tagged({
+    tag: completePreparedBatch.name,
+    l
+  });
   cl.debug('reporting original prepared group completion');
   if (batchState.decision === undefined) throw new PreparedBatchContractError('Prepared batch completed without admission outcome');
   if (failures.length > 0) throw new PreparedBatchExecutionError(
     'Prepared batch retained lifecycle failures',
-    { failures, outcomes: settled, assessmentDecision: batchState.decision }
+    {
+      failures,
+      outcomes: settled,
+      assessmentDecision: batchState.decision
+    }
   );
   /**
    Native rejections are considered only after retained lifecycle failures have been ruled out.

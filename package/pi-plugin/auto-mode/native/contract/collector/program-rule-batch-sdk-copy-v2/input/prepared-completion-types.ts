@@ -33,7 +33,10 @@ export type PreparedCompletionInput = Readonly<{
   settled: readonly PreparedNativeOutcome[];
   snapshots: readonly (readonly unknown[])[];
   PreparedBatchContractError: new (message: string) => Error;
-  PreparedBatchExecutionError: new (message: string, input: PreparedExecutionFailure) => Error;
+  PreparedBatchExecutionError: new (
+    message: string,
+    input: PreparedExecutionFailure
+  ) => Error;
 }>;
 
 /**
