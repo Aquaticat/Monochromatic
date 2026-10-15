@@ -281,6 +281,93 @@ the items after it are the record of 2026-10-05 and older.
   `monochromatic-lint package/desktop-app/ide` exits 1 with 570 `markdown/semantic-line-breaks` errors
   and 821 `rust/no-anonymous-functions` warnings.
   None of it comes from the IDE work of this handover; the cutover owns it.
+- Branch `refactor/ide-split-top` (2026-10-15) clears the `rust/max-lines` and `rust/require-rustdoc` findings of
+  `src/annotation.rs`,
+  `src/shaped_text.rs`,
+  `src/text_raster.rs`,
+  `src/name_order.rs`,
+  `src/tab_layout.rs`,
+  `src/text_projection.rs`,
+  `src/wrap.rs`
+  and `src/wrap_sign.rs`.
+  The rule counts lines that hold a token other than a comment or whitespace,
+  with a limit of 300
+  (`package/linter/monochromatic-lint/src/rust_source.rs`,
+  `code_lines`).
+  The three over-long files had 304,
+  452
+  and 308 such lines
+  and now have 267,
+  279
+  and 258.
+  `annotation/severity.rs` now holds `rank`,
+  `severity_name`,
+  `shown`
+  and `describe`;
+  `text_raster/palette.rs` holds `CodeColors`
+  and `ink`;
+  `shaped_text/frame.rs` holds `Clip`,
+  `Viewport`
+  and `ShapedView`;
+  `shaped_text/layout.rs` holds `LineRequest`
+  and the line and virtual-row shaping of `TextShaper`
+  (`line_layout`,
+  `wrapped_line_layout`,
+  `build_line`,
+  `row_layout`,
+  `wrap_row_text`,
+  `build_row`,
+  `space_advance`,
+  `baseline`).
+  Every moved item is re-exported from its old module,
+  so no caller changed;
+  `TextShaper::baseline` became `pub(super)`.
+  The source guards `markup-heading-ink`,
+  `indent-scale`,
+  `markup-weight-push`
+  and `markup-italic-push`
+  and the annotation guard `omitted-severity` point at the new files;
+  no `before` text or expected failure changed.
+  Gate on the code of `a31468e2bc` (logs in `~/temp/agent/ide-split-top/logs/`):
+  lint:rustfmt,
+  lint:clippy,
+  lint:slint,
+  lint:release,
+  test,
+  test:cli,
+  test:language,
+  test:minimap,
+  test:wrap,
+  test:annotations,
+  test:annotations-native,
+  test:syntax,
+  bundle,
+  inspect:bundle 10 of 10,
+  inspect:bundle-guards 8 of 8,
+  test:native 197 of 197 on the second run
+  (the first run failed `wrap_keys_tests::the_view_follows_the_caret_through_every_visual_row`,
+  the known flake).
+  The guard tasks passed with
+  annotation 65,
+  source 108,
+  find 39,
+  ignored 28,
+  search 17,
+  sidebar 18,
+  theme 7,
+  watch 76,
+  language 31,
+  language lifecycle 28 runs,
+  and language navigation 16.
+  The combined lint of `package/desktop-app/ide` has the same 2654 `markdown/semantic-line-breaks` errors
+  and 1135 `rust/no-anonymous-functions` warnings as before.
+  Its `rust/max-lines` findings fell from 9 to 6,
+  and `rust/require-rustdoc` from 33 to 25;
+  the remaining ones are in `src/native*`,
+  `src/language*`,
+  `src/minimap*`
+  and `src/git_ignore*`,
+  which other branches own.
 - The user approved installing into the real home on 2026-10-10:
   `bin/install.mjs` put `dist/monochromatic-ide` at `~/.local/bin/monochromatic-ide`
   (identical bytes, hash checked) and the launcher entry at `~/.local/share/applications/monochromatic.ide.desktop`
