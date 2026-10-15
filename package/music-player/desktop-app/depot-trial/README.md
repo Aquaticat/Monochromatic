@@ -57,6 +57,35 @@ The `.depot` workflow has manual dispatch only.
 The GitHub comparison workflows respond only to their trial-branch workflow-file changes or manual dispatch.
 They publish no releases.
 
+## Runner sizing experiment
+
+The branch-only `.github/workflows/depot-trial-sizing.yml` workflow compares CPU/job-count pairs
+`4/4`,
+`8/4`,
+`8/8`,
+`16/4`,
+`16/8`,
+and `16/16`.
+It calls `trial:github:sizing` on separate ephemeral runners,
+with a maximum of six concurrent jobs and a 75-minute limit per job.
+Each job performs two rounds using distinct `TRIAL_CACHE_SCOPE` values.
+That variable namespaces the Cargo download and target cache mounts;
+its default preserves the original trial caches.
+
+Each round measures a cold Cargo build,
+two unchanged-source repeats,
+a changed CLI name,
+and an unchanged repeat of that changed source.
+The task checks the exported version against the expected name after every build,
+restores the original source in cleanup,
+and writes JSON measurements to the job log and summary.
+Base-image preparation is shared between rounds inside each runner;
+the second cold round means cold Cargo caches,
+not a fresh machine or cold operating-system page cache.
+The workflow records CPU model,
+logical CPU count,
+and visible memory for interpreting hardware differences.
+
 ## Interpretation
 
 An unchanged repetition first establishes ordinary timing variation.
