@@ -7,6 +7,9 @@ name: music-player-alpine
 # Wayland compositor from source, then runs the app inside that compositor:
 # no sound server, an ALSA stub, and a real PipeWire daemon, one scenario each.
 #
+# The runners ship podman 4.9, so the Containerfile uses no heredoc (its builder reads each heredoc line as an
+# instruction). Both architectures run the same commands.
+#
 # Caching: the cargo registry and git checkouts and the two target directories
 # are bind-mounted into the containers from $CI_CACHE and restored and saved
 # by actions/cache. The key names the architecture, the Alpine toolchain and
