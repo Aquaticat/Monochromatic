@@ -682,7 +682,31 @@ Commit `a96c4d1da1` scopes the CLI fixture's reader and process cleanup
 and the historical-run fixture's session cleanup with disposal.
 The historical-run fixture now retains its counters and original source in one record.
 The package also exposes that existing fixture as `test:native:run-history`;
-its rebuilt consumer and CLI cleanup checks remain pending.
+its rebuilt consumer and CLI cleanup checks pass.
+Native syntax also passes all 260 modules at that artifact.
+`${HOME}/temp/agent/pi-native-fixture-cleanup-consumer-20261014.log` retains those results.
+The package type check passes after the lifecycle and wrapper interface changes.
+Commit `2c67f036e7` adds explicit budget input,
+retained-state,
+and response types.
+The budget's type-safety findings disappear in focused lint;
+its total warning count changes from 55 to 41 because the first annotations introduced comment-format findings.
+Commits `1e14b97233` and `35c0febc93` then separate stable error identities,
+name the unchanged budget limits,
+and correct the remaining statement and comment shapes.
+The next focused report has two warnings:
+sequential retry awaiting and an explicit return required in the classifier-error branch.
+Commit `a8b5cf2811` addresses that return and documents the narrow sequential-retry exception in
+the troubleshooting entry's "Sequential native judgment retries" section.
+Commit `c9807abb0c` adds a built consumer for retry accounting,
+overlap refusal,
+deadline and cancellation retirement,
+late response rejection,
+classifier failures,
+and stable error names and causes.
+Its built check,
+omission control,
+and final focused lint are pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
