@@ -231,6 +231,56 @@ Without the input,
  `latestMiseVersion` still reads the version file,
  so the release age is what switches the resolution path.
 
+### The release-age lookup can fail with 403
+
+Run 38688512043 (`music-player-release.yml`, a push to `main`, 2026-10-15) failed attempt 1 in two jobs with
+ `##[error]GitHub releases API returned 403 Forbidden`:
+ the Android job at "Set up mise (skip auto-install of all tools)" (05:46:17Z)
+ and the macOS desktop job at "Install node (runs the repository's bundle:macos task)" (05:51:20Z).
+Attempt 2 passed, and its Android job logged
+ `Selected mise 2026.10.9, released 2026-10-13T14:53:38Z, with minimum_release_age=1d`.
+The cause of the 403 (a rate limit, a secondary limit, or the token) was not established:
+ the job logs carry no response headers.
+
+The action treats the response as final.
+In `githubMiseReleases` (`src/index.ts:985` at `c2a87611a18de5b3828c5652fe268e992400cb5c`):
+
+```ts
+    if (!response.ok) {
+      const message = `GitHub releases API returned ${response.status} ${response.statusText}`
+      if (
+        response.status >= 400 &&
+        response.status < 500 &&
+        response.status !== 429
+      ) {
+        throw new NonRetryableError(message)
+      }
+```
+
+so any 4xx except 429 fails the step without a retry.
+That function is called only from `latestMiseVersion` (`src/index.ts:1013`), which `setupMise` calls only when no
+ `version` input is given (`src/index.ts:413`):
+
+```ts
+  let resolvedVersion = cleanVersion(version)
+  if (
+    !resolvedVersion &&
+    (!fs.existsSync(miseBinPath) || useMinimumReleaseAge)
+  ) {
+```
+
+and `useMinimumReleaseAge` is `!version && Boolean(minimumReleaseAge.trim())` (`src/index.ts:407`).
+With `version` set, the action logs "`minimum_release_age` is ignored because an explicit mise version was provided"
+ (`src/index.ts:408`), so `minimum_release_age` does nothing and the pinned workflow does not set it.
+The remaining requests go to `github.com/jdx/mise/releases/download/` (the archive and `SHASUMS256.txt`
+ with its `.minisig`, `src/index.ts:685` to `src/index.ts:740`); `rg api.github.com src/index.ts` finds the releases
+ lookup as the only API call.
+The pinned version must be a published release with its assets:
+ `gh release view v2026.10.9 --repo jdx/mise` shows `isDraft` false and the `linux-x64`, `macos-arm64` and
+ `windows-*` assets.
+The pin was checked only by reading the source and by the dry run of the pin's branch (recorded in
+ `doc/decision/music-player-releases.md`); it has not met a 403 since.
+
 ## Verification
 
 Version under test:
@@ -311,12 +361,16 @@ Patterns that work:
      and the window length is upstream's;
      a run that must happen now cannot.
 3.   Pin `version:` to a release known to exist.
-     The action builds the GitHub URL from the pinned value and never reads the version file.
-     Not applied.
+     The action builds the GitHub URL from the pinned value and never reads the version file
+     and never calls the releases API (see "The release-age lookup can fail with 403").
+     Applied on 2026-10-15 to the two `jdx/mise-action` steps of `.github/workflows/music-player-release.yml`
+     (`version: 2026.10.9`, without `minimum_release_age`).
+     Not applied to the other workflows.
      Tradeoff:
      the pin needs a maintenance rule (the repository's `PIN` rule wants a comment saying why),
      no bot in this repository bumps action inputs,
-     and thirteen steps would carry it.
+     so the owner of the workflow updates it by hand:
+     the steps are in `doc/runbook/release-the-music-player.md`, section "The mise version pin".
 
 ## What does not work
 
