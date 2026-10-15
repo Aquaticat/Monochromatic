@@ -132,7 +132,11 @@ The trial produces disposable validation artifacts without publishing releases o
 Existing Windows and macOS paths remain the reference while Linux execution is evaluated.
 [Depot CI][depot-ci] does not offer Windows or macOS sandboxes.
 The separate [Depot GitHub runner product][depot-runners] requires an organization-owned repository;
-this repository is personally owned.
+the repository was personally owned when the interview began.
+On 2026-10-15,
+GitHub reported its move from `Aquaticat/Monochromatic` to `Aquaticats/Monochromatic`,
+and a fresh API query confirmed organization ownership.
+Both Depot CI and Depot GitHub Actions runners are therefore candidates where their platform support applies.
 Cross-platform migration therefore needs its own design and validation before replacing existing jobs.
 
 ### Measure the complete monthly cost

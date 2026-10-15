@@ -78,6 +78,9 @@ transcript investigation was stopped.
 - Q15 remains unresolved:
   the user does not yet know whether a future organization transfer is acceptable.
   Evaluate currently available routes without assuming transfer permission.
+  Superseded by observed state on 2026-10-15:
+  GitHub subsequently reported `Aquaticats/Monochromatic` as organization-owned.
+  This session did not perform that transfer.
 - Q16 accepts prioritizing the newest version and stopping superseded intermediate checks.
   Explicit release builds remain separate from this intermediate-check policy.
 - Q17 accepts deeper Depot dependence when measured benefits justify it.
@@ -128,6 +131,11 @@ Those cache sizes are historical readings,
 not current measurements.
 
 GitHub's repository API reported `Aquaticat/Monochromatic` as public and personally owned.
+On 2026-10-15 during the interview,
+GitHub's push response reported its move to `Aquaticats/Monochromatic`.
+`gh api repos/Aquaticats/Monochromatic` then confirmed public visibility and owner type `Organization`.
+The personal-ownership observation is historical;
+the current organization ownership permits evaluation of the runner product under its ownership requirement.
 Current [Depot runner documentation][runner-docs] requires organization-owned GitHub repositories.
 [Depot CI documentation][ci-docs] supports personal repositories but excludes Windows and macOS sandboxes.
 These are distinct products;
@@ -308,8 +316,6 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
 
 ## Open questions and next work
 
-- The ownership question remains unresolved;
-  no repository transfer is authorized.
 - Await Q19 confirmation of the trial brief:
   intentional hybrid routing,
   broader coverage,
@@ -317,6 +323,8 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
   rolling budgets without current counting overhead,
   correct outputs and failure detection,
   and the combined cost objective within USD $200/month.
+  A replacement question corrects the ownership clause after GitHub reported the repository move:
+  evaluate both Depot CI and Depot GitHub Actions runners where applicable.
 - Verify account spending controls before resource-consuming execution;
   the supported usage endpoint rejected the available user-token credential.
 - Preserve existing explicit-release handling during the proposed trial.
