@@ -33,7 +33,7 @@ const l = tagged({ tag: 'auto-mode-program-runner-execution-callbacks' });
  
  @returns original native dispatch callbacks
  
- @example createProgramExecutionCallbacks({ runner, origin, group, bound, assertParentCurrent, parentId, assessment });
+ @example createProgramExecutionCallbacks({ runner, judgment, group, bound, assertParentCurrent, parentId, assessment });
  */
 export function createProgramExecutionCallbacks({
   runner,
