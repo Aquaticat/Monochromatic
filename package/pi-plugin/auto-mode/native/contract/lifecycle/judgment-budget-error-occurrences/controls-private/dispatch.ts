@@ -9,6 +9,7 @@ import {
 import {createBundleDispatcher} from './bundles.ts';
 import type {
   JudgmentAccounting,
+  JudgmentAttempt,
   JudgmentAttemptRecord,
   JudgmentBudget,
   JudgmentBudgetInput,
@@ -165,7 +166,7 @@ export function createJudgmentDispatcher({
       // At most one retry can occur across every dispatch through this boundary.
       for(let invocation=0;invocation<attemptLimit;invocation+=1){
         checkpoint();
-        if(accounting.attempts>=attemptLimit)throw new JudgmentAttemptLimitError('Judgment exhausted its three client attempts');
+        if(accounting.attempts>=attemptLimit)throw new JudgmentAttemptLimitError('Judgment exhausted its three assessment dispatches');
         accounting.attempts+=1;
         /**
          Original judgment-wide invocation ordinal.
@@ -187,10 +188,16 @@ export function createJudgmentDispatcher({
          Only the successful transport path publishes a response field.
          */
         const response: { value?: Result }={};
+        const admission={active:true};
+        using bundleScope={ [Symbol.dispose](): void {admission.active=false;} };
+        const ownedRunBundle: JudgmentAttempt['runBundle']=async function dispatchOwnedBundle(operations){
+          if(!admission.active)throw new JudgmentBudgetError('Call bundle capability belongs to a completed assessment dispatch');
+          return await runBundle(operations);
+        };
         try {
           // oxlint-disable-next-line eslint/no-await-in-loop -- Original failure classification gates the next attempt; see doc/troubleshooting/pi-sdk-staging.md, "Sequential native judgment retries".
           response.value=await operation(Object.freeze({
-          runBundle,
+          runBundle:ownedRunBundle,
           signal,
           deadlineAt,
           attempt

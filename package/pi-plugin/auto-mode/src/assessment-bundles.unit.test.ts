@@ -46,7 +46,7 @@ await describe({name:'assessment call bundles',children:[
   let peak=0;
   const send=createAssessmentSender({now:()=>0,readCredential:()=>assessmentFixtureKey,fetchImpl:async function localHttp(_url,options){
    assert.equal(typeof options?.body,'string');
-   const body=String(options.body);
+   const body=String(options?.body);
    bodies.push(body);
    active+=1;
    peak=Math.max(peak,active);
