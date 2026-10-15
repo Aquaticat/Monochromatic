@@ -272,6 +272,26 @@ A faster Linux job saves none of that elapsed time when a longer required Window
 The individual build differences therefore cannot be multiplied by commit count to forecast monthly value.
 This trial has not replayed an equivalent complete cross-platform change stream.
 
+A follow-up inspected every October 15 run returned for the Alpine and Windows workflows:
+13 Alpine runs and 33 Windows runs at the query time.
+The API total counts matched the returned counts.
+Matching completed push runs by exact commit produced four pairs,
+of which three succeeded on both platforms.
+Windows finished after the final Linux job in all three successful pairs,
+by 104,
+199,
+and 123 seconds.
+For those pairs,
+even an instantaneous Linux build would not advance the combined completion time while Windows stays unchanged.
+The fourth pair had a Linux failure and is excluded from successful-completion comparisons.
+This is observed history,
+not a forecast for all revisions or a reason to omit Linux coverage.
+The upper-bound calculation was checked with a positive control where Linux finishes 60 seconds later
+and correctly reports 60 seconds of possible earlier completion.
+[Paired job timestamps](depot-platform-overlap-2026-10-15.evidence.json),
+[first paired Linux run](https://github.com/Aquaticats/Monochromatic/actions/runs/38765172148),
+[first paired Windows run](https://github.com/Aquaticats/Monochromatic/actions/runs/38765171887)
+
 ## Recommended allocation and check frequency
 
 These are proposed operating arrangements,

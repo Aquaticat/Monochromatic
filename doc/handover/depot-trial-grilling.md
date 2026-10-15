@@ -550,6 +550,19 @@ calculate provider charges and the user's combined time cost,
 and update the allocation recommendation with spread and limitations.
 No production size setting changed in response to this question.
 
+The parallel history check inspected complete October 15 API pages:
+13 Alpine and 33 Windows runs.
+Four exact-commit completed push pairs exist;
+three succeeded on both platforms.
+Windows finished last in every successful pair,
+by 104,
+199,
+and 123 seconds.
+Linux-only acceleration cannot advance those pairs' final completion while Windows stays unchanged.
+The failed Linux pair is excluded from successful-completion comparisons.
+Evidence and a positive control for the upper-bound calculation are recorded in the
+[trial report](../audit/depot-trial-2026-10-15.md).
+
 ## Interview process correction
 
 The agent answered the larger-runner follow-up with an unexecuted measurement proposal,
