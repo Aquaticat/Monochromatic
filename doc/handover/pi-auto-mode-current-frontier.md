@@ -2511,9 +2511,20 @@ parent-reader,
 and reached-view checks in their original order.
 The original collector baseline is `program-collector-before-current-types.mjs`;
 its exact extracted statements are `group-current-original-functions.txt`.
-Currentness lint,
-built consumers,
-original replay,
+`1ccc58cb0c` introduces the original currentness owner;
+`1d1935e4c6` re-reads failure and closure through a shared helper after callbacks can publish state.
+The helper preserves original checks while preventing TypeScript from retaining pre-callback narrowing.
+`c6aaab1bbc`,
+`b1a75a47dd`,
+and `07336598f6` add and format independently declared currentness consumers.
+All five changed implementation and consumer files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-group-current-lint-final-20261015.log`.
+The owned rebuild,
+package type check,
+and both currentness suites pass in
+`${HOME}/temp/agent/pi-group-current-final-20261015.log`.
+Original replay,
+domain comparison,
 and omission qualification remain pending.
 The status response on 2026-10-15 confirms that the live model and approval verification are already complete,
 failure and lifetime owners are qualified,
