@@ -18,6 +18,10 @@ variable "TRIAL_LINKER" {
   default = "default"
 }
 
+variable "TRIAL_CACHE_SCOPE" {
+  default = "music-player-trial"
+}
+
 target "toolchain" {
   context = "."
   dockerfile = "package/music-player/desktop-app/Containerfile.alpine"
@@ -46,6 +50,7 @@ target "artifact" {
     REQUIRE_FAILURE = REQUIRE_FAILURE
     TRIAL_LOG_VERSION = TRIAL_LOG_VERSION
     TRIAL_LINKER = TRIAL_LINKER
+    TRIAL_CACHE_SCOPE = TRIAL_CACHE_SCOPE
   }
   platforms = ["linux/amd64"]
   output = ["type=local,dest=package/music-player/desktop-app/target/depot-trial"]

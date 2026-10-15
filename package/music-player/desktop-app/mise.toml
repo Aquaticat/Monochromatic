@@ -761,6 +761,46 @@ for (const trialRun of ['cold-1', 'warm-1', 'warm-2']) {
 }
 """
 
+[tasks."trial:github:sizing"]
+description = "Compare runner CPU and Cargo concurrency with repeated isolated cold and source-change builds"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, appendFileSync } = await import('node:fs')
+const { cpus, totalmem } = await import('node:os')
+if (process.env.GITHUB_ACTIONS !== 'true') throw new Error('The sizing fixture requires a disposable GitHub runner.')
+const sourcePath = 'package/music-player/desktop-app/src/cli.rs'
+const original = readFileSync(sourcePath, 'utf8')
+const originalName = 'name = "music-player",'
+if (!original.includes(originalName)) throw new Error('The CLI name fixture changed; inspect the source.')
+const buildJobs = Number(process.env.BUILD_JOBS)
+const runnerCpus = Number(process.env.TRIAL_RUNNER_CPUS)
+if (![4, 8, 16].includes(buildJobs) || ![4, 8, 16].includes(runnerCpus)) throw new Error('Unexpected sizing configuration.')
+console.log(JSON.stringify({ trialHardware: true, runnerCpus, buildJobs, logicalCpus: cpus().length, cpuModel: cpus()[0]?.model, memoryBytes: totalmem() }))
+try {
+  for (const round of [1, 2]) {
+    writeFileSync(sourcePath, original)
+    const scope = `sizing-${runnerCpus}-${buildJobs}-${round}`
+    for (const phase of ['cold', 'unchanged-1', 'unchanged-2', 'source-change', 'source-unchanged']) {
+      const changed = phase.startsWith('source-')
+      if (changed) writeFileSync(sourcePath, original.replace(originalName, 'name = "music-player-sizing",'))
+      const started = performance.now()
+      execFileSync('docker', ['buildx', 'bake', '--file', 'package/music-player/desktop-app/depot-trial/bake.hcl', '--progress', 'plain', 'artifact'], { stdio: 'inherit', env: { ...process.env, TRIAL_RUN: `${scope}-${phase}`, TRIAL_CACHE_SCOPE: scope } })
+      const elapsedSeconds = (performance.now() - started) / 1000
+      const version = readFileSync('package/music-player/desktop-app/target/depot-trial/version.txt', 'utf8').trim()
+      const expected = changed ? 'music-player-sizing 0.1.4' : 'music-player 0.1.4'
+      if (version !== expected) throw new Error(`Expected runtime version ${expected}, received ${version}`)
+      const measurement = { trialSizing: true, runnerCpus, buildJobs, round, phase, elapsedSeconds, version }
+      console.log(JSON.stringify(measurement))
+      if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n${JSON.stringify(measurement)}\n`)
+    }
+  }
+} finally {
+  writeFileSync(sourcePath, original)
+}
+'''
+
 [tasks."trial:depot:device-prerequisites"]
 description = "Inspect the disposable cloud sandbox's display, audio, and virtualization prerequisites"
 shell = "node --input-type=module-typescript -e"
