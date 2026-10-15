@@ -28,6 +28,7 @@ const EXECUTION_METHODS = [
 
 /** Preserve original truthiness without changing property-read order.
  @param value - original observed value
+ *
  @returns whether original admission treats the value as absent
  */
 function isAbsent(value: unknown): boolean {
@@ -72,7 +73,8 @@ export function schedulePreparedCalls({
     || (calls.length > MAX_MEMBERS)
     || calls.some(function isInvalidCall(call: ProgramNativeCall) {
       return (call.type !== 'toolCall') || ((typeof call.id) !== 'string')
-        || (isAbsent(call.id)) || ((typeof call.name) !== 'string')
+        || (isAbsent(call.id))
+        || ((typeof call.name) !== 'string')
         || (isAbsent(call.name));
     })
     || (new Set(calls.map(function readCallId(call: ProgramNativeCall) {
