@@ -864,7 +864,27 @@ event-receipt,
 approval-context,
 and source-work consumers pass in
 `${HOME}/temp/agent/pi-native-handler-publication-split-consumer-20261015.log`.
-The next structural change separates definition validation and answer settlement from question identity ownership.
+Commit `10a606eb32` separates definition validation and answer settlement from question identity ownership.
+Original claim,
+batch,
+and evidence maps remain private to the selection owner.
+Focused lint has zero errors and 463 warnings.
+Rebuilt domain,
+semantic-operating-policy,
+and manual-review consumers pass in
+`${HOME}/temp/agent/pi-native-question-selection-split-consumer-20261015.log`.
+Commit `b48b22a7d6` adds named inputs around the native result converter.
+Generated staging preserves the original SDK functions byte-for-byte and appends the adapter;
+the adversarial source-literal test imports and executes that generated module.
+Package type checking and rebuilt program-value,
+native-return,
+program-queue,
+and domain consumers pass in
+`${HOME}/temp/agent/pi-native-conversion-adapter-types-20261015.log` and
+`${HOME}/temp/agent/pi-native-conversion-adapter-consumer-20261015.log`.
+The first focused converter report has zero errors and 25 warnings;
+the fixture expectation now retains original text directly instead of parsing it back to an unchecked value.
+The next structural work separates the event-receipt and domain fixture assertions.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
