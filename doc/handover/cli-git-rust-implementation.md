@@ -1602,7 +1602,16 @@ that is verification, not a decision for the user.
   (`doc/handover/cli-git-native-interop.md`), leaving static captured fixtures.
   The `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324, 373 at the time) were removed on
   2026-10-15 in `91bdc9a9f9`: a key whose cluster lost a member matches nothing, so no fresh `slopo analyze` report was
-  needed. Still open from the retirement: the SPEC sections the plan did not name were not re-verified line by line.
+  needed. Still open from the retirement: the SPEC sections the plan did not name were not re-verified line by line. On
+  2026-10-15 three read-only agents began auditing `package/git-policy/cli/SPEC.md` (lines 1 to 1070, 1070 to 2100 and
+  2100 to 3292) against `src/native`; their findings must be checked by reading the cited code before any SPEC edit.
+  Resumed on 2026-10-15 (user: the named trailing work is to be done, not listed): replay-core mutation campaign
+  (`doc/handover/cli-git-native-replay-core.md`, unit `cli-git-replay-campaign`); measured the release archive's glibc
+  floor (2.39) and the Windows compile failure (README); pinned the wrapper's x86_64 build to `ubuntu-24.04`; pruned
+  `slopo.ignore.txt`. Next after the replay campaign: long fuzz campaigns (not run while the mutation lanes load the
+  CPU cap), release-artifact performance gates, the scanner Windows pathname mutation rerun (task 23, needs a Windows
+  VM), and a decision for the user on Windows (the crate does not compile there: declare it unsupported and delete the
+  dead Windows branches, or port it).
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
