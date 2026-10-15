@@ -43,7 +43,7 @@ const MAX_UNIT_ADOPTION_PAIRS = 64;
  // A selected pair is not proof of incorporation meaning or source authority.
  ```
  */
-export function selectUnitAdoptionPairs<const PreparedMember extends object | undefined>(
+export function selectUnitAdoptionPairs<const PreparedMember>(
   {
     candidates,
     readRule,

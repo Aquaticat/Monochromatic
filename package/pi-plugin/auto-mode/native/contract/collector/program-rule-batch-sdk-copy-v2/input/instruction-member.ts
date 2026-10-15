@@ -23,7 +23,7 @@ import type { InstructionSources } from './instruction-sources.ts';
  *
  @throws TypeError when original member ownership has disappeared
  */
-function memberProjection(memberRecord: InstructionMember | undefined) {
+function memberProjection(memberRecord?: InstructionMember) {
   if (memberRecord === undefined) throw new TypeError("Cannot read properties of undefined (reading 'binding')");
   return memberRecord.binding
     .projection;
@@ -113,6 +113,7 @@ export function createMemberInstructions({
     ].includes(definitionId)) throw new JudgmentConstructionError('Whole-program rule relation cannot be selected through a member');
     const member = byMember.get(memberId);
     if (!member) throw new JudgmentConstructionError('Instruction claim member is outside the original prepared group');
+    const originalMember: object = member;
     ensureRuleBindings();
     const projection = retainedInstructionRules(state)
       .read(rule);
@@ -126,7 +127,7 @@ export function createMemberInstructions({
      Capture the original member lookup even for member-independent clause meaning.
      */
     function createRecord() {
-      const memberRecord = bindings.get(member);
+      const memberRecord = bindings.get(originalMember);
       const claimProjection = instructionOnly ? {
         claimScope: 'instruction',
         governingRule: projection

@@ -4,6 +4,7 @@
 import { JudgmentConstructionError } from './judgment-error.ts';
 import { retainInstructionHandle } from './instruction-ownership.ts';
 import type {
+  InstructionMember,
   InstructionAdoptionPair,
   InstructionContext,
   ProgramInstruction
@@ -172,17 +173,19 @@ export function createProgramInstructions({
       .read(target);
     const memberRecord = member === undefined ? undefined : bindings.get(member);
     if ((!memberRecord) || (member === undefined) || (adopterProjection.sourceOccurrence !== targetProjection.sourceOccurrence)) throw new JudgmentConstructionError('Unit adoption requires its original member and same-source units');
+    const originalMember: object = member;
+    const originalMemberRecord: InstructionMember = memberRecord;
     /**
      Retain both source projections and the authenticated original member ordinal.
      */
     function createRecord() {
       const binding = Object.freeze({
         identity: pair,
-        projection: Object.freeze({ claimScope: 'member-unit-adoption', member, memberOrdinal: memberRecord.binding.projection.memberOrdinal, adopter: adopterProjection, target: targetProjection })
+        projection: Object.freeze({ claimScope: 'member-unit-adoption', member, memberOrdinal: originalMemberRecord.binding.projection.memberOrdinal, adopter: adopterProjection, target: targetProjection })
       });
       return {
         kind: 'unit-adoption' as const,
-        member,
+        member: originalMember,
         adopter,
         target,
         adopterProjection,

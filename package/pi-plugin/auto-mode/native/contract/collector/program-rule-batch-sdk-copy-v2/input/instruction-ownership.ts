@@ -10,6 +10,22 @@ import type { GoverningRuleSet } from '../../../lifecycle/governing-rule-candida
 
 //region Original maps distinguish program, meaning, and member-bound claim identities.
 /**
+ Read the original first-member identifier at the same source-selection boundary.
+
+ @param declared - original first declaration, if present
+
+ @returns original declared identifier
+
+ @throws TypeError if the original declaration array has no first entry
+
+ @example firstInstructionMemberId(declaredNames[0]);
+ */
+export function firstInstructionMemberId(declared?: Readonly<{ id: string }>): string {
+  if (declared === undefined) throw new TypeError("Cannot read properties of undefined (reading 'id')");
+  return declared.id;
+}
+
+/**
  Construct private owner state without reading lazy source or request capabilities.
  *
  @returns unpublished original instruction owner
@@ -20,9 +36,6 @@ export function createInstructionState(): InstructionState {
     instructionPairs: new WeakMap(),
     instructionMeaningPairs: new WeakMap(),
     programInstructionPairs: new WeakMap(),
-    ruleBindings: undefined,
-    unitAdoptionPairs: undefined,
-    requestMaterialBinding: undefined,
   };
 }
 

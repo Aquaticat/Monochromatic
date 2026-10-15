@@ -13,7 +13,7 @@ import type { QuestionSelection } from '../../../lifecycle/claim-evidence-batch-
 /**
  Structural opportunities precede original prepared-member authentication.
  */
-export type InstructionAdoptionPair = UnitAdoptionPair<object | undefined>;
+export type InstructionAdoptionPair = UnitAdoptionPair<ReturnType<ReadonlyMap<string, object>['get']>>;
 
 /**
  Original prepared-member projection is borrowed, never reconstructed.
@@ -43,7 +43,7 @@ export type JudgmentInstructionsInput = Readonly<{
   byMember: ReadonlyMap<string, object>;
   bindings: WeakMap<object, InstructionMember>;
   knownSelection: () => Pick<QuestionSelection, 'declare'>;
-  parsePolicy: GoverningSetInput['parse'] | undefined;
+  parsePolicy?: GoverningSetInput['parse'];
   receipt: Readonly<{ request: object }>;
   issue: (claims: readonly object[]) => object;
 }>;
@@ -53,7 +53,7 @@ export type JudgmentInstructionsInput = Readonly<{
  */
 type ClauseInstruction = Readonly<{
   kind?: never;
-  member: object | undefined;
+  member: InstructionAdoptionPair['member'];
   rule: object;
   projection: GoverningSetProjection;
   binding: QuestionBinding;
@@ -94,9 +94,9 @@ export type InstructionState = {
   readonly instructionPairs: WeakMap<object, WeakMap<object, object>>;
   readonly instructionMeaningPairs: WeakMap<object, object>;
   readonly programInstructionPairs: WeakMap<object, object>;
-  ruleBindings: GoverningRuleSet | undefined;
-  unitAdoptionPairs: readonly InstructionAdoptionPair[] | undefined;
-  requestMaterialBinding: object | undefined;
+  ruleBindings?: GoverningRuleSet;
+  unitAdoptionPairs?: readonly InstructionAdoptionPair[];
+  requestMaterialBinding?: object;
 };
 
 /**

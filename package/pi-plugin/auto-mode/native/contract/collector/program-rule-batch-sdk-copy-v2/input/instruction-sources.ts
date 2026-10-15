@@ -4,6 +4,7 @@
 import { selectUnitAdoptionPairs } from '../../../integration/action-policy/unit-adoption-profile.mjs';
 import { createGoverningRuleSet } from '../../../lifecycle/governing-rule-candidates/set-owner.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
+import { firstInstructionMemberId } from './instruction-ownership.ts';
 import type { InstructionContext } from './instruction-types.ts';
 
 //region Enumeration selects source-owned structure without establishing authority or permission.
@@ -35,7 +36,8 @@ export function createInstructionSources({
   function ensureRuleBindings() {
     ready();
     if (!state.ruleBindings) {
-      if (((typeof parsePolicy) !== 'function') || (!readJudgmentSources().hostGoverningPolicy)) throw new JudgmentConstructionError('Original host-selected policy and qualified parser are required for instruction claims');
+      if (((typeof parsePolicy) !== 'function') || (!Boolean(readJudgmentSources().hostGoverningPolicy))) throw new JudgmentConstructionError('Original host-selected policy and qualified parser are required for instruction claims');
+      const parse: NonNullable<InstructionContext['input']['parsePolicy']> = parsePolicy;
       /**
        Source reads retain the original judgment lifetime check.
        */
@@ -49,7 +51,7 @@ export function createInstructionSources({
        */
       function createRuleBindings() {
         return createGoverningRuleSet({
-          parse: parsePolicy,
+          parse,
           readSources: readGoverningSources
         });
       }
@@ -101,7 +103,7 @@ export function createInstructionSources({
         return declaredNames.length === 1 ? selectUnitAdoptionPairs({
           candidates: indexedInstructionCandidates(),
           readRule: readRuleCandidate,
-          member: byMember.get(declaredNames[0].id),
+          member: byMember.get(firstInstructionMemberId(declaredNames[0])),
         }) : Object.freeze([]);
       }
       state.unitAdoptionPairs = isBindingSegmentActive() ? selectAdoptionCandidates() : bindingSegment(selectAdoptionCandidates);

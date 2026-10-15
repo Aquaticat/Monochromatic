@@ -39,7 +39,7 @@ export type UnitRuleProjection<SourceOccurrence = object> = {
 /**
  Original member and clause handles remain borrowed identity capabilities.
  */
-export type UnitAdoptionPair<PreparedMember extends object | undefined = object> = {
+export type UnitAdoptionPair<PreparedMember = object> = {
   /**
    Tagged adopter clause handle.
    */

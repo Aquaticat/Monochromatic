@@ -1510,7 +1510,18 @@ The complete maintained lint recount covers 570 files and 486 rules:
 zero errors and 12726 warnings in
 `${HOME}/temp/agent/pi-maintained-typed-judgment-input-lint-20261015.log`.
 All four judgment-input source and consumer files have zero diagnostics in that full report.
-Next is instruction-claim construction using the now-typed governing-source and JSON owners.
+Instruction-claim construction now routes through the typed owner in `4eba8033e8`.
+`deabf144fd` separates structural adoption selection from later member authentication in its types;
+authority-consuming types retain their authenticated-object defaults.
+`be7a0a8e34` and `dde93c7164` retain original source selection,
+canonical clause/request/member handles,
+and dependency resolution.
+The initial type check identified closure-narrowing and first-member access corrections;
+the initial format pass still reports documentation and type diagnostics.
+These ports are not yet qualified.
+Next complete those corrections,
+exercise the built consumers against the saved original,
+and verify guard-removal controls before continuing to program ownership.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

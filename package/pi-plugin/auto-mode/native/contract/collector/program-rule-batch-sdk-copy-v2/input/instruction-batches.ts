@@ -2,6 +2,7 @@
  Original semantic-use batches retain selection limits and declaration order. @module
  */
 import { JudgmentConstructionError } from './judgment-error.ts';
+import { firstInstructionMemberId } from './instruction-ownership.ts';
 import type {
   JudgmentInstructionsInput,
   BoundPolicySelection
@@ -135,7 +136,7 @@ export function createInstructionBatches({
       if ((candidates.length === 0) || (candidates.length > 256)) throw new JudgmentConstructionError('Mixed rule assessment requires one through 256 indexed clauses; unclassified prose and larger batches remain unsupported');
       const meanings = candidates.map(function claimApprovalMeaning(rule) { return claimRuleCandidate({
         definitionId: 'states_approval_prerequisite',
-        memberId: declaredNames[0].id,
+        memberId: firstInstructionMemberId(declaredNames[0]),
         rule
       }); });
       const operations = candidates.map(function claimOperationViolation(rule) { return claimProgramRuleCandidate({
