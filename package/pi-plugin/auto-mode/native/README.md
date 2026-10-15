@@ -177,6 +177,20 @@ Synthetic parser nodes retain the original fractional end-position admission;
 this does not establish that the parser emits such positions.
 The computed-member fixture `tools[tool]` isolates computed syntax rejection from property-kind rejection.
 
+`test:native:profile-successors` verifies original native `Promise.all` and `Promise.allSettled` declarations.
+Complete successor collections retain their inclusive 32-member limit,
+original source spans,
+ordered aliases,
+and private pattern ownership.
+Original producer and borrowed call-inspector results retain their exact identities.
+The original binding name is read for each mapped member and again for final publication.
+Declaration envelopes remain unfrozen until their original outer owner publishes them.
+Synthetic syntax isolates each combinator guard and preserves original getter order,
+opaque failures,
+and sparse array mapping.
+Sparse group members retain holes while the original combined site spread materializes them as `undefined`.
+That synthetic observation does not establish complete native dispatch for sparse input.
+
 `test:native:prepared-member` verifies original native preparation,
 independent sealed input snapshots,
 and complete-group admission.

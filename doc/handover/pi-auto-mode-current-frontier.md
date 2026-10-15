@@ -11,11 +11,29 @@ Updated 2026-10-15.
 
 The next extraction delegates original parallel successor inspection to `profile-successors.ts`.
 Its borrowed call inspector and private pattern ownership remain unchanged.
-The implementation and independent built-consumer suites are committed;
-formatting, type checking, original replay, and omission verification are still pending.
-The current package status remains the completed 814-file recount with zero errors and 10194 warnings.
+Native build, package type checking, all built consumers, and exact original replay pass.
+Six domain comparisons preserve public outcomes and native execution counts,
+including a permission-versus-prohibition positive control.
+Public syntax consumers retain the direct and binding forms and both parallel combinators.
+All 33 process-local omissions or substitutions produce assertion failures;
+the built helper and profile-inspector hashes remain unchanged.
+Consumers isolate overlapping syntax guards and retain borrowed callback identities,
+repeated binding and member reads,
+partial member inspection before later failures,
+and original sparse synthetic mapping.
+The helper leaves declaration envelopes unfrozen for their original outer owner.
+The complete recount covers 820 files with zero errors and 10148 warnings;
+all six successor files have zero diagnostics.
+The remaining profile inspector has 61 warnings;
+the dispatcher has 85 and is the next native boundary.
+Receipts are `typed-profile-successors-comparison.json` and `typed-profile-successors-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-profile-successors-final-lint-20261015.log`.
+The saved original profile inspector has SHA-256
+`dab8f248c9ba906586e967e1e55ca90911170a05faa054aedfc99ff623c907d4`.
 The functional scope correction and live/human checks remain complete.
-Continue verification of this extraction, then the remaining maintained native quality queue.
+Continue the remaining maintained native quality queue.
 
 Original pattern decoding now delegates to `pattern-decoder.ts` and `pattern-decoder-types.ts`.
 The helper borrows the original private pattern owner and diagnostic constructor.
@@ -132,8 +150,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 814 files and 486 rules,
-with zero errors and 10194 warnings.
+The latest complete lint report covers 820 files and 486 rules,
+with zero errors and 10148 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
