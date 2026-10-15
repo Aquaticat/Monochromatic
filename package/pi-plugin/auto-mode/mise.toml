@@ -810,3 +810,11 @@ run = [
   'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction-lifetime.unit.test.ts',
   'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction-batch.unit.test.ts',
 ]
+
+[tasks."test:native:pattern-decoder"]
+description = "Verify original bounded pattern decoding and private ownership"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-pattern-decoder.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-pattern-decoder-failure.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-pattern-decoder-ownership.unit.test.ts",
+]

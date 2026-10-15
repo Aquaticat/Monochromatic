@@ -9,6 +9,11 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+Typed pattern decoding is in progress.
+`pattern-decoder.ts` borrows the original private pattern owner and diagnostic constructor.
+Original ownership and materialization stay in `result-pattern.mjs`.
+Built consumers, original replay, domain comparisons, omission controls, and recount are pending.
+
 The dispatcher now delegates original `beforeToolCall` member preparation to
 `prepared-member.ts` and `prepared-member-types.ts`.
 Native build,
