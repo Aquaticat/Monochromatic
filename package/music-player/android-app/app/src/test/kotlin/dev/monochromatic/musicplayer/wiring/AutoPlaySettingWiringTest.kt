@@ -304,6 +304,43 @@ class AutoPlaySettingWiringTest {
         assertEquals("on: thumb on the right", scheme.onPrimary.toArgb(), on[rightProbe, middleY].toArgb())
     }
 
+    /**
+     * Counts the pixels of [color] in the upper left of the 16 dp mark inside the thumb, where a cross has a stroke
+     * and a check mark has none; [thumbLeft] is the thumb's left edge in dp and [switchTop] the switch's top.
+     */
+    private fun upperLeftMarkPixels(thumbLeft: Float, switchTop: Float, color: Int): Int {
+        val image = composeTestRule.onRoot().captureToImage().toPixelMap()
+        val markLeft: Float = thumbLeft + 4f
+        val markTop: Float = switchTop + 4f + 4f
+        var count = 0
+        for (x in ((markLeft + 1.3f) * PIXELS_PER_DP).toInt() until ((markLeft + 6.7f) * PIXELS_PER_DP).toInt()) {
+            for (y in ((markTop + 1.3f) * PIXELS_PER_DP).toInt() until ((markTop + 6f) * PIXELS_PER_DP).toInt()) {
+                if (image[x, y].toArgb() == color) {
+                    count += 1
+                }
+            }
+        }
+        return count
+    }
+
+    /** The thumb holds a cross when off and a check mark when on, the third channel of the state. */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun theThumbHoldsACrossWhenOffAndACheckMarkWhenOn() {
+        showHost()
+        openSettings()
+        val bounds = switchRow().getUnclippedBoundsInRoot()
+        val switchBounds = composeTestRule.onNode(hasTestTag(AUTO_PLAY_SWITCH_TAG), useUnmergedTree = true)
+            .getUnclippedBoundsInRoot()
+        val switchLeft: Float = bounds.right.value - 16f - 52f
+        val switchTop: Float = switchBounds.top.value
+        val crossStroke: Int = upperLeftMarkPixels(switchLeft + 4f, switchTop, scheme.surface.toArgb())
+        assertTrue("off: a cross has a stroke in the upper left of the mark, found $crossStroke", crossStroke > 3)
+        switchRow().performClick()
+        composeTestRule.waitForIdle()
+        val checkStroke: Int = upperLeftMarkPixels(switchLeft + 24f, switchTop, scheme.primary.toArgb())
+        assertEquals("on: a check mark has none there", 0, checkStroke)
+    }
+
     /** In dark the page is pure black and the switch keeps its two channels on it. */
     @Test(timeout = CASE_LIMIT_MS)
     @Config(qualifiers = COVER_DARK)
