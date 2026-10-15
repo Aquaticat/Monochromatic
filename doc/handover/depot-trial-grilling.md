@@ -71,6 +71,10 @@ transcript investigation was stopped.
   The user rejected it as irrelevant to Depot.
   The interviewer withdrew it;
   keep subsequent questions tied to Depot evaluation and adoption constraints.
+- Q14 established an intentional hybrid:
+  intelligently route some CI to GitHub and some to Depot.
+  Routing should use measured benefit and the provider-spending ceiling from the outset;
+  GitHub is not merely a fallback after budget exhaustion.
 
 ## Measured release example
 
@@ -244,7 +248,6 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
 ## Open questions and next work
 
 - Await the current interview round:
-  Q14 asks whether budget exhaustion should use a feasible GitHub fallback or leave checks pending;
   Q15 asks whether an evidence-backed future organization transfer is an acceptable option.
   Recommendations are not accepted answers or authorization to transfer the repository.
 - The factual exploration agent is checking workflow cancellation settings,
