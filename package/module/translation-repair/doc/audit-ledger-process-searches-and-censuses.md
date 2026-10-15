@@ -454,3 +454,48 @@ a positive control exercises the same pattern and the same tool as the probe,
 on a text known to hold the thing looked for.
 `mistake-prevention.md`,
 "Searches and censuses that miss".
+
+## M170: an outcome that was rare became common and nobody re-read its consumers
+
+Status:
+happened on 2026-10-13,
+found by the sixth review (B479 and B480).
+The test `edits.length < receivers.length` in the block carry was harmless while `unavailable` was rare.
+The mark rule made `unavailable` common,
+and two consumers then withheld work from places that could have been carried:
+the splice offer of a block,
+and the writability of a paragraph.
+
+Prevention:
+when a change makes an outcome more frequent,
+a search lists every consumer of that outcome and each is re-read.
+`mistake-prevention.md`,
+"Searches and censuses that miss".
+
+## M181: a count of zero in the corpus was read as a shape that cannot happen
+
+Status:
+happened on 2026-10-13 in the brief of the proven-apostrophe work (B488),
+found by the seventh review on 2026-10-14 (B492).
+The brief set the scope of the proof as "the paragraph",
+taking the unit from the corpus count that came first,
+and did not ask whether a quotation can cross a paragraph.
+The count over 92 pages found no such case,
+and the brief read that as "cannot happen".
+The review built eight small pages (B1 to B3,
+F1 and N1 to N4 of B492) in which a replace deleted a quotation mark:
+the closing mark in six of them,
+the opening mark in one,
+and both in the last.
+In four the quotation opened in another paragraph,
+and in four the opener was glued to a letter or was `‚`,
+`‛` or `‹`,
+none of which the rule counted as a partner.
+Hand fixtures of that shape are what the oracle of the work had lacked (B499).
+
+Prevention:
+a corpus count sizes a cost and never proves a shape absent.
+The scope of a rule is decided from what the language allows,
+and each shape the count shows as zero gets a hand-built input before the rule leans on its absence.
+`mistake-prevention.md`,
+"Searches and censuses that miss".

@@ -195,6 +195,18 @@ and found only when an `Edit` would not apply:
 - Why a working NUL separator is still a defect,
    and the shared escaped constant that fixes it
 
+### [V8 first-call compile at the stack edge](v8-first-call-compile-at-the-stack-edge.md)
+
+A handler that turns a stack exhaustion into its own error
+let the engine's `RangeError` escape instead:
+
+- V8 compiles a function on its first call,
+  and a compile with too little stack raises the stack-exhaustion `RangeError`
+- The failure depended on load and test order,
+  and a smaller `--stack-size` did not reproduce it
+- The module-load warm-up that fixed it,
+  and what it still cannot cover
+
 ### [dprint-plugin-exec](dprint-exec.md)
 
 Why the exec plugin silently does nothing and why certain tools are incompatible:

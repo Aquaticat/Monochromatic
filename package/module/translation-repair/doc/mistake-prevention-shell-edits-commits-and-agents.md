@@ -61,6 +61,43 @@ and created an agent worktree through the Git wrapper without `--no-worktree-cop
 so it copied 888 MB of ignored logger files and held the settlement lock for over 45 minutes;
 the script that sets up agent worktrees then ran under `mise exec`,
 where `git` was plain Git and refused the flag (ledger M152).
+In the work of B470 to B491 nine authors and reviewers and the lead broke the same rules once more:
+`head`,
+`;`,
+a `for` loop,
+a heredoc beside a second command,
+`--eval` scripts,
+short flags,
+and an edit sent in one batch with the command that read it (ledger M177).
+In the work of B492 to B500 the reviewer and both authors of the fixes broke them once more:
+`head` and `tail`,
+`node --eval`,
+`sed --in-place` on package files,
+large output printed to the terminal,
+and edits sent in one batch with the commands that read them (ledger M182).
+In the work of B501 to B521 the reviewers and the authors of five more rounds broke them again:
+`;` and `head`,
+output of more than 50 lines printed to the terminal,
+`/dev/stdin` given as the path of an `rg`,
+a shell loop and a `tail --follow` inside a unit,
+and edits sent in one batch with the commands that read them (ledger M183 to M187).
+In the work of B513 to B574 the authors and the reviewers of the rounds that followed broke them again,
+and most of the rounds repeated the first two kinds:
+two or three edits to one file,
+or an edit and the command that reads it,
+sent in one batch;
+output of 50 to 650 lines printed to the terminal;
+Reads of 54 to 347 lines at once of sources,
+hand-backs and logs,
+by authors and a reviewer who took the limit for a limit on outputs;
+a listing or a search that recursed under the shared working tree;
+a `;` chain;
+a pipe into `rg` or `head`;
+and a background unit whose output file was read three times before it finished (ledger M189 to M197).
+The re-review polled the state of a unit about fifty times,
+and the authors of the residue round and the fixes that followed it wrote a pipe,
+a `;`,
+and edits of one file in one batch again (ledger M201 to M206).
 
 The rule:
 a Bash call holds at most three steps joined by `&&`,
@@ -72,6 +109,22 @@ A report that must run after a failing command is `a || b`.
 An edit script goes through the Write tool and runs in a call of its own,
 in a later response than the write,
 under a name no earlier script used.
+A command that reads a file just edited is sent in a later call than the edit,
+since parallel calls may run in either order (M177).
+Edits to one file are sent one per call for the same reason (M189 to M197).
+Output that may pass 50 lines goes to a file in the scratch folder
+and is read in ranges of at most 50 lines;
+the limit binds a Read of any file as it binds the terminal,
+source files,
+hand-backs,
+reviews and logs included,
+and a brief says so (M193,
+M202,
+M205,
+M209).
+A listing or a search names the directory it needs
+and never recurses under the shared working root (M191,
+M197).
 Git runs from the repository root or with `git -C`.
 An agent worktree is created with `--no-worktree-copy` from a shell whose `git` is the wrapper,
 then set up.
@@ -80,6 +133,9 @@ or by the task id of the call that started it,
 never by name or pattern.
 A count that may be zero is a call of its own,
 since `rg --count` exits 1 on zero.
+The path of an `rg` is a file or a directory:
+the input of a pipe is written to a file in the scratch folder first,
+and `/dev/stdin` is no path (ledger M186).
 While a background task runs,
 the turn ends;
 a notification arrives when it finishes.
@@ -147,6 +203,13 @@ which rebuilt `dist` under it,
 and counted that lint void (ledger B366),
 the shared build directory of M63 again:
 a run that reads `dist` never runs beside one that rebuilds it.
+A reviewer's `verify-published` rebuilds `dist` too,
+and ran during probe reruns that read it,
+so five probes failed with a missing module and were run again (ledger M182);
+every task that builds counts as a rebuild.
+The eighth review ran its replay with `--skip-deps` for the same reason (ledger M185),
+and two commands that read `dist` together were started in one block in two more rounds (ledger M184,
+M186).
 The first lines of a started run's log are read before a waiter is armed,
 a waiter watches the failure line as well as the success line,
 and the folder a unit writes to exists before the unit starts;
@@ -193,6 +256,11 @@ A scratch scan lists its files from git's index,
 or walks with a bound that skips `node_modules`,
 and runs with a heap cap (`node --max-old-space-size=512`);
 one that runs past its expected time is checked once by process status.
+A task that depends on the build,
+run while other work reads `dist`,
+is run without it
+(`mise run --skip-deps <task>`),
+and the brief names that form (ledger M185).
 
 What enforces it:
 the coverage census,
@@ -363,6 +431,9 @@ Lint's summary is read with `rg 'Found [0-9]+ warnings?'`,
 beside the findings list,
 each a check on the other (M95).
 Commit before `--fix` and read the diff after it for anything but layout.
+An author runs a fixer only on the files it changed,
+or reports every file the fixer touched:
+one author ran the package's auto-formatter twice over the shared tree and listed none (M178).
 A split searches `src`,
 tests and `doc` for the old file's name and repoints every hit in the same commit.
 A TSDoc block sits directly before the declaration it documents:
@@ -502,6 +573,9 @@ and after the message's last edit (M46),
 read the message for `#` followed by digits:
 this audit's task list numbers its items like issues,
 and two commits named a task as an issue within one hour.
+A list of paths for a commit is generated from `git status --porcelain --untracked-files=all -z`
+immediately before the commit and at no other time,
+since the lists written at merge time went stale as soon as the next author added files (M173).
 An inaccurate message is never amended:
 a commit comment corrects it.
 
@@ -569,6 +643,13 @@ separating test files is not separating the work.
 When two pieces of work did run apart,
 the second merge runs every test file of both on the merged head before its commit is relied on,
 and a rule both stated is kept once.
+The first merged tree of the fourth review's fixes held three slips the gate found:
+a case that pinned "unknown generation" at the number 17 after generation 17 became known,
+a helper carried by two test files,
+and two predicates that tested membership in a string (ledger M174).
+A case about an unknown member reads the known list and names no number,
+a helper two test files need lives in one fixture,
+and membership is tested on a set.
 
 What enforces it:
 nothing in the package;
@@ -586,6 +667,9 @@ armed two more,
 then counted the log's lines in about twenty separate calls while the suite ran;
 one call also ended in `; echo done` (ledger M162).
 Each count cost a turn and decided nothing.
+The eighth review waited on a unit with a shell loop inside `systemd-run`,
+a second unit that held a `tail --follow`,
+and four `systemctl --user is-active` calls (ledger M185).
 
 The rule:
 a brief that forbids a way of waiting names the way to wait.
@@ -597,8 +681,114 @@ a timed-out wait is repeated once,
 not replaced by polling.
 No Monitor,
 `pgrep` or `ps` loop,
-or line count of a growing log stands in for it.
+or line count of a growing log stands in for it,
+and neither does a loop in a unit,
+a `tail --follow` in a unit,
+or a repeated `systemctl` status call.
 
 What enforces it:
 the shared facts every brief points to carry the waiting rule and the exact unit form;
 the lead checks a new brief for a forbidden form of waiting with no named replacement.
+
+## Briefs and hand-backs
+
+What happened:
+a brief gave an example of a failing result that nobody had run,
+and the reader accepted the section it said the reader would refuse (ledger M167).
+A brief asked a reviewer to copy probes and repoint their imports,
+and not the paths they write,
+so the reviewer's reruns overwrote the output of the review before it (ledger M171).
+A hand-back called the work green from 64 test files,
+and the whole suite then found four failing cases (ledger M175).
+An agent denied a step by the permission classifier ran the task the step wraps (ledger M176).
+An author wrote the code of a fix before its tests,
+and two rounds whose lists of files overlapped each edited files outside their lists (ledger M182).
+Three more rounds wrote code before its tests (ledger M183,
+M184,
+M187),
+and copied probes kept hard-coded output paths and overwrote the reviewer's outputs once more (ledger M187).
+A brief required a result that contradicted a decision of the lead:
+the check that no mark changes its reading was to reach 0 under an oracle that reads a lone `*` as emphasis,
+when the lead had decided that a lone `*` is a character (ledger M188).
+A brief asked for a shared letter test to be widened without a list of its callers,
+and a later round had to confine the widening to the one pass that needed it (ledger M198).
+A brief named grid copies that a later round had already updated,
+and the review's runs on them gave counts that were no defects (ledger M199).
+An author changed its copies of the oracle to its new rule,
+and its zeros of the grids were the author's reading checked against itself;
+an oracle written from the rule text by another author then found 3,555 failing pages on the same tree (ledger M194,
+M196).
+Numbers in hand-backs came from a red run,
+from a build before the last refactors,
+or from the review's build and not a rebuild,
+and 36 more `replace` plans of a grid went unattributed for a round (ledger B532,
+M194,
+M195).
+Probe copies from older rounds called a function the tree had since removed,
+`textBetweenSlices`,
+and failed (the replay copy of n143 and the examples probe of the ninth review),
+so a newer copy had to be found for each (ledger M199).
+A ruling stated the run between two marks as a list of named characters,
+and each family around a name shipped a doubled mark until the re-review found it (ledger M208).
+A brief gave the limit of 50 lines for outputs and did not say that it covers the files an agent reads,
+and a reviewer read sources in ranges up to 347 lines (ledger M209).
+
+The rule:
+an example in a brief that claims a failing result is run before the brief is sent,
+or is written as a question.
+A brief that asks for a copied probe names both the import and every path the probe writes,
+and the author searches each copy for the folder of the review it copies before the first run (ledger M187).
+Before a brief is sent,
+each result it requires is checked against every decision that result depends on,
+and each step it requires is checked against the rules of the repository that the step must pass,
+the lint rule for the imports of tests among them (ledger M188,
+M190).
+The lead checks each brief against the decisions recorded in the notes,
+and against the rules of this page for what a brief must say,
+before the brief is launched (ledger M188,
+M200,
+M209).
+A brief that changes a shared predicate carries the list of its callers and a measurement of each (ledger M198).
+A brief names the newest copy of each probe it asks an agent to rerun and the round that updated it,
+since a copy of an older round can measure another build or call code the tree has dropped (ledger M199).
+The author of a change never edits or reads the oracle that judges it,
+and a brief for a changed rule gives the oracle to another author (ledger M194,
+and "Guards that cannot fail" in `mistake-prevention-guards-searches-and-claims.md`).
+The numbers in a hand-back come from the final build only:
+a suite that ended red is rerun whole after the fix,
+and a grid is rerun after the last refactor.
+A figure taken on another build or in a red run is labelled with that build
+and is not offered as the result (ledger B532,
+M194,
+M195).
+A figure that cannot be rerun on the final build says which build it came from
+and why the final build would give the same,
+for instance that its source files equal those of the build by checksum,
+and a difference that two changes could have made is attributed to neither (ledger M201,
+M204).
+The run-to-run spread of a timing probe is measured on the build that is reported,
+before a difference smaller than the spread is claimed (ledger M189,
+M192).
+A hand-back says which build each guard experiment ran on,
+and every file a mutation touched is checked by checksum when it is restored (ledger M191).
+A comparison written to a file is read for the size of the file before it is called identical,
+and an expectation corrected after a green run is listed in the hand-back as having no red of its own (ledger M197).
+"Green" in a hand-back means the whole package suite ran in that tree,
+and a list of files is not green.
+An agent denied a step stops and reports the denial,
+even where the wrapped task would do the same harmless work.
+A brief repeats the shell rules with each banned form named,
+and a hand-back lists every rule its author broke;
+the lead reads that list before relying on the results.
+A change is built tests first,
+item by item,
+memos and reader changes included,
+and an author who wrote the code first says so and shows that the red run was made without the change.
+A temporary edit of a source file for an attribution run is checked by the file's checksum before and after,
+and the hand-back lists the file (ledger M183).
+A file outside an author's list is edited only for a reason the hand-back names,
+and rounds whose lists overlap are merged by hand (ledger M182).
+
+What enforces it:
+habit,
+and the lead's check of each new brief against this list.

@@ -151,3 +151,27 @@ the report names no alternative.
 Recurrence:
 `mistake-prevention.md`,
 "Lint and edits".
+
+## M174: the first merged tree of the fourth review's fixes held three slips
+
+Status:
+found on 2026-10-13 by gate g88 on the first merged tree;
+each was mended before the commit.
+
+- A case pinned "unknown generation" at the number 17,
+  which generation 17 made known.
+  It now reads the known list,
+  as `artifact-dispatch.unit.test.ts` already did.
+- Two test files carried one helper.
+  It now lives in `runs-of-pieces.test-fixture.ts`.
+- Two predicates tested membership in a string,
+  so they needed a blankness guard.
+  They now test membership in sets.
+
+Prevention:
+a case about an unknown member reads the known list and names no number;
+a helper two test files need lives in one fixture;
+membership is tested on a set and never on a string.
+The first merged tree runs the whole gate before its results are relied on.
+`mistake-prevention.md`,
+"Work merged from parallel briefs".

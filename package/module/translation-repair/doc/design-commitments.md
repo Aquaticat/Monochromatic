@@ -545,6 +545,161 @@ Part of [the package README](../README.md).
   with a repeat that touches quoted speech anywhere left out (B434)
   and no two groups claiming one span (B435);
   the pass that judges them and carries the choice to every place is ledger B431.
+- **The consistency pass carries words and leaves every mark where it was.**
+  Rules of the lead on 2026-10-13 and 2026-10-14 after the fourth to seventh independent reviews,
+  and of the owner's question of 2026-10-13,
+  "Can't we pre-fix the apostrophe things deterministically?"
+  Built in ledger B463 to B500 and uncommitted when this was written.
+  The mark rule:
+  the span the pass replaces is the words alone.
+  The single marks that touch each edge of the span are read at the chosen place and at the receiving place.
+  There are four such marks:
+  `'`,
+  `‘`,
+  `’` and U+02BC.
+  The straight mark,
+  `’` and U+02BC are one mark,
+  and `‘` equals only itself.
+  From artifact generation 17 they are recorded with the located place.
+  A splice is unavailable in four cases.
+  The two places differ in a touching mark.
+  The loose marks inside the two sets of words differ in sequence.
+  A mark stands beside the receiving words and the edge character of the incoming words is of another class
+  (a letter or digit,
+  any other character,
+  or nothing).
+  Or the two sets of words differ in block breaks,
+  since no splice of one set into the other can pass the floor that holds the page's block count.
+  A loose mark is a single mark with no letter or digit directly on both sides of it.
+  When a splice goes ahead each loose mark of the incoming words is written in the receiving place's form,
+  so a straight mark carried onto a curly page arrives curly.
+  An apostrophe that arrives with the words is written the same way:
+  in the form the receiving words share when they share one,
+  otherwise in the form the page's prose apostrophes outside the span share when they share one,
+  otherwise as the chosen place wrote it.
+  A place the splice cannot carry is carried by a writer's paragraph when a writer was asked and the bench chooses it,
+  and otherwise keeps its words.
+  A writer's paragraph is withheld when it no longer holds,
+  at the block's edge,
+  the words of any place of the group that runs over that edge and must stay:
+  a receiving place the splice cannot carry,
+  the chosen place,
+  a place kept for its context,
+  and a place that already reads as the chosen one.
+  The proven-apostrophe rule:
+  an edge single mark is an apostrophe only when nothing in the whole page's prose can pair with it.
+  The proof reads the prose of the English:
+  code,
+  markup and its attributes,
+  comments,
+  link destinations,
+  addresses and emphasis marks are blanked first.
+  The possible partners are every single quotation character.
+  The backtick and `‘`,
+  `‚`,
+  `‛`,
+  `‹` and `›` count as an opener and a closer wherever they stand,
+  and `'`,
+  `’` and U+02BC count by kind:
+  an attached mark is inert,
+  a trailing mark is a closer,
+  a leading mark an opener,
+  and a free mark both.
+  A trailing mark is proven when no possible opener stands before it,
+  and a leading mark when no possible closer stands after it.
+  A proven apostrophe belongs to its word,
+  is inside the span and travels with it.
+  An edge apostrophe in the incoming words that the receiving words lack is the gain case.
+  It is decided on the page with every edit of the pass applied:
+  an edit is left out,
+  with a finding,
+  when the apostrophe it carries in is not proven there,
+  and the check repeats until no edit drops.
+  A joint is read past closing marks.
+  An apostrophe after closing emphasis,
+  a closing straight or curly double mark,
+  a closing bracket or a link and its destination,
+  and before a letter or digit,
+  joins the word,
+  so no stand sits inside `**cat**'s`,
+  `"cat"'s` or `[the cat](x)'s`.
+  Every other edge mark stays outside the span and keeps the refusal.
+  Corpus counts of 2026-10-13 (the 92 English pages `people/<id>/page.en.md` of the pinned corpus,
+  2,799 prose blocks,
+  counted with the package's own parser by `s177/counts.md`):
+  - 1,199 single marks stand in prose,
+    in 779 blocks.
+  - 1,148 are attached,
+    like the apostrophe of `don't` (65 straight,
+    1,083 curly).
+  - 33 trail a word:
+    28 have no possible partner and are all `’` after `s` in nine words,
+    and 5 have a partner and all close a single quotation.
+  - 4 follow closing markup and precede `s`,
+    all `’`.
+  - 10 lead a word and are not after markup:
+    9 are `‘` openers and 1 is `’round`.
+  - 4 are free:
+    `’` closing a quotation after sentence punctuation.
+  - No trailing mark with a partner looks like a plural possessive,
+    and the pages hold no `'90s` and no `goin'`.
+  - The marks in front matter (14),
+    HTML comments (17),
+    flow JSX (381),
+    flow expressions (19) and inline code (1) are not counted.
+  The production function run over the 92 pages finds 28 trailing and 5 leading proven marks (`s178/replay.out`).
+  What a reader of a page sees as a result of the accepted limits:
+  - A place whose edge mark differs from the chosen place's keeps its own wording or takes a writer's paragraph.
+    So does a place whose words stand beside a mark and end in another class of character than the incoming words,
+    and a place whose words differ from the chosen words in block breaks.
+  - A place whose words end in emphasis,
+    a closing double mark,
+    a closing bracket or a link before a possessive `'s` is never located and keeps its words.
+  - Carrying `the parents’` onto `the family`,
+    which has no mark,
+    keeps the place's words,
+    with a finding,
+    when another quotation mark of the page's prose could pair with the carried apostrophe.
+    Where none can,
+    the apostrophe arrives and stays an apostrophe.
+  - A decade written `1990's` holds no stand for `1990`.
+    A frame whose slot is a bare year written that way gets no slot,
+    and both places keep their words.
+  - A web or mail address holds no stand.
+    A relative link destination is not an address and is still located.
+  - A slot that stands twice inside its span leaves the place without a slot.
+  - Equal words with different marks go through the writers and the bench,
+    which costs model calls.
+  - A page whose own apostrophes mix straight and curly keeps the form of the chosen place for an arriving apostrophe,
+    since the page offers no one form to follow.
+  - Quote-like characters outside the four marks (the backtick,
+    U+00B4,
+    U+2032,
+    the low and angle quotation marks)
+    stay inside a span at a quote's edge,
+    and a replacement replaces them.
+  - A corner bracket directly beside a span is not recorded and stays where it is.
+  - A block carried in part leaves the place code could not move as it was,
+    with the finding `consistency-partly-carried`.
+  - Two groups that share a block are settled together over the English as it stood when the pass began.
+    The group that gives way keeps its places' words,
+    so the page stays inconsistent for that group.
+  - The generation 17 reader holds no English,
+    so it cannot check a recorded mark or that an edge apostrophe was proven.
+    A forged record that the pass never writes
+    (a byte-equal copy of another block's record,
+    a mark that folds equal)
+    is accepted and changes no page.
+  - No property check tells an apostrophe from a quotation mark,
+    since that is a judgment about the English.
+    Hand fixtures cover the shapes known to matter,
+    and a shape no fixture holds can still lose a quotation mark.
+  Open:
+  - `blockStandingOf` throws on 80,000 inline siblings (ledger B486).
+  - A logger line,
+    `sink verification failed for entry 3`,
+    prints from three test files,
+    and no test fails (ledger B486).
 - **The past-tense rule gets a deterministic aid,
   never a deterministic verdict.**
   Owner,

@@ -227,12 +227,85 @@ named for that subject and listed here.
 - [Audit ledger: loops that copy what they built](audit-ledger-loops-that-copy-what-they-built.md):
   Folds,
   maps and scans that copied or re-read everything built so far at every step.
-- [Audit ledger: building the tense check and the page-level consistency pass](audit-ledger-tense-check-and-consistency-pass.md):
-  The record of building the tense candidates and the page-level consistency pass:
-  what was missing,
-  what each review found,
+- [Audit ledger: building the tense check](audit-ledger-tense-check.md):
+  The record of building the tense candidates:
+  what the review of the tense records and sheets found loose,
   and what was fixed.
-  Findings of those reviews that belong to a named family are filed under that family.
+- [Audit ledger: building the consistency pass, repeat groups and the carry](audit-ledger-consistency-pass-repeat-groups-and-the-carry.md):
+  The record of building the page-level consistency pass up to the independent review of its rebuild:
+  how the repeated wording is located,
+  how the bench chooses and the pass carries the choice to every place,
+  and what the first reviews found.
+- [Audit ledger: the consistency pass, the span and the marks beside it](audit-ledger-consistency-pass-span-and-marks-beside-it.md):
+  The fourth and fifth independent reviews of the pass:
+  what the located span covers,
+  which single marks beside it travel with it or refuse a splice,
+  and the joint rules that keep a stand from sitting inside a word.
+- [Audit ledger: the consistency pass, apostrophes and block floors](audit-ledger-consistency-pass-apostrophes-and-block-floors.md):
+  The sixth independent review and the apostrophe round that followed it:
+  which apostrophes are attached to a word,
+  the apostrophes that need no guess and travel with their word,
+  and the blocks a splice carries in part.
+- [Audit ledger: the consistency pass, the page-wide proof, forms, floors and limits](audit-ledger-consistency-pass-page-wide-proof-forms-floors-and-limits.md):
+  The seventh independent review and the fixes that answered it:
+  the proof that an edge mark is an apostrophe,
+  read over the whole page,
+  the joints after closing marks,
+  the form of an arriving apostrophe,
+  the floors that keep a writer from changing words that must stay,
+  and the limits the lead accepted.
+- [Audit ledger: the consistency pass, stack depth, the floors fixed point and the page form](audit-ledger-consistency-pass-stack-depth-floors-fixed-point-and-page-form.md):
+  The rounds that built the whole-page reading:
+  the parser's refusal at the edge of the stack,
+  the floors and the gain check settled together,
+  and the page that an arriving apostrophe takes its form from.
+- [Audit ledger: the consistency pass, one reading of every mark](audit-ledger-consistency-pass-one-reading-of-every-mark.md):
+  The independent grid check and the eighth review's findings that the first fix round closed:
+  one meaning for a mark in the counter,
+  the locator,
+  the proof and the readers of form and of marks inside words,
+  and the two limits that round left accepted.
+- [Audit ledger: the consistency pass, the fixes of the eighth review and the oracle residue](audit-ledger-consistency-pass-fixes-of-the-eighth-review-and-the-oracle-residue.md):
+  The findings of the eighth review that the second fix round took in hand,
+  the flags of the first that the lead decided to fix after the merge,
+  and the residue of the oracle's rerun that the next round fixed,
+  each with the outcome of its fix.
+- [Audit ledger: the consistency pass, parse boundaries, the letter test and the proof's page](audit-ledger-consistency-pass-parse-boundaries-letter-test-and-proof-page.md):
+  The defects of the second fix round and the rounds after it:
+  the stack exhaustion read as a refusal wherever it came from,
+  the letter test widened for every caller,
+  the reason a left-out gain states,
+  and the proof's page that was a reconstruction.
+- [Audit ledger: the consistency pass, the ninth review](audit-ledger-consistency-pass-ninth-review.md):
+  The ninth independent review and its fixes:
+  the glyphs that ship,
+  the stack edge,
+  the largest set of re-admitted gains,
+  the double marks `„` and `‟`,
+  the mark after closing emphasis,
+  the cost,
+  and the comments.
+- [Audit ledger: the consistency pass, the independent oracle and the rules for marks](audit-ledger-consistency-pass-independent-oracle-and-mark-rules.md):
+  What an oracle written from the rule text found after the fixes,
+  the nine rules for marks the lead decided in answer,
+  and the limits accepted with them.
+- [Audit ledger: the consistency pass, the tenth review](audit-ledger-consistency-pass-tenth-review.md):
+  The tenth independent review and the fixes that answered it:
+  the gain blocked by a mark that reads free,
+  the second mark carried past a footnote reference,
+  a tag,
+  a link or a space,
+  the readers that knew four marks and eight,
+  and the leading elisions.
+- [Audit ledger: the consistency pass, the re-review and the refusal run](audit-ledger-consistency-pass-re-review-and-the-refusal-run.md):
+  The independent re-review of those fixes and the round that answered it:
+  the refusal run stated by what renders between two marks,
+  with references,
+  escapes,
+  spaces and line breaks,
+  the elisions that open a quotation,
+  the limits accepted,
+  and the container markers still to build.
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
   Sheets that lacked a block their role needs to judge or write.
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
@@ -347,6 +420,12 @@ named for that subject and listed here.
   briefs that left something out,
   agents that broke their rules,
   and work merged from parallel briefs.
+- [Audit ledger: process mistakes, agents and briefs in the consistency fix rounds](audit-ledger-process-agents-and-briefs-consistency-fix-rounds.md):
+  The same,
+  for the rounds that fixed the eighth,
+  ninth and tenth reviews of the consistency pass and the re-review:
+  the rule breaches of each round,
+  and the six mistakes of the lead's briefs and rulings in them.
 - [Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md):
   The lead's own slips as they were collected at the close of each batch of work.
 - [Audit ledger: process mistakes, checks run before a commit](audit-ledger-process-commit-gates.md):
@@ -559,7 +638,19 @@ Filed in:
 - [Audit ledger: failures under a caller's stop](audit-ledger-failures-under-a-callers-stop.md)
 - [Audit ledger: work merged from parallel briefs](audit-ledger-work-merged-from-parallel-briefs.md)
 - [Audit ledger: ambient state touched by library code](audit-ledger-ambient-state-touched-by-library-code.md)
-- [Audit ledger: building the tense check and the page-level consistency pass](audit-ledger-tense-check-and-consistency-pass.md)
+- [Audit ledger: building the tense check](audit-ledger-tense-check.md)
+- [Audit ledger: building the consistency pass, repeat groups and the carry](audit-ledger-consistency-pass-repeat-groups-and-the-carry.md)
+- [Audit ledger: the consistency pass, the span and the marks beside it](audit-ledger-consistency-pass-span-and-marks-beside-it.md)
+- [Audit ledger: the consistency pass, apostrophes and block floors](audit-ledger-consistency-pass-apostrophes-and-block-floors.md)
+- [Audit ledger: the consistency pass, the page-wide proof, forms, floors and limits](audit-ledger-consistency-pass-page-wide-proof-forms-floors-and-limits.md)
+- [Audit ledger: the consistency pass, stack depth, the floors fixed point and the page form](audit-ledger-consistency-pass-stack-depth-floors-fixed-point-and-page-form.md)
+- [Audit ledger: the consistency pass, one reading of every mark](audit-ledger-consistency-pass-one-reading-of-every-mark.md)
+- [Audit ledger: the consistency pass, the fixes of the eighth review and the oracle residue](audit-ledger-consistency-pass-fixes-of-the-eighth-review-and-the-oracle-residue.md)
+- [Audit ledger: the consistency pass, parse boundaries, the letter test and the proof's page](audit-ledger-consistency-pass-parse-boundaries-letter-test-and-proof-page.md)
+- [Audit ledger: the consistency pass, the ninth review](audit-ledger-consistency-pass-ninth-review.md)
+- [Audit ledger: the consistency pass, the independent oracle and the rules for marks](audit-ledger-consistency-pass-independent-oracle-and-mark-rules.md)
+- [Audit ledger: the consistency pass, the tenth review](audit-ledger-consistency-pass-tenth-review.md)
+- [Audit ledger: the consistency pass, the re-review and the refusal run](audit-ledger-consistency-pass-re-review-and-the-refusal-run.md)
 
 ## Process mistakes in this audit
 
@@ -578,6 +669,7 @@ Filed in:
 - [Audit ledger: process mistakes, lint, edits and tests](audit-ledger-process-lint-edits-and-tests.md)
 - [Audit ledger: process mistakes, stopping and waiting](audit-ledger-process-stopping-and-waiting.md)
 - [Audit ledger: process mistakes, agents and briefs](audit-ledger-process-agents-and-briefs.md)
+- [Audit ledger: process mistakes, agents and briefs in the consistency fix rounds](audit-ledger-process-agents-and-briefs-consistency-fix-rounds.md)
 - [Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md)
 - [Audit ledger: work merged from parallel briefs](audit-ledger-work-merged-from-parallel-briefs.md)
 - [Audit ledger: process mistakes, questions and handoffs to the owner](audit-ledger-process-questions-to-the-owner.md)

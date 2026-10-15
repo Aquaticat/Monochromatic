@@ -604,3 +604,19 @@ for invisible characters and for an escape that came out as its character;
 the brief agents read says so.
 `mistake-prevention.md`,
 "Escapes and the layer that reads them".
+
+## M178: an author ran the package's auto-formatter over the shared tree
+
+Status:
+happened on 2026-10-13 or 2026-10-14 in the work on B488 to B491;
+disclosed by the author in its hand-back.
+The author ran `format:oxlint` twice over the package in the shared tree,
+and the formatter reformatted files in the package.
+The hand-back does not list them,
+and the tree held other authors' uncommitted work.
+
+Prevention:
+an author runs a fixer only on the files it changed,
+or reports every file the fixer touched.
+`mistake-prevention.md`,
+"Lint and edits".

@@ -859,3 +859,40 @@ and T8's rule that a span no runtime value can reach is removed as dead code is 
 a span that guards an invariant is not dead code.
 `mistake-prevention.md`,
 "Guards a census wants gone".
+
+## M167: a brief's example claimed a failing result that nobody had run
+
+Status:
+happened on 2026-10-13 in the brief for the follow-ups to the mark rule;
+disclosed by its author in the hand-back.
+The brief gave an example for the writer item,
+a chosen place of other words,
+and said the reader refuses the section without the fix.
+The reader accepts that section.
+The red shape is a chosen place that holds the equal words,
+beside a receiving place that holds them with a mark.
+The author ran both shapes,
+said so plainly,
+and kept the first as a second round-trip case that was never red.
+
+Prevention:
+an example in a brief that claims a failing result is run before the brief is sent,
+or is written as a question.
+`mistake-prevention.md`,
+"Briefs and hand-backs".
+
+## M179: the property oracle counted the proven apostrophes as loose marks
+
+Status:
+happened on 2026-10-13 in the work on B488;
+caught by the author before any result rested on it.
+The oracle of the sixth review's grids counted a proven apostrophe as a loose mark,
+so under the new rule it would have flagged correct carries.
+The author wrote a new independent oracle,
+and showed with a positive control that it detects a planted gain case and a planted attach flip.
+
+Prevention:
+when a rule changes what a property means,
+the oracle is rewritten and shown to detect a planted violation before any grid is run with it.
+`mistake-prevention.md`,
+"Guards that cannot fail".

@@ -210,6 +210,30 @@ a plain word for an edge);
 one that stays carries a comment at its site saying why no case can separate it,
 so a reader of a later mutation run finds the reason beside the survivor,
 not in a ledger entry.
+When a rule changes what a property means,
+the oracle that checks the property is rewritten,
+and shown to detect a planted violation,
+before any grid is run with it:
+the oracle of the sixth review's grids counted a proven apostrophe as a loose mark,
+and would have flagged correct carries (ledger M179).
+The author of a change never edits or reads the oracle that judges it:
+n140 changed its copies of the oracle and of the final check to its new rule,
+and its grids read zero on pages that an oracle written from the rule text alone failed:
+3,555 single-edit pages of one grid and 1,092 of another,
+861 of them for a doubled mark (ledger M194,
+B535).
+A changed rule gets an oracle written by someone else from the rule text,
+which imports nothing from the code under test,
+reads no body of it,
+and is shown on hand cases that fail first before a grid is run with it (ledger M196).
+An independent oracle is written from the rule text alone,
+and the reviewers of a rerun read its outputs and never its code:
+the tenth review did not open the oracle,
+and decided the four pages the oracle still failed from the flanking rules of the format
+and the parse of a reference implementation,
+which showed the oracle wrong and production right (ledger M194,
+M196,
+B549).
 
 What enforces it:
 the mutation harness in each fix's record,
@@ -342,6 +366,17 @@ issue 610),
 so a failing scan named nothing it found until its walk ran again in a probe.
 Each helper writes every difference whole on a line of its own,
 then makes the comparison the scan made.
+
+A change that makes an outcome more frequent starts with a search that lists every consumer of that outcome,
+and each consumer is re-read:
+a test that was harmless while `unavailable` was rare withheld work from carriable places once the mark rule made it common
+(ledger M170).
+
+A corpus count sizes a cost and never proves a shape absent.
+A rule's scope was set to "the paragraph" from the unit of a count that found no quotation across paragraphs,
+and eight small pages the seventh review built lost a quotation mark (ledger M181).
+The scope of a rule is decided from what the language allows,
+and each shape a count shows as zero gets a hand-built input before the rule leans on its absence.
 
 What enforces it:
 habit,
@@ -483,6 +518,23 @@ not the writer's output.
 A check's log counts only with its exit status and its own verdict line:
 a docs commit was recorded as Markdown-lint clean from a log holding only the logger's sink timeout,
 and no line from the linter (ledger M151).
+A cost is sized by counting every shape that reaches the code path,
+never by the example that prompted the question:
+a span rule's cost was sized by its one dropped opening when plural possessives,
+years and `'em` reach the same code (ledger M168).
+A sentence of the form "so the result pairs X the way both places did" is backed by a property probe
+over a grid that includes markup and punctuation edges before it is written in a header (ledger M169).
+A limit is accepted only with a probe that shows what a reader of the page sees,
+and the entry that records the acceptance names the probe:
+a mix of straight and curly apostrophes was accepted from the author's description,
+and the seventh review counted it on 6,239 of 61,846 replaces of its grid (ledger M180).
+A limit is also read against the text of the decision it departs from before it is recorded:
+a mark beside a CJK character was accepted as trailing against a decision that says it reads as loose,
+and the entry that recorded it had no probe either (ledger M200,
+B520).
+A replay cited as evidence for a reader prints the thing the reader read:
+the replay of the stored run printed no count of consistency groups until its line ended `consistency-groups=2 read-at-generation=15`
+(ledger M172).
 
 What enforces it:
 habit;
@@ -674,6 +726,11 @@ or runner entries,
 and 300 are logic that another module's test reaches or no test names at all (ledger B102).
 A module tested only through its importers loses that coverage when an importer changes,
 and nothing stopped a new one from joining them.
+The same held inside a module:
+three private helpers of the mark readings (`readProof`,
+`isPartOfAWord` and `bringsAtEdge`) were reached only through exported callers,
+and no case named their branches (ledger B519,
+M187).
 
 The rule:
 a new production module ships with `<stem>.unit.test.ts` beside it,
@@ -681,10 +738,21 @@ unless it is a barrel,
 holds only types and literal constants,
 or is a runner entry `src/build-entries.ts` lists.
 A module on the list leaves it when it gains a test.
+A new helper with branches of its own is exported from its module marked `@internal`,
+reaches its tests through `built-artifact-barrel.ts`
+(the lint rule for the imports of tests asks for the built entry,
+and rule XPT of `AGENTS.md` allows it;
+ledger B519,
+M190),
+and is tested directly branch by branch;
+the hand-back lists any helper without such a test.
 
 What enforces it:
 `own-unit-tests.unit.test.ts`,
-among the source scans.
+among the source scans,
+for modules;
+for helpers,
+habit and the hand-back's list.
 
 ## Lists that must name every member of a type
 

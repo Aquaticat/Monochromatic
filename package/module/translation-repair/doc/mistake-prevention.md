@@ -41,6 +41,7 @@ named for that subject and listed here.
   - [Questions to the owner](mistake-prevention-shell-edits-commits-and-agents.md#questions-to-the-owner)
   - [Work merged from parallel briefs](mistake-prevention-shell-edits-commits-and-agents.md#work-merged-from-parallel-briefs)
   - [How an agent waits](mistake-prevention-shell-edits-commits-and-agents.md#how-an-agent-waits)
+  - [Briefs and hand-backs](mistake-prevention-shell-edits-commits-and-agents.md#briefs-and-hand-backs)
 - [Preventing mistakes: guards, searches and claims](mistake-prevention-guards-searches-and-claims.md):
   Rules for evidence:
   guards that must be able to fail,

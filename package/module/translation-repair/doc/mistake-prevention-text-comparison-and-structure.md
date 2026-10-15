@@ -796,9 +796,92 @@ a line break against a space and a straight against a curly apostrophe,
 so a 3 to 1 choice located nothing (ledger B449);
 and a quote that did locate would have carried a word that renders source outside the repeat (ledger B450).
 Both families were recorded before the module was written.
+Then the locator widened a located span over a single mark it judged,
+from the shape of nearby words,
+to be an apostrophe,
+and 194 of 1,020 generated texts gave a wrong span that deleted or stranded a quotation mark (ledger B463).
+The proof that replaced the guess read only the paragraph of the mark,
+and a closing quotation mark whose opener stood in another paragraph was taken for an apostrophe and deleted (ledger B492).
+Then one mark was read by five readers that disagreed:
+the counter,
+the locator,
+the proof,
+the reader of the page's form and the reader of marks inside words.
+An apostrophe after closing markup was an opener to the proof and a joint to the locator (ledger B504),
+a lone `*` counted as closing emphasis by shape (ledger B506),
+the letter beside a mark was a Latin letter in one reader and a letter of any script in another (ledger B507),
+and a mark one markup character past the words was recorded by none of them (ledger B508).
+Widening the shared letter test for the pass reached the glossary,
+quote locating,
+alignment and the other callers of the package (ledger B523),
+and an oracle written from the rule text then found the pass reading a mark as an apostrophe
+beside another script,
+a symbol or a pictograph,
+past a `)` or a `"`,
+and past a lone `_` that the parse does not make emphasis (ledger B536 to B538).
+The run that a gain looks across for a kept mark,
+so that the page never shows two marks where the source had one,
+was first stated as the characters the parse reads as markup,
+then as three references,
+three spaces and "on the line".
+The tenth review found the page carrying a second mark past a footnote reference,
+a tag,
+a link and a space,
+and the re-review found it past a reference that is itself a mark,
+a backslash escape,
+the other Unicode spaces and a soft line break,
+and the fix of those found a fifth family,
+the container markers of a block quotation or a list (ledger B557,
+B564 to B567,
+B574,
+M208).
+A leading straight mark before a word of a closed list of elisions was curled to `’` whether or not it was paired,
+and a quotation that begins with such a word shipped `’Tis the season,'`
+with its closing mark straight (ledger B563,
+B568,
+M207).
 
 The rule:
-a quote a model gives back is evidence of where it points,
+a span covers only what the quote matched,
+and anything decided by a guess stays outside it.
+A single mark at the edge of a span is part of the span only where the whole page's prose proves it an apostrophe
+(no possible partner for it anywhere in that prose,
+every single quotation character counting as a partner);
+every other edge mark is recorded beside the span and compared at both places.
+An apostrophe that arrives with the words is written in the form of the receiving place (ledger B494).
+One mark has one reading in every reader of the pass:
+the letter beside it is a Latin letter (accents included),
+an ASCII digit or a letter or digit whose compatibility form is one,
+and the pass keeps its own test for that and does not widen the shared `continuesLatinWord` (ledger B523),
+`*`,
+`_` and `~` close only where the parse makes them the closing delimiter of a node (ledger B536),
+and a splice is built and then checked by reading every single mark of the block outside the span before and after,
+a change making the place unavailable (ledger B505 to B507).
+A mark beside another script,
+a symbol,
+a pictograph or another single mark reads free,
+and the run it is read past holds the closing delimiters of the parse and a link's closing tail only (ledger B537 to B539).
+A leading mark of any apostrophe-like form is a possible opener for the marks after it (ledger B540,
+B559).
+The run that a gain looks across for a kept mark is another run than the one a mark is read past.
+A rule about what lies between two marks is stated by what renders between them,
+in the model of the renderer,
+and never by a list of characters:
+escapes (a backslash and the character it escapes show as that character),
+character references (one that decodes to a quotation mark makes the page unavailable for every gain),
+every white space that the proof's own test holds,
+line breaks inside a paragraph (a single one shows as a space),
+and container markers at the start of a line (they show as nothing)
+(ledger B557,
+B564 to B567,
+B574,
+M208).
+Before an option is accepted that changes the glyphs a page ships,
+a paired and an unpaired quotation are probed with it,
+a quotation that begins with a word the option treats specially among them (ledger B563,
+B568,
+M207).
+A quote a model gives back is evidence of where it points,
 not text to compare or splice:
 it is located in the text it quotes,
 with whitespace runs,
@@ -812,5 +895,10 @@ never through a splice.
 What enforces it:
 the consistency pass's own tests,
 built from the live run's texts;
+`pass-consistency-shipped-marks.unit.test.ts` holds a page for each family of second mark that the re-review found
+(references,
+escapes,
+spaces and line breaks),
+and `restore-typography.unit.test.ts` holds paired and unpaired elisions;
 no scan finds a quote compared as a string elsewhere,
 so a new reader of judges' quotes is reviewed against this rule.

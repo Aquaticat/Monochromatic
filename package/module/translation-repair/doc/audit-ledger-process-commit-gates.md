@@ -411,3 +411,19 @@ the touched files by name,
 the source scans,
 the lint,
 then the whole suite or a gate.
+
+## M173: the commit path lists went stale before the commit
+
+Status:
+found on 2026-10-13 in the merges of the sixth-review round.
+The lists of paths for each commit were written at merge time,
+and went stale as soon as the next author added files.
+The second round of the linter migration generated its lists from `git status --porcelain --untracked-files=all -z`
+just before the commit,
+and found 100 entries in two lists.
+
+Prevention:
+path lists for a commit are generated from the worktree status immediately before the commit,
+and at no other time.
+`mistake-prevention.md`,
+"Commit messages".

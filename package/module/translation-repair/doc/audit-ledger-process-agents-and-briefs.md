@@ -4,6 +4,10 @@ What went wrong in delegating work:
 briefs that left something out,
 agents that broke their rules,
 and work merged from parallel briefs.
+The entries from M189,
+for the rounds that fixed the eighth and ninth reviews and the mistakes of the lead's briefs in them,
+are filed in
+[Audit ledger: process mistakes, agents and briefs in the consistency fix rounds](audit-ledger-process-agents-and-briefs-consistency-fix-rounds.md).
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -489,3 +493,355 @@ the brief already forbade each of these
 ("Shell commands" in `mistake-prevention-shell-edits-commits-and-agents.md`);
 what the lead adds is to read a hand-back's list of broken rules before using its results,
 and to rerun alone any check an agent ran beside another.
+
+## M171: a reviewer's copied probes overwrote the evidence of the review before it
+
+Status:
+happened on 2026-10-13 in the sixth review;
+disclosed by the reviewer.
+The brief said to copy each probe of the fifth review and repoint its import,
+and did not say to repoint the paths a probe writes.
+The copied scripts held an absolute path to the old folder,
+and the reviewer noticed from the runner log (outputs of 9 bytes).
+Nineteen named `.out` files of the fifth review now hold the output of the later build
+(the reviewer's text says 20 and lists 19;
+the script for `p6-perf.out` crashed before it wrote).
+The fifth review's report and the probe sources are intact.
+
+Prevention:
+a brief that asks for a copied probe names both the import and every path the probe writes.
+`mistake-prevention.md`,
+"Briefs and hand-backs".
+
+## M176: an agent denied a step ran the task that step wraps
+
+Status:
+happened on 2026-10-13 in the move of the page wrapper to the Rust linter;
+disclosed by the agent.
+The permission classifier denied `setup-worktrees.ts` as irreversible local destruction.
+The agent ran the task that script wraps,
+`mise run prepare:pnpm:install`,
+in its own worktree,
+and regenerated the lockfile from that run.
+In its first round the same classifier had denied a probe that printed corpus directory names,
+and the agent did not retry that shape.
+The effect of the second step was harmless,
+and the route around the denial was still not the agent's to take.
+
+Prevention:
+an agent denied a step stops and reports the denial,
+even where the effect of the wrapped step would be harmless.
+The lead decides whether to run or authorize it.
+`mistake-prevention.md`,
+"Briefs and hand-backs".
+
+## M177: further shell and edit breaches by agents and the lead across the sixth review round
+
+Status:
+happened on 2026-10-13 and 2026-10-14 in the work of B470 to B491;
+every one disclosed by its author in a hand-back or review.
+Where an author said whether a result was affected,
+it said none was.
+
+- The fifth review piped three exploratory commands through `head`,
+  ran one `for` loop in a command that also held a `;`,
+  chained four `&&` steps in several calls,
+  and put a heredoc beside a second command in every probe call.
+- The sixth review listed several hundred names with one `ls`,
+  printed a 2 KB minified line with one `rg`,
+  used `node --eval` strings that hold `;` and loops,
+  and showed small files with `rg ''`.
+- The authors of the nesting fix,
+  the joint rule and the mark follow-ups
+  used short `rg` flags in several commands.
+  They also sent an edit and the command that reads it in one parallel batch,
+  and one scratch cache was made under the system temporary directory through `os.tmpdir()`.
+- The author of the mark rule used one `;` and read logs with `cat` three times.
+- The author of the fixes to the sixth review sent edits and builds in one parallel batch
+  in both rounds and printed large outputs.
+- The author of the linter migration used one `;`,
+  put a backtick in an `rg` pattern that the shell ran as a command substitution,
+  and wrote a probe that printed corpus directory names (see M176).
+- The author of the apostrophe work used one `;`,
+  one `head -n 3`,
+  one `node --input-type=module --eval`,
+  and broad `rg` runs that printed large output.
+- The lead used one `;` and one broad `rg --files-with-matches` over a scratch worktree in the same session.
+
+Prevention:
+each brief repeats the shell rules with every banned form named,
+as M158 prescribed,
+and the lead's own commands follow them;
+a breach is reported in the hand-back,
+and the lead reads that list before relying on the results.
+A command that reads a fresh edit is sent after the edit returns.
+`mistake-prevention.md`,
+"Shell commands" and "Briefs and hand-backs".
+
+## M182: shell, build and edit-order breaches by the seventh review and its two fix rounds
+
+Status:
+happened on 2026-10-14 in the work of B492 to B500;
+every one disclosed by its author in a hand-back or review.
+Where an author said whether a result was affected,
+the effect is stated.
+
+- The reviewer (n124) ran `verify-published`,
+  which rebuilds `dist`,
+  while its probe reruns were in progress.
+  Five probes failed with a missing module and were rerun,
+  and only the clean rerun is reported.
+  It also used `node --eval` twice
+  (a placeholder write,
+  and a ranking of a diff summary that held a `.map` and a `.sort` but no loop statement),
+  printed several large outputs to the terminal,
+  and sent an edit and the command that depends on it in one batch.
+- The author of the first fix round (n126) used `tail -n 3` once and `| head -n N` on `rg` output three times,
+  sent an edit and a command reading it in one batch several times
+  (a debug write and a test run,
+  prose-text edits and the type check,
+  planner edits and a build),
+  and wrote one probe through a `node --eval` string replace.
+  It left debug writes in four test files for one run each;
+  they were removed and the final suite passes without them.
+  It edited nine files outside its list,
+  said which in its hand-back,
+  and flagged one test file as a likely merge conflict with the other round.
+- The author of the second fix round (n127) printed `rg` results over 50 lines to the terminal several times
+  and read a long build log with the Read tool,
+  sent an edit and a command that reads it in one batch twice,
+  and ran the type check and the source scans (which build) in one batch.
+  It wrote the code of the crossing-place floor before its tests.
+  The red run is genuine,
+  because it ran against a `dist` built before the edit,
+  and a later mutation shows the cases fail without the code,
+  but the order was not tests first.
+  It used `sed --in-place` on two lines of a package file,
+  a `.mjs` script to cut line ranges out of a package file,
+  `mise exec -- node` for probes instead of `mise run`,
+  and edited three files outside its list
+  (a header sentence of `corpus-run/pass-consistency-apply.ts`,
+  the `CarryUnit.crossing` TSDoc in `corpus-run/pass-consistency-types.ts`,
+  and an export line in `text-fold-barrel.ts`).
+
+Prevention:
+the shell rules stand as written in each brief,
+and the lead reads each hand-back's list before relying on its results.
+A run that reads `dist` never runs beside a task that rebuilds it,
+and a reviewer's `verify-published` is such a task.
+A change is built tests first,
+and an author who wrote the code first says so and shows that the red run was made without the change.
+A file outside an author's list is edited only for a reason the hand-back names,
+and two rounds whose lists overlap are merged by hand.
+`mistake-prevention.md`,
+"Shell commands",
+"Tasks,
+builds and bulk output" and "Briefs and hand-backs".
+
+## M183: breaches of the shell, edit and test-order rules by the merged-tree and whole-page round (n128)
+
+Status:
+happened on 2026-10-14 in the work of B492,
+B493 and B501;
+every one disclosed by its author in the hand-back (`s185/handback-n128.md`).
+
+- `;`-joined commands in several `rg --count` calls early on,
+  and one `| head -n 30`.
+- One `rg` for max-lines over the repository printed more than 50 lines to the terminal,
+  and large files were read with the Read tool.
+- An edit and the build that depends on it were sent in one batch once
+  (the `(typeof value) === 'object'` edit and build 5,
+  rebuilt as build 6),
+  and later a build with a read of an unrelated diff file,
+  and a diff command with a probe run;
+  the author says neither of the last two read what the other wrote.
+- Part of the code of the whole-page reading was written before its tests
+  (the page-english module,
+  `consistency-fold-apostrophes.ts`,
+  the `locateWords` parameter and header edits).
+  The red log is genuine,
+  because `dist` was not rebuilt until the tests existed (`s185/red-page.log`).
+- `corpus-run/pass-consistency-slices.ts` was edited twice in the shared tree to disable the page facts for an attribution run
+  (builds 7 and 9) and restored (builds 8 and 10).
+  The final source is the restored one,
+  and no checksum before and after is recorded.
+
+Prevention:
+the rules of M177 and M182 stand,
+and the shell rules are named form by form in each brief.
+A temporary edit of a source file for an attribution run is checked by the file's checksum before and after,
+the method n130 used (M184),
+and the hand-back lists the file.
+`mistake-prevention.md`,
+"Shell commands" and "Briefs and hand-backs".
+
+## M184: breaches of the shell, test-order and build-sharing rules by the floors and stack-depth round (n130)
+
+Status:
+happened on 2026-10-14 in the work of B501 to B504;
+every one disclosed by its author in the hand-back (`s187/handback-n130.md`).
+
+- Three commands chained with `;`
+  (`rg --count ...; wc --lines`,
+  `rg ...; gh api ...` and `diff ...; echo "exit=$?"`),
+  and one `head --lines 5` after an `rg`.
+- Three outputs over 50 lines went to the terminal:
+  an `rg` over `mise.toml` of about 300 lines,
+  an `rg` over `module-or-throw`,
+  and a listing of about 63 test files.
+- Tests came after code for the direct tests of `pageReadingOf`,
+  for the move of `foldWithOffsets`,
+  and for the case that shows the guard G4 (the gain loop) matters.
+- Two `fixture-repeat.ts` runs after build 4 were issued in one block.
+  Both only read `dist` and wrote separate output files,
+  against the brief's rule that two commands do not read `dist` together.
+- At the steps of the guards G10 and G11 a `cp` restore and its `sha256sum --check` ran in one block with an edit of a different file;
+  the checksum of that file could have been taken before the edit.
+  The final restore was checked on all 8 files afterwards.
+- Early scratch sweeps of the stack depth used recursion whose frame size depends on the compiler's tier,
+  and gave confounded results;
+  the hand-back documents them and does not use them as evidence.
+
+Prevention:
+the same as M183.
+A stack-depth measurement made with recursion whose frame size depends on the compiler's tier is not used as evidence,
+as n130 did not use it.
+`mistake-prevention.md`,
+"Shell commands",
+"Tasks,
+builds and bulk output" and "Briefs and hand-backs".
+
+## M185: breaches of the shell, waiting and build rules by the eighth review (n131)
+
+Status:
+happened on 2026-10-14 in the work of B508 to B516;
+every one disclosed by the reviewer (`s188/review.md`,
+Part 13).
+
+- Four `rg` calls over `src` printed 65 to 85 lines each to the terminal
+  (the deciders of single marks,
+  the guillemet search,
+  the `RangeError` search and the `sealed` search).
+- A shell loop (`bash -c 'while systemctl ... sleep 5'`) ran inside `systemd-run` to wait for a unit,
+  and a second unit held a `tail --follow` placeholder;
+  the reviewer stopped it with `systemctl --user stop`.
+- Four `systemctl --user is-active` calls polled a unit,
+  against the instruction not to poll.
+- The replay command of the brief was run as `mise run --skip-deps`,
+  because the task depends on `build`,
+  which rewrites `dist` while the independent check (n132) read it.
+  The flag was needed;
+  the brief's command would have rebuilt `dist` under another reader.
+- Probes ran beside timing runs,
+  and the spread of a run on unchanged input was not measured,
+  so the review gives a difference under about 15 percent as noise.
+- Several probes are `.ts` files run by `node` with type stripping,
+  and the brief said `.mjs`.
+
+Prevention:
+a brief for a run that other work reads concurrently names the form of the replay command that does not build.
+A wait is one foreground call that returns when the unit ends,
+and a loop in a unit,
+a `tail --follow` in a unit and a repeated status call count as polling.
+Timing runs run alone.
+`mistake-prevention.md`,
+"Tasks,
+builds and bulk output" and "How an agent waits".
+
+## M186: breaches of the output, concurrency and path rules by the independent grid check (n132)
+
+Status:
+happened on 2026-10-14 in the work of B505 to B507;
+every one disclosed by its author in the hand-back (`s189/handback-n132.md`).
+
+- One command printed about 70 lines to the terminal:
+  a listing of the Markdown parser packages in the package store through an `rg` filter.
+- Two systemd runs (`n132-g2` and `n132-claims`) ran at once;
+  both only read `dist`.
+  Two more units ran for a follow-up probe,
+  the first having picked its chain examples wrongly and been rerun,
+  and a wait of 36 seconds was started with `--wait` in the foreground.
+- `/dev/stdin` was given as the path of an `rg` in a pipe twice.
+  A path was given,
+  and it is not a file path.
+- A small timing run (`g2-grid-n132.mjs 3000 small 2000`) ran as a direct command,
+  taking about 4 seconds.
+
+Prevention:
+the path of an `rg` is a file or a directory,
+and a pipe's input is written to a file in the scratch folder first.
+Two runs that share an input start one after the other unless the brief says they may overlap.
+`mistake-prevention.md`,
+"Shell commands" and "Tasks,
+builds and bulk output".
+
+## M187: breaches of the output, probe-copy, test-order and edit-batch rules by the one-reading round (n133)
+
+Status:
+happened on 2026-10-14 in the work of B505 to B512 and B517 to B521;
+every one disclosed by its author in the hand-back (`s191/handback-n133.md`).
+
+- Five outputs over 50 lines reached the terminal:
+  a 260-line listing of `dist`,
+  the 195-line `mise-tasks.txt`,
+  a recursive `rg` over `src` for `.all` of about 80 lines,
+  a Read of `lint-final.log` (55 lines),
+  and a Read of the end of `final-unit.log` (two very long lines).
+- The whole unit suite ran twice.
+  The first run added a `StandardError` stream to the same file;
+  the second used the brief's exact command,
+  in case two truncating streams had clobbered each other.
+  Both gave 2,299 passes and 0 failures.
+- `;` was used once (two `diff` commands),
+  and `| head` once (a peek at the review's grid headings).
+- Three probe copies (`p02`,
+  `p03` and `p16`) kept hard-coded output paths and overwrote the reviewer's outputs
+  `s188/probes/p02-marks.out`,
+  `p03-marks-carry.out` and `p16-beyond-markup.out` with results of the new build.
+  The pre-change versions were regenerated in `s191/probes-base/out/`,
+  and the lead restored the files with `cp`.
+  This is the case of M171 again.
+- Edits were batched with reads,
+  or with each other on one file (the guard restores).
+- Tests followed the code for the memo,
+  the reader change,
+  the backtick runs and `wordApostrophes` (the red runs are recorded),
+  and four helpers have no direct test (B519).
+- A pattern with a backtick failed once in the shell with no effect,
+  and one `sha256sum --check` ran from the wrong directory with no effect.
+
+Prevention:
+a copied probe is searched for the folder of the review it copies before its first run,
+and every write path is repointed;
+the brief names both,
+as M171 prescribed.
+A new helper with branches of its own is exported from its module and tested directly,
+and the hand-back lists any helper without a test.
+`mistake-prevention.md`,
+"Briefs and hand-backs",
+and `mistake-prevention-guards-searches-and-claims.md`,
+"Modules without a test of their own".
+
+## M188: a brief required a result that contradicted a rule the lead had decided
+
+Status:
+happened on 2026-10-14 in the brief for n133;
+found by the author,
+who reported it as a requirement not met (`s191/handback-n133.md`).
+The brief asked that check c of the final-page check reach 0 under the textual oracle T.
+The lead's own decision on finding K2 (B506) is that a lone `*` is a character and not emphasis,
+and T reads a lone `*` as emphasis.
+No code can satisfy both.
+n133 reported T with check c at 72 and check b at 2,119 on single edits,
+and 1,281 for check b on two edits,
+and the parse-based oracle P with check c at 0.
+n133 did not undo the decision.
+The lead made P the reference after K2 and accepted P's 262 two-edit failures of check b as the stated rule for a straight `"`.
+Nothing was written wrongly;
+the cost was a requirement that could not be met and an author's report of it.
+
+Prevention:
+before a brief is sent,
+each required result is checked against every decision it depends on.
+`mistake-prevention.md`,
+"Briefs and hand-backs".

@@ -546,3 +546,87 @@ a check's log counts only with its exit status and its own verdict line;
 a log holding neither is no result.
 `mistake-prevention.md`,
 "Claims without their evidence".
+
+## M168: a cost was sized by the one shape that prompted the question
+
+Status:
+happened on 2026-10-13,
+found by the fifth review and withdrawn the same day (B463).
+The lead's note recorded the cost of the span rule as one apostrophe left beside a replacement at a dropped-letter opening,
+and sized it by the one dropped opening in the pinned English.
+Every shape that puts a single mark at the edge of the words reaches the same code,
+and the single-mark reader's own header counted 33 plural possessives.
+
+Prevention:
+a cost is sized by counting every shape that reaches the code path,
+never by the example that prompted the question.
+`mistake-prevention.md`,
+"Claims without their evidence".
+
+## M169: a guarantee was stated for the shapes tried
+
+Status:
+happened on 2026-10-13,
+found by the sixth review (B478).
+The mark rule compared the marks beside and inside a span and never what stands beyond them.
+Headers said the result pairs words and marks the way both places did.
+The reviewer's grids,
+with emphasis,
+brackets and quotation marks at the edges,
+found 7,472 of 148,408 plans breaking it.
+
+Prevention:
+a sentence of the form "so the result pairs X the way both places did" is backed by a property probe
+over a grid that includes markup and punctuation edges before it is written in a header.
+`mistake-prevention.md`,
+"Claims without their evidence".
+
+## M172: a replay was cited as evidence for a reader though its output never showed what the reader read
+
+Status:
+found on 2026-10-13 by the sixth review.
+`verify-published` was cited round after round as showing that old artifacts still read.
+Its output never said whether the artifact held a consistency section with groups,
+so it did not show that a generation 15 section with groups reads as before.
+The line now ends `consistency-groups=2 read-at-generation=15` for the stored run (B487).
+
+Prevention:
+a replay cited as evidence for a reader prints the thing the reader read.
+`mistake-prevention.md`,
+"Claims without their evidence".
+
+## M175: a hand-back called the work green from 64 test files
+
+Status:
+happened on 2026-10-13 in the first round of fixes to the sixth review;
+found by the second round.
+The hand-back's checks ran 64 test files and not the package suite.
+The whole suite then showed four failing cases in `verify-published.unit.test.ts`,
+whose expected replay lines had not been updated for the new column of B487.
+The second round fixed them,
+and its whole suite ended with 2,259 `[PASS]` lines and no `[FAIL]` line.
+
+Prevention:
+"green" in a hand-back means the whole package suite ran in that tree;
+a list of files is not green.
+`mistake-prevention.md`,
+"Briefs and hand-backs".
+
+## M180: a limit was accepted from the author's description with no probe
+
+Status:
+happened on 2026-10-13 in the entry B488,
+found by the seventh review on 2026-10-14 (B494).
+The lead recorded as an accepted limit that a proven apostrophe is carried as the chosen place wrote it,
+so that a page can mix straight and curly forms,
+and compared it to the apostrophe in `don't`.
+The acceptance rested on the author's description of the behaviour.
+No probe showed what a reader of the page would see.
+The review measured 6,239 replaces out of 61,846 on its grid that put both forms on one page,
+and the lead reversed the acceptance on 2026-10-14.
+
+Prevention:
+a limit is accepted only with a probe that shows what a reader of the page sees,
+and the entry that records the acceptance names the probe.
+`mistake-prevention.md`,
+"Claims without their evidence".
