@@ -22,7 +22,10 @@ export type Pattern = Readonly<
   }
   | {
     kind: 'object';
-    entries: readonly Readonly<{ key: string; pattern: Pattern }>[]
+    entries: readonly Readonly<{
+      key: string;
+      pattern: Pattern
+    }>[]
   }
 >;
 /**
@@ -121,11 +124,14 @@ export function rejects({
   message: string
 }>): void {
   assert.throws(
-    function rejectedPattern() { decode(input); },
+    function rejectedPattern() { 
+      decode(input); 
+    },
     {
-    constructor: patterns.ResultProgramProfileError, name: 'ResultProgramProfileError',
-    message: `Result-derived program is outside the inspected profile: ${message}`,
-  }
+      constructor: patterns.ResultProgramProfileError,
+      name: 'ResultProgramProfileError',
+      message: `Result-derived program is outside the inspected profile: ${message}`,
+    }
   );
 }
 /**
@@ -140,8 +146,16 @@ export function rejects({
 export function objectNode(input: Input = {}): object {
   return {
     type: 'ObjectExpression',
-    properties: [{ type: 'Property', computed: false, method: false, kind: 'init', shorthand: false,
-    key: { type: 'Identifier', name: 'value' }, value: { type: 'Literal', value: 1 }, ...input }]
+    properties: [{
+      type: 'Property',
+      computed: false,
+      method: false,
+      kind: 'init',
+      shorthand: false,
+      key: { type: 'Identifier', name: 'value' },
+      value: { type: 'Literal', value: 1 },
+      ...input
+    }]
   };
 }
 //endregion

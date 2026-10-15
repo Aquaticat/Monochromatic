@@ -94,7 +94,8 @@ export function readOwnedPattern({
     if (!(isAbsent(node.regex) && isAbsent(node.bigint)
       && ((value === null) || ((typeof value) === 'string')
         || ((typeof value) === 'boolean')
-        || (((typeof value) === 'number') && Number.isFinite(value) && (!Object.is(value, -0)))))) {
+        || (((typeof value) === 'number') && Number.isFinite(value)
+          && (!Object.is(value, -0)))))) {
       throw new ResultProgramProfileError('non-JSON literal');
     }
     return owned({
@@ -103,8 +104,11 @@ export function readOwnedPattern({
     });
   }
   if ((node?.type === 'UnaryExpression') && (node.operator === '-')
-    && (node.argument?.type === 'Literal')
-    && ((typeof node.argument.value) === 'number')) {
+    && (node.argument
+      ?.type
+      === 'Literal')
+    && ((typeof node.argument
+      .value) === 'number')) {
     /**
      Negation repeats the original argument and numeric value reads.
      */
@@ -129,7 +133,13 @@ export function readOwnedPattern({
     const items = node.elements
       .map(function readArrayPattern(item) {
       if ((item === null) || (item.type === 'SpreadElement')) throw new ResultProgramProfileError('array hole or spread');
-      return readOwnedPattern({ node: item, bindingName, depth: depth + 1, owned, ResultProgramProfileError });
+      return readOwnedPattern({
+        node: item,
+        bindingName,
+        depth: depth + 1,
+        owned,
+        ResultProgramProfileError
+      });
     });
     return owned({
       kind: 'array',
@@ -161,12 +171,12 @@ export function readOwnedPattern({
     const key = property.key
       .type
       === 'Identifier' ? property.key
-      .name
+        .name
       : (property.key
         .type
         === 'Literal') && ((typeof property.key
-        .value) === 'string') ? property.key
-        .value : undefined;
+          .value) === 'string') ? property.key
+          .value : undefined;
     if (!(((typeof key) === 'string') && (key !== '__proto__')
       && (!keys.has(key)))) {
       throw new ResultProgramProfileError('duplicate, prototype-setting or unsupported key');
@@ -174,13 +184,23 @@ export function readOwnedPattern({
     keys.add(key);
     // Shorthand is allowed only for the exact earlier result binding.
     if (!((!property.shorthand) || ((bindingName !== undefined)
-      && (property.value.type === 'Identifier')
-      && (property.value.name === bindingName)))) {
+      && (property.value
+        .type
+        === 'Identifier')
+      && (property.value
+        .name
+        === bindingName)))) {
       throw new ResultProgramProfileError('unbound shorthand');
     }
     entries.push(Object.freeze({
       key,
-      pattern: readOwnedPattern({ node: property.value, bindingName, depth: depth + 1, owned, ResultProgramProfileError })
+      pattern: readOwnedPattern({
+        node: property.value,
+        bindingName,
+        depth: depth + 1,
+        owned,
+        ResultProgramProfileError
+      })
     }));
   }
   return owned({

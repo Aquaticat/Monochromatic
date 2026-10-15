@@ -18,7 +18,10 @@ export type DecodedPattern = Readonly<
   }
   | {
     kind: 'object';
-    entries: readonly Readonly<{ key: string; pattern: DecodedPattern }>[]
+    entries: readonly Readonly<{
+      key: string;
+      pattern: DecodedPattern
+    }>[]
   }
 >;
 

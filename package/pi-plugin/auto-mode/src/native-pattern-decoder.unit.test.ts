@@ -29,23 +29,33 @@ await describe({ name: 'original pattern decoding', children: [
     assert.ok(Object.isFrozen(decoded));
   } }),
   it({ name: 'accepts original inclusive collection and nesting bounds', fn: async function bounds() {
-    const array = decode({ node: parseArgument(`[${Array.from({ length: 64 }, function item() { return '0'; }).join(',')}]`) });
+    const array = decode({ node: parseArgument(`[${Array.from({ length: 64 }, function item() { 
+      return '0'; 
+    }).join(',')}]`) });
     assert.ok(array.kind === 'array');
     assert.equal(array.items.length, 64);
     assert.ok(Object.isFrozen(array.items));
-    const object = decode({ node: parseArgument(`{${Array.from({ length: 64 }, function field(_value, index) { return `key${index}:0`; }).join(',')}}`) });
+    const object = decode({ node: parseArgument(`{${Array.from({ length: 64 }, function field(_value, index) { 
+      return `key${index}:0`; 
+    }).join(',')}}`) });
     assert.ok(object.kind === 'object');
     assert.equal(object.entries.length, 64);
     assert.ok(Object.isFrozen(object.entries));
-    assert.ok(object.entries.every(function frozen(entry) { return Object.isFrozen(entry); }));
-    assert.doesNotThrow(function inclusiveDepth() { decode({ node: parseArgument(`${'['.repeat(8)}0${']'.repeat(8)}`) }); });
+    assert.ok(object.entries.every(function frozen(entry) { 
+      return Object.isFrozen(entry); 
+    }));
+    assert.doesNotThrow(function inclusiveDepth() { 
+      decode({ node: parseArgument(`${'['.repeat(8)}0${']'.repeat(8)}`) }); 
+    });
     assert.deepEqual(decode({ node: parseArgument('null'), depth: -1 }), { kind: 'literal', value: null });
     assert.deepEqual(decode({ node: parseArgument('null'), depth: 7.5 }), { kind: 'literal', value: null });
   } }),
   it({ name: 'retains empty structures and synthetic sparse array mapping', fn: async function sparseArray() {
     assert.deepEqual(decode({ node: parseArgument('[]') }), { kind: 'array', items: [] });
     assert.deepEqual(decode({ node: parseArgument('{}') }), { kind: 'object', entries: [] });
-    const elements = Array.from({ length: 3 }, function item() { return { type: 'Literal', value: 2 }; });
+    const elements = Array.from({ length: 3 }, function item() { 
+      return { type: 'Literal', value: 2 }; 
+    });
     Reflect.deleteProperty(elements, '1');
     const result = decode({ node: { type: 'ArrayExpression', elements } });
     assert.ok(result.kind === 'array');

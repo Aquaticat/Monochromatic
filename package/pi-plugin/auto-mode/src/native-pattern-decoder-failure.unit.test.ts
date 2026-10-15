@@ -46,7 +46,9 @@ await describe({ name: 'original pattern rejection', children: [
     }
     rejects({ input: { node: parseArgument('[,]') }, message: 'array hole or spread' });
     rejects({ input: { node: parseArgument('[...value]') }, message: 'array hole or spread' });
-    assert.throws(function undefinedElement() { decode({ node: { type: 'ArrayExpression', elements: [undefined] } }); }, TypeError);
+    assert.throws(function undefinedElement() { 
+      decode({ node: { type: 'ArrayExpression', elements: [undefined] } }); 
+    }, TypeError);
   } }),
   //endregion
   //region Data properties reject computation, duplicate keys, and unbound shorthand separately.
