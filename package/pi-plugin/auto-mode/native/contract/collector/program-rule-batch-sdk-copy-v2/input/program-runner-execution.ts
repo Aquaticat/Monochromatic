@@ -18,17 +18,17 @@ const l = tagged({ tag: 'auto-mode-program-runner-execution' });
 //region Original queue acquisition encloses currentness, cancellation, and complete native dispatch.
 /** Execute the original complete reached group under its existing native queue owner.
  @param runner - original shared queue and host
- *
+ 
  @param origin - original parent occurrence, response, and judgment
- *
+ 
  @param group - original complete reached member group
- *
+ 
  @param bound - original recorder and admitted native transport
- *
+ 
  @param assertParentCurrent - original parent currentness check after queue acquisition
- *
+ 
  @param dispatchPreparedBatch - original complete native dispatcher
- *
+ 
  @example await executeReachedProgramGroup({ runner, origin, group, bound, assertParentCurrent, dispatchPreparedBatch });
  */
 export async function executeReachedProgramGroup({
@@ -76,13 +76,17 @@ export async function executeReachedProgramGroup({
     || calls.some(function requiresSequentialExecution(call) {
       return tools.find(function matchesCall(tool) {
         return tool.name === call.name;
-      })?.executionMode === 'sequential';
+      })
+        ?.executionMode
+        === 'sequential';
     }));
   /**
    Assessment publication belongs to this complete reached group only.
    */
   const assessment: ProgramAssessment = {};
-  /** Acquired queue ownership lasts through currentness checks and complete native dispatch. */
+  /**
+   Acquired queue ownership lasts through currentness checks and complete native dispatch.
+   */
   using queueTurn = exclusive ? await acquireProgramQueue(runner) : undefined;
   el.debug('checking original parent after queue selection');
   assertParentCurrent();

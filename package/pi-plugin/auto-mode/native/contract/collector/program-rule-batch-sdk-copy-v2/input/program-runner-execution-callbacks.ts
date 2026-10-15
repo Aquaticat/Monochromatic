@@ -18,21 +18,21 @@ const l = tagged({ tag: 'auto-mode-program-runner-execution-callbacks' });
 //region Native callbacks preserve original admission publication and callback receivers.
 /** Create the original group callbacks over one retained assessment publication.
  @param runner - original host for native preparation and completion hooks
- *
+ 
  @param origin - original judgment and parent occurrence
- *
+ 
  @param group - original complete reached member association
- *
+ 
  @param bound - original native identifiers and admitted slots
- *
+ 
  @param assertParentCurrent - original parent currentness check
- *
+ 
  @param parentId - original prepared parent identifier
- *
+ 
  @param assessment - original mutable prepared member publication
- *
+ 
  @returns original native dispatch callbacks
- *
+ 
  @example createProgramExecutionCallbacks({ runner, origin, group, bound, assertParentCurrent, parentId, assessment });
  */
 export function createProgramExecutionCallbacks({
@@ -80,7 +80,8 @@ export function createProgramExecutionCallbacks({
        Lookup diagnostics never inspect the caller's native identifier.
        */
       const ml = tagged({
-        tag: callbacks.memberForExecution.name,
+        tag: callbacks.memberForExecution
+          .name,
         l: cl
       });
       ml.debug('reading original admitted member handle');
@@ -115,7 +116,8 @@ export function createProgramExecutionCallbacks({
        Native forwarding preserves caller-owned argument and option identities.
        */
       const nl = tagged({
-        tag: callbacks.runToolCall.name,
+        tag: callbacks.runToolCall
+          .name,
         l: cl
       });
       nl.debug('invoking original reached native member');
@@ -150,12 +152,16 @@ export function createProgramExecutionCallbacks({
        Preparation logs identify the host boundary without reading opaque hook contents.
        */
       const pl = tagged({
-        tag: callbacks.prepare.name,
+        tag: callbacks.prepare
+          .name,
         l: cl
       });
       pl.debug('forwarding original native preparation');
       return runner.host
-        .prepareOwnedToolCall(hook, parentId);
+        .prepareOwnedToolCall(
+          hook,
+          parentId
+        );
     },
     /** Forward original completion to the original host and parent.
      @param hook - opaque native completion hook
@@ -169,12 +175,16 @@ export function createProgramExecutionCallbacks({
        Completion logs retain the original callback boundary.
        */
       const al = tagged({
-        tag: callbacks.after.name,
+        tag: callbacks.after
+          .name,
         l: cl
       });
       al.debug('forwarding original native completion');
       return runner.host
-        .finishOwnedToolCall(hook, parentId);
+        .finishOwnedToolCall(
+          hook,
+          parentId
+        );
     },
     /**
      Recheck parent currentness before reading original reached-group eligibility.
@@ -184,7 +194,8 @@ export function createProgramExecutionCallbacks({
        Original parent validation precedes original group validation.
        */
       const fl = tagged({
-        tag: callbacks.assertFresh.name,
+        tag: callbacks.assertFresh
+          .name,
         l: cl
       });
       fl.debug('checking original parent and reached group');
@@ -203,7 +214,8 @@ export function createProgramExecutionCallbacks({
        Assessment publication retains the original judgment as sole admission owner.
        */
       const al = tagged({
-        tag: callbacks.assess.name,
+        tag: callbacks.assess
+          .name,
         l: cl
       });
       al.debug('admitting original complete reached member group');
