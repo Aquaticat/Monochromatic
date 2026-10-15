@@ -3,6 +3,7 @@
  @module
  */
 import assert from 'node:assert/strict';
+import {unlinkSync} from 'node:fs';
 import {mkdir,mkdtemp,rm,stat,symlink,writeFile} from 'node:fs/promises';
 import {homedir} from 'node:os';
 import {join} from 'node:path';
@@ -177,6 +178,38 @@ await describe({name:'',children:[
     assertFailure({error:await failure(current.store.read(key)),message:'incomplete or malformed'});
     await writeFile(path,JSON.stringify({schema:1,key,profileKey:'another-profile',probability:0.5,qualification:'not-established'}));
     assertFailure({error:await failure(current.store.read(key)),message:'different profile or invalid estimate'});
+  }}),
+  ...['null','[]','true','42','"text"','{"schema":1}'].map(function invalidShape(text){
+    return it({name:`rejects parsed cache value ${text}`,fn:async function rejectParsedValue(){
+      await using current=await fixture();
+      const key=storeModule.digest('invalid-shape');
+      const miss=await current.store.read(key);
+      assert.equal(typeof miss,'symbol');
+      assert.equal(await current.store.read(key),miss);
+      await writeFile(join(current.directory,current.store.namespaceKey,`${key}.json`),text,{mode:0o600});
+      assertFailure({error:await failure(current.store.read(key)),message:'different profile or invalid estimate'});
+    }});
+  }),
+  it({name:'rejects existing-entry removal before reuse and releases the failed publication',fn:async function removedExistingEntry(){
+    await using current=await fixture();
+    const key=storeModule.digest('removed-existing-entry');
+    await current.store.put({key,probability:0.25});
+    const events:string[]=[];
+    const second=storeModule.createRelevanceStore({
+      directory:current.directory,namespace:{repository:'fixture',primaryBranch:'main'},profileKey:'fixture-profile',
+      trace:function removeBeforeReuse(event){
+        events.push(event.event);
+        if(event.event==='cache-publication-already-exists'){
+          unlinkSync(join(current.directory,current.store.namespaceKey,`${key}.json`));
+        }
+      },
+    });
+    assertFailure({error:await failure(second.put({key,probability:0.75})),message:'disappeared before reuse'});
+    assert.ok(events.includes('cache-publication-already-exists'));
+    assert.ok(events.includes('cache-miss'));
+    assert.equal(events.includes('cache-published'),false);
+    assert.equal((await second.put({key,probability:0.75})).probability,0.75);
+    assert.deepEqual(await current.store.read(key),await second.read(key));
   }}),
   ...['../escape','A'.repeat(64),'a'.repeat(63),'a'.repeat(65),`${'a'.repeat(64)}\n`].map(function invalidKey(key){
     return it({name:`rejects non-digest filename ${JSON.stringify(key)}`,fn:async function rejectFilename(){
