@@ -1,0 +1,15 @@
+**
+!package/
+!package/music-player/
+!package/music-player/desktop-app/
+!package/music-player/desktop-app/**
+!package/music-player/truepeak-core/
+!package/music-player/truepeak-core/**
+!package/music-player/android-app/
+!package/music-player/android-app/rust/
+!package/music-player/android-app/rust/src/
+!package/music-player/android-app/rust/src/**
+**/target
+**/dist
+**/node_modules
+**/.git

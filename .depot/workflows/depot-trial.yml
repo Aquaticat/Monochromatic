@@ -1,0 +1,23 @@
+name: depot-trial
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: depot-trial-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  connection:
+    name: Verify repository checkout and sandbox execution
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - name: Verify the checked-out revision
+      run: git rev-parse --verify HEAD

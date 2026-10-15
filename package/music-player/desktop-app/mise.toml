@@ -675,3 +675,18 @@ console.log('== Windows: self-signed sign + verify ==')
 execFileSync('mise', ['run', 'sign:windows'], { stdio: 'inherit' })
 console.log('self-signed signing pipeline OK (artifacts are NOT distributable)')
 """
+
+[tasks."trial:depot:build"]
+description = "Build and export an Alpine trial artifact on Depot with persistent Cargo caches"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const trialRun = process.env.DEPOT_TRIAL_RUN ?? new Date().toISOString()
+execFileSync('depot', ['bake', '--file', 'package/music-player/desktop-app/depot-trial/bake.hcl', '--progress', 'plain', '--metadata-file', 'package/music-player/desktop-app/target/depot-trial-metadata.json', 'artifact'], { stdio: 'inherit', env: { ...process.env, TRIAL_RUN: trialRun } })
+"""
+
+[tasks."trial:depot:inspect"]
+description = "Inspect the Alpine trial build definition without launching a remote build"
+dir = "{{config_root}}/../../.."
+run = "depot bake --file package/music-player/desktop-app/depot-trial/bake.hcl --print artifact"

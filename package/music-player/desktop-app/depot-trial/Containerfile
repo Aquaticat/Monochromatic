@@ -1,0 +1,35 @@
+# The named contexts reuse the production Alpine toolchain and runtime stages.
+# bake.hcl supplies both contexts from Containerfile.alpine.
+FROM toolchain AS compile
+
+ENV CARGO_HOME=/cargo \
+    CARGO_TARGET_DIR=/target \
+    SLINT_ENABLE_EXPERIMENTAL_FEATURES=1
+WORKDIR /src/desktop-app
+
+COPY package/music-player/desktop-app /src/desktop-app
+COPY package/music-player/truepeak-core /src/truepeak-core
+COPY package/music-player/android-app/rust/src /src/android-app/rust/src
+
+RUN mkdir -p /out && rustc --version --verbose > /out/toolchain.txt
+
+# Changing the trial identifier forces Cargo to execute while its own caches persist.
+# Otherwise a repeated image-layer hit would not measure a warm Cargo invocation.
+ARG TRIAL_RUN=initial
+ARG BUILD_JOBS=4
+RUN --mount=type=cache,id=music-player-trial-cargo,target=/cargo,sharing=locked \
+    --mount=type=cache,id=music-player-trial-target,target=/target,sharing=locked \
+    printf '%s\n' "trial-run=${TRIAL_RUN}" "build-jobs=${BUILD_JOBS}" \
+    && timeout 1800 cargo build --release --locked --features alsa-fallback --jobs "${BUILD_JOBS}" \
+    && cp /target/release/music-player /out/music-player
+
+FROM runtime AS verify
+COPY --from=compile /out /out
+RUN /out/music-player --version > /out/version.txt
+
+# The failure control exercises the same verified-artifact path without recompiling it.
+ARG REQUIRE_FAILURE=0
+RUN test "${REQUIRE_FAILURE}" = 0
+
+FROM scratch AS artifact
+COPY --from=verify /out /
