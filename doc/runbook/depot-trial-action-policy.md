@@ -25,7 +25,9 @@ TODO
 
 1.  Open [Aquaticats Actions settings](https://github.com/organizations/Aquaticats/settings/actions).
     Expect the organization's **Policies** settings.
-2.  Select **Allow Aquaticats, and select non-Aquaticats, actions and reusable workflows**.
+2.  Select **Allow Aquaticats,
+    and select non-Aquaticats,
+    actions and reusable workflows**.
     Expect controls for specified external actions.
 3.  Add the comma-separated list in this section to **Allow or block specified actions and reusable workflows**.
     Expect exactly the listed action revisions in the field.
