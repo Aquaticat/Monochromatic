@@ -40,3 +40,14 @@ export type EventControl = {
   onStep?: (point: string) => void;
   record: unknown;
 };
+/** Fixture exposes observations separately from original callback input ownership. */
+export type EventFixture = {
+  steps: string[];
+  events: unknown[];
+  recordings: unknown[][];
+  resolutions: unknown[][];
+  control: EventControl;
+  calls: EventCall[];
+  input: EventInput;
+  callbacks: EventCallbacks;
+};

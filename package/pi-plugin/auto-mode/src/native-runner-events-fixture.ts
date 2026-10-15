@@ -1,6 +1,6 @@
 /** Independent event consumer separates original recorder, host, and transport boundaries. @module */
 import assert from 'node:assert/strict';
-import type { EventCall, EventControl, EventInput, EventModule } from './native-runner-events-fixture-types.ts';
+import type { EventCall, EventControl, EventFixture, EventInput, EventModule } from './native-runner-events-fixture-types.ts';
 
 /** Require the built export before using its independent consumer signature.
  @param value - built native namespace
@@ -24,7 +24,7 @@ export const eventModule: EventModule = loaded;
  @returns fixture with independently owned calls, records, events, and failure controls
  @example createRunnerEventsFixture();
  */
-export function createRunnerEventsFixture() {
+export function createRunnerEventsFixture(): EventFixture {
   /** Ordered observations include transport settlement after asynchronous event delivery. */
   const steps: string[] = [];
   /** Host events preserve the actual payload objects received. */
