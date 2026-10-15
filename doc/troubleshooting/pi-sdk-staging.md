@@ -7447,6 +7447,16 @@ No production configuration change was required.
 The evidence is `pi-native-source-boundaries-final-20261014.log`
 and `pi-native-source-boundaries-remaining-20261014.log` under `${HOME}/temp/agent/`.
 
+The typed file-observer verification reproduced the same scratch-task directory mistake on 2026-10-15.
+Its build,
+consumer checks,
+and type check had completed before the next scratch-owned lint command emitted the diagnostic.
+`${HOME}/temp/agent/pi-native-typed-observer-consumer-20261015.log` retains that boundary.
+The recovered `lint-typed-observer` task pins `dir` to the repository;
+only the failed lint step is resumed.
+Its first recovered pass produced ordinary lint diagnostics,
+confirming recovery of task discovery without rerunning the successful consumer sequence.
+
 A separate full lint attempt during this cleanup failed before producing diagnostics with
 `Error running tsgolint: "exit status: exit status: 2"`
 and `runtime: failed to create new OS thread (have 2 already; errno=11)`.

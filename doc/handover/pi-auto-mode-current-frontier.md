@@ -982,9 +982,19 @@ Commit `bf9eee5abc` moves the selected-file observer from `file-observer.mjs` to
 with explicit completed-snapshot and bounded-reader contracts in `file-observation-types.ts`.
 Its direct consumers and provenance mapping now select the typed source.
 Commit `a6e2b905a7` names the selected-path revalidation boundary while retaining its original checks and order.
-Formatting,
-type checking,
-and built-consumer qualification of this typed port are pending.
+The typed port passes the rebuilt observer,
+store,
+refresh,
+source-freshness,
+approved-dependency,
+and package type checks in
+`${HOME}/temp/agent/pi-native-typed-observer-consumer-20261015.log`.
+That scratch runner then reached its lint command outside the repository
+and reproduced the documented missing-monorepo-root diagnostic.
+The separate lint task now pins its repository directory;
+its first pass found only a path-condition line-layout warning.
+That layout is corrected;
+final focused lint is pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

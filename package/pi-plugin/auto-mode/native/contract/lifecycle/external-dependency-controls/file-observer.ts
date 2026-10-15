@@ -130,7 +130,8 @@ function scopedPath({
    */
   const parts = relativePath.split('/');
   if (isAbsolute(relativePath) || parts.some(function isForbiddenPathSegment(part) {
-    return ( (part === '') || (part === '.') || (part === '..'));
+    return (part === '') || (part === '.')
+      || (part === '..');
   })) throw new ObservedFileScopeError(relativePath);
   /**
    One linear walk retains the currently checked parent.
