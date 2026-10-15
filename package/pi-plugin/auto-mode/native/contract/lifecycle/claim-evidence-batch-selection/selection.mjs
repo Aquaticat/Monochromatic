@@ -1,6 +1,6 @@
 import {QuestionSelectionError} from './selection-error.ts';
 import {object} from './selection-values.ts';
-import {readQuestionDefinitions} from './selection-definitions.mjs';
+import {readQuestionDefinitions} from './selection-definitions.ts';
 import {createQuestionSettlement} from './selection-settlement.mjs';
 
 export {QuestionSelectionError} from './selection-error.ts';

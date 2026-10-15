@@ -1111,6 +1111,45 @@ retains those results.
 The complete maintained lint recount covers 524 files and 486 rules:
 zero errors and 13465 warnings in
 `${HOME}/temp/agent/pi-maintained-typed-refresh-lint-20261015.log`.
+Commit `dcd7a9c176` types fixed-question answer admission and its error category.
+The original `selection-values.mjs` and `selection-error.mjs` are now
+`selection-values.ts` and `selection-error.ts` as of 2026-10-15.
+The reader retains scalar bounds,
+original choice-object identity,
+distribution freezing without normalization,
+and descriptor-based serving-model attribution.
+Commit `6e65184e92` adds built consumers for valid and rejected answers;
+`3b774e9be8` corrects their callback signatures to the harness's asynchronous contract.
+The fixture now describes its consumer contract independently of maintained source imports,
+because the artifact-import lint rule also rejects source imports used only for types.
+The rebuilt answer,
+request-claim,
+domain,
+semantic-policy,
+manual-review,
+and package type sequence passes in
+`${HOME}/temp/agent/pi-native-typed-answers-consumer-20261015.log`.
+The original and built typed readers match values,
+diagnostic fields,
+freezing,
+and retained choice identity across 59 cases.
+A changed-choice control changes success to rejection;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-answer-comparison.json`
+records the artifact hashes and cases.
+Process-local omissions of the serving-model byte bound,
+complete distribution check,
+and scalar upper bound each make the committed consumers fail.
+The built artifact remains unchanged;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-answer-omissions.json`
+records those controls.
+Final focused formatting reports no diagnostics in the typed readers or answer tests;
+the independent fixture correction also passes with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-answers-fixture-format-20261015.log`.
+The full maintained lint recount covers 528 files and 486 rules:
+zero errors and 13357 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-answers-lint-20261015.log`.
+Warnings still fail the strict package gate.
+The next boundary is admission of fixed question-definition catalogs.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
