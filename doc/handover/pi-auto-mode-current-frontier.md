@@ -1732,9 +1732,18 @@ in `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 The three implementation modules and five consumer files have zero focused lint diagnostics in
 `${HOME}/temp/agent/pi-judgment-membership-format-third-20261015.log`
 and `${HOME}/temp/agent/pi-membership-tests-format-third-20261015.log`.
-The final mutable-group contrast,
-type check,
-and full maintained lint recount are running.
+The final mutable-group contrast and type check pass in
+`${HOME}/temp/agent/pi-membership-final-20261015.log`.
+The full maintained lint recount covers 623 files and 486 rules:
+zero errors and 11561 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-membership-lint-20261015.log`.
+All eight snapshot implementation and consumer files have zero diagnostics in that full report.
+`child-constructor.mjs` now has 322 warnings.
+Original snapshot extraction is qualified at the tested consumer boundaries.
+Continue the constructor's assessment,
+evidence closure,
+preparation publication,
+and retained inspection paths.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
