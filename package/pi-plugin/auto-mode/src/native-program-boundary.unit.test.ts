@@ -10,6 +10,35 @@ await describe({
   name: '',
   children: [
     //region Construction preserves original unbound views and publication timing through callback failures.
+    ...['returned', 'dependencies', 'cancelled'].map(function openingPreflight(kind) {
+      return it({
+        name: `rejects ${kind} parent entry before reserving a program`,
+        fn: async function originalOpeningPreflight() {
+          const fixture = createProgramOwnerFixture();
+          fixture.owner.bindPreparedProgram({ member: fixture.member, declaration: fixture.declaration, assertCurrent: fixture.assertCurrent });
+          const parentToken = fixture.begin();
+          const failure = new Error('original opening preflight failed');
+          assert.ok(fixture.record.execution);
+          if (kind === 'returned') fixture.record.execution.state = 'returned';
+          if (kind === 'dependencies') fixture.state.dependencyFailure = failure;
+          if (kind === 'cancelled') fixture.parent.abort(failure);
+          assert.throws(function rejectOriginalOpening() { fixture.owner.openProgram({ parentToken, toolNames: ['read', 'write'] }); }, function originalFailure(error) { return kind === 'returned' ? error instanceof Error && error.message === 'Program parent execution has returned' : error === failure; });
+          assert.equal(fixture.record.program, undefined);
+        },
+      });
+    }),
+    it({
+      name: 'rejects inspection for an original child and reserves failure for nonarray runtime callables',
+      fn: async function originalRootAndCallableAdmission() {
+        const fixture = createProgramOwnerFixture();
+        const child = Object.freeze({});
+        fixture.bindings.set(child, { ...fixture.record, parent: Object.freeze({}) });
+        assert.throws(function inspectChildSource() { fixture.owner.bindPreparedProgram({ member: child, declaration: fixture.declaration, assertCurrent: fixture.assertCurrent }); }, { message: 'Prepared program inspection requires an unentered original root member' });
+        fixture.owner.bindPreparedProgram({ member: fixture.member, declaration: fixture.declaration, assertCurrent: fixture.assertCurrent });
+        assert.throws(function rejectNonarrayCallables() { fixture.owner.openProgram({ parentToken: fixture.begin(), toolNames: {} }); }, { message: 'Runtime callables differ from the original prepared program' });
+        assert.equal(fixture.record.program?.status, 'failed');
+      },
+    }),
     it({
       name: 'retains unbound opening and unreached views during original judgment capture',
       fn: async function originalOpeningViews() {
