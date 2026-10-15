@@ -23,6 +23,8 @@ FROM registry.fedoraproject.org/fedora@sha256:4031272b5578da0aafbf8e83b041778a4d
 # Run time:
 #   wine-core, wine-common  the Windows API layer that runs the .exe files; headless console
 #                          tests need no display.
+#   wine-*-winefonts       the fonts Wine registers in its prefix; without them Slint's software renderer finds no
+#                          system font on Windows and three UI tests panic in `systemfonts.rs`.
 #   xorg-x11-server-Xvfb   a virtual X11 display, because Wine's graphics driver talks to X11;
 #                          only the app launch check uses it.
 #   mesa-dri-drivers       software OpenGL for Wine's opengl32, for the femtovg renderer.
@@ -34,7 +36,7 @@ RUN mirror_args=""; \
     dnf install -y ${mirror_args} --setopt=install_weak_deps=False \
       gcc cmake ninja-build make \
       mingw64-gcc mingw64-binutils mingw64-crt mingw64-headers mingw64-winpthreads-static \
-      wine-core wine-common \
+      wine-core wine-common wine-winefonts wine-tahoma-winefonts wine-arial-winefonts wine-times-new-roman-winefonts \
       xorg-x11-server-Xvfb xdotool mesa-dri-drivers mesa-libGL \
       curl tar gzip which file \
     && dnf clean all

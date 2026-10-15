@@ -220,7 +220,7 @@ run = """
 {{vars.cargo_dispatch}}
 {{vars.windows_gnu_dispatch}}
 process.env.SLINT_EMIT_DEBUG_INFO = '1'
-runWindowsGnu(['nextest', 'run', '--target', gnuTarget, '--no-fail-fast', '--config', 'profile.default.slow-timeout={ period = "60s", terminate-after = 5 }'])
+runWindowsGnu(['nextest', 'run', '--target', gnuTarget, '--no-fail-fast', '--config', 'profile.default.slow-timeout.period="60s"', '--config', 'profile.default.slow-timeout.terminate-after=5'])
 """
 
 [tasks.mcp]
