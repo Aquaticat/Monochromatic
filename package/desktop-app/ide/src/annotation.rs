@@ -64,54 +64,25 @@ use std::{collections::BTreeMap, ops::Range, sync::Arc, time::Instant};
 ///  and assembly.
 mod blocks;
 
+/// Severity vocabulary:
+///  rank,
+///  name,
+///  default,
+///  and the text of one problem.
+mod severity;
 /// What:
-///  Order of severity from worst to mildest;
-///  `u8` is an unsigned byte (siblings `u32`,
-///  `usize`).
+///  `pub use` re-exports the severity helpers under this module's name.
 /// Why:
-///  Overlapping marks are drawn mildest first,
-///  and messages above a line are listed worst first.
+///  Callers written against `annotation` keep their imports while the vocabulary lives in its own file.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function rank(severity: Severity): number { return ['error', 'warning', 'information', 'hint'].indexOf(severity); }
+/// export { describe, rank, severityName } from './severity';
 /// ```
-pub fn rank(severity: Severity) -> u8 {
-    if severity == Severity::Error {
-        return 0;
-    }
-    if severity == Severity::Warning {
-        return 1;
-    }
-    if severity == Severity::Information {
-        return 2;
-    }
-    return 3;
-}
-
-/// What:
-///  The word a reader sees for a severity;
-///  `&'static str` is text baked into the binary (sibling `String`).
-/// Why:
-///  Every message row starts with its severity in words,
-///  so it does not depend on color.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function severityName(severity: Severity): string;
-/// ```
-pub fn severity_name(severity: Severity) -> &'static str {
-    if severity == Severity::Error {
-        return "Error";
-    }
-    if severity == Severity::Warning {
-        return "Warning";
-    }
-    if severity == Severity::Information {
-        return "Information";
-    }
-    return "Hint";
-}
+pub use severity::{describe, rank, severity_name};
+/// The default for an omitted severity,
+///  used when the diagnostics are indexed.
+use severity::shown;
 
 /// What:
 ///  One diagnostic as a frame underlines it;
@@ -359,24 +330,6 @@ pub struct Annotations {
     /// version: number;
     /// ```
     version: u64,
-}
-
-/// What:
-///  Severity a diagnostic is drawn with;
-///  `Option<Severity>` is a severity or nothing.
-/// Why:
-///  The protocol leaves an omitted severity to the client;
-///  Helix shows it as a warning
-///      (`helix-term/src/ui/editor.rs`,
-///  `Some(Severity::Warning) | None => warning`).
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function shown(severity?: Severity): Severity { return severity ?? 'warning'; }
-/// ```
-fn shown(severity: Option<Severity>) -> Severity {
-    // `unwrap_or` takes the present severity or substitutes the warning.
-    return severity.unwrap_or(Severity::Warning);
 }
 
 /// What:
@@ -775,32 +728,4 @@ impl Annotations {
         result.sort_by_key(|problem| return rank(problem.mark.severity));
         return result;
     }
-}
-
-/// What:
-///  The text of one problem,
-///  for example `Error E0308 (rustc): mismatched types`.
-/// Why:
-///  The severity is spelled out,
-///  so a message row does not rely on its ink;
-///  the code and source say who
-///      reported it.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function describe(problem: Problem): string;
-/// ```
-pub fn describe(problem: &Problem) -> String {
-    let mut text = severity_name(problem.mark.severity).to_string();
-    if let Some(code) = &problem.code {
-        text.push(' ');
-        text.push_str(code);
-    }
-    if !problem.source.is_empty() {
-        // `format!` builds a new `String` from a template, like a TS template literal.
-        text.push_str(&format!(" ({})", problem.source));
-    }
-    text.push_str(": ");
-    text.push_str(problem.message.trim());
-    return text;
 }
