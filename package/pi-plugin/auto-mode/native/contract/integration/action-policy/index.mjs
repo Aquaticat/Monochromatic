@@ -1,10 +1,10 @@
-import {resolveGuardOutcome} from '../../lifecycle/instruction-policy-consumer-v3/outcome.mjs';
+import {resolveManualReviewOutcome} from './review-outcome.ts';
 import {InstructionResolutionInputError} from '../../lifecycle/instruction-policy-consumer-v3/resolve.mjs';
 
 /**
  Resolve code-owned policy inside the existing judgment and close its evidence.
  readProgram belongs to trusted bootstrap code, never the model response.
- Unresolved and unspecified outcomes deliberately do not select a fallback.
+ The native approval router selects manual confirmation for uncertain outcomes.
  */
 export function decideAndClose({
   judgment,
@@ -12,7 +12,7 @@ export function decideAndClose({
 }){
  judgment.assertDependenciesCurrent();
  judgment.checkpoint();
- const outcome=resolveGuardOutcome(readProgram());
+ const outcome=resolveManualReviewOutcome(readProgram());
  judgment.assertDependenciesCurrent();
  judgment.checkpoint();
  const closure=judgment.finalize();

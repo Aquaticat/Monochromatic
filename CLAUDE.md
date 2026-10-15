@@ -121,6 +121,12 @@ Write only the real task or a bare sentinel;
  when fired,
  re-derive actions + stop conditions from user instructions + state.
 
+QWD:
+ Saying work is queued,
+ deferred,
+ or waiting for a free slot means writing it to the handover in the same turn;
+ an unwritten queue item is lost at compaction.
+
 DCK:
  Long sessions:
  after each correction,

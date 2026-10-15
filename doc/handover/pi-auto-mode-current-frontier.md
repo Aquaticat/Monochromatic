@@ -88,7 +88,283 @@ Production prerequisite ownership,
 live semantic behavior,
 and the previously measured native lint backlog remain separate unfinished work.
 
+### Fresh current-session confirmation implementation
+
+The configured Hyper CLI reproduced the missing prerequisite-owner path with an otherwise permitted read
+and an explicit requirement for a fresh Allow from the current session user.
+It executed no child tool and reported unresolved instruction or operation facts.
+`${HOME}/temp/agent/pi-hyper-tool-call-prerequisite-2Y4UOq/verification.json` retains that control.
+
+Commit `58a3265939` adds the `fresh-session-approval` clause meaning and its original native channel facts.
+The meaning describes a clause expressly requiring a new response from this session's user
+for the exact prepared group.
+Generic authorization,
+other approvers,
+existing or reusable grants,
+and additional conditions remain outside this particular meaning.
+The existing `0.60` admission cutoff applies to the expanded vocabulary.
+Historical response distributions retain their old vocabulary and cannot be replayed as current responses.
+
+The native evaluator now captures the actual pending confirmation channel before decision closure or tool entry.
+Its code-owned facts start unsatisfied;
+absent or headless presentation is unsupported.
+Original capability identities and judgment dependencies remain checked during review and execution.
+Only an admitted fresh-confirmation clause consumes these facts.
+Generic prerequisites retain their independent owner path.
+Permission and prohibition still resolve separately,
+and the existing native binder consumes the actual Allow,
+Deny,
+or Stop response.
+Quoted fresh-confirmation targets retain unresolved authorization facts through their existing incorporation path.
+
+Unit and native fixture additions are committed in `67fa816d5a`.
+The first lint pass found callable identity reads represented as unbound methods,
+missing documentation,
+and test assertion typing and formatting errors.
+The implementation now retains callable identities as non-invocable unknown values;
+tests preserve the actual dependency failure values.
+The second pass had only one test formatting warning,
+which was corrected before starting the current build,
+type check,
+and final changed-file lint.
+These checks and the new native approval scenarios remain pending at this checkpoint.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/rpc-host.ts`
+is prepared to exercise the real configured Hyper CLI's RPC approval dialog with authored semantic answers,
+without injected authorization facts or external provider requests.
+Run it only after the updated native artifact is built.
+
+### Confirmation rejection stops the run
+
+The user requested identical Stop semantics for denial and cancellation whenever the confirmation dialog is shown.
+Commit `b711afc237` reduces the dialog to `Allow` and `Stop`.
+Every non-Allow result,
+including a legacy `Deny` value or dismissed selector,
+records `user-deny` with reason `user stopped`,
+then invokes the original context's abort capability.
+The obsolete `reflectExplanationOnDeny` option and its callers are removed.
+The separate headless fallback still records the unavailable approval channel.
+
+The JavaScript and owned native builds,
+package type check,
+changed TypeScript lint,
+and focused built confirmation tests pass.
+The lint task reported zero warnings and errors and exited zero;
+its logger subsequently emitted `sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`.
+The abort omission control makes the rejection assertions fail while retaining the original artifact unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/abort-verification.json` records that check.
+
+The native fresh-confirmation suite passes Allow,
+legacy denial,
+Stop,
+cancellation,
+unspecified policy,
+and prohibition without an injected authorization owner.
+The actual configured Hyper RPC host passes the same response routes,
+external cancellation,
+and generic-prerequisite rejection with all 17 configured packages.
+Allow reads the disposable file once;
+all other cases execute no child tool.
+The fixture expects `Allow` and `Stop` and exercises the original production requester.
+`${HOME}/temp/agent/pi-fresh-session-hyper-rpc-original-source-20261014.log` names every preserved receipt.
+
+These host cases author clause meanings for the original policy source and `none` for other candidates.
+They establish confirmation plumbing,
+not live semantic interpretation or genuine human permission.
+The first RPC fixture also assigned the fresh-confirmation meaning to a same-tag occurrence
+inside an extension-produced composite prompt.
+That case remains blocked by unresolved source authority;
+its original outputs are preserved under `pi-hyper-rpc-allow-aIIepr` and `pi-hyper-rpc-allow-rKcQFn`.
+Restricting fixture answers to the intended source does not repair this separate interpretation boundary.
+
+The next check sends the unchanged current captured assessment to Luna,
+using the expanded vocabulary and the adopted `0.60` operating rule.
+Its artifacts live under `${HOME}/temp/agent/pi-luna-current-confirmation-20261014/`.
+Do not replay those calls or replace their original responses.
+
+### Manual confirmation for uncertainty
+
+The user selected confirmation for uncertain automatic assessments on 2026-10-14.
+Commit `e39c3da741` records that decision;
+`7d04a67ea8` implements the native routing,
+with tests in `88c8b19010` and formatting in `c2b5f9ed89`.
+Unresolved and unspecified assessments reach the existing original-group dialog when a UI is available.
+An established prohibition at the strongest known applicable tier still blocks,
+even if another interpretation remains unresolved.
+Known stronger applicable permission may supersede a lower-priority prohibition.
+Original source and operation freshness checks remain mandatory.
+
+The unchanged captured assessment produced identical answer data in three live Luna calls.
+The adopted consumer admitted 22 of 84 answers each time,
+including original permission at `0.60`,
+fresh confirmation at `0.99`,
+and the duplicate confirmation at `1`.
+These are admission measurements,
+not accuracy estimates.
+The first local verifier incorrectly passed response metadata into the strict choice consumer.
+Its already-completed response was preserved and rescored with the actual choice/probability fields;
+only the remaining two planned calls were made.
+
+The native manual-review suite passes its priority cases,
+Allow,
+denial,
+Stop,
+cancellation,
+prohibition alongside uncertainty,
+and missing UI.
+The package type check and changed TypeScript lint pass.
+The original authorization fixture suite also passes.
+The approval-context suite passed its initial cases but its reload case exhausted the original judgment deadline.
+The standalone unchanged reload control passes with one selection and three child calls.
+The failed run remains preserved;
+no cause for its deadline exhaustion has been established.
+`${HOME}/temp/agent/pi-manual-review-reload-control-20261014.log` records the successful control.
+
+Exact replay of the older Luna response in another configured session was rejected:
+captured event timestamps and durations changed the assessment input.
+No response was admitted in that failed replay.
+A fresh-request bridge then exercised the configured native Hyper host with live Luna responses,
+using scripted primary responses and scripted UI responses in a disposable network-isolated child.
+The parent sends only the actual captured assessment to Luna;
+the child receives no real credentials.
+Each case makes one Luna request.
+Allow executes the original read once;
+Stop and dismissal execute no child tool.
+Receipts are in `pi-hyper-rpc-allow-hRnQ6s`,
+`pi-hyper-rpc-stop-UJfsga`,
+and `pi-hyper-rpc-cancelled-9LsqI6` under `${HOME}/temp/agent/`.
+
+The real Hyper primary and live Luna assessment now pass together through the installed native CLI.
+The generated program reads `proof.txt` with the original `read` tool after a scripted Allow.
+All 17 configured packages are loaded,
+the read executes once,
+and the child exits zero.
+`pi-hyper-rpc-allow-Gt6QZx/verification.json` records two Hyper requests and one Luna request.
+The initial receipt counted only Luna;
+its provider total was corrected from retained responses without another host run.
+The first attempt stopped before any provider request because the saved Hyper OAuth access token had expired.
+The installed provider's `refreshHyperToken` and Pi's locked credential owner refreshed it normally.
+The disposable child still receives only fake credentials;
+the parent holds current credentials in memory for the exact bridged requests.
+
+Both new process-local omission controls pass:
+removing established-prohibition protection fails its named outcome assertion,
+and removing uncertainty routing fails the native confirmation assertions.
+`pi-tool-call-scope-20261014/manual-review-prohibition-verification.json`
+and `manual-review-uncertainty-verification.json` retain unchanged built-artifact hashes.
+The package README now distinguishes installed native behavior from the retained legacy extension.
+Native documentation uses the adopted `0.60` cutoff and current confirmation semantics.
+Rendered output has been inspected.
+
+The user supplied Allow to the pending original native dialog in
+`pi-hyper-rpc-human-bFNRvU` under `${HOME}/temp/agent/`.
+Its exact operation was `return await tools.read({path: "proof.txt"});`.
+The controller forwarded that response to the unchanged pending request identifier.
+The original tool executed once and returned the expected disposable file contents;
+the host exited zero.
+`verification.json` records one genuine human response,
+two actual Hyper requests,
+one actual Luna request,
+and no authored primary responses,
+semantic answers,
+or authorization facts.
+This completes the live production-host human-confirmation boundary.
+It grants no permission for another operation or session.
+
+The full package lint now reports 14,550 warnings and 454 errors across 425 files.
+`${HOME}/temp/agent/pi-native-full-lint-manual-review-20261014.log` retains the complete diagnostics.
+This is a changed file set,
+not a controlled comparison with the older 389-file count.
+Continue the maintained native quality work;
+do not reinterpret this passing live operation as full package completion.
+
 ## Current Pi execution model
+
+### Owned runtime source correction
+
+The October 14 native formatting pass exposed exact-text dependencies in the maintained build.
+`replaceOnce` in `native/contract/integration/native-batch/build-rebase.ts`
+locates a literal substring and rejects absent or repeated matches.
+Formatting owned source therefore broke the runner,
+dispatcher,
+and judgment transformations.
+The user challenged this design.
+The agent acknowledged carrying the brittle prototype mechanism into the maintained package.
+
+The first repair replaced the runner and dispatcher transformations with parsed source selection.
+A subsequent consumer search established that the owned runner,
+dispatcher,
+and judgment inputs had only the native build as their consumer.
+The source-patching requirement was unnecessary for those modules.
+The integrated implementations are now maintained directly in
+`native/contract/collector/program-rule-batch-sdk-copy-v2/input/`.
+The build emits export bridges for them instead of rewriting their bodies.
+The judgment directly imports its generated result converter,
+whose separate installed-Pi adaptation remains unchanged.
+The obsolete judgment transformations and the intermediate runner/dispatcher syntax transformers are removed.
+Historical provenance hashes remain the original import record rather than being rewritten as current hashes.
+
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/owned-program-before/`
+retains the successfully built implementations used for this integration.
+`owned-program-promotion.json` records source and generated hashes.
+Only import locations and the dispatcher's original shared error declarations changed during promotion.
+The direct-integration build and type checks passed.
+The first runtime suite stopped before executing its test because the formatting commit had inserted
+`readonly #state` into `policy-source/system-slot.mjs`.
+Commit `bbb1aa2f64` removes that TypeScript modifier from JavaScript;
+the rebuilt domain,
+manual review,
+approval context,
+single call,
+approved dependency,
+event receipt,
+host lifecycle,
+and actual CLI process suites all pass.
+The syntax task separately exposed its own invalid assumption that `node --check` strips TypeScript.
+The task now explicitly strips types before checking TypeScript modules,
+while JavaScript modules reach Node unchanged.
+That syntax task passes 227 maintained modules.
+The native lint report after direct integration contains 533 errors;
+the maintained-package quality queue remains open.
+Commit `53c651c0c0` separates the shared governing-source error to remove the source-history import cycle.
+Its owned build and native domain suite pass.
+Commits `d9c7183140` and `d014715404` name native runner callbacks,
+extract original recorder ownership,
+and scope exclusive queue release with `using`.
+The parallel branch retains synchronous entry without acquiring a queue turn.
+The rebuilt native domain suite passes;
+the focused lint report contains no errors in either runner module or the error/history modules.
+Commit `99886bdca1` retains governing binding failure and source selection in one lifecycle record.
+Commits `2e025dc5cc` and `d6c4d39496` share the original judgment operation wrappers
+and name the remaining judgment callbacks.
+Their owned build and complete direct-runtime regression sequence pass.
+The focused lint check found no errors in the runner or source-binding modules;
+the constructor retained file-length,
+mutable-binding,
+cleanup,
+and function-declaration findings.
+Commit `72a7e2ca36` adds original recorder ownership and queue-release tests.
+Normal and exceptional queue release both pass.
+The process-local omitted-release control fails with `queue-release-missing`,
+and the built helper hash remains unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-queue-omission.json` retains that receipt.
+Commits `25c6a6819f` and `813b9c1b35` separate original program ownership and instruction-claim ownership
+from the judgment constructor.
+Their owned build and focused lint checks are running;
+their consumer regression verification remains queued before any completion claim.
+The handover,
+troubleshooting entry,
+and native README were rendered and inspected with Pandoc.
+The earlier formatting-only commit is `2728f357f`.
+Its judgment-input formatting was temporarily restored to recover a passing build before this direct integration.
+
+The native JSON lint report before direct integration contains 499 errors.
+The earlier human-readable report did not print every diagnostic counted in its summary;
+use structured diagnostics when allocating cleanup work.
+Most current errors concern arrow functions,
+mutable bindings at function or module scope,
+cleanup using `finally`,
+and file length.
+Do not replace the removed owned-source patch layer with another formatting-sensitive mechanism.
 
 On 2026-10-14,
 the user corrected the requested Pi execution model to `hyper/gemma-4-26b-a4b-it`.
@@ -2708,10 +2984,20 @@ Use this finite delivery queue:
 - [ ] Integrate the implementation into the maintained package and necessary host path.
   The product must not depend on private scratch files.
   Run package checks against that integration.
-- [ ] Build,
+  The maintained implementation,
+  native build,
+  installation,
+  package type checks,
+  and scoped behavioral checks are complete.
+  Full package lint remains open with the October 14 measured diagnostics.
+- [x] Build,
   install,
   and exercise the actual plugin through its host,
   including native approval and cancellation.
+  The configured production CLI passes with the selected Hyper model,
+  live Luna decisions,
+  and the user's genuine Allow for the exact original disposable read.
+  Separate scripted Stop and dismissal controls abort without child execution.
 
 Further source work must fix a named failure of these delivery criteria;
 standalone inventory expansion is not the default next step.

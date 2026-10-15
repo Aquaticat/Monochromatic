@@ -1,5 +1,211 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Owned native program builds depended on source formatting
+
+### Symptom and cause
+
+The October 14 formatting commit `2728f357f` changed maintained program source layout.
+The native build then emitted `Native SDK edit does not have one matching location`
+for the owned runner,
+prepared dispatcher,
+and judgment constructor.
+The deciding helper in
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/build-rebase.ts:63`
+matches literal source text:
+
+```ts
+// native/contract/integration/native-batch/build-rebase.ts
+const at = source.indexOf(from);
+```
+
+Those transformations patched repository-owned modules consumed only by this build.
+Formatting changed the search text without changing the intended implementation.
+This was an unnecessary owned-source transformation boundary,
+not installed Pi source drift.
+
+### Correction and verification
+
+Commit `26994ff789` maintains the integrated runner,
+dispatcher,
+and judgment directly in `native/contract/collector/program-rule-batch-sdk-copy-v2/input/`.
+`native/contract/integration/native-batch/prepare-program.ts:137` now emits an export bridge:
+
+```ts
+// native/contract/integration/native-batch/prepare-program.ts
+const programRunner = `export {createReachedRunnerClass} from ${JSON.stringify(programRunnerUrl.href)};\n`;
+```
+
+The installed-Pi executor and converter adaptations remain separate.
+Historical provenance hashes retain their original meaning.
+The intermediate parsed-source runner and dispatcher replacements were removed:
+they preserved an unnecessary transformation rather than removing its need.
+
+The native build and package type check pass.
+After correcting the separate JavaScript modifier recurrence documented in
+"Native source autofixes emit invalid JavaScript",
+the domain,
+manual review,
+approval context,
+single call,
+approved dependency,
+event receipt,
+host lifecycle,
+and actual CLI process tasks pass.
+The CLI fixture made zero provider requests and exited with clean shutdown.
+The syntax task checks 227 maintained modules after explicit TypeScript erasure.
+The retained log is `${HOME}/temp/agent/pi-native-direct-owned-regressions-syntax-fixed-20261014.log`.
+
+### Upstream filing decision
+
+- The failing transformation was repository-owned.
+- No upstream fix is required for the direct module boundary.
+- No unsupported Pi use case is inferred from this failure.
+- External contribution policy is irrelevant to this local correction.
+- No upstream maintainer position is inferred.
+- The owned correction has passing build and consumer evidence;
+  no upstream prototype or filing is proposed.
+
+## Pi 1.2.0 confirmation fixtures must preserve occurrence identity and exact assessment input
+
+### Symptoms and separate causes
+
+The October 14 confirmation verification encountered separate local controller errors.
+They did not establish an upstream Pi or Luna defect.
+
+The first authored RPC assessment matched the policy tag `CNF` without its source occurrence.
+It assigned `fresh-session-approval` both to the designated policy file
+and to an extension-produced composite prompt containing the same text.
+The compiler retained unresolved authority for that second occurrence,
+so the then-current strict policy blocked the read.
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/compiler.mjs:250`
+gives the retained reason:
+
+```js
+// native/contract/integration/action-policy/compiler.mjs:250, authority diagnostic
+'The original candidate has no established instruction authority and request scope; source registration does not resolve remaining unit-level delegation.'
+```
+
+The local fixture now selects the original occurrence as well as the tag.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/rpc-hook.mjs:44` contains:
+
+```js
+// Private configured-host fixture, rpc-hook.mjs:44
+const original=instruction.selectedRule?.sourceOrdinal===0;
+const rule=original&&instruction.selectedRule?.id==='RUL';
+```
+
+This corrects authored test inputs only.
+It does not authenticate the composite source or change a live model's interpretation.
+The later adopted manual-confirmation policy handles otherwise uncertain assessments separately.
+
+The first live-score verifier passed response metadata into the strict categorical consumer.
+It received `InstructionResolutionInputError: Policy record contains an unsupported field`
+after the HTTP request had completed.
+`package/pi-plugin/auto-mode/src/semantic-operating-choice.ts:122` selects only these fields:
+
+```ts
+// package/pi-plugin/auto-mode/src/semantic-operating-choice.ts, categorical input fields
+fields: [
+  'choice',
+  'probabilities',
+],
+```
+
+`package/pi-plugin/auto-mode/src/policy-data.ts:79` rejects every other own key:
+
+```ts
+// package/pi-plugin/auto-mode/src/policy-data.ts:79
+for (const key of Reflect.ownKeys(input,)) {
+  if (((typeof key) !== 'string') || (!fields.includes(key,)))
+    throw new InstructionResolutionInputError('Policy record contains an unsupported field',);
+```
+
+The verifier was corrected to pass the original `choice` and `probabilities` fields.
+It rescored the preserved response without repeating the completed provider call.
+
+A later replay correctly failed
+`AssertionError: Retained Luna answers require the unchanged complete assessment request`.
+The new session's observed event timestamps,
+durations,
+and dependent source identities differed from the saved assessment.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/rpc-hook.mjs:37` enforces:
+
+```js
+// Private configured-host fixture, rpc-hook.mjs:37
+assert.deepEqual(body,original,'Retained Luna answers require the unchanged complete assessment request');
+```
+
+Ignoring those differences would admit answers for another input.
+The corrected live bridge instead sends each session's actual assessment to Luna within its original deadline.
+
+### Verification and workarounds
+
+All controls use Node 26.11.1 and the maintained Pi 1.2.0 host.
+The failed composite-occurrence cases remain in `pi-hyper-rpc-allow-aIIepr`
+and `pi-hyper-rpc-allow-rKcQFn` under `${HOME}/temp/agent/`.
+The corrected authored controls in `pi-fresh-session-hyper-rpc-original-source-20261014.log`
+pass Allow,
+Stop,
+dismissal,
+and prohibition with zero provider requests.
+Their tradeoff is authored interpretation rather than live model evidence.
+
+`pi-luna-current-confirmation-20261014/failure.json` preserves the verifier failure.
+Its retained responses and summary show three unchanged live calls with identical answer data
+and 22 of 84 admitted meanings under the adopted `0.60` rule.
+Projection into the strict consumer discards transport metadata only at that boundary;
+the original provider responses remain intact.
+
+`pi-hyper-rpc-allow-KN9yYC` retains the rejected replay.
+The `compare-rpc` task reads its actual request and the earlier saved request without a provider call:
+
+```sh
+# Run from ${HOME}/temp/agent/pi-tool-call-scope-20261014
+mise run compare-rpc
+```
+
+The subsequent live bridge cases in `pi-manual-review-hyper-live-luna-20261014.log`
+pass Allow,
+Stop,
+and dismissal with one new assessment per current request.
+The primary responses remain authored in those cases.
+`pi-hyper-rpc-allow-Gt6QZx/verification.json` separately records an actual Hyper-generated read,
+live Luna review,
+scripted Allow,
+and the original read result.
+It used two Hyper requests and one Luna request.
+Its receipt originally counted only the assessment;
+the receipt was corrected from preserved primary-response records without rerunning the host.
+Live verification costs new provider requests and is unsuitable for unchanged-response replay claims.
+
+### What does not work
+
+Matching a tag without source identity confuses distinct instruction occurrences.
+Passing the whole decoded answer to a closed categorical consumer violates its input contract.
+Replaying a response after timestamp or source-identity changes violates exact request attribution.
+Repeating completed requests to repair a verifier discards usable evidence and changes the experiment.
+
+### Upstream filing decision
+
+1.  Fault: these failures belong to our authored inputs,
+    verifier projection,
+    and attempted cross-session replay.
+2.  Fixability: corrections belong in those local controllers;
+    the production identity and input checks remain intact.
+3.  Supported use: current-input assessment works through the native host;
+    applying old answers to different input is outside this verification contract.
+4.  Contribution policy: no third-party source change or public report is proposed.
+5.  Upstream disposition: no external defect is established,
+    so there is no candidate upstream issue or duplicate search to pursue.
+6.  Prototype: the occurrence-qualified fixture,
+    preserved-response projection,
+    and fresh-request bridge each have the passing controls named here.
+
+Nothing is filed upstream.
+These local incidents remain separate from model accuracy,
+source-authority design,
+and the package's broader lint work.
+
 ## Pi 1.2.0 Hyper selection succeeds while the configured fixture rejects startup diagnostics
 
 ### Symptom and cause
@@ -7429,6 +7635,19 @@ it does not fix either formatter.
 Reapplying the complete fixer to the JavaScript class can reintroduce the `readonly` error.
 The failed formatter's remaining diagnostic count cannot establish full lint coverage
 because syntax errors prevented complete analysis.
+
+Commit `2728f357f` repeated that known modifier insertion during the later formatting pass.
+The built domain test stopped at `SyntaxError: Unexpected identifier '#state'`
+before any test body ran.
+Commit `bbb1aa2f64` removed the modifier again.
+The rebuilt domain and subsequent native regression tasks passed.
+Do not treat a successful build or package type check as validation of copied JavaScript syntax.
+
+The expanded syntax task also passed `.ts` files directly to `node --check`.
+Node `26.11.1` rejected valid `override readonly` syntax in `process-network-guard.ts`.
+Commit `13ec2b134a` calls Node's `stripTypeScriptTypes` for TypeScript inputs before syntax checking;
+JavaScript remains unchanged.
+The corrected task passes all 227 maintained modules.
 
 ### Upstream filing decision
 

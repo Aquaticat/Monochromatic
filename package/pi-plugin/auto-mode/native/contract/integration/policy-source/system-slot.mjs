@@ -40,7 +40,8 @@ class SystemPolicyInput {
   this.#state=state;Object.freeze(this);
  }
  static #stateFor(input){
-  if((!input)||(typeof input)!=='object'||(!(#state in input)))throw new PolicySlotBindingError('Requires original policy-input capability');
+  if((!input)||(typeof input)!=='object'
+    ||(!(#state in input)))throw new PolicySlotBindingError('Requires original policy-input capability');
   return input.#state;
  }
  static read(input){return SystemPolicyInput.#stateFor(input)
@@ -121,23 +122,31 @@ function createPolicyLoader({
   readSessionInputUsage,
   readSessionDomainEvents
 }){
- if((readSessionConstructedInputs!==undefined)&&(typeof readSessionConstructedInputs)!=='function')throw new PolicySlotBindingError('Constructed inputs require a fixed native session reader');
- if(((readResourceToolInputs===undefined)!==(readResourceToolOrigin===undefined))||(readResourceToolInputs!==undefined)&&((typeof readResourceToolInputs)!=='function'||(typeof readResourceToolOrigin)!=='function'))throw new PolicySlotBindingError('Resource tool inputs require paired fixed native readers');
- if((readResourceToolInputs!==undefined)&&(typeof readResourceToolUsage)!=='function'||(readSessionInputUsage!==undefined)&&(typeof readSessionInputUsage)!=='function')throw new PolicySlotBindingError('Input budgets require fixed native usage readers');
+ if((readSessionConstructedInputs!==undefined)&&((typeof readSessionConstructedInputs)!=='function'))throw new PolicySlotBindingError('Constructed inputs require a fixed native session reader');
+ if(((readResourceToolInputs===undefined)!==(readResourceToolOrigin===undefined))||(readResourceToolInputs!==undefined)
+   &&((typeof readResourceToolInputs)!=='function'||(typeof readResourceToolOrigin)!=='function'))throw new PolicySlotBindingError('Resource tool inputs require paired fixed native readers');
+ if(((readResourceToolInputs!==undefined)&&(typeof readResourceToolUsage)!=='function')||((readSessionInputUsage!==undefined)&&(typeof readSessionInputUsage)!=='function'))throw new PolicySlotBindingError('Input budgets require fixed native usage readers');
  const options=copyOptions(inputOptions);
  const registration=copyAuthorityRegistration(authority);
  const hostRegistration=copyAuthorityRegistration(customPromptAuthority);
- if(hostRegistration&&(systemSlot||typeof options.systemPrompt!=='string'
-   ||options.systemPromptOverride!==undefined))throw new PolicySlotBindingError('Host prompt authority requires explicit systemPrompt text without a replacement callback');
- const hostPrompt=(!systemSlot)&&(typeof options.systemPrompt)==='string'&&(options.systemPromptOverride===undefined)?Object.freeze({
+ if(hostRegistration&&(systemSlot||(typeof options.systemPrompt)!=='string'
+   ||(options.systemPromptOverride!==undefined)))throw new PolicySlotBindingError('Host prompt authority requires explicit systemPrompt text without a replacement callback');
+ const hostPrompt=(!systemSlot)&&(typeof options.systemPrompt)==='string'
+   &&(options.systemPromptOverride===undefined)?Object.freeze({
    kind:'bootstrap-host-custom-prompt',
    content:options.systemPrompt,
-   sha256:createHash('sha256').update(options.systemPrompt).digest('hex'),
+   sha256:createHash('sha256')
+     .update(options.systemPrompt)
+     .digest('hex'),
    occurrence:Object.freeze({}),
    registration:hostRegistration
  }):undefined;
  if(systemSlot&&((options.systemPromptOverride!==undefined)||(options.systemPrompt!==undefined)))throw new PolicySlotBindingError('An existing system override cannot be silently replaced');
- let binding,contextPublication,emission,failure,loader;
+ let binding,
+   contextPublication,
+   emission,
+   failure,
+   loader;
  let retainedResourceReceipts=Object.freeze([]);
  const contextEmitter=systemSlot?undefined:createGoverningContextEmitter({
    callback:options.agentsFilesOverride,
@@ -202,10 +211,12 @@ function createPolicyLoader({
   const system=frame.stages
     .find(function isResourceSystemStage(value) { return (value.kind==='system'); });
   const resourceSystemInput=systemSlot||hostPrompt
-    ||system.after===undefined?undefined:Object.freeze({
+    ||(system.after===undefined)?undefined:Object.freeze({
     kind:'native-resource-system-input',
     content:system.after,
-    sha256:createHash('sha256').update(system.after).digest('hex'),
+    sha256:createHash('sha256')
+      .update(system.after)
+      .digest('hex'),
     occurrence:Object.freeze({}),
     registration:undefined,
     pathToRawFileIdentity:'not-established'
@@ -222,26 +233,46 @@ function createPolicyLoader({
     carrier
   ]); }));
   const context=frame.stages
-    .find(function isResourceContextStage(value) { return (value.kind==='context'); }),append=frame.stages
-    .find(function isResourceAppendStage(value) { return (value.kind==='append'); });
-  const singleCarrier=systemSlot&&context?.after.agentsFiles.length===0
-    &&append?.after.length===0;
+    .find(function isResourceContextStage(value) { return (value.kind==='context'); }); const append=frame.stages
+      .find(function isResourceAppendStage(value) { return (value.kind==='append'); });
+  const singleCarrier=systemSlot&&(context?.after.agentsFiles.length===0)
+    &&(append?.after.length===0);
   const appendInputs=Object.freeze(append.after
-    .map(function captureResourceAppendInput(content,ordinal) { return (Object.freeze({
-   kind:'native-resource-append-input',content,ordinal,
-   sha256:createHash('sha256').update(content).digest('hex'),occurrence:Object.freeze({}),
-   registration:undefined,pathToRawFileIdentity:'not-established'
-  })); }));
+    .map(function captureResourceAppendInput(
+      content,
+      ordinal
+    ) { return (Object.freeze({
+      kind:'native-resource-append-input',
+      content,
+      ordinal,
+      sha256:createHash('sha256').update(content).digest('hex'),
+      occurrence:Object.freeze({}),
+      registration:undefined,
+      pathToRawFileIdentity:'not-established'
+    })); }));
   const contextInputs=Object.freeze(context.after
     .agentsFiles
-    .map(function captureResourceContextInput(entry,ordinal) { return (Object.freeze({
-   kind:'native-resource-context-input',content:entry.content,path:entry.path,ordinal,entry,carrier:carrierByOrdinal.get(ordinal),
-   sha256:createHash('sha256').update(entry.content).digest('hex'),occurrence:Object.freeze({}),
-   registration:undefined,pathToRawFileIdentity:'not-established'
-  })); }));
+    .map(function captureResourceContextInput(
+      entry,
+      ordinal
+    ) { return (Object.freeze({
+      kind:'native-resource-context-input',
+      content:entry.content,
+      path:entry.path,
+      ordinal,
+      entry,
+      carrier:carrierByOrdinal.get(ordinal),
+      sha256:createHash('sha256').update(entry.content).digest('hex'),
+      occurrence:Object.freeze({}),
+      registration:undefined,
+      pathToRawFileIdentity:'not-established'
+    })); }));
   retainedResourceReceipts=retainResourceReceiptInputs({
     previous:retainedResourceReceipts,
-    current:createResourceReceiptInputs({frame,priorContext:contextPublication?.prior})
+    current:createResourceReceiptInputs({
+      frame,
+      priorContext:contextPublication?.prior
+    })
   });
   binding=Object.freeze({
     resourceReceiptInputs:retainedResourceReceipts,
@@ -266,7 +297,10 @@ function createPolicyLoader({
     loader,
     context,
     readPolicy(){
-   const {source}=readCurrent();return {identity:source.identity,content:source.content};
+   const {source}=readCurrent();return {
+     identity:source.identity,
+     content:source.content
+   };
   }
   })});
  }
@@ -276,31 +310,44 @@ function createPolicyLoader({
  });}
  function assertInputBudget(session){
   if(readResourceToolInputs===undefined)return;
-  if(session&&(typeof readSessionInputUsage)!=='function')throw new PolicySlotBindingError('Combined resource and session input budgets require their native session usage reader');
-  const resource=readResourceToolUsage(loader); const currentSession=session?readSessionInputUsage(session):{
+  if(session&&((typeof readSessionInputUsage)!=='function'))throw new PolicySlotBindingError('Combined resource and session input budgets require their native session usage reader');
+  const resource=readResourceToolUsage(loader);
+  const currentSession=session?readSessionInputUsage(session):{
     count:0,
     bytes:0
   };
   const receiptBytes=retainedResourceReceipts.reduce(
-    function sumReceiptInputBytes(bytes,source) { return (bytes+Buffer.byteLength(JSON.stringify(source))); },
+    function sumReceiptInputBytes(
+      bytes,
+      source
+    ) { return (bytes+Buffer.byteLength(JSON.stringify(source))); },
     0
   );
   assertOriginalInputBudget({
-    resource:{count:resource.count+retainedResourceReceipts.length,bytes:resource.bytes+receiptBytes},
+    resource:{
+      count:resource.count+retainedResourceReceipts.length,
+      bytes:resource.bytes+receiptBytes
+    },
     session:currentSession
   });
  }
  function resourceInputs(){
   if(readResourceToolInputs===undefined)return undefined;
   const origins=readResourceToolInputs(loader);
-  if((!Array.isArray(origins))||(!Object.isFrozen(origins))||(origins.length>64))throw new PolicySlotBindingError('Resource tool inputs require their original bounded native view');
+  if((!Array.isArray(origins))||(!Object.isFrozen(origins))
+    ||(origins.length>64))throw new PolicySlotBindingError('Resource tool inputs require their original bounded native view');
   for(const origin of origins){
    const {
      source,
      publication,
      resourceInputOccurrence
    }=origin;
-   if((readResourceToolOrigin({loader,publication})!==origin)||(resourceInputOccurrence===undefined)||(source.resourceInputOccurrence!==resourceInputOccurrence)||(publication.sourceOccurrence!==source.occurrence)||(source.kind!=='native-resource-tool-input')||(source.registration!==undefined)||(source.permission!==false))throw new PolicySlotBindingError('Resource tool input is not an original unregistered receipt of this loader');
+   if((readResourceToolOrigin({loader,publication})!==origin)||(resourceInputOccurrence===undefined)
+     ||(source.resourceInputOccurrence!==resourceInputOccurrence)
+     ||(publication.sourceOccurrence!==source.occurrence)
+     ||(source.kind!=='native-resource-tool-input')
+     ||(source.registration!==undefined)
+     ||(source.permission!==false))throw new PolicySlotBindingError('Resource tool input is not an original unregistered receipt of this loader');
   }
   if(readResourceToolInputs(loader)!==origins)throw new PolicySlotBindingError('Resource tool inputs changed during source binding');
   return origins;
@@ -313,7 +360,8 @@ function createPolicyLoader({
   function constructedInputs(run){return (run===undefined)&&session?readSessionConstructedInputs?.(session):undefined;}
   function domainEvents(){return session&&readSessionDomainEvents?readSessionDomainEvents(session):undefined;}
   function capture(options){
-   const input=readCurrent(); const original=base.capture(options);
+   const input=readCurrent();
+   const original=base.capture(options);
    assertCurrent(input);assertInputBudget(session);
    if(original.resourceInputObservation!==input.frame)throw new PolicySlotBindingError('Native collector belongs to another policy input resource frame');
    const independentContext=input.contextInputs
@@ -330,9 +378,16 @@ function createPolicyLoader({
      ?.replacementInputs;
    const skillDescriptionInputs=original.nativeRunComposition
      ?.skillDescriptionInputs;
-   const nativeConstructedInputs=constructedInputs(original.nativeRunComposition); const nativeResourceToolInputs=resourceInputs();
-   if((nativeResourceToolInputs!==undefined)&&(Buffer.byteLength(JSON.stringify({resourceInputObservation:original.resourceInputObservation,nativeResourceToolInputs}))>1048576))throw new PolicySlotBindingError('Combined resource inputs exceed the original one-MiB resource bound');
-   if((nativeConstructedInputs!==undefined)&&(Buffer.byteLength(JSON.stringify({...original,nativeConstructedInputs}))>1048576))throw new PolicySlotBindingError('Base-linked source collection exceeds total byte bound');
+   const nativeConstructedInputs=constructedInputs(original.nativeRunComposition);
+   const nativeResourceToolInputs=resourceInputs();
+   if((nativeResourceToolInputs!==undefined)&&(Buffer.byteLength(JSON.stringify({
+     resourceInputObservation:original.resourceInputObservation,
+     nativeResourceToolInputs
+   }))>1_048_576))throw new PolicySlotBindingError('Combined resource inputs exceed the original one-MiB resource bound');
+   if((nativeConstructedInputs!==undefined)&&(Buffer.byteLength(JSON.stringify({
+     ...original,
+     nativeConstructedInputs
+   }))>1_048_576))throw new PolicySlotBindingError('Base-linked source collection exceeds total byte bound');
    const runMessageInputs=collectNativeMessageInputs({
      nativeRunComposition:original.nativeRunComposition,
      nativeConstructedInputs
@@ -398,22 +453,36 @@ function createPolicyLoader({
    assertInputBudget(session);
    snapshots.set(
      snapshot,
-     {input,original,nativeConstructedInputs,nativeResourceToolInputs}
+     {
+       input,
+       original,
+       nativeConstructedInputs,
+       nativeResourceToolInputs
+     }
    );return snapshot;
   }
   /** Preserve selected dependencies while later authenticated receipts remain available to the next decision. */
-  function assertApprovedSourcesCurrent({snapshot,saved}){
+  function assertApprovedSourcesCurrent({
+    snapshot,
+    saved
+  }){
    assertCurrent(saved.input);assertInputBudget(session);
    if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Approved operation lost its original extension tool inputs');
    const current=base.capture();
    const currentConstructed=constructedInputs(current.nativeRunComposition);
    const nativeDomain=domainEvents();
-   if(JSON.stringify(nativeDomain?.kinds)!==JSON.stringify(snapshot.nativeDomainEventKinds)
-     ||nativeDomain?.observation?.occurrence!==snapshot.nativeDomainEventObservation?.occurrence
+   if((JSON.stringify(nativeDomain?.kinds)!==JSON.stringify(snapshot.nativeDomainEventKinds))
+     ||(nativeDomain?.observation?.occurrence!==snapshot.nativeDomainEventObservation?.occurrence)
      ||nativeDomain?.observation?.failed
-     ||(nativeDomain?.observation?.revision??0)<(snapshot.nativeDomainEventObservation?.revision??0))throw new PolicySlotBindingError('Approved operation lost its original native event runner or complete receipt accounting');
-   assertCollectedManagerGrowth({before:saved.original,after:current});
-   assertManagerOriginsAppended({before:saved.nativeConstructedInputs,after:currentConstructed});
+     ||((nativeDomain?.observation?.revision??0)<(snapshot.nativeDomainEventObservation?.revision??0)))throw new PolicySlotBindingError('Approved operation lost its original native event runner or complete receipt accounting');
+   assertCollectedManagerGrowth({
+     before:saved.original,
+     after:current
+   });
+   assertManagerOriginsAppended({
+     before:saved.nativeConstructedInputs,
+     after:currentConstructed
+   });
    base.assertObservedFresh(current);
    if(constructedInputs(current.nativeRunComposition)!==currentConstructed)throw new PolicySlotBindingError('Approved operation inputs changed during dependency validation');
    assertCurrent(saved.input);assertInputBudget(session);
@@ -424,17 +493,24 @@ function createPolicyLoader({
    if(!saved)throw new PolicySlotBindingError('Governing snapshot is not owned by this source collector');
    if(saved.failure)throw new PolicySlotBindingError(
      'Original governing snapshot lost eligibility',
-     {cause:saved.failure.cause}
+     {cause:saved.failure
+       .cause}
    );
    try{
-    if(saved.approved){assertApprovedSourcesCurrent({snapshot,saved});return;}
+    if(saved.approved){assertApprovedSourcesCurrent({
+      snapshot,
+      saved
+    });return;}
     assertCurrent(saved.input);assertInputBudget(session);
     if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Original extension tool inputs changed after source capture');
     if(constructedInputs(saved.original
       .nativeRunComposition)!==saved.nativeConstructedInputs)throw new PolicySlotBindingError('Original constructed inputs changed after source capture');
     const nativeDomain=domainEvents();
     if(JSON.stringify(nativeDomain?.kinds)!==JSON.stringify(snapshot.nativeDomainEventKinds))throw new PolicySlotBindingError("Native extension event membership changed after source capture");
-    if(nativeDomain?.observation!==snapshot.nativeDomainEventObservation)throw new PolicySlotBindingError(`Native extension event callbacks changed after source capture: ${JSON.stringify({before:snapshot.nativeDomainEventObservation,after:nativeDomain?.observation})}`);
+    if(nativeDomain?.observation!==snapshot.nativeDomainEventObservation)throw new PolicySlotBindingError(`Native extension event callbacks changed after source capture: ${JSON.stringify({
+      before:snapshot.nativeDomainEventObservation,
+      after:nativeDomain?.observation
+    })}`);
     base.assertObservedFresh(saved.original);
     if(constructedInputs(saved.original
       .nativeRunComposition)!==saved.nativeConstructedInputs)throw new PolicySlotBindingError('Original constructed inputs changed during source finalization');
@@ -459,7 +535,8 @@ function createPolicyLoader({
    if(!saved)throw new PolicySlotBindingError('Judgment source handoff requires this collector original snapshot');
    if(saved.failure)throw new PolicySlotBindingError(
      'Original governing snapshot lost eligibility',
-     {cause:saved.failure.cause}
+     {cause:saved.failure
+       .cause}
    );
    if(saved.capturingJudgment){
     const error=new PolicySlotBindingError('Original judgment source capture cannot reenter');
@@ -468,22 +545,27 @@ function createPolicyLoader({
    saved.capturingJudgment=true;
    try{
     assertCurrent(saved.input);
-    if(saved.judgmentSources!==undefined&&(!extend||domainEvents()?.observation===saved.judgmentSources.nativeDomainEventObservation)){
+    if((saved.judgmentSources!==undefined)&&((!extend)||(domainEvents()?.observation===saved.judgmentSources.nativeDomainEventObservation))){
      assertObservedFresh(saved.judgmentSources);
      if(saved.failure)throw new PolicySlotBindingError(
        'Original governing snapshot lost eligibility',
-       {cause:saved.failure.cause}
+       {cause:saved.failure
+         .cause}
      );
      return saved.judgmentSources;
     }
     const previous=saved.judgmentSources===undefined?saved:snapshots.get(saved.judgmentSources);
-    if(previous.failure)throw new PolicySlotBindingError('Original prepared source collection lost eligibility',{cause:previous.failure.cause});
+    if(previous.failure)throw new PolicySlotBindingError(
+      'Original prepared source collection lost eligibility',
+      {cause:previous.failure.cause}
+    );
     const previousSnapshot=saved.judgmentSources??original;
-    const current=capture({signal}); const next=snapshots.get(current);
+    const current=capture({signal});
+    const next=snapshots.get(current);
     if(next.input!==saved.input)throw new PolicySlotBindingError('Judgment source handoff cannot replace its original policy binding');
     if(next.nativeResourceToolInputs!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Manager-only judgment handoff cannot adopt new extension tool receipts');
-    if(JSON.stringify(current.nativeDomainEventKinds)!==JSON.stringify(previousSnapshot.nativeDomainEventKinds)
-      ||current.nativeDomainEventObservation?.occurrence!==previousSnapshot.nativeDomainEventObservation?.occurrence)
+    if((JSON.stringify(current.nativeDomainEventKinds)!==JSON.stringify(previousSnapshot.nativeDomainEventKinds))
+      ||(current.nativeDomainEventObservation?.occurrence!==previousSnapshot.nativeDomainEventObservation?.occurrence))
       throw new PolicySlotBindingError('Judgment source handoff cannot replace native event membership or its original runner');
     assertCollectedManagerGrowth({
       before:previous.original,
@@ -496,7 +578,8 @@ function createPolicyLoader({
     assertObservedFresh(current);
     if(saved.failure)throw new PolicySlotBindingError(
       'Original governing snapshot lost eligibility',
-      {cause:saved.failure.cause}
+      {cause:saved.failure
+        .cause}
     );
     saved.judgmentSources=current;return current;
    }catch(error){saved.failure??={cause:error};throw error;}
@@ -511,7 +594,17 @@ function createPolicyLoader({
  }
  return new SystemPolicyInput({
    key:constructionKey,
-   state:Object.freeze({loader,nativeBinding,reload,readCurrent,assertCurrent,registration,hostPrompt,bindCollector,bindSessionCollector})
+   state:Object.freeze({
+     loader,
+     nativeBinding,
+     reload,
+     readCurrent,
+     assertCurrent,
+     registration,
+     hostPrompt,
+     bindCollector,
+     bindSessionCollector
+   })
  });
 }
 

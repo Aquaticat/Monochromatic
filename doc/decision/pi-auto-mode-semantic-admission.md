@@ -3,6 +3,19 @@
 ## Current Luna decision
 
 On 2026-10-14,
+the user selected manual confirmation when automatic tool-call assessment remains uncertain.
+The native host must offer `Allow` and `Stop` for unresolved or unspecified assessments when its UI is available.
+An established applicable prohibition still blocks.
+Only an original Allow for the exact prepared operation permits execution;
+denial,
+dismissal,
+and cancellation stop the run.
+This supersedes the earlier policy that uncertainty never selects an approval request.
+Missing UI,
+stale operation or source dependencies,
+and cancellation do not acquire permission through this fallback.
+
+On 2026-10-14,
 the user selected Luna,
 excluded Perplexity from further trials,
 and initially accepted `0.8+` because the operating goal is to improve on manually judging every request.
@@ -25,6 +38,18 @@ coverage,
 and authorization requirements remain intact.
 The model score is an operating signal,
 not a measured correctness probability.
+
+The maintained clause vocabulary also includes `fresh-session-approval`:
+an express requirement for a new confirmation from this session's user for the exact prepared group.
+The native host supplies availability and freshness of its pending confirmation channel.
+This meaning supplies no permission and cannot satisfy unrelated authorization requirements.
+The same `0.60` selected-probability rule applies.
+The native confirmation dialog offers `Allow` and `Stop`;
+every non-Allow response records refusal and aborts the current run.
+
+The user clarified that the approval subject is the model-initiated tool operation and its arguments.
+The current native evaluator does not ask a separate whole-request admission question.
+The historical response replay counts in this document retain their original vocabulary and question set.
 
 The prior `0.99` choice was the agent's conservative heuristic under delegated authority.
 It was scoped to Jev and was not empirically calibrated.
@@ -126,8 +151,11 @@ currentness,
 source authority,
 complete operation and instruction coverage,
 and authorization satisfaction remain independent code-owned requirements.
-Unresolved or unspecified policy blocks execution and does not implicitly request approval.
-The existing approval path requires independently established permission and an eligible authorization requirement.
+Historically,
+unresolved or unspecified policy blocked execution without an approval request.
+The user's 2026-10-14 uncertainty-confirmation decision supersedes that fallback for the native interactive host.
+The pure resolver continues to preserve unresolved and unspecified results;
+the host owns manual confirmation and original execution eligibility.
 This direction is enforced by
 `package/pi-plugin/auto-mode/native/contract/integration/action-policy/approval.mjs`
 and `package/pi-plugin/auto-mode/src/guard-outcome.ts`.

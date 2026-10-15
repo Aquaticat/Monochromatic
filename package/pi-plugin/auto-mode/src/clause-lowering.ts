@@ -150,7 +150,8 @@ export function lowerEstablishedClause(input: unknown,): LoweredClause {
   if (Object.hasOwn(
     value,
     'authorization',
-  ) && (relation !== 'prerequisite') && (relation !== 'fresh-session-approval'))
+  ) && (relation !== 'prerequisite')
+    && (relation !== 'fresh-session-approval'))
     throw new InstructionResolutionInputError('Authorization facts belong only to an established prerequisite',);
   /**
    Each invocation owns its output arrays independently of submitted records.

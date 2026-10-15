@@ -4,7 +4,9 @@ export class OriginalTuiApprovalError extends Error {
   constructor(message){super(message);this.name=this.constructor
     .name;}
 }
-function sha(value) { return createHash('sha256').update(value).digest('hex'); }
+function sha(value) { return createHash('sha256')
+  .update(value)
+  .digest('hex'); }
 /**
  Reuse the incumbent askUser implementation and fixed native Pi capabilities.
  Bootstrap owns these dependencies; returned labels or copied verdict entries do not establish ownership.
@@ -24,16 +26,23 @@ export function bindOriginalTuiApproval({
   notificationInvoker,
   trace
 }){
-  if((typeof askUser)!=='function'||(typeof trace)!=='function'||(typeof explanation)!=='string'||(typeof verdictEntryType)!=='string')throw new OriginalTuiApprovalError('Existing askUser, fixed entry type, explanation and trace are required');
+  if(((typeof askUser)!=='function')||((typeof trace)!=='function')
+    ||((typeof explanation)!=='string')
+    ||((typeof verdictEntryType)!=='string'))throw new OriginalTuiApprovalError('Existing askUser, fixed entry type, explanation and trace are required');
   if(producerOwner.judgmentFor({
     response,
     stream
   })!==judgment)throw new OriginalTuiApprovalError('TUI approval must use the response original judgment');
-  const source=observer.observationFor(response); const closure=judgment.inspect()
+  const source=observer.observationFor(response);
+  const closure=judgment.inspect()
     .finalRecord;
   // The original judgment already owns its assessed snapshot; never recapture after evidence closure.
-  const sources=judgment.readSourceSnapshot?.()??judgment.sourceSnapshot??source.sources;
-  if((closure?.status!=='evidence-closed')||(judgment.inspect().accounting.finished!==true))throw new OriginalTuiApprovalError('TUI approval requires closed original assessment evidence');
+  const sources=judgment.readSourceSnapshot?.()??judgment.sourceSnapshot
+    ??source.sources;
+  if((closure?.status!=='evidence-closed')||(judgment.inspect()
+    .accounting
+    .finished
+    !==true))throw new OriginalTuiApprovalError('TUI approval requires closed original assessment evidence');
   const states=judgment.inspect()
     .memberExecutions;
   if((states.length===0)||states.some(function hasEnteredApprovalMember(value) { return (value.state!=='unentered'); }))throw new OriginalTuiApprovalError('TUI approval must precede entry of the prepared group');
@@ -41,8 +50,12 @@ export function bindOriginalTuiApproval({
     handle,
     ...judgment.preparedMemberFor(handle)
   });});
-  const {ui} = ctx,{select} = ui,{appendEntry} = pi,{abort} = ctx;
-  if((typeof select)!=='function'||(typeof appendEntry)!=='function'||(typeof abort)!=='function')throw new OriginalTuiApprovalError('Native TUI selection, verdict append and abort capabilities are required');
+  const {ui} = ctx;
+    const {select} = ui;
+    const {appendEntry} = pi;
+    const {abort} = ctx;
+  if(((typeof select)!=='function')||((typeof appendEntry)!=='function')
+    ||((typeof abort)!=='function'))throw new OriginalTuiApprovalError('Native TUI selection, verdict append and abort capabilities are required');
   const signal=AbortSignal.any(members.map(function readPreparedSignal(value) { return (value.signal); }));
   const scope=JSON.stringify({
     parentProgram:JSON.parse(closure.parentJSON),
@@ -51,17 +64,35 @@ export function bindOriginalTuiApproval({
   const action=`Complete prepared group:\n${scope}`;
   const approvalFingerprint=sha(JSON.stringify({
     scope,
-    policy:sha(sources.mandatoryPolicy.content),
-    request:sha(source.request.body)
+    policy:sha(sources.mandatoryPolicy
+      .content),
+    request:sha(source.request
+      .body)
   }));
-  let choice,decision,entry,failure,forwarded=false,phase='created',prompt,result,selectionReturned=false;
+  let choice;
+    let decision;
+    let entry;
+    let failure;
+    let forwarded=false;
+    let phase='created';
+    let prompt;
+    let result;
+    let selectionReturned=false;
   function current(){
     if(phase==='failed')throw failure;
     try{
-      if((producerOwner.judgmentFor({response,stream})!==judgment)||(judgment.inspect().finalRecord!==closure))throw new OriginalTuiApprovalError('Original TUI judgment closure changed');
-      if((judgment.readSourceSnapshot?.()??judgment.sourceSnapshot??source.sources)!==sources)throw new OriginalTuiApprovalError('Original approval judgment source snapshot changed');
+      if((producerOwner.judgmentFor({
+        response,
+        stream
+      })!==judgment)||(judgment.inspect()
+        .finalRecord
+        !==closure))throw new OriginalTuiApprovalError('Original TUI judgment closure changed');
+      if((judgment.readSourceSnapshot?.()??judgment.sourceSnapshot
+        ??source.sources)!==sources)throw new OriginalTuiApprovalError('Original approval judgment source snapshot changed');
       observer.assertFresh(source);collector.assertObservedFresh(sources);judgment.assertDependenciesCurrent();signal.throwIfAborted();
-      if((ctx.ui!==ui)||(ui.select!==select)||(pi.appendEntry!==appendEntry)||(ctx.abort!==abort))throw new OriginalTuiApprovalError('Original native approval capabilities changed');
+      if((ctx.ui!==ui)||(ui.select!==select)
+        ||(pi.appendEntry!==appendEntry)
+        ||(ctx.abort!==abort))throw new OriginalTuiApprovalError('Original native approval capabilities changed');
       for(const member of members)if(judgment.preparedMemberFor(member.handle)
         .prepared
         !==member.prepared)throw new OriginalTuiApprovalError('Original prepared group changed');
@@ -75,7 +106,10 @@ export function bindOriginalTuiApproval({
       opts
     ){
       current();if(prompt)throw new OriginalTuiApprovalError('Incumbent askUser opened more than one selector');
-      if((JSON.stringify(options)!==JSON.stringify(['Allow','Deny','Stop']))||(!title.includes(action)))throw new OriginalTuiApprovalError('Incumbent selector did not present the complete original group');
+      if((JSON.stringify(options)!==JSON.stringify([
+        'Allow',
+        'Stop'
+      ]))||(!title.includes(action)))throw new OriginalTuiApprovalError('Incumbent selector did not present the complete original group');
       prompt=Object.freeze({
         title,
         options:Object.freeze([...options])
@@ -87,7 +121,14 @@ export function bindOriginalTuiApproval({
       choice=await Reflect.apply(
         select,
         ui,
-        [title,options,{...opts,signal:AbortSignal.any(signals)}]
+        [
+          title,
+          options,
+          {
+            ...opts,
+            signal:AbortSignal.any(signals)
+          }
+        ]
       );
       selectionReturned=true;trace('tui-selected');
       // Let the incumbent record the response even if current release eligibility was lost while waiting.
@@ -108,16 +149,19 @@ export function bindOriginalTuiApproval({
       customType,
       data
     ){
-      if(entry||customType!==verdictEntryType
-        ||data.action!==action
-        ||data.approvalFingerprint!==approvalFingerprint)throw new OriginalTuiApprovalError('Verdict append differs from the original group');
+      if(entry||(customType!==verdictEntryType)
+        ||(data.action!==action)
+        ||(data.approvalFingerprint!==approvalFingerprint))throw new OriginalTuiApprovalError('Verdict append differs from the original group');
       const expected=selectionReturned&&(choice==='Allow')?'user-approve':'user-deny';
       if(data.verdict!==expected)throw new OriginalTuiApprovalError('Verdict append differs from the original selector result');
       entry=Object.freeze({...data});trace('tui-verdict-append');
       Reflect.apply(
         appendEntry,
         pi,
-        [customType,data]
+        [
+          customType,
+          data
+        ]
       );forwarded=true;
     },
   });
@@ -132,11 +176,11 @@ export function bindOriginalTuiApproval({
         action,
         approvalFingerprint,
         explanation,
-        reflectExplanationOnDeny:true,
         ...(notificationInvoker?{notificationInvoker}:{})
       });
       if((!forwarded)||(!entry))throw new OriginalTuiApprovalError('Incumbent verdict was not recorded');
-      if((!decision.block)&&((!selectionReturned)||(choice!=='Allow')||(entry.verdict!=='user-approve')))throw new OriginalTuiApprovalError('Allow result lacks its original selection and verdict append');
+      if((!decision.block)&&((!selectionReturned)||(choice!=='Allow')
+        ||(entry.verdict!=='user-approve')))throw new OriginalTuiApprovalError('Allow result lacks its original selection and verdict append');
       result=Object.freeze({
         decision:Object.freeze({...decision}),
         action,
@@ -151,7 +195,10 @@ export function bindOriginalTuiApproval({
   }
   /** Retained Allow is not reusable after source, cancellation or host-capability changes. */
   function assertOriginalAllow(value){
-    if((phase!=='responded')||(value!==result)||value.decision.block)throw new OriginalTuiApprovalError('No current original Allow result for this group');
+    if((phase!=='responded')
+      ||(value!==result)
+      ||value.decision
+      .block)throw new OriginalTuiApprovalError('No current original Allow result for this group');
     current();
   }
   function inspect(){return Object.freeze({

@@ -61,7 +61,9 @@ await describe({ name: '', children: [
       nativePendingApproval.capturePendingSessionApproval(f).assertCurrent();
       if (mode === 'closed') f.state.finalRecord = {};
       else f.state.memberExecutions = mode === 'empty' ? [] : [{ state: 'entered' }];
-      expect(function captureLate() { nativePendingApproval.capturePendingSessionApproval(f); }).toThrow('before the original prepared group');
+      expect(function captureLate() {
+        nativePendingApproval.capturePendingSessionApproval(f);
+      }).toThrow('before the original prepared group');
     } });
   }),
   ...['ui', 'select', 'record', 'abort', 'availability'].map(function replacement(mode) {
@@ -72,9 +74,15 @@ await describe({ name: '', children: [
       const pending = nativePendingApproval.capturePendingSessionApproval(f);
       pending.assertCurrent();
       if (mode === 'ui') f.host.ctx.ui = { select: unexpectedPresentation };
-      else if (mode === 'select') f.host.ctx.ui.select = function replacementSelect() { unexpectedPresentation(); };
-      else if (mode === 'record') f.host.pi.appendEntry = function replacementRecord() { unexpectedPresentation(); };
-      else if (mode === 'abort') f.host.ctx.abort = function replacementAbort() { unexpectedPresentation(); };
+      else if (mode === 'select') f.host.ctx.ui.select = function replacementSelect() {
+        unexpectedPresentation();
+      };
+      else if (mode === 'record') f.host.pi.appendEntry = function replacementRecord() {
+        unexpectedPresentation();
+      };
+      else if (mode === 'abort') f.host.ctx.abort = function replacementAbort() {
+        unexpectedPresentation();
+      };
       else f.host.ctx.hasUI = false;
       expect(pending.assertCurrent).toThrow('confirmation capabilities changed');
     } });
@@ -85,8 +93,21 @@ await describe({ name: '', children: [
     /** Capture succeeds before the original owner retires its dependency. */
     const pending = nativePendingApproval.capturePendingSessionApproval(f);
     f.dependency.failure = new Error('Original policy dependency retired');
-    expect(pending.assertCurrent).toThrow(f.dependency.failure);
-    expect(function recaptureRetired() { nativePendingApproval.capturePendingSessionApproval(f); }).toThrow(f.dependency.failure);
+    /** Retain both actual thrown values rather than matching only an error message. */
+    const failures: unknown[] = [];
+    for (const invoke of [pending.assertCurrent, function recaptureRetired() {
+      nativePendingApproval.capturePendingSessionApproval(f);
+    }]) {
+      try {
+        invoke();
+      }
+      catch (error) {
+        failures.push(error);
+      }
+    }
+    expect(failures).toHaveLength(2);
+    expect(failures[0]).toBe(f.dependency.failure);
+    expect(failures[1]).toBe(f.dependency.failure);
   } }),
 ] });
 

@@ -91,8 +91,15 @@ This obscured the remaining delivery risk and made the user correct the objectiv
 
 Commit `3ec320b8fa` removes whole-request admission selection and its independent obligation
 from the native tool-policy compiler and evaluator.
-The follow-up removal of provider-field derivation,
-fixture updates,
-and installed-host verification are still in progress at the time of this entry.
+Commit `09bf9f9080` removes provider-field derivation from the native observer path.
+The configured Hyper host passes isolated permission,
+prohibition,
+and unspecified-policy controls with no whole-request question.
+Fresh-confirmation integration subsequently passes scripted Allow,
+Stop,
+denial,
+and cancellation through the original RPC host.
+Those checks use authored semantic answers;
+they do not establish live interpretation quality or genuine human approval.
 The scope correction is recorded;
 this entry does not claim the migration is complete.
