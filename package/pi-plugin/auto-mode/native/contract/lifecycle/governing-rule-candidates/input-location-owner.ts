@@ -8,7 +8,12 @@ import {
   inputLocationShape,
   isInputLocationInteger
 } from './input-location-record.ts';
-import { isNamedInputField, isScalarInputField, isMetadataInputField, isIndexedMetadataInputField } from './input-location-fields.ts';
+import {
+  isNamedInputField,
+  isScalarInputField,
+  isMetadataInputField,
+  isIndexedMetadataInputField
+} from './input-location-fields.ts';
 import type { SourceInputLocation } from './input-location-types.ts';
 
 /**
@@ -61,7 +66,8 @@ export function sourceInputLocation(source: object): SourceInputLocation {
   const shape = inputLocationShape(location);
   if (location.field === 'toolGuidelines') {
       if ((shape !== 'field,ordinal,toolName') || ((typeof location.toolName) !== 'string')
-        || (!isInputLocationInteger(location.ordinal)) || (location.ordinal < 0)) throw new SourceInputLocationError('Source input location differs from the native tool-guideline slot');
+        || (!isInputLocationInteger(location.ordinal))
+        || (location.ordinal < 0)) throw new SourceInputLocationError('Source input location differs from the native tool-guideline slot');
       return { inputLocation: {
         field: location.field,
         toolName: location.toolName,
@@ -80,7 +86,8 @@ export function sourceInputLocation(source: object): SourceInputLocation {
       return { inputLocation: { field: location.field } };
     }
   if (location.field === 'contextFiles') {
-      if ((shape !== 'field,ordinal,path') || (!isInputLocationInteger(location.ordinal)) || (location.ordinal < 0)
+      if ((shape !== 'field,ordinal,path') || (!isInputLocationInteger(location.ordinal))
+        || (location.ordinal < 0)
         || ((typeof location.path) !== 'string')) throw new SourceInputLocationError('Context input location requires its native ordinal and path');
       return { inputLocation: {
         field: location.field,
@@ -89,7 +96,8 @@ export function sourceInputLocation(source: object): SourceInputLocation {
       } };
     }
   if (location.field === 'skills') {
-      if ((shape !== 'field,metadataJSON,ordinal') || (!isInputLocationInteger(location.ordinal)) || (location.ordinal < 0)
+      if ((shape !== 'field,metadataJSON,ordinal') || (!isInputLocationInteger(location.ordinal))
+        || (location.ordinal < 0)
         || ((typeof location.metadataJSON) !== 'string')) throw new SourceInputLocationError('Skill input location requires its native ordinal and serialized companion metadata');
       return { inputLocation: {
         field: location.field,
@@ -105,7 +113,8 @@ export function sourceInputLocation(source: object): SourceInputLocation {
       } };
     }
   if (isIndexedMetadataInputField(location.field)) {
-      if ((shape !== 'field,metadataJSON,ordinal') || (!isInputLocationInteger(location.ordinal)) || (location.ordinal < 0)
+      if ((shape !== 'field,metadataJSON,ordinal') || (!isInputLocationInteger(location.ordinal))
+        || (location.ordinal < 0)
         || ((typeof location.metadataJSON) !== 'string')) throw new SourceInputLocationError('Message input location requires its original ordinal and serialized metadata');
       return { inputLocation: {
         field: location.field,
@@ -114,7 +123,8 @@ export function sourceInputLocation(source: object): SourceInputLocation {
       } };
     }
   if (location.field === 'nativePromptBuilder') {
-      if ((shape !== 'field,ordinal,slot') || (!isInputLocationInteger(location.ordinal)) || (location.ordinal < 0)
+      if ((shape !== 'field,ordinal,slot') || (!isInputLocationInteger(location.ordinal))
+        || (location.ordinal < 0)
         || ((typeof location.slot) !== 'string')) throw new SourceInputLocationError('Built-in input location requires its original construction ordinal and slot');
       return { inputLocation: {
         field: location.field,

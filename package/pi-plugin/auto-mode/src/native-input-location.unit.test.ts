@@ -12,7 +12,7 @@ await describe({
     ...inputLocationCases.map(function originalSlot(location) {
       return it({
         name: `copies the original ${String(location.field)} position without granting authority`,
-        fn: function copyOriginalSlot() {
+        fn: async function copyOriginalSlot() {
           const original = Object.freeze({ ...location });
           const source = Object.freeze({ inputLocation: original });
           const result = sourceInputLocation(source);
@@ -27,7 +27,7 @@ await describe({
     }),
     it({
       name: 'omits missing and inherited positions while admitting hidden own data fields',
-      fn: function ownLocationMembership() {
+      fn: async function ownLocationMembership() {
         const inherited: unknown = Object.create({ inputLocation: { field: 'customPrompt' } });
         assert.deepEqual(sourceInputLocation({}), {});
         assert.deepEqual(sourceInputLocation(inherited), {});
@@ -40,7 +40,7 @@ await describe({
     ...[-0, Number.MAX_SAFE_INTEGER].map(function validOrdinal(ordinal) {
       return it({
         name: `retains the admitted ordinal ${Object.is(ordinal, -0) ? 'negative zero' : 'maximum safe integer'}`,
-        fn: function ordinalBoundary() {
+        fn: async function ordinalBoundary() {
           for (const location of inputLocationCases) {
             if (!Object.hasOwn(location, 'ordinal')) continue;
             const inputLocation = { ...location, ordinal };
@@ -51,8 +51,8 @@ await describe({
     }),
     it({
       name: 'copies delimiter and traversal text without parsing or normalizing companion values',
-      fn: function opaqueCompanionText() {
-        const adversarial = '../..\\path\n"quoted"\r\t${value}; `command` */ <script> 雪 🧭';
+      fn: async function opaqueCompanionText() {
+        const adversarial = `../..\\path\n"quoted"\r\t\${value}; \`command\` */ <script> 雪 🧭`;
         for (const location of inputLocationCases) {
           const inputLocation = Object.fromEntries(Object.entries(location).map(function replaceCompanion([key, value]) {
             return [key, ((key !== 'field') && ((typeof value) === 'string')) ? adversarial : value];
@@ -63,7 +63,7 @@ await describe({
     }),
     it({
       name: 'retains a stable operation category under ordinary and derived error construction',
-      fn: function stableErrorCategory() {
+      fn: async function stableErrorCategory() {
         const ordinary = new InputLocationError('Original diagnostic');
         assert.equal(ordinary.name, 'SourceInputLocationError');
         assert.equal(ordinary.message, 'Original diagnostic');

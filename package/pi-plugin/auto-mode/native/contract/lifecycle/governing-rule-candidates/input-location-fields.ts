@@ -1,16 +1,33 @@
 /**
  Native slot membership narrows the original discriminator without changing source read order. @module
  */
-import type { MetadataInputField, IndexedMetadataInputField } from './input-location-types.ts';
+import type {
+  MetadataInputField,
+  IndexedMetadataInputField
+} from './input-location-types.ts';
 
 /**
  Original constructed-message and callback slot names.
  */
 const metadataFields: readonly string[] = [
-  'queuedMessages', 'customMessage', 'inputEvent', 'uninterceptedInput', 'transformedInput',
-  'commandInput', 'callInput', 'agentInput', 'managerInput', 'customTools', 'extensionTool',
-  'toolLoadoutOutput', 'toolLoadoutInput', 'toolLoadoutQuery', 'handlerResult', 'contextHandler',
-  'eventHandler', 'resourceCallback',
+  'queuedMessages',
+  'customMessage',
+  'inputEvent',
+  'uninterceptedInput',
+  'transformedInput',
+  'commandInput',
+  'callInput',
+  'agentInput',
+  'managerInput',
+  'customTools',
+  'extensionTool',
+  'toolLoadoutOutput',
+  'toolLoadoutInput',
+  'toolLoadoutQuery',
+  'handlerResult',
+  'contextHandler',
+  'eventHandler',
+  'resourceCallback',
 ] satisfies readonly MetadataInputField[];
 
 /**
@@ -36,7 +53,8 @@ export function isNamedInputField(field: unknown): field is 'toolSnippets' | 'se
  @example isScalarInputField('expandedPrompt');
  */
 export function isScalarInputField(field: unknown): field is 'customPrompt' | 'appendSystemPrompt' | 'expandedPrompt' {
-  return (field === 'customPrompt') || (field === 'appendSystemPrompt') || (field === 'expandedPrompt');
+  return (field === 'customPrompt') || (field === 'appendSystemPrompt')
+    || (field === 'expandedPrompt');
 }
 
 /**
@@ -62,5 +80,6 @@ export function isMetadataInputField(field: unknown): field is MetadataInputFiel
  @example isIndexedMetadataInputField('sessionMessages');
  */
 export function isIndexedMetadataInputField(field: unknown): field is Exclude<IndexedMetadataInputField, 'skills'> {
-  return (field === 'emitterMessages') || (field === 'sessionMessages') || (field === 'handlerOptions');
+  return (field === 'emitterMessages') || (field === 'sessionMessages')
+    || (field === 'handlerOptions');
 }

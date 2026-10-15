@@ -41,16 +41,27 @@ export function inputLocationShape(location: Record<string, unknown>): string {
    */
   const keys = Reflect.ownKeys(location);
   if ((keys.length === 0) || (keys.length > MAX_LOCATION_FIELDS)
-    || keys.some(function isNonStringLocationKey(key) { return (typeof key) !== 'string'; })) throw new SourceInputLocationError('Source input location requires supported named slot fields');
+    || keys.some(function isNonStringLocationKey(key) { 
+      return (typeof key) !== 'string'; 
+    })) throw new SourceInputLocationError('Source input location requires supported named slot fields');
   for (const key of keys) {
     /**
      A disappearing own property retains the original descriptor failure category.
      */
-    const descriptor = Object.getOwnPropertyDescriptor(location, key);
+    const descriptor = Object.getOwnPropertyDescriptor(
+      location,
+      key
+    );
     if (descriptor === undefined) throw new TypeError('Cannot convert undefined or null to object');
-    if (!Object.hasOwn(descriptor, 'value')) throw new SourceInputLocationError('Source input location requires data fields');
+    if (!Object.hasOwn(
+      descriptor,
+      'value'
+    )) throw new SourceInputLocationError('Source input location requires data fields');
   }
-  return keys.toSorted(function compareLocationKeys(left, right) {
+  return keys.toSorted(function compareLocationKeys(
+    left,
+    right
+  ) {
     if (((typeof left) !== 'string') || ((typeof right) !== 'string')) throw new SourceInputLocationError('Source input location requires string field names');
     return left < right ? -1 : left > right ? 1 : 0;
   })
