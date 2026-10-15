@@ -98,8 +98,8 @@ await describe({ name: '', children: [
   //region Callback publication cannot replace associations captured before host context lookup.
   it({ name: 'retains original judgment and native slot association across host context replacement', fn: async () => {
     const fixture = createRunnerExecutionFixture();
-    const judgment = fixture.input.origin.judgment;
-    const slots = fixture.input.bound.slots;
+    const {judgment} = fixture.input.origin;
+    const {slots} = fixture.input.bound;
     fixture.control.onStep = function replaceAtContext(point) {
       if (point !== 'context') return;
       fixture.input.origin.judgment = {

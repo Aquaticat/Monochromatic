@@ -12,9 +12,9 @@ import type {
 
 /** Require the built native execution export before invoking its independent consumer contract.
  @param value - built native namespace
- *
+ 
  @returns narrowed original execution factory
- *
+ 
  @throws Error when the execution export is absent
  */
 function assertExecutionModule(value: unknown): asserts value is ExecutionModule {
@@ -38,7 +38,7 @@ export const executionModule: ExecutionModule = loaded;
 //region Independent original capabilities expose callback identity and scheduling observations.
 /** Construct original group execution with test-owned host and judgment observations.
  @returns independent execution fixture and callback controls
- *
+ 
  @example createRunnerExecutionFixture();
  */
 export function createRunnerExecutionFixture(): ExecutionFixture {
@@ -79,7 +79,7 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
   };
   /** Record a callback boundary before its optional fixture failure.
    @param point - original callback boundary
-   *
+   
    @throws Error when the fixture selected this callback to fail
    */
   function step(point: string): void {
@@ -270,7 +270,10 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
     },
     group: {
       handle: Object.freeze({ original: 'group' }),
-      members: [{ signal: new AbortController().signal }, { signal: new AbortController().signal }]
+      members: [
+        { signal: new AbortController().signal },
+        { signal: new AbortController().signal }
+      ]
     },
     bound: {
       scope: {
@@ -287,8 +290,14 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
         Object.freeze({ slot: 'second' })
       ],
       ordinals: new Map([
-        ['parent/1', 0],
-        ['parent/2', 1]
+        [
+          'parent/1',
+          0
+        ],
+        [
+          'parent/2',
+          1
+        ]
       ]),
       tickets: calls.map(function ticketFor(call) {
         return { resolve(outcome: unknown): void { 
