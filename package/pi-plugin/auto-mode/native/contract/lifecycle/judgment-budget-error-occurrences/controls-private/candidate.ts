@@ -32,15 +32,15 @@ const durationMs = 5_000;
 /**
  Own one preparation-inclusive deadline and client-attempt ceiling.
  Trusted transport classification never reads model claims.
- *
+ 
  @param now - original monotonic clock
- *
+ 
  @param signal - original cancellation
- *
+ 
  @param isRetryableTransportFailure - fixed classification of actual transport errors
- *
+ 
  @returns original judgment budget without renewal or reset operations
- *
+ 
  @example
  ```ts
  const budget = createJudgmentBudget({
@@ -94,7 +94,7 @@ export function createJudgmentBudget({
   const records=new Map<number, JudgmentAttemptRecord>();
   /**
    Reject expired, cancelled or previously retired evidence.
-   *
+   
    @returns remaining milliseconds in the original lifetime
    */
   function checkpoint(): number {
@@ -147,7 +147,7 @@ export function createJudgmentBudget({
   });
   /**
    Copy retained evidence without invoking the clock or renewing its lifetime.
-   *
+   
    @returns immutable current accounting snapshot
    */
   function diagnostics(): JudgmentBudgetSnapshot {
@@ -164,7 +164,7 @@ export function createJudgmentBudget({
   }
   /**
    Close evidence only after pending work ends and lifetime remains valid.
-   *
+   
    @returns immutable final accounting snapshot
    */
   function finish(): JudgmentBudgetSnapshot {

@@ -22,21 +22,21 @@ const attemptLimit=3;
 
 /**
  Bind transport dispatch to its original clock and retained accounting.
- *
+ 
  @param checkpoint - original lifetime check
- *
+ 
  @param isRetryableTransportFailure - fixed classification of actual failed transport
- *
+ 
  @param accounting - original shared accounting owner
- *
+ 
  @param records - original attempt record collection
- *
+ 
  @param deadlineAt - original absolute expiry
- *
+ 
  @param signal - original cancellation
- *
+ 
  @returns transport operation preserving its response type
- *
+ 
  @example
  ```ts
  const dispatch = createJudgmentDispatcher({
@@ -62,7 +62,7 @@ export function createJudgmentDispatcher({
 }): JudgmentBudget['dispatch'] {
   /**
    Check lifetime after a failed attempt without replacing its original error.
-   *
+   
    @param error - original transport failure
    */
   function retainFailureAtCheckpoint(error: unknown): void {
@@ -87,9 +87,9 @@ export function createJudgmentDispatcher({
   }
   /**
    Preserve transport, classifier and boundary failures together.
-   *
+   
    @param error - original failed attempt
-   *
+   
    @param classificationError - original classification failure
    */
   function throwClassificationFailure({
@@ -123,9 +123,9 @@ export function createJudgmentDispatcher({
   }
   /**
    Classify only the original transport failure and retain classifier exceptions separately.
-   *
+   
    @param error - original failed attempt
-   *
+   
    @returns fixed transport classifier decision
    */
   function classifyRetry(error: unknown): boolean {
@@ -141,9 +141,9 @@ export function createJudgmentDispatcher({
   }
   /**
    Return only a response completed inside the original attempt and lifetime limits.
-   *
+   
    @param operation - original transport attempt
-   *
+   
    @returns response belonging to the completed attempt
    */
   async function dispatch<Result>(operation: JudgmentOperation<Result>): Promise<Result> {

@@ -2,7 +2,10 @@
  Disposable original judgment clocks and transport failure capture.
  @module
  */
-import {nativeBudget, type NativeBudget} from './native-judgment-budget-module-fixture.ts';
+import {
+  nativeBudget,
+  type NativeBudget
+} from './native-judgment-budget-module-fixture.ts';
 
 //region Each test owns its clock, cancellation and budget independently.
 /**
@@ -25,7 +28,7 @@ type BudgetFixture = {
 
 /**
  Default failures are not eligible for another transport invocation.
- *
+ 
  @returns fixed refusal to retry
  */
 function noRetry(): boolean {
@@ -34,11 +37,11 @@ function noRetry(): boolean {
 
 /**
  Create an independent original lifetime for each consumer test.
- *
+ 
  @param classify - fixed classification of actual transport failures
- *
+ 
  @returns owned clock, cancellation and built budget
- *
+ 
  @example
  ```ts
  const fixture = createBudgetFixture();
@@ -73,11 +76,11 @@ export function createBudgetFixture({classify=noRetry}: {
 
 /**
  Preserve a rejected original value for assertions after the operation settles.
- *
+ 
  @param operation - started original operation whose rejection is expected
- *
+ 
  @returns original rejected value
- *
+ 
  @example
  ```ts
  const error = await captureBudgetRejection(budget.dispatch(failedTransport));
