@@ -165,7 +165,11 @@ run = [
 
 [tasks."test:native:program-queue"]
 description = "Verify original recorder ownership and native queue release on normal and failed dispatch"
-run = "node --max-old-space-size=512 ./dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/program-runner-scope.test.mjs"
+run = [
+ "node --max-old-space-size=512 ./dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/program-runner-scope.test.mjs",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-scope.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-queue.unit.test.ts",
+]
 
 [tasks."test:native:judgment-budget"]
 description = "Verify built judgment attempt accounting, sequential retries, lifetime and cleanup"
