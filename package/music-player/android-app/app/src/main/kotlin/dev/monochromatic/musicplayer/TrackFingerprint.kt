@@ -560,8 +560,5 @@ object TrackFingerprint {
         // ```ts
         // return result.getOrDefault(UNKNOWN_MODIFIED_MS);
         // ```
-        }.onFailure { failure ->
-            // Diagnostic only, reverted after the call path is shown: names the caller of each refused query.
-            android.util.Log.w("FingerprintDiag", "last_modified refused for $uri", failure)
         }.getOrDefault(UNKNOWN_MODIFIED_MS)
 }
