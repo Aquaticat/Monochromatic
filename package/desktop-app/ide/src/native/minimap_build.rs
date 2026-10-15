@@ -380,6 +380,7 @@ impl Drop for MinimapWorker {
 
 /// Compile-time proof that jobs and replies may cross to the worker thread.
 const _: fn() = || {
+    /// Fails to compile when `T` cannot cross to another thread.
     fn assert_send<T: Send>() {}
     assert_send::<Job>();
     assert_send::<Reply>();

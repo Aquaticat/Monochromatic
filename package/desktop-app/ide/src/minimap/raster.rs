@@ -13,6 +13,7 @@ use crate::shaped_text::{TextShaper, line_work};
 use crate::source_style::StyleSpan;
 /// The palette the source glyphs are painted with, in both schemes.
 use crate::text_raster::{CodeColors, ink};
+/// A visual row is a range of characters of its line.
 use std::ops::Range;
 
 /// What:
