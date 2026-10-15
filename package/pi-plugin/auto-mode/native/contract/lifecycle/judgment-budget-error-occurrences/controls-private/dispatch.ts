@@ -9,7 +9,7 @@ import {
 import {createBundleDispatcher} from './bundles.ts';
 import type {
   JudgmentAccounting,
-  JudgmentAttempt,
+  JudgmentBundleOperation,
   JudgmentAttemptRecord,
   JudgmentBudget,
   JudgmentBudgetInput,
@@ -62,6 +62,7 @@ export function createJudgmentDispatcher({
   readonly deadlineAt: number;
   readonly signal: AbortSignal;
 }): JudgmentBudget['dispatch'] {
+  /** Original judgment counters are shared by every active dispatch capability. */
   const runBundle=createBundleDispatcher({accounting,checkpoint,signal,deadlineAt});
   /**
    Check lifetime after a failed attempt without replacing its original error.
@@ -188,12 +189,21 @@ export function createJudgmentDispatcher({
          Only the successful transport path publishes a response field.
          */
         const response: { value?: Result }={};
+        /** Saved capabilities cannot enter a subsequent assessment dispatch. */
         const admission={active:true};
+        /** Every success, failure, retry, and early return retires this capability. */
         using bundleScope={ [Symbol.dispose](): void {admission.active=false;} };
-        const ownedRunBundle: JudgmentAttempt['runBundle']=async function dispatchOwnedBundle(operations){
+        /**
+         Admit calls only during their originating assessment invocation.
+
+         @param operations - original provider callbacks to run together
+
+         @returns complete ordered bundle responses
+         */
+        async function ownedRunBundle<Value>(operations: readonly JudgmentBundleOperation<Value>[]): Promise<readonly Value[]> {
           if(!admission.active)throw new JudgmentBudgetError('Call bundle capability belongs to a completed assessment dispatch');
           return await runBundle(operations);
-        };
+        }
         try {
           // oxlint-disable-next-line eslint/no-await-in-loop -- Original failure classification gates the next attempt; see doc/troubleshooting/pi-sdk-staging.md, "Sequential native judgment retries".
           response.value=await operation(Object.freeze({

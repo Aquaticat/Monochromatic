@@ -4,6 +4,12 @@
  */
 
 //region Typed boundaries expose original lifetime and attempt accounting only.
+/** One actual provider invocation receives the original cancellation and deadline. */
+export type JudgmentBundleOperation<Result> = (input: {
+ readonly signal: AbortSignal;
+ readonly deadlineAt: number;
+ readonly attempt: number;
+}) => Promise<Result>;
 /**
  Private mutable accounting shared only by original clock and dispatch owners.
  */
