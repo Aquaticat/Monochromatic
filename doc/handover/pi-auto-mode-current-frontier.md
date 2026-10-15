@@ -1164,9 +1164,28 @@ The typed catalog and contracts pass focused lint with zero warnings and errors 
 `${HOME}/temp/agent/pi-native-typed-definitions-format-20261015.log`;
 the new catalog consumer tests also pass with zero diagnostics in
 `${HOME}/temp/agent/pi-native-typed-definitions-tests-format-20261015.log`.
-Rebuilt consumer execution,
-old/new comparisons,
-and omission controls are pending.
+The rebuilt catalog,
+answer-value,
+request-claim,
+domain,
+and package type sequence passes in
+`${HOME}/temp/agent/pi-native-typed-definitions-consumer-20261015.log`.
+The original and built typed catalog readers match across 33 cases,
+including definition values and order,
+criteria order and freezing,
+independent identity indexes,
+original diagnostics,
+and parse-error cause categories.
+A changed digest changes success to rejection;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-definition-comparison.json`
+retains the comparison and artifact hashes.
+Omitting the pinned-byte rejection,
+definition-count rejection,
+or choice-option-count rejection makes the committed consumer tests fail.
+The built artifact remains unchanged;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-definition-omissions.json`
+retains those controls.
+The full maintained lint recount is pending for this boundary.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
