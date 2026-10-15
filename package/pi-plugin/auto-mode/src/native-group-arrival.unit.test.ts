@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
 import { awaitCollectorResult, createCollectorFixture } from './native-group-collector-fixture.ts';
 
-await awaitCollectorResult(describe({ name: '', children: [
+await describe({ name: '', children: [
   //region Admission checks retain argument serialization, cancellation, and replay boundaries.
   ...[null, false, {}, 'signal'].map(function invalidSignal(signal) {
     return it({ name: `rejects invalid native signal ${JSON.stringify(signal)} before publishing arrival`, fn: async () => {
@@ -115,4 +115,4 @@ await awaitCollectorResult(describe({ name: '', children: [
     assert.deepEqual(fixture.run.inspect().members[0]?.completion, { status: 'fulfilled', value: 'original retained result' });
   } }),
   //endregion
-] }));
+] });

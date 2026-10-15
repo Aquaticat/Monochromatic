@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
 import { awaitCollectorResult, collectorFixtureModule, createCollectorFixture } from './native-group-collector-fixture.ts';
 
-await awaitCollectorResult(describe({ name: '', children: [
+await describe({ name: '', children: [
   //region Construction validates original parent capabilities before reading the canonical group.
   ...['signal', 'assertParentCurrent', 'dispatchGroup', 'readGroup'].map(function missingCapability(key) {
     return it({ name: `rejects missing ${key} before original group read`, fn: async () => {
@@ -143,4 +143,4 @@ await awaitCollectorResult(describe({ name: '', children: [
     assert.equal(fixture.run.inspect().phase, 'closed');
   } }),
   //endregion
-] }));
+] });

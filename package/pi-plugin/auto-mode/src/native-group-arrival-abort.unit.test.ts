@@ -4,7 +4,7 @@ import { setImmediate } from 'node:timers/promises';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
 import { awaitCollectorResult, createCollectorFixture, originalCollectorAbortListener } from './native-group-collector-fixture.ts';
 
-await awaitCollectorResult(describe({ name: '', children: [
+await describe({ name: '', children: [
   //region Parent, native, and collector cancellation preserve original transport and native lifetimes.
   ...['parent', 'native'].map(function directSignal(source) {
     return it({ name: `retains direct ${source} signal membership before failure callbacks run`, fn: async () => {
@@ -185,4 +185,4 @@ await awaitCollectorResult(describe({ name: '', children: [
     assert.equal(fixture.run.inspect().failures.length, 1);
   } }),
   //endregion
-] }));
+] });
