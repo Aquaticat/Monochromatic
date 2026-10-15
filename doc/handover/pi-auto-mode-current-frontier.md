@@ -253,10 +253,27 @@ Queue selection,
 parent currentness after acquisition,
 native cancellation,
 complete dispatch,
-and scope disposal await independent consumer qualification.
+and scope disposal now pass independent built consumer tests and original-code replay.
+The native build,
+package type check,
+and existing program-owner consumers pass.
+Six domain comparisons retain identical public outcomes and native execution counts,
+with the permission-versus-prohibition positive control.
 The first type check exposed a pre-admission signal contract that required already validated `AbortSignal` values.
 The input now retains opaque native signal values until the existing member-preparation owner validates them.
 No earlier runner cancellation guard is introduced for absent native member signals.
+Original judgment,
+slot,
+and ordinal-map capture precedes host callbacks;
+independent consumers replace these fields during context lookup and still reach the original captured owner.
+Malformed call identifiers or removed native slots now produce explicit null-check `Error` diagnostics
+before judgment invocation.
+The original method passed an undefined slot to the judgment.
+The diagnostic fixture intentionally does not validate slots,
+so its successful original callback return does not establish real judgment admission for malformed input.
+This change in malformed-input rejection ownership is recorded separately from valid-call equivalence.
+Comparison receipts are `typed-runner-execution-comparison.json` and `typed-runner-execution-diagnostics.json`.
+Omission controls and the complete maintained lint recount remain pending.
 The original method and runner are retained under
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 

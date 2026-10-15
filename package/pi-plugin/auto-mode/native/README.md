@@ -99,6 +99,17 @@ Start and update callbacks await host event completion.
 Completion records the result and usage before publishing its end event,
 then resolves the original member ticket only after the host finishes that event.
 Opaque callback failures stop later publication and retain their original identity.
+`test:native:runner-execution` verifies complete native dispatcher inputs,
+original host and judgment receivers,
+prepared member publication,
+and native slot association.
+An existing parent queue owner prevents reacquisition.
+Otherwise,
+host scheduling or the first matching sequential tool definition selects a native queue turn.
+Parent currentness and cancellation are checked after acquisition;
+the acquired turn remains held through asynchronous dispatch and is released on normal or exceptional exit.
+The original predecessor-rejection behavior retains an unresolved published successor.
+Native member signals reach the existing judgment admission validator unchanged.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 
