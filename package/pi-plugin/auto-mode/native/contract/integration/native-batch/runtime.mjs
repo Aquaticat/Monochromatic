@@ -151,12 +151,22 @@ export function bindNativePolicyRuntime({
  });
  async function executeToolBatch(input){
   trace('policy-runtime.batch');
-  const batchLog=tagged({tag:executeToolBatch.name,l:tagged({tag:'auto-mode-native-runtime'})});
+  const batchLog=tagged({
+    tag:executeToolBatch.name,
+    l:tagged({tag:'auto-mode-native-runtime'})
+  });
   try{
    const result=await handler(input);
    lastReview=result.review;trace('policy-runtime.reviewed');return result;
   }catch(error){
-   batchLog.error(inspectValue(error,{depth:8,customInspect:false,getters:false}));
+   batchLog.error(inspectValue(
+     error,
+     {
+       depth:8,
+       customInspect:false,
+       getters:false
+     }
+   ));
    throw error;
   }
  }

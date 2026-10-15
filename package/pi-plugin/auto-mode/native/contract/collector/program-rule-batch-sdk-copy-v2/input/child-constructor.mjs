@@ -1,10 +1,11 @@
-import {createGoverningRuleBindings} from "../../../lifecycle/governing-rule-candidates/bindings.mjs";
-import {declareResultProgram} from "./program-profile-reviewed.mjs";
+import {selectUnitAdoptionPairs} from "../../../integration/action-policy/unit-adoption-profile.mjs";
+import {createGoverningRuleSet} from "../../../lifecycle/governing-rule-candidates/set.mjs";
+import {assertDeclaredProgram} from "./program-profile.mjs";
 import {materializePattern} from "./result-pattern.mjs";
-import {createNativeReturnConsumer} from "./native-return-consumer.ts";
+import {createNativeReturnConsumer} from "../../../integration/native-batch/generated/native-return-consumer.mjs";
 import {NativeScriptValueGuardError,scriptValueGuard} from "./script-value-guard.ts";
 import {createJudgmentBudget} from "../../../lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs";
-import {createQuestionSelection} from "../../../lifecycle/claim-evidence-batch-selection/selection.mjs";
+import {createQuestionSelection,readAssessmentResponse} from "../../../lifecycle/claim-evidence-batch-selection/selection.mjs";
 import {createDependencyFacade} from "../../../lifecycle/native-text-read-contract/dependencies.mjs";
 import {readMainAgentRequest} from "../../request-producer-group-consumer/request.mjs";
 
@@ -19,7 +20,11 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     let firstClockRead=true;
     const budget=createJudgmentBudget({now:()=>{if(firstClockRead){firstClockRead=false;return startedAt;}return now();},signal,isRetryableTransportFailure});
     budget.checkpoint();
-    const input={producerOwner,observer,stream,response},receipt=readMainAgentRequest(input);
+    const input={producerOwner,observer,stream,response};
+    const sourceBinding=observer.beginJudgmentSources?observer.beginJudgmentSources(response):observer.bindJudgmentSources?.(response);
+    const receipt=readMainAgentRequest(input);
+    let judgmentSources=sourceBinding?.sources??receipt.sources;
+    if(sourceBinding&&sourceBinding.request!==receipt)throw new JudgmentConstructionError("Judgment sources do not belong to the original request receipt");
     // SDK-produced content is an owned plain JSON tree in this finite profile, not arbitrary JavaScript objects.
     for(const part of response.content)if(part.type==='toolCall')requireJSONInput(part.arguments);
     const parentJSON=JSON.stringify(response.content);
@@ -29,12 +34,26 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     const declared=content.filter(value=>value&&value.type==='toolCall');
     if(declared.length===0||declared.length>64||declared.some(value=>typeof value.id!=='string'||!value.id||typeof value.name!=='string'||!value.name)||new Set(declared.map(value=>value.id)).size!==declared.length)throw new JudgmentConstructionError('Enclosing judgment requires complete unique native tool membership');
     const declaredNames=Object.freeze(declared.map(value=>Object.freeze({id:value.id,name:value.name})));
-    const facade=createDependencyFacade({collector,rootAdapter,deadlineAt:budget.diagnostics().deadlineAt,rootDirectory,files,trace,now});
+    const judgmentCollector=Object.freeze({
+      capture(options){
+        if(options.signal!==signal)throw new JudgmentConstructionError('Dependency sources require original judgment cancellation');
+        collector.assertObservedFresh(judgmentSources);
+        return judgmentSources;
+      },
+      assertObservedFresh(snapshot){
+        if(snapshot!==judgmentSources)throw new JudgmentConstructionError('Dependencies require the original assessed source collection');
+        collector.assertObservedFresh(snapshot);
+      }
+    });
+    const facade=createDependencyFacade({collector:judgmentCollector,rootAdapter,deadlineAt:budget.diagnostics().deadlineAt,rootDirectory,files,trace,now});
     const instructionBindings=new WeakMap(),instructionPairs=new WeakMap(),instructionMeaningPairs=new WeakMap(),programInstructionPairs=new WeakMap();let ruleBindings,evidenceEligibilityFailure,bindingSegmentActive=false;
     const bindings=new WeakMap(),byMember=new Map(),executions=new WeakMap(),programs=new WeakMap(),groups=new WeakMap(),slots=new WeakMap(),childGroups=[],issuedBatches=new Set(),attemptedBatches=new WeakSet();let operating=false,assessing=false,prepared=false,preparing=false,preparationFailed=false,preparationFailure,handle,selection,finished=false,closeFailed=false,finalRecord;
     function operation(run){if(operating)throw new JudgmentConstructionError('Judgment operations cannot reenter through callbacks');operating=true;try{return run();}finally{operating=false;}}
+    function assertPreparedProgramDependencies(){
+      for(const member of byMember.values())bindings.get(member).preparedProgram?.assertCurrent();
+    }
     function dependencyCheck(read){
-      try{return read();}
+      try{const value=read();if(!bindingSegmentActive)assertPreparedProgramDependencies();return value;}
       catch(error){evidenceEligibilityFailure??=Object.freeze({cause:error});throw error;}
     }
     function active(){if(evidenceEligibilityFailure)throw new JudgmentConstructionError('Original relation evidence lost dependency eligibility',{cause:evidenceEligibilityFailure.cause});if(closeFailed)throw new JudgmentConstructionError('Judgment finalization failed permanently',{cause:finalRecord.failure});if(preparationFailed)throw new JudgmentConstructionError('Judgment preparation failed permanently',{cause:preparationFailure});if(finished)throw new JudgmentConstructionError('Judgment evidence collection is finished');dependencyCheck(()=>{budget.checkpoint();if(!bindingSegmentActive&&readMainAgentRequest(input)!==receipt)throw new JudgmentConstructionError('Enclosing request observation changed');});}
@@ -60,10 +79,86 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     function resolveBinding(bindingHandle){
       ready();const instruction=instructionBindings.get(bindingHandle);
       if(instruction){
+        if(instruction.kind==='unit-adoption'){
+          if(!bindings.has(instruction.member)||ruleBindings.read(instruction.adopter)!==instruction.adopterProjection||ruleBindings.read(instruction.target)!==instruction.targetProjection)throw new JudgmentConstructionError('Unit adoption lost its original member or source units');
+          return instruction.binding;
+        }
+        if(instruction.kind==='whole-request-material'){
+          if(instruction.request!==receipt.request)throw new JudgmentConstructionError('Whole-request material lost its original request occurrence');
+          return instruction.binding;
+        }
         if((instruction.member!==undefined&&!bindings.has(instruction.member))||ruleBindings.read(instruction.rule)!==instruction.projection)throw new JudgmentConstructionError('Instruction claim lost its original member or source clause');
         return instruction.binding;
       }
       const value=bindings.get(bindingHandle);if(!value)throw new JudgmentConstructionError('Prepared member binding is not owned by this judgment');return value.binding;
+    }
+    let unitAdoptionPairs;
+    function indexedUnitAdoptionPairs(){
+      ready();
+      if(!unitAdoptionPairs){
+        const selectPairs=()=>declaredNames.length===1?selectUnitAdoptionPairs({
+          candidates:indexedInstructionCandidates(),readRule:readRuleCandidate,member:byMember.get(declaredNames[0].id)
+        }):Object.freeze([]);
+        unitAdoptionPairs=bindingSegmentActive?selectPairs():bindingSegment(selectPairs);
+      }
+      return unitAdoptionPairs;
+    }
+    function claimUnitAdoption({pair}){
+      if(!indexedUnitAdoptionPairs().includes(pair))throw new JudgmentConstructionError('Unit adoption requires an original selected pair from this judgment');
+      const {adopter,target,member}=pair;
+      const adopterProjection=ensureRuleBindings().read(adopter),targetProjection=ensureRuleBindings().read(target);
+      const memberRecord=bindings.get(member);
+      if(!memberRecord||adopterProjection.sourceOccurrence!==targetProjection.sourceOccurrence)throw new JudgmentConstructionError('Unit adoption requires its original member and same-source units');
+      let bindingHandle=programInstructionPairs.get(pair);
+      if(!bindingHandle){
+        bindingHandle=Object.freeze({});
+        const binding=Object.freeze({identity:pair,projection:Object.freeze({
+          claimScope:'member-unit-adoption',member,memberOrdinal:memberRecord.binding.projection.memberOrdinal,adopter:adopterProjection,target:targetProjection
+        })});
+        instructionBindings.set(bindingHandle,{kind:'unit-adoption',member,adopter,target,adopterProjection,targetProjection,binding});
+        programInstructionPairs.set(pair,bindingHandle);
+      }
+      return knownSelection().declare({definitionId:'unit_adoption',bindingHandle});
+    }
+    let requestMaterialBinding;
+    function requestMaterialFor(){ready();return receipt.request;}
+    function claimRequestMaterial(){
+      ready();
+      if(!requestMaterialBinding){
+        requestMaterialBinding=Object.freeze({});
+        const request=receipt.request;
+        const binding=Object.freeze({identity:request,projection:Object.freeze({claimScope:'program-request',requestMaterial:request})});
+        instructionBindings.set(requestMaterialBinding,{kind:'whole-request-material',request,binding});
+      }
+      return knownSelection().declare({definitionId:'request_instruction_content',bindingHandle:requestMaterialBinding});
+    }
+    function claimHeadingContext({candidate}){
+      const projection=ensureRuleBindings().read(candidate);
+      if(projection.kind!=='source-heading-context')throw new JudgmentConstructionError('Heading content requires an original contextual-heading group');
+      let bindingHandle=programInstructionPairs.get(candidate);
+      if(!bindingHandle){
+        bindingHandle=Object.freeze({});
+        const binding=Object.freeze({identity:candidate,projection:Object.freeze({claimScope:'program-heading-context',headingContext:projection})});
+        instructionBindings.set(bindingHandle,{member:undefined,rule:candidate,projection,binding});
+        programInstructionPairs.set(candidate,bindingHandle);
+      }
+      return knownSelection().declare({definitionId:'heading_instruction_content',bindingHandle});
+    }
+    function issueBoundPolicyBatch({clauseRelations,requestMaterial,headingContexts=false,unitAdoptions=false}){
+      if(typeof clauseRelations!=='boolean'||typeof requestMaterial!=='boolean'||typeof headingContexts!=='boolean'||typeof unitAdoptions!=='boolean'||(!clauseRelations&&!requestMaterial&&!headingContexts&&!unitAdoptions))throw new JudgmentConstructionError('Bound policy batch requires explicit code-selected semantic uses');
+      const candidates=clauseRelations?indexedInstructionCandidates():[];
+      const headings=headingContexts?indexedHeadingContextCandidates():[];
+      const adoptions=unitAdoptions?indexedUnitAdoptionPairs():[];
+      if(unitAdoptions&&!adoptions.length)throw new JudgmentConstructionError('No bounded original same-source adoption pairs are available');
+      if(clauseRelations&&(candidates.length===0||candidates.length>256))throw new JudgmentConstructionError('Clause relation requires one through 256 original instruction candidates');
+      if(headingContexts&&(headings.length===0||headings.length>64))throw new JudgmentConstructionError('Heading content requires one through 64 original source groups');
+      return bindingSegment(()=>{
+        const claims=candidates.map(rule=>claimProgramRuleCandidate({definitionId:'clause_operation_relation',rule}));
+        if(requestMaterial)claims.push(claimRequestMaterial());
+        for(const candidate of headings)claims.push(claimHeadingContext({candidate}));
+        for(const pair of adoptions)claims.push(claimUnitAdoption({pair}));
+        return issue(claims);
+      });
     }
     function knownSelection(){if(!selection)throw new JudgmentConstructionError('Judgment question selection was not prepared');return selection;}
     function prepare(members){
@@ -74,11 +169,12 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
         for(const member of members)requireJSONInput(member.input);
         const preparedJSON=JSON.stringify(members);
         if(typeof preparedJSON!=='string'||Buffer.byteLength(preparedJSON)>1048576)throw new JudgmentConstructionError('Prepared member data exceeds the declared JSON profile');
+        if(observer.beginJudgmentSources){const binding=observer.sealJudgmentSources(response);if(binding.request!==receipt)throw new JudgmentConstructionError("Prepared sources lost their original request receipt");judgmentSources=binding.sources;}
         const dependencyHandle=facade.prepare({signal});
         active();facade.finalize(dependencyHandle);budget.checkpoint();
-        const mandatoryPolicy=receipt.sources.mandatoryPolicy;
+        const mandatoryPolicy=judgmentSources.mandatoryPolicy;
         if(!mandatoryPolicy||!Object.isFrozen(mandatoryPolicy)||typeof mandatoryPolicy.content!=='string')throw new JudgmentConstructionError('Original request lacks complete owned mandatory policy');
-        const envelope=Object.freeze({parentJSON,preparedJSON,requestBody:receipt.request.body,mandatoryPolicy,instructionAuthority:'not-established'});
+        const envelope=Object.freeze({parentJSON,preparedJSON,requestBody:receipt.request.body,mandatoryPolicy,governingSources:judgmentSources.governingSources,instructionAuthority:'not-established'});
         selection=createQuestionSelection({catalogText,catalogSHA256,budget,resolveBinding,envelope});
         active();budget.checkpoint();
         // Publish immutable occurrence records only after complete input and dependency checks.
@@ -91,22 +187,27 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       } catch(error){preparationFailed=true;preparationFailure=error;throw error;}
       finally{preparing=false;}
     }
-    function claim({definitionId,memberId}){ready();if(definitionId==='operation_violates_rule')throw new JudgmentConstructionError('Whole-program rule relation requires claimProgramRuleCandidate');if(definitionId==='states_approval_prerequisite')throw new JudgmentConstructionError('Instruction meaning requires claimInstruction and its original clause');const bindingHandle=byMember.get(memberId);if(!bindingHandle)throw new JudgmentConstructionError('Requested member was not in the prepared native group');return selection.declare({definitionId,bindingHandle});}
+    function claim({definitionId,memberId}){ready();if(['request_instruction_content','heading_instruction_content','unit_adoption'].includes(definitionId))throw new JudgmentConstructionError('Whole-request material requires its original request selector; heading content requires its original source-group selector');if(definitionId==='operation_violates_rule')throw new JudgmentConstructionError('Whole-program rule relation requires claimProgramRuleCandidate');if(definitionId==='states_approval_prerequisite')throw new JudgmentConstructionError('Instruction meaning requires claimInstruction and its original clause');const bindingHandle=byMember.get(memberId);if(!bindingHandle)throw new JudgmentConstructionError('Requested member was not in the prepared native group');return selection.declare({definitionId,bindingHandle});}
     function ensureRuleBindings(){
       ready();
       if(!ruleBindings){
-        if(typeof parsePolicy!=='function'||!receipt.sources.hostGoverningPolicy)throw new JudgmentConstructionError('Original host-selected policy and qualified parser are required for instruction claims');
-        ruleBindings=createGoverningRuleBindings({parse:parsePolicy,readSource:()=>{ready();return receipt.sources.hostGoverningPolicy;}});
+        if(typeof parsePolicy!=='function'||!judgmentSources.hostGoverningPolicy)throw new JudgmentConstructionError('Original host-selected policy and qualified parser are required for instruction claims');
+        const indexSources=()=>createGoverningRuleSet({parse:parsePolicy,readSources:()=>{ready();return judgmentSources.governingSources;}});
+        ruleBindings=bindingSegmentActive?indexSources():bindingSegment(indexSources);
       }
       return ruleBindings;
     }
     /** Enumeration is source-owned selection only, not authority, full-source coverage or permission. */
     function indexedRuleCandidates(){return ensureRuleBindings().indexedCandidates();}
     function readRuleCandidate(rule){return ensureRuleBindings().read(rule);}
+    function indexedInstructionCandidates(){return ensureRuleBindings().indexedInstructionCandidates();}
+    function indexedHeadingContextCandidates(){return ensureRuleBindings().indexedHeadingContextCandidates();}
+    function inspectRuleSources(){return ensureRuleBindings().inspect();}
     /** Canonical whole original program/rule identity cannot be resampled through another member. */
     function claimProgramRuleCandidate({definitionId,rule}){
-      if(definitionId!=='operation_violates_rule')throw new JudgmentConstructionError('Unsupported whole-program rule relation definition');
+      if(!['operation_violates_rule','clause_operation_relation'].includes(definitionId))throw new JudgmentConstructionError('Unsupported whole-program rule relation definition');
       const projection=ensureRuleBindings().read(rule);
+      if(projection.kind==='source-heading-context')throw new JudgmentConstructionError('Heading groups cannot be selected as individual clauses');
       let bindingHandle=programInstructionPairs.get(rule);
       if(!bindingHandle){
         bindingHandle=Object.freeze({});
@@ -118,9 +219,20 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     }
     /** Enumerate and issue all original indexed program/rule claims under one synchronous source boundary. */
     function issueProgramRuleBatch({definitionId}){
-      if(definitionId!=='operation_violates_rule')throw new JudgmentConstructionError('Unsupported whole-program rule relation definition');
-      const candidates=indexedRuleCandidates();
+      if(!['operation_violates_rule','clause_operation_relation'].includes(definitionId))throw new JudgmentConstructionError('Unsupported whole-program rule relation definition');
+      const candidates=definitionId==='clause_operation_relation'?indexedInstructionCandidates():indexedRuleCandidates();
+      if(definitionId==='clause_operation_relation'&&(candidates.length===0||candidates.length>256))throw new JudgmentConstructionError('Clause relation requires one through 256 indexed clauses');
       return bindingSegment(()=>issue(candidates.map(rule=>claimProgramRuleCandidate({definitionId,rule}))));
+    }
+    /** Issue fixed independent relation types together inside the existing synchronous binding segment. */
+    function issueRuleAssessmentBatch(){
+      const candidates=indexedRuleCandidates();
+      if(candidates.length===0||candidates.length>256)throw new JudgmentConstructionError('Mixed rule assessment requires one through 256 indexed clauses; unclassified prose and larger batches remain unsupported');
+      return bindingSegment(()=>{
+        const meanings=candidates.map(rule=>claimRuleCandidate({definitionId:'states_approval_prerequisite',memberId:declaredNames[0].id,rule}));
+        const operations=candidates.map(rule=>claimProgramRuleCandidate({definitionId:'operation_violates_rule',rule}));
+        return issue([...meanings,...operations]);
+      });
     }
     /** Authenticate original batch and terminal phase before any eligibility failure can be retained. */
     function captureBatchEvidence(batch){
@@ -133,14 +245,18 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       assertDependenciesCurrent();
     }
     function claimRuleCandidate({definitionId,memberId,rule}){
-      const projection=ensureRuleBindings().read(rule);
-      return claimInstruction({definitionId,memberId,ruleCode:projection.code});
+      ensureRuleBindings().read(rule);
+      return claimSelectedInstruction({definitionId,memberId,rule});
     }
     function claimInstruction({definitionId,memberId,ruleCode}){
-      ready();if(definitionId==='operation_violates_rule')throw new JudgmentConstructionError('Whole-program rule relation cannot be selected through a member');const member=byMember.get(memberId);
+      return claimSelectedInstruction({definitionId,memberId,rule:ensureRuleBindings().select(ruleCode)});
+    }
+    function claimSelectedInstruction({definitionId,memberId,rule}){
+      ready();if(['operation_violates_rule','clause_operation_relation','request_instruction_content','heading_instruction_content','unit_adoption'].includes(definitionId))throw new JudgmentConstructionError('Whole-program rule relation cannot be selected through a member');const member=byMember.get(memberId);
       if(!member)throw new JudgmentConstructionError('Instruction claim member is outside the original prepared group');
       ensureRuleBindings();
-      const rule=ruleBindings.select(ruleCode),projection=ruleBindings.read(rule);
+      const projection=ruleBindings.read(rule);
+      if(projection.kind==='source-heading-context')throw new JudgmentConstructionError('Heading groups cannot be selected as individual clauses');
       const instructionOnly=definitionId==='states_approval_prerequisite';
       let pairs;
       if(instructionOnly){pairs=instructionMeaningPairs;}
@@ -168,8 +284,8 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       attemptedBatches.add(batch);assessing=true;
       try {
         const request=bindingSegment(()=>selection.requestFor(batch));
-        const answerText=await budget.dispatch(attempt=>send(Object.freeze({request,...attempt})));
-        return bindingSegment(()=>selection.settle({batch,answerText}));
+        const answer=await budget.dispatch(attempt=>send(Object.freeze({request,...attempt})));
+        return bindingSegment(()=>selection.settle({batch,...readAssessmentResponse(answer)}));
       } catch(error) {
         try {if(!selection.inspectBatch(batch).settled)selection.discard({batch,error});}
         catch(retentionError){throw new AggregateError([error,retentionError],'Assessment failure and terminal retention failure');}
@@ -211,6 +327,21 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       if(record.execution?.state!=='active')throw new JudgmentConstructionError('Program parent execution has returned');
       assertDependenciesCurrent();record.execution.origin.signal.throwIfAborted();return record;
     }
+    function bindPreparedProgram({member,declaration,assertCurrent}){
+      const record=knownMember(member);
+      if(record.parent!==undefined||record.execution)throw new JudgmentConstructionError('Prepared program inspection requires an unentered original root member');
+      if(record.preparedProgram)throw new JudgmentConstructionError('Original prepared program inspection is already bound');
+      if(typeof assertCurrent!=='function')throw new JudgmentConstructionError('Prepared program requires its original tool-dependency reader');
+      assertDeclaredProgram(declaration);
+      if(declaration.source!==record.prepared.input.code)throw new JudgmentConstructionError('Inspected program differs from the original prepared source');
+      ready();dependencyCheck(assertCurrent);ready();
+      const view=Object.freeze({kind:'original-prepared-program-inspection',member,prepared:record.prepared,declaration,permission:false});
+      record.preparedProgram={view,assertCurrent};return view;
+    }
+    function preparedProgramFor(member){
+      const record=knownMember(member);assertDependenciesCurrent();parentCurrent(record);
+      return record.preparedProgram?.view;
+    }
     function openProgram({parentToken,toolNames}){
       const record=knownExecution(parentToken);
       if(record.execution.state!=='active')throw new JudgmentConstructionError('Program parent execution has returned');
@@ -219,7 +350,9 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       const program=Object.freeze({}),scope={handle:program,status:'opening',declaration:undefined,view:undefined,groups:[],valueReceipt:undefined,guardFailure:undefined,guardFailures:[],seenGuards:new WeakSet()};
       record.program=scope;programs.set(program,record);
       try{
-        const declaration=declareResultProgram({source:record.prepared.input.code,toolNames});
+        const declaration=record.preparedProgram?.view.declaration;
+        if(!declaration)throw new JudgmentConstructionError('Native program requires its original declaration captured before policy review');
+        if(!Array.isArray(toolNames)||declaration.sites.some(site=>!toolNames.includes(site.name)))throw new JudgmentConstructionError('Runtime callables differ from the original prepared program');
         currentProgram(program);
         scope.groups=declaration.groups.map(definition=>{
           const group={handle:Object.freeze({}),program,definition,state:'unreached',view:undefined,slots:[],members:undefined,consumer:undefined};groups.set(group.handle,group);return group;
@@ -317,7 +450,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       });}catch(error){throw operation(()=>markProgramGuard({program:group.program,error}));}
     }
     function inspectReachedGroup(handle){const group=knownGroup(handle);return Object.freeze({retainedOnly:true,ordinal:group.definition.ordinal,state:group.state,failure:group.failure,members:Object.freeze((group.members??[]).map(member=>{const record=bindings.get(member);return Object.freeze({id:record.prepared.id,state:record.execution?.state??'unentered'});})),nativeReturns:Object.freeze(group.slots.map(slot=>group.consumer.inspect(slot.handle)))});}
-    function inspectProgram(program){const scope=knownProgram(program).program;return Object.freeze({retainedOnly:true,status:scope.status,failure:scope.failure,producerValueReady:scope.valueReceipt!==undefined,guardFailures:Object.freeze([...scope.guardFailures]),groups:Object.freeze(scope.groups.map(group=>inspectReachedGroup(group.handle)))});}
+    function inspectProgram(program){const scope=knownProgram(program).program;return Object.freeze({retainedOnly:true,status:scope.status,failure:scope.failure,declaration:scope.declaration,producerValueReady:scope.valueReceipt!==undefined,guardFailures:Object.freeze([...scope.guardFailures]),groups:Object.freeze(scope.groups.map(group=>inspectReachedGroup(group.handle)))});}
     function preparedMemberFor(member){const record=knownMember(member);assertDependenciesCurrent();parentCurrent(record);return Object.freeze({prepared:record.prepared,signal:record.effectiveSignal});}
     function originalFileFor(member){
       ready();const record=knownMember(member);parentCurrent(record);
@@ -338,8 +471,8 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     function finishExecution(token){const record=knownExecution(token);record.execution.state='returned';}
     function inspectExecution(token){const record=knownExecution(token);return Object.freeze({retainedOnly:true,state:record.execution.state});}
     function memberExecutionStates(){return Object.freeze([...byMember.entries()].map(([id,handle])=>Object.freeze({id,state:bindings.get(handle).execution?.state??'unentered'})));}
-    function inspect(){return Object.freeze({prepared,preparationFailed,preparationFailure,finished,closeFailed,accounting:budget.diagnostics(),finalRecord,memberExecutions:memberExecutionStates(),rootPrograms:Object.freeze([...byMember.values()].flatMap(member=>{const record=bindings.get(member);return record.program?[inspectProgram(record.program.handle)]:[];})),childGroups:Object.freeze(childGroups.map(group=>inspectReachedGroup(group.handle)))});}
-    budget.checkpoint();const judgment=Object.freeze({openProgram:input=>operation(()=>openProgram(input)),programFor:program=>operation(()=>programFor(program)),reachProgramGroup:input=>operation(()=>reachProgramGroup(input)),reachedGroupFor:group=>operation(()=>reachedGroupFor(group)),bindProgramCalls:input=>operation(()=>bindProgramCalls(input)),prepareReachedMembers:input=>operation(()=>prepareReachedMembers(input)),invokeProgramNative,scriptValueFor,markProgramGuard:input=>operation(()=>markProgramGuard(input)),inspectReachedGroup,originalFileFor:member=>operation(()=>originalFileFor(member)),preparedMemberFor:member=>operation(()=>preparedMemberFor(member)),assertExecutionEntry:token=>operation(()=>assertExecutionEntry(token)),inspectProgram,memberFor:memberId=>operation(()=>memberFor(memberId)),beginExecution:member=>operation(()=>beginExecution(member)),executionFor:token=>operation(()=>executionFor(token)),finishExecution:token=>operation(()=>finishExecution(token)),inspectExecution,checkpoint:()=>operation(active),prepare:members=>operation(()=>prepare(members)),claim:input=>operation(()=>claim(input)),claimInstruction:input=>operation(()=>claimInstruction(input)),captureClaimEvidence:claim=>operation(()=>captureClaimEvidence(claim)),assertClaimEvidence:input=>operation(()=>assertClaimEvidence(input)),indexedRuleCandidates:()=>operation(indexedRuleCandidates),readRuleCandidate:rule=>operation(()=>readRuleCandidate(rule)),claimRuleCandidate:input=>operation(()=>claimRuleCandidate(input)),claimProgramRuleCandidate:input=>operation(()=>claimProgramRuleCandidate(input)),issueProgramRuleBatch:input=>operation(()=>issueProgramRuleBatch(input)),captureBatchEvidence:batch=>operation(()=>captureBatchEvidence(batch)),assertBatchEvidence:evidence=>operation(()=>assertBatchEvidence(evidence)),issue:claims=>operation(()=>issue(claims)),assess,finalize:()=>operation(finalize),assertDependenciesCurrent:()=>operation(assertDependenciesCurrent),inspect,inspectBatch:batch=>knownSelection().inspectBatch(batch),inspectClaim:claim=>knownSelection().inspectClaim(claim)});return judgment;
+    function inspect(){return Object.freeze({prepared,preparationFailed,preparationFailure,finished,closeFailed,accounting:budget.diagnostics(),finalRecord,memberExecutions:memberExecutionStates(),preparedPrograms:Object.freeze([...byMember.values()].flatMap(member=>{const inspection=bindings.get(member).preparedProgram;return inspection?[inspection.view]:[];})),rootPrograms:Object.freeze([...byMember.values()].flatMap(member=>{const record=bindings.get(member);return record.program?[inspectProgram(record.program.handle)]:[];})),childGroups:Object.freeze(childGroups.map(group=>inspectReachedGroup(group.handle)))});}
+    budget.checkpoint();const judgment=Object.freeze({bindPreparedProgram:input=>operation(()=>bindPreparedProgram(input)),preparedProgramFor:member=>operation(()=>preparedProgramFor(member)),openProgram:input=>operation(()=>openProgram(input)),programFor:program=>operation(()=>programFor(program)),reachProgramGroup:input=>operation(()=>reachProgramGroup(input)),reachedGroupFor:group=>operation(()=>reachedGroupFor(group)),bindProgramCalls:input=>operation(()=>bindProgramCalls(input)),prepareReachedMembers:input=>operation(()=>prepareReachedMembers(input)),invokeProgramNative,scriptValueFor,markProgramGuard:input=>operation(()=>markProgramGuard(input)),inspectReachedGroup,originalFileFor:member=>operation(()=>originalFileFor(member)),preparedMemberFor:member=>operation(()=>preparedMemberFor(member)),assertExecutionEntry:token=>operation(()=>assertExecutionEntry(token)),inspectProgram,memberFor:memberId=>operation(()=>memberFor(memberId)),beginExecution:member=>operation(()=>beginExecution(member)),executionFor:token=>operation(()=>executionFor(token)),finishExecution:token=>operation(()=>finishExecution(token)),inspectExecution,checkpoint:()=>operation(active),prepare:members=>operation(()=>prepare(members)),claim:input=>operation(()=>claim(input)),claimInstruction:input=>operation(()=>claimInstruction(input)),captureClaimEvidence:claim=>operation(()=>captureClaimEvidence(claim)),assertClaimEvidence:input=>operation(()=>assertClaimEvidence(input)),readSourceSnapshot:()=>judgmentSources,indexedUnitAdoptionPairs:()=>operation(indexedUnitAdoptionPairs),claimUnitAdoption:input=>operation(()=>claimUnitAdoption(input)),requestMaterialFor:()=>operation(requestMaterialFor),claimRequestMaterial:()=>operation(claimRequestMaterial),claimHeadingContext:input=>operation(()=>claimHeadingContext(input)),issueBoundPolicyBatch:input=>operation(()=>issueBoundPolicyBatch(input)),indexedRuleCandidates:()=>operation(indexedRuleCandidates),indexedInstructionCandidates:()=>operation(indexedInstructionCandidates),indexedHeadingContextCandidates:()=>operation(indexedHeadingContextCandidates),inspectRuleSources:()=>operation(inspectRuleSources),issueRuleAssessmentBatch:()=>operation(issueRuleAssessmentBatch),readRuleCandidate:rule=>operation(()=>readRuleCandidate(rule)),claimRuleCandidate:input=>operation(()=>claimRuleCandidate(input)),claimProgramRuleCandidate:input=>operation(()=>claimProgramRuleCandidate(input)),issueProgramRuleBatch:input=>operation(()=>issueProgramRuleBatch(input)),captureBatchEvidence:batch=>operation(()=>captureBatchEvidence(batch)),assertBatchEvidence:evidence=>operation(()=>assertBatchEvidence(evidence)),issue:claims=>operation(()=>issue(claims)),assess,finalize:()=>operation(finalize),assertDependenciesCurrent:()=>operation(assertDependenciesCurrent),inspect,inspectBatch:batch=>knownSelection().inspectBatch(batch),inspectClaim:claim=>knownSelection().inspectClaim(claim)});return judgment;
   };
 }
 //endregion

@@ -1,5 +1,5 @@
 import {SourceCollectionError} from '../../collector/collector.mjs';
-import {GoverningPolicyBindingError} from './governing-source.mjs';
+import {GoverningPolicyBindingError} from './governing-error.mjs';
 
 /** Original source records from one completed run, preserving each occurrence. */
 function promptSources(publication){

@@ -31,14 +31,17 @@ export function inspectNativeSourceDomain({
  else for(const kind of snapshot.nativeDomainEventKinds){
   const observation=snapshot.nativeDomainEventObservation;
   const observedEvent=isNativeEventObservation(observation)
-    &&observation.pending===0&&!observation.failed
-    &&JSON.stringify(observation.registeredKinds)===JSON.stringify(snapshot.nativeDomainEventKinds)
+    &&(observation.pending===0)
+    &&(!observation.failed)
+    &&(JSON.stringify(observation.registeredKinds)===JSON.stringify(snapshot.nativeDomainEventKinds))
     &&NATIVE_OBSERVED_EVENT_KINDS.includes(kind);
   const receipt=run?.contextHandlerReceipt;
-  const observedContext=(kind==='context'||kind==='context_with_system')
-    &&receipt?.runOccurrence===run?.occurrence
-    &&receipt?.observation.kinds.includes(kind);
-  if(!observedContext&&!observedEvent)missing(`Native extension event ${JSON.stringify(kind)} has no complete original input and result receipt accounting in this host integration.`);
+  const observedContext=((kind==='context')||(kind==='context_with_system'))
+    &&(receipt?.runOccurrence===run?.occurrence)
+    &&receipt?.observation
+    .kinds
+    .includes(kind);
+  if((!observedContext)&&(!observedEvent))missing(`Native extension event ${JSON.stringify(kind)} has no complete original input and result receipt accounting in this host integration.`);
  }
  const arrays=[
    'retainedRunInputs',
