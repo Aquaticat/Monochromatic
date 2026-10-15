@@ -12,9 +12,13 @@ import type { InstructionSources } from './instruction-sources.ts';
 import type { ProgramInstructions } from './instruction-program.ts';
 import type { MemberInstructions } from './instruction-member.ts';
 
-/** Original instruction relation profile bounds each candidate collection. */
+/**
+ Original instruction relation profile bounds each candidate collection.
+ */
 const MAX_INSTRUCTION_CANDIDATES = 256;
-/** Original contextual-heading profile bounds selected source groups. */
+/**
+ Original contextual-heading profile bounds selected source groups.
+ */
 const MAX_HEADING_GROUPS = 64;
 
 //region Complete original batches issue inside one synchronous source dependency segment.
@@ -81,7 +85,9 @@ export function createInstructionBatches({
     headingContexts = false,
     unitAdoptions = false
   }: BoundPolicySelection) : object {
-    if ((typeof clauseRelations) !== 'boolean' || (typeof requestMaterial) !== 'boolean' || (typeof headingContexts) !== 'boolean' || (typeof unitAdoptions) !== 'boolean' || ((!clauseRelations) && (!requestMaterial) && (!headingContexts) && (!unitAdoptions))) throw new JudgmentConstructionError('Bound policy batch requires explicit code-selected semantic uses');
+    if (((typeof clauseRelations) !== 'boolean') || ((typeof requestMaterial) !== 'boolean') || ((typeof headingContexts) !== 'boolean') || ((typeof unitAdoptions) !== 'boolean') || ((!clauseRelations) && (!requestMaterial)
+      && (!headingContexts)
+      && (!unitAdoptions))) throw new JudgmentConstructionError('Bound policy batch requires explicit code-selected semantic uses');
     const includeClauses: boolean = clauseRelations;
     const includeRequest: boolean = requestMaterial;
     const includeHeadings: boolean = headingContexts;
@@ -93,7 +99,7 @@ export function createInstructionBatches({
       const candidates = includeClauses ? indexedInstructionCandidates() : [];
       const headings = includeHeadings ? indexedHeadingContextCandidates() : [];
       const adoptions = includeAdoptions ? indexedUnitAdoptionPairs() : [];
-      if (includeAdoptions && adoptions.length === 0) throw new JudgmentConstructionError('No bounded original same-source adoption pairs are available');
+      if (includeAdoptions && (adoptions.length === 0)) throw new JudgmentConstructionError('No bounded original same-source adoption pairs are available');
       if (includeClauses && ((candidates.length === 0) || (candidates.length > MAX_INSTRUCTION_CANDIDATES))) throw new JudgmentConstructionError('Clause relation requires one through 256 original instruction candidates');
       if (includeHeadings && ((headings.length === 0) || (headings.length > MAX_HEADING_GROUPS))) throw new JudgmentConstructionError('Heading content requires one through 64 original source groups');
       const claims = candidates.map(function claimOperationRelation(rule) { return claimProgramRuleCandidate({

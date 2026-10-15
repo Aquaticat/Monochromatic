@@ -40,14 +40,17 @@ export function createInstructionResolver({
       .get(bindingHandle);
     if (instruction) {
       if (instruction.kind === 'unit-adoption') {
-        if ((!bindings.has(instruction.member)) || (retainedInstructionRules(state).read(instruction.adopter) !== instruction.adopterProjection) || (retainedInstructionRules(state).read(instruction.target) !== instruction.targetProjection)) throw new JudgmentConstructionError('Unit adoption lost its original member or source units');
+        if ((!bindings.has(instruction.member)) || (retainedInstructionRules(state).read(instruction.adopter) !== instruction.adopterProjection)
+          || (retainedInstructionRules(state).read(instruction.target) !== instruction.targetProjection)) throw new JudgmentConstructionError('Unit adoption lost its original member or source units');
         return instruction.binding;
       }
       if (instruction.kind === 'whole-request-material') {
         if (instruction.request !== receipt.request) throw new JudgmentConstructionError('Whole-request material lost its original request occurrence');
         return instruction.binding;
       }
-      if (((instruction.member !== undefined) && (!bindings.has(instruction.member))) || (retainedInstructionRules(state).read(instruction.rule) !== instruction.projection)) throw new JudgmentConstructionError('Instruction claim lost its original member or source clause');
+      if (((instruction.member !== undefined) && (!bindings.has(instruction.member))) || (retainedInstructionRules(state)
+        .read(instruction.rule)
+        !== instruction.projection)) throw new JudgmentConstructionError('Instruction claim lost its original member or source clause');
       return instruction.binding;
     }
     const value = bindings.get(bindingHandle);

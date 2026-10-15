@@ -2,18 +2,16 @@
  Original member claims distinguish clause meaning from member-bound operation predicates. @module
  */
 import type { MemberInstructionOperations } from './instruction-api.ts';
-import type { InstructionRecord } from './instruction-types.ts';
+import type { InstructionRecord,
+  InstructionContext,
+  InstructionMember,
+  SelectedInstruction } from './instruction-types.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
 import {
   retainInstructionHandle,
   memberInstructionPairs,
   retainedInstructionRules
 } from './instruction-ownership.ts';
-import type {
-  InstructionContext,
-  InstructionMember,
-  SelectedInstruction
-} from './instruction-types.ts';
 import type { InstructionSources } from './instruction-sources.ts';
 
 /**
@@ -85,7 +83,10 @@ export function createMemberInstructions({
     const bindingHandle = byMember.get(memberId);
     if (!bindingHandle) throw new JudgmentConstructionError('Requested member was not in the prepared native group');
     return knownSelection()
-      .declare({ definitionId, bindingHandle });
+      .declare({
+        definitionId,
+        bindingHandle
+      });
   }
   /**
    Retain canonical clause meaning or member-clause identity before declaration.
@@ -155,7 +156,10 @@ export function createMemberInstructions({
       createRecord
     });
     return knownSelection()
-      .declare({ definitionId, bindingHandle });
+      .declare({
+        definitionId,
+        bindingHandle
+      });
   }
   /**
    Authenticate original candidate membership before selecting its predicate.
@@ -200,7 +204,8 @@ export function createMemberInstructions({
     return claimSelectedInstruction({
       definitionId,
       memberId,
-      rule: ensureRuleBindings().select(ruleCode)
+      rule: ensureRuleBindings()
+        .select(ruleCode)
     });
   }
   return {

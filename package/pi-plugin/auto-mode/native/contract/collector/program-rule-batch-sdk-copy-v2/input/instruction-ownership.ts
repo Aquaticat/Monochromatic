@@ -27,7 +27,7 @@ export function firstInstructionMemberId(declared?: Readonly<{ id: string }>): s
 
 /**
  Construct private owner state without reading lazy source or request capabilities.
- *
+ 
  @returns unpublished original instruction owner
  */
 export function createInstructionState(): InstructionState {
@@ -41,11 +41,11 @@ export function createInstructionState(): InstructionState {
 
 /**
  Read a previously initialized source owner without introducing another readiness check.
- *
+ 
  @param state - original instruction ownership
- *
+ 
  @returns initialized original source owner
- *
+ 
  @throws Error if internal construction has not retained its source owner
  */
 export function retainedInstructionRules(state: InstructionState): GoverningRuleSet {
@@ -54,17 +54,17 @@ export function retainedInstructionRules(state: InstructionState): GoverningRule
 
 /**
  Publish a binding once after original source and member checks succeed.
- *
+ 
  @param state - original private instruction records
- *
+ 
  @param map - canonical mapping for the selected claim scope
- *
+ 
  @param key - original source, pair, or member-clause identity
- *
+ 
  @param createRecord - original dependency capture before publication
- *
+ 
  @returns canonical opaque handle
- *
+ 
  @throws original dependency-capture failure without publishing the handle
  */
 export function retainInstructionHandle({
@@ -82,7 +82,10 @@ export function retainInstructionHandle({
   if (existing) return existing;
   const bindingHandle = Object.freeze({});
   state.instructionBindings
-    .set(bindingHandle, createRecord());
+    .set(
+      bindingHandle,
+      createRecord()
+    );
   map.set(
     key,
     bindingHandle
@@ -92,11 +95,11 @@ export function retainInstructionHandle({
 
 /**
  Each member owns a separate original rule-to-claim mapping.
- *
+ 
  @param state - original private member maps
- *
+ 
  @param member - original prepared-member handle
- *
+ 
  @returns canonical mapping for this member alone
  */
 export function memberInstructionPairs({
@@ -111,7 +114,10 @@ export function memberInstructionPairs({
   if (existing) return existing;
   const pairs = new WeakMap<object, object>();
   state.instructionPairs
-    .set(member, pairs);
+    .set(
+      member,
+      pairs
+    );
   return pairs;
 }
 //endregion

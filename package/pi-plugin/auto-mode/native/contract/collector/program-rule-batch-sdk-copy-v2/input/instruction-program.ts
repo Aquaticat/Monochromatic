@@ -2,15 +2,13 @@
  Original program claims retain request, heading, clause, and adoption identities. @module
  */
 import type { ProgramInstructionOperations } from './instruction-api.ts';
-import type { InstructionRecord } from './instruction-types.ts';
-import { JudgmentConstructionError } from './judgment-error.ts';
-import { retainInstructionHandle } from './instruction-ownership.ts';
-import type {
+import type { InstructionRecord,
   InstructionMember,
   InstructionAdoptionPair,
   InstructionContext,
-  ProgramInstruction
-} from './instruction-types.ts';
+  ProgramInstruction } from './instruction-types.ts';
+import { JudgmentConstructionError } from './judgment-error.ts';
+import { retainInstructionHandle } from './instruction-ownership.ts';
 import type { InstructionSources } from './instruction-sources.ts';
 
 //region Canonical original program selectors cannot be resampled through another member.
@@ -61,13 +59,22 @@ export function createProgramInstructions({
       const {request} = receipt;
       const binding = Object.freeze({
         identity: request,
-        projection: Object.freeze({ claimScope: 'program-request', requestMaterial: request })
+        projection: Object.freeze({
+          claimScope: 'program-request',
+          requestMaterial: request
+        })
       });
       state.instructionBindings
-        .set(state.requestMaterialBinding, { kind: 'whole-request-material', request, binding });
+        .set(
+          state.requestMaterialBinding,
+          { kind: 'whole-request-material', request, binding }
+        );
     }
     return knownSelection()
-      .declare({ definitionId: 'request_instruction_content', bindingHandle: state.requestMaterialBinding });
+      .declare({
+        definitionId: 'request_instruction_content',
+        bindingHandle: state.requestMaterialBinding
+      });
   }
   /**
    Retain original source-wide heading content without selecting an individual clause.
@@ -88,7 +95,10 @@ export function createProgramInstructions({
     function createRecord() : InstructionRecord {
       const binding = Object.freeze({
         identity: candidate,
-        projection: Object.freeze({ claimScope: 'program-heading-context', headingContext: projection })
+        projection: Object.freeze({
+          claimScope: 'program-heading-context',
+          headingContext: projection
+        })
       });
       return {
         member: undefined,
@@ -104,7 +114,10 @@ export function createProgramInstructions({
       createRecord
     });
     return knownSelection()
-      .declare({ definitionId: 'heading_instruction_content', bindingHandle });
+      .declare({
+        definitionId: 'heading_instruction_content',
+        bindingHandle
+      });
   }
   /**
    Bind the original enclosing program to one original instruction clause.
@@ -134,7 +147,10 @@ export function createProgramInstructions({
     function createRecord() : InstructionRecord {
       const binding = Object.freeze({
         identity: Object.freeze({}),
-        projection: Object.freeze({ claimScope: 'program-instruction', governingRule: projection })
+        projection: Object.freeze({
+          claimScope: 'program-instruction',
+          governingRule: projection
+        })
       });
       return {
         member: undefined,
@@ -150,7 +166,10 @@ export function createProgramInstructions({
       createRecord
     });
     return knownSelection()
-      .declare({ definitionId, bindingHandle });
+      .declare({
+        definitionId,
+        bindingHandle
+      });
   }
   /**
    Declare an original structural pair only after member and same-source admission.
@@ -174,7 +193,8 @@ export function createProgramInstructions({
     const targetProjection = ensureRuleBindings()
       .read(target);
     const memberRecord = member === undefined ? undefined : bindings.get(member);
-    if ((!memberRecord) || (member === undefined) || (adopterProjection.sourceOccurrence !== targetProjection.sourceOccurrence)) throw new JudgmentConstructionError('Unit adoption requires its original member and same-source units');
+    if ((!memberRecord) || (member === undefined)
+      || (adopterProjection.sourceOccurrence !== targetProjection.sourceOccurrence)) throw new JudgmentConstructionError('Unit adoption requires its original member and same-source units');
     const originalMember: object = member;
     const originalMemberRecord: InstructionMember = memberRecord;
     /**
@@ -183,7 +203,13 @@ export function createProgramInstructions({
     function createRecord() : InstructionRecord {
       const binding = Object.freeze({
         identity: pair,
-        projection: Object.freeze({ claimScope: 'member-unit-adoption', member, memberOrdinal: originalMemberRecord.binding.projection.memberOrdinal, adopter: adopterProjection, target: targetProjection })
+        projection: Object.freeze({
+          claimScope: 'member-unit-adoption',
+          member,
+          memberOrdinal: originalMemberRecord.binding.projection.memberOrdinal,
+          adopter: adopterProjection,
+          target: targetProjection
+        })
       });
       return {
         kind: 'unit-adoption' as const,
@@ -202,7 +228,10 @@ export function createProgramInstructions({
       createRecord
     });
     return knownSelection()
-      .declare({ definitionId: 'unit_adoption', bindingHandle });
+      .declare({
+        definitionId: 'unit_adoption',
+        bindingHandle
+      });
   }
   return {
     requestMaterialFor,
