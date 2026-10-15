@@ -9,6 +9,24 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+### Reopened consumer failures
+
+After the replacement handoff, the user reported `Root lease has been retired` and `Connection error.`.
+The real session beginning at 22:17:29 UTC records connection failures on `llmgateway-devpass/mimo-v2.6-pro`,
+followed by a lease error on `opencode-go/mimo-v2.6-pro`.
+The user confirms using Esc, editing/retrying, `/tree`, and `/reload` between attempts.
+These are separate incidents until reproduced at their respective consumer boundaries.
+
+- [ ] Reproduce and fix the connection failure after selecting another provider.
+- [ ] Reproduce and fix retired-root failure after native navigation and retry.
+- [ ] Verify original host operations, install the corrected artifact, and document the evidence.
+
+Scratch reproductions live under `${HOME}/temp/agent/pi-reported-errors-20261015/`.
+The prior successful controls did not cover this complete UI-operation sequence.
+Warning cleanup remains assigned to the MiMo handoff after these functional regressions are resolved.
+
+### Replacement verification before the new report
+
 The user subsequently requested a whole-system re-review and consideration of rebuilding.
 The review is complete.
 The user accepted decision-core replacement and requested avoiding overengineering.
