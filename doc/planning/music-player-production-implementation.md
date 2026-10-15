@@ -248,6 +248,12 @@ before saying it matches, QAB):
   Release authority: the human said "Feel free to do real releases. Release early and often." (2026-10-15), so real
   releases need no further asking: after the dry run on main is green, dispatch with dry-run false (or bump the
   version in both manifests, which releases on push), then verify the published assets and report the version.
+  RELEASED `music-player-v0.1.0` on 2026-10-15 (run `38676838535`, dispatched on main after the green dry run
+  `38675318400`): a pre-release, immutable, six assets plus `SHA256SUMS`. I downloaded them, `sha256sum --check` passed
+  for all six, `gh attestation verify` exited 0 for the Linux x64 tarball and the APK, the APK certificate SHA-256 is
+  the expected `9de6e9a4...6926`, and the Linux x64 binary prints `music-player 0.1.0`. Not run by me: the Windows and
+  macOS binaries (no such machine here; CI ran `--version`), the arm64 Linux binary, any real device. Next releases
+  follow the version bump of the fingerprint migration (task 99) and the Windows linkers (task 96).
   Open for the human: (1) nothing for releasing itself (`0.1.0` is on main with no tag; a push that leaves the version
   unchanged never releases it, only a dispatch with dry-run false on main does); (2) copy
   `~/.local/share/music-player-release-keys` (`music-player-release.p12`, plaintext `credentials.txt`) into KeePassXC
