@@ -20,7 +20,7 @@ await describe({ name: '', children: [
         const original = Object.freeze({ failure: 'original' });
         /** Original occurrence is appended even when delivery is already closed. */
         const token = f.owner.recordFailure({ error: original, at: 'first boundary' });
-        assert.ok(token instanceof Error);
+        assert.ok(Error.isError(token,));
         assert.equal(token.message, 'Declared group failure already recorded');
         assert.equal(token.occurrence, f.failures[0]);
         assert.deepEqual(token.occurrence, { identity: {}, ordinal: 0, at: 'first boundary', error: original });
@@ -42,7 +42,7 @@ await describe({ name: '', children: [
     });
   }),
   ...[undefined, null, 'original primitive', 17, Object.freeze({ original: true })].map(function opaqueCases(original) {
-    return it({ name: `retains repeated opaque ${String(original)} occurrences independently`, fn: async function repeated() {
+    return it({ name: `retains repeated opaque ${JSON.stringify(original)} occurrences independently`, fn: async function repeated() {
       /** Every new observation appends even when its value equals an earlier observation. */
       const f = createFailureFixture();
       /** First occurrence controls group cancellation and pending delivery. */
@@ -84,7 +84,11 @@ await describe({ name: '', children: [
     /** Callback failure leaves native cancellation untouched after primary publication. */
     const f = createFailureFixture();
     f.state.failReject = true;
-    assert.throws(function fail() { f.owner.recordFailure({ error: 'original', at: 'first' }); }, function same(error: unknown) { return error === f.callbackFailure; });
+    assert.throws(function fail() { 
+      f.owner.recordFailure({ error: 'original', at: 'first' }); 
+    }, function same(error: unknown) { 
+      return error === f.callbackFailure; 
+    });
     assert.equal(f.failures.length, 1);
     assert.equal(f.state.primary?.occurrence, f.failures[0]);
     assert.equal(f.state.phase, 'failed');

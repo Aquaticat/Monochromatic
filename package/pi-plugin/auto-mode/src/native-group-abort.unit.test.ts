@@ -65,7 +65,11 @@ await describe({ name: '', children: [
     /** Retrying the same signal must append because its first observation never completed. */
     const observed = AbortSignal.abort('original');
     f.state.failReject = true;
-    assert.throws(function fail() { f.owner.abortOccurrence({ observed, at: 'first' }); }, function same(error: unknown) { return error === f.callbackFailure; });
+    assert.throws(function fail() { 
+      f.owner.abortOccurrence({ observed, at: 'first' }); 
+    }, function same(error: unknown) { 
+      return error === f.callbackFailure; 
+    });
     /** Existing primary prevents repeating the failing callback on retry. */
     const retried = f.owner.abortOccurrence({ observed, at: 'retry' });
     assert.equal(f.failures.length, 2);
