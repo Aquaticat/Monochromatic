@@ -169,9 +169,15 @@ export function createExecutableFixture(): ExecutableFixture {
    Native callback controls remain replaceable without global mocks.
    */
   const control: ExecutableControl = {
-    active() { return undefined; },
-    waitForTurn() { return undefined; },
-    execute() { return 'native result'; },
+    active() { 
+      return undefined; 
+    },
+    waitForTurn() { 
+      return undefined; 
+    },
+    execute() { 
+      return 'native result'; 
+    },
   };
   /**
    Create wrapper snapshots with original callbacks and explicit disposable overrides.

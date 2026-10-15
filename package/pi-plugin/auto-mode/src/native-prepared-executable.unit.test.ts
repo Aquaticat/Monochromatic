@@ -13,11 +13,15 @@ await describe({ name: 'prepared native wrappers', children: [
     const inherited: unknown = Object.create({ inherited: true });
     Object.defineProperties(inherited, {
       name: { value: 'tool', enumerable: true },
-      label: { get() { reads.push('label');
-      return 'original label'; }, enumerable: true },
+      label: { get() { 
+        reads.push('label');
+      return 'original label'; 
+      }, enumerable: true },
       hidden: { value: true },
-      execute: { get() { reads.push('execute');
-      return 'replaced callback'; }, enumerable: true },
+      execute: { get() { 
+        reads.push('execute');
+      return 'replaced callback'; 
+      }, enumerable: true },
       [symbol]: { value: fixture.original, enumerable: true },
     });
     const [tool] = fixture.wrap({ tools: [inherited] });
@@ -54,14 +58,20 @@ await describe({ name: 'prepared native wrappers', children: [
     await Promise.all(wrappers.map(async function executePrimitive(wrapper) {
       assert.equal(await wrapper.execute('one'), 'native result');
     }));
-    assert.deepEqual(fixture.invocations.map(function original(input) { return input.tool; }), ['ab', null, undefined]);
+    assert.deepEqual(fixture.invocations.map(function original(input) { 
+      return input.tool; 
+    }), ['ab', null, undefined]);
   } }),
   it({ name: 'preserves opaque source getter failures during wrapper construction', fn: async function metadataFailure() {
     const fixture = createExecutableFixture();
     const failure: unknown = Object.freeze({ reason: 'native metadata getter' });
     assert.throws(function construct() {
-      fixture.wrap({ tools: [{ get label() { throw failure; } }] });
-    }, function sameFailure(error: unknown) { return error === failure; });
+      fixture.wrap({ tools: [{ get label() { 
+        throw failure; 
+      } }] });
+    }, function sameFailure(error: unknown) { 
+      return error === failure; 
+    });
     assert.deepEqual(fixture.events, []);
   } }),
   it({ name: 'retained execution callbacks do not reread the returned wrapper property', fn: async function retainedCallback() {
@@ -95,8 +105,12 @@ await describe({ name: 'prepared native wrappers', children: [
   it({ name: 'parallel execution bypasses turn lookup and assimilates native asynchronous results', fn: async function parallelTurn() {
     const fixture = createExecutableFixture();
     const native = Promise.withResolvers<unknown>();
-    fixture.control.waitForTurn = function unexpectedTurn() { throw new Error('Parallel execution read a turn'); };
-    fixture.control.execute = function execute() { return native.promise; };
+    fixture.control.waitForTurn = function unexpectedTurn() { 
+      throw new Error('Parallel execution read a turn'); 
+    };
+    fixture.control.execute = function execute() { 
+      return native.promise; 
+    };
     const [tool] = fixture.wrap();
     assert.ok(tool);
     const pending = tool.execute('one');
@@ -109,7 +123,9 @@ await describe({ name: 'prepared native wrappers', children: [
   it({ name: 'does not await the original synchronous currentness callback result', fn: async function activeResult() {
     const fixture = createExecutableFixture();
     const active = Promise.withResolvers<void>();
-    fixture.control.active = function current() { return active.promise; };
+    fixture.control.active = function current() { 
+      return active.promise; 
+    };
     const [tool] = fixture.wrap();
     assert.ok(tool);
     assert.equal(await Promise.race([tool.execute('one'), setImmediate('pending')]), 'native result');
