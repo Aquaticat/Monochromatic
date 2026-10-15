@@ -1352,6 +1352,28 @@ zero errors and 13007 warnings in
 All selection source and consumer files have zero diagnostics in that full report.
 The warning gate remains open;
 continue typing the original judgment consumers and their retained owner boundaries.
+The next port is original governing-rule binding and source-set ownership.
+Commits `feefb247f9`,
+`f22e014e5d`,
+`ab39c3a8a6`,
+and `8bef59cdd6` introduce typed source projections,
+structural indexing,
+candidate capture,
+heading retention,
+and per-source/set lifetime operations behind the unchanged original entry paths.
+The first focused binding check has zero errors and four formatting warnings.
+The expanded set check identified callback type loss after `Array.isArray` narrowing;
+the occurrence callback now explicitly retains the original source type.
+The built consumer checks cover exact source intervals and digests,
+native JSON representation,
+permanent invalidation,
+duplicate source-code ambiguity,
+and original source/clause limits.
+Their rebuild and broader consumer verification are running in
+`${HOME}/temp/agent/pi-native-governing-bindings-consumers-20261015.log`.
+Saved-baseline comparison,
+guard-omission controls,
+and final lint remain pending for this port.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
