@@ -2,7 +2,10 @@
  Sequential transport attempts share the original judgment's cancellation and accounting.
  @module
  */
-import {JudgmentAttemptLimitError,JudgmentBudgetError} from './errors.ts';
+import {
+  JudgmentAttemptLimitError,
+  JudgmentBudgetError
+} from './errors.ts';
 import type {
   JudgmentAccounting,
   JudgmentAttemptRecord,
@@ -12,18 +15,28 @@ import type {
 } from './types.ts';
 
 //region Classification of an actual failed transport attempt gates the next invocation.
-/** Shared client-attempt allowance across all dispatches in one judgment. */
+/**
+ Shared client-attempt allowance across all dispatches in one judgment.
+ */
 const attemptLimit=3;
 
 /**
  Bind transport dispatch to its original clock and retained accounting.
+ *
  @param checkpoint - original lifetime check
+ *
  @param isRetryableTransportFailure - fixed classification of actual failed transport
+ *
  @param accounting - original shared accounting owner
+ *
  @param records - original attempt record collection
+ *
  @param deadlineAt - original absolute expiry
+ *
  @param signal - original cancellation
+ *
  @returns transport operation preserving its response type
+ *
  @example
  ```ts
  const dispatch = createJudgmentDispatcher({
@@ -49,10 +62,13 @@ export function createJudgmentDispatcher({
 }): JudgmentBudget['dispatch'] {
   /**
    Check lifetime after a failed attempt without replacing its original error.
+   *
    @param error - original transport failure
    */
   function retainFailureAtCheckpoint(error: unknown): void {
-    /** Avoid retaining the same terminal failure twice. */
+    /**
+     Avoid retaining the same terminal failure twice.
+     */
     const alreadyRetired=accounting.retired;
     try {
       checkpoint();
@@ -71,19 +87,28 @@ export function createJudgmentDispatcher({
   }
   /**
    Preserve transport, classifier and boundary failures together.
+   *
    @param error - original failed attempt
+   *
    @param classificationError - original classification failure
    */
   function throwClassificationFailure({
     error,
     classificationError
-  }: { readonly error: unknown; readonly classificationError: unknown }): never {
-    /** Preserve errors in their original occurrence order. */
+  }: {
+    readonly error: unknown;
+    readonly classificationError: unknown
+  }): never {
+    /**
+     Preserve errors in their original occurrence order.
+     */
     const failures=[
       error,
       classificationError
     ];
-    /** Only newly observed boundary failures extend this aggregate. */
+    /**
+     Only newly observed boundary failures extend this aggregate.
+     */
     const alreadyRetired=accounting.retired;
     try {
       checkpoint();
@@ -98,7 +123,9 @@ export function createJudgmentDispatcher({
   }
   /**
    Classify only the original transport failure and retain classifier exceptions separately.
+   *
    @param error - original failed attempt
+   *
    @returns fixed transport classifier decision
    */
   function classifyRetry(error: unknown): boolean {
@@ -114,7 +141,9 @@ export function createJudgmentDispatcher({
   }
   /**
    Return only a response completed inside the original attempt and lifetime limits.
+   *
    @param operation - original transport attempt
+   *
    @returns response belonging to the completed attempt
    */
   async function dispatch<Result>(operation: JudgmentOperation<Result>): Promise<Result> {
@@ -122,7 +151,9 @@ export function createJudgmentDispatcher({
     if((typeof operation)!=='function')throw new JudgmentBudgetError('Judgment transport operation must be an owned function');
     checkpoint();
     accounting.running=true;
-    /** Pending transport excludes overlapping dispatch and closure. */
+    /**
+     Pending transport excludes overlapping dispatch and closure.
+     */
     using attemptScope={
       [Symbol.dispose](): void {
         accounting.running=false;
@@ -134,9 +165,13 @@ export function createJudgmentDispatcher({
         checkpoint();
         if(accounting.attempts>=attemptLimit)throw new JudgmentAttemptLimitError('Judgment exhausted its three client attempts');
         accounting.attempts+=1;
-        /** Original judgment-wide invocation ordinal. */
+        /**
+         Original judgment-wide invocation ordinal.
+         */
         const attempt=accounting.attempts;
-        /** This dispatch has already consumed a failed transport invocation. */
+        /**
+         This dispatch has already consumed a failed transport invocation.
+         */
         const retry=invocation>0;
         records.set(
           attempt,
@@ -146,7 +181,9 @@ export function createJudgmentDispatcher({
             state:'started'
           })
         );
-        /** Only the successful transport path publishes a response field. */
+        /**
+         Only the successful transport path publishes a response field.
+         */
         const response: { value?: Result }={};
         try {
           // oxlint-disable-next-line eslint/no-await-in-loop -- Original failure classification gates the next attempt; see doc/troubleshooting/pi-sdk-staging.md, "Sequential native judgment retries".
@@ -168,7 +205,9 @@ export function createJudgmentDispatcher({
           );
           retainFailureAtCheckpoint(error);
           if(accounting.retryUsed||(accounting.attempts>=attemptLimit))throw error;
-          /** The next attempt depends on classification of this actual failure. */
+          /**
+           The next attempt depends on classification of this actual failure.
+           */
           const retryable=classifyRetry(error);
           if((typeof retryable)!=='boolean')throwClassificationFailure({
             error,

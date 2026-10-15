@@ -6,18 +6,27 @@ import {createJudgmentBudget} from '../dist/native/contract/lifecycle/judgment-b
 import type {JudgmentBudget} from '../dist/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/types.ts';
 
 //region Each test owns its clock, cancellation and budget independently.
-/** Controlled lifetime behind a built original judgment. */
+/**
+ Controlled lifetime behind a built original judgment.
+ */
 type BudgetFixture = {
-  /** Original built budget consumer. */
+  /**
+   Original built budget consumer.
+   */
   readonly budget: JudgmentBudget;
-  /** Test-owned monotonic clock input. */
+  /**
+   Test-owned monotonic clock input.
+   */
   readonly clock: {at: number};
-  /** Original caller cancellation. */
+  /**
+   Original caller cancellation.
+   */
   readonly controller: AbortController;
 };
 
 /**
  Default failures are not eligible for another transport invocation.
+ *
  @returns fixed refusal to retry
  */
 function noRetry(): boolean {
@@ -26,8 +35,11 @@ function noRetry(): boolean {
 
 /**
  Create an independent original lifetime for each consumer test.
+ *
  @param classify - fixed classification of actual transport failures
+ *
  @returns owned clock, cancellation and built budget
+ *
  @example
  ```ts
  const fixture = createBudgetFixture();
@@ -37,23 +49,36 @@ function noRetry(): boolean {
 export function createBudgetFixture({classify=noRetry}: {
   readonly classify?: (error: unknown) => boolean;
 }={}): BudgetFixture {
-  /** Initial time is deterministic and advances only when this test requests it. */
+  /**
+   Initial time is deterministic and advances only when this test requests it.
+   */
   const clock={at:0};
-  /** Every budget receives its original independent cancellation signal. */
+  /**
+   Every budget receives its original independent cancellation signal.
+   */
   const controller=new AbortController();
-  /** Import the artifact's implementation, so tests cannot bypass native packaging. */
+  /**
+   Import the artifact's implementation, so tests cannot bypass native packaging.
+   */
   const budget=createJudgmentBudget({
     now:function readClock() { return clock.at; },
     signal:controller.signal,
     isRetryableTransportFailure:classify
   });
-  return {budget,clock,controller};
+  return {
+    budget,
+    clock,
+    controller
+  };
 }
 
 /**
  Preserve a rejected original value for assertions after the operation settles.
+ *
  @param operation - started original operation whose rejection is expected
+ *
  @returns original rejected value
+ *
  @example
  ```ts
  const error = await captureBudgetRejection(budget.dispatch(failedTransport));
