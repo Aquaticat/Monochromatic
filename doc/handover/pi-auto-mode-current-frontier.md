@@ -16,8 +16,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 730 files and 486 rules,
-with zero errors and 10841 warnings.
+The latest complete lint report covers 740 files and 486 rules,
+with zero errors and 10760 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -29,14 +29,16 @@ Its warning distribution and the subsequent recounts are recorded in this handov
 
 Original failure ownership,
 collector lifetime,
-and collector currentness are qualified through built consumers,
+collector currentness,
+dispatch,
+construction,
+and native arrival are qualified through built consumers,
 original-code replay,
 domain comparisons,
 and deliberate omission controls.
-Continue the remaining collector construction and arrival implementation,
-then reached-program runtime and runner contracts.
-The last report retains 81 warnings in `program-collector.mjs`,
-133 in `program-runtime.mjs`,
+Continue reached-program runtime and runner contracts.
+The collector implementation and new consumers have zero diagnostics in the full report.
+The last report retains 133 warnings in `program-runtime.mjs`,
 and 266 in `program-runner.mjs`.
 Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
 No current user-input blocker exists.
@@ -104,9 +106,22 @@ Independent arrival consumers now separate retention from rejection and exercise
 closure,
 primary-failure,
 and native-listener guards independently.
-Their built execution,
-original replay,
-and the complete expanded omission run remain pending.
+The expanded built consumer suites and package type check pass.
+The same suites pass against the exact saved original collector and original arrival function body.
+All 51 process-local omissions or substitutions are detected through assertion failures,
+including the separately observed pending-rejection callback.
+The collector bridge,
+collector implementation,
+and arrival implementation retain their starting artifact hashes.
+The complete maintained lint report has zero errors and 10760 warnings across 740 files and 486 rules;
+all 12 changed collector files have zero diagnostics.
+The package-wide warning gate remains failing.
+Receipts are `typed-group-collector-comparison.json` and `typed-group-collector-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The final verification sequence is retained in
+`${HOME}/temp/agent/pi-group-collector-independent-final-20261015.log`;
+the full report is
+`${HOME}/temp/agent/pi-maintained-typed-group-collector-final-lint-20261015.log`.
 The preceding collector body is saved as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/program-collector-before-arrival-types.mjs`,
 with SHA-256 `eada90c16fdb852469c4079f7fea850afbf54c52e55eec199d4f997a3fb9d419`.

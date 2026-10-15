@@ -59,6 +59,16 @@ and observation after transport closes.
 Invalid returned arrays retain every enumerable completion,
 including extra named properties while skipping holes and inherited positions.
 These unassociated outcomes stay inspectable without acquiring a declared member association.
+`test:native:group-collector` verifies original capability and frozen-view checks,
+exact argument serialization,
+out-of-order member arrival,
+replay and reentry rejection,
+listener identity,
+and combined cancellation.
+It checks cancellation during final currentness and listener installation,
+plus retained native outcomes after transport cancellation.
+Independent arrival consumers distinguish failure retention from pending rejection:
+the latter remains required even when the retention callback does not reject delivery itself.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 
