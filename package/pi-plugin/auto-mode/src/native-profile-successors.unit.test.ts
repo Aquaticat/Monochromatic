@@ -43,7 +43,9 @@ await describe({ name: 'original native successor declarations', children: [
     } });
   }),
   it({ name: 'accepts the inclusive complete collection limit', fn: async function inclusiveLimit() {
-    const source = `Promise.all([${Array.from({ length: 32 }, function call() { return 'tools.tool({ result })'; }).join(',')}])`;
+    const source = `Promise.all([${Array.from({ length: 32 }, function call() { 
+      return 'tools.tool({ result })'; 
+    }).join(',')}])`;
     assert.doesNotThrow(function acceptedLimit() {
       const result = inspectSuccessors({ source });
       assert.equal(result.sites.length, 33);

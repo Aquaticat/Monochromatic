@@ -24,11 +24,11 @@ const maximumSuccessors = 32;
  Inspect only the original static member predicate.
 
  @param node - parser-owned member candidate
- *
+ 
  @param object - required original receiver name
- *
+ 
  @param property - required original method name
- *
+ 
  @returns whether original static-member checks succeed
  */
 function member({
@@ -42,24 +42,41 @@ function member({
 }>): boolean {
   return (node?.type === 'MemberExpression') && (!node.computed)
     && (!node.optional)
-    && (node.object.type === 'Identifier')
-    && (node.object.name === object)
-    && (node.property.type === 'Identifier')
-    && (node.property.name === property);
+    && (node.object
+      .type
+      === 'Identifier')
+    && (node.object
+      .name
+      === object)
+    && (node.property
+      .type
+      === 'Identifier')
+    && (node.property
+      .name
+      === property);
 }
 /**
  Narrow using the original combinator predicate without additional syntax reads.
 
  @param group - original awaited expression
- *
+ 
  @returns whether original complete combinator admission succeeds
  */
 function isNativeGroup(group: NativeGroupCandidate): group is NativeParallelCall {
   return (group.type === 'CallExpression') && (!group.optional)
-    && ['all', 'allSettled'].some(function isPromiseGroupMethod(name) {
-      return member({ node: group.callee, object: 'Promise', property: name });
+    && [
+      'all',
+      'allSettled'
+    ].some(function isPromiseGroupMethod(name) {
+      return member({
+        node: group.callee,
+        object: 'Promise',
+        property: name
+      });
     })
-    && (group.arguments.length === 1);
+    && (group.arguments
+      .length
+      === 1);
 }
 //endregion
 
@@ -68,25 +85,25 @@ function isNativeGroup(group: NativeGroupCandidate): group is NativeParallelCall
  Inspect complete native successors using the caller's original binding and producer.
 
  @param returned - admitted original awaited return statement
- *
+ 
  @param declaration - admitted original immutable binding declaration
- *
+ 
  @param producer - original producer callsite retained by identity
- *
+ 
  @param allowed - original callable membership
- *
+ 
  @param source - original unwrapped source text
- *
+ 
  @param prefix - original parser wrapper excluded from callsite spans
- *
+ 
  @param inspectCall - original call inspector retaining private pattern ownership
- *
+ 
  @param ResultProgramProfileError - original diagnostic constructor
- *
+ 
  @returns original declaration parts without additional freezing
- *
+ 
  @throws Error for unsupported combinators, collections, or successor calls
- *
+ 
  @example inspectProfileSuccessors({ returned, declaration, producer, allowed, source, prefix, inspectCall, ResultProgramProfileError });
  */
 export function inspectProfileSuccessors({
@@ -129,8 +146,19 @@ export function inspectProfileSuccessors({
    Original mapping rereads the binding for each actual member.
    */
   const successors = array.elements
-    .map(function inspectSuccessorCall(call, ordinal) {
-    return inspectCall({ call, group: 1, ordinal, bindingName: declaration.id.name, allowed, source, prefix });
+    .map(function inspectSuccessorCall(
+      call,
+      ordinal
+    ) {
+    return inspectCall({
+      call,
+      group: 1,
+      ordinal,
+      bindingName: declaration.id.name,
+      allowed,
+      source,
+      prefix
+    });
   });
   return {
     bindingName: declaration.id
@@ -143,7 +171,9 @@ export function inspectProfileSuccessors({
       },
       {
         ordinal: 1,
-        kind: group.callee.property.name,
+        kind: group.callee
+          .property
+          .name,
         members: successors
       },
     ],

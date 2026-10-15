@@ -53,9 +53,15 @@ export type NativeParallelCall = Extract<NativeGroupCandidate, { type: 'CallExpr
 export type NativeMemberCandidate = Readonly<{
   type: 'MemberExpression';
   computed: boolean;
-  optional?: boolean;
-  object: Readonly<{ type: string; name?: string }>;
-  property: Readonly<{ type: string; name?: string }>;
+  optional: boolean;
+  object: Readonly<{
+    type: string;
+    name?: string
+  }>;
+  property: Readonly<{
+    type: string;
+    name?: string
+  }>;
 }> | Readonly<{ type: Exclude<Node['type'], 'MemberExpression'> }>;
 
 /**

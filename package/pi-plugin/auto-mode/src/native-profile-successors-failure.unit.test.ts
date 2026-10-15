@@ -17,7 +17,9 @@ await describe({ name: 'original successor rejection', children: [
       rejects({ source, message: 'native parallel combinator required' });
     } });
   }),
-  ...['Promise.all({})', 'Promise.all([])', `Promise.all([${Array.from({ length: 33 }, function member() { return 'tools.tool({})'; }).join(',')}])`].map(function invalidCollection(source) {
+  ...['Promise.all({})', 'Promise.all([])', `Promise.all([${Array.from({ length: 33 }, function member() { 
+    return 'tools.tool({})'; 
+  }).join(',')}])`].map(function invalidCollection(source) {
     return it({ name: `rejects collection ${source}`, fn: async function rejectedCollection() {
       rejects({ source, message: 'complete successor member array required' });
     } });
@@ -45,7 +47,9 @@ await describe({ name: 'original successor rejection', children: [
   } }),
   it({ name: 'retains native missing-expression and missing-array type errors', fn: async function missingNodes() {
     for (const returned of [{ argument: {} }, { argument: { argument: null } }, returnedGroup({ arguments: [undefined] })]) {
-      assert.throws(function missingNode() { inspectSuccessors({ input: { returned } }); }, TypeError);
+      assert.throws(function missingNode() { 
+        inspectSuccessors({ input: { returned } }); 
+      }, TypeError);
     }
   } }),
   it({ name: 'rejects an absent member through the original profile constructor', fn: async function absentMember() {

@@ -35,15 +35,15 @@ type SuccessorModule = Readonly<{ inspectProfileSuccessors: (input: Input) => Su
  Narrow the built namespace without importing its declarations.
 
  @param value - rebuilt module namespace
- *
+ 
  @returns narrowed independent consumer contract
- *
+ 
  @throws Error for an absent inspection export
  */
 function assertSuccessorModule(value: unknown): asserts value is SuccessorModule {
-  assert.ok((value !== null) && (typeof value === 'object')
+  assert.ok((value !== null) && ((typeof value) === 'object')
     && ('inspectProfileSuccessors' in value)
-    && (typeof value.inspectProfileSuccessors === 'function'));
+    && ((typeof value.inspectProfileSuccessors) === 'function'));
 }
 /**
  Consumer import resolves the rebuilt helper through the production loader.
@@ -70,13 +70,13 @@ export const producer: CallSite = inspect({
  Inspect original successor syntax with opaque consumer substitutions.
 
  @param source - original combinator expression
- *
+ 
  @param input - original borrowed state and callback substitutions
- *
+ 
  @returns original unfrozen successor declaration parts
- *
+ 
  @throws Error for unsupported syntax or borrowed callback failures
- *
+ 
  @example inspectSuccessors({});
  */
 export function inspectSuccessors({
@@ -102,18 +102,26 @@ export function inspectSuccessors({
  Construct synthetic group syntax for isolated original admission checks.
 
  @param input - original combinator overrides
- *
+ 
  @returns original admitted-return envelope containing synthetic syntax
- *
+ 
  @example returnedGroup({ optional: true });
  */
 export function returnedGroup(input: Input = {}): object {
   return { argument: { argument: {
     type: 'CallExpression',
     optional: false,
-    callee: { type: 'MemberExpression', computed: false, optional: false,
-      object: { type: 'Identifier', name: 'Promise' }, property: { type: 'Identifier', name: 'all' } },
-    arguments: [{ type: 'ArrayExpression', elements: [parseCall('tools.tool({})')] }],
+    callee: {
+      type: 'MemberExpression',
+      computed: false,
+      optional: false,
+      object: { type: 'Identifier', name: 'Promise' },
+      property: { type: 'Identifier', name: 'all' }
+    },
+    arguments: [{
+      type: 'ArrayExpression',
+      elements: [parseCall('tools.tool({})')]
+    }],
     ...input,
   } } };
 }
@@ -121,15 +129,13 @@ export function returnedGroup(input: Input = {}): object {
  Assert the original diagnostic constructor and full message.
 
  @param source - syntax expected to reject
- *
+ 
  @param message - original profile rejection detail
- *
+ 
  @param input - opaque original runtime substitutions
- *
- @returns after the original diagnostic has been observed
- *
+ 
  @throws Error when original rejection changes
- *
+ 
  @example rejects({ source: 'Promise.race([])', message: 'native parallel combinator required' });
  */
 export function rejects({
@@ -143,10 +149,16 @@ export function rejects({
 }>): void {
   assert.throws(
     function rejectedSuccessors() {
-    inspectSuccessors({ ...(source === undefined ? {} : { source }), input });
+    inspectSuccessors({
+      ...(source === undefined ? {} : { source }),
+      input
+    });
   },
-    { constructor: patterns.ResultProgramProfileError, name: 'ResultProgramProfileError',
-    message: `Result-derived program is outside the inspected profile: ${message}` }
+    {
+      constructor: patterns.ResultProgramProfileError,
+      name: 'ResultProgramProfileError',
+      message: `Result-derived program is outside the inspected profile: ${message}`
+    }
   );
 }
 //endregion
