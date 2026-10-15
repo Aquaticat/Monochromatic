@@ -18,6 +18,7 @@ function assertCatalogModule(value: unknown): asserts value is CatalogModule {
 
 const loaded: unknown = await import(new URL('../dist/native/contract/lifecycle/claim-evidence-batch-selection/selection-definitions.ts', import.meta.url).href);
 assertCatalogModule(loaded);
+const catalogModule: CatalogModule = loaded;
 
 function fixedScalar(): Readonly<Record<string, unknown>> {
   return { type: 'noul', instructions: 'Assess the fixed predicate.', criteria: { false: 'negative', true: 'positive' } };
@@ -34,7 +35,9 @@ function catalogInput(catalogText: string): Readonly<Record<string, unknown>> {
 }
 
 function readCatalog(value: unknown): ReturnType<CatalogModule['readQuestionDefinitions']> {
-  return loaded.readQuestionDefinitions(catalogInput(JSON.stringify(value)));
+  const serialized = JSON.stringify(value);
+  assert.equal(typeof serialized, 'string');
+  return catalogModule.readQuestionDefinitions(catalogInput(serialized));
 }
 
 //region Pinned catalogs establish structural membership, never claim identity or semantic truth.
