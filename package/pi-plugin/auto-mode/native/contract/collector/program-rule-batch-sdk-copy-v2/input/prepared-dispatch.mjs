@@ -3,6 +3,7 @@ import { schedulePreparedCalls } from './prepared-schedule.ts';
 import { completePreparedBatch } from './prepared-completion.ts';
 import { wrapPreparedTools } from './prepared-executable.ts';
 import { preparePreparedMember } from './prepared-member.ts';
+import { runPreparedLifecycle } from './prepared-lifecycle.ts';
 
 export class PreparedBatchContractError extends Error {}
 export class PreparedBatchExecutionError extends Error {
@@ -95,45 +96,16 @@ export async function dispatchPreparedBatch({
     {once:true}
   );
   if(signal.aborted)onAbort();
-  async function runMember(call){
-    const memberState={entered:false,preparationReleased:false};
-    
-    const ordinal=ordinalByID.get(call.id);
-    if(ordinal===undefined)throw new PreparedBatchContractError('Preparation has no declared member ordinal');
-    function releasePreparation(){
-      if(memberState.preparationReleased)return;
-      memberState.preparationReleased=true;
-      preparationTurns[ordinal+1]
-        ?.resolve();
-    }
-    using memberTurn={ [Symbol.dispose]() {releasePreparation();turns[ordinal+1]
-      ?.resolve();} };
-    try{
-      await preparationTurns[ordinal]
-        .promise;
-      await onStart?.(call);
-      const result=await runToolCall(
-        call,
-        {
-          tools:executableTools,
-          assistantMessage,
-          context,
-          signal,
-          afterToolCall:after,
-          onUpdate:onUpdate===undefined?undefined:function forwardPartialUpdate(partial) { return (onUpdate(
-            partial,
-            call
-          )); },
-          /** {@inheritDoc preparePreparedMember} */
-          beforeToolCall:function prepareNativeMember(hook) {
-        return preparePreparedMember({hook,call,memberState,batchState,ready,scheduled,snapshots,failures,serial,signal,gate,active,prepare,block,sealInput,releasePreparation,assess,PreparedBatchContractError});
-      }
-        }
-      );
-      if(!memberState.entered)block('A member failed native preparation before group admission');
-      await onFinish?.(result);
-      return result;
-    }catch(error){failures.push(error);block('Native member lifecycle failed');throw error;}
+  function waitForPreparation(ordinal) { return preparationTurns[ordinal].promise; }
+  function releaseNextPreparation(ordinal) { return preparationTurns[ordinal+1]?.resolve(); }
+  function releaseNextExecution(ordinal) { return turns[ordinal+1]?.resolve(); }
+  /** {@inheritDoc preparePreparedMember} */
+  function prepareNativeMember({hook,call,memberState,releasePreparation}) {
+    return preparePreparedMember({hook,call,memberState,batchState,ready,scheduled,snapshots,failures,serial,signal,gate,active,prepare,block,sealInput,releasePreparation,assess,PreparedBatchContractError});
+  }
+  /** {@inheritDoc runPreparedLifecycle} */
+  function runMember(call){
+    return runPreparedLifecycle({call,ordinalByID,waitForPreparation,releaseNextPreparation,releaseNextExecution,onStart,onFinish,onUpdate,runToolCall,executableTools,assistantMessage,context,signal,after,prepareNativeMember,failures,block,PreparedBatchContractError});
   }
   const completion={settled:undefined};
   {
