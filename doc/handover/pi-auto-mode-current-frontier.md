@@ -314,6 +314,13 @@ The full report is
 `${HOME}/temp/agent/pi-maintained-typed-runner-facade-final-lint-20261015.log`.
 The remaining runner class adapter retains 22 warnings;
 the prepared dispatcher retains 185 warnings and is the next extraction boundary.
+`prepared-input-seal.ts` now contains the first typed dispatcher helper.
+Its delegation,
+independent consumers,
+original replay,
+omission controls,
+and lint verification are pending.
+The unchanged dispatcher is saved as `prepared-dispatch-before-input-seal-types.mjs`.
 The original facade runner is retained as `program-runner-before-facade-types.mjs`,
 and its original method is retained as `program-runner-facade-original-method.txt`.
 The typed facade adds an explicit null check for missing script-value slots.
