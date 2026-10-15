@@ -40,7 +40,7 @@ await describe({ name: '', children: [
         assert.ok(error instanceof AggregateError);
         assert.equal(error.name, 'NativeExecutionGuardError');
         assert.deepEqual(error.errors, [failure]);
-        assert.ok(('phase' in error) && error.phase === 'validation');
+        assert.ok(('phase' in error) && (error.phase === 'validation'));
         assert.ok(error.message.includes('parent id'));
         assert.ok(error.message.includes('parent tool'));
         return true;
