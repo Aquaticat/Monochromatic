@@ -26,6 +26,10 @@ transcript investigation was stopped.
   GitHub Actions is slow.
 - Provider-spending ceiling:
   USD $200 per month.
+  During execution the user clarified that saving USD $180 monthly matters:
+  prefer the USD $20 Developer plan if it fits without excessive inconvenience.
+  Compare Developer with GitHub routing and selective overage before recommending Startup.
+  No subscription or billing change is authorized by this preference.
   The time-value objective now guides latency tradeoffs;
   no absolute wait threshold has been chosen.
 - The user confirmed that the music-player release taking about 24 minutes is a relevant example.

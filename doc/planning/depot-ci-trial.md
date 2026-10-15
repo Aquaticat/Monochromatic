@@ -8,6 +8,13 @@ The user wants more comprehensive CI with less repeated setup,
 rebuilding,
 and scheduling overhead.
 They delegated the technical recommendation and set a USD $200 monthly provider-spending ceiling.
+During execution they clarified that saving USD $180 per month matters:
+prefer the USD $20 Developer plan if the workload fits without excessive inconvenience.
+Evaluate Developer with intentional GitHub routing first,
+then Developer with selective overage,
+and compare Startup only when its added allowances justify the price.
+The USD $200 figure is a ceiling,
+not a target subscription cost.
 The user wants intentional routing between GitHub and Depot based on measured benefit and budget,
 not a complete migration or a fallback used only after exhausting Depot allowances.
 They accept deeper Depot dependence when evidence justifies it;
@@ -152,6 +159,14 @@ including the effect of stopping superseded intermediate checks.
 Account for each product's separate allowances and the costs of broader coverage.
 
 [Depot Startup pricing][depot-pricing] has a USD $200 base plus additional usage charges.
+Developer has a USD $20 base with 500 container build minutes,
+2,000 CI minutes,
+2,000 GitHub runner minutes,
+25 GB combined cache and registry storage,
+and 1,000,000 passing test results.
+Both plans publish unlimited concurrency.
+The cheaper plan's smaller allowances change placement and retention decisions;
+they do not by themselves imply serial execution.
 Included usage is 250 GB combined cache/registry storage,
 20,000 CI minutes,
 20,000 GitHub runner minutes,
