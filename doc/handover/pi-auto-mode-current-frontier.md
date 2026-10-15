@@ -129,12 +129,16 @@ with SHA-256 `eada90c16fdb852469c4079f7fea850afbf54c52e55eec199d4f997a3fb9d419`.
 Reached-program runtime is now implemented in `program-runtime.ts`,
 with separate original lifetime operations in `program-runtime-lifetime.ts`.
 The original `.mjs` path delegates to these typed owners.
-Independent runtime consumers and lifetime fixtures are committed,
-but their build,
-type check,
-lint,
-original replay,
-and omission controls remain pending.
+Independent runtime consumers and lifetime fixtures pass the native build,
+package type check,
+and original-code replay.
+Focused runtime and fixture lint passes with zero diagnostics after documenting fixture ownership.
+Six domain comparisons pass with identical public outcomes and native execution counts,
+including the permission-versus-prohibition positive control.
+The first omission pass exposed an undetected missing collector-parent currentness callback.
+Added consumers now change parent currentness after reaching and pass original native cancellation through the source tool.
+Their verification and the complete omission run remain pending,
+as do the diagnostic contrasts and full maintained lint recount.
 The original body is retained as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/program-runtime-before-types.mjs`,
 with SHA-256 `2d2b88d31a0d6dd0febf4a42624b2b561b133ef2836758ac990950fa513b459f`.
