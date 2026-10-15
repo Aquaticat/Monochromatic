@@ -58,6 +58,17 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
     {depth:3}
   ));
  }
+ if(sdkStream&&!receiptControl&&!observedContext&&!unobservedContext){
+  const systemContributions=review.inputs.requestObservation.sourceContributions.filter(function originalSystemDerivation(value){return value.systemDerivation!==undefined;});
+  assert.ok(systemContributions.length>0,'The normal native serializer must retain its original system input derivation');
+  const derivation=systemContributions[0].systemDerivation;
+  assert.ok(derivation.associations.length>0);
+  for(const association of derivation.associations){
+   assert.ok(association.systemInputPublication,'System derivation must use the original manager input publication');
+   assert.ok(systemContributions.some(function originalSystemAssociation(value){return value.association===association;}),
+    'Every original system derivation input must reach contribution consumption');
+  }
+ }
  const issues=review.premiseIssues
    .map(function describeUnresolvedIssue(issue) { return (({premise:issue.premise,kind:issue.kind,reason:issue.reason})); });
  const result={
