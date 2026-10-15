@@ -551,3 +551,11 @@ run = 'node --max-old-space-size=512 src/native-file-observer.unit.test.ts'
 [tasks."test:native:question-settlement"]
 description = "Verify original answer admission, terminal diagnostics, and stale settlement"
 run = "node src/native-settlement.unit.test.ts"
+
+[tasks."test:native:question-selection"]
+description = "Verify original canonical membership, bounded issuance, evidence identity, and lifetime"
+run = [
+  "node --max-old-space-size=512 src/native-selection.unit.test.ts",
+  "node --max-old-space-size=512 src/native-selection-boundary.unit.test.ts",
+  "node --max-old-space-size=512 src/native-selection-lifetime.unit.test.ts",
+]
