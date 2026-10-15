@@ -630,6 +630,16 @@ console.log(JSON.stringify({ complete: true, installedCommandVerified: true, set
 [tasks."test:native:host-lifecycle"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-host/lifecycle.test.mjs"
 
+[tasks."test:native:session-actions"]
+description = "Verify provider switching and tree navigation preserve usable prompts without reviving old leases"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs switch",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs tree",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs retry",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs reload",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs abort",
+]
+
 [tasks."test:native:cli-process"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-host/process.test.mjs"
 
