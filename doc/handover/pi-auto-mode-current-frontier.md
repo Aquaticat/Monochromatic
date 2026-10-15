@@ -16,8 +16,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 778 files and 486 rules,
-with zero errors and 10383 warnings.
+The latest complete lint report covers 782 files and 486 rules,
+with zero errors and 10376 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -57,10 +57,18 @@ Six domain comparisons preserve public outcomes and native execution counts,
 including a permission-versus-prohibition positive control.
 The saved original dispatcher has SHA-256
 `be4d2f66a767fc95669eb4369f9b957668b9a93e22a50ead971bdcde51f11f8c`.
-Focused lint reported zero diagnostics before the additional deep-tree consumer was added.
-Final consumer verification,
-deliberate-change controls,
-and the complete maintained lint recount remain pending for this extraction.
+Final consumer verification and the package type check pass,
+including the 10,000-container deep-tree fixture.
+All 18 process-local omissions or substitutions produce assertion failures;
+the built dispatcher and sealing helper retain their original hashes.
+The complete lint recount has zero diagnostics in the sealing helper and its three consumer files.
+The first recount found a destructuring style warning in the added deep-tree test;
+the final recount follows its correction.
+Receipts are `typed-input-seal-comparison.json` and `typed-input-seal-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-input-seal-final-lint-20261015.log`.
+The remaining dispatcher has 178 warnings and is the next native boundary to extract.
 The original array check counts own keys;
 it can accept a missing index offset by an extra enumerable property.
 The extraction preserves that behavior and explicitly tests it.
