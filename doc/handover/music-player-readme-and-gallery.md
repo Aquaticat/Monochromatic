@@ -86,43 +86,56 @@ README oids were changed to match (`git cli-git fix --policy markdown/autofix` d
 twenty embedded oids were checked against the files again (zero mismatches).
 The R2 check task has not run, since the objects reach R2 on push.
 
-Later on 2026-10-14 the four Settings images were retaken for the Auto-play on select switch row (D129, branch
-`feat/auto-play-on-select`), the only images that show the Settings list (checked with `rg` over the README and by
-viewing the others): `desktop-settings-light.png` and `desktop-settings-dark.png` from a release build in the nested
-compositor (1000 by 800, accent `4E5E8B`, an invented 35-track library with root `Music`, loose tracks `Amber Hour`
-and `Lantern Season`, `Ctrl+Alt+S`, keyboard ring on Track rows, switch off), and `android-cover-settings-light.png`
-and `android-inner-settings-dark.png` from the debug build on a private copy of the Pixel 9 Pro Fold emulator
+Later on 2026-10-14 two branches changed Android and desktop images that show the Settings list or the track rows.
+The record below says who retook what, and the final state of each image.
+
+The branch `feat/auto-play-on-select` (D129, the Auto-play on select switch row) retook the four Settings images,
+the only images that show the Settings list (checked with `rg` over the README and by viewing the others):
+`desktop-settings-light.png` and `desktop-settings-dark.png` from a release build in the nested compositor (1000 by 800,
+accent `4E5E8B`, an invented 35-track library with root `Music`, loose tracks `Amber Hour` and `Lantern Season`,
+`Ctrl+Alt+S`, keyboard ring on Track rows, switch off), and `android-cover-settings-light.png` and
+`android-inner-settings-dark.png` from the debug build on a private copy of the Pixel 9 Pro Fold emulator
 (headful, host GPU, demo mode on, an invented 13-track library `ApsLibrary`, the gear on each display, crops
 `1080x2240+0+125` and `2076x1964+0+110`, default off on a fresh install).
 The Android library is smaller than the first gallery's, so the track counts differ in those two images.
-The new sha256 values are `2848bc4d7c2d` (desktop light), `44d7735d2401` (desktop dark), `eafa459ad9fd` (cover) and
-`ae30ec73e56a` (inner), the README oids were set to them, and all twenty embedded oids were checked against their files
-(zero mismatches).
-Facts learned: a file pushed to an emulator needs `scan_volume --arg external_primary` (no trailing dot) and a second
-scan before `is_music` and `duration` are filled, or the app reports an empty library; an adb server started with another
-`HOME` needs that `HOME` for `adb emu kill` (the console token lives there); a debug APK built in another Gradle home is
-signed with another key, so `adb uninstall` first; after `cmd device_state base-state 0` the cover display needs
-`KEYCODE_WAKEUP` and `wm dismiss-keyguard` before a capture is not black.
-On 2026-10-14 `android-inner-two-pane-light.png` and `android-inner-two-pane-dark.png` were retaken from the debug
-build of branch `fix/android-row-text-alignment` (D130: the track rows' box spans the pane and their text starts in the
-column of the headings), on the invented 35-track library in demo mode, with the same crop (`2076x1964+0+110`).
+The new sha256 values were `2848bc4d7c2d` (desktop light), `44d7735d2401` (desktop dark), `eafa459ad9fd` (cover) and
+`ae30ec73e56a` (inner).
+
+The branch `fix/android-row-text-alignment` (D130: the track rows' box spans the pane and their text starts in the
+column of the headings) retook `android-inner-two-pane-light.png` and `android-inner-two-pane-dark.png` from its debug
+build, on the invented 35-track library in demo mode, with the same crop (`2076x1964+0+110`).
 The committed pair showed the defect itself: the row text 11 dp right of the subfolder headings and the playing fill
 starting at the crease clearance.
 `android-cover-player-dark.png` was compared with the fixed build instead of retaken: the cover list region of the
 fixed build is pixel-identical to the build before the change (zero differing pixels in four captures), and the
 committed image differs from it by the 4 to 7 px row offset and the playing fill starting about 8 px in from the
 pane edge, both recorded by the earlier retake and neither caused by this change.
-`android-inner-settings-dark.png` was retaken from the debug build of the same branch (the template editor change of D130: the field
-rows' text moved 3 dp left under the `Fields` heading, and the editor's hairlines now start at the pane edge), with the
-same crop; `android-cover-settings-light.png` shows only the Settings list, which the change does not touch, so it was
-kept.
-The new files are `164afb146209` (two-pane light), `bdfe6255fecb` (two-pane dark) and `4155db09c791` (Settings dark)
-by their sha256, the README oids were changed to
-match, `git cli-git fix --policy markdown/autofix` rewrote nothing, and all twenty embedded oids were checked against
-the files again (zero mismatches).
+`android-inner-settings-dark.png` was retaken there too, for the template editor change of D130 (the field rows' text
+moved 3 dp left under the `Fields` heading, and the editor's hairlines now start at the pane edge), with the same crop;
+`android-cover-settings-light.png` shows only the Settings list, which D130 does not touch, so it was kept.
+The new sha256 values were `164afb146209` (two-pane light), `bdfe6255fecb` (two-pane dark) and `4155db09c791`
+(Settings dark).
 The elapsed time on the deck differs from the earlier captures because the invented track resumes where the previous
 session left it.
+
+After the two branches met, `android-inner-settings-dark.png` showed only one of the two changes in each branch's
+version (the D129 file had the switch row beside the old template editor, the D130 file had the aligned editor and no
+switch row), so it was retaken once more from the debug build of the merged head `2285fca73c`, with the invented
+13-track library `ApsLibrary`, demo mode, dark appearance, the gear on the inner display and the same crop.
+It shows the Playback group with the Auto-play on select switch off, and the aligned template editor (the field text
+under the `Fields` heading, the hairlines from the pane edge).
+Its sha256 is `0d57342b59f5`, so that is the final value for the inner Settings image; the other three Settings images
+and the two two-pane images keep the values above.
+Every other Settings and track-row image of both branches was left as its branch committed it.
+For all of them the README oids equal the sha256 of their files (all twenty checked after the merged retake, zero
+mismatches), and `git cli-git fix --policy markdown/autofix` rewrote nothing.
 The R2 check task has not run, since the objects reach R2 on push.
+
+Facts learned: a file pushed to an emulator needs `scan_volume --arg external_primary` (no trailing dot) and a second
+scan before `is_music` and `duration` are filled, or the app reports an empty library; an adb server started with
+another `HOME` needs that `HOME` for `adb emu kill` (the console token lives there); a debug APK built in another
+Gradle home is signed with another key, so `adb uninstall` first; after `cmd device_state base-state 0` the cover
+display needs `KEYCODE_WAKEUP` and `wm dismiss-keyguard` before a capture is not black.
 
 Last updated: 2026-10-14.
 

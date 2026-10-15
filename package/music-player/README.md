@@ -494,7 +494,7 @@ its template text,
 and the fields that can be inserted,
 each with an example value and its `mi(...)` name.
 
-![Settings with the Track rows template and the Auto-play on select switch off on the inner display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/ae30ec73e56aff6900bec6250969ce8fd38837e3e2314d9b680ff0c740674510/package/music-player/asset/readme/android-inner-settings-dark.png)
+![Settings with the Track rows template and the Auto-play on select switch off on the inner display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/0d57342b59f546353cae871dbd8d771fd0d9d943f2b62058c4e6c46d4bb6628a/package/music-player/asset/readme/android-inner-settings-dark.png)
 
 ## Design record
 
