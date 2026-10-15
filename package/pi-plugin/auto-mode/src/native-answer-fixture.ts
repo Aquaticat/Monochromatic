@@ -2,16 +2,18 @@
  Built answer readers are loaded without importing maintained runtime source. @module
  */
 import assert from 'node:assert/strict';
-import type { object, text, readAssessmentResponse, readRelationEstimate } from '../native/contract/lifecycle/claim-evidence-batch-selection/selection-values.ts';
 
 /**
- Export contract shared by the native readers and their built consumer.
+ Consumer-visible reader contract, independent of maintained source imports.
  */
 type Readers = Readonly<{
-  object: typeof object;
-  text: typeof text;
-  readAssessmentResponse: typeof readAssessmentResponse;
-  readRelationEstimate: typeof readRelationEstimate;
+  object: (value: unknown) => boolean;
+  text: (value: unknown) => boolean;
+  readAssessmentResponse: (value: unknown) => unknown;
+  readRelationEstimate: (input: Readonly<{
+    definition: Readonly<{type: string; criteria: Readonly<Record<string, string>>}>;
+    value: unknown;
+  }>) => unknown;
 }>;
 
 /** Verify required callable exports before exercising built behavior.
