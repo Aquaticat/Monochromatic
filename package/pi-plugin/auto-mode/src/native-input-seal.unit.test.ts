@@ -55,7 +55,7 @@ await describe({ name: seal.name, children: [
       assert.equal(Object.isFrozen(input), false);
     }
   } }),
-  it({ name: 'counts containers with an inclusive bound and no recursive traversal', fn: async function treeBound() {
+  it({ name: 'counts containers with an inclusive bound independently of primitive leaves', fn: async function treeBound() {
     const accepted = Array.from({ length: 9_999 }, function container() { 
       return {}; 
     });
@@ -76,6 +76,21 @@ await describe({ name: seal.name, children: [
       return undefined; 
     });
     assert.equal(seal(primitives), primitives);
+  } }),
+  it({ name: 'seals a deeply nested tree at the declared bound without recursive traversal', fn: async function deepTree() {
+    const containers = Array.from({ length: 10_000 }, function container(): { child?: object } {
+      return {};
+    });
+    for (const [index, container] of containers.entries()) {
+      const child = containers[index + 1];
+      if (child !== undefined) container.child = child;
+    }
+    const root = containers[0];
+    assert.notEqual(root, undefined);
+    assert.equal(seal(root), root);
+    assert.ok(containers.every(function frozenContainer(container) {
+      return Object.isFrozen(container);
+    }));
   } }),
   it({ name: 'freezes parents and last children before failing the first child', fn: async function partialFreeze() {
     const invalid = { value: Symbol('invalid prepared child value') };

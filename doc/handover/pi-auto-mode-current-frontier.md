@@ -48,6 +48,24 @@ and retains 22 warnings in `program-runner.mjs`.
 Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
 No current user-input blocker exists.
 
+Prepared input sealing now delegates to `prepared-input-seal.ts`.
+The original dispatcher still owns the contract error constructor.
+The native build and package type check pass after correcting a fixture's directly exported binding pattern
+(`TS9019`).
+Both built sealing consumer suites and their exact original-code replay pass.
+Six domain comparisons preserve public outcomes and native execution counts,
+including a permission-versus-prohibition positive control.
+The saved original dispatcher has SHA-256
+`be4d2f66a767fc95669eb4369f9b957668b9a93e22a50ead971bdcde51f11f8c`.
+Focused lint reported zero diagnostics before the additional deep-tree consumer was added.
+Final consumer verification,
+deliberate-change controls,
+and the complete maintained lint recount remain pending for this extraction.
+The original array check counts own keys;
+it can accept a missing index offset by an extra enumerable property.
+The extraction preserves that behavior and explicitly tests it.
+It also preserves parent freezing before child validation and original proxy failure identity.
+
 The dispatch extraction is implemented in `group-dispatch.ts` and `group-dispatch-types.ts`.
 Its production scope passes focused lint with zero diagnostics.
 The original collector delegates dispatch while retaining its existing arrival code.
