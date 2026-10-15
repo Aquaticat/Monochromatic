@@ -384,28 +384,34 @@ fn report_progress(shared: &SweepShared, done: usize) {
 /// ```
 #[cfg(target_os = "linux")]
 fn lower_current_thread_to_idle() {
-    // What:     `let param = libc::sched_param { sched_priority: 0 };`. The scheduler
-    //           parameter struct; `SCHED_IDLE` ignores the priority, so 0 is the only valid
-    //           value. `libc::` names the raw C library bindings.
-    // Why:      `sched_setscheduler` requires a `*const sched_param` argument.
+    // What:     `let param: libc::sched_param = unsafe { std::mem::zeroed() };`. The scheduler
+    //           parameter struct with every byte zero; `SCHED_IDLE` ignores the priority, so a
+    //           priority of 0 is the only valid value. `libc::` names the raw C library bindings.
+    // Why:      `sched_setscheduler` requires a `*const sched_param` argument. The struct literal
+    //           `libc::sched_param { sched_priority: 0 }` does not compile on musl, where the
+    //           struct also carries the sporadic-server fields (`sched_ss_*`); zeroing the whole
+    //           struct is valid on every libc because all of its fields are plain integers.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const param = { sched_priority: 0 };
     // ```
-    let param = libc::sched_param { sched_priority: 0 };
-    // What:     `let result = unsafe { libc::sched_setscheduler(0, libc::SCHED_IDLE, &param) };`.
-    //           Call the C function. `unsafe { ... }` is required for ANY raw FFI call. The
-    //           first arg `0` means "the calling thread"; `libc::SCHED_IDLE` selects the idle
-    //           class; `&param` lends the struct as a raw pointer. Returns `0` on success,
-    //           `-1` on error.
-    // Why:      Actually change this thread's scheduling class.
+    let param: libc::sched_param = unsafe { std::mem::zeroed() };
+    // What:     `let result = unsafe { libc::syscall(libc::SYS_sched_setscheduler, 0, libc::SCHED_IDLE, &param) };`.
+    //           Call the kernel's `sched_setscheduler` system call directly. `unsafe { ... }` is
+    //           required for ANY raw FFI call. The first arg `0` means "the calling thread";
+    //           `libc::SCHED_IDLE` selects the idle class; `&param` lends the struct as a raw
+    //           pointer. Returns `0` on success, `-1` on error.
+    // Why:      musl's `sched_setscheduler` wrapper is a stub that always fails with ENOSYS, because
+    //           musl cannot give it the per-thread meaning POSIX leaves open. The Linux system call
+    //           changes exactly the calling thread, and glibc's wrapper is a thin shell around the same
+    //           call, so one direct call behaves the same on glibc and on Alpine.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const result = schedSetscheduler(0, SCHED_IDLE, param);
     // ```
-    let result = unsafe { libc::sched_setscheduler(0, libc::SCHED_IDLE, &param) };
+    let result = unsafe { libc::syscall(libc::SYS_sched_setscheduler, 0, libc::SCHED_IDLE, &param) };
     // What:     `if result != 0 { eprintln!(...); }`. On failure, log and carry on.
     // Why:      Best-effort: a failure just means the sweep runs at normal priority, which
     //           is still correct, only less polite. Never abort the sweep.
@@ -415,7 +421,8 @@ fn lower_current_thread_to_idle() {
     // if (result !== 0) console.error("music-player: could not lower sweep thread");
     // ```
     if result != 0 {
-        tracing::warn!("could not lower sweep thread to SCHED_IDLE; running at normal priority");
+        let error = std::io::Error::last_os_error();
+        tracing::warn!(%error, "could not lower sweep thread to SCHED_IDLE; running at normal priority");
     }
 }
 
