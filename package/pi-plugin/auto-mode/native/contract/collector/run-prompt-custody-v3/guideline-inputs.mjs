@@ -53,9 +53,9 @@ export function createGuidelineInputs({
     sources
   );return sources;
  });
- let sealed=false;
+ const publication={sealed:false};
  function observe(value){
-  if(sealed)throw new SourceCollectionError('Guideline insertion observation is already sealed');
+  if(publication.sealed)throw new SourceCollectionError('Guideline insertion observation is already sealed');
   if((!value)||((typeof value)!=='object')
     ||types.isProxy(value)
     ||(Object.getPrototypeOf(value)!==Object.prototype))throw new SourceCollectionError('Guideline insertion requires an ordinary native observation');
@@ -103,8 +103,8 @@ export function createGuidelineInputs({
   if(source.nativeRuleInsertion!=='inserted')source.nativeRuleInsertion=insertion;
  }
  function seal(){
-  if(sealed)throw new SourceCollectionError('Guideline source publication is already sealed');
-  sealed=true;
+  if(publication.sealed)throw new SourceCollectionError('Guideline source publication is already sealed');
+  publication.sealed=true;
   for(const source of prompt)Object.freeze(source);
   for(const source of tools)Object.freeze(source);
   return Object.freeze({

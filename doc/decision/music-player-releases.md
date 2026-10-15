@@ -131,7 +131,9 @@ One release holds, with `<version>` filled in:
   an `INSTALL.txt` and the license, in a reproducible tar stream.
   The icon is the repository's `asset/icon.svg`, which calls itself a placeholder;
   no designed icon exists, and none was invented.
-  No AppImage is shipped:
+  The human ruled on 2026-10-15 that a placeholder icon is fine.
+  No AppImage is shipped, and the human ruled on 2026-10-15 that none is needed while the program ships as a
+  single executable application (one `bin/music-player` file):
   the program links `libpipewire` and `libfontconfig` from the host,
   and bundling PipeWire's client library and its plugins is the part that cannot be validated across distributions
   from this project's single Linux machine,

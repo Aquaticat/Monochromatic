@@ -1,5 +1,79 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Sequential native judgment retries
+
+### Symptom
+
+Oxlint reports `eslint(no-await-in-loop): Unexpected await inside a loop`
+for the original judgment transport attempt in
+`package/pi-plugin/auto-mode/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs`.
+The complete diagnostic includes backticks around `await`.
+The package denies warnings,
+so this finding fails lint even when the runtime consumer passes.
+
+### Rule and application boundaries
+
+The upstream implementation in
+`crates/oxc_linter/src/rules/eslint/no_await_in_loop.rs:94`
+reports syntactic loop ancestry:
+
+```rust
+// oxc/crates/oxc_linter/src/rules/eslint/no_await_in_loop.rs
+if is_in_loop {
+    ctx.diagnostic(no_await_in_loop_diagnostic(span));
+}
+```
+
+The [current rule source](https://github.com/oxc-project/oxc/blob/main/crates/oxc_linter/src/rules/eslint/no_await_in_loop.rs)
+defines a unit rule with no option parser or sequential-retry allow-list.
+The existing local source checkout at commit `288d8cc77984b0a3851c58c423ffe9e6edc79f2e`
+also contains that unconditional diagnostic.
+This is expected rule behavior,
+not an upstream defect.
+
+The linted operation belongs to the original judgment's dispatch loop.
+Its catch branch records the failed attempt,
+rechecks cancellation and deadline,
+classifies the actual transport failure,
+and consumes the judgment's single retry before continuing.
+Starting attempts together would bypass those conditions and spend attempts that may never be allowed.
+The attempt count remains capped at three across dispatches;
+the original preparation-inclusive deadline remains five seconds.
+
+### Verification and exception
+
+The typed budget alone originally reported 55 warnings.
+Adding boundary and retained-state types removed its unsafe-value warnings;
+subsequent statement and error-definition cleanup left the sequential-await diagnostic
+and one return-shape warning.
+The return branch now explicitly returns its never-returning failure helper.
+A next-line `eslint/no-await-in-loop` exception covers only the original transport await.
+The exception retains sequential behavior and does not change any configured rule or admission limit.
+Its final focused lint and rebuilt consumer verification are pending.
+
+Reproduce with the package's `lint:oxlint` task and the explicit budget path.
+`${HOME}/temp/agent/pi-native-budget-shape-lint-20261014.log`
+retains the pre-exception diagnostics.
+Named error fields and explicit input types pass their corresponding rules;
+the unannotated boundary and unsuppressed retry await form the failing controls.
+
+### Rejected alternatives and upstream filing
+
+Parallel attempts are incompatible with failure-dependent retry eligibility.
+The rule provides no targeted configuration alternative;
+disabling it for a file or package would weaken unrelated checks.
+No recursive retry implementation or additional promise chain is introduced.
+
+No upstream report or draft is warranted.
+The rule operates as specified;
+upstream could add an option,
+but the application requires no tool change.
+Supported syntax is already handled.
+Contribution acceptance and likelihood of an upstream change are immaterial to this local exception,
+and no upstream patch is proposed or prototyped.
+The checked `.out-of-scope/` entries contain no applicable Oxlint exemption.
+There is no upstream filing requiring a duplicate search.
+
 ## Owned native program builds depended on source formatting
 
 ### Symptom and cause
@@ -7287,6 +7361,60 @@ The unchanged 10000-open regression and the approved-dependency rejection contro
 Commit `2ea0d1c836` builds and completes the Allow scenario,
 but still fails the work bound at 14185 opens.
 `${HOME}/temp/agent/pi-native-current-source-work-20261014.log` records that incomplete remedy.
+Subsequent built Allow work counts were 13233 after batching nested rule reads,
+12169 after collecting policy selections under one synchronous boundary,
+and 11224 after removing the duplicate request read before `active()`.
+All still failed the unchanged work bound after completing their native scenarios.
+The logs are `pi-native-rule-read-work-20261014.log`,
+`pi-native-policy-selection-work-20261014.log`,
+and `pi-native-active-check-work-20261014.log` under `${HOME}/temp/agent/`.
+The constructor retains the original request read through `active()` while the judgment is open,
+and its explicit request read plus retained-dependency validation after evidence closes.
+Reading each prepared input and program inspection together measured 10812 opens;
+using validated judgment identities during approval measured 10634.
+Selecting the matching source before validation did not change that count in this fixture.
+Skipping the initial dependency check when complete source validation already performs it measured 10236 opens.
+These runs completed Allow but still failed the unchanged 10000-open assertion.
+The broader regression sequence is retained in
+`${HOME}/temp/agent/pi-native-source-boundary-regressions-20261014.log`.
+
+The separate whole-request claim extraction error in `b3f980b0f8` now has direct built-consumer coverage.
+`test:native:request-claim` passes original request identity,
+selector reuse,
+foreign-handle rejection,
+and dependency retirement.
+A process-local omission reproduced `ReferenceError: requestMaterialBinding is not defined`
+without changing the built module;
+the receipt is `${HOME}/temp/agent/pi-tool-call-scope-20261014/request-claim-omission.json`.
+
+The broader regression sequence passed on `ac35a7c2ac`,
+including approved policy changes,
+cancellation,
+prepared argument mutation,
+native event receipts,
+host lifecycle,
+and the isolated CLI process.
+Batch selection consolidation measured 10208 opens;
+the original-approval validation consolidation measured 10086.
+Commit `f79ac0ea45` then passed the unchanged work bound with 9046 opens:
+the native tool wrapper reads its original execution origin through the required entry validation,
+instead of performing entry validation and then repeating dependency validation to read the origin.
+`${HOME}/temp/agent/pi-native-entry-origin-work-20261014.log` retains the passing output.
+This is work-count evidence for the fixed fixture,
+not a universal latency guarantee.
+The expanded final runtime regression sequence passed in two parts.
+The first part reached the CLI successfully,
+then the scratch runner's next command failed with Mise's
+``Monorepo task paths (like `//path:task` or `:task`) require a monorepo root configuration.``
+The task lacked a repository working directory.
+Pinning its `dir` to the repository allowed all remaining queue,
+resource reload,
+resource input,
+context receipt,
+and whole-request claim checks to pass.
+No production configuration change was required.
+The evidence is `pi-native-source-boundaries-final-20261014.log`
+and `pi-native-source-boundaries-remaining-20261014.log` under `${HOME}/temp/agent/`.
 
 A separate full lint attempt during this cleanup failed before producing diagnostics with
 `Error running tsgolint: "exit status: exit status: 2"`
@@ -7303,6 +7431,18 @@ That retry completed the full 438-file sweep with 203 errors and 12801 warnings.
 It verifies recovery of diagnostic collection,
 not a passing lint gate or a permanent thread-allocation remedy.
 The completed report is `${HOME}/temp/agent/pi-maintained-resource-lint-retry-20261014.log`.
+After the source-boundary changes and resumed state cleanup,
+the same bounded full lint invocation completed across 455 files with 175 errors and 13188 warnings.
+The report is `${HOME}/temp/agent/pi-maintained-source-boundaries-lint-20261014.log`.
+This remains a failing quality gate;
+the higher warning count exposes additional untyped module boundaries rather than qualifying those extractions.
+The follow-up callback shape check first reported
+`no-restricted-syntax(no-variable-function-expression)` for direct variable-assigned callbacks.
+The existing rule source permits callback function expressions where external APIs dictate positional arguments.
+The request callback now comes from a named factory;
+the filesystem counter is assigned directly to its native hook.
+The focused callback/counter/approval report has zero errors and 300 warnings,
+so the warning gate remains red.
 
 ### Symptoms and separate incident boundaries
 

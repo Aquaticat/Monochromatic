@@ -67,20 +67,28 @@ const FNV_OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
 const FNV_PRIME: u64 = 0x0000_0100_0000_01b3;
 
 /// What:
-///      `pub const SCHEMA_VERSION: u32 = 1;`.
-///  The cache row-layout version.
+///      `pub const SCHEMA_VERSION: u32 = 2;`.
+///  The cache key-and-row version.
 ///  `u32`
 ///           (sibling `u64` overkill) is plenty for a slowly-changing schema counter.
 /// Why:
-///       A read is a hit only when the stored row layout matches;
-///  bump this when
-///           the row columns change.
+///       A read is a hit only when the stored version matches;
+///  bump this when the row columns
+///           change OR when the fingerprint that fills the key column changes.
+///  Version 2 is the
+///           switch from the gxhash `u64` fingerprint to XXH3-64
+///           (`doc/decision/music-player-fingerprint-hash.md`):
+///  the column keeps its type but
+///           holds different values,
+///  so version 1 rows can never match again.
+///  `DecisionCache::open`
+///           deletes every row below this version.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const SCHEMA_VERSION = 1;
+/// const SCHEMA_VERSION = 2;
 /// ```
-pub const SCHEMA_VERSION: u32 = 1;
+pub const SCHEMA_VERSION: u32 = 2;
 
 /// What:
 ///      `const METER_DESCRIPTION: &str = "...";`.

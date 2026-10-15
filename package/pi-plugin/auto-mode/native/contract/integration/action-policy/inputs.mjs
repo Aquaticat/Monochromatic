@@ -44,10 +44,9 @@ export async function capturePolicyInputs({
  function sourceViewFor(handle){
   const rule=readRule(handle);
   for(const source of sources){
+   if(rule.sourceOccurrence!==source.view.sourceOccurrence)continue;
    source.assertCurrent(source.view);
-   if(rule.sourceOccurrence
-     ===source.view
-     .sourceOccurrence)return source.view;
+   return source.view;
   }
   return Object.freeze({
     kind:'unresolved-instruction-source',
@@ -58,10 +57,9 @@ export async function capturePolicyInputs({
   const rule=readRule(handle);
   for(const source of sources){
    if(!source.authority)continue;
+   if(rule.sourceOccurrence!==source.authority.sourceOccurrence)continue;
    source.assertAuthorityCurrent(source.authority);
-   if(rule.sourceOccurrence
-     ===source.authority
-     .sourceOccurrence)return source.authority;
+   return source.authority;
   }
   return Object.freeze({
     kind:'unresolved-instruction-authority',
@@ -74,8 +72,7 @@ export async function capturePolicyInputs({
  const members=[];
  for(const {id} of states){
   const member=judgment.memberFor(id);
-  const {prepared} = judgment.preparedMemberFor(member);
-  const programInspection=judgment.preparedProgramFor?.(member);
+  const {prepared,programInspection} = judgment.preparedMemberFor(member);
   const owner=effectOwnerFor?.({
     judgment,
     member,
@@ -106,8 +103,8 @@ export async function capturePolicyInputs({
     {cause:inputState.failure.cause}
   );
   try{
-   judgment.assertDependenciesCurrent();
-   sourceBinding?.assertAllCurrent();
+   if(sourceBinding)sourceBinding.assertAllCurrent();
+   else judgment.assertDependenciesCurrent();
    // Closed judgments retain dependency checks, but cannot reopen candidate selection.
    if(!judgment.inspect()
      .finalRecord){
@@ -124,10 +121,9 @@ export async function capturePolicyInputs({
      evidence,
      programInspection
    } of effects){
-    if(judgment.preparedMemberFor(member)
-      .prepared
-      !==prepared)throw new PolicyInputBindingError('Original prepared effect input changed');
-    if(judgment.preparedProgramFor?.(member)!==programInspection)throw new PolicyInputBindingError('Original prepared program inspection changed');
+    const current=judgment.preparedMemberFor(member);
+    if(current.prepared!==prepared)throw new PolicyInputBindingError('Original prepared effect input changed');
+    if(current.programInspection!==programInspection)throw new PolicyInputBindingError('Original prepared program inspection changed');
     if(owner)owner.assertCurrent(evidence);
    }
   }catch(error){inputState.failure={cause:error};throw error;}

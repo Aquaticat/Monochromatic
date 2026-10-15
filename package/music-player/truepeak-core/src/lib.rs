@@ -71,6 +71,11 @@ mod decision;
 /// The resolver that drives a source through the policy to a gain decision.
 mod resolve;
 
+/// The track fingerprint (the opaque cache key),
+///  behind the `fingerprint` feature.
+#[cfg(feature = "fingerprint")]
+mod fingerprint;
+
 /// The persistent decision cache,
 ///  backed by Turso,
 ///  behind the `service` feature.
@@ -121,6 +126,11 @@ pub use crate::decision::{Decision, DecisionKind, PeakKind};
 ///  and the always-exact
 /// full-scan resolver (warming upgrade).
 pub use crate::resolve::{resolve_decision, resolve_decision_for, resolve_full_scan};
+
+/// Re-exports the track fingerprint function and its domain tag,
+///  behind the `fingerprint` feature.
+#[cfg(feature = "fingerprint")]
+pub use crate::fingerprint::{FINGERPRINT_DOMAIN_TAG, track_fingerprint};
 
 /// Re-exports the decision cache and its error,
 ///  behind the `service` feature.

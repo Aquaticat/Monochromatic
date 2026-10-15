@@ -245,13 +245,23 @@ before saying it matches, QAB):
   `9de6e9a475f182c36f2513179fd4b14763b0e00fe068c9b8f3e6f08103616926`), checksums, immutable pre-release. The final
   workflow text never ran in CI before merge (only its earlier commits ran, nine dry runs); the dry run on main
   dispatched at merge (run `38675318400`) is that check: read its result before any real release.
-  Open for the human: (1) the first real release (`0.1.0` is on main with no tag; a push never releases it, only a
-  dispatch with dry-run false on main; ask first, releases are immutable); (2) copy
+  Release authority: the human said "Feel free to do real releases. Release early and often." (2026-10-15), so real
+  releases need no further asking: after the dry run on main is green, dispatch with dry-run false (or bump the
+  version in both manifests, which releases on push), then verify the published assets and report the version.
+  RELEASED `music-player-v0.1.0` on 2026-10-15 (run `38676838535`, dispatched on main after the green dry run
+  `38675318400`): a pre-release, immutable, six assets plus `SHA256SUMS`. I downloaded them, `sha256sum --check` passed
+  for all six, `gh attestation verify` exited 0 for the Linux x64 tarball and the APK, the APK certificate SHA-256 is
+  the expected `9de6e9a4...6926`, and the Linux x64 binary prints `music-player 0.1.0`. Not run by me: the Windows and
+  macOS binaries (no such machine here; CI ran `--version`), the arm64 Linux binary, any real device. Next releases
+  follow the version bump of the fingerprint migration (task 99) and the Windows linkers (task 96).
+  Open for the human: (1) nothing for releasing itself (`0.1.0` is on main with no tag; a push that leaves the version
+  unchanged never releases it, only a dispatch with dry-run false on main does); (2) copy
   `~/.local/share/music-player-release-keys` (`music-player-release.p12`, plaintext `credentials.txt`) into KeePassXC
   and delete the plaintext; (3) vetoable choices: macOS ad-hoc signing, no Android SDK cache (measured 17 s restore
-  against 25 s install), macOS x64 dropped, AppImage not built (a design reason, not a CI result); (4) product gaps
-  the agent found: the Windows exe is a console-subsystem binary (a console window opens), the apk is about 160 MB,
-  placeholder icon, no third-party license notices, Linux needs glibc 2.39+ and AES. Cache budget: 4.0 GB steady
+  against 25 s install), macOS x64 dropped, and AppImage (the human ruled 2026-10-15: not needed while the program ships as a single
+  executable application; the placeholder icon is fine too, so both are settled); (4) product gaps the agent found:
+  the Windows exe is a console-subsystem binary (a console window opens), the apk is about 160 MB, no third-party
+  license notices, Linux needs glibc 2.39+ and AES. Cache budget: 4.0 GB steady
   state from this workflow alone against the 10 GB cap (task 97 owns the policy). The Alpine (task 95) and Windows
   (task 96) agents write the artifact names and job steps; apply them to the release workflow as a follow-up when
   they report (the agent has finished, so a new agent or me).
@@ -272,11 +282,33 @@ before saying it matches, QAB):
   then "if XXH3-64 is available in twox-hash use that". The last ruling stands: XXH3-64, the fingerprint stays a
   64-bit value in every layer, the peak caches still re-key once (the function changes), the `+aes` target feature
   goes away, the 128-bit width criterion of the issue is waived by the human, and the final commit body carries
-  `Closes #545`. If the crate lacks XXH3-64 the agent stops and reports. Merge procedure as for the others; the Windows
-  agent also edits `desktop-app/.cargo/config.toml`, so expect a trivial conflict.
-- Task 97, existing CI caching, branch `chore/ci-caching`, worktree `ci-caching` (agent started 2026-10-15): restore-keys
-  for `cargo-publish.yml`, a pnpm store cache for the three pnpm workflows, `doc/decision/ci-caching.md`, proven by
-  dispatching cold and warm runs from the branch (never cargo-publish with dry-run false).
+  `Closes #545`. The agent reported 2026-10-15 (head `671602773e`): `twox-hash` 2.1.4 has XXH3-64 (feature
+  `xxhash3_64`); one shared `track_fingerprint` in `truepeak-core/src/fingerprint.rs` (domain tag inside the hashed
+  bytes, seed 0); `gxhash` and every `+aes` setting removed; `SCHEMA_VERSION` 2 with old rows deleted on open;
+  Android duration cache renamed `track-durations-v2.tsv`; known answers from the xxHash reference C implementation;
+  about 1.9 times faster than `gxhash64` on 5,000 tracks (agent's measurement with wide spread). Its desktop suite
+  failed one different timing test in each of two earlier runs (cause not established), so before merging I merge
+  main (done: `05d322fba2`, conflict in `desktop-app/.cargo/config.toml` resolved by hand: no `aes` left, `+crt-static`
+  kept, the `lld-link.exe` pin kept for the Windows agent to remove) and run the desktop suite three times plus clippy
+  and the Android checks fresh as unit `verify-xxh3-final`. Not verified: aarch64 NEON known answers, real Android
+  device, macOS and Windows builds. One surviving mutant: the call site of `measureDeleteLegacyDurationFiles`.
+- Task 97, existing CI caching: MERGED to `main` at `56d268686a` on 2026-10-15 (policy `doc/decision/ci-caching.md`,
+  actionlint clean, the agent's cold and warm dispatch runs recorded there; I did not rerun them). Findings: the
+  `cargo-publish.yml` cache never hit (keys hashed `Cargo.lock`, which every version bump changes), now keyed with a
+  restore-key prefix, `target/` minus `target/package`, `ImageOS` in the key; the mise `cache: true` is inert (the
+  action saves it only with `install: true`, every workflow sets `install: false`), removed only in
+  `cargo-publish.yml`; pnpm store caches measured slower than no cache and reverted; `cli-git-native` is cached in
+  `final-newline.yml` and `npm-release.yml`. Unverified: the `npm-release.yml` version job, a PR restoring a
+  main-scoped entry, release-matrix caching. Repo cache usage went over the cap (11.1 to 11.3 GB). Follow-ups noted by
+  the agent, not done: remove the dead `cache: true` from `npm-release.yml`, `pnpr-publish.yml` and
+  `kotlin-linter-publish.yml`; `kotlin-linter-publish.yml` lacks `MISE_AUTO_INSTALL: false` (472 s install on
+  2026-08-16); `cargo-publish.yml` uses one concurrency group for all refs, so a branch dispatch can replace a pending
+  publish on main; `logger-fuzz.yml` fails its coverage gate (2026-09-24 and now). `cache-prune.yml` (daily, `actions:
+  write`, deletes superseded cache entries, keeps the newest per family per ref): the human approved it with the
+  music player families added, merged at `96728127aa`; its dispatch dry run (run `38676731033`) listed 24 entries in
+  11 families and would delete 0, so the DELETE call itself has still never executed (it runs on the first scheduled
+  run that finds a stale entry; check that run's log). Feature-branch entries of the Windows agent
+  (`mp-win-v1`, about 2.6 GB) count against the cap until that branch merges and its entries are deleted.
 - Task 95, Alpine, branch `feat/music-player-alpine`, worktree `music-player-alp`: the desktop app must run on Alpine
   (musl, dynamic link expected because Slint loads libwayland and libxkbcommon at run time); the real-window proof uses
   our own nested compositor `monochromatic-nested-wayland-session`, never sway or weston; if the compositor needs
@@ -290,10 +322,8 @@ before saying it matches, QAB):
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
-- Evidence behind task 97: `cargo-publish.yml` caches are exact-key only (no `restore-keys`), so any lockfile change
-  rebuilds everything and stores a new 130 to 420 MB entry (28 caches, 5.5 GB of the 10 GB cap on 2026-10-15);
-  `logger-fuzz.yml`, `toml-edit-fuzz.yml` and `readonly-semantic-bridge.yml` run `pnpm install --frozen-lockfile`
-  with no pnpm store cache. The new workflows of tasks 92, 95 and 96 were told to cache properly and prove it.
+- The workflows of tasks 95 and 96 were told to cache properly and prove it; `doc/decision/ci-caching.md` binds them
+  to save only on main and dispatch, under 650 MB per entry, and to delete feature-branch entries after merge.
 - Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
 - Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
 
@@ -302,8 +332,8 @@ desktop keeps an unreadable row selected D128; Search restyled within the decisi
 recents, desktop parity D126; no scrollbar on the folders panel D125; the unplayable and analysis-failure reports are
 system notifications with no in-app fallback when one cannot be posted (D122, D123), and a later unread failure
 notification replaces the earlier; USB debugging on emulators is always allowed (skill rule EMA); the repo's own nested
-compositor is the only nested compositor; CI must cache. Decision numbers D122 to D129 are taken; the next free one is
-D130.
+compositor is the only nested compositor; CI must cache; real releases are authorized, early and often (2026-10-15).
+Decision numbers D122 to D130 are taken; the next free one is D131.
 
 ### Open, not started
 

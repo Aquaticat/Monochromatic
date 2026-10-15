@@ -255,11 +255,10 @@ object NativeBridge {
     //           signed; sibling `Int` is 32-bit, too narrow for nanosecond timestamps), and returns
     //           the raw `u64` cache key as a `Long` (bit-cast), which `nativeResolveGain`/
     //           `nativeWarmTrack` take.
-    // Why:      gxhash (the cache fingerprint hash) has no JVM port, so the fingerprint that was
-    //           hand-written FNV-1a in pure Kotlin now lives in the native crate (src/fingerprint.rs)
-    //           and is reached here. The native side builds the SAME (path + size + mtime) byte
-    //           material and seed as the desktop crate, and the shared `DecisionCache` keys on the
-    //           `u64` directly, so no hex-string round-trip is needed.
+    // Why:      The cache fingerprint (XXH3-64, shared with the desktop through `truepeak-core`) is
+    //           computed natively (src/fingerprint.rs) and reached here. Both flavors call the SAME
+    //           `track_fingerprint` function, and the shared `DecisionCache` keys on the `u64`
+    //           directly, so no hex-string round-trip is needed.
     // Gotcha:   `size`/`mtimeNanos` are passed as signed `Long` but treated as unsigned native-side
     //           (sizes/timestamps are never negative); the returned `Long` is an opaque key, not a
     //           number to interpret.

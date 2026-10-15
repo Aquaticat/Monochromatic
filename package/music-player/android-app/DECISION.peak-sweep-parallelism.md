@@ -81,7 +81,8 @@ What was ruled out by inspection,
 - The warm-restart skip is deterministic,
    so it is not a re-measure-forever bug.
    The
-  fingerprint is `gxhash64(uri + size + mtime, seed = 0)` (`rust/src/fingerprint.rs:81`),
+  fingerprint was `gxhash64(uri + size + mtime, seed = 0)` (`rust/src/fingerprint.rs:81`; since 2026-10-14
+  it is the shared XXH3-64 `track_fingerprint`, see `doc/decision/music-player-fingerprint-hash.md`),
    and
   for MediaStore URIs the mtime query asks for the DocumentsContract `COLUMN_LAST_MODIFIED`
   column that MediaStore lacks,

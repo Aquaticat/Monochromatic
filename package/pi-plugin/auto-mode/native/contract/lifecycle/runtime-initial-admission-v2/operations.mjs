@@ -46,17 +46,24 @@ export function createRuntimeOperationOwner({
     ||((typeof lifecycle?.completeRetirement)!=='function'))throw new RuntimeOperationError('Qualified lifecycle and native runtime-result readers are required');
   const preparedInitial=prepareRuntimeResult(initial);
   assertRuntimeResult(preparedInitial);
-  let current=Object.freeze({
+  const initialCurrent=Object.freeze({
     session:preparedInitial.session,
     manager:readManager(preparedInitial.session)
   });
-  let lease=lifecycle.capture(current);
-    let pending;
-    let closed=false;
-    let unavailable=false;
+  const runtimeState={
+    current:initialCurrent,
+    lease:lifecycle.capture(initialCurrent),
+    pending:undefined,
+    closed:false,
+    unavailable:false
+  };
+  
+    
+    
+    
   const disposed=new WeakSet();
-  function currentLease(){lifecycle.assertActive(lease);return lease;}
-  function preparing(){if((!pending)||(pending.state!=='preparing'))throw new RuntimeOperationError('No runtime operation is preparing');return pending;}
+  function currentLease(){lifecycle.assertActive(runtimeState.lease);return runtimeState.lease;}
+  function preparing(){if((!runtimeState.pending)||(runtimeState.pending.state!=='preparing'))throw new RuntimeOperationError('No runtime operation is preparing');return runtimeState.pending;}
   function beforeEffects(){
     const operation=preparing();
     if(operation.dirty)return;
@@ -91,11 +98,11 @@ export function createRuntimeOperationOwner({
     });
     // Registry publication is irreversible. Do not later run failed-transition cleanup on this token.
     operation.state='applied';
-    try{publish(prepared);}catch(error){unavailable=true;pending=undefined;throw new RuntimeOperationError(
+    try{publish(prepared);}catch(error){runtimeState.unavailable=true;runtimeState.pending=undefined;throw new RuntimeOperationError(
       'Native runtime publication failed after lifecycle commit; construct another runtime',
       {cause:error}
     );}
-    current=pair;lease=nextLease;unavailable=false;pending=undefined;
+    runtimeState.current=pair;runtimeState.lease=nextLease;runtimeState.unavailable=false;runtimeState.pending=undefined;
   }
   function failPreparing({
     operation,
@@ -103,12 +110,12 @@ export function createRuntimeOperationOwner({
   }){
     const failures=[error];
     if(operation.transition){
-      if(operation.dirty||operation.cancellationAttempted){try{lifecycle.retireFailed(operation.transition);}catch(cleanupError){failures.push(cleanupError);}unavailable=true;}
+      if(operation.dirty||operation.cancellationAttempted){try{lifecycle.retireFailed(operation.transition);}catch(cleanupError){failures.push(cleanupError);}runtimeState.unavailable=true;}
       else {
-        try{lifecycle.cancelUnchanged(operation.transition);}catch(proofError){failures.push(proofError);try{lifecycle.retireFailed(operation.transition);}catch(cleanupError){failures.push(cleanupError);}unavailable=true;}
+        try{lifecycle.cancelUnchanged(operation.transition);}catch(proofError){failures.push(proofError);try{lifecycle.retireFailed(operation.transition);}catch(cleanupError){failures.push(cleanupError);}runtimeState.unavailable=true;}
       }
     }
-    operation.state='failed';if(pending===operation)pending=undefined;
+    operation.state='failed';if(runtimeState.pending===operation)runtimeState.pending=undefined;
     if(failures.length>1)throw new AggregateError(
       failures,
       'Runtime operation and retirement/cancellation failures retained'
@@ -118,33 +125,32 @@ export function createRuntimeOperationOwner({
     body,
     terminal=false
   }){
-    if(pending)throw new RuntimeOperationError('Another runtime operation is still preparing; wait for it to apply before replacing the runtime');
-    if(closed){if(terminal)return;throw new RuntimeOperationError('Runtime is closed; construct another runtime');}
-    if(unavailable&&(!terminal))throw new RuntimeOperationError('Runtime has no admitted active root; close it and construct another runtime');
+    if(runtimeState.pending)throw new RuntimeOperationError('Another runtime operation is still preparing; wait for it to apply before replacing the runtime');
+    if(runtimeState.closed){if(terminal)return;throw new RuntimeOperationError('Runtime is closed; construct another runtime');}
+    if(runtimeState.unavailable&&(!terminal))throw new RuntimeOperationError('Runtime has no admitted active root; close it and construct another runtime');
     // A completed native disposal is a cleanup receipt, not merely a liveness flag.
-    if(terminal&&unavailable
-      &&disposed.has(current.session)){closed=true;return;}
-    let transition;
-    if(!unavailable)transition=lifecycle.begin(lease);
+    if(terminal&&runtimeState.unavailable
+      &&disposed.has(runtimeState.current.session)){runtimeState.closed=true;return;}
+    const transition=runtimeState.unavailable?undefined:lifecycle.begin(runtimeState.lease);
     const operation={
       transition,
-      source:current,
+      source:runtimeState.current,
       state:'preparing',
-      dirty:unavailable,
+      dirty:runtimeState.unavailable,
       terminal
-    };pending=operation;
+    };runtimeState.pending=operation;
     try{
       const result=await body();
       if(operation.state==='applied')return result;
-      if((operation.state!=='preparing')||(pending!==operation))throw new RuntimeOperationError('Runtime operation lost its preparation binding');
+      if((operation.state!=='preparing')||(runtimeState.pending!==operation))throw new RuntimeOperationError('Runtime operation lost its preparation binding');
       if(terminal){
         if((!operation.dirty)||(!disposed.has(operation.source
           .session)))throw new RuntimeOperationError('Terminal runtime disposal did not complete for its retired source session');
         if(transition)lifecycle.completeRetirement(transition);
-        operation.state='closed';closed=true;unavailable=true;pending=undefined;return result;
+        operation.state='closed';runtimeState.closed=true;runtimeState.unavailable=true;runtimeState.pending=undefined;return result;
       }
       if(result?.cancelled!==true)throw new RuntimeOperationError('Runtime replacement returned without cancellation or application');
-      operation.cancellationAttempted=true;lifecycle.cancelUnchanged(transition);operation.state='cancelled';pending=undefined;return result;
+      operation.cancellationAttempted=true;lifecycle.cancelUnchanged(transition);operation.state='cancelled';runtimeState.pending=undefined;return result;
     }catch(error){
       // Post-apply callback errors preserve both the applied root and any nested successor.
       if(operation.state==='applied')throw error;
@@ -155,9 +161,9 @@ export function createRuntimeOperationOwner({
     }
   }
   function diagnostics(){return Object.freeze({
-    closed,
-    unavailable,
-    preparing:pending!==undefined
+    closed:runtimeState.closed,
+    unavailable:runtimeState.unavailable,
+    preparing:runtimeState.pending!==undefined
   });}
   return Object.freeze({
     run,

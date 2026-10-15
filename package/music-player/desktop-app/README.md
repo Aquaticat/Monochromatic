@@ -237,7 +237,7 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/peakcache.rs`,
    `src/peakcache_service.rs` and `src/peakcache_handle.rs`:
    the persistent peak cache.
-   `peakcache.rs` computes the opaque fingerprint and decides where `decisions.db` lives;
+   `peakcache.rs` computes the opaque fingerprint (through the shared XXH3-64 `track_fingerprint` of `truepeak-core`) and decides where `decisions.db` lives;
    the Turso-backed actor in `peakcache_service.rs` owns the database,
    and the synchronous `CacheHandle` in `peakcache_handle.rs` is what the controller and the sweep call.
 - `src/measure.rs`:
