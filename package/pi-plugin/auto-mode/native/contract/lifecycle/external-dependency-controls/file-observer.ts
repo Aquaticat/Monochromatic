@@ -32,13 +32,19 @@ import type {
 } from './file-observation-types.ts';
 
 //region Descriptor-bound selected fixture observations.
-/** Permission comparison excludes non-permission inode flags. */
+/**
+ Permission comparison excludes non-permission inode flags.
+ */
 const permissionMask=0o777n;
-/** Original default bound used by policy and declared-dependency consumers. */
+/**
+ Original default bound used by policy and declared-dependency consumers.
+ */
 const defaultMaxBytes=65_536;
 /**
  Native bigint values retain filesystem precision without read-induced atime changes.
+ 
  @param stat - original descriptor or selected-path metadata
+ 
  @returns fields whose equality qualifies this declared observation
  */
 function stability(stat:Readonly<BigIntStats>):readonly (bigint|boolean)[] {
@@ -54,17 +60,27 @@ function stability(stat:Readonly<BigIntStats>):readonly (bigint|boolean)[] {
 }
 /**
  Compare the declared fields without floating-point timestamp conversion.
+ 
  @param left - original metadata
+ 
  @param right - subsequent metadata for comparison
+ 
  @returns whether every declared identity field remains equal
  */
 function sameStability({
   left,
   right
-}:{readonly left:Readonly<BigIntStats>;readonly right:Readonly<BigIntStats>}):boolean {
-  /** Retained original identity fields. */
+}:{
+  readonly left:Readonly<BigIntStats>;
+  readonly right:Readonly<BigIntStats>
+}):boolean {
+  /**
+   Retained original identity fields.
+   */
   const leftValues = stability(left);
-  /** Subsequent identity fields in the same comparison order. */
+  /**
+   Subsequent identity fields in the same comparison order.
+   */
   const rightValues = stability(right);
   return leftValues.every(function matchesObservedFileIdentity(
     value,
@@ -73,37 +89,52 @@ function sameStability({
 }
 /**
  Only initial ENOENT becomes a missing-path finding; other native I/O failures propagate.
+ 
  @param path - original selected path
+ 
  @returns precise original metadata
+ 
  @throws ObservedFileMissingError when the selected path is absent
  */
 function initialStat(path:string):BigIntStats {
-  // oxlint-disable-next-line no-restricted-syntax/no-sync -- Original freshness callers consume this result without yielding; see native/file-observation.md.
-  try { return lstatSync(
-    path,
-    { bigint: true }
-  ); }
+  try {
+    // oxlint-disable-next-line no-restricted-syntax/no-sync -- Original freshness callers consume this result without yielding; see native/file-observation.md.
+    return lstatSync(
+      path,
+      { bigint: true }
+    );
+  }
   catch (error) {
-    if (Error.isError(error)&&('code' in error)&&(error.code === 'ENOENT')) throw new ObservedFileMissingError(path);
+    if (Error.isError(error)&&('code' in error)
+      &&(error.code === 'ENOENT')) throw new ObservedFileMissingError(path);
     throw error;
   }
 }
 /**
  Scope begins at the independently owned fixture root, not every ancestor on the host.
+ 
  @param root - independently owned selection root
+ 
  @param relativePath - declared root-relative filename
+ 
  @returns selected path after validating its parent directories
+ 
  @throws ObservedFileScopeError when traversal or redirected parents leave the declared scope
  */
 function scopedPath({
   root,
   relativePath
 }:Pick<FileObservationInput,'root'|'relativePath'>):string {
-  /** Parent traversal uses the same original slash-delimited path profile. */
+  /**
+   Parent traversal uses the same original slash-delimited path profile.
+   */
   const parts = relativePath.split('/');
-  if (isAbsolute(relativePath) || parts.some(function isForbiddenPathSegment(part) { return ( (part === '') || (part === '.')
-    || (part === '..')); })) throw new ObservedFileScopeError(relativePath);
-  /** One linear walk retains the currently checked parent. */
+  if (isAbsolute(relativePath) || parts.some(function isForbiddenPathSegment(part) {
+    return ( (part === '') || (part === '.') || (part === '..'));
+  })) throw new ObservedFileScopeError(relativePath);
+  /**
+   One linear walk retains the currently checked parent.
+   */
   const scope = { parent: root };
   for (const part of [
     '',
@@ -116,7 +147,9 @@ function scopedPath({
       scope.parent,
       part
     );
-    /** Inspect each selected parent without following its symbolic link. */
+    /**
+     Inspect each selected parent without following its symbolic link.
+     */
     const stat = initialStat(scope.parent);
     if ((!stat.isDirectory()) || stat.isSymbolicLink()) throw new ObservedFileScopeError(relativePath);
   }
@@ -127,11 +160,17 @@ function scopedPath({
 }
 /**
  Native read remains the default; only owned bootstrap fixtures can supply a controlled wrapper.
+ 
  @param fd - original open descriptor
+ 
  @param buffer - owner-allocated bounded destination
+ 
  @param offset - next destination position
+ 
  @param length - remaining destination capacity
+ 
  @param position - next original file position
+ 
  @returns bytes completed by the original synchronous read
  */
 function nativeRead({
@@ -152,21 +191,35 @@ function nativeRead({
 }
 /**
  Recheck selected-path identity after the bounded descriptor read.
+ 
  @param path - original selected absolute path
+ 
  @param root - independently owned selection root
+ 
  @param relativePath - original relative filename
+ 
  @returns selected-path metadata after validating its parent directories again
+ 
  @throws ObservedFileUnstableReadError when the selected path disappears or changes scope
  */
-function selectedAfterRead({path,root,relativePath}:{
+function selectedAfterRead({
+  path,
+  root,
+  relativePath
+}:{
   readonly path:string;
   readonly root:string;
   readonly relativePath:string;
 }):BigIntStats{
   try {
-    /** Preserve the original order: selected path first, parent validation second. */
+    /**
+     Preserve the original order: selected path first, parent validation second.
+     */
     const selected=initialStat(path);
-    scopedPath({root,relativePath});
+    scopedPath({
+      root,
+      relativePath
+    });
     return selected;
   }
   catch(error){
@@ -176,13 +229,21 @@ function selectedAfterRead({path,root,relativePath}:{
 }
 /**
  Bound bytes, retain descriptor identity, and close even after an expected read failure.
+ 
  @param root - independently owned selection root
+ 
  @param relativePath - declared root-relative filename
+ 
  @param requiredMode - exact expected permission bits
+ 
  @param maxBytes - maximum admitted file size before allocation
+ 
  @param read - original synchronous reader or fixture-owned interception
+ 
  @returns completed observation after descriptor closure
+ 
  @throws ObservationLifecycleError when a read count is invalid or descriptor closure fails
+ 
  @example
  ```ts
  const snapshot = observeDeclaredFile({ root, relativePath: 'policy', requiredMode: 0o600 });
@@ -195,27 +256,43 @@ export function observeDeclaredFile({
   maxBytes = defaultMaxBytes,
   read = nativeRead
 }:FileObservationInput):FileObservation {
-  /** Original path follows the declared scope checks. */
+  /**
+   Original path follows the declared scope checks.
+   */
   const path = scopedPath({
     root,
     relativePath
   });
-  /** Initial metadata bounds allocation and anchors descriptor comparison. */
+  /**
+   Initial metadata bounds allocation and anchors descriptor comparison.
+   */
   const initial = initialStat(path);
   if ((!initial.isFile()) || initial.isSymbolicLink()) throw new ObservedFileTypeError(relativePath);
   if (Number(initial.mode & permissionMask) !== requiredMode) throw new ObservedFileModeError(relativePath);
   if (initial.size > BigInt(maxBytes)) throw new ObservedFileOversizeError(relativePath);
-  /** Only completed resource acquisition and observation publish these fields. */
-  const observation:{fd?:number;snapshot?:FileObservation;closureFailed:boolean}={closureFailed:false};
-  /** Original caught values retain their occurrence order. */
+  /**
+   Only completed resource acquisition and observation publish these fields.
+   */
+  const observation:{
+    fd?:number;
+    snapshot?:FileObservation;
+    closureFailed:boolean
+  }={closureFailed:false};
+  /**
+   Original caught values retain their occurrence order.
+   */
   const failures:unknown[] = [];
   {
-    /** Closure must finish before the original ordered failure checks. */
+    /**
+     Closure must finish before the original ordered failure checks.
+     */
     using descriptorScope = {
       [Symbol.dispose]():void {
         if (observation.fd === undefined) return;
-        // oxlint-disable-next-line no-restricted-syntax/no-sync -- Descriptor closure and its failures must settle before observation returns; see native/file-observation.md.
-        try { closeSync(observation.fd); }
+        try {
+          // oxlint-disable-next-line no-restricted-syntax/no-sync -- Descriptor closure and its failures must settle before observation returns; see native/file-observation.md.
+          closeSync(observation.fd);
+        }
         catch (error) {
           observation.closureFailed = true;
           failures.push(error);
@@ -228,22 +305,31 @@ export function observeDeclaredFile({
       path,
       constants.O_RDONLY | constants.O_NOFOLLOW
     );
-    /** Original descriptor identity before reading bytes. */
-    // oxlint-disable-next-line no-restricted-syntax/no-sync -- Check the opened descriptor before reading without inserting a yield; see native/file-observation.md.
+    /* oxlint-disable no-restricted-syntax/no-sync -- Check the opened descriptor before reading without inserting a yield; see native/file-observation.md. */
+    /**
+     Original descriptor identity before reading bytes.
+     */
     const before = fstatSync(
       observation.fd,
       { bigint: true }
     );
+    /* oxlint-enable no-restricted-syntax/no-sync */
     if (!sameStability({
       left: initial,
       right: before
     })) throw new ObservedFileUnstableReadError(relativePath);
-    /** One extra byte reveals growth beyond the original metadata size. */
+    /**
+     One extra byte reveals growth beyond the original metadata size.
+     */
     const buffer = Buffer.alloc(Number(before.size) + 1);
-    /** Completed byte count advances without rebuilding the destination. */
+    /**
+     Completed byte count advances without rebuilding the destination.
+     */
     let length = 0;
     while (length < buffer.length) {
-      /** Each native read may complete only part of the remaining capacity. */
+      /**
+       Each native read may complete only part of the remaining capacity.
+       */
       const count = read({
         fd:observation.fd,
         buffer,
@@ -257,14 +343,23 @@ export function observeDeclaredFile({
       if (count === 0) break;
       length += count;
     }
-    /** Original descriptor metadata after all completed reads. */
-    // oxlint-disable-next-line no-restricted-syntax/no-sync -- Check descriptor identity after the bounded read before publishing bytes; see native/file-observation.md.
+    /* oxlint-disable no-restricted-syntax/no-sync -- Check descriptor identity after the bounded read before publishing bytes; see native/file-observation.md. */
+    /**
+     Original descriptor metadata after all completed reads.
+     */
     const after = fstatSync(
       observation.fd,
       { bigint: true }
     );
-    /** Rechecked selected path must still identify the original descriptor. */
-    const selected=selectedAfterRead({path,root,relativePath});
+    /* oxlint-enable no-restricted-syntax/no-sync */
+    /**
+     Rechecked selected path must still identify the original descriptor.
+     */
+    const selected=selectedAfterRead({
+      path,
+      root,
+      relativePath
+    });
     if ((!sameStability({
       left: before,
       right: after
@@ -294,9 +389,13 @@ export function observeDeclaredFile({
 }
 /**
  Only stable observations enter retained dependency comparison.
+ 
  @param initial - original completed observation retained by its owner
+ 
  @param current - fresh completed observation of the same selected file
+ 
  @throws ObservedFileStaleError when selected identity or bytes differ
+ 
  @example
  ```ts
  assertRetainedFile({ initial, current: observeDeclaredFile(input) });
@@ -305,7 +404,10 @@ export function observeDeclaredFile({
 export function assertRetainedFile({
   initial,
   current
-}:{readonly initial:FileObservation;readonly current:FileObservation}):void {
+}:{
+  readonly initial:FileObservation;
+  readonly current:FileObservation
+}):void {
   if ((initial.relativePath !== current.relativePath) || (initial.dev !== current.dev)
     || (initial.ino !== current.ino)
     || (initial.mode !== current.mode)

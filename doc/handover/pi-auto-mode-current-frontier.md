@@ -978,6 +978,13 @@ zero errors and 13812 warnings in
 `${HOME}/temp/agent/pi-maintained-cache-observer-lint-20261015.log`.
 Remaining warnings still prevent the strict lint task from passing.
 Untyped native module boundaries and statement formatting remain the largest unfinished groups.
+Commit `bf9eee5abc` moves the selected-file observer from `file-observer.mjs` to `file-observer.ts`,
+with explicit completed-snapshot and bounded-reader contracts in `file-observation-types.ts`.
+Its direct consumers and provenance mapping now select the typed source.
+Commit `a6e2b905a7` names the selected-path revalidation boundary while retaining its original checks and order.
+Formatting,
+type checking,
+and built-consumer qualification of this typed port are pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
