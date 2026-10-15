@@ -72,6 +72,19 @@ Each job performs two rounds using distinct `TRIAL_CACHE_SCOPE` values.
 That variable namespaces the Cargo download and target cache mounts;
 its default preserves the original trial caches.
 
+The companion `depot-trial-sizing-large.yml` workflow compares `32/16`,
+`32/32`,
+`64/16`,
+and `64/64`,
+with four concurrent jobs and a 45-minute limit per job.
+
+The build hashes all copied source files and records that hash in the target cache after a successful compile.
+When content changes,
+it cleans the release artifacts of `music-player` and `truepeak-core` before compiling.
+This prevents old BuildKit source timestamps from making Cargo reuse a stale local executable.
+Registry dependencies remain cached;
+even a documentation-only change in the copied tree conservatively invalidates the local packages.
+
 Each round measures a cold Cargo build,
 two unchanged-source repeats,
 a changed CLI name,
