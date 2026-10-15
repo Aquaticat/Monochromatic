@@ -535,6 +535,13 @@ B520).
 A replay cited as evidence for a reader prints the thing the reader read:
 the replay of the stored run printed no count of consistency groups until its line ended `consistency-groups=2 read-at-generation=15`
 (ledger M172).
+A page read that says a rule holds names the lines it read:
+the read of TianqiChen66623 recorded that the tense held from the narration,
+and her last message,
+quoted in her own words,
+had been moved into the past on the same page (ledger M220).
+Quoted speech is read against the source and the human archive line by line,
+apart from the narration.
 
 What enforces it:
 habit;

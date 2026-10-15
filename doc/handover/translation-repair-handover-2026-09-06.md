@@ -269,18 +269,33 @@ A path written `s<N>/...`,
   into the fresh runs directory `/var/home/user/temp/agent/corpus-pass-TianqiChen66624`,
   log `/var/home/user/temp/agent/corpus-pass-TianqiChen66624.log`,
   unit `corpus-pass-corpus-pass-TianqiChen66624`.
+- It settled on 2026-10-15 with every check clean,
+  and the consistency pass carried one repeat.
+  Its page tells her last message,
+  quoted in her own words,
+  in the past,
+  as `TianqiChen66623`'s did (ledger M220).
+  The read is in
+  [the pass log for 2026-10-15](../planning/translation-repair-openrouter-2026-09-03-2026-10-15.md).
 
 #### Next
 
-1.  Read `TianqiChen66624` when it settles,
-    by "What to check" in
-    [the corpus pass runbook](../runbook/translation-repair-corpus-pass.md):
-    `verify-published`,
-    the `[error]` and `warn` counts,
-    `DESTINATIONS` and `DEFECTS`,
-    the tense,
-    and what the consistency pass changed;
-    record the read in the pass log.
+1.  The round that follows the read and the review,
+    n161,
+    builds in `w153` on top of n159's changes,
+    scratch `s232`,
+    from the rulings in `s159/ledger-notes-after-sixth-review-fixes.md`,
+    section "TianqiChen66624 read and n160 review of n159":
+    quoted speech keeps its speaker's tense (R1),
+    the consistency group line names why nothing was carried (R2),
+    and the review findings Y1,
+    Y2,
+    Y4 and Y6 to Y9.
+    Then a review by an agent that wrote none of it,
+    the gate `g98`,
+    landing as tests,
+    code and docs commits,
+    and a relaunch of `TianqiChen666` as `TianqiChen66625` after "Before a run launches" is walked again.
 2.  The findings of the tenth review that were decided and not landed
     (X1,
     X2,
@@ -295,7 +310,8 @@ A path written `s<N>/...`,
     so these land after `TianqiChen66624` settles.
     That round,
     n159,
-    is running in the keyless worktree `w153`
+    was built and handed back in the keyless worktree `w153`,
+    and the review n160 read it (`s231/review.md`)
     (moved to `db6c26a486` with `git reset --mixed`,
     so its status lists only n159's changes),
     scratch `s230`,
@@ -304,6 +320,16 @@ A path written `s<N>/...`,
     `blockStandingOf` throws `RangeError` on 80,000 inline siblings;
     whether judges quote a year slot bare is unmeasured;
     a second independent reading of the history-archive fixes is owed.
+    From the review of n159 (Y5):
+    the page's definitions miss those inside a list,
+    a blockquote or an HTML block,
+    and a footnote joined to a link definition by one newline;
+    no corpus page has either.
+    From the read of `TianqiChen66624`:
+    the front matter ships as the archive's,
+    whose `desc` drops the game of hide-and-seek,
+    and whether the pipeline repairs front matter is undecided;
+    the title rule sets the card game Uno in italics.
     The spent scratch worktrees are listed in `remove-worktrees.ts`;
     the owner runs its `force` mode.
 
@@ -315,11 +341,11 @@ landed in `2bb5d72bb5`.
 
 - Next free:
   worktree `w160`,
-  agent `n160`,
-  scratch `s231`,
+  agent `n162` (`n161` is the author round in Next),
+  scratch `s233` (`s232` is that round's),
   gate `g98`,
   ledger `B616`,
-  mistake `M220`.
+  mistake `M221`.
 
 ### 2026-10-12: the four patches merged, reviewed, and the relaunch of TianqiChen666
 
@@ -696,8 +722,11 @@ each read off the pass log and the shipped page:
 As of 2026-10-15,
 the next action is the "Next" list of the checkpoint of 2026-10-15
 under "Where the work stands":
-read `TianqiChen66624` when it settles,
-then build and land the tenth review's deferred findings.
+`TianqiChen66624` is read;
+build the round n161,
+then review,
+gate and land it with n159's changes,
+and relaunch as `TianqiChen66625`.
 The numbered items keep the queue as the sessions of 2026-09-08 to 2026-09-26 left it;
 read each against its date.
 

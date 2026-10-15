@@ -761,5 +761,8 @@ named for that subject and listed here.
   Entries:
   TianqiChen66622,
   TianqiChen66623.
+- [OpenRouter and the corpus passes: 2026-10-15](translation-repair-openrouter-2026-09-03-2026-10-15.md):
+  What was launched,
+  read and decided on 2026-10-15.
   Entries:
-  TianqiChen66622 to TianqiChen66623.
+  TianqiChen66624.

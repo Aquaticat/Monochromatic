@@ -630,3 +630,28 @@ a limit is accepted only with a probe that shows what a reader of the page sees,
 and the entry that records the acceptance names the probe.
 `mistake-prevention.md`,
 "Claims without their evidence".
+
+## M220: a page read said the tense held without reading the quoted speech
+
+Status:
+happened on 2026-10-12 (UTC) in the read of TianqiChen66623,
+found on 2026-10-15 in the read of TianqiChen66624.
+The read recorded that the passage shipped in the present now read in the past,
+and that the tense held.
+It read the narration only.
+Her last message (source lines 71 to 75),
+which she wrote in her present,
+shipped in the past on that page ("I felt like I might not make it to that day",
+"There were still so many kids who needed help"),
+while the human archive and her other quoted words on the page keep the present.
+TianqiChen66624 shipped the same.
+The house rule on tense lists what the person said among the life told in the past
+and makes no exception for her own words quoted;
+the lead decided on 2026-10-15 that quoted words keep their speaker's tense,
+and the rule says so in the round that follows the read.
+
+Prevention:
+a page read that says a rule holds names the lines it read,
+and reads quoted speech against the source and the human archive apart from the narration.
+`mistake-prevention.md`,
+"Claims without their evidence".

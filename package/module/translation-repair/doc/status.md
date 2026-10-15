@@ -64,10 +64,11 @@ the findings,
 their fixes and the process mistakes (M entries) are in
 [the audit ledger](audit-ledger.md),
 and the owner's rulings in [the design commitments](design-commitments.md).
-Three passes have run since the audit began,
+Four passes have run since the audit began,
 all of TianqiChen666:
 TianqiChen66621 on 2026-09-28,
-TianqiChen66622 on 2026-10-11 and TianqiChen66623 on 2026-10-12
+TianqiChen66622 on 2026-10-11,
+TianqiChen66623 on 2026-10-12 and TianqiChen66624 on 2026-10-15
 (the repository's pass log,
 `doc/planning/translation-repair-openrouter-2026-09-03.md`,
 reads each).
@@ -78,6 +79,11 @@ the fixes of its later independent reviews and the proven-apostrophe rule landed
 (ledger B463 to B574),
 and `TianqiChen66624` was launched on that build the same day
 (the handover's checkpoint of 2026-10-15).
+It settled with every check clean and the consistency pass carried one repeat;
+its page,
+like `TianqiChen66623`'s,
+tells her last message in the past though she wrote it in the present (ledger M220),
+and the round that keeps quoted speech in its speaker's tense lands before the next launch.
 The two Bedrock Gemma seats answer with an expired token and are withheld after their first failed calls;
 no launch waits on them.
 
