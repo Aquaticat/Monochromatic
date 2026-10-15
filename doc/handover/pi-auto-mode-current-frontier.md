@@ -2523,9 +2523,21 @@ The owned rebuild,
 package type check,
 and both currentness suites pass in
 `${HOME}/temp/agent/pi-group-current-final-20261015.log`.
-Original replay,
-domain comparison,
-and omission qualification remain pending.
+Both direct suites pass against the exact original currentness statements in
+`${HOME}/temp/agent/pi-group-current-original-20261015.log`.
+Six original/current domain scenarios match public outcomes and native execution counts,
+with the permission/prohibition positive control,
+in `typed-group-current-comparison.json`.
+The saved collector baseline has SHA-256
+`acce762fc8e61341662b53454db84c446ce74907503796df0d3d0cada3c74707`.
+All twenty-four process-local currentness changes fail the consumer checks;
+both built artifacts retain their starting hashes in `typed-group-current-omissions.json`.
+The verifier initially required an assertion diagnostic for an added unconditional cancellation check,
+although that check correctly caused the unexpected original cancellation token to escape.
+The completed verifier requires that exact token cause for this control
+and assertion diagnostics for the other controls.
+The original currentness owner is qualified at these tested boundaries.
+The full maintained lint recount remains pending.
 The status response on 2026-10-15 confirms that the live model and approval verification are already complete,
 failure and lifetime owners are qualified,
 and the maintained-package quality queue remains unfinished without a current user-input blocker.

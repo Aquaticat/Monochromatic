@@ -46,6 +46,12 @@ Failures during listener detachment or incomplete-membership recording leave ret
 A pending rejection callback failure occurs after closure,
 so a later retirement call does not retry that callback or publish cancellation.
 Snapshots retain original failure and native completion identities without claiming execution effects.
+`test:native:group-current` verifies original failure,
+closure,
+and cancellation precedence around parent-currentness and reached-view callbacks.
+Callback-published state is re-read after both callbacks.
+Parent cancellation observation stops for closed transport or fully retained outcomes,
+while partial outcomes and existing failures preserve the original cancellation callback.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 
