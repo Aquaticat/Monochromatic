@@ -472,7 +472,70 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     function inspectExecution(token){const record=knownExecution(token);return Object.freeze({retainedOnly:true,state:record.execution.state});}
     function memberExecutionStates(){return Object.freeze([...byMember.entries()].map(([id,handle])=>Object.freeze({id,state:bindings.get(handle).execution?.state??'unentered'})));}
     function inspect(){return Object.freeze({prepared,preparationFailed,preparationFailure,finished,closeFailed,accounting:budget.diagnostics(),finalRecord,memberExecutions:memberExecutionStates(),preparedPrograms:Object.freeze([...byMember.values()].flatMap(member=>{const inspection=bindings.get(member).preparedProgram;return inspection?[inspection.view]:[];})),rootPrograms:Object.freeze([...byMember.values()].flatMap(member=>{const record=bindings.get(member);return record.program?[inspectProgram(record.program.handle)]:[];})),childGroups:Object.freeze(childGroups.map(group=>inspectReachedGroup(group.handle)))});}
-    budget.checkpoint();const judgment=Object.freeze({bindPreparedProgram:input=>operation(()=>bindPreparedProgram(input)),preparedProgramFor:member=>operation(()=>preparedProgramFor(member)),openProgram:input=>operation(()=>openProgram(input)),programFor:program=>operation(()=>programFor(program)),reachProgramGroup:input=>operation(()=>reachProgramGroup(input)),reachedGroupFor:group=>operation(()=>reachedGroupFor(group)),bindProgramCalls:input=>operation(()=>bindProgramCalls(input)),prepareReachedMembers:input=>operation(()=>prepareReachedMembers(input)),invokeProgramNative,scriptValueFor,markProgramGuard:input=>operation(()=>markProgramGuard(input)),inspectReachedGroup,originalFileFor:member=>operation(()=>originalFileFor(member)),preparedMemberFor:member=>operation(()=>preparedMemberFor(member)),assertExecutionEntry:token=>operation(()=>assertExecutionEntry(token)),inspectProgram,memberFor:memberId=>operation(()=>memberFor(memberId)),beginExecution:member=>operation(()=>beginExecution(member)),executionFor:token=>operation(()=>executionFor(token)),finishExecution:token=>operation(()=>finishExecution(token)),inspectExecution,checkpoint:()=>operation(active),prepare:members=>operation(()=>prepare(members)),claim:input=>operation(()=>claim(input)),claimInstruction:input=>operation(()=>claimInstruction(input)),captureClaimEvidence:claim=>operation(()=>captureClaimEvidence(claim)),assertClaimEvidence:input=>operation(()=>assertClaimEvidence(input)),readSourceSnapshot:()=>judgmentSources,indexedUnitAdoptionPairs:()=>operation(indexedUnitAdoptionPairs),claimUnitAdoption:input=>operation(()=>claimUnitAdoption(input)),requestMaterialFor:()=>operation(requestMaterialFor),claimRequestMaterial:()=>operation(claimRequestMaterial),claimHeadingContext:input=>operation(()=>claimHeadingContext(input)),issueBoundPolicyBatch:input=>operation(()=>issueBoundPolicyBatch(input)),indexedRuleCandidates:()=>operation(indexedRuleCandidates),indexedInstructionCandidates:()=>operation(indexedInstructionCandidates),indexedHeadingContextCandidates:()=>operation(indexedHeadingContextCandidates),inspectRuleSources:()=>operation(inspectRuleSources),issueRuleAssessmentBatch:()=>operation(issueRuleAssessmentBatch),readRuleCandidate:rule=>operation(()=>readRuleCandidate(rule)),claimRuleCandidate:input=>operation(()=>claimRuleCandidate(input)),claimProgramRuleCandidate:input=>operation(()=>claimProgramRuleCandidate(input)),issueProgramRuleBatch:input=>operation(()=>issueProgramRuleBatch(input)),captureBatchEvidence:batch=>operation(()=>captureBatchEvidence(batch)),assertBatchEvidence:evidence=>operation(()=>assertBatchEvidence(evidence)),issue:claims=>operation(()=>issue(claims)),assess,finalize:()=>operation(finalize),assertDependenciesCurrent:()=>operation(assertDependenciesCurrent),inspect,inspectBatch:batch=>knownSelection().inspectBatch(batch),inspectClaim:claim=>knownSelection().inspectClaim(claim)});return judgment;
+    /** Retain the original synchronous operation guard for one-input public methods. */
+    function guardWithInput(run) {
+      return function invokeJudgmentOperation(input) {
+        return operation(function runBoundJudgmentOperation() { return run(input); });
+      };
+    }
+    /** Retain no-input operation calls without changing their argument list. */
+    function guardWithoutInput(run) {
+      return function invokeJudgmentOperation() { return operation(run); };
+    }
+    budget.checkpoint();const judgment=Object.freeze({
+      bindPreparedProgram: guardWithInput(bindPreparedProgram),
+      preparedProgramFor: guardWithInput(preparedProgramFor),
+      openProgram: guardWithInput(openProgram),
+      programFor: guardWithInput(programFor),
+      reachProgramGroup: guardWithInput(reachProgramGroup),
+      reachedGroupFor: guardWithInput(reachedGroupFor),
+      bindProgramCalls: guardWithInput(bindProgramCalls),
+      prepareReachedMembers: guardWithInput(prepareReachedMembers),
+      invokeProgramNative,
+      scriptValueFor,
+      markProgramGuard: guardWithInput(markProgramGuard),
+      inspectReachedGroup,
+      originalFileFor: guardWithInput(originalFileFor),
+      preparedMemberFor: guardWithInput(preparedMemberFor),
+      assertExecutionEntry: guardWithInput(assertExecutionEntry),
+      inspectProgram,
+      memberFor: guardWithInput(memberFor),
+      beginExecution: guardWithInput(beginExecution),
+      executionFor: guardWithInput(executionFor),
+      finishExecution: guardWithInput(finishExecution),
+      inspectExecution,
+      checkpoint: guardWithoutInput(active),
+      prepare: guardWithInput(prepare),
+      claim: guardWithInput(claim),
+      claimInstruction: guardWithInput(claimInstruction),
+      captureClaimEvidence: guardWithInput(captureClaimEvidence),
+      assertClaimEvidence: guardWithInput(assertClaimEvidence),
+      readSourceSnapshot() { return judgmentSources; },
+      indexedUnitAdoptionPairs: guardWithoutInput(indexedUnitAdoptionPairs),
+      claimUnitAdoption: guardWithInput(claimUnitAdoption),
+      requestMaterialFor: guardWithoutInput(requestMaterialFor),
+      claimRequestMaterial: guardWithoutInput(claimRequestMaterial),
+      claimHeadingContext: guardWithInput(claimHeadingContext),
+      issueBoundPolicyBatch: guardWithInput(issueBoundPolicyBatch),
+      indexedRuleCandidates: guardWithoutInput(indexedRuleCandidates),
+      indexedInstructionCandidates: guardWithoutInput(indexedInstructionCandidates),
+      indexedHeadingContextCandidates: guardWithoutInput(indexedHeadingContextCandidates),
+      inspectRuleSources: guardWithoutInput(inspectRuleSources),
+      issueRuleAssessmentBatch: guardWithoutInput(issueRuleAssessmentBatch),
+      readRuleCandidate: guardWithInput(readRuleCandidate),
+      claimRuleCandidate: guardWithInput(claimRuleCandidate),
+      claimProgramRuleCandidate: guardWithInput(claimProgramRuleCandidate),
+      issueProgramRuleBatch: guardWithInput(issueProgramRuleBatch),
+      captureBatchEvidence: guardWithInput(captureBatchEvidence),
+      assertBatchEvidence: guardWithInput(assertBatchEvidence),
+      issue: guardWithInput(issue),
+      assess,
+      finalize: guardWithoutInput(finalize),
+      assertDependenciesCurrent: guardWithoutInput(assertDependenciesCurrent),
+      inspect,
+      inspectBatch(batch) { return knownSelection().inspectBatch(batch); },
+      inspectClaim(claim) { return knownSelection().inspectClaim(claim); }
+    });return judgment;
   };
 }
 //endregion
