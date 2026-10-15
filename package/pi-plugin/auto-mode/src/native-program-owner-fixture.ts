@@ -111,7 +111,10 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
   const stream = Object.freeze({});
   const declaration = declareFixtureProgram({
     source,
-    toolNames: ['read', 'write']
+    toolNames: [
+      'read',
+      'write'
+    ]
   });
   /**
    Source inspection retains its original independently failing tool dependency reader.
@@ -180,7 +183,8 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
    @param original - fixture-owned original record
    */
   function parentCurrent(original: FixtureProgramRecord): void { events.push('parent');
-  original.effectiveSignal.throwIfAborted(); }
+  original.effectiveSignal
+    .throwIfAborted(); }
   /**
    Synchronous operation callbacks retain their original names and result identity.
 
@@ -193,7 +197,7 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
     if (state.operationFailure
       ?.callback
       === run.name) throw state.operationFailure
-      .error;
+        .error;
     return run();
   }
   const input = {
@@ -247,7 +251,10 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
     });
     return owner.openProgram({
       parentToken: begin(),
-      toolNames: ['read', 'write']
+      toolNames: [
+        'read',
+        'write'
+      ]
     });
   }
   return {

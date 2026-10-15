@@ -75,8 +75,16 @@ export function createProgramGroupFixture({
     ordinal
   });
   const calls = Object.freeze(reached.members
-    .map(function originalCall(site, index): FixtureProgramCall {
-    return Object.freeze({ type: 'toolCall', id: `group-${ordinal}-call-${index}`, name: site.name, arguments: site.args });
+    .map(function originalCall(
+      site,
+      index
+    ): FixtureProgramCall {
+    return Object.freeze({
+      type: 'toolCall',
+      id: `group-${ordinal}-call-${index}`,
+      name: site.name,
+      arguments: site.args
+    });
   }));
   const tools = Object.freeze(calls.map(function originalTool(call) { return Object.freeze({
     name: call.name,
@@ -92,7 +100,10 @@ export function createProgramGroupFixture({
   const outcomes: FixtureProgramOutcome[] = calls.map(function originalOutcome(call) { return {
     toolCall: call,
     isError: false,
-    result: { content: [{ type: 'text', text: 'original producer text' }] }
+    result: { content: [{
+      type: 'text',
+      text: 'original producer text'
+    }] }
   }; });
   const options = Object.freeze({});
   const invocations: Readonly<{
