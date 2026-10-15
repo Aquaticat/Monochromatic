@@ -31,7 +31,11 @@ The byte counts include repeated serialized observations and references.
 They do not establish actual live heap use or provider request size.
 Repeatedly raising the thresholds moves the failure and leaves the same product limitation.
 
-## Proposed repair
+## Accepted repair
+
+On 2026-10-15 the user explicitly selected removal of arbitrary capture limits.
+This supersedes the earlier fixture-derived capture ceilings, including the 128-receipt limit.
+Implementation and configured-host verification remain pending.
 
 Remove arbitrary byte and occurrence ceilings from normal instruction capture and source accounting.
 Preserve data-shape checks,
