@@ -35,6 +35,21 @@ await describe({ name: 'original successor rejection', children: [
   } }),
   //endregion
   //region Synthetic syntax isolates collection admission, null handling, and rejection ordering.
+  it({ name: 'isolates each original node and static member guard', fn: async function isolatedGuards() {
+    const callee = { type: 'MemberExpression', computed: false, optional: false,
+      object: { type: 'Identifier', name: 'Promise' }, property: { type: 'Identifier', name: 'all' } };
+    for (const input of [
+      { type: 'NewExpression' },
+      { callee: { ...callee, type: 'Identifier' } },
+      { callee: { ...callee, optional: true } },
+      { callee: { ...callee, object: { type: 'Literal', name: 'Promise' } } },
+      { callee: { ...callee, property: { type: 'Literal', name: 'all' } } },
+    ]) {
+      rejects({ input: { returned: returnedGroup(input) }, message: 'native parallel combinator required' });
+    }
+    rejects({ input: { returned: returnedGroup({ arguments: [{ type: 'ObjectExpression', elements: [{}] }] }) },
+      message: 'complete successor member array required' });
+  } }),
   it({ name: 'rejects nonfinite and empty collection lengths before mapping', fn: async function invalidLength() {
     for (const length of [0, -1, 33, Number.NaN, Number.POSITIVE_INFINITY]) {
       let mapped = false;
