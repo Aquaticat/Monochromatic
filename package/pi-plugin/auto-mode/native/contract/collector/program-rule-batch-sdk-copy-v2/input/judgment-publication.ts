@@ -1,7 +1,12 @@
-/** Original constructor publication links completed owners to the frozen public surface. @module */
+/**
+ Original constructor publication links completed owners to the frozen public surface. @module
+ */
 import {tagged} from '@monochromatic-dev/module-logger/ts';
 import {createJudgmentAPI} from './judgment-api.ts';
-import type {JudgmentAPIInput,JudgmentPublicAPI} from './judgment-api-types.ts';
+import type {
+  JudgmentAPIInput,
+  JudgmentPublicAPI
+} from './judgment-api-types.ts';
 import type {JudgmentPreparationSources} from './judgment-preparation-types.ts';
 import type {JudgmentSources} from './judgment-source-types.ts';
 import type {createJudgmentPrograms} from './program-owner.ts';
@@ -9,9 +14,13 @@ import type {createJudgmentExecutions} from './execution-owner.ts';
 import type {createJudgmentInstructions} from './instruction-owner.ts';
 import type {createJudgmentInspection} from './judgment-inspection.ts';
 import type {JudgmentLifecycle} from './judgment-lifecycle-types.ts';
-/** Publication diagnostics never inspect source values or invoke owner methods. */
+/**
+ Publication diagnostics never inspect source values or invoke owner methods.
+ */
 const l=tagged({tag:'auto-mode-judgment-publication'});
-/** Complete owned capabilities preserve original method identities at publication. */
+/**
+ Complete owned capabilities preserve original method identities at publication.
+ */
 type JudgmentPublicationInput<Source extends JudgmentPreparationSources> = Pick<JudgmentAPIInput<Source>,'prepare'|'knownSelection'|'active'|'assertDependenciesCurrent'|'readCurrentSourceBinding'> & Readonly<{
  programs:ReturnType<typeof createJudgmentPrograms>;
  executions:ReturnType<typeof createJudgmentExecutions>;
@@ -31,10 +40,29 @@ type JudgmentPublicationInput<Source extends JudgmentPreparationSources> = Pick<
  @example publishJudgment(input);
  */
 export function publishJudgment<const Source extends JudgmentPreparationSources>(input:JudgmentPublicationInput<Source>):JudgmentPublicAPI<Source>{
-/** Retained capabilities remain fixed for this original judgment. */
-const {programs,executions,lifecycle,instructions,inspection,sourceOwner,prepare,knownSelection,active,assertDependenciesCurrent,readCurrentSourceBinding}=input;
-/** Logging identifies publication without reading original inputs. */
-const rl=tagged({tag:publishJudgment.name,l});
+/**
+ Retained capabilities remain fixed for this original judgment.
+ */
+const {
+  programs,
+  executions,
+  lifecycle,
+  instructions,
+  inspection,
+  sourceOwner,
+  prepare,
+  knownSelection,
+  active,
+  assertDependenciesCurrent,
+  readCurrentSourceBinding
+}=input;
+/**
+ Logging identifies publication without reading original inputs.
+ */
+const rl=tagged({
+  tag:publishJudgment.name,
+  l
+});
 rl.debug('publishing original judgment owners');
 return createJudgmentAPI({
       bindPreparedProgram:programs.bindPreparedProgram,

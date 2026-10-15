@@ -155,11 +155,11 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
           preparationFailed,
           preparationFailure,
           finished:lifecycle.state
-          .finished,
+            .finished,
           closeFailed:lifecycle.state
-          .closeFailed,
+            .closeFailed,
           finalRecord:lifecycle.state
-          .finalRecord,
+            .finalRecord,
           handle
         };
       }
@@ -187,7 +187,10 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
     /**
      Original owner capabilities retain captured method identities.
      */
-    const {operation,issue}=lifecycle;
+    const {
+      operation,
+      issue
+    }=lifecycle;
     /**
      Original owner capabilities retain captured method identities.
      */
@@ -204,7 +207,9 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       receipt,
       issue
     });
-    /** Captured original methods link subsequent owners without invoking them. */
+    /**
+     Captured original methods link subsequent owners without invoking them.
+     */
     const {resolveBinding}=instructions;
 
     /**
@@ -242,9 +247,9 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       readClosure(){
         return {
           finished:lifecycle.state
-          .finished,
+            .finished,
           closeFailed:lifecycle.state
-          .closeFailed
+            .closeFailed
         };
       },
       readJudgment(){
@@ -254,8 +259,14 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       stream,
       assertDependenciesCurrent
     });
-    /** Captured original methods link subsequent owners without invoking them. */
-    const {knownMember,knownExecution,parentCurrent}=executions;
+    /**
+     Captured original methods link subsequent owners without invoking them.
+     */
+    const {
+      knownMember,
+      knownExecution,
+      parentCurrent
+    }=executions;
     /**
      Original owner capabilities retain captured method identities.
      */
@@ -276,8 +287,13 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       childGroups,
       operation
     });
-    /** Captured original methods link subsequent owners without invoking them. */
-    const {inspectProgram,inspectReachedGroup}=programs;
+    /**
+     Captured original methods link subsequent owners without invoking them.
+     */
+    const {
+      inspectProgram,
+      inspectReachedGroup
+    }=programs;
     /**
      Original owner capabilities retain captured method identities.
      */
@@ -302,7 +318,19 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
     /**
      Public ownership is published after the final construction checkpoint.
      */
-    const judgment=publishJudgment({programs,executions,lifecycle,instructions,inspection,sourceOwner,prepare,knownSelection,active,assertDependenciesCurrent,readCurrentSourceBinding});
+    const judgment=publishJudgment({
+      programs,
+      executions,
+      lifecycle,
+      instructions,
+      inspection,
+      sourceOwner,
+      prepare,
+      knownSelection,
+      active,
+      assertDependenciesCurrent,
+      readCurrentSourceBinding
+    });
     return judgment;
   };
 }
