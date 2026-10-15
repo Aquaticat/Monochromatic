@@ -109,6 +109,10 @@ run = [
 description = "Verify lossless Luna request conversion, exact response attribution, and original lifetime"
 run = "node src/decision-wire.unit.test.ts"
 
+[tasks."test:assessment-bundles"]
+description = "Verify complete question partitioning through owned parallel call bundles"
+run = "node --max-old-space-size=512 src/assessment-bundles.unit.test.ts"
+
 [tasks."test:native:assessment-transport"]
 description = "Exercise the maintained HTTP sender through original native policy review with authored responses"
 run = [
