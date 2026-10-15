@@ -410,9 +410,10 @@ the items after it are the record of 2026-10-05 and older.
     longer, the picture settles 41 to 60 ms (50,000 lines) or 242 to 260 ms (2,000 wrapped lines) after the last
     width, a 50,000-line picture builds in 13 to 15 ms, and memory is within 0.4 MB of the current `main`. Numbers,
     flake counts, and the 17 guard cases (each seen failing) are in the IDE README section Minimap. Not done: marks in
-    the picture, the code preview after 400 ms, the resizable width. Two native tests failed once each in full runs
-    (`find_box_context_menu_runs_each_entry`, `the_view_follows_the_caret_through_every_visual_row`), passed alone
-    and in later runs, and were not seen on `main`; the cause is not determined.
+    the picture, the code preview after 400 ms, the resizable width. In parallel full runs of
+    `test:native` the test `the_view_follows_the_caret_through_every_visual_row` failed 3 of 23 times on this branch
+    and 1 of 10 on `main` (same assertion, 120 against 147), and `find_box_context_menu_runs_each_entry` failed once
+    on this branch; filtered (serial) runs never failed. Details are in the README section Minimap.
     Markdown and MDX highlighting (branch `feat/ide-markdown-highlight`, worktree `.claude/worktrees/ide-markdown`):
     a copy of `.agents/skills/choosing-technology/SKILL.md` showed only the YAML frontmatter colored. The language, the
     `markdown`, `markdown_inline` and `yaml` grammars and the injections all worked; `syntax::SCOPES` had no `markup`

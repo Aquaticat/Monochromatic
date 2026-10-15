@@ -2699,11 +2699,15 @@ and the new highlights, fifty thousand lines, and the pace of requests for each 
 `minimap-wheel-reaches-view`, `minimap-key-has-no-scroll`, `minimap-built-on-worker`, `minimap-stale-text`,
 `minimap-older-request`, `minimap-follows-measurement`, `minimap-resize-keeps-wait`, and `minimap-throttle-period`.
 
-Two native tests each failed once in 22 full runs of the native suite on this branch before the last merge of `main`:
-`find_box_context_menu_runs_each_entry` (the menu's Select All did not select the whole find text) and
-`the_view_follows_the_caret_through_every_visual_row` (left 120, right 161 at `src/native/wrap_keys_tests.rs`).
-Both passed in the other runs and in isolated reruns (12 of 12 for the second, and 10 of 10 on each of this branch and
-`main` for both together), and neither failed in 14 full runs of `main`; the cause is not determined.
+Two native tests failed in full runs of the suite that run its tests in parallel (`mise run test:native` without a
+filter; a filtered run is serial, and none of its 42 runs on this branch or on `main` failed).
+In 23 such runs on this branch, `the_view_follows_the_caret_through_every_visual_row` failed 3 times (for example
+"after 161 Down presses the caret is on the drawn row 120 of 162", with a row map of 121 rows) and
+`find_box_context_menu_runs_each_entry` failed once (the menu's Select All did not select the whole find text).
+In 10 such runs on `main` the first of these failed once with the same assertion (left 120, right 147).
+The row count the test reads before its Down presses is larger than the row map's count afterwards, so the test reads
+the map before the measurement has finished shrinking it; the find box failure was seen once and its cause is not
+determined.
 The layout tests were adjusted for the 288 px source column and the minimap's width in
 `src/native/sidebar_tests.rs` (`minimap_beside`, `text_area`).
 
