@@ -39,7 +39,7 @@ await describe({ name: '', children: [
       /** A missing disposer fails promptly instead of leaving this verification pending. */
       const second = await Promise.race([pendingSecond, setImmediate('missing-release')]);
       assert.notEqual(second, 'missing-release');
-      assert.ok(typeof second !== 'string');
+      assert.ok((typeof second) !== 'string');
       assert.equal(await firstTail, undefined);
       first[Symbol.dispose]();
       assert.equal(await Promise.race([secondTail, setImmediate('blocked')]), 'blocked');

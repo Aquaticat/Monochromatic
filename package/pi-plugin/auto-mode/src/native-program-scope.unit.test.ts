@@ -15,8 +15,8 @@ await describe({ name: '', children: [
     /** Constructor counts remain local to the original scope fixture. */
     const constructions: object[] = [];
     /** Native construction must receive no additional source arguments. */
-    const NestedCallRecorder = new Proxy(Map, {
-      construct(target, args, receiver) {
+    const NestedCallRecorder: typeof Map = new Proxy(Map, {
+      construct(target, args, receiver): object {
         assert.equal(target, Map);
         assert.deepEqual(args, []);
         assert.equal(receiver, NestedCallRecorder);
