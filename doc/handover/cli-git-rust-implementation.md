@@ -1688,30 +1688,41 @@ that is verification, not a decision for the user.
   `grace_remains`, `is_flood`, `handled_by_the_landing_pass`. Refusals other than "absent" are provoked without
   root by putting a file where a directory belongs (ENOTDIR), and with a read-only parent where that is the only way
   (the test skips itself when run as root).
-  To justify with code instead of a test: `recovery_files.rs` 214 (`<` to `<=`: reading into an empty slice returns 0
-  and breaks, same result), `index_writer_coordination.rs` 373 (`release_quietly` body removed: the by-value lock is
-  dropped at the end of the function and `OwnerLock::drop` performs the same release), and the
-  `#[cfg(not(unix))]` and `#[cfg(not(target_os = "linux"))]` mutants in `worktree_copy_stage.rs` (90, 122, 227) that
-  the Linux gate never compiles. `worktree_copy_stage.rs` `try_clone` to `false` is killed only on a filesystem
-  that supports reflinks.
-  Container gate on head `2eeb8ba3f3` (tag `hardeningX`): 1767 unit, 120 binary, 1 consumer test passed, Clippy
-  finished. The two `FAILED` lines inside `live_lock` output are helper processes that fail on purpose.
-  Verification rerun of every survivor's function and the new seams: unit `cli-git-hardening-verify`, driver
-  `~/temp/agent/hardening-verify-20261015.ts`, status `~/temp/agent/hardening-verify.status` (ends with
-  `verification done`), logs `hardening-verify-R{1,2,3,4}.log`, started 2026-10-15 00:08 EDT, 55 to 70 mutants per
-  lane, about an hour. Lanes use image tags `hardeningR1` to `hardeningR4`, aliases of the tested image
-  `hardeningX`: a mutation run needs `localhost/git-policy-native-test:<tag>` from a gate on the same head, which it
-  copies the source snapshot from. Read every MISSED or TIMEOUT line; anything left needs another control or a
-  code-based justification added to the list above.
+  Verification rerun R1 to R4 (head `2eeb8ba3f3`, 254 mutants, 00:08 to 01:17 EDT): 242 caught or unviable, 12 missed.
+  Lane R4 (`worktree_copy_journal.rs`) had none. The misses were:
+  - Real gaps, fixed: the refused-retirement test skipped itself whenever the call succeeded, which a mutant also
+    does (it now skips only for a superuser, by `geteuid`); `remove_lock_of` had no direct test, so it gained the
+    seams `remove_lock_of_with` and `rename_lock`; the sync-absence arm of `reap_abandoned_stages` became
+    `absent_is_fine`. A second rerun of those 25 mutants (head `dda72f677c`, 05:26 to 05:49 UTC) left one miss, the
+    foreign-owner guard of `remove_lock_of_with`, which the re-check after the rename hides from outcome tests; it
+    is caught by asserting the rename is never asked for (`a_lock_of_another_owner_is_never_moved`). The guard after
+    the rename is caught by `a_replacement_that_raced_the_rename_is_put_back`. Both guards were shown to fail on a
+    hand-applied mutant on the host.
+  - Justified from the code, no test: `recovery_files.rs` 214 (`<` to `<=`: reading into an empty slice returns 0
+    and breaks, same result); `index_writer_coordination.rs` 373 (`release_quietly` body removed: the by-value lock
+    is dropped at the end of the function and `OwnerLock::drop` performs the same release); `worktree_copy_stage.rs`
+    `create_private_tree` (90), `try_clone` (122, both values) and `symlink_at` (246), which are
+    `#[cfg(not(unix))]` or `#[cfg(not(target_os = "linux"))]` code the Linux gate never compiles.
+  - Filesystem-dependent: `worktree_copy_stage.rs` `try_clone` to `false` (104) is equivalent on the gate
+    container's filesystem, which refuses clones (the copy falls back to the same bytes). The test
+    `the_clone_request_succeeds_where_the_filesystem_clones` asks the kernel directly and fails on that mutant when
+    `TMPDIR` is on a cloning filesystem; shown on btrfs (`TMPDIR=~/temp/agent/clone-probe`) with the mutant applied
+    by hand.
+  Container gate on the final head (tag `hardeningZ`, log `hardening-container-8.log`) follows; the earlier gate on
+  `dda72f677c` passed with 1771 unit, 120 binary and 1 consumer test. The two `FAILED` lines inside `live_lock`
+  output are helper processes that fail on purpose.
   Lessons: `&&` binds tighter than `||`, so reason about those mutants with explicit parentheses; run parallel
-  container runs under distinct `GIT_POLICY_NATIVE_IMAGE_TAG` values; Clippy here rejects `serde_json::json!` in tests
-  (it expands to `unwrap`); an auto-push can fail with "missing necessary objects" while another session repacks the
-  shared object store, and a retry succeeds; the shared `.git` has a commit-graph entry for an unreadable commit
-  (`a2e8a99c`), left alone because other sessions use it.
-  Next: read the verification results, then land with the landing pattern (merge `main`, check the gated paths are
-  byte-identical to the tested head `2eeb8ba3f3`, fast-forward the main checkout, push; "Closes #990" must close the
-  issue), bump the wrapper to 0.1.3, push to trigger the `gpc-*` release jobs, then verify with a real-credential commit
-  and push, and finally merge the pathBytes branch.
+  container runs under distinct `GIT_POLICY_NATIVE_IMAGE_TAG` values; a mutation run needs
+  `localhost/git-policy-native-test:<tag>` from a gate on the same head (alias it with `podman tag` for parallel
+  lanes); a test that skips itself on "the call succeeded" cannot tell a superuser from a mutant, so skip on the
+  cause; a guard that an outcome re-check duplicates needs a test of the call it saves; Clippy here rejects
+  `serde_json::json!` in tests (it expands to `unwrap`); an auto-push can fail with "missing necessary objects"
+  while another session repacks the shared object store, and a retry succeeds; the shared `.git` has a
+  commit-graph entry for an unreadable commit (`a2e8a99c`), left alone because other sessions use it.
+  Next: land with the landing pattern (merge `main`, check the gated paths are byte-identical to the tested head,
+  fast-forward the main checkout, push; "Closes #990" must close the issue), bump the wrapper to 0.1.3, push to
+  trigger the `gpc-*` release jobs, then verify with a real-credential commit and push, and finally merge the
+  pathBytes branch.
   Not verified: Windows (the target is not installed here; `tempfile` and `libc` are unix-only dependencies that
   `bounded_child.rs` already relied on).
   A podman cleanup by the user (`podman image prune --all`) removed `rust:1.97-bookworm`; pull it back, and pin it with
