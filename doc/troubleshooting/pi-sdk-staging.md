@@ -7241,7 +7241,10 @@ Without a pre-failure counter sample,
 these values do not attribute that particular failure.
 The current lint retry uses the previously probed `GOMAXPROCS=2` worker setting
 with no concurrent native consumer verification.
-Its result remains pending.
+That retry completed the full 438-file sweep with 203 errors and 12801 warnings.
+It verifies recovery of diagnostic collection,
+not a passing lint gate or a permanent thread-allocation remedy.
+The completed report is `${HOME}/temp/agent/pi-maintained-resource-lint-retry-20261014.log`.
 
 ### Symptoms and separate incident boundaries
 
