@@ -1145,7 +1145,7 @@ jobs:
         ## Downloads
 
         - Windows: `music-player-@VERSION@-windows-x64.exe` and `music-player-@VERSION@-windows-arm64.exe`, one standalone program each.
-        - Windows without Microsoft's toolchain: `music-player-@VERSION@-windows-x64-gnu.exe` (x64 only), built with MinGW-w64 and GNU ld, one standalone program that needs no Visual C++ runtime. It does the same as `windows-x64.exe`; pick either one.
+        - Windows without Microsoft's toolchain: `music-player-@VERSION@-windows-x64-gnu.exe` (x64 only), built with MinGW-w64 and GNU ld, one standalone program that needs no Visual C++ runtime. It is built from the same source as `windows-x64.exe`; pick either one.
         - macOS: `music-player-@VERSION@-macos-arm64.dmg`, for Apple silicon Macs only. There is no Intel Mac build; build from source instead.
         - Linux: `music-player-@VERSION@-linux-x64.tar.gz` and `music-player-@VERSION@-linux-arm64.tar.gz`, with the program, a launcher file and an icon.
         - Alpine Linux: `music-player-@VERSION@-linux-musl-x64.tar.gz` (x86_64) and `music-player-@VERSION@-linux-musl-arm64.tar.gz` (aarch64), for Alpine 3.24 or newer (musl libc), with the same contents as the Linux archives. The Linux archives above do not run on Alpine.
