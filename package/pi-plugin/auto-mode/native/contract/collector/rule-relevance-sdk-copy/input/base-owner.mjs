@@ -7,15 +7,15 @@ import {freezePromptOptions} from "../../base-prompt-custody-v2/copy.mjs";
 
 export class BaseCompositionError extends AggregateError{
   constructor(failures){super(
-    failures.map(value=>value.error),
+    failures.map(function readFailureValue(value){return value.error;}),
     'Native base prompt has no current qualified resource derivation. Inspect its input/linkage failure, supply the original loader binding, or rebuild through the owning session before using it.'
   );this.name=this.constructor
     .name;this.failures=Object.freeze([...failures]);}
 }
 /** Each native session privately owns one instance; there is no global session map. */
 export function createBaseCompositionOwner(){
-  const history=[];let active;
-  let current;
+  const history=[];const compositionState={active:undefined,current:undefined};
+  
   function failure({
     scope,
     error,
@@ -34,11 +34,11 @@ export function createBaseCompositionOwner(){
     read,
     normalize
   }){
-    if(active){failure({
-      scope:active,
+    if(compositionState.active){failure({
+      scope:compositionState.active,
       error:new SourceCollectionError('Native base composition cannot reenter'),
       at:'entry'
-    });throw new BaseCompositionError(active.failures);}
+    });throw new BaseCompositionError(compositionState.active.failures);}
     const scope={
       binding,
       loader,
@@ -47,7 +47,8 @@ export function createBaseCompositionOwner(){
       failures:[],
       linkFailures:[],
       view:undefined
-    };history.push(scope);active=scope;current=undefined;
+    };history.push(scope);compositionState.active=scope;compositionState.current=undefined;
+    using compositionActivity={ [Symbol.dispose](){compositionState.active=undefined;} };
     try{
       let frame;
       // Missing source linkage does not claim an authority or tear down partially constructed native state.
@@ -118,7 +119,7 @@ export function createBaseCompositionOwner(){
         sourceAuthority:'not-established',
         otherInputCoverage:'not-established'
       });
-      current=scope;return options;
+      compositionState.current=scope;return options;
     }catch(error){
       if(!(error instanceof BaseCompositionError))failure({
         scope,
@@ -126,11 +127,11 @@ export function createBaseCompositionOwner(){
         at:'composition'
       });
       scope.status='failed';throw new BaseCompositionError(scope.failures);
-    }finally{active=undefined;}
+    }
   }
   /** Internal native reader supplies its canonical field, not a mutable working copy. */
   function read(request){
-    const scope=current;
+    const scope=compositionState.current;
     if((!request)||((typeof request)!=='object')
       ||(Reflect.ownKeys(request)
         .length
@@ -149,7 +150,7 @@ export function createBaseCompositionOwner(){
       error:new SourceCollectionError('Native base read requires its canonical options field'),
       at:'read-input'
     })]);
-    if(active||(!scope)
+    if(compositionState.active||(!scope)
       ||(scope.status!=='ready')
       ||(scope.view
         .options
@@ -170,28 +171,28 @@ export function createBaseCompositionOwner(){
       });
       if((frame
         !==scope.view
-        .resourceFrame)||(current!==scope)
-        ||active)throw new SourceCollectionError('Original resource occurrence or native base changed before current read');
+        .resourceFrame)||(compositionState.current!==scope)
+        ||compositionState.active)throw new SourceCollectionError('Original resource occurrence or native base changed before current read');
     }catch(error){
       failure({
         scope,
         error,
         at:'resource-current'
-      });scope.status='stale';if(current===scope)current=undefined;throw new BaseCompositionError(scope.failures);
+      });scope.status='stale';if(compositionState.current===scope)compositionState.current=undefined;throw new BaseCompositionError(scope.failures);
     }
     return scope.view;
   }
   function inspect(){return Object.freeze({
     retainedOnly:true,
-    pending:active!==undefined,
-    currentOrdinal:current?.ordinal,
-    history:Object.freeze(history.map(scope=>Object.freeze({
+    pending:compositionState.active!==undefined,
+    currentOrdinal:compositionState.current?.ordinal,
+    history:Object.freeze(history.map(function inspectComposition(scope){return Object.freeze({
       ordinal:scope.ordinal,
       status:scope.status,
       view:scope.view,
       failures:Object.freeze([...scope.failures]),
       linkFailures:Object.freeze([...scope.linkFailures])
-    })))
+    });}))
   });}
   return Object.freeze({
     build,

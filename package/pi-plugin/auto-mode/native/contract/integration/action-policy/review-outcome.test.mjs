@@ -155,10 +155,10 @@ for(const fixture of cases){
    true
  );
 }
-assert.throws(()=>resolveManualReviewOutcome({
+assert.throws(function rejectMalformedRule() { return (resolveManualReviewOutcome({
   premises:'incomplete',
   rules:[{id:'invalid'}]
-}));
+})); });
 await flushPolicyDiagnostics();
 console.log(JSON.stringify({
   complete:true,

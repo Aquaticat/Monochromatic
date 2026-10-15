@@ -103,6 +103,25 @@ scan before `is_music` and `duration` are filled, or the app reports an empty li
 `HOME` needs that `HOME` for `adb emu kill` (the console token lives there); a debug APK built in another Gradle home is
 signed with another key, so `adb uninstall` first; after `cmd device_state base-state 0` the cover display needs
 `KEYCODE_WAKEUP` and `wm dismiss-keyguard` before a capture is not black.
+On 2026-10-14 `android-inner-two-pane-light.png` and `android-inner-two-pane-dark.png` were retaken from the debug
+build of branch `fix/android-row-text-alignment` (D130: the track rows' box spans the pane and their text starts in the
+column of the headings), on the invented 35-track library in demo mode, with the same crop (`2076x1964+0+110`).
+The committed pair showed the defect itself: the row text 11 dp right of the subfolder headings and the playing fill
+starting at the crease clearance.
+`android-cover-player-dark.png` was compared with the fixed build instead of retaken: the cover list region of the
+fixed build is pixel-identical to the build before the change (zero differing pixels in four captures), and the
+committed image differs from it by the 4 to 7 px row offset and the playing fill starting about 8 px in from the
+pane edge, both recorded by the earlier retake and neither caused by this change.
+`android-inner-settings-dark.png` was retaken from the debug build of the same branch (the template editor change of D130: the field
+rows' text moved 3 dp left under the `Fields` heading, and the editor's hairlines now start at the pane edge), with the
+same crop; `android-cover-settings-light.png` shows only the Settings list, which the change does not touch, so it was
+kept.
+The new files are `164afb146209` (two-pane light), `bdfe6255fecb` (two-pane dark) and `4155db09c791` (Settings dark)
+by their sha256, the README oids were changed to
+match, `git cli-git fix --policy markdown/autofix` rewrote nothing, and all twenty embedded oids were checked against
+the files again (zero mismatches).
+The elapsed time on the deck differs from the earlier captures because the invented track resumes where the previous
+session left it.
 The R2 check task has not run, since the objects reach R2 on push.
 
 Last updated: 2026-10-14.

@@ -31,7 +31,7 @@ export function createBoundPolicyReviewer({
    approvalHost
  });
  const authorizationFactory=authorizationOwnerFor===undefined?undefined:captureAuthorizationOwnerFactory(authorizationOwnerFor);
- let reviewing=false;
+ const reviewActivity={active:false};
  async function review(response){
   producerOwner.assertMainAgentResponse({
     response,
@@ -41,11 +41,12 @@ export function createBoundPolicyReviewer({
     response,
     stream
   });
-  if(reviewing)throw new PolicyReviewPhaseError('An original policy review is already running; await it before requesting another');
+  if(reviewActivity.active)throw new PolicyReviewPhaseError('An original policy review is already running; await it before requesting another');
   const state=judgment.inspect();
   if((state.prepared!==true)||state.preparationFailed
     ||(state.finalRecord!==undefined))throw new PolicyReviewPhaseError('Policy review requires an open original judgment with complete prepared membership');
-  reviewing=true;
+  reviewActivity.active=true;
+  using activeReview={ [Symbol.dispose](){reviewActivity.active=false;} };
   try{
    return await evaluate({
      judgment,
@@ -76,7 +77,7 @@ export function createBoundPolicyReviewer({
     );
    }
    throw error;
-  }finally{reviewing=false;}
+  }
  }
  return Object.freeze({review});
 }

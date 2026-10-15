@@ -97,11 +97,11 @@ export async function capturePolicyInputs({
   judgment.assertDependenciesCurrent();
   judgment.checkpoint();
  }
- const effects=Object.freeze(members);let failure;
+ const effects=Object.freeze(members);const inputState={failure:undefined};
  function assertCurrent(){
-  if(failure)throw new PolicyInputBindingError(
+  if(inputState.failure)throw new PolicyInputBindingError(
     'Original policy inputs lost eligibility',
-    {cause:failure.cause}
+    {cause:inputState.failure.cause}
   );
   try{
    judgment.assertDependenciesCurrent();
@@ -130,7 +130,7 @@ export async function capturePolicyInputs({
     if(judgment.preparedProgramFor?.(member)!==programInspection)throw new PolicyInputBindingError('Original prepared program inspection changed');
     if(owner)owner.assertCurrent(evidence);
    }
-  }catch(error){failure={cause:error};throw error;}
+  }catch(error){inputState.failure={cause:error};throw error;}
  }
  function inspectSourceDomain(){
   assertCurrent();
