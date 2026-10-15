@@ -10,6 +10,7 @@ import { privatizeNativeMembers } from './build-members.ts';
 export { programJudgmentSource } from './program-judgment-source.ts';
 export { nativeScriptValueSource } from './program-value-source.ts';
 export { programRunnerSource } from './program-runner-source.ts';
+export { preparedDispatcherSource } from './prepared-dispatcher-source.ts';
 
 //region Original program source boundaries retain their native execution and judgment owners
 
@@ -17,61 +18,6 @@ export { programRunnerSource } from './program-runner-source.ts';
  Program preparation retains diagnostics separate from execution authority.
  */
 const l = tagged({ tag: 'auto-mode-native-program-source' });
-
-/**
- Preserve the incumbent dispatcher and error identities; publish its deciding group mode with each original member.
-
- @param source - original prepared dispatcher module
-
- @param originalUrl - original dispatcher module retaining shared error identities
-
- @returns generated source retaining original program ownership boundaries
-
- @throws NativeBatchBuildError when original source qualification changes
-
- @example
- ```ts
- const generated = preparedDispatcherSource({ source, originalUrl });
- ```
- */
-export function preparedDispatcherSource({
-  source,
-  originalUrl
-}: {
-  readonly source: string;
-  readonly originalUrl: string
-}): string {
- /**
-  Each original program transformation retains its own diagnostic boundary.
-  */
- const rl = tagged({
-   tag: preparedDispatcherSource.name,
-   l
- });
- rl.debug('preparing original native program source');
- /**
-  Error identities stay attached to the original dispatcher module.
-  */
- const errors='export class PreparedBatchContractError extends Error {}\nexport class PreparedBatchExecutionError extends Error {\n  constructor(message,{failures,outcomes,assessmentDecision}) {\n    super(message,{cause:new AggregateError(failures)});\n    this.diagnosticRecord={outcomes,assessmentDecision};\n  }\n}';
- /**
-  shared errors retains its original source occurrence before the next transformation.
-  */
- const sharedErrors=replaceOnce({
-   source,
-   from:errors,
-   to:`export {PreparedBatchContractError,PreparedBatchExecutionError} from ${JSON.stringify(originalUrl)};`
- });
- /**
-  group mode retains its original source occurrence before the next transformation.
-  */
- const groupMode=replaceOnce({
-   source:sharedErrors,
-   from:'const member=Object.freeze({id:call.id,name:call.name,input:sealInput(structuredClone(sealed))});',
-   to:'const member=Object.freeze({id:call.id,name:call.name,input:sealInput(structuredClone(sealed)),groupExecutionMode:serial?"sequential":"parallel"});'
- });
- return `import {PreparedBatchContractError,PreparedBatchExecutionError} from ${JSON.stringify(originalUrl)};\n${groupMode}`;
-}
-
 
 /**
  Extend the session's existing nested runner rather than creating another queue or recorder owner.
