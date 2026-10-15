@@ -186,7 +186,7 @@ export function createExecutionWrappers({wrapToolDefinition}) {
       });
       if(failed)throw failure;
       return value;
-    }
+    };
     }
     return {
       ...original,

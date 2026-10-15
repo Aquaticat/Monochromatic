@@ -150,7 +150,7 @@ export function createExecutionWrappers({
         onUpdate,
         context
       );
-    }
+    };
     }
     return {
       ...original,

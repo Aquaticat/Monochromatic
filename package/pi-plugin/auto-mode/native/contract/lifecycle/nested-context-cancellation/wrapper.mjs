@@ -7,6 +7,17 @@ export class NestedContextClosedError extends Error {
   }
 }
 
+/** Preserve requested options when no parent signal applies, otherwise combine cancellation. */
+function parentCancellationOptions({options,signal}) {
+  if(signal===undefined)return options;
+  const requested=options===undefined?undefined:options.signal;
+  const effectiveSignal=(requested===undefined)||(requested===signal)?signal:AbortSignal.any([
+    signal,
+    requested
+  ]);
+  return {...options,signal:effectiveSignal};
+}
+
 /** Preserve lazy native context getters and only narrow the lifetime of nested invocation. */
 function guardContext({
   context,
@@ -30,18 +41,7 @@ function guardContext({
         options
       ) {
       if(!isActive())throw new NestedContextClosedError(toolCallId);
-      let effectiveOptions=options;
-      if(signal!==undefined){
-        const requested=options===undefined?undefined:options.signal;
-        const effectiveSignal=(requested===undefined)||(requested===signal)?signal:AbortSignal.any([
-          signal,
-          requested
-        ]);
-        effectiveOptions={
-          ...options,
-          signal:effectiveSignal
-        };
-      }
+      const effectiveOptions=parentCancellationOptions({options,signal});
       return await invoke(
         name,
         args,
