@@ -168,7 +168,7 @@ function sourceFor(content:string):Source{
  Built original module, independent of maintained source imports.
  */
 const loaded:unknown=await import(new URL(
-  '../dist/native/contract/lifecycle/rule-relevance-cache/cache.mjs',
+  '../dist/native/contract/lifecycle/rule-relevance-cache/cache.ts',
   import.meta.url
 ).href);
 assertCacheModule(loaded);

@@ -1,5 +1,5 @@
 import {createBootstrapPolicySelection as createOriginalSelection} from '../../collector/host-governing-policy/selection.mjs';
-import {bindRuleRelevanceCache} from './cache.mjs';
+import {bindRuleRelevanceCache} from './cache.ts';
 
 /** Extend the incumbent policy source owner rather than create another source or session registry. */
 export function createBootstrapPolicySelection({
