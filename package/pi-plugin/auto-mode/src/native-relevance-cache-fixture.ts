@@ -221,7 +221,9 @@ type CacheFixture=AsyncDisposable&{
  ```
  */
 export async function cacheFixture():Promise<CacheFixture>{
-  /** Trusted scratch parent contains no shared test data. */
+  /**
+   Trusted scratch parent contains no shared test data.
+   */
   const scratch=join(
     homedir(),
     'temp/agent'
@@ -233,23 +235,36 @@ export async function cacheFixture():Promise<CacheFixture>{
       mode:0o700
     }
   );
-  /** Exclusive directory owns every test mutation. */
+  /**
+   Exclusive directory owns every test mutation.
+   */
   const root=await mkdtemp(join(
     scratch,
     'pi-native-cache-owner-'
   ));
-  /** Consumer export comes from the current native artifact. */
+  /**
+   Consumer export comes from the current native artifact.
+   */
   const parserModule=await loadNativeParserArtifact();
-  /** Qualified parser preserves real index behavior in cache tests. */
+  /**
+   Qualified parser preserves real index behavior in cache tests.
+   */
   const parser=await parserModule.createNativeMarkdownParser({expectedVersion:'0.10.5'});
-  /** Replacement changes source identity even when text is equal. */
+  /**
+   Replacement changes source identity even when text is equal.
+   */
   const state={source:sourceFor('AAA: Ask before publishing.\n\nBBB: Retain original permission.\n')};
-  /** Capture exact original classifier membership. */
+  /**
+   Capture exact original classifier membership.
+   */
   const requests:Assessment['request'][]=[];
-  /** Test-owned mutations run at real consumer boundaries. */
+  /**
+   Test-owned mutations run at real consumer boundaries.
+   */
   const callbacks:CacheFixture['callbacks']={};
   /**
    Advance the source occurrence used by the original selector.
+   
    @param content - replacement authored policy
    */
   function replace(content:string):void{
@@ -257,6 +272,7 @@ export async function cacheFixture():Promise<CacheFixture>{
   }
   /**
    Bind an independent cache owner sharing only this fixture's files.
+   
    @returns original built cache owner
    */
   function open():Cache{
@@ -289,7 +305,9 @@ export async function cacheFixture():Promise<CacheFixture>{
       assessBatch({request}){
         requests.push(request);
         callbacks.onAssessment?.();
-        /** Authored estimates exercise delivery without a provider request. */
+        /**
+         Authored estimates exercise delivery without a provider request.
+         */
         const answers=request.rules
           .map(function answer(rule){
             return {

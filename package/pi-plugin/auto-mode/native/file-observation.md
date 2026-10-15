@@ -3,6 +3,7 @@
 ## Consumer boundary
 
 `contract/lifecycle/external-dependency-controls/file-observer.mjs`
+(renamed to `file-observer.ts` on 2026-10-15)
 returns completed bytes and closes its descriptor before returning to the caller.
 `contract/collector/host-governing-policy/selection.mjs`
 uses those bytes directly during `capture` and `assertCurrent`.

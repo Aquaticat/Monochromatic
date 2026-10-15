@@ -5,7 +5,7 @@ import {
   writeFile
 } from 'node:fs/promises';
 import {join} from 'node:path';
-import {observeDeclaredFile} from '../external-dependency-controls/file-observer.mjs';
+import {observeDeclaredFile} from '../external-dependency-controls/file-observer.ts';
 import {ObservedFileMissingError} from '../external-dependency-controls/errors.ts';
 import {RuleRelevanceCacheError} from './definition.mjs';
 

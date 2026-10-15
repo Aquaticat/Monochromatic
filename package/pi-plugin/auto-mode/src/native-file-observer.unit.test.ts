@@ -53,7 +53,7 @@ function assertObserverModule(value:unknown):asserts value is ObserverModule{
     ||((typeof value.observeDeclaredFile)!=='function'))throw new Error('Built file observer is unavailable');
 }
 /** Original copied artifact selected through its consumer URL. */
-const loaded:unknown=await import(new URL('../dist/native/contract/lifecycle/external-dependency-controls/file-observer.mjs',import.meta.url).href);
+const loaded:unknown=await import(new URL('../dist/native/contract/lifecycle/external-dependency-controls/file-observer.ts',import.meta.url).href);
 assertObserverModule(loaded);
 /** Checked built callable namespace. */
 const observer=loaded;
