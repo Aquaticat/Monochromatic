@@ -9,7 +9,7 @@ export function assertCompleteDomainResolution(review){
        .instructionSources[0]
        .sources,
      instructionSources:review.inputs
-       .instructionSources,
+       .provenanceSources,
      sourceCoverage:review.inputs
        .ruleSourceCoverage
    };
