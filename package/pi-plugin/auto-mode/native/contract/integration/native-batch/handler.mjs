@@ -192,6 +192,8 @@ export function createNativeBatchHandler({
     }
     if(reviewState.automaticFailure){
      manual.current();
+     try{if(judgment&&judgment.inspect().finalRecord===undefined)judgment.finalize();}
+     catch(error){tagged({tag:'closeAutomaticAssessment',l}).debug(`automatic evidence closure failed: ${String(error)}`);}
      reviewState.manual=true;
      reviewState.reviewed=await manual.request(reviewState.automaticFailure.error);
     }
