@@ -833,3 +833,6 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-lifecycle-failure.unit.test.ts",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-lifecycle-ownership.unit.test.ts",
 ]
+[tasks."test:native:bypass"]
+description = "Verify the native Shift+Tab bypass control and restored policy checks"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/bypass.test.mjs prohibited --native-context --bypass-fixture"

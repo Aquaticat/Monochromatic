@@ -13,6 +13,8 @@ import {registerHostResource} from '../native-host/resource-reload.ts';
 
 export const {
   askUser,
+  registerNativeBypass,
+  readNativeBypassEnabled,
   VERDICT_ENTRY_TYPE,
   flushPolicyDiagnostics
 }=await import(maintainedPolicyEntry);
@@ -20,7 +22,10 @@ await flushPolicyDiagnostics();
 export const env=await createEnvironment({
   policyText,
   hostPrompt:'Fixture background.',
-  extensionFactories:[function captureNativePiApi(pi) {fixtureState.nativePi=pi;}]
+  extensionFactories:[function captureNativePiApi(pi) {
+    fixtureState.nativePi=pi;
+    if(process.argv.includes('--bypass-fixture'))registerNativeBypass(pi);
+  }]
 });
 // This direct-SDK fixture registers the original policy reload boundary used by native host services.
 // It does not acquire the CLI host's private resource membership or session-construction ownership.
@@ -116,6 +121,7 @@ if(useNativeContext&&(!headless))await session.bindExtensions({uiContext:{
   select
 }});
 export const runtime=bindNativePolicyRuntime({
+  ...(process.argv.includes('--bypass-fixture')?{readBypass(){return readNativeBypassEnabled(session.extensionRunner.createContext());}}:{}),
   root,
   lifecycle,
   policyInput:env.policyInput,
