@@ -139,7 +139,6 @@ export function createRunPromptOwner({
     value
   }){
     scope.bytes+=Buffer.byteLength(JSON.stringify(value));
-    if(scope.bytes>4_194_304)throw new SourceCollectionError('Complete native run observations exceed the snapshot byte bound');
     return value;
   }
   function capture({
@@ -156,11 +155,9 @@ export function createRunPromptOwner({
     });
   }
   function dense({
-    value,
-    maximum
+    value
   }){
     if((!Array.isArray(value))||(Object.getPrototypeOf(value)!==Array.prototype)
-      ||(value.length>maximum)
       ||(Reflect.ownKeys(value)
         .length
         !==(value.length

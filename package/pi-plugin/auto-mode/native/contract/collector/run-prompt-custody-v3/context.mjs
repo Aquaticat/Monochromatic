@@ -30,7 +30,6 @@ export function createRunContext({state,phase,check,charge,known,assertLive,asse
         if((!origin)||activeOccurrences.has(origin.runOccurrence)
           ||seen.has(origin.source
             .occurrence))return;
-        if(origins.length>=128)throw new SourceCollectionError('Retained native message sources exceed the original 128-source profile');
         seen.add(origin.source
           .occurrence);origins.push(origin);
       }
@@ -61,7 +60,6 @@ export function createRunContext({state,phase,check,charge,known,assertLive,asse
         ...scope.view,
         retainedMessageOrigins
       });
-      if(Buffer.byteLength(JSON.stringify(view))>8_388_608)throw new SourceCollectionError('Complete run ancestry exceeds its declared byte bound');
       check(scope);scope.view=view;scope.constructedInputs=constructedInputs;
     }
     });

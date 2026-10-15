@@ -5,13 +5,6 @@ import { SourceCollectionError } from './errors.ts';
 export { SourceCollectionError } from './errors.ts';
 /** Bindings can be made by bootstrap code, never by serialized action metadata. */
 const bindings = new WeakMap();
-/** Bound the private fixture profile without truncating source content. */
-const limits = Object.freeze({
-  sourceBytes: 65_536,
-  totalBytes: 524_288,
-  files: 64,
-  appendTexts: 32
-});
 /** Hash exact captured text, not rendered source labels. */
 function digest(value) { return createHash('sha256')
   .update(value)
@@ -24,7 +17,6 @@ function text(
 }
 ) {
   if ((typeof value) !== 'string') throw new SourceCollectionError(`${label} must provide text`);
-  if (Buffer.byteLength(value) > limits.sourceBytes) throw new SourceCollectionError(`${label} exceeds source byte cap`);
   return value;
 }
 /** A source path remains metadata; it confers no authority. */
@@ -75,16 +67,16 @@ export function bindConstructionOwner({
   );
   return token;
 }
-/** Copy bounded owner data; do not pair append paths with text by an invented index convention. */
+/** Copy owner data; do not pair append paths with text by an invented index convention. */
 function inventory(owner) {
   if (owner === undefined) return Object.freeze({ availability: 'unavailable' });
   const agents = owner.getAgentsFiles()
     .agentsFiles;
   const appendTexts = owner.getAppendSystemPrompt();
   const appendSources = owner.getAppendSystemPromptSources();
-  if ((!Array.isArray(agents)) || (agents.length > limits.files)) throw new SourceCollectionError('Resource file inventory exceeds its profile');
-  if ((!Array.isArray(appendTexts)) || (appendTexts.length > limits.appendTexts)) throw new SourceCollectionError('Append text inventory exceeds its profile');
-  if ((!Array.isArray(appendSources)) || (appendSources.length > limits.appendTexts)) throw new SourceCollectionError('Append path inventory exceeds its profile');
+  if ((!Array.isArray(agents))) throw new SourceCollectionError('Resource file inventory exceeds its profile');
+  if ((!Array.isArray(appendTexts))) throw new SourceCollectionError('Append text inventory exceeds its profile');
+  if ((!Array.isArray(appendSources))) throw new SourceCollectionError('Append path inventory exceeds its profile');
   const files = Object.freeze(agents.map(function captureResourceFile(file)  {
     const content = text(
       {
@@ -127,7 +119,7 @@ function inventory(owner) {
     appendTextPathLinks: 'not-established',
   });
 }
-/** A collector owns copying, bounds, stage distinctions and scoped freshness behind its interface. */
+/** A collector owns copying, stage distinctions and scoped freshness behind its interface. */
 export function createCollector({
   binding,
   readPolicy
@@ -182,7 +174,6 @@ export function createCollector({
       humanWitness: 'not-established',
     });
     const serialized = JSON.stringify(data);
-    if (Buffer.byteLength(serialized) > limits.totalBytes) throw new SourceCollectionError('Collected source evidence exceeds total byte cap');
     if (signal?.aborted) throw new SourceCollectionError('Collection cancelled');
     return {
       data,

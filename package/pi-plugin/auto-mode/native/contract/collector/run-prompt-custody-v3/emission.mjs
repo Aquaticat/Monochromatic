@@ -79,8 +79,7 @@ function enterNative({
           path,
           'value'
         ))
-          ||((typeof path.value)!=='string')
-          ||(Buffer.byteLength(path.value)>65_536))throw new SourceCollectionError('Native extension snapshot requires a bounded data path');
+          ||((typeof path.value)!=='string'))throw new SourceCollectionError('Native extension snapshot requires a bounded data path');
         for(const handler of dense({
           value:item.handlers,
           maximum:256

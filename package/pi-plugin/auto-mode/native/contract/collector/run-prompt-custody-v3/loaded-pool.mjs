@@ -15,8 +15,6 @@ import {createLoadedUserInputs} from './loaded-user-inputs.mjs';
  */
 export function createInputPool({
   entries,
-  maximumInputs,
-  maximumSnapshotBytes,
   InputCaptureError
 }){
  const occurrence=Object.freeze({});
@@ -24,7 +22,7 @@ export function createInputPool({
  const poolState={bytes:0,pendingEventBytes:0,count:0,failure:undefined,constructedInputs:Object.freeze([])};
 
  function reserve(){
-  if((++poolState.count)>maximumInputs)throw new SourceCollectionError(`Original input receipts exceed the ${maximumInputs}-source profile`);
+  poolState.count++;
  }
  function retain({
    carrier,
@@ -39,7 +37,6 @@ export function createInputPool({
  }){
   const contentFormat=(typeof value)==='string'?'text':'native-content-json';
   const content=contentFormat==='text'?value:JSON.stringify(value??[]);
-  if(Buffer.byteLength(content)>65_536)throw new SourceCollectionError('Loaded session message content exceeds the original source byte bound');
   const source=Object.freeze({
     kind,
     content,
@@ -63,7 +60,6 @@ export function createInputPool({
     permission:false
   });
   poolState.bytes+=Buffer.byteLength(JSON.stringify(source));
-  if((poolState.bytes+poolState.pendingEventBytes)>maximumSnapshotBytes)throw new SourceCollectionError('Loaded session source observations exceed the original snapshot byte bound');
   const publisher=createInputOnlyPublication({source,systemInput});publisher.capture(carrier);
   const origin=Object.freeze({
     source,
@@ -89,7 +85,7 @@ export function createInputPool({
  const {captureSummary,captureEdit,captureLoadedEntries}=createLoadedHistory({occurrence,reserve,retain,poolState,InputCaptureError});
 captureLoadedEntries(entries);
 const {captureInitialManagerInput,captureManagerInput}=createLoadedManagerInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
-const {createEventHandlerCapture,captureContextHandler,captureHandlerResultOutput}=createLoadedEventInputs({poolState,InputCaptureError,reserve,retainConstructedInput,maximumSnapshotBytes});
+const {createEventHandlerCapture,captureContextHandler,captureHandlerResultOutput}=createLoadedEventInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
 const {captureToolLoadoutQuery,captureToolLoadoutInput,captureToolLoadoutOutput,captureExtensionToolInput,captureCustomToolDescriptions}=createLoadedToolInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
 const {captureAgentInput}=createLoadedAgentInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
 const {captureQueuedInput,captureUninterceptedInput,captureCallInput,captureCommandInput,captureTransformedInput,captureInputEvent,captureCustomMessageInput}=createLoadedUserInputs({poolState,InputCaptureError,reserve,retainConstructedInput});

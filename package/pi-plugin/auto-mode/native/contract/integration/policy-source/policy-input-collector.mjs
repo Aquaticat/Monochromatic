@@ -30,14 +30,6 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
      ?.skillDescriptionInputs;
    const nativeConstructedInputs=constructedInputs(original.nativeRunComposition);
    const nativeResourceToolInputs=resourceInputs();
-   if((nativeResourceToolInputs!==undefined)&&(Buffer.byteLength(JSON.stringify({
-     resourceInputObservation:original.resourceInputObservation,
-     nativeResourceToolInputs
-   }))>1_048_576))throw new PolicySlotBindingError('Combined resource inputs exceed the original one-MiB resource bound');
-   if((nativeConstructedInputs!==undefined)&&(Buffer.byteLength(JSON.stringify({
-     ...original,
-     nativeConstructedInputs
-   }))>1_048_576))throw new PolicySlotBindingError('Base-linked source collection exceeds total byte bound');
    const runMessageInputs=collectNativeMessageInputs({
      nativeRunComposition:original.nativeRunComposition,
      nativeConstructedInputs

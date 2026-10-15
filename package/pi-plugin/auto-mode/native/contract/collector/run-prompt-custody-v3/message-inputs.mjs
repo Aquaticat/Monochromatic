@@ -27,7 +27,7 @@ export function captureExpandedPromptInput({
   content,
   runOccurrence
 }){
- if(((typeof content)!=='string')||(Buffer.byteLength(content)>1_048_576))throw new SourceCollectionError('Expanded prompt input requires text within the original request byte bound');
+ if((typeof content)!=='string')throw new SourceCollectionError('Expanded prompt input requires text');
  return Object.freeze({
    kind:'native-run-expanded-prompt-input',
    content,

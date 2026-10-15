@@ -1,5 +1,5 @@
 import {createInputPool} from './loaded-pool.mjs';
-//region Native load boundaries retain their original failure classes and budgets.
+//region Native load boundaries retain their original failure classes.
 /** Native loading and message construction continue independently; capture failures are raised on source use. */
 export class SessionInputCaptureError extends AggregateError {
  constructor(error){super(
@@ -8,11 +8,9 @@ export class SessionInputCaptureError extends AggregateError {
  );this.name=this.constructor
    .name;}
 }
-/** Keep all existing Session input paths on their original shared four-MiB record budget. */
+/** Keep Session receipt accounting without an arbitrary capacity ceiling. */
 export function captureLoadedInputs(entries){return createInputPool({
   entries,
-  maximumInputs:128,
-  maximumSnapshotBytes:4_194_304,
   InputCaptureError:SessionInputCaptureError
 });}
 /** Native resource registration failures retain exact causes without replacing the native registration result. */
@@ -23,11 +21,9 @@ export class ResourceToolInputCaptureError extends AggregateError {
  );this.name=this.constructor
    .name;}
 }
-/** Extend resource-owned receipts under the existing one-MiB resource budget, using the same store and publisher. */
+/** Retain resource-owned receipts using the same store and publisher. */
 export function captureResourceToolInputs(){return createInputPool({
   entries:[],
-  maximumInputs:64,
-  maximumSnapshotBytes:1_048_576,
   InputCaptureError:ResourceToolInputCaptureError
 });}
 //endregion

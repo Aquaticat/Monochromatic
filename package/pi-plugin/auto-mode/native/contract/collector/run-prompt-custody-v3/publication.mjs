@@ -191,7 +191,6 @@ function publishScope(scope){
       ...scope.node,
       ancestors:Object.freeze(ancestors)
     });
-    if(Buffer.byteLength(JSON.stringify(scope.view))>8_388_608)throw new SourceCollectionError('Complete run ancestry exceeds its declared byte bound');
     scope.state='published';state.current=scope;state.active=undefined;return options;
   }
 return {publishScope};

@@ -78,7 +78,6 @@ function read({options}){
         for(const original of history){
           if((original===scope)||(original.rootOccurrence!==root))continue;
           if((original.state!=='published')||(!original.node))throw new SourceCollectionError('Original run input history contains an unpublished processing receipt');
-          if(prior.length>=64)throw new SourceCollectionError('Original run input history exceeds the bounded native run profile');
           prior.push(original.node);
         }
         if(readRoot()!==root)throw new SourceCollectionError('Native root changed while reading original run input history');
@@ -93,7 +92,6 @@ function read({options}){
             ...scope.view,
             priorRuns:Object.freeze(prior)
           });
-          if(Buffer.byteLength(JSON.stringify(view))>8_388_608)throw new SourceCollectionError('Original run history exceeds the native source byte bound');
           scope.view=view;
         }
       }
