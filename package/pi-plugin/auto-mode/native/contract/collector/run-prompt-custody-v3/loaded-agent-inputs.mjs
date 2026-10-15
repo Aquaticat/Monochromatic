@@ -7,8 +7,7 @@ import {dataField,agentMessageFields,systemInputFields,assertSystemInput,agentPr
 /** Select supported native Agent inputs without copying opaque provider records. */
 export function createLoadedAgentInputs({poolState,InputCaptureError,reserve,retainConstructedInput}){
 
-return {
-captureAgentInput:function captureAgentInput({
+function captureAgentInput({
     frame,
     method
   }){
@@ -116,6 +115,8 @@ captureAgentInput:function captureAgentInput({
     if(!(error instanceof SourceCollectionError))throw error;
    }
   }
+return {
+captureAgentInput
 };
 }
 //endregion

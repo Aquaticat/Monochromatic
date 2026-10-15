@@ -6,8 +6,7 @@ import {dataField,messageMetadata} from './loaded-fields.mjs';
 /** Retain original queued, command, and transformed user-input occurrences. */
 export function createLoadedUserInputs({poolState,InputCaptureError,reserve,retainConstructedInput}){
 
-return {
-captureQueuedInput:function captureQueuedInput({
+function captureQueuedInput({
     message,
     text,
     delivery
@@ -34,8 +33,8 @@ captureQueuedInput:function captureQueuedInput({
       inputOrigin:'native-queue'
     });
    }catch(error){poolState.failure=new InputCaptureError(error);}
-  },
-captureUninterceptedInput:function captureUninterceptedInput({
+  }
+function captureUninterceptedInput({
     input,
     source,
     streamingBehavior
@@ -59,8 +58,8 @@ captureUninterceptedInput:function captureUninterceptedInput({
       inputOrigin:'native-unintercepted-input'
     });
    }catch(error){poolState.failure=new InputCaptureError(error);}
-  },
-captureCallInput:function captureCallInput({
+  }
+function captureCallInput({
     frame,
     method
   }){
@@ -89,8 +88,8 @@ captureCallInput:function captureCallInput({
     poolState.failure=new InputCaptureError(error);
     if(!(error instanceof SourceCollectionError))throw error;
    }
-  },
-captureCommandInput:function captureCommandInput({
+  }
+function captureCommandInput({
     context,
     text,
     commandName
@@ -110,8 +109,8 @@ captureCommandInput:function captureCommandInput({
     poolState.failure=new InputCaptureError(error);
     if(!(error instanceof SourceCollectionError))throw error;
    }
-  },
-captureTransformedInput:function captureTransformedInput({
+  }
+function captureTransformedInput({
     input,
     source,
     streamingBehavior
@@ -135,8 +134,8 @@ captureTransformedInput:function captureTransformedInput({
       inputOrigin:'native-transformed-input'
     });
    }catch(error){poolState.failure=new InputCaptureError(error);}
-  },
-captureInputEvent:function captureInputEvent(event){
+  }
+function captureInputEvent(event){
    if(poolState.failure)return;
    try{
     reserve();
@@ -167,8 +166,8 @@ captureInputEvent:function captureInputEvent(event){
       inputOrigin:'native-input-event'
     });
    }catch(error){poolState.failure=new InputCaptureError(error);}
-  },
-captureCustomMessageInput:function captureCustomMessageInput(message){
+  }
+function captureCustomMessageInput(message){
    if(poolState.failure)return;
    try{
     reserve();
@@ -192,6 +191,14 @@ captureCustomMessageInput:function captureCustomMessageInput(message){
     });
    }catch(error){poolState.failure=new InputCaptureError(error);}
   }
+return {
+captureQueuedInput,
+captureUninterceptedInput,
+captureCallInput,
+captureCommandInput,
+captureTransformedInput,
+captureInputEvent,
+captureCustomMessageInput
 };
 }
 //endregion

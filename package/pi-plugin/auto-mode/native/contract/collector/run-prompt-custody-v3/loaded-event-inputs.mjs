@@ -6,9 +6,8 @@ import {dataField} from './loaded-fields.mjs';
 /** Charge pending callback observations to the original shared input budget. */
 export function createLoadedEventInputs({poolState,InputCaptureError,reserve,retainConstructedInput,maximumSnapshotBytes}){
 
-return {
 /** Group one native emission while copying each callback phase before its borrowed value can change. */
-  createEventHandlerCapture:function createEventHandlerCapture(){
+function createEventHandlerCapture(){
    const eventState={records:[],retainedBytes:0,part:0,closed:false};
    
    
@@ -71,9 +70,9 @@ return {
      capture,
      complete
    });
-  },
+  }
 /** Retain original context inputs and complete results under the existing manager budget. */
-  captureContextHandler:function captureContextHandler(input){
+function captureContextHandler(input){
    if(poolState.failure)return;
    try{
     reserve();
@@ -94,9 +93,9 @@ return {
     poolState.failure=new InputCaptureError(error);
     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
    }
-  },
+  }
 /** Preserve the complete received result before native callback field selection. */
-  captureHandlerResultOutput:function captureHandlerResultOutput({frame}){
+function captureHandlerResultOutput({frame}){
    if(poolState.failure)return;
    try{
     if(types.isProxy(frame)||(!types.isArgumentsObject(frame))
@@ -129,6 +128,10 @@ return {
     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
    }
   }
+return {
+createEventHandlerCapture,
+captureContextHandler,
+captureHandlerResultOutput
 };
 }
 //endregion

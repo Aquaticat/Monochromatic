@@ -99,15 +99,17 @@ export function createLoadedManagerInputs({poolState,InputCaptureError,reserve,r
     if(!(error instanceof SourceCollectionError))throw error;
    }
  }
-return {
-captureInitialManagerInput:function captureInitialManagerInput(input){captureManagerFrame({
+function captureInitialManagerInput(input){captureManagerFrame({
     ...input,
     inputOrigin:'native-manager-initial-input'
-  });},
-captureManagerInput:function captureManagerInput(input){captureManagerFrame({
+  });}
+function captureManagerInput(input){captureManagerFrame({
     ...input,
     inputOrigin:'native-manager-input'
   });}
+return {
+captureInitialManagerInput,
+captureManagerInput
 };
 }
 //endregion

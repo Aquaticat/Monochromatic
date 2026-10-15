@@ -8,8 +8,7 @@ import {dataField} from './loaded-fields.mjs';
 /** Retain tool registration and loadout observations at native call boundaries. */
 export function createLoadedToolInputs({poolState,InputCaptureError,reserve,retainConstructedInput}){
 
-return {
-captureToolLoadoutQuery:function captureToolLoadoutQuery({
+function captureToolLoadoutQuery({
     frame,
     phase='output'
   }){
@@ -76,8 +75,8 @@ captureToolLoadoutQuery:function captureToolLoadoutQuery({
     poolState.failure=new InputCaptureError(error);
     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
    }
-  },
-captureToolLoadoutInput:function captureToolLoadoutInput({frame}){
+  }
+function captureToolLoadoutInput({frame}){
    if(poolState.failure)return;
    try{
     if(types.isProxy(frame)||(!types.isArgumentsObject(frame))
@@ -109,8 +108,8 @@ captureToolLoadoutInput:function captureToolLoadoutInput({frame}){
     poolState.failure=new InputCaptureError(error);
     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
    }
-  },
-captureToolLoadoutOutput:function captureToolLoadoutOutput({frame}){
+  }
+function captureToolLoadoutOutput({frame}){
    if(poolState.failure)return;
    try{
     if(types.isProxy(frame)||(!types.isArgumentsObject(frame))
@@ -147,8 +146,8 @@ captureToolLoadoutOutput:function captureToolLoadoutOutput({frame}){
     poolState.failure=new InputCaptureError(error);
     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
    }
-  },
-captureExtensionToolInput:function captureExtensionToolInput({frame}){
+  }
+function captureExtensionToolInput({frame}){
    if(poolState.failure)return;
    try{
     reserve();
@@ -181,8 +180,8 @@ captureExtensionToolInput:function captureExtensionToolInput({frame}){
     poolState.failure=new InputCaptureError(error);
     if(!(error instanceof SourceCollectionError))throw error;
    }
-  },
-captureCustomToolDescriptions:function captureCustomToolDescriptions({frame}){
+  }
+function captureCustomToolDescriptions({frame}){
    if(poolState.failure)return;
    try{
     if(types.isProxy(frame)||(!types.isArgumentsObject(frame)))throw new SourceCollectionError('Native custom tool descriptions require the original Session constructor frame');
@@ -212,6 +211,12 @@ captureCustomToolDescriptions:function captureCustomToolDescriptions({frame}){
     if(!(error instanceof SourceCollectionError))throw error;
    }
   }
+return {
+captureToolLoadoutQuery,
+captureToolLoadoutInput,
+captureToolLoadoutOutput,
+captureExtensionToolInput,
+captureCustomToolDescriptions
 };
 }
 //endregion
