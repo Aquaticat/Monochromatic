@@ -299,6 +299,22 @@ fn recovered_already(outcomes: &[RecoveryOutcome], path: &Path) -> bool {
 }
 
 /// What:
+///  Whether the landing pass owns an entry:
+///  it was known to need the landing lock, or the pass has already recovered it.
+/// Why:
+///   An entry whose owner died after the first inspection is recovered by the landing pass although it did not need
+///  the lock then, and one that vanished before the pass is not recovered at all;
+///  in both cases the main pass must leave it alone instead of acting on its stale inspection.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// needed || outcomes.some((outcome) => outcome.directory === path)
+/// ```
+fn handled_by_the_landing_pass(needed: bool, outcomes: &[RecoveryOutcome], path: &Path) -> bool {
+    return needed || recovered_already(outcomes, path);
+}
+
+/// What:
 ///  Recover every dead-owner transaction of one worktree registry and remove retired
 ///       leftovers;
 ///  a dead reservation holder's lock is retired too.
@@ -345,7 +361,7 @@ pub fn recover_registered_transactions(
         }
     }
     for (index, item) in ordered.iter().enumerate() {
-        if needs[index] || recovered_already(outcomes.as_slice(), item.entry.path.as_path()) {
+        if handled_by_the_landing_pass(needs[index], outcomes.as_slice(), item.entry.path.as_path()) {
             continue;
         }
         let action: RecoveryAction = recover_inspected_entry(place, item)?;
