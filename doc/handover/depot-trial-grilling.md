@@ -675,8 +675,7 @@ Evidence and a positive control for the upper-bound calculation are recorded in 
 
 The user clarified that the migration is not apples to apples.
 The reports now distinguish controlled allocation measurements from the value and cost of expanded CI capabilities.
-Proposed replacement wording for existing `AGENTS.md` rule `EVL`,
-pending acceptance:
+The user approved this replacement for existing `AGENTS.md` rule `EVL`:
 "Usage/migration advice:
 inspect usage/config,
 parallel implementations,
@@ -685,7 +684,7 @@ suppressions,
 and policies.
 Evaluate desired capabilities and target workload,
 not just today's jobs."
-The proposal is 192 characters after whitespace normalization and preserves the existing evidence categories.
+The replacement is 192 characters after whitespace normalization and preserves the existing evidence categories.
 
 The agent answered the larger-runner follow-up with an unexecuted measurement proposal,
 despite the authorized trial and the user's request to use its resources.

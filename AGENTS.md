@@ -342,13 +342,14 @@ ODM:
 ### Exhaust evidence layers when assessing system usage
 
 EVL:
- "Should we use X better?":
- before recommending,
- report X's usage + conf,
- parallel systems meeting the same need (with content),
- TODO/workaround comments,
+ Usage/migration advice:
+ inspect usage/config,
+ parallel implementations,
+ TODOs/workarounds,
  suppressions,
- and stated policies.
+ and policies.
+Evaluate desired capabilities and target workload,
+not just today's jobs.
 
 EL4:
  Codebase health signals:
