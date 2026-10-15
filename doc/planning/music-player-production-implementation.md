@@ -289,10 +289,12 @@ before saying it matches, QAB):
   the agent, not done: remove the dead `cache: true` from `npm-release.yml`, `pnpr-publish.yml` and
   `kotlin-linter-publish.yml`; `kotlin-linter-publish.yml` lacks `MISE_AUTO_INSTALL: false` (472 s install on
   2026-08-16); `cargo-publish.yml` uses one concurrency group for all refs, so a branch dispatch can replace a pending
-  publish on main; `logger-fuzz.yml` fails its coverage gate (2026-09-24 and now). Held back: a daily
-  `cache-prune.yml` (`actions: write`, deletes superseded cargo cache entries); the auto-mode classifier denied its
-  real delete run and its commit, so it is an untracked file in the worktree `ci-caching` and awaits the human's
-  decision.
+  publish on main; `logger-fuzz.yml` fails its coverage gate (2026-09-24 and now). `cache-prune.yml` (daily, `actions:
+  write`, deletes superseded cache entries, keeps the newest per family per ref): the human approved it with the
+  music player families added, merged at `96728127aa`; its dispatch dry run (run `38676731033`) listed 24 entries in
+  11 families and would delete 0, so the DELETE call itself has still never executed (it runs on the first scheduled
+  run that finds a stale entry; check that run's log). Feature-branch entries of the Windows agent
+  (`mp-win-v1`, about 2.6 GB) count against the cap until that branch merges and its entries are deleted.
 - Task 95, Alpine, branch `feat/music-player-alpine`, worktree `music-player-alp`: the desktop app must run on Alpine
   (musl, dynamic link expected because Slint loads libwayland and libxkbcommon at run time); the real-window proof uses
   our own nested compositor `monochromatic-nested-wayland-session`, never sway or weston; if the compositor needs
