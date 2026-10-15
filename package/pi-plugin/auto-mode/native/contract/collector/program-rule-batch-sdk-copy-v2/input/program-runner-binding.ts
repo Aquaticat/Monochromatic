@@ -31,8 +31,13 @@ function memberOptions<const Options>({
   options: Options;
   readSignal: () => ProgramRunnerGroup['members'][number]['signal'];
 }>): Options & Readonly<{ signal: ProgramRunnerGroup['members'][number]['signal'] }> {
-  /** Option copying preserves original getter order before native member lookup. */
-  const ol = tagged({ tag: memberOptions.name, l });
+  /**
+   Option copying preserves original getter order before native member lookup.
+   */
+  const ol = tagged({
+    tag: memberOptions.name,
+    l
+  });
   ol.debug('copying original native options before reading member cancellation');
   return {
     ...options,
@@ -125,7 +130,9 @@ export function bindReachedProgramGroup<const Recorder extends object>({
     .runOwnedToolCall;
   /** Forward original native call after copying options and resolving its member signal.
    @param call - original native call identity supplied by the judgment
+   
    @param options - original opaque native option spread input
+   
    @returns exact native callback return value
    */
   function runNative(
@@ -144,12 +151,21 @@ export function bindReachedProgramGroup<const Recorder extends object>({
        @returns original reached member signal
        */
       function readMemberSignal(): ProgramRunnerGroup['members'][number]['signal'] {
-        /** Bound call lookup follows the original native option-copy boundary. */
-        const sl = tagged({ tag: readMemberSignal.name, l: nl });
+        /**
+         Bound call lookup follows the original native option-copy boundary.
+         */
+        const sl = tagged({
+          tag: readMemberSignal.name,
+          l: nl
+        });
         sl.debug('reading original bound native member cancellation');
-        /** Successfully bound calls have their original member ordinal before native entry. */
+        /**
+         Successfully bound calls have their original member ordinal before native entry.
+         */
         const ordinal = nonNullishOrThrow(ordinals.get(call.id));
-        /** Original complete-group association remains the source of the member signal. */
+        /**
+         Original complete-group association remains the source of the member signal.
+         */
         const member = nonNullishOrThrow(group.members[ordinal]);
         return member.signal;
       }
@@ -161,8 +177,11 @@ export function bindReachedProgramGroup<const Recorder extends object>({
         })
       );
     }
-  /** Judgment admission receives original tool lookup results, including absent definitions. */
-  const slots = origin.judgment.bindProgramCalls({
+  /**
+   Judgment admission receives original tool lookup results, including absent definitions.
+   */
+  const slots = origin.judgment
+    .bindProgramCalls({
     group: group.handle,
     calls,
     tools: calls.map(function readNativeDefinition(call) {

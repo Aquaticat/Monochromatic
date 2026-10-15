@@ -19,7 +19,7 @@ await describe({ name: '', children: [
       assert.ok(observed);
       assert.equal(observed.call, call);
       assert.notEqual(observed.options, options);
-      assert.deepEqual(observed.options, { original: call.id, signal: fixture.input.group.members[bound.ordinals.get(call.id) ?? -1]?.signal });
+      assert.deepEqual(observed.options, { original: call.id, signal: fixture.input.group.members[bound.ordinals.get(call.id) ?? (-1)]?.signal });
       assert.equal(Object.hasOwn(options, 'signal'), true);
     }
   } }),
@@ -30,7 +30,7 @@ await describe({ name: '', children: [
       const [call] = bound.calls;
       assert.ok(call);
       fixture.admission().runNative(call, options);
-      const expected = typeof options === 'string' ? { 0: 'a', 1: '\ud83d', 2: '\ude00', signal: fixture.input.group.members[0]?.signal } : { ...(typeof options === 'object' && options !== null ? options : {}), signal: fixture.input.group.members[0]?.signal };
+      const expected = (typeof options) === 'string' ? { 0: 'a', 1: '\uD83D', 2: '\uDE00', signal: fixture.input.group.members[0]?.signal } : { ...(((typeof options) === 'object') && (options !== null) ? options : {}), signal: fixture.input.group.members[0]?.signal };
       assert.deepEqual(fixture.native[0]?.options, expected);
     } });
   }),
