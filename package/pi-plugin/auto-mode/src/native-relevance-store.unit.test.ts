@@ -47,8 +47,8 @@ type StoreModule={
  @throws Error when required exports are missing
  */
 function assertStoreModule(value:unknown):asserts value is StoreModule{
-  if(value===null||typeof value!=='object'||!('digest' in value)||typeof value.digest!=='function'
-    ||!('createRelevanceStore' in value)||typeof value.createRelevanceStore!=='function'){
+  if((value===null)||((typeof value)!=='object')||(!('digest' in value))||((typeof value.digest)!=='function')
+    ||(!('createRelevanceStore' in value))||((typeof value.createRelevanceStore)!=='function')){
     throw new Error('Built relevance store exports are unavailable');
   }
 }
@@ -90,10 +90,14 @@ async function fixture():Promise<Fixture>{
   /** Original cache owner, including its asynchronous initialization lifetime. */
   const store=storeModule.createRelevanceStore({
     directory,namespace:{repository:'fixture',primaryBranch:'main'},profileKey:'fixture-profile',
-    trace:function retainEvent(event){events.push(event.event);},
+    trace:function retainEvent(event){
+      events.push(event.event);
+    },
   });
   return {root,directory,store,events,
-    async [Symbol.asyncDispose](){await rm(root,{recursive:true,force:true});}
+    async [Symbol.asyncDispose](){
+      await rm(root,{recursive:true,force:true});
+    }
   };
 }
 /**
@@ -103,8 +107,12 @@ async function fixture():Promise<Fixture>{
  @throws Error when the operation unexpectedly succeeds
  */
 async function failure(operation:Promise<unknown>):Promise<unknown>{
-  try{await operation;}
-  catch(error){return error;}
+  try{
+    await operation;
+  }
+  catch(error){
+    return error;
+  }
   throw new Error('Cache operation unexpectedly succeeded');
 }
 /**
@@ -131,7 +139,9 @@ await describe({name:'',children:[
     assert.deepEqual(await current.store.read(key),first);
     assert.equal((await current.store.put({key,probability:0.75})).probability,0.25);
     assert.equal((await stat(join(current.directory,current.store.namespaceKey,`${key}.json`))).mode&0o777,0o600);
-    assert.equal(current.events.filter(function published(event){return event==='cache-published';}).length,1);
+    assert.equal(current.events.filter(function published(event){
+      return event==='cache-published';
+    }).length,1);
   }}),
   it({name:'joins concurrent same-key publications before reading the original entry',fn:async function sharedPublication(){
     await using current=await fixture();
@@ -144,14 +154,18 @@ await describe({name:'',children:[
     assert.equal(entries.length,4);
     for(const entry of entries)assert.equal(entry.probability,0.125);
     assert.deepEqual(await read,entries[0]);
-    assert.equal(current.events.filter(function published(event){return event==='cache-published';}).length,1);
+    assert.equal(current.events.filter(function published(event){
+      return event==='cache-published';
+    }).length,1);
   }}),
   it({name:'rejects symlink cache directories before publication',fn:async function rejectSymlink(){
     await using current=await fixture();
     const target=join(current.root,'target');
     await mkdir(target,{mode:0o700});
     await symlink(target,current.directory);
-    const error=await failure(current.store.read(storeModule.digest('missing')));
+    const error=await failure(
+      current.store.read(storeModule.digest('missing')),
+    );
     assertFailure({error,message:'not a private ordinary directory'});
   }}),
   it({name:'rejects malformed and mismatched persisted entries',fn:async function invalidPersistedEntry(){

@@ -935,8 +935,34 @@ The focused lint pass found an inferred absent promise in initialization
 and a nullable test contract.
 Initialization now declares its pending operation;
 the consumer treats read values as unknown and compares them with the original complete entry.
-Verification of those corrections is pending.
-The cache refresh consumer still needs a direct check of its new awaited read and publication paths.
+The built refresh consumers in `99ecff732d` pass reuse across owners,
+changed-rule membership,
+recursive refresh joining,
+source replacement during classification,
+and source replacement or cancellation during cache hits and publication.
+`${HOME}/temp/agent/pi-native-relevance-refresh-consumer-20261015.log`
+retains those results and the initial fixture declaration failure.
+Commit `fb56538d9e` adds the required explicit fixture return type;
+package type verification then passed in
+`${HOME}/temp/agent/pi-native-file-observer-baseline-20261015.log`.
+
+The built file-observer baseline in the same receipt passes completed synchronous observations,
+short reads,
+descriptor cleanup,
+ordered original read and close failures,
+invalid counts,
+byte bounds,
+and selected-path rejection.
+Commit `0df033dd92` replaces its `finally` with a lexical descriptor owner.
+The exact synchronous filesystem calls retain scoped exceptions documented in
+[the file-observation contract](../../package/pi-plugin/auto-mode/native/file-observation.md).
+The rule has no per-call configuration allow-list;
+changing the observer alone to return asynchronously would change the synchronous policy-selection
+and dependency-finalization consumer contracts.
+The package rules and their severities remain unchanged.
+Post-change observer integration,
+focused lint,
+and new fixture formatting remain pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

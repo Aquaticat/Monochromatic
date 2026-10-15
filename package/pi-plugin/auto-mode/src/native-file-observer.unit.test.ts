@@ -49,8 +49,8 @@ type ObserverModule={
  @throws Error when the callable is missing
  */
 function assertObserverModule(value:unknown):asserts value is ObserverModule{
-  if(value===null||typeof value!=='object'||!('observeDeclaredFile' in value)
-    ||typeof value.observeDeclaredFile!=='function')throw new Error('Built file observer is unavailable');
+  if((value===null)||((typeof value)!=='object')||(!('observeDeclaredFile' in value))
+    ||((typeof value.observeDeclaredFile)!=='function'))throw new Error('Built file observer is unavailable');
 }
 /** Original copied artifact selected through its consumer URL. */
 const loaded:unknown=await import(new URL('../dist/native/contract/lifecycle/external-dependency-controls/file-observer.mjs',import.meta.url).href);
@@ -64,8 +64,12 @@ const observer=loaded;
  @throws Error when observation unexpectedly succeeds
  */
 function failure(operation:()=>unknown):unknown{
-  try{operation();}
-  catch(error){return error;}
+  try{
+    operation();
+  }
+  catch(error){
+    return error;
+  }
   throw new Error('File observation unexpectedly succeeded');
 }
 /**
@@ -78,7 +82,9 @@ async function fixture(){
   const root=await mkdtemp(join(scratch,'pi-file-observer-'));
   await writeFile(join(root,'policy'),'original',{mode:0o600});
   return {root,input:{root,relativePath:'policy',requiredMode:0o600},
-    async [Symbol.asyncDispose](){await rm(root,{recursive:true,force:true});}
+    async [Symbol.asyncDispose](){
+      await rm(root,{recursive:true,force:true});
+    }
   };
 }
 //endregion
@@ -96,7 +102,9 @@ await describe({name:'',children:[
     assert.ok(Object.isFrozen(snapshot));
     assert.equal(descriptors.length,9);
     for(const descriptor of descriptors){
-      const error=failure(function closed(){return fstatSync(descriptor);});
+      const error=failure(function closed(){
+        return fstatSync(descriptor);
+      });
       assert.ok(Error.isError(error));
       assert.ok('code' in error);
       assert.equal(error.code,'EBADF');
@@ -106,28 +114,34 @@ await describe({name:'',children:[
     await using current=await fixture();
     const original=new Error('Fixture read failed');
     const descriptors:number[]=[];
-    const error=failure(function readFailure(){return observer.observeDeclaredFile({...current.input,read({fd}){
+    const error=failure(function readFailure(){
+      return observer.observeDeclaredFile({...current.input,read({fd}){
       descriptors.push(fd);
       throw original;
-    }});});
+    }});
+    });
     assert.equal(error,original);
     assert.equal(descriptors.length,1);
-    for(const descriptor of descriptors)assert.throws(function closed(){fstatSync(descriptor);});
+    for(const descriptor of descriptors)assert.throws(function closed(){
+      fstatSync(descriptor);
+    });
   }}),
   it({name:'aggregates original read and close failures in occurrence order',fn:async function cleanupFailure(){
     await using current=await fixture();
     const original=new Error('Fixture read failed after closing');
-    const error=failure(function readFailure(){return observer.observeDeclaredFile({...current.input,read({fd}){
+    const error=failure(function readFailure(){
+      return observer.observeDeclaredFile({...current.input,read({fd}){
       closeSync(fd);
       throw original;
-    }});});
+    }});
+    });
     assert.ok(Error.isError(error));
     assert.equal(error.name,'ObservationLifecycleError');
     assert.ok(error.cause instanceof AggregateError);
     const errors:readonly unknown[]=error.cause.errors;
     assert.equal(errors.length,2);
     assert.equal(errors[0],original);
-    const closeError=errors[1];
+    const [,closeError]=errors;
     assert.ok(Error.isError(closeError));
     assert.ok('code' in closeError);
     assert.equal(closeError.code,'EBADF');
@@ -135,7 +149,11 @@ await describe({name:'',children:[
   ...[-1,1.5,Number.NaN,100].map(function invalidCount(count){
     return it({name:`rejects invalid read count ${String(count)}`,fn:async function invalidRead(){
       await using current=await fixture();
-      const error=failure(function readFailure(){return observer.observeDeclaredFile({...current.input,read(){return count;}});});
+      const error=failure(function readFailure(){
+        return observer.observeDeclaredFile({...current.input,read(){
+        return count;
+      }});
+      });
       assert.ok(Error.isError(error));
       assert.equal(error.name,'ObservationLifecycleError');
       assert.ok(error.cause instanceof AggregateError);
@@ -143,10 +161,16 @@ await describe({name:'',children:[
   }),
   it({name:'rejects incomplete reads and declared byte-bound overflow',fn:async function readBounds(){
     await using current=await fixture();
-    const short=failure(function truncated(){return observer.observeDeclaredFile({...current.input,read(){return 0;}});});
+    const short=failure(function truncated(){
+      return observer.observeDeclaredFile({...current.input,read(){
+      return 0;
+    }});
+    });
     assert.ok(Error.isError(short));
     assert.equal(short.name,'ObservedFileUnstableReadError');
-    const large=failure(function oversized(){return observer.observeDeclaredFile({...current.input,maxBytes:1});});
+    const large=failure(function oversized(){
+      return observer.observeDeclaredFile({...current.input,maxBytes:1});
+    });
     assert.ok(Error.isError(large));
     assert.equal(large.name,'ObservedFileOversizeError');
   }}),
@@ -155,7 +179,9 @@ await describe({name:'',children:[
     await symlink(join(current.root,'policy'),join(current.root,'link'));
     const cases=[['missing','ObservedFileMissingError'],['link','ObservedFileTypeError'],['../policy','ObservedFileScopeError']] as const;
     for(const [relativePath,name] of cases){
-      const error=failure(function invalidPath(){return observer.observeDeclaredFile({...current.input,relativePath});});
+      const error=failure(function invalidPath(){
+        return observer.observeDeclaredFile({...current.input,relativePath});
+      });
       assert.ok(Error.isError(error));
       assert.equal(error.name,name);
     }

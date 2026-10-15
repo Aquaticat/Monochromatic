@@ -9,7 +9,9 @@ await describe({name:'',children:[
     await using fixture=await cacheFixture();
     const cache=fixture.open();
     const recursive:{pending?:Promise<CacheView>}={};
-    fixture.callbacks.onAssessment=function reenter(){recursive.pending=cache.refresh();};
+    fixture.callbacks.onAssessment=function reenter(){
+      recursive.pending=cache.refresh();
+    };
     const pending=cache.refresh();
     assert.equal(cache.refresh(),pending);
     const initial=await pending;
@@ -23,7 +25,9 @@ await describe({name:'',children:[
     assert.deepEqual(reused.requestedRuleIds,[]);
     assert.equal(fixture.requests.length,1);
     fixture.replace('AAA: Ask before publishing.\n\nBBB: Require a fresh response.\n');
-    assert.throws(function oldView(){cache.assertCurrent(initial);});
+    assert.throws(function oldView(){
+      cache.assertCurrent(initial);
+    });
     const changed=await cache.refresh();
     assert.deepEqual(changed.requestedRuleIds,['BBB']);
     assert.deepEqual(changed.candidateRuleIds,['AAA','BBB']);
@@ -55,19 +59,25 @@ await describe({name:'',children:[
           assert.ok(Error.isError(error));
           assert.equal(error.message,'Fixture original policy changed');
         }
-        assert.throws(function noView(){owner.readCurrent();});
+        assert.throws(function noView(){
+          owner.readCurrent();
+        });
       }});
     });
   }),
   it({name:'rejects source replacement during classifier delivery',fn:async function rejectAssessmentChange(){
     await using fixture=await cacheFixture();
     const owner=fixture.open();
-    fixture.callbacks.onAssessment=function replaceSource(){fixture.replace('AAA: Replacement policy.\n');};
+    fixture.callbacks.onAssessment=function replaceSource(){
+      fixture.replace('AAA: Replacement policy.\n');
+    };
     const error=await cacheFailure(owner.refresh());
     assert.ok(Error.isError(error));
     assert.equal(error.message,'Fixture original policy changed');
     assert.equal(fixture.requests.length,1);
-    assert.throws(function noView(){owner.readCurrent();});
+    assert.throws(function noView(){
+      owner.readCurrent();
+    });
   }}),
   //endregion
 ]});
