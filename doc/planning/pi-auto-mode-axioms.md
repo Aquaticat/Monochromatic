@@ -943,6 +943,16 @@ No coding-plan fallback or model substitution is authorized.
 
 ### Three-call ceiling and parallel batched axioms
 
+On 2026-10-15 the user replaced the three-call ceiling with at most three sequential call bundles.
+Each bundle permits at most three parallel calls.
+The maximum is therefore nine calls arranged within three sequential bundles,
+not nine sequential calls.
+Preserve every selected question and its answer identity when dividing provider requests.
+The user also withdrew the average budget expectation;
+whether this removes the five-second hard deadline is awaiting clarification.
+The historical three-call and five-second decisions in this section describe the superseded design
+where they conflict with this update.
+
 On 2026-10-01,
 the user allowed at most three decision-model calls per eventual decision
 and required termination as early as possible.

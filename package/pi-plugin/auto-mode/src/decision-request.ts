@@ -37,7 +37,7 @@ const l = tagged({ tag: 'auto-mode-decision-request', },);
 /**
  Provider question limit applies to the complete original assessment.
  */
-export const maximumQuestions = 200;
+const maximumQuestions = 200;
 
 //region Lossless conversion retains state and all named questions
 

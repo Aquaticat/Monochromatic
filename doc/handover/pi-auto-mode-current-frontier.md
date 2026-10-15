@@ -9,6 +9,20 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+The user rejected treating normal workspace size as grounds to abandon automatic assessment.
+The process-local assessment probe measured 615 instruction candidates,
+617 total questions,
+and 7420722 bytes in the internal selection request.
+This is not a live provider rejection or a model token measurement.
+The one-question-per-candidate, one-request implementation is the active design defect.
+The unverified manual-capacity fallback in `8fe7e33410` is withdrawn.
+The user now permits three sequential bundles with at most three parallel calls per bundle.
+The user withdrew the average budget expectation;
+clarification of the existing five-second hard deadline is pending.
+Next: implement complete attributed request partitioning and shared bundle accounting,
+then verify configured workspace tool execution.
+Do not present size-triggered manual review as the completed repair.
+
 The user explicitly accepted removal of arbitrary capture limits on 2026-10-15.
 Commits through `c65c7c9a3e` remove fixture-derived byte and occurrence limits from
 prompt options,
