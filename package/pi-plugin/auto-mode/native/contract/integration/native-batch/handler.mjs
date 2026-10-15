@@ -1,5 +1,5 @@
 import {dispatchPreparedBatch} from "./generated/prepared-dispatch.mjs";
-import {createDecisionGate} from '../action-policy/decision-core.mjs';
+import {createDecisionGate,EstablishedPolicyDecisionError} from '../action-policy/decision-core.mjs';
 import {captureApprovalHostSource} from '../action-policy/approval.mjs';
 import {createManualGroup} from './manual-group.mjs';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
@@ -188,7 +188,10 @@ export function createNativeBatchHandler({
     }
     if(!reviewState.automaticFailure){
      try{await automaticReview();}
-     catch(error){retainAutomaticFailure(error);}
+     catch(error){
+      if(error instanceof EstablishedPolicyDecisionError)throw error;
+      retainAutomaticFailure(error);
+     }
     }
     if(reviewState.automaticFailure){
      manual.current();

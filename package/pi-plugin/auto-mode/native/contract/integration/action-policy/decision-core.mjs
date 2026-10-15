@@ -15,6 +15,9 @@ import {
 /** Original prepared groups can be reviewed only once before closure or execution. */
 export class PolicyReviewPhaseError extends Error {}
 
+/** A resolved policy decision cannot be replaced by an evidence-free approval after its dependencies change. */
+export class EstablishedPolicyDecisionError extends Error {}
+
 const l=tagged({tag:'auto-mode-decision-core'});
 
 //region A single owner plans, assesses, resolves, and confirms the original prepared operation.
@@ -67,6 +70,7 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
  });
  dl.debug('resolving captured policy before original evidence closure');
  const outcome=resolveManualReviewOutcome(compiled.program);
+ try{
  judgment.assertDependenciesCurrent();
  judgment.checkpoint();
  const closure=judgment.finalize();
@@ -107,6 +111,9 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
    premiseIssues:compiled.premiseIssues,
    assertCurrent
  });
+ }catch(error){
+  throw new EstablishedPolicyDecisionError('The established policy decision or its approval is no longer current; propose the operation again',{cause:error});
+ }
 }
 
 /** Bootstrap fixes native custody and assessment policy; callers can supply only the original response. */
