@@ -7284,6 +7284,9 @@ The remaining duplicate validation is being tested through `readCurrentSourceBin
 the original judgment validates dependencies before returning its original request and source identities.
 This lets the governing-source owner avoid separately repeating the same observer and collector reads.
 The unchanged 10000-open regression and the approved-dependency rejection controls remain required.
+Commit `2ea0d1c836` builds and completes the Allow scenario,
+but still fails the work bound at 14185 opens.
+`${HOME}/temp/agent/pi-native-current-source-work-20261014.log` records that incomplete remedy.
 
 A separate full lint attempt during this cleanup failed before producing diagnostics with
 `Error running tsgolint: "exit status: exit status: 2"`

@@ -516,7 +516,11 @@ These include setup and shutdown and are not judgment-only latency measurements.
 The next change introduces `readCurrentSourceBinding()` on the original judgment.
 It returns original request and source identities only after `assertDependenciesCurrent()` succeeds.
 The governing-source owner uses that operation instead of independently repeating observer and collector checks.
-Its build and the unchanged work-bound regression are pending.
+Commit `2ea0d1c836` builds successfully.
+The unchanged work-bound regression still fails at 14185 opens after the Allow scenario completes.
+`${HOME}/temp/agent/pi-native-current-source-work-20261014.log` retains that result.
+A profile of this artifact is collecting evidence for the next caller to address;
+the 10000-open bound remains unchanged.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
