@@ -1,5 +1,65 @@
 # Pi 0.87.1 and 1.0.0 instruction snapshots can miss later prompt transformations
 
+## Pi 1.2.0 complete workspace assessments exceeded single-request construction on 2026-10-15
+
+After capture ceilings were removed,
+the configured workspace still failed tool preparation with
+`Clause relation requires one through 256 original instruction candidates`.
+The emitting owner was
+`package/pi-plugin/auto-mode/native/contract/collector/program-rule-batch-sdk-copy-v2/input/instruction-batches.ts`.
+Process-local controls measured 615 instruction candidates,
+617 total questions,
+and 7420722 bytes in the internal selection request.
+That byte count is not a model token count or live heap measurement.
+
+The evaluator selected every original candidate into one complete logical assessment,
+but the transport encoded that assessment as a single provider request.
+The provider's [Decisions API](https://developers.openai.com/api/reference/resources/decisions/methods/create)
+documents at most 200 questions per request.
+The workspace was not invalid;
+the construction and transport layers had conflated a complete assessment with one request.
+Other owned checks also rejected aggregate claims,
+wire bytes,
+and complete retained answers at fixture-derived thresholds.
+
+The user authorized three sequential bundles of at most three parallel calls on 2026-10-15.
+Only the average USD 0.001 per judgment cost limit was removed;
+the five-second preparation-inclusive deadline remains.
+The unverified size-triggered manual fallback in `8fe7e33410` was withdrawn by `95bd6db768`.
+
+The maintained sender now partitions original question names without changing shared context,
+then merges only complete attributed responses.
+The native judgment owns bundle and call counters across dispatches and eligible retries.
+Sibling failures cancel outstanding transport work;
+partial answers cannot authorize execution.
+Saved dispatch capabilities cannot enter later dispatches.
+
+The configured native CLI passed Allow execution and prohibition,
+denial,
+Stop,
+dismissal,
+abort,
+generic prerequisite,
+and bare-policy controls with the full copied repository instructions and configured skills.
+Its requests contained 200, 200, 200, and 17 questions across two bundles.
+These are network-isolated fixtures with authored model replies,
+not live-provider latency measurements.
+
+`mise run //package/pi-plugin/auto-mode:test:assessment-bundles`
+exercises the built sender with the actual built judgment owner.
+The test proves three parallel starts before releasing the first bundle,
+complete answer identity,
+provider-boundary counts,
+cancellation,
+malformed-response rejection,
+and ownership retirement.
+Removing the three-bundle guard through a process-local import hook makes the fourth-bundle test fail
+with `Expected original budget operation to reject`;
+the unmodified built consumer passes.
+
+This was an owned integration defect;
+no upstream Pi issue or patch was filed.
+
 ## Pi 1.2.0 native prompt submission rejected by owned capture ceilings on 2026-10-15
 
 ### Symptom and root cause
