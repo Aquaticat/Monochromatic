@@ -7,6 +7,7 @@ import { requireJSONInput } from './judgment-json.ts';
 import type { PrepareReachedMembersInput, ProgramContext } from './program-operation-types.ts';
 import type { ProgramOwnership } from './program-ownership.ts';
 import type { ProgramMemberRecord } from './program-state-types.ts';
+import type { JudgmentPrograms } from './program-api.ts';
 
 /**
  Original final group storage remains bounded in UTF-8 bytes.
@@ -25,7 +26,7 @@ const MAX_REACHED_GROUP_BYTES = 1_048_576;
 
  @example createProgramMemberPreparation({ input, ownership });
  */
-export function createProgramMemberPreparation({ input, ownership }: Pick<ProgramContext, 'input'> & Readonly<{ ownership: ProgramOwnership }>) {
+export function createProgramMemberPreparation({ input, ownership }: Pick<ProgramContext, 'input'> & Readonly<{ ownership: ProgramOwnership }>): JudgmentPrograms['prepareReachedMembers'] {
   const { signal, bindings, childGroups } = input;
   const { currentGroup, knownProgram } = ownership;
   /**

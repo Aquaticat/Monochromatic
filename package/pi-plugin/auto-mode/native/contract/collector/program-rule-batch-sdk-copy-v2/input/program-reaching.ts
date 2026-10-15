@@ -8,6 +8,7 @@ import { requireJSONInput } from './judgment-json.ts';
 import type { ReachedProgramSite, ReachedProgramView } from './program-declaration-types.ts';
 import type { ProgramOwnership } from './program-ownership.ts';
 import type { ProgramGroup } from './program-state-types.ts';
+import type { ProgramReaching } from './program-api.ts';
 
 /**
  Original reached argument data remains bounded in UTF-8 bytes.
@@ -24,7 +25,7 @@ const MAX_REACHED_ARGUMENT_BYTES = 1_048_576;
 
  @example createProgramReaching(ownership);
  */
-export function createProgramReaching(ownership: ProgramOwnership) {
+export function createProgramReaching(ownership: ProgramOwnership): ProgramReaching {
   const { currentProgram, currentGroup } = ownership;
   /**
    Materialize all original group arguments before publishing their immutable view.

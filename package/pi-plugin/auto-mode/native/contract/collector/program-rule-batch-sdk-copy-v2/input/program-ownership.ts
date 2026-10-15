@@ -29,7 +29,7 @@ export function createProgramState(): ProgramOwnerState {
 
  @example createProgramOwnership({ input, state });
  */
-export function createProgramOwnership({ input, state }: ProgramContext) {
+export function createProgramOwnership({ input, state }: ProgramContext): ProgramOwnership {
   /**
    Captured dependency guard does not consult mutable caller properties again.
    */
@@ -115,4 +115,10 @@ export function createProgramOwnership({ input, state }: ProgramContext) {
 /**
  Shared readers preserve original ownership and current-use ordering.
  */
-export type ProgramOwnership = ReturnType<typeof createProgramOwnership>;
+export type ProgramOwnership = Readonly<{
+  knownProgram: (program: object) => ProgramExecutionRecord;
+  currentProgram: (program: object) => ProgramExecutionRecord;
+  knownGroup: (handle: object) => ProgramGroup;
+  currentGroup: (handle: object) => ProgramGroup;
+  knownSlot: (input: Readonly<{ group: ProgramGroup; slot: object }>) => ProgramSlot;
+}>;

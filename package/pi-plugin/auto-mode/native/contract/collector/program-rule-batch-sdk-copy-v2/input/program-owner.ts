@@ -10,6 +10,7 @@ import { createProgramMemberPreparation } from './program-member-preparation.ts'
 import { createProgramValueAccess } from './program-value-access.ts';
 import { createProgramInspection } from './program-inspection.ts';
 import type { JudgmentProgramsInput } from './program-state-types.ts';
+import type { JudgmentPrograms } from './program-api.ts';
 
 /**
  Owner diagnostics omit original source, native arguments, and returned values.
@@ -26,7 +27,7 @@ const l = tagged({ tag: 'auto-mode-judgment-programs' });
 
  @example createJudgmentPrograms(input);
  */
-export function createJudgmentPrograms(input: JudgmentProgramsInput) {
+export function createJudgmentPrograms(input: JudgmentProgramsInput): JudgmentPrograms {
   /**
    Preserve the original constructor's single property-read pass and incumbent order.
    */

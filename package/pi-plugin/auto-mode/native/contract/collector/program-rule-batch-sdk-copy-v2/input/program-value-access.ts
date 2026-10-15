@@ -8,6 +8,7 @@ import type { NativeReturnInput, NativeReturnOutcome } from './native-return-typ
 import type { ProgramContext } from './program-operation-types.ts';
 import type { ProgramOwnership } from './program-ownership.ts';
 import type { ProgramGroup } from './program-state-types.ts';
+import type { ProgramValueAccess } from './program-api.ts';
 
 //region Native completion remains possible after retirement while live result use stays guarded.
 /**
@@ -21,7 +22,7 @@ import type { ProgramGroup } from './program-state-types.ts';
 
  @example createProgramValueAccess({ input, ownership });
  */
-export function createProgramValueAccess({ input, ownership }: Pick<ProgramContext, 'input'> & Readonly<{ ownership: ProgramOwnership }>) {
+export function createProgramValueAccess({ input, ownership }: Pick<ProgramContext, 'input'> & Readonly<{ ownership: ProgramOwnership }>): ProgramValueAccess {
   const { operation } = input;
   const { knownGroup, knownProgram, currentGroup, knownSlot } = ownership;
   /**

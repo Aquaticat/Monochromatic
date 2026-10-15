@@ -7,6 +7,7 @@ import type { ProgramContext } from './program-operation-types.ts';
 import type { ProgramOwnership } from './program-ownership.ts';
 import type { ProgramGroup, ProgramMemberExecution, ProgramScope } from './program-state-types.ts';
 import type { NativeScriptValueGuardError } from './script-value-guard.ts';
+import type { ProgramInspection } from './program-api.ts';
 
 /**
  Group diagnostics retain terminal states and original native return evidence.
@@ -45,7 +46,7 @@ export type OriginalProgramInspection = Readonly<{
 
  @example createProgramInspection({ input, ownership });
  */
-export function createProgramInspection({ input, ownership }: Pick<ProgramContext, 'input'> & Readonly<{ ownership: ProgramOwnership }>) {
+export function createProgramInspection({ input, ownership }: Pick<ProgramContext, 'input'> & Readonly<{ ownership: ProgramOwnership }>): ProgramInspection {
   const { bindings } = input;
   const { knownGroup, knownProgram } = ownership;
   /**

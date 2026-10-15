@@ -334,3 +334,23 @@ result,
 dependency,
 and cancellation checks for the sole call.
 Native loadout descriptions show the supported forms and retain the underlying tool declarations.
+
+## Original prepared-program lookup
+
+The original native judgment method `preparedProgramFor` returns its retained inspection view,
+or `undefined` before inspection is bound.
+`native/contract/collector/program-rule-batch-sdk-copy-v2/input/program-api.ts`
+mirrors that existing callable contract in `PreparedProgramLookup`.
+Changing absence to a symbol,
+throwing,
+or returning a wrapper would change the native consumer boundary during the typed-owner port.
+Optional private fields still use ordinary optional-property syntax.
+
+The scoped `no-restricted-syntax/no-nullish-union` suppression covers only that return-value alias.
+The deciding implementation is
+`package/oxlint-plugin/no-restricted-syntax/src/rule/no-nullish-union.ts`,
+which rejects nullish union members without contextual options.
+Its `simpleBanRule` helper in `src/rule/_simple-ban-rule.ts` exposes no configuration or allow-list.
+The rule's own documented external-API mirror exception fits this retained native method contract.
+Deriving a nullable result from an unrelated `Map.get` signature would obscure the actual contract;
+the explicit alias records the native method's real absence value.

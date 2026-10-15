@@ -4,7 +4,8 @@
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import { assertDeclaredProgram } from './program-profile.mjs';
 import { JudgmentConstructionError } from './judgment-error.ts';
-import type { OriginalProgramView, PreparedProgramView } from './program-declaration-types.ts';
+import type { PreparedProgramView } from './program-declaration-types.ts';
+import type { PreparedProgramLookup, ProgramOpening } from './program-api.ts';
 import type { BindPreparedProgramInput, ProgramContext } from './program-operation-types.ts';
 import type { ProgramOwnership } from './program-ownership.ts';
 import type { ProgramGroup, ProgramScope } from './program-state-types.ts';
@@ -23,7 +24,7 @@ import type { ProgramGroup, ProgramScope } from './program-state-types.ts';
 
  @example createProgramOpening({ input, state, ownership });
  */
-export function createProgramOpening({ input, state, ownership }: ProgramContext & Readonly<{ ownership: ProgramOwnership }>) {
+export function createProgramOpening({ input, state, ownership }: ProgramContext & Readonly<{ ownership: ProgramOwnership }>): ProgramOpening {
   const { readJudgment, response, stream, knownMember, knownExecution, ready, dependencyCheck, assertDependenciesCurrent, parentCurrent } = input;
   const { programs, groups } = state;
   const { currentProgram } = ownership;
@@ -59,7 +60,7 @@ export function createProgramOpening({ input, state, ownership }: ProgramContext
 
    @returns original inspection when bound
    */
-  function preparedProgramFor(member: object): ReturnType<ReadonlyMap<object, PreparedProgramView>['get']> {
+  function preparedProgramFor(member: object): PreparedProgramLookup {
     const record = knownMember(member);
     assertDependenciesCurrent();
     parentCurrent(record);
@@ -111,7 +112,7 @@ export function createProgramOpening({ input, state, ownership }: ProgramContext
 
    @returns original view when published
    */
-  function programFor(program: object): ReturnType<ReadonlyMap<object, OriginalProgramView>['get']> {
+  function programFor(program: object): ProgramScope['view'] {
     return nonNullishOrThrow(currentProgram(program).program).view;
   }
   return { bindPreparedProgram, preparedProgramFor, openProgram, programFor };

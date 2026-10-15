@@ -7,6 +7,7 @@ import { JudgmentConstructionError } from './judgment-error.ts';
 import type { BindProgramCallsInput, ProgramContext } from './program-operation-types.ts';
 import type { ProgramOwnership } from './program-ownership.ts';
 import type { ProgramSlot } from './program-state-types.ts';
+import type { JudgmentPrograms } from './program-api.ts';
 
 //region Slots publish as a complete original group before native invocation is possible.
 /**
@@ -22,7 +23,7 @@ import type { ProgramSlot } from './program-state-types.ts';
 
  @example createProgramCallBinding({ input, state, ownership });
  */
-export function createProgramCallBinding({ input, state, ownership }: ProgramContext & Readonly<{ ownership: ProgramOwnership }>) {
+export function createProgramCallBinding({ input, state, ownership }: ProgramContext & Readonly<{ ownership: ProgramOwnership }>): JudgmentPrograms['bindProgramCalls'] {
   const { knownMember, operation } = input;
   const { slots } = state;
   const { currentGroup, knownSlot } = ownership;
