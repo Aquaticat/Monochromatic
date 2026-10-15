@@ -3,7 +3,8 @@ import {SourceCollectionError} from '../collector.mjs';
 
 /** Retain only the native creator's actual forced-message objects, not equal text in replacement objects. */
 export function createForcedPublication(source){
- const messages=new WeakMap();let failure;
+ const messages=new WeakMap();
+ const publication={failure:undefined};
  function fields(message){
   if((!message)||((typeof message)!=='object')
     ||(Object.getPrototypeOf(message)!==Object.prototype))throw new SourceCollectionError('Native forced publication requires its ordinary original message');
@@ -34,9 +35,9 @@ export function createForcedPublication(source){
     content
   };
  }
- function live(){if(failure)throw new SourceCollectionError(
+ function live(){if(publication.failure)throw new SourceCollectionError(
    'Original forced-message publication lost eligibility',
-   {cause:failure.cause}
+   {cause:publication.failure.cause}
  );}
  function capture(message){
   live();
@@ -46,7 +47,7 @@ export function createForcedPublication(source){
      message,
      fields(message)
    );
-  }catch(error){failure={cause:error};throw error;}
+  }catch(error){publication.failure={cause:error};throw error;}
  }
  const view=Object.freeze({
    occurrence:Object.freeze({}),
@@ -60,7 +61,7 @@ export function createForcedPublication(source){
       original
     ))throw new SourceCollectionError('Original forced message changed before serializer consumption');
     return true;
-   }catch(error){failure={cause:error};throw error;}
+   }catch(error){publication.failure={cause:error};throw error;}
   }
  });
  return Object.freeze({
