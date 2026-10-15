@@ -44,6 +44,9 @@ await describe({ name: 'original profile call admission', children: [
   it({ name: 'rejects non-identifier member properties before membership lookup', fn: async function property() {
     rejects({ input: { call: syntheticCall({ property: { type: 'PrivateIdentifier', name: 'tool' } }), allowed: undefined }, message: 'owned tool identifier required' });
   } }),
+  it({ name: 'rejects a non-identifier receiver even when its name matches tools', fn: async function receiver() {
+    rejects({ input: { call: syntheticCall({ object: { type: 'Literal', name: 'tools' } }) }, message: 'owned tool identifier required' });
+  } }),
   ...[
     { start: -1 }, { start: 0.5 }, { start: Number.NaN }, { start: Infinity },
     { start: 10 }, { end: 0 }, { end: 100 }, { end: Number.NaN }, { end: Infinity },

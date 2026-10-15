@@ -11,7 +11,12 @@ Updated 2026-10-15.
 
 Original call inspection is being extracted to `profile-call.ts` and `profile-call-types.ts`.
 The original pattern decoder and diagnostic constructor remain borrowed from `result-pattern.mjs`.
-Built consumers and original replay are pending;
+Native build,
+package type checking,
+and both built consumers pass.
+Original replay,
+domain comparison,
+and omission controls are pending;
 the last qualified package recount remains the executable-wrapper report recorded here.
 
 The tool-call scope correction,
