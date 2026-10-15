@@ -48,6 +48,7 @@ function sameStability({
 }
 /** Only initial ENOENT becomes a missing-path finding; other native I/O failures propagate. */
 function initialStat(path) {
+  // oxlint-disable-next-line no-restricted-syntax/no-sync -- Original freshness callers consume this result without yielding; see native/file-observation.md.
   try { return lstatSync(
     path,
     { bigint: true }
@@ -65,7 +66,7 @@ function scopedPath({
   const parts = relativePath.split('/');
   if (isAbsolute(relativePath) || parts.some(function isForbiddenPathSegment(part) { return ( (part === '') || (part === '.')
     || (part === '..')); })) throw new ObservedFileScopeError(relativePath);
-  let parent = root;
+  const scope = { parent: root };
   for (const part of [
     '',
     ...parts.slice(
@@ -73,11 +74,11 @@ function scopedPath({
       -1
     )
   ]) {
-    parent = join(
-      parent,
+    scope.parent = join(
+      scope.parent,
       part
     );
-    const stat = initialStat(parent);
+    const stat = initialStat(scope.parent);
     if ((!stat.isDirectory()) || stat.isSymbolicLink()) throw new ObservedFileScopeError(relativePath);
   }
   return join(
@@ -93,6 +94,7 @@ function nativeRead({
   length,
   position
 }) {
+  // oxlint-disable-next-line no-restricted-syntax/no-sync -- Bounded descriptor reads complete inside the original freshness boundary; see native/file-observation.md.
   return readSync(
     fd,
     buffer,
@@ -121,11 +123,25 @@ export function observeDeclaredFile({
   let snapshot;
   const failures = [];
   let closureFailed = false;
+  {
+    using descriptorScope = {
+      [Symbol.dispose]() {
+        if (fd === undefined) return;
+        // oxlint-disable-next-line no-restricted-syntax/no-sync -- Descriptor closure and its failures must settle before observation returns; see native/file-observation.md.
+        try { closeSync(fd); }
+        catch (error) {
+          closureFailed = true;
+          failures.push(error);
+        }
+      }
+    };
   try {
+    // oxlint-disable-next-line no-restricted-syntax/no-sync -- Open belongs to the uninterrupted original selection and freshness operation; see native/file-observation.md.
     fd = openSync(
       path,
       constants.O_RDONLY | constants.O_NOFOLLOW
     );
+    // oxlint-disable-next-line no-restricted-syntax/no-sync -- Check the opened descriptor before reading without inserting a yield; see native/file-observation.md.
     const before = fstatSync(
       fd,
       { bigint: true }
@@ -150,6 +166,7 @@ export function observeDeclaredFile({
       if (count === 0) break;
       length += count;
     }
+    // oxlint-disable-next-line no-restricted-syntax/no-sync -- Check descriptor identity after the bounded read before publishing bytes; see native/file-observation.md.
     const after = fstatSync(
       fd,
       { bigint: true }
@@ -185,12 +202,7 @@ export function observeDeclaredFile({
     });
   } catch (error) {
     failures.push(error);
-  } finally {
-    if (fd !== undefined) {
-      try { closeSync(fd); }
-      catch (error) { closureFailed = true;
-      failures.push(error); }
-    }
+  }
   }
   if (closureFailed) throw new ObservationLifecycleError(failures);
   if (failures.length > 0) throw failures[0];
