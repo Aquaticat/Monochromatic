@@ -59,8 +59,7 @@ export function createQuestionSelection({
         definition,
         bindingHandle,
         binding,
-        issued:false,
-        answer:undefined
+        issued:false
       }
     );canonical.set(
       binding.identity,
@@ -112,8 +111,7 @@ export function createQuestionSelection({
       {
         selected,
         request,
-        settled:false,
-        record:undefined
+        settled:false
       }
     );selectionState.batchCount+=1;return handle;
   });}
@@ -203,7 +201,6 @@ export function createQuestionSelection({
     .map(function createDiscardedClaimAnswer() { return (Object.freeze({status:'discarded'})); });for(const [index,claim] of batch.selected
       .entries())claim.answer=values[index];batch.settled=true;batch.record=Object.freeze({
     answers:Object.freeze(values),
-    raw:undefined,
     malformed:false,
     discarded:true,
     failure:error,

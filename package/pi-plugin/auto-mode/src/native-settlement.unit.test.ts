@@ -2,6 +2,7 @@
  Complete response admission preserves original terminal evidence and lifetime failures. @module
  */
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
 import { createSettlementFixture } from './native-settlement-fixture.ts';
 
@@ -85,6 +86,7 @@ await describe({
       '[{"id":"q0","status":"estimate","value":0.5},{"id":"q1","status":"unresolved","reason":"unknown","extra":true}]',
       '[{"id":"q0","status":"estimate","value":0.5},{"id":"q1","status":"other"}]',
       ' '.repeat(65_537),
+      JSON.stringify([{ id: 'q0', status: 'estimate', value: 0.5 }, { id: 'q1', status: 'unresolved', reason: 'é'.repeat(33_000) }]),
     ].map(function malformedCase(answerText, index) {
       return it({
         name: `retains malformed response ${index} across every selected claim`,
@@ -97,7 +99,7 @@ await describe({
           assert.equal(record.discarded, false);
           assert.ok(record.failure instanceof Error);
           assert.deepEqual(record.answers, [{ status: 'malformed' }, { status: 'malformed' }]);
-          assert.equal(Object.hasOwn(record, 'raw'), true);
+          assert.equal(Object.hasOwn(record, 'raw'), ((typeof answerText) === 'string') && (Buffer.byteLength(answerText) <= 65_536));
           assert.equal(Object.hasOwn(record, 'model'), false);
           assert.equal(fixture.batch.settled, true);
           for (const [answerIndex, claim] of fixture.batch.selected.entries()) {
@@ -166,6 +168,7 @@ await describe({
           assert.equal(fixture.batch.record?.malformed, false);
           assert.equal(fixture.batch.record?.raw, validText);
           assert.equal(fixture.batch.settled, true);
+          assert.ok(fixture.batch.record);
           assert.deepEqual(fixture.batch.record.answers, [{ status: 'discarded' }, { status: 'discarded' }]);
           for (const [index, claim] of fixture.batch.selected.entries()) assert.equal(claim.answer, fixture.batch.record.answers[index]);
         },

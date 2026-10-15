@@ -5,14 +5,14 @@
 /** Original claims carry only the fields this consumer allows settlement to update. */
 export type FixtureClaim = {
   readonly definition: Readonly<{ type: string; criteria: Readonly<Record<string, string>> }>;
-  answer: Readonly<{ status: string; value?: unknown; reason?: string }> | undefined;
+  answer?: Readonly<{ status: string; value?: unknown; reason?: string }>;
   model?: string;
 };
 
-/** Retained diagnostics expose their own absent-valued properties. */
+/** Retained raw diagnostics are optional; failure keeps the original caught value. */
 type SettlementRecord = Readonly<{
   answers: readonly Readonly<{ status: string; value?: unknown; reason?: string }>[];
-  raw: string | undefined;
+  raw?: string;
   malformed: boolean;
   discarded: boolean;
   failure: unknown;
@@ -25,7 +25,7 @@ type SettlementRecord = Readonly<{
 type FixtureBatch = {
   readonly selected: readonly FixtureClaim[];
   settled: boolean;
-  record: SettlementRecord | undefined;
+  record?: SettlementRecord;
 };
 
 /** The caller submits untrusted transport data through its original batch handle. */
@@ -78,12 +78,12 @@ export function createSettlementFixture({
 } = {}): { batch: FixtureBatch; settle: Settle; handle: object } {
   /** The fixture retains each original claim so partial publication is observable. */
   const selected: FixtureClaim[] = definitions.map(function originalClaim(definition) {
-    return { definition, answer: undefined };
+    return { definition };
   });
   /** Opaque handle is distinct from the mutable owner record. */
   const handle = Object.freeze({});
   /** This is the only record the fixture's owner recognizes. */
-  const batch: FixtureBatch = { selected, settled: false, record: undefined };
+  const batch: FixtureBatch = { selected, settled: false };
   /** The production function receives exactly the original owner callbacks. */
   const settle = settlementModule.createQuestionSettlement({
     knownBatch(candidate) {
