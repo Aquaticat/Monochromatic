@@ -1456,10 +1456,28 @@ and freeze state.
 The changed-value positive control distinguishes a different original named-text slot value.
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-input-location-comparison.json`
 retains the comparison and artifact hashes.
-`77854a77ff` adds null-source and disappearing-proxy-descriptor controls;
-their rebuilt verification,
-guard-removal controls,
-and the complete maintained lint recount remain pending.
+`77854a77ff` adds null-source and disappearing-proxy-descriptor controls.
+Their final rebuild,
+consumer tests,
+and package type check pass in
+`${HOME}/temp/agent/pi-native-input-location-final-consumers-20261015.log`.
+The expanded baseline suite passes in
+`${HOME}/temp/agent/pi-native-input-location-baseline-expanded-20261015.log`.
+All 15 process-local omissions of descriptor,
+record,
+key,
+slot-shape,
+supported-field,
+safe-integer,
+and nonnegative-ordinal guards fail the committed consumers.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-input-location-omissions.json`
+records those controls and unchanged artifact hashes.
+The maintained lint recount covers 567 files and 486 rules:
+zero errors and 12751 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-input-location-lint-20261015.log`.
+All nine input-position source and consumer files have zero diagnostics in that full report.
+The next dependency is original judgment input admission,
+followed by instruction-claim construction using the now-typed governing-source owner.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
