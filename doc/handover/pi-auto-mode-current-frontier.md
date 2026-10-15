@@ -1782,9 +1782,20 @@ the original budget's `durationMs` is 5000 milliseconds,
 and the built attempt supplied exactly 5000.
 The assertion now matches that original fixed budget.
 Type checking passes with the new fixtures.
-Final direct-suite verification,
-original-constructor comparisons,
-and guard controls remain pending for this extraction.
+The complete saved constructor and the current artifact match all six domain scenarios,
+including native execution counts and the permission-versus-prohibition positive control.
+`typed-lifecycle-constructor-comparison.json` retains the saved original's SHA-256 and both result sets.
+The direct evidence and assessment suites pass against current typed modules and exact saved original function bodies.
+The original-body wrapper supplies instrumented selection lookup,
+dependency-handle access,
+and exposed state;
+it leaves extracted function statements unchanged.
+Both variants caught the same finalization-test recording mistake:
+its ordering assertion included the preceding issuance events.
+Clear the event record after issuance before asserting closure order.
+All five direct consumer files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-lifecycle-tests-lint-final-20261015.log`.
+Final direct-suite verification and guard controls remain pending for this extraction.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

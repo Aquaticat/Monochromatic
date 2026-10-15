@@ -70,6 +70,7 @@ await describe({ name: '', children: [
       /** Failure identity must be retained without an implicit retry path. */
       const failure = new Error(point);
       f.state.failures.set(point, failure);
+      f.events.length = 0;
       assert.throws(function failedClosure() { 
         f.owner.finalize(); 
       }, failure);
