@@ -1,0 +1,46 @@
+name: Depot trial Android device artifacts
+
+on:
+  push:
+    branches: [trial/depot-20261015]
+    paths: [.github/workflows/depot-trial-android-device.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  artifacts:
+    runs-on: depot-ubuntu-24.04-16
+    timeout-minutes: 45
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      CARGO_BUILD_JOBS: '16'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Pin for this trial: release discovery returned HTTP 403.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - name: Install Rust
+      run: mise install rust cargo-binstall
+    - name: Install Android build tools
+      run: mise install cargo:cargo-ndk node java android-sdk
+    - name: Prepare SDK and native targets
+      run: mise run prepare:android
+    - name: Build application and all instrumented checks
+      run: mise run //package/music-player/android-app:test:instrumented:build
+    - name: Retain disposable device verification artifacts
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: depot-trial-android-instrumented
+        path: |
+          package/music-player/android-app/app/build/outputs/apk/debug/app-debug.apk
+          package/music-player/android-app/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+        if-no-files-found: error
+        retention-days: 2
+        compression-level: 0
