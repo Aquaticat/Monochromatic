@@ -7,7 +7,7 @@ import {
 import {join} from 'node:path';
 import {observeDeclaredFile} from '../external-dependency-controls/file-observer.ts';
 import {ObservedFileMissingError} from '../external-dependency-controls/errors.ts';
-import {RuleRelevanceCacheError} from './definition.mjs';
+import {RuleRelevanceCacheError} from './definition.ts';
 
 export function digest(value) { return createHash('sha256')
   .update(value)

@@ -2,7 +2,7 @@ import {indexPolicyDocument} from '../../policy-index.ts';
 import {
   RELEVANCE_QUESTION,
   RuleRelevanceCacheError
-} from './definition.mjs';
+} from './definition.ts';
 import {
   createRelevanceStore,
   digest
