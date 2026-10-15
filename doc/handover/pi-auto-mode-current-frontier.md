@@ -453,6 +453,230 @@ Its owned build passes.
 Focused structured lint reports zero errors and 1082 warnings across the eight changed modules;
 the warning gate still fails.
 Consumer verification is running in `${HOME}/temp/agent/pi-native-run-owner-regressions-20261014.log`.
+That run subsequently passed all domain cases and manual uncertainty Allow,
+Deny,
+Stop,
+and cancellation.
+Its prohibited case stopped at `JudgmentDeadlineError`,
+with the outcome assertion reporting `undefined` instead of a policy outcome.
+Commit `c3cb4b1f97` separates loaded-input field selection,
+history,
+manager frames,
+events,
+tools,
+Agent inputs,
+and user inputs while retaining the original pool budget.
+The first loaded-input build passed;
+focused lint exposed detached method references after extraction.
+Those callbacks now use named function values;
+the updated build and focused checks remain pending.
+Named function expressions still produced `typescript(unbound-method)` findings.
+Commit `13dc500508` declares the loaded callbacks before constructing their returned facade.
+Its build passes;
+the loaded-pool lint subset now has zero errors and 51 warnings.
+The other new loaded modules still need the updated full subset check.
+The user requested status twice during this work;
+the replies distinguished verified live installation from unfinished quality work and the timing diagnosis.
+Unchanged ordinary Allow repetitions on the loaded-input build failed twice and passed once.
+Their complete process durations were 10089.97,
+8502.33,
+and 12054.84 milliseconds,
+including setup and shutdown.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-before.json` retains the results and CPU counters.
+Both separate CPU-profile runs passed,
+for ordinary Allow and manual-uncertainty prohibition.
+Their profiles identify repeated source-freshness validation as a sampled runtime cost;
+these separate modes are not a before/after timing comparison.
+An instrumented Allow fixture failed at `DependencyDeadlineError`
+after 23740 opens of its original governing file.
+The exact captured counts are in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/loaded-allow-fs.json`.
+The new `test:native:source-freshness-work` task exercises the built Allow consumer
+and requires fewer than 10000 governing-file opens for that fixed fixture.
+Its required-red run precedes the proposed complete-binding-set validation change.
+Required-red commit `971f1bd` completed the native Allow fixture,
+then failed its work-bound assertion with 45637 governing-file opens.
+Commit `5b29e43e8d` validates local source-binding identities between fresh common-parent checks.
+Individual public source assertions still perform their original parent freshness check.
+The updated owned build passes.
+The same native Allow fixture then completed with 15653 opens,
+but the new work-bound regression still fails its 10000-open limit.
+This is a measured reduction in repeated reads,
+not completion of the performance fix or a full regression pass.
+The logs are `${HOME}/temp/agent/pi-native-source-work-red-20261014.log`
+and `${HOME}/temp/agent/pi-native-source-work-green-20261014.log`;
+the latter filename names the intended stage,
+not its actual failed assertion result.
+Unchanged repetitions of this changed artifact all passed.
+Their complete process durations were 8224.54,
+6064.67,
+and 6179.07 milliseconds;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-after.json` retains the results.
+These include setup and shutdown and are not judgment-only latency measurements.
+The next change introduces `readCurrentSourceBinding()` on the original judgment.
+It returns original request and source identities only after `assertDependenciesCurrent()` succeeds.
+The governing-source owner uses that operation instead of independently repeating observer and collector checks.
+Commit `2ea0d1c836` builds successfully.
+The unchanged work-bound regression still fails at 14185 opens after the Allow scenario completes.
+`${HOME}/temp/agent/pi-native-current-source-work-20261014.log` retains that result.
+A profile of this artifact is collecting evidence for the next caller to address;
+the 10000-open bound remains unchanged.
+The next built Allow probes still failed that bound:
+`48e2532d46` put nested rule reads inside the original synchronous binding segment and measured 13233 opens;
+`45c180d7d7` collected related policy selections in that segment and measured 12169 opens;
+removing the repeated request observation before `active()` measured 11224 opens.
+Each fixture completed its Allow scenario before failing the work assertion.
+The current probe reads a prepared member's input and program inspection together after one dependency check.
+The complete rejection and lifecycle suites remain pending.
+Commit `b3f980b0f8` also fixes an extraction error:
+the whole-request claim branch must register `retained.requestMaterialBinding`,
+not the removed standalone variable.
+The built `test:native:request-claim` consumer passes original request identity,
+repeated selector reuse,
+foreign-handle rejection,
+and dependency retirement.
+A process-local omission restored the removed variable reference and failed with
+`ReferenceError: requestMaterialBinding is not defined`;
+the built module hash was unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/request-claim-omission.json` records that control.
+The prepared-member probe measured 10812 policy opens;
+using the original judgment's validated identities during approval measured 10634.
+Selecting the matching source before validating its binding did not change this fixture's 10634-open count.
+That fixture therefore supplies no performance evidence for source lookup paths that encounter earlier unrelated sources.
+Removing the redundant dependency check before complete source validation measured 10236 opens.
+The native Allow scenario passes,
+but the unchanged 10000-open regression remains red.
+The broader domain,
+manual review,
+approval,
+single-call,
+changed-dependency,
+event,
+host,
+and CLI regression sequence is running against this frozen built artifact.
+The user requested status during this work;
+the response reported the verified live flow,
+the remaining work-bound failure,
+the last full lint counts,
+and the absence of a reliable completion estimate.
+The first broader regression sequence passed on `ac35a7c2ac`:
+domain,
+manual review,
+approval context,
+single-call,
+changed-dependency,
+event-receipt,
+host-lifecycle,
+and CLI-process checks.
+Batch candidate selection consolidation then measured 10208 opens;
+removing duplicate decision-wrapper validation before original approval measured 10086.
+Commit `f79ac0ea45` reads execution origins through the already-required native entry check.
+Its built work-bound regression passes at 9046 opens without changing the 10000-open limit.
+The baseline required-red count remains 45637.
+`${HOME}/temp/agent/pi-native-entry-origin-work-20261014.log` records the passing consumer.
+The final expanded regression sequence is running in
+`${HOME}/temp/agent/pi-native-source-boundaries-final-20261014.log`.
+It adds program queue,
+resource reload,
+resource input,
+context receipts,
+and the whole-request claim consumer to the prior sequence.
+On the `f79ac0ea45` build,
+the repeated original runtime sequence passed again.
+The scratch runner then stopped before the queue task because its working directory was outside the monorepo;
+this was a task-launch error rather than an application assertion.
+With the scratch task's `dir` pinned to the repository,
+all remaining queue,
+resource reload,
+resource input,
+context receipt,
+and whole-request claim checks passed.
+The complete split records are
+`${HOME}/temp/agent/pi-native-source-boundaries-final-20261014.log`
+and `${HOME}/temp/agent/pi-native-source-boundaries-remaining-20261014.log`.
+Lint cleanup resumed with `45269cca6f` and `0313276bd7`:
+tool diagnostic and declaration budgets,
+guideline publication,
+forced-message retirement,
+and governing selection now retain mutable values in their original owned records.
+Their updated build and source-work/resource consumers pass;
+the work count remains 9046.
+The full lint recount is running with `GOMAXPROCS=2` and the package's existing worker and heap limits,
+without concurrent native runtime tests.
+Its log is `${HOME}/temp/agent/pi-maintained-source-boundaries-lint-20261014.log`.
+The recount completed across 455 files with 175 errors and 13188 warnings.
+Errors decreased from the previous 203;
+warnings increased as module extraction exposed additional untyped boundaries.
+The rule configuration still rejects warnings.
+Current structured diagnostics and error allocation are retained in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/current-maintained-diagnostics.json`
+and `current-native-errors.json` in that directory.
+The new work counter now uses Node's actual `openSync(path, flags, mode)` callback signature.
+The request preparation hook now retains its function value directly instead of detaching an object method.
+The initial function-value edits replaced the prior findings with
+`no-restricted-syntax(no-variable-function-expression)` findings.
+Commit `0fab7d8f10` constructs the request callback through a named factory
+and assigns the filesystem callback directly to its native hook.
+Commit `b9a6a57750` retains the approval lifecycle fields in one owned record.
+The focused callback,
+counter,
+and approval check has zero errors and 300 warnings;
+it remains a failing warning gate.
+The updated owned build and source-work/manual-review/approval/dependency consumers pass in
+`${HOME}/temp/agent/pi-native-callback-approval-consumer-20261014.log`.
+Native syntax passes all 259 maintained modules;
+the package type check also passes.
+Commit `81ecaf586b` separates dependency eligibility and synchronous binding checks into
+`judgment-dependencies.mjs`,
+with preparation and finalization state still supplied by the original constructor.
+Its rebuilt manual-review,
+approval-context,
+and changed-dependency consumers pass.
+The same source-work fixture passes at 9046 policy-file opens.
+`${HOME}/temp/agent/pi-native-dependency-owner-consumer-20261014.log` retains those results.
+Commit `33c1c35cd8` groups runtime publication state and judgment accounting in their respective owners
+and scopes budget cleanup with synchronous disposal.
+Focused lint reports zero errors and 736 warnings across the constructor,
+dependency owner,
+runtime owner,
+and judgment budget.
+The warning gate remains failing.
+The rebuilt source-work,
+domain,
+host-lifecycle,
+and actual CLI-process checks pass in
+`${HOME}/temp/agent/pi-native-lifecycle-records-consumer-20261014.log`.
+The host-lifecycle fixture includes runtime replacement,
+cancelled replacement,
+persisted resume,
+and incomplete-disposal retry.
+Commit `53defdddad` next scopes native wrapper reentrancy and execution cleanup
+and gives owned wrapper constructors named input fields.
+Native execute callbacks retain their positional SDK signature through a fixed factory.
+Commit `79622d6e43` derives parent cancellation options without mutable temporary state.
+The rebuilt wrapper consumers pass domain outcomes,
+single-call execution,
+post-approval source/cancellation/argument changes,
+and normal and exceptional program queue release in
+`${HOME}/temp/agent/pi-native-wrapper-lifetimes-consumer-20261014.log`.
+The first wrapper lint found one remaining mutable options binding;
+the subsequent cancellation helper addresses that finding.
+The full maintained-package recount reports 131 errors and 13218 warnings across 456 files and 486 rules.
+`${HOME}/temp/agent/pi-maintained-lifecycle-cleanup-lint-20261014.log` contains the structured diagnostics.
+The constructor,
+dependency owner,
+runtime owner,
+budget,
+and wrapper files now have no error-severity findings in that full scan.
+The warning gate remains open;
+these results do not establish package completion.
+Commit `9c28c21d7d` replaces synchronous fixture directory and file setup with awaited filesystem operations.
+It also records network requests by their URL and keeps provider-call accounting in one fixture-owned record.
+Focused lint reports zero errors and 64 warnings for `environment.mjs`.
+The rebuilt domain,
+context-receipt,
+resource-input,
+and approval-context checks are running against this change.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

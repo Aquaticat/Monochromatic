@@ -1,4 +1,8 @@
-# Per-target build overrides for this crate: the Windows MSVC linker (lld-link).
+# Per-target build overrides for this crate: the Windows MSVC linker (lld-link) and the static C runtime.
+#
+# The `gxhash` dependency that needed the `aes` CPU target-feature on every target is gone (the fingerprint is XXH3-64
+# from `twox-hash`, which picks its SIMD kernel at run time), so no target here sets `aes` any more.
+# See doc/decision/music-player-fingerprint-hash.md and doc/troubleshooting/gxhash-aes-target-feature.md.
 
 # Windows MSVC. `lld-link.exe` is LLVM's MSVC-compatible linker (a drop-in for
 # Visual Studio's `link.exe`). It must be on PATH: LLVM ships it in its `bin`
@@ -6,6 +10,17 @@
 # directory has to be added (see README "Windows" and
 # HANDOVER.windows-toolchain-and-check.md). rustc still discovers the Visual Studio
 # CRT and Windows SDK import libraries and passes them as `/LIBPATH:` arguments,
-# which lld-link consumes unchanged.
+# which lld-link consumes unchanged. The `rustflags` line adds `+crt-static`: the C
+# runtime is linked into the .exe, so the released executable does not need the
+# Microsoft Visual C++ Redistributable (VCRUNTIME140.dll) on the user's machine.
+# The release workflow fails if the .exe still imports a Visual C++ runtime DLL.
+# That holds only with the MSVC `link.exe`: an x86_64 build linked by `lld-link.exe`
+# (the pin below) still imports VCRUNTIME140.dll and the api-ms-win-crt DLLs, so the
+# release workflow overrides the linker with CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER.
 [target.x86_64-pc-windows-msvc]
 linker = "lld-link.exe"
+rustflags = ["-C", "target-feature=+crt-static"]
+
+# Windows arm64 (the release workflow builds it natively on a windows-11-arm runner). It uses the default MSVC linker.
+[target.aarch64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

@@ -4,12 +4,14 @@
 import { Theme } from "../theme.slint";
 import { SettingsPage } from "../settings.slint";
 
-// Settings with the two template rows and their current lines, as the captures show them.
+// Settings with the two template rows and their current lines, and the Auto-play on select row switched off.
 component TemplatesSettings inherits SettingsPage {
     rows: [
         { label: "Track rows", line: "3:20 −1.0 dBTP" },
         { label: "Playing track", line: "1 of 16 −1.0 dBTP" },
     ];
+    auto-play-enabled: false;
+    auto-play-text: "Select first, then Play";
 }
 
 // Cover width Settings in light, 443 px wide.

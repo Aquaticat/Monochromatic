@@ -15,7 +15,6 @@ export function bindOriginalTuiApproval({
   judgment,
   producerOwner,
   observer,
-  collector,
   response,
   stream,
   pi,
@@ -69,17 +68,27 @@ export function bindOriginalTuiApproval({
     request:sha(source.request
       .body)
   }));
-  let choice;
-    let decision;
-    let entry;
-    let failure;
-    let forwarded=false;
-    let phase='created';
-    let prompt;
-    let result;
-    let selectionReturned=false;
+  const selectionState={
+    choice:undefined,
+    decision:undefined,
+    entry:undefined,
+    failure:undefined,
+    forwarded:false,
+    phase:'created',
+    prompt:undefined,
+    result:undefined,
+    selectionReturned:false
+  };
+    
+    
+    
+    
+    
+    
+    
+    
   function current(){
-    if(phase==='failed')throw failure;
+    if(selectionState.phase==='failed')throw selectionState.failure;
     try{
       if((producerOwner.judgmentFor({
         response,
@@ -87,16 +96,17 @@ export function bindOriginalTuiApproval({
       })!==judgment)||(judgment.inspect()
         .finalRecord
         !==closure))throw new OriginalTuiApprovalError('Original TUI judgment closure changed');
-      if((judgment.readSourceSnapshot?.()??judgment.sourceSnapshot
-        ??source.sources)!==sources)throw new OriginalTuiApprovalError('Original approval judgment source snapshot changed');
-      observer.assertFresh(source);collector.assertObservedFresh(sources);judgment.assertDependenciesCurrent();signal.throwIfAborted();
+      const currentBinding=judgment.readCurrentSourceBinding();
+      if(currentBinding.request!==source)throw new OriginalTuiApprovalError('Original approval request receipt changed');
+      if(currentBinding.sources!==sources)throw new OriginalTuiApprovalError('Original approval judgment source snapshot changed');
+      signal.throwIfAborted();
       if((ctx.ui!==ui)||(ui.select!==select)
         ||(pi.appendEntry!==appendEntry)
         ||(ctx.abort!==abort))throw new OriginalTuiApprovalError('Original native approval capabilities changed');
       for(const member of members)if(judgment.preparedMemberFor(member.handle)
         .prepared
         !==member.prepared)throw new OriginalTuiApprovalError('Original prepared group changed');
-    }catch(error){failure=error;phase='failed';throw error;}
+    }catch(error){selectionState.failure=error;selectionState.phase='failed';throw error;}
   }
   current();
   const scopedUi=Object.freeze({
@@ -105,12 +115,12 @@ export function bindOriginalTuiApproval({
       options,
       opts
     ){
-      current();if(prompt)throw new OriginalTuiApprovalError('Incumbent askUser opened more than one selector');
+      current();if(selectionState.prompt)throw new OriginalTuiApprovalError('Incumbent askUser opened more than one selector');
       if((JSON.stringify(options)!==JSON.stringify([
         'Allow',
         'Stop'
       ]))||(!title.includes(action)))throw new OriginalTuiApprovalError('Incumbent selector did not present the complete original group');
-      prompt=Object.freeze({
+      selectionState.prompt=Object.freeze({
         title,
         options:Object.freeze([...options])
       });trace('tui-select');
@@ -118,7 +128,7 @@ export function bindOriginalTuiApproval({
         signal,
         opts.signal
       ]:[signal];
-      choice=await Reflect.apply(
+      selectionState.choice=await Reflect.apply(
         select,
         ui,
         [
@@ -130,9 +140,9 @@ export function bindOriginalTuiApproval({
           }
         ]
       );
-      selectionReturned=true;trace('tui-selected');
+      selectionState.selectionReturned=true;trace('tui-selected');
       // Let the incumbent record the response even if current release eligibility was lost while waiting.
-      return choice;
+      return selectionState.choice;
     },
   });
   const scopedContext=Object.freeze({
@@ -149,12 +159,12 @@ export function bindOriginalTuiApproval({
       customType,
       data
     ){
-      if(entry||(customType!==verdictEntryType)
+      if(selectionState.entry||(customType!==verdictEntryType)
         ||(data.action!==action)
         ||(data.approvalFingerprint!==approvalFingerprint))throw new OriginalTuiApprovalError('Verdict append differs from the original group');
-      const expected=selectionReturned&&(choice==='Allow')?'user-approve':'user-deny';
+      const expected=selectionState.selectionReturned&&(selectionState.choice==='Allow')?'user-approve':'user-deny';
       if(data.verdict!==expected)throw new OriginalTuiApprovalError('Verdict append differs from the original selector result');
-      entry=Object.freeze({...data});trace('tui-verdict-append');
+      selectionState.entry=Object.freeze({...data});trace('tui-verdict-append');
       Reflect.apply(
         appendEntry,
         pi,
@@ -162,15 +172,15 @@ export function bindOriginalTuiApproval({
           customType,
           data
         ]
-      );forwarded=true;
+      );selectionState.forwarded=true;
     },
   });
   async function request(){
-    if(phase!=='created')throw new OriginalTuiApprovalError('Original group TUI approval is one-shot');
-    phase='pending';trace('tui-approval-entry');
+    if(selectionState.phase!=='created')throw new OriginalTuiApprovalError('Original group TUI approval is one-shot');
+    selectionState.phase='pending';trace('tui-approval-entry');
     try{
       current();
-      decision=await askUser({
+      selectionState.decision=await askUser({
         pi:scopedPi,
         ctx:scopedContext,
         action,
@@ -178,39 +188,39 @@ export function bindOriginalTuiApproval({
         explanation,
         ...(notificationInvoker?{notificationInvoker}:{})
       });
-      if((!forwarded)||(!entry))throw new OriginalTuiApprovalError('Incumbent verdict was not recorded');
-      if((!decision.block)&&((!selectionReturned)||(choice!=='Allow')
-        ||(entry.verdict!=='user-approve')))throw new OriginalTuiApprovalError('Allow result lacks its original selection and verdict append');
-      result=Object.freeze({
-        decision:Object.freeze({...decision}),
+      if((!selectionState.forwarded)||(!selectionState.entry))throw new OriginalTuiApprovalError('Incumbent verdict was not recorded');
+      if((!selectionState.decision.block)&&((!selectionState.selectionReturned)||(selectionState.choice!=='Allow')
+        ||(selectionState.entry.verdict!=='user-approve')))throw new OriginalTuiApprovalError('Allow result lacks its original selection and verdict append');
+      selectionState.result=Object.freeze({
+        decision:Object.freeze({...selectionState.decision}),
         action,
         approvalFingerprint,
         closure,
         origin:'incumbent-askUser-invocation',
         productionPermission:false
       });
-      if(!decision.block)current();
-      phase='responded';trace('tui-approval-complete');return result;
-    }catch(error){failure=error;phase='failed';trace('tui-approval-failed');throw error;}
+      if(!selectionState.decision.block)current();
+      selectionState.phase='responded';trace('tui-approval-complete');return selectionState.result;
+    }catch(error){selectionState.failure=error;selectionState.phase='failed';trace('tui-approval-failed');throw error;}
   }
   /** Retained Allow is not reusable after source, cancellation or host-capability changes. */
   function assertOriginalAllow(value){
-    if((phase!=='responded')
-      ||(value!==result)
+    if((selectionState.phase!=='responded')
+      ||(value!==selectionState.result)
       ||value.decision
       .block)throw new OriginalTuiApprovalError('No current original Allow result for this group');
     current();
   }
   function inspect(){return Object.freeze({
     retainedOnly:true,
-    phase,
-    prompt,
-    choice,
-    selectionReturned,
-    entry,
-    forwarded,
-    result,
-    failure,
+    phase:selectionState.phase,
+    prompt:selectionState.prompt,
+    choice:selectionState.choice,
+    selectionReturned:selectionState.selectionReturned,
+    entry:selectionState.entry,
+    forwarded:selectionState.forwarded,
+    result:selectionState.result,
+    failure:selectionState.failure,
     productionPermission:false
   });}
   return Object.freeze({

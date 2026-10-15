@@ -91,14 +91,21 @@ export function bindRunMessageSources({governing}){
     completeGoverningCoverage:false,
     permission:false
   });
-  function assertCurrent(value){
-   if(value!==view)throw new GoverningPolicyBindingError('Message input view is not this original source binding');
-   governing.assertCurrent(governing.view);
-  }
+  /** Check immutable binding identity and its local publication link within the owning source set. */
+function assertBindingIdentity(value){
+if(value!==view)throw new GoverningPolicyBindingError('Message input view is not this original source binding');
+
+}
+function assertCurrent(value){
+if(value!==view)throw new GoverningPolicyBindingError('Message input view is not this original source binding');
+governing.assertCurrent(governing.view);
+assertBindingIdentity(value);
+}
   assertCurrent(view);return Object.freeze({
     view,
     authority:undefined,
-    assertCurrent
+    assertBindingIdentity,
+assertCurrent
   });
  });
 }

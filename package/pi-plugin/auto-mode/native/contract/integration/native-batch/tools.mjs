@@ -19,7 +19,9 @@ export function registerOwnedExecutionTools({
  const previous=agent.prepareRequest;
  const wrappers=createExecutionWrappers({wrapToolDefinition});
  const installationState={active:true};
- const requestHooks={prepareRequest:async function prepareRequest(
+ /** Capture the positional native callback without detaching a method or changing its receiver. */
+ function createRequestHook(){
+ return async function prepareRequest(
    request,
    signal
  ){
@@ -169,8 +171,7 @@ export function registerOwnedExecutionTools({
       response:carrier.response,
       stream
     });
-    judgment.assertExecutionEntry(carrier.token);
-    const origin=judgment.executionFor(carrier.token);
+    const origin=judgment.executionEntryFor(carrier.token);
     current();return origin;
    }
    function capturePreparedProgram({
@@ -200,12 +201,12 @@ export function registerOwnedExecutionTools({
     });
    }
    current();
-   const original=wrappers.wrapRegisteredTool(
-     {definition},
+   const original=wrappers.wrapRegisteredTool({
+     registeredTool:{definition},
      runner,
      readOrigin,
      createProgramRun
-   );
+   });
    const wrapped=Object.freeze({
      ...original,
      ...(isOwnedProgramDefinition(definition)?{capturePreparedProgram}:{})
@@ -244,9 +245,9 @@ export function registerOwnedExecutionTools({
       tools
     }
   };
- }
  };
- const {prepareRequest}=requestHooks;
+ }
+ const prepareRequest=createRequestHook();
  agent.prepareRequest=prepareRequest;
  return function unregister(){
   installationState.active=false;

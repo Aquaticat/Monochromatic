@@ -248,7 +248,10 @@ systemd-run --user --unit=agent-fold-headful --collect --property=MemoryMax=12G 
 ```
 
 (The owned AVD also needs its own `HOME`, `ANDROID_USER_HOME` and `ANDROID_AVD_HOME`, and a private adb server port, as
-in the agent's notes.)
+in the agent's notes.
+Every `adb` call for that emulator, including `emu kill`, must run with the same `HOME` and port:
+in one session the shell's real `HOME` showed the device as `unauthorized` and failed the console token check,
+see `android-emulator-console-token-container-home.md`.)
 Result: `sys.boot_completed=1` after 98 s, no ANR dialog and no crash, with the journal naming the AMD Radeon RX 7600
 as the GL and Vulkan device, at a load average above 60 on 16 cores.
 So the failures were launch flags and container limits, not host load.

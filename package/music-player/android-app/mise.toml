@@ -137,7 +137,7 @@ depends = ["build:native"]
 run = "./gradlew :app:assembleDebug --no-daemon --console=plain"
 
 [tasks."build:release"]
-description = "Assemble the optimized (non-debuggable) release APK, debug-signed so it installs (rebuilds the native .so first)"
+description = "Assemble the optimized (non-debuggable) release APK, debug-signed so it installs unless the MUSIC_PLAYER_KEYSTORE_FILE, _KEYSTORE_PASSWORD, _KEY_ALIAS and _KEY_PASSWORD values are set (rebuilds the native .so first)"
 dir = "{{config_root}}"
 depends = ["build:native"]
 run = "./gradlew :app:assembleRelease --no-daemon --console=plain"

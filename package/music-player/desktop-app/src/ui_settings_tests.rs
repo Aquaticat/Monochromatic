@@ -254,12 +254,17 @@ fn selecting_by_keyboard_changes_only_the_selection_and_shifts_nothing() {
     assert_eq!(open_kind(), Some(TemplateKind::PlayingTrack));
     assert_eq!(app.get_route(), Route::Settings.to_int());
     assert_eq!(row_layout(&app), before);
-    // Down at the last row stays there; Up and Home return to the first row.
+    // Down from the last template row reaches the Auto-play on select switch row, which selects nothing (D129).
     press(&app, Key::DownArrow);
     assert_eq!(selected_flags(&app), vec![false, true]);
     press(&app, Key::UpArrow);
+    assert_eq!(selected_flags(&app), vec![false, true], "Up from the switch row lands on the already selected row");
+    press(&app, Key::UpArrow);
     assert_eq!(selected_flags(&app), vec![true, false]);
+    // End jumps to the switch row, the last stop, and leaves the selection where it was; Up returns to a template row.
     press(&app, Key::End);
+    assert_eq!(selected_flags(&app), vec![true, false]);
+    press(&app, Key::UpArrow);
     assert_eq!(selected_flags(&app), vec![false, true]);
     press(&app, Key::Home);
     assert_eq!(selected_flags(&app), vec![true, false]);

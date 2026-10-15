@@ -5,6 +5,57 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// One version for the whole product. The desktop crate's Cargo.toml is the single source of truth, so the Android
+// versionName is read from it and the Android versionCode is derived from it, and neither can be edited here to
+// disagree. The release workflow (.github/workflows/music-player-release.yml) reads the same file.
+// versionCode = major * 10000 + minor * 100 + patch, which never decreases while the version never decreases, and
+// stays unique because the workflow rejects any version that is not plain MAJOR.MINOR.PATCH with minor and patch
+// at most 99. Layout assumption: package/music-player/{android-app,desktop-app}, which the repository extraction
+// plan keeps.
+val productVersionManifest: File = rootDir.resolve("../desktop-app/Cargo.toml")
+val productVersionParts: List<Int> = run {
+    if (!productVersionManifest.isFile) {
+        throw GradleException("Product version source not found: $productVersionManifest")
+    }
+    val packageSection = productVersionManifest.readText().substringAfter("[package]").substringBefore("\n[")
+    val match = Regex("""(?m)^version\s*=\s*"(\d+)\.(\d+)\.(\d+)"\s*$""").find(packageSection)
+        ?: throw GradleException(
+            "No plain MAJOR.MINOR.PATCH version in the [package] table of $productVersionManifest",
+        )
+    val parts = match.groupValues.drop(1).map { it.toInt() }
+    if (parts[1] > 99 || parts[2] > 99) {
+        throw GradleException("Minor and patch must be at most 99 for the derived versionCode: ${parts.joinToString(".")}")
+    }
+    parts
+}
+val productVersionName: String = productVersionParts.joinToString(".")
+val productVersionCode: Int = productVersionParts[0] * 10000 + productVersionParts[1] * 100 + productVersionParts[2]
+
+// Release signing comes from the environment (or a Gradle property of the same name), so a local build without the
+// secrets keeps producing the debug-signed release APK it always did. The release workflow sets all four values and
+// MUSIC_PLAYER_REQUIRE_RELEASE_SIGNING=true, which turns a missing key into a build failure instead of a silent
+// debug-signed APK.
+fun releaseSigningValue(name: String): String? =
+    providers.environmentVariable(name).orNull?.takeIf { it.isNotEmpty() }
+        ?: providers.gradleProperty(name).orNull?.takeIf { it.isNotEmpty() }
+
+val releaseKeystoreFile: String? = releaseSigningValue("MUSIC_PLAYER_KEYSTORE_FILE")
+val releaseKeystorePassword: String? = releaseSigningValue("MUSIC_PLAYER_KEYSTORE_PASSWORD")
+val releaseKeyAlias: String? = releaseSigningValue("MUSIC_PLAYER_KEY_ALIAS")
+val releaseKeyPassword: String? = releaseSigningValue("MUSIC_PLAYER_KEY_PASSWORD")
+val releaseSigningValues: List<String?> =
+    listOf(releaseKeystoreFile, releaseKeystorePassword, releaseKeyAlias, releaseKeyPassword)
+val hasReleaseSigning: Boolean = releaseSigningValues.all { it != null }
+if (!hasReleaseSigning && releaseSigningValues.any { it != null }) {
+    throw GradleException(
+        "Release signing is partly configured: set all of MUSIC_PLAYER_KEYSTORE_FILE, MUSIC_PLAYER_KEYSTORE_PASSWORD, " +
+            "MUSIC_PLAYER_KEY_ALIAS and MUSIC_PLAYER_KEY_PASSWORD, or none of them.",
+    )
+}
+if (!hasReleaseSigning && providers.environmentVariable("MUSIC_PLAYER_REQUIRE_RELEASE_SIGNING").orNull == "true") {
+    throw GradleException("MUSIC_PLAYER_REQUIRE_RELEASE_SIGNING is true but the release signing values are not set.")
+}
+
 android {
     namespace = "dev.monochromatic.musicplayer"
     // compileSdk 37: the current androidx (core-ktx 1.19.1, Compose 1.12.1 from the BOM, Material3 1.5.0-beta01)
@@ -26,8 +77,8 @@ android {
         // build:native), so the artifact itself loads on the floor.
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = productVersionCode
+        versionName = productVersionName
         // On-device instrumented tests (the offline true-peak decoder needs a real MediaCodec).
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,14 +87,28 @@ android {
     // existed only to install all three engines side by side for the head-to-head
     // measurement comparison; that comparison is decided (the full-Rust variant
     // won decisively), so the flavor dimension is gone and this is a single app.
+    // The project release key, present only when the four MUSIC_PLAYER_* signing values are set (see the top of this
+    // file). Its storeType stays the PKCS12 default: the keystore the workflow restores is PKCS12, which uses one
+    // password for the store and the key.
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(requireNotNull(releaseKeystoreFile))
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            // Sign the release build with the debug key so it installs on the owner's device without a
-            // separate keystore. release is not debuggable, so ART optimizes the numeric DSP loops it
-            // runs (the true-peak scan), which a debuggable build does not; this is the build the
-            // owner actually runs.
-            signingConfig = signingConfigs.getByName("debug")
+            // With the release key configured, sign with it. Without it, sign with the debug key so a local build
+            // installs on the owner's device without a separate keystore. release is not debuggable, so ART
+            // optimizes the numeric DSP loops it runs (the true-peak scan), which a debuggable build does not;
+            // this is the build the owner actually runs.
+            signingConfig = signingConfigs.getByName(if (hasReleaseSigning) "release" else "debug")
         }
     }
 

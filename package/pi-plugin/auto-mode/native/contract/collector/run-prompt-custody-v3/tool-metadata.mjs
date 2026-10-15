@@ -71,7 +71,7 @@ export function selectToolMetadataInput(tools){
    'description'
  ]);
    const unobservedMetadata=[];
- let gapBytes=0;
+ const diagnosticBudget={bytes:0};
  function gap({
    ordinal,
    key,
@@ -83,8 +83,8 @@ export function selectToolMetadataInput(tools){
     ordinal,
     key,
     reason
-  };gapBytes+=Buffer.byteLength(JSON.stringify(entry));
-  if(gapBytes>1_048_576)throw new SourceCollectionError('Tool metadata observation gaps exceed the byte bound');
+  };diagnosticBudget.bytes+=Buffer.byteLength(JSON.stringify(entry));
+  if(diagnosticBudget.bytes>1_048_576)throw new SourceCollectionError('Tool metadata observation gaps exceed the byte bound');
   unobservedMetadata.push(Object.freeze(entry));
  }
  for(let ordinal=0;ordinal<length;ordinal++){

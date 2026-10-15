@@ -10,8 +10,9 @@ a server,
 or an import step.
 
 Status:
-under active development,
-build from source.
+under active development.
+Pre-release builds are published for download,
+and the source is there to build.
 
 Version `0.1.0` builds a Slint desktop application and a Jetpack Compose Android application.
 They provide corresponding product behaviour through separate platform implementations and share true-peak metering.
@@ -24,6 +25,7 @@ and audio output remain native to each platform.
 - [What works today](#what-works-today)
 - [Gallery](#gallery)
 - [Design record](#design-record)
+- [Install](#install)
 - [Build from source](#build-from-source)
 - [Architecture](#architecture)
 - [Contributing](#contributing)
@@ -42,7 +44,8 @@ It saves the root,
 the selected track,
 the position,
 the playback mode,
-and the two template texts,
+the two template texts,
+and the Auto-play on select setting,
 but not the queue,
 so a relaunch rebuilds the queue from disk.
 
@@ -132,15 +135,18 @@ and the playback mode.
 
 On both platforms,
 clicking or tapping a track row that is not the current track selects it and leaves it paused,
-and any track that was playing stops (D124).
+and any track that was playing stops (D124),
+unless the Auto-play on select setting is on (D129),
+which also starts the track at once.
 Clicking or tapping the current row toggles play and pause,
 which also starts a track restored from the last session.
 A track that failed to open stays selected on both platforms and the next click or tap tries it again (D128);
 Next, Previous and the end of a track still skip unreadable files and report them.
 `Enter` on the focused row does the same.
 A Search result for a track follows the same rule (D127):
-the first activation selects the track and leaves it paused, and the second toggles play and pause.
-Only the Play item of the track menu starts a track at once.
+the first activation selects the track and leaves it paused, and the second toggles play and pause,
+or, with Auto-play on select on, the first activation also starts it.
+The Play item of the track menu starts a track at once with the setting on or off.
 
 One playback mode of four applies on both platforms,
 and the app saves it:
@@ -224,6 +230,13 @@ template's editor on the other,
 so selecting a row never navigates.
 A narrower window shows the list,
 and a row opens that template's editor page.
+Under the templates, a Playback group holds one switch row,
+Auto-play on select, which is off by default.
+With it on, a click, tap or `Enter` on a track that is not the current track, and a Search result for one,
+selects the track and starts it at once (D129).
+The row toggles in place by click, tap, `Space` or `Enter`,
+opens no editor and leaves the selected template as it is;
+in a narrow list pane the switch sits under the supporting line.
 The page is drawn on the one canvas color,
 pure white in light and pure black in dark.
 
@@ -261,7 +274,9 @@ The desktop build uses Slint with winit on every desktop target.
 Linux targets Wayland and uses PipeWire,
 with no ALSA or PulseAudio backend.
 macOS targets Apple Silicon and uses CoreAudio.
-Windows targets `x86_64` and uses WASAPI through cpal.
+Windows targets `x86_64` and `arm64` and uses WASAPI through cpal.
+Only the Linux `x86_64` build has been run by the project;
+the other desktop targets are built by CI and have not been tested on their platform.
 
 The desktop source implements LauncherEntry D-Bus taskbar progress on Linux and native taskbar progress on Windows.
 These shell integrations are best-effort and are not shown in the gallery.
@@ -337,10 +352,11 @@ The Track rows template is selected when Settings opens.
 Its editor,
 a preview from the open library,
 and the list of insertable fields fill the second pane.
+The Playback group under the templates holds the Auto-play on select switch.
 
-![Settings with the Track rows template in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/2aebcf0a532bd80b74b94f8a3080f7dd4e25c0ffa8f7facb949e32d54f230c6e/package/music-player/asset/readme/desktop-settings-light.png)
+![Settings with the Track rows template and the Auto-play on select switch off in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/2848bc4d7c2d10a659f5708a26f7da6d70e3d419be264efbe8b0a9f4fe13b34a/package/music-player/asset/readme/desktop-settings-light.png)
 
-![Settings with the Track rows template in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/eb725dda5b69c22394904bf5cf10c27c10dc812d92d1f8a39a5680b754632277/package/music-player/asset/readme/desktop-settings-dark.png)
+![Settings with the Track rows template and the Auto-play on select switch off in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/44d7735d2401ece941e3aa4f94bf5546f4f033c8e3e92b56f12ece8d42ac2364/package/music-player/asset/readme/desktop-settings-dark.png)
 
 #### Track menu and key hints
 
@@ -458,9 +474,10 @@ and Move to trash has a red label and a trash icon.
 On the cover display Settings is a single pane.
 It lists the two templates,
 Track rows and Playing track,
-each with a preview line.
+each with a preview line,
+and the Auto-play on select switch under a Playback heading.
 
-![Settings on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/38060578083a8d54d0789ac615244bdddaaf8e8add7fb05c9e3f6c1296b703d1/package/music-player/asset/readme/android-cover-settings-light.png)
+![Settings with the Auto-play on select switch off on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/eafa459ad9fd32bf09cf26e3b6d04c277ba94cd282b6a7fd2169a2be10b4fb92/package/music-player/asset/readme/android-cover-settings-light.png)
 
 #### Inner display
 
@@ -474,13 +491,14 @@ and the mode group wraps to two rows.
 
 ![Inner display with two panes in dark appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/bdfe6255fecba3dca4a8ebb349494e8ee2282c80757e011eeda75f5f2eeb2825/package/music-player/asset/readme/android-inner-two-pane-dark.png)
 
-On the inner display Settings keeps the template list on the left with Track rows selected.
+On the inner display Settings keeps the template list on the left with Track rows selected,
+and the Auto-play on select switch under it, below the Playback heading.
 The right pane shows that template's preview from the open library,
 its template text,
 and the fields that can be inserted,
 each with an example value and its `mi(...)` name.
 
-![Settings with the Track rows template on the inner display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/4155db09c791b09eb0bfb78bbc8a05e1b645cdc8b19f55cb53d0d88120cf6baf/package/music-player/asset/readme/android-inner-settings-dark.png)
+![Settings with the Track rows template and the Auto-play on select switch off on the inner display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/0d57342b59f546353cae871dbd8d771fd0d9d943f2b62058c4e6c46d4bb6628a/package/music-player/asset/readme/android-inner-settings-dark.png)
 
 ## Design record
 
@@ -511,6 +529,109 @@ session handling,
 decoding,
 output,
 and platform integration still have platform-specific implementations.
+
+## Install
+
+Pre-release builds are attached to the GitHub releases of
+[`Aquaticat/Monochromatic`](https://github.com/Aquaticat/Monochromatic/releases),
+because this package still lives in that repository.
+Look for a release titled `Music Player <version> (pre-release)` with a tag named `music-player-v<version>`;
+the same page lists releases of other packages.
+If it lists no Music Player release yet,
+[build from source](#build-from-source).
+
+Every release is a pre-release,
+because the project is under active development.
+A release holds one file per platform and a `SHA256SUMS` file:
+
+- Windows: `music-player-<version>-windows-x64.exe` and `music-player-<version>-windows-arm64.exe`.
+- macOS: `music-player-<version>-macos-arm64.dmg`, for Apple silicon Macs only.
+  Intel Macs have no download: build from source.
+- Linux: `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz`.
+- Android: `music-player-<version>-android.apk`.
+
+### What has been tested
+
+The project has run the Linux `x86_64` build on Wayland with PipeWire,
+and the Android app on emulators.
+Every other file is built by CI, not yet tested on this platform:
+CI starts each desktop program once with `--version` and does nothing more.
+No build has run on a real Android device, on macOS or on Windows.
+Treat those downloads as unverified and report what you find as issues.
+
+### Windows
+
+Download the `.exe` that matches your processor and run it.
+It is one standalone program that needs no installer and no Visual C++ runtime.
+It is not signed with a developer identity,
+so SmartScreen may show "Windows protected your PC":
+choose "More info",
+then "Run anyway".
+The executable is built as a console program,
+so Windows opens a console window next to the app.
+The program takes one optional folder or file to open: `music-player.exe C:\Music`.
+
+### macOS
+
+Open the `.dmg` and drag Music Player to Applications.
+The app is not notarized by Apple and has only an ad-hoc signature (no developer identity),
+so the first launch needs your confirmation:
+
+1.  Try to open Music Player once.
+    macOS shows a warning and does not start it.
+2.  Open System Settings, go to Privacy & Security, scroll down and click "Open Anyway".
+3.  Click "Open" when the warning appears again.
+
+macOS remembers the choice after that.
+These are the steps in [Apple's guide](https://support.apple.com/en-us/102445).
+The app needs macOS 11 or newer.
+
+### Linux
+
+Extract the archive and run `bin/music-player`,
+or follow `INSTALL.txt` inside it to add a menu entry and an icon for your user.
+It needs a Wayland or X11 session,
+PipeWire,
+fontconfig,
+and a CPU with AES instructions.
+The program is built on Ubuntu 24.04 and needs a glibc of that age or newer.
+There is no AppImage:
+the program links PipeWire from the host,
+so an AppImage would depend on the host as much as the archive does.
+
+### Android
+
+Download the `.apk` on the device,
+open it,
+and allow installing from that app when Android asks.
+It needs Android 8.0 (API 26) or newer,
+and the `arm64-v8a` or `x86_64` instruction set.
+
+The APK is signed with the project's release key,
+and an update installs over it only if it carries the same key.
+The certificate's SHA-256 fingerprint is
+`9de6e9a475f182c36f2513179fd4b14763b0e00fe068c9b8f3e6f08103616926`;
+compare it with `apksigner verify --print-certs <file>.apk`.
+A debug build made from source uses a different key,
+so Android refuses to update one into the other:
+uninstall first.
+
+### Verify a download
+
+Every file is attested with GitHub build provenance,
+which binds its exact bytes to the workflow run that built it:
+
+```bash
+# Fails if the file was changed after the workflow built it.
+gh attestation verify <file> --repo Aquaticat/Monochromatic
+
+# Compare against the checksum file attached to the release.
+sha256sum --check --ignore-missing SHA256SUMS
+```
+
+The runbook [`doc/runbook/release-the-music-player.md`](../../doc/runbook/release-the-music-player.md)
+describes how releases are made,
+and [`doc/decision/music-player-releases.md`](../../doc/decision/music-player-releases.md) records why.
 
 ## Build from source
 
@@ -705,6 +826,10 @@ at commit `49d4db35df873165d6bd6ba09b063c7dafbac2f4`:
   for the Track rows template.
 - `play_circle`,
   for the Playing track template.
+- `autoplay`,
+  for the Auto-play on select row,
+  and `check` and `close`,
+  for the marks in the switch thumb.
 
 Each app embeds the path data as vector code,
 with no icon font and no network access at run time.

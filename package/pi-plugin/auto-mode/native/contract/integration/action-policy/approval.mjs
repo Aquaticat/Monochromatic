@@ -77,10 +77,13 @@ export async function finishWithApproval({
   decision,
   approvalContext
 }){
- function current(){
+ function assertDecisionIdentity(){
   if(judgment.inspect()
     .finalRecord
     !==decision.closure)throw new PolicyApprovalError('Policy decision belongs to a different original judgment closure');
+ }
+ function current(){
+  assertDecisionIdentity();
   judgment.assertDependenciesCurrent();
  }
  current();
@@ -128,7 +131,7 @@ export async function finishWithApproval({
   assertCurrent:current
  });
  function assertOriginalApproval(){
-  current();
+  assertDecisionIdentity();
   approval.assertOriginalAllow(response);
  }
  assertOriginalApproval();

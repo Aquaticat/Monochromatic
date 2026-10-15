@@ -60,11 +60,16 @@ function bindHostPromptSource({
    completeGoverningCoverage:false,
    permission:false
  }):undefined;
- function assertCurrent(value){
-  if(value!==view)throw new GoverningPolicyBindingError('Host prompt view is not this original source binding');
-  governing.assertCurrent(governing.view);
-  if((readHostPromptInput(policyInput)!==source)||(readPolicyInput(policyInput)!==link))throw new GoverningPolicyBindingError('Original registered host prompt binding changed');
- }
+ /** Check immutable binding identity and its local publication link within the owning source set. */
+function assertBindingIdentity(value){
+if(value!==view)throw new GoverningPolicyBindingError('Host prompt view is not this original source binding');
+if((readHostPromptInput(policyInput)!==source)||(readPolicyInput(policyInput)!==link))throw new GoverningPolicyBindingError('Original registered host prompt binding changed');
+}
+function assertCurrent(value){
+if(value!==view)throw new GoverningPolicyBindingError('Host prompt view is not this original source binding');
+governing.assertCurrent(governing.view);
+assertBindingIdentity(value);
+}
  function assertAuthorityCurrent(value){
   if((!authority)||(value!==authority))throw new GoverningPolicyBindingError('Authority is not this original host prompt registration');
   assertCurrent(view);
@@ -73,7 +78,8 @@ function bindHostPromptSource({
  return Object.freeze({
    view,
    authority,
-   assertCurrent,
+   assertBindingIdentity,
+assertCurrent,
    assertAuthorityCurrent
  });
 }
@@ -111,15 +117,21 @@ function bindResourceSystemSource({
    completeGoverningCoverage:false,
    permission:false
  });
- function assertCurrent(value){
-  if(value!==view)throw new GoverningPolicyBindingError('System view is not this original resource binding');
-  governing.assertCurrent(governing.view);
-  if(readPolicyInput(policyInput)!==link)throw new GoverningPolicyBindingError('Original resource system publication changed');
- }
+ /** Check immutable binding identity and its local publication link within the owning source set. */
+function assertBindingIdentity(value){
+if(value!==view)throw new GoverningPolicyBindingError('System view is not this original resource binding');
+if(readPolicyInput(policyInput)!==link)throw new GoverningPolicyBindingError('Original resource system publication changed');
+}
+function assertCurrent(value){
+if(value!==view)throw new GoverningPolicyBindingError('System view is not this original resource binding');
+governing.assertCurrent(governing.view);
+assertBindingIdentity(value);
+}
  assertCurrent(view);return Object.freeze({
    view,
    authority:undefined,
-   assertCurrent
+   assertBindingIdentity,
+assertCurrent
  });
 }
 
@@ -157,15 +169,21 @@ function bindAppendPromptSources({
     completeGoverningCoverage:false,
     permission:false
   });
-  function assertCurrent(value){
-   if(value!==view)throw new GoverningPolicyBindingError('Append view is not this original input binding');
-   governing.assertCurrent(governing.view);
-   if(readPolicyInput(policyInput)!==link)throw new GoverningPolicyBindingError('Original append input publication changed');
-  }
+  /** Check immutable binding identity and its local publication link within the owning source set. */
+function assertBindingIdentity(value){
+if(value!==view)throw new GoverningPolicyBindingError('Append view is not this original input binding');
+if(readPolicyInput(policyInput)!==link)throw new GoverningPolicyBindingError('Original append input publication changed');
+}
+function assertCurrent(value){
+if(value!==view)throw new GoverningPolicyBindingError('Append view is not this original input binding');
+governing.assertCurrent(governing.view);
+assertBindingIdentity(value);
+}
   assertCurrent(view);return Object.freeze({
     view,
     authority:undefined,
-    assertCurrent
+    assertBindingIdentity,
+assertCurrent
   });
  });
 }
@@ -214,15 +232,21 @@ function bindContextPromptSources({
     completeGoverningCoverage:false,
     permission:false
   });
-  function assertCurrent(value){
-   if(value!==view)throw new GoverningPolicyBindingError('Context view is not this original input binding');
-   governing.assertCurrent(governing.view);
-   if(readPolicyInput(policyInput)!==link)throw new GoverningPolicyBindingError('Original context input publication changed');
-  }
+  /** Check immutable binding identity and its local publication link within the owning source set. */
+function assertBindingIdentity(value){
+if(value!==view)throw new GoverningPolicyBindingError('Context view is not this original input binding');
+if(readPolicyInput(policyInput)!==link)throw new GoverningPolicyBindingError('Original context input publication changed');
+}
+function assertCurrent(value){
+if(value!==view)throw new GoverningPolicyBindingError('Context view is not this original input binding');
+governing.assertCurrent(governing.view);
+assertBindingIdentity(value);
+}
   assertCurrent(view);return Object.freeze({
     view,
     authority:undefined,
-    assertCurrent
+    assertBindingIdentity,
+assertCurrent
   });
  });
 }
@@ -252,14 +276,21 @@ function bindForcedPromptSource({governing}){
    completeGoverningCoverage:false,
    permission:false
  });
- function assertCurrent(value){
-  if(value!==view)throw new GoverningPolicyBindingError('Forced prompt view is not this original input binding');
-  governing.assertCurrent(governing.view);
- }
+ /** Check immutable binding identity and its local publication link within the owning source set. */
+function assertBindingIdentity(value){
+if(value!==view)throw new GoverningPolicyBindingError('Forced prompt view is not this original input binding');
+
+}
+function assertCurrent(value){
+if(value!==view)throw new GoverningPolicyBindingError('Forced prompt view is not this original input binding');
+governing.assertCurrent(governing.view);
+assertBindingIdentity(value);
+}
  assertCurrent(view);return Object.freeze({
    view,
    authority:undefined,
-   assertCurrent
+   assertBindingIdentity,
+assertCurrent
  });
 }
 
@@ -298,14 +329,21 @@ function bindRunGuidelineSources({governing}){
     completeGoverningCoverage:false,
     permission:false
   });
-  function assertCurrent(value){
-   if(value!==view)throw new GoverningPolicyBindingError('Guideline view is not this original input binding');
-   governing.assertCurrent(governing.view);
-  }
+  /** Check immutable binding identity and its local publication link within the owning source set. */
+function assertBindingIdentity(value){
+if(value!==view)throw new GoverningPolicyBindingError('Guideline view is not this original input binding');
+
+}
+function assertCurrent(value){
+if(value!==view)throw new GoverningPolicyBindingError('Guideline view is not this original input binding');
+governing.assertCurrent(governing.view);
+assertBindingIdentity(value);
+}
   assertCurrent(view);return Object.freeze({
     view,
     authority:undefined,
-    assertCurrent
+    assertBindingIdentity,
+assertCurrent
   });
  });
 }
@@ -348,14 +386,21 @@ function bindMappedPromptSources({governing}){
     completeGoverningCoverage:false,
     permission:false
   });
-  function assertCurrent(value){
-   if(value!==view)throw new GoverningPolicyBindingError('Mapped prompt view is not this original input binding');
-   governing.assertCurrent(governing.view);
-  }
+  /** Check immutable binding identity and its local publication link within the owning source set. */
+function assertBindingIdentity(value){
+if(value!==view)throw new GoverningPolicyBindingError('Mapped prompt view is not this original input binding');
+
+}
+function assertCurrent(value){
+if(value!==view)throw new GoverningPolicyBindingError('Mapped prompt view is not this original input binding');
+governing.assertCurrent(governing.view);
+assertBindingIdentity(value);
+}
   assertCurrent(view);return Object.freeze({
     view,
     authority:undefined,
-    assertCurrent
+    assertBindingIdentity,
+assertCurrent
   });
  });
 }
@@ -392,14 +437,21 @@ function bindSkillDescriptionSources({governing}){
     completeGoverningCoverage:false,
     permission:false
   });
-  function assertCurrent(value){
-   if(value!==view)throw new GoverningPolicyBindingError('Skill description view is not this original input binding');
-   governing.assertCurrent(governing.view);
-  }
+  /** Check immutable binding identity and its local publication link within the owning source set. */
+function assertBindingIdentity(value){
+if(value!==view)throw new GoverningPolicyBindingError('Skill description view is not this original input binding');
+
+}
+function assertCurrent(value){
+if(value!==view)throw new GoverningPolicyBindingError('Skill description view is not this original input binding');
+governing.assertCurrent(governing.view);
+assertBindingIdentity(value);
+}
   assertCurrent(view);return Object.freeze({
     view,
     authority:undefined,
-    assertCurrent
+    assertBindingIdentity,
+assertCurrent
   });
  });
 }
@@ -435,14 +487,21 @@ function bindBuiltInPromptSources({governing}){
     completeGoverningCoverage:false,
     permission:false
   });
-  function assertCurrent(value){
-   if(value!==view)throw new GoverningPolicyBindingError('Built-in view is not this original source binding');
-   governing.assertCurrent(governing.view);
-  }
+  /** Check immutable binding identity and its local publication link within the owning source set. */
+function assertBindingIdentity(value){
+if(value!==view)throw new GoverningPolicyBindingError('Built-in view is not this original source binding');
+
+}
+function assertCurrent(value){
+if(value!==view)throw new GoverningPolicyBindingError('Built-in view is not this original source binding');
+governing.assertCurrent(governing.view);
+assertBindingIdentity(value);
+}
   assertCurrent(view);return Object.freeze({
     view,
     authority:undefined,
-    assertCurrent
+    assertBindingIdentity,
+assertCurrent
   });
  });
 }
@@ -477,14 +536,21 @@ function bindResourceToolSources({governing}){
     completeGoverningCoverage:false,
     permission:false
   });
-  function assertCurrent(value){
-   if(value!==view)throw new GoverningPolicyBindingError('Extension tool view is not this original resource source');
-   governing.assertCurrent(governing.view);
-  }
+  /** Check immutable binding identity and its local publication link within the owning source set. */
+function assertBindingIdentity(value){
+if(value!==view)throw new GoverningPolicyBindingError('Extension tool view is not this original resource source');
+
+}
+function assertCurrent(value){
+if(value!==view)throw new GoverningPolicyBindingError('Extension tool view is not this original resource source');
+governing.assertCurrent(governing.view);
+assertBindingIdentity(value);
+}
   assertCurrent(view);return Object.freeze({
     view,
     authority:undefined,
-    assertCurrent
+    assertBindingIdentity,
+assertCurrent
   });
  });
 }
@@ -548,10 +614,21 @@ export function bindRegisteredPolicy(context){
    ...builtIn,
    ...resourceTools
  ]);
+ /** Validate each local binding between fresh reads of their common original parent. */
+ function assertAllCurrent(){
+  source.assertCurrent(source.view);
+  for(const binding of additionalSources){
+   binding.assertBindingIdentity(binding.view);
+   if(binding.authority)binding.assertAuthorityCurrent(binding.authority);
+  }
+  if(readAuthorityRegistration(policyInput)!==registration)throw new GoverningPolicyBindingError('Original startup authority registration changed');
+  source.assertCurrent(source.view);
+ }
  if(!registration)return Object.freeze({
    ...source,
    authority:undefined,
    additionalSources,
+   assertAllCurrent,
    instructionCarriers,
    runInstructionCarriers
  });
@@ -581,6 +658,7 @@ export function bindRegisteredPolicy(context){
    authority,
    assertAuthorityCurrent,
    additionalSources,
+   assertAllCurrent,
    instructionCarriers,
    runInstructionCarriers
  });
