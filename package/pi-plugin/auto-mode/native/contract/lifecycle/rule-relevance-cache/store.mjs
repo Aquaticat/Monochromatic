@@ -69,6 +69,7 @@ export function createRelevanceStore({
    namespaceKey
  );
  const initialization={pending:undefined};
+ const publications=new Map();
  async function initialize(){
   await privateDirectory({path:directory,trace});
   await privateDirectory({path:root,trace});
@@ -82,9 +83,8 @@ export function createRelevanceStore({
   if(!isContentDigest(key))throw new RuleRelevanceCacheError('Cache entry key is not a content digest');
   return `${key}.json`;
  }
- async function read(key){
+ function readEntry(key){
   const filename=fileFor(key);
-  await ready();
   const capture={observed:undefined};
   try{capture.observed=observeDeclaredFile({
     root,
@@ -117,21 +117,15 @@ export function createRelevanceStore({
     key
   });return Object.freeze(entry);
  }
- async function put({
-   key,
-   probability
- }){
-  if((!Number.isFinite(probability))||(probability<0)
-    ||(probability>1))throw new RuleRelevanceCacheError('Relevance estimate must be finite and between zero and one');
-  const entry=Object.freeze({
-    schema:1,
-    key,
-    profileKey,
-    probability,
-    qualification:'not-established'
-  });
-  const filename=fileFor(key);
+ async function read(key){
+  fileFor(key);
   await ready();
+  const pending=publications.get(key);
+  if(pending!==undefined)await pending;
+  return readEntry(key);
+ }
+ async function publish({entry,filename}){
+  const {key}=entry;
   try{await writeFile(
     join(
       root,
@@ -150,12 +144,27 @@ export function createRelevanceStore({
      event:'cache-publication-already-exists',
      key,
      error
-   });return await read(key);
+   });return readEntry(key);
   }
   trace({
     event:'cache-published',
     key
   });return entry;
+ }
+ async function put({key,probability}){
+  if((!Number.isFinite(probability))||(probability<0)
+    ||(probability>1))throw new RuleRelevanceCacheError('Relevance estimate must be finite and between zero and one');
+  const filename=fileFor(key);
+  await ready();
+  const pending=publications.get(key);
+  if(pending!==undefined)return await pending;
+  const entry=Object.freeze({schema:1,key,profileKey,probability,qualification:'not-established'});
+  const publication=publish({entry,filename});
+  publications.set(key,publication);
+  using publicationScope={
+   [Symbol.dispose](){publications.delete(key);}
+  };
+  return await publication;
  }
  return Object.freeze({
    read,

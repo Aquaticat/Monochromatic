@@ -910,7 +910,16 @@ serializer-receipt,
 and context-receipt consumers then pass in
 `${HOME}/temp/agent/pi-native-domain-fixture-entry-consumer-20261015.log`.
 The failed original log remains in `pi-native-domain-fixture-split-consumer-20261015.log`.
-The remaining structural lint errors are being recounted before filesystem and cache cleanup.
+The full maintained recount covers 513 files and 486 rules:
+16 errors and 13771 warnings remain in
+`${HOME}/temp/agent/pi-maintained-domain-splits-lint-20261015.log`.
+Remaining errors are in the relevance store,
+its cache owner,
+the composed-distribution protocol,
+and the descriptor-bound file observer.
+The relevance store now awaits directory validation and file publication during cache operations;
+its constructor still returns the cache owner synchronously.
+This cache change is pending focused concurrency and built-consumer verification.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
