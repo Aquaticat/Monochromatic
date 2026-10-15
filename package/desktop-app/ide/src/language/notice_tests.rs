@@ -294,7 +294,7 @@ fn the_entry_joins_the_servers_diagnostics_at_the_first_character() {
         },
         None,
     )]);
-    let joined = with_notice(Some(own.clone()), STAMP, &missing, &[]).expect("snapshot");
+    let joined = with_notice(Some(own.clone()), STAMP, &missing, &[], &[]).expect("snapshot");
     assert_eq!(joined.stamp, STAMP);
     assert_eq!(joined.groups.len(), 2);
     assert_eq!(joined.groups[0], own.groups[0]);
@@ -306,11 +306,75 @@ fn the_entry_joins_the_servers_diagnostics_at_the_first_character() {
     assert_eq!(item.severity, Some(Severity::Information));
     assert!(item.message.contains("taplo is not available: not found."));
     // With no snapshot of its own the entry still gets one, stamped for the displayed text.
-    let alone = with_notice(None, STAMP, &missing, &[]).expect("snapshot");
+    let alone = with_notice(None, STAMP, &missing, &[], &[]).expect("snapshot");
     assert_eq!(alone.stamp, STAMP);
     assert_eq!(alone.groups.len(), 1);
     // Nothing to say leaves the snapshot, or its absence, as it was.
     let fine = status(vec![row("taplo", ServerState::Ready, Some(everything()))]);
-    assert_eq!(with_notice(Some(own.clone()), STAMP, &fine, &[]), Some(own));
-    assert_eq!(with_notice(None, STAMP, &fine, &[]), None);
+    assert_eq!(
+        with_notice(Some(own.clone()), STAMP, &fine, &[], &[]),
+        Some(own)
+    );
+    assert_eq!(with_notice(None, STAMP, &fine, &[], &[]), None);
+}
+
+fn advisory() -> Vec<String> {
+    return vec![
+        "The mise configuration for /work/project could not be used, so language servers are looked up on PATH only."
+            .to_string(),
+        "mise said: mise ERROR Config files in /work/project/mise.toml are not trusted.".to_string(),
+        "If you trust that mise configuration, run `mise trust` on /work/project/mise.toml in a terminal yourself (the IDE never does), then display a file again."
+            .to_string(),
+    ];
+}
+
+#[test]
+fn a_mise_failure_is_told_even_when_every_server_works() {
+    let fine = status(vec![row("taplo", ServerState::Ready, Some(everything()))]);
+    let entry = with_notice(None, STAMP, &fine, &[], &advisory()).expect("snapshot");
+    let message = &entry.groups[0].items[0].message;
+    assert_eq!(entry.groups[0].source, SOURCE);
+    assert_eq!(message, &advisory().join("\n"));
+}
+
+#[test]
+fn the_mise_failure_follows_the_reasons_of_the_servers_that_do_not_work() {
+    let missing = status(vec![row(
+        "taplo",
+        ServerState::MissingExecutable {
+            reason: "the program 'taplo' for taplo was not found on PATH".to_string(),
+        },
+        None,
+    )]);
+    let entry = with_notice(None, STAMP, &missing, &[], &advisory()).expect("snapshot");
+    let message = &entry.groups[0].items[0].message;
+    let reason = message
+        .find("taplo is not available")
+        .expect("reason of the server");
+    let mise = message.find("mise said:").expect("mise's words");
+    assert!(reason < mise, "{message}");
+    assert!(
+        message.contains("run `mise trust` on /work/project/mise.toml"),
+        "{message}"
+    );
+}
+
+#[test]
+fn files_without_servers_get_no_mise_notice() {
+    for document in [
+        DocumentState::Closed,
+        DocumentState::NoLanguage,
+        DocumentState::NoServerConfigured,
+        DocumentState::OutsideProject,
+    ] {
+        let mut plain = status(Vec::new());
+        plain.document = document;
+        assert_eq!(
+            with_notice(None, STAMP, &plain, &[], &advisory()),
+            None,
+            "{document:?}"
+        );
+    }
+    let no_rows = status(Vec::new());
+    assert_eq!(with_notice(None, STAMP, &no_rows, &[], &advisory()), None);
 }

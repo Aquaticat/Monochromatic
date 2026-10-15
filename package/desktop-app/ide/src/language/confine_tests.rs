@@ -22,6 +22,7 @@ fn request(server: &str, environment: &[(&str, &str)]) -> LaunchRequest {
         settings: Some(json!({ "kept": true })),
         project_root: PathBuf::from("/work/project"),
         project_spellings: Vec::new(),
+        read_only_binds: Vec::new(),
         state_root: Some(PathBuf::from("/state")),
     };
 }

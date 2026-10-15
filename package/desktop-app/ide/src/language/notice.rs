@@ -16,8 +16,6 @@
 use super::diagnostics::{Diagnostic, DiagnosticsSnapshot, Freshness, Severity, SourceGroup};
 /// The entry names the file generation and revision it describes.
 use super::identity::{DocumentStamp, ServerIdentity};
-/// A failed request is described in the words the interface uses for it.
-use super::reply::RequestFailure;
 /// What the servers of the displayed file are doing.
 use super::status::{DocumentState, LanguageStatus, ServerState, ServerStatus};
 
@@ -25,50 +23,10 @@ use super::status::{DocumentState, LanguageStatus, ServerState, ServerStatus};
 ///  for example `Information (language support): ...`.
 pub const SOURCE: &str = "language support";
 
-/// What:
-///  The last failure of each request the worker makes on its own,
-///  per server process.
-///  `Option<RequestFailure>` is "a failure,
-///  or nothing";
-///  `Default` builds the value with no failures.
-/// Why:
-///  A server that is running but answers hover or inlay hint requests with errors,
-///  or never answers,
-///  looks like a server without those features unless the failure is kept.
-///  A later answer clears it.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Trouble = { hints?: RequestFailure; hover?: RequestFailure };
-/// ```
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub(super) struct Trouble {
-    /// The last inlay hint request that failed and was not asked again.
-    pub(super) hints: Option<RequestFailure>,
-    /// The last hover request that failed.
-    pub(super) hover: Option<RequestFailure>,
-}
-
-/// What:
-///  Describe a failed request in words that follow "answer" or "request".
-///  `&RequestFailure` is a borrowed value.
-/// Why:
-///  The same failure is named the same way wherever it is shown.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function failureText(failure: RequestFailure): string
-/// ```
-fn failure_text(failure: &RequestFailure) -> String {
-    return match failure {
-        RequestFailure::Rpc { code, message } => {
-            format!("the server answered with error {code}: {message}")
-        }
-        RequestFailure::Timeout => "the server did not answer in time".to_string(),
-        RequestFailure::StreamClosed => "the server stopped while answering".to_string(),
-        RequestFailure::Other(text) => text.clone(),
-    };
-}
+/// The failures kept per server process, and their wording.
+mod trouble;
+pub(super) use trouble::Trouble;
+use trouble::failure_text;
 
 /// What:
 ///  End a sentence with a period unless it already ends with one.
@@ -266,15 +224,20 @@ pub(super) fn lines(
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function withNotice(snapshot: DiagnosticsSnapshot | undefined, stamp: DocumentStamp,
-///                     status: LanguageStatus, troubles: [ServerIdentity, Trouble][]): DiagnosticsSnapshot | undefined
+///                     status: LanguageStatus, troubles: [ServerIdentity, Trouble][], advisory: string[]): DiagnosticsSnapshot | undefined
 /// ```
 pub(super) fn with_notice(
     snapshot: Option<DiagnosticsSnapshot>,
     stamp: DocumentStamp,
     status: &LanguageStatus,
     troubles: &[(ServerIdentity, Trouble)],
+    advisory: &[String],
 ) -> Option<DiagnosticsSnapshot> {
-    let text = lines(status, troubles);
+    let mut text = lines(status, troubles);
+    // The advisory (mise could not be used) belongs to every file that has servers, working or not.
+    if status.document == DocumentState::Attached && !status.servers.is_empty() {
+        text.extend(advisory.iter().cloned());
+    }
     if text.is_empty() {
         return snapshot;
     }
