@@ -69,6 +69,18 @@ under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 The complete lint output is
 `${HOME}/temp/agent/pi-maintained-typed-input-seal-final-lint-20261015.log`.
 The remaining dispatcher has 178 warnings and is the next native boundary to extract.
+The next extraction now delegates original call admission,
+per-call cloning,
+judgment capability checks,
+and sequential scheduling to `prepared-schedule.ts` and `prepared-schedule-types.ts`.
+Its formatter,
+type check,
+built consumers,
+original-code replay,
+domain comparisons,
+and omission controls remain pending.
+The pre-extraction dispatcher is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-schedule-types.mjs`.
 The original array check counts own keys;
 it can accept a missing index offset by an extra enumerable property.
 The extraction preserves that behavior and explicitly tests it.
