@@ -3,4 +3,7 @@
  */
 export { createQuestionSelection } from './selection-owner.ts';
 export { QuestionSelectionError } from './selection-error.ts';
-export { readAssessmentResponse, readRelationEstimate } from './selection-values.ts';
+export {
+  readAssessmentResponse,
+  readRelationEstimate
+} from './selection-values.ts';

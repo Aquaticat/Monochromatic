@@ -11,7 +11,10 @@ import type {
 /**
  Resolver retains the original occurrence record and its immutable identity.
  */
-export type QuestionBinding = Readonly<{ identity: object; projection: unknown }>;
+export type QuestionBinding = Readonly<{
+  identity: object;
+  projection: unknown
+}>;
 
 /**
  Claim membership remains private to one judgment and one fixed predicate.
@@ -67,10 +70,13 @@ export type SelectionBatch = SettlementBatch<SelectionClaim> & {
 /**
  One owner serializes synchronous access and authenticates every opaque handle.
  */
-export type SelectionOwner = QuestionSettlementOwner<SelectionClaim> & Readonly<{
+export type SelectionOwner = Omit<QuestionSettlementOwner<SelectionClaim>, 'knownBatch'> & Readonly<{
   claims: WeakMap<object, SelectionClaim>;
   batches: WeakMap<object, SelectionBatch>;
-  state: { batchCount: number; declaredCount: number };
+  state: {
+    batchCount: number;
+    declaredCount: number
+  };
   resolve: (handle: unknown) => QuestionBinding;
   knownClaim: (handle: unknown) => SelectionClaim;
   knownBatch: (handle: unknown) => SelectionBatch;
@@ -91,4 +97,7 @@ export type QuestionSelectionInput = Readonly<{
 /**
  Declaration selects an admitted predicate for an original occurrence handle.
  */
-export type QuestionDeclaration = Readonly<{ definitionId: unknown; bindingHandle: unknown }>;
+export type QuestionDeclaration = Readonly<{
+  definitionId: unknown;
+  bindingHandle: unknown
+}>;
