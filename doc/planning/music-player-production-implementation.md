@@ -282,8 +282,22 @@ before saying it matches, QAB):
   then "if XXH3-64 is available in twox-hash use that". The last ruling stands: XXH3-64, the fingerprint stays a
   64-bit value in every layer, the peak caches still re-key once (the function changes), the `+aes` target feature
   goes away, the 128-bit width criterion of the issue is waived by the human, and the final commit body carries
-  `Closes #545`. If the crate lacks XXH3-64 the agent stops and reports. Merge procedure as for the others; the Windows
-  agent also edits `desktop-app/.cargo/config.toml`, so expect a trivial conflict.
+  `Closes #545`. The agent reported 2026-10-15 (head `671602773e`): `twox-hash` 2.1.4 has XXH3-64 (feature
+  `xxhash3_64`); one shared `track_fingerprint` in `truepeak-core/src/fingerprint.rs` (domain tag inside the hashed
+  bytes, seed 0); `gxhash` and every `+aes` setting removed; `SCHEMA_VERSION` 2 with old rows deleted on open;
+  Android duration cache renamed `track-durations-v2.tsv`; known answers from the xxHash reference C implementation;
+  about 1.9 times faster than `gxhash64` on 5,000 tracks (agent's measurement with wide spread). Its desktop suite
+  failed one different timing test in each of two earlier runs (cause not established), so before merging I merge
+  main (done: `05d322fba2`, conflict in `desktop-app/.cargo/config.toml` resolved by hand: no `aes` left, `+crt-static`
+  kept, the `lld-link.exe` pin kept for the Windows agent to remove) and run the desktop suite three times plus clippy
+  and the Android checks fresh as unit `verify-xxh3-final`. Not verified: aarch64 NEON known answers, real Android
+  device, macOS and Windows builds. One surviving mutant: the call site of `measureDeleteLegacyDurationFiles`.
+  MERGED to `main` on 2026-10-15 (issue 545 closed by `Closes #545`). My fresh run on the merged head: desktop suite
+  three times, each 1445 run, 1445 passed, 1 skipped (no timing test failed in any of them, so the two earlier
+  failures did not recur; the cause stays unestablished), clippy clean; Android detekt, 1289 unit tests and lint
+  clean. Released as `music-player-v0.1.1` (bump commit `5fe8e8e2e5`, push run `38679233251`): same checks as 0.1.0
+  passed (`sha256sum --check` for six files, attestation exit 0 for the Linux x64 tarball and the APK, APK
+  certificate `9de6e9a4...6926`, Linux x64 prints `music-player 0.1.1`).
 - Task 97, existing CI caching: MERGED to `main` at `56d268686a` on 2026-10-15 (policy `doc/decision/ci-caching.md`,
   actionlint clean, the agent's cold and warm dispatch runs recorded there; I did not rerun them). Findings: the
   `cargo-publish.yml` cache never hit (keys hashed `Cargo.lock`, which every version bump changes), now keyed with a

@@ -31,16 +31,20 @@
 use crate::decision::{Decision, DecisionKind};
 
 /// What:
-///      `use crate::policy::CacheIdentity;`.
-///  The four-part identity a row must match.
+///      `use crate::policy::{CacheIdentity, SCHEMA_VERSION};`.
+///  The four-part identity a row must
+///           match,
+///  and the current row-and-key version.
 /// Why:
-///       It supplies the non-fingerprint half of the primary key.
+///       The identity supplies the non-fingerprint half of the primary key;
+///  the version drives
+///           the stale-row cleanup on open.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { CacheIdentity } from "./policy";
+/// import { CacheIdentity, SCHEMA_VERSION } from "./policy";
 /// ```
-use crate::policy::CacheIdentity;
+use crate::policy::{CacheIdentity, SCHEMA_VERSION};
 
 /// What:
 ///      `use std::collections::HashSet;`.
@@ -180,6 +184,27 @@ const DELETE_DECISION: &str = "DELETE FROM decisions WHERE fingerprint = ?1 AND 
 const SELECT_EXACT: &str = "SELECT fingerprint FROM decisions \
     WHERE policy_id = ?1 AND meter_id = ?2 AND decoder_stack_id = ?3 AND schema_version = ?4 \
     AND kind IN (0, 2)";
+
+/// What:
+///      `const DELETE_STALE: &str = "...";`.
+///  Remove every row written under an older
+///           schema version.
+///  `&str` literal.
+/// Why:
+///       A version bump (a new row layout, or a new fingerprint hash that fills the same
+///           column) makes older rows unreachable,
+///  because every read and write keys on the current
+///           version.
+///  Deleting them on open stops a retired hash's rows from accumulating forever
+///           in the user's database.
+///  The comparison is `<` so a newer app's rows survive a downgrade
+///           and are simply never matched.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const DELETE_STALE = "DELETE FROM decisions WHERE schema_version < ?1";
+/// ```
+const DELETE_STALE: &str = "DELETE FROM decisions WHERE schema_version < ?1";
 
 /// What:
 ///      `pub struct CacheError { pub message: String }`.
@@ -425,6 +450,23 @@ impl DecisionCache {
         // await conn.execute(CREATE_TABLE, []);
         // ```
         conn.execute(CREATE_TABLE, ()).await?;
+        // What:     `let removed = conn.execute(DELETE_STALE, (i64::from(SCHEMA_VERSION),)).await?;`.
+        //           Delete every row written under an older schema version; the one-element
+        //           tuple is the single bound parameter and `removed` is the row count.
+        // Why:      Rows from a retired fingerprint hash or row layout can never match again,
+        //           so they are removed instead of accumulating. A first open of a fresh
+        //           database removes nothing.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const removed = await conn.execute(DELETE_STALE, [SCHEMA_VERSION]);
+        // ```
+        let removed = conn.execute(DELETE_STALE, (i64::from(SCHEMA_VERSION),)).await?;
+        if removed > 0 {
+            tracing::info!(removed, schema_version = SCHEMA_VERSION, "stale decision rows removed on open");
+        } else {
+            tracing::debug!(schema_version = SCHEMA_VERSION, "no stale decision rows on open");
+        }
         // The cache is open and the table ensured; record the file it is backing.
         tracing::debug!(path, "decision cache opened");
         // What:     `Ok(DecisionCache { conn })`. The ready handle. Tail -> return.

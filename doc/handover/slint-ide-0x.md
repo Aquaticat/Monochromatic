@@ -104,6 +104,60 @@ soft-hyphen,
 and combining-mark-only.
 Those 13 cases are accepted as documented deliberate differences from editord's browser find.
 
+### Servers from mise
+
+Branch `feat/ide-mise-servers` (not merged into `main`).
+The user decided: "If mise is detected in dir the IDE starts the servers themselves through mise exec.
+We need to be adaptable and not hardcode anything."
+What is implemented, and why it differs from the literal wording:
+
+- When the project folder has a mise configuration at or above it,
+  servers are looked up in the tool directories mise prints for that folder and started from there;
+  otherwise the plain `PATH` lookup stays.
+  Nothing of any repository is named in the code.
+  The README section "Servers from mise" in `package/desktop-app/ide/README.md` has the behavior.
+- `mise exec` is not the launched command.
+  `mise env --json` in this repository prints 42 variables, 26 with a name containing `KEY` or `TOKEN`
+  (names only read);
+  `mise exec -- SERVER` would give every server the decrypted project `[env]` and bypass the cleared environment.
+  Mise only says where the tools are (`config ls --json` from the project and from `/`, then `bin-paths`).
+- Mise runs inside the servers' bubblewrap sandbox (`confine_with`), not outside it as first suggested.
+  Reason: every mise command, including `config ls`, evaluates a trusted configuration's `[env]` templates
+  (a template that touched a marker file ran for `config ls`, `bin-paths`, `which`, `env` and `exec`),
+  which is project code that would otherwise run on the bare host with network and write access.
+  Measured, no distinguishable cost:
+  `bin-paths` 235 ms plain (standard deviation 43) against 319 ms sandboxed (41) in a two-tool project;
+  413 ms (80) against 387 ms (152) in this repository;
+  production resolution 179 to 639 ms over four runs on a host at load about 60, 415 ms in a headless window run.
+- Safety variables for every mise run:
+  `MISE_AUTO_INSTALL`, `MISE_EXEC_AUTO_INSTALL`, `MISE_NOT_FOUND_AUTO_INSTALL`, `MISE_TASK_RUN_AUTO_INSTALL`,
+  `MISE_LOCKFILE` and `MISE_YES` false, `MISE_OFFLINE` true;
+  an environment variable beats a project `[settings]` (measured), and a positive control in a disposable data
+  directory shows auto install on makes `mise exec -- true` exit 1 while trying to fetch.
+  The IDE never runs `mise trust`, `install` or `exec`.
+- Trust: a tools-only configuration needs none; one with `[env]`, hooks or `[settings]` is refused until the user
+  runs `mise trust`.
+  A refusal, any other failure, or a run over 10 seconds gives a language support notice that names the
+  configuration, quotes mise's message, says the user runs `mise trust` (or `mise doctor`),
+  and falls back to `PATH` lookup with shims skipped.
+  The notice puts that explanation first, because the display keeps about a dozen lines.
+- Servers get mise's directories first on their `PATH`, so a Node launcher finds the project's `node`;
+  directories below `/tmp`, `/run` and `/dev` are bound back read-only.
+- Evidence: `lint:clippy`, `test:language`, `test:native`,
+  `inspect:language-mise` (43 checks on disposable projects with the launcher's `PATH`),
+  guard-removal controls seen failing for each rule (the shim refusal, the three safety variables, the read-only
+  binds, the notice, the global listing, the served-failure state, the run time limit),
+  and a headless nested compositor run with screenshots (hover answered by `marksman` and by
+  `bash-language-server` from mise's directories; a folder without mise keeps "was not found on PATH";
+  an untrusted folder shows mise's words).
+  Failure causes and probes: `doc/troubleshooting/mise-servers-for-the-confined-ide.md`.
+- Verified: the IDE writes no `mise.lock` and no trust record (trees compared before and after, trust directory
+  listed after the window runs).
+- Open: variables a tool adds to its environment (`GOROOT`, `JAVA_HOME`) are not passed;
+  mise's global tools come with the project's directories (56 directories in the e2e project);
+  an `[env]` template runs without network (not measured for a template that needs one);
+  unconfined mise runs outside the IDE persisted trust records (see the troubleshooting doc).
+
 ### Handoff state
 
 #### Current state on 2026-10-06

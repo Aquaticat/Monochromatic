@@ -41,6 +41,7 @@ fn default_policy_spawns_the_resolved_program_unchanged() {
         settings: Some(serde_json::json!({ "flag": true })),
         project_root: PathBuf::from("/project"),
         project_spellings: Vec::new(),
+        read_only_binds: Vec::new(),
         state_root: None,
     };
     let launch = launch_directly(&request).expect("default policy never refuses a Unicode path");

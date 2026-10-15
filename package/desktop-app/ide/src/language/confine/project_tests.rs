@@ -5,7 +5,7 @@
 //!  all with one mount option,
 //!  and all after the replacements.
 
-use super::{PROJECT_MOUNT, project_binds, replaced_location};
+use super::{PROJECT_MOUNT, project_binds, read_only_binds, replaced_location};
 use crate::language::confine::recipe::recipe;
 use crate::language::launch::LaunchRequest;
 use std::{collections::HashMap, path::Path, path::PathBuf};
@@ -19,6 +19,7 @@ fn request(project: &str, spellings: &[&str]) -> LaunchRequest {
         settings: None,
         project_root: PathBuf::from(project),
         project_spellings: spellings.iter().map(PathBuf::from).collect(),
+        read_only_binds: Vec::new(),
         state_root: Some(PathBuf::from("/state")),
     };
 }
@@ -145,4 +146,77 @@ fn state_inside_the_project_is_bound_writable_after_the_read_only_project() {
     );
     let clear = args.iter().position(|part| return part == "--clearenv");
     assert!(writable < clear, "binds must precede the environment");
+}
+
+/// Tool directories of mise below a replaced location exist inside only if they are bound again,
+/// after the replacements and before the state bind, and never writable.
+#[test]
+fn read_only_directories_below_replaced_locations_are_bound_back_read_only() {
+    let mut wanted = request("/work/project", &[]);
+    wanted.read_only_binds = vec![
+        PathBuf::from("/tmp/mise data/installs/node/bin"),
+        PathBuf::from("/run/user/1000/tools"),
+        PathBuf::from("/usr/local/tools"),
+    ];
+    let state = "/state/p/rust-analyzer";
+    let launch = recipe(&wanted, Path::new(state), "/usr/bin/bwrap", &[]).expect("recipe");
+    let args = &launch.args;
+    let tmp = triple(args, "--bind", "/state/p/rust-analyzer/tmp", "/tmp");
+    let project = triple(args, "--ro-bind", "/work/project", "/work/project");
+    let node = triple(
+        args,
+        "--ro-bind",
+        "/tmp/mise data/installs/node/bin",
+        "/tmp/mise data/installs/node/bin",
+    );
+    let tools = triple(
+        args,
+        "--ro-bind",
+        "/run/user/1000/tools",
+        "/run/user/1000/tools",
+    );
+    let writable = triple(args, "--bind", state, state);
+    assert!(
+        node.is_some() && tools.is_some(),
+        "a tool directory below /tmp or /run is missing: {args:?}"
+    );
+    assert!(
+        tmp < node && project < node && node < writable && tools < writable,
+        "the tool directories must come after the replacements and before the state bind: {args:?}"
+    );
+    // A directory elsewhere is visible through the read-only root and gets no mount of its own.
+    assert!(
+        !args.iter().any(|part| return part == "/usr/local/tools"),
+        "{args:?}"
+    );
+    // No tool directory is ever mounted writable.
+    assert!(
+        !args.windows(3).any(|window| {
+            return window[0] == "--bind" && window[1].contains("/mise data/");
+        }),
+        "{args:?}"
+    );
+}
+
+#[test]
+fn only_replaced_locations_need_a_read_only_mount() {
+    let directories = vec![
+        PathBuf::from("/tmp/a b/-c"),
+        PathBuf::from("/dev/shm/tools"),
+        PathBuf::from("/tmpfoo/tools"),
+        PathBuf::from("/opt/tools"),
+    ];
+    let options = read_only_binds(&directories).expect("options");
+    assert_eq!(
+        options,
+        [
+            "--ro-bind",
+            "/tmp/a b/-c",
+            "/tmp/a b/-c",
+            "--ro-bind",
+            "/dev/shm/tools",
+            "/dev/shm/tools"
+        ]
+    );
+    assert!(read_only_binds(&[]).expect("none").is_empty());
 }

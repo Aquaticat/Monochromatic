@@ -6,7 +6,7 @@ import {createJudgmentDependencyChecks} from './judgment-dependencies.mjs';
 
 
 
-import {createJudgmentBudget} from "../../../lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs";
+import {createJudgmentBudget} from "../../../lifecycle/judgment-budget-error-occurrences/controls-private/candidate.ts";
 import {createQuestionSelection,readAssessmentResponse} from "../../../lifecycle/claim-evidence-batch-selection/selection.mjs";
 import {createDependencyFacade} from "../../../lifecycle/native-text-read-contract/dependencies.mjs";
 import {readMainAgentRequest} from "../../request-producer-group-consumer/request.mjs";

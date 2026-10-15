@@ -661,7 +661,137 @@ and normal and exceptional program queue release in
 `${HOME}/temp/agent/pi-native-wrapper-lifetimes-consumer-20261014.log`.
 The first wrapper lint found one remaining mutable options binding;
 the subsequent cancellation helper addresses that finding.
-A full maintained-package lint recount is running before the next source cleanup.
+The full maintained-package recount reports 131 errors and 13218 warnings across 456 files and 486 rules.
+`${HOME}/temp/agent/pi-maintained-lifecycle-cleanup-lint-20261014.log` contains the structured diagnostics.
+The constructor,
+dependency owner,
+runtime owner,
+budget,
+and wrapper files now have no error-severity findings in that full scan.
+The warning gate remains open;
+these results do not establish package completion.
+Commit `9c28c21d7d` replaces synchronous fixture directory and file setup with awaited filesystem operations.
+It also records network requests by their URL and keeps provider-call accounting in one fixture-owned record.
+Focused lint reports zero errors and 64 warnings for `environment.mjs`.
+The rebuilt domain,
+context-receipt,
+resource-input,
+and approval-context checks pass in
+`${HOME}/temp/agent/pi-native-async-environment-consumer-20261014.log`.
+Commit `a96c4d1da1` scopes the CLI fixture's reader and process cleanup
+and the historical-run fixture's session cleanup with disposal.
+The historical-run fixture now retains its counters and original source in one record.
+The package also exposes that existing fixture as `test:native:run-history`;
+its rebuilt consumer and CLI cleanup checks pass.
+Native syntax also passes all 260 modules at that artifact.
+`${HOME}/temp/agent/pi-native-fixture-cleanup-consumer-20261014.log` retains those results.
+The package type check passes after the lifecycle and wrapper interface changes.
+Commit `2c67f036e7` adds explicit budget input,
+retained-state,
+and response types.
+The budget's type-safety findings disappear in focused lint;
+its total warning count changes from 55 to 41 because the first annotations introduced comment-format findings.
+Commits `1e14b97233` and `35c0febc93` then separate stable error identities,
+name the unchanged budget limits,
+and correct the remaining statement and comment shapes.
+The next focused report has two warnings:
+sequential retry awaiting and an explicit return required in the classifier-error branch.
+Commit `a8b5cf2811` addresses that return and documents the narrow sequential-retry exception in
+the troubleshooting entry's "Sequential native judgment retries" section.
+Commit `c9807abb0c` adds a built consumer for retry accounting,
+overlap refusal,
+deadline and cancellation retirement,
+late response rejection,
+classifier failures,
+and stable error names and causes.
+Its built check passes.
+The process-local omitted overlap guard fails the expected rejection assertion;
+the original built artifact hash is unchanged in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/budget-overlap-omission.json`.
+The final JavaScript subset reports zero errors and 139 warnings,
+mostly in the new consumer.
+The consumer's imported calls remain unchecked despite annotations inside the budget module.
+The inherited TypeScript configuration sets `allowJs: false` and excludes these JavaScript consumers.
+Commit `4f27290d9b` moves the implementation into TypeScript;
+the package type check passes,
+but the still-JavaScript consumer retains its unchecked-call warnings.
+The migration also exposes TypeScript documentation requirements,
+which are addressed in the following ownership and dispatch split.
+Commits `a1f2204eed` and `0fc4da484c` document original ownership
+and separate sequential dispatch from clock lifetime.
+Commit `a4d9d43970` moves the consumer to typed tests using the existing module-test harness
+and built native imports.
+The rebuilt typed consumer tasks pass.
+Their first typed lint exposes copied-artifact import classification and callback-return errors;
+the unsafe-value warnings are absent.
+The tests now follow the existing native fixture pattern:
+load the copied module through its artifact URL,
+check the required exports,
+and invoke an independently typed consumer interface.
+They do not add copied output to the TypeScript source project.
+The final formatting pass reports zero errors and 27 remaining warnings;
+the following edits separate callback statements and complete the fixture assertion documentation.
+Commit `feb3b62cec` separates the remaining compound export assertion operators.
+Package type checking passes;
+focused lint passes all eight budget implementation and consumer files with zero warnings or errors.
+`${HOME}/temp/agent/pi-native-budget-operator-lint-20261015.log` retains the complete report.
+The rebuilt typed consumers pass in
+`${HOME}/temp/agent/pi-native-budget-checked-consumer-20261015.log`.
+Removing the dispatch overlap guard in memory makes the typed consumer fail its expected rejection assertion.
+The unchanged artifact hashes and result are recorded in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/budget-overlap-typescript-omission.json`.
+Original source-work,
+manual-review,
+approval-context,
+and changed-dependency consumers pass on the rebuilt typed budget in
+`${HOME}/temp/agent/pi-native-budget-approval-consumer-20261015.log`.
+The source-work check records 9045 policy-file opens within its unchanged 10000 limit;
+this count alone does not establish a performance change.
+Commit `a21d26fd12` separates host fixture construction and observations from lifecycle assertions
+and scopes runtime cleanup and failed-disconnection restoration.
+Its rebuilt host-lifecycle consumer passes replacement,
+cancellation,
+fork,
+persisted resume,
+and incomplete-disposal retry in
+`${HOME}/temp/agent/pi-native-host-fixture-consumer-20261015.log`.
+The subsequent full lint recount covers 464 files and 486 rules,
+with 107 errors and 13167 warnings.
+`${HOME}/temp/agent/pi-maintained-typed-budget-lint-20261015.log` retains the complete report.
+This remains a failing package gate.
+Commits `0f55a81f89`,
+`fbbeedd83c`,
+and `7924d5b74a` scope original producer construction and invocation claims,
+retain CLI manager observations in a fixture record,
+and name collector and manual-review helper inputs.
+Focused lint reports zero errors and 356 warnings across that six-file subset.
+The rebuilt request-claim,
+domain,
+CLI-manager,
+host-lifecycle,
+and manual-review consumers pass in
+`${HOME}/temp/agent/pi-native-producer-manager-consumer-20261015.log`.
+Commit `897d64e1b3` retains authorization observations in their fixture record;
+commit `7095845a18` separates approval setup and scenario state from its original assertions.
+The package now exposes `test:native:authorization-inputs` for the maintained authorization fixture.
+The final approval and authorization subset has zero errors and 163 warnings.
+Its rebuilt authorization,
+manual-review,
+approval-context,
+and source-work consumers pass in
+`${HOME}/temp/agent/pi-native-approval-fixtures-consumer-20261015.log`.
+The work counter remains 9045 policy-file opens in that run.
+The source-association split then separates envelope shape,
+message origins,
+original prompt contributions,
+and one-time serialization closure into sibling modules.
+The original callback and closure share one private observation record.
+Focused lint has zero errors and 439 warnings across those modules.
+Rebuilt serializer-receipt,
+event-receipt,
+approval-context,
+and source-work checks are running;
+the remaining full lint gate is still open.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

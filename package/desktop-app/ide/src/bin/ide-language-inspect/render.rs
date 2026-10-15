@@ -22,7 +22,7 @@ use serde_json::{Value, json};
 
 /// Longest text copied into the record,
 ///  in characters.
-const SHOWN_CHARS: usize = 400;
+const SHOWN_CHARS: usize = 2000;
 
 /// Shorten text for the record.
 fn shown(text: &str) -> String {

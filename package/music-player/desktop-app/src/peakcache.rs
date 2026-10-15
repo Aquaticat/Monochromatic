@@ -42,28 +42,6 @@ use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
 
 /// What:
-///      `use gxhash::gxhash64;`.
-///  The one-shot 64-bit non-cryptographic hash
-///           `gxhash64(input: &[u8], seed: i64) -> u64`.
-/// Why:
-///       Derive the opaque fingerprint;
-///  its output is fully determined by
-///           `(bytes, seed)` with no per-process randomness,
-///  which a stable cache
-///           key needs.
-/// Gotcha:
-///    gxhash has a hardware-AES code path with no software fallback,
-///  so the
-///           target must enable the `aes` CPU feature (.cargo/config.toml) or the
-///           binary SIGILLs at runtime.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { gxhash64 } from "gxhash"; // hypothetical; no real JVM/JS port exists
-/// ```
-use gxhash::gxhash64;
-
-/// What:
 ///      `use crate::identity;` imports the shared identity-strings module
 ///           (reads stay qualified as `identity::config_dir`).
 /// Why:
@@ -78,21 +56,26 @@ use gxhash::gxhash64;
 use crate::identity;
 
 /// What:
-///      `use truepeak_core::{CacheIdentity, default_policy};`.
-///  The four-part cache
-///           identity type and the one shipped policy,
-///  from the shared crate.
+///      `use truepeak_core::{CacheIdentity, default_policy, track_fingerprint};`.
+///  The four-part
+///           cache identity type,
+///  the one shipped policy,
+///  and the shared fingerprint function,
+///  from the
+///           shared crate.
 /// Why:
 ///       `cache_identity` pairs the shared policy's `policy_id`/`meter_id`/`schema`
 ///           with the desktop's `decoder_stack_id`,
 ///  so a cache row is reused only when the
 ///           whole measurement environment matches.
+///  `fingerprint` hands its three inputs to `track_fingerprint`,
+///           so desktop and Android share one hash and one byte layout.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { CacheIdentity, defaultPolicy } from "truepeak-core";
+/// import { CacheIdentity, defaultPolicy, trackFingerprint } from "truepeak-core";
 /// ```
-use truepeak_core::{CacheIdentity, default_policy};
+use truepeak_core::{CacheIdentity, default_policy, track_fingerprint};
 
 /// What:
 ///      `#[path = "peakcache_service.rs"] mod service;`.
@@ -141,24 +124,6 @@ mod handle;
 pub(crate) use handle::CacheHandle;
 
 /// What:
-///      `const FINGERPRINT_SEED: i64 = 0;`.
-///  The fixed seed handed to `gxhash64`.
-///           `i64` because that is the exact parameter type of `gxhash64(input, seed)`.
-/// Why:
-///       gxhash64 is fully deterministic given `(bytes, seed)`,
-///  so pinning one
-///           constant seed makes the fingerprint reproducible across runs of the SAME
-///           binary,
-///  which is all a cache key needs.
-///  The value itself is arbitrary.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const FINGERPRINT_SEED = 0n; // bigint: the API wants a 64-bit integer
-/// ```
-const FINGERPRINT_SEED: i64 = 0;
-
-/// What:
 ///      `pub(crate) fn fingerprint(path: &Path) -> Option<u64>`.
 ///  Build the opaque
 ///           cache key for a file from its path,
@@ -168,11 +133,12 @@ const FINGERPRINT_SEED: i64 = 0;
 ///           if the file cannot be stat'd.
 ///  `pub(crate)` for the controller and background
 ///           worker.
-///  The value is the raw `gxhash64` output,
-///  since the shared
-///           `DecisionCache` keys on a `u64` (stored as a bijective `i64` bit-cast),
-///  not a
-///           hex string.
+///  The value is the shared `track_fingerprint` output (XXH3-64 over a
+///           domain-tagged,
+///  length-prefixed layout),
+///  since the shared `DecisionCache` keys on a `u64`
+///           (stored as a bijective `i64` bit-cast),
+///  not a hex string.
 /// Why:
 ///       Identify a track without storing anything identifying;
 ///  size+mtime make the key
@@ -182,8 +148,7 @@ const FINGERPRINT_SEED: i64 = 0;
 /// ```ts
 /// function fingerprint(path: string): bigint | null {
 ///   let meta; try { meta = statSync(path); } catch { return null; }
-///   const material = encode(path) + u64le(meta.size) + u128le(meta.mtimeNanos);
-///   return gxhash64(material, FINGERPRINT_SEED);
+///   return trackFingerprint(path, meta.size, meta.mtimeNanos);
 /// }
 /// ```
 pub(crate) fn fingerprint(path: &Path) -> Option<u64> {
@@ -221,51 +186,18 @@ pub(crate) fn fingerprint(path: &Path) -> Option<u64> {
     // const pathText = String(path);
     // ```
     let path_text = path.to_string_lossy();
-    // What:     `let mut material: Vec<u8> = Vec::new();`. A growable byte buffer.
-    // Why:      Concatenate path + size + mtime before hashing.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const material: number[] = [];
-    // ```
-    let mut material: Vec<u8> = Vec::new();
-    // What:     `material.extend_from_slice(path_text.as_bytes());`. Append path bytes.
-    // Why:      Distinguish tracks at different paths.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // material.push(...encode(pathText));
-    // ```
-    material.extend_from_slice(path_text.as_bytes());
-    // What:     `material.extend_from_slice(&meta.len().to_le_bytes());`. Append the
-    //           file size as little-endian bytes (`u64` -> `[u8; 8]`).
-    // Why:      Size change (re-encode) invalidates the key.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // material.push(...u64le(meta.size));
-    // ```
-    material.extend_from_slice(&meta.len().to_le_bytes());
-    // What:     `material.extend_from_slice(&mtime_nanos.to_le_bytes());`. Append the
-    //           mtime as little-endian bytes (`u128` -> `[u8; 16]`).
-    // Why:      In-place edits (same size) still change the key via mtime.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // material.push(...u128le(mtimeNanos));
-    // ```
-    material.extend_from_slice(&mtime_nanos.to_le_bytes());
-    // What:     `Some(gxhash64(&material, FINGERPRINT_SEED))`. Hash the bytes with the
-    //           fixed seed; the raw `u64` is the cache key. Tail -> return.
-    // Why:      The opaque key stored on disk; a 64-bit non-cryptographic hash is not
+    // What:     `track_fingerprint(&path_text, meta.len(), mtime_nanos)`. Hand the path text,
+    //           the file size (`u64`), and the mtime nanoseconds (`u128`) to the shared
+    //           function, which owns the hashed layout and the hash. Tail -> return.
+    // Why:      The opaque key stored on disk; a non-cryptographic 64-bit hash is not
     //           reversible to the path in practice, preserving the privacy guarantee. The
     //           shared cache keys on the `u64` directly, so no hex rendering is needed.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return gxhash64(material, FINGERPRINT_SEED);
+    // return trackFingerprint(pathText, meta.size, mtimeNanos);
     // ```
-    return Some(gxhash64(&material, FINGERPRINT_SEED))
+    return Some(track_fingerprint(&path_text, meta.len(), mtime_nanos))
 }
 
 /// What:
