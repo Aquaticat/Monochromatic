@@ -28,7 +28,18 @@ All checks use authored provider responses in a disposable network-isolated home
 No live-provider latency claim follows from these controls.
 The built bundle tests verify parallel starts, exact membership through 1800 questions,
 cancellation, malformed responses, stale capabilities, overlap rejection, and shared retry accounting.
-Final regression checks and documentation rendering are in progress.
+The subsequent live-provider replay failed at the original five-second deadline.
+The first bundle started three requests of 2566713, 2690737, and 4538472 bytes;
+none returned response headers before cancellation and the fourth request was not sent.
+The complete shared state is 2152170 bytes in each request.
+This single observation establishes failure under the retained deadline,
+not a causal latency comparison or a provider capacity rejection.
+Normal live use is therefore not yet qualified.
+The deciding receipt is `${HOME}/temp/agent/pi-live-bundled-assessment.log`;
+the replay verifies exact equality with the configured fixture's provider request bodies.
+The next investigation is lossless removal of repeated context from provider representation,
+retaining every original instruction occurrence and its source identity.
+Do not drop instructions or silently relax the deadline.
 Do not present size-triggered manual review as the completed repair.
 
 The user explicitly accepted removal of arbitrary capture limits on 2026-10-15.

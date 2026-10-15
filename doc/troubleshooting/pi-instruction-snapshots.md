@@ -45,6 +45,17 @@ Its requests contained 200, 200, 200, and 17 questions across two bundles.
 These are network-isolated fixtures with authored model replies,
 not live-provider latency measurements.
 
+A subsequent real-service replay of those exact request bodies expired at five seconds.
+The first bundle dispatched 2566713, 2690737, and 4538472 bytes;
+no response headers arrived before cancellation,
+and the remaining request was not sent.
+Every request contains the same 2152170-byte shared state.
+The largest retained source is a 592915-byte `message_end` receipt collection;
+the corresponding selected-rule question repeats that collection.
+This establishes a remaining live-use failure,
+not proof that payload size alone caused the timeout.
+The configured offline successes must not be described as full live functionality.
+
 `mise run //package/pi-plugin/auto-mode:test:assessment-bundles`
 exercises the built sender with the actual built judgment owner.
 The test proves three parallel starts before releasing the first bundle,
