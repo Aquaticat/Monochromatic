@@ -278,7 +278,9 @@ Delegating technical judgment does not confirm that the interview is complete.
 The grilling skill requires an empty decision frontier and confirmation of shared understanding before implementation.
 Proposed clarification to existing `AGENTS.md` rule `ASK`,
 pending acceptance:
-"Non-measurable facts: ask. An uncertain answer or delegated technical judgment does not close unresolved preferences;
+"Non-measurable facts:
+ask.
+An uncertain answer or delegated technical judgment does not close unresolved preferences;
 offer concrete recommendations and confirm shared understanding."
 
 The interviewer asked for hypothetical rate-limit preferences before inspecting the existing policy and run history.
