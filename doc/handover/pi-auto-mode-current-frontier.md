@@ -9,6 +9,26 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+The next dispatcher boundary is in progress:
+`prepared-lifecycle.ts` and `prepared-lifecycle-types.ts` now own original member callback sequencing.
+The dispatcher retains shared group state and passes original queue operations through borrowed callbacks.
+Built consumers cover ordering,
+opaque callback failures,
+exact native identities,
+once-only preparation release,
+and synchronous disposal failure ownership.
+These changes are committed through `c98f5aac5e`;
+formatting and verification are pending.
+The original dispatcher is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-lifecycle-types.mjs`.
+Continue focused formatting,
+native build and package type checking,
+built consumers,
+original replay,
+domain comparisons,
+omission controls,
+and the complete lint recount before marking this boundary complete.
+
 The next extraction delegates original parallel successor inspection to `profile-successors.ts`.
 Its borrowed call inspector and private pattern ownership remain unchanged.
 Native build, package type checking, all built consumers, and exact original replay pass.
