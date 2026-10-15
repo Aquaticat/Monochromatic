@@ -41,9 +41,9 @@ type LifecycleFixture = ReturnType<typeof createBudgetFixture> & Readonly<{
 
 /**
  Construct independent lifecycle capabilities while preserving actual native budget and selection behavior.
- *
+ 
  @returns disposable consumer and exact fault controls
- *
+ 
  @example createLifecycleFixture();
  */
 export function createLifecycleFixture(): LifecycleFixture {
@@ -87,9 +87,9 @@ export function createLifecycleFixture(): LifecycleFixture {
   const dependencies = Object.freeze({ original: true });
   /**
    Record an operation boundary before executing the selected injected behavior.
-   *
+   
    @param point - exact boundary whose ordering is under test
-   *
+   
    @throws Error when the fixture selects a failure at this boundary
    */
   function visit(point: string): void {
@@ -112,11 +112,13 @@ export function createLifecycleFixture(): LifecycleFixture {
     },
     ready: function ready() { 
       visit('ready');
-    budgetFixture.budget.checkpoint(); 
+    budgetFixture.budget
+      .checkpoint(); 
     },
     active: function active() { 
       visit('active');
-    budgetFixture.budget.checkpoint(); 
+    budgetFixture.budget
+      .checkpoint(); 
     },
     bindingSegment: function bindingSegment<Result>(run: () => Result): Result {
       visit(`segment:${run.name}:enter`);
@@ -172,7 +174,11 @@ export function createLifecycleFixture(): LifecycleFixture {
       return JSON.stringify(attempt.request
         .questions
         .map(function answer(question) {
-        return { id: question.id, status: 'estimate', value: 0.75 };
+        return {
+          id: question.id,
+          status: 'estimate',
+          value: 0.75
+        };
       }));
     },
   });

@@ -70,16 +70,17 @@ type LifecycleModule = Readonly<{
 
 /**
  Require the original factory in the copied consumer artifact.
- *
+ 
  @param value - built namespace before admission
- *
+ 
  @returns assertion exposing the independent consumer contract
- *
+ 
  @throws Error when the original factory is unavailable
  */
 function assertLifecycleModule(value: unknown): asserts value is LifecycleModule {
-  if ((value === null) || (typeof value) !== 'object' || (!('createJudgmentLifecycle' in value))
-    || (typeof value.createJudgmentLifecycle) !== 'function') throw new Error('Built judgment lifecycle export is unavailable');
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('createJudgmentLifecycle' in value))
+    || ((typeof value.createJudgmentLifecycle) !== 'function')) throw new Error('Built judgment lifecycle export is unavailable');
 }
 
 /**
