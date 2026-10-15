@@ -5,7 +5,6 @@ import type { MemberInstructionOperations } from './instruction-api.ts';
 import type {
   InstructionRecord,
   InstructionContext,
-  InstructionMember,
   SelectedInstruction
 } from './instruction-types.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
@@ -15,23 +14,7 @@ import {
   retainedInstructionRules
 } from './instruction-ownership.ts';
 import type { InstructionSources } from './instruction-sources.ts';
-
-/**
- Preserve the native missing-member failure at the original projection access boundary.
-
- @param memberRecord - original private map read
-
- @returns original prepared-member projection
-
- @throws TypeError when original member ownership has disappeared
- */
-function memberProjection(memberRecord?: InstructionMember) : NonNullable<InstructionMember['binding']>['projection'] {
-  if (memberRecord === undefined) throw new TypeError("Cannot read properties of undefined (reading 'binding')");
-  /** Original root projection access fails before claim publication when its binding is absent. */
-  const { binding } = memberRecord;
-  if (binding === undefined) throw new TypeError("Cannot read properties of undefined (reading 'projection')");
-  return binding.projection;
-}
+import { memberProjection } from './instruction-member-projection.ts';
 
 //region Instruction meaning shares clause identity while member predicates retain separate original handles.
 /**

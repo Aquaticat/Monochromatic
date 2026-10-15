@@ -10,6 +10,7 @@ import type {
   ProgramInstruction
 } from './instruction-types.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
+import { memberProjection } from './instruction-member-projection.ts';
 import { retainInstructionHandle } from './instruction-ownership.ts';
 import type { InstructionSources } from './instruction-sources.ts';
 
@@ -278,8 +279,7 @@ export function createProgramInstructions({
         projection: Object.freeze({
           claimScope: 'member-unit-adoption',
           member,
-          memberOrdinal: originalMemberRecord.binding
-            .projection
+          memberOrdinal: memberProjection(originalMemberRecord)
             .memberOrdinal,
           adopter: adopterProjection,
           target: targetProjection

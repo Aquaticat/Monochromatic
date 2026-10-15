@@ -136,10 +136,17 @@ await describe({
         assert.throws(function missingBindingProjection() {
           instructions.claimRuleCandidate({ definitionId: 'fixture', memberId: 'member-0', rule });
         }, { name: 'TypeError', message: "Cannot read properties of undefined (reading 'projection')" });
+        /** Adoption consumes the same original root projection boundary. */
+        const [pair] = instructions.indexedUnitAdoptionPairs();
+        assert.ok(pair);
+        assert.throws(function missingAdoptionProjection() {
+          instructions.claimUnitAdoption({ pair });
+        }, { name: 'TypeError', message: "Cannot read properties of undefined (reading 'projection')" });
         bindings.set(root, rootRecord);
         /** Failed projection access must not publish a partial claim handle. */
         const recovered = instructions.claimRuleCandidate({ definitionId: 'fixture', memberId: 'member-0', rule });
         assert.equal(instructions.resolveBinding(recovered).projection.memberOrdinal, 0);
+        assert.equal(instructions.resolveBinding(instructions.claimUnitAdoption({ pair })).projection.memberOrdinal, 0);
       },
     }),
     ...['clause', 'heading', 'adoption'].map(function originalDependency(kind) {
