@@ -581,6 +581,25 @@ resource reload,
 resource input,
 context receipts,
 and the whole-request claim consumer to the prior sequence.
+On the `f79ac0ea45` build,
+the repeated original runtime sequence passed again.
+The scratch runner then stopped before the queue task because its working directory was outside the monorepo;
+this was a task-launch error rather than an application assertion.
+With the scratch task's `dir` pinned to the repository,
+all remaining queue,
+resource reload,
+resource input,
+context receipt,
+and whole-request claim checks passed.
+The complete split records are
+`${HOME}/temp/agent/pi-native-source-boundaries-final-20261014.log`
+and `${HOME}/temp/agent/pi-native-source-boundaries-remaining-20261014.log`.
+Lint cleanup resumed with `45269cca6f` and `0313276bd7`:
+tool diagnostic and declaration budgets,
+guideline publication,
+forced-message retirement,
+and governing selection now retain mutable values in their original owned records.
+Their updated build and source-work/resource consumers are running before the full lint recount.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
