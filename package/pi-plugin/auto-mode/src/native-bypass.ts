@@ -84,10 +84,7 @@ export function registerNativeBypass(pi: ForeignHostCapability<ExtensionAPI>): v
 
    @mutates ctx - updates displayed bypass status
    */
-  function restoreStatus(
-    _event: unknown,
-    ctx: ForeignHostCapability<ExtensionContext>
-  ): void {
+  function restoreStatus(ctx: ForeignHostCapability<ExtensionContext>): void {
     tagged({ tag: restoreStatus.name, l: rl })
       .debug('restoring native bypass status from current branch');
     updateBypassStatus({
@@ -97,15 +94,15 @@ export function registerNativeBypass(pi: ForeignHostCapability<ExtensionAPI>): v
   }
   pi.on(
     'session_start',
-    restoreStatus
+    function restoreSession(_event, ctx) { restoreStatus(ctx); }
   );
   pi.on(
     'session_tree',
-    restoreStatus
+    function restoreBranch(_event, ctx) { restoreStatus(ctx); }
   );
   pi.on(
     'tool_call',
-    function guardNativeTool(event: ForeignBorrowed<ToolCallEvent>, ctx: ForeignHostCapability<ExtensionContext>): ToolCallEventResult | undefined {
+    function guardNativeTool(event: ForeignBorrowed<ToolCallEvent>, ctx: ForeignHostCapability<ExtensionContext>): Readonly<{ decision?: ToolCallEventResult }>['decision'] {
     /** Fixed safety policy precedes explicit bypass and remains active in both modes. */
     const decision = guardVirtualInput(event);
     if (decision.block) {
