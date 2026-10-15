@@ -1,11 +1,10 @@
 /** Pinned definition contracts retain predicate text and per-definition claim identities. @module */
 
 /** Complete fixed predicate with immutable criteria after catalog admission. */
-export type QuestionDefinition = Readonly<{
-  type: 'noul' | 'choice';
-  instructions: string;
-  criteria: Readonly<Record<string, string>>;
-}>;
+export type QuestionDefinition = Readonly<{ instructions: string }> & (
+  | Readonly<{ type: 'noul'; criteria: Readonly<{ true: string; false: string }> }>
+  | Readonly<{ type: 'choice'; criteria: Readonly<Record<string, string>> }>
+);
 
 /** Untrusted catalog boundary and its caller-owned binding capability. */
 export type QuestionCatalogInput = Readonly<{
