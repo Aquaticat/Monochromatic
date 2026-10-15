@@ -36,8 +36,16 @@ It uses local provider replies in a network-isolated disposable home,
 with no process-local capacity overrides.
 The fixture is `capture-removal-repro.ts` under
 `${HOME}/temp/agent/pi-tool-call-scope-20261014`.
-Type checking passes.
-Updated regression and tool-control verification remain active.
+Type checking and the updated capture, resource, event, history, governing-index,
+tool-publication, file-observer and native-bypass regressions pass.
+The configured native CLI's existing Allow, Deny, Stop, cancellation, abort,
+generic prerequisite, prohibition and bare-policy controls pass with their original small policy.
+The expanded full-workspace tool check found a separate downstream limit:
+`instruction-batches.ts:144` rejects more than 256 instruction candidates before assessment.
+Its exact error is `Clause relation requires one through 256 original instruction candidates`.
+Normal workspace tool use is therefore not yet qualified.
+The scratch `assessment-capacity-control` task measures the next boundary with process-local controls;
+no production assessment limits have changed.
 Do not claim live-provider or physical-terminal verification from these offline checks.
 
 The deciding pre-repair measurements were:
