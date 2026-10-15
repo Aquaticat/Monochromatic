@@ -326,8 +326,21 @@ That syntax task passes 227 maintained modules.
 The native lint report after direct integration contains 533 errors;
 the maintained-package quality queue remains open.
 Commit `53c651c0c0` separates the shared governing-source error to remove the source-history import cycle.
-Its source changes have not yet been rebuilt or verified;
-the passing regression artifact predates that extraction.
+Its owned build and native domain suite pass.
+Commits `d9c7183140` and `d014715404` name native runner callbacks,
+extract original recorder ownership,
+and scope exclusive queue release with `using`.
+The parallel branch retains synchronous entry without acquiring a queue turn.
+The rebuilt native domain suite passes;
+the focused lint report contains no errors in either runner module or the error/history modules.
+Commit `99886bdca1` retains governing binding failure and source selection in one lifecycle record.
+Commits `2e025dc5cc` and `d6c4d39496` share the original judgment operation wrappers
+and name the remaining judgment callbacks.
+Their build and focused lint checks are running;
+consumer regression verification remains required.
+The handover,
+troubleshooting entry,
+and native README were rendered and inspected with Pandoc.
 The earlier formatting-only commit is `2728f357f`.
 Its judgment-input formatting was temporarily restored to recover a passing build before this direct integration.
 
