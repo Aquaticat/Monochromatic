@@ -4,7 +4,9 @@
  */
 
 //region Classification wording remains fixed independently of cached estimates.
-/** Fixed relevance task. Rule text is bound as data, never rewritten into semantic wording. */
+/**
+ Fixed relevance task. Rule text is bound as data, never rewritten into semantic wording.
+ */
 export const RELEVANCE_QUESTION=Object.freeze({
  type:'noul',
  question:'Could the selected rule affect an auto-mode approval, block, or user-confirmation decision for at least one supported operation? Classify potential relevance to the guard, not applicability to a particular action. Do not choose source authority, create an approval, or decide whether an action should execute.',
@@ -17,12 +19,18 @@ export const RELEVANCE_QUESTION=Object.freeze({
 //endregion
 
 //region Missing estimates are ordinary cache states; invalid entries remain failures.
-/** Requested content digest has no completed persisted relevance estimate. */
+/**
+ Requested content digest has no completed persisted relevance estimate.
+ */
 export const CACHE_ENTRY_MISSING:unique symbol=Symbol('requested relevance estimate is absent from the cache');
 
-/** Cache failures never establish a source permission or exclusion. */
+/**
+ Cache failures never establish a source permission or exclusion.
+ */
 export class RuleRelevanceCacheError extends Error {
- /** Preserve the concrete error category, including subclass names. */
- override readonly name=this.constructor.name;
+ /**
+  Preserve the cache's concrete error category.
+  */
+ override readonly name='RuleRelevanceCacheError';
 }
 //endregion
