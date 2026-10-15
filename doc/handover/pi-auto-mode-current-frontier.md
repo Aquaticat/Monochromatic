@@ -1955,11 +1955,26 @@ retained,
 and binding suites pass before formatting,
 including actual budget expiry/cancellation and original primitive or undefined throws.
 Initial type checking also passes.
-Direct original comparison,
-full-constructor comparison,
-guard controls,
-final consumer formatting,
-and the maintained recount remain pending for dependency extraction.
+`ce6dd23fac` records final consumer callback boundaries and formatting.
+All five consumer files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-dependency-tests-format-second-20261015.log`.
+The final direct suites and type check pass in
+`${HOME}/temp/agent/pi-dependency-tests-final-20261015.log`
+and `${HOME}/temp/agent/pi-dependency-types-final-20261015.log`.
+The same suites pass against the saved original dependency function statements in
+`${HOME}/temp/agent/pi-dependency-original-blocks-final-20261015.log`.
+The wrapper supplies the original request reader through the independent fixture callback
+and leaves the dependency function bodies unchanged.
+The six saved-constructor scenarios match public domain outcomes and native execution counts,
+including the permission/prohibition positive control,
+in `typed-dependency-constructor-comparison.json`.
+All 32 process-local omissions trigger assertion failures;
+all four built artifacts retain their starting hashes in `typed-dependency-omissions.json`.
+The full maintained recount covers 654 files and 486 rules:
+zero errors and 11275 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-dependency-lint-20261015.log`.
+Dependency eligibility and original binding-segment extraction are qualified at these tested boundaries.
+Continue original source binding and the remaining constructor composition.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.

@@ -71,6 +71,13 @@ The preparation owner shares original member records with instruction and execut
 original prepared data and file arguments,
 and retained frozen diagnostic snapshots after cancellation or closure failure.
 Retained inspection preserves original callback failures and declaration order without asserting live eligibility.
+`test:native:judgment-dependencies` verifies original request identity,
+permanent first-failure retention,
+prepared program currentness,
+and live versus retained dependency release.
+Binding segments authenticate dependencies before entering,
+release cached internal freshness before external postchecks,
+and retain paired failures in original order without an added `cause` property.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
