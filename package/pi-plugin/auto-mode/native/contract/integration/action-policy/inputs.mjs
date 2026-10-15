@@ -103,8 +103,8 @@ export async function capturePolicyInputs({
     {cause:inputState.failure.cause}
   );
   try{
-   judgment.assertDependenciesCurrent();
-   sourceBinding?.assertAllCurrent();
+   if(sourceBinding)sourceBinding.assertAllCurrent();
+   else judgment.assertDependenciesCurrent();
    // Closed judgments retain dependency checks, but cannot reopen candidate selection.
    if(!judgment.inspect()
      .finalRecord){
