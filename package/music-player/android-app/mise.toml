@@ -213,6 +213,27 @@ if (!sdk) throw new Error('ANDROID_HOME is unset; install the android-sdk mise t
 execFileSync('sdkmanager', [`--sdk_root=${sdk}`, 'platforms;android-37.0', 'build-tools;37.0.0', 'platform-tools'], { input: 'y\n'.repeat(50), stdio: ['pipe', 'inherit', 'inherit'] })
 '''
 
+[tasks."trial:depot:report-jvm"]
+description = "Count executed JVM cases from Gradle XML reports and reject an empty result"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { readdirSync, readFileSync } = await import('node:fs')
+const directory = 'app/build/test-results/testDebugUnitTest'
+const reports = readdirSync(directory).filter((name) => name.endsWith('.xml'))
+let total = 0
+for (const name of reports) {
+  const xml = readFileSync(`${directory}/${name}`, 'utf8')
+  const suite = xml.match(/<testsuite\b[^>]*>/)?.[0]
+  if (!suite) throw new Error(`Missing testsuite in ${name}`)
+  const count = Number(suite.match(/\btests="(\d+)"/)?.[1])
+  if (!Number.isFinite(count)) throw new Error(`Missing test count in ${name}`)
+  total += count
+  console.log(JSON.stringify({ report: name, tests: count, suite }))
+}
+if (total === 0) throw new Error('Android JVM checks executed no test cases.')
+console.log(JSON.stringify({ reports: reports.length, executedTests: total }))
+'''
+
 [tasks."test:instrumented:build"]
 description = "Assemble the app + instrumented-test APKs (native .so included; no device). Run on device with am instrument or connectedAndroidTest."
 dir = "{{config_root}}"

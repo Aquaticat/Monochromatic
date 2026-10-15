@@ -49,6 +49,7 @@ jobs:
       with:
         minimum_release_age: 1d
         install: false
+        cache: false
     - name: Check the locked dependencies against the current checkout
       run: mise run //package/music-player/desktop-app:trial:depot:dependencies
     - name: Build logger
@@ -78,6 +79,8 @@ jobs:
       run: mise run //package/music-player/android-app:trial:depot:prepare-jvm
     - name: Run Android host unit tests
       run: mise run //package/music-player/android-app:test:unit
+    - name: Verify the executed Android test report
+      run: mise run //package/music-player/android-app:trial:depot:report-jvm
     - name: Run Android lint
       run: mise run //package/music-player/android-app:lint
 
@@ -135,3 +138,23 @@ jobs:
         persist-credentials: false
     - name: Verify the checked-out revision
       run: git rev-parse --verify HEAD
+
+  device-prerequisites:
+    name: Inspect cloud display, audio, and virtualization prerequisites
+    runs-on: depot-ubuntu-24.04-4
+    timeout-minutes: 3
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        minimum_release_age: 1d
+        install: false
+        cache: false
+    - name: Install the probe runtime
+      run: mise install node
+    - name: Inspect prerequisites without starting an emulator
+      run: mise run //package/music-player/desktop-app:trial:depot:device-prerequisites

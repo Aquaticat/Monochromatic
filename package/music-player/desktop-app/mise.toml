@@ -729,3 +729,16 @@ for (const trialRun of ['cold-1', 'warm-1', 'warm-2']) {
   console.log(JSON.stringify({ trialRun, elapsedSeconds: (performance.now() - started) / 1000, version: readFileSync('package/music-player/desktop-app/target/depot-trial/version.txt', 'utf8') }))
 }
 """
+
+[tasks."trial:depot:device-prerequisites"]
+description = "Inspect the disposable cloud sandbox's display, audio, and virtualization prerequisites"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync } = await import('node:child_process')
+const { existsSync, readdirSync } = await import('node:fs')
+console.log(JSON.stringify({ kvm: existsSync('/dev/kvm'), dri: existsSync('/dev/dri') ? readdirSync('/dev/dri') : [], wayland: process.env.WAYLAND_DISPLAY ?? null, display: process.env.DISPLAY ?? null, runtime: process.env.XDG_RUNTIME_DIR ?? null }))
+for (const [command, args] of [['systemctl', ['--user', 'is-system-running']], ['pipewire', ['--version']], ['pactl', ['info']], ['weston', ['--version']], ['nvidia-smi', ['--query-gpu=name', '--format=csv,noheader']]]) {
+  const result = spawnSync(command, args, { encoding: 'utf8' })
+  console.log(JSON.stringify({ command, status: result.status, stdout: result.stdout, stderr: result.stderr, error: result.error?.message }))
+}
+'''
