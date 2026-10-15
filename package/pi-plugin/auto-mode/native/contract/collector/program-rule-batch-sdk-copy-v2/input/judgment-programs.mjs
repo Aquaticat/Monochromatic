@@ -137,13 +137,21 @@ export function createJudgmentPrograms({
       if(!scope.seenGuards.has(guard)){scope.seenGuards.add(guard);scope.guardFailures.push(guard);}
       scope.guardFailure??=guard;return guard;
     }
-    function scriptValueFor({group:handle,slot:slotHandle,outcome}){
-      let group;
-      try{group=knownGroup(handle);if(!group.consumer)throw new JudgmentConstructionError('Reached group has no fixed native consumer');}
+    function requireReturnConsumer(handle){
+      try{
+        const group=knownGroup(handle);
+        if(!group.consumer)throw new JudgmentConstructionError('Reached group has no fixed native consumer');
+        return group;
+      }
       catch(error){throw scriptValueGuard({error});}
-      let value;
-      try{value=group.consumer.valueFor({slot:slotHandle,outcome});}
+    }
+    function consumeScriptValue({group,slotHandle,outcome}){
+      try{return group.consumer.valueFor({slot:slotHandle,outcome});}
       catch(error){if(error instanceof NativeScriptValueGuardError)throw operation(function markInvocationFailure() { return (markProgramGuard({program:group.program,error})); });throw error;}
+    }
+    function scriptValueFor({group:handle,slot:slotHandle,outcome}){
+      const group=requireReturnConsumer(handle);
+      const value=consumeScriptValue({group,slotHandle,outcome});
       try{return operation(function readGuardedScriptValue() {
         currentGroup(handle);const slot=knownSlot({group,slot:slotHandle}),scope=knownProgram(group.program).program;
         if(group.definition.ordinal===0){

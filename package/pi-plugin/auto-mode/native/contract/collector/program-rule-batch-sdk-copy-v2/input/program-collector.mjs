@@ -1,13 +1,12 @@
+import {createGroupFailures} from './program-collector-failures.mjs';
+import {createGroupCompletions} from './program-collector-completions.mjs';
 
 export class DeclaredGroupCollectionError extends Error {
   constructor(message){super(message);this.name=this.constructor
     .name;}
 }
 
-/** Internal control-flow token distinguishes recorded delivery from a new equal-valued failure. */
-class RecordedFailure extends Error {
-  constructor(occurrence){super('Declared group failure already recorded');this.occurrence=occurrence;}
-}
+
 
 //region Run-local collection and transport lifetime, separate from actual native execution lifetime.
 /**
@@ -36,7 +35,7 @@ export function createReachedGroupRun({
     const handle=group;
     const controller=new AbortController();
   const records=declaration.members
-    .map(member=>({
+    .map(function createMemberRecord(member) { return (({
       member,
       handle:Object.freeze({}),
       arrival:'unarrived',
@@ -45,18 +44,20 @@ export function createReachedGroupRun({
       signal:undefined,
       removeAbort:undefined,
       completion:undefined
-    }));
+    })); });
   const failures=[];
-    const abortOccurrences=new WeakMap();
-  let checking=false;
-    let closed=false;
-    let dispatches=0;
-    let phase='collecting';
-    let phaseAtReturn;
-    let primary;
-    let unboundPending=0;
-    let work;
-    let unboundOutcomes=Object.freeze([]);
+    
+  const groupState={checking:false,closed:false,dispatches:0,phase:'collecting',phaseAtReturn:undefined,primary:undefined,unboundPending:0,work:Promise.resolve(),unboundOutcomes:Object.freeze([])};
+  const {recordFailure,abortOccurrence,retainBoundaryFailure}=createGroupFailures({groupState,failures,controller,rejectPending});
+  const {detach,observeCompletion}=createGroupCompletions({groupState,records,signal,onParentAbort});
+    
+    
+    
+    
+    
+    
+    
+    
 
   function rejectPending({
     error,
@@ -65,40 +66,8 @@ export function createReachedGroupRun({
     for(const record of records)if(record.state==='pending'){record.state=state;record.ticket
       .reject(error);}
   }
-  function recordFailure({
-    error,
-    at
-  }){
-    const occurrence=Object.freeze({
-      identity:Object.freeze({}),
-      ordinal:failures.length,
-      at,
-      error
-    });
-    const recorded=new RecordedFailure(occurrence);failures.push(occurrence);
-    if((!primary)&&(!closed)
-      &&(phase!=='settled')){
-      primary=recorded;phase='failed';rejectPending({
-        error,
-        state:'rejected'
-      });controller.abort(error);
-    }
-    return recorded;
-  }
-  function abortOccurrence({
-    observed,
-    at
-  }){
-    let recorded=abortOccurrences.get(observed);
-    if(!recorded){recorded=recordFailure({
-      error:observed.reason,
-      at
-    });abortOccurrences.set(
-      observed,
-      recorded
-    );}
-    return recorded;
-  }
+  
+  
   function checkAbort({
     observed,
     at
@@ -107,8 +76,8 @@ export function createReachedGroupRun({
     at
   });}
   function current(){
-    if(primary)throw primary;
-    if(closed)throw new DeclaredGroupCollectionError('Declared parent group has returned');
+    if(groupState.primary)throw groupState.primary;
+    if(groupState.closed)throw new DeclaredGroupCollectionError('Declared parent group has returned');
     checkAbort({
       observed:signal,
       at:'original-cancellation'
@@ -122,66 +91,31 @@ export function createReachedGroupRun({
       observed:signal,
       at:'original-cancellation'
     });
-    if(primary)throw primary;
-    if(closed)throw new DeclaredGroupCollectionError('Declared parent group has returned');
+    if(groupState.primary)throw groupState.primary;
+    if(groupState.closed)throw new DeclaredGroupCollectionError('Declared parent group has returned');
   }
   function onParentAbort(){
-    if(closed||(phase==='settled')
-      ||records.every(record=>record.completion!==undefined))return;
+    if(groupState.closed||(groupState.phase==='settled')
+      ||records.every(function hasCompletion(record) { return (record.completion!==undefined); }))return;
     abortOccurrence({
       observed:signal,
       at:'original-cancellation'
     });
   }
-  function detach(){
-    signal.removeEventListener(
-      'abort',
-      onParentAbort
-    );
-    for(const record of records){record.removeAbort?.();record.removeAbort=undefined;}
-  }
-  function completed(){
-    if(records.every(record=>record.completion!==undefined)){
-      detach();if((!primary)&&(!closed))phase='settled';
-    }
-  }
-  async function observeCompletion({
-    record,
-    completion
-  }){
-    try{
-      const value=await completion;record.completion=Object.freeze({
-        status:'fulfilled',
-        value
-      });
-      if(record.state==='pending'){record.state='fulfilled';record.ticket
-        .resolve(value);}
-    }catch(error){
-      record.completion=Object.freeze({
-        status:'rejected',
-        reason:error
-      });
-      if(record.state==='pending'){record.state='rejected';record.ticket
-        .reject(error);}
-    }finally{record.removeAbort?.();record.removeAbort=undefined;completed();}
-  }
-  function retainBoundaryFailure({
-    error,
-    at
-  }){return error instanceof RecordedFailure?error:recordFailure({
-    error,
-    at
-  });}
+  
+  
+  
+  
   async function dispatch(){
     try{
       current();
-      if(!records.every(record=>record.arrival==='matched'))throw new DeclaredGroupCollectionError('Declared member set is incomplete');
-      phase='dispatching';dispatches++;
-      const members=Object.freeze(records.map(record=>Object.freeze({
+      if(!records.every(function hasArrived(record) { return (record.arrival==='matched'); }))throw new DeclaredGroupCollectionError('Declared member set is incomplete');
+      groupState.phase='dispatching';groupState.dispatches++;
+      const members=Object.freeze(records.map(function createDispatchMember(record) { return (Object.freeze({
         handle:record.handle,
         declaration:record.member,
         signal:record.signal
-      })));
+      })); }));
       let completions;
       try{completions=await dispatchGroup(Object.freeze({
         handle,
@@ -193,41 +127,35 @@ export function createReachedGroupRun({
         at:'group-consumer'
       });}
       if((!Array.isArray(completions))||(completions.length!==records.length)
-        ||records.some((
-        record,
-        index
-      )=>!Object.hasOwn(
+        ||records.some(function isMissingCompletion(record,
+        index) { return (!Object.hasOwn(
         completions,
         index
-      ))){
+      )); })){
         const failure=recordFailure({
           error:new DeclaredGroupCollectionError('Complete group consumer returned a different member set'),
           at:'group-dispatch'
         });
         if(Array.isArray(completions)){
           // These outcomes have no admitted member association. Enumeration skips holes, not returned promises.
-          const entries=Object.entries(completions);unboundPending=entries.length;
-          const settled=await Promise.allSettled(entries.map(([,completion])=>completion));
-          unboundOutcomes=Object.freeze(settled.map((
-            outcome,
-            index
-          )=>Object.freeze({
+          const entries=Object.entries(completions);groupState.unboundPending=entries.length;
+          const settled=await Promise.allSettled(entries.map(function readUnboundCompletion([,completion]) { return (completion); }));
+          groupState.unboundOutcomes=Object.freeze(settled.map(function retainUnboundOutcome(outcome,
+            index) { return (Object.freeze({
             retainedOnly:true,
             sourceKey:entries[index][0],
             ...outcome
-          })));unboundPending=0;
+          })); }));groupState.unboundPending=0;
         }
         throw failure;
       }
-      const settlements=records.map((
-        record,
-        index
-      )=>observeCompletion({
+      const settlements=records.map(function observeMemberCompletion(record,
+        index) { return (observeCompletion({
         record,
         completion:completions[index]
-      }));
+      })); });
       // Returned parents cannot receive more transport results. Observe already-issued completions regardless.
-      if(!closed){try{current();}catch(error){retainBoundaryFailure({
+      if(!groupState.closed){try{current();}catch(error){retainBoundaryFailure({
         error,
         at:'group-consumer-tail'
       });}}
@@ -238,14 +166,14 @@ export function createReachedGroupRun({
     });}
   }
   function startDispatch(){
-    const completion=Promise.withResolvers();work=completion.promise;
+    const completion=Promise.withResolvers();groupState.work=completion.promise;
     // Publish work before any synchronous parent-reader or consumer callback can request its drain.
     async function run(){
-      try{await dispatch();}catch(error){retainBoundaryFailure({
+      using dispatchCompletion={ [Symbol.dispose]() {completion.resolve();} };
+    try{await dispatch();}catch(error){retainBoundaryFailure({
         error,
         at:'dispatcher-completion'
       });}
-      finally{completion.resolve();}
     }
     void run();
   }
@@ -254,13 +182,15 @@ export function createReachedGroupRun({
     args,
     nativeSignal
   }){
-    let ticket;
+    const invocation={ticket:undefined};
     try{
-      if(checking)throw new DeclaredGroupCollectionError('Declared group collection cannot reenter through callbacks');
-      checking=true;
-      try{
+      if(groupState.checking)throw new DeclaredGroupCollectionError('Declared group collection cannot reenter through callbacks');
+      groupState.checking=true;
+      {
+        using collection={ [Symbol.dispose]() {groupState.checking=false;} };
+
         current();
-        if((phase!=='collecting')||(record.arrival!=='unarrived'))throw new DeclaredGroupCollectionError('Declared member callback cannot be replayed');
+        if((groupState.phase!=='collecting')||(record.arrival!=='unarrived'))throw new DeclaredGroupCollectionError('Declared member callback cannot be replayed');
         if(!(nativeSignal instanceof AbortSignal))throw new DeclaredGroupCollectionError('Native member cancellation is required');
         if(JSON.stringify(args)
           !==record.member
@@ -269,14 +199,14 @@ export function createReachedGroupRun({
           observed:nativeSignal,
           at:'native-cancellation'
         });current();
-        ticket=Promise.withResolvers();record.ticket=ticket;record.arrival='matched';record.state='pending';
+        invocation.ticket=Promise.withResolvers();record.ticket=invocation.ticket;record.arrival='matched';record.state='pending';
         record.signal=AbortSignal.any([
           signal,
           nativeSignal,
           controller.signal
         ]);
         function onNativeAbort() {
-          if(closed||(phase==='settled')
+          if(groupState.closed||(groupState.phase==='settled')
             ||(record.completion!==undefined))return;
           abortOccurrence({
             observed:nativeSignal,
@@ -287,22 +217,23 @@ export function createReachedGroupRun({
           'abort',
           onNativeAbort,
           {once:true}
-        );record.removeAbort=()=>{ nativeSignal.removeEventListener(
+        );record.removeAbort=function removeNativeAbort() { nativeSignal.removeEventListener(
           'abort',
           onNativeAbort
         ); };
         // Abort events do not replay when a constituent was aborted by the final parent-reader callback.
         if(nativeSignal.aborted)onNativeAbort();
         if(signal.aborted)onParentAbort();
-      }finally{checking=false;}
-      if((!primary)&&(!closed)
-        &&records.every(value=>value.arrival==='matched'))startDispatch();
+      
+      }
+      if((!groupState.primary)&&(!groupState.closed)
+        &&records.every(function hasArrivedMember(value) { return (value.arrival==='matched'); }))startDispatch();
     }catch(error){
       const recorded=retainBoundaryFailure({
         error,
         at:'member-entry'
       });
-      if(!ticket)throw recorded.occurrence
+      if(!invocation.ticket)throw recorded.occurrence
         .error;
       rejectPending({
         error:recorded.occurrence
@@ -310,7 +241,7 @@ export function createReachedGroupRun({
         state:'rejected'
       });
     }
-    return await ticket.promise;
+    return await invocation.ticket.promise;
   }
   signal.addEventListener(
     'abort',
@@ -318,7 +249,7 @@ export function createReachedGroupRun({
     {once:true}
   );
   if(signal.aborted)onParentAbort();
-  const tools=Object.freeze(records.map(record=>Object.freeze({
+  const tools=Object.freeze(records.map(function createGroupTool(record) { return (Object.freeze({
     name:record.member
       .alias,
     execute(
@@ -329,39 +260,39 @@ export function createReachedGroupRun({
       args,
       nativeSignal:context.signal
     });}
-  })));
+  })); }));
   function retire(){
-    if(closed)return;
-    detach();phaseAtReturn=phase;
-    if((phase==='collecting')&&(!primary))recordFailure({
+    if(groupState.closed)return;
+    detach();groupState.phaseAtReturn=groupState.phase;
+    if((groupState.phase==='collecting')&&(!groupState.primary))recordFailure({
       error:new DeclaredGroupCollectionError('Parent returned before declared membership completed'),
       at:'incomplete-membership-return'
     });
-    closed=true;
+    groupState.closed=true;
     const reason=new DeclaredGroupCollectionError('Declared parent group has returned');
     rejectPending({
       error:reason,
       state:'cancelled'
     });controller.abort(reason);
   }
-  async function drain(){await work;}
+  async function drain(){await groupState.work;}
   function inspect(){return Object.freeze({
-    phase:closed?'closed':phase,
-    phaseAtReturn,
-    failed:primary!==undefined,
-    failure:primary?.occurrence
+    phase:groupState.closed?'closed':groupState.phase,
+    phaseAtReturn:groupState.phaseAtReturn,
+    failed:groupState.primary!==undefined,
+    failure:groupState.primary?.occurrence
       .error,
     failures:Object.freeze([...failures]),
-    dispatches,
-    unboundPending,
-    unboundOutcomes,
-    members:Object.freeze(records.map(record=>Object.freeze({
+    dispatches:groupState.dispatches,
+    unboundPending:groupState.unboundPending,
+    unboundOutcomes:groupState.unboundOutcomes,
+    members:Object.freeze(records.map(function inspectMember(record) { return (Object.freeze({
       ordinal:record.member
         .ordinal,
       arrival:record.arrival,
       state:record.state,
       completion:record.completion
-    }))),
+    })); })),
     executionState:'owned-by-native-consumer-not-inferred',
     effectQualification:'not-established'
   });}

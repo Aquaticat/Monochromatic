@@ -94,11 +94,13 @@ import dev.monochromatic.musicplayer.core.KeyActivateRow
 import dev.monochromatic.musicplayer.core.KeyOpenRowMenu
 import dev.monochromatic.musicplayer.core.KeyRowAction
 import dev.monochromatic.musicplayer.core.ListKeyCommand
+import dev.monochromatic.musicplayer.core.TRACK_ROW_RING_TEXT_GAP_DP
 import dev.monochromatic.musicplayer.core.TrackListEntry
 import dev.monochromatic.musicplayer.core.TrackMenuAction
 import dev.monochromatic.musicplayer.core.ringAfter
 import dev.monochromatic.musicplayer.core.startFocus
 import dev.monochromatic.musicplayer.core.TrackRowLineSource
+import dev.monochromatic.musicplayer.core.TrackRowColumns
 import dev.monochromatic.musicplayer.core.TrackRowModel
 import dev.monochromatic.musicplayer.core.currentPositionOf
 import dev.monochromatic.musicplayer.core.entryKeyOf
@@ -107,6 +109,7 @@ import dev.monochromatic.musicplayer.core.pageEntryScrollTarget
 import dev.monochromatic.musicplayer.core.pageIdentityOf
 import dev.monochromatic.musicplayer.core.reportFirstVisibleTrack
 import dev.monochromatic.musicplayer.core.rowWithPlayingFlag
+import dev.monochromatic.musicplayer.core.trackRowColumns
 
 // What:     `private val ROW_MIN_HEIGHT: Dp = 48.dp` is the smallest height of a track row and a header.
 // Why:      The row meets the 48dp touch target, and a row with a supporting line grows past it.
@@ -127,28 +130,6 @@ private val ROW_MIN_HEIGHT: Dp = 48.dp
 // ```
 /** Horizontal inset of a row's text from the pane edges. */
 private val ROW_HORIZONTAL_PADDING: Dp = 16.dp
-
-// What:     `private val ROW_RING_TEXT_GAP: Dp = 8.dp` is the least space between a row's focus ring and its text.
-// Why:      Beside the crease the row's box starts at the crease clearance, which is as far as the text used to start,
-//           so without this gap the ring, which lies just inside the box (D120), would touch the first letters.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const ROW_RING_TEXT_GAP = 8;
-// ```
-/** Least distance from the inner edge of a row's focus ring to the start and end of its text. */
-private val ROW_RING_TEXT_GAP: Dp = 8.dp
-
-// What:     `private val ROW_RING_TEXT_START_MIN: Dp = ROW_RING_TEXT_GAP + FOCUS_RING_OUTSET` is the least padding
-//           between a row's box and its text.
-// Why:      The ring lies within the box edge by FOCUS_RING_OUTSET, and the text keeps ROW_RING_TEXT_GAP beyond it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const ROW_RING_TEXT_START_MIN = ROW_RING_TEXT_GAP + FOCUS_RING_OUTSET;
-// ```
-/** Least distance from a row's box edge to the start and end of its text: the ring's depth plus the gap. */
-private val ROW_RING_TEXT_START_MIN: Dp = ROW_RING_TEXT_GAP + FOCUS_RING_OUTSET
 
 // What:     `private val ROW_VERTICAL_PADDING: Dp = 12.dp` insets a row's text from its top and bottom.
 // Why:      A one-line row with this inset reaches the 48dp minimum height.
@@ -528,7 +509,7 @@ private fun rowWithLine(row: TrackRowModel, lines: TrackRowLineSource?): TrackRo
 
 // What:     `@Composable private fun trackRow(...)` draws one playable track row.
 // Why:      The current row gets the D42 surface background and a bold title, and a tap selects a row, or toggles
-//           play on the current one (D124).
+//           play on the current one (D124). Its box spans the pane and its text sits in the heading column (D130).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -556,10 +537,17 @@ private fun trackRow(
     val titleWeight: FontWeight? = if (row.isCurrent) FontWeight.Bold else null
     /** Window-space bounds of this row from its last layout, or null before the row is first placed. */
     var rowBounds: MenuAnchorRect? by remember { mutableStateOf<MenuAnchorRect?>(null) }
-    /** Start of the row's box, which is the pane's clearance; the focus ring is drawn just inside it (D120). */
-    val boxStart: Dp = LocalPaneStartClearance.current
-    /** End of the row's box, likewise. */
-    val boxEnd: Dp = LocalPaneEndClearance.current
+    /**
+     * Box and text insets of this row (D130): the box (fill, state layers, the ring just inside its edge, D120) spans
+     * the pane even beside the crease, and the text takes the heading column, the only thing the crease moves.
+     */
+    val columns: TrackRowColumns = trackRowColumns(
+        startClearanceDp = LocalPaneStartClearance.current.value,
+        endClearanceDp = LocalPaneEndClearance.current.value,
+        ordinaryInsetDp = ROW_HORIZONTAL_PADDING.value,
+        ringDepthDp = FOCUS_RING_OUTSET.value,
+        ringTextGapDp = TRACK_ROW_RING_TEXT_GAP_DP,
+    )
     /** Action that opens this row's menu anchored to the row, or null when no menu opener is provided. */
     val openMenuForRow: (() -> Unit)? = onOpenMenu?.let { open ->
         {
@@ -570,7 +558,7 @@ private fun trackRow(
         modifier = Modifier
             .fillMaxWidth()
             .onGloballyPositioned { coordinates -> rowBounds = menuAnchorOfRect(coordinates.boundsInWindow()) }
-            .padding(start = boxStart, end = boxEnd)
+            .padding(start = columns.boxStartDp.dp, end = columns.boxEndDp.dp)
             .heightIn(min = ROW_MIN_HEIGHT)
             .background(rowBackground)
             .keyboardFocusRing(visible = ringed, shape = RectangleShape, placement = FocusRingPlacement.INSIDE)
@@ -593,8 +581,8 @@ private fun trackRow(
             }
             .semantics { selected = row.isCurrent }
             .padding(
-                start = (paneStartInset(ROW_HORIZONTAL_PADDING) - boxStart).coerceAtLeast(ROW_RING_TEXT_START_MIN),
-                end = (paneEndInset(ROW_HORIZONTAL_PADDING) - boxEnd).coerceAtLeast(ROW_RING_TEXT_START_MIN),
+                start = columns.textStartDp.dp - columns.boxStartDp.dp,
+                end = columns.textEndDp.dp - columns.boxEndDp.dp,
                 top = ROW_VERTICAL_PADDING,
                 bottom = ROW_VERTICAL_PADDING,
             ),

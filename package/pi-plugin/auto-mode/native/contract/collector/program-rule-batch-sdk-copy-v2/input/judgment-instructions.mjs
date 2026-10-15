@@ -20,6 +20,23 @@ export function createJudgmentInstructions({
 }) {
   const instructionBindings=new WeakMap(),instructionPairs=new WeakMap(),instructionMeaningPairs=new WeakMap(),programInstructionPairs=new WeakMap();
   const retained={ruleBindings:undefined,unitAdoptionPairs:undefined,requestMaterialBinding:undefined};
+  /** Publish a binding once after its original source and member checks succeed. */
+  function retainInstructionHandle({map,key,createRecord}) {
+    const existing=map.get(key);
+    if(existing)return existing;
+    const bindingHandle=Object.freeze({});
+    instructionBindings.set(bindingHandle,createRecord());
+    map.set(key,bindingHandle);
+    return bindingHandle;
+  }
+  /** Each member owns a separate original rule-to-claim mapping. */
+  function memberInstructionPairs(member) {
+    const existing=instructionPairs.get(member);
+    if(existing)return existing;
+    const pairs=new WeakMap();
+    instructionPairs.set(member,pairs);
+    return pairs;
+  }
 function resolveBinding(bindingHandle){
       ready();const instruction=instructionBindings.get(bindingHandle);
       if(instruction){
@@ -39,10 +56,10 @@ function resolveBinding(bindingHandle){
 function indexedUnitAdoptionPairs(){
       ready();
       if(!retained.unitAdoptionPairs){
-        const selectPairs=function selectAdoptionCandidates() { return (declaredNames.length===1?selectUnitAdoptionPairs({
+        function selectAdoptionCandidates() { return (declaredNames.length===1?selectUnitAdoptionPairs({
           candidates:indexedInstructionCandidates(),readRule:readRuleCandidate,member:byMember.get(declaredNames[0].id)
-        }):Object.freeze([])); };
-        retained.unitAdoptionPairs=isBindingSegmentActive()?selectPairs():bindingSegment(selectPairs);
+        }):Object.freeze([])); }
+        retained.unitAdoptionPairs=isBindingSegmentActive()?selectAdoptionCandidates():bindingSegment(selectAdoptionCandidates);
       }
       return retained.unitAdoptionPairs;
     }
@@ -52,15 +69,12 @@ function claimUnitAdoption({pair}){
       const adopterProjection=ensureRuleBindings().read(adopter),targetProjection=ensureRuleBindings().read(target);
       const memberRecord=bindings.get(member);
       if(!memberRecord||adopterProjection.sourceOccurrence!==targetProjection.sourceOccurrence)throw new JudgmentConstructionError('Unit adoption requires its original member and same-source units');
-      let bindingHandle=programInstructionPairs.get(pair);
-      if(!bindingHandle){
-        bindingHandle=Object.freeze({});
+      const bindingHandle=retainInstructionHandle({map:programInstructionPairs,key:pair,createRecord(){
         const binding=Object.freeze({identity:pair,projection:Object.freeze({
           claimScope:'member-unit-adoption',member,memberOrdinal:memberRecord.binding.projection.memberOrdinal,adopter:adopterProjection,target:targetProjection
         })});
-        instructionBindings.set(bindingHandle,{kind:'unit-adoption',member,adopter,target,adopterProjection,targetProjection,binding});
-        programInstructionPairs.set(pair,bindingHandle);
-      }
+        return {kind:'unit-adoption',member,adopter,target,adopterProjection,targetProjection,binding};
+      }});
       return knownSelection().declare({definitionId:'unit_adoption',bindingHandle});
     }
 function requestMaterialFor(){ready();return receipt.request;}
@@ -77,13 +91,10 @@ function claimRequestMaterial(){
 function claimHeadingContext({candidate}){
       const projection=ensureRuleBindings().read(candidate);
       if(projection.kind!=='source-heading-context')throw new JudgmentConstructionError('Heading content requires an original contextual-heading group');
-      let bindingHandle=programInstructionPairs.get(candidate);
-      if(!bindingHandle){
-        bindingHandle=Object.freeze({});
+      const bindingHandle=retainInstructionHandle({map:programInstructionPairs,key:candidate,createRecord(){
         const binding=Object.freeze({identity:candidate,projection:Object.freeze({claimScope:'program-heading-context',headingContext:projection})});
-        instructionBindings.set(bindingHandle,{member:undefined,rule:candidate,projection,binding});
-        programInstructionPairs.set(candidate,bindingHandle);
-      }
+        return {member:undefined,rule:candidate,projection,binding};
+      }});
       return knownSelection().declare({definitionId:'heading_instruction_content',bindingHandle});
     }
 function issueBoundPolicyBatch({clauseRelations,requestMaterial,headingContexts=false,unitAdoptions=false}){
@@ -107,8 +118,8 @@ function ensureRuleBindings(){
       ready();
       if(!retained.ruleBindings){
         if(typeof parsePolicy!=='function'||!readJudgmentSources().hostGoverningPolicy)throw new JudgmentConstructionError('Original host-selected policy and qualified parser are required for instruction claims');
-        const indexSources=function createRuleBindings() { return (createGoverningRuleSet({parse:parsePolicy,readSources:function readGoverningSources() {ready();return readJudgmentSources().governingSources;}})); };
-        retained.ruleBindings=isBindingSegmentActive()?indexSources():bindingSegment(indexSources);
+        function createRuleBindings() { return (createGoverningRuleSet({parse:parsePolicy,readSources:function readGoverningSources() {ready();return readJudgmentSources().governingSources;}})); }
+        retained.ruleBindings=isBindingSegmentActive()?createRuleBindings():bindingSegment(createRuleBindings);
       }
       return retained.ruleBindings;
     }
@@ -123,13 +134,10 @@ function inspectRuleSources(){return ensureRuleBindings().inspect();}
       if(!['operation_violates_rule','clause_operation_relation'].includes(definitionId))throw new JudgmentConstructionError('Unsupported whole-program rule relation definition');
       const projection=ensureRuleBindings().read(rule);
       if(projection.kind==='source-heading-context')throw new JudgmentConstructionError('Heading groups cannot be selected as individual clauses');
-      let bindingHandle=programInstructionPairs.get(rule);
-      if(!bindingHandle){
-        bindingHandle=Object.freeze({});
+      const bindingHandle=retainInstructionHandle({map:programInstructionPairs,key:rule,createRecord(){
         const binding=Object.freeze({identity:Object.freeze({}),projection:Object.freeze({claimScope:'program-instruction',governingRule:projection})});
-        instructionBindings.set(bindingHandle,{member:undefined,rule,projection,binding});
-        programInstructionPairs.set(rule,bindingHandle);
-      }
+        return {member:undefined,rule,projection,binding};
+      }});
       return knownSelection().declare({definitionId,bindingHandle});
     }
 /** Enumerate and issue all original indexed program/rule claims under one synchronous source boundary. */
@@ -163,16 +171,12 @@ function claimSelectedInstruction({definitionId,memberId,rule}){
       const projection=retained.ruleBindings.read(rule);
       if(projection.kind==='source-heading-context')throw new JudgmentConstructionError('Heading groups cannot be selected as individual clauses');
       const instructionOnly=definitionId==='states_approval_prerequisite';
-      let pairs;
-      if(instructionOnly){pairs=instructionMeaningPairs;}
-      else {pairs=instructionPairs.get(member);if(!pairs){pairs=new WeakMap();instructionPairs.set(member,pairs);}}
-      let bindingHandle=pairs.get(rule);
-      if(!bindingHandle){
-        bindingHandle=Object.freeze({});
+      const pairs=instructionOnly?instructionMeaningPairs:memberInstructionPairs(member);
+      const bindingHandle=retainInstructionHandle({map:pairs,key:rule,createRecord(){
         const memberRecord=bindings.get(member),claimProjection=instructionOnly?{claimScope:'instruction',governingRule:projection}:{...memberRecord.binding.projection,governingRule:projection};
         const binding=Object.freeze({identity:Object.freeze({}),projection:Object.freeze(claimProjection)});
-        instructionBindings.set(bindingHandle,{member:instructionOnly?undefined:member,rule,projection,binding});pairs.set(rule,bindingHandle);
-      }
+        return {member:instructionOnly?undefined:member,rule,projection,binding};
+      }});
       return knownSelection().declare({definitionId,bindingHandle});
     }
   return Object.freeze({
@@ -184,7 +188,6 @@ function claimSelectedInstruction({definitionId,memberId,rule}){
     claimHeadingContext,
     issueBoundPolicyBatch,
     claim,
-    ensureRuleBindings,
     indexedRuleCandidates,
     readRuleCandidate,
     indexedInstructionCandidates,
@@ -194,8 +197,7 @@ function claimSelectedInstruction({definitionId,memberId,rule}){
     issueProgramRuleBatch,
     issueRuleAssessmentBatch,
     claimRuleCandidate,
-    claimInstruction,
-    claimSelectedInstruction
+    claimInstruction
   });
 }
 
