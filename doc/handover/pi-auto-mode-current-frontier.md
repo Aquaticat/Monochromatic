@@ -29,6 +29,8 @@ Local retention for provenance does not require sending every retained byte to e
 The context-sharing experiments remain scratch-only and are not the selected repair.
 Next work must restore the incumbent decision-context selection boundary while retaining local provenance.
 Do not describe byte sharing or a larger context window as resolution of this scope defect.
+The user chose to keep the migration lesson in auto-mode documentation only;
+do not add a general `AGENTS.md` migration rule.
 
 The latest user decision raises the preparation-inclusive assessment deadline to 15 seconds.
 The three sequential bundles of at most three parallel calls remain unchanged.
@@ -72,8 +74,8 @@ not a causal latency comparison or a provider capacity rejection.
 Normal live use is therefore not yet qualified.
 The deciding receipt is `${HOME}/temp/agent/pi-live-bundled-assessment.log`;
 the replay verifies exact equality with the configured fixture's provider request bodies.
-The next investigation is lossless removal of repeated context from provider representation,
-retaining every original instruction occurrence and its source identity.
+An initial investigation considered sharing repeated context bytes while retaining source identities.
+The user subsequently corrected that direction to restore legacy decision-context selection.
 Do not drop instructions or silently relax the deadline.
 Do not present size-triggered manual review as the completed repair.
 
