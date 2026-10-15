@@ -195,7 +195,8 @@ jobs:
           --output "${dest}/${archive}" \
           "https://github.com/nextest-rs/nextest/releases/download/cargo-nextest-${NEXTEST_VERSION}/${archive}"
         echo "${NEXTEST_SHA256}  ${dest}/${archive}" | sha256sum --check
-        tar --extract --gzip --file "${dest}/${archive}" --directory "$dest"
+        # A path with a drive letter would be read by tar as host:path, so extract from inside the directory.
+        (cd "$dest" && tar --extract --gzip --file "$archive")
         echo "$(cygpath --windows "$dest")" >> "$GITHUB_PATH"
 
     # Decide once whether this run may write caches: main, manual dispatch, and the TEMP proof branch.
