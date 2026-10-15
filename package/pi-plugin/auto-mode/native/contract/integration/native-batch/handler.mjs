@@ -126,10 +126,6 @@ export function createNativeBatchHandler({
     assertFresh,
     async assess({members}){
     judgment.prepare(members);
-    prepareProgramInputs({
-      judgment,
-      tools:context.tools??[]
-    });
     if(bypass){
      assertFresh();
      judgment.finalize();
@@ -137,6 +133,10 @@ export function createNativeBatchHandler({
      reviewState.bypassed=true;
      return {block:false};
     }
+    prepareProgramInputs({
+      judgment,
+      tools:context.tools??[]
+    });
     reviewState.reviewed=await reviewer.review(assistantMessage);
     reviewState.reviewed.assertCurrent();
     if((reviewState.reviewed.outcome
