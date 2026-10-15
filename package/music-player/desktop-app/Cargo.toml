@@ -210,7 +210,7 @@ libc = "0.2"
 # The high-level `windows` crate (not `windows-sys`) is required because
 # ITaskbarList3 is a COM interface and needs the crate's IUnknown/Interface
 # machinery; the same crate also exposes the threading call, so one dependency
-# covers both. Built natively on x13-win.
+# covers both. The same crate builds for both Windows ABIs (MSVC and GNU).
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Threading", "Win32_UI_Shell"] }
 
@@ -237,9 +237,10 @@ slint-build = "1.18.1"
 # Explorer, the taskbar, and Alt-Tab show the app icon (the macOS icon lives in
 # the .app bundle, Linux in the .desktop Icon= name). Gated to cfg(windows) so it
 # is absent from the Linux and macOS dependency graphs entirely, matching the
-# #[cfg(windows)] gate in build.rs. Windows is built natively on x13-win, where
-# Visual Studio's resource compiler is present; winresource invokes it from the
-# build script. winresource is the maintained successor to the winres crate.
+# #[cfg(windows)] gate in build.rs. Both cfg(windows) gates test the HOST running the
+# build script, so a Windows build must run on Windows: there winresource invokes
+# the Windows SDK's rc.exe (MSVC targets) or MinGW-w64's windres (GNU target). A
+# Linux cross-compile of the GNU target skips the icon (see build.rs). winresource is the maintained successor to the winres crate.
 [target.'cfg(windows)'.build-dependencies]
 winresource = "0.1"
 

@@ -9,8 +9,13 @@ fn main() {
     //           tells the Rust compiler to keep the statement directly below it
     //           ONLY when this build script is compiled for a Windows host; on
     //           Linux and macOS the statement is physically removed before
-    //           compilation, so nothing runs there. (We build each OS natively,
-    //           so host == target; we never cross-compile Windows from Linux.)
+    //           compilation, so nothing runs there. This tests the HOST that
+    //           runs the build script, not the target. The shipped Windows
+    //           binaries are built natively (host == target), so the icon is
+    //           embedded. A cross-compile of the GNU target from Linux (the
+    //           `build:windows-gnu` mise task in a container) is a proof of the
+    //           toolchain only: there the host is Linux, this statement is
+    //           removed, and the resulting .exe carries no icon.
     // Why:      Embedding an icon resource into an executable is a Windows-only
     //           concept. The macOS icon lives in the .app bundle and Linux uses
     //           the .desktop file's `Icon=` name, so neither needs this.
@@ -66,8 +71,9 @@ fn embed_windows_icon() {
     // ```
     resource.set_icon("asset/music-player.ico");
 
-    // What:     `.compile()` runs the Windows resource compiler (rc.exe / llvm-rc
-    //           from the installed toolchain) to turn the recorded resources into
+    // What:     `.compile()` runs the Windows resource compiler (rc.exe from the
+    //           Windows SDK for the MSVC targets, `windres` from MinGW-w64 binutils
+    //           for the GNU target; winresource picks by the target environment) to turn the recorded resources into
     //           a `.res` file and tells Cargo to link it into the binary. It
     //           returns a `Result` (Rust's ok-or-error value); `.expect("...")`
     //           unwraps the success case and PANICS with the given message if it
