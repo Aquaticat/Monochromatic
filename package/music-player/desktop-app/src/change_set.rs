@@ -308,6 +308,21 @@ pub enum Change {
     Everything,
 }
 
+/// What: `event_is_a_plain_write` says whether a notify event kind means that an entry was only written, not created, removed
+/// or renamed.
+/// Why: A plain write needs no look inside the entry; a structural event reads the whole subtree of a folder. Linux and macOS
+///      report writes as `Modify(Data)` or `Modify(Metadata)`. The notify Windows backend (`notify` 8.2.0, `windows.rs`)
+///      maps every `FILE_ACTION_MODIFIED` to `Modify(Any)` and never to those two, and Windows also reports that action for a
+///      folder whose entries were just written. Treating it as structural made each such event read a whole folder, so on
+///      Windows `Modify(Any)` is a plain write. Renames arrive as `Modify(Name)`, creations as `Create`, removals as `Remove`.
+pub(crate) fn event_is_a_plain_write(kind: &EventKind) -> bool {
+    return match kind {
+        EventKind::Modify(ModifyKind::Data(_) | ModifyKind::Metadata(_)) => true,
+        EventKind::Modify(ModifyKind::Any) => cfg!(windows),
+        _ => false,
+    };
+}
+
 /// What: `impl Change { ... }` opens the block that holds the methods of `Change`.
 /// Why: the translation from a raw event and the merge of two changes belong to the type.
 ///
@@ -381,7 +396,17 @@ impl Change {
         // ```ts
         // const structural: boolean = !(event.kind.type === "modify" && (event.kind.sub === "data" || event.kind.sub === "metadata"));
         // ```
-        let structural: bool = !matches!(event.kind, EventKind::Modify(ModifyKind::Data(_) | ModifyKind::Metadata(_)));
+        // What:     `let structural: bool = !event_is_a_plain_write(&event.kind);` asks whether the event is anything other than
+        //           a write. The leading `!` negates the answer.
+        // Why:      An entry that appeared, disappeared or was renamed is structural; a file whose bytes were only written is
+        //           not, and needs no look inside it. Windows reports writes under another event kind than Unix does, which
+        //           `event_is_a_plain_write` accounts for.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const structural: boolean = !eventIsAPlainWrite(event.kind);
+        // ```
+        let structural: bool = !event_is_a_plain_write(&event.kind);
         // What:     `let mut set: DirtyPaths = DirtyPaths::default();` makes a new empty, changeable set.
         // Why:      The event's paths are added to it in the loop that follows.
         //

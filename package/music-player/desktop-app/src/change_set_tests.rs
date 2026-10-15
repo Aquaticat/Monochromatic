@@ -55,6 +55,18 @@ fn an_event_names_its_paths_and_says_whether_an_entry_appeared_or_went() {
     assert_eq!(paths_of(Change::of_event(&ok(renamed))), vec![(PathBuf::from("/lib/new"), true), (PathBuf::from("/lib/old"), true)]);
 }
 
+// What:     An unspecific "modified" event is a plain write on Windows and a structural change elsewhere.
+// Why:      The notify Windows backend reports every FILE_ACTION_MODIFIED as `Modify(Any)`; read as structural, one rewritten
+//           file made the planner read its whole folder. Elsewhere that kind says nothing about what changed, so it stays
+//           structural.
+#[test]
+fn an_unspecific_modify_is_a_plain_write_only_where_the_platform_reports_writes_that_way() {
+    let modified = Event::new(EventKind::Modify(ModifyKind::Any)).add_path(PathBuf::from("/lib/a.flac"));
+    assert_eq!(paths_of(Change::of_event(&ok(modified))), vec![(PathBuf::from("/lib/a.flac"), !cfg!(windows))]);
+    let other = Event::new(EventKind::Any).add_path(PathBuf::from("/lib/a.flac"));
+    assert_eq!(paths_of(Change::of_event(&ok(other))), vec![(PathBuf::from("/lib/a.flac"), true)], "an event of unknown kind stays structural");
+}
+
 #[test]
 fn a_path_named_twice_is_one_path_and_keeps_the_stronger_meaning() {
     let mut set = DirtyPaths::default();

@@ -193,6 +193,26 @@ fn watched(tag: &str, files: &[&str]) -> (std::path::PathBuf, SourceWatcher, mps
     return (dir, watcher, rx);
 }
 
+// What:     `assert_names_only_plain_writes_to(named, files)` checks that a report names each of `files` as a plain write and
+//           nothing else. On Windows the report may also name a folder that holds one of the files, as a plain write too,
+//           because Windows reports a folder whose entries were just written as modified; elsewhere the report is exactly
+//           the files.
+// Why:      The refresh looks at the named paths only, so a stray structural entry would read a whole folder.
+fn assert_names_only_plain_writes_to(named: &[(std::path::PathBuf, bool)], files: &[std::path::PathBuf]) {
+    if !cfg!(windows) {
+        let expected: Vec<(std::path::PathBuf, bool)> = files.iter().map(|file| return (file.clone(), false)).collect();
+        assert_eq!(named, expected.as_slice());
+        return;
+    }
+    for file in files {
+        assert!(named.contains(&(file.clone(), false)), "{} is named as a plain write: {named:?}", file.display());
+    }
+    for (path, structural) in named {
+        assert!(!structural, "{} is a plain write, not structural: {named:?}", path.display());
+        assert!(files.iter().any(|file| return file.starts_with(path)), "{} is one of the files or a folder holding one: {named:?}", path.display());
+    }
+}
+
 // What:     A file written in place is reported by its own path and as a write, not as everything.
 // Why:      D113: the refresh looks at the named path only, so one replaced file must not name the library.
 #[test]
@@ -201,7 +221,7 @@ fn a_file_written_in_place_is_reported_by_its_own_path() {
     std::fs::write(dir.join("sub").join("a.flac"), b"second, longer").expect("the file is replaced");
     let change = rx.recv_timeout(Duration::from_secs(10)).expect("a change is reported");
     let Change::Paths(set) = change else { panic!("a write is not everything: {change:?}") };
-    assert_eq!(set.sorted(), vec![(dir.join("sub").join("a.flac"), false)]);
+    assert_names_only_plain_writes_to(&set.sorted(), &[dir.join("sub").join("a.flac")]);
     drop(watcher);
     std::fs::remove_dir_all(&dir).ok();
 }
@@ -267,8 +287,57 @@ fn a_burst_of_writes_is_one_report_naming_each_file_once() {
         std::fs::write(dir.join("b.flac"), format!("round {round}")).expect("written");
     }
     let Ok(Change::Paths(set)) = rx.recv_timeout(Duration::from_secs(10)) else { panic!("paths are reported") };
-    assert_eq!(set.sorted(), vec![(dir.join("a.flac"), false), (dir.join("b.flac"), false)]);
+    assert_names_only_plain_writes_to(&set.sorted(), &[dir.join("a.flac"), dir.join("b.flac")]);
     assert!(rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS)).is_err(), "and only one report");
     drop(watcher);
     std::fs::remove_dir_all(&dir).ok();
+}
+
+// TEMP probe, removed once the Windows watcher behavior is understood: prints a timeline of what the watcher reports
+// when nothing, then only reads, are done after the registration.
+#[test]
+fn zz_probe_what_windows_reports_for_reads() {
+    fn drain(rx: &mpsc::Receiver<Change>, window: Duration, started: Instant, log: &mut String, phase: &str) {
+        let end = Instant::now() + window;
+        while let Some(left) = end.checked_duration_since(Instant::now()) {
+            match rx.recv_timeout(left) {
+                Ok(change) => log.push_str(&format!("[{phase} +{}ms] {change:?}\n", started.elapsed().as_millis())),
+                Err(_) => break,
+            }
+        }
+    }
+    let nanos = SystemTime::now().duration_since(UNIX_EPOCH).expect("system clock should be after Unix epoch").as_nanos();
+    let dir = std::env::temp_dir().join(format!("mp_watch_probe_{nanos}"));
+    std::fs::create_dir_all(dir.join("sub")).expect("fixture directory");
+    std::fs::write(dir.join("sub").join("a.flac"), b"x").expect("fixture file");
+    let (tx, rx) = mpsc::channel::<Change>();
+    let mut watcher = SourceWatcher::new(move |change| {
+        let _ = tx.send(change);
+    })
+    .expect("OS watcher should start");
+    watcher.watch(&dir);
+    let started = Instant::now();
+    let mut log = String::new();
+    drain(&rx, Duration::from_secs(10), started, &mut log, "catch-up and nothing else (3s after first)");
+    // The drain above stops at the first timeout of 10 s only when quiet; collect more quiet time explicitly.
+    drain(&rx, Duration::from_secs(3), started, &mut log, "quiet");
+    for _ in 0..3 {
+        let _count = std::fs::read_dir(&dir).expect("root reads").count();
+    }
+    drain(&rx, Duration::from_millis(2_000), started, &mut log, "after read_dir of the root");
+    for _ in 0..3 {
+        let _count = std::fs::read_dir(dir.join("sub")).expect("sub reads").count();
+    }
+    drain(&rx, Duration::from_millis(2_000), started, &mut log, "after read_dir of sub");
+    for _ in 0..3 {
+        let _bytes = std::fs::read(dir.join("sub").join("a.flac")).expect("file reads");
+    }
+    drain(&rx, Duration::from_millis(2_000), started, &mut log, "after reading the file");
+    for _ in 0..3 {
+        let _meta = std::fs::symlink_metadata(dir.join("sub").join("a.flac")).expect("metadata");
+    }
+    drain(&rx, Duration::from_millis(2_000), started, &mut log, "after symlink_metadata");
+    drop(watcher);
+    std::fs::remove_dir_all(&dir).ok();
+    panic!("PROBE TIMELINE (dir {})\n{log}", dir.display());
 }
