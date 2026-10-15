@@ -37,7 +37,8 @@ fn long_path(length: usize) -> String {
         .collect()
 }
 
-// The five material cases with their reference digests.
+// The six material cases with their reference digests. Cases 1, 2, 4, 5, and 6 fit the Android
+// JNI call (a 64-bit mtime), and `NativeBridgeTest` asserts the same constants on a device.
 fn material_cases() -> Vec<MaterialCase> {
     return vec![
         MaterialCase {
@@ -52,6 +53,12 @@ fn material_cases() -> Vec<MaterialCase> {
             size: u64::MAX,
             mtime_nanos: 0x0123_4567_89ab_cdef_fedc_ba98_7654_3210,
             expected: 0x2651_5b9b_8566_c812,
+        },
+        MaterialCase {
+            path: "/musique/été/chanson.ogg".to_string(),
+            size: u64::MAX,
+            mtime_nanos: u128::from(i64::MAX as u64),
+            expected: 0x5c24_c1d0_6cee_b36f,
         },
         MaterialCase {
             path: long_path(300),

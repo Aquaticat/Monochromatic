@@ -28,19 +28,6 @@ crate-type = ["cdylib"]
 # Pure-Rust JNI bindings (no C).
 jni = "0.22"
 
-# Cache fingerprint hash (src/fingerprint.rs, exposed to Kotlin over JNI as
-# NativeBridge.nativeFingerprint). gxhash has no JVM/Kotlin port, so the
-# fingerprint that used to be hand-written FNV-1a in pure Kotlin moved into this
-# native crate. Pinned to major 3, matching the desktop crate, so identical
-# (path, size, mtime) input hashes identically on both flavors (gxhash output is
-# stable within a major and across its supported platforms). REQUIRES the `aes`
-# CPU feature with NO software fallback: .cargo/config.toml enables
-# -C target-feature=+aes for the Android target triples, and the arm64 device must
-# carry the ARMv8 crypto extensions (a SIGILL at runtime otherwise). Builds on
-# STABLE Rust (the nightly-only `hybrid` feature is left OFF). See
-# ../../../doc/troubleshooting/gxhash-aes-target-feature.md.
-gxhash = "3"
-
 # libopus via opus-rs 0.4: its opusic-sys backend bundles libopus 1.6.1 and
 # builds it from source with cmake on every platform. The same release as the
 # desktop crate (the CMake 4.x compatibility fix; see that crate's Cargo.toml).
@@ -72,8 +59,11 @@ ringbuf = "0.5"
 # cross-compiles for the Android ABIs; the Stage-0 spike proved arm64-v8a + x86_64 builds
 # and an in-process round-trip to an app-private path) and Tokio transitively; the cache
 # schema, its exact-over-probe precedence, and the gain math all live in the shared crate,
-# so Kotlin no longer owns a JSON peak cache or the gain calculation.
-truepeak-core = { path = "../../truepeak-core", features = ["service"] }
+# so Kotlin no longer owns a JSON peak cache or the gain calculation. The `fingerprint` feature
+# adds the shared `track_fingerprint` (XXH3-64 through `twox-hash`, run-time AVX2/SSE2/NEON
+# selection, no `-C target-feature` flag) behind src/fingerprint.rs, the same function the
+# desktop crate calls. See ../../../doc/decision/music-player-fingerprint-hash.md.
+truepeak-core = { path = "../../truepeak-core", features = ["service", "fingerprint"] }
 
 # Async runtime for the native true-peak service (src/service.rs): a dedicated thread runs a
 # current-thread Tokio runtime that drives the shared `DecisionCache`'s Turso futures, and the
