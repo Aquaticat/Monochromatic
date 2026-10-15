@@ -16,12 +16,12 @@ jobs:
       max-parallel: 6
       matrix:
         include:
-        - {cpus: 4, jobs: 4}
-        - {cpus: 8, jobs: 4}
-        - {cpus: 8, jobs: 8}
-        - {cpus: 16, jobs: 4}
-        - {cpus: 16, jobs: 8}
-        - {cpus: 16, jobs: 16}
+        - { cpus: 4, jobs: 4 }
+        - { cpus: 8, jobs: 4 }
+        - { cpus: 8, jobs: 8 }
+        - { cpus: 16, jobs: 4 }
+        - { cpus: 16, jobs: 8 }
+        - { cpus: 16, jobs: 16 }
     runs-on: depot-ubuntu-24.04-${{ matrix.cpus }}
     timeout-minutes: 75
     env:

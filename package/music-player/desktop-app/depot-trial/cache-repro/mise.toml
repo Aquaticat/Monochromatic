@@ -1,0 +1,42 @@
+[tasks.reproduce]
+description = "Reproduce stale Cargo output after restoring older source, then verify package invalidation"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { strictEqual } = await import('node:assert')
+const { setTimeout: wait } = await import('node:timers/promises')
+const id = execFileSync('podman', ['run', '--detach', '--memory=2g', '--cpus=2', '--network=none', '--entrypoint=sleep', 'localhost/music-player-alpine-build:latest', '600'], { encoding: 'utf8' }).trim()
+const run = (args) => execFileSync('podman', ['exec', id, ...args], { encoding: 'utf8' })
+const build = (target) => run(['cargo', 'build', '--offline', '--manifest-path', '/probe/Cargo.toml', '--target-dir', target])
+try {
+  console.log(run(['cargo', '--version', '--verbose']))
+  run(['cargo', 'init', '--bin', '--name', 'cache-probe', '/probe'])
+  run(['cp', '-p', '/probe/src/main.rs', '/original.rs'])
+  build('/target-one')
+  strictEqual(run(['/target-one/debug/cache-probe']).trim(), 'Hello, world!')
+  await wait(1100)
+  run(['sed', '-i', 's/Hello, world!/changed source/', '/probe/src/main.rs'])
+  run(['cp', '-p', '/probe/src/main.rs', '/changed.rs'])
+  build('/target-one')
+  const firstChange = run(['/target-one/debug/cache-probe']).trim()
+  strictEqual(firstChange, 'changed source')
+  console.log(JSON.stringify({ phase: 'first change', output: firstChange }))
+  await wait(1100)
+  run(['cp', '-p', '/original.rs', '/probe/src/main.rs'])
+  build('/target-two')
+  run(['cp', '-p', '/changed.rs', '/probe/src/main.rs'])
+  console.log(run(['stat', '-c', '%n %Y', '/probe/src/main.rs', '/target-two/debug/cache-probe']))
+  build('/target-two')
+  const stale = run(['/target-two/debug/cache-probe']).trim()
+  console.log(JSON.stringify({ phase: 'second change with old mtime', output: stale }))
+  strictEqual(stale, 'Hello, world!', 'The negative control must expose stale output.')
+  run(['cargo', 'clean', '--manifest-path', '/probe/Cargo.toml', '--target-dir', '/target-two', '--package', 'cache-probe'])
+  build('/target-two')
+  const fixed = run(['/target-two/debug/cache-probe']).trim()
+  console.log(JSON.stringify({ phase: 'package invalidation', output: fixed }))
+  strictEqual(fixed, 'changed source', 'Package invalidation must rebuild the changed source.')
+} finally {
+  execFileSync('podman', ['kill', id], { stdio: 'inherit' })
+  execFileSync('podman', ['rm', id], { stdio: 'inherit' })
+}
+'''
