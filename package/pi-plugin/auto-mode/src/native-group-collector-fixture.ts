@@ -147,16 +147,29 @@ export const collectorFixtureModule: CollectorFixtureModule = loaded;
 //region Independent callbacks expose exact original arrival, reader, and native completion ordering.
 /** Require fixture-controlled in-memory work to settle before the next native event-loop checkpoint.
  @param pending - original operation whose fixture-owned dependencies have already settled
+ 
  @returns original operation result without normalization
+ 
  @throws Error when original delivery or cleanup remains pending after its dependencies settle
+ 
  @example await awaitCollectorResult(pending);
  */
 export async function awaitCollectorResult<const Result>(pending: Promise<Result>): Promise<Result> {
-  /** Private marker cannot be supplied by the original native operation. */
+  /**
+   Private marker cannot be supplied by the original native operation.
+   */
   const missing = Symbol('original collector settlement missing');
-  /** Event-loop checkpoint lets all original queued microtasks finish before asserting settlement. */
-  const result = await Promise.race([pending, setImmediate(missing)]);
-  assert.ok(result !== missing, 'Original collector operation did not settle after its fixture dependencies');
+  /**
+   Event-loop checkpoint lets all original queued microtasks finish before asserting settlement.
+   */
+  const result = await Promise.race([
+    pending,
+    setImmediate(missing)
+  ]);
+  assert.ok(
+    result !== missing,
+    'Original collector operation did not settle after its fixture dependencies'
+  );
   return result;
 }
 /** Require an installed original abort callback before testing its retained guards.
