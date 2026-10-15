@@ -14,6 +14,7 @@ import {readMainAgentRequest} from "../../request-producer-group-consumer/reques
 import {JudgmentConstructionError, requireJSONInput} from './judgment-input.mjs';
 export {JudgmentConstructionError} from './judgment-input.mjs';
 import {createJudgmentPrograms} from './judgment-programs.mjs';
+import {createJudgmentExecutions} from './execution-owner.ts';
 
 //region Fixed session-bound creator; all inputs come from the owned native JSON/prepared-member profile.
 /** Bind one native consumer to source/root/file observers, fixed catalog and owned transport dependencies. */
@@ -48,7 +49,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       }
     });
     const facade=createDependencyFacade({collector:judgmentCollector,rootAdapter,deadlineAt:budget.diagnostics().deadlineAt,rootDirectory,files,trace,now});
-    const bindings=new WeakMap(),byMember=new Map(),executions=new WeakMap(),childGroups=[],issuedBatches=new Set(),attemptedBatches=new WeakSet();let operating=false,assessing=false,prepared=false,preparing=false,preparationFailed=false,preparationFailure,handle,selection,finished=false,closeFailed=false,finalRecord;
+    const bindings=new WeakMap(),byMember=new Map(),childGroups=[],issuedBatches=new Set(),attemptedBatches=new WeakSet();let operating=false,assessing=false,prepared=false,preparing=false,preparationFailed=false,preparationFailure,handle,selection,finished=false,closeFailed=false,finalRecord;
     function operation(run){
       if(operating)throw new JudgmentConstructionError('Judgment operations cannot reenter through callbacks');
       operating=true;
@@ -190,15 +191,16 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       assertDependenciesCurrent();
       return Object.freeze({request:receipt,sources:judgmentSources});
     }
-    /** Selector returns the already-owned member handle, not proof derived from the identifier. */
-    function memberFor(memberId){assertDependenciesCurrent();const member=byMember.get(memberId);if(!member)throw new JudgmentConstructionError('Execution member was not in the prepared native group');return member;}
-    function knownMember(member){const record=bindings.get(member);if(!record)throw new JudgmentConstructionError('Execution member handle is not owned by this judgment');return record;}
-    function knownExecution(token){const record=executions.get(token);if(!record||record.execution.token!==token)throw new JudgmentConstructionError('Execution occurrence is not owned by this judgment');return record;}
-    /** Original parent is an entry dependency, not an ancestor-liveness condition on an already-active child. */
-    function parentCurrent(record){
-      if(record.parent!==undefined&&knownExecution(record.parent).execution.state!=='active')throw new JudgmentConstructionError('Immediate parent execution has returned before child entry');
-      record.effectiveSignal?.throwIfAborted();
-    }
+    const {
+      memberFor, knownMember, knownExecution, parentCurrent,
+      assertExecutionEntry, executionEntryFor, beginExecution, executionFor,
+      finishExecution, inspectExecution
+    }=createJudgmentExecutions({
+      bindings, byMember,
+      readClosure(){return {finished,closeFailed};},
+      readJudgment(){return judgment;},
+      response, stream, assertDependenciesCurrent
+    });
     const {
       bindPreparedProgram,
       preparedProgramFor,
@@ -242,25 +244,6 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       ready();const record=knownMember(member);parentCurrent(record);
       return facade.originalFile({handle,absolutePath:record.prepared.input.path});
     }
-    function assertExecutionEntry(token){const record=knownExecution(token);if(record.execution.state!=='active')throw new JudgmentConstructionError('Execution occurrence has returned before native entry');assertDependenciesCurrent();parentCurrent(record);}
-    /** Read the original execution origin after authenticating this exact native entry. */
-    function executionEntryFor(token){
-      assertExecutionEntry(token);
-      return knownExecution(token).execution.origin;
-    }
-    /** Reserve once only after evidence closes; scope identity is not an execution permission. */
-    function beginExecution(member){
-      const record=knownMember(member);
-      if(!finished||closeFailed)throw new JudgmentConstructionError('Execution occurrence requires successfully closed evidence');
-      if(record.execution)throw new JudgmentConstructionError('Prepared member already reserved its execution occurrence');
-      assertDependenciesCurrent();parentCurrent(record);
-      const token=Object.freeze({}),origin=Object.freeze({judgment,response,stream,signal:record.effectiveSignal,member,prepared:record.prepared,permission:'not-established'});
-      record.execution={token,state:'active',origin};executions.set(token,record);return token;
-    }
-    function executionFor(token){const record=knownExecution(token);if(record.execution.state!=='active')throw new JudgmentConstructionError('Parent execution occurrence has returned');assertDependenciesCurrent();record.execution.origin.signal.throwIfAborted();return record.execution.origin;}
-    /** Terminal marking never invokes the source reader and is safe after cancellation or stale dependencies. */
-    function finishExecution(token){const record=knownExecution(token);record.execution.state='returned';}
-    function inspectExecution(token){const record=knownExecution(token);return Object.freeze({retainedOnly:true,state:record.execution.state});}
     function memberExecutionStates(){return Object.freeze([...byMember.entries()].map(function readExecutionState([id,handle]) { return (Object.freeze({id,state:bindings.get(handle).execution?.state??'unentered'})); }));}
     function inspect(){return Object.freeze({prepared,preparationFailed,preparationFailure,finished,closeFailed,accounting:budget.diagnostics(),finalRecord,memberExecutions:memberExecutionStates(),preparedPrograms:Object.freeze([...byMember.values()].flatMap(function readPreparedProgramView(member) {const inspection=bindings.get(member).preparedProgram;return inspection?[inspection.view]:[];})),rootPrograms:Object.freeze([...byMember.values()].flatMap(function readRootProgramView(member) {const record=bindings.get(member);return record.program?[inspectProgram(record.program.handle)]:[];})),childGroups:Object.freeze(childGroups.map(function inspectChildGroup(group) { return (inspectReachedGroup(group.handle)); }))});}
     /** Retain the original synchronous operation guard for one-input public methods. */
