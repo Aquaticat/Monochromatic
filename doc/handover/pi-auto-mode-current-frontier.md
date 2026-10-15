@@ -17,17 +17,21 @@ opaque callback failures,
 exact native identities,
 once-only preparation release,
 and synchronous disposal failure ownership.
-These changes are committed through `c98f5aac5e`;
-formatting and verification are pending.
+These changes are committed through `9d120a7020`.
+Focused formatting reports zero diagnostics in the six new files.
+Native build,
+package type checking,
+all built consumers,
+and original dispatcher replay pass.
+Six domain comparisons preserve public outcomes and native execution counts,
+including a permission-versus-prohibition positive control.
+All 40 process-local omissions or substitutions produce assertion failures;
+the built lifecycle and dispatcher hashes remain unchanged.
+Receipts are `typed-prepared-lifecycle-comparison.json` and `typed-prepared-lifecycle-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 The original dispatcher is saved as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-lifecycle-types.mjs`.
-Continue focused formatting,
-native build and package type checking,
-built consumers,
-original replay,
-domain comparisons,
-omission controls,
-and the complete lint recount before marking this boundary complete.
+The complete lint recount is running before this boundary can be marked complete.
 
 The next extraction delegates original parallel successor inspection to `profile-successors.ts`.
 Its borrowed call inspector and private pattern ownership remain unchanged.

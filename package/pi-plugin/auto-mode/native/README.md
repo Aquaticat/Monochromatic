@@ -204,6 +204,20 @@ Preparation failures remain retained with their original identity and produce a 
 Entry-marker publication failures reject before retention begins.
 Failures in the retention or blocking owner still reject the native member.
 
+`test:native:prepared-lifecycle` verifies original native callback order,
+borrowed SDK argument identity,
+awaited preparation turns and notifications,
+and synchronous release ownership.
+An undeclared member rejects before lifecycle failure retention or turn disposal.
+Preparation may release its turn before native completion;
+repeated hooks and final disposal release that turn only once.
+Missing native preparation blocks admission while preserving the native result and finish notification.
+Failures caught during execution are retained before blocking and rethrowing.
+Disposal failures remain outside that catch;
+combined execution and disposal failures preserve the original `SuppressedError` identities.
+Partial updates and preparation callbacks return their original values synchronously.
+Native options retain the original explicit `onUpdate: undefined` property when updates are absent.
+
 `test:native:pattern-decoder` verifies original finite data,
 exact result bindings,
 ordinary object properties,
