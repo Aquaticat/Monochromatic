@@ -9,7 +9,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 //region Counter validation remains separate from native receipt ownership
 
 /**
- Unsupported receipt counters or exceeded original aggregate budget.
+ Unsupported receipt counters or aggregate arithmetic overflow.
  */
 export class InputReceiptBudgetError extends Error {
   /**
@@ -31,17 +31,6 @@ type InputUsage = {
    */
   readonly bytes: number;
 };
-
-/**
- Shared source occurrence bound across resource and Session owners.
- The configured native extension fixture requires 81 retained receipts for one complete operation.
- */
-const INPUT_COUNT_LIMIT = 128;
-
-/**
- Shared serialized-record bound, independent of per-source and resource limits.
- */
-const INPUT_BYTE_LIMIT = 4_194_304;
 
 /**
  Receipt-budget diagnostics never log input content.
@@ -125,10 +114,10 @@ function readInputUsage(input: unknown,): InputUsage {
 }
 
 /**
- Enforce original aggregate limits across resource and Session receipt owners.
+ Validate receipt accounting across resource and Session owners without a capture ceiling.
  The calling code owns the pair; each counter record remains untrusted until validated.
  This calculation establishes neither native ownership nor complete governing coverage.
- Per-owner and per-source bounds remain independent obligations.
+ Source size and occurrence counts do not determine instruction eligibility.
 
  @param resource - resource owner's serialized receipt usage
 
@@ -160,7 +149,7 @@ export function assertOriginalInputBudget(
     tag: assertOriginalInputBudget.name,
     l,
   },);
-  rl.debug('checking shared original input receipt limits',);
+  rl.debug('checking shared original input receipt accounting',);
   /**
    Resource ownership remains the fixed reader's responsibility.
    */
@@ -169,14 +158,14 @@ export function assertOriginalInputBudget(
    Session usage joins the same aggregate without receiving another allowance.
    */
   const sessionUsage = readInputUsage(session,);
-  if (((resourceUsage.count + sessionUsage.count) > INPUT_COUNT_LIMIT)
-    || ((resourceUsage.bytes + sessionUsage.bytes) > INPUT_BYTE_LIMIT)) {
-    rl.debug('combined resource and Session receipts exceed the original aggregate budget',);
+  if ((!Number.isSafeInteger(resourceUsage.count + sessionUsage.count,))
+    || (!Number.isSafeInteger(resourceUsage.bytes + sessionUsage.bytes,))) {
+    rl.debug('combined resource and Session counters exceed exact integer representation',);
     throw new InputReceiptBudgetError(
-      'Combined original resource and session receipts exceed the shared 128-input or four-MiB budget',
+      'Combined resource and session receipt counters cannot be represented exactly',
     );
   }
-  rl.debug('combined original input counters fit the aggregate budget; source ownership remains independent',);
+  rl.debug('combined original input counters are valid; source ownership remains independent',);
 }
 
 //endregion Counter arithmetic

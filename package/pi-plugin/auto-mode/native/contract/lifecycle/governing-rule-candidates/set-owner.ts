@@ -18,10 +18,6 @@ import type {
 } from './set-types.ts';
 
 /**
- One original judgment admits only the existing bounded source-list profile.
- */
-const MAX_SOURCES = 128;
-/**
  Combined original clause membership stays inside the existing batch profile.
  */
 const MAX_CLAUSES = 512;
@@ -39,8 +35,7 @@ const l = tagged({ tag: 'auto-mode-governing-rule-set' });
  */
 function assertOriginalSources(sources: readonly GoverningSource[]): void {
   if ((!Array.isArray(sources)) || (!Object.isFrozen(sources))
-    || (sources.length === 0)
-    || (sources.length > MAX_SOURCES)) throw new GoverningRuleBindingError('Original governing sources require a bounded immutable source list');
+    || (sources.length === 0)) throw new GoverningRuleBindingError('Original governing sources require a nonempty immutable source list');
   if (new Set(sources.map(function readGoverningSourceOccurrence(source: GoverningSource) { 
     return source.occurrence; 
   })).size !== sources.length) throw new GoverningRuleBindingError('Original governing source occurrence is repeated');
