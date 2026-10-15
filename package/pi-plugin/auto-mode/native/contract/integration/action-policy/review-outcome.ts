@@ -129,7 +129,7 @@ export function resolveConfirmedOutcome(program: CompiledProgram): GuardOutcome 
     state: 'resolved',
     verdict: 'approve',
     reason: 'The user approved the original prepared group and its independent prerequisites are satisfied',
-    resolution: automatic.resolution,
+    ...(automatic.resolution === undefined ? {} : { resolution: automatic.resolution }),
     authorizationRequirements: authorization
   });
 }
