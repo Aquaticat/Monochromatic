@@ -759,10 +759,39 @@ The subsequent full lint recount covers 464 files and 486 rules,
 with 107 errors and 13167 warnings.
 `${HOME}/temp/agent/pi-maintained-typed-budget-lint-20261015.log` retains the complete report.
 This remains a failing package gate.
-The next edits scope original producer construction and invocation claims,
+Commits `0f55a81f89`,
+`fbbeedd83c`,
+and `7924d5b74a` scope original producer construction and invocation claims,
 retain CLI manager observations in a fixture record,
 and name collector and manual-review helper inputs.
-Their focused lint and rebuilt consumer verification are pending.
+Focused lint reports zero errors and 356 warnings across that six-file subset.
+The rebuilt request-claim,
+domain,
+CLI-manager,
+host-lifecycle,
+and manual-review consumers pass in
+`${HOME}/temp/agent/pi-native-producer-manager-consumer-20261015.log`.
+Commit `897d64e1b3` retains authorization observations in their fixture record;
+commit `7095845a18` separates approval setup and scenario state from its original assertions.
+The package now exposes `test:native:authorization-inputs` for the maintained authorization fixture.
+The final approval and authorization subset has zero errors and 163 warnings.
+Its rebuilt authorization,
+manual-review,
+approval-context,
+and source-work consumers pass in
+`${HOME}/temp/agent/pi-native-approval-fixtures-consumer-20261015.log`.
+The work counter remains 9045 policy-file opens in that run.
+The source-association split then separates envelope shape,
+message origins,
+original prompt contributions,
+and one-time serialization closure into sibling modules.
+The original callback and closure share one private observation record.
+Focused lint has zero errors and 439 warnings across those modules.
+Rebuilt serializer-receipt,
+event-receipt,
+approval-context,
+and source-work checks are running;
+the remaining full lint gate is still open.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
