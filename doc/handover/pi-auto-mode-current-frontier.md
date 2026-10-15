@@ -39,6 +39,20 @@ Scratch reproductions live under `${HOME}/temp/agent/pi-reported-errors-20261015
 The prior successful controls did not cover this complete UI-operation sequence.
 Warning cleanup remains assigned to the MiMo handoff after these functional regressions are resolved.
 
+The implementation now removes judgment creation from `message_end` and starts it at complete-group dispatch.
+Native branch readers supply operation-local currentness; constructor ownership remains separate.
+Primary observation retains failures for tool admission and preserves native transport retries and callbacks.
+The startup endpoint is no longer an admission condition.
+These changes are committed but are not yet verified or installed.
+Build and consumer checks run in a disposable package so the installed native release remains intact.
+The first type check overlapped the policy build and read its old declaration;
+repeat after the build finishes before treating it as implementation evidence.
+The subsequent package type check passes.
+The disposable native release `native-release-xt65Kl` passes the maintained model-switch,
+tree-navigation, retry, reload, and completed-abort tests.
+Authored permission, prohibition, and unspecified policy consumers also pass through native tool dispatch.
+Broader in-flight, combined-action, failure-isolation, configured-host, and live checks remain pending.
+
 ### Replacement verification before the new report
 
 The user subsequently requested a whole-system re-review and consideration of rebuilding.

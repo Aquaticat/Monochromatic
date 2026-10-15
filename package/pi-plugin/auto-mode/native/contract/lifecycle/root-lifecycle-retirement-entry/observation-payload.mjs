@@ -2,26 +2,31 @@
 /** Preserve native callback results and failures when source association is unavailable. */
 export function prepareObservedPayload({prepareSourceAssociation,originalStream,sources,model,context,options,fail}){
  const previous=options?.onPayload;
- const state={called:false,value:undefined,nativeFailed:false};
- async function nativePayload(...args){
+ const state={called:false,nativeFailed:false};
+ /** @type {{value: unknown}} */
+ const result={value:undefined};
+ const nativePayload=async function nativePayload(payload,selectedModel){
   state.called=true;
-  try{state.value=previous?await Reflect.apply(previous,this,args):undefined;return state.value;}
-  catch(error){state.nativeFailed=true;throw error;}
+  try{
+   result.value=previous?await Reflect.apply(previous,this,[payload,selectedModel]):undefined;
+   return result.value;
+  }catch(error){state.nativeFailed=true;throw error;}
+ };
+ function createAssociation(){
+  try{return prepareSourceAssociation?.({originalStream,sources,model,context,options:{...options,onPayload:nativePayload}});}
+  catch(error){fail(error);return undefined;}
  }
- let association;
- try{
-  association=prepareSourceAssociation?.({originalStream,sources,model,context,options:{...options,onPayload:nativePayload}});
- }catch(error){fail(error);}
- async function onPayload(...args){
-  state.called=false;state.value=undefined;state.nativeFailed=false;
-  try{return await Reflect.apply(association.onPayload,this,args);}
+ const association=createAssociation();
+ const onPayload=async function onPayload(payload,selectedModel){
+  state.called=false;result.value=undefined;state.nativeFailed=false;
+  try{return await Reflect.apply(association.onPayload,this,[payload,selectedModel]);}
   catch(error){
    if(state.nativeFailed)throw error;
    fail(error);
-   if(state.called)return state.value;
-   return await Reflect.apply(nativePayload,this,args);
+   if(state.called)return result.value;
+   return await Reflect.apply(nativePayload,this,[payload,selectedModel]);
   }
- }
+ };
  return {association,onPayload:association?onPayload:previous};
 }
 //endregion

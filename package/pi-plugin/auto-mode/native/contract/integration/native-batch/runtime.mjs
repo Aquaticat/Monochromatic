@@ -98,7 +98,7 @@ export function bindNativePolicyRuntime({
    collector,
    rootAdapter:Object.freeze({
      prepare:function captureOperationRoot() { return (currentness.capture(root)); },
-     finalize:function checkOperationRoot(operation) { return (currentness.assertActive(operation)); }
+     finalize:function checkOperationRoot(operation) { ; (currentness.assertActive(operation)); }
    }),
    rootDirectory,
    files,
@@ -111,7 +111,10 @@ export function bindNativePolicyRuntime({
    send:configuredSemanticUse?sendAttributedAssessment:send,
    isRetryableTransportFailure:function declineUnqualifiedClaim() { return (false); }
  });
- const runtimeState={lastJudgment:undefined,lastReview:undefined};
+ const runtimeState={
+   lastJudgment:undefined,
+   lastReview:undefined
+ };
  const stream=producerOwner.bindJudgmentConsumer({
   handle:function observeOriginalMainRequest({
     model,
@@ -163,8 +166,15 @@ export function bindNativePolicyRuntime({
  const installation=installNativePolicyHooks({
    agent,
    previousStream,
-   observedStream:function observedStream(model,context,options){return producerOwner.fromAgentLoop({
-     stream,model,context,options
+   observedStream:function observedStream(
+     model,
+     context,
+     options
+   ){return producerOwner.fromAgentLoop({
+     stream,
+     model,
+     context,
+     options
    });},
    executeToolBatch,
    invalidateObserver:function invalidateRequestObservation() { observer.invalidate(); },

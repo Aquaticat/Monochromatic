@@ -92,15 +92,19 @@ export function createNativeBatchHandler({
     stream,
     signal
   });
-  const bypass=readBypass()===true;
-  const reviewState={reviewed:undefined,bypassed:false};
+  const bypass=readBypass();
+  const reviewState={
+    reviewed:undefined,
+    bypassed:false
+  };
   function assertFresh(){
-   if(bypass&&readBypass()!==true)throw new NativeBatchBindingError('Explicit bypass was disabled before this group completed; retry with guardrail checks');
+   if(bypass&&(!readBypass()))throw new NativeBatchBindingError('Explicit bypass was disabled before this group completed; retry with guardrail checks');
    if(producerOwner.judgmentFor({
      response:assistantMessage,
      stream
    })!==judgment)throw new NativeBatchBindingError('Original complete-group judgment changed');
-   if(reviewState.reviewed){reviewState.reviewed.assertCurrent();return;}
+   if(reviewState.reviewed){reviewState.reviewed
+     .assertCurrent();return;}
    if(reviewState.bypassed){judgment.assertDependenciesCurrent();return;}
    judgment.checkpoint();
    if(judgment.inspect()
@@ -139,19 +143,24 @@ export function createNativeBatchHandler({
       tools:context.tools??[]
     });
     reviewState.reviewed=await reviewer.review(assistantMessage);
-    reviewState.reviewed.assertCurrent();
-    if((reviewState.reviewed.outcome
+    reviewState.reviewed
+      .assertCurrent();
+    if((reviewState.reviewed
+      .outcome
       .state
-      ==='resolved')&&(reviewState.reviewed.outcome
+      ==='resolved')&&(reviewState.reviewed
+        .outcome
         .verdict
         ==='approve')){
      observer.retainExecutionSources(assistantMessage);
-     reviewState.reviewed.assertCurrent();
+     reviewState.reviewed
+       .assertCurrent();
      return {block:false};
     }
     return {
       block:true,
-      reason:reviewState.reviewed.outcome
+      reason:reviewState.reviewed
+        .outcome
         .reason
         ??'Execution is withheld because the complete group has no established policy outcome'
     };
