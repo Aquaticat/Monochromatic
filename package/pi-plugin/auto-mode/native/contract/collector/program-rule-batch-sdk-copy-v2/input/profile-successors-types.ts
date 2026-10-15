@@ -2,7 +2,10 @@
  Original successor inspection borrows parser identities and call inspection. @module
  */
 import type { Node } from 'yuku-parser';
-import type { DeclaredProgramGroup, DeclaredProgramSite } from './program-declaration-types.ts';
+import type {
+  DeclaredProgramGroup,
+  DeclaredProgramSite
+} from './program-declaration-types.ts';
 
 /**
  Caller-established return and binding shapes retain their original parser objects.
@@ -39,7 +42,28 @@ export type ProfileSuccessors = Readonly<{
 /**
  Original combinator admission establishes a static member and single argument.
  */
-export type NativeParallelCall = Extract<Node, { type: 'CallExpression' }> & Readonly<{
+export type NativeParallelCall = Extract<NativeGroupCandidate, { type: 'CallExpression' }> & Readonly<{
   callee: Readonly<{ property: Readonly<{ name: 'all' | 'allSettled' }> }>;
   arguments: readonly [Node];
 }>;
+
+/**
+ Member admission reads only static member flags and identifier names.
+ */
+export type NativeMemberCandidate = Readonly<{
+  type: 'MemberExpression';
+  computed: boolean;
+  optional?: boolean;
+  object: Readonly<{ type: string; name?: string }>;
+  property: Readonly<{ type: string; name?: string }>;
+}> | Readonly<{ type: Exclude<Node['type'], 'MemberExpression'> }>;
+
+/**
+ Combinator admission observes only the original discriminant, member, and argument count.
+ */
+export type NativeGroupCandidate = Readonly<{
+  type: 'CallExpression';
+  optional: boolean;
+  callee: NativeMemberCandidate;
+  arguments: Readonly<{ length: number }>;
+}> | Readonly<{ type: Exclude<Node['type'], 'CallExpression'> }>;

@@ -29,7 +29,7 @@ await describe({ name: 'original successor rejection', children: [
   }),
   it({ name: 'uses the exact borrowed allowed membership and binding', fn: async function borrowedState() {
     rejects({ input: { allowed: new Set() }, message: 'owned tool identifier required' });
-    rejects({ input: { declaration: { id: { name: 'other' } } }, message: 'unbound identifier' });
+    rejects({ input: { declaration: { id: { name: 'other' } } }, message: 'unbound shorthand' });
   } }),
   //endregion
   //region Synthetic syntax isolates collection admission, null handling, and rejection ordering.
@@ -52,18 +52,18 @@ await describe({ name: 'original successor rejection', children: [
     rejects({ input: { returned: returnedGroup({ callee: undefined }) }, message: 'native parallel combinator required' });
   } }),
   it({ name: 'uses the borrowed constructor before reading invalid group members', fn: async function rejectionOrder() {
-    class OriginalFailure extends Error {}
-    let inspected = false;
+    class OriginalFailureError extends Error { override name = 'OriginalFailureError'; }
+    const inspected: boolean[] = [];
     assert.throws(function originalConstructor() {
-      inspectSuccessors({ input: { returned: returnedGroup({ optional: true }), ResultProgramProfileError: OriginalFailure, inspectCall() {
-        inspected = true;
+      inspectSuccessors({ input: { returned: returnedGroup({ optional: true }), ResultProgramProfileError: OriginalFailureError, inspectCall() {
+        inspected.push(true);
         throw new Error('unexpected inspection');
       } } });
-    }, { constructor: OriginalFailure, message: 'native parallel combinator required' });
-    assert.equal(inspected, false);
+    }, { constructor: OriginalFailureError, message: 'native parallel combinator required' });
+    assert.deepEqual(inspected, []);
     assert.throws(function collectionConstructor() {
-      inspectSuccessors({ source: 'Promise.all([])', input: { ResultProgramProfileError: OriginalFailure } });
-    }, { constructor: OriginalFailure, message: 'complete successor member array required' });
+      inspectSuccessors({ source: 'Promise.all([])', input: { ResultProgramProfileError: OriginalFailureError } });
+    }, { constructor: OriginalFailureError, message: 'complete successor member array required' });
   } }),
   //endregion
 ] });

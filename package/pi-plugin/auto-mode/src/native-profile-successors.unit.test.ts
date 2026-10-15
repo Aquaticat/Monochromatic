@@ -53,12 +53,12 @@ await describe({ name: 'original native successor declarations', children: [
   } }),
   it({ name: 'retains escaped original callee text and parser wrapper offsets', fn: async function escapedSource() {
     const prefix = '/* wrapper */';
-    const source = 'Promise.all([tools.\\u0074ool({ result })])';
+    const source = String.raw`Promise.all([tools.\u0074ool({ result })])`;
     const result = inspectSuccessors({ source: prefix + source, input: { source, prefix } });
-    const site = result.sites[1];
+    const site = result.sites.at(1);
     assert.ok(site);
     assert.equal(site.name, 'tool');
-    assert.equal(site.callee.text, 'tools.\\u0074ool');
+    assert.equal(site.callee.text, String.raw`tools.\u0074ool`);
     assert.equal(source.slice(site.callee.start, site.callee.end), site.callee.text);
   } }),
   //endregion

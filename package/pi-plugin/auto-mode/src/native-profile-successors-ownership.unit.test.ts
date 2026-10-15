@@ -35,8 +35,11 @@ await describe({ name: 'original successor ownership', children: [
     const names: string[] = [];
     const seen: unknown[] = [];
     const result = inspectSuccessors({ source: 'Promise.all([tools.tool({}), tools.tool({})])', input: {
-      declaration: { get id() { names.push('id'); return { get name() { names.push('name'); return `binding${names.length}`; } }; } },
-      inspectCall(input: Readonly<Record<string, unknown>>) { seen.push(input.bindingName); return producer; },
+      declaration: { get id() { names.push('id');
+      return { get name() { names.push('name');
+      return `binding${names.length}`; } }; } },
+      inspectCall(input: Readonly<Record<string, unknown>>) { seen.push(input.bindingName);
+      return producer; },
     } });
     assert.deepEqual(names, ['id', 'name', 'id', 'name', 'id', 'name']);
     assert.deepEqual(seen, ['binding2', 'binding4']);
@@ -49,7 +52,8 @@ await describe({ name: 'original successor ownership', children: [
     const seen: unknown[] = [];
     const result = inspectSuccessors({ input: {
       returned: returnedGroup({ arguments: [{ type: 'ArrayExpression', elements }] }),
-      inspectCall(input: Readonly<Record<string, unknown>>) { seen.push(input.ordinal); return producer; },
+      inspectCall(input: Readonly<Record<string, unknown>>) { seen.push(input.ordinal);
+      return producer; },
     } });
     assert.deepEqual(seen, [1]);
     const members = result.groups[1]?.members;
@@ -66,21 +70,27 @@ await describe({ name: 'original successor ownership', children: [
   it({ name: 'repeats static member reads for allSettled and publishes the later method name', fn: async function memberReads() {
     const reads: string[] = [];
     const callee = {
-      get type() { reads.push('type'); return 'MemberExpression'; },
-      get computed() { reads.push('computed'); return false; },
-      get optional() { reads.push('optional'); return false; },
-      get object() { reads.push('object'); return { type: 'Identifier', name: 'Promise' }; },
-      get property() { reads.push('property'); return { type: 'Identifier', get name() { reads.push('name'); return 'allSettled'; } }; },
+      get type() { reads.push('type');
+      return 'MemberExpression'; },
+      get computed() { reads.push('computed');
+      return false; },
+      get optional() { reads.push('optional');
+      return false; },
+      get object() { reads.push('object');
+      return { type: 'Identifier', name: 'Promise' }; },
+      get property() { reads.push('property');
+      return { type: 'Identifier', get name() { reads.push('name');
+      return 'allSettled'; } }; },
     };
     const result = inspectSuccessors({ input: { returned: returnedGroup({ callee }), inspectCall() { return producer; } } });
     const member = ['type', 'computed', 'optional', 'object', 'object', 'property', 'property', 'name'];
     assert.deepEqual(reads, [...member, ...member, 'property', 'name']);
     assert.equal(result.groups[1]?.kind, 'allSettled');
-    let readsOfName = 0;
+    const readsOfName: boolean[] = [];
     const changing = inspectSuccessors({ input: { returned: returnedGroup({ callee: {
       type: 'MemberExpression', object: { type: 'Identifier', name: 'Promise' }, property: { type: 'Identifier', get name() {
-        readsOfName += 1;
-        return readsOfName === 1 ? 'all' : 'published method';
+        readsOfName.push(true);
+        return readsOfName.length === 1 ? 'all' : 'published method';
       } },
     } }), inspectCall() { return producer; } } });
     assert.equal(changing.groups[1]?.kind, 'published method');
@@ -96,7 +106,8 @@ await describe({ name: 'original successor ownership', children: [
           return producer;
         },
       } });
-    }, function sameFailure(error: unknown) { assert.equal(error, failure); return true; });
+    }, function sameFailure(error: unknown) { assert.equal(error, failure);
+    return true; });
     assert.deepEqual(seen, [0, 1]);
   } }),
   it({ name: 'propagates original syntax, binding, and callback failure identities', fn: async function opaqueFailures() {
@@ -108,7 +119,8 @@ await describe({ name: 'original successor ownership', children: [
       { inspectCall() { throw failure; } },
     ]) {
       assert.throws(function originalFailure() { inspectSuccessors({ input }); }, function sameFailure(error: unknown) {
-        assert.equal(error, failure); return true;
+        assert.equal(error, failure);
+        return true;
       });
     }
   } }),

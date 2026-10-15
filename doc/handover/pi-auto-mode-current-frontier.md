@@ -9,6 +9,14 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+The next extraction delegates original parallel successor inspection to `profile-successors.ts`.
+Its borrowed call inspector and private pattern ownership remain unchanged.
+The implementation and independent built-consumer suites are committed;
+formatting, type checking, original replay, and omission verification are still pending.
+The current package status remains the completed 814-file recount with zero errors and 10194 warnings.
+The functional scope correction and live/human checks remain complete.
+Continue verification of this extraction, then the remaining maintained native quality queue.
+
 Original pattern decoding now delegates to `pattern-decoder.ts` and `pattern-decoder-types.ts`.
 The helper borrows the original private pattern owner and diagnostic constructor.
 Original ownership and materialization stay in `result-pattern.mjs`.
