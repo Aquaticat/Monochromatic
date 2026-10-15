@@ -74,9 +74,10 @@ reads each).
 The rebuild of how the page-level consistency pass reads agreement and carries the bench's
 choice (ledger B449,
 B450) landed on 2026-10-12;
-the next waits for the fixes to its sixth independent review and the apostrophe resolution,
-which were uncommitted on 2026-10-13
-(the handover's checkpoint headed "2026-10-13 after the hardware change").
+the fixes of its later independent reviews and the proven-apostrophe rule landed on 2026-10-15
+(ledger B463 to B574),
+and `TianqiChen66624` was launched on that build the same day
+(the handover's checkpoint of 2026-10-15).
 The two Bedrock Gemma seats answer with an expired token and are withheld after their first failed calls;
 no launch waits on them.
 
