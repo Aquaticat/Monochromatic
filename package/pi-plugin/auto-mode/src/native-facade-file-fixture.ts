@@ -21,7 +21,9 @@ type FacadeFileFixture = ReturnType<typeof createFacadeFixture> & AsyncDisposabl
   bytes: Buffer;
 }>;
 
-/** Private scratch storage excludes other users from disposable observation fixtures. */
+/**
+ Private scratch storage excludes other users from disposable observation fixtures.
+ */
 const privateDirectoryMode = 0o700;
 
 //region Only disposable selected files are mutated during original dependency verification.
@@ -43,7 +45,10 @@ export async function createFacadeFileFixture(): Promise<FacadeFileFixture> {
   );
   await mkdir(
     scratch,
-    { recursive: true, mode: privateDirectoryMode }
+    {
+      recursive: true,
+      mode: privateDirectoryMode
+    }
   );
   await chmod(
     scratch,
@@ -59,7 +64,10 @@ export async function createFacadeFileFixture(): Promise<FacadeFileFixture> {
   /**
    Original selected bytes include non-text content to expose accidental string conversion.
    */
-  const bytes = Buffer.from('00ff270a41', 'hex');
+  const bytes = Buffer.from(
+    '00ff270a41',
+    'hex'
+  );
   /**
    Only this selected original path is supplied to the built facade.
    */
@@ -76,7 +84,10 @@ export async function createFacadeFileFixture(): Promise<FacadeFileFixture> {
   } catch (error) {
     await rm(
       directory,
-      { recursive: true, force: true }
+      {
+        recursive: true,
+        force: true
+      }
     );
     throw error;
   }
@@ -97,7 +108,13 @@ export async function createFacadeFileFixture(): Promise<FacadeFileFixture> {
     path,
     bytes,
     async [Symbol.asyncDispose](): Promise<void> { 
-      await rm(directory, { recursive: true, force: true }); 
+      await rm(
+        directory,
+        {
+          recursive: true,
+          force: true,
+        }
+      ); 
     },
   };
 }
