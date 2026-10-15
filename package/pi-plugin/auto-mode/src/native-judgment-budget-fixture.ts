@@ -2,8 +2,7 @@
  Disposable original judgment clocks and transport failure capture.
  @module
  */
-import {createJudgmentBudget} from '../dist/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.ts';
-import type {JudgmentBudget} from '../dist/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/types.ts';
+import {nativeBudget, type NativeBudget} from './native-judgment-budget-module-fixture.ts';
 
 //region Each test owns its clock, cancellation and budget independently.
 /**
@@ -13,7 +12,7 @@ type BudgetFixture = {
   /**
    Original built budget consumer.
    */
-  readonly budget: JudgmentBudget;
+  readonly budget: NativeBudget;
   /**
    Test-owned monotonic clock input.
    */
@@ -60,7 +59,7 @@ export function createBudgetFixture({classify=noRetry}: {
   /**
    Import the artifact's implementation, so tests cannot bypass native packaging.
    */
-  const budget=createJudgmentBudget({
+  const budget=nativeBudget.createJudgmentBudget({
     now:function readClock() { return clock.at; },
     signal:controller.signal,
     isRetryableTransportFailure:classify

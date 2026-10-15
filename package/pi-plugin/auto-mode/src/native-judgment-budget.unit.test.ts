@@ -4,12 +4,13 @@
  */
 import assert from 'node:assert/strict';
 import {describe,it} from '@monochromatic-dev/module-test/ts';
-import {
+import {nativeBudget} from './native-judgment-budget-module-fixture.ts';
+const {
   JudgmentAttemptLimitError,
   JudgmentBudgetError,
   JudgmentCancelledError,
   JudgmentDeadlineError
-} from '../dist/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.ts';
+}=nativeBudget;
 import {captureBudgetRejection,createBudgetFixture} from './native-judgment-budget-fixture.ts';
 
 //region Attempts share one original allowance and cannot overlap.
@@ -67,6 +68,7 @@ await describe({name:'',children:[
       assert.equal(error.cause,cause);
       assert.ok(error instanceof JudgmentBudgetError);
     }
+    return Promise.resolve();
   }})
 ]});
 //endregion
