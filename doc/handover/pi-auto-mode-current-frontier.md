@@ -2495,10 +2495,29 @@ the complete control sequence passed with a fresh artifact-hash comparison.
 `typed-group-collection-category.json` directly verifies unchanged base diagnostic names and messages,
 and the intentionally stable subclass category.
 The original lifetime extraction is qualified at these tested boundaries.
-The full maintained lint recount remains pending.
+The full maintained recount covers 720 files and 486 rules,
+with zero errors and 10902 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-group-lifetime-lint-20261015.log`.
+All six changed lifetime implementation and consumer files have zero diagnostics in that report.
 Continue original collector currentness,
 dispatch,
 and arrival composition before the reached-program runtime and runner.
+
+The currentness extraction now has `group-current.ts` and separate original input contracts.
+It preserves the original first-failure,
+closure,
+cancellation,
+parent-reader,
+and reached-view checks in their original order.
+The original collector baseline is `program-collector-before-current-types.mjs`;
+its exact extracted statements are `group-current-original-functions.txt`.
+Currentness lint,
+built consumers,
+original replay,
+and omission qualification remain pending.
+The status response on 2026-10-15 confirms that the live model and approval verification are already complete,
+failure and lifetime owners are qualified,
+and the maintained-package quality queue remains unfinished without a current user-input blocker.
 
 Auto-pushing `6973251c83` was separately rejected with `GH006` and no detailed requirement.
 The original local signature verified,
