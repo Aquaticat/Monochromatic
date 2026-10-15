@@ -297,7 +297,7 @@ async fn count_rows(cache: &DecisionCache) -> i64 {
 // fingerprint (version 1) can never match a current read.
 #[test]
 fn the_schema_version_moved_past_the_gxhash_rows() {
-    assert!(SCHEMA_VERSION >= 2, "version 1 rows hold gxhash fingerprints and must not match");
+    const { assert!(SCHEMA_VERSION >= 2, "version 1 rows hold gxhash fingerprints and must not match") };
 }
 
 // A row left by the gxhash build (schema version written as the literal 1) is a miss for the
