@@ -60,15 +60,15 @@ fn an_untrusted_configuration_is_named_quoted_and_left_to_the_user_to_trust() {
         "{paragraphs:?}"
     );
     assert_eq!(
-        paragraphs[1],
+        paragraphs[2],
         "mise said: mise ERROR Config files in /work/project one/mise.toml are not trusted."
     );
     assert!(
-        paragraphs[2].contains("run `mise trust` on /work/project one/mise.toml"),
+        paragraphs[1].contains("run `mise trust` on /work/project one/mise.toml"),
         "{paragraphs:?}"
     );
     assert!(
-        paragraphs[2].contains("yourself (the IDE never does)"),
+        paragraphs[1].contains("yourself (the IDE never does)"),
         "{paragraphs:?}"
     );
 }
@@ -82,11 +82,11 @@ fn another_failure_points_at_what_mise_names() {
     let paragraphs = state.advisory(Path::new("/work/project"));
     assert_eq!(paragraphs.len(), 3);
     assert!(
-        paragraphs[1].contains("did not finish within 10 s"),
+        paragraphs[2].contains("did not finish within 10 s"),
         "{paragraphs:?}"
     );
-    assert!(paragraphs[2].contains("mise doctor"), "{paragraphs:?}");
-    assert!(!paragraphs[2].contains("mise trust"), "{paragraphs:?}");
+    assert!(paragraphs[1].contains("mise doctor"), "{paragraphs:?}");
+    assert!(!paragraphs[1].contains("mise trust"), "{paragraphs:?}");
 }
 
 #[test]

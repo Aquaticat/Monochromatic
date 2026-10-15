@@ -322,9 +322,9 @@ fn advisory() -> Vec<String> {
     return vec![
         "The mise configuration for /work/project could not be used, so language servers are looked up on PATH only."
             .to_string(),
-        "mise said: mise ERROR Config files in /work/project/mise.toml are not trusted.".to_string(),
         "If you trust that mise configuration, run `mise trust` on /work/project/mise.toml in a terminal yourself (the IDE never does), then display a file again."
             .to_string(),
+        "mise said: mise ERROR Config files in /work/project/mise.toml are not trusted.".to_string(),
     ];
 }
 

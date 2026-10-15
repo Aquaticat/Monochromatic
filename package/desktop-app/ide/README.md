@@ -1132,8 +1132,8 @@ the servers are looked up on `PATH` as before,
 mise shims are skipped,
 and every file with servers gets this in its language support notice:
 that mise could not be used for the folder,
-mise's own message (without its version footer),
-and the remedy.
+the remedy,
+and mise's own message (without its version footer).
 For an untrusted file the remedy names the file mise named and says the user runs `mise trust` on it
 (the IDE never does),
 then displays a file again.

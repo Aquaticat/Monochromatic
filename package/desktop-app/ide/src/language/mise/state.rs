@@ -105,6 +105,9 @@ impl MiseState {
     ///  The notice must name the configuration, quote mise, and say what the user does:
     ///  the application never trusts a configuration, because trusting lets the project's
     ///  `[env]` commands run.
+    ///  The remedy stands before mise's own words:
+    ///  the display keeps only the first dozen lines,
+    ///  and mise's message is several long lines.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -128,8 +131,8 @@ impl MiseState {
                 "The mise configuration for {} could not be used, so language servers are looked up on PATH only.",
                 root.display()
             ),
-            format!("mise said: {}", failed.message),
             remedy,
+            format!("mise said: {}", failed.message),
         ];
     }
 }
