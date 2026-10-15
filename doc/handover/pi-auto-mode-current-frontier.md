@@ -2061,7 +2061,12 @@ The expanded consumers also pass against the saved original instruction implemen
 `${HOME}/temp/agent/pi-member-binding-original-20261015.log`.
 All eleven changed contract and consumer files have zero focused diagnostics in
 `${HOME}/temp/agent/pi-composition-contract-format-first-20261015.log`.
-Final post-format verification is running in
+`6090a6ee8d` records final projection-helper formatting.
+Final post-format rebuild,
+type checking,
+and source,
+preparation,
+and instruction consumers pass in
 `${HOME}/temp/agent/pi-composition-contract-final-20261015.log`.
 Constructor composition remains pending.
 
