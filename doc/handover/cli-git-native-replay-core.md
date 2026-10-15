@@ -153,16 +153,34 @@ and one was stopped by the coordinator during planted controls.
 
 ### In flight
 
-Resumed on 2026-10-15 (user: the named work is to be done, not listed). The branch was migrated to the data-only
-`cli-git.config.jsonc` and merged with `main`; the container gate on the merge (tag `replayG`) passed with 1812 unit,
-137 binary and 1 consumer test and Clippy clean.
-The mutation campaign runs as the systemd user unit `cli-git-replay-campaign` (driver
-`~/temp/agent/replay-campaign-20261015.ts`, status `~/temp/agent/replay-campaign.status` ending with `campaign done`,
-logs `~/temp/agent/replay-mutation-P1.log` to `-P5.log`), restarted 2026-10-15 10:06 EDT (the first start had one lane with 189 of 429 mutants) with `--timeout 300` (the task
-accepts it now). Lanes: P1 `replay_patch`, P2 `replay_reverse_apply`, P3 containment, capture order and shared paths,
-P5 object and reservation, P4 the other seven files. Each lane uses its own image tag `replayP1` to `replayP5`,
-aliases of the gate image `replayG`. Read every MISSED or TIMEOUT line when it ends; kill each with a test shown to
-fail on the mutant, or justify it from the code.
+The branch was migrated to the data-only `cli-git.config.jsonc` and merged with `main`; the container gate on that
+merge (tag `replayG`) passed with 1812 unit, 137 binary and 1 consumer test and Clippy clean.
+The mutation campaign ran 2026-10-15 from 10:06 to 11:38 EDT as the systemd user unit `cli-git-replay-campaign`
+(driver `~/temp/agent/replay-campaign-20261015.ts`, logs `~/temp/agent/replay-mutation-P1.log` to `-P5.log`,
+`--timeout 300`): 429 mutants, no timeouts, 15 missed (1 in `replay_patch`, 12 in `replay_reverse_apply`, 2 in
+`replay_containment`); lanes P4 and P5 had none.
+Dispositions:
+
+- `replay_patch.rs:249` (the cursor after a trailing incomplete-line marker): killed by the cursor assertion in
+  `incomplete_lines_lose_their_newline`.
+- `replay_containment.rs:122` and `:157` (`&&` to `||`): killed by
+  `own_lines_between_landed_lines_need_both_ends_anchored` and
+  `a_prepared_change_shorter_than_the_landed_range_does_not_cover_it`.
+- `replay_reverse_apply.rs:129` (`-` to `+`): equivalent. With the end anchor only the position
+  `image.len() - preimage.len()` passes `matches_at`, and the widening search reaches every position, so the starting
+  position cannot change the result. The `/` mutant divides by zero for an empty preimage and is killed by
+  `a_removal_only_hunk_reverses_by_restoring_its_lines_at_the_end`.
+- `:135` (three mutants of the range guard): the guard duplicated the `usize` conversion and `matches_at`'s end check,
+  so it was removed instead of tested.
+- `:150`, `:180`, `:190`, `:100`: killed by the new reverse-apply controls (search backwards, restored lines,
+  search start, middle line without a newline).
+
+The controls and the guard removal are committed (`ed641c4a1b`). Open: container gate on the merged head (tag `replayH`),
+then `mutation:scoped` over `replay_reverse_apply.rs` (`--examine 'find_position|reverse_hunk|matches_at'`),
+`replay_containment.rs` and `replay_patch.rs` to show each control failing on its mutant, then landing and the crate
+release 0.1.5 together with the deletion of the dead policy patch modules already on `main`.
+A long fuzz campaign (900 s per target, 15 targets) started 2026-10-15 as the unit `cli-git-fuzz-campaign`
+(log `~/temp/agent/fuzz-campaign-20261015.log`); read it for crashes before the release.
 
 ### Remaining after drain
 
