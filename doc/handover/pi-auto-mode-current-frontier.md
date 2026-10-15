@@ -16,8 +16,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 740 files and 486 rules,
-with zero errors and 10760 warnings.
+The latest complete lint report covers 752 files and 486 rules,
+with zero errors and 10621 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -36,10 +36,10 @@ and native arrival are qualified through built consumers,
 original-code replay,
 domain comparisons,
 and deliberate omission controls.
-Continue reached-program runtime and runner contracts.
+Reached-program runtime is also qualified.
+Continue reached-program runner contracts.
 The collector implementation and new consumers have zero diagnostics in the full report.
-The last report retains 133 warnings in `program-runtime.mjs`,
-and 266 in `program-runner.mjs`.
+The latest report has zero runtime diagnostics and retains 260 warnings in `program-runner.mjs`.
 Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
 No current user-input blocker exists.
 
@@ -137,17 +137,40 @@ Six domain comparisons pass with identical public outcomes and native execution 
 including the permission-versus-prohibition positive control.
 The first omission pass exposed an undetected missing collector-parent currentness callback.
 Added consumers now change parent currentness after reaching and pass original native cancellation through the source tool.
-Their verification and the complete omission run remain pending,
-as do the diagnostic contrasts and full maintained lint recount.
+The expanded consumers pass against both implementations.
+All 44 deliberate runtime omissions or substitutions produce assertion failures,
+and the runtime bridge and implementation artifacts retain their starting hashes.
+The complete report has zero errors and 10621 warnings across 752 files and 486 rules;
+all 13 runtime implementation and consumer files have zero diagnostics.
+The package-wide warning gate remains failing.
 The original body is retained as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/program-runtime-before-types.mjs`,
 with SHA-256 `2d2b88d31a0d6dd0febf4a42624b2b561b133ef2836758ac990950fa513b459f`.
-Qualification must separately measure diagnostic differences:
-the runtime error uses a literal category rather than a derived constructor name,
-and explicit non-null checks replace implicit property-access failures for missing published views or source slots.
-Do not claim exact failure-category equivalence for those malformed-publication cases.
-Ordinary value-conversion failures must retain their original identity,
+Diagnostic probes measure a literal base error category for subclasses instead of their derived constructor name.
+Missing program,
+reached-group,
+or current-group views and missing source slots now produce explicit `Error` null-check diagnostics;
+the original implementation produced implicit `TypeError` diagnostics.
+A sparse guard-history array now throws the explicit null-check error rather than `undefined`.
+These malformed-publication differences do not establish exact failure-category equivalence.
+Ordinary value-conversion failures retain their original identity,
 and only original native result guards trigger the conversion-specific program-guard callback.
+Receipts are `typed-program-runtime-comparison.json`,
+`typed-program-runtime-omissions.json`,
+and `typed-program-runtime-diagnostics.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+Build,
+type checking,
+original replay,
+and complete omission output are retained in
+`${HOME}/temp/agent/pi-program-runtime-expanded-20261015.log`.
+That sequence stopped afterward on a diagnostic fixture that accidentally replaced the original callback receiver;
+the corrected diagnostic probe passes in
+`${HOME}/temp/agent/pi-program-runtime-diagnostic-contrasts-20261015.log`.
+The final type check,
+consumers,
+and full lint report are in
+`${HOME}/temp/agent/pi-maintained-typed-program-runtime-final-cleaner-lint-20261015.log`.
 
 ## Tool-call scope correction
 
