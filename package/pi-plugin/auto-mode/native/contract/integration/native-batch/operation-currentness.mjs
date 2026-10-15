@@ -12,7 +12,7 @@ export function createOperationCurrentness({session,manager}){
  function readCurrent(){
   tagged({tag:readCurrent.name,l}).debug('reading native operation occurrence');
   const disposal=readSessionDisposalState(session);
-  if(disposal.started||disposal.completed)throw new NativeOperationStaleError('Session disposal invalidated this tool decision');
+  if(disposal.entered)throw new NativeOperationStaleError('Session disposal invalidated this tool decision');
   if(readActiveSessionManager(session)!==manager)throw new NativeOperationStaleError('Session manager changed during this tool decision');
   return readRootOccurrence(manager);
  }
