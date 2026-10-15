@@ -1000,6 +1000,13 @@ The next typed boundary is structural policy indexing.
 Its original copied JavaScript module is retained under
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/policy-index-before-types.mjs`
 for direct comparison with the typed artifact before qualification.
+Commit `f8db05b2ca` moves `policy-index.mjs` to `policy-index.ts`
+and adds explicit structural-index contracts.
+Commit `c1bd9b7bad` passes original coordinate values to the span checker
+and uses a bounded ASCII tag scan instead of spreading source text.
+The formatted index and its contracts pass focused lint with zero errors and warnings in
+`${HOME}/temp/agent/pi-native-typed-index-final-format-20261015.log`.
+The built old/new comparison and native policy-consumer checks are pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

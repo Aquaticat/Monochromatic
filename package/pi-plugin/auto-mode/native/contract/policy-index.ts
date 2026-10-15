@@ -118,7 +118,9 @@ function hasLiteralCodePrefix(text:string):boolean {
     ].includes(text.charAt(width + 1)))) return false;
   // The tag grammar admits ASCII code units only; grapheme segmentation cannot add an admitted tag.
   for(let index=0;index<width;index+=1){
-    /** Constant-width scan rejects every code unit outside the original literal alphabet. */
+    /**
+     Constant-width scan rejects every code unit outside the original literal alphabet.
+     */
     const character=text.charAt(index);
     if(!'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.includes(character))return false;
   }
@@ -183,8 +185,12 @@ export function indexPolicyDocument({
     const span = sourceSpan({
       node,
       source,
-      start:node.position?.start?.offset,
-      end:node.position?.end?.offset
+      start:node.position
+        ?.start
+        ?.offset,
+      end:node.position
+        ?.end
+        ?.offset
     });
     if (node.type === 'heading') {
       /**
