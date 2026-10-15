@@ -67,6 +67,10 @@ complete member publication,
 retained failures,
 and real budget cancellation or expiry before publication.
 The preparation owner shares original member records with instruction and execution owners.
+`test:native:judgment-inspection` checks ownership and currentness before live member access,
+original prepared data and file arguments,
+and retained frozen diagnostic snapshots after cancellation or closure failure.
+Retained inspection preserves original callback failures and declaration order without asserting live eligibility.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.

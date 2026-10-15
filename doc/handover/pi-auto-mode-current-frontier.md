@@ -1906,10 +1906,22 @@ The original wrapper only binds the shared state and supplied capabilities;
 it does not rewrite the extracted functions.
 The initial type check required an explicit fixture return contract under isolated declarations;
 `81a4bfd1af` adds that independent contract.
-Final formatting,
-type checking,
-guard controls,
-and the full maintained recount remain pending for inspection.
+`3ecafa1806` records the final callback contracts and formatting repairs.
+All four direct consumer files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-inspection-tests-format-second-20261015.log`.
+The final direct suites and type check pass in
+`${HOME}/temp/agent/pi-inspection-tests-final-20261015.log`
+and `${HOME}/temp/agent/pi-inspection-types-second-20261015.log`.
+All 29 process-local omissions trigger test failures;
+all three built artifacts retain their starting hashes in `typed-inspection-omissions.json`.
+The first omission attempt caught an ambiguous indentation substring in the mutation hook;
+anchoring that fragment at the line boundary selects the intended freeze operation.
+The resumed verifier rechecks starting hashes and retains the completed controls.
+The full maintained recount covers 647 files and 486 rules:
+zero errors and 11361 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-inspection-lint-20261015.log`.
+Original current-member and retained-snapshot extraction is qualified at these tested boundaries.
+Continue the remaining source and dependency owners.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
