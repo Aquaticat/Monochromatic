@@ -191,8 +191,14 @@ fn unproven_owner_fails_the_blocking_wait_and_keeps_lock() {
     let lock: PathBuf = lock_of(common.as_path());
     publish(lock.as_path(), "garbage");
     let mut stderr: Vec<u8> = Vec::new();
+    let started: Instant = Instant::now();
     let failure: WorktreeCopyError =
         acquire_worktree_copy_lock(common.as_path(), &mut stderr).expect_err("timeout");
+    assert!(
+        started.elapsed() >= Duration::from_millis(UNPROVEN_OWNER_TIMEOUT_MS),
+        "the refusal came after {:?}",
+        started.elapsed()
+    );
     assert!(
         failure.0.contains("stayed in place for 1000 ms"),
         "{}",
@@ -329,4 +335,86 @@ fn a_live_holder_past_the_limit_ends_the_wait_and_keeps_its_lock() {
     assert!(lock_of(common.as_path()).exists(), "the holder's lock stays");
     held.release().expect("released");
     remove(root.as_path());
+}
+
+/// A lease that is dropped without a release still frees the lock.
+#[cfg(unix)]
+#[test]
+fn a_dropped_lease_frees_the_lock() {
+    let root: PathBuf = fixture("lock-dropped");
+    let common: PathBuf = root.join("common");
+    std::fs::create_dir(common.as_path()).expect("common");
+    let lease: WorktreeCopyLease = try_acquire_worktree_copy_lock(common.as_path())
+        .expect("attempt")
+        .expect("free");
+    assert!(lock_of(common.as_path()).exists());
+    drop(lease);
+    assert!(!lock_of(common.as_path()).exists(), "the drop removed the lock");
+    remove(root.as_path());
+}
+
+/// A wait on one owner ends at once when another owner has taken the lock,
+///  even though that other owner is alive.
+#[cfg(unix)]
+#[test]
+fn a_wait_ends_when_the_lock_passes_to_another_owner() {
+    let root: PathBuf = fixture("lock-passed-on");
+    let common: PathBuf = root.join("common");
+    std::fs::create_dir(common.as_path()).expect("common");
+    let held: WorktreeCopyLease = try_acquire_worktree_copy_lock(common.as_path())
+        .expect("attempt")
+        .expect("free");
+    let waited_on: LockOwner = LockOwner {
+        lease_token: "the-owner-that-left".to_owned(),
+        owner_pid: i64::from(std::process::id()),
+        owner_birth_identity: "the-owner-that-left".to_owned(),
+    };
+    let started: Instant = Instant::now();
+    wait_while_owner_lives(
+        lock_of(common.as_path()).as_path(),
+        &waited_on,
+        Duration::from_secs(5),
+    )
+    .expect("the lock is no longer the waited-on owner's");
+    assert!(started.elapsed() < Duration::from_secs(4), "{:?}", started.elapsed());
+    held.release().expect("released");
+    remove(root.as_path());
+}
+
+/// A lock whose retirement is refused for any reason other than having vanished is an error, not a lost race.
+#[cfg(unix)]
+#[test]
+fn a_refused_retirement_is_an_error() {
+    use std::os::unix::fs::PermissionsExt;
+    let root: PathBuf = fixture("lock-retire-refused");
+    let parent: PathBuf = std::fs::canonicalize(&root).expect("canonical");
+    let lock: PathBuf = parent.join("settlement.lock");
+    publish(lock.as_path(), DEAD_OWNER);
+    std::fs::set_permissions(&parent, std::fs::Permissions::from_mode(0o500)).expect("lock");
+    let outcome: Result<bool, WorktreeCopyError> = remove_lock_of(lock.as_path(), "dead-token");
+    std::fs::set_permissions(&parent, std::fs::Permissions::from_mode(0o700)).expect("unlock");
+    // A superuser renames anyway, so only an ordinary user shows the refusal.
+    if outcome.is_ok() {
+        remove(root.as_path());
+        return;
+    }
+    assert!(outcome.is_err());
+    assert!(lock.join(OWNER_RECORD_NAME).exists(), "the lock stays");
+    remove(root.as_path());
+}
+
+/// The jitter source gives numbers in the unit interval that differ from call to call.
+#[test]
+fn the_jitter_source_gives_varying_numbers_in_the_unit_interval() {
+    let samples: Vec<f64> = (0..64)
+        .map(|_| return unit_random().expect("random"))
+        .collect();
+    assert!(
+        samples.iter().all(|sample| return *sample >= 0.0 && *sample < 1.0),
+        "{samples:?}"
+    );
+    assert!(
+        samples.iter().any(|sample| return *sample != samples[0]),
+        "{samples:?}"
+    );
 }
