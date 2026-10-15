@@ -814,9 +814,19 @@ and changed-dependency consumers pass in
 `${HOME}/temp/agent/pi-native-root-lifecycle-consumer-20261015.log`.
 The policy compiler now delegates output packaging and remaining-premise filtering to `compilation-result.mjs`.
 The compiler retains the original evidence and input validation before that final filtering call.
-A full maintained lint recount is running in
+The full maintained lint recount reports 44 errors and 13464 warnings across 479 files and 486 rules in
 `${HOME}/temp/agent/pi-maintained-observation-splits-lint-20261015.log`.
-Rebuilt compiler consumers remain queued after the recount.
+Errors decreased from 107;
+warnings increased as extracted untyped module boundaries became visible.
+The compiler retained one file-size error after its first extraction.
+Its rebuilt domain,
+semantic-operating-policy,
+and manual-review consumers pass in
+`${HOME}/temp/agent/pi-native-policy-compilation-consumer-20261015.log`.
+The following extraction places original scheduler and inspected-program coverage in `operation-coverage.mjs`.
+Focused lint now reports zero errors and 234 warnings across the compiler and its output and coverage helpers.
+The rebuilt compiler consumers are running again on that final extraction in
+`${HOME}/temp/agent/pi-native-operation-coverage-consumer-20261015.log`.
 The remaining full lint gate is still open.
 The handover,
 troubleshooting entry,
