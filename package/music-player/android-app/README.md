@@ -135,6 +135,12 @@ They cover the Compose call sites that no pure function can reach:
   because a Compose test starts in touch mode, in which buttons and rows cannot take focus.
   The host cannot draw a press ripple into a capture, so the shape of the indication is checked with Material's focus
   layer instead; a press on a device is part of the emulator pass.
+- the flush rows beside the crease (D130), in `RowAlignmentWiringTest` and `TemplateEditorAlignmentWiringTest`, which
+  render the real right pane (title bar, subfolder heading, rows) under a provided pane clearance with native graphics:
+  the title bar, the subfolder heading and the row text start at one x for no clearance, the 22.64 dp floor, a 10 dp
+  and a 60 dp clearance, the end side ends at one x under an end clearance, the playing row's fill begins at root
+  pixel 0 and its keyboard ring (outer ring at pixel 0, near ring inside it) keeps at least 8 dp from the text, and the
+  template editor's first field row starts its text under the `Fields` heading with and without the crease inset.
 
 - the Search field caret, in `SearchFieldCaretWiringTest`: typing after a layout change that rebuilds the header lands
   after the kept query, `Ctrl+F` on an open page puts the caret at the end without selecting, a caret the person placed
@@ -237,6 +243,9 @@ text in the right pane (header, track rows, subfolder headers, the empty notice,
 after it,
 and backgrounds and containers still span the band.
 A window with no crease keeps the ordinary insets.
+Beside the crease only text dodges it (D130): a track row's box (the current row's fill, the state layers and the ring)
+spans the pane from edge to edge, and its text starts in the column of the subfolder headings and the title bar
+([`core/TrackRowGeometry.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/TrackRowGeometry.kt)).
 
 ## Keyboard and focus
 

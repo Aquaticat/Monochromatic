@@ -86,6 +86,21 @@ README oids were changed to match (`git cli-git fix --policy markdown/autofix` d
 twenty embedded oids were checked against the files again (zero mismatches).
 The R2 check task has not run, since the objects reach R2 on push.
 
+On 2026-10-14 `android-inner-two-pane-light.png` and `android-inner-two-pane-dark.png` were retaken from the debug
+build of branch `fix/android-row-text-alignment` (D130: the track rows' box spans the pane and their text starts in the
+column of the headings), on the invented 35-track library in demo mode, with the same crop (`2076x1964+0+110`).
+The committed pair showed the defect itself: the row text 11 dp right of the subfolder headings and the playing fill
+starting at the crease clearance.
+`android-cover-player-dark.png` was compared with the fixed build instead of retaken: the cover list region of the
+fixed build is pixel-identical to the build before the change (zero differing pixels in four captures), and the
+committed image differs from it only by the 4 to 7 px row offset noted earlier.
+The new files are `164afb146209` (light) and `bdfe6255fecb` (dark) by their sha256, the README oids were changed to
+match, `git cli-git fix --policy markdown/autofix` rewrote nothing, and all twenty embedded oids were checked against
+the files again (zero mismatches).
+The elapsed time on the deck differs from the earlier captures because the invented track resumes where the previous
+session left it.
+The R2 check task has not run, since the objects reach R2 on push.
+
 Last updated: 2026-10-14.
 
 ## Goal
