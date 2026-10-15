@@ -6,7 +6,11 @@ Research recorded on 2026-10-15 for the request to prevent Claude Code from usin
 The user chose account-wide configuration on this machine and ordinary-call enforcement.
 Deliberate bypasses are outside scope.
 The separately configured Fable advisor must remain unchanged.
-No enforcement mechanism has been accepted or installed.
+The user selected ordinary Agent delegation only and requested Sonnet for the general-purpose agent.
+Forks,
+subagent skills,
+and teammates are outside the selected scope.
+The accepted general-purpose default has not yet been installed.
 
 The user corrected the ordering of the discussion:
 enumerate supported mechanisms before asking which delegation paths to include.
@@ -146,23 +150,32 @@ not a tested enforcement result.
 
 ## Remaining decisions and validation
 
-Q3 remains open pending presentation of the mechanism inventory.
-The evidence leaves distinct choices:
-reject explicit prohibited selections,
-force ordinary delegation onto one permitted model,
-or add restrictions on inheritance paths and skills.
-These controls can be combined.
-No proposed combination yet has a demonstrated end-to-end guarantee.
+Q3 is settled:
+ordinary Agent delegation only.
+The user requested Sonnet for the general-purpose agent to cover omitted-model inheritance.
+The proposed account-wide settings edit uses `CLAUDE_CODE_SUBAGENT_MODEL=sonnet`
+and deny rules `Agent(model:*opus*)` and `Agent(model:*fable*)`.
+This retains the built-in general-purpose instructions rather than replacing its definition.
+The documented selection order gives the environment default priority over parent-model inheritance,
+but gives agent definitions and explicit invocation models priority over that default.
+The deny rules address explicit Opus/Fable selections.
+Custom definitions selecting either prohibited family or `inherit` remain an unresolved path.
+No complete prohibition across named agents has been demonstrated.
+
+The settings write was blocked before execution by automatic approval review.
+The reviewer accepted the settings edit as authorized but rejected the launcher's cgroup PID write,
+stating that the previous cgroup approval covered only a documentation commit.
+Approval for this invocation is pending.
 
 Validation must exercise accepted and rejected calls through the installed Claude Code host,
 including omitted models,
 aliases,
 full IDs,
 definitions,
-resumed agents,
-forks,
+and resumed agents.
+Forks,
 skills,
-and any enabled teammate/workflow paths.
+and teammates are excluded from this enforcement scope.
 Direct user commands must be distinguished from model-invoked tools.
 The advisor must remain configured and operational.
 Use disposable configuration fixtures;
@@ -192,8 +205,8 @@ It has not been accepted or applied.
 
 ## Next action
 
-Present the supported controls with their limitations before reopening Q3.
-Select implementation only after shared understanding is confirmed.
+Apply the authorized general-purpose default and explicit model denials after launcher approval.
+Verify settings through the installed host and resolve the remaining named-agent inheritance path.
 No implementation commits exist for this request.
 
 [permissions]: https://code.claude.com/docs/en/permissions#match-by-input-parameter
