@@ -123,18 +123,20 @@ type NativeBudgetModule = {
 
 /**
  Require copied artifact exports before any test invokes their consumer contract.
- *
+
  @param value - copied native module namespace
- *
+
+ @returns assertion narrowing to the tested original callables
+
  @throws Error when an expected original callable is missing
  */
 function assertBudgetModule(value: unknown): asserts value is NativeBudgetModule {
-  if((value===null)||(typeof value)!=='object'
-    ||(!('createJudgmentBudget' in value))||(typeof value.createJudgmentBudget)!=='function'
-    ||(!('JudgmentBudgetError' in value))||(typeof value.JudgmentBudgetError)!=='function'
-    ||(!('JudgmentDeadlineError' in value))||(typeof value.JudgmentDeadlineError)!=='function'
-    ||(!('JudgmentCancelledError' in value))||(typeof value.JudgmentCancelledError)!=='function'
-    ||(!('JudgmentAttemptLimitError' in value))||(typeof value.JudgmentAttemptLimitError)!=='function') {
+  if((value===null)||((typeof value)!=='object')
+    ||(!('createJudgmentBudget' in value))||((typeof value.createJudgmentBudget)!=='function')
+    ||(!('JudgmentBudgetError' in value))||((typeof value.JudgmentBudgetError)!=='function')
+    ||(!('JudgmentDeadlineError' in value))||((typeof value.JudgmentDeadlineError)!=='function')
+    ||(!('JudgmentCancelledError' in value))||((typeof value.JudgmentCancelledError)!=='function')
+    ||(!('JudgmentAttemptLimitError' in value))||((typeof value.JudgmentAttemptLimitError)!=='function')) {
     throw new Error('Built native judgment budget exports are unavailable');
   }
 }
@@ -145,7 +147,8 @@ function assertBudgetModule(value: unknown): asserts value is NativeBudgetModule
 const built: unknown=await import(new URL(
   '../dist/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.ts',
   import.meta.url
-).href);
+)
+  .href);
 assertBudgetModule(built);
 /**
  Checked original callables remain fixed throughout the consumer suites.
