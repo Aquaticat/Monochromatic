@@ -2238,6 +2238,29 @@ Typed original constructor composition is qualified at these tested boundaries.
 Continue the maintained-package quality queue with the dependency facade body;
 its composition declaration remains separate from implementation qualification.
 
+Dependency facade migration is now in progress.
+`0f97d68407` moves the body behind its stable native bridge into typed owners for
+original records,
+declared profiles,
+and file inspection.
+The commit was prepared as `5be83a89e1` and replayed after a concurrent landing.
+The original source is retained in `dependencies-before-owner-types.mjs`.
+The first type check reports `TS2322` for widened mechanical-projection literals;
+`7fedacfcaa` retains their declared literal values and documents original lifecycle boundaries.
+The first consumer build then reports `TS9017` for inferred exported fixture arrays;
+those independent event contracts now have explicit readonly string-array types.
+`3ade565745` adds original callback ordering,
+foreign-handle rejection,
+failure recovery,
+and live versus retained lifetime consumers.
+File consumers use disposable roots to check exact original bytes,
+changed-file rejection,
+controlled-reader identity,
+and accepted/rejected declared profile boundaries.
+Primitive handle narrowing preserves the original object-keyed membership outcome;
+it is not a new authorization safeguard.
+The full facade qualification and final formatting remain pending.
+
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
 Its `cli-git` push-wait notice was initially misread as a timeout.
