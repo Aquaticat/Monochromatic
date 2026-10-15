@@ -9,7 +9,7 @@ function textRecord({
  if((!value)||((typeof value)!=='object')
    ||(Object.getPrototypeOf(value)!==Object.prototype))throw new SourceCollectionError('Native prompt construction requires an ordinary text record');
  const keys=Reflect.ownKeys(value);
- if((keys.length>512)||keys.some(function isUnsupportedRenderKey(key) { return (((typeof key)!=='string')||(key==='__proto__')); })
+ if(keys.some(function isUnsupportedRenderKey(key) { return (((typeof key)!=='string')||(key==='__proto__')); })
    ||(fields&&((keys.length!==fields.length)||keys.some(function isUnexpectedRenderField(key) { return (!fields.includes(key)); }))))throw new SourceCollectionError('Native prompt construction has unsupported text fields');
  const copied={};
  for(const key of keys){

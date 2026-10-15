@@ -242,8 +242,7 @@ export function createPolicyLoaderState({
  function resourceInputs(){
   if(readResourceToolInputs===undefined)return undefined;
   const origins=readResourceToolInputs(inputState.loader);
-  if((!Array.isArray(origins))||(!Object.isFrozen(origins))
-    ||(origins.length>64))throw new PolicySlotBindingError('Resource tool inputs require their original bounded native view');
+  if((!Array.isArray(origins))||(!Object.isFrozen(origins)))throw new PolicySlotBindingError('Resource tool inputs require their original native view');
   for(const origin of origins){
    const {
      source,

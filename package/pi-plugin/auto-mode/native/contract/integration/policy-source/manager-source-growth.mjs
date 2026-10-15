@@ -23,17 +23,16 @@ function frozenRecord(value){
  }
 }
 
-/** Inspect a bounded owned reference list, never a copied message inventory. */
+/** Inspect a owned reference list, never a copied message inventory. */
 function origins(value){
  if(value===undefined)return [];
  if(types.isProxy(value)||(!Array.isArray(value))
    ||(Object.getPrototypeOf(value)!==Array.prototype)
    ||(!Object.isFrozen(value))
-   ||(value.length>128)
    ||(Reflect.ownKeys(value)
      .length
      !==(value.length
-     +1)))throw new SourceCollectionError('Manager source growth requires its bounded frozen origin list');
+     +1)))throw new SourceCollectionError('Manager source growth requires its frozen origin list');
  for(let index=0;index<value.length;index++){
   const field=Object.getOwnPropertyDescriptor(
     value,

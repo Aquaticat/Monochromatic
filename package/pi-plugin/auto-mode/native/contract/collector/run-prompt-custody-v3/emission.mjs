@@ -69,7 +69,6 @@ function enterNative({
       )))throw new SourceCollectionError('Native normalized options differ from their original base seed');
       for(const item of dense({
         value:snapshot,
-        maximum:64
       })){
         const path=Object.getOwnPropertyDescriptor(
           item.ext,
@@ -82,11 +81,8 @@ function enterNative({
           ||((typeof path.value)!=='string'))throw new SourceCollectionError('Native extension snapshot requires a bounded data path');
         for(const handler of dense({
           value:item.handlers,
-          maximum:256
         })){
-          if(((typeof handler)!=='function')||(scope.slots
-            .length
-            >=256))throw new SourceCollectionError('Native handler membership exceeds its declared profile');
+          if((typeof handler)!=='function')throw new SourceCollectionError('Native handler membership requires callable handlers');
           scope.slots
             .push({
               ordinal:scope.slots
@@ -101,7 +97,6 @@ function enterNative({
       }
       if(dense({
         value:messages,
-        maximum:64
       })
         .length
         > 0)throw new SourceCollectionError('Native run messages must begin with their empty owned accumulator');
