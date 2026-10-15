@@ -465,7 +465,8 @@ object TrackFingerprint {
     //           query naming the column:
     //           - A MediaStore URI (authority `media`): the media store has no `last_modified` column (its own column
     //             is `date_modified`, in seconds), and before 2026-10-15 every MediaStore row asked anyway and read
-    //             the unknown time from the thrown exception. Skipping the query keeps every fingerprint value as it was.
+    //             the unknown time from the thrown exception. Skipping the query keeps every fingerprint value as
+    //             it was.
     //           - An authority that already refused the column in this process.
     //           - A failed query, which is logged. A refusal whose message names the column is remembered for the
     //             authority; any other failure (a revoked grant, a deleted file) belongs to that one row.
@@ -476,7 +477,9 @@ object TrackFingerprint {
     // ```ts
     // function queryLastModifiedMs(context: Context, uri: Uri): number {
     //   const authority = uri.authority ?? "";
-    //   if (authority === MediaStore.AUTHORITY || authoritiesLackingModified.has(authority)) return UNKNOWN_MODIFIED_MS;
+    //   if (authority === MediaStore.AUTHORITY || authoritiesLackingModified.has(authority)) {
+    //     return UNKNOWN_MODIFIED_MS;
+    //   }
     //   try { return readColumn(uri) ?? UNKNOWN_MODIFIED_MS; }
     //   catch (error) {
     //     if (error instanceof IllegalArgumentException && error.message?.includes("last_modified"))

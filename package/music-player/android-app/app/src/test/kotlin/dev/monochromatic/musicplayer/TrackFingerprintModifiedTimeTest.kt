@@ -37,7 +37,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 /** Modification time in milliseconds that the invented document provider reports for every row. */
 private const val INVENTED_MODIFIED_MS: Long = 1_700_000_000_123L
 
-// What:     `internal abstract class ColumnProvider` is a content provider that records the columns each query asked for.
+// What:     `internal abstract class ColumnProvider` is a content provider that records the columns each query asked
+//           for.
 // Why:      Each case counts the queries that named the document column, which is the call the media provider logged as
 //           `Invalid column last_modified` on the emulator.
 //
@@ -83,7 +84,12 @@ internal abstract class ColumnProvider : ContentProvider() {
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int = 0
 
     /** Refuses updates, which the read never makes. */
-    override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<out String>?): Int = 0
+    override fun update(
+        uri: Uri,
+        values: ContentValues?,
+        selection: String?,
+        selectionArgs: Array<out String>?,
+    ): Int = 0
 }
 
 // What:     `internal class ColumnLackingProvider` throws on the document column, as the media provider does.
@@ -106,7 +112,8 @@ internal class ColumnLackingProvider : ColumnProvider() {
 }
 
 // What:     `internal class DocumentProvider` answers the document column with one row holding the invented time.
-// Why:      A document provider of the Storage Access Framework reports the column, and its value feeds the fingerprint.
+// Why:      A document provider of the Storage Access Framework reports the column, and its value feeds the
+//           fingerprint.
 //
 // In TS you'd write (pseudocode):
 // ```ts
