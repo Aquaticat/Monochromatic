@@ -88,6 +88,7 @@ await describe({ name: '', children: [
     assert.deepEqual(call.members.map(function declaration(member) { 
       return member.declaration; 
     }), fixture.view.members);
+    for (const [index, member] of call.members.entries()) assert.equal(member.declaration, fixture.view.members[index]);
     const handles = call.members.map(function handle(member) { 
       return member.handle; 
     });
