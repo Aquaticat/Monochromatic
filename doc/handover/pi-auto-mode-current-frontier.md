@@ -1476,8 +1476,38 @@ The maintained lint recount covers 567 files and 486 rules:
 zero errors and 12751 warnings in
 `${HOME}/temp/agent/pi-maintained-typed-input-location-lint-20261015.log`.
 All nine input-position source and consumer files have zero diagnostics in that full report.
-The next dependency is original judgment input admission,
-followed by instruction-claim construction using the now-typed governing-source owner.
+`e813dc328c` moves original judgment input admission behind typed JSON and construction-error owners.
+`cd9ff435c0` and `6e2d274a47` add consumer coverage for preserved values,
+undefined and lossy numeric values,
+array holes,
+native cyclic and bigint errors,
+callback ordering,
+and original cause identity.
+The checker retains its limited role after structural admission;
+it does not become a general validator for callable or symbol values.
+All four source and consumer files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-native-judgment-input-verified-lint-20261015.log`.
+The owned rebuild,
+new consumers,
+request claims,
+domain contrasts,
+and type check pass in
+`${HOME}/temp/agent/pi-native-judgment-input-consumers-20261015.log`.
+The original implementation passes the same consumer suite with its historical derived-error name assertion in
+`${HOME}/temp/agent/pi-native-judgment-input-baseline-20261015.log`.
+The saved original and typed implementations agree across 54 cases on values,
+errors,
+and callback events;
+a negative-zero positive control distinguishes rejected and admitted numeric input.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-judgment-input-comparison.json`
+retains that evidence and artifact hashes.
+Removing missing-value,
+nonfinite-number,
+or negative-zero checks fails the committed tests;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-judgment-input-omissions.json`
+records the controls and unchanged artifact hashes.
+The complete lint recount is running.
+Next is instruction-claim construction using the now-typed governing-source and JSON owners.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
