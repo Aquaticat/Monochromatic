@@ -9,8 +9,7 @@ import {
   type AssessmentTransportInput,
   AssessmentTransportError,
 } from './assessment-transport.ts';
-import { encodeDecisionRequest, } from './decision-request.ts';
-import { decodeDecisionResponse, } from './decision-response.ts';
+import { sendAssessmentPartitions } from './assessment-partitions.ts';
 
 /**
  Conversion lifecycle logs exclude credentials and assessment content.
@@ -22,7 +21,6 @@ const l = tagged({ tag: 'auto-mode-assessment-sender', },);
  */
 const conversionLimits = {
   durationMs: 5_000,
-  requestBytes: 1_048_576
 } as const;
 
 //region Conversion consumes the original judgment deadline and one original attempt
@@ -112,27 +110,16 @@ export function createAssessmentSender({
     },)
       .debug('converting original assessment for Luna',);
     assertLifetime(input,);
-    if (Buffer.byteLength(input.body,) > conversionLimits.requestBytes)
-      throw new AssessmentTransportError('Original assessment exceeds 1048576 bytes before Luna conversion',);
     /**
      The HTTP sender checks the converted request's bytes before reading credentials.
      */
-    const encoded = encodeDecisionRequest(input.body,);
     /**
      Attempt number, cancellation, and deadline pass through unchanged.
      */
-    const raw = await sendHttp({
-      ...input,
-      body: encoded.body,
-    },);
-    assertLifetime(input,);
+    const decoded = await sendAssessmentPartitions({input,sendHttp,assertLifetime});
     /**
      Response identity and vocabulary checks do not supply policy admission.
      */
-    const decoded = decodeDecisionResponse({
-      raw,
-      questions: encoded.questions,
-    },);
     assertLifetime(input,);
     return decoded;
   }

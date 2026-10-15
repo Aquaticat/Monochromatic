@@ -54,7 +54,6 @@ export function bindRuleAssessmentWire(request){
  ])if((typeof envelope[field])!=='string')throw new RuleAssessmentWireError(`Original complete operation field is missing: ${field}`);
  const sources=envelope.governingSources;
  if((!Array.isArray(sources))||(sources.length === 0)
-   ||(sources.length>128)
    ||(Reflect.ownKeys(sources)
      .length
      !==(sources.length
@@ -81,11 +80,10 @@ export function bindRuleAssessmentWire(request){
    ?.content)throw new RuleAssessmentWireError('Primary source differs from mandatory policy');
  const input=request.questions;
  if((!Array.isArray(input))||(input.length === 0)
-   ||(input.length>512)
    ||(Reflect.ownKeys(input)
      .length
      !==(input.length
-     +1)))throw new RuleAssessmentWireError('One mixed batch requires one through 512 original claims');
+     +1)))throw new RuleAssessmentWireError('Mixed assessment requires a complete dense original claim list');
  const questions={};
    const pairs=[];
    const seen=new Set();
@@ -153,25 +151,6 @@ export function bindRuleAssessmentWire(request){
    state,
    questions
  });
- const bodyBytes=Buffer.byteLength(body);
- if(bodyBytes>1_048_576){
-  const sourceTexts=sources.map(function readSelectedSourceContent(source) { return (source.content); });
-  const selectedTexts=Object.values(questions)
-    .map(function readSelectedRuleText(value) { return (value.instructions
-      .selectedRule
-      ?.text
-      ??''); });
-  const sizes={
-    bodyBytes,
-    sourceCount:sources.length,
-    questionCount:input.length,
-    sourceTextBytes:Buffer.byteLength(JSON.stringify(sourceTexts)),
-    uniqueSourceTextBytes:Buffer.byteLength(JSON.stringify([...new Set(sourceTexts)])),
-    selectedRuleTextBytes:Buffer.byteLength(JSON.stringify(selectedTexts)),
-    originalRequestBytes:Buffer.byteLength(state.originalRequestBody)
-  };
-  throw new RuleAssessmentWireError(`Complete mixed assessment exceeds the one MiB bound; retained-input byte counts: ${JSON.stringify(sizes)}`);
- }
  function answerText(raw){
   const parsed=parseBatchAnswer({
     raw,

@@ -12,14 +12,6 @@ import type { InstructionSources } from './instruction-sources.ts';
 import type { ProgramInstructions } from './instruction-program.ts';
 import type { MemberInstructions } from './instruction-member.ts';
 
-/**
- Original instruction relation profile bounds each candidate collection.
- */
-const MAX_INSTRUCTION_CANDIDATES = 256;
-/**
- Original contextual-heading profile bounds selected source groups.
- */
-const MAX_HEADING_GROUPS = 64;
 
 //region Complete original batches issue inside one synchronous source dependency segment.
 /**
@@ -141,8 +133,8 @@ export function createInstructionBatches({
        */
       const adoptions = includeAdoptions ? indexedUnitAdoptionPairs() : [];
       if (includeAdoptions && (adoptions.length === 0)) throw new JudgmentConstructionError('No bounded original same-source adoption pairs are available');
-      if (includeClauses && ((candidates.length === 0) || (candidates.length > MAX_INSTRUCTION_CANDIDATES))) throw new JudgmentConstructionError('Clause relation requires one through 256 original instruction candidates');
-      if (includeHeadings && ((headings.length === 0) || (headings.length > MAX_HEADING_GROUPS))) throw new JudgmentConstructionError('Heading content requires one through 64 original source groups');
+      if (includeClauses && (candidates.length === 0)) throw new JudgmentConstructionError('Clause relation requires original instruction candidates');
+      if (includeHeadings && (headings.length === 0)) throw new JudgmentConstructionError('Heading content requires original source groups');
       /**
        Original clauses are declared before request, heading, and adoption claims.
        */
@@ -183,7 +175,7 @@ export function createInstructionBatches({
        Complete original candidate sequence determines both admission bounds and declaration order.
        */
       const candidates = definitionId === 'clause_operation_relation' ? indexedInstructionCandidates() : indexedRuleCandidates();
-      if ((definitionId === 'clause_operation_relation') && ((candidates.length === 0) || (candidates.length > MAX_INSTRUCTION_CANDIDATES))) throw new JudgmentConstructionError('Clause relation requires one through 256 indexed clauses');
+      if ((definitionId === 'clause_operation_relation') && (candidates.length === 0)) throw new JudgmentConstructionError('Clause relation requires indexed clauses');
       return issue(candidates.map(function claimCandidateRule(rule) { 
         return claimProgramRuleCandidate({
         definitionId,
@@ -203,7 +195,7 @@ export function createInstructionBatches({
        Complete original candidate sequence determines both admission bounds and declaration order.
        */
       const candidates = indexedRuleCandidates();
-      if ((candidates.length === 0) || (candidates.length > MAX_INSTRUCTION_CANDIDATES)) throw new JudgmentConstructionError('Mixed rule assessment requires one through 256 indexed clauses; unclassified prose and larger batches remain unsupported');
+      if (candidates.length === 0) throw new JudgmentConstructionError('Mixed rule assessment requires indexed clauses');
       /**
        Original clause meanings are declared before operation relations.
        */
