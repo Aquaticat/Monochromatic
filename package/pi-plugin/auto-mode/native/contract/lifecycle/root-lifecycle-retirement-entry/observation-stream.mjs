@@ -90,7 +90,7 @@ export function createObservationStream({
     fail
   });
   const send=options?.fetch??terminalFetch;
-  const observedFetch=async function observedFetch(
+  function createObservedFetch(){return async function observedFetch(
     input,
     init
   ){
@@ -141,7 +141,8 @@ export function createObservationStream({
      input,
      init
    );
-  };
+  };}
+  const observedFetch=createObservedFetch();
   const stream=await originalStream(
     model,
     context,

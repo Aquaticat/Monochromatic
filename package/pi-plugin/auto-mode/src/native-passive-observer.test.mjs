@@ -12,10 +12,10 @@ for(const failure of ['none','capture','prepare','before-callback','after-callba
  const root={session:{},manager:{}};
  const collector={
   capture(){if(failure==='capture')throw new Error('Evidence capture failed');return Object.freeze({});},
-  assertObservedFresh(){}
+  assertObservedFresh(value){assert.ok(Object.isFrozen(value));}
  };
  const owner=createRequestObservationOwner({
-  root,lifecycle:{capture(){return Object.freeze({});},assertActive(){}},collector,
+  root,lifecycle:{capture(){return Object.freeze({});},assertActive(value){assert.ok(Object.isFrozen(value));}},collector,
   terminalFetch(){throw new Error('Caller fetch must remain selected');},
   prepareSourceAssociation({options}){
    if(failure==='prepare')throw new Error('Evidence preparation failed');
