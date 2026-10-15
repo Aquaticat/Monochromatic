@@ -7202,6 +7202,47 @@ Every completed mode reports zero provider calls and zero genuine human approval
 The isolated repeat did not change the five-second deadline or prove a permanent timing remedy.
 This is distinct from the earlier SIGABRT and Go thread-creation failures in this incident record.
 
+During the later owned-runtime cleanup,
+the domain run and manual uncertainty Allow separately exhausted the same original judgment deadline.
+The unchanged manual uncertainty case passed in isolation.
+After an unrelated bounded CPU stress process exited,
+the domain and manual uncertainty suites passed,
+but ordinary native-context Allow still exhausted its deadline.
+The stress overlap therefore does not establish the cause or a sufficient remedy.
+
+Three unchanged isolated ordinary Allow runs then passed.
+Total process durations were 7259.69,
+7205.50,
+and 7954.08 milliseconds;
+these include setup and shutdown rather than measuring only judgment time.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/native-allow-repeat.json`
+retains individual outcomes and enclosing CPU counters.
+The subsequent complete remaining consumer sequence passed,
+including approval context,
+single calls,
+approved dependencies,
+event receipts,
+host lifecycle,
+CLI shutdown,
+queue release,
+resource reload and copies,
+and context receipts.
+`${HOME}/temp/agent/pi-native-resource-runtime-remaining-20261014.log` retains that sequence.
+This is verified recovery without a causal diagnosis or permanent timing fix.
+
+A separate full lint attempt during this cleanup failed before producing diagnostics with
+`Error running tsgolint: "exit status: exit status: 2"`
+and `runtime: failed to create new OS thread (have 2 already; errno=11)`.
+Its log is `${HOME}/temp/agent/pi-maintained-resource-lint-20261014.log`.
+A later parent-slice sample showed 50 tasks,
+`pids.max=256`,
+and cumulative `pids.events: max 340`.
+Without a pre-failure counter sample,
+these values do not attribute that particular failure.
+The current lint retry uses the previously probed `GOMAXPROCS=2` worker setting
+with no concurrent native consumer verification.
+Its result remains pending.
+
 ### Symptoms and separate incident boundaries
 
 On 2026-10-14,
