@@ -55,10 +55,10 @@ function guardContext({
 
 /** Extend the existing registered wrapper; no session/root registry or new judgment is created. */
 export function createRegisteredWrappers({wrapToolDefinition}) {
-  function wrapRegisteredTool(
+  function wrapRegisteredTool({
     registeredTool,
     runner
-  ) {
+  }) {
     const {definition} = registeredTool;
     const guardedDefinition={
       ...definition,
@@ -69,21 +69,21 @@ export function createRegisteredWrappers({wrapToolDefinition}) {
         onUpdate,
         context
       ){
-      let active=true;
+      const lifetime={active:true};
       const guarded=guardContext({
         context,
         toolCallId,
-        isActive:function isParentExecutionActive() { return (active); },
+        isActive:function isParentExecutionActive() { return (lifetime.active); },
         signal
       });
-      try {return await definition.execute(
+      using executionScope={ [Symbol.dispose]() { lifetime.active=false; } };
+      return await definition.execute(
         toolCallId,
         params,
         signal,
         onUpdate,
         guarded
-      );}
-      finally {active=false;}
+      );
     }
     };
     return wrapToolDefinition(
@@ -97,13 +97,13 @@ export function createRegisteredWrappers({wrapToolDefinition}) {
       )); }
     );
   }
-  function wrapRegisteredTools(
+  function wrapRegisteredTools({
     registeredTools,
     runner
-  ){return registeredTools.map(function wrapOriginalCancellationTool(tool) { return (wrapRegisteredTool(
-    tool,
+  }){return registeredTools.map(function wrapOriginalCancellationTool(tool) { return (wrapRegisteredTool({
+    registeredTool:tool,
     runner
-  )); });}
+  })); });}
   return Object.freeze({
     wrapRegisteredTool,
     wrapRegisteredTools

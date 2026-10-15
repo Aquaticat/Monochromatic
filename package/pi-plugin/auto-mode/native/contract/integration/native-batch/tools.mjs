@@ -201,12 +201,12 @@ export function registerOwnedExecutionTools({
     });
    }
    current();
-   const original=wrappers.wrapRegisteredTool(
-     {definition},
+   const original=wrappers.wrapRegisteredTool({
+     registeredTool:{definition},
      runner,
      readOrigin,
      createProgramRun
-   );
+   });
    const wrapped=Object.freeze({
      ...original,
      ...(isOwnedProgramDefinition(definition)?{capturePreparedProgram}:{})

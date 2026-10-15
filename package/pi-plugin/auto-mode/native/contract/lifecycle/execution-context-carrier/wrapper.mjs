@@ -14,18 +14,24 @@ export function createExecutionWrappers({
   const native=createRegisteredWrappers({wrapToolDefinition});
     const contexts=new WeakMap();
     const issued=new WeakMap();
-  let changing=false;
-  function operation(run){if(changing)throw new ExecutionContextOwnershipError('Native context operations cannot reenter through callbacks');changing=true;try{return run();}finally{changing=false;}}
-  function wrapRegisteredTool(
+  const activity={changing:false};
+  /** Keep callback reentrancy closed until the synchronous context operation returns. */
+  function operation(run){
+    if(activity.changing)throw new ExecutionContextOwnershipError('Native context operations cannot reenter through callbacks');
+    activity.changing=true;
+    using scope={ [Symbol.dispose]() { activity.changing=false; } };
+    return run();
+  }
+  function wrapRegisteredTool({
     registeredTool,
     runner,
     readOrigin
-  ){
+  }){
     if((typeof readOrigin)!=='function')throw new ExecutionContextOwnershipError('Registered native context requires its fixed session execution reader');
-    const original=native.wrapRegisteredTool(
+    const original=native.wrapRegisteredTool({
       registeredTool,
       runner
-    );
+    });
       const {name} = registeredTool.definition;
       const receiver=Object.freeze({});
     function current(record){
@@ -109,7 +115,9 @@ export function createExecutionWrappers({
         );return context;
       }catch(error){record.state='failed';throw error;}
     });}
-    async function execute(
+    /** Preserve the native positional execute callback behind its original wrapper owner. */
+    function createExecutionCallback() {
+      return async function execute(
       toolCallId,
       params,
       signal,
@@ -134,30 +142,31 @@ export function createExecutionWrappers({
         .input))throw new ExecutionContextOwnershipError('Prepared native arguments changed before execution');
       currentContext.state='running';return currentContext;
       });
-      try {return await original.execute(
+      using executionScope={ [Symbol.dispose]() { record.state='returned'; } };
+      return await original.execute(
         toolCallId,
         params,
         signal,
         onUpdate,
         context
-      );}
-      finally {record.state='returned';}
+      );
+    }
     }
     return {
       ...original,
       createExecutionContext,
-      execute
+      execute:createExecutionCallback()
     };
   }
-  function wrapRegisteredTools(
+  function wrapRegisteredTools({
     registeredTools,
     runner,
     readOrigin
-  ){return registeredTools.map(function wrapOriginalExecutionTool(tool) { return (wrapRegisteredTool(
-    tool,
+  }){return registeredTools.map(function wrapOriginalExecutionTool(tool) { return (wrapRegisteredTool({
+    registeredTool:tool,
     runner,
     readOrigin
-  )); });}
+  })); });}
   return Object.freeze({
     wrapRegisteredTool,
     wrapRegisteredTools
