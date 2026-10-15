@@ -28,6 +28,7 @@ export {
   SemanticAdmissionPolicyError,
   copySemanticAdmissionPolicy,
   inspectSemanticAdmissionScope,
+  matchesSemanticProgramProfile,
   consumeHeadingContexts,
   consumeUnitAdoptions,
   selectUnitAdoptionPairs,
@@ -35,10 +36,10 @@ export {
   consumeSourceAssociations,
   PolicyInputBindingError,
   flushPolicyDiagnostics
-} from '../../../src/public-api.ts';
+} from '../../../src/native-policy-api.ts';
 
 /**
- Original built package entry selected before disposable fixture homes are installed.
+ Original built native policy entry selected before disposable fixture homes are installed.
  */
 export declare const maintainedPolicyEntry: string;
 

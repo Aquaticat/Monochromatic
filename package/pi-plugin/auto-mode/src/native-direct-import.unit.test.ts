@@ -33,6 +33,12 @@ const manager = ownedManagers.inMemory(process.cwd());
 assert.equal(manager.getCwd(), process.cwd());
 assert.deepEqual(manager.getEntries(), []);
 assert.equal(manager.isPersisted(), false);
+const nativePolicy = await import('./dist/final/node/native-policy.mjs');
+const extension = await import('./dist/final/node/index.mjs');
+assert.ok(Object.keys(nativePolicy).length > 0);
+for (const name of Object.keys(nativePolicy)) {
+  assert.equal(nativePolicy[name], extension[name], 'Policy export identity differs: ' + name);
+}
 console.log('direct native import and owned manager construction completed');
 `;
         /** Child completion proves initialization and construction, while stderr detects shutdown noise. */
