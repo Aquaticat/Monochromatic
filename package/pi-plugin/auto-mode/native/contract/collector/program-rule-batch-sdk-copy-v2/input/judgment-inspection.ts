@@ -101,7 +101,9 @@ export function createJudgmentInspection(input: JudgmentInspectionInput): Judgme
     parentCurrent(record);
     return originalFile({
       handle: preparation.handle,
-      absolutePath: record.prepared.input.path
+      absolutePath: record.prepared
+        .input
+        .path
     });
   }
   /**
@@ -113,7 +115,10 @@ export function createJudgmentInspection(input: JudgmentInspectionInput): Judgme
     return Object.freeze([...byMember.entries()].map(function readExecutionState([id, handle]) {
       return Object.freeze({
         id,
-        state: publishedRecord(handle).execution?.state ?? 'unentered'
+        state: publishedRecord(handle)
+          .execution
+          ?.state
+          ?? 'unentered'
       });
     }));
   }
