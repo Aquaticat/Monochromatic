@@ -10,8 +10,9 @@ a server,
 or an import step.
 
 Status:
-under active development,
-build from source.
+under active development.
+Pre-release builds are published for download,
+and the source is there to build.
 
 Version `0.1.0` builds a Slint desktop application and a Jetpack Compose Android application.
 They provide corresponding product behaviour through separate platform implementations and share true-peak metering.
@@ -24,6 +25,7 @@ and audio output remain native to each platform.
 - [What works today](#what-works-today)
 - [Gallery](#gallery)
 - [Design record](#design-record)
+- [Install](#install)
 - [Build from source](#build-from-source)
 - [Architecture](#architecture)
 - [Contributing](#contributing)
@@ -258,8 +260,10 @@ It measures non-current tracks in a background sweep and uses a bounded current-
 The desktop build uses Slint with winit on every desktop target.
 Linux targets Wayland and uses PipeWire,
 with no ALSA or PulseAudio backend.
-macOS targets Apple Silicon and uses CoreAudio.
-Windows targets `x86_64` and uses WASAPI through cpal.
+macOS targets Apple Silicon and Intel and uses CoreAudio.
+Windows targets `x86_64` and `arm64` and uses WASAPI through cpal.
+Only the Linux `x86_64` build has been run by the project;
+the other desktop targets are built by CI and have not been tested on their platform.
 
 The desktop source implements LauncherEntry D-Bus taskbar progress on Linux and native taskbar progress on Windows.
 These shell integrations are best-effort and are not shown in the gallery.
@@ -509,6 +513,106 @@ session handling,
 decoding,
 output,
 and platform integration still have platform-specific implementations.
+
+## Install
+
+Pre-release builds are attached to the GitHub releases of
+[`Aquaticat/Monochromatic`](https://github.com/Aquaticat/Monochromatic/releases),
+because this package still lives in that repository.
+Look for a release titled `Music Player <version> (pre-release)` with a tag named `music-player-v<version>`;
+the same page lists releases of other packages.
+If it lists no Music Player release yet,
+[build from source](#build-from-source).
+
+Every release is a pre-release,
+because the project is under active development.
+A release holds one file per platform and a `SHA256SUMS` file:
+
+- Windows: `music-player-<version>-windows-x64.exe` and `music-player-<version>-windows-arm64.exe`.
+- macOS: `music-player-<version>-macos-arm64.dmg` (Apple silicon) and `music-player-<version>-macos-x64.dmg` (Intel).
+- Linux: `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz`.
+- Android: `music-player-<version>-android.apk`.
+
+### What has been tested
+
+The project has run the Linux `x86_64` build on Wayland with PipeWire,
+and the Android app on emulators.
+Every other file is built by CI, not yet tested on this platform:
+CI starts each desktop program once with `--version` and does nothing more.
+No build has run on a real Android device, on macOS or on Windows.
+Treat those downloads as unverified and report what you find as issues.
+
+### Windows
+
+Download the `.exe` that matches your processor and run it.
+It is one standalone program that needs no installer and no Visual C++ runtime.
+It is not signed with a developer identity,
+so SmartScreen may show "Windows protected your PC":
+choose "More info",
+then "Run anyway".
+The program takes one optional folder or file to open: `music-player.exe C:\Music`.
+
+### macOS
+
+Open the `.dmg` that matches your Mac and drag Music Player to Applications.
+The app is not notarized by Apple and has only an ad-hoc signature (no developer identity),
+so the first launch needs your confirmation:
+
+1.  Try to open Music Player once.
+    macOS shows a warning and does not start it.
+2.  Open System Settings, go to Privacy & Security, scroll down and click "Open Anyway".
+3.  Click "Open" when the warning appears again.
+
+macOS remembers the choice after that.
+These are the steps in [Apple's guide](https://support.apple.com/en-us/102445).
+The app needs macOS 11 or newer.
+
+### Linux
+
+Extract the archive and run `bin/music-player`,
+or follow `INSTALL.txt` inside it to add a menu entry and an icon for your user.
+It needs a Wayland or X11 session,
+PipeWire,
+fontconfig,
+and a CPU with AES instructions.
+The program is built on Ubuntu 24.04 and needs a glibc of that age or newer.
+There is no AppImage:
+the program links PipeWire from the host,
+so an AppImage would depend on the host as much as the archive does.
+
+### Android
+
+Download the `.apk` on the device,
+open it,
+and allow installing from that app when Android asks.
+It needs Android 8.0 (API 26) or newer,
+and the `arm64-v8a` or `x86_64` instruction set.
+
+The APK is signed with the project's release key,
+and an update installs over it only if it carries the same key.
+The certificate's SHA-256 fingerprint is
+`9de6e9a475f182c36f2513179fd4b14763b0e00fe068c9b8f3e6f08103616926`;
+compare it with `apksigner verify --print-certs <file>.apk`.
+A debug build made from source uses a different key,
+so Android refuses to update one into the other:
+uninstall first.
+
+### Verify a download
+
+Every file is attested with GitHub build provenance,
+which binds its exact bytes to the workflow run that built it:
+
+```bash
+# Fails if the file was changed after the workflow built it.
+gh attestation verify <file> --repo Aquaticat/Monochromatic
+
+# Compare against the checksum file attached to the release.
+sha256sum --check --ignore-missing SHA256SUMS
+```
+
+The runbook [`doc/runbook/release-the-music-player.md`](../../doc/runbook/release-the-music-player.md)
+describes how releases are made,
+and [`doc/decision/music-player-releases.md`](../../doc/decision/music-player-releases.md) records why.
 
 ## Build from source
 

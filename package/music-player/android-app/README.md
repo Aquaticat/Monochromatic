@@ -80,7 +80,15 @@ mise run //package/music-player/android-app:run:release
 - `build` rebuilds the native libraries and assembles the debug APK.
 - `build:release` rebuilds the native libraries and assembles the optimized,
   non-debuggable release APK.
-  The release variant uses the debug signing key so it can be installed without a separate keystore.
+  The release variant uses the debug signing key so it can be installed without a separate keystore,
+  unless `MUSIC_PLAYER_KEYSTORE_FILE`,
+  `MUSIC_PLAYER_KEYSTORE_PASSWORD`,
+  `MUSIC_PLAYER_KEY_ALIAS`,
+  and `MUSIC_PLAYER_KEY_PASSWORD` are all set in the environment (or as Gradle properties),
+  in which case it is signed with that key.
+  Setting only some of them fails the build.
+  The release workflow signs this way with the project key (`doc/runbook/release-the-music-player.md`).
+  The app's `versionName` and `versionCode` come from the `version` in `../desktop-app/Cargo.toml`.
 - `install` rebuilds the native libraries and installs the debug APK on a connected device.
 - `run:release` builds the release APK,
   installs it on every attached device,
