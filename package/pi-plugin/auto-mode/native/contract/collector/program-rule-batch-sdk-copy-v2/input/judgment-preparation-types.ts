@@ -61,7 +61,9 @@ export type JudgmentPreparationInput<Source extends JudgmentPreparationSources =
   catalogText: string;
   catalogSHA256: string;
   resolveBinding: QuestionSelectionInput['resolveBinding'];
-  bindings: Pick<WeakMap<object, JudgmentPreparedBinding>, 'set'>;
+  bindings: Readonly<{
+    set: (identity: object, record: JudgmentPreparedBinding) => unknown;
+  }>;
   byMember: Map<string, object>;
 }>;
 

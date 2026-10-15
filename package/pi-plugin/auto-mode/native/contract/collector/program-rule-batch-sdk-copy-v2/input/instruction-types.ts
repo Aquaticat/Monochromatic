@@ -43,7 +43,7 @@ export type JudgmentInstructionsInput = Readonly<{
   byMember: ReadonlyMap<string, object>;
   bindings: Pick<WeakMap<object, InstructionMember>, 'get' | 'has'>;
   knownSelection: () => Pick<QuestionSelection, 'declare'>;
-  parsePolicy?: GoverningSetInput['parse'];
+  parsePolicy?: GoverningSetInput['parse'] | undefined;
   receipt: Readonly<{ request: object }>;
   issue: (claims: readonly object[]) => object;
 }>;

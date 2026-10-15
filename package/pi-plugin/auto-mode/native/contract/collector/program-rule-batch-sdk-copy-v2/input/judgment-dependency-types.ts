@@ -16,8 +16,8 @@ export type JudgmentDependencyState = Readonly<{
   finalRecord?: Readonly<{
     failure?: unknown;
     status?: 'evidence-closed' | 'close-failed'
-  }>;
-  handle?: object;
+  }> | undefined;
+  handle?: object | undefined;
 }>;
 
 /**
