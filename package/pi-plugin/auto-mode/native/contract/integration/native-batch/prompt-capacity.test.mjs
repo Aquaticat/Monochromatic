@@ -5,8 +5,8 @@ import {bindPolicySessionCollector} from '../policy-source/system-slot.mjs';
 import {createOwnedCodemodeDefinition} from './generated/program-definition.mjs';
 
 // Exercise complete native prompt publication with individually bounded inputs whose bundle exceeds one text field.
-const policyText='# Policy\n\nRUL:\n Keep the original instruction.\n'+ 'Workspace context.\n'.repeat(1_800);
-const forcedPrompt='Native provider prompt.\n'.repeat(1_800);
+const policyText='# Policy\n\nRUL:\n Keep the original instruction.\n'+ 'Workspace context.\n'.repeat(3_800);
+const forcedPrompt='Native provider prompt.\n'.repeat(3_800);
 const env=await createEnvironment({policyText,omitHostPrompt:true,appendPrompts:[],extensionFactories:[
  function providerPrompt(pi){pi.on('before_agent_start',function forcePrompt(event){event.systemPromptOptions.forceSystemPrompt=forcedPrompt;});},
  function observePrompt(pi){pi.on('before_agent_start',function retainPromptInput(){return undefined;});},
@@ -39,9 +39,10 @@ session.agent.streamFunction=async function completeOriginalPrompt(model){
 };
 try{
  await session.prompt('Receive the original workspace prompt.');
+ await session.prompt('Receive the follow-up prompt.');
  const result=session.messages.at(-1);
  assert.equal(result.stopReason,'stop',result.errorMessage);
- assert.equal(requests,1);
+ assert.equal(requests,2);
  console.log(JSON.stringify({complete:true,originalPromptPreserved:true,aggregateOptions:true,aggregateLoadout:true,aggregateSnapshot:true,providerRequests:0}));
 }finally{
  session.dispose();

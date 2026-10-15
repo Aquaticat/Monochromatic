@@ -455,7 +455,7 @@ run = [
 ]
 
 [tasks."test:native:resource-input"]
-description = "Verify built native resource copies preserve values, ownership, descriptors, and byte limits"
+description = "Verify built native resource copies preserve complete values, ownership, and descriptors"
 run = [
   "node src/native-resource-input.unit.test.ts",
   "node src/native-resource-input-rejection.unit.test.ts",
@@ -839,4 +839,8 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 
 [tasks."test:native:prompt-capacity"]
 description = "Verify original prompt and tool bundles retain their complete native input capacity"
-run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/prompt-capacity.test.mjs"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/capture-data.test.mjs",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/prompt-capacity.test.mjs",
+  "node --max-old-space-size=512 src/input-receipt-budget.unit.test.ts",
+]
