@@ -47,7 +47,7 @@ export function createReachedGroupRun({
     })); });
   const failures=[];
     
-  const groupState={checking:false,closed:false,dispatches:0,phase:'collecting',phaseAtReturn:undefined,primary:undefined,unboundPending:0,work:undefined,unboundOutcomes:Object.freeze([])};
+  const groupState={checking:false,closed:false,dispatches:0,phase:'collecting',phaseAtReturn:undefined,primary:undefined,unboundPending:0,work:Promise.resolve(),unboundOutcomes:Object.freeze([])};
   const {recordFailure,abortOccurrence,retainBoundaryFailure}=createGroupFailures({groupState,failures,controller,rejectPending});
   const {detach,observeCompletion}=createGroupCompletions({groupState,records,signal,onParentAbort});
     
