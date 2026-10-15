@@ -6,11 +6,11 @@ import { PreparedBatchContractError, seal } from './native-input-seal-fixture.ts
 await describe({ name: 'prepared argument descriptors', children: [
   //region Original descriptor rules reject observations before freezing their container.
   it({ name: 'rejects accessors without invoking their getter and rejects hidden properties and symbols', fn: async function descriptors() {
-    let reads = 0;
-    const accessor = { get value() { reads += 1;
+    const reads: string[] = [];
+    const accessor = { get value() { reads.push('unexpected getter invocation');
     return 'unobserved'; } };
     const hidden = Object.defineProperty({}, 'value', { value: 'hidden' });
-    const symbol = { [Symbol('key')]: 'value' };
+    const symbol = { [Symbol('unsupported prepared property key')]: 'value' };
     for (const [input, message] of [
       [accessor, 'Prepared input has an accessor'],
       [hidden, 'Prepared input has hidden properties'],
@@ -19,7 +19,7 @@ await describe({ name: 'prepared argument descriptors', children: [
       assert.throws(function invalidDescriptor() { seal(input); }, { message });
       assert.equal(Object.isFrozen(input), false);
     }
-    assert.equal(reads, 0);
+    assert.deepEqual(reads, []);
   } }),
   it({ name: 'rejects an own key whose proxy descriptor disappears', fn: async function missingDescriptor() {
     const input = new Proxy({}, { ownKeys() { return ['missing']; } });
@@ -67,7 +67,7 @@ await describe({ name: 'prepared argument descriptors', children: [
   } }),
   ...['getPrototypeOf', 'ownKeys', 'getOwnPropertyDescriptor', 'preventExtensions', 'defineProperty'].map(function proxyTrap(trap) {
     return it({ name: `preserves an opaque ${trap} failure`, fn: async function trapFailure() {
-      const failure = Object.freeze({ trap });
+      const failure: unknown = Object.freeze({ trap });
       const input = new Proxy({ value: true }, { [trap]: function fail() { throw failure; } });
       assert.throws(function originalTrap() { seal(input); }, function sameFailure(error: unknown) { return error === failure; });
       assert.equal(failure instanceof PreparedBatchContractError, false);

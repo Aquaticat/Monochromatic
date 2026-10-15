@@ -74,6 +74,8 @@ export const { PreparedBatchContractError } = dispatcher;
  @returns original input after sealing
  *
  @throws Error for original admission failures
+
+ @example seal({ value: true });
  */
 export function seal(input: unknown): unknown {
   return sealing.sealPreparedInput({

@@ -8,6 +8,9 @@ import { tagged } from '@monochromatic-dev/module-logger/ts';
  */
 const l = tagged({ tag: 'auto-mode-prepared-input-seal' });
 
+/** Original declared bound counts object identities rather than primitive leaves. */
+const MAX_CONTAINERS = 10_000;
+
 //region Original iterative validation freezes each visited container before visiting its children.
 /** Seal the original non-aliased input tree after native preparation finishes.
  @param input - original prepared argument tree
@@ -54,7 +57,7 @@ export function sealPreparedInput({
     if (((typeof value) === 'number') && Number.isFinite(value)) continue;
     if (((typeof value) !== 'object') || seen.has(value)) throw new PreparedBatchContractError('Prepared input must be a non-aliased JSON-like tree');
     seen.add(value);
-    if (seen.size > 10_000) throw new PreparedBatchContractError('Prepared input exceeds the declared tree bound');
+    if (seen.size > MAX_CONTAINERS) throw new PreparedBatchContractError('Prepared input exceeds the declared tree bound');
     /**
      Original prototype identity separates plain objects and arrays from other objects.
      */
@@ -76,7 +79,7 @@ export function sealPreparedInput({
         property,
         'value'
       ))) throw new PreparedBatchContractError('Prepared input has an accessor');
-      if ((!property.enumerable) && (!(Array.isArray(value) && (key === 'length')))) throw new PreparedBatchContractError('Prepared input has hidden properties');
+      if ((property.enumerable !== true) && (!(Array.isArray(value) && (key === 'length')))) throw new PreparedBatchContractError('Prepared input has hidden properties');
       /**
        Opaque descriptor values remain unvalidated until their original traversal turn.
        */
