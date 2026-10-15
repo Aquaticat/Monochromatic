@@ -4,11 +4,9 @@
 import { JudgmentConstructionError } from './judgment-error.ts';
 import { retainedInstructionRules } from './instruction-ownership.ts';
 import type {
-  InstructionContext,
-  InstructionRecord,
-  InstructionMember
+  InstructionContext
 } from './instruction-types.ts';
-import type { OriginalMembershipRead } from './membership-read.ts';
+import { readOriginalMembership } from './membership-read.ts';
 import type { InstructionBindingLookup } from './instruction-api.ts';
 
 //region Retained instruction records require the same original request, member, and source units.
@@ -47,13 +45,9 @@ export function createInstructionResolver({
   function resolveBinding(bindingHandle: unknown): InstructionBindingLookup {
     ready();
     /**
-     Native query capability retains primitive lookup after original readiness checks.
-     */
-    const instructionBindings: OriginalMembershipRead<InstructionRecord> = state.instructionBindings;
-    /**
      Private original record selects the exact dependencies that must remain current.
      */
-    const instruction = instructionBindings.get(bindingHandle);
+    const instruction = readOriginalMembership({ records: state.instructionBindings, handle: bindingHandle });
     if (instruction) {
       if (instruction.kind === 'unit-adoption') {
         if ((!bindings.has(instruction.member)) || (retainedInstructionRules(state)
@@ -76,11 +70,7 @@ export function createInstructionResolver({
     /**
      Foreign instruction handles may resolve only through original prepared-member ownership.
      */
-    const memberBindings: OriginalMembershipRead<InstructionMember> = bindings;
-    /**
-     Original fallback reads the same shared map even for foreign primitive queries.
-     */
-    const value = memberBindings.get(bindingHandle);
+    const value = readOriginalMembership({ records: bindings, handle: bindingHandle });
     if (!value) throw new JudgmentConstructionError('Prepared member binding is not owned by this judgment');
     return value.binding;
   }
