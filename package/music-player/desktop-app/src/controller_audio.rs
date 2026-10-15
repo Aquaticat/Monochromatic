@@ -220,26 +220,24 @@ impl Controller {
     /// currentSession(): Session { ... }
     /// ```
     fn current_session(&self) -> Session {
-        // What:     `let position_secs = self.audible_secs();`. The position the listener hears now
-        //           (frames the output consumed, not frames pushed), in seconds.
-        // Why:      The session stores seconds, and a restart must land where the sound was,
-        //           not up to a ring (one second) later.
+        // What:     `Session::load()` reads the saved template texts and the Auto-play on select setting from the
+        //           existing session before the playback snapshot replaces it.
+        // Why:      They belong to the UI rather than the audio controller, but controller shutdown must preserve the
+        //           independently saved values.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const positionSecs = this.audibleSecs();
+        // return this.sessionOver(Session.load());
         // ```
+        return self.session_over(Session::load());
+    }
+
+    /// What: `session_over` snapshots the playback state on top of the `stored` session.
+    /// Why: the fields that belong to the UI (the two templates and the Auto-play on select setting) come from `stored`,
+    /// so a save at shutdown cannot erase them; taking `stored` as an argument lets a test prove that without the
+    /// user's session file.
+    fn session_over(&self, stored: Session) -> Session {
         let position_secs = self.audible_secs();
-        // What:     `Session::load()` reads the saved template texts from the existing session before the playback snapshot
-        //           replaces it.
-        // Why:      The templates belong to the UI rather than the audio controller, but controller shutdown must
-        //           preserve the independently saved texts.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const stored = Session.load();
-        // ```
-        let stored = Session::load();
         // What:     `Session { ... }`. Build the record from the Source Root + state.
         //           `self.source_root.clone()` copies the owned root option;
         //           `self.queue.current_path().cloned()` is the Selected Track's path (or
@@ -261,6 +259,7 @@ impl Controller {
             playback_mode: self.queue.playback_mode(),
             track_rows_template: stored.track_rows_template,
             playing_template: stored.playing_template,
+            auto_play_on_select: stored.auto_play_on_select,
         }
     }
 

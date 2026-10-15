@@ -3317,6 +3317,9 @@ The human answered three questions raised by the D117 build.
   page-control styles since the `AppWindow` replacement of 2026-10-10.
 - D118 as built also floors accent chroma at the largest gray tint of the scheme for every non-neutral root, so no
   accent is grayer than a gray; this is the orchestrator's reading and stays open to the human's veto.
+- Update, 2026-10-14 (D130): the first build of the flush rows' ring started the box at the crease clearance and held
+  the text 8 dp from the ring, which pushed row text right of the heading column beside the crease. The box spans the
+  pane and the text takes the heading column; D130 states the rule.
 
 ### D121. Closed veto windows: accent floor, AA retune, Turso bugs, targetSdk (2026-10-13)
 
@@ -3425,6 +3428,8 @@ Android, played it at once.
 - The folder and letter rails, long press and the right click are not track-row selects and are unchanged.
 - A tap during the first library load keeps its choice as before, because `selectIndex` loads the track, and the
   loaded track is what `finishLoad` keeps.
+- D129 adds the Auto-play on select setting: with it on, selecting a track that is not current also starts it. The
+  rule above is the default.
 ### D125. The folder names list shows no scrollbar (2026-10-14)
 
 The human asked that the scrollbar on the folders panel go, because the panel has several other ways to say where the
@@ -3615,6 +3620,8 @@ the same rule as the track rows.
 - This changes D73's first paragraph, which said a result for a different track starts that track at once.
   D73's current-track toggle, D72 (a folder result opens its folder without autoplay) and D74's return to the player
   stand.
+- D129: with Auto-play on select on, the result of a track that is not current is also started; this is the default
+  behavior of D127 only while the setting is off.
 - The explicit Play item of the track menu stays play-at-once on both platforms (desktop `play_row_now`, Android
   `playIndex`).
   It is an explicit Play, not a click on a row or a result.
@@ -3661,6 +3668,95 @@ Android when the file of a clicked row cannot be opened.
 - Tests: `controller_flow_tests.rs` (an unreadable select stays and drops the old decoder, the second click retries and
   reports nothing more, a readable file loads and plays and gets its peak, the Play button stays on the row, Next,
   Previous and the natural end still skip).
+
+### D129. Auto-play on select: a setting that brings back play-on-select, default off (2026-10-14)
+
+The human asked for "a setting to auto play on select, default to off".
+The meaning, the Settings row and the stored form below are the implementer's reading of that one line, open to a veto.
+It amends D124 and D127, which stay as the rule for the default.
+
+- With the setting on, a click, a tap or `Enter` on a track row that is not the current track selects it and starts
+  it at once, and so does activating the result of such a track in Search.
+  This is the behavior before D124.
+- With the setting off, which is the default and what an unmigrated or missing value means, D124 and D127 apply as
+  written: the track is only selected.
+- Unchanged in both modes: the current row (or result) still toggles play and pause; the explicit Play item of the
+  track menu still plays at once; the folder and letter rails, long press and right click are not track selects; an
+  unreadable selected row stays selected and is reported once (D128), and with the setting on it simply does not start.
+- The setting is one pure rule on each platform, inputs the setting and whether the row is current, output select only,
+  select and play, or toggle: `rowActivationFor` in `RowActivation.kt` on Android and `row_activation_for` in
+  `row_activation.rs` on desktop.
+  Android `PlayerController.activateRow` takes the setting from the host (tap, `Enter`, Search result); desktop
+  `ui_wire::play_row` reads it from the screen state (click, `Enter`, Search result), and `play_row_now` forces it on
+  for the menu Play.
+- Stored in each platform's existing settings storage, outside the template texts: desktop in `session.json` as
+  `auto_play_on_select` (a missing field is off, an old file loads unchanged, and the shutdown snapshot keeps the stored
+  value); Android in the `session` preferences under `auto_play_on_select` (a missing key is off).
+- The Settings page gets a third row in its own group headed "Playback", after the two template rows, in the stock
+  Settings switch-row form: 72 dp row, 40 dp icon circle (Material Symbols Outlined `autoplay`), the title
+  "Auto-play on select", one supporting line, and a trailing Material 3 switch (52 by 32, 24 dp thumb).
+  It toggles in place on click, tap, `Space` or `Enter` and never opens an editor or changes which template is
+  selected; on an unfolded window the detail pane keeps the selected template's editor.
+  The group heading's 16 dp top padding is the gap between the two groups (D109).
+- The state is shown in more than one way (CXD): the thumb sits right when on and left when off, the track is the accent
+  when on and the canvas with an outline border when off, the thumb holds a check mark when on and a cross when off, and
+  the supporting line names what selecting does, "Select and play at once" or "Select first, then Play".
+  Colors are existing roles only (`primary`, `on-primary`, `outline`, canvas); the dark scheme stays true black.
+- The spoken action of another track's Search result follows the setting: "Select track" when off (D127), "Play track"
+  when on.
+  The switch row is announced as a switch with the title as its label and the state as its value.
+- Keyboard: the switch row is the last stop of the list (Down, Up, Home and End, Tab on Android), with the focus ring of
+  D117 on its group-rounded shape; reaching it selects nothing.
+- A narrow list pane cannot hold the title beside the switch (the pane is 218 px at 600 and 309 px at 850, and about
+  213 dp on the unfolded Android screen), so below 300 px or dp of row width the switch sits under the supporting line,
+  and the title and line wrap instead of being cut.
+  At the 443 dp cover and in the wide pane the switch stays beside the text.
+- Tests: the pure rule on both platforms, the stored value (default off, missing field, round trip, old file), the
+  Settings switch row in real windows (default, click, `Space`, `Enter`, the state it draws, the unfolded detail pane,
+  the ring), the click, `Enter` and Search paths with the setting on and off, and the desktop end-to-end session
+  `auto-play` (off by default, `Space` on the row turns it on, a click plays at once, and the setting survives a
+  restart).
+
+### D130. Beside the crease only text dodges it; fills, state layers and rings may reach it (2026-10-14)
+
+The human ruled it after a screenshot of the inner display showed the track rows' text 11 dp right of the subfolder
+headings and the library title, while the cover display (no crease) showed all of them aligned.
+It states the rule that D58, D110 and D120 already imply for flush rows, and corrects how D120's ring was built.
+
+- Text columns win. In one pane the title bar, the subfolder headings and the row text start at the same x, which is
+  the larger of the ordinary 16 dp inset and the pane's crease clearance (`paneTextInsetDp`, half of
+  `max(7.5 mm, crease width)`, 22.64 dp on the Fold inner display at density 390 when the crease reports no width).
+  The end side is the mirror in the left pane.
+- Beside the crease only text dodges it. The row's box (the current row's fill, the press and hover layers, and the
+  D120 focus ring just inside the box edge) is not text and may reach the crease and the pane's edge, so it spans the
+  pane edge to edge on every display, as the fill always did on the cover. No clearance applies to it.
+- The cause: the D120 ring work started a flush row's box at the pane clearance and kept at least 8 dp between the ring
+  and the text (`ROW_RING_TEXT_START_MIN`, 11 dp from the box edge). Beside the crease the clearance already equalled
+  the text inset, so the text was pushed right by that minimum, to 33.64 dp (82 px at density 2.4375) while the
+  headings sat at 22.64 dp (55 px), and the fill began at the clearance instead of the pane edge.
+  Measured from pixels on the emulator, glyph edges stood 84 px and 56 px from the pane edge, and the fill began 55 px
+  from it.
+- With the box at the pane edge the ring's gap to the text is 13 dp on the cover and 19.64 dp beside the crease, so
+  the 8 dp minimum between the ring's inner edge and the text holds with no clamp. `trackRowColumns` keeps the floor
+  (ring depth plus gap) for an ordinary inset below 11 dp, so the text never moves off the column while that inset is
+  16 dp.
+- The same rule fixed the template editor's field rows in two ways. Their 3 dp padding for the ring put their text at
+  19 dp while the section headings stayed at 16 dp, with or without the crease inset; the ring lies inside the row edge
+  (D120) and needs no padding. And the crease inset padded the whole scrolling column, so a row's box began at the
+  inset; each text now takes the inset itself and the field row applies it after its clickable, so the box spans the
+  pane. The hairlines between the rows are not text and now start at the pane edge too.
+- Audited and unchanged: Search result rows (D126, D58), whose rounded shape starts 8 dp after the clear zone by the
+  human's earlier decision and whose content already sits at the header's column (measured on the device: query text
+  and result titles 1 px apart), so they are a candidate for this rule only if the human wants the shape to reach the
+  crease.
+  Search's own column is half the crease plus 16 dp plus the 48 dp glyph slot, which is not the player pane's inset, and
+  this change does not touch it.
+  Also unchanged: the folder names (outside ring, text column at 12 dp plus the 4 dp name padding, in the left pane,
+  which has its crease clearance at the end only), the letter rail cells (ring inside a circle, no crease beside them)
+  and the Settings list rows (the fill spans the pane and only the text end takes the extra inset, D110).
+- Code: `core/TrackRowGeometry.kt` (`trackRowColumns`), `TrackListPane.kt`, `TemplateEditor.kt`.
+  Tests: `TrackRowGeometryTest`, `RowAlignmentWiringTest` (bounds and pixels of the real pane) and
+  `TemplateEditorAlignmentWiringTest`.
 
 ## Pending after the theme picks (2026-09-04)
 

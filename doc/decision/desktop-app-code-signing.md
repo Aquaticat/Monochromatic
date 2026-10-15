@@ -150,6 +150,8 @@ deferred.
    MSI,
    NSIS):
    deferred until the signing chain is proven.
+   Update 2026-10-14: unsigned `.dmg` images and standalone `.exe` files are now released by CI without this chain;
+   see `doc/decision/music-player-releases.md`.
 
 ## Sources
 

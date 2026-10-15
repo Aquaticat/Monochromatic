@@ -99,6 +99,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       indexedInstructionCandidates,
       indexedHeadingContextCandidates,
       inspectRuleSources,
+      readPolicySelection,
       claimProgramRuleCandidate,
       issueProgramRuleBatch,
       issueRuleAssessmentBatch,
@@ -207,7 +208,25 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       }
     }
     /** Native release checks keep freshness separate from decision-model time and never authorize an effect. */
-    function assertDependenciesCurrent(){if(evidenceEligibilityFailure)throw new JudgmentConstructionError('Original relation evidence lost dependency eligibility',{cause:evidenceEligibilityFailure.cause});if(closeFailed)throw new JudgmentConstructionError('Failed finalization cannot release dependencies');if(!prepared||preparationFailed)throw new JudgmentConstructionError('Judgment has no prepared dependency handle');return dependencyCheck(function checkOriginalDependencies() {if(readMainAgentRequest(input)!==receipt)throw new JudgmentConstructionError('Enclosing request observation changed');if(!finished){active();return facade.finalize(handle);}return facade.checkRetained(handle);});}
+    function assertDependenciesCurrent(){
+      if(evidenceEligibilityFailure)throw new JudgmentConstructionError('Original relation evidence lost dependency eligibility',{cause:evidenceEligibilityFailure.cause});
+      if(closeFailed)throw new JudgmentConstructionError('Failed finalization cannot release dependencies');
+      if(!prepared||preparationFailed)throw new JudgmentConstructionError('Judgment has no prepared dependency handle');
+      return dependencyCheck(function checkOriginalDependencies(){
+        if(!finished){
+          // active authenticates the original request after checking the live decision budget.
+          active();
+          return facade.finalize(handle);
+        }
+        if(readMainAgentRequest(input)!==receipt)throw new JudgmentConstructionError('Enclosing request observation changed');
+        return facade.checkRetained(handle);
+      });
+    }
+    /** Return original identities only after the complete current dependency check succeeds. */
+    function readCurrentSourceBinding(){
+      assertDependenciesCurrent();
+      return Object.freeze({request:receipt,sources:judgmentSources});
+    }
     /** Selector returns the already-owned member handle, not proof derived from the identifier. */
     function memberFor(memberId){assertDependenciesCurrent();const member=byMember.get(memberId);if(!member)throw new JudgmentConstructionError('Execution member was not in the prepared native group');return member;}
     function knownMember(member){const record=bindings.get(member);if(!record)throw new JudgmentConstructionError('Execution member handle is not owned by this judgment');return record;}
@@ -306,6 +325,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       captureClaimEvidence: guardWithInput(captureClaimEvidence),
       assertClaimEvidence: guardWithInput(assertClaimEvidence),
       readSourceSnapshot() { return judgmentSources; },
+      readCurrentSourceBinding: guardWithoutInput(readCurrentSourceBinding),
       indexedUnitAdoptionPairs: guardWithoutInput(indexedUnitAdoptionPairs),
       claimUnitAdoption: guardWithInput(claimUnitAdoption),
       requestMaterialFor: guardWithoutInput(requestMaterialFor),
@@ -316,6 +336,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       indexedInstructionCandidates: guardWithoutInput(indexedInstructionCandidates),
       indexedHeadingContextCandidates: guardWithoutInput(indexedHeadingContextCandidates),
       inspectRuleSources: guardWithoutInput(inspectRuleSources),
+      readPolicySelection: guardWithoutInput(readPolicySelection),
       issueRuleAssessmentBatch: guardWithoutInput(issueRuleAssessmentBatch),
       readRuleCandidate: guardWithInput(readRuleCandidate),
       claimRuleCandidate: guardWithInput(claimRuleCandidate),

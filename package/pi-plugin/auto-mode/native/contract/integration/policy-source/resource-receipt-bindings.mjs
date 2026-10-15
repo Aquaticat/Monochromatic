@@ -28,16 +28,22 @@ export function bindResourceReceiptSources({
     completeGoverningCoverage:false,
     permission:false
   });
-  function assertCurrent(value){
-   if(value!==view)throw new GoverningPolicyBindingError('Resource receipt view is not its original binding');
-   governing.assertCurrent(governing.view);
-   if(readPolicyInput(policyInput)!==input)throw new GoverningPolicyBindingError('Original resource receipt collection changed');
-  }
+  /** Check immutable binding identity and its local publication link within the owning source set. */
+function assertBindingIdentity(value){
+if(value!==view)throw new GoverningPolicyBindingError('Resource receipt view is not its original binding');
+if(readPolicyInput(policyInput)!==input)throw new GoverningPolicyBindingError('Original resource receipt collection changed');
+}
+function assertCurrent(value){
+if(value!==view)throw new GoverningPolicyBindingError('Resource receipt view is not its original binding');
+governing.assertCurrent(governing.view);
+assertBindingIdentity(value);
+}
   assertCurrent(view);
   return Object.freeze({
     view,
     authority:undefined,
-    assertCurrent
+    assertBindingIdentity,
+assertCurrent
   });
  });
 }

@@ -119,6 +119,10 @@ mod ui_keys_focus_tests;
 #[cfg(test)]
 mod ui_keys_window_tests;
 
+/// Window tests of Auto-play on select (D129): the Settings switch row and what a click, Enter and a Search result do.
+#[cfg(test)]
+mod ui_auto_play_window_tests;
+
 /// Window tests of the empty, reading and failure states.
 #[cfg(test)]
 mod ui_states_window_tests;

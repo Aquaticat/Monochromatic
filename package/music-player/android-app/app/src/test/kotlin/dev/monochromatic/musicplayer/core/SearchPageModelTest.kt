@@ -295,6 +295,59 @@ class SearchPageModelTest {
         )
     }
 
+    // What:     `@Test fun otherTrackActionPlaysWithAutoPlayOn()` checks a track that is not current, setting on.
+    // Why:      With Auto-play on select on (D129) a result starts its track, so the label is Play track again.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("other track plays with auto-play", () => { /* ... */ });
+    // ```
+    /** A track that is not the current track speaks Play track when Auto-play on select is on. */
+    @Test
+    fun otherTrackActionPlaysWithAutoPlayOn() {
+        assertEquals(
+            "Play track",
+            searchRowActionLabel(
+                trackResult("Night", "Live", 1),
+                currentTrackIndex = 2,
+                isPlaying = true,
+                autoPlayOnSelect = true,
+            ),
+        )
+        assertEquals(
+            "Play track",
+            searchRowSemantics(
+                trackResult("Night", "Live", 1),
+                currentTrackIndex = null,
+                isPlaying = null,
+                autoPlayOnSelect = true,
+            ).actionLabel,
+        )
+    }
+
+    /** The setting changes only the label of a track that is not current. */
+    @Test
+    fun autoPlayDoesNotChangeTheFolderOrCurrentTrackLabels() {
+        assertEquals(
+            "Open folder without autoplay",
+            searchRowActionLabel(
+                folderResult("Camellia"),
+                currentTrackIndex = 2,
+                isPlaying = true,
+                autoPlayOnSelect = true,
+            ),
+        )
+        assertEquals(
+            "Pause track",
+            searchRowActionLabel(
+                trackResult("Night", "Live", 2),
+                currentTrackIndex = 2,
+                isPlaying = true,
+                autoPlayOnSelect = true,
+            ),
+        )
+    }
+
     // What:     `@Test fun playingCurrentTrackActionPauses()` checks the current track while it plays.
     // Why:      The current-track toggle pauses while playing (D73 and D77).
     //

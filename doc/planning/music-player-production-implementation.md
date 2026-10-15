@@ -196,7 +196,7 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 - A click or tap on a track row selects it paused and, on the selected row, toggles play and pause on both platforms
   (D124, decided by the human on 2026-10-14; Enter on the focused row follows it; the track menu's Play and Search
   results still start a track at once). `PlayerController.activateRow` (Android) and `play_row` (desktop) hold the rule;
-  the e2e suite declares one more check for it (111 declared).
+  the e2e suite declares one more check for it (111 declared; D129 adds a setting that also starts the track).
 
 - Since then (D113 to D119): library and analysis follow files automatically (D113: no rescan or re-analyze command;
   the watcher names changed paths and a planner edits the list in place; at 1M tracks a replaced file costs 0.12 ms on
@@ -235,20 +235,48 @@ in the worktree, rerun that platform's verification as a systemd unit, forced fr
 files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
 before saying it matches, QAB):
 
-- Task 92, release workflow, branch `feat/music-player-release-workflow`, worktree `music-player-rel`: GitHub release
-  of `.exe`, `.dmg`, Linux tarballs and `.apk` on the cargo-publish conventions (version bump on main or dispatch with
-  dry-run default true, tag `music-player-v<version>`, attestation, immutable pre-release, Android release keystore as
-  repository secrets with a backup under `~/.local/share/music-player-release-keys`, Windows and macOS unsigned).
-  macOS x64 is culled by the human's decision. Gate: nothing real is released without asking the human first (releases
-  are immutable). The Alpine (task 95) and Windows (task 96) agents write the artifact names and job steps that must
-  be forwarded to this agent when they report.
-- Task 93, auto-play on select (D129), branch `feat/auto-play-on-select`, worktree `music-player-aps`, based on the
-  Search select-only branch: a Settings switch row, default off, both platforms; the Settings gallery images must be
-  retaken (desktop and Android).
-- Task 94, Android row text alignment, branch `fix/android-row-text-alignment`, worktree `music-player-ral`: on the
-  unfolded display the track row text sits about 26 dp right of the headings (my ring work, `TrackListPane.kt`). The
-  human's ruling: beside the crease only text dodges it; fills, state layers and rings may reach the crease and the pane
-  edge; text columns win. Search's rounded result shape (D126) was left alone and is a candidate if the human asks.
+- Task 92, release workflow: MERGED to `main` at `ab725bd924` on 2026-10-15 (actionlint 1.7.12 clean; Android
+  detekt, 1287 unit tests and lint fresh on the merged head; the merge touched neither version manifest, so it started
+  no release, confirmed with `gh run list`). Workflow `.github/workflows/music-player-release.yml`, decision
+  `doc/decision/music-player-releases.md`, runbook `doc/runbook/release-the-music-player.md`. Matrix: Linux x64 and
+  arm64 tarballs, macOS arm64 dmg (ad-hoc codesign, the agent's addition), Windows x64 (`link.exe`) and arm64 exe,
+  Android apk signed with the release key (secrets `MUSIC_PLAYER_KEYSTORE_BASE64`, `_KEYSTORE_PASSWORD`,
+  `_KEY_ALIAS`, `_KEY_PASSWORD`; a real run fails unless the APK cert SHA-256 is
+  `9de6e9a475f182c36f2513179fd4b14763b0e00fe068c9b8f3e6f08103616926`), checksums, immutable pre-release. The final
+  workflow text never ran in CI before merge (only its earlier commits ran, nine dry runs); the dry run on main
+  dispatched at merge (run `38675318400`) is that check: read its result before any real release.
+  Open for the human: (1) the first real release (`0.1.0` is on main with no tag; a push never releases it, only a
+  dispatch with dry-run false on main; ask first, releases are immutable); (2) copy
+  `~/.local/share/music-player-release-keys` (`music-player-release.p12`, plaintext `credentials.txt`) into KeePassXC
+  and delete the plaintext; (3) vetoable choices: macOS ad-hoc signing, no Android SDK cache (measured 17 s restore
+  against 25 s install), macOS x64 dropped, AppImage not built (a design reason, not a CI result); (4) product gaps
+  the agent found: the Windows exe is a console-subsystem binary (a console window opens), the apk is about 160 MB,
+  placeholder icon, no third-party license notices, Linux needs glibc 2.39+ and AES. Cache budget: 4.0 GB steady
+  state from this workflow alone against the 10 GB cap (task 97 owns the policy). The Alpine (task 95) and Windows
+  (task 96) agents write the artifact names and job steps; apply them to the release workflow as a follow-up when
+  they report (the agent has finished, so a new agent or me).
+- Task 93, auto-play on select (D129): MERGED to `main` at `9a356efd02` on 2026-10-15. Desktop: 1444 passed, 1
+  skipped, clippy and slint lint clean (agent's run on the pre-merge head; the merges since touched no desktop
+  file). Android: I reran detekt, unit tests (1287, none failed, the test task executed) and lint fresh on the merged
+  head. Real runs on both platforms were the agent's (desktop in the nested compositor, Android on an emulator); I
+  viewed the four Settings PNGs. Open to the human's veto: the setting's name, the "Playback" group, the supporting
+  lines, and the Search action label ("Select track" or "Play track"). Known and left alone: `desktop-e2e` `lint:oxlint` has errors in files this branch did not touch (`wide-select.ts` and others).
+- Task 94, Android row text alignment (D130): MERGED to `main` at `3e7d03e7c2` on 2026-10-15 (detekt, 1249 unit tests
+  and lint passed fresh on the merged head; I viewed the three retaken PNGs). The human's ruling: beside the crease
+  only text dodges it; fills, state layers and rings may reach the crease and the pane edge; text columns win. Two
+  changes beyond the brief are open to the human's veto: the template editor's hairlines now start at the pane edge,
+  and its field rows lost 3 dp of ring padding. Search's rounded result shape (D126) was left alone and is a candidate
+  if the human asks. Not verified on a device: the keyboard ring on a template field row.
+- Issue 545, fingerprint hash migration, branch `feat/music-player-xxh3-128`, worktree `music-player-xxh3` (agent
+  started 2026-10-15): the human said "just migrate to XXH3-128", then "just `twox-hash`" (the only hash crate, 2.1.4),
+  then "if XXH3-64 is available in twox-hash use that". The last ruling stands: XXH3-64, the fingerprint stays a
+  64-bit value in every layer, the peak caches still re-key once (the function changes), the `+aes` target feature
+  goes away, the 128-bit width criterion of the issue is waived by the human, and the final commit body carries
+  `Closes #545`. If the crate lacks XXH3-64 the agent stops and reports. Merge procedure as for the others; the Windows
+  agent also edits `desktop-app/.cargo/config.toml`, so expect a trivial conflict.
+- Task 97, existing CI caching, branch `chore/ci-caching`, worktree `ci-caching` (agent started 2026-10-15): restore-keys
+  for `cargo-publish.yml`, a pnpm store cache for the three pnpm workflows, `doc/decision/ci-caching.md`, proven by
+  dispatching cold and warm runs from the branch (never cargo-publish with dry-run false).
 - Task 95, Alpine, branch `feat/music-player-alpine`, worktree `music-player-alp`: the desktop app must run on Alpine
   (musl, dynamic link expected because Slint loads libwayland and libxkbcommon at run time); the real-window proof uses
   our own nested compositor `monochromatic-nested-wayland-session`, never sway or weston; if the compositor needs
@@ -262,12 +290,11 @@ before saying it matches, QAB):
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
-- Task 97, existing CI caching: `cargo-publish.yml` caches are exact-key only (no `restore-keys`), so any lockfile
-  change rebuilds everything and stores a new 130 to 420 MB entry (28 caches, 5.5 GB of the 10 GB cap on 2026-10-15);
+- Evidence behind task 97: `cargo-publish.yml` caches are exact-key only (no `restore-keys`), so any lockfile change
+  rebuilds everything and stores a new 130 to 420 MB entry (28 caches, 5.5 GB of the 10 GB cap on 2026-10-15);
   `logger-fuzz.yml`, `toml-edit-fuzz.yml` and `readonly-semantic-bridge.yml` run `pnpm install --frozen-lockfile`
-  with no pnpm store cache. Fix with restore-keys, a pnpm store cache and a short written caching policy, proven with
-  a cold and a warm run each. The new workflows of tasks 92, 95 and 96 were told to cache properly and prove it.
-- Gallery retakes owed after task 93 (Settings images) and after task 94 if committed images differ.
+  with no pnpm store cache. The new workflows of tasks 92, 95 and 96 were told to cache properly and prove it.
+- Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
 - Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
 
 Standing rulings of the human in this effort (2026-10-14 and 15): click rule D124; Search results select only D127; the
@@ -536,4 +563,15 @@ Read these before repeating them. Each one cost the human a correction.
   (Next, Previous and the end of a track still skip unreadable files); the Android Search field keeps its caret at the
   end of the kept query after a fold change and after `Ctrl+F`. The spoken action of a non-current result is now
   "Select track" (D127, open to the human's veto).
-- [ ] Release builds, signing and distribution are outside this plan and were not touched.
+- [x] Auto-play on select setting (D129, 2026-10-14, branch `feat/auto-play-on-select`): a Settings switch row under a
+  Playback heading, off by default and stored with the session on both platforms; with it on, a click, tap, `Enter` or
+  Search result for a track that is not current also starts it, and the current track, the menu Play, the rails and
+  an unreadable row behave as before. One pure rule per platform (`rowActivationFor`, `row_activation_for`), mutation
+  checked; the desktop e2e suite gains the `auto-play` session (117 declared); the switch moves under the text in a
+  narrow list pane.
+- [x] Release workflow (2026-10-14, branch `feat/music-player-release-workflow`): `.github/workflows/music-player-release.yml`
+  builds the desktop app for Windows, macOS (Apple silicon) and Linux and the Android app and creates one pre-release,
+  triggered by a version change in `package/music-player/desktop-app/Cargo.toml` or by a dispatch
+  (`doc/decision/music-player-releases.md`, `doc/runbook/release-the-music-player.md`).
+  The Android version now derives from that manifest, and a release signing config reads `MUSIC_PLAYER_*` values.
+- [ ] The first real release is the human's call: it is immutable, and no Windows, macOS or real-device run exists.

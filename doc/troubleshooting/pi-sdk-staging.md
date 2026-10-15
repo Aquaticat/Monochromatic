@@ -7202,6 +7202,108 @@ Every completed mode reports zero provider calls and zero genuine human approval
 The isolated repeat did not change the five-second deadline or prove a permanent timing remedy.
 This is distinct from the earlier SIGABRT and Go thread-creation failures in this incident record.
 
+During the later owned-runtime cleanup,
+the domain run and manual uncertainty Allow separately exhausted the same original judgment deadline.
+The unchanged manual uncertainty case passed in isolation.
+After an unrelated bounded CPU stress process exited,
+the domain and manual uncertainty suites passed,
+but ordinary native-context Allow still exhausted its deadline.
+The stress overlap therefore does not establish the cause or a sufficient remedy.
+
+Three unchanged isolated ordinary Allow runs then passed.
+Total process durations were 7259.69,
+7205.50,
+and 7954.08 milliseconds;
+these include setup and shutdown rather than measuring only judgment time.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/native-allow-repeat.json`
+retains individual outcomes and enclosing CPU counters.
+The subsequent complete remaining consumer sequence passed,
+including approval context,
+single calls,
+approved dependencies,
+event receipts,
+host lifecycle,
+CLI shutdown,
+queue release,
+resource reload and copies,
+and context receipts.
+`${HOME}/temp/agent/pi-native-resource-runtime-remaining-20261014.log` retains that sequence.
+This is verified recovery without a causal diagnosis or permanent timing fix.
+
+The later profile-cleanup build passed its domain and manual-uncertainty suites,
+then ordinary native-context Allow again reached
+`JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
+The native selector assertion was `ERR_ASSERTION: 0 !== 1`.
+`${HOME}/temp/agent/pi-native-profile-cleanup-regressions-20261014.log` retains the failure.
+The original five-second deadline remains unchanged;
+the isolated passes did not establish a permanent timing fix.
+
+After the run-owner split,
+domain cases and manual uncertainty Allow,
+Deny,
+Stop,
+and cancellation passed.
+The prohibited case then exhausted the judgment deadline before producing its policy outcome.
+Its final assertion reported `undefined` rather than the expected outcome.
+`${HOME}/temp/agent/pi-native-run-owner-regressions-20261014.log` retains that separate occurrence.
+
+The unchanged loaded-input build then failed ordinary Allow twice and passed once.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-before.json`
+retains complete process durations and enclosing CPU counters.
+CPU profiles of separate Allow and prohibition cases both passed;
+they show repeated source-freshness validation and filesystem observation costs.
+An instrumented Allow case failed with
+`DependencyDeadlineError: Original dependency assessment deadline expired`
+after 23740 opens of the disposable `workspace/AGENTS.md`.
+It also recorded 47478 `lstatSync` calls each for the workspace and its policy file.
+The fixture-specific count log is
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/loaded-allow-fs.json`.
+The instrumentation preserves native filesystem results;
+its timing overhead means it is not an uninstrumented latency estimate.
+
+The committed `test:native:source-freshness-work` regression uses the actual built Allow consumer.
+Before the change,
+the native scenario completed and its work-bound assertion failed at 45637 policy opens.
+After complete-binding-set validation,
+the native scenario again completed,
+and the same assertion failed at 15653 opens.
+Both exceed its 10000-open limit.
+The change checks every local binding identity between fresh common-parent checks;
+individual public source assertions retain their own parent freshness check.
+This reduces measured repeated filesystem work without yet completing the performance remedy.
+`${HOME}/temp/agent/pi-native-source-work-red-20261014.log`
+and `${HOME}/temp/agent/pi-native-source-work-green-20261014.log` retain the failing assertions.
+The `green` filename is a stage label,
+not a passing result.
+
+The subsequent unchanged repetitions of the first remedy all passed;
+`binding-set-after.json` records complete process durations of 8224.54,
+6064.67,
+and 6179.07 milliseconds.
+The remaining duplicate validation is being tested through `readCurrentSourceBinding()`:
+the original judgment validates dependencies before returning its original request and source identities.
+This lets the governing-source owner avoid separately repeating the same observer and collector reads.
+The unchanged 10000-open regression and the approved-dependency rejection controls remain required.
+Commit `2ea0d1c836` builds and completes the Allow scenario,
+but still fails the work bound at 14185 opens.
+`${HOME}/temp/agent/pi-native-current-source-work-20261014.log` records that incomplete remedy.
+
+A separate full lint attempt during this cleanup failed before producing diagnostics with
+`Error running tsgolint: "exit status: exit status: 2"`
+and `runtime: failed to create new OS thread (have 2 already; errno=11)`.
+Its log is `${HOME}/temp/agent/pi-maintained-resource-lint-20261014.log`.
+A later parent-slice sample showed 50 tasks,
+`pids.max=256`,
+and cumulative `pids.events: max 340`.
+Without a pre-failure counter sample,
+these values do not attribute that particular failure.
+The current lint retry uses the previously probed `GOMAXPROCS=2` worker setting
+with no concurrent native consumer verification.
+That retry completed the full 438-file sweep with 203 errors and 12801 warnings.
+It verifies recovery of diagnostic collection,
+not a passing lint gate or a permanent thread-allocation remedy.
+The completed report is `${HOME}/temp/agent/pi-maintained-resource-lint-retry-20261014.log`.
+
 ### Symptoms and separate incident boundaries
 
 On 2026-10-14,

@@ -22,6 +22,12 @@
 [target.x86_64-unknown-linux-gnu]
 rustflags = ["-C", "target-feature=+aes"]
 
+# Linux arm64 (the release workflow builds it natively on an arm64 runner). aarch64 baseline already carries neon;
+# `aes` is the ARMv8 crypto extension, present on every arm64 Linux desktop and server CPU in practice but not
+# guaranteed by the architecture, so a CPU without it would crash with SIGILL at runtime.
+[target.aarch64-unknown-linux-gnu]
+rustflags = ["-C", "target-feature=+aes"]
+
 # Intel macOS.
 [target.x86_64-apple-darwin]
 rustflags = ["-C", "target-feature=+aes"]
@@ -37,7 +43,17 @@ rustflags = ["-C", "target-feature=+aes"]
 # HANDOVER.windows-toolchain-and-check.md). rustc still discovers the Visual Studio
 # CRT and Windows SDK import libraries and passes them as `/LIBPATH:` arguments,
 # which lld-link consumes unchanged. The `rustflags` line adds the same `+aes`
-# gxhash needs (sse2 is already in the x86_64 baseline).
+# gxhash needs (sse2 is already in the x86_64 baseline), plus `+crt-static`: the C
+# runtime is linked into the .exe, so the released executable does not need the
+# Microsoft Visual C++ Redistributable (VCRUNTIME140.dll) on the user's machine.
+# The release workflow fails if the .exe still imports a Visual C++ runtime DLL.
+# That holds only with the MSVC `link.exe`: an x86_64 build linked by `lld-link.exe`
+# (the pin below) still imports VCRUNTIME140.dll and the api-ms-win-crt DLLs, so the
+# release workflow overrides the linker with CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER.
 [target.x86_64-pc-windows-msvc]
 linker = "lld-link.exe"
-rustflags = ["-C", "target-feature=+aes"]
+rustflags = ["-C", "target-feature=+aes,+crt-static"]
+
+# Windows arm64 (the release workflow builds it natively on a windows-11-arm runner). It uses the default MSVC linker.
+[target.aarch64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+aes,+crt-static"]

@@ -149,6 +149,8 @@ struct StateSnapshot {
     first_run_title: String,
     /// Whether the transport deck is switched off.
     deck_disabled: bool,
+    /// Whether Auto-play on select is on (D129).
+    auto_play_on_select: bool,
 }
 
 /// What: `emit` writes one `ui_state` line with the window's observable state as JSON.
@@ -198,6 +200,7 @@ pub(crate) fn emit(window: &AppWindow, reason: &str) {
             badges,
             first_run_title: if window.get_first_run_state() == 0 { String::new() } else { window.get_first_run_title().to_string() },
             deck_disabled: window.global::<crate::DeckState>().get_disabled(),
+            auto_play_on_select: state.auto_play_on_select,
         };
     });
     let line = match serde_json::to_string(&snapshot) {

@@ -424,6 +424,25 @@ the items after it are the record of 2026-10-05 and older.
     the call that turns the changed-rules flag into a reread of every shown folder has no guard of its own, because
     the safety sweep would also repair the rows within a second. `inspect:ignored-guards` removes 28 guards in a copy
     and all failed as named.
+  - Language servers through mise (request of 2026-10-14: servers "to the repo's mise tools"). Fifteen servers are
+    declared in `mise.no-env.toml` (generated into `mise.toml`) and locked: taplo, tombi, marksman, rumdl,
+    markdown-oxide, zizmor, yaml-language-server, `@actions/languageserver`, `@ansible/ansible-language-server`,
+    `vscode-langservers-extracted` (json, css, html), superhtml, bash-language-server, the two Docker Node servers and
+    docker-language-server. Each answered `initialize` in the IDE's bubblewrap shape; hover works for all but zizmor
+    (diagnostics only); inlay hints are advertised by tombi, markdown-oxide, the Actions server and
+    docker-language-server, and none produced a hint on the fixture. Nine Node servers exited about 3 s after start
+    because `vscode-languageserver` 9.0.1 (`lib/node/main.js`) checks `process.kill(clientPid, 0)` every 3 s and the
+    client's pid is invisible in a pid namespace; they were added to `NO_PID_NAMESPACE` in
+    `src/language/confine/recipe.rs` (the network stays unshared; test
+    `node_servers_that_watch_the_client_run_without_a_pid_namespace_but_without_network` was seen failing without the
+    list). The desktop launcher's PATH is a stale systemd user session snapshot without the repo's tool directories,
+    and mise shims fail with "No version is set for shim" outside a mise tree. The user decided: "If mise is detected
+    in dir the IDE starts the servers themselves through mise exec. We need to be adaptable and not hardcode
+    anything." Queue: the branch `feat/ide-mise-servers` (agent in flight) implements the lookup through mise for a
+    project folder with a mise configuration, never auto installing or trusting, with PATH lookup as the fallback.
+    Open causes: taplo answered hover only after 10 s and tombi answered null at once on the TOML fixture (cause not
+    determined); `find_box_context_menu_runs_each_entry` failed once under load (left "needlex", right "x") and
+    passed alone and in a full rerun (cause not determined).
   - The IDE checks used compositor builds inside each worktree's `target` directory, which were 0.1.1 (no minimized
     launch) in the root checkout and four worktrees, so checks opened visible windows on the user's desktop. Those
     five binaries were replaced with the mise-installed 0.4.0, and the four `bin/inspect-*.mjs` scripts and the `native`
