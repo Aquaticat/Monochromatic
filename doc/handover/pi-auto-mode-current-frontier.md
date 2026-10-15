@@ -7,6 +7,41 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-14.
 
+## Tool-call scope correction
+
+The user clarified that automatic mode is meant to check model-initiated tool calls.
+The authorization subject is the proposed tool operation and its arguments,
+evaluated against applicable instructions and authorization.
+The model's outbound API request supplies context;
+its entire provider protocol is not a separate operation requiring automatic-mode approval.
+
+The agent's status update described complete API-request field derivation as remaining delivery work.
+That promoted an implementation mechanism into a product requirement.
+Do not continue extending provider-field coverage as a delivery objective.
+In particular,
+Hyper's `thinking` control is not a model-initiated tool call.
+
+The current implementation still contains the broader gate.
+`native/contract/integration/native-batch/request-derivation-envelope.ts` rejects unknown request fields,
+and `src/request-material-obligations.ts` can retain an independent whole-request instruction-use obligation.
+The exact isolated Hyper capture failed the built envelope check with
+`Request field thinking has no supported native instruction-use derivation`;
+the same captured object without that field passed.
+`${HOME}/temp/agent/pi-hyper-capture-20261014/envelope-before.json` retains this contrast.
+No production code was changed during that probe.
+This demonstrates the existing coupling,
+not a requirement to add Hyper protocol validation.
+
+The next implementation decision must narrow that coupling around tool-call policy evaluation.
+Preserve applicable instructions,
+the exact proposed operation,
+authorization,
+and cancellation checks.
+Reassess the earlier 84-question admission count against this corrected boundary before treating it as a delivery gate.
+The prior status estimate and provider-coverage next step are superseded by this correction.
+No further `AGENTS.md` edit is adopted;
+the user's existing decision to leave that file unchanged remains in force.
+
 ## Current Pi execution model
 
 On 2026-10-14,
