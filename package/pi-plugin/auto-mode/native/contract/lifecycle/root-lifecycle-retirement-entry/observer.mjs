@@ -67,7 +67,7 @@ export function createRequestObservationOwner({
   let currentScope;
     let generation=0;
   function advance(){
-    if(currentScope){currentScope.request=undefined;currentScope.sourceContributions=undefined;currentScope.sources=undefined;currentScope.judgmentBinding=undefined;currentScope.receipt=undefined;currentScope.root=undefined;currentScope.response=undefined;currentScope.signal=undefined;currentScope=undefined;}
+    if(currentScope){currentScope.request=undefined;currentScope.sourceContributions=undefined;currentScope.sourceDerivation=undefined;currentScope.sourceDerivationFailure=undefined;currentScope.sources=undefined;currentScope.judgmentBinding=undefined;currentScope.receipt=undefined;currentScope.root=undefined;currentScope.response=undefined;currentScope.signal=undefined;currentScope=undefined;}
     generation+=1;if(!Number.isSafeInteger(generation))throw new RequestObservationProfileError('Observation generation overflow');return generation;
   }
   function invalidate(){advance();}
@@ -268,6 +268,9 @@ export function createRequestObservationOwner({
           ...value,
           request:scope.request
         })); }));
+        const derivation=sourceAssociation?.bindDerivation?.({request:scope.request,contributions:scope.sourceContributions});
+        scope.sourceDerivation=derivation?.sourceDerivation;
+        scope.sourceDerivationFailure=derivation?.sourceDerivationFailure;
         return await terminalFetch(
           input,
           init
@@ -316,6 +319,8 @@ export function createRequestObservationOwner({
           request:scope.request,
           sources:scope.sources,
           sourceContributions:scope.sourceContributions??Object.freeze([]),
+          ...(scope.sourceDerivation?{sourceDerivation:scope.sourceDerivation}:{}),
+          ...(scope.sourceDerivationFailure?{sourceDerivationFailure:scope.sourceDerivationFailure}:{}),
           requestedAPI,
           requestedModel,
           instructionAuthority:'not-established',
