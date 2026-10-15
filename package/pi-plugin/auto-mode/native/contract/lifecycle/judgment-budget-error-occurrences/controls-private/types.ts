@@ -4,6 +4,26 @@
  */
 
 //region Typed boundaries expose original lifetime and attempt accounting only.
+/** Private mutable accounting shared only by original clock and dispatch owners. */
+export type JudgmentAccounting = {
+  /** Last accepted monotonic clock reading. */
+  lastAt: number;
+  /** Consumed client transport invocations. */
+  attempts: number;
+  /** Whether the judgment's single retry is already consumed. */
+  retryUsed: boolean;
+  /** Pending dispatch excludes another transport invocation. */
+  running: boolean;
+  /** Successful evidence closure is permanent. */
+  finished: boolean;
+  /** Clock callbacks cannot recursively check the same budget. */
+  checking: boolean;
+  /** Boundary failure permanently retires evidence. */
+  retired: boolean;
+  /** Original terminal failure retains its exact value. */
+  retirement: unknown;
+};
+
 /** One actual transport invocation within the original judgment. */
 export type JudgmentAttempt = {
   /** Original caller cancellation. */
