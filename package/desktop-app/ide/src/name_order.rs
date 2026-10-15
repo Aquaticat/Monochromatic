@@ -22,7 +22,10 @@ enum Piece {
         digits: String,
     },
     /// One character folded to lower case, so `B` and `b` compare equal and `a` sorts before `B`.
-    Character(char),
+    Character(
+        /// The character after lower-casing.
+        char,
+    ),
 }
 
 /// A piece compares by the character it stands for, then by value among numbers.
@@ -40,6 +43,8 @@ impl Piece {
 /// Pieces order by rank first;
 ///  two numbers then order by length and digits.
 impl Ord for Piece {
+    /// Rank decides first;
+    ///  only two numbers fall through to length and digits.
     fn cmp(&self, other: &Self) -> Ordering {
         let by_rank = self.rank().cmp(&other.rank());
         if by_rank != Ordering::Equal {
@@ -62,6 +67,7 @@ impl Ord for Piece {
 
 /// Ordering must agree with `Ord`.
 impl PartialOrd for Piece {
+    /// Delegate to `cmp` so the two orders cannot disagree.
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         return Some(self.cmp(other));
     }

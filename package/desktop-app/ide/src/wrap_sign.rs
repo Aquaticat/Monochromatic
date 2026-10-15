@@ -57,7 +57,10 @@ pub const SIGN_PAIRS: [(char, char); 4] = [
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Sign {
     /// The symbol after the wrap in the first pair whose symbols the fonts display.
-    Glyph(char),
+    Glyph(
+        /// The symbol that marks the row after the wrap.
+        char,
+    ),
     /// No pair is displayable, so an arrow is drawn.
     Arrow,
 }

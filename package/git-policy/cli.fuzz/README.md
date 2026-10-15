@@ -61,9 +61,10 @@ so it reads no configuration and starts no Git.
 Whatever the arguments,
 a forwarded command must not be a `git commit` without a dry-run or status-format option,
 a `git push` without a dry-run option while the built-in content policy is on,
-a `git add` in a worktree while that policy is on
-(the fixed answers prepare no candidates, so that policy cannot read them),
-or a worktree creation or possible alias run from a linked worktree without `--no-worktree-copy`.
+or a `git add` in a worktree while that policy is on
+(the fixed answers prepare no candidates, so that policy cannot read them).
+A worktree creation or possible alias run from a linked worktree is forwarded:
+the executable settles the worktree copy around it.
 The dry-run options are restated from Git's documentation instead of read from the subject's tables.
 
 ### `batch_reply`
@@ -270,6 +271,10 @@ under 2 GiB,
 128 PIDs,
 and a 4,096-byte input limit.
 A target must exit 0 and report at least one executed unit.
+A longer campaign passes the time per target after the task name,
+for example `mise run //package/git-policy/cli.fuzz:smoke -- --seconds-per-target=1800`;
+the value is a whole number of seconds from 1 to 86,400,
+and the manifest in the evidence directory records it.
 Corpora,
 artifacts,
 and logs are retained under `target/verification/campaign-*`.

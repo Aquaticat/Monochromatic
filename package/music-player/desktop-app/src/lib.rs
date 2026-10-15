@@ -464,6 +464,33 @@ pub mod launcher;
 pub mod logging;
 
 /// What:
+///      `pub mod console_attach;` the pure part of the Windows console attachment (`src/console_attach.rs`):
+///           which standard handles need repair after attaching to the parent console, and the startup report.
+/// Why:
+///       The Windows executable is a GUI-subsystem program (no console window on double-click) that still has to print
+///           in a terminal; the decisions are pure, so they are tested on every host.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as consoleAttach from "./consoleAttach";
+/// ```
+pub mod console_attach;
+
+/// What:
+///      `#[cfg(windows)] pub mod console_attach_win32;` the Win32 calls of the console attachment
+///           (`src/console_attach_win32.rs`).
+/// Why:
+///       `AttachConsole`, `GetStdHandle` and `SetStdHandle` exist on Windows only, so the module is gated out of the
+///           Linux and macOS builds.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// if (process.platform === "win32") await import("./consoleAttachWin32");
+/// ```
+#[cfg(windows)]
+pub mod console_attach_win32;
+
+/// What:
 ///      `pub mod template_model;` the supporting-text template vocabulary (`src/template_model.rs`):
 ///  fields,
 ///  the two templates and their defaults,

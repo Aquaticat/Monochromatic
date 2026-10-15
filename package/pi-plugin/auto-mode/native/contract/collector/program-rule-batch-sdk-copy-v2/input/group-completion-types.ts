@@ -1,6 +1,7 @@
 /**
  Original completion observation separates transport delivery from retained native outcomes. @module
  */
+import type { GroupFailureState } from './group-failure-types.ts';
 
 /**
  Optional values supply explicit undefined slots in the original mutable record.
@@ -31,7 +32,7 @@ export type DispatchedCompletionRecord<Outcome> = GroupCompletionRecord<Outcome>
  */
 export type GroupCompletionInput<Outcome> = Readonly<{
   groupState: {
-    readonly primary?: object;
+    readonly primary?: GroupFailureState['primary'];
     readonly closed: boolean;
     phase: 'collecting' | 'dispatching' | 'settled' | 'failed';
   };

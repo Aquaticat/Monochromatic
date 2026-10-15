@@ -7,23 +7,31 @@ use super::render::{Frame, Paint, render, show, stamp_for};
 use super::rows;
 /// The tile worker and its result type.
 use super::tile_build::{TileBuilt, TileJob, TileWorker};
-/// The background measurement of the whole text.
-use super::tile_pass::{PassJob, PassKey, PassOutput, TAKE_LIMIT};
+/// How much of the pass's output one poll takes.
+use super::tile_pass::TAKE_LIMIT;
 /// Parent state, the window, and the viewport's hold rule.
 use super::{AppWindow, State, viewport::holds};
 /// The part of a tall tile's lines its raster holds.
 use ide_app::shaped_text::Clip;
-/// A wrap width must be a positive number of pixels.
-use ide_app::wrap::has_wrap_width;
 /// Timer and toolkit-string bridges for the poll and the error message.
 use slint::{ComponentHandle, SharedString, TimerMode};
 /// Poll period of the worker's reply slot, the same as the other background pollers.
 use std::{
     cell::RefCell,
     rc::Rc,
-    sync::Arc,
     time::{Duration, Instant},
 };
+
+/// What the measurements are valid for,
+///  posting the pass,
+///  and applying what it measured.
+mod pass;
+
+/// Applying what a pass measured,
+///  from the poll.
+use pass::apply_pass;
+/// The measurement key and the pass request that the render and the tests also use.
+pub(super) use pass::{current_key, sync_pass};
 
 /// What:
 ///  Position and width of one materialized tile:
@@ -128,86 +136,6 @@ fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut Stat
         });
 }
 
-/// What:
-///  What the measurements of the window's text at its current scale and wrap width are valid for.
-///  A window without a wrap width yet has wrap bits of zero.
-/// Why:
-///  A finished tile or pass output is used only when its key is this one.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function currentKey(current: State, scale: number): PassKey;
-/// ```
-pub(super) fn current_key(current: &State, scale: f32) -> PassKey {
-    let wrap = if has_wrap_width(current.width) {
-        current.width.to_bits()
-    } else {
-        0
-    };
-    return PassKey {
-        file: current.file_generation,
-        revision: current.document.revision(),
-        scale: scale.to_bits(),
-        wrap,
-    };
-}
-
-/// What:
-///  Ask the worker to measure the whole text at the current wrap width when it has not been asked yet for this
-///  text, scale, width, and syntax snapshot.
-/// Why:
-///  The pass is what makes the scroll extent exact without any frame waiting for it;
-///  a resize or a new text starts it again, and lines the worker kept are only broken again.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function syncPass(window: AppWindow, state: Shared<State>, current: State, scale: number): void;
-/// ```
-pub(super) fn sync_pass(
-    window: &AppWindow,
-    state: &Rc<RefCell<State>>,
-    current: &mut State,
-    scale: f32,
-) {
-    if !has_wrap_width(current.width) {
-        return;
-    }
-    let key = current_key(current, scale);
-    // The address of the syntax snapshot tells a new snapshot from the one the pass already used.
-    let styles = Arc::as_ptr(&current.styles).cast::<()>() as usize;
-    if current.pass_posted == Some((key, styles)) {
-        return;
-    }
-    if let Err(error) = warm(window, state, current) {
-        tracing::error!(%error, "source tile worker could not start");
-        return;
-    }
-    let job = PassJob {
-        key,
-        document: current.document.clone(),
-        styles: Arc::clone(&current.styles),
-        typography: current.shaper.typography().clone(),
-        scale,
-        wrap: current.width,
-        focus: current.shown.first,
-    };
-    let Some(worker) = current.tile_worker.as_mut() else {
-        return;
-    };
-    match worker.post_pass(job) {
-        Ok(()) => {
-            tracing::debug!(
-                wrap = current.width,
-                focus = current.shown.first,
-                "posted the measurement pass"
-            );
-            current.pass_posted = Some((key, styles));
-            start_poll(window, state, current);
-        }
-        Err(error) => tracing::error!(%error, "source measurement pass request failed"),
-    }
-}
-
 /// Whether a finished tile still describes what is displayed, wanted, and the current view.
 /// Stale inputs are rejected here, so a result from before an edit, a file change, or a theme change is never shown.
 /// The tile's own lines must have the heights the map has for them, which `apply` makes so before asking.
@@ -276,52 +204,6 @@ pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
             lines,
             "window thread applied the output of the measurement pass"
         );
-    }
-}
-
-/// What:
-///  Apply what the pass measured: the visual rows of lines outside the displayed tile go into the window's table,
-///  and the window renders when any count changed.
-/// Why:
-///  The lines of the displayed tile keep the heights they were painted with;
-///  a pass result must never move the rows of the frame on screen.
-///  A result for another text, scale, or width is dropped.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function applyPass(window: AppWindow, state: Shared<State>, output: PassOutput): void;
-/// ```
-fn apply_pass(window: &AppWindow, state: &Rc<RefCell<State>>, output: PassOutput) {
-    let factor = window.window().scale_factor();
-    let mut current = state.borrow_mut();
-    if output.key != current_key(&current, factor) {
-        tracing::debug!(
-            lines = output.lines.len(),
-            "dropped a measurement for another text or width"
-        );
-        return;
-    }
-    let held = current.shown.first..current.shown.first + current.shown.count;
-    let count = output.lines.len();
-    let changed = rows::absorb(
-        &mut current,
-        output
-            .lines
-            .into_iter()
-            .filter(|(line, _)| return !held.contains(line)),
-    );
-    #[cfg(debug_assertions)]
-    {
-        current.pass_applied += 1;
-        current.pass_lines += count as u64;
-        current.pass_most_lines = current.pass_most_lines.max(count);
-        current.pass_shaped += output.shaped;
-        current.pass_rebroken += output.rebroken;
-    }
-    tracing::debug!(count, changed, done = output.done, "applied a measurement");
-    drop(current);
-    if changed {
-        render(window, state);
     }
 }
 

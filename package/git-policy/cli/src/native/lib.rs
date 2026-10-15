@@ -231,12 +231,6 @@ pub mod path_bytes;
 /// Ordered policy execution for one lifecycle point.
 pub mod policy_engine;
 
-/// Slice 6: the exact grammar of one policy-proposed Git patch (`commit-transaction-patch.ts`).
-pub mod policy_patch_validate;
-
-/// Slice 6: one policy patch applied to the private index with `git apply --cached --3way`.
-pub mod policy_patch;
-
 /// Slice 6: writes one corrected file into the private commit index as a blob and an index entry.
 pub mod private_index_stage;
 

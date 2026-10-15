@@ -92,3 +92,21 @@ fn the_later_capture_wins() {
         CaptureOrderDecision::Landed
     );
 }
+
+/// A prepared capture with the same sequence as the latest landed capture is not later, so the landed entry stays.
+#[test]
+fn an_equal_sequence_is_not_later_than_the_landed_capture() {
+    let history: Vec<LandedChange> = vec![landed_change("c1", &["a.txt"])];
+    let landed: BTreeMap<String, CaptureView> = landed_records(&[("c1", capture("w", 2, &["a.txt"]))]);
+    assert_eq!(
+        decide_capture_order("a.txt", &capture("w", 2, &["a.txt"]), &history, &landed),
+        CaptureOrderDecision::Landed
+    );
+}
+
+/// The format error displays exactly its message.
+#[test]
+fn the_capture_order_error_displays_its_message() {
+    let error: CaptureOrderFormatError = CaptureOrderFormatError(String::from("bad listing"));
+    assert_eq!(error.to_string(), "bad listing");
+}

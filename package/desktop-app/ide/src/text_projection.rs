@@ -159,6 +159,9 @@ pub fn project_line(source: &str) -> Projection {
     };
 }
 
+/// Unit tests of the caret stops,
+///  including the work of finding them,
+///  live in a sidecar file.
 #[cfg(test)]
 #[path = "text_projection_tests.rs"]
 mod tests;

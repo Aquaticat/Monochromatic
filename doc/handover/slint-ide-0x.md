@@ -281,6 +281,185 @@ the items after it are the record of 2026-10-05 and older.
   `monochromatic-lint package/desktop-app/ide` exits 1 with 570 `markdown/semantic-line-breaks` errors
   and 821 `rust/no-anonymous-functions` warnings.
   None of it comes from the IDE work of this handover; the cutover owns it.
+- Branch `refactor/ide-split-top` (2026-10-15) clears the `rust/max-lines` and `rust/require-rustdoc` findings of
+  `src/annotation.rs`,
+  `src/shaped_text.rs`,
+  `src/text_raster.rs`,
+  `src/name_order.rs`,
+  `src/tab_layout.rs`,
+  `src/text_projection.rs`,
+  `src/wrap.rs`
+  and `src/wrap_sign.rs`.
+  The rule counts lines that hold a token other than a comment or whitespace,
+  with a limit of 300
+  (`package/linter/monochromatic-lint/src/rust_source.rs`,
+  `code_lines`).
+  The three over-long files had 304,
+  452
+  and 308 such lines
+  and now have 267,
+  279
+  and 258.
+  `annotation/severity.rs` now holds `rank`,
+  `severity_name`,
+  `shown`
+  and `describe`;
+  `text_raster/palette.rs` holds `CodeColors`
+  and `ink`;
+  `shaped_text/frame.rs` holds `Clip`,
+  `Viewport`
+  and `ShapedView`;
+  `shaped_text/layout.rs` holds `LineRequest`
+  and the line and virtual-row shaping of `TextShaper`
+  (`line_layout`,
+  `wrapped_line_layout`,
+  `build_line`,
+  `row_layout`,
+  `wrap_row_text`,
+  `build_row`,
+  `space_advance`,
+  `baseline`).
+  Every moved item is re-exported from its old module,
+  so no caller changed;
+  `TextShaper::baseline` became `pub(super)`.
+  The source guards `markup-heading-ink`,
+  `indent-scale`,
+  `markup-weight-push`
+  and `markup-italic-push`
+  and the annotation guard `omitted-severity` point at the new files;
+  no `before` text or expected failure changed.
+  Gate on the code of `a31468e2bc` (logs in `~/temp/agent/ide-split-top/logs/`):
+  lint:rustfmt,
+  lint:clippy,
+  lint:slint,
+  lint:release,
+  test,
+  test:cli,
+  test:language,
+  test:minimap,
+  test:wrap,
+  test:annotations,
+  test:annotations-native,
+  test:syntax,
+  bundle,
+  inspect:bundle 10 of 10,
+  inspect:bundle-guards 8 of 8,
+  test:native 197 of 197 on the second run
+  (the first run failed `wrap_keys_tests::the_view_follows_the_caret_through_every_visual_row`,
+  the known flake).
+  The guard tasks passed with
+  annotation 65,
+  source 108,
+  find 39,
+  ignored 28,
+  search 17,
+  sidebar 18,
+  theme 7,
+  watch 76,
+  language 31,
+  language lifecycle 28 runs,
+  and language navigation 16.
+  The combined lint of `package/desktop-app/ide` has the same 2654 `markdown/semantic-line-breaks` errors
+  and 1135 `rust/no-anonymous-functions` warnings as before.
+  Its `rust/max-lines` findings fell from 9 to 6,
+  and `rust/require-rustdoc` from 33 to 25;
+  the remaining ones are in `src/native*`,
+  `src/language*`,
+  `src/minimap*`
+  and `src/git_ignore*`,
+  which other branches own.
+- The over-long native files are split on branch `refactor/ide-split-native`
+  (worktree `.claude/worktrees/ide-split-native`),
+  with no change of behavior.
+  Fixed:
+  `rust/max-lines` in `src/native.rs`,
+  `src/native/render.rs`,
+  `src/native/rows.rs`,
+  `src/native/tile.rs`,
+  and `src/native/tile_build.rs`,
+  and `rust/require-rustdoc` in `src/native/tile_build.rs`.
+  The rule counts lines that hold a token other than a comment or whitespace,
+  against a limit of 300 (`check_max_lines` in `package/linter/monochromatic-lint/src/rust_rules.rs`).
+  Docs and `//region` markers are free.
+  Each new module is re-exported by its parent,
+  so no caller changed.
+  `native/state.rs` holds `State::new`.
+  `native/start.rs` holds `servers_wanted` and `run`.
+  `native/render/paint.rs` holds the paint inputs,
+  `tile_cap`,
+  and the tile stamp and job.
+  `render/present.rs` holds `Frame`,
+  `show`,
+  and the gutter's wrap indicator.
+  `render/measure.rs` holds the measurement of the requested tile.
+  `native/rows/held.rs` holds the space held over a reload.
+  `rows/quiet.rs` holds the scrolling rule's clock.
+  `rows/window.rs` holds the window models and setters.
+  `native/tile/pass.rs` holds `current_key`,
+  `sync_pass`,
+  and `apply_pass`.
+  `native/tile_build/job.rs` holds the job,
+  the result,
+  and `build_tile`.
+  `tile_build/worker_thread.rs` holds the worker loop.
+  The test modules stay declared in `native.rs`,
+  so every test path such as `native::wrap_keys_tests::...` is unchanged.
+  Moved items that were `pub(super)` became `pub(in crate::native)`.
+  Two guard anchors moved:
+  `clip-cap` (now `src/native/render/paint.rs`),
+  and the `logging::install` mutation of `inspect:log-stall` (now `src/native/start.rs`).
+  The 16 `tracing` records in the moved code
+  (`tile/pass.rs` 5,
+  `render/present.rs` 3,
+  `rows/held.rs` 1,
+  `tile_build/worker_thread.rs` 7)
+  now carry the module path of their new file as target.
+  A search of `bin`,
+  `tests`,
+  `README.md`,
+  and `src` found no filter on the old targets.
+  Combined lint over `package/desktop-app/ide/src`:
+  `rust/max-lines` 9 to 4,
+  `rust/require-rustdoc` 33 to 30,
+  none of the remaining ones in these files.
+  The rest belong to `native/minimap.rs`,
+  `native/minimap_build.rs`,
+  `minimap.rs`,
+  and `minimap/raster.rs`,
+  which this change did not touch,
+  and to the files of the other split.
+  `markdown/semantic-line-breaks` stays at 1156 and `rust/no-anonymous-functions` at 862.
+  Gate on the branch tip,
+  all status 0:
+  lint:rustfmt,
+  lint:clippy,
+  lint:slint,
+  lint:release,
+  test,
+  test:cli,
+  test:native 197 of 197,
+  test:language,
+  test:minimap,
+  test:wrap,
+  test:annotations,
+  test:annotations-native,
+  test:syntax,
+  bundle,
+  inspect:bundle,
+  inspect:bundle-guards,
+  the source (108),
+  theme (7),
+  annotation (65),
+  language navigation (16),
+  find (39),
+  sidebar (18),
+  ignored (28),
+  watch (76),
+  search (17),
+  language (31),
+  and language lifecycle (28 runs) guards,
+  inspect:log-stall,
+  and inspect:refresh-latency.
 - The user approved installing into the real home on 2026-10-10:
   `bin/install.mjs` put `dist/monochromatic-ide` at `~/.local/bin/monochromatic-ide`
   (identical bytes, hash checked) and the launcher entry at `~/.local/share/applications/monochromatic.ide.desktop`

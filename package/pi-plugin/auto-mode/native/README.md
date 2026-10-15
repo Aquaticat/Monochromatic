@@ -20,6 +20,129 @@ and exact retained file bytes in disposable roots.
 Live checks enforce the original deadline;
 retained checks preserve cancellation and freshness after that deadline expires.
 Mechanical projections explicitly withhold instruction authority and human permission.
+`test:native:program-queue` checks original recorder reuse,
+private token and public label membership,
+immediate queue-tail publication,
+and normal or exceptional dispatch release.
+An original rejected predecessor retains its exact failure and leaves its already published successor unresolved.
+`test:native:group-completions` verifies that original native outcomes remain retained after delivery closes.
+It checks every delivery state,
+original value and failure identity,
+listener detachment,
+and failures inside result delivery or cleanup.
+Closed or failed groups retain outcomes without being relabeled as successfully settled transport.
+`test:native:group-failures` checks occurrence identity and order,
+first-failure publication before rejection and cancellation,
+already-recorded token propagation,
+and signal caching after callback completion.
+Reentrant cancellation records its inner observation before the outer observation reaches the cache.
+A throwing rejection callback leaves the primary failure retained without publishing cancellation or that cache entry.
+The internal `RecordedGroupFailureError` token retains the original caught value in its occurrence.
+`test:native:group-lifetime` verifies retirement callback order,
+incomplete-membership failure retention,
+work capture at drain invocation,
+and frozen retained snapshots.
+Failures during listener detachment or incomplete-membership recording leave retirement unpublished.
+A pending rejection callback failure occurs after closure,
+so a later retirement call does not retry that callback or publish cancellation.
+Snapshots retain original failure and native completion identities without claiming execution effects.
+`test:native:group-current` verifies original failure,
+closure,
+and cancellation precedence around parent-currentness and reached-view callbacks.
+Callback-published state is re-read after both callbacks.
+Parent cancellation observation stops for closed transport or fully retained outcomes,
+while partial outcomes and existing failures preserve the original cancellation callback.
+`test:native:group-dispatch` verifies drainable work publication before callbacks,
+complete original member association,
+opaque callback failures,
+and observation after transport closes.
+Invalid returned arrays retain every enumerable completion,
+including extra named properties while skipping holes and inherited positions.
+These unassociated outcomes stay inspectable without acquiring a declared member association.
+`test:native:group-collector` verifies original capability and frozen-view checks,
+exact argument serialization,
+out-of-order member arrival,
+replay and reentry rejection,
+listener identity,
+and combined cancellation.
+It checks cancellation during final currentness and listener installation,
+plus retained native outcomes after transport cancellation.
+Independent arrival consumers distinguish failure retention from pending rejection:
+the latter remains required even when the retention callback does not reject delivery itself.
+`test:native:program-runtime` verifies frozen source tools,
+lazy group ownership,
+canonical view identity,
+parent and native cancellation checks,
+and script-value conversion boundaries.
+Ordinary conversion failures retain their original identity;
+native value guards pass through the original judgment's retention callback.
+Runtime retirement closes entry before visiting reached groups in live insertion order.
+Draining awaits its captured group work,
+then inspects the current reached map and preserves the earliest retained program guard.
+Independent lifetime consumers cover callback failures,
+partial retirement,
+and frozen snapshots that retain child inspection identity.
+`test:native:runner-binding` verifies original recorder reuse,
+parent-derived call numbering,
+complete slot admission,
+and distinct unresolved result tickets.
+Original native callback identity is captured once.
+Native option getters run before member signal lookup;
+enumerable symbols and primitive object-spread behavior remain intact.
+Missing tool-name lookups reach the original judgment admission callback unchanged.
+`test:native:runner-events` verifies original recorder publication,
+native event payload identity,
+text filtering and coercion,
+usage truthiness and getter order,
+and reverse-order member settlement.
+Start and update callbacks await host event completion.
+Completion records the result and usage before publishing its end event,
+then resolves the original member ticket only after the host finishes that event.
+Opaque callback failures stop later publication and retain their original identity.
+`test:native:runner-execution` verifies complete native dispatcher inputs,
+original host and judgment receivers,
+prepared member publication,
+and native slot association.
+An existing parent queue owner prevents reacquisition.
+Otherwise,
+host scheduling or the first matching sequential tool definition selects a native queue turn.
+Parent currentness and cancellation are checked after acquisition;
+the acquired turn remains held through asynchronous dispatch and is released on normal or exceptional exit.
+The original predecessor-rejection behavior retains an unresolved published successor.
+Native member signals reach the existing judgment admission validator unchanged.
+`test:native:runner-facade` verifies the original frozen tool snapshot,
+prepared-source equality,
+judgment opening,
+native slot publication before execution,
+and aggregate drainage.
+Runtime drainage starts before the retained native-work snapshot is read.
+Execution failures reject the original member tickets and remain retained across repeated drains.
+Aggregate failure order preserves execution failures before runtime or settlement rejections,
+including duplicate and nullish values.
+A missing script-value slot now throws an explicit null-check error before judgment invocation.
+The original facade passed an undefined slot to judgment;
+the independent diagnostic fixture accepts it without establishing real judgment admission.
+`test:native:input-seal` verifies prepared argument identity,
+descriptor admission,
+original proxy failures,
+and the inclusive 10,000-container bound through both wide and deeply nested trees.
+Sealing freezes a parent before validating its children and visits the last child first.
+The original array check counts own keys;
+a missing index offset by an extra enumerable property remains accepted.
+These consumers preserve that behavior rather than introducing stricter array validation.
+`test:native:prepared-schedule` verifies the inclusive 64-member limit,
+unique nonempty identifiers,
+independently cloned calls,
+and original judgment and tool capability checks.
+Cloning precedes execution-mode validation.
+The group and call objects are frozen;
+nested arguments remain unfrozen until prepared-input sealing.
+Only the first matching tool definition determines context support and execution policy.
+Every context capability is checked before reading serial policy.
+An explicit sequential mode skips tool policy reads.
+All execution capabilities remain uninvoked during scheduling.
+Original sparse-array scheduling is retained when no tool lookup observes an array hole.
+This admission behavior does not establish successful complete dispatch for sparse input.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 

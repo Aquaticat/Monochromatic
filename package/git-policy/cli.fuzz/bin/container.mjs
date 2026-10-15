@@ -30,7 +30,9 @@ const targets = [
   { name: 'event_path', dictionary: 'event_path.dict' },
   { name: 'linter_config', dictionary: 'linter_config.dict' },
 ];
-const secondsPerTarget = 30;
+const defaultSecondsPerTarget = 30;
+const maxSecondsPerTarget = 86_400;
+const secondsOption = '--seconds-per-target=';
 const maxInputBytes = 4096;
 
 /** Preserve the failed verification boundary rather than masking it with a later copy error. */
@@ -88,9 +90,16 @@ async function copyInputs({ source, context }) {
 
 /** Build and run within explicit container limits and retain discoveries before cleanup. */
 async function main() {
-  if (process.argv.slice(2).some(argument => argument !== '--build-only'))
-    throw new FuzzVerificationError('Only --build-only is accepted.');
-  const buildOnly = process.argv.includes('--build-only');
+  const options = process.argv.slice(2);
+  if (options.some(argument => argument !== '--build-only' && !argument.startsWith(secondsOption)))
+    throw new FuzzVerificationError(`Only --build-only and ${secondsOption}<seconds> are accepted.`);
+  const buildOnly = options.includes('--build-only');
+  const secondsArgument = options.find(argument => argument.startsWith(secondsOption));
+  const secondsPerTarget = secondsArgument === undefined
+    ? defaultSecondsPerTarget
+    : Number(secondsArgument.slice(secondsOption.length));
+  if (!Number.isSafeInteger(secondsPerTarget) || secondsPerTarget < 1 || secondsPerTarget > maxSecondsPerTarget)
+    throw new FuzzVerificationError(`${secondsOption}<seconds> must be a whole number from 1 to ${maxSecondsPerTarget}.`);
   const source = process.cwd();
   const compiler = execute({ command: 'rustc', args: ['--print', 'sysroot'], capture: true }).stdout.trim();
   const compilerVersion = execute({ command: 'rustc', args: ['--version'], capture: true }).stdout.trim();

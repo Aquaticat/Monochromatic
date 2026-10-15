@@ -1,3 +1,7 @@
+import { sealPreparedInput } from './prepared-input-seal.ts';
+import { schedulePreparedCalls } from './prepared-schedule.ts';
+import { completePreparedBatch } from './prepared-completion.ts';
+
 export class PreparedBatchContractError extends Error {}
 export class PreparedBatchExecutionError extends Error {
   constructor(
@@ -28,41 +32,9 @@ import {
 
 
 
-/** Seal ordinary JSON-like input trees only after the supplied preparation hooks finish. */
+/** {@inheritDoc sealPreparedInput} */
 function sealInput(input) {
-  const pending=[input];
-  const seen=new Set();
-  while(pending.length > 0){
-    const value=pending.pop();
-    if((value===null) || (value===undefined)
-      || ((typeof value)==='string')
-      || ((typeof value)==='boolean'))continue;
-    if(((typeof value)==='number') && Number.isFinite(value))continue;
-    if(((typeof value)!=='object') || seen.has(value))throw new PreparedBatchContractError('Prepared input must be a non-aliased JSON-like tree');
-    seen.add(value);
-    if(seen.size>10_000)throw new PreparedBatchContractError('Prepared input exceeds the declared tree bound');
-    const prototype=Object.getPrototypeOf(value);
-    if(Array.isArray(value) ? prototype!==Array.prototype : (prototype!==Object.prototype) && (prototype!==null))throw new PreparedBatchContractError('Prepared input has an unsupported prototype');
-    if(Array.isArray(value) && (Reflect.ownKeys(value)
-      .length
-      !==(value.length
-      +1)))throw new PreparedBatchContractError('Prepared input array is sparse or has extra properties');
-    for(const key of Reflect.ownKeys(value)){
-      if((typeof key)!=='string')throw new PreparedBatchContractError('Prepared input has a symbol key');
-      const property=Object.getOwnPropertyDescriptor(
-        value,
-        key
-      );
-      if((property===undefined) || (!Object.hasOwn(
-        property,
-        'value'
-      )))throw new PreparedBatchContractError('Prepared input has an accessor');
-      if((!property.enumerable) && (!(Array.isArray(value) && (key==='length'))))throw new PreparedBatchContractError('Prepared input has hidden properties');
-      pending.push(property.value);
-    }
-    Object.freeze(value);
-  }
-  return input;
+  return sealPreparedInput({ input, PreparedBatchContractError });
 }
 
 /** Caller owns the complete explicit group and actual SDK runToolCall function. */
@@ -83,26 +55,7 @@ export async function dispatchPreparedBatch({
   executionJudgment,
   executionMode='parallel'
 }) {
-  if((!Array.isArray(calls)) || (calls.length===0)
-    || (calls.length>64)
-    || calls.some(function isInvalidCall(call) { return ((call.type!=='toolCall') || ((typeof call.id)!=='string')
-      || (!call.id)
-      || ((typeof call.name)!=='string')
-      || (!call.name)); })
-    || (new Set(calls.map(function readCallId(call) { return (call.id); })).size!==calls.length))throw new PreparedBatchContractError('Prepared batch requires one to64 unique named members');
-  const scheduled=Object.freeze(calls.map(function cloneScheduledCall(call) { return (Object.freeze(structuredClone(call))); }));
-  if((executionMode!=='parallel') && (executionMode!=='sequential'))throw new PreparedBatchContractError('Unknown batch execution mode');
-  if((!executionJudgment)||[
-    'memberFor',
-    'beginExecution',
-    'executionFor',
-    'finishExecution'
-  ].some(function isMissingExecutionSupport(name) { return ((typeof executionJudgment[name])!=='function'); }))throw new PreparedBatchContractError('Enclosing judgment lacks required native execution occurrence support');
-  for(const call of scheduled){const tool=tools.find(function matchesTool(value) { return (value.name===call.name); });if(tool&&((typeof tool.createExecutionContext)!=='function'))throw new PreparedBatchContractError(`Tool ${JSON.stringify(call.name)
-    } lacks required native context support; the complete group was not started`);}
-  const serial=(executionMode==='sequential') || scheduled.some(function requiresSequentialExecution(call) { return (tools.find(function matchesTool(tool) { return (tool.name===call.name); })
-    ?.executionMode
-    ==='sequential'); });
+  const { scheduled, serial } = schedulePreparedCalls({ calls, tools, executionJudgment, executionMode, PreparedBatchContractError });
   const turns=scheduled.map(function createExecutionTurn() { return (Promise.withResolvers()); });
   const preparationTurns=scheduled.map(function createPreparationTurn() { return (Promise.withResolvers()); });
   turns[0]
@@ -247,29 +200,6 @@ export async function dispatchPreparedBatch({
     completion.settled=await Promise.allSettled(scheduled.map(runMember));
   }
   const {settled}=completion;
-  if(batchState.decision===undefined)throw new PreparedBatchContractError('Prepared batch completed without admission outcome');
-  if(failures.length > 0)throw new PreparedBatchExecutionError(
-    'Prepared batch retained lifecycle failures',
-    {
-      failures,
-      outcomes:settled,
-      assessmentDecision:batchState.decision
-    }
-  );
-  const rejected=settled.filter(function isRejectedResult(result) { return (result.status==='rejected'); });
-  if(rejected.length > 0)throw new PreparedBatchExecutionError(
-    'Prepared batch has unhandled native outcomes',
-    {
-      failures:rejected.map(function readRejection(result) { return (result.reason); }),
-      outcomes:settled,
-      assessmentDecision:batchState.decision
-    }
-  );
-  return Object.freeze({
-    decision:batchState.decision,
-    assessmentCount:snapshots.length,
-    members:snapshots[0]??Object.freeze([]),
-    outcomes:Object.freeze(settled.map(function readCompletedValue(result) { return (result.value); }))
-  });
+  return completePreparedBatch({ batchState, failures, settled, snapshots, PreparedBatchContractError, PreparedBatchExecutionError });
 }
 //endregion

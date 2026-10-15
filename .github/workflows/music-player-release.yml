@@ -493,7 +493,8 @@ jobs:
         # imports. The GNU executable is built with MinGW-w64 and GNU ld: it imports the Windows C runtime
         # (api-ms-win-crt-*, UCRT64) and system DLLs, and no MinGW runtime DLL (libgcc_s, libwinpthread,
         # libstdc++), which would have to ship next to it. The runner's PATH holds the MSYS2 DLLs, so
-        # the --version smoke test above cannot catch that; this check does.
+        # the --version smoke test above cannot catch that; this check does. It also requires the Windows GUI subsystem
+        # (Subsystem 2), so a double-click opens no console window.
         python -m pip install --disable-pip-version-check --quiet pefile==2024.8.26
         python - "dist/${asset}" "$TARGET" <<'PY'
         import sys
@@ -506,6 +507,11 @@ jobs:
         ])
         header = pe.OPTIONAL_HEADER
         print("machine", hex(pe.FILE_HEADER.Machine), "subsystem", header.Subsystem)
+        # IMAGE_SUBSYSTEM_WINDOWS_GUI is 2; the console subsystem is 3 and opens a console window on a double-click.
+        # The program attaches to the console of its parent itself, so --version still prints in a terminal.
+        if header.Subsystem != 2:
+            print(f"::error::The Subsystem field of the executable is {header.Subsystem}, expected 2 (windows GUI), so Windows would open a console window.")
+            sys.exit(1)
         print(f"linker version in the PE header: {header.MajorLinkerVersion}.{header.MinorLinkerVersion}")
         names = sorted({entry.dll.decode().lower() for table in ("DIRECTORY_ENTRY_IMPORT", "DIRECTORY_ENTRY_DELAY_IMPORT") for entry in getattr(pe, table, [])})
         print("imports:", " ".join(names))
@@ -1162,7 +1168,7 @@ jobs:
 
         ## Unsigned builds and first launch
 
-        - **Windows**: the programs are not signed with a developer identity. SmartScreen may show "Windows protected your PC": choose "More info", then "Run anyway". The executable is built as a console program, so Windows opens a console window next to the app.
+        - **Windows**: the programs are not signed with a developer identity. SmartScreen may show "Windows protected your PC": choose "More info", then "Run anyway". The executable opens no console window; started from a terminal, it prints there. In PowerShell, redirect with `| Out-File file.txt`, because PowerShell does not read the output of a program like this one through `>`.
         - **macOS**: the app is not notarized, and carries only an ad-hoc signature with no developer identity. Open the disk image, drag Music Player to Applications, and try to open it once. Then open System Settings, go to Privacy & Security, scroll down and click "Open Anyway", and click "Open" when the warning appears again. macOS remembers the choice. These are the steps in [Apple's guide](https://support.apple.com/en-us/102445).
         - **Android**: the APK is signed with the project release key. Allow installing from your browser or file manager when Android asks. Updates install over this app only when they carry the same key. Certificate SHA-256: `@CERT@`.
         - **Linux**: extract the archive and run `bin/music-player`. `INSTALL.txt` inside shows how to add a menu entry. It needs PipeWire and glibc 2.39 or newer (it is built on Ubuntu 24.04).

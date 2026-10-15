@@ -69,7 +69,7 @@ const replaceOne = (text, before, after) => {
   if (text.indexOf(before, start + before.length) >= 0) throw new Error('Mutation source anchor is ambiguous: ' + before);
   return text.slice(0, start) + after + text.slice(start + before.length);
 };
-const nativePath = join(source, 'src/native.rs');
+const nativePath = join(source, 'src/native/start.rs');
 const native = readFileSync(nativePath, 'utf8');
 const variants = [{ name: 'background-writer', binary: build('background-writer') }];
 try {

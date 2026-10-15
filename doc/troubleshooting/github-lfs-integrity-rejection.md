@@ -131,3 +131,67 @@ No upstream message was sent.
 
 The filing artifact is an explicit nothing-to-add record for
 [issue 4787](https://github.com/git-lfs/git-lfs/issues/4787).
+
+## Separate protected-branch rejection on 2026-10-15
+
+A later automatic push of `6973251c8342005567353fad9e1c7b3cb4ebdb51`
+failed at a different visible boundary:
+
+```text
+remote: error: GH006: Protected branch update failed for refs/heads/main.
+remote: error:
+ ! [remote rejected]       main -> main (protected branch hook declined)
+```
+
+This incident is not attributed to the LFS failure.
+The server provided no specific rejected requirement.
+The local commit remained saved,
+while the direct remote query still named parent `ef8f58d9226db6b10e45c0676aa41597c5b1111c`.
+
+Read-only checks used the same Git `2.56.0` and repository-owned wrapper:
+
+```sh
+# Repository root: inspect the actual required policy and original local signature.
+git verify-commit 6973251c83
+gh api repos/Aquaticat/Monochromatic/branches/main/protection
+gh api repos/Aquaticat/Monochromatic/commits/6973251c8342005567353fad9e1c7b3cb4ebdb51 --jq '{sha: .sha, verification: .commit.verification.verified, reason: .commit.verification.reason}'
+```
+
+Local signature verification succeeded.
+The protection response required signatures,
+reported strict status checking with empty context/check arrays,
+required conversation resolution,
+and reported `lock_branch: false`.
+The commit endpoint returned HTTP `422` with `No commit found for SHA`.
+These reads do not identify the rejected requirement or prove a GitHub signature-verification result.
+
+One unchanged ordinary `git push origin main` then exited zero,
+reporting `ef8f58d922..6973251c83 main -> main`.
+No protection setting,
+commit signature,
+or history was changed.
+As with the LFS incident,
+successful retry establishes recovery only.
+The internal cause and deterministic reproduction remain unavailable;
+no backend patch or new upstream report is justified by these observations.
+
+## Protected-branch rejection followed by concurrent publication on 2026-10-15
+
+The automatic push for local commit `2447ba4224` emitted the same visible
+`GH006: Protected branch update failed for refs/heads/main`
+and `protected branch hook declined` messages.
+The commit remained saved locally.
+The diagnostic again did not identify a rejected requirement.
+
+Before retrying,
+`git ls-remote origin refs/heads/main` returned
+`9e4b09e2d180020194cfbabc9d5d8d38c9c8e449`.
+The local log showed concurrent repository work had published that commit,
+and `git merge-base --is-ancestor 2447ba4224 9e4b09e2d180020194cfbabc9d5d8d38c9c8e449`
+exited zero.
+The rejected local commit was therefore already reachable from the actual remote branch.
+No additional push,
+protection change,
+or history rewrite was needed.
+This establishes delivery through concurrent publication,
+not the cause of the preceding rejection.

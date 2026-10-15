@@ -51,6 +51,10 @@ The release workflow branch recorded a concrete defect of that pin in commit 24b
   On Windows it is built with MSYS2 (UCRT64 environment) and a rustup GNU host toolchain.
   On Linux it can be cross-built and tested under Wine in a container (`image:windows-gnu`, `build:windows-gnu`,
   `test:windows-gnu` in `package/music-player/desktop-app/mise.toml`).
+- Both Windows linkers build a GUI-subsystem program (`#![windows_subsystem = "windows"]` in `src/main.rs`):
+  rustc passes `/SUBSYSTEM:windows` to `link.exe` and `-Wl,--subsystem,windows` to GNU ld through gcc, so the GNU target
+  needs no `-mwindows` flag and no change in `.cargo/config.toml`.
+  Sources, the console attach and the CI proof: `doc/decision/music-player-windows-gui-subsystem.md`.
 - Linux is unchanged and keeps `rust-lld`: the maintainer's switch to `mold` was conditional on it working
   everywhere, and it does not.
 - macOS is unchanged and keeps its linker.
