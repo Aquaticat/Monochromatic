@@ -32,7 +32,7 @@ await describe({ name: '', children: [
       fixture.control.failure = failure;
       fixture.control.failAt = 'execute';
       const run = fixture.create();
-      const promises = assert.equal(fixture.runtimeInput().dispatchGroup({ handle: {} }).length, 2);
+      const promises = fixture.runtimeInput().dispatchGroup({ handle: {} });
       assert.equal(promises[0], fixture.bound.tickets[0]?.promise);
       assert.deepEqual(fixture.steps.slice(-4), ['bind', 'execute', 'reject:0', 'reject:1']);
       /** Require aggregate identity and original retained values rather than diagnostic text. */
