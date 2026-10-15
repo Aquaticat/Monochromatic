@@ -9,7 +9,22 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
-### Reopened consumer failures
+### Host-isolation replacement complete
+
+The corrected native host is installed as `native-release-Yhc7sX` and verified through the original `pi` command.
+New Pi processes load it; existing processes retain their loaded release.
+All functional work in this section is complete.
+The remaining warning cleanup belongs to the requested [MiMo handoff](pi-auto-mode-mimo-lint-prompt.md).
+
+Final package type checking passes.
+Focused Oxlint on 40 changed files reports zero errors and 2709 warnings;
+its nonzero exit is the warning gate, not a clean-lint result or whole-package measurement.
+The candidate live controls pass scoped Allow, prohibition, and an independent external-office prerequisite.
+Installed-command controls pass with all 17 configured packages, followed by live Luna Allow verification.
+That live installed check uses three successful HTTP requests for 516 questions and executes one native read.
+Primary responses and dialog selection are authored fixtures; no physical human input is claimed.
+Receipts are `live-final.log`, `installed-configured.log`, and `installed-live.log`
+under `${HOME}/temp/agent/pi-host-isolation-20261015/`.
 
 The user corrected the fallback on 2026-10-15:
 unavailable observation or assessment evidence must fall back to manual approval,
@@ -29,7 +44,7 @@ setting and asserting overrides on the constructed session verifies both agent a
 The native prompt callback fixture also passes capture failures before and after callbacks,
 exactly-once invocation, and preservation of original thrown values.
 Package type checking passes.
-Focused lint on the first 36 changed files reports 2247 warnings and zero errors;
+An intermediate focused lint check on 36 changed files reports 2247 warnings and zero errors;
 warnings still fail the lint command and remain assigned to the requested MiMo handoff.
 The combined session, passive-prompt, lifecycle, runtime-hook, policy, and manual-fallback matrix passes
 on disposable release `native-release-JWvYLT`.
@@ -39,7 +54,7 @@ Release `native-release-LNNqh3` passes the corrected original-approval, native-c
 fresh-confirmation, and uncertain-review controls.
 The out-of-profile bypass fixture requires the new manual fallback after disabling bypass;
 its scripted Stop response is now explicit instead of accidentally approving the fallback.
-Configured-host and live checks remain pending before installation.
+Final original-approval, bypass, and selected-context controls pass in `approval-final.log`.
 The configured-host candidate checks subsequently pass with all 17 packages in `configured-final.log`.
 Live verification and commits were interrupted by the shared worker's 256-task limit:
 Mise reports failed thread creation and Git reports failed forks and threaded `lstat`.
@@ -53,8 +68,9 @@ The installed hook, persistent slice definition, runtime parent, and existing `c
 The 4 GiB memory cap, zero swap, and two-CPU quota remain unchanged; the preview stays running.
 Ordinary shell commands through the updated hook succeed.
 The exact manual-group identity/lifetime fixture also passes in `manual-group.log`.
-Pending queue: live configured controls, exact manual-group test, final bypass/context checks,
-focused lint/type checking, rendered documentation, native activation, and installed CLI verification.
+The original installed manual-group test passes in `installed-manual-group.log`.
+Removing only the parent-identity guard in a process-local disposable probe makes the same test fail
+with `changed-parent must reject its stale Allow response`; production keeps that guard.
 Use the candidate's canonical path and preload its own HTTP dispatcher in the configured fixture.
 Scratch multi-task invocations without separators passed later names as arguments;
 only explicit per-task output counts as execution evidence.
@@ -82,7 +98,7 @@ contains the exact emitters, reproductions, and limitations.
 - [x] Reproduce and fix retired-root failure after native navigation and retry.
 - [x] Resolve the host-isolation design choice and update the accepted integration scope.
 - [x] Move primary observation failures to tool admission and use operation-scoped native currentness.
-- [ ] Verify original host operations, install the corrected artifact, and document the evidence.
+- [x] Verify original host operations, install the corrected artifact, and document the evidence.
 
 Scratch reproductions live under `${HOME}/temp/agent/pi-reported-errors-20261015/`.
 The prior successful controls did not cover this complete UI-operation sequence.
@@ -92,13 +108,12 @@ The implementation now removes judgment creation from `message_end` and starts i
 Native branch readers supply operation-local currentness; constructor ownership remains separate.
 Primary observation retains failures for tool admission and preserves native transport retries and callbacks.
 The startup endpoint is no longer an admission condition.
-Build and consumer checks run in a disposable package so the installed native release remains intact.
+Build and consumer checks first ran in a disposable package before the verified release was activated.
 The expanded native fixture exposed general event capture rejecting a native `AbortSignal`.
 That failure is now retained only for automatic evidence; native callbacks and subsequent chat complete.
 The source owner can remain unavailable after such a failure, so affected tools require manual review.
 The tests do not claim that automatic evidence recovers after every unsupported event.
-Next: finish exact manual-identity, bypass, configured-host, live, and final lint checks;
-then activate and verify the installed command.
+The completed verification retains this automatic-evidence limitation explicitly.
 
 ### Replacement verification before the new report
 

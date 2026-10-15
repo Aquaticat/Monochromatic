@@ -8,7 +8,8 @@ This proposal revises the integration scope recommended in the
 [whole-system review](pi-auto-mode-whole-system-review.md).
 The user accepted alternative A, "Replace the integration", on 2026-10-15.
 The [accepted decision](../decision/pi-auto-mode-host-isolation.md) authorizes implementation.
-The two functional failures remain unfixed until the consumer matrix passes.
+The replacement consumer matrix passes, and release `native-release-Yhc7sX` is installed on 2026-10-15.
+The [current handover](../handover/pi-auto-mode-current-frontier.md) records final evidence and remaining warning cleanup.
 
 ## What the new evidence changes
 
@@ -81,7 +82,7 @@ Likewise, preserving every existing internal test is not a goal when its contrac
 Benefit: prevents a tool-policy mechanism from owning unrelated chat and navigation availability.
 It keeps the accepted policy semantics and useful prepared-execution checks.
 Cost: requires integration migration and renewed proof of source identity, freshness, and cancellation.
-The proposal has not yet demonstrated that complete proof.
+The accepted implementation subsequently passed the consumer evidence recorded in the current handover.
 
 ### B: Repair the current endpoint and navigation ownership
 
@@ -117,7 +118,7 @@ B precedes C because it retains useful tested behavior rather than replacing unr
 - Verify both authored-response controls and authorized live model consumers before activation.
 - Keep the currently installed artifact intact until the replacement passes these checks.
 
-## Next decision
+## Completion
 
-Implement accepted alternative A and verify the consumer matrix before activation.
+Accepted alternative A is implemented, verified, and activated.
 No change to the accepted policy cutoff, budget, approval semantics, or inspected program profiles is proposed.

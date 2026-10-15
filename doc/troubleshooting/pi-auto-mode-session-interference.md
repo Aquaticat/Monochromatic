@@ -215,8 +215,23 @@ retains the build and consumer logs.
 host lifecycle, runtime-hook installation, policy outcomes, and manual fallback on `native-release-JWvYLT`.
 `approval-matrix.log` on `native-release-LNNqh3` passes original approval,
 native-context reload, fresh confirmation, and uncertainty controls.
-Its out-of-profile bypass expectation required updating for the accepted manual fallback;
-final bypass verification and configured/live consumers remain pending.
+Its out-of-profile bypass expectation required updating for the accepted manual fallback.
+The subsequent `approval-final.log` passes that Stop control, the complete approval matrix,
+and selected-context verification with six assessments and eighteen native child executions.
+
+The installed replacement is `native-release-Yhc7sX`.
+`installed-configured.log` verifies the original installed command with all 17 configured packages:
+Allow executes one read, while prohibition and an unmet independent prerequisite execute none.
+`live-final.log` passes the same policy outcomes using live Luna against the disposable candidate.
+`installed-live.log` then verifies live Luna through the installed command:
+516 questions in three successful HTTP requests, one dialog, and one native read.
+Primary responses and dialog selection remain authored fixtures.
+No human keyboard approval or universal semantic accuracy is claimed.
+
+`installed-manual-group.log` passes parent identity, native retirement, cancellation,
+host replacement, one-shot execution, and returned-token rejection.
+A process-local omission of the parent-identity check makes that committed regression fail with
+`changed-parent must reject its stale Allow response`; the production check remains present.
 
 The session-action cases include switching providers, tree navigation, explicit retry, reload,
 completed and in-flight abort, combined actions, cancelled and no-op navigation, summary navigation,
@@ -233,9 +248,12 @@ These are harness corrections, not additional provider incidents.
 
 One verification attempt ended with Mise's `killed by SIGABRT` without a retained native fatal diagnostic.
 A later commit hook reported `cannot fork()` and `Resource temporarily unavailable`.
-The shared worker task limit is 256; a later sample measured 245 tasks.
+The shared worker task limit was 256; a later sample measured 245 tasks.
 Those samples do not prove the original abort's cause.
 Verification now reduces fixture worker pools and runs the configured checks separately.
+The user subsequently requested 2048 tasks.
+The maintained hook and both live worker groups now use that limit while memory and CPU budgets remain unchanged.
+The [worker-limits record](codex-shell-worker-limits.md) documents the coordinated update.
 
 ## What does not work
 
@@ -247,8 +265,7 @@ Verification now reduces fixture worker pools and runs the configured checks sep
 The user identified an architectural problem after these reproductions.
 The user accepted the
 [host-isolation proposal](../planning/pi-auto-mode-host-isolation.md).
-Its replacement passes the disposable session reproductions;
-installation remains pending the remaining consumer checks.
+Its replacement passes the disposable session reproductions and the installed configured-host checks.
 
 ## Upstream filing decision
 
