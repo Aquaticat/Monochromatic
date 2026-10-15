@@ -871,14 +871,16 @@
     },
     {
       "original": "lifecycle/root-lifecycle-retirement-entry/registry.mjs",
-      "maintained": "lifecycle/root-lifecycle-retirement-entry/registry.mjs",
+      "maintained": "lifecycle/root-lifecycle-retirement-entry/registry.ts",
+      "movedOn": "2026-10-14",
       "sha256": "21d948767d0eb52bdd7072eb5f77e14a9a5d6f087a8987009fc0a4ca828c8806",
       "origin": "authored-source",
       "relocatedLiterals": 0
     },
     {
       "original": "lifecycle/root-lifecycle-retirement-entry/root-reader.mjs",
-      "maintained": "lifecycle/root-lifecycle-retirement-entry/root-reader.mjs",
+      "maintained": "lifecycle/root-lifecycle-retirement-entry/root-reader.ts",
+      "movedOn": "2026-10-14",
       "sha256": "6c61bf24b23388f9e301c0dae77b8016b4fb10d3abaf3d27d7a4e85c660cbbf2",
       "origin": "authored-source",
       "relocatedLiterals": 0

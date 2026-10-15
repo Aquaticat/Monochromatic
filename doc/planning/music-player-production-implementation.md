@@ -193,6 +193,11 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   fixture of 52 roots (`android-app/app/src/test/resources/theme-roles-vector.txt`) is checked by a test on each side, and
   the Rust drift test fails if either side changes alone.
 
+- A click or tap on a track row selects it paused and, on the selected row, toggles play and pause on both platforms
+  (D124, decided by the human on 2026-10-14; Enter on the focused row follows it; the track menu's Play and Search
+  results still start a track at once). `PlayerController.activateRow` (Android) and `play_row` (desktop) hold the rule;
+  the e2e suite declares one more check for it (111 declared; D129 adds a setting that also starts the track).
+
 - Since then (D113 to D119): library and analysis follow files automatically (D113: no rescan or re-analyze command;
   the watcher names changed paths and a planner edits the list in place; at 1M tracks a replaced file costs 0.12 ms on
   the handler instead of 1.4 s; a replaced playing file is swapped in at the same position; every refresh retries
@@ -204,6 +209,131 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   the `containerCargo` fallback (it mounts `truepeak-core` and the Android fixture); `states/window-title` and
   `states/natural-order` were harness races and pass 20 of 20; nested compositor 0.4.0 is published and installed, and
   the runner checks capability by version with no pin; the e2e suite has 110 checks (110 pass, 1 not injectable).
+- Android analysis failures (D123, 2026-10-14, branch `feat/android-analysis-failure-notification`, not merged): the
+  message "Could not analyze <file>" is no longer an in-app message. The analysis service posts one system notification
+  on its own low-importance channel `analysis-failure` (id 4202, apart from the D107 progress notification) when files
+  first fail, with the old wording, the app's small icon, auto-cancel, no action button, tap opens the app.
+  When it cannot be posted (permission denied, notifications or the channel off, any post failure) the app shows
+  nothing, writes one warning without file names to the log, and the file keeps no row mark. The tap-time
+  "Could not play <file>" message stays in the app. Wording and decisions are in `core/AnalysisFailureNotice.kt`, the
+  Android side in `AnalysisFailureNotification.kt`, and `PlayerHostWiringTest`-style coverage in
+  `wiring/AnalysisFailureWiringTest.kt`. The desktop app makes the same move as D122 on its own branch.
+
+### In flight and queued (written 2026-10-15 01:50 UTC; read this first after a context loss)
+
+Merged on 2026-10-14 and 2026-10-15, all on `main`: the click rule (D124), Search select-only (D127), the desktop
+unreadable row that stays selected (D128), the Search restyle on both platforms (D126), the folders panel without a
+scrollbar (D125), the desktop notification for an unplayable file (D122, merged at `973572ea12`; the notification
+bus tests start a private `dbus-daemon`, so `:image` must be rebuilt before `:test:container` can run them), the
+Android analysis-failure notification (D123), the queue-cost fix, the legacy queue removal, the Compose wiring tests,
+and the gallery retakes. Open item from D122, not fixed: the e2e suite runs its app in a systemd user unit that
+inherits the real session bus (`unix:path=/run/user/1000/bus`), so `states/refresh-broken-file-once` posts
+"d.wav can't be played." on the real desktop on every run.
+
+Work in flight, each in its own worktree under `~/temp/agent/` (merge procedure for each: `git merge main --no-edit`
+in the worktree, rerun that platform's verification as a systemd unit, forced fresh, count tests from the result
+files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
+before saying it matches, QAB):
+
+- Task 92, release workflow: MERGED to `main` at `ab725bd924` on 2026-10-15 (actionlint 1.7.12 clean; Android
+  detekt, 1287 unit tests and lint fresh on the merged head; the merge touched neither version manifest, so it started
+  no release, confirmed with `gh run list`). Workflow `.github/workflows/music-player-release.yml`, decision
+  `doc/decision/music-player-releases.md`, runbook `doc/runbook/release-the-music-player.md`. Matrix: Linux x64 and
+  arm64 tarballs, macOS arm64 dmg (ad-hoc codesign, the agent's addition), Windows x64 (`link.exe`) and arm64 exe,
+  Android apk signed with the release key (secrets `MUSIC_PLAYER_KEYSTORE_BASE64`, `_KEYSTORE_PASSWORD`,
+  `_KEY_ALIAS`, `_KEY_PASSWORD`; a real run fails unless the APK cert SHA-256 is
+  `9de6e9a475f182c36f2513179fd4b14763b0e00fe068c9b8f3e6f08103616926`), checksums, immutable pre-release. The final
+  workflow text never ran in CI before merge (only its earlier commits ran, nine dry runs); the dry run on main
+  dispatched at merge (run `38675318400`) is that check: read its result before any real release.
+  Release authority: the human said "Feel free to do real releases. Release early and often." (2026-10-15), so real
+  releases need no further asking: after the dry run on main is green, dispatch with dry-run false (or bump the
+  version in both manifests, which releases on push), then verify the published assets and report the version.
+  RELEASED `music-player-v0.1.0` on 2026-10-15 (run `38676838535`, dispatched on main after the green dry run
+  `38675318400`): a pre-release, immutable, six assets plus `SHA256SUMS`. I downloaded them, `sha256sum --check` passed
+  for all six, `gh attestation verify` exited 0 for the Linux x64 tarball and the APK, the APK certificate SHA-256 is
+  the expected `9de6e9a4...6926`, and the Linux x64 binary prints `music-player 0.1.0`. Not run by me: the Windows and
+  macOS binaries (no such machine here; CI ran `--version`), the arm64 Linux binary, any real device. Next releases
+  follow the version bump of the fingerprint migration (task 99) and the Windows linkers (task 96).
+  Open for the human: (1) nothing for releasing itself (`0.1.0` is on main with no tag; a push that leaves the version
+  unchanged never releases it, only a dispatch with dry-run false on main does); (2) copy
+  `~/.local/share/music-player-release-keys` (`music-player-release.p12`, plaintext `credentials.txt`) into KeePassXC
+  and delete the plaintext; (3) vetoable choices: macOS ad-hoc signing, no Android SDK cache (measured 17 s restore
+  against 25 s install), macOS x64 dropped, and AppImage (the human ruled 2026-10-15: not needed while the program ships as a single
+  executable application; the placeholder icon is fine too, so both are settled); (4) product gaps the agent found:
+  the Windows exe is a console-subsystem binary (a console window opens), the apk is about 160 MB, no third-party
+  license notices, Linux needs glibc 2.39+ and AES. Cache budget: 4.0 GB steady
+  state from this workflow alone against the 10 GB cap (task 97 owns the policy). The Alpine (task 95) and Windows
+  (task 96) agents write the artifact names and job steps; apply them to the release workflow as a follow-up when
+  they report (the agent has finished, so a new agent or me).
+- Task 93, auto-play on select (D129): MERGED to `main` at `9a356efd02` on 2026-10-15. Desktop: 1444 passed, 1
+  skipped, clippy and slint lint clean (agent's run on the pre-merge head; the merges since touched no desktop
+  file). Android: I reran detekt, unit tests (1287, none failed, the test task executed) and lint fresh on the merged
+  head. Real runs on both platforms were the agent's (desktop in the nested compositor, Android on an emulator); I
+  viewed the four Settings PNGs. Open to the human's veto: the setting's name, the "Playback" group, the supporting
+  lines, and the Search action label ("Select track" or "Play track"). Known and left alone: `desktop-e2e` `lint:oxlint` has errors in files this branch did not touch (`wide-select.ts` and others).
+- Task 94, Android row text alignment (D130): MERGED to `main` at `3e7d03e7c2` on 2026-10-15 (detekt, 1249 unit tests
+  and lint passed fresh on the merged head; I viewed the three retaken PNGs). The human's ruling: beside the crease
+  only text dodges it; fills, state layers and rings may reach the crease and the pane edge; text columns win. Two
+  changes beyond the brief are open to the human's veto: the template editor's hairlines now start at the pane edge,
+  and its field rows lost 3 dp of ring padding. Search's rounded result shape (D126) was left alone and is a candidate
+  if the human asks. Not verified on a device: the keyboard ring on a template field row.
+- Issue 545, fingerprint hash migration, branch `feat/music-player-xxh3-128`, worktree `music-player-xxh3` (agent
+  started 2026-10-15): the human said "just migrate to XXH3-128", then "just `twox-hash`" (the only hash crate, 2.1.4),
+  then "if XXH3-64 is available in twox-hash use that". The last ruling stands: XXH3-64, the fingerprint stays a
+  64-bit value in every layer, the peak caches still re-key once (the function changes), the `+aes` target feature
+  goes away, the 128-bit width criterion of the issue is waived by the human, and the final commit body carries
+  `Closes #545`. The agent reported 2026-10-15 (head `671602773e`): `twox-hash` 2.1.4 has XXH3-64 (feature
+  `xxhash3_64`); one shared `track_fingerprint` in `truepeak-core/src/fingerprint.rs` (domain tag inside the hashed
+  bytes, seed 0); `gxhash` and every `+aes` setting removed; `SCHEMA_VERSION` 2 with old rows deleted on open;
+  Android duration cache renamed `track-durations-v2.tsv`; known answers from the xxHash reference C implementation;
+  about 1.9 times faster than `gxhash64` on 5,000 tracks (agent's measurement with wide spread). Its desktop suite
+  failed one different timing test in each of two earlier runs (cause not established), so before merging I merge
+  main (done: `05d322fba2`, conflict in `desktop-app/.cargo/config.toml` resolved by hand: no `aes` left, `+crt-static`
+  kept, the `lld-link.exe` pin kept for the Windows agent to remove) and run the desktop suite three times plus clippy
+  and the Android checks fresh as unit `verify-xxh3-final`. Not verified: aarch64 NEON known answers, real Android
+  device, macOS and Windows builds. One surviving mutant: the call site of `measureDeleteLegacyDurationFiles`.
+- Task 97, existing CI caching: MERGED to `main` at `56d268686a` on 2026-10-15 (policy `doc/decision/ci-caching.md`,
+  actionlint clean, the agent's cold and warm dispatch runs recorded there; I did not rerun them). Findings: the
+  `cargo-publish.yml` cache never hit (keys hashed `Cargo.lock`, which every version bump changes), now keyed with a
+  restore-key prefix, `target/` minus `target/package`, `ImageOS` in the key; the mise `cache: true` is inert (the
+  action saves it only with `install: true`, every workflow sets `install: false`), removed only in
+  `cargo-publish.yml`; pnpm store caches measured slower than no cache and reverted; `cli-git-native` is cached in
+  `final-newline.yml` and `npm-release.yml`. Unverified: the `npm-release.yml` version job, a PR restoring a
+  main-scoped entry, release-matrix caching. Repo cache usage went over the cap (11.1 to 11.3 GB). Follow-ups noted by
+  the agent, not done: remove the dead `cache: true` from `npm-release.yml`, `pnpr-publish.yml` and
+  `kotlin-linter-publish.yml`; `kotlin-linter-publish.yml` lacks `MISE_AUTO_INSTALL: false` (472 s install on
+  2026-08-16); `cargo-publish.yml` uses one concurrency group for all refs, so a branch dispatch can replace a pending
+  publish on main; `logger-fuzz.yml` fails its coverage gate (2026-09-24 and now). `cache-prune.yml` (daily, `actions:
+  write`, deletes superseded cache entries, keeps the newest per family per ref): the human approved it with the
+  music player families added, merged at `96728127aa`; its dispatch dry run (run `38676731033`) listed 24 entries in
+  11 families and would delete 0, so the DELETE call itself has still never executed (it runs on the first scheduled
+  run that finds a stale entry; check that run's log). Feature-branch entries of the Windows agent
+  (`mp-win-v1`, about 2.6 GB) count against the cap until that branch merges and its entries are deleted.
+- Task 95, Alpine, branch `feat/music-player-alpine`, worktree `music-player-alp`: the desktop app must run on Alpine
+  (musl, dynamic link expected because Slint loads libwayland and libxkbcommon at run time); the real-window proof uses
+  our own nested compositor `monochromatic-nested-wayland-session`, never sway or weston; if the compositor needs
+  changes they are made in `package/cli/nested-wayland-session` without a version bump. The human authorized
+  publishing that crate whenever needed: after verification bump its version (patch or minor as the agent reports),
+  run the cargo-publish workflow as a dry run first, then let the merge to main publish it.
+- Task 96, Windows linkers, branch `feat/music-player-windows-linkers`, worktree `music-player-win`: Windows MSVC
+  uses `link.exe` instead of `lld-link.exe`, plus a non-MSVC build for `x86_64-pc-windows-gnu`, a Windows CI workflow;
+  Linux stays on rust-lld because mold links ELF only (upstream README, mold 3.0.0, and
+  `doc/audit/tech-mold-linker-vet-2026-10-05.md`) and the human declined it on Linux; macOS keeps its linker.
+
+Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
+
+- The workflows of tasks 95 and 96 were told to cache properly and prove it; `doc/decision/ci-caching.md` binds them
+  to save only on main and dispatch, under 650 MB per entry, and to delete feature-branch entries after merge.
+- Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
+- Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
+
+Standing rulings of the human in this effort (2026-10-14 and 15): click rule D124; Search results select only D127; the
+desktop keeps an unreadable row selected D128; Search restyled within the decisions with no section labels and no
+recents, desktop parity D126; no scrollbar on the folders panel D125; the unplayable and analysis-failure reports are
+system notifications with no in-app fallback when one cannot be posted (D122, D123), and a later unread failure
+notification replaces the earlier; USB debugging on emulators is always allowed (skill rule EMA); the repo's own nested
+compositor is the only nested compositor; CI must cache; real releases are authorized, early and often (2026-10-15).
+Decision numbers D122 to D130 are taken; the next free one is D131.
 
 ### Open, not started
 
@@ -368,19 +498,43 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   2026-10-14 from `e02e74edec` (only the track menu image changed visibly and was replaced; the other seven differ by
   4 to 7 px row offsets and were kept; see `doc/handover/music-player-readme-and-gallery.md`). The ring capture
   emulator ran with `-no-window` on the host GPU, which the rule below bans.
-- Stale docs: none known. The README gallery and the Android page-control text were rewritten on 2026-10-13, and the
-  peak-sweep start path in `android-app/HANDOVER.peak-sweep-optimization.md` and
-  `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
+- Desktop folder names scrollbar removed (2026-10-14, D125, amends D22): the names list of the folder picker draws no
+  bar on either input; the track list, Search, Settings and the template editor keep theirs. Verified: two window tests
+  (both fail with the bar restored in a throwaway worktree), the whole nextest suite, clippy, `slint-viewer --check`,
+  and release builds of the old and the new commit in the nested compositor on an invented library of 61 folders in a
+  1000 by 800 and a 443 by 900 window (names unchanged in place, wheel offsets identical, track list bar kept). Not
+  verified: macOS, Windows, a real Plasma session, touch input on a real screen (only the window test sets it). Eight
+  committed desktop gallery images still show the old bar and are due a retake: `desktop-two-pane-light.png`,
+  `desktop-two-pane-dark.png`, `desktop-menu-light.png`, `desktop-menu-dark.png`, `desktop-hints-dark.png`,
+  `desktop-search-light.png`, `desktop-search-dark.png` and `desktop-narrow-folders-light.png` in
+  `package/music-player/asset/readme/`. The `desktop-settings-*` images, `desktop-narrow-player-dark.png` and
+  `desktop-empty-light.png` do not show it.
+- Stale docs: the gallery images in the bullet above; otherwise none known. The README gallery and the Android
+  page-control text were rewritten on 2026-10-13, and the peak-sweep start path in
+  `android-app/HANDOVER.peak-sweep-optimization.md` and `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
 - Hygiene: `~/temp/agent/agent-polish2/work/` and `~/temp/agent/agent-refresh-cost/lib-1m` (12 GB) hold scratch libraries
   that can be deleted. A failed decode is retried at every library change, one decode per failed file per change.
 - Rate limit: on 2026-10-12 the Sonnet weekly limit stopped five agents mid-run; a re-login lifted it and they were
   resumed. Their work is committed; check `git log` before relaunching anything.
-- Never verified: a real Plasma session, macOS, Windows, real Android hardware, Android API 33 to 36 for D107.
+- Never verified: a real Plasma session, macOS, Windows, real Android hardware, Android API 33 to 36 for D107 and for
+  the D123 failure notification (its device pass ran on the API 37 emulator only).
 
 ### Mistakes made in this effort, and what corrected them
 
 Read these before repeating them. Each one cost the human a correction.
 
+- The orchestrator merged the unplayable-file notification (D122) with a racy test helper:
+  `unplayable_notification_bus_support.rs` made its message iterator inside the service thread, so a `Notify` call that
+  came first on a loaded host was never delivered and `a_successful_post_leaves_the_warned_flag_clear` timed out after
+  3 s (it failed in 3 of about 8 runs; the agent had reported a 40 of 40 stress pass and one failure it called load).
+  A failure that shows up in more than one run is a defect to fix before merging, not load to note. Fixed on
+  2026-10-14 by making the iterator before the thread starts; three clean full runs followed.
+
+- The unplayable-notification run (2026-10-14) shipped a test that started a fake notification service after posting
+  the first report, so it raced the notifier thread; it passed in the suite and failed only as the baseline of the
+  mutation run (fixed in `95d573b836`: the fake service now refuses its first call on purpose). The docs commit
+  `2007ce0cb4` says its Containerfile note follows, but that change landed in `b21530ceae`; a corrective commit comment
+  was posted. Tests that wait for "something happens after X" need a deterministic signal, not an order of two threads.
 - The orchestrator told the human the desktop click rule already matched ("an unselected row is selected, the selected
   row toggles") after reading only `play_row` and the README, which say a click plays at once. The human pointed out the
   mismatch: `Command::SelectIndex` selects and pauses ("selecting never auto-plays") and `play_row` then sends Play, so
@@ -427,4 +581,27 @@ Read these before repeating them. Each one cost the human a correction.
 - [x] Package 1.
 - [x] Package 2.
 - [x] Packages 3 to 12 landed on `main`; device-only and live-desktop behaviours remain unexercised (see the handoff).
-- [ ] Release builds, signing and distribution are outside this plan and were not touched.
+- [x] Search page restyle on Android (D126, 2026-10-14, branch `feat/android-search-restyle`): canvas-tone header,
+  `outlineVariant` divider, 40 dp circle result glyphs with a rounded press and ring shape, the empty and no-result
+  states in a 72 dp circle lifted clear of the keyboard (`doc/planning/android-search-page-refresh.md`).
+- [x] Search page restyle on desktop (D126 addendum, 2026-10-14, branch `feat/desktop-search-restyle`): the same header,
+  divider, rounded rows with tonal circle glyphs and status block in Slint, thirteen window tests, and the two desktop
+  Search gallery images retaken.
+- [x] Search select only, unreadable rows and the Search caret (D127, D128 and a D126 note, 2026-10-14, branch
+  `feat/search-select-only`): a Search result for a track that is not current only selects it (both platforms), the
+  result of the current track toggles; desktop keeps an unreadable row selected like Android and a click retries it
+  (Next, Previous and the end of a track still skip unreadable files); the Android Search field keeps its caret at the
+  end of the kept query after a fold change and after `Ctrl+F`. The spoken action of a non-current result is now
+  "Select track" (D127, open to the human's veto).
+- [x] Auto-play on select setting (D129, 2026-10-14, branch `feat/auto-play-on-select`): a Settings switch row under a
+  Playback heading, off by default and stored with the session on both platforms; with it on, a click, tap, `Enter` or
+  Search result for a track that is not current also starts it, and the current track, the menu Play, the rails and
+  an unreadable row behave as before. One pure rule per platform (`rowActivationFor`, `row_activation_for`), mutation
+  checked; the desktop e2e suite gains the `auto-play` session (117 declared); the switch moves under the text in a
+  narrow list pane.
+- [x] Release workflow (2026-10-14, branch `feat/music-player-release-workflow`): `.github/workflows/music-player-release.yml`
+  builds the desktop app for Windows, macOS (Apple silicon) and Linux and the Android app and creates one pre-release,
+  triggered by a version change in `package/music-player/desktop-app/Cargo.toml` or by a dispatch
+  (`doc/decision/music-player-releases.md`, `doc/runbook/release-the-music-player.md`).
+  The Android version now derives from that manifest, and a release signing config reads `MUSIC_PLAYER_*` values.
+- [ ] The first real release is the human's call: it is immutable, and no Windows, macOS or real-device run exists.

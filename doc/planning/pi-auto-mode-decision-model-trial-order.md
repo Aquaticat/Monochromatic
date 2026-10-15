@@ -1,5 +1,15 @@
 # Decision-model trial priorities
 
+## Adopted direction
+
+The user subsequently excluded Perplexity and selected Luna on October 14,
+2026.
+The user then accepted a `0.80` operating cutoff to reduce manual judgment burden.
+The ranking retained in this document is historical;
+it does not authorize further Perplexity trials.
+The [current admission decision](../decision/pi-auto-mode-semantic-admission.md#current-luna-decision)
+governs implementation and Luna-specific verification.
+
 ## Purpose
 
 The user asked which other decision models to try on October 14,
@@ -7,6 +17,10 @@ The user asked which other decision models to try on October 14,
 This ranks experiments,
 not production technologies.
 No candidate is qualified to replace the incumbent under the unchanged semantic admission rule.
+The user's follow-up asking for the most promising model retained this ordering.
+The October 14 catalog recheck still lists Perplexity's 128-question and 262,144-token limits.
+Perplexity leads the next-trial recommendation;
+Luna has the strongest measured complete-input serving result among the tested new candidates.
 Provider-specific compatibility records retain the actual requests,
 authorizations,
 and results.

@@ -148,6 +148,9 @@ mod focus_tests;
 mod font_tests;
 /// Debug records of the moments a window frame passes through.
 mod frame_trace;
+/// Tree rows that git ignores draw their name at 0.8 opacity and nothing else of the row changes.
+#[cfg(test)]
+mod ignored_row_tests;
 /// Source selection and keyboard callbacks.
 mod input;
 /// Inspection-only hint and diagnostic injection from a JSON file;

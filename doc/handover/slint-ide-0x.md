@@ -381,6 +381,40 @@ the items after it are the record of 2026-10-05 and older.
     sidebar (18), theme (7), find (39) and annotation (65) guards, all status 0. Not guarded: the tab measuring pass
     (JetBrains Mono advances do not change with weight or italic, so no mutation can fail a test), and the contrast
     ratios of at least 6.6 were measured against assumed backgrounds. The installed binary is not changed.
+  - Ignored entries dimmed in the tree (branch `feat/ide-ignored-dim`, request of 2026-10-14: "Apply 0.8 opacity to text
+    for gitignored files/dirs"; the user chose the `ignore` crate 0.4.33, the only new package). Before, the tree
+    listed ignored entries at full ink (`Workspace::list` is a plain `read_dir`). The reader thread now decides the
+    ignored names beside each listing from `.gitignore` files (top of the work tree down), `info/exclude` and the
+    global excludes file, with git's precedence and the parent-directory rule (`src/git_ignore.rs`); the answer rides
+    the listing's single-use request, so a stale reply drops it. The name draws at 0.8 opacity (arrow and badge keep
+    full ink, as IntelliJ colors the name only), the row label gains `, ignored by git` (the compositor's `a11y`
+    serves names, not descriptions), and the watcher reports a folder whose `.gitignore` or `info/exclude` is written
+    in place. Measured contrast of the name's strongest pixel: dark 17.04 to 11.16, light 17.01 to 9.19, selected row
+    4.53 to 3.45 (3.92 tinted), which is under WCAG 2's 4.5 and over the 3:1 floor of the selected-ink rule; kept as
+    asked. Not done: git's index is not read, so a tracked file matching a pattern is dimmed (pinned by a test and
+    named in the README); `.git/info/exclude` and the global file are found by the safety sweep, not a watch;
+    the call that turns the changed-rules flag into a reread of every shown folder has no guard of its own, because
+    the safety sweep would also repair the rows within a second. `inspect:ignored-guards` removes 28 guards in a copy
+    and all failed as named.
+  - Language servers through mise (request of 2026-10-14: servers "to the repo's mise tools"). Fifteen servers are
+    declared in `mise.no-env.toml` (generated into `mise.toml`) and locked: taplo, tombi, marksman, rumdl,
+    markdown-oxide, zizmor, yaml-language-server, `@actions/languageserver`, `@ansible/ansible-language-server`,
+    `vscode-langservers-extracted` (json, css, html), superhtml, bash-language-server, the two Docker Node servers and
+    docker-language-server. Each answered `initialize` in the IDE's bubblewrap shape; hover works for all but zizmor
+    (diagnostics only); inlay hints are advertised by tombi, markdown-oxide, the Actions server and
+    docker-language-server, and none produced a hint on the fixture. Nine Node servers exited about 3 s after start
+    because `vscode-languageserver` 9.0.1 (`lib/node/main.js`) checks `process.kill(clientPid, 0)` every 3 s and the
+    client's pid is invisible in a pid namespace; they were added to `NO_PID_NAMESPACE` in
+    `src/language/confine/recipe.rs` (the network stays unshared; test
+    `node_servers_that_watch_the_client_run_without_a_pid_namespace_but_without_network` was seen failing without the
+    list). The desktop launcher's PATH is a stale systemd user session snapshot without the repo's tool directories,
+    and mise shims fail with "No version is set for shim" outside a mise tree. The user decided: "If mise is detected
+    in dir the IDE starts the servers themselves through mise exec. We need to be adaptable and not hardcode
+    anything." Queue: the branch `feat/ide-mise-servers` (agent in flight) implements the lookup through mise for a
+    project folder with a mise configuration, never auto installing or trusting, with PATH lookup as the fallback.
+    Open causes: taplo answered hover only after 10 s and tombi answered null at once on the TOML fixture (cause not
+    determined); `find_box_context_menu_runs_each_entry` failed once under load (left "needlex", right "x") and
+    passed alone and in a full rerun (cause not determined).
   - The IDE checks used compositor builds inside each worktree's `target` directory, which were 0.1.1 (no minimized
     launch) in the root checkout and four worktrees, so checks opened visible windows on the user's desktop. Those
     five binaries were replaced with the mise-installed 0.4.0, and the four `bin/inspect-*.mjs` scripts and the `native`

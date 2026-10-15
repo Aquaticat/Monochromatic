@@ -117,6 +117,8 @@ import dev.monochromatic.musicplayer.core.Session
 // import { PlaybackMode } from "./core/PlaybackMode";
 // ```
 import dev.monochromatic.musicplayer.core.PlaybackMode
+import dev.monochromatic.musicplayer.core.RowActivation
+import dev.monochromatic.musicplayer.core.rowActivationFor
 
 import dev.monochromatic.musicplayer.core.buildLibrary
 /** Stable page identity distinguishes duplicate displayed labels. */
@@ -883,12 +885,13 @@ class PlayerController(private val engine: AudioEngine) {
 
     // What:     `fun playIndex(index: Int) { ... }` declares a public method taking a
     //           load-order `Int` index, block body, `Unit` return.
-    // Why:      Load and play the track at load-order index `index` (a tap on a non-current
-    //           row).
+    // Why:      Load and play the track at load-order index `index` (the track menu's Play, and a tap on a
+    //           non-current row when Auto-play on select is on). An index past the library does nothing, so the
+    //           track that was current is not started by mistake.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // playIndex(index: number): void { this.queue.playIndex(index); this.playCurrent(); }
+    // playIndex(index: number): void { if (this.queue.playIndex(index) === null) return; this.playCurrent(); }
     // ```
     /**
      * Defines play index behavior for this music-player component; the TypeScript-oriented notes above explain
@@ -903,7 +906,9 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // this.queue.playIndex(index);
         // ```
-        queue.playIndex(index)
+        if (queue.playIndex(index) == null) {
+            return
+        }
         // What:     `playCurrent()` loads and plays the now-current track.
         // Why:      Start playback of the tapped track.
         //
@@ -912,6 +917,60 @@ class PlayerController(private val engine: AudioEngine) {
         // this.playCurrent();
         // ```
         playCurrent()
+    }
+
+    // What:     `fun selectIndex(index: Int) { ... }` declares a public method taking a load-order `Int` index,
+    //           block body, `Unit` return.
+    // Why:      Make the track at `index` the current one WITHOUT starting it (D124): pause whatever plays, point the
+    //           queue at the track, and load it paused so the deck shows it. An index past the library does nothing.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // selectIndex(index: number): void {
+    //   if (this.queue.playIndex(index) === null) return;
+    //   this.engine.pause(); this.loadedUri = this.uris[index]; this.engine.load(this.uris[index], false);
+    //   this.onTrackLoaded?.(this.uris[index]); this.refresh(true);
+    // }
+    // ```
+    /** Selects the track at [index] and loads it paused, stopping a playing track; an unknown index does nothing. */
+    fun selectIndex(index: Int) {
+        if (queue.playIndex(index) == null) {
+            return
+        }
+        engine.pause()
+        loadedUri = uris[index]
+        engine.load(uris[index], play = false)
+        onTrackLoaded?.invoke(uris[index])
+        refresh(followCurrent = true)
+    }
+
+    // What:     `fun activateRow(index: Int, autoPlayOnSelect: Boolean)` declares a public method taking a load-order
+    //           `Int` index and the Auto-play on select setting.
+    // Why:      The one rule for a tap, Enter or Search result on a track (D124, D127, D129): the current row toggles
+    //           play and pause through the same `togglePlay` as the deck's Play button, so a restored row that was
+    //           never loaded starts and a row whose load failed tries again; any other row is only selected and stays
+    //           paused, or is selected and started at once when Auto-play on select is on. `rowActivationFor` decides.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // activateRow(index: number, autoPlayOnSelect: boolean): void {
+    //   switch (rowActivationFor(autoPlayOnSelect, this.queue.currentIndex() === index)) {
+    //     case "togglePlay": this.togglePlay(); break;
+    //     case "selectAndPlay": this.playIndex(index); break;
+    //     case "selectOnly": this.selectIndex(index); break;
+    //   }
+    // }
+    // ```
+    /**
+     * Handles a tap, Enter or Search result on the row of [index]: toggles play on the current row, otherwise selects
+     * the row and also starts it when [autoPlayOnSelect] is on.
+     */
+    fun activateRow(index: Int, autoPlayOnSelect: Boolean) {
+        when (rowActivationFor(autoPlayOnSelect = autoPlayOnSelect, isCurrent = queue.currentIndex() == index)) {
+            RowActivation.TOGGLE_PLAY -> togglePlay()
+            RowActivation.SELECT_AND_PLAY -> playIndex(index)
+            RowActivation.SELECT_ONLY -> selectIndex(index)
+        }
     }
 
     // What:     `fun seekToScopeIndex(scopeIndex: Int, positionSec: Double = 0.0) { ... }`

@@ -3,6 +3,9 @@ import {
   types
 } from 'node:util';
 import {SourceCollectionError} from '../collector.mjs';
+import {publishSystemToolInput} from './system-tool-publication.ts';
+import {copyMessageData} from '../run-prompt-custody/messages.mjs';
+import {tagged} from '@monochromatic-dev/module-logger/ts';
 
 // This index holds aliases of existing source capabilities, never another source/content inventory.
 const aliases=new WeakMap();
@@ -392,7 +395,10 @@ function createMessagePublication({
 }
 
 /** Original loaded values retain input identity only; no text-part or payload capability is issued. */
-export function createInputOnlyPublication(source){
+export function createInputOnlyPublication(
+  source,
+  systemInput
+){
  const publication=createMessagePublication({
    source,
    input:{},
@@ -400,7 +406,17 @@ export function createInputOnlyPublication(source){
  });
  return Object.freeze({
    view:publication.view,
-   capture:publication.captureInput
+   capture(value){
+    publication.captureInput(value);
+    if(systemInput)publishSystemToolInput({
+      aliases,
+      publication:publication.view,
+      message:systemInput.message,
+      expected:systemInput.expected,
+      copyInput:copyMessageData,
+      InputError:SourceCollectionError
+    });
+   }
  });
 }
 
@@ -563,7 +579,8 @@ export function readOriginalMessagePublication(value){
    'custom',
    'entry',
    'llm',
-   'input-only'
+   'input-only',
+   'system-input'
  ].includes(known.kind)?known.owner
    .view:undefined;
 }
@@ -572,6 +589,48 @@ export function readOriginalMessagePublication(value){
 export function readHandlerPayloadPublication(value){
  const known=aliases.get(value);
  return (known?.kind==='payload')
+   &&known.owner
+   .current(value)?known.owner
+     .view:undefined;
+}
+
+/** Original tool declarations retain existing source membership only while their native input remains current. */
+export function readOriginalToolPublication(value){
+ const known=aliases.get(value);
+ return (known?.kind==='tool-declaration')
+   &&known.owner
+   .current(value)?known.owner
+     .view:undefined;
+}
+
+/** Original serializer values are captured before callbacks; unsupported native data retains its failure. */
+export function snapshotOriginalToolEmission({
+  tool,
+  converted
+}){
+ const l=tagged({tag:'auto-mode-handler-publication'});
+ const fl=tagged({
+   tag:snapshotOriginalToolEmission.name,
+   l
+ });
+ fl.debug('capturing original converted tool data before payload callbacks');
+ try{return Object.freeze({
+   tool,
+   value:copyMessageData(converted)
+ });}
+ catch(error){
+  fl.debug(String(error));
+  return Object.freeze({
+    tool,
+    error
+  });
+ }
+}
+
+/** Original system fields retain captured input membership only while the native message remains current. */
+export function readOriginalSystemPublication(value){
+ const known=aliases.get(value);
+ return (known?.kind==='system-input')
    &&known.owner
    .current(value)?known.owner
      .view:undefined;

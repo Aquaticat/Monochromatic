@@ -2,6 +2,8 @@
 
 /// Parent-owned cache state and request tokens share one lifecycle boundary.
 use super::{DirectoryRequest, FileTree};
+/// What the rule files said about the snapshot is accepted or dropped together with it.
+use crate::git_ignore::IgnoreAnswer;
 /// Completed requests carry the reader's original ordered snapshot or failure.
 use crate::workspace::DirectoryEntry;
 /// Request failures identify the directory;
@@ -77,10 +79,24 @@ impl FileTree {
 
     /// Accept a current reply once;
     ///  stale success and failure replies both return false without side effects.
+    /// The snapshot has no ignored entries,
+    ///  as before an answer exists.
     pub fn complete_listing(
         &mut self,
         request: &DirectoryRequest,
         result: Result<Vec<DirectoryEntry>>,
+    ) -> Result<bool> {
+        return self.complete_listing_with(request, result, IgnoreAnswer::default());
+    }
+
+    /// Accept a current reply once,
+    ///  with the answer of the rule files for its entries;
+    ///  a stale reply drops the answer with the snapshot.
+    pub fn complete_listing_with(
+        &mut self,
+        request: &DirectoryRequest,
+        result: Result<Vec<DirectoryEntry>>,
+        answer: IgnoreAnswer,
     ) -> Result<bool> {
         // What: Arc::ptr_eq compares allocation identity, unlike equality of the contained path bytes.
         // Why: Reissued reads and tokens from another tree cannot overwrite the current request's snapshot.
@@ -113,7 +129,7 @@ impl FileTree {
         // this.applyListing(request.path, unwrapResult(result));
         // return true;
         // ```
-        self.apply_listing(request.path(), result?)?;
+        self.apply_listing_with(request.path(), result?, answer)?;
         // The validated snapshot was installed exactly once.
         return Ok(true);
     }

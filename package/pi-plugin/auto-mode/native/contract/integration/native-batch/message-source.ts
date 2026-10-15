@@ -147,16 +147,50 @@ export function handlerProviderSource({
    to: after
  });
  /**
-  The serializer binds its payload to the original model and transcript before user callbacks.
+  The original system renderer identifies its exact input, text, and emitted message before callbacks.
+  */
+ const systemMessages=replaceOnce({
+   source:messages,
+   from:'                params.push({ role: instructionRole, content: sanitizeSurrogates(text) });',
+   to:'                const systemMessage = {role:instructionRole,content:sanitizeSurrogates(text)};\n                nativeSystemPayloads.set(systemMessage,Object.freeze({messages:context.messages,normalizedMessages:normalizedContext.messages,transformedMessages,message:msg,text,role:instructionRole,ordinal:i}));\n                params.push(systemMessage);'
+ });
+ /**
+  Tool serialization retains the exact declaration objects selected by the native transcript resolver.
+  */
+ const toolDeclarations=replaceOnce({
+   source:systemMessages,
+   from:'        params.tools = convertTools(transcriptTools.requestTools, compat);',
+   to:'        params.tools = convertTools(transcriptTools.requestTools, compat);\n        nativeToolPayloads.set(params.tools,Object.freeze({messages:context.messages,tools:transcriptTools.requestTools}));'
+ });
+ /**
+  The original tool map retains each callback's exact input and emitted output.
+  */
+ const toolOutputStart=replaceOnce({
+   source:toolDeclarations,
+   from:'function convertTools(tools, compat) {\n    return tools.map((tool) => {',
+   to:'function convertTools(tools, compat) {\n    return tools.map((tool) => {\n        const converted = (() => {'
+ });
+ /**
+  Each original map callback binds its declaration directly to the value it actually returns.
+  */
+ const toolOutputs=replaceOnce({
+   source:toolOutputStart,
+   from:'                ...(compat.supportsStrictMode !== false && { strict: strict ?? false }),\n            },\n        };\n    });\n}',
+   to:'                ...(compat.supportsStrictMode !== false && { strict: strict ?? false }),\n            },\n        };\n        })();\n        nativeToolPayloads.set(converted,snapshotOriginalToolEmission({tool,converted}));\n        return converted;\n    });\n}'
+ });
+ /**
+  The complete payload observation follows all original member emissions.
   */
  const observed=replaceOnce({
-   source:messages,
+   source:toolOutputs,
    from:'            const nextParams = await options?.onPayload?.(params, model);',
-   to:'            nativeSerializedPayloads.set(params,Object.freeze({model,messages:context.messages}));\n            const nextParams = await options?.onPayload?.(params, model);'
+   to:'            nativeSerializedPayloads.set(params,Object.freeze({model,modelId:model.id,messages:context.messages,normalizedMessages:normalizedContext.messages,messageCount:params.messages.length,toolCount:params.tools?.length??0}));\n            const nextParams = await options?.onPayload?.(params, model);'
  });
- return `import {recordHandlerPayload} from ${JSON.stringify(publicationUrl)};\n`
-  +`const nativeSerializedPayloads=new WeakMap();\n`
-   +`export function readNativeSerializedPayload(payload){return nativeSerializedPayloads.get(payload);}\n${observed}`;
+ return `import {recordHandlerPayload,snapshotOriginalToolEmission} from ${JSON.stringify(publicationUrl)};\n`
+  +`const nativeSerializedPayloads=new WeakMap(),nativeSystemPayloads=new WeakMap(),nativeToolPayloads=new WeakMap();\n`
+   +`export function readNativeSerializedPayload(payload){return nativeSerializedPayloads.get(payload);}\n`
+   +`export function readNativeSystemPayload(payload){return nativeSystemPayloads.get(payload);}\n`
+   +`export function readNativeToolPayload(payload){return nativeToolPayloads.get(payload);}\n${observed}`;
 }
 
 //endregion Provider serialization binds the exact native payload to its original context

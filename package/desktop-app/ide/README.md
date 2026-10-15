@@ -213,6 +213,146 @@ and each keyboard-focus mark in a disposable copy
 and checks that its named test fails.
 The divider's accessible slider is tested under [Accessibility checks](#accessibility-checks).
 
+## Entries that git ignores
+
+The tree lists every entry of a folder, hidden names and ignored ones included, as `Workspace::list` reads them.
+Before this change an ignored entry looked like any other
+(measured on 2026-10-14 with the release bundle on a disposable repository:
+`app.log`, `build`, `old.bak`, `private.txt`, and a nested `scratch.tmp` were all drawn in the full ink).
+The name of an entry that git would ignore is now drawn at 0.8 opacity of its ink,
+in both color schemes.
+The user asked for the text only:
+the disclosure arrow and the slot badge keep the full ink,
+and the row's layout, weight, and size do not change.
+IntelliJ colors the name text of such an entry and leaves its icon alone
+(`NodeRenderer.customizeLegacyRenderer` in `platform/platform-api/src/com/intellij/ide/util/treeView/NodeRenderer.java`
+takes the descriptor's color for the text attributes and the presentation's icon unchanged),
+which is what the arrow and the badge do here.
+
+A second signal does not depend on color or opacity:
+the row's accessible label is the name followed by `, ignored by git`,
+so a screen reader says it,
+and the accessibility tree the nested compositor serves (`a11y`) lists `app.log, ignored by git`.
+The row's description is unchanged (`Directory`, or `Source file` with the shortcut of its slot badge).
+
+### How an entry is judged
+
+The `ignore` crate (ripgrep's, 0.4.33, used for its `gitignore` module only) compiles each rule file;
+`src/git_ignore.rs` applies them in git's order.
+No git process runs and git's index is not read.
+For a listed directory the reader thread (`DirectoryWorker`) decides, beside the read,
+which entries are ignored and sends the names with the listing,
+so the tree installs the answer with the listing it describes
+and a superseded reply is dropped with its answer by the same single-use request.
+The window thread only compares and draws rows.
+
+- The work tree is the nearest folder at or above the listed one that holds `.git`, a folder or a file.
+  Outside any work tree nothing is dimmed, and the reason is logged once at info level.
+  A `.git` file (linked work tree or submodule) names its git directory with a `gitdir:` line,
+  and a `commondir` file there names the directory that holds `info/exclude`.
+- `.gitignore` files apply from the top of the work tree down to the listed folder,
+  the deepest first,
+  then `info/exclude` of the common git directory,
+  then the global excludes file (`core.excludesFile` of the user's git configuration,
+  else `$XDG_CONFIG_HOME/git/ignore`);
+  the first file that matches decides,
+  a negation included,
+  and inside one file the last matching line decides.
+  A nested repository starts its own rules.
+- An ignored directory ignores everything inside it,
+  whatever a deeper rule says:
+  `build/` with `!build/keep.txt` leaves `build/keep.txt` ignored.
+  A directory pattern (`build/`) does not match a file or a symbolic link of that name.
+  The directory row dims too.
+- `.ignore` and `.rgignore` are not read:
+  they are ripgrep's rules, and the tree follows git.
+
+Compiled rule files are kept until their stamp (inode, length, modification time) changes,
+and each listing stats the rule files that apply to it:
+one `.gitignore` per level from the top of the work tree down, `info/exclude`, and the global file.
+Matching costs about 3 microseconds per entry for four levels of twelve patterns
+(debug build, `test:ignored`: 60 ms for a directory at the 20,000 entry limit).
+A directory with more entries than that shows nothing dimmed and the reason is logged,
+so one huge folder cannot hold the single reader.
+
+### Refresh
+
+A folder's listing is read again when something in it changes name;
+a `.gitignore` edited in place changes no name,
+so the change watcher also reports a watched folder when a `.gitignore` in it,
+or `info/exclude` inside a shown `.git` folder,
+is written (`src/change_watch/record.rs`).
+A listing whose own `.gitignore` stamp,
+or whose work tree's `info/exclude` or global file stamp,
+differs from the previous listing's marks the tree,
+and the tick then reads every shown folder again,
+because a changed rule can change the rows of any folder below it and nothing notifies those folders.
+A `.gitignore` above the project folder,
+`info/exclude` of a work tree whose `.git` folder is not shown,
+and the global file are not watched:
+the one-second safety sweep of [Change watching](#recovery-and-timers) finds them.
+Measured on 2026-10-14 with the release bundle in the nested compositor,
+from the write of a rule file to the label in the accessibility tree
+(each polled every 20 ms, so about 45 ms of every figure is the tree read itself; six edits each way per source):
+a `.gitignore` of a shown folder took 49 to 120 ms,
+`.git/info/exclude` 48 to 973 ms,
+and the global excludes file 53 to 945 ms,
+the last two being the safety sweep's phase.
+A `.gitignore` edit that changed a row of an open folder inside it took 20 ms more to show in the same pass.
+Twelve expanded folders in a work tree cost the idle IDE 0.05 to 0.06 s of CPU in 30 s,
+against 0.06 to 0.08 s for the build before this change (three runs each; the clock ticks at 0.01 s).
+
+### Limits
+
+- Git's index is not read, so a tracked file that matches a pattern is dimmed,
+  where `git check-ignore` reports it as not ignored.
+  This is deliberate: telling tracked files needs the index or a git process,
+  and the user chose the `ignore` crate.
+  `a_file_that_matches_a_pattern_is_ignored_whether_or_not_git_tracks_it` pins the behavior.
+- Only the rule sources named above are read.
+  Case-insensitive matching (`core.ignorecase`),
+  `core.excludesFile` set only in a repository's own configuration,
+  and `include` and `includeIf` sections of the configuration are not followed;
+  with `GIT_CONFIG_GLOBAL` set, the crate still falls back to the home configuration
+  when the named file sets no excludes file,
+  where git would not.
+- A symbolic link to a directory is a file for directory patterns, as in git.
+- Rules are judged from the files as they are on disk:
+  an unreadable `.gitignore` counts as empty,
+  and invalid lines are skipped with a warning in the log.
+
+### Checks
+
+`test:ignored` runs the matcher tests (patterns, negation, anchoring, nested files, ignored directories,
+`info/exclude`, the global file, linked work trees, the top of the work tree, nested repositories,
+the entry limit, and the tracked file),
+the tree tests (marks per directory, the stale-answer drop, the reread flag),
+the reader tests,
+and the rule-file notification test,
+and prints the matching time.
+`test:native` renders the rows in both schemes and measures the name's contrast,
+checks the model flag and the accessible label through element handles,
+and rewrites a `.gitignore` under a running window.
+`inspect:ignored-guards` removes each guard in a disposable copy and requires the named test to fail.
+
+Contrast of the name's strongest glyph pixel against its row fill,
+measured on rendered frames in `ignored_names_are_drawn_at_eighty_percent_with_measured_contrast`
+(plain name, then the same name ignored):
+
+- Dark scheme: 17.04:1 to 11.16:1;
+  with the pointer over the ignored row 17.04:1 to 9.38:1 (the fill becomes `#2D2D2D`);
+  with keyboard focus on it the same 9.38:1.
+- Light scheme: 17.01:1 to 9.19:1;
+  with the pointer over the ignored row 17.01:1 to 8.46:1;
+  with keyboard focus the same 8.46:1.
+- Selected row, both schemes: white on `#0078D4` 4.53:1 to 3.45:1;
+  under the pointer or keyboard focus (fill `#006EC3`) 4.53:1 to 3.92:1.
+  The ignored selected name stays above the 3:1 floor of the selected-ink rule
+  and falls below the 4.5:1 of WCAG 2 for normal text,
+  which a plain selected row reaches at 4.53:1.
+  The user asked for 0.8 opacity, so it is kept on selected rows too;
+  the row's label still says `ignored by git`.
+
 ## Combined search
 
 Double-Shift opens transient search.
@@ -663,7 +803,8 @@ so a row is looked up again after the list changes.
   In every list exactly one element carries a row's name,
   and only the location list carries its title;
   a tree row's description is `Directory`,
-  or `Source file` followed by the shortcut of its slot badge.
+  or `Source file` followed by the shortcut of its slot badge,
+  and the label of an entry that git ignores ends with `, ignored by git`.
 
 Each test has a guard-removal control,
 run in a disposable copy,
@@ -747,8 +888,20 @@ The latest set pushed during the hold is shown when the hold ends,
 unless a set with the current version arrived first;
 a set naming a line the text does not have is discarded.
 
-The TypeScript family uses the project's own TypeScript 7 server (`node_modules/typescript/bin/tsc --lsp --stdio`);
-a project without it shows the missing-executable state.
+The TypeScript family uses the project's own TypeScript 7 server (`node_modules/typescript/bin/tsc --lsp --stdio`).
+The launcher is looked up for the displayed file,
+from the file's folder up to the project root,
+and the nearest `node_modules/typescript` decides,
+as Node and TypeScript resolve a package;
+a pnpm monorepo opened at its root, or a home folder opened as the project,
+therefore uses the install at the repository root.
+An install older than version 7 is reported as such and never skipped for a farther one.
+An install above the project root is never used,
+because the project root bounds what runs;
+the reason names it and says to open the folder that holds it as the project.
+The registry is built again when the launcher found for a file differs from the one it holds,
+and `Languages::refresh` is given the file for that.
+A project without any usable install shows the missing-executable state.
 Server-initiated workspace edits are refused.
 Every server launch passes through one launch policy in `src/language/launch.rs`.
 The default,
@@ -885,7 +1038,9 @@ Ctrl+click goes to the definition of the character under the pointer.
 Ctrl+Q shows hover information for the caret,
 and a pointer resting 350 ms on one character shows it for that character.
 Nothing of this is visible until it is used:
-there is no status bar and no language indicator.
+there is no status bar and no language indicator,
+except the one entry that says why a file has no language support
+([Why a feature is missing](#why-a-feature-is-missing)).
 
 ### Definitions and references
 
@@ -970,8 +1125,9 @@ Notes are declared as an assertive live region and hover content as a polite one
 announcement by a screen reader was not tested.
 A note closes like hover content,
 and a new action replaces it.
-A resting pointer never shows a note;
-its failures are only logged.
+A resting pointer shows a note only when the file's language support itself is missing or failing,
+and then once for each displayed file ([Why a feature is missing](#why-a-feature-is-missing));
+every other failure of a resting pointer is only logged.
 
 Each note names the reason and the remedy:
 
@@ -1018,6 +1174,99 @@ or an outside-project file without a ready server,
 and no server is ready,
 an explicit action first displays the file to the worker again,
 so the remedy "press Ctrl+B again" works without switching files.
+
+### Why a feature is missing
+
+Before 2026-10-14 a file whose server was missing, failing, or without hover or inlay hints looked like a file
+where the features were broken:
+a resting pointer logged every failure and nothing on screen mentioned hints at all.
+Measured with the installed build on a disposable copy of the repository,
+opening the TypeScript package folder, or a folder above the repository, as the project showed no hint
+and no hover for `index.unit.test.ts`,
+and left no `language` folder in the cache, the same as the user's real `~/.cache/monochromatic-ide`,
+while opening the repository root showed both.
+The reasons are now on screen in two places.
+
+The entry:
+the Language module adds one `Information` entry named `language support` to the displayed file's diagnostics
+(`src/language/notice.rs`, joined to the snapshot in `Worker::publish`),
+so the source view draws it as message rows over line 1 with the gutter letter `I`,
+for example `Information (language support): Hover, inlay hints, and go to definition are not available for this file.`
+Its range is empty at the first character, so no text is underlined.
+It is made from the status the window already polls and says what is lost,
+the server, the cause, and the remedy:
+
+- no server runs and none is starting:
+  that hover, inlay hints, and go to definition are not available,
+  then one line for each server naming its state:
+  a program not found (`the program 'taplo' for taplo was not found on PATH`),
+  the TypeScript install that was not found and where it was looked for,
+  a launch the confinement refused with its cause,
+  a start that failed,
+  a server that stopped,
+  one that cannot follow the file,
+  or one that would be rooted outside the project;
+  and, when displaying the file again can help,
+  that servers are looked up again when a file is displayed;
+- a server runs but offers no hover or no inlay hints:
+  `Inlay hints are not offered by slint-lsp, so none are shown.`
+  `slint-lsp` and `qmlls` both announce no inlay hints on this host;
+- a server runs and a request failed:
+  `The inlay hint request to typescript-native failed: the server answered with error -32603: ...`,
+  or `the server did not answer in time` after the retries the worker makes on its own.
+  The failure is kept for that server process until a later answer clears it.
+
+Nothing is drawn while a server is still starting,
+for a file without a recognized language or without a configured server,
+for a file outside the project,
+or when every feature works.
+The entry stands on line 1 and leaves the view with it when the file is scrolled.
+
+The resting pointer:
+the first rest on a displayed file whose answer is about the support itself,
+a failed request, a server that cannot follow the file, a feature the server does not offer,
+or no running server for a file that has servers configured,
+shows the same note Ctrl+Q shows, drawn as a note and ended like hover content.
+Each displayed file gets it once.
+An empty answer, a request the server set aside, and a server that is still starting stay silent,
+because they describe one position or one moment.
+Decided on 2026-10-14: the entry is the permanent surface and the pointer note is the pointer's answer,
+so a user who scrolled away from line 1 still learns why.
+
+A failed start states what the server wrote:
+`the server process ended before it finished starting` was all the window said,
+and the cause was in the log.
+The last four standard-error lines, each cut to 200 bytes, now follow the reason on lines of their own,
+once the server's standard error ended or the settle time of the log record passed (`Internal::EndCause`);
+the start deadline carries the lines directly.
+The log record of the ended server is unchanged because the hand-over reads a copy of the kept lines.
+For `rust-analyzer` on this host the lines read `info: falling back to ".../mise/shims/rust-analyzer"`
+and `error: infinite recursion detected`
+(`doc/troubleshooting/rustup-proxy-mise-shim-rust-analyzer-recursion.md`).
+
+Causes outside the IDE that the entry now names:
+a language server that is not installed,
+a project without TypeScript 7 in the project folder or below it,
+and a server version that does not announce the feature.
+Installing the server or the project's dependencies, then displaying the file again, ends the first two;
+the third is the server's own capability.
+
+Checks:
+`src/language/notice_tests.rs` holds the wording of every state without a server,
+`tests/language/notice.rs` the entry through the worker and the scripted server
+(`IDE_SCRIPTED_FEATURES=hover` for a server without hints, the hint step `error`, `IDE_SCRIPTED_HOVER=silent`),
+`tests/language/quiet.rs` the cause of a failed start,
+`src/language/config_tests.rs` the TypeScript lookup,
+and `native::language::hover_tests::resting_pointer_explains_a_missing_server_once_for_each_file` the pointer.
+`inspect:language-guards` removes the lookup from the file's folder, the nearest-install rule,
+the rebuild when the launcher moves, the publishing of the entry, its wait for a starting server,
+the kept hint failure, the copy of the lines for a failed start, and their arrival in the reason
+(`typescript-document-folder`, `typescript-nearest-install`, `typescript-launcher-moved`,
+`notice-published`, `notice-waits-for-start`, `hint-failure-kept`,
+`cause-hand-over-copies`, `cause-reaches-reason`),
+and `inspect:language-navigation-guards` the pointer note and its once-per-file rule
+(`pointer-explains-support-problem`, `pointer-explains-once`),
+each observed failing with the named test.
 
 ### Stale results
 
@@ -2337,8 +2586,10 @@ by `selected_rows_use_the_ink_chosen_from_the_fill_with_measured_contrast`:
   the location list's label and detail,
   and both lines of a search result,
   whether or not the list has keyboard focus.
-  No part of a selected row is dimmed:
-  all of it uses the one ink at full opacity.
+  No part of a selected row is dimmed,
+  except the name of an ignored entry,
+  which is drawn at 0.8 opacity (see [Entries that git ignores](#entries-that-git-ignores)):
+  everything else of a selected row uses the one ink at full opacity.
 - A selected tree row under the pointer or with keyboard focus is tinted.
   The tint is the opposite of the ink,
   black under white ink,
@@ -3241,7 +3492,9 @@ the start-deadline error is followed by the warning
 `language server wrote this to standard error before it was stopped`
 with the lines so far, and only when there are some.
 A clean shutdown, and a server the worker stops for any other reason, log nothing more.
-The lines appear only in the log, never in a note in the window.
+The log keeps all of them;
+the window shows the last four of a failed start, each cut to 200 bytes, in the reason of that start
+([Why a feature is missing](#why-a-feature-is-missing)).
 `helix-lsp` names a line's server by its configured name only, so two processes of one name share a tail;
 lines a process writes after its lines were reported, or after the worker stopped it,
 are dropped until its standard error ends, so they are never reported as a later process's words.

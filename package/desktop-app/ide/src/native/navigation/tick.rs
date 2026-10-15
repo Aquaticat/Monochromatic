@@ -19,6 +19,13 @@ fn directory_reply(navigation: &mut Navigation) -> bool {
     let was_busy = navigation.reader.is_busy();
     match navigation.reader.poll(&mut navigation.tree) {
         Ok(changed) => {
+            // A changed `.gitignore` or exclude file can change the rows of every directory below it,
+            // and nothing notifies those directories, so they are all listed again;
+            // each listing decides its own ignored entries.
+            if navigation.tree.take_ignore_sources_changed() {
+                tracing::debug!("ignore rules changed; listing every shown directory again");
+                navigation.directories.changed_all(&navigation.shown);
+            }
             if was_busy && !navigation.reader.is_busy() {
                 let completed = navigation.reading.take();
                 if changed

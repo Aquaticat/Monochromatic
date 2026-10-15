@@ -23,7 +23,7 @@ import {
 /**
  Supported meaning labels do not represent final policy verdicts.
  */
-export type ClauseRelation = 'permission' | 'prohibition' | 'prerequisite' | 'none' | 'unsupported' | 'unknown';
+export type ClauseRelation = 'permission' | 'prohibition' | 'prerequisite' | 'fresh-session-approval' | 'none' | 'unsupported' | 'unknown';
 
 /**
  Supported clause meanings remain separate from final policy verdicts.
@@ -32,6 +32,7 @@ export const CLAUSE_RELATIONS: readonly ClauseRelation[] = Object.freeze([
   'permission',
   'prohibition',
   'prerequisite',
+  'fresh-session-approval',
   'none',
   'unsupported',
   'unknown',
@@ -149,7 +150,8 @@ export function lowerEstablishedClause(input: unknown,): LoweredClause {
   if (Object.hasOwn(
     value,
     'authorization',
-  ) && (relation !== 'prerequisite'))
+  ) && (relation !== 'prerequisite')
+    && (relation !== 'fresh-session-approval'))
     throw new InstructionResolutionInputError('Authorization facts belong only to an established prerequisite',);
   /**
    Each invocation owns its output arrays independently of submitted records.
@@ -201,7 +203,7 @@ export function lowerEstablishedClause(input: unknown,): LoweredClause {
     },);
   }
   // A new meaning label must get its own lowering branch instead of falling into prerequisite handling.
-  rl.debug(`validating remaining ${relation satisfies 'prerequisite'} facts`,);
+  rl.debug(`validating remaining ${relation satisfies 'prerequisite' | 'fresh-session-approval'} facts`,);
   /**
    Missing facts remain unresolved; explicit invalid values are not treated as absence.
    */

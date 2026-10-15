@@ -3,10 +3,19 @@
 
  @module
  */
-import type { AgentSession, CreateAgentSessionResult, SessionManager } from '@earendil-works/pi-coding-agent';
-import type { RootSessionLifecycle, RootSessionScope } from '../../integration/native-batch/session-root-types.ts';
+import type {
+  AgentSession,
+  CreateAgentSessionResult,
+  SessionManager
+} from '@earendil-works/pi-coding-agent';
+import type {
+  RootSessionLifecycle,
+  RootSessionScope
+} from '../../integration/native-batch/session-root-types.ts';
 
-/** Bootstrap supplies the actual SDK result validator and original native readers. */
+/**
+ Bootstrap supplies the actual SDK result validator and original native readers.
+ */
 export type FactoryScopeDefinition = {
   readonly lifecycle: RootSessionLifecycle;
   readonly readManager: (session: AgentSession) => SessionManager;
@@ -15,18 +24,24 @@ export type FactoryScopeDefinition = {
   readonly disposeSession: (session: AgentSession) => void;
 };
 
-/** Construction may attach to an already owned replacement transition. */
+/**
+ Construction may attach to an already owned replacement transition.
+ */
 export type FactoryScopeInput = {
   readonly manager: SessionManager;
   readonly transition?: object;
 };
 
-/** Failed cleanup blocks new construction until every retained obligation completes. */
+/**
+ Failed cleanup blocks new construction until every retained obligation completes.
+ */
 export type FactoryScopes = {
   readonly begin: (input: FactoryScopeInput) => RootSessionScope;
   readonly retryCleanup: () => void;
   readonly diagnostics: () => { readonly pendingCleanup: number };
 };
 
-/** Synchronous callbacks share one factory-wide reentrancy boundary. */
+/**
+ Synchronous callbacks share one factory-wide reentrancy boundary.
+ */
 export type FactoryExclusive = <Result>(body: () => Result) => Result;

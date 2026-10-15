@@ -3,6 +3,7 @@
 
  @module
  */
+import type { RequestSourceDerivation } from './request-source-derivation-types.ts';
 
 //region Original input and publication identities are not authority declarations
 
@@ -18,6 +19,10 @@ export type ContributionSource = {
    Original emitting run when this input was produced by a run.
    */
   readonly runOccurrence?: object;
+  /**
+   Original session input occurrence retained by the manager publication.
+   */
+  readonly sessionInputOccurrence?: object;
   /**
    Original builder render when this input was generated.
    */
@@ -40,6 +45,10 @@ export type ContributionSource = {
  */
 export type ContributionPublication = {
   /**
+   Original manager input whose declaration objects this publication retains.
+   */
+  readonly sessionInputOccurrence?: object;
+  /**
    Source occurrence authenticated by message publication.
    */
   readonly sourceOccurrence?: object;
@@ -57,6 +66,10 @@ export type ContributionPublication = {
  Original same-root historical message origin, not active run ancestry.
  */
 export type RetainedContributionOrigin = {
+  /**
+   Original manager input identity remains separate from active run ancestry.
+   */
+  readonly sessionInputOccurrence?: object;
   /**
    Original input reference.
    */
@@ -180,6 +193,14 @@ export type ContributionRunCarrier = {
  */
 export type SourceContributionAssociation = {
   /**
+   Original manager system publication authenticated at native serialization.
+   */
+  readonly systemInputPublication?: ContributionPublication;
+  /**
+   Original manager declaration publication authenticated at native serialization.
+   */
+  readonly toolPublication?: ContributionPublication;
+  /**
    Original source input reference.
    */
   readonly source: ContributionSource;
@@ -251,6 +272,14 @@ export type SourceContribution = {
  Original request receipt exposes its owner's contribution list.
  */
 export type ContributionRequestObservation = {
+  /**
+   Complete native field derivation is separate from partial contribution records.
+   */
+  readonly sourceDerivation?: RequestSourceDerivation;
+  /**
+   Unsupported native request fields retain their original diagnostic.
+   */
+  readonly sourceDerivationFailure?: string;
   /**
    Original serialized request occurrence.
    */

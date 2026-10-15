@@ -64,7 +64,7 @@ assert.equal(
 );
 factory.lifecycle
   .completeRetirement(transition);
-assert.throws(function inspectRetiredLease() { return (factory.lifecycle
+assert.throws(function inspectRetiredLease() { ; (factory.lifecycle
   .assertActive(oldLease)); });
 manager.newSession();
 const second=await factory.createFromManager({
@@ -98,7 +98,7 @@ const disposalFailure=new Error('Fixture disposal has not completed');
 second.session
   ._disconnectFromAgent=function failIncompleteDisposal() {throw disposalFailure;};
 assert.throws(
-  function disposeIncompleteSession() { return (second.session
+  function disposeIncompleteSession() { ; (second.session
     .dispose()); },
   function matchesDisposalFailure(error) { return (error===disposalFailure); }
 );
@@ -136,7 +136,7 @@ assert.equal(
 );
 second.session
   ._disconnectFromAgent=function rejectRepeatedCleanup() {throw new Error('Completed disposal must not enter old cleanup again');};
-assert.doesNotThrow(function repeatCompletedDisposal() { return (second.session
+assert.doesNotThrow(function repeatCompletedDisposal() { ; (second.session
   .dispose()); });
 assert.throws(
   function attachObserverAfterOldDisposal() { return (attachNativeContextCopies(

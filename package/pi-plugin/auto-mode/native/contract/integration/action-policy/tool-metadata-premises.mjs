@@ -1,14 +1,17 @@
 import {PolicyInputBindingError} from './inputs.mjs';
 
 /** Decode only the original collector's companion metadata, never the serialized model request. */
-function readGaps(source){
- let metadata;
- try{metadata=JSON.parse(source.inputLocation
+function readMetadata(source){
+ try{return JSON.parse(source.inputLocation
    .metadataJSON);}
  catch(error){throw new PolicyInputBindingError(
    'Original tool declaration source metadata cannot be decoded',
    {cause:error}
  );}
+}
+/** Validate captured metadata gaps before they become original source obligations. */
+function readGaps(source){
+ const metadata=readMetadata(source);
  if((!metadata)||Array.isArray(metadata)
    ||(![
      'constructor',

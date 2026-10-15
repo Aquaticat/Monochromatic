@@ -7,6 +7,7 @@ use super::diagnostics::DiagnosticStore;
 use super::hints::{HintWindow, InlayHint};
 /// Identities that tag every result.
 use super::identity::{DocumentStamp, ServerIdentity};
+use super::notice::Trouble;
 /// Requests of the worker's own that a server left unanswered.
 use super::owed::Owed;
 /// The latest-value status rows are built from these records.
@@ -81,6 +82,9 @@ pub(super) struct ServerRecord {
     /// through their retries;
     ///  they are asked again when the server next sends anything.
     pub(super) owed: Owed,
+    /// The last failures of the requests the worker or the reader sent it,
+    ///  until a later answer clears them.
+    pub(super) trouble: Trouble,
 }
 
 /// Record behavior.
@@ -293,6 +297,7 @@ impl Session {
             opened: false,
             progress: Vec::new(),
             owed: Owed::default(),
+            trouble: Trouble::default(),
         });
     }
 

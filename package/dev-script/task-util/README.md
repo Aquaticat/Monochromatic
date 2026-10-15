@@ -145,6 +145,14 @@ The wrapper drops diagnostic lines whose file path contains `/node_modules/`
 along with their continuation lines (indented context lines),
 and exits 0 when only `node_modules` errors were found.
 
+A compiler crash,
+silent nonzero exit,
+or unfamiliar remaining output preserves the failing process status.
+Suppression requires that the existing filter actually removed known diagnostics;
+only blank stdout lines and emitted-file `TSFILE: ` metadata may remain.
+`test:tsc-failure` verifies the built wrapper through disposable compiler processes,
+including a simulated Go panic that creates no actual thread pressure.
+
 ```sh
 # Default: runs tsc --build with filtering
 task-tsc --build

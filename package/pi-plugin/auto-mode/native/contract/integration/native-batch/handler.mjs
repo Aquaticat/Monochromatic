@@ -53,7 +53,6 @@ export function createNativeBatchHandler({
   effectOwnerFor,
   authorizationOwnerFor,
   semanticAdmissionPolicy,
-  requestMaterialAdmissionPolicy,
   headingContextAdmissionPolicy,
   unitAdoptionAdmissionPolicy,
   approvalHost
@@ -67,7 +66,6 @@ export function createNativeBatchHandler({
    effectOwnerFor,
    authorizationOwnerFor,
    semanticAdmissionPolicy,
-   requestMaterialAdmissionPolicy,
    headingContextAdmissionPolicy,
    unitAdoptionAdmissionPolicy,
    approvalHost
@@ -92,13 +90,13 @@ export function createNativeBatchHandler({
     response:assistantMessage,
     stream
   });
-  let reviewed;
+  const reviewState={reviewed:undefined};
   function assertFresh(){
    if(producerOwner.judgmentFor({
      response:assistantMessage,
      stream
    })!==judgment)throw new NativeBatchBindingError('Original complete-group judgment changed');
-   if(reviewed){reviewed.assertCurrent();return;}
+   if(reviewState.reviewed){reviewState.reviewed.assertCurrent();return;}
    judgment.checkpoint();
    if(judgment.inspect()
      .prepared)judgment.assertDependenciesCurrent();
@@ -128,20 +126,20 @@ export function createNativeBatchHandler({
       judgment,
       tools:context.tools??[]
     });
-    reviewed=await reviewer.review(assistantMessage);
-    reviewed.assertCurrent();
-    if((reviewed.outcome
+    reviewState.reviewed=await reviewer.review(assistantMessage);
+    reviewState.reviewed.assertCurrent();
+    if((reviewState.reviewed.outcome
       .state
-      ==='resolved')&&(reviewed.outcome
+      ==='resolved')&&(reviewState.reviewed.outcome
         .verdict
         ==='approve')){
      observer.retainApprovedSources(assistantMessage);
-     reviewed.assertCurrent();
+     reviewState.reviewed.assertCurrent();
      return {block:false};
     }
     return {
       block:true,
-      reason:reviewed.outcome
+      reason:reviewState.reviewed.outcome
         .reason
         ??'Execution is withheld because the complete group has no established policy outcome'
     };
@@ -149,7 +147,7 @@ export function createNativeBatchHandler({
   });
   return Object.freeze({
     ...dispatched,
-    review:reviewed
+    review:reviewState.reviewed
   });
  };
 }

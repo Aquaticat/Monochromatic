@@ -133,7 +133,11 @@ Run it alone:
 - `src/wide-interaction.ts` and `src/narrow-interaction.ts` hold the click-through checks:
    while Search covers the player, a click on its empty area changes nothing under it (wide and narrow window),
    and a click on the body of a toast does not reach the track row under it.
-  Each proves its click points are live first (the same click plays a row, or changes the mode, once the page or the toast is gone).
+  Each proves its click points are live first (the same click selects a row, or toggles play on the selected one, or changes the mode, once the page or the toast is gone).
+- `src/wide-select.ts` holds the select-only checks (D124, D127, D128):
+   a Search result for another track selects it paused and stops the playing track, the same result again plays it,
+   and a row whose file cannot be opened (an unreadable file the check writes into the scratch library) stays the
+   selected row until a click loads it once the file has been repaired.
 - `src/wide-menu.ts` holds the menu placement checks:
    a right click opens the track menu at the pointer in the two-pane layout,
    and the menu is wider than the 280 px that cut its longest shortcut hint.

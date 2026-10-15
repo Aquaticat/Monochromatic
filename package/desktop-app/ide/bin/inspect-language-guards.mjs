@@ -3,7 +3,7 @@
 // Guards: stale-result fencing (file, revision, server process), the readiness gate in front of
 // every helix-lsp call, the refusal of server-initiated workspace edits, asking again for
 // hints and pull diagnostics a server left unanswered, hint windows, the diagnostics hold, and
-// the start allowance with its request bound.
+// the start allowance with its request bound, the TypeScript lookup, and the entry that says why features are missing.
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -69,6 +69,16 @@ const cases = [
   // Starting: helix-lsp gets three request timeouts for initialize, and the worker bounds every request by one.
   { name: 'start-allowance', file: 'src/language/config.rs', before: 'definition.timeout = definition.timeout.saturating_mul(START_FACTOR);', after: 'definition.timeout = definition.timeout.saturating_mul(1);', integration: 'language', test: 'start::initialize_answered_within_the_start_allowance_is_accepted', failure: 'a server that answered initialize within its start allowance was not accepted' },
   { name: 'request-bound', file: 'src/language/request.rs', before: 'return Payload::Hover(bounded(seconds, request).await);', after: 'return Payload::Hover(request.await);', integration: 'language', test: 'requests::request_keeps_the_request_timeout_while_the_start_allowance_is_longer', failure: 'a request waited longer than its request timeout' },
+  // Finding the project's TypeScript 7 server from the displayed file's folder upward, and saying why hover and hints are missing.
+  { name: 'typescript-document-folder', file: 'src/language/config/typescript.rs', before: '.filter(|folder| return folder.starts_with(root));', after: '.filter(|_folder| return false);', test: 'language::config::tests::typescript_is_found_for_a_project_folder_that_holds_no_install_of_its_own', failure: "the install below the project folder was not found from the document's folder" },
+  { name: 'typescript-nearest-install', file: 'src/language/config/typescript.rs', before: 'return check_version(folder, launcher);', after: 'if let Ok(found) = check_version(folder, launcher) { return Ok(found); } continue;', test: 'language::config::tests::the_nearest_typescript_install_decides_and_an_older_one_is_not_skipped', failure: "the package's TypeScript 5 was skipped for the root's TypeScript 7" },
+  { name: 'typescript-launcher-moved', file: 'src/language/config.rs', before: 'if found != definition.resolved {', after: 'if found.is_some() != definition.resolved.is_some() {', test: 'language::config::tests::the_registry_follows_the_launcher_to_another_install_of_version_seven', failure: 'the registry kept the launcher of the other install' },
+  { name: 'notice-published', file: 'src/language/worker.rs', before: 'return notice::with_notice(stored, document.stamp, &status, &troubles);', after: 'return stored;', integration: 'language', test: 'notice::a_missing_program_gives_the_entry_with_its_remedy', failure: 'the entry for a missing program' },
+  { name: 'notice-waits-for-start', file: 'src/language/notice.rs', before: 'if starting {', after: 'if false {', test: 'language::notice::tests::a_server_that_is_still_starting_gives_no_entry', failure: 'an entry was shown while the server was still starting' },
+  { name: 'hint-failure-kept', file: 'src/language/request/answer.rs', before: '*slot = failure;', after: '*slot = None;', integration: 'language', test: 'notice::a_failed_hint_request_is_named_and_a_later_answer_clears_it', failure: 'the entry for a failed hint request' },
+  // A failed start states what the server wrote to standard error, and handing the lines over leaves the log record whole.
+  { name: 'cause-hand-over-copies', file: 'src/language/attach/report.rs', before: 'then(stderr_tail::lines(&record.server));', after: 'then(stderr_tail::take(&record.server));', test: 'language::attach::report::tests::the_lines_are_handed_over_complete_and_the_record_still_reports_them', failure: 'handing the lines over drained them from the log record' },
+  { name: 'cause-reaches-reason', file: 'src/language/attach.rs', before: 'record.state = ServerState::FailedToStart { reason: updated };', after: 'tracing::trace!(%updated, "cause removed");', integration: 'language', test: 'quiet::a_server_that_ends_during_its_start_is_logged_with_its_stderr_lines', failure: 'the cause in the reason' },
 ];
 // An optional comma-separated list reruns only the named guards.
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;

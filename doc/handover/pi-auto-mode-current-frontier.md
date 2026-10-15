@@ -7,7 +7,1235 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-14.
 
+## Tool-call scope correction
+
+The user clarified that automatic mode is meant to check model-initiated tool calls.
+The authorization subject is the proposed tool operation and its arguments,
+evaluated against applicable instructions and authorization.
+The model's outbound API request supplies context;
+its entire provider protocol is not a separate operation requiring automatic-mode approval.
+
+The agent's status update described complete API-request field derivation as remaining delivery work.
+That promoted an implementation mechanism into a product requirement.
+Do not continue extending provider-field coverage as a delivery objective.
+In particular,
+Hyper's `thinking` control is not a model-initiated tool call.
+
+The current implementation still contains the broader gate.
+`native/contract/integration/native-batch/request-derivation-envelope.ts` rejects unknown request fields,
+and `src/request-material-obligations.ts` can retain an independent whole-request instruction-use obligation.
+The exact isolated Hyper capture failed the built envelope check with
+`Request field thinking has no supported native instruction-use derivation`;
+the same captured object without that field passed.
+`${HOME}/temp/agent/pi-hyper-capture-20261014/envelope-before.json` retains this contrast.
+No production code was changed during that probe.
+This demonstrates the existing coupling,
+not a requirement to add Hyper protocol validation.
+
+The next implementation decision must narrow that coupling around tool-call policy evaluation.
+Preserve applicable instructions,
+the exact proposed operation,
+authorization,
+and cancellation checks.
+Reassess the earlier 84-question admission count against this corrected boundary before treating it as a delivery gate.
+The prior status estimate and provider-coverage next step are superseded by this correction.
+No further `AGENTS.md` edit is adopted;
+the user's existing decision to leave that file unchanged remains in force.
+
+After the user instructed continuation,
+commit `3ec320b8fa` removed whole-request admission from the native evaluator and compiler.
+Commit `09bf9f9080` removed provider-field derivation from the original observer path
+and replaced the old derivation-gate scenarios with tool-policy invariance checks.
+The semantic policy factory no longer configures a whole-request question.
+The original request remains contextual evidence;
+it no longer receives an independent approval obligation.
+
+The JavaScript and owned native builds,
+package type checking,
+and changed TypeScript lint scope pass.
+The native metadata suite passes permission,
+prohibition,
+and unspecified policy with both Hyper-style `thinking` and an unrecognized provider metadata object.
+The original approval-context suite passes Allow,
+Deny,
+Stop,
+cancellation,
+and Allow after reload with authored prerequisite facts and fixture UI responses.
+Policy replacement,
+cancellation,
+and argument replacement after approval also retain their existing guards.
+
+The actual configured Hyper CLI passes isolated permission,
+prohibition,
+and unspecified-policy controls with all 17 configured packages.
+The permission case executes the original `read` tool and returns the disposable file contents;
+the other cases execute no child tool.
+Each assessment contains 82 clause questions and no whole-request question.
+Primary responses and semantic answers are authored local inputs,
+so these results establish host integration rather than live model decision quality.
+All cases make zero provider requests.
+Receipts are under `${HOME}/temp/agent/pi-hyper-tool-call-permission-SAmMCJ/`,
+`pi-hyper-tool-call-prohibition-xgH6VW/`,
+and `pi-hyper-tool-call-none-4W2K6i/` in the same scratch directory.
+The permission controller originally miscounted nested completion events;
+the prohibition controller accidentally treated its imported verifier as a CLI.
+Both host runs had already finished successfully.
+Their preserved outputs were verified without replaying the hosts.
+
+The requested [Astra limitation entry](../limitation/astra.md) is committed as `930e3e854f`
+and checked in rendered output.
+Production prerequisite ownership,
+live semantic behavior,
+and the previously measured native lint backlog remain separate unfinished work.
+
+### Fresh current-session confirmation implementation
+
+The configured Hyper CLI reproduced the missing prerequisite-owner path with an otherwise permitted read
+and an explicit requirement for a fresh Allow from the current session user.
+It executed no child tool and reported unresolved instruction or operation facts.
+`${HOME}/temp/agent/pi-hyper-tool-call-prerequisite-2Y4UOq/verification.json` retains that control.
+
+Commit `58a3265939` adds the `fresh-session-approval` clause meaning and its original native channel facts.
+The meaning describes a clause expressly requiring a new response from this session's user
+for the exact prepared group.
+Generic authorization,
+other approvers,
+existing or reusable grants,
+and additional conditions remain outside this particular meaning.
+The existing `0.60` admission cutoff applies to the expanded vocabulary.
+Historical response distributions retain their old vocabulary and cannot be replayed as current responses.
+
+The native evaluator now captures the actual pending confirmation channel before decision closure or tool entry.
+Its code-owned facts start unsatisfied;
+absent or headless presentation is unsupported.
+Original capability identities and judgment dependencies remain checked during review and execution.
+Only an admitted fresh-confirmation clause consumes these facts.
+Generic prerequisites retain their independent owner path.
+Permission and prohibition still resolve separately,
+and the existing native binder consumes the actual Allow,
+Deny,
+or Stop response.
+Quoted fresh-confirmation targets retain unresolved authorization facts through their existing incorporation path.
+
+Unit and native fixture additions are committed in `67fa816d5a`.
+The first lint pass found callable identity reads represented as unbound methods,
+missing documentation,
+and test assertion typing and formatting errors.
+The implementation now retains callable identities as non-invocable unknown values;
+tests preserve the actual dependency failure values.
+The second pass had only one test formatting warning,
+which was corrected before starting the current build,
+type check,
+and final changed-file lint.
+These checks and the new native approval scenarios remain pending at this checkpoint.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/rpc-host.ts`
+is prepared to exercise the real configured Hyper CLI's RPC approval dialog with authored semantic answers,
+without injected authorization facts or external provider requests.
+Run it only after the updated native artifact is built.
+
+### Confirmation rejection stops the run
+
+The user requested identical Stop semantics for denial and cancellation whenever the confirmation dialog is shown.
+Commit `b711afc237` reduces the dialog to `Allow` and `Stop`.
+Every non-Allow result,
+including a legacy `Deny` value or dismissed selector,
+records `user-deny` with reason `user stopped`,
+then invokes the original context's abort capability.
+The obsolete `reflectExplanationOnDeny` option and its callers are removed.
+The separate headless fallback still records the unavailable approval channel.
+
+The JavaScript and owned native builds,
+package type check,
+changed TypeScript lint,
+and focused built confirmation tests pass.
+The lint task reported zero warnings and errors and exited zero;
+its logger subsequently emitted `sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`.
+The abort omission control makes the rejection assertions fail while retaining the original artifact unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/abort-verification.json` records that check.
+
+The native fresh-confirmation suite passes Allow,
+legacy denial,
+Stop,
+cancellation,
+unspecified policy,
+and prohibition without an injected authorization owner.
+The actual configured Hyper RPC host passes the same response routes,
+external cancellation,
+and generic-prerequisite rejection with all 17 configured packages.
+Allow reads the disposable file once;
+all other cases execute no child tool.
+The fixture expects `Allow` and `Stop` and exercises the original production requester.
+`${HOME}/temp/agent/pi-fresh-session-hyper-rpc-original-source-20261014.log` names every preserved receipt.
+
+These host cases author clause meanings for the original policy source and `none` for other candidates.
+They establish confirmation plumbing,
+not live semantic interpretation or genuine human permission.
+The first RPC fixture also assigned the fresh-confirmation meaning to a same-tag occurrence
+inside an extension-produced composite prompt.
+That case remains blocked by unresolved source authority;
+its original outputs are preserved under `pi-hyper-rpc-allow-aIIepr` and `pi-hyper-rpc-allow-rKcQFn`.
+Restricting fixture answers to the intended source does not repair this separate interpretation boundary.
+
+The next check sends the unchanged current captured assessment to Luna,
+using the expanded vocabulary and the adopted `0.60` operating rule.
+Its artifacts live under `${HOME}/temp/agent/pi-luna-current-confirmation-20261014/`.
+Do not replay those calls or replace their original responses.
+
+### Manual confirmation for uncertainty
+
+The user selected confirmation for uncertain automatic assessments on 2026-10-14.
+Commit `e39c3da741` records that decision;
+`7d04a67ea8` implements the native routing,
+with tests in `88c8b19010` and formatting in `c2b5f9ed89`.
+Unresolved and unspecified assessments reach the existing original-group dialog when a UI is available.
+An established prohibition at the strongest known applicable tier still blocks,
+even if another interpretation remains unresolved.
+Known stronger applicable permission may supersede a lower-priority prohibition.
+Original source and operation freshness checks remain mandatory.
+
+The unchanged captured assessment produced identical answer data in three live Luna calls.
+The adopted consumer admitted 22 of 84 answers each time,
+including original permission at `0.60`,
+fresh confirmation at `0.99`,
+and the duplicate confirmation at `1`.
+These are admission measurements,
+not accuracy estimates.
+The first local verifier incorrectly passed response metadata into the strict choice consumer.
+Its already-completed response was preserved and rescored with the actual choice/probability fields;
+only the remaining two planned calls were made.
+
+The native manual-review suite passes its priority cases,
+Allow,
+denial,
+Stop,
+cancellation,
+prohibition alongside uncertainty,
+and missing UI.
+The package type check and changed TypeScript lint pass.
+The original authorization fixture suite also passes.
+The approval-context suite passed its initial cases but its reload case exhausted the original judgment deadline.
+The standalone unchanged reload control passes with one selection and three child calls.
+The failed run remains preserved;
+no cause for its deadline exhaustion has been established.
+`${HOME}/temp/agent/pi-manual-review-reload-control-20261014.log` records the successful control.
+
+Exact replay of the older Luna response in another configured session was rejected:
+captured event timestamps and durations changed the assessment input.
+No response was admitted in that failed replay.
+A fresh-request bridge then exercised the configured native Hyper host with live Luna responses,
+using scripted primary responses and scripted UI responses in a disposable network-isolated child.
+The parent sends only the actual captured assessment to Luna;
+the child receives no real credentials.
+Each case makes one Luna request.
+Allow executes the original read once;
+Stop and dismissal execute no child tool.
+Receipts are in `pi-hyper-rpc-allow-hRnQ6s`,
+`pi-hyper-rpc-stop-UJfsga`,
+and `pi-hyper-rpc-cancelled-9LsqI6` under `${HOME}/temp/agent/`.
+
+The real Hyper primary and live Luna assessment now pass together through the installed native CLI.
+The generated program reads `proof.txt` with the original `read` tool after a scripted Allow.
+All 17 configured packages are loaded,
+the read executes once,
+and the child exits zero.
+`pi-hyper-rpc-allow-Gt6QZx/verification.json` records two Hyper requests and one Luna request.
+The initial receipt counted only Luna;
+its provider total was corrected from retained responses without another host run.
+The first attempt stopped before any provider request because the saved Hyper OAuth access token had expired.
+The installed provider's `refreshHyperToken` and Pi's locked credential owner refreshed it normally.
+The disposable child still receives only fake credentials;
+the parent holds current credentials in memory for the exact bridged requests.
+
+Both new process-local omission controls pass:
+removing established-prohibition protection fails its named outcome assertion,
+and removing uncertainty routing fails the native confirmation assertions.
+`pi-tool-call-scope-20261014/manual-review-prohibition-verification.json`
+and `manual-review-uncertainty-verification.json` retain unchanged built-artifact hashes.
+The package README now distinguishes installed native behavior from the retained legacy extension.
+Native documentation uses the adopted `0.60` cutoff and current confirmation semantics.
+Rendered output has been inspected.
+
+The user supplied Allow to the pending original native dialog in
+`pi-hyper-rpc-human-bFNRvU` under `${HOME}/temp/agent/`.
+Its exact operation was `return await tools.read({path: "proof.txt"});`.
+The controller forwarded that response to the unchanged pending request identifier.
+The original tool executed once and returned the expected disposable file contents;
+the host exited zero.
+`verification.json` records one genuine human response,
+two actual Hyper requests,
+one actual Luna request,
+and no authored primary responses,
+semantic answers,
+or authorization facts.
+This completes the live production-host human-confirmation boundary.
+It grants no permission for another operation or session.
+
+The full package lint now reports 14,550 warnings and 454 errors across 425 files.
+`${HOME}/temp/agent/pi-native-full-lint-manual-review-20261014.log` retains the complete diagnostics.
+This is a changed file set,
+not a controlled comparison with the older 389-file count.
+Continue the maintained native quality work;
+do not reinterpret this passing live operation as full package completion.
+
+## Current Pi execution model
+
+### Owned runtime source correction
+
+The October 14 native formatting pass exposed exact-text dependencies in the maintained build.
+`replaceOnce` in `native/contract/integration/native-batch/build-rebase.ts`
+locates a literal substring and rejects absent or repeated matches.
+Formatting owned source therefore broke the runner,
+dispatcher,
+and judgment transformations.
+The user challenged this design.
+The agent acknowledged carrying the brittle prototype mechanism into the maintained package.
+
+The first repair replaced the runner and dispatcher transformations with parsed source selection.
+A subsequent consumer search established that the owned runner,
+dispatcher,
+and judgment inputs had only the native build as their consumer.
+The source-patching requirement was unnecessary for those modules.
+The integrated implementations are now maintained directly in
+`native/contract/collector/program-rule-batch-sdk-copy-v2/input/`.
+The build emits export bridges for them instead of rewriting their bodies.
+The judgment directly imports its generated result converter,
+whose separate installed-Pi adaptation remains unchanged.
+The obsolete judgment transformations and the intermediate runner/dispatcher syntax transformers are removed.
+Historical provenance hashes remain the original import record rather than being rewritten as current hashes.
+
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/owned-program-before/`
+retains the successfully built implementations used for this integration.
+`owned-program-promotion.json` records source and generated hashes.
+Only import locations and the dispatcher's original shared error declarations changed during promotion.
+The direct-integration build and type checks passed.
+The first runtime suite stopped before executing its test because the formatting commit had inserted
+`readonly #state` into `policy-source/system-slot.mjs`.
+Commit `bbb1aa2f64` removes that TypeScript modifier from JavaScript;
+the rebuilt domain,
+manual review,
+approval context,
+single call,
+approved dependency,
+event receipt,
+host lifecycle,
+and actual CLI process suites all pass.
+The syntax task separately exposed its own invalid assumption that `node --check` strips TypeScript.
+The task now explicitly strips types before checking TypeScript modules,
+while JavaScript modules reach Node unchanged.
+That syntax task passes 227 maintained modules.
+The native lint report after direct integration contains 533 errors;
+the maintained-package quality queue remains open.
+Commit `53c651c0c0` separates the shared governing-source error to remove the source-history import cycle.
+Its owned build and native domain suite pass.
+Commits `d9c7183140` and `d014715404` name native runner callbacks,
+extract original recorder ownership,
+and scope exclusive queue release with `using`.
+The parallel branch retains synchronous entry without acquiring a queue turn.
+The rebuilt native domain suite passes;
+the focused lint report contains no errors in either runner module or the error/history modules.
+Commit `99886bdca1` retains governing binding failure and source selection in one lifecycle record.
+Commits `2e025dc5cc` and `d6c4d39496` share the original judgment operation wrappers
+and name the remaining judgment callbacks.
+Their owned build and complete direct-runtime regression sequence pass.
+The focused lint check found no errors in the runner or source-binding modules;
+the constructor retained file-length,
+mutable-binding,
+cleanup,
+and function-declaration findings.
+Commit `72a7e2ca36` adds original recorder ownership and queue-release tests.
+Normal and exceptional queue release both pass.
+The process-local omitted-release control fails with `queue-release-missing`,
+and the built helper hash remains unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-queue-omission.json` retains that receipt.
+Commits `25c6a6819f` and `813b9c1b35` separate original program ownership and instruction-claim ownership
+from the judgment constructor.
+Their owned build and focused lint checks are running;
+their consumer regression verification remains queued before any completion claim.
+The user requested a status update during this cleanup.
+The response distinguished the completed live Hyper/Gemma,
+Luna,
+and genuine Allow check from the unfinished lint and module-splitting work.
+Continue the maintained-package quality queue without reopening the completed live approval.
+Commit `4e7545abda` consolidates one-time original instruction-handle publication;
+its changed source is not part of the currently running pre-cleanup split regression artifact.
+The pre-cleanup split artifact subsequently passed the full direct-runtime regression sequence.
+Commit `a4bfcb943e` scopes judgment activity cleanup with `using`
+and separates guarded result consumption.
+The focused check of the constructor and its new owner modules now has zero lint errors.
+Commit `a66c5d5c96` applies named callbacks,
+owned state records,
+and scoped cleanup to both prepared dispatchers,
+preserving their separate root and child execution behavior.
+The dispatcher cleanup build passed;
+the full native structured lint report contains 312 errors.
+Its domain checks passed,
+but manual uncertainty Allow exhausted the original preparation deadline.
+The same built artifact passed that exact Allow case in isolation,
+with one selector call,
+three executions,
+and no provider calls.
+The cause remains unestablished;
+the interrupted sequence does not qualify the remaining consumer suites.
+Commits `17cd623ee4`,
+`4dddea7b46`,
+and `d3d0de3168` separate reached-group failure and completion ownership,
+retain delivery state explicitly,
+and represent idle group work with a settled promise.
+Their owned build and queue tests pass.
+The domain sequence stopped at `JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
+An unrelated bounded CPU stress task was active during this run;
+its overlap does not establish the cause.
+The complete regression sequence remains pending after that task finishes.
+Commits `443d6bc709` and `d4e52c5394` separate original resource capture,
+reload,
+binding,
+and governing-policy ownership and scope their cleanup.
+Their owned build passes.
+The focused structured lint report contains no errors across these resource modules and the group-runtime modules.
+It still exits with failure because warnings remain;
+`package/config/oxlint/src/config-base.ts:31` sets `denyWarnings: true`.
+Zero error-severity diagnostics therefore do not mean the lint task passes.
+Commit `fe77f1d9d6` retains base-composition and governing-source lifetime state explicitly.
+The adjacent policy reviewer now scopes review activity and retains compilation results in its review record.
+The source-lifetime and native host-hook changes subsequently built successfully.
+The syntax task passed all 241 maintained native modules,
+and package type checking passed.
+The full lint attempt failed before producing diagnostics:
+`tsgolint` emitted `failed to create new OS thread (have 2 already; errno=11)`.
+The post-stress domain and manual-uncertainty suites passed;
+ordinary native-context Allow then exhausted the original judgment deadline.
+That exact case passed three unchanged isolated repeats,
+with total process durations from 7205.50 to 7954.08 milliseconds.
+These durations include setup and shutdown;
+they are not judgment-only timings or evidence of a permanent timing remedy.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/native-allow-repeat.json` retains each result and CPU counters.
+The subsequent approval-context,
+single-call,
+approved-dependency,
+event-receipt,
+host-lifecycle,
+CLI-process,
+queue,
+resource-reload,
+resource-copy,
+and context-receipt suites all passed on that unchanged artifact.
+The complete log is `${HOME}/temp/agent/pi-native-resource-runtime-remaining-20261014.log`.
+Later source changes name remaining profile callbacks,
+separate program inspection,
+replace profile regex scans,
+and retain the original reload and assessment await boundaries.
+Those later edits remain pending build and consumer verification.
+Their owned build subsequently passed;
+the expanded resource/runtime regression sequence is running again on that artifact.
+The full lint retry with `GOMAXPROCS=2` completed across 438 files,
+reporting 203 errors and 12801 warnings.
+All error-severity findings are in native source.
+The later request-hook callback correction and explicit input-key comparators still need their focused lint check.
+Direct source-consumer comparisons passed 456 identifier cases and 152 whitespace cases
+against the replaced regex behavior.
+The current full report is `${HOME}/temp/agent/pi-maintained-resource-lint-retry-20261014.log`;
+the current running regression log is `${HOME}/temp/agent/pi-native-profile-cleanup-regressions-20261014.log`.
+The user requested another status update during cleanup;
+the answer distinguished the completed live installation from unfinished lint and intermittent deadline verification.
+The profile-cleanup regression run subsequently stopped at ordinary native-context Allow:
+`JudgmentDeadlineError: Judgment preparation and assessment deadline expired`
+led to the original selector assertion `0 !== 1`.
+Its preceding domain and manual-uncertainty suites passed.
+This recurrence remains unresolved;
+the earlier isolated passes do not establish a timing remedy.
+Commit `fe24956975` separates the run-prompt owner into emission,
+rendering,
+retained-input,
+context,
+publication,
+and lifecycle modules while retaining its original scope and failure maps.
+Its owned build passes.
+Focused structured lint reports zero errors and 1082 warnings across the eight changed modules;
+the warning gate still fails.
+Consumer verification is running in `${HOME}/temp/agent/pi-native-run-owner-regressions-20261014.log`.
+That run subsequently passed all domain cases and manual uncertainty Allow,
+Deny,
+Stop,
+and cancellation.
+Its prohibited case stopped at `JudgmentDeadlineError`,
+with the outcome assertion reporting `undefined` instead of a policy outcome.
+Commit `c3cb4b1f97` separates loaded-input field selection,
+history,
+manager frames,
+events,
+tools,
+Agent inputs,
+and user inputs while retaining the original pool budget.
+The first loaded-input build passed;
+focused lint exposed detached method references after extraction.
+Those callbacks now use named function values;
+the updated build and focused checks remain pending.
+Named function expressions still produced `typescript(unbound-method)` findings.
+Commit `13dc500508` declares the loaded callbacks before constructing their returned facade.
+Its build passes;
+the loaded-pool lint subset now has zero errors and 51 warnings.
+The other new loaded modules still need the updated full subset check.
+The user requested status twice during this work;
+the replies distinguished verified live installation from unfinished quality work and the timing diagnosis.
+Unchanged ordinary Allow repetitions on the loaded-input build failed twice and passed once.
+Their complete process durations were 10089.97,
+8502.33,
+and 12054.84 milliseconds,
+including setup and shutdown.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-before.json` retains the results and CPU counters.
+Both separate CPU-profile runs passed,
+for ordinary Allow and manual-uncertainty prohibition.
+Their profiles identify repeated source-freshness validation as a sampled runtime cost;
+these separate modes are not a before/after timing comparison.
+An instrumented Allow fixture failed at `DependencyDeadlineError`
+after 23740 opens of its original governing file.
+The exact captured counts are in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/loaded-allow-fs.json`.
+The new `test:native:source-freshness-work` task exercises the built Allow consumer
+and requires fewer than 10000 governing-file opens for that fixed fixture.
+Its required-red run precedes the proposed complete-binding-set validation change.
+Required-red commit `971f1bd` completed the native Allow fixture,
+then failed its work-bound assertion with 45637 governing-file opens.
+Commit `5b29e43e8d` validates local source-binding identities between fresh common-parent checks.
+Individual public source assertions still perform their original parent freshness check.
+The updated owned build passes.
+The same native Allow fixture then completed with 15653 opens,
+but the new work-bound regression still fails its 10000-open limit.
+This is a measured reduction in repeated reads,
+not completion of the performance fix or a full regression pass.
+The logs are `${HOME}/temp/agent/pi-native-source-work-red-20261014.log`
+and `${HOME}/temp/agent/pi-native-source-work-green-20261014.log`;
+the latter filename names the intended stage,
+not its actual failed assertion result.
+Unchanged repetitions of this changed artifact all passed.
+Their complete process durations were 8224.54,
+6064.67,
+and 6179.07 milliseconds;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-after.json` retains the results.
+These include setup and shutdown and are not judgment-only latency measurements.
+The next change introduces `readCurrentSourceBinding()` on the original judgment.
+It returns original request and source identities only after `assertDependenciesCurrent()` succeeds.
+The governing-source owner uses that operation instead of independently repeating observer and collector checks.
+Commit `2ea0d1c836` builds successfully.
+The unchanged work-bound regression still fails at 14185 opens after the Allow scenario completes.
+`${HOME}/temp/agent/pi-native-current-source-work-20261014.log` retains that result.
+A profile of this artifact is collecting evidence for the next caller to address;
+the 10000-open bound remains unchanged.
+The next built Allow probes still failed that bound:
+`48e2532d46` put nested rule reads inside the original synchronous binding segment and measured 13233 opens;
+`45c180d7d7` collected related policy selections in that segment and measured 12169 opens;
+removing the repeated request observation before `active()` measured 11224 opens.
+Each fixture completed its Allow scenario before failing the work assertion.
+The current probe reads a prepared member's input and program inspection together after one dependency check.
+The complete rejection and lifecycle suites remain pending.
+Commit `b3f980b0f8` also fixes an extraction error:
+the whole-request claim branch must register `retained.requestMaterialBinding`,
+not the removed standalone variable.
+The built `test:native:request-claim` consumer passes original request identity,
+repeated selector reuse,
+foreign-handle rejection,
+and dependency retirement.
+A process-local omission restored the removed variable reference and failed with
+`ReferenceError: requestMaterialBinding is not defined`;
+the built module hash was unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/request-claim-omission.json` records that control.
+The prepared-member probe measured 10812 policy opens;
+using the original judgment's validated identities during approval measured 10634.
+Selecting the matching source before validating its binding did not change this fixture's 10634-open count.
+That fixture therefore supplies no performance evidence for source lookup paths that encounter earlier unrelated sources.
+Removing the redundant dependency check before complete source validation measured 10236 opens.
+The native Allow scenario passes,
+but the unchanged 10000-open regression remains red.
+The broader domain,
+manual review,
+approval,
+single-call,
+changed-dependency,
+event,
+host,
+and CLI regression sequence is running against this frozen built artifact.
+The user requested status during this work;
+the response reported the verified live flow,
+the remaining work-bound failure,
+the last full lint counts,
+and the absence of a reliable completion estimate.
+The first broader regression sequence passed on `ac35a7c2ac`:
+domain,
+manual review,
+approval context,
+single-call,
+changed-dependency,
+event-receipt,
+host-lifecycle,
+and CLI-process checks.
+Batch candidate selection consolidation then measured 10208 opens;
+removing duplicate decision-wrapper validation before original approval measured 10086.
+Commit `f79ac0ea45` reads execution origins through the already-required native entry check.
+Its built work-bound regression passes at 9046 opens without changing the 10000-open limit.
+The baseline required-red count remains 45637.
+`${HOME}/temp/agent/pi-native-entry-origin-work-20261014.log` records the passing consumer.
+The final expanded regression sequence is running in
+`${HOME}/temp/agent/pi-native-source-boundaries-final-20261014.log`.
+It adds program queue,
+resource reload,
+resource input,
+context receipts,
+and the whole-request claim consumer to the prior sequence.
+On the `f79ac0ea45` build,
+the repeated original runtime sequence passed again.
+The scratch runner then stopped before the queue task because its working directory was outside the monorepo;
+this was a task-launch error rather than an application assertion.
+With the scratch task's `dir` pinned to the repository,
+all remaining queue,
+resource reload,
+resource input,
+context receipt,
+and whole-request claim checks passed.
+The complete split records are
+`${HOME}/temp/agent/pi-native-source-boundaries-final-20261014.log`
+and `${HOME}/temp/agent/pi-native-source-boundaries-remaining-20261014.log`.
+Lint cleanup resumed with `45269cca6f` and `0313276bd7`:
+tool diagnostic and declaration budgets,
+guideline publication,
+forced-message retirement,
+and governing selection now retain mutable values in their original owned records.
+Their updated build and source-work/resource consumers pass;
+the work count remains 9046.
+The full lint recount is running with `GOMAXPROCS=2` and the package's existing worker and heap limits,
+without concurrent native runtime tests.
+Its log is `${HOME}/temp/agent/pi-maintained-source-boundaries-lint-20261014.log`.
+The recount completed across 455 files with 175 errors and 13188 warnings.
+Errors decreased from the previous 203;
+warnings increased as module extraction exposed additional untyped boundaries.
+The rule configuration still rejects warnings.
+Current structured diagnostics and error allocation are retained in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/current-maintained-diagnostics.json`
+and `current-native-errors.json` in that directory.
+The new work counter now uses Node's actual `openSync(path, flags, mode)` callback signature.
+The request preparation hook now retains its function value directly instead of detaching an object method.
+The initial function-value edits replaced the prior findings with
+`no-restricted-syntax(no-variable-function-expression)` findings.
+Commit `0fab7d8f10` constructs the request callback through a named factory
+and assigns the filesystem callback directly to its native hook.
+Commit `b9a6a57750` retains the approval lifecycle fields in one owned record.
+The focused callback,
+counter,
+and approval check has zero errors and 300 warnings;
+it remains a failing warning gate.
+The updated owned build and source-work/manual-review/approval/dependency consumers pass in
+`${HOME}/temp/agent/pi-native-callback-approval-consumer-20261014.log`.
+Native syntax passes all 259 maintained modules;
+the package type check also passes.
+Commit `81ecaf586b` separates dependency eligibility and synchronous binding checks into
+`judgment-dependencies.mjs`,
+with preparation and finalization state still supplied by the original constructor.
+Its rebuilt manual-review,
+approval-context,
+and changed-dependency consumers pass.
+The same source-work fixture passes at 9046 policy-file opens.
+`${HOME}/temp/agent/pi-native-dependency-owner-consumer-20261014.log` retains those results.
+Commit `33c1c35cd8` groups runtime publication state and judgment accounting in their respective owners
+and scopes budget cleanup with synchronous disposal.
+Focused lint reports zero errors and 736 warnings across the constructor,
+dependency owner,
+runtime owner,
+and judgment budget.
+The warning gate remains failing.
+The rebuilt source-work,
+domain,
+host-lifecycle,
+and actual CLI-process checks pass in
+`${HOME}/temp/agent/pi-native-lifecycle-records-consumer-20261014.log`.
+The host-lifecycle fixture includes runtime replacement,
+cancelled replacement,
+persisted resume,
+and incomplete-disposal retry.
+Commit `53defdddad` next scopes native wrapper reentrancy and execution cleanup
+and gives owned wrapper constructors named input fields.
+Native execute callbacks retain their positional SDK signature through a fixed factory.
+Commit `79622d6e43` derives parent cancellation options without mutable temporary state.
+The rebuilt wrapper consumers pass domain outcomes,
+single-call execution,
+post-approval source/cancellation/argument changes,
+and normal and exceptional program queue release in
+`${HOME}/temp/agent/pi-native-wrapper-lifetimes-consumer-20261014.log`.
+The first wrapper lint found one remaining mutable options binding;
+the subsequent cancellation helper addresses that finding.
+The full maintained-package recount reports 131 errors and 13218 warnings across 456 files and 486 rules.
+`${HOME}/temp/agent/pi-maintained-lifecycle-cleanup-lint-20261014.log` contains the structured diagnostics.
+The constructor,
+dependency owner,
+runtime owner,
+budget,
+and wrapper files now have no error-severity findings in that full scan.
+The warning gate remains open;
+these results do not establish package completion.
+Commit `9c28c21d7d` replaces synchronous fixture directory and file setup with awaited filesystem operations.
+It also records network requests by their URL and keeps provider-call accounting in one fixture-owned record.
+Focused lint reports zero errors and 64 warnings for `environment.mjs`.
+The rebuilt domain,
+context-receipt,
+resource-input,
+and approval-context checks pass in
+`${HOME}/temp/agent/pi-native-async-environment-consumer-20261014.log`.
+Commit `a96c4d1da1` scopes the CLI fixture's reader and process cleanup
+and the historical-run fixture's session cleanup with disposal.
+The historical-run fixture now retains its counters and original source in one record.
+The package also exposes that existing fixture as `test:native:run-history`;
+its rebuilt consumer and CLI cleanup checks pass.
+Native syntax also passes all 260 modules at that artifact.
+`${HOME}/temp/agent/pi-native-fixture-cleanup-consumer-20261014.log` retains those results.
+The package type check passes after the lifecycle and wrapper interface changes.
+Commit `2c67f036e7` adds explicit budget input,
+retained-state,
+and response types.
+The budget's type-safety findings disappear in focused lint;
+its total warning count changes from 55 to 41 because the first annotations introduced comment-format findings.
+Commits `1e14b97233` and `35c0febc93` then separate stable error identities,
+name the unchanged budget limits,
+and correct the remaining statement and comment shapes.
+The next focused report has two warnings:
+sequential retry awaiting and an explicit return required in the classifier-error branch.
+Commit `a8b5cf2811` addresses that return and documents the narrow sequential-retry exception in
+the troubleshooting entry's "Sequential native judgment retries" section.
+Commit `c9807abb0c` adds a built consumer for retry accounting,
+overlap refusal,
+deadline and cancellation retirement,
+late response rejection,
+classifier failures,
+and stable error names and causes.
+Its built check,
+omission control,
+and final focused lint are pending.
+The handover,
+troubleshooting entry,
+and native README were rendered and inspected with Pandoc.
+The earlier formatting-only commit is `2728f357f`.
+Its judgment-input formatting was temporarily restored to recover a passing build before this direct integration.
+
+The native JSON lint report before direct integration contains 499 errors.
+The earlier human-readable report did not print every diagnostic counted in its summary;
+use structured diagnostics when allocating cleanup work.
+Most current errors concern arrow functions,
+mutable bindings at function or module scope,
+cleanup using `finally`,
+and file length.
+Do not replace the removed owned-source patch layer with another formatting-sensitive mechanism.
+
+On 2026-10-14,
+the user corrected the requested Pi execution model to `hyper/gemma-4-26b-a4b-it`.
+Use that provider and model for subsequent Pi work and configured-host verification.
+The decision model remains Luna with the separately adopted `0.60` selected-probability cutoff.
+Historical Qwen verification records retain their original model identities.
+
+The installed `@charmland/pi-hyper-provider` version is `0.4.2`.
+The existing native model store contains the exact requested Hyper model.
+Pi's saved default was `opencode-go/mimo-v2.6-pro`;
+Qwen had been selected explicitly by the earlier verification commands.
+Pi's native settings owner has now saved `hyper` and `gemma-4-26b-a4b-it`
+as the global defaults,
+with every unrelated parsed setting preserved.
+`${HOME}/temp/agent/pi-hyper-model-20261014/selection.json` records the change.
+The isolated configured-host RPC check selected that exact provider and model without CLI overrides,
+using all 17 configured packages and the existing Hyper catalogue.
+The process exited zero and made zero provider requests inside its network namespace.
+The check verifies selection rather than a live model response.
+Its initial empty-stderr assertion was inappropriate for this configured fixture:
+the deliberately blocked Synthetic startup discovery,
+missing other-provider fixture catalogues,
+and ordinary extension lifecycle logs produced retained diagnostics.
+The original RPC result and complete stderr were inspected without replaying the completed host.
+`${HOME}/temp/agent/pi-hyper-model-20261014/state-verification.json`
+records the successful selection and failed empty-stderr assertion separately.
+
+## Adopted Luna migration
+
+The user subsequently lowered the selected-option probability cutoff from `0.80` to `0.60` on 2026-10-14.
+The maintained cutoff and unit/native boundary fixtures are updated and verified.
+Both maintained and native builds,
+package type checking,
+and the changed TypeScript lint scope pass.
+Built admission tests accept supported meanings at `0.60` and abstain at `0.599999`.
+Native HTTP fixtures pass permission,
+prohibition,
+unspecified,
+lower-score,
+unknown,
+and unsupported controls with zero provider requests.
+Removing the cutoff process-locally makes the boundary assertions fail;
+the built artifact remains unchanged.
+The isolated Qwen CLI also passes with clean shutdown and zero provider requests.
+Replaying the original baseline through the built consumer admits 29 of 84 answers,
+compared with four at `0.80`.
+There are 28 admitted clause meanings and one admitted request-content meaning;
+the other 55 answers remain unadmitted.
+`${HOME}/temp/agent/pi-luna-score-semantics-20261014/measurement-six.json`
+and `cutoff-verification.json` retain the recount and guard control.
+The `0.80` results in this section remain historical measurements.
+
+The user selected `gpt-6-luna-decisions`,
+excluded Perplexity,
+and accepted scores of `0.80` or higher to reduce manual request judgment.
+The agent's earlier `0.99` heuristic was Jev-specific and uncalibrated;
+it must not be imposed as an unchanged Luna requirement.
+The [updated decision](../decision/pi-auto-mode-semantic-admission.md#current-luna-decision)
+preserves unique-leading supported meanings and independent source and authorization guards.
+Only four of the retained 84 Luna answers reach `0.80`,
+including the primary permission answer at `0.83`.
+The migration therefore includes the serving adapter,
+fixed model binding,
+cutoff tests,
+and bounded question-format experiments retaining all input.
+The explicitly authorized Luna format comparison is complete:
+three baseline requests admit four answers each at `0.80`,
+and three requests with existing rubrics repeated beside their questions admit six each.
+Every request returns all 84 answers inside five seconds,
+with identical answer data within each format's repeated runs.
+The primary permission estimate remains `0.83`.
+The [comparison record](../planning/pi-auto-mode-gateway-decisions-current-contract.md)
+retains the overlap in latency ranges and the mixed admission changes.
+The maintained implementation now selects Luna and `0.80`
+and contains the lossless Decisions adapter.
+The package and owned native builds pass.
+Package type checking passes;
+the 16-file changed TypeScript lint scope reports zero warnings and zero errors,
+with subsequent fixture-only changes checked separately.
+The initial formatter diagnostics and fixture declaration-generation failure were corrected,
+not ignored.
+Built wire,
+transport,
+and admission tests pass.
+Additional wire tests cover nullable request shapes,
+the 255-choice boundary,
+predicate bounds,
+independent confidence,
+and usage counts;
+their final lint,
+type,
+and built-consumer runs also pass.
+Native authored HTTP cases verify permission at `0.80`,
+prohibition,
+unspecified policy,
+lower scores,
+unknown meanings,
+and unsupported meanings.
+Every native case makes one local HTTP call and zero provider requests.
+The native lifecycle and actual isolated Qwen CLI also pass with clean shutdown.
+
+Local replay of all six retained provider responses preserves all 504 answer distributions
+and their independent confidence values exactly.
+Re-encoding the retained baseline request preserves its complete parsed JSON value.
+Process-local omission of the model,
+answer identity,
+duplicate-label,
+normalization,
+or question-count guard makes the corresponding behavior assertion fail.
+The first identity omission survived because mixed-kind reordering failed another guard;
+an otherwise valid answer with a changed name now isolates original name attribution.
+The final controls leave the built artifact unchanged.
+Receipts live in `${HOME}/temp/agent/pi-luna-guard-controls-20261014/`
+and the comparison directory's `built-adapter-replay.json`.
+The explicit-rubric variant remains an experiment;
+its mixed results do not establish greater accuracy.
+The production adapter currently uses the verified lossless baseline encoding.
+The installed host's new offline capture retains 73 source occurrences,
+84 questions,
+and 584,007 bytes.
+Compared with the original provider-trial input,
+only event timestamps,
+recorded durations,
+and their validated source hashes differ.
+The first local capture used the smaller authored domain fixture,
+which was not comparable to the installed extension set.
+Its capture path also needed binding before the fixture clears its environment.
+The installed capture uses the existing network-isolated disposable host
+with all 17 configured packages and 37 read-only workspace package mounts.
+`${HOME}/temp/agent/pi-luna-guard-controls-20261014/installed-equivalence.json`
+retains the complete comparison result.
+No new provider request was needed for this check.
+The [question-batch experiment](../planning/pi-auto-mode-gateway-decisions-current-contract.md#question-batch-compensation-experiment)
+is complete after explicit authorization resolved the automatic review rejection.
+The user also authorized further Luna calls needed for this task without a total call cap.
+Retain finite experiments and the original production judgment bounds.
+All nine calls succeeded;
+every complete repetition returned the same 84 estimates as the original baseline,
+with four admitted at `0.80`.
+The shared judgments took 1,993.272,
+1,433.419,
+and 1,182.940 ms.
+Each used 246,783 reported input tokens rather than the baseline's 126,129.
+Batching is not adopted because this experiment supplies no semantic improvement.
+
+The subsequent readable-selection experiment also completed under the user's standing authorization.
+It retains the complete baseline input and question bindings,
+adding each selected passage verbatim beside its escaped JSON representation.
+All three calls returned 84 valid answers within five seconds,
+with identical answer data across repetitions.
+Eight supported answers reach `0.80`;
+the primary permission estimate is `0.82`.
+This changes estimates without establishing accuracy or a complete admitted interpretation.
+The candidate remains experimental.
+Further representation-only trials on this same input are deferred;
+continue the source-boundary investigation and native quality work.
+
+The whole-request interpretation has a separate missing consumer,
+independent of the low-scoring clause answers.
+The retained baseline's `head_83` selects `potential-instruction` at `0.96`;
+the readable-selection variant selects it at `0.97`.
+A fresh built native contrast changes only the authored whole-request relation:
+with every clause admitted,
+`none` executes three prepared children,
+whereas `potential-instruction` executes zero and retains `request-material-instruction-use`.
+Both runs have 33 original sources,
+five accounted partial source contributions,
+one local HTTP assessment,
+and zero provider requests.
+The log is `${HOME}/temp/agent/pi-luna-request-use-control-20261014.log`.
+This is an implementation boundary,
+not evidence that Luna should report absence when the request contains instructions.
+Continue original request-to-source governing-use accounting through the existing serializer and source owners.
+Partial contribution associations alone must not be promoted to complete governing-use evidence.
+
+The first producer extension now observes actual native system-message emission and converted tool arrays.
+The existing payload owner retains the original caller transcript and the actual normalized transcript
+passed to native parameter construction.
+System associations require their original emission record,
+and retain that record beside each partial contribution.
+This corrected an initial comparison against the wrong transcript boundary:
+Pi's normalizer creates a new array when collapsing system messages.
+The rebuilt native SDK control passes with five accounted contributions and three executed children.
+Built emission tests and copied-payload/transcript controls pass without provider requests.
+The copied-system control now retains an unresolved system contribution and the unaffected accounted user contribution,
+executing no child.
+Process-local omission of the system-emission guard makes the copied system incorrectly accounted
+and fails the native assertion;
+`${HOME}/temp/agent/pi-serialization-controls-20261014/verification.json`
+records the unchanged artifact hash.
+Scoped TypeScript lint and package types pass.
+The actual isolated Qwen CLI process also passes with zero provider requests and clean shutdown.
+The next original-owner link is from serialized tools to their host input receipts.
+Commit `4187ef7e13` extends the existing manager input publication through the incumbent message alias index,
+using the declaration metadata already retained by the original append call.
+The new typed owner propagates tool object identity only at observed native copy sites;
+equal replacements and cross-publication reuse do not receive membership.
+The original source still has no permission.
+Built native-manager tests now pass for original append/context copies,
+equal-content separate owners,
+cross-owner reuse,
+array/tool replacement,
+schema mutation,
+and accessor rejection without invocation.
+The process-local array identity omission fails the corresponding assertion while leaving the built artifact unchanged.
+`${HOME}/temp/agent/pi-tool-publication-controls-20261014/verification.json` retains that check.
+The normal SDK fixture and all serializer receipt controls also pass with zero provider requests.
+The test enters through the maintained policy consumer:
+direct generated-manager and generated-SDK imports exposed an existing owned bootstrap cycle,
+documented in `doc/troubleshooting/pi-sdk-staging.md`.
+Removing that coupling remains native-quality work.
+The serialized tool consumer now passes the normal SDK fixture with seven accounted partial contributions,
+including both original tool declarations,
+and three executed fixture children.
+Copied-tool,
+copied-tool-array,
+and changed-description controls leave the affected contributions unresolved and execute no children.
+All existing system/payload/transcript substitution controls still pass,
+with zero provider requests.
+The built membership consumer also passes each original-source/publication/input-occurrence contrast.
+The typed native tool association module passes scoped lint,
+package types,
+the rebuilt SDK control,
+all serializer substitution controls,
+and the actual isolated Qwen CLI with clean shutdown and zero provider requests.
+The original map callback retains each converted value before payload callbacks;
+removing that owned snapshot makes the changed-description control fail.
+`${HOME}/temp/agent/pi-tool-publication-controls-20261014/emission-verification.json`
+retains the unchanged artifact hash.
+The next boundary is complete system-message derivation and original request governing-use consumption.
+The consolidated built contribution regression also passes the base,
+run,
+message,
+publication,
+and tool membership cases through `test:source-contribution`.
+The current tool records remain partial contributions;
+they do not remove `request-material-instruction-use`.
+Complete system and tool governing-use accounting is still required before removing the independent obligation.
+
+The original manager publication now validates its complete selected system input:
+content,
+sections,
+tool declarations,
+and tool removals.
+System inputs without tool declarations receive the same original-owner checks.
+The existing alias index carries these publications through observed native copies;
+no second source inventory or authority registration is added.
+Built manager tests pass for unchanged copies,
+equal replacement messages and sections,
+changed prose and section text,
+replaced removal arrays,
+and accessor rejection without invocation.
+The package type check and four-file scoped lint pass with zero lint diagnostics.
+The rebuilt native SDK and all serializer substitution controls pass with zero provider requests.
+Process-local omission of either the full-field integrity check or field-identity check
+makes its corresponding assertion fail.
+`${HOME}/temp/agent/pi-system-publication-controls-20261014/verification.json`
+records both failures and the unchanged built-artifact hash.
+The serialized system derivation consumer remains the next step;
+these original input publications alone do not establish complete request coverage.
+The isolated Qwen CLI also passes with zero provider requests and clean shutdown.
+The retained-input consumer now handles system and tool publications through the same original membership checks.
+Its built contribution regressions,
+package types,
+and six-file scoped lint pass.
+`src/source-contribution-tool.ts` moved to `src/source-contribution-retained-input.ts` on 2026-10-14.
+The first derivation integration probe found the original system input publication,
+but rejected its emitted system message because the new identity check used the wrong normalization stage.
+Pi normalizes once in `stream` and again inside `convertMessages`;
+the emitted message comes from the latter's transformed transcript.
+The producer receipt now retains that exact inner normalized and transformed transcript,
+and the consumer checks both original identities.
+Native revalidation passes with eight accounted contributions,
+including the complete captured system input,
+and three executed fixture children.
+The built emission test now verifies both actual normalization stages.
+All serializer substitution controls and the package type check pass.
+The request-level consumer is now implemented and under verification.
+It uses the observer's existing JSON parse,
+original producer cardinalities,
+complete system replay inputs,
+whole user-message publications,
+and original converted tool declarations.
+The supported envelope permits the original model and stream fields,
+known numeric controls,
+`store: false`,
+and the native usage-reporting shape.
+Unknown protocol fields,
+additional message fields,
+unsupported message roles,
+missing original sources,
+and changed cardinalities retain an unresolved request-use obligation.
+Successful field coverage can discharge only `request-material-instruction-use`;
+source-domain,
+semantic admission,
+authority,
+delegation,
+and operation premises remain independent.
+The native request-derivation suite now passes permission,
+prohibition,
+and unspecified-policy cases while the request interpretation remains `potential-instruction`.
+Permission executes three fixture children;
+the other outcomes execute none.
+Unsupported protocol and message fields,
+added or removed messages,
+removed tools,
+copied system inputs,
+unsupported roles,
+and copied serialized system or tool values all retain unresolved request use and execute no children.
+Every case makes zero provider requests.
+The built source-contribution and request-obligation regressions pass,
+including preservation of independent premises;
+package type checking also passes.
+The process-local unsupported-protocol-field guard omission fails the native unresolved-outcome assertion:
+without that guard,
+the fixture incorrectly resolves the request.
+The verification record at `${HOME}/temp/agent/pi-request-derivation-controls-20261014/verification.json`
+retains the unchanged built-artifact hash.
+The initial verifier expected a later assertion;
+it was corrected to recognize the actual earlier outcome assertion.
+The final native rebuild and isolated Qwen CLI also pass,
+with zero provider requests and clean shutdown.
+
+The user subsequently asked about Jev 1.14 and whether `0.80` gates the correct quantity.
+The [Jev release check](../planning/pi-auto-mode-jev-1-14-current-contract.md)
+establishes native release availability but no qualified replacement through the current gateway.
+The [Luna score trace](../planning/pi-auto-mode-luna-score-semantics.md)
+confirms that the built consumer gates selected-option probability for each interpretation.
+The baseline has 83 clause questions and one content question;
+three clause answers and the content answer pass.
+Applying `0.80` to the separate confidence field selects the same four baseline answers.
+Neither score is established as whole-decision correctness,
+and the suitability of requiring a unique meaning for every candidate remains a separate design question.
+
+## Original native RPC approval verification
+
+The disposable harness in `${HOME}/temp/agent/pi-native-rpc-human-20261014/`
+now constructs the original native SDK session,
+selects its installed `qwen-token-plan-individual/qwen3.8-flash` model record,
+and runs Pi's original RPC mode.
+Its complete proposed program is `return await tools.fixture_value({path:"seed"});`.
+The tool returns fixed inert text.
+All stream responses,
+semantic answers,
+and independent prerequisite facts are authored fixture inputs.
+No provider request is allowed.
+The direct SDK host facade supports only its original disposable session;
+this is not the production CLI host's authorization owner.
+
+The initial Allow control passed with one assessment,
+one original verdict entry,
+one tool execution,
+zero external provider requests,
+exit zero,
+and empty child stderr.
+The controller preserves the complete pending native dialog and response transcript.
+Deny also passed with no tool execution and empty stderr.
+Stop retained its original `user-deny` entry,
+executed no tool,
+and exited zero,
+but failed the controller's unconditional empty-stderr assertion.
+The source trace identifies deliberate request cancellation during assessment,
+which the existing approval-domain test already expects as a handler failure.
+This is not evidence of a disposal failure.
+The corrected controller captured every stderr byte with its execution or disposal phase,
+without filtering output.
+Stop's 10,467 diagnostic bytes belong to execution;
+disposal output is empty.
+Stop,
+cancellation,
+Allow after 6,007 ms,
+and an unrelated response identifier followed by Deny now pass.
+The unrelated identifier leaves the original native request pending.
+Every completed control uses one assessment,
+zero provider requests,
+and exit zero.
+Only Allow executes the inert tool.
+The user supplied a genuine Allow response.
+The original pending controller had disappeared without a completion report,
+so recovery recreated the disposable native dialog.
+The complete displayed operation and choices matched exactly;
+only the pending request identifier changed.
+The user's Allow response was forwarded to that recreated request.
+The fixture completed with one execution,
+one assessment,
+one original `user-approve` verdict,
+zero provider requests,
+exit zero,
+and empty execution and disposal stderr.
+`human-recreated-dialog.json` and `human-verified.json` retain the comparison and result.
+This verifies the genuine human response through the native dialog boundary;
+the production authorization-owner integration remains separate work.
+
 ## Typed native session construction
+
+The manager registry port and its verification are complete.
+`root-lifecycle-retirement-entry/registry.mjs` moved to `registry.ts` on 2026-10-14,
+with its input and canonical epoch types in `registry-types.ts`.
+A complete tracked-source search for `createNativeManagerRegistry` found only the maintained SDK factory
+and its static bridge as consumers.
+The factory consumes only `lifecycle`.
+The unused `bind` snapshot adapter was removed:
+its historical profile checked a planned session ID,
+persistent file path,
+leaf,
+and a branch of at most two entries under qualification clocks.
+Those were qualification-fixture restrictions,
+not requirements of the maintained native lifecycle.
+Canonical manager state,
+constructor ownership checks,
+registry-local epochs,
+and the incumbent lifecycle remain.
+The `session-root-dependencies.mjs` bridge and its declaration were removed on the same date;
+the factory imports both the typed registry and typed native reader directly.
+Registry branch controls pass against the rebuilt native artifact:
+one manager shares reservations,
+distinct managers and registries remain independent,
+released reservations reuse canonical state,
+and foreign or revoked ownership fails before canonical accounting changes.
+The returned interface remains frozen without freezing borrowed managers.
+The package type check and scoped lint pass with zero lint warnings and errors.
+The owned rebuild,
+native manager constructors,
+host lifecycle,
+and actual isolated Qwen CLI pass with zero provider requests and clean CLI shutdown.
+Process-local omission of `owner.assertOwned(manager)` makes both foreign and revoked ownership assertions fail.
+`${HOME}/temp/agent/pi-registry-controls-20261014/verification.json`
+records the unchanged built-artifact hash and expected failures.
+Commits `6d5a8642d1`,
+`6260d5d19a`,
+`2ed70ed78a`,
+and `988d7cb453` retain the port and its branch controls.
+The full native lint backlog and original request governing-use consumer remain separate work.
+
+The next maintained dependency is the native session-manager identity reader.
+`root-lifecycle-retirement-entry/root-reader.mjs` moved to `root-reader.ts` on 2026-10-14;
+the original provenance remains recorded.
+The SDK constructor now imports that typed interface directly.
+The reader retains the original callbacks and exact returned occurrence,
+and rejects a manager mismatch before invoking the occurrence reader.
+The incumbent lifecycle still owns its original error constructors.
+The owned native build and package type check pass.
+The five changed TypeScript files pass scoped lint with zero warnings and errors.
+Built-artifact checks pass for exact arguments,
+original callback capture,
+live manager changes,
+missing callbacks,
+and unchanged thrown values.
+Native manager constructors,
+host lifecycle,
+and the actual isolated Qwen CLI process pass with zero provider requests.
+Process-local removal of either callback validation or the manager-identity guard
+makes the corresponding behavior assertion fail.
+`${HOME}/temp/agent/pi-root-reader-controls-20261014/verification.json`
+retains those controls and the unchanged built-artifact hash.
+The first formatter run identified a test-local root `let` and incomplete ambient constructor declarations;
+both were corrected without suppressions.
+
+The next owned dependency is now ported from `runtime-factory-scopes/scopes.mjs`
+to `scopes.ts` and `construction.ts`.
+The maintained SDK caller now imports its real typed interface directly.
+The original callback and manager captures,
+exact prepared-result identity,
+factory-wide exclusion,
+and retryable failed cleanup remain explicit requirements.
+The unused legacy result-preparer default is removed:
+the maintained caller already supplies `prepareSdkResult`,
+and the typed interface now requires that callback.
+The historical provenance records the old path and October 14 move date.
+Built-artifact checks for missing capabilities,
+input replacement,
+publication,
+failed cleanup,
+and reentrancy pass.
+The final ten-file lint scope reports zero warnings and zero errors.
+Package type checking passes with `TSC_SINGLE_THREADED=1` and `GOMAXPROCS=2`.
+Native manager constructors,
+host lifecycle,
+and the actual isolated Qwen CLI process pass after the owned rebuild.
+They report zero external provider requests;
+the CLI reports clean shutdown and zero genuine human approvals.
+Process-local omission of reentrancy exclusion or cleanup blocking fails its corresponding assertion.
+Omitting original callback capture invokes the forbidden replacement preparer and fails the test.
+The initial omission auditor incorrectly required all failures to be `AssertionError`;
+the corrected readback verifies each actual failure boundary.
+`${HOME}/temp/agent/pi-factory-scope-controls-20261014/verification.json`
+records those controls and the emitted scope file's exact match with maintained source afterward.
+The first type-check attempt emitted Go `newosproc` and is invalid despite its wrapper returning exit zero.
+That masked compiler failure was reproduced and repaired separately in `dev-script/task-util`.
+The built wrapper now preserves failed process status unless the existing known-diagnostic filter
+fully accounts for the failure.
+Original failing-before cases include a panic,
+silent failure,
+unfamiliar diagnostic,
+and a panic beside suppressed diagnostics.
+The repaired real-process fixture and existing output-filter tests pass.
+The [wrapper incident record](../troubleshooting/typescript.md#task-tsc-002-converted-compiler-process-failures-into-successful-checks)
+retains the initial success-control newline mistake and its source-backed correction.
+Final wrapper lint reports zero warnings and zero errors across four changed files;
+its package type check and all declared process cases pass.
+Pi's real `lint:types` task also passes through the repaired wrapper.
+The broader native quality queue remains open.
+The genuine human response is now verified in the native RPC fixture described in
+the original native RPC approval verification section.
+
+The next approval preparation uses the existing native RPC dialog boundary.
+The emitted Pi 1.2.0 `rpc-mode.js` creates the original extension selector request
+and resolves only its pending response identifier.
+A direct SDK fixture can retain authored prerequisite premises and local model responses
+while allowing a genuine human to answer the actual pending native request.
+This would verify that human response boundary only.
+The production CLI still lacks an independent authorization-requirement owner;
+unknown requirements must remain unresolved and must not be converted into UI requests.
+The later genuine Allow result completes this human response verification.
+Production authorization-owner integration remains separate work.
 
 The maintained constructor now lives in `native-batch/session-root.ts`,
 with typed native readers,
@@ -2112,10 +3340,20 @@ Use this finite delivery queue:
 - [ ] Integrate the implementation into the maintained package and necessary host path.
   The product must not depend on private scratch files.
   Run package checks against that integration.
-- [ ] Build,
+  The maintained implementation,
+  native build,
+  installation,
+  package type checks,
+  and scoped behavioral checks are complete.
+  Full package lint remains open with the October 14 measured diagnostics.
+- [x] Build,
   install,
   and exercise the actual plugin through its host,
   including native approval and cancellation.
+  The configured production CLI passes with the selected Hyper model,
+  live Luna decisions,
+  and the user's genuine Allow for the exact original disposable read.
+  Separate scripted Stop and dismissal controls abort without child execution.
 
 Further source work must fix a named failure of these delivery criteria;
 standalone inventory expansion is not the default next step.

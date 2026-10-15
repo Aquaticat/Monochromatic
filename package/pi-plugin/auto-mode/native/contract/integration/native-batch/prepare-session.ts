@@ -127,7 +127,10 @@ const contextObserverUrl=new URL(
 /**
  Original event observations share the captured native manager input pool.
  */
-const eventObserverUrl=new URL('event-observer.ts',import.meta.url).href;
+const eventObserverUrl=new URL(
+  'event-observer.ts',
+  import.meta.url
+).href;
 /**
  Qualified native manager edits are rebased onto the original module dependency graph.
  */
@@ -222,11 +225,25 @@ const runnerPath=join(
  Native dispatch and observer publication retain the same original runner class.
  */
 const eventRunner=imports({
-  source:eventRunnerSource(await readFile(runnerPath,'utf8')),
+  source:eventRunnerSource(await readFile(
+    runnerPath,
+    'utf8'
+  )),
   path:runnerPath,
-  overrides:{'./session-manager.mjs':pathToFileURL(join(output,'session-manager.mjs')).href}
+  overrides:{'./session-manager.mjs':pathToFileURL(join(
+    output,
+    'session-manager.mjs'
+  ))
+    .href}
 });
-await writeFile(join(output,'event-runner.mjs'),eventRunner,{mode:0o600});
+await writeFile(
+  join(
+    output,
+    'event-runner.mjs'
+  ),
+  eventRunner,
+  {mode:0o600}
+);
 /**
  Generated handlers retain original invocation, error, input, and context behavior.
  */

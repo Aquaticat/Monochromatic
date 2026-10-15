@@ -13,20 +13,29 @@ package dev.monochromatic.musicplayer.wiring
 import android.content.Context
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isNotSelected
 import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
-import dev.monochromatic.musicplayer.FakeAudioEngine
 import dev.monochromatic.musicplayer.FeedbackHostState
 import dev.monochromatic.musicplayer.PlayerController
+import dev.monochromatic.musicplayer.ReportingAudioEngine
+import dev.monochromatic.musicplayer.SearchHost
 import dev.monochromatic.musicplayer.SessionStore
 import dev.monochromatic.musicplayer.SweepProgress
 import dev.monochromatic.musicplayer.Track
+import dev.monochromatic.musicplayer.core.SEARCH_FIELD_LABEL
 import dev.monochromatic.musicplayer.core.TemplateKind
 import dev.monochromatic.musicplayer.playerHost
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -52,8 +61,11 @@ class PlayerHostWiringTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    /** Controller over a fake engine, so no native library or audio device is involved. */
-    private val controller = PlayerController(FakeAudioEngine())
+    /** Test engine, so no native library or audio device is involved; it records loads and reports play changes. */
+    private val engine = ReportingAudioEngine()
+
+    /** Controller over [engine]. */
+    private val controller = PlayerController(engine)
 
     // What:     `@Before fun resetProcessState()` puts the process-wide state of the app into a known shape.
     // Why:      Robolectric keeps the app's classes loaded across the cases of a run, so the template cache of
@@ -70,6 +82,7 @@ class PlayerHostWiringTest {
         /** Application context that the host reads the saved templates through. */
         val context: Context = ApplicationProvider.getApplicationContext()
         SessionStore.saveTemplate(context, TemplateKind.TRACK_ROWS, EXTENSION_TEMPLATE)
+        SessionStore.saveAutoPlayOnSelect(context, enabled = false)
         SweepProgress.reset()
     }
 
@@ -259,6 +272,54 @@ class PlayerHostWiringTest {
         assertEquals(6, countNodesWithText(EXTENSION_LINE))
     }
 
+    /** Opens the Search page from the top bar, types [title], and taps the first result row that shows it. */
+    private fun activateSearchResultTitled(title: String) {
+        composeTestRule.onNodeWithContentDescription(SEARCH_BUTTON_LABEL).performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).performTextInput(title)
+        /** Matches a tappable result row whose text holds [title]; the query field also holds it and is not a row. */
+        val resultRow = hasClickAction() and hasText(title, substring = true) and !hasSetTextAction()
+        composeTestRule.waitUntil(timeoutMillis = WAIT_LIMIT_MS) {
+            composeTestRule.onAllNodes(resultRow).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onAllNodes(resultRow)[0].performClick()
+        composeTestRule.waitForIdle()
+    }
+
+    // What:     `@Test fun aSearchResultSelectsAnotherTrackAndTheSecondActivationStartsIt()` runs D127 via the host.
+    // Why:      `openSearchResult` maps the activation to a controller call; a pure test of the decision cannot see a
+    //           host that still starts the track at once, which is the behavior D127 removes.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("search result selects", () => {
+    //   searchAndTap("Track 05"); expect(paused(5));
+    //   searchAndTap("Track 05"); expect(playing(5));
+    // });
+    // ```
+    /** Tapping the result of another track loads it paused as the current track; tapping its result again plays it. */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun aSearchResultSelectsAnotherTrackAndTheSecondActivationStartsIt() {
+        controller.searchHost = SearchHost()
+        controller.openLibrary(alpha(count = 8))
+        controller.playIndex(1)
+        showHost()
+        assertTrue("the first track plays before the search", controller.uiState.playing)
+        activateSearchResultTitled(titleOf(5))
+        assertEquals("the result's track is the current track", 5, controller.uiState.currentIndex)
+        assertFalse("selecting a result does not play it and stops the playing track", controller.uiState.playing)
+        assertEquals(
+            "the engine was cued with the track, paused",
+            "content://invented/alpha/5" to false,
+            engine.loads.last(),
+        )
+        assertFalse(engine.playing)
+        activateSearchResultTitled(titleOf(5))
+        assertEquals(5, controller.uiState.currentIndex)
+        assertTrue("the result of the current track starts it", controller.uiState.playing)
+        assertTrue(engine.playing)
+    }
+
     /** Template of the track rows that shows only the file extension, so every row has a line without a measure. */
     private companion object {
         /** Template text, in the app's formula syntax, that prints the extension field. */
@@ -266,5 +327,8 @@ class PlayerHostWiringTest {
 
         /** The line that template gives each of the invented `.mp3` tracks. */
         const val EXTENSION_LINE: String = "mp3"
+
+        /** Spoken label of the top bar's Search button. */
+        const val SEARCH_BUTTON_LABEL: String = "Search music"
     }
 }
