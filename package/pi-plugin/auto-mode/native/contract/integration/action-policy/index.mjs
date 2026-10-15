@@ -12,12 +12,14 @@ export function decideAndClose({
 }){
  judgment.assertDependenciesCurrent();
  judgment.checkpoint();
- const outcome=resolveManualReviewOutcome(readProgram());
+ const program=readProgram();
+ const outcome=resolveManualReviewOutcome(program);
  judgment.assertDependenciesCurrent();
  judgment.checkpoint();
  const closure=judgment.finalize();
  return Object.freeze({
    outcome,
+   program,
    closure
  });
 }

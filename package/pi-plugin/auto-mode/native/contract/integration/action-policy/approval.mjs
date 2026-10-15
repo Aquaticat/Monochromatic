@@ -1,5 +1,6 @@
 import {isProxy} from 'node:util/types';
 import {bindOriginalTuiApproval} from '../../lifecycle/incumbent-tui-group/approval.mjs';
+import {resolveConfirmedOutcome} from './review-outcome.ts';
 
 export class PolicyApprovalError extends Error {
  constructor(message){super(message);this.name=this.constructor
@@ -87,6 +88,10 @@ export async function finishWithApproval({
   judgment.assertDependenciesCurrent();
  }
  current();
+ if(decision.outcome.authorizationRequirements?.state==='unresolved')return Object.freeze({
+   ...decision,
+   assertCurrent:current
+ });
  const uncertain=decision.outcome
    .state
    !=='resolved';
@@ -138,11 +143,7 @@ export async function finishWithApproval({
  return Object.freeze({
   ...decision,
   automaticOutcome:decision.outcome,
-  outcome:Object.freeze({
-    state:'resolved',
-    verdict:'approve',
-    reason:'The user approved the original prepared group'
-  }),
+  outcome:resolveConfirmedOutcome(decision.program),
   approval:response,
   assertCurrent:assertOriginalApproval
  });
