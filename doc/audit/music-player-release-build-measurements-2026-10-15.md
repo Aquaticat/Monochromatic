@@ -141,6 +141,23 @@ node tools/desktop.ts --seed --mode cold --size 10000 --rep 0
 systemd-run --user --unit=relmeasure-suite --collect --property=MemoryMax=10G node tools/suite.ts --reps 5 --first-rep 1
 ```
 
+The strace summary runs and the thread counters (each run uses a fresh empty XDG tree and a new unit):
+
+```bash
+# shell: strace summary of a cold start (argv built by tools/lib.ts: strace wraps the hosted command)
+RELMEASURE_STRACE=relmeasure/results/strace-summary-wall-cold-10000.txt RELMEASURE_STRACE_SUMMARY=1 \
+  node tools/desktop.ts --mode cold --size 10000 --rep 98
+# inside the unit the hosted command is:
+# /usr/bin/strace --follow-forks --summary-only --summary-wall \
+#   --trace=fsync,fdatasync,pwrite64,write,sync_file_range,fallocate,rename,unlink \
+#   --output relmeasure/results/strace-summary-wall-cold-10000.txt \
+#   relmeasure/app/music-player-0.1.3-linux-x64/bin/music-player relmeasure/lib-10000
+# thread ticks and io counters, five runs (the window starts 12 s after the 'queue projected' line)
+node tools/threads.ts
+```
+
+The first strace run (rep 99) used the same argv without `--summary-wall`.
+
 Scroll commands sent through the compositor control socket:
 `scroll 750 400 0 1200 steps=60 step-ms=16` (track list, flick down, then `-1200` up) and
 `scroll 250 300 0 300 steps=60 step-ms=16` (folder panel).
@@ -186,8 +203,8 @@ against 150 ms with the real home;
 two single exploratory runs gave 2.6 s and 1.3 s (the latter under `strace`).
 A `strace` of the empty-home start shows fontconfig opening font files under `/usr/local/share/fonts`
 (for example `monaspace`) because its per-user cache was empty.
-This is an effect of the host's font set and cache, not of the library, and is listed under findings only as a method
-warning.
+This is an effect of the host's font set and cache, not of the library, and is recorded in the notes after the
+findings as a method warning.
 
 ### Memory
 
@@ -229,7 +246,7 @@ So the log line of the second sweep does not mark the end of the work, and the s
 Why the sweep gap of run 2 (3.5 s) and its settle wait (27.1 s) differ this much was not established.
 
 What the app does during the wait was measured in five further cold runs (10,000 tracks, a window of 10 s starting 12 s
-after the first queue, per-thread `utime` plus `stime` from `/proc/<pid>/task` and the process `/proc/<pid>/io`):
+after the first queue line, per-thread `utime` plus `stime` from `/proc/<pid>/task` and the process `/proc/<pid>/io`):
 
 - `write_bytes` in the window: 79.7, 80.9, 88.2, 92.1, 110.5 MB (minimum, then the others sorted; median 88.2 MB).
 - `syscw` (write calls) in the window: 892, 1,026, 1,185, 1,202, 1,283; `wchar` 8.9 to 12.2 MB.
@@ -238,26 +255,20 @@ after the first queue, per-thread `utime` plus `stime` from `/proc/<pid>/task` a
   a third used 4 to 5 ticks; in the other two runs one thread used 30 and 37 ticks.
   These runs were not timed to the end of the drain, so which part of the drain each window fell in is not known.
 
-A `strace --follow-forks` summary of a whole cold start (10,000 tracks, two runs, `-c`, one run with
-`--summary-wall`) counted the same calls both times:
+A `strace --follow-forks --summary-only` of a whole cold start (10,000 tracks, two runs, tracing only `fsync`,
+`fdatasync`, `pwrite64`, `write`, `sync_file_range`, `fallocate`, `rename` and `unlink`; the exact command is in the
+section on exact commands) counted the same calls both times:
 10,073 `fsync` calls, 10,259 and 10,268 `write` calls, 725 and 822 `pwrite64` calls and 42 `rename` calls.
 That is one `fsync` per stored row.
-In the run with `--summary-wall` (gap 90 s, settle wait 97.4 s) the `fsync` calls took 91.7 s in total, 9.1 ms per
-call, which is 99 percent of the traced syscall time.
-In the run with the CPU-time summary (gap 89.7 s, settle wait 97.3 s) the same calls used 3.9 s of system time,
-0.39 ms per call.
+The first run (record rep 99, summary without `--summary-wall`, second sweep ended 92.6 s after process start,
+settle wait 97.3 s) shows the time inside each call as system time: 3.9 s for all `fsync` calls, 0.39 ms per call.
+The second run (record rep 98, with `--summary-wall`, second sweep ended 77.1 s after start, settle wait 97.4 s) shows
+wall time inside each call: 91.7 s for all `fsync` calls, 9.1 ms per call, which is 99 percent of the traced time.
+`strace -f` sums the time over all threads, so the 91.7 s is a total of waiting, not elapsed time.
 So the drain is the time the disk takes to acknowledge about ten thousand flushes, not CPU work.
-`strace` slows every call, so the absolute times are indicative; the same start without `strace` took 21 to 99 s.
+`strace` slows every call, so the absolute times are indicative; the same start without `strace` took 27 to 99 s in
+the five timed runs.
 The scratch directory is on `btrfs` (`compress=zstd:3`, `ssd`) on an encrypted volume.
-
-In the source, the peak cache actor (`package/music-player/desktop-app/src/peakcache_service.rs`) handles each queued
-`Write::Put` as its own call to `DecisionCache::put` (`package/music-player/truepeak-core/src/cache.rs`), and that
-function runs one `UPSERT_DECISION` statement per call with no explicit transaction, so each row is its own commit.
-The store configuration (journal mode and sync level of the Turso connection) was not read, so the audit does not
-name the setting that makes each commit flush.
-The tracks here are 0.5 s long, so the measuring was cheap;
-the upsert binds nine numbers, so the per-row commit has no term in track length.
-What the window does during the drain was not measured (scroll cadence was measured only on second launches).
 
 ### Idle minute
 
@@ -475,6 +486,20 @@ adb -s emulator-5842 shell dumpsys gfxinfo dev.monochromatic.musicplayer
 node tools/android.ts --attempt 3 --phase size --size 1000 --reps 5 --parts scroll
 ```
 
+The search of the release dex for the column name, in a fresh empty directory outside the download directory:
+
+```bash
+# shell: classes of the release dex that hold the literal last_modified
+unzip -q -o relmeasure/download/music-player-0.1.3-android.apk 'classes*.dex' -d relmeasure/apkx
+strings --bytes=6 relmeasure/apkx/classes3.dex | rg --count '^last_modified$' -
+~/Android/Sdk/build-tools/37.0.0/dexdump -d relmeasure/apkx/classes3.dex > relmeasure/apkx-classes3.txt
+rg --line-number 'last_modified' relmeasure/apkx-classes3.txt
+```
+
+The same `strings` command on `classes.dex` and `classes2.dex` printed nothing, and on `classes3.dex` it printed 1.
+The disassembly shows three `const-string` uses, in `SafTreeSource` (`<clinit>`, `signatureOfRow`) and
+`TrackFingerprint.queryLastModifiedMs`.
+
 The driver runs these with `spawnSync`, not through a shell, and the graceful shutdown is `sync`, 8 seconds, `sync`,
 `adb emu kill`.
 
@@ -541,7 +566,8 @@ Every slow window also rendered fewer frames (706 to 741 against 787 to 838), be
   Their host load was 4.9 to 8.2 in every window, slow or not.
 - 10,000 tracks, six further diagnostic windows run by hand in the second session (`top` scrolling, same script):
   janky 123 of 720, 144 of 648, 116 of 738, 110 of 737, 17 of 821 and 127 of 716 frames, 5 slow of 6.
-  These six are not in `results/android.jsonl`; their numbers come from the console output of the diagnostic script.
+  These six are not in `results/android.jsonl`; they are written down in `results/android-diag.txt` from the console
+  output of the diagnostic script.
   Counting them, 13 of 23 windows at 10,000 tracks are slow.
 
 The 99th percentile of frame time still reads 16 ms in most slow windows (20 ms in one), because most janky frames miss
@@ -610,9 +636,9 @@ The same holds for the handover's main-thread CPU per track change, which was no
     The window's behaviour during the drain was not measured.
 2.  The Android app queries the media store for a column it lacks, over and over, at 10,000 tracks:
     772 to 1,005 provider exceptions per 15 s idle, and none at 1,000 tracks.
-    The only app code that names this column on a media store address is `queryLastModifiedMs`
-    (the literal `last_modified` is in the release dex only in `TrackFingerprint` and `SafTreeSource`);
-    what drives it repeatedly at the larger size needs finding.
+    The only Kotlin code in the release dex that names this column is `queryLastModifiedMs` (called with media store
+    addresses) and `SafTreeSource` (tree documents); the native libraries were not searched.
+    What drives the calls repeatedly at the larger size needs finding.
     Each failure costs a binder round trip and a forty-line log stack in another process.
 3.  At 10,000 tracks 13 of 23 Android scroll windows had more than 100 janky frames (16 to 20 percent of frames),
     against 2 of 20 at 1,000 tracks (both with a recorded confound, host load 23 and a GPU stall).
@@ -631,9 +657,10 @@ The desktop track list's work per frame grows with the number of rows (median ca
 2.1 ms at 500, 3.2 ms at 5,000; 99th percentile 2.9, 3.4, 5.0 ms), which stays far under the frame budget:
 a trend to watch, not a defect.
 A desktop run with an empty `HOME` took 736 to 1,179 ms to the first queue, against 150 ms with the real home,
-because fontconfig rebuilds its cache; any future desktop timing must keep a real `HOME`.
+with an empty fontconfig cache (a `strace` showed font files being opened);
+any future desktop timing must keep a real `HOME`.
 
-No measured number showed a regression in idle cost (10 to 30 ms of CPU a minute at every size), in start up
+No measured number showed a problem in idle cost (10 to 30 ms of CPU a minute at every size), in start up
 (median first projected queue 158 to 167 ms at every size on the desktop, 161 to 287 ms to the first Android frame),
 or in memory (145 MiB peak at 10,000 tracks on the desktop).
 
@@ -642,7 +669,7 @@ or in memory (145 MiB peak at 10,000 tracks on the desktop).
 - GPU execution time of a frame: no GPU counter was read.
 - Any desktop number at 1,000,000 tracks, the handover's normal operating scale.
 - Analysis of real-length tracks: the invented tracks last 0.5 s.
-- The window and the scroll cadence during the 21 to 99 s analysis drain at 10,000 tracks.
+- The window and the scroll cadence during the 27 to 99 s analysis drain at 10,000 tracks.
 - Sound output and playback: the null sink only, no track played (desktop), and no playback at all on Android.
 - Android on a real device: the emulator's host GPU path is the only renderer measured, and its two crashes cost
   windows.
