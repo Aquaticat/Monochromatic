@@ -1,4 +1,5 @@
 import {createJudgmentInstructions} from './judgment-instructions.mjs';
+import {createJudgmentDependencyChecks} from './judgment-dependencies.mjs';
 
 
 
@@ -47,7 +48,6 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       }
     });
     const facade=createDependencyFacade({collector:judgmentCollector,rootAdapter,deadlineAt:budget.diagnostics().deadlineAt,rootDirectory,files,trace,now});
-    let evidenceEligibilityFailure,bindingSegmentActive=false;
     const bindings=new WeakMap(),byMember=new Map(),executions=new WeakMap(),childGroups=[],issuedBatches=new Set(),attemptedBatches=new WeakSet();let operating=false,assessing=false,prepared=false,preparing=false,preparationFailed=false,preparationFailure,handle,selection,finished=false,closeFailed=false,finalRecord;
     function operation(run){
       if(operating)throw new JudgmentConstructionError('Judgment operations cannot reenter through callbacks');
@@ -55,36 +55,14 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       using activity={ [Symbol.dispose](){operating=false;} };
       return run();
     }
-    function assertPreparedProgramDependencies(){
-      for(const member of byMember.values())bindings.get(member).preparedProgram?.assertCurrent();
-    }
-    function dependencyCheck(read){
-      try{const value=read();if(!bindingSegmentActive)assertPreparedProgramDependencies();return value;}
-      catch(error){evidenceEligibilityFailure??=Object.freeze({cause:error});throw error;}
-    }
-    function active(){if(evidenceEligibilityFailure)throw new JudgmentConstructionError('Original relation evidence lost dependency eligibility',{cause:evidenceEligibilityFailure.cause});if(closeFailed)throw new JudgmentConstructionError('Judgment finalization failed permanently',{cause:finalRecord.failure});if(preparationFailed)throw new JudgmentConstructionError('Judgment preparation failed permanently',{cause:preparationFailure});if(finished)throw new JudgmentConstructionError('Judgment evidence collection is finished');dependencyCheck(function checkOriginalRequest() {budget.checkpoint();if(!bindingSegmentActive&&readMainAgentRequest(input)!==receipt)throw new JudgmentConstructionError('Enclosing request observation changed');});}
-    function ready(){active();if(!prepared)throw new JudgmentConstructionError('Complete final prepared membership is unavailable');dependencyCheck(function finalizePreparedDependencies() {if(!bindingSegmentActive)facade.finalize(handle);budget.checkpoint();});}
-    function bindingSegment(run){
-      if(bindingSegmentActive)throw new JudgmentConstructionError('Original binding segments cannot nest');
-      // All external identity/phase authentication precedes this internal boundary.
-      ready();
-      const completed={value:undefined,failure:undefined};
-      {
-        bindingSegmentActive=true;
-        using segment={ [Symbol.dispose](){bindingSegmentActive=false;} };
-        try{completed.value=run();}
-        catch(error){completed.failure=Object.freeze({cause:error});}
+    const {
+      active, ready, dependencyCheck, bindingSegment, assertDependenciesCurrent, isBindingSegmentActive
+    } = createJudgmentDependencyChecks({
+      budget, input, receipt, facade, byMember, bindings, trace,
+      readPreparation() {
+        return { prepared, preparationFailed, preparationFailure, finished, closeFailed, finalRecord, handle };
       }
-      // No cached freshness remains while observers and diagnostic callbacks run.
-      try{trace('binding-segment.postcheck');ready();}
-      catch(error){
-        evidenceEligibilityFailure??=Object.freeze({cause:error});
-        if(completed.failure)throw new AggregateError([completed.failure.cause,error],'Original binding operation and postcheck failed');
-        throw error;
-      }
-      if(completed.failure)throw completed.failure.cause;
-      return completed.value;
-    }
+    });
     const {
       resolveBinding,
       indexedUnitAdoptionPairs,
@@ -107,7 +85,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       claimInstruction
     }=createJudgmentInstructions({
       ready,bindingSegment,
-      isBindingSegmentActive() { return bindingSegmentActive; },
+      isBindingSegmentActive,
       readJudgmentSources() { return judgmentSources; },
       declaredNames,byMember,bindings,knownSelection,parsePolicy,receipt,issue
     });
@@ -206,21 +184,6 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
         finalRecord=Object.freeze({retainedOnly:true,status:'close-failed',failure:error,accounting:budget.diagnostics(),batches:Object.freeze([...issuedBatches].map(function inspectIssuedBatch(batch) { return (selection.inspectBatch(batch)); }))});
         throw error;
       }
-    }
-    /** Native release checks keep freshness separate from decision-model time and never authorize an effect. */
-    function assertDependenciesCurrent(){
-      if(evidenceEligibilityFailure)throw new JudgmentConstructionError('Original relation evidence lost dependency eligibility',{cause:evidenceEligibilityFailure.cause});
-      if(closeFailed)throw new JudgmentConstructionError('Failed finalization cannot release dependencies');
-      if(!prepared||preparationFailed)throw new JudgmentConstructionError('Judgment has no prepared dependency handle');
-      return dependencyCheck(function checkOriginalDependencies(){
-        if(!finished){
-          // active authenticates the original request after checking the live decision budget.
-          active();
-          return facade.finalize(handle);
-        }
-        if(readMainAgentRequest(input)!==receipt)throw new JudgmentConstructionError('Enclosing request observation changed');
-        return facade.checkRetained(handle);
-      });
     }
     /** Return original identities only after the complete current dependency check succeeds. */
     function readCurrentSourceBinding(){
