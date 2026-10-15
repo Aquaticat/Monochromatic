@@ -45,10 +45,15 @@ if ((url !== endpoint) || (init?.method !== 'POST')
 
 A process-local diagnostic at that catch records this exact profile error after switching providers.
 The OpenAI SDK then reports `Connection error.`.
-Installed `openai@7.19.0/client.mjs:599` wraps transport rejection in `APIConnectionError`;
+Installed `openai@7.19.0/client.mjs:837` wraps transport rejection in `APIConnectionError`;
 `openai@7.19.0/core/error.mjs:74` supplies the default message:
 
 ```javascript
+// Installed openai@7.19.0/client.mjs
+throw new Errors.APIConnectionError({
+  message: getConnectionErrorMessage(response),
+  cause: response,
+});
 // Installed openai@7.19.0/core/error.mjs
 super(undefined, undefined, message || 'Connection error.', undefined);
 ```
