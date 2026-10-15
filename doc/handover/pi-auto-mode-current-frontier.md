@@ -2167,6 +2167,8 @@ and public API suites pass in
 `${HOME}/temp/agent/pi-composition-membership-consumers-first-20261015.log`.
 All ten focused contract and consumer files have zero diagnostics in
 `${HOME}/temp/agent/pi-composition-membership-format-final-20261015.log`.
+The expanded instruction consumers pass against the saved original implementation in
+`${HOME}/temp/agent/pi-membership-instruction-original-20261015.log`.
 The full maintained count has not been refreshed since the API extraction report.
 Continue typed constructor ownership and the maintained-package quality queue.
 
