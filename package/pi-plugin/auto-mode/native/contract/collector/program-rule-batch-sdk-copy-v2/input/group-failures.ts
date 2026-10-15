@@ -1,9 +1,17 @@
-/** Original group failures retain occurrence order, pending rejection, and cancellation publication. @module */
+/**
+ Original group failures retain occurrence order, pending rejection, and cancellation publication. @module
+ */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { RecordedGroupFailureError } from './group-failure-error.ts';
-import type { GroupFailures, GroupFailuresInput, GroupFailureInput } from './group-failure-types.ts';
+import type {
+  GroupFailures,
+  GroupFailuresInput,
+  GroupFailureInput
+} from './group-failure-types.ts';
 
-/** Failure logs describe custody transitions without serializing arbitrary caught values. */
+/**
+ Failure logs describe custody transitions without serializing arbitrary caught values.
+ */
 const l = tagged({ tag: 'auto-mode-group-failures' });
 
 //region New occurrences are retained before original delivery cancellation, even when caught values repeat.
@@ -22,11 +30,23 @@ const l = tagged({ tag: 'auto-mode-group-failures' });
 
  @example createGroupFailures({ groupState, failures, controller, rejectPending });
  */
-export function createGroupFailures({ groupState, failures, controller, rejectPending }: GroupFailuresInput): GroupFailures {
-  /** Failure callbacks retain the original owner across cancellation reentry. */
-  const rl = tagged({ tag: createGroupFailures.name, l });
+export function createGroupFailures({
+  groupState,
+  failures,
+  controller,
+  rejectPending
+}: GroupFailuresInput): GroupFailures {
+  /**
+   Failure callbacks retain the original owner across cancellation reentry.
+   */
+  const rl = tagged({
+    tag: createGroupFailures.name,
+    l
+  });
   rl.debug('binding original group failure owner');
-  /** Cancellation observations are cached only after original failure publication returns. */
+  /**
+   Cancellation observations are cached only after original failure publication returns.
+   */
   const abortOccurrences = new WeakMap<AbortSignal, RecordedGroupFailureError>();
   /**
    Record every newly observed failure, including repeated equal-valued throws.
@@ -37,19 +57,40 @@ export function createGroupFailures({ groupState, failures, controller, rejectPe
 
    @returns internal token for this exact retained failure occurrence
    */
-  function recordFailure({ error, at }: GroupFailureInput): RecordedGroupFailureError {
-    /** Recording logs omit the original caught value and caller-supplied boundary text. */
-    const fl = tagged({ tag: recordFailure.name, l: rl });
+  function recordFailure({
+    error,
+    at
+  }: GroupFailureInput): RecordedGroupFailureError {
+    /**
+     Recording logs omit the original caught value and caller-supplied boundary text.
+     */
+    const fl = tagged({
+      tag: recordFailure.name,
+      l: rl
+    });
     fl.debug('retaining new original failure occurrence');
-    /** Original failure identity is independent of equality between caught values. */
-    const occurrence = Object.freeze({ identity: Object.freeze({}), ordinal: failures.length, at, error });
-    /** This token prevents a propagated occurrence from being appended again. */
+    /**
+     Original failure identity is independent of equality between caught values.
+     */
+    const occurrence = Object.freeze({
+      identity: Object.freeze({}),
+      ordinal: failures.length,
+      at,
+      error
+    });
+    /**
+     This token prevents a propagated occurrence from being appended again.
+     */
     const recorded = new RecordedGroupFailureError(occurrence);
     failures.push(occurrence);
-    if ((!groupState.primary) && (!groupState.closed) && (groupState.phase !== 'settled')) {
+    if ((!groupState.primary) && (!groupState.closed)
+      && (groupState.phase !== 'settled')) {
       groupState.primary = recorded;
       groupState.phase = 'failed';
-      rejectPending({ error, state: 'rejected' });
+      rejectPending({
+        error,
+        state: 'rejected'
+      });
       controller.abort(error);
       fl.debug('published original group failure and cancellation');
     }
@@ -64,18 +105,36 @@ export function createGroupFailures({ groupState, failures, controller, rejectPe
 
    @returns original recorded cancellation after publication completes
    */
-  function abortOccurrence({ observed, at }: Parameters<GroupFailures['abortOccurrence']>[0]): RecordedGroupFailureError {
-    /** Repeated cancellation logging does not read or replace the original reason. */
-    const al = tagged({ tag: abortOccurrence.name, l: rl });
-    /** An earlier completed observation remains authoritative for this exact signal. */
+  function abortOccurrence({
+    observed,
+    at
+  }: Parameters<GroupFailures['abortOccurrence']>[0]): RecordedGroupFailureError {
+    /**
+     Repeated cancellation logging does not read or replace the original reason.
+     */
+    const al = tagged({
+      tag: abortOccurrence.name,
+      l: rl
+    });
+    /**
+     An earlier completed observation remains authoritative for this exact signal.
+     */
     const existing = abortOccurrences.get(observed);
     if (existing) {
       al.debug('retaining original cancellation occurrence');
       return existing;
     }
-    /** Original callbacks run before caching, preserving reentry and failure behavior. */
-    const recorded = recordFailure({ error: observed.reason, at });
-    abortOccurrences.set(observed, recorded);
+    /**
+     Original callbacks run before caching, preserving reentry and failure behavior.
+     */
+    const recorded = recordFailure({
+      error: observed.reason,
+      at
+    });
+    abortOccurrences.set(
+      observed,
+      recorded
+    );
     al.debug('published original cancellation occurrence');
     return recorded;
   }
@@ -88,12 +147,27 @@ export function createGroupFailures({ groupState, failures, controller, rejectPe
 
    @returns unchanged recorded token or newly retained original occurrence
    */
-  function retainBoundaryFailure({ error, at }: GroupFailureInput): RecordedGroupFailureError {
-    /** Boundary propagation records no extra failure for an existing internal token. */
-    const bl = tagged({ tag: retainBoundaryFailure.name, l: rl });
+  function retainBoundaryFailure({
+    error,
+    at
+  }: GroupFailureInput): RecordedGroupFailureError {
+    /**
+     Boundary propagation records no extra failure for an existing internal token.
+     */
+    const bl = tagged({
+      tag: retainBoundaryFailure.name,
+      l: rl
+    });
     bl.debug('retaining original boundary failure');
-    return error instanceof RecordedGroupFailureError ? error : recordFailure({ error, at });
+    return error instanceof RecordedGroupFailureError ? error : recordFailure({
+      error,
+      at
+    });
   }
-  return { recordFailure, abortOccurrence, retainBoundaryFailure };
+  return {
+    recordFailure,
+    abortOccurrence,
+    retainBoundaryFailure
+  };
 }
 //endregion
