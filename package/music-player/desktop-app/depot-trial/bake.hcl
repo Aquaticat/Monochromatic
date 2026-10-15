@@ -10,6 +10,14 @@ variable "REQUIRE_FAILURE" {
   default = "0"
 }
 
+variable "TRIAL_LOG_VERSION" {
+  default = "unchanged"
+}
+
+variable "TRIAL_LINKER" {
+  default = "default"
+}
+
 target "toolchain" {
   context = "."
   dockerfile = "package/music-player/desktop-app/Containerfile.alpine"
@@ -36,6 +44,8 @@ target "artifact" {
     TRIAL_RUN = TRIAL_RUN
     BUILD_JOBS = BUILD_JOBS
     REQUIRE_FAILURE = REQUIRE_FAILURE
+    TRIAL_LOG_VERSION = TRIAL_LOG_VERSION
+    TRIAL_LINKER = TRIAL_LINKER
   }
   platforms = ["linux/amd64"]
   output = ["type=local,dest=package/music-player/desktop-app/target/depot-trial"]

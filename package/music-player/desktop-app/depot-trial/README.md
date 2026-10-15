@@ -25,6 +25,15 @@ Use the same `DEPOT_TRIAL_RUN` value to measure an image-layer cache hit separat
 Set `REQUIRE_FAILURE=1` to require a visible build failure after the verified artifact stage.
 This failure control is expected to return a nonzero command status.
 
+`TRIAL_LOG_VERSION=0.4.33` asks Cargo to regenerate the disposable container's lockfile
+with that transitive dependency version.
+The exported `Cargo.lock` records the resolved graph;
+the checked-in lockfile stays unchanged.
+`TRIAL_LINKER=mold` installs Alpine's packaged linker and selects it through GCC for a toolchain invalidation probe.
+Its version appears in `toolchain.txt`.
+This probe checks rebuilding and executable compatibility;
+it is not a linker-only performance comparison.
+
 ## Interpretation
 
 An unchanged repetition first establishes ordinary timing variation.

@@ -2,6 +2,10 @@
 # bake.hcl supplies both contexts from Containerfile.alpine.
 FROM toolchain AS compile
 
+# The alternate linker is confined to the disposable toolchain-invalidation run.
+ARG TRIAL_LINKER=default
+RUN if [ "${TRIAL_LINKER}" = mold ]; then apk add --no-cache mold; fi
+
 ENV CARGO_HOME=/cargo \
     CARGO_TARGET_DIR=/target \
     SLINT_ENABLE_EXPERIMENTAL_FEATURES=1
@@ -17,10 +21,14 @@ RUN mkdir -p /out && rustc --version --verbose > /out/toolchain.txt
 # Otherwise a repeated image-layer hit would not measure a warm Cargo invocation.
 ARG TRIAL_RUN=initial
 ARG BUILD_JOBS=4
+ARG TRIAL_LOG_VERSION=unchanged
 RUN --mount=type=cache,id=music-player-trial-cargo,target=/cargo,sharing=locked \
     --mount=type=cache,id=music-player-trial-target,target=/target,sharing=locked \
     printf '%s\n' "trial-run=${TRIAL_RUN}" "build-jobs=${BUILD_JOBS}" \
+    && if [ "${TRIAL_LOG_VERSION}" != unchanged ]; then cargo update --package log --precise "${TRIAL_LOG_VERSION}"; fi \
+    && if [ "${TRIAL_LINKER}" = mold ]; then export RUSTFLAGS="-C link-arg=-fuse-ld=mold"; mold --version >> /out/toolchain.txt; fi \
     && timeout 1800 cargo build --release --locked --features alsa-fallback --jobs "${BUILD_JOBS}" \
+    && cp Cargo.lock /out/Cargo.lock \
     && cp /target/release/music-player /out/music-player
 
 FROM runtime AS verify
