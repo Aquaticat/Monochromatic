@@ -7362,6 +7362,13 @@ the same bounded full lint invocation completed across 455 files with 175 errors
 The report is `${HOME}/temp/agent/pi-maintained-source-boundaries-lint-20261014.log`.
 This remains a failing quality gate;
 the higher warning count exposes additional untyped module boundaries rather than qualifying those extractions.
+The follow-up callback shape check first reported
+`no-restricted-syntax(no-variable-function-expression)` for direct variable-assigned callbacks.
+The existing rule source permits callback function expressions where external APIs dictate positional arguments.
+The request callback now comes from a named factory;
+the filesystem counter is assigned directly to its native hook.
+The focused callback/counter/approval report has zero errors and 300 warnings,
+so the warning gate remains red.
 
 ### Symptoms and separate incident boundaries
 

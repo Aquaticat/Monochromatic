@@ -613,9 +613,17 @@ Current structured diagnostics and error allocation are retained in
 and `current-native-errors.json` in that directory.
 The new work counter now uses Node's actual `openSync(path, flags, mode)` callback signature.
 The request preparation hook now retains its function value directly instead of detaching an object method.
-Focused lint,
-the updated owned build,
-and consumer verification of these follow-up edits remain pending.
+The initial function-value edits replaced the prior findings with
+`no-restricted-syntax(no-variable-function-expression)` findings.
+Commit `0fab7d8f10` constructs the request callback through a named factory
+and assigns the filesystem callback directly to its native hook.
+Commit `b9a6a57750` retains the approval lifecycle fields in one owned record.
+The focused callback,
+counter,
+and approval check has zero errors and 300 warnings;
+it remains a failing warning gate.
+The updated owned build and source-work/manual-review/approval/dependency consumers are running in
+`${HOME}/temp/agent/pi-native-callback-approval-consumer-20261014.log`.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
