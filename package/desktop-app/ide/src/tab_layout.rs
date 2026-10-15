@@ -331,6 +331,7 @@ pub(crate) fn layout_wrapped_with_tabs(
     return layout;
 }
 
+/// Unit tests of the work bound of the tab correction live in a sidecar file.
 #[cfg(test)]
 #[path = "tab_layout_tests.rs"]
 mod tests;

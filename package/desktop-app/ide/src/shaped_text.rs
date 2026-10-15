@@ -1,7 +1,5 @@
 //! Shared shaped rows replace independently centered fallback-font glyph items.
 
-/// Positioned hints and diagnostic marks travel with the frame they were laid out against.
-use crate::annotation_layout::AnnotationFrame;
 /// Canonical source remains in the read-only document.
 use crate::document::Document;
 /// Variable roman and real italic blobs retain stable cache identities;
@@ -23,7 +21,7 @@ pub use crate::shaped_row::{ReadingRect, ShapedRow, VisualCaret};
 /// Shaped rows kept by line for one text revision and scale.
 use crate::shaped_row_cache::RowCache;
 /// Syntax classifications stay independent of pixels.
-use crate::source_style::{StyleSpan, role_face};
+use crate::source_style::StyleSpan;
 /// Immutable font requests validate continuous weights before shaping.
 use crate::source_typography::SourceTypography;
 /// Tabs end on pixel tab stops,
@@ -31,19 +29,10 @@ use crate::source_typography::SourceTypography;
 use crate::tab_layout::{layout_with_tabs, layout_wrapped_with_tabs};
 /// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
 use crate::text_projection::project_line;
-/// Height and text size of the virtual rows above annotated lines.
-use crate::virtual_row::{ROW_HEIGHT, ROW_TEXT};
-/// IntelliJ's break rules as a Parley override, and the continuation indent of a wrapped line.
-use crate::wrap::{INTELLIJ_LINE_BREAK, break_wrapped, has_wrap_width};
 /// Construction failures identify unsupported source typography.
 use anyhow::Result;
 /// Font and paragraph layout are supplied by the same Parley stack Slint uses.
-use parley::{
-    Affinity, Cursor, FontContext, FontFamily, FontFeature, FontFeatures, FontStyle, FontWeight,
-    Layout, LayoutContext, LineHeight, OverflowWrap, StyleProperty,
-};
-/// Font bytes are shared immutably across the font database.
-use std::borrow::Cow;
+use parley::{FontContext, FontFeature, LayoutContext};
 
 /// Reading geometry of a prepared frame:
 ///  hits,
@@ -55,7 +44,38 @@ mod view;
 /// Whole-file passes: bringing rows into the cache for a wrap width,
 ///  and breaking kept rows again at a new width.
 mod pass;
+/// What:
+///  `pub use` re-exports the pass results and the work measure under this module's name.
+/// Why:
+///  Callers written against `shaped_text` keep their imports while the passes live in their own file.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { Budget, Ensured, LINE_WORK, Measured, lineWork } from './pass';
+/// ```
 pub use pass::{Budget, Ensured, LINE_WORK, Measured, line_work};
+
+/// Types of a prepared frame:
+///  the clip of a raster,
+///  the viewport,
+///  and the shaped view.
+mod frame;
+/// What:
+///  `pub use` re-exports the frame types under this module's name.
+/// Why:
+///  Callers written against `shaped_text` keep their imports while the types live in their own file.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { Clip, ShapedView, Viewport } from './frame';
+/// ```
+pub use frame::{Clip, ShapedView, Viewport};
+
+/// Shaping of single lines and virtual rows with the shared font setup.
+mod layout;
+/// The inputs that shape one source line,
+///  which the tab passes build too.
+pub(crate) use layout::LineRequest;
 
 /// What:
 ///  `pub const` exports a compile-time value;
@@ -83,112 +103,6 @@ pub const TERMINATOR_MARK: f32 = 9.0;
 /// export const ROW_ROLE = 65;
 /// ```
 pub const ROW_ROLE: u32 = 65;
-
-/// Family name of the bundled interface face,
-///  as its name table spells it.
-const ROW_FAMILY: &str = "Inter Variable";
-
-/// What:
-///  The inputs that shape one source line:
-///  display text, scale, syntax roles, tab spacings, and an optional wrap width.
-/// Why:
-///  Plain and wrapped layouts share one builder,
-///  and the wrap width is the only difference between them.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type LineRequest = { text: string; scale: number; roles: Role[]; spacings: Spacing[]; wrap?: number };
-/// ```
-#[derive(Clone, Copy)]
-pub(crate) struct LineRequest<'a> {
-    /// Display text, with each tab stood in by one space.
-    pub(crate) text: &'a str,
-    /// Physical pixels per logical pixel.
-    pub(crate) scale: f32,
-    /// Syntax role runs as display byte start, end, and brush.
-    pub(crate) roles: &'a [(usize, usize, u32)],
-    /// Extra advance per display byte in logical pixels.
-    pub(crate) spacings: &'a [(usize, f32)],
-    /// Wrap width in logical pixels, or nothing for an unbroken line.
-    pub(crate) wrap: Option<f32>,
-}
-
-/// What:
-///  The part of a tile's lines that its raster holds,
-///  as two distances in logical pixels from the top of the first materialized line's block.
-/// Why:
-///  A tile holds whole lines, and one line wrapped to thousands of rows would pass the raster limit.
-///  The clip keeps the rows near the view; rows outside it are not painted,
-///  and the gutter and the other row lists leave them out.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Clip = { top: number; bottom: number };
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Clip {
-    /// Where the raster starts, below the top of the first line's block.
-    pub top: f32,
-    /// Where the raster ends, below the top of the first line's block.
-    pub bottom: f32,
-}
-
-/// Logical dimensions and scale of the source viewport.
-#[derive(Clone, Copy, PartialEq)]
-pub struct Viewport {
-    /// First logical line materialized,
-    ///  including overscan.
-    pub first: usize,
-    /// Maximum number of source lines materialized.
-    pub count: usize,
-    /// Width of the raster in logical pixels.
-    pub width: f32,
-    /// Physical pixels per logical pixel.
-    pub scale: f32,
-    /// Wrap width in logical pixels that every line is broken at,
-    ///  or nothing to leave lines unbroken.
-    pub wrap: Option<f32>,
-    /// The part of the materialized lines the raster holds,
-    ///  or nothing for all of them.
-    pub clip: Option<Clip>,
-}
-
-/// Viewport text and selection geometry share these exact shaped rows.
-pub struct ShapedView {
-    /// Visible source rows.
-    pub rows: Vec<ShapedRow>,
-    /// Viewport request retained for coordinate conversion.
-    pub viewport: Viewport,
-    /// Physical raster width.
-    pub width: u32,
-    /// Physical raster height.
-    pub height: u32,
-    /// Top of the raster in logical pixels from the top of the text:
-    ///  the top of the first materialized
-    /// line's block, or the clip's top below it.
-    pub origin: f32,
-    /// The vertical mapping this frame was shaped against;
-    ///  rows outside the frame are placed by it.
-    pub map: RowMap,
-    /// Shared logical selection rectangles drive both native backgrounds and glyph clipping.
-    pub selections: Vec<ReadingRect>,
-    /// In-file find rectangles from the same row geometry;
-    ///  filled by the native renderer.
-    pub matches: Vec<ReadingRect>,
-    /// What:
-    ///  `Option<AnnotationFrame>` is the frame's positioned hints and diagnostic marks,
-    ///  or nothing.
-    /// Why:
-    ///  The renderer fills it after shaping;
-    ///  rows are never changed by it,
-    ///  so reading geometry ignores it.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// annotations?: AnnotationFrame;
-    /// ```
-    pub annotations: Option<AnnotationFrame>,
-}
 
 /// Own font discovery and shaping scratch space,
 ///  rather than recreate per glyph.
@@ -266,239 +180,6 @@ impl TextShaper {
             rebroken_rows: 0,
             tab_passes: 0,
         });
-    }
-
-    /// Shape text with explicit source typography and no soft wrapping.
-    /// `spacings` pairs a display byte with extra advance in logical pixels;
-    ///  tabs use it to reach their stop.
-    pub(crate) fn line_layout(
-        &mut self,
-        text: &str,
-        scale: f32,
-        roles: &[(usize, usize, u32)],
-        spacings: &[(usize, f32)],
-    ) -> Layout<u32> {
-        let request = LineRequest {
-            text,
-            scale,
-            roles,
-            spacings,
-            wrap: None,
-        };
-        return self.build_line(request);
-    }
-
-    /// What:
-    ///  Shape text broken at a logical wrap width with IntelliJ's break rules,
-    ///  and a hanging continuation indent.
-    /// Why:
-    ///  Parley breaks by its own rules unless the override says otherwise,
-    ///  and a continuation row starts after the indent,
-    ///  so the indent is set on the layout before it is broken.
-    ///  A width that is not positive gives the unbroken layout,
-    ///  because the caller keeps its last positive width instead (`wrap::has_wrap_width`).
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// wrappedLayout(text: string, scale: number, width: number): Layout;
-    /// ```
-    pub(crate) fn wrapped_line_layout(&mut self, request: LineRequest<'_>) -> Layout<u32> {
-        let width = request.wrap.unwrap_or(0.0);
-        if !has_wrap_width(width) {
-            let unwrapped = LineRequest {
-                wrap: None,
-                ..request
-            };
-            return self.build_line(unwrapped);
-        }
-        // The advance is physical; the indent that is built from it is in logical pixels and is scaled once more
-        // where the layout takes it, so a physical advance would double the indent at scale 2.
-        let space = self.space_advance(request.scale) / request.scale;
-        let mut layout = self.build_line(request);
-        break_wrapped(&mut layout, request.text, request.scale, width, space);
-        return layout;
-    }
-
-    /// Build and break one line with the shared font setup;
-    ///  a request that wraps is left unbroken for `break_wrapped`.
-    fn build_line(&mut self, request: LineRequest<'_>) -> Layout<u32> {
-        let mut builder =
-            self.layouts
-                .ranged_builder(&mut self.fonts, request.text, request.scale, true);
-        builder.push_default(StyleProperty::FontFamily(FontFamily::Source(
-            Cow::Borrowed("JetBrains Mono"),
-        )));
-        builder.push_default(StyleProperty::FontSize(15.0));
-        builder.push_default(StyleProperty::FontWeight(FontWeight::new(
-            self.typography.weight,
-        )));
-        let style = if self.typography.italic {
-            FontStyle::Italic
-        } else {
-            FontStyle::Normal
-        };
-        builder.push_default(StyleProperty::FontStyle(style));
-        // Glyphs are set on a line box as tall as one code row; where that row sits is the row map's business.
-        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(CODE_ROW)));
-        builder.push_default(StyleProperty::Brush(0));
-        builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
-            Cow::Borrowed(&self.typography.features),
-        )));
-        if request.wrap.is_some() {
-            // What: `OverflowWrap::Anywhere` lets a token wider than the width break inside it.
-            // Why: IntelliJ breaks a token without an opportunity at the code point where the width is exceeded.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // style.overflowWrap = 'anywhere';
-            // ```
-            builder.push_default(StyleProperty::OverflowWrap(OverflowWrap::Anywhere));
-            builder.set_line_break_override(Some(INTELLIJ_LINE_BREAK));
-        }
-        for (start, end, role) in request.roles {
-            builder.push(StyleProperty::Brush(*role), *start..*end);
-            // What: a role's second channel is a weight offset and the real italic face for its range.
-            // Why: The raster paints glyph runs only, so weight and italic are the style channels that exist.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const face = roleFace(role); if (face) { range.weight = clamp(base + face.offset); range.italic ||= face.italic; }
-            // ```
-            if let Some(face) = role_face(*role) {
-                if face.weight_offset != 0.0 {
-                    let weight = (self.typography.weight + face.weight_offset).clamp(100.0, 800.0);
-                    builder.push(
-                        StyleProperty::FontWeight(FontWeight::new(weight)),
-                        *start..*end,
-                    );
-                }
-                if face.italic {
-                    builder.push(StyleProperty::FontStyle(FontStyle::Italic), *start..*end);
-                }
-            }
-        }
-        // The stand-in space of a tab is one byte; spacing on it changes that one advance only.
-        for (byte, extra) in request.spacings {
-            builder.push(StyleProperty::LetterSpacing(*extra), *byte..*byte + 1);
-        }
-        let mut layout = builder.build(request.text);
-        if request.wrap.is_none() {
-            layout.break_all_lines(None);
-        }
-        return layout;
-    }
-
-    /// What:
-    ///  Shape the text of one virtual row,
-    ///  an inlay hint or one row of a diagnostic message:
-    ///  the
-    ///       interface face at [`ROW_TEXT`] on a line box of [`ROW_HEIGHT`],
-    ///  regular weight,
-    ///  upright.
-    ///       `&str` lends the text;
-    ///  the answer is an owned layout.
-    /// Why:
-    ///  The reference editor sets these rows in its interface face,
-    ///  which tells them from source text at
-    ///      a glance.
-    ///  The text is never part of a source line,
-    ///  and the raster paints it in one given ink.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// rowLayout(text: string, scale: number): Layout;
-    /// ```
-    pub fn row_layout(&mut self, text: &str, scale: f32) -> Layout<u32> {
-        return self.build_row(text, scale, None);
-    }
-
-    /// What:
-    ///  Break the text of one virtual row into pieces that each fit `width` logical pixels,
-    ///  in the face and size [`Self::row_layout`] sets it;
-    ///  a token wider than the width breaks inside it.
-    ///  The answer is the pieces in reading order, trailing blanks dropped;
-    ///  an empty text has none.
-    /// Why:
-    ///  Hint labels and message rows wrap to the width of the code they stand over,
-    ///  and a block's height is the number of pieces,
-    ///  so the break comes from the same shaping that paints each piece.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// wrapRowText(text: string, scale: number, width: number): string[];
-    /// ```
-    pub fn wrap_row_text(&mut self, text: &str, scale: f32, width: f32) -> Vec<String> {
-        let layout = self.build_row(text, scale, Some(width));
-        let mut pieces = Vec::new();
-        for line in layout.lines() {
-            let range = line.text_range();
-            let piece = text[range.start..range.end.min(text.len())].trim_end();
-            if !piece.is_empty() {
-                pieces.push(piece.to_string());
-            }
-        }
-        tracing::trace!(width, pieces = pieces.len(), "wrapped virtual row text");
-        return pieces;
-    }
-
-    /// Shape virtual-row text in the interface face, broken at `wrap` logical pixels or not at all.
-    fn build_row(&mut self, text: &str, scale: f32, wrap: Option<f32>) -> Layout<u32> {
-        let mut builder = self
-            .layouts
-            .ranged_builder(&mut self.fonts, text, scale, true);
-        builder.push_default(StyleProperty::FontFamily(FontFamily::Source(
-            Cow::Borrowed(ROW_FAMILY),
-        )));
-        builder.push_default(StyleProperty::FontSize(ROW_TEXT));
-        builder.push_default(StyleProperty::FontWeight(FontWeight::new(400.0)));
-        builder.push_default(StyleProperty::FontStyle(FontStyle::Normal));
-        builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(ROW_HEIGHT)));
-        builder.push_default(StyleProperty::Brush(ROW_ROLE));
-        if wrap.is_some() {
-            // A token wider than the width has to break inside it, as it does in the source text.
-            builder.push_default(StyleProperty::OverflowWrap(OverflowWrap::Anywhere));
-        }
-        let mut layout = builder.build(text);
-        layout.break_all_lines(wrap.map(|width| return width * scale));
-        return layout;
-    }
-
-    /// Physical advance of one space in the source font at `scale`,
-    ///  measured once per scale.
-    /// Tab stops are multiples of this advance,
-    ///  so it comes from the font,
-    ///  not from an assumed cell width.
-    pub(crate) fn space_advance(&mut self, scale: f32) -> f32 {
-        // What: `if let Some((known, advance))` runs only when a measurement is stored, naming its two parts.
-        // Why: A viewport reshapes many tab lines per frame; the font is asked once.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (this.space && this.space[0] === scale) return this.space[1];
-        // ```
-        if let Some((known, advance)) = self.space
-            && known == scale
-        {
-            return advance;
-        }
-        let probe = self.line_layout(" ", scale, &[], &[]);
-        // The caret after the only character stands one space advance from the line start.
-        let cursor = Cursor::from_byte_index(&probe, 1, Affinity::Upstream);
-        let advance = cursor.geometry(&probe, 1.0).x0 as f32;
-        self.space = Some((scale, advance));
-        return advance;
-    }
-
-    /// Baseline of the primary font at `scale`;
-    ///  a known primary glyph makes it the same for all source rows.
-    fn baseline(&mut self, scale: f32) -> f32 {
-        let probe = self.line_layout("M", scale, &[], &[]);
-        return probe
-            .lines()
-            .next()
-            .expect("primary font line")
-            .metrics()
-            .baseline;
     }
 
     /// Shape one source line with syntax roles on a given common baseline.

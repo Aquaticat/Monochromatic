@@ -19,8 +19,7 @@ use super::{
     check_separator, control_arguments, removed_tokens, separated_arguments,
 };
 use crate::arguments::arguments_from_bytes;
-use crate::control_tables::{CONTROL_TOKENS, POSSIBLE_ALIASES, WRAPPER_SPELLINGS};
-use git_policy_cli::git_builtins::is_git_builtin;
+use crate::control_tables::{CONTROL_TOKENS, WRAPPER_SPELLINGS};
 use git_policy_cli::policy_registry::POLICY_REGISTRY;
 use git_policy_cli::wrapper_controls::{CONTROL_SPELLINGS, control_meaning, is_escaped};
 use git_policy_cli::wrapper_invocation::{
@@ -72,11 +71,6 @@ fn restated_spellings_match_the_subject() {
         CONTROL_TOKENS.len() <= 256,
         "one byte must reach every token"
     );
-    // Every word the frontier check treats as a possible alias really is not built in.
-    for word in POSSIBLE_ALIASES {
-        assert!(CONTROL_TOKENS.contains(word), "{word:?}");
-        assert!(!is_git_builtin(word), "{word:?}");
-    }
     assert_eq!(control_arguments(&[]), Vec::<OsString>::new());
     assert_eq!(control_arguments(&[0; 200]).len(), MAX_CONTROL_ARGUMENTS);
 }
@@ -360,7 +354,7 @@ fn generated_arguments_reach_every_frontier_ending() {
             1,
             FrontierSeen::Forwarded,
         ),
-        (vec!["worktree", "add", "x"], 1, FrontierSeen::Refused),
+        (vec!["worktree", "add", "x"], 1, FrontierSeen::Forwarded),
         (vec!["worktree", "add", "x"], 0, FrontierSeen::Forwarded),
         (
             vec!["worktree", "add", "--no-worktree-copy", "x"],
@@ -368,7 +362,7 @@ fn generated_arguments_reach_every_frontier_ending() {
             FrontierSeen::Forwarded,
         ),
         (vec!["worktree", "list"], 1, FrontierSeen::Forwarded),
-        (vec!["st"], 1, FrontierSeen::Refused),
+        (vec!["st"], 1, FrontierSeen::Forwarded),
         (vec!["st"], 0, FrontierSeen::Forwarded),
         (vec!["status"], 1, FrontierSeen::Forwarded),
         (vec!["--version"], 1, FrontierSeen::Forwarded),

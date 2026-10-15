@@ -8,6 +8,12 @@
 //!  and engine `Update`s are applied to the window's properties from the
 //! event-loop thread.
 //!  Also handles CLI path arguments and the file-open dialog.
+//!
+//! On Windows the executable is linked for the GUI subsystem, so a double-click opens no console window;
+//!  `main` attaches to the console of the parent process first, so `--version` and the logs still print in a terminal
+//! (`src/console_attach.rs`, `doc/decision/music-player-windows-gui-subsystem.md`).
+//!  The unit-test build of this binary keeps the console subsystem so the test harness prints as usual.
+#![cfg_attr(all(windows, not(test)), windows_subsystem = "windows")]
 
 /// What:
 ///      `mod slint_generated;` loads the sibling `slint_generated.rs` module,
@@ -909,6 +915,18 @@ fn start_unplayable_notifier() -> UnplayableNotifier {
 /// async function main(): Promise<void> { ... } // throws on platform failure
 /// ```
 fn main() -> Result<()> {
+    // What:     `let console_attach = attach_parent_console();`. Windows only: attach to the console of the
+    //           parent process and repair stdout and stderr (a handle the parent passed on is kept).
+    // Why:      The Windows executable is a GUI-subsystem program, which starts with no console. This runs before
+    //           the logger and before `Cli::parse()`, because both print. A double-click start has no parent
+    //           console; the attach then fails, nothing is printed anywhere and no window opens.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const consoleAttach = attachParentConsole(); // win32 only
+    // ```
+    #[cfg(windows)]
+    let console_attach = music_player::console_attach_win32::attach_parent_console();
     // What:     `music_player::logging::init();`. Install the stderr tracing subscriber
     //           before anything else, so startup events have a sink. Idempotent.
     // Why:      Every `tracing` event from this crate and `truepeak-core` needs a sink;
@@ -919,6 +937,10 @@ fn main() -> Result<()> {
     // logging.init();
     // ```
     music_player::logging::init();
+    // What:     `log_console_attach(&console_attach);`. Windows only: write what the attach did at debug level.
+    // Why:      The attach ran before the logger existed, so its outcome is logged now.
+    #[cfg(windows)]
+    music_player::console_attach::log_console_attach(&console_attach);
     // What:     `let cli = Cli::parse();`. Read and validate the command-line
     //           arguments FIRST, before any backend, window, or GPU setup.
     //           `Cli::parse()` (from the `clap::Parser` trait) reads the real process

@@ -244,6 +244,7 @@ fn break_with_indent(layout: &mut Layout<u32>, indent: f32, scale: f32, width: f
     layout.align(Alignment::Start, AlignmentOptions::default());
 }
 
+/// Unit tests of the break rules and the indent live in a sidecar file.
 #[cfg(test)]
 #[path = "wrap_tests.rs"]
 mod tests;

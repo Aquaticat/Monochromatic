@@ -61,9 +61,10 @@ so it reads no configuration and starts no Git.
 Whatever the arguments,
 a forwarded command must not be a `git commit` without a dry-run or status-format option,
 a `git push` without a dry-run option while the built-in content policy is on,
-a `git add` in a worktree while that policy is on
-(the fixed answers prepare no candidates, so that policy cannot read them),
-or a worktree creation or possible alias run from a linked worktree without `--no-worktree-copy`.
+or a `git add` in a worktree while that policy is on
+(the fixed answers prepare no candidates, so that policy cannot read them).
+A worktree creation or possible alias run from a linked worktree is forwarded:
+the executable settles the worktree copy around it.
 The dry-run options are restated from Git's documentation instead of read from the subject's tables.
 
 ### `batch_reply`

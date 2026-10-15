@@ -10,7 +10,12 @@ name: music-player-windows
 #   links the program. No Visual Studio tool is used to build that job's program.
 #
 # Every job runs cargo nextest for its target, builds the real binary, prints the linker rustc ran,
-# inspects the PE import table, and starts the program.
+# inspects the PE header (import table and Subsystem field), runs the program with --version from bash and from
+# PowerShell, with and without output redirection, and starts the program.
+#
+# The program is a GUI-subsystem executable (Subsystem 2): double-clicking it opens no console window. It attaches to
+# the console of its parent process when it has one, so --version still prints in a terminal. Decision and sources:
+# doc/decision/music-player-windows-gui-subsystem.md.
 #
 # Caches (one entry per job): the cargo registry index and downloaded crates, the git db, and the package
 # target directory. The key holds the runner OS and architecture, the target, the Rust toolchain version
@@ -308,8 +313,18 @@ jobs:
         if [ "$FLAVOR" = 'gnu' ]; then
           grep --quiet -e '-fuse-ld=bfd' "${RUNNER_TEMP}/link-args.txt"
         fi
+        # The #![windows_subsystem = "windows"] attribute reaches the linker as /SUBSYSTEM:windows (link.exe) or as
+        # --subsystem windows (GNU ld, through the gcc driver as -Wl,--subsystem,windows).
+        if [ "$FLAVOR" = 'gnu' ]; then
+          grep --quiet -e '--subsystem,windows' "${RUNNER_TEMP}/link-args.txt"
+        else
+          grep --quiet --ignore-case -e '/SUBSYSTEM:windows' "${RUNNER_TEMP}/link-args.txt"
+        fi
+        echo "the linker was told to build a GUI-subsystem program"
 
+    # The checks from here to the launch check run even when an earlier check failed, so one run reports every failure.
     - name: Inspect the PE file
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
       working-directory: package/music-player/desktop-app
       run: |
         set -euo pipefail
@@ -326,6 +341,11 @@ jobs:
         ])
         header = pe.OPTIONAL_HEADER
         print(f"linker version in the PE header: {header.MajorLinkerVersion}.{header.MinorLinkerVersion}")
+        # IMAGE_SUBSYSTEM_WINDOWS_GUI is 2 and IMAGE_SUBSYSTEM_WINDOWS_CUI (console) is 3; Windows opens a console
+        # window for a double-clicked program with 3 and none for one with 2.
+        subsystem = header.Subsystem
+        subsystem_name = pefile.SUBSYSTEM_TYPE.get(subsystem, "unknown")
+        print(f"Subsystem in the PE header: {subsystem} ({subsystem_name})")
         names = sorted({
             entry.dll.decode().lower()
             for attribute in ("DIRECTORY_ENTRY_IMPORT", "DIRECTORY_ENTRY_DELAY_IMPORT")
@@ -335,22 +355,326 @@ jobs:
         crt = sorted(n for n in names if n == "msvcrt.dll" or n.startswith(("ucrtbase", "api-ms-win-crt", "vcruntime", "msvcp")))
         print("C runtime imports:", ", ".join(crt) or "none")
         gcc_runtime = [n for n in names if n.startswith(("libgcc_s", "libwinpthread", "libstdc++"))]
+        problems = []
+        if subsystem != 2:
+            problems.append(f"the Subsystem field is {subsystem} ({subsystem_name}), expected 2 (IMAGE_SUBSYSTEM_WINDOWS_GUI)")
         if gcc_runtime:
-            raise SystemExit(f"the program needs MinGW runtime DLLs next to it: {gcc_runtime}")
+            problems.append(f"the program needs MinGW runtime DLLs next to it: {gcc_runtime}")
+        if problems:
+            raise SystemExit("; ".join(problems))
         PYTHON
 
-    - name: Run the binary (--version)
+    # The program is a GUI-subsystem executable. A shell that does not capture its output does not wait for it, and
+    # PowerShell never reads the output of a GUI program that ends a pipeline (NativeCommandProcessor.cs of PowerShell:
+    # _isRunningInBackground is set for a Windows GUI application at the end of a pipeline), so `> file` in PowerShell
+    # gives an empty file for any GUI program. The checks below use the forms that work and print what the others do.
+    - name: Run the binary (--version and a bad argument, bash)
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
       working-directory: package/music-player/desktop-app
       run: |
         set -euo pipefail
-        out=$("target/${TARGET}/debug/music-player.exe" --version)
-        echo "$out"
+        exe="target/${TARGET}/debug/music-player.exe"
         expected="music-player $(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head --lines=1 | tr --delete '\r')"
+        out=$("$exe" --version)
+        echo "pipe: $out"
         test "$out" = "$expected"
+        "$exe" --version > "${RUNNER_TEMP}/version-stdout.txt"
+        echo "file: $(cat "${RUNNER_TEMP}/version-stdout.txt")"
+        test "$(tr --delete '\r' < "${RUNNER_TEMP}/version-stdout.txt")" = "$expected"
+        # clap prints an argument error on stderr and exits with 2; stderr redirected to a file must hold the text.
+        status=0
+        "$exe" --no-such-option > "${RUNNER_TEMP}/bad-stdout.txt" 2> "${RUNNER_TEMP}/bad-stderr.txt" || status=$?
+        echo "bad argument exit status: $status"
+        cat "${RUNNER_TEMP}/bad-stderr.txt"
+        test "$status" = 2
+        grep --quiet -e 'no-such-option' "${RUNNER_TEMP}/bad-stderr.txt"
+
+    - name: Run the binary (--version, PowerShell and cmd.exe)
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
+      shell: pwsh
+      working-directory: package/music-player/desktop-app
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $PSNativeCommandUseErrorActionPreference = $true
+        $exe = Join-Path (Get-Location) "target/$env:TARGET/debug/music-player.exe"
+        $version = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"$' | Select-Object -First 1).Matches.Groups[1].Value
+        $expected = "music-player $version"
+        # A GUI program that does not end the pipeline is waited for and its output is read.
+        $captured = (& $exe --version | Out-String).Trim()
+        Write-Output "captured in the pipeline: $captured"
+        if ($captured -cne $expected) { throw "captured '$captured', expected '$expected'" }
+        $merged = (& $exe --version 2>&1 | Out-String).Trim()
+        Write-Output "merged streams: $merged"
+        if ($merged -cne $expected) { throw "merged '$merged', expected '$expected'" }
+        $fileOut = Join-Path $env:RUNNER_TEMP 'out-file.txt'
+        & $exe --version | Out-File -FilePath $fileOut -Encoding utf8
+        $fromOutFile = (Get-Content -Raw -Path $fileOut).Trim()
+        Write-Output "| Out-File holds: $fromOutFile"
+        if ($fromOutFile -cne $expected) { throw "Out-File holds '$fromOutFile', expected '$expected'" }
+        # Start-Process gives the program a file handle of its own and waits for it.
+        $fileStart = Join-Path $env:RUNNER_TEMP 'out-start.txt'
+        Start-Process -FilePath $exe -ArgumentList '--version' -Wait -NoNewWindow -RedirectStandardOutput $fileStart
+        $fromStart = (Get-Content -Raw -Path $fileStart).Trim()
+        Write-Output "Start-Process -RedirectStandardOutput holds: $fromStart"
+        if ($fromStart -cne $expected) { throw "Start-Process file holds '$fromStart', expected '$expected'" }
+        # cmd.exe opens the file and hands it to the program; cmd.exe does not wait for a GUI program, so the step waits
+        # for the text and prints how long that took.
+        $fileCmd = Join-Path $env:RUNNER_TEMP 'out-cmd.txt'
+        Remove-Item -Path $fileCmd -ErrorAction SilentlyContinue
+        $watch = [System.Diagnostics.Stopwatch]::StartNew()
+        cmd.exe /d /c "`"$exe`" --version > `"$fileCmd`""
+        Write-Output "cmd.exe > out-cmd.txt: the command returned after $($watch.ElapsedMilliseconds) ms"
+        $fromCmd = ''
+        while ($watch.Elapsed.TotalSeconds -lt 20) {
+          if (Test-Path -Path $fileCmd) { $fromCmd = "$(Get-Content -Raw -Path $fileCmd)".Trim() }
+          if ($fromCmd) { break }
+          Start-Sleep -Milliseconds 100
+        }
+        Write-Output "cmd.exe > out-cmd.txt: held the text after $($watch.ElapsedMilliseconds) ms: $fromCmd"
+        if ($fromCmd -cne $expected) { throw "out-cmd.txt holds '$fromCmd', expected '$expected'" }
+        # What PowerShell's own `>` does with a GUI program, for the program and for a probe that has no console code at
+        # all. Printed, not asserted: it is PowerShell's behavior, and the probe shows it does not come from this program.
+        $probeDir = Join-Path $env:RUNNER_TEMP 'gui-probe'
+        New-Item -ItemType Directory -Path $probeDir -Force | Out-Null
+        Set-Content -Path (Join-Path $probeDir 'probe.rs') -Value "#![windows_subsystem = `"windows`"]`nfn main() { println!(`"gui-probe`"); }"
+        rustc --edition 2024 --out-dir $probeDir (Join-Path $probeDir 'probe.rs')
+        $probe = Join-Path $probeDir 'probe.exe'
+        foreach ($case in @(@('music-player', $exe, '--version'), @('gui-probe', $probe, ''))) {
+          $target = Join-Path $env:RUNNER_TEMP "ps-redirect-$($case[0]).txt"
+          Remove-Item -Path $target -ErrorAction SilentlyContinue
+          if ($case[2]) { & $case[1] $case[2] > $target } else { & $case[1] > $target }
+          Start-Sleep -Seconds 3
+          $length = if (Test-Path -Path $target) { (Get-Item -Path $target).Length } else { -1 }
+          Write-Output "PowerShell > file with $($case[0]): $length bytes after 3 seconds (-1 means no file)"
+        }
+        # Not captured: the program is started without redirection. Whether its text reaches this log depends on the
+        # console of this step; it is printed here as evidence and not asserted.
+        Write-Output 'uncaptured run follows'
+        & $exe --version
+        Start-Sleep -Seconds 5
+
+    # The one branch the runner cannot reach through a shell: no standard handle at all, or only some, and a parent console.
+    # This step makes that parent a Python process with a console of its own, starts the program with exactly the
+    # handles each case needs through CreateProcessW, and reads the console screen buffer back. Cases:
+    # - no handles: --version and a bad argument must print on the console (the AttachConsole branch);
+    # - stdout inherited as a file, stderr missing, no STARTF_USESTDHANDLES: stdout must stay in the file and the bad
+    #   argument text must reach the console;
+    # - the same with STARTF_USESTDHANDLES;
+    # - RUST_LOG=debug makes the program log what the attach did (which action each standard handle got), and the step
+    #   prints those lines, so the branch that ran is measured and not assumed;
+    # - a double-click start: the parent has no console at all (FreeConsole), so the attach fails as it does under
+    #   Explorer. A bad argument must exit with status 2 (not a panic, 101), and a start without a path and a start on the
+    #   fixture folder must both still be running after 15 seconds. A sibling start of the no-path case with both output
+    #   handles in files prints the startup log lines, to show it takes the first-run path.
+    - name: Run the binary with missing standard handles against a real console
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
+      working-directory: package/music-player/desktop-app
+      run: |
+        set -euo pipefail
+        exe="$(cygpath --windows "$PWD/target/${TARGET}/debug/music-player.exe")"
+        expected="music-player $(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head --lines=1 | tr --delete '\r')"
+        python - "$exe" "$expected" "$(cygpath --windows "$RUNNER_TEMP")" "$(cygpath --windows "$PWD/fixture")" <<'PYTHON'
+        import ctypes
+        import os
+        import re
+        import sys
+        from ctypes import wintypes
+
+        exe, expected, temp_dir, fixture = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE = (wintypes.DWORD(-10).value, wintypes.DWORD(-11).value, wintypes.DWORD(-12).value)
+        STARTF_USESTDHANDLES = 0x100
+        GENERIC_READ, GENERIC_WRITE = 0x80000000, 0x40000000
+        FILE_SHARE_READ, FILE_SHARE_WRITE = 1, 2
+        CREATE_ALWAYS, OPEN_EXISTING = 2, 3
+        INFINITE = 0xFFFFFFFF
+        WAIT_TIMEOUT = 0x102
+
+
+        class SecurityAttributes(ctypes.Structure):
+            _fields_ = [("nLength", wintypes.DWORD), ("lpSecurityDescriptor", wintypes.LPVOID), ("bInheritHandle", wintypes.BOOL)]
+
+
+        class StartupInfo(ctypes.Structure):
+            _fields_ = [
+                ("cb", wintypes.DWORD), ("lpReserved", wintypes.LPWSTR), ("lpDesktop", wintypes.LPWSTR), ("lpTitle", wintypes.LPWSTR),
+                ("dwX", wintypes.DWORD), ("dwY", wintypes.DWORD), ("dwXSize", wintypes.DWORD), ("dwYSize", wintypes.DWORD),
+                ("dwXCountChars", wintypes.DWORD), ("dwYCountChars", wintypes.DWORD), ("dwFillAttribute", wintypes.DWORD),
+                ("dwFlags", wintypes.DWORD), ("wShowWindow", wintypes.WORD), ("cbReserved2", wintypes.WORD),
+                ("lpReserved2", ctypes.c_void_p), ("hStdInput", wintypes.HANDLE), ("hStdOutput", wintypes.HANDLE), ("hStdError", wintypes.HANDLE),
+            ]
+
+
+        class ProcessInformation(ctypes.Structure):
+            _fields_ = [("hProcess", wintypes.HANDLE), ("hThread", wintypes.HANDLE), ("dwProcessId", wintypes.DWORD), ("dwThreadId", wintypes.DWORD)]
+
+
+        class Coord(ctypes.Structure):
+            _fields_ = [("X", wintypes.SHORT), ("Y", wintypes.SHORT)]
+
+
+        class SmallRect(ctypes.Structure):
+            _fields_ = [("Left", wintypes.SHORT), ("Top", wintypes.SHORT), ("Right", wintypes.SHORT), ("Bottom", wintypes.SHORT)]
+
+
+        class ScreenBufferInfo(ctypes.Structure):
+            _fields_ = [("dwSize", Coord), ("dwCursorPosition", Coord), ("wAttributes", wintypes.WORD), ("srWindow", SmallRect), ("dwMaximumWindowSize", Coord)]
+
+
+        kernel32.GetStdHandle.restype = wintypes.HANDLE
+        kernel32.GetStdHandle.argtypes = [wintypes.DWORD]
+        kernel32.SetStdHandle.argtypes = [wintypes.DWORD, wintypes.HANDLE]
+        kernel32.CreateFileW.restype = wintypes.HANDLE
+        kernel32.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+        kernel32.CreateProcessW.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, ctypes.c_void_p, ctypes.c_void_p, wintypes.BOOL, wintypes.DWORD, ctypes.c_void_p, wintypes.LPCWSTR, ctypes.POINTER(StartupInfo), ctypes.POINTER(ProcessInformation)]
+        kernel32.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+        kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
+        kernel32.GetConsoleScreenBufferInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(ScreenBufferInfo)]
+        kernel32.ReadConsoleOutputCharacterW.argtypes = [wintypes.HANDLE, wintypes.LPWSTR, wintypes.DWORD, Coord, ctypes.POINTER(wintypes.DWORD)]
+
+
+        def fresh_console():
+            """Leaves the console of the CI step and creates an empty console of this process."""
+            kernel32.FreeConsole()
+            if not kernel32.AllocConsole():
+                raise SystemExit(f"AllocConsole failed with error {ctypes.get_last_error()}")
+
+
+        def console_text():
+            """Reads every written row of this process's console screen buffer."""
+            screen = kernel32.CreateFileW("CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, None, OPEN_EXISTING, 0, None)
+            info = ScreenBufferInfo()
+            if not kernel32.GetConsoleScreenBufferInfo(screen, ctypes.byref(info)):
+                raise SystemExit(f"GetConsoleScreenBufferInfo failed with error {ctypes.get_last_error()}")
+            width = info.dwSize.X
+            rows = []
+            for row in range(info.dwCursorPosition.Y + 1):
+                buffer = ctypes.create_unicode_buffer(width)
+                read = wintypes.DWORD(0)
+                kernel32.ReadConsoleOutputCharacterW(screen, buffer, width, Coord(0, row), ctypes.byref(read))
+                rows.append(buffer.value.rstrip())
+            kernel32.CloseHandle(screen)
+            return "\n".join(rows).strip()
+
+
+        def open_inheritable_file(path):
+            attributes = SecurityAttributes(ctypes.sizeof(SecurityAttributes), None, True)
+            handle = kernel32.CreateFileW(path, GENERIC_WRITE, FILE_SHARE_READ, ctypes.byref(attributes), CREATE_ALWAYS, 0, None)
+            if handle in (None, wintypes.HANDLE(-1).value):
+                raise SystemExit(f"CreateFileW failed for {path} with error {ctypes.get_last_error()}")
+            return handle
+
+
+        def start(argument, inherit, use_std_handles, stdout_file, stderr_file=None, wait_ms=INFINITE):
+            """Starts the program. Returns its exit code, or None when it is still running after wait_ms (it is then ended)."""
+            startup = StartupInfo()
+            startup.cb = ctypes.sizeof(StartupInfo)
+            if use_std_handles:
+                startup.dwFlags = STARTF_USESTDHANDLES
+                startup.hStdOutput = stdout_file
+                startup.hStdError = stderr_file
+            info = ProcessInformation()
+            command = ctypes.create_unicode_buffer(f'"{exe}" {argument}'.rstrip())
+            if not kernel32.CreateProcessW(exe, command, None, None, inherit, 0, None, None, ctypes.byref(startup), ctypes.byref(info)):
+                raise SystemExit(f"CreateProcessW failed with error {ctypes.get_last_error()}")
+            waited = kernel32.WaitForSingleObject(info.hProcess, wait_ms)
+            code = None
+            if waited == WAIT_TIMEOUT:
+                kernel32.TerminateProcess(info.hProcess, 1)
+                kernel32.WaitForSingleObject(info.hProcess, INFINITE)
+            else:
+                exit_code = wintypes.DWORD(0)
+                kernel32.GetExitCodeProcess(info.hProcess, ctypes.byref(exit_code))
+                code = exit_code.value
+            kernel32.CloseHandle(info.hProcess)
+            kernel32.CloseHandle(info.hThread)
+            return code
+
+
+        # clap decides between plain text, console attributes and ANSI escape sequences from these variables and the
+        # console; they are printed because the arm64 runner showed escape sequences on a console without VT processing.
+        for name in ("TERM", "COLORTERM", "CLICOLOR", "CLICOLOR_FORCE", "NO_COLOR", "ANSICON", "WT_SESSION"):
+            print(f"environment {name}={os.environ.get(name)!r}", flush=True)
+
+        # The program logs what the console attach did at debug level, before it parses the arguments.
+        os.environ["RUST_LOG"] = "debug"
+
+        failures = []
+
+
+        def attach_lines(text):
+            """The program's own report of the attach, taken from the console text (rows wrapped at the buffer width are joined)."""
+            joined = text.replace("\n", "")
+            found = re.search(r"attached to the console.*?stderr.{0,40}?StreamReport \{[^}]*\}", joined)
+            return found.group(0) if found else ""
+
+
+        def check(name, condition, detail):
+            # Escapes non-ASCII characters (an ESC byte shows as a left arrow in an OEM code page) so the print cannot fail on the
+            # step's code page.
+            print(f"{'ok  ' if condition else 'FAIL'} {name}: {detail.encode('ascii', 'backslashreplace').decode()}", flush=True)
+            if not condition:
+                failures.append(name)
+
+
+        # Case 1: no standard handle at all (CreateProcessW without handle inheritance), a console of the parent.
+        for argument, wanted_code, wanted_text in (("--version", 0, expected), ("--no-such-option", 2, "no-such-option")):
+            fresh_console()
+            code = start(argument, False, False, None)
+            text = console_text()
+            check(f"no handles, {argument}", code == wanted_code and wanted_text in text and "attached to the console" in text, f"exit code {code}, console shows {text!r}")
+
+        # Cases 2 and 3: stdout is a file, stderr and stdin are missing, with and without STARTF_USESTDHANDLES.
+        for label, use_std_handles in (("inherited from the parent process", False), ("STARTF_USESTDHANDLES", True)):
+            for argument, wanted_code, in_file, in_console in (("--version", 0, expected, ""), ("--no-such-option", 2, "", "no-such-option")):
+                fresh_console()
+                path = os.path.join(temp_dir, "handle-case.txt")
+                stdout_file = open_inheritable_file(path)
+                kernel32.SetStdHandle(STD_INPUT_HANDLE, None)
+                kernel32.SetStdHandle(STD_OUTPUT_HANDLE, stdout_file)
+                kernel32.SetStdHandle(STD_ERROR_HANDLE, None)
+                code = start(argument, True, use_std_handles, stdout_file)
+                kernel32.CloseHandle(stdout_file)
+                with open(path, encoding="utf-8") as handle:
+                    file_text = handle.read().strip()
+                text = console_text()
+                good = code == wanted_code
+                good = good and (in_file in file_text if in_file else file_text == "")
+                good = good and (in_console in text if in_console else expected not in text)
+                good = good and "attached to the console" in text
+                check(f"stdout file, stderr missing, {label}, {argument}", good, f"exit code {code}, file holds {file_text!r}, attach report {attach_lines(text)!r}")
+
+        # Double-click start: no console in the parent, no standard handle, so the attach fails with ERROR_INVALID_HANDLE.
+        kernel32.FreeConsole()
+        code = start("--no-such-option", False, False, None)
+        check("double-click start, bad argument", code == 2, f"exit code {code} (101 would be a panic)")
+        for label, argument in (("no path", ""), ("fixture folder", f'"{fixture}"')):
+            code = start(argument, False, False, None, wait_ms=15000)
+            check(f"double-click start, {label}, alive after 15 seconds", code is None, f"exit code {code} (None means still running)")
+
+        # The no-path start with both output handles in files, to read the startup log lines of the first-run path.
+        os.environ["RUST_LOG"] = "info"
+        out_file = open_inheritable_file(os.path.join(temp_dir, "first-run-out.txt"))
+        err_file = open_inheritable_file(os.path.join(temp_dir, "first-run-err.txt"))
+        code = start("", True, True, out_file, err_file, wait_ms=10000)
+        kernel32.CloseHandle(out_file)
+        kernel32.CloseHandle(err_file)
+        with open(os.path.join(temp_dir, "first-run-err.txt"), encoding="utf-8", errors="replace") as handle:
+            log_lines = [line.strip() for line in handle if "music folder" in line or "folder" in line.lower()]
+        for line in log_lines[:6]:
+            print("first-run log: " + line.encode("ascii", "backslashreplace").decode(), flush=True)
+        check("no-path start with output in files, alive after 10 seconds", code is None, f"exit code {code}, {len(log_lines)} folder log lines")
+
+        if failures:
+            raise SystemExit("failed: " + "; ".join(failures))
+        PYTHON
 
     # The program must stay up when started on a folder, with no audio device on the runner. A start that
     # exits within the wait fails the job.
     - name: Launch the program and check it stays up
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
       working-directory: package/music-player/desktop-app
       env:
         RUST_LOG: info

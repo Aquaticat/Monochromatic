@@ -15,6 +15,11 @@ on:
 permissions:
   contents: read
 
+env:
+  # Same reason as npm-release.yml: the root mise config would otherwise try to
+  # build every heavy dev tool on the runner.
+  MISE_AUTO_INSTALL: 'false'
+
 concurrency:
   group: kotlin-linter-publish
   cancel-in-progress: false
@@ -109,7 +114,6 @@ jobs:
         # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
         minimum_release_age: 1d
         install: false
-        cache: true
 
     - name: Install Java
       run: mise install java
