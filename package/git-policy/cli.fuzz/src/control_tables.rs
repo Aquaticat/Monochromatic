@@ -1,7 +1,5 @@
 //! What:
-//!  The token tables the control generators draw from,
-//!  and the words the frontier
-//!       check treats as possible aliases.
+//!  The token tables the control generators draw from.
 //! Why:
 //!  Keeping the spellings apart from the logic lets each list be reviewed on its own.
 //!      Control spellings are restated here instead of imported,
@@ -211,31 +209,4 @@ pub(crate) const VALUELESS_TOKENS: &[&[u8]] = &[
     b"--force",
     b"--dry-run",
     b"--no-such-option",
-];
-
-/// What:
-///  Command words in `CONTROL_TOKENS` that Git does not build in.
-/// Why:
-///   From a linked worktree each may be an alias for a worktree creation.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const POSSIBLE_ALIASES = ['st', 'wta', 'cli-git', 'dir', ...];
-/// ```
-pub(crate) const POSSIBLE_ALIASES: &[&[u8]] = &[
-    b"st",
-    b"wta",
-    b"cli-git",
-    b"dir",
-    b"a=b",
-    b".",
-    b"file",
-    b"HEAD",
-    b"origin",
-    b"topic",
-    b"move",
-    b"list",
-    b"pop",
-    b"",
-    b"\xff\xfe",
 ];
