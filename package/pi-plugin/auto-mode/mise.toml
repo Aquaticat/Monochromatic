@@ -152,6 +152,10 @@ run = "node native/build.ts"
 description = "Rebuild owned native transformations against the already emitted qualified Pi source"
 run = "node native/build.ts --owned"
 
+[tasks."test:native:build-activation"]
+description = "Verify failed release generation and loading preserve a usable disposable installation"
+run = "node --max-old-space-size=512 native/build.unit.test.ts"
+
 [tasks."test:native:source-freshness-work"]
 description = "Bound repeated governing-file observation through the built native approval consumer"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/source-freshness-work.test.mjs"
