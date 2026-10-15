@@ -15,7 +15,6 @@ export function bindGoverningPolicySource({
   judgment,
   producerOwner,
   observer,
-  collector,
   response,
   stream
 }){
@@ -36,12 +35,12 @@ export function bindGoverningPolicySource({
      response,
      stream
    });
-   const currentSources=judgment.readSourceSnapshot?.()??judgment.sourceSnapshot
-     ??receipt.sources;
+   const currentBinding=judgment.readCurrentSourceBinding();
+   if(currentBinding.request!==receipt)throw new GoverningPolicyBindingError('Original judgment request receipt changed');
+   const currentSources=currentBinding.sources;
    if(bindingState.sources===undefined)bindingState.sources=currentSources;
    else if(bindingState.sources!==currentSources)throw new GoverningPolicyBindingError('Original judgment source snapshot changed');
-   observer.assertFresh(receipt);collector.assertObservedFresh(bindingState.sources);
-   judgment.assertDependenciesCurrent();assertPolicyInput({
+   assertPolicyInput({
      input:policyInput,
      binding:link
    });
