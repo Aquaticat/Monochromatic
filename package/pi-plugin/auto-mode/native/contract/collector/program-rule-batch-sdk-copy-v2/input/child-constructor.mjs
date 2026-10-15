@@ -11,10 +11,12 @@ import {createQuestionSelection,readAssessmentResponse} from "../../../lifecycle
 import {createDependencyFacade} from "../../../lifecycle/native-text-read-contract/dependencies.mjs";
 import {readMainAgentRequest} from "../../request-producer-group-consumer/request.mjs";
 
-import {JudgmentConstructionError, requireJSONInput} from './judgment-input.mjs';
+import {JudgmentConstructionError} from './judgment-input.mjs';
 export {JudgmentConstructionError} from './judgment-input.mjs';
 import {createJudgmentPrograms} from './judgment-programs.mjs';
 import {createJudgmentExecutions} from './execution-owner.ts';
+import {captureJudgmentMembership} from './judgment-membership.ts';
+import {capturePreparedJudgmentJSON} from './judgment-prepared-input.ts';
 
 //region Fixed session-bound creator; all inputs come from the owned native JSON/prepared-member profile.
 /** Bind one native consumer to source/root/file observers, fixed catalog and owned transport dependencies. */
@@ -28,15 +30,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     const receipt=readMainAgentRequest(input);
     let judgmentSources=sourceBinding?.sources??receipt.sources;
     if(sourceBinding&&sourceBinding.request!==receipt)throw new JudgmentConstructionError("Judgment sources do not belong to the original request receipt");
-    // SDK-produced content is an owned plain JSON tree in this finite profile, not arbitrary JavaScript objects.
-    for(const part of response.content)if(part.type==='toolCall')requireJSONInput(part.arguments);
-    const parentJSON=JSON.stringify(response.content);
-    if(typeof parentJSON!=='string'||Buffer.byteLength(parentJSON)>1048576)throw new JudgmentConstructionError('Native enclosing response exceeds the declared JSON profile');
-    const content=JSON.parse(parentJSON);
-    if(!Array.isArray(content))throw new JudgmentConstructionError('Native enclosing response has no content array');
-    const declared=content.filter(function isToolCall(value) { return (value&&value.type==='toolCall'); });
-    if(declared.length===0||declared.length>64||declared.some(function hasInvalidToolIdentity(value) { return (typeof value.id!=='string'||!value.id||typeof value.name!=='string'||!value.name); })||new Set(declared.map(function readDeclaredCallId(value) { return (value.id); })).size!==declared.length)throw new JudgmentConstructionError('Enclosing judgment requires complete unique native tool membership');
-    const declaredNames=Object.freeze(declared.map(function copyDeclaredToolIdentity(value) { return (Object.freeze({id:value.id,name:value.name})); }));
+    const {parentJSON,declaredNames}=captureJudgmentMembership(response);
     const judgmentCollector=Object.freeze({
       capture(options){
         if(options.signal!==signal)throw new JudgmentConstructionError('Dependency sources require original judgment cancellation');
@@ -103,11 +97,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       active();if(prepared||preparing)throw new JudgmentConstructionError('Prepared judgment membership cannot be replaced or reentered');preparing=true;
       using preparation={ [Symbol.dispose](){preparing=false;} };
       try {
-        if(!Array.isArray(members)||!Object.isFrozen(members)||members.length!==declaredNames.length)throw new JudgmentConstructionError('Prepared group differs from complete declared membership');
-        for(let index=0;index<members.length;index+=1){const member=members[index],expected=declaredNames[index];if(!member||!Object.isFrozen(member)||member.id!==expected.id||member.name!==expected.name||!Object.hasOwn(member,'input')||!Object.isFrozen(member.input))throw new JudgmentConstructionError('Prepared member identity or sealed input differs from the native group');}
-        for(const member of members)requireJSONInput(member.input);
-        const preparedJSON=JSON.stringify(members);
-        if(typeof preparedJSON!=='string'||Buffer.byteLength(preparedJSON)>1048576)throw new JudgmentConstructionError('Prepared member data exceeds the declared JSON profile');
+        const preparedJSON=capturePreparedJudgmentJSON({members,declaredNames});
         if(observer.beginJudgmentSources){const binding=observer.sealJudgmentSources(response);if(binding.request!==receipt)throw new JudgmentConstructionError("Prepared sources lost their original request receipt");judgmentSources=binding.sources;}
         const dependencyHandle=facade.prepare({signal});
         active();facade.finalize(dependencyHandle);budget.checkpoint();

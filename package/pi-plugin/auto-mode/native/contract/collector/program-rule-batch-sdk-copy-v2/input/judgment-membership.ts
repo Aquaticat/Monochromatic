@@ -75,8 +75,8 @@ export function captureJudgmentMembership(response: JudgmentResponseInput): Judg
   const content: unknown = JSON.parse(parentJSON);
   if (!isProgramArray(content)) throw new JudgmentConstructionError('Native enclosing response has no content array');
   /** Complete tool membership follows original response order. */
-  const declared = content.filter(isDeclaredTool);
-  if (declared.length === 0 || declared.length > JUDGMENT_MEMBER_LIMIT || !declared.every(hasDeclaredIdentity)
+  const declared = content.filter(function selectDeclaredTool(value) { return isDeclaredTool(value); });
+  if (declared.length === 0 || declared.length > JUDGMENT_MEMBER_LIMIT || !declared.every(function admitDeclaredIdentity(value) { return hasDeclaredIdentity(value); })
     || new Set(declared.map(function declaredId(value) { return value.id; })).size !== declared.length) {
     throw new JudgmentConstructionError('Enclosing judgment requires complete unique native tool membership');
   }
