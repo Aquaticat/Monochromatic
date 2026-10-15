@@ -4,7 +4,12 @@
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
 import type { ProgramContext } from './program-operation-types.ts';
-import type { ProgramExecutionRecord, ProgramGroup, ProgramOwnerState, ProgramSlot } from './program-state-types.ts';
+import type {
+  ProgramExecutionRecord,
+  ProgramGroup,
+  ProgramOwnerState,
+  ProgramSlot
+} from './program-state-types.ts';
 
 //region Original handle lookup keeps terminal inspection separate from current-use checks.
 /**
@@ -15,7 +20,11 @@ import type { ProgramExecutionRecord, ProgramGroup, ProgramOwnerState, ProgramSl
  @example createProgramState();
  */
 export function createProgramState(): ProgramOwnerState {
-  return { programs: new WeakMap(), groups: new WeakMap(), slots: new WeakMap() };
+  return {
+    programs: new WeakMap(),
+    groups: new WeakMap(),
+    slots: new WeakMap()
+  };
 }
 
 /**
@@ -29,7 +38,10 @@ export function createProgramState(): ProgramOwnerState {
 
  @example createProgramOwnership({ input, state });
  */
-export function createProgramOwnership({ input, state }: ProgramContext): ProgramOwnership {
+export function createProgramOwnership({
+  input,
+  state
+}: ProgramContext): ProgramOwnership {
   /**
    Captured dependency guard does not consult mutable caller properties again.
    */
@@ -37,7 +49,11 @@ export function createProgramOwnership({ input, state }: ProgramContext): Progra
   /**
    Private maps are populated only at their original publication boundaries.
    */
-  const { programs, groups, slots } = state;
+  const {
+    programs,
+    groups,
+    slots
+  } = state;
   /**
    Authenticate a program before reading its retained scope.
 
@@ -49,7 +65,9 @@ export function createProgramOwnership({ input, state }: ProgramContext): Progra
    */
   function knownProgram(program: object): ProgramExecutionRecord {
     const record = programs.get(program);
-    if ((!record) || (nonNullishOrThrow(record.program).handle !== program)) throw new JudgmentConstructionError('Program handle is not owned by this judgment');
+    if ((!record) || (nonNullishOrThrow(record.program)
+      .handle
+      !== program)) throw new JudgmentConstructionError('Program handle is not owned by this judgment');
     return record;
   }
   /**
@@ -63,10 +81,18 @@ export function createProgramOwnership({ input, state }: ProgramContext): Progra
     const record = knownProgram(program);
     const scope = nonNullishOrThrow(record.program);
     if (scope.guardFailure) throw scope.guardFailure;
-    if (scope.status === 'failed') throw new JudgmentConstructionError('Program declaration failed permanently', { cause: scope.failure });
-    if (record.execution?.state !== 'active') throw new JudgmentConstructionError('Program parent execution has returned');
+    if (scope.status === 'failed') throw new JudgmentConstructionError(
+      'Program declaration failed permanently',
+      { cause: scope.failure }
+    );
+    if (record.execution
+      ?.state
+      !== 'active') throw new JudgmentConstructionError('Program parent execution has returned');
     assertDependenciesCurrent();
-    record.execution.origin.signal.throwIfAborted();
+    record.execution
+      .origin
+      .signal
+      .throwIfAborted();
     return record;
   }
   /**
@@ -91,7 +117,10 @@ export function createProgramOwnership({ input, state }: ProgramContext): Progra
   function currentGroup(handle: object): ProgramGroup {
     const group = knownGroup(handle);
     currentProgram(group.program);
-    if (group.state === 'failed') throw new JudgmentConstructionError('Reached group failed permanently', { cause: group.failure });
+    if (group.state === 'failed') throw new JudgmentConstructionError(
+      'Reached group failed permanently',
+      { cause: group.failure }
+    );
     return group;
   }
   /**
@@ -103,12 +132,24 @@ export function createProgramOwnership({ input, state }: ProgramContext): Progra
 
    @returns original group-owned slot
    */
-  function knownSlot({ group, slot }: Readonly<{ group: ProgramGroup; slot: object }>): ProgramSlot {
+  function knownSlot({
+    group,
+    slot
+  }: Readonly<{
+    group: ProgramGroup;
+    slot: object
+  }>): ProgramSlot {
     const record = slots.get(slot);
     if ((!record) || (record.group !== group)) throw new JudgmentConstructionError('Native slot is not owned by this reached group');
     return record;
   }
-  return { knownProgram, currentProgram, knownGroup, currentGroup, knownSlot };
+  return {
+    knownProgram,
+    currentProgram,
+    knownGroup,
+    currentGroup,
+    knownSlot
+  };
 }
 //endregion
 
@@ -120,5 +161,8 @@ export type ProgramOwnership = Readonly<{
   currentProgram: (program: object) => ProgramExecutionRecord;
   knownGroup: (handle: object) => ProgramGroup;
   currentGroup: (handle: object) => ProgramGroup;
-  knownSlot: (input: Readonly<{ group: ProgramGroup; slot: object }>) => ProgramSlot;
+  knownSlot: (input: Readonly<{
+    group: ProgramGroup;
+    slot: object
+  }>) => ProgramSlot;
 }>;

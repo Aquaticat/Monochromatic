@@ -1,11 +1,24 @@
 /**
  Public original program operations preserve prepared inspection, live execution, and retained diagnostics. @module
  */
-import type { NativeReturnInput, NativeReturnOutcome } from './native-return-types.ts';
+import type {
+  NativeReturnInput,
+  NativeReturnOutcome
+} from './native-return-types.ts';
 import type { PreparedProgramView } from './program-declaration-types.ts';
-import type { BindPreparedProgramInput, BindProgramCallsInput, PrepareReachedMembersInput } from './program-operation-types.ts';
-import type { OriginalProgramInspection, ReachedGroupInspection } from './program-inspection.ts';
-import type { ProgramGroup, ProgramScope } from './program-state-types.ts';
+import type {
+  BindPreparedProgramInput,
+  BindProgramCallsInput,
+  PrepareReachedMembersInput
+} from './program-operation-types.ts';
+import type {
+  OriginalProgramInspection,
+  ReachedGroupInspection
+} from './program-inspection.ts';
+import type {
+  ProgramGroup,
+  ProgramScope
+} from './program-state-types.ts';
 import type { NativeScriptValueGuardError } from './script-value-guard.ts';
 
 /* oxlint-disable no-restricted-syntax/no-nullish-union -- Mirrors the original native judgment preparedProgramFor API: unbound inspection returns undefined before program entry; native/README.md documents why a sentinel would change its consumer contract. */
@@ -21,7 +34,10 @@ export type PreparedProgramLookup = PreparedProgramView | undefined;
 export type ProgramOpening = Readonly<{
   bindPreparedProgram: (input: BindPreparedProgramInput) => PreparedProgramView;
   preparedProgramFor: (member: object) => PreparedProgramLookup;
-  openProgram: (input: Readonly<{ parentToken: object; toolNames: readonly string[] }>) => object;
+  openProgram: (input: Readonly<{
+    parentToken: object;
+    toolNames: readonly string[]
+  }>) => object;
   programFor: (program: object) => ProgramScope['view'];
 }>;
 
@@ -29,7 +45,10 @@ export type ProgramOpening = Readonly<{
  Original source-group materialization exposes only its already published view.
  */
 export type ProgramReaching = Readonly<{
-  reachProgramGroup: (input: Readonly<{ program: object; ordinal: number }>) => ProgramGroup['view'];
+  reachProgramGroup: (input: Readonly<{
+    program: object;
+    ordinal: number
+  }>) => ProgramGroup['view'];
   reachedGroupFor: (group: object) => ProgramGroup['view'];
 }>;
 
@@ -38,8 +57,15 @@ export type ProgramReaching = Readonly<{
  */
 export type ProgramValueAccess = Readonly<{
   invokeProgramNative: (input: NativeReturnInput & Readonly<{ group: object }>) => Promise<NativeReturnOutcome>;
-  scriptValueFor: (input: Readonly<{ group: object; slot: object; outcome: unknown }>) => string;
-  markProgramGuard: (input: Readonly<{ program: object; error: unknown }>) => NativeScriptValueGuardError;
+  scriptValueFor: (input: Readonly<{
+    group: object;
+    slot: object;
+    outcome: unknown
+  }>) => string;
+  markProgramGuard: (input: Readonly<{
+    program: object;
+    error: unknown
+  }>) => NativeScriptValueGuardError;
 }>;
 
 /**

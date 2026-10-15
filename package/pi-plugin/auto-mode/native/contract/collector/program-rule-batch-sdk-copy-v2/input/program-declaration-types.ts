@@ -10,7 +10,11 @@ export type DeclaredProgramSite = Readonly<{
   ordinal: number;
   name: string;
   pattern: object;
-  callee: Readonly<{ start: number; end: number; text: string }>;
+  callee: Readonly<{
+    start: number;
+    end: number;
+    text: string
+  }>;
   alias: string;
 }>;
 

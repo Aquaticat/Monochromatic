@@ -5,7 +5,10 @@ import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import { materializePattern } from './result-pattern.mjs';
 import { JudgmentConstructionError } from './judgment-error.ts';
 import { requireJSONInput } from './judgment-json.ts';
-import type { ReachedProgramSite, ReachedProgramView } from './program-declaration-types.ts';
+import type {
+  ReachedProgramSite,
+  ReachedProgramView
+} from './program-declaration-types.ts';
 import type { ProgramOwnership } from './program-ownership.ts';
 import type { ProgramGroup } from './program-state-types.ts';
 import type { ProgramReaching } from './program-api.ts';
@@ -26,7 +29,10 @@ const MAX_REACHED_ARGUMENT_BYTES = 1_048_576;
  @example createProgramReaching(ownership);
  */
 export function createProgramReaching(ownership: ProgramOwnership): ProgramReaching {
-  const { currentProgram, currentGroup } = ownership;
+  const {
+    currentProgram,
+    currentGroup
+  } = ownership;
   /**
    Materialize all original group arguments before publishing their immutable view.
 
@@ -36,23 +42,42 @@ export function createProgramReaching(ownership: ProgramOwnership): ProgramReach
 
    @returns original reached view when published
    */
-  function reachProgramGroup({ program, ordinal }: Readonly<{ program: object; ordinal: number }>): ProgramGroup['view'] {
+  function reachProgramGroup({
+    program,
+    ordinal
+  }: Readonly<{
+    program: object;
+    ordinal: number
+  }>): ProgramGroup['view'] {
     const parent = currentProgram(program);
     const scope = nonNullishOrThrow(parent.program);
     const group = scope.groups[ordinal];
     if ((!Number.isSafeInteger(ordinal)) || (!group)) throw new JudgmentConstructionError('Program group ordinal is outside original source');
-    if (group.state === 'failed') throw new JudgmentConstructionError('Reached group failed permanently', { cause: group.failure });
+    if (group.state === 'failed') throw new JudgmentConstructionError(
+      'Reached group failed permanently',
+      { cause: group.failure }
+    );
     if (group.state !== 'unreached') return group.view;
-    const result = ordinal === 0 ? undefined : scope.valueReceipt?.value;
+    const result = ordinal === 0 ? undefined : scope.valueReceipt
+      ?.value;
     if ((ordinal > 0) && (!scope.valueReceipt)) throw new JudgmentConstructionError('Successor group requires the owned producer script value');
-    const members = Object.freeze(group.definition.members.map(function materializeGroupMember(site): ReachedProgramSite {
+    const members = Object.freeze(group.definition
+      .members
+      .map(function materializeGroupMember(site): ReachedProgramSite {
       const args = materializePattern({ pattern: site.pattern, ...(result === undefined ? {} : { result }) });
       requireJSONInput(args);
       return Object.freeze({ ...site, args, argsJSON: nonNullishOrThrow(JSON.stringify(args)) });
     }));
-    if (Buffer.byteLength(JSON.stringify(members.map(function readMemberArguments(member) { return member.args; }))) > MAX_REACHED_ARGUMENT_BYTES) throw new JudgmentConstructionError('Reached group argument data exceeds one MiB');
+    if (Buffer.byteLength(
+      JSON.stringify(members.map(function readMemberArguments(member) { return member.args; })),
+    ) > MAX_REACHED_ARGUMENT_BYTES) throw new JudgmentConstructionError('Reached group argument data exceeds one MiB');
     currentProgram(program);
-    const view: ReachedProgramView = Object.freeze({ handle: group.handle, ordinal, declaration: nonNullishOrThrow(scope.declaration), members });
+    const view: ReachedProgramView = Object.freeze({
+      handle: group.handle,
+      ordinal,
+      declaration: nonNullishOrThrow(scope.declaration),
+      members
+    });
     group.view = view;
     group.state = 'reached';
     return group.view;
@@ -65,8 +90,12 @@ export function createProgramReaching(ownership: ProgramOwnership): ProgramReach
    @returns original group view when published
    */
   function reachedGroupFor(group: object): ProgramGroup['view'] {
-    return currentGroup(group).view;
+    return currentGroup(group)
+      .view;
   }
-  return { reachProgramGroup, reachedGroupFor };
+  return {
+    reachProgramGroup,
+    reachedGroupFor
+  };
 }
 //endregion

@@ -4,7 +4,10 @@
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import { createNativeReturnConsumer } from '../../../integration/native-batch/generated/native-return-consumer.mjs';
 import { JudgmentConstructionError } from './judgment-error.ts';
-import type { BindProgramCallsInput, ProgramContext } from './program-operation-types.ts';
+import type {
+  BindProgramCallsInput,
+  ProgramContext
+} from './program-operation-types.ts';
 import type { ProgramOwnership } from './program-ownership.ts';
 import type { ProgramSlot } from './program-state-types.ts';
 import type { JudgmentPrograms } from './program-api.ts';
@@ -23,10 +26,20 @@ import type { JudgmentPrograms } from './program-api.ts';
 
  @example createProgramCallBinding({ input, state, ownership });
  */
-export function createProgramCallBinding({ input, state, ownership }: ProgramContext & Readonly<{ ownership: ProgramOwnership }>): JudgmentPrograms['bindProgramCalls'] {
-  const { knownMember, operation } = input;
+export function createProgramCallBinding({
+  input,
+  state,
+  ownership
+}: ProgramContext & Readonly<{ ownership: ProgramOwnership }>): JudgmentPrograms['bindProgramCalls'] {
+  const {
+    knownMember,
+    operation
+  } = input;
   const { slots } = state;
-  const { currentGroup, knownSlot } = ownership;
+  const {
+    currentGroup,
+    knownSlot
+  } = ownership;
   /**
    Compare complete native calls before publishing any pending slot.
 
@@ -40,24 +53,48 @@ export function createProgramCallBinding({ input, state, ownership }: ProgramCon
 
    @returns frozen original native slot handles
    */
-  function bindProgramCalls({ group: handle, calls, tools, runNative }: BindProgramCallsInput): readonly object[] {
+  function bindProgramCalls({
+    group: handle,
+    calls,
+    tools,
+    runNative
+  }: BindProgramCallsInput): readonly object[] {
     const group = currentGroup(handle);
     if (group.state !== 'reached') throw new JudgmentConstructionError('Reached group native calls cannot be rebound');
     group.state = 'binding';
     try {
-      const expected = nonNullishOrThrow(group.view).members;
-      if ((!Array.isArray(calls)) || (calls.length !== expected.length) || (!Array.isArray(tools)) || (tools.length !== expected.length) || ((typeof runNative) !== 'function')) throw new JudgmentConstructionError('Native calls differ from complete reached group');
+      const expected = nonNullishOrThrow(group.view)
+        .members;
+      if ((!Array.isArray(calls)) || (calls.length !== expected.length)
+        || (!Array.isArray(tools))
+        || (tools.length !== expected.length)
+        || ((typeof runNative) !== 'function')) throw new JudgmentConstructionError('Native calls differ from complete reached group');
       const ids = new Set<string>();
       const pending: ProgramSlot[] = [];
       for (const [index, call] of calls.entries()) {
         const site = nonNullishOrThrow(expected[index]);
         const tool = tools[index];
-        if ((!call) || (call.type !== 'toolCall') || ((typeof call.id) !== 'string') || (!call.id) || ids.has(call.id) || (call.name !== site.name) || (tool?.name !== site.name) || (JSON.stringify(call.arguments) !== site.argsJSON)) throw new JudgmentConstructionError('Native call binding differs from original reached member');
+        if ((!call) || (call.type !== 'toolCall')
+          || ((typeof call.id) !== 'string')
+          || (!call.id)
+          || ids.has(call.id)
+          || (call.name !== site.name)
+          || (tool?.name !== site.name)
+          || (JSON.stringify(call.arguments) !== site.argsJSON)) throw new JudgmentConstructionError('Native call binding differs from original reached member');
         ids.add(call.id);
-        pending.push({ handle: Object.freeze({}), group, ordinal: index, call: Object.freeze({ id: call.id, name: call.name }), tool: Object.freeze({ name: nonNullishOrThrow(tool).name, outputSchema: tool?.outputSchema ? true : undefined }) });
+        pending.push({
+          handle: Object.freeze({}),
+          group,
+          ordinal: index,
+          call: Object.freeze({ id: call.id, name: call.name }),
+          tool: Object.freeze({ name: nonNullishOrThrow(tool).name, outputSchema: tool?.outputSchema ? true : undefined })
+        });
       }
       currentGroup(handle);
-      for (const slot of pending) slots.set(slot.handle, slot);
+      for (const slot of pending) slots.set(
+        slot.handle,
+        slot
+      );
       group.slots = pending;
       /**
        Original native return lookup authenticates this exact reached group.
@@ -67,7 +104,10 @@ export function createProgramCallBinding({ input, state, ownership }: ProgramCon
        @returns original slot record
        */
       function readOwnedSlot(slot: object): ProgramSlot {
-        return knownSlot({ group, slot });
+        return knownSlot({
+          group,
+          slot
+        });
       }
       /**
        Native callbacks cross the enclosing judgment's original synchronous operation boundary.
@@ -82,9 +122,16 @@ export function createProgramCallBinding({ input, state, ownership }: ProgramCon
        */
       function readReturnedMember(member: unknown): void {
         const record = knownMember(member);
-        if ((record.group !== group) || (record.execution?.state !== 'returned')) throw new JudgmentConstructionError('Script binding producer is not the returned prepared member');
+        if ((record.group !== group) || (record.execution
+          ?.state
+          !== 'returned')) throw new JudgmentConstructionError('Script binding producer is not the returned prepared member');
       }
-      group.consumer = createNativeReturnConsumer({ runNative, getSlot: readOwnedSlot, assertCurrent: assertOriginalGroup, assertReturnedMember: readReturnedMember });
+      group.consumer = createNativeReturnConsumer({
+        runNative,
+        getSlot: readOwnedSlot,
+        assertCurrent: assertOriginalGroup,
+        assertReturnedMember: readReturnedMember
+      });
       group.state = 'bound';
       return Object.freeze(pending.map(function readSlotHandle(slot) { return slot.handle; }));
     } catch (error) {

@@ -7,7 +7,10 @@
 
  @param input - original admission condition and diagnostic
  */
-export declare function requireProfile(input: Readonly<{ condition: unknown; message: string }>): void;
+export declare function requireProfile(input: Readonly<{
+  condition: unknown;
+  message: string
+}>): void;
 
 /**
  Decode original syntax into an owned bounded argument pattern.

@@ -2,7 +2,10 @@
  Original judgment program ownership composes source, reached-group, native-call, and result boundaries. @module
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import { createProgramState, createProgramOwnership } from './program-ownership.ts';
+import {
+  createProgramState,
+  createProgramOwnership
+} from './program-ownership.ts';
 import { createProgramOpening } from './program-opening.ts';
 import { createProgramReaching } from './program-reaching.ts';
 import { createProgramCallBinding } from './program-call-binding.ts';
@@ -31,19 +34,97 @@ export function createJudgmentPrograms(input: JudgmentProgramsInput): JudgmentPr
   /**
    Preserve the original constructor's single property-read pass and incumbent order.
    */
-  const { readJudgment, response, stream, signal, knownMember, knownExecution, ready, dependencyCheck, assertDependenciesCurrent, parentCurrent, bindings, childGroups, operation } = input;
-  const originalInput: JudgmentProgramsInput = { readJudgment, response, stream, signal, knownMember, knownExecution, ready, dependencyCheck, assertDependenciesCurrent, parentCurrent, bindings, childGroups, operation };
-  const rl = tagged({ tag: createJudgmentPrograms.name, l });
+  const {
+    readJudgment,
+    response,
+    stream,
+    signal,
+    knownMember,
+    knownExecution,
+    ready,
+    dependencyCheck,
+    assertDependenciesCurrent,
+    parentCurrent,
+    bindings,
+    childGroups,
+    operation
+  } = input;
+  const originalInput: JudgmentProgramsInput = {
+    readJudgment,
+    response,
+    stream,
+    signal,
+    knownMember,
+    knownExecution,
+    ready,
+    dependencyCheck,
+    assertDependenciesCurrent,
+    parentCurrent,
+    bindings,
+    childGroups,
+    operation
+  };
+  const rl = tagged({
+    tag: createJudgmentPrograms.name,
+    l
+  });
   rl.debug('binding original program ownership');
   const state = createProgramState();
-  const context = { input: originalInput, state };
+  const context = {
+    input: originalInput,
+    state
+  };
   const ownership = createProgramOwnership(context);
-  const { bindPreparedProgram, preparedProgramFor, openProgram, programFor } = createProgramOpening({ ...context, ownership });
-  const { reachProgramGroup, reachedGroupFor } = createProgramReaching(ownership);
-  const bindProgramCalls = createProgramCallBinding({ ...context, ownership });
-  const prepareReachedMembers = createProgramMemberPreparation({ input: originalInput, ownership });
-  const { invokeProgramNative, scriptValueFor, markProgramGuard } = createProgramValueAccess({ input: originalInput, ownership });
-  const { inspectReachedGroup, inspectProgram } = createProgramInspection({ input: originalInput, ownership });
-  return Object.freeze({ bindPreparedProgram, preparedProgramFor, openProgram, programFor, reachProgramGroup, reachedGroupFor, bindProgramCalls, prepareReachedMembers, invokeProgramNative, scriptValueFor, markProgramGuard, inspectReachedGroup, inspectProgram });
+  const {
+    bindPreparedProgram,
+    preparedProgramFor,
+    openProgram,
+    programFor
+  } = createProgramOpening({
+    ...context,
+    ownership
+  });
+  const {
+    reachProgramGroup,
+    reachedGroupFor
+  } = createProgramReaching(ownership);
+  const bindProgramCalls = createProgramCallBinding({
+    ...context,
+    ownership
+  });
+  const prepareReachedMembers = createProgramMemberPreparation({
+    input: originalInput,
+    ownership
+  });
+  const {
+    invokeProgramNative,
+    scriptValueFor,
+    markProgramGuard
+  } = createProgramValueAccess({
+    input: originalInput,
+    ownership
+  });
+  const {
+    inspectReachedGroup,
+    inspectProgram
+  } = createProgramInspection({
+    input: originalInput,
+    ownership
+  });
+  return Object.freeze({
+    bindPreparedProgram,
+    preparedProgramFor,
+    openProgram,
+    programFor,
+    reachProgramGroup,
+    reachedGroupFor,
+    bindProgramCalls,
+    prepareReachedMembers,
+    invokeProgramNative,
+    scriptValueFor,
+    markProgramGuard,
+    inspectReachedGroup,
+    inspectProgram
+  });
 }
 //endregion

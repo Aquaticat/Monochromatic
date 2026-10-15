@@ -2,7 +2,10 @@
  Private program state retains original parent, group, slot, and result occurrences. @module
  */
 import type { NativeScriptValueGuardError } from './script-value-guard.ts';
-import type { NativeReturnConsumer, NativeReturnSlot } from './native-return-types.ts';
+import type {
+  NativeReturnConsumer,
+  NativeReturnSlot
+} from './native-return-types.ts';
 import type {
   DeclaredProgramGroup,
   DeclaredResultProgram,

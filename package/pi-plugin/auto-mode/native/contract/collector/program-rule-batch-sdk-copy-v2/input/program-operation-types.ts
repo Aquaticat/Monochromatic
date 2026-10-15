@@ -1,9 +1,16 @@
 /**
  Original program operations separate caller inputs from retained owner state. @module
  */
-import type { NativeReturnCall, NativeReturnOwner, NativeReturnTool } from './native-return-types.ts';
+import type {
+  NativeReturnCall,
+  NativeReturnOwner,
+  NativeReturnTool
+} from './native-return-types.ts';
 import type { ProgramPreparedMember } from './program-declaration-types.ts';
-import type { JudgmentProgramsInput, ProgramOwnerState } from './program-state-types.ts';
+import type {
+  JudgmentProgramsInput,
+  ProgramOwnerState
+} from './program-state-types.ts';
 
 /**
  Helpers borrow the same original capabilities and private custody maps.
