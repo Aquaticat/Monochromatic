@@ -73,12 +73,23 @@ The next extraction now delegates original call admission,
 per-call cloning,
 judgment capability checks,
 and sequential scheduling to `prepared-schedule.ts` and `prepared-schedule-types.ts`.
-Its formatter,
-type check,
+The native build,
+package type check,
 built consumers,
-original-code replay,
-domain comparisons,
-and omission controls remain pending.
+and exact original-code replay pass.
+Six domain comparisons preserve public outcomes and native execution counts,
+including the permission-versus-prohibition positive control.
+All 21 process-local omissions or substitutions produce assertion failures,
+with the built dispatcher and scheduler hashes unchanged.
+The full maintained lint recount is running.
+Receipts are `typed-prepared-schedule-comparison.json` and `typed-prepared-schedule-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The saved original dispatcher has SHA-256
+`44cce9180cdcd4b0e17b611ae1cfa5d20d96f2fed2f46f7f3f5cb29ab77b168f`.
+Consumers preserve first-match tool lookup,
+cloning before mode admission,
+context validation before serial-policy reads,
+and explicit sequential mode bypassing those policy reads.
 The pre-extraction dispatcher is saved as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-schedule-types.mjs`.
 The original array check counts own keys;

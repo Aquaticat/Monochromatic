@@ -130,6 +130,17 @@ Sealing freezes a parent before validating its children and visits the last chil
 The original array check counts own keys;
 a missing index offset by an extra enumerable property remains accepted.
 These consumers preserve that behavior rather than introducing stricter array validation.
+`test:native:prepared-schedule` verifies the inclusive 64-member limit,
+unique nonempty identifiers,
+independently cloned calls,
+and original judgment and tool capability checks.
+Cloning precedes execution-mode validation.
+The group and call objects are frozen;
+nested arguments remain unfrozen until prepared-input sealing.
+Only the first matching tool definition determines context support and execution policy.
+Every context capability is checked before reading serial policy.
+An explicit sequential mode skips tool policy reads.
+All execution capabilities remain uninvoked during scheduling.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 
