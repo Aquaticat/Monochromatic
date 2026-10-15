@@ -536,8 +536,20 @@ domain contrasts,
 and authored approval decisions without provider requests.
 Its final type check exposed `TS9037: Default exports can't be inferred with --isolatedDeclarations.`
 The config now explicitly annotates its value with `ReturnType<typeof nodeConfig>`.
-Commit `6ddeaef3eb` also removes the publication and domain fixtures' policy-preload workarounds;
-the rebuilt checks without those workarounds are pending.
+Commit `6ddeaef3eb` also removes the publication and domain fixtures' policy-preload workarounds.
+The rebuilt direct-import identity,
+publication,
+domain,
+and package type checks pass without either preload in
+`${HOME}/temp/agent/pi-native-policy-unordered-consumers-20261015.log`.
+The original standalone manager reproduction also passes in
+`${HOME}/temp/agent/pi-native-direct-manager-import-after-20261015.log`.
+The entry,
+generator,
+declarations,
+regression,
+and build config pass focused lint with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-policy-entry-final-lint-20261015.log`.
 
 Reproduce the committed entry checks after building:
 

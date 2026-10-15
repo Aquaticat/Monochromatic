@@ -1219,10 +1219,21 @@ and authored approval decisions without provider requests.
 `${HOME}/temp/agent/pi-native-policy-entry-consumers-20261015.log` retains the completed consumer results.
 Its final type check failed with `TS9037` because the config default export lacked an explicit type.
 Commit `6ddeaef3eb` adds that type and removes both policy-preload fixture workarounds.
-The rebuilt publication,
+The rebuilt direct-import identity,
+publication,
 domain,
-and type checks are running in
+and package type checks pass without either preload in
 `${HOME}/temp/agent/pi-native-policy-unordered-consumers-20261015.log`.
+The original standalone manager probe now passes in
+`${HOME}/temp/agent/pi-native-direct-manager-import-after-20261015.log`.
+The native policy entry,
+generator,
+declarations,
+regression,
+and build config pass focused lint with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-policy-entry-final-lint-20261015.log`.
+The direct generated import cycle is resolved;
+continue the remaining native type cleanup at question settlement and selection.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
