@@ -338,7 +338,7 @@ fn a_mise_failure_is_told_even_when_every_server_works() {
 }
 
 #[test]
-fn the_mise_failure_follows_the_reasons_of_the_servers_that_do_not_work() {
+fn the_mise_failure_comes_before_the_reasons_of_the_servers_that_do_not_work() {
     let missing = status(vec![row(
         "taplo",
         ServerState::MissingExecutable {
@@ -352,7 +352,7 @@ fn the_mise_failure_follows_the_reasons_of_the_servers_that_do_not_work() {
         .find("taplo is not available")
         .expect("reason of the server");
     let mise = message.find("mise said:").expect("mise's words");
-    assert!(reason < mise, "{message}");
+    assert!(mise < reason, "{message}");
     assert!(
         message.contains("run `mise trust` on /work/project/mise.toml"),
         "{message}"

@@ -233,11 +233,14 @@ pub(super) fn with_notice(
     troubles: &[(ServerIdentity, Trouble)],
     advisory: &[String],
 ) -> Option<DiagnosticsSnapshot> {
-    let mut text = lines(status, troubles);
     // The advisory (mise could not be used) belongs to every file that has servers, working or not.
+    // It comes first: the display keeps only the first dozen lines of a long notice,
+    //  and the reasons of the servers that are missing (a shim for each) would push it out of sight.
+    let mut text: Vec<String> = Vec::new();
     if status.document == DocumentState::Attached && !status.servers.is_empty() {
         text.extend(advisory.iter().cloned());
     }
+    text.extend(lines(status, troubles));
     if text.is_empty() {
         return snapshot;
     }
