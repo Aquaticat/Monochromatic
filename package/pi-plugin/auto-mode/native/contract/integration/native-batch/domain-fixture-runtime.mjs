@@ -34,7 +34,10 @@ const runtime=bindNativePolicyRuntime({
    semanticAdmissionPolicy:policy('clause_operation_relation'),
    headingContextAdmissionPolicy:policy('heading_instruction_content')
   }),
-  sendWire:sendAssessment,
+  sendWire(input){
+   if(observations.failAssessment){observations.assessments++;throw new Error('Fixture assessment unavailable');}
+   return sendAssessment(input);
+  },
   ...(unconfiguredPolicies?{send(){observations.assessments++;throw new Error('An unconfigured semantic consumer must not dispatch an assessment');}}:{}),
   originalStream:sdkStream?function stream(
     model,
@@ -49,6 +52,7 @@ const runtime=bindNativePolicyRuntime({
     input,
     init
   ){
+   if(observations.warmingUp)return fixtureResponse({proposal:false});
    observations.requests++;
    if(nextDecision&&(observations.requests===2))observations.firstDecision={
      ...runtime.inspect(),

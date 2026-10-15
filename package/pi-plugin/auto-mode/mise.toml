@@ -638,6 +638,15 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs retry",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs reload",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs abort",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs inflight",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs combined",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs tree-cancel",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs tree-noop",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs tree-summary",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs fork",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs resume",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs automatic-retry",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs provider-retry",
 ]
 
 [tasks."test:native:cli-process"]
@@ -868,4 +877,21 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/capture-data.test.mjs",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/prompt-capacity.test.mjs",
   "node --max-old-space-size=512 src/input-receipt-budget.unit.test.ts",
+]
+
+[tasks."test:native:runtime-hooks"]
+description = "Verify native hook installation and rollback without message listeners"
+run = [
+ "node src/native-runtime-hooks.unit.test.ts",
+ "node src/native-runtime-rollback.unit.test.ts",
+ "node src/native-runtime-slots.unit.test.ts",
+]
+
+[tasks."test:native:host-isolation"]
+description = "Verify tool admission survives navigation and fails independently of chat"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-passive-observer.test.mjs",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-tool-after-navigation.test.mjs permission --sdk-stream --http-transport --operating-policy",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-tool-after-navigation.test.mjs prohibition --sdk-stream --http-transport --operating-policy",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy",
 ]
