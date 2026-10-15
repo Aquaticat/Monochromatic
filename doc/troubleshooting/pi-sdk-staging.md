@@ -548,8 +548,10 @@ The entry,
 generator,
 declarations,
 regression,
-and build config pass focused lint with zero warnings and errors in
+and build config have zero errors and one `tsdoc(multiline-blocks)` warning in
 `${HOME}/temp/agent/pi-native-policy-entry-final-lint-20261015.log`.
+The added config comment needs multiline formatting;
+the earlier zero-warning statement in `12a4a8a00c` was incorrect.
 
 Reproduce the committed entry checks after building:
 
