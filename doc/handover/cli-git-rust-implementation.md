@@ -1642,9 +1642,10 @@ that is verification, not a decision for the user.
   The interop lane landed on `main` as `78d23d18a4` (container gate rerun: 1666 unit and 118 binary tests, Clippy clean).
   mise holds new releases back for 24 hours; the repository exempts its own crates by exact name
   (`minimum_release_age_excludes` in `mise.no-env.toml`, commit `4059fc9925`).
-  The pathBytes lane finished on `feat/cli-git-native-pathbytes` (head `e629ab99ff8e`, evidence in
-  `doc/handover/cli-git-native-pathbytes.md`) and is not merged; it merges after the hardening branch, and its gated
-  source must be rerun on the merge because both branches change `package/git-policy/cli`.
+  The pathBytes lane (evidence in `doc/handover/cli-git-native-pathbytes.md`) merged on 2026-10-15 after the hardening
+  branch: main was merged into `feat/cli-git-native-pathbytes`, the only conflict was this handover, and the container
+  gate on the merge (tag `pathbytesM`) passed with 1801 unit, 137 binary and 1 consumer test and Clippy clean. The
+  gated paths on `main` are byte-identical to that tested merge.
   Hardening (user, 2026-10-14: "You own the cli git series of crates ... If cli git is robust, it shouldn't ever get
   stuck."), branch `fix/cli-git-hardening`.
   Trigger: another session's `git push` stalled for minutes holding the wrapper's single-flight push lock, and every
