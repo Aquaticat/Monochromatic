@@ -3,8 +3,7 @@
  */
 import assert from 'node:assert/strict';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
-import type { Pattern } from './native-pattern-decoder-fixture.ts';
-import { decode, objectNode, parseArgument } from './native-pattern-decoder-fixture.ts';
+import { decode, objectNode, parseArgument, type Pattern } from './native-pattern-decoder-fixture.ts';
 import { patterns } from './native-profile-call-fixture.ts';
 
 await describe({ name: 'original pattern ownership', children: [
@@ -31,7 +30,7 @@ await describe({ name: 'original pattern ownership', children: [
     assert.equal(result, seen[3]);
     assert.ok(result.kind === 'object');
     assert.equal(result.entries[0]?.pattern, seen[2]);
-    const array = seen[2];
+    const [, , array] = seen;
     assert.ok(array?.kind === 'array');
     assert.equal(array.items[0], seen[0]);
     assert.equal(array.items[1], seen[1]);
