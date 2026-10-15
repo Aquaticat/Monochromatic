@@ -17,7 +17,10 @@ await describe({
         const reads: string[] = [];
         const supplied = Object.create(null);
         for (const property of properties) {
-          Object.defineProperty(supplied, property, { get() { reads.push(property); return input[property]; } });
+          Object.defineProperty(supplied, property, { get() { 
+            reads.push(property); 
+            return input[property]; 
+          } });
         }
         const instructions = createFixtureInstructions(supplied);
         assert.deepEqual(reads, properties);
@@ -33,9 +36,13 @@ await describe({
         const missingParser = createFixtureInstructions({ ...fixture.input, parsePolicy: undefined });
         assert.equal(missingParser.requestMaterialFor(), fixture.receipt.request);
         assert.ok(missingParser.claimRequestMaterial());
-        assert.throws(function noParser() { missingParser.indexedRuleCandidates(); }, { message: 'Original host-selected policy and qualified parser are required for instruction claims' });
+        assert.throws(function noParser() { 
+          missingParser.indexedRuleCandidates(); 
+        }, { message: 'Original host-selected policy and qualified parser are required for instruction claims' });
         fixture.state.hostPolicy = false;
-        assert.throws(function noHostPolicy() { fixture.instructions.indexedInstructionCandidates(); }, { message: 'Original host-selected policy and qualified parser are required for instruction claims' });
+        assert.throws(function noHostPolicy() { 
+          fixture.instructions.indexedInstructionCandidates(); 
+        }, { message: 'Original host-selected policy and qualified parser are required for instruction claims' });
         fixture.state.hostPolicy = {};
         assert.equal(fixture.instructions.indexedRuleCandidates().length, 1);
       },
@@ -50,7 +57,9 @@ await describe({
         assert.ok(rule);
         fixture.instructions.readRuleCandidate(rule);
         fixture.instructions.indexedUnitAdoptionPairs();
-        assert.equal(fixture.events.some(function segmentEvent(value) { return value.startsWith('enter:'); }), false);
+        assert.equal(fixture.events.some(function segmentEvent(value) { 
+          return value.startsWith('enter:'); 
+        }), false);
         fixture.state.active = false;
         fixture.instructions.readRuleCandidate(rule);
         assert.equal(fixture.events.includes('enter:readOwnedRule'), true);
@@ -72,7 +81,9 @@ await describe({
         assert.ok(pair);
         assert.equal(Object.hasOwn(pair, 'member'), true);
         assert.equal(pair.member, undefined);
-        assert.throws(function missingOriginalMember() { instructions.claimUnitAdoption({ pair }); }, { message: 'Unit adoption requires its original member and same-source units' });
+        assert.throws(function missingOriginalMember() { 
+          instructions.claimUnitAdoption({ pair }); 
+        }, { message: 'Unit adoption requires its original member and same-source units' });
       },
     }),
     it({
@@ -86,7 +97,9 @@ await describe({
         const original = bindings.get(member);
         assert.ok(original);
         bindings.delete(member);
-        assert.throws(function missingMemberProjection() { instructions.claimRuleCandidate({ definitionId: 'fixture', memberId: 'member-0', rule }); }, { name: 'TypeError', message: "Cannot read properties of undefined (reading 'binding')" });
+        assert.throws(function missingMemberProjection() { 
+          instructions.claimRuleCandidate({ definitionId: 'fixture', memberId: 'member-0', rule }); 
+        }, { name: 'TypeError', message: "Cannot read properties of undefined (reading 'binding')" });
         const meaning = instructions.claimRuleCandidate({ definitionId: 'states_approval_prerequisite', memberId: 'member-0', rule });
         assert.equal(instructions.resolveBinding(meaning).projection.claimScope, 'instruction');
         bindings.set(member, original);
@@ -109,7 +122,9 @@ await describe({
           assert.ok(pair);
           const handle = kind === 'adoption' ? instructions.claimUnitAdoption({ pair }) : kind === 'heading' ? instructions.claimHeadingContext({ candidate: heading }) : instructions.claimProgramRuleCandidate({ definitionId: 'operation_violates_rule', rule });
           state.sources = Object.freeze([...state.sources]);
-          assert.throws(function changedSourceList() { instructions.resolveBinding(handle); }, { name: 'GoverningRuleBindingError' });
+          assert.throws(function changedSourceList() { 
+            instructions.resolveBinding(handle); 
+          }, { name: 'GoverningRuleBindingError' });
         },
       });
     }),
@@ -121,14 +136,28 @@ await describe({
         const failure = new Error('original fixture lifetime retired');
         state.failure = failure;
         const operations = [
-          function requestRead() { instructions.requestMaterialFor(); },
-          function requestClaim() { instructions.claimRequestMaterial(); },
-          function memberClaim() { instructions.claim({ definitionId: 'fixture', memberId: 'member-0' }); },
-          function sourceSelection() { instructions.indexedRuleCandidates(); },
-          function adoptionSelection() { instructions.indexedUnitAdoptionPairs(); },
-          function bindingResolution() { instructions.resolveBinding(request); },
+          function requestRead() { 
+            instructions.requestMaterialFor(); 
+          },
+          function requestClaim() { 
+            instructions.claimRequestMaterial(); 
+          },
+          function memberClaim() { 
+            instructions.claim({ definitionId: 'fixture', memberId: 'member-0' }); 
+          },
+          function sourceSelection() { 
+            instructions.indexedRuleCandidates(); 
+          },
+          function adoptionSelection() { 
+            instructions.indexedUnitAdoptionPairs(); 
+          },
+          function bindingResolution() { 
+            instructions.resolveBinding(request); 
+          },
         ];
-        for (const operation of operations) assert.throws(operation, function exactFailure(error) { return error === failure; });
+        for (const operation of operations) assert.throws(operation, function exactFailure(error) { 
+          return error === failure; 
+        });
       },
     }),
     //endregion

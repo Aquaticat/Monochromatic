@@ -11,7 +11,10 @@ import type {
   GoverningSetProjection,
   GoverningSetSnapshot
 } from '../../../lifecycle/governing-rule-candidates/set-types.ts';
-import type { InstructionAdoptionPair,InstructionContext } from './instruction-types.ts';
+import type {
+  InstructionAdoptionPair,
+  InstructionContext
+} from './instruction-types.ts';
 import { selectUnitAdoptionPairs } from '../../../integration/action-policy/unit-adoption-profile.mjs';
 import { createGoverningRuleSet } from '../../../lifecycle/governing-rule-candidates/set-owner.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
@@ -64,8 +67,11 @@ export function createInstructionSources({
     ready();
     if (state.ruleBindings) return state.ruleBindings;
       if ((typeof parsePolicy) !== 'function') throw new JudgmentConstructionError('Original host-selected policy and qualified parser are required for instruction claims');
-      /** Original host selection uses native truthiness after parser admission. */
-      const hostSelected = Boolean(readJudgmentSources().hostGoverningPolicy);
+      /**
+       Original host selection uses native truthiness after parser admission.
+       */
+      const hostSelected = Boolean(readJudgmentSources()
+        .hostGoverningPolicy);
       if (!hostSelected) throw new JudgmentConstructionError('Original host-selected policy and qualified parser are required for instruction claims');
       /**
        Qualified parser remains narrowed inside original source construction.
@@ -91,8 +97,10 @@ export function createInstructionSources({
    
    @returns original tagged clause handles
    */
-  function indexedRuleCandidates() : readonly object[] { return ensureRuleBindings()
-    .indexedCandidates(); }
+  function indexedRuleCandidates() : readonly object[] { 
+    return ensureRuleBindings()
+      .indexedCandidates(); 
+  }
   /**
    Keep original reads inside fresh entry and exit dependency checks.
    
@@ -106,8 +114,10 @@ export function createInstructionSources({
      
      @returns original authenticated source projection
      */
-    function readOwnedRule() : GoverningSetProjection { return ensureRuleBindings()
-      .read(rule); }
+    function readOwnedRule() : GoverningSetProjection { 
+      return ensureRuleBindings()
+        .read(rule); 
+    }
     return isBindingSegmentActive() ? readOwnedRule() : bindingSegment(readOwnedRule);
   }
   /**
@@ -115,22 +125,28 @@ export function createInstructionSources({
    
    @returns all original instruction candidate handles
    */
-  function indexedInstructionCandidates() : readonly object[] { return ensureRuleBindings()
-    .indexedInstructionCandidates(); }
+  function indexedInstructionCandidates() : readonly object[] { 
+    return ensureRuleBindings()
+      .indexedInstructionCandidates(); 
+  }
   /**
    Keep contextual heading aggregates distinct from individual clauses.
    
    @returns original contextual-heading aggregate handles
    */
-  function indexedHeadingContextCandidates() : readonly object[] { return ensureRuleBindings()
-    .indexedHeadingContextCandidates(); }
+  function indexedHeadingContextCandidates() : readonly object[] { 
+    return ensureRuleBindings()
+      .indexedHeadingContextCandidates(); 
+  }
   /**
    Preserve original structural coverage diagnostics without claiming authority.
    
    @returns retained original structural coverage records
    */
-  function inspectRuleSources() : readonly GoverningSetSnapshot[] { return ensureRuleBindings()
-    .inspect(); }
+  function inspectRuleSources() : readonly GoverningSetSnapshot[] { 
+    return ensureRuleBindings()
+      .inspect(); 
+  }
   /**
        Selection remains inside one original synchronous source boundary.
        

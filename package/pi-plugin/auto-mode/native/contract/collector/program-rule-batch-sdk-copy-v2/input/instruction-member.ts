@@ -2,10 +2,12 @@
  Original member claims distinguish clause meaning from member-bound operation predicates. @module
  */
 import type { MemberInstructionOperations } from './instruction-api.ts';
-import type { InstructionRecord,
+import type {
+  InstructionRecord,
   InstructionContext,
   InstructionMember,
-  SelectedInstruction } from './instruction-types.ts';
+  SelectedInstruction
+} from './instruction-types.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
 import {
   retainInstructionHandle,

@@ -27,9 +27,13 @@ await describe({
         assert.equal(Object.isFrozen(binding.projection), true);
         assert.equal(Object.isFrozen(first), true);
         assert.equal(Object.isFrozen(instructions), true);
-        assert.throws(function foreignOwner() { createFixtureInstructions(input).resolveBinding(first); }, { name: 'JudgmentConstructionError' });
+        assert.throws(function foreignOwner() { 
+          createFixtureInstructions(input).resolveBinding(first); 
+        }, { name: 'JudgmentConstructionError' });
         receipt.request = Object.freeze({ ...receipt.request });
-        assert.throws(function replacedRequest() { instructions.resolveBinding(first); }, { message: 'Whole-request material lost its original request occurrence' });
+        assert.throws(function replacedRequest() { 
+          instructions.resolveBinding(first); 
+        }, { message: 'Whole-request material lost its original request occurrence' });
       },
     }),
     it({
@@ -53,9 +57,13 @@ await describe({
         assert.equal(instructions.claimInstruction({ definitionId: 'states_approval_prerequisite', memberId: 'member-1', ruleCode: 'AAA' }), meaning);
         assert.equal(instructions.resolveBinding(meaning).projection.claimScope, 'instruction');
         bindings.delete(member);
-        assert.throws(function retiredMemberClaim() { instructions.resolveBinding(first); }, { message: 'Instruction claim lost its original member or source clause' });
+        assert.throws(function retiredMemberClaim() { 
+          instructions.resolveBinding(first); 
+        }, { message: 'Instruction claim lost its original member or source clause' });
         assert.equal(instructions.resolveBinding(meaning).projection.governingRule, instructions.readRuleCandidate(rule));
-        assert.throws(function retiredDirectMember() { instructions.resolveBinding(direct); }, { message: 'Prepared member binding is not owned by this judgment' });
+        assert.throws(function retiredDirectMember() { 
+          instructions.resolveBinding(direct); 
+        }, { message: 'Prepared member binding is not owned by this judgment' });
       },
     }),
     //endregion
@@ -95,11 +103,17 @@ await describe({
         assert.equal(binding.projection.adopter, instructions.readRuleCandidate(pair.adopter));
         assert.equal(binding.projection.target, instructions.readRuleCandidate(pair.target));
         assert.equal(binding.projection.adopter?.authorityEstablishedByIndex, false);
-        assert.throws(function copiedPair() { instructions.claimUnitAdoption({ pair: { ...pair } }); }, { message: 'Unit adoption requires an original selected pair from this judgment' });
+        assert.throws(function copiedPair() { 
+          instructions.claimUnitAdoption({ pair: { ...pair } }); 
+        }, { message: 'Unit adoption requires an original selected pair from this judgment' });
         assert.ok(pair.member);
         bindings.delete(pair.member);
-        assert.throws(function retiredAdoption() { instructions.resolveBinding(adoption); }, { message: 'Unit adoption lost its original member or source units' });
-        assert.throws(function redeclaredRetiredPair() { instructions.claimUnitAdoption({ pair }); }, { message: 'Unit adoption requires its original member and same-source units' });
+        assert.throws(function retiredAdoption() { 
+          instructions.resolveBinding(adoption); 
+        }, { message: 'Unit adoption lost its original member or source units' });
+        assert.throws(function redeclaredRetiredPair() { 
+          instructions.claimUnitAdoption({ pair }); 
+        }, { message: 'Unit adoption requires its original member and same-source units' });
       },
     }),
     it({
@@ -110,21 +124,41 @@ await describe({
         const [heading] = instructions.indexedHeadingContextCandidates();
         assert.ok(rule);
         assert.ok(heading);
-        assert.throws(function clauseAsHeading() { instructions.claimHeadingContext({ candidate: rule }); }, { message: 'Heading content requires an original contextual-heading group' });
-        assert.throws(function headingAsProgramClause() { instructions.claimProgramRuleCandidate({ definitionId: 'clause_operation_relation', rule: heading }); }, { message: 'Heading groups cannot be selected as individual clauses' });
-        assert.throws(function headingAsMemberClause() { instructions.claimRuleCandidate({ definitionId: 'fixture', memberId: 'member-0', rule: heading }); }, { message: 'Heading groups cannot be selected as individual clauses' });
-        assert.throws(function unsupportedProgramPredicate() { instructions.claimProgramRuleCandidate({ definitionId: 'fixture', rule }); }, { message: 'Unsupported whole-program rule relation definition' });
-        assert.throws(function missingDirectMember() { instructions.claim({ definitionId: 'fixture', memberId: 'missing' }); }, { message: 'Requested member was not in the prepared native group' });
-        assert.throws(function missingClauseMember() { instructions.claimRuleCandidate({ definitionId: 'fixture', memberId: 'missing', rule }); }, { message: 'Instruction claim member is outside the original prepared group' });
+        assert.throws(function clauseAsHeading() { 
+          instructions.claimHeadingContext({ candidate: rule }); 
+        }, { message: 'Heading content requires an original contextual-heading group' });
+        assert.throws(function headingAsProgramClause() { 
+          instructions.claimProgramRuleCandidate({ definitionId: 'clause_operation_relation', rule: heading }); 
+        }, { message: 'Heading groups cannot be selected as individual clauses' });
+        assert.throws(function headingAsMemberClause() { 
+          instructions.claimRuleCandidate({ definitionId: 'fixture', memberId: 'member-0', rule: heading }); 
+        }, { message: 'Heading groups cannot be selected as individual clauses' });
+        assert.throws(function unsupportedProgramPredicate() { 
+          instructions.claimProgramRuleCandidate({ definitionId: 'fixture', rule }); 
+        }, { message: 'Unsupported whole-program rule relation definition' });
+        assert.throws(function missingDirectMember() { 
+          instructions.claim({ definitionId: 'fixture', memberId: 'missing' }); 
+        }, { message: 'Requested member was not in the prepared native group' });
+        assert.throws(function missingClauseMember() { 
+          instructions.claimRuleCandidate({ definitionId: 'fixture', memberId: 'missing', rule }); 
+        }, { message: 'Instruction claim member is outside the original prepared group' });
         for (const definitionId of ['operation_violates_rule', 'clause_operation_relation', 'request_instruction_content', 'heading_instruction_content', 'unit_adoption']) {
-          assert.throws(function forbiddenMemberSelector() { instructions.claimRuleCandidate({ definitionId, memberId: 'member-0', rule }); }, { message: 'Whole-program rule relation cannot be selected through a member' });
+          assert.throws(function forbiddenMemberSelector() { 
+            instructions.claimRuleCandidate({ definitionId, memberId: 'member-0', rule }); 
+          }, { message: 'Whole-program rule relation cannot be selected through a member' });
         }
         for (const definitionId of ['operation_violates_rule', 'states_approval_prerequisite', 'request_instruction_content', 'heading_instruction_content', 'unit_adoption']) {
-          assert.throws(function dedicatedDirectSelector() { instructions.claim({ definitionId, memberId: 'member-0' }); }, { name: 'JudgmentConstructionError' });
+          assert.throws(function dedicatedDirectSelector() { 
+            instructions.claim({ definitionId, memberId: 'member-0' }); 
+          }, { name: 'JudgmentConstructionError' });
         }
         for (const candidate of [{}, undefined, null, false, 'AAA']) {
-          assert.throws(function foreignSourceCandidate() { instructions.readRuleCandidate(candidate); }, { name: 'GoverningRuleBindingError' });
-          assert.throws(function foreignClaimHandle() { instructions.resolveBinding(candidate); }, { message: 'Prepared member binding is not owned by this judgment' });
+          assert.throws(function foreignSourceCandidate() { 
+            instructions.readRuleCandidate(candidate); 
+          }, { name: 'GoverningRuleBindingError' });
+          assert.throws(function foreignClaimHandle() { 
+            instructions.resolveBinding(candidate); 
+          }, { message: 'Prepared member binding is not owned by this judgment' });
         }
       },
     }),

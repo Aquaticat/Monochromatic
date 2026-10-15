@@ -2,11 +2,13 @@
  Original program claims retain request, heading, clause, and adoption identities. @module
  */
 import type { ProgramInstructionOperations } from './instruction-api.ts';
-import type { InstructionRecord,
+import type {
+  InstructionRecord,
   InstructionMember,
   InstructionAdoptionPair,
   InstructionContext,
-  ProgramInstruction } from './instruction-types.ts';
+  ProgramInstruction
+} from './instruction-types.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
 import { retainInstructionHandle } from './instruction-ownership.ts';
 import type { InstructionSources } from './instruction-sources.ts';
@@ -88,7 +90,11 @@ export function createProgramInstructions({
       state.instructionBindings
         .set(
           state.requestMaterialBinding,
-          { kind: 'whole-request-material', request, binding }
+          {
+            kind: 'whole-request-material',
+            request,
+            binding
+          }
         );
     }
     return knownSelection()
@@ -272,7 +278,9 @@ export function createProgramInstructions({
         projection: Object.freeze({
           claimScope: 'member-unit-adoption',
           member,
-          memberOrdinal: originalMemberRecord.binding.projection.memberOrdinal,
+          memberOrdinal: originalMemberRecord.binding
+            .projection
+            .memberOrdinal,
           adopter: adopterProjection,
           target: targetProjection
         })

@@ -99,7 +99,10 @@ export function createInstructionBatches({
     headingContexts = false,
     unitAdoptions = false
   }: BoundPolicySelection) : object {
-    if (((typeof clauseRelations) !== 'boolean') || ((typeof requestMaterial) !== 'boolean') || ((typeof headingContexts) !== 'boolean') || ((typeof unitAdoptions) !== 'boolean') || ((!clauseRelations) && (!requestMaterial)
+    if (((typeof clauseRelations) !== 'boolean') || ((typeof requestMaterial) !== 'boolean')
+      || ((typeof headingContexts) !== 'boolean')
+      || ((typeof unitAdoptions) !== 'boolean')
+      || ((!clauseRelations) && (!requestMaterial)
       && (!headingContexts)
       && (!unitAdoptions))) throw new JudgmentConstructionError('Bound policy batch requires explicit code-selected semantic uses');
     /**
@@ -142,10 +145,12 @@ export function createInstructionBatches({
       /**
        Original clauses are declared before request, heading, and adoption claims.
        */
-      const claims = candidates.map(function claimOperationRelation(rule) { return claimProgramRuleCandidate({
+      const claims = candidates.map(function claimOperationRelation(rule) { 
+        return claimProgramRuleCandidate({
         definitionId: 'clause_operation_relation',
         rule
-      }); });
+      }); 
+      });
       if (includeRequest) claims.push(claimRequestMaterial());
       for (const candidate of headings) claims.push(claimHeadingContext({ candidate }));
       for (const pair of adoptions) claims.push(claimUnitAdoption({ pair }));
@@ -178,10 +183,12 @@ export function createInstructionBatches({
        */
       const candidates = definitionId === 'clause_operation_relation' ? indexedInstructionCandidates() : indexedRuleCandidates();
       if ((definitionId === 'clause_operation_relation') && ((candidates.length === 0) || (candidates.length > MAX_INSTRUCTION_CANDIDATES))) throw new JudgmentConstructionError('Clause relation requires one through 256 indexed clauses');
-      return issue(candidates.map(function claimCandidateRule(rule) { return claimProgramRuleCandidate({
+      return issue(candidates.map(function claimCandidateRule(rule) { 
+        return claimProgramRuleCandidate({
         definitionId,
         rule
-      }); }));
+      }); 
+      }));
     }
     return bindingSegment(issueCandidateClaims);
   }
@@ -199,18 +206,22 @@ export function createInstructionBatches({
       /**
        Original clause meanings are declared before operation relations.
        */
-      const meanings = candidates.map(function claimApprovalMeaning(rule) { return claimRuleCandidate({
+      const meanings = candidates.map(function claimApprovalMeaning(rule) { 
+        return claimRuleCandidate({
         definitionId: 'states_approval_prerequisite',
         memberId: firstInstructionMemberId(declaredNames[0]),
         rule
-      }); });
+      }); 
+      });
       /**
        Original program relations retain the same tagged candidate order.
        */
-      const operations = candidates.map(function claimOperationViolation(rule) { return claimProgramRuleCandidate({
+      const operations = candidates.map(function claimOperationViolation(rule) { 
+        return claimProgramRuleCandidate({
         definitionId: 'operation_violates_rule',
         rule
-      }); });
+      }); 
+      });
       return issue([
         ...meanings,
         ...operations

@@ -27,12 +27,37 @@ const l = tagged({ tag: 'native-judgment-instructions' });
  @example createJudgmentInstructions(input);
  */
 export function createJudgmentInstructions(input: JudgmentInstructionsInput) : JudgmentInstructions {
-  /** Original bootstrap properties are read once in the incumbent constructor order. */
-  const { ready, bindingSegment, isBindingSegmentActive, readJudgmentSources, declaredNames, byMember, bindings, knownSelection, parsePolicy, receipt, issue } = input;
-  /** Helpers share captured capabilities without rereading caller-owned accessors. */
+  /**
+   Original bootstrap properties are read once in the incumbent constructor order.
+   */
+  const {
+    ready,
+    bindingSegment,
+    isBindingSegmentActive,
+    readJudgmentSources,
+    declaredNames,
+    byMember,
+    bindings,
+    knownSelection,
+    parsePolicy,
+    receipt,
+    issue
+  } = input;
+  /**
+   Helpers share captured capabilities without rereading caller-owned accessors.
+   */
   const originalInput: JudgmentInstructionsInput = {
-    ready, bindingSegment, isBindingSegmentActive, readJudgmentSources, declaredNames, byMember, bindings, knownSelection,
-    ...(parsePolicy === undefined ? {} : { parsePolicy }), receipt, issue,
+    ready,
+    bindingSegment,
+    isBindingSegmentActive,
+    readJudgmentSources,
+    declaredNames,
+    byMember,
+    bindings,
+    knownSelection,
+    ...(parsePolicy === undefined ? {} : { parsePolicy }),
+    receipt,
+    issue,
   };
   /**
    Function-specific diagnostics contain operation names without source or request material.

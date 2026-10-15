@@ -48,8 +48,12 @@ export function createInstructionResolver({
       .get(bindingHandle);
     if (instruction) {
       if (instruction.kind === 'unit-adoption') {
-        if ((!bindings.has(instruction.member)) || (retainedInstructionRules(state).read(instruction.adopter) !== instruction.adopterProjection)
-          || (retainedInstructionRules(state).read(instruction.target) !== instruction.targetProjection)) throw new JudgmentConstructionError('Unit adoption lost its original member or source units');
+        if ((!bindings.has(instruction.member)) || (retainedInstructionRules(state)
+          .read(instruction.adopter)
+          !== instruction.adopterProjection)
+          || (retainedInstructionRules(state)
+            .read(instruction.target)
+            !== instruction.targetProjection)) throw new JudgmentConstructionError('Unit adoption lost its original member or source units');
         return instruction.binding;
       }
       if (instruction.kind === 'whole-request-material') {
