@@ -330,20 +330,31 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
   - Container compilation and cache reuse:
     dedicated project created;
     remote marker build and local artifact export succeeded.
+    The actual Alpine build is running as `ws40v1c9xt`,
+    using persistent Cargo caches and a 1,800-second compilation limit.
+    The dedicated project's requested 20 GB cache policy returned 25 GiB;
+    treat the returned value as authoritative and the policy as a soft cache limit.
   - Depot CI and GitHub runner access:
     canonical Git remote updated to `Aquaticats/Monochromatic`;
-    Depot Code Access is absent in the new organization.
-    The [connection runbook](../runbook/depot-github-connection.md) records the access step.
+    the user connected Depot Code Access.
+    CLI preflight and the real checkout run `kbz7cjc5vt` succeeded.
+    The separate GitHub Actions runner app is absent from the installation listing.
+    The [runner connection runbook](../runbook/depot-github-runners.md) records that remaining access step.
   - Broader checks and deliberate failure detection:
-    prepare disposable workflows without release credentials.
+    run `wjr4cmpjvs` exercises logger build/types/unit tests and the shared audio core's own all-feature tests.
+    Branch `trial/depot-20261015` contains the disposable workflows without release credentials.
+    A GitHub reference job uses the identical Alpine build definition and unchanged-source repetitions.
   - Scheduling and rolling budgets:
     preserve the existing policy and test admission separately from execution.
   - Runtime and monthly cost:
     collect bounded-run evidence and retain the USD $200 ceiling.
 - The trial brief and corrected ownership scope are confirmed.
   No interview question is pending.
-- Verify account spending controls before resource-consuming execution;
+- Account-wide spending controls remain unverified;
   the supported usage endpoint rejected the available user-token credential.
+  The user authorized immediate execution and reported an unused seven-day trial.
+  Execution is bounded to explicit trial runs with time limits;
+  no recurring dispatch or billing setting has been enabled.
 - Preserve existing explicit-release handling during the proposed trial.
   The current release workflow serializes runs with `cancel-in-progress: false`;
   Q16 changes only the proposed policy for intermediate checks.
@@ -358,7 +369,7 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
   rather than reopening cache unit pricing.
 - Keep the agreed trial requirements separate from unproven performance claims and vendor-adoption decisions.
 
-No workflow,
+At interview completion no workflow,
 Depot resource,
 credential,
 or billing setting has been changed in this interview.
