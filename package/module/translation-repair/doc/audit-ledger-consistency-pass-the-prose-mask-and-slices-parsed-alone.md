@@ -19,18 +19,31 @@ X4,
 X5,
 X6,
 X8,
-X10 and X11 are decided and not yet landed.
+X10 and X11 were decided and built by n159,
+and landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`.
+The review of n159 found three more findings about the readers that parse a slice
+(the definitions inside containers,
+an out-of-range landing and the memory of the mask),
+and n161 fixed two of them;
+they are B620 to B622 and are filed in
+[Audit ledger: the consistency pass, definitions inside containers, fragment landings and the mask memory](audit-ledger-consistency-pass-definitions-landings-and-the-mask-memory.md).
+B623 here records the cache versions that n159 and n161 moved.
 
 The findings about span edges are filed in
 [Audit ledger: the consistency pass, span edges as whole units](audit-ledger-consistency-pass-span-edges-as-whole-units.md),
 those about elisions and pairing in
 [Audit ledger: the consistency pass, elisions, quoted numbers and pairing](audit-ledger-consistency-pass-elisions-quoted-numbers-and-pairing.md),
-and those about the refusal run in
-[Audit ledger: the consistency pass, what the refusal run steps over](audit-ledger-consistency-pass-what-the-refusal-run-steps-over.md).
+those about the refusal run in
+[Audit ledger: the consistency pass, what the refusal run steps over](audit-ledger-consistency-pass-what-the-refusal-run-steps-over.md),
+and those about what the word test reads as shown in
+[Audit ledger: the consistency pass, what the word test reads as shown](audit-ledger-consistency-pass-what-the-word-test-reads-as-shown.md).
 
-Written on 2026-10-15 (UTC) from the reviews of n154 and n156
-(`s224/review.md` and `s227/review.md`),
-the hand-back of n156 (`s225/handback-n156.md`)
+Written on 2026-10-15 (UTC) from the reviews of n154,
+n156 and n159
+(`s224/review.md`,
+`s227/review.md` and `s231/review.md`),
+the hand-backs of n156 (`s225/handback-n156.md`),
+n159 (`s230/handback-n159.md`) and n161 (`s232/handback-n161.md`)
 and the lead's notes of that day.
 The labels W1 and X2 to X11 are the reviews' own and are no ledger ids.
 The labels of probe scenarios and the names of probes and logs are the sources' own too.
@@ -38,6 +51,23 @@ A path that starts with `src/` is under `package/module/translation-repair/`.
 Every function,
 type and constant of the package named here was found declared in non-test source of the tree `w158`
 by searches of declarations on the day of writing.
+The functions,
+types and constants named in the landing text of B609 to B615
+(`pageDefinitionsOf`,
+`withDefinitions`,
+`collectDefinitions`,
+`destinationEndOf`,
+`readingForRestoration`,
+`proseMaskReading`,
+`proseMaskBuilds`,
+`PageReadings`,
+`readingOf`,
+`childrenAreProse`,
+`labelIsAddress`,
+`noteRefusedMask`,
+`textNamed`,
+`guillemetFindings` and `restoreTypography`)
+were found declared in non-test source of the tree `w153` at `277145a862`.
 The names that only a review or a hand-back gives
 (test names,
 guard names,
@@ -291,10 +321,10 @@ Found on 2026-10-15 by the review of n156
 (n157,
 finding X2).
 
-Decided on 2026-10-15;
-not yet landed;
-commit:
-pending.
+Decided on 2026-10-15.
+Built by n159;
+landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`,
+in one landing with the fixes of n161.
 
 What a reader of the page would see:
 `dogs’¹’ bowl`,
@@ -342,8 +372,67 @@ none on the corpus.
 No definition label holds a mark and no reference is followed by a mark,
 and the search reached all 92 pages.
 
-Not landed.
-The plan is that it is built after the launch and landed as its own commit.
+Built by n159,
+for B609 and B615 together,
+and landed with the fixes of n161 and not as its own commit.
+- `src/page-definitions.ts` (new) holds `pageDefinitionsOf` and `withDefinitions`,
+  and the definitions are threaded through `src/typography-prose-mask.ts`,
+  `src/consistency-prose-text.ts`,
+  `src/consistency-paragraphs.ts`,
+  `src/consistency-run-steps.ts`,
+  `src/consistency-closing-marks.ts`,
+  `src/consistency-shown-edge.ts`,
+  `src/consistency-fold.ts`,
+  `src/consistency-count.ts`,
+  `src/corpus-run/quote-style-unify.ts`
+  and `src/refine-stage-replies.ts`,
+  which hands `definitions` on to `restoreTypography`.
+  `destinationEndOf` moved from `src/consistency-closing-marks.ts` to `src/consistency-markup-runs.ts`.
+- A shortcut or collapsed reference such as `[dogs' bowl]` reads as no prose when a definition resolves it,
+  since its text is also the definition's label.
+- Tests:
+  `src/page-definitions.unit.test.ts` and `src/corpus-run/quote-style-unify-page.unit.test.ts` (new),
+  and the `DEFINED_ELSEWHERE` rows of `src/corpus-run/pass-consistency-shipped-marks.unit.test.ts`
+  (the reference-link row now expects `unlocated` and an unchanged page).
+  The doubled mark `dogs’[x][r]’` of the four footnote probes F0 to F3 was shown on the build before the round,
+  the shipped-marks test was red,
+  and the page-pass test was red by a failed load only.
+  With `withDefinitions` removed,
+  the definitions test fails 4 rows,
+  the shipped-marks test 5 and the page-pass test 4;
+  with the shortcut-reference rule removed,
+  the definitions test fails 2 rows
+  (the link-text test alone passed,
+  so the guard was unguarded until the definitions test was added to its run).
+- The review of n159 (n160) reran the page-level probe:
+  the doubled mark is gone,
+  `The kittens[^1]’ bowl` stays unchanged and `[x][r]` is `unlocated`.
+  Appending the definitions after the slice shifts no offset,
+  and the mask,
+  the visible flags and the transparent flags keep the slice's length.
+  It invented no definition from a fence,
+  a comment,
+  an indented code block,
+  an unterminated fence or a title with marks.
+
+Corpus effect:
+none,
+as the lead measured.
+Typography changed 0 characters on the 92 pages,
+and the prose flag of every straight mark changed 0 times with the definitions on (21 pages hold definitions);
+the positive controls,
+four texts that must move,
+changed 6 marks,
+so the probe could show a difference.
+
+Limits that stand:
+a call site with no page at hand gets no definitions
+(`src/apply-patch.ts`,
+which passes the slice as the landing text,
+`src/archive-replacement-candidates.ts` and `src/corpus-run/would-ship-text.ts`),
+and `collectDefinitions` in `src/refine-envelope.ts` joins definition lines with a single newline,
+so a link definition directly after a footnote definition is read as a continuation of the footnote.
+The definitions inside containers and that single-newline join are B620.
 
 ## B610: typography goes silent on an edit-region fragment that the grammar refuses alone
 
@@ -351,10 +440,10 @@ Found on 2026-10-15 by the review of n156
 (n157,
 finding X4).
 
-Decided on 2026-10-15;
-not yet landed;
-commit:
-pending.
+Decided on 2026-10-15.
+Built by n159;
+landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`,
+in one landing with the fixes of n161.
 
 What a reader of the page would see:
 a region that the editor rewrote keeps straight marks on a curly page
@@ -397,8 +486,32 @@ This fixes the straight marks after `<b>It's here` and the curled attribute tail
 
 Reach:
 the lead measured it at run time only.
-Not landed.
-The plan is that it is built after the launch and landed as its own commit.
+
+Built by n159,
+and landed with the fixes of n161 and not as its own commit.
+`src/apply-patch.ts` passes a landing (the slice,
+the start and the end) to `restoreTypography`,
+and `src/restore-typography.ts` reads the fragment as part of its slice
+(`readingForRestoration`,
+with the new optional parameters `reading`,
+`landing` and `definitions`).
+Tests:
+the `LANDINGS` rows of `src/typography-transparent-markup.unit.test.ts`,
+and a row of `src/apply-patch.unit.test.ts` ("READS THE REGION AS PART OF ITS SLICE",
+the tail of a tag with an attribute),
+whose failure is shown by the guard-removal run (3 rows fail);
+the landing row was changed after its red log to the base behaviour found by the review's probe.
+The review of n159 (n160) found the landing built from the target text and the envelope's offsets
+after the checks that the current text equals the base text and that the hashes agree,
+so its range is never stale or out of bounds there,
+and it can be out of range only through a direct call (B621).
+Its reach on the corpus is 0 pages:
+typography changed 0 characters on the 92 pages.
+The limit that stands:
+no definitions reach `src/apply-patch.ts`,
+so a fragment holding `[^1]` or `[x][r]` whose definition is in another slice is read there as plain text
+(reasoned by the review from the trailing-apostrophe rule,
+not probed).
 
 ## B611: two sentences of the mask file are not true, and the page pass parses each slice about twice
 
@@ -406,10 +519,10 @@ Found on 2026-10-15 by the review of n156
 (n157,
 finding X5).
 
-Decided on 2026-10-15;
-not yet landed;
-commit:
-pending.
+Decided on 2026-10-15.
+Built by n159;
+landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`,
+in one landing with the fixes of n161.
 
 The header of `src/typography-prose-mask.ts` says that the memory of 32 texts answers nearly every question
 because the page pass reads each slice twice,
@@ -434,8 +547,29 @@ The lead ruled:
 the page pass reads each slice's mask once and hands it to its tally and its rewrite,
 and the memo sentence and the two refused TSDoc examples become true.
 
-Not landed.
-The plan is that it is built after the launch and landed as its own commit.
+Built by n159,
+and landed with the fixes of n161 and not as its own commit.
+`unifyQuoteStyle` in `src/corpus-run/quote-style-unify.ts` reads each slice once
+(`PageReadings` and `readingOf`),
+and `src/typography-prose-mask.ts` exports the seam `proseMaskBuilds`,
+which `src/dead-code.unit.test.ts` lists among the package seams with its reason.
+`proseMask` left the package API,
+since it was dead in production once every reader had moved to `proseMaskReading`;
+the package is unpublished,
+and the lead accepted its removal.
+The tests that used it read the new fixture `src/quote-flags.test-fixture.ts` (`quoteFlags`).
+The TSDoc examples of `src/typography-prose-mask.ts` now use `a <b c="d">cat</b> e`,
+which the grammar accepts.
+Test:
+`src/corpus-run/quote-style-unify-page.unit.test.ts`,
+red by a failed load,
+and 2 rows fail with the guard removed.
+`proseMaskBuilds` is guarded only through that test.
+The review of n159 (n160) did not re-measure the single read per slice
+(`readingOf` keys by the carried text,
+which is right,
+since the reading is a function of the text and the definitions),
+and the author's guard-removal run is the only evidence.
 
 ## B612: a link whose label is an address has its label curled
 
@@ -443,10 +577,10 @@ Found on 2026-10-15 by the review of n156
 (n157,
 finding X6).
 
-Decided on 2026-10-15;
-not yet landed;
-commit:
-pending.
+Decided on 2026-10-15.
+Built by n159;
+landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`,
+in one landing with the fixes of n161.
 
 What a reader of the page would see:
 the address shown on the page is not the address that opens.
@@ -462,8 +596,28 @@ The lead ruled:
 the text of a link whose label is itself an address is no prose,
 where the reading of autolink literals finds an address that spans the label.
 
-Not landed.
-The plan is that it is built after the launch and landed as its own commit.
+Built by n159,
+and landed with the fixes of n161 and not as its own commit.
+The new `src/typography-link-text.ts` holds `childrenAreProse`,
+the internal `writesLabel`,
+`namesItsDefinition` and `labelIsAddress`
+(which checks that the label is one token with no white space),
+and `src/typography-prose-mask.ts` uses them.
+Tests:
+`src/typography-link-text.unit.test.ts`,
+renamed from `src/typography-prose-mask-links.unit.test.ts` with `mv`,
+which was 3 red before the rename and fails 4 rows with the guard removed.
+The review of n159 (n160) checked `[https://x.example/O'Toole](…)` and `[a'b@c.example](mailto:…)`
+(no prose in either),
+and the one address label of the corpus,
+`[info@one-among.us](`,
+which holds no mark;
+a label with words keeps its prose.
+Probe `p-mask-more`:
+the address label and the email label are now no prose.
+Corpus effect:
+none,
+since the one address label holds no mark.
 
 ## B613: a refusal of the grammar for a bound is silent for typography
 
@@ -471,10 +625,10 @@ Found on 2026-10-15 by the review of n156
 (n157,
 finding X8).
 
-Decided on 2026-10-15;
-not yet landed;
-commit:
-pending.
+Decided on 2026-10-15.
+Built by n159;
+landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`,
+in one landing with the fixes of n161.
 
 The grammar refuses a block with more than 1,024 emphasis delimiters or more than 256 levels of nesting
 (`src/nesting-vocabulary.ts`).
@@ -493,8 +647,24 @@ Reach:
 none on the corpus,
 since the 1,237 slices of the author's measure all parse;
 this is exposure.
-Not landed.
-The plan is that it is built after the launch and landed as its own commit.
+
+Built by n159,
+and landed with the fixes of n161 and not as its own commit.
+The new `src/typography-mask-refusal.ts` holds `noteRefusedMask` and `textNamed`,
+and every reader that refuses a mask calls the first
+(`src/restore-typography.ts`,
+`src/restore-ellipsis.ts`,
+`src/quote-normalize.ts`,
+`src/translate-guillemets.ts` and `src/corpus-run/quote-style-unify.ts`).
+The finding names the text by its first 48 characters.
+Test:
+`src/typography-mask-refusal.unit.test.ts` (new,
+with no separate red log),
+which fails 2 rows with the guard removed.
+The review of n159 (n160) found that `src/restore-typography.ts` logs only when it built the reading itself,
+since a reading it was given is the caller's to log (`src/corpus-run/quote-style-unify.ts`),
+and that the warning can be wrong for an out-of-range landing,
+which B621 closes.
 
 ## B614: the guillemet floor stands aside for a candidate that the grammar refuses
 
@@ -502,10 +672,10 @@ Found on 2026-10-15 by the review of n156
 (n157,
 finding X10).
 
-Decided on 2026-10-15;
-not yet landed;
-commit:
-pending.
+Decided on 2026-10-15.
+Built by n159;
+landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`,
+in one landing with the fixes of n161.
 
 `guillemetFindings({ candidateText: 'The cat said «I am hungry.» and {' })` returns no finding,
 and with the grammar satisfied it returns one
@@ -520,8 +690,22 @@ the guillemet floor refuses it.
 To check,
 and to fix if needed.
 
-Not landed.
-The plan is that it is built after the launch and landed as its own commit.
+Built by n159,
+and landed with the fixes of n161 and not as its own commit.
+By the author's account of the order,
+the floor of `src/translate-source-carry.ts` runs at an earlier step of `src/translate-validate.ts`,
+and the refusal of an unparseable candidate comes later and so never speaks first.
+`guillemetFindings` in `src/translate-guillemets.ts` therefore now answers for a candidate that the grammar refuses:
+it carries its guillemets outside comments as a finding.
+Test:
+`src/translate-guillemets-refused.unit.test.ts` (new),
+whose refused-candidate row was red with 0 findings against the 1 expected,
+and which fails 2 rows with the guard removed.
+Probe `p-readers`:
+the guillemet floor went from 0 to 1 finding for the refused-parse candidates.
+The review of n159 (n160) found that the floor stands aside on `carriesGuillemet` of the source or the page,
+which does not read the parse,
+so counting every guillemet of the refused parse cannot change whether it stands aside.
 
 ## B615: a reference label with a straight mark is curled at the reference and left straight at its definition
 
@@ -529,10 +713,10 @@ Found on 2026-10-15 by the review of n156
 (n157,
 finding X11).
 
-Decided on 2026-10-15;
-not yet landed;
-commit:
-pending.
+Decided on 2026-10-15.
+Built by n159;
+landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`,
+in one landing with the fixes of n161.
 
 What a reader of the page would see:
 the reference `[b’s]` no longer matches the definition `[b's]`,
@@ -578,5 +762,109 @@ the search reached 92 pages).
 The author's own corpus measure had not counted labels with a mark.
 Labels are mostly numeric.
 
-Not landed.
-The plan is that it is built after the launch and landed as its own commit.
+Built by n159 with B609,
+by the page's definitions that every reader of a slice now has,
+and landed with the fixes of n161 and not as its own commit.
+The tests,
+the red and the guard counts are those of B609.
+Probe `p-refs` shows the shortcut reference label no longer half curled,
+with its definition unchanged,
+and probe `p-mask-kinds` counts 2 more marks that are no prose in that case (66 to 68).
+Corpus effect:
+none,
+as the lead measured:
+typography changed 0 characters on the 92 pages,
+and no straight mark changed its prose flag.
+The limit that stands for a fragment is that of B610.
+
+## B623: the cache versions that n159 and n161 moved, and the two that stayed
+
+Written on 2026-10-15,
+from the accounts of n159 and n161,
+the review of n159 and the lead's notes.
+
+Red `5fe3173cc5`,
+fixed in `277145a862`.
+
+The earlier moves of this family are B607 and B608.
+The rule is the same:
+a cache needs a move when its stored output could hold text written under the old rule
+and its key does not hash the sheet.
+Each version has an account paragraph in its own file.
+
+Moved by n159,
+because a stored or derived outcome was decided by a reader that the round changed
+(quote restoration,
+the shown-word test,
+the prose mask or the guillemet floor):
+- `CONSOLIDATE_CACHE_VERSION` from 22 to 23 (`src/consolidate-key.ts`).
+- `LANE_CONTEST_CACHE_VERSION` from 7 to 8 (`src/lane-contest-key.ts`).
+- `SLICE_CACHE_VERSION` from 35 to 36 (`src/repair-slice-key.ts`).
+- `REFINE_CACHE_VERSION` from 6 to 7 (`src/refine-slice-key.ts`).
+  No test pinned this version before,
+  and the guard run showed it unguarded,
+  so `src/refine-slice-key.unit.test.ts` gained a pin;
+  with the version reverted,
+  3 rows fail.
+- `TRANSLATE_SLICE_CACHE_VERSION` from 16 to 17 (`src/translate-document-contract.ts`).
+  The pinned `LEGACY_WINDOWLESS_KEY` of `src/translate-slice-key.unit.test.ts` moved with it,
+  as did the pins of the consolidation,
+  lane contest and repair slice tests.
+  With each of the four reverted,
+  2 rows fail.
+
+Moved by n161:
+- The account paragraphs of the five versions that n159 moved gained the quoted-tense rule (B627),
+  and each now names both rounds.
+- `PAGE_TITLE_CACHE_VERSION` from 1 to 2 (`src/page-title-cache-version.ts`,
+  with a new paragraph for n161).
+  Its key does not hash the sheet,
+  and the page title lexicon sheet carries the rule,
+  so a reading cached under version one was written without it.
+  The review of n159 had judged version 1 right for that round,
+  since `src/page-title-lexicon-stage.ts` imports `straightenQuotes`,
+  which n159 did not touch.
+  A pin case,
+  "STANDS AT VERSION TWO",
+  in `src/corpus-run/pass-page-titles.unit.test.ts` fails 3 rows with the version put back to 1.
+  The lead accepted the move.
+
+Stayed:
+- `CONSISTENCY_CACHE_VERSION` at 4.
+  Its key hashes the whole sheet messages with the roster and the stage (`src/corpus-run/pass-consistency-cache.ts`),
+  so a changed sheet is a different key,
+  the stored answer is the heard voices,
+  counting is not stored (`src/consistency-cache-version.ts`),
+  and no consistency path calls a typography rule.
+  The word test of B597 moves no number for that reason.
+- `PAIRING_CACHE_VERSION` at 3,
+  since the pairing sheets carry no house tense rule.
+
+The control that the document allows an exception for,
+a cache record written after the change,
+was not made by either round,
+since no runs directory is read except by the read-only replay.
+The review of n159 did not check which key covers the stored replies of the archive review,
+which restores typography (`src/archive-replacement-candidates.ts`),
+and `wording-key.ts` uses `straightenProseQuotes`,
+whose mask changed for address labels and shortcut references;
+the replay (24 wordings,
+none missing) and the corpus (one address label without a mark) show no change.
+The account paragraphs are documentation text that no test guards,
+and only the cache account audit reads them.
+
+The audit:
+`cache-account-audit` run by n161 on the uncommitted tree rebuilt the package,
+read 1,615 source files and 8 versions,
+accepted `CONSISTENCY_CACHE_VERSION` 4 (set in `e91da9ea8`) and `PAIRING_CACHE_VERSION` 3 (set in `d614a0c1d`),
+and stopped with exit status 6:
+`CONSOLIDATE_CACHE_VERSION = 23` was in no commit,
+and the audit reads committed history.
+After the landing the lead ran it again,
+and by the lead's notes of that run
+`CONSOLIDATE` 23,
+`LANE_CONTEST` 8,
+`PAGE_TITLE` 2,
+`REFINE` 7,
+`SLICE` 36 and `TRANSLATE_SLICE` 17 are set in `277145a86`,
+and `CONSISTENCY` 4 and `PAIRING` 3 ride.

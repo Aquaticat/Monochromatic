@@ -692,7 +692,15 @@ and a reader that cannot do either names that blind spot in its header
 (ledger B609,
 B610,
 B615;
-decided and not yet landed).
+built by n159 and landed with the fixes of n161).
+The definitions the shared reader collects (`page-definitions.ts`)
+still miss those inside a container and stop at a single newline,
+which is an open item (ledger B620),
+and a call site with no page at hand gets none.
+A fragment landing that lies outside its slice is refused by throwing `FragmentLandingError`,
+never read as no prose,
+and a memory of readings is keyed so that no text can read another's (ledger B621,
+B622).
 
 What enforces it:
 `blank-line-splits.unit.test.ts`,
@@ -925,6 +933,16 @@ tags,
 comments and expressions (ledger B596,
 B597,
 B605).
+Not everything the parse hides is transparent:
+a hidden stretch hides every unit in it,
+whatever its width (ledger B616),
+markup that separates or annotates ends a word
+(line breaks with or without a slash,
+block tags,
+table cells,
+images and the `rt` and `rp` of a ruby annotation),
+while inline wrappers stay transparent (ledger B617),
+and inline code is a shown word (ledger B618).
 Typography touches only the text that the page parse shows as prose,
 through the one mask that every typography reader shares (ledger B606).
 A quote a model gives back is evidence of where it points,

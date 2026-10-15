@@ -9,8 +9,12 @@ an edge that cut a character reference or a backslash escape in two,
 an edge that took in a reference-looking text,
 and an edge that left half a word.
 The rounds that fixed them are n151,
-n154 and n156,
-and two findings of the last review (X1 and X9) are decided and not yet landed.
+n154,
+n156 and n159,
+and the two findings of the review of n156 (X1 and X9) were built by n159
+and landed on 2026-10-15 with the fixes of n161.
+What the review of n159 found the word test still read wrongly is filed in
+[Audit ledger: the consistency pass, what the word test reads as shown](audit-ledger-consistency-pass-what-the-word-test-reads-as-shown.md).
 The edge marks themselves (apostrophes and quotation marks at the edge of a span) are filed in
 [Audit ledger: the consistency pass, apostrophes and block floors](audit-ledger-consistency-pass-apostrophes-and-block-floors.md)
 and in
@@ -30,6 +34,8 @@ Written on 2026-10-15 (UTC) from the four reviews
 the hand-backs of n151 (`s219/handback-draft-items.md`),
 n154 (`s222/handback-n154.md`) and n156 (`s225/handback-n156.md`),
 and the lead's notes of 2026-10-14 and 2026-10-15.
+The landing text of B597 and B598 was added on 2026-10-15 from the review of n159 (`s231/review.md`),
+the hand-back of n159 (`s230/handback-n159.md`) and the lead's notes of the landing.
 The labels V3,
 U1 to U3,
 U8,
@@ -51,6 +57,16 @@ except those an entry says were removed;
 `partStartAt`,
 `keepsClosingAt`,
 `ESCAPABLE_CLOSING` and `referenceStartIn` were searched in the four source files that held them and are gone.
+The functions and constants named in the landing text of B597 and B598
+(`transparentUnitsOf`,
+`cutsShownWord`,
+`shownRangesOf`,
+`shownViewOf`,
+`writtenBack`,
+`restoreTypography`,
+`isSpacedScriptWordCharacter`,
+`SINGLE_MARK_LETTERS` and `JOINERS`)
+were found declared in non-test source of the tree `w153` at `277145a862`.
 The names that only a review or a hand-back gives
 (test names,
 guard names,
@@ -517,10 +533,10 @@ whether the recorded span of a published artifact has an edge at one of the nine
 Found on 2026-10-15 by the review of n156 (n157,
 finding X1).
 
-Decided on 2026-10-15;
-not yet landed;
-commit:
-pending.
+Decided on 2026-10-15.
+Built by n159 and corrected by n161 (B616 to B618);
+landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`,
+in one landing with the fixes of n161 and not as its own commit.
 
 What a reader of the page would have seen:
 `dogstens`,
@@ -581,19 +597,92 @@ where a letter touches an emphasis,
 link or tag delimiter,
 and a span edge must fall there to ship half a word.
 
-The lead's plan:
-it is built after the launch and landed as its own commit,
+The lead's plan was to build it after the launch and land it as its own commit,
 because the checks that measure what ships had not moved in four builds (the rule of M219).
+It was built as n159 in the tree `w153` and landed with the fixes of n161.
+
+Built by n159:
+- `transparentUnitsOf` in `src/consistency-unread-units.ts` flags the units that show nothing,
+  and `cutsShownWord` in `src/consistency-shown-edge.ts` steps over them,
+  so an edge inside a word that a reader sees is refused,
+  and an edge beside markup that shows nothing is read as beside the word.
+  `src/consistency-prose-text.ts`,
+  `src/consistency-count.ts` and `src/consistency-fold.ts` changed with it,
+  and the header of `src/consistency-shown-edge.ts` was updated.
+- Typography reads the same shown text through the new `src/typography-shown-view.ts`
+  (`shownRangesOf`,
+  `shownViewOf` and `writtenBack`):
+  `restoreTypography` reads the shown text of the replacement and writes the curled marks back (B605).
+- Tests:
+  `src/typography-transparent-markup.unit.test.ts` and `src/typography-shown-view.unit.test.ts` (new),
+  `src/consistency-shown-edge.unit.test.ts`,
+  and rows X1a to X1h of `src/corpus-run/pass-consistency-shipped-marks.unit.test.ts`.
+  Red on the build before the round:
+  9 failures in the transparent-markup test and 10 in the shipped-marks test
+  (the controls X1g and X1h pass).
+  With the single-unit filter removed,
+  `src/consistency-shown-edge.unit.test.ts` fails 2 rows and the shipped-marks test 8
+  (the transparent-markup test passes,
+  since it does not exercise the filter).
+  With the shown view of `src/restore-typography.ts` removed,
+  the transparent-markup test fails 4 rows and `src/restore-typography.unit.test.ts` 2.
+- Probe `p-intraword`:
+  M1 to M4,
+  M6 and M8 are now `unlocated` or `untouched`;
+  M5 (the inline-code case) has place 2 `unlocated` and place 3 replaced.
+
+The review of n159 (n160) held the principle for the delimiters it was built for:
+a twin probe over 189 thousand short sequences (24 thousand of them comparable)
+found no case where a string with invisible delimiters curls differently from the same string without them,
+and the same probe on the build before n159 found 4,360.
+What it found wrong in how the principle decides which units show nothing is filed as B616,
+B617 and B618.
+
+Corpus effect:
+- Of the 23 word-test decisions that n159 changed on 9 pages,
+  10 were from this finding on 5 pages
+  (`*Yorushika*’s` on `Susiethegamer`,
+  `*Arcaea*’s` on `lxyddice`,
+  `[Yantian](...)’s` on `a2581911655`,
+  `[𝓠𝓾𝓪𝓷](...)’s` on `mikaela_khara`,
+  and the `<rt>` annotation on `windward0032`).
+  The 37 places of the lead's measure counted every letter that touches a delimiter,
+  and the decisions count only those that change.
+- n161 restored the two `<rt>` decisions (B617),
+  so as landed this finding changes 8 decisions on 4 pages,
+  and the word test changes 21 decisions on 8 pages in all
+  (13 from the `_` joiner of B598 and 8 from this finding).
+- Typography changed 0 characters on the 92 pages.
+- The claims grid located 28,137 texts on the build before n159 and 27,873 on the new one;
+  the 264 lost texts are all attributed to the shapes of this finding
+  (3 for each of seven plain words in the shape `*cats*s`,
+  and 243 for the `**cats**` word followed by `s` or `*s`,
+  or with a quote mark before it).
+  The final-page failures of the oracle's column `b` went from 9 to 4,
+  all one class (a free mark before `*`).
+  The second grid located 22,524 texts before and 22,298 after,
+  and the review's count over that grid's word list attributes all 226 lost texts to the two rulings
+  (emphasis closed directly before a letter or digit,
+  and the literal `_cats_`).
+
+Accepted by the lead:
+the cost of `cutsShownWord` rose up to about 2.2 times on long slices
+(7.3 to 13.1 ms,
+32.6 to 118 ms and 168.6 to 370.9 ms on English slices of 37 thousand,
+379 thousand and 1.16 million characters;
+a repeat showed a run-to-run spread of about 15 percent),
+and the corpus slices are far shorter than the longest probe.
+The overridden pins are listed in B604 (four of them) and in B598 (one).
 
 ## B598: words in a script other than Latin are not word characters at an edge
 
 Found on 2026-10-15 by the review of n156 (n157,
 finding X9).
 
-Decided on 2026-10-15;
-not yet landed;
-commit:
-pending.
+Decided on 2026-10-15.
+Built by n159;
+landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`,
+in one landing with the fixes of n161.
 
 `Привет мир` with the span `Прив` and `Γειά σου` with `Γει` return `once`,
 so a cut inside a Cyrillic or Greek word ships,
@@ -614,5 +703,53 @@ The lead ruled:
 a word character at an edge is a letter,
 a mark or a digit of any script,
 and `_` between two word characters joins them.
-No corpus reach was measured for it.
-The plan is that of B597.
+No corpus reach was measured for it before the build.
+
+Built by n159:
+- `isSpacedScriptWordCharacter` in `src/latin-letters.ts` accepts a letter,
+  a mark or a decimal digit of any script except Han,
+  Hiragana and Katakana,
+  which keep the Latin-style reading
+  (an unspaced script has no word edge to cut,
+  and `看kittens好` stays a control with no cut),
+  and except U+02BC,
+  which the module reads as a single mark (`SINGLE_MARK_LETTERS`;
+  failing tests found it).
+  The lead accepted both exceptions.
+  `JOINERS` in `src/consistency-shown-edge.ts` gained `_`,
+  and the header of that file was updated.
+- Tests:
+  `src/consistency-shown-edge.unit.test.ts` and `src/consistency-fold.unit.test.ts`,
+  rows X9a (`kit_tens`) and X9b (a Greek letter) of `src/corpus-run/pass-consistency-shipped-marks.unit.test.ts`,
+  and a direct test in `src/latin-letters.unit.test.ts`,
+  which needed `isSpacedScriptWordCharacter` exported through `src/text-barrel.ts`.
+  The guard run first showed the function with no direct test and no page-level row
+  (2 rows failed in the shown-edge test and 3 in the fold test,
+  with the latin-letters test and the shipped-marks test passing),
+  and the `_` joiner with no page-level row;
+  both were added,
+  and with the guards removed the latin-letters test fails 2 rows,
+  the shown-edge test 2,
+  the fold test 3 and the shipped-marks test 2 for the letters,
+  and 2 and 2 for the joiner.
+- One existing pin changed:
+  `catω naps` with `cat` is now `none`,
+  since a Greek letter cuts,
+  and the name of the case was updated.
+- The review of n159 ran the function:
+  true for `П`,
+  a combining acute and `٣`;
+  false for `猫`,
+  `ʼ` and `²`.
+  Its header sentence "a Latin letter or digit" was stale and is B625.
+
+Corpus effect:
+13 word-test decisions on 4 pages changed because of the `_` joiner,
+all of them handles that a reader sees whole:
+`AmbeR_the_anpa` on its own page (3),
+`@Cang_Shan_Jing_Ye` on `GLaDOSister` (4),
+`@qiandao_shi` on `dogesir_` (2),
+`@awxs_2081573566` on `luxuanwen3` (2)
+and `[Collapsar_ndn]` on `luxuanwen3` (2).
+The Greek,
+Cyrillic and other letters changed no corpus decision.

@@ -177,6 +177,47 @@ A sheet whose rules name no block,
 and a caller whose fixture passes a block production does not,
 are outside what these can see.
 
+## A rule a sheet states about tense and what it does not cover
+
+What happened:
+the house rule on tense listed what the person said among the life told in the past,
+and named no exception for words quoted as she wrote them.
+The last message of `TianqiChen666`,
+written in her own present,
+shipped in the past in two passes,
+and the read of the first pass said the tense held,
+because it read the narration only (ledger B627,
+M220).
+
+The rule:
+a sheet rule that moves text into another form names what it does not cover.
+For tense,
+words quoted as someone wrote or said them keep the speaker's tense,
+and keeping their present is never a tense inconsistency.
+Every sheet that states the tense rule carries that exception:
+the full rule where the house policy is shown (`QUOTED_WORDS_RULE`),
+and the one-sentence reminder beside every instruction to move a line of the life to the past,
+in the house block's words or in the sheet's own (`QUOTED_WORDS_REMINDER`).
+Both are built by named constants in `english-usage-policy.ts`,
+never inline where they are sent.
+A new sheet with a tense instruction carries the reminder in the commit that adds it.
+A sheet that carries no tense rule gets none,
+as the pairing sheets,
+the reference attestation,
+the picture readings and the derivability sheets do;
+a tense rule added to one carries the exception.
+
+What enforces it:
+`sheet-quoted-tense.unit.test.ts` renders every sheet of the rendered-sheets fixture and fails on
+a sheet that carries the house rule without the rule sentences,
+an instruction to move a line of the life to the past with neither the reminder nor the rule beside it,
+a polish gate text without the reminder twice,
+and the list of house corrections of form without "(never for quoted words)".
+Each marker must be found in at least one sheet,
+so the checks are not vacuous.
+A tense instruction written in words that no marker of the test holds is outside what it can see,
+and its marker is added to the test by hand.
+
 ## Exits an outcome rule reaches
 
 What happened:

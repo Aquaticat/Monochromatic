@@ -72,13 +72,15 @@ named for that subject and listed here.
   keys and processes,
   the clock,
   process globals,
-  and the order concurrent work ends in.
+  the order concurrent work ends in,
+  and the orders and seats that a prompt hash decides.
   Sections:
   - [Tests touching the real world](mistake-prevention-tests-clocks-and-arrival-order.md#tests-touching-the-real-world)
   - [Tests on the real clock](mistake-prevention-tests-clocks-and-arrival-order.md#tests-on-the-real-clock)
   - [Durations on the system clock](mistake-prevention-tests-clocks-and-arrival-order.md#durations-on-the-system-clock)
   - [Globals a case replaces](mistake-prevention-tests-clocks-and-arrival-order.md#globals-a-case-replaces)
   - [Output decided by arrival order](mistake-prevention-tests-clocks-and-arrival-order.md#output-decided-by-arrival-order)
+  - [Orders and seats that a prompt hash decides](mistake-prevention-tests-clocks-and-arrival-order.md#orders-and-seats-that-a-prompt-hash-decides)
 - [Preventing mistakes: comparing text and reading structure](mistake-prevention-text-comparison-and-structure.md):
   Rules for comparing text and reading a document's structure:
   code points,
@@ -103,12 +105,14 @@ named for that subject and listed here.
   - [Quotes a judge gives back](mistake-prevention-text-comparison-and-structure.md#quotes-a-judge-gives-back)
 - [Preventing mistakes: sheets, quorums and outcome rules](mistake-prevention-sheets-quorums-and-outcome-rules.md):
   Rules for what each model is shown,
+  what a sheet rule names as outside its reach,
   which seats a quorum counts,
   and how a stage reaches and records its outcome.
   Sections:
   - [Which seats a quorum counts](mistake-prevention-sheets-quorums-and-outcome-rules.md#which-seats-a-quorum-counts)
   - [Sheets every model reads](mistake-prevention-sheets-quorums-and-outcome-rules.md#sheets-every-model-reads)
   - [What each sheet is shown](mistake-prevention-sheets-quorums-and-outcome-rules.md#what-each-sheet-is-shown)
+  - [A rule a sheet states about tense and what it does not cover](mistake-prevention-sheets-quorums-and-outcome-rules.md#a-rule-a-sheet-states-about-tense-and-what-it-does-not-cover)
   - [Exits an outcome rule reaches](mistake-prevention-sheets-quorums-and-outcome-rules.md#exits-an-outcome-rule-reaches)
   - [Refusals inside a composed operation](mistake-prevention-sheets-quorums-and-outcome-rules.md#refusals-inside-a-composed-operation)
   - [Checks on one part of a composed text](mistake-prevention-sheets-quorums-and-outcome-rules.md#checks-on-one-part-of-a-composed-text)
@@ -136,7 +140,8 @@ named for that subject and listed here.
   its class,
   its labels,
   its counts,
-  and what a catch adds to it.
+  what a catch adds to it,
+  and the reason a line gives when it reports nothing done.
   Sections:
   - [Messages a marked class carries](mistake-prevention-messages-labels-and-counts.md#messages-a-marked-class-carries)
   - [Counts a finding states](mistake-prevention-messages-labels-and-counts.md#counts-a-finding-states)
@@ -144,6 +149,7 @@ named for that subject and listed here.
   - [One field carrying two kinds of text](mistake-prevention-messages-labels-and-counts.md#one-field-carrying-two-kinds-of-text)
   - [Counts in printed text](mistake-prevention-messages-labels-and-counts.md#counts-in-printed-text)
   - [What a catch charges](mistake-prevention-messages-labels-and-counts.md#what-a-catch-charges)
+  - [Log lines that report nothing done](mistake-prevention-messages-labels-and-counts.md#log-lines-that-report-nothing-done)
 - [Preventing mistakes: shared code, loops and keyed tables](mistake-prevention-shared-code-loops-and-keyed-tables.md):
   Rules for the shape of the code:
   one copy of shared code,

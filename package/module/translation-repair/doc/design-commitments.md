@@ -550,17 +550,21 @@ Part of [the package README](../README.md).
   2026-10-14 and 2026-10-15 after the independent reviews of the pass,
   and of the owner's question of 2026-10-13,
   "Can't we pre-fix the apostrophe things deterministically?"
-  Recorded in ledger B463 to B615,
-  and uncommitted when this was written.
-  Decided and not yet landed:
-  the word test and the pairing of typography reading shown text through markup (B597,
-  B605),
-  `'the '90s'` (B604),
-  readers that parse a slice with the page's definitions (B609,
-  B610,
-  B615),
-  and the smaller findings B598,
-  B611 to B614.
+  Recorded in ledger B463 to B626 and B628.
+  Landed on 2026-10-15:
+  the rules of the earlier rounds with the tests `7ae9914d3d` and the code `1fb06389e1` (by the lead's notes),
+  and the shown words at a span edge,
+  the pairing of typography on shown text,
+  the page's definitions for every reader of a slice,
+  the tie rule for `'the '90s'` and the smaller findings (B597,
+  B598,
+  B604,
+  B605 and B609 to B615),
+  with the corrections of the review that followed (B616 to B618,
+  B621 and B622) and the group line's reason (B628),
+  with the tests `5fe3173cc5` and the code `277145a862`.
+  Open:
+  the definitions inside containers (B620) and the rows of B619.
   The words rule:
   the span the pass replaces is the words alone.
   The single marks that touch each edge of the span are read at the chosen place and at the receiving place.
@@ -714,8 +718,51 @@ Part of [the package README](../README.md).
   a unit counts as its shown character,
   default-ignorable characters are transparent,
   and `&` between two word characters joins them.
+  A word character is a letter,
+  a mark or a decimal digit of a script that sets its words apart by spaces,
+  so Han,
+  Hiragana,
+  Katakana and U+02BC are not word characters here,
+  and `_` between two word characters joins them.
+  What a reader sees decides what is transparent.
+  Emphasis,
+  strike and code delimiters,
+  link brackets with their destination and title,
+  tags that wrap text,
+  comments and expressions show nothing between the pieces of a word,
+  so a span edge beside them is read as beside the word.
+  A hidden stretch (a link destination or title,
+  a tag attribute,
+  a comment) hides every unit in it,
+  whatever the width of the unit,
+  so a reference,
+  an escape or an astral character inside it is hidden whole.
+  Markup that separates or annotates ends a word:
+  a line break with or without a slash,
+  a block tag,
+  a table cell,
+  an image,
+  and the `rt` and `rp` of a ruby annotation.
+  Inline wrappers (`b`,
+  `i`,
+  `em`,
+  `strong`,
+  `span`,
+  `a`,
+  `u`,
+  `s`,
+  `sub`,
+  `sup`,
+  `ruby`,
+  `mark`,
+  `small` and `code`) stay transparent.
+  The content of an inline code span is a shown word,
+  so a text place beside it is refused.
   An edge that would cut a shown word leaves the receiving place as it was,
   and refuses a chosen place.
+  Detail:
+  ledger B597,
+  B598 and B616 to B618.
   Typography acts only on prose that the page parse shows.
   Curling a mark,
   the ellipsis,
@@ -730,7 +777,20 @@ Part of [the package README](../README.md).
   and bare addresses are no prose;
   an indented line is prose,
   since the MDX grammar has no indented code.
-  A text that the grammar refuses has no prose.
+  A text that the grammar refuses has no prose,
+  and a reader that gets such a mask logs a finding that names the slice.
+  Every reader that parses a slice reads it with the page's definitions,
+  so a reference label that holds a mark is no prose where its definition stands in another slice,
+  and a shortcut reference is read the same way.
+  An edit-region fragment is read where it lands in its slice,
+  and a landing outside the slice throws `FragmentLandingError`.
+  The text of a link whose label is an address is no prose.
+  The pairing context of typography reads the same shown text as the word test,
+  so `<b>'hi'</b>` curls and `rock *'n'* roll` takes `’n’`.
+  Detail:
+  ledger B605 and B609 to B615,
+  B621 and B622;
+  the definitions inside containers are an open item (B620).
   The elision and quoted-number readings of a straight mark on a curly page:
   a listed elision (`'tis`,
   `'twas`,
@@ -751,7 +811,14 @@ Part of [the package README](../README.md).
   with no guessed glyph.
   Between the elision and the quoted-number readings of `'NN`,
   the one that leaves fewer marks unpaired wins,
-  and a tie keeps the elision (decided and not yet landed).
+  and a tie keeps the elision,
+  so `'the '90s'` curls to `‘the ’90s’`.
+  The log line of a consistency group counts all nine outcomes of its places,
+  and when a place was left as it stood,
+  or the bench was not asked,
+  failed or named no winner,
+  it ends with `because=` and each distinct reason,
+  each the code's own decision read from the record (ledger B628).
   Detail for each rule is in the ledger:
   the marks and the proof in B463 to B555,
   the refusal run in B557,
@@ -759,9 +826,13 @@ Part of [the package README](../README.md).
   B574 and B575 to B589,
   the page-wide reference refusal in B564 and B575,
   span edges in B590 to B598,
+  what the word test reads as shown in B616 to B619,
   elisions and pairing in B563,
   B568 and B599 to B605,
-  and the prose mask in B606 to B615.
+  the prose mask and the readers of a slice in B606 to B615 and B620 to B622,
+  the cache versions in B607,
+  B608 and B623,
+  and the group line in B628.
   Corpus counts (the 92 English pages `people/<id>/page.en.md` of the pinned corpus,
   2,799 prose blocks,
   counted with the package's own parser):
@@ -772,6 +843,13 @@ Part of [the package README](../README.md).
   - The prose mask changes no character outside prose on the 92 pages
     (the 1,237 slices;
     ledger B606).
+  - Typography changes 0 characters on the 92 pages under the shown-text rules and the page's definitions.
+    The word test changes 21 decisions on 8 pages
+    (13 from the `_` joiner and 8 from markup in a shown word),
+    and the 21 pages that hold definitions change no prose flag
+    (ledger B597,
+    B598,
+    B617).
   What a reader of a page sees as a result of the accepted limits:
   - A place whose edge mark differs from the chosen place's keeps its own wording or takes a writer's paragraph.
     So does a place whose words stand beside a mark and end in another class of character than the incoming words,
@@ -808,6 +886,15 @@ Part of [the package README](../README.md).
     since no context separates them.
   - `<!-->` and `<!--->` are read as comments that never end,
     where CommonMark calls them complete.
+  - A word in Han,
+    Hiragana or Katakana has no word edge for a span to cut,
+    so an edge beside such a letter is not refused,
+    and U+02BC stays a mark and not a word character.
+  - A definition inside a list item,
+    a blockquote or an HTML block is not part of the page's definitions,
+    and a link definition directly after a footnote definition is read as part of the footnote (ledger B620).
+  - The names of the block tags that end a word are typed by hand,
+    under a test that reads the installed parser's list and fails when a name it holds is missing (ledger B617).
   - The generation 17 reader holds no English,
     so it cannot check a recorded mark or that an edge apostrophe was proven.
     A forged record that the pass never writes
@@ -850,6 +937,14 @@ Part of [the package README](../README.md).
   the subject is the front matter `name` and every declared alias
   ("Name and declared aliases").
   Built as ledger B419.
+  The rule has one exception,
+  decided by the lead on 2026-10-15 after the read of `TianqiChen66624`:
+  words quoted as someone wrote or said them keep the speaker's tense,
+  because they are the speaker's own voice and the past belongs to the narration around them.
+  A quotation moved into the past is a defect,
+  and keeping its present is never a tense inconsistency.
+  Every sheet that states the tense rule carries the exception (ledger B627,
+  M220).
 - **A dictionary entry for 扑面而来.**
   Owner,
   2026-10-11:

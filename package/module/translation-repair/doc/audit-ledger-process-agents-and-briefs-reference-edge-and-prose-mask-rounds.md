@@ -1,9 +1,11 @@
 # Audit ledger: process mistakes, agents and briefs in the reference, edge and prose mask rounds
 
-What went wrong in the rounds from the review of n149 to the review of n156 (n150 to n157):
+What went wrong in the rounds from the review of n149 to the review of n156 (n150 to n157),
+and in the rounds that built the deferred findings of the review of n156,
+reviewed them and added the quoted-tense rule (n159 to n161):
 the rule breaches of each round,
 as its author or reviewer disclosed them,
-and two mistakes of the lead's own that ran through the whole stretch of work.
+and two mistakes of the lead's own that ran through the first stretch of work.
 The entries before these are filed in
 [Audit ledger: process mistakes, agents and briefs in the consistency fix rounds](audit-ledger-process-agents-and-briefs-consistency-fix-rounds.md),
 which stopped at M209 because it would otherwise pass the line limit.
@@ -13,7 +15,17 @@ The work of these rounds is filed in
 [Audit ledger: the consistency pass, span edges as whole units](audit-ledger-consistency-pass-span-edges-as-whole-units.md),
 [Audit ledger: the consistency pass, elisions, quoted numbers and pairing](audit-ledger-consistency-pass-elisions-quoted-numbers-and-pairing.md)
 and
-[Audit ledger: the consistency pass, the prose mask and slices parsed alone](audit-ledger-consistency-pass-the-prose-mask-and-slices-parsed-alone.md).
+[Audit ledger: the consistency pass, the prose mask and slices parsed alone](audit-ledger-consistency-pass-the-prose-mask-and-slices-parsed-alone.md),
+and the work of n159 to n161 also in
+[Audit ledger: the consistency pass, what the word test reads as shown](audit-ledger-consistency-pass-what-the-word-test-reads-as-shown.md),
+[Audit ledger: the consistency pass, definitions inside containers, fragment landings and the mask memory](audit-ledger-consistency-pass-definitions-landings-and-the-mask-memory.md),
+[Audit ledger: building the tense check](audit-ledger-tense-check.md)
+and
+[Audit ledger: labels and counts in messages](audit-ledger-labels-and-counts-in-messages.md).
+M220,
+the read that missed the quoted tense,
+is filed in
+[Audit ledger: process mistakes, claims and commit messages](audit-ledger-process-claims-and-commit-messages.md).
 
 Written on 2026-10-15 (UTC) from the accounts of the rounds,
 each of which lists its own breaches
@@ -23,9 +35,14 @@ each of which lists its own breaches
 the hand-backs `s219/handback-draft-items.md`,
 `s219/handback-n151-rest.md`,
 `s222/handback-n154.md`,
-`s225/handback-n156.md` and `s218/handback-n152.md`)
+`s225/handback-n156.md` and `s218/handback-n152.md`),
+and,
+for M221 to M223,
+the hand-back of n159 (`s230/handback-n159.md`),
+the review of n159 (`s231/review.md`)
+and the list and hand-back of n161 (`s232/rules-broken.md` and `s232/handback-n161.md`),
 and the lead's notes of 2026-10-14 and 2026-10-15.
-The breaches of the docs round that wrote these entries are in its own hand-back and are not filed here.
+The breaches of the docs rounds that wrote these entries are in their own hand-backs and are not filed here.
 The rounds are named as the neighbouring entries name them,
 and a round name is not a task number.
 The sizes of reads and outputs are the authors' own figures.
@@ -452,6 +469,9 @@ B604,
 B605,
 B609 to B615),
 and build them after the launch as their own commits.
+They were built as n159 and landed on 2026-10-15 together with the fixes of n161,
+in the tests `5fe3173cc5` and the code `277145a862`,
+and not as their own commits.
 
 Prevention:
 when the checks that measure what ships stay identical across builds
@@ -464,3 +484,203 @@ the work is landed,
 and the rest is fixed after the launch.
 `mistake-prevention-shell-edits-commits-and-agents.md`,
 "Briefs and hand-backs".
+
+## M221: breaches of the Read, output, batch and hand-back rules by the round that built the deferred findings (n159)
+
+Status:
+happened on 2026-10-15 in the work of B597,
+B598,
+B604,
+B605 and B609 to B615;
+every one disclosed by its author in the hand-back (`s230/handback-n159.md`),
+and one more found by the review of the round (the paragraph that begins "Found by the review of the round").
+
+- Reads with a limit over 50:
+  `consistency-paragraphs.ts` (94),
+  `consistency-closing-marks.ts` (70),
+  `consistency-count.ts` (80),
+  `quote-style-unify.ts` (120),
+  `consistency-prose-text.ts` (90 and 75),
+  `refine-slice-key.unit.test.ts` (75)
+  and `page-definitions.ts` (56).
+- Reads with no limit,
+  or over 50 lines:
+  `claims-n132.mjs` (144 lines),
+  `lib2.mjs`,
+  and the copy of `grid-n132.mjs` (read before a context compaction,
+  its contents too large to retain).
+- Terminal output over 50 lines not sent to a file:
+  an `rg --files-with-matches` for `module-logger`,
+  twice (about 350 lines),
+  an `rg` of the `mise.toml` files (about 280),
+  a probe run through `mise exec` (about 140),
+  an `rg` over the tests for a `describe` opener (persisted by the tool to a results file),
+  an `rg` of the lost `**cats**` texts (about 250),
+  and an `rg` over the whole `src` tree for guard anchors (122 KB,
+  persisted by the tool).
+- The structure of the hand-back:
+  sections 1 and 2 went in one Write,
+  sections 3 to 6 were appended with several Edits in places,
+  and earlier text was edited in place several times,
+  where the brief said one Write and then one Edit per appended section.
+- Two or more Edits to one file in one batch:
+  `typography-link-text.ts`,
+  `consolidate-key.unit.test.ts`,
+  `consistency-fold.unit.test.ts`,
+  `consistency-shown-edge.unit.test.ts`,
+  `quote-style-unify.ts`,
+  `restore-typography.ts`,
+  `restore-ellipsis.ts`,
+  `consistency-prose-text.ts`,
+  `consistency-paragraphs.ts`,
+  `consistency-run-steps.ts`,
+  `consistency-closing-marks.ts`,
+  `consistency-count.ts`,
+  `translate-guillemets.ts`,
+  `quote-normalize.ts`,
+  `consistency-shown-edge.ts`
+  and the hand-back itself.
+- A parallel `rg` of a log in the same batch as the run that wrote it (an ordering slip with no effect).
+- `mv` to rename `typography-prose-mask-links.unit.test.ts` to `typography-link-text.unit.test.ts`,
+  and `cp` to copy probes (inside the scratch folder and from read-only inputs).
+- Waits written as `systemd-run` units:
+  a placeholder run of `/usr/bin/true` and two runs of `/usr/bin/sleep`,
+  used as foreground waits and not as polling.
+  A `diff` of two text files,
+  and a probe run with the path of the build from before the round (read-only).
+
+Found by the review of the round and not by its author:
+the hand-back called the folder `S/grid2` the "`s226` harness copies",
+but the folder `s226` holds outputs only and no harness,
+so the description is unsupported,
+and the author's control reproduces the `s226` record only on the columns
+that do not depend on the oracle or on the final-page check (B597).
+The author had said it did not read the harness.
+
+Prevention:
+the same as M189,
+M210 and M214.
+A hand-back is one Write and one Edit per appended section,
+and a Read states its range.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Shell commands" and "Briefs and hand-backs".
+
+## M222: breaches of the output, Read, batch and hand-back rules by the review of the deferred findings round (n160)
+
+Status:
+happened on 2026-10-15 in the review that found B616 to B618,
+B620 to B622 and B624 to B626;
+every one disclosed by its author in the review (`s231/review.md`).
+
+- Terminal output that could pass 50 lines:
+  an `ls` of the two `dist/final/node` directories (several hundred lines),
+  an `ls` of the probe folder of the previous round (about 66 lines),
+  and the console output of the first run of `p2-pages.ts` (54 KB,
+  kept by the tool;
+  redirects were added afterwards).
+- Reads with a limit over 50:
+  `consistency-unread-units.ts` (56),
+  `typography-shown-view.ts` (57)
+  and `typography-link-text.ts` (52),
+  and Reads of several small files with no limit given
+  (each under 50 lines:
+  `c-br-lines.txt`,
+  `c-br-xing.txt`,
+  `d-qnorm.diff`,
+  `c-addrlabel.txt`,
+  the outputs of probes `p9` and `p11` to `p16`,
+  and a few more).
+- A `cp --target-directory` of 14 probes of the author into the review's folder
+  (inside the scratch folder,
+  which the brief does not forbid;
+  the hand-back of n159 counted the same as a breach),
+  and an `rg` of the copies in the same batch as the `cp`.
+- Fourteen Edits of the review file beyond the one Write and one Edit per appended section:
+  four small corrections before the advisor check and ten afterwards.
+- Two probes edited after their first run to take the module under test from the arguments
+  (to run the build before n159 as a control);
+  nothing else read those files in the same batch.
+- The replay started with the tool's background flag and not as a `systemd-run` unit,
+  since the brief's command was not a `systemd-run` line;
+  every later run over a minute used the unit form,
+  one unit at a time.
+- A double-quoted `rg` pattern with backticks that the shell interpreted,
+  which failed with no effect on any file.
+
+Prevention:
+the same as M210 and M214.
+A search of a folder that may be large names a count limit or a file,
+and a Read states its range.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Shell commands" and "Tasks,
+builds and bulk output".
+
+## M223: breaches of the Read, output, batch and build rules by the quoted tense round (n161)
+
+Status:
+happened on 2026-10-15 in the work of B616 to B618,
+B621,
+B622 and B625 to B628;
+every one disclosed by its author
+(`s232/rules-broken.md` and the hand-back `s232/handback-n161.md`).
+
+- Reads with a limit over 50,
+  of sources read while tracing the consistency pass:
+  `artifact-two-lane-consistency.ts` (90),
+  `consistency-count-types.ts` (70),
+  `pass-consistency-decide.ts` (60 and 110),
+  `pass-consistency-apply.ts` (120),
+  `pass-consistency-apply-record.ts` (110),
+  `pass-consistency-settle.ts` (145),
+  `consistency-markup-ranges.ts` (92),
+  `typography-prose-mask.ts` (60),
+  the test file of B616 (55),
+  `editor-calibrate-run.unit.test.ts` (56)
+  and `files-newer-than-start.txt` (56).
+- Whole-file Reads with no limit after a context compaction:
+  `audit-sensitivity-print.unit.test.ts`,
+  `rot-audit.ts`,
+  `rot-audit.out`,
+  `unit-pre-fails.txt` and `results-rerun.txt`.
+- Terminal output over 50 lines not sent to a file:
+  the listing of the files of `corpus-run` that start with `pass-consistency` (about 100 lines),
+  the listing of the source files that mention tense (about 70),
+  the search of the package `mise.toml` for its tasks (about 200),
+  an unfiltered search for NUL names (about 45),
+  a search of fragment and test names (about 100),
+  a search for `shuffle`,
+  `seeded` and `rotat` (about 70),
+  a grep of the tests for `Number.MAX` (about 50),
+  an `rg --line-number` for `messageNamesOnly` over `src` (about 140,
+  where a per-file cap was meant,
+  which does not cap the total),
+  and a `git show HEAD:` of `typography-prose-mask.ts` with `--no-patch`,
+  meant as a no-op,
+  which printed the whole file (about 300).
+- Two or more Edits to one file in one batch:
+  the edits of B621 and B622 to `typography-prose-mask.ts`,
+  and the edits of `audit-sensitivity-print`,
+  `producer-calibrate-round`,
+  `roster-bench-round`,
+  `probe-verify-collect`,
+  `judge-fidelity-probe-run`,
+  `english-usage-policy` and `consistency-markup-ranges`.
+- A source edit in the same batch as a build of the package
+  (an edit to a test file,
+  which the build does not read).
+- Two Edits of files created before the compaction were refused as not read and redone after a Read,
+  which breaks no rule.
+- The probes and the lint tasks ran as `cd -- <path> && mise exec -- node <probe>` and `... mise run ...`,
+  as the commands of the brief do,
+  and several `diff` commands ended with status 1,
+  which is no error.
+
+Prevention:
+the same as M210,
+M214 and M216.
+After a context compaction a file is read in ranges of at most 50 lines,
+as before it,
+and a search that may print more than 50 lines goes to a file.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Shell commands" and "Tasks,
+builds and bulk output".

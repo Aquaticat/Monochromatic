@@ -154,7 +154,8 @@ named for that subject and listed here.
   Defects in what the source says about itself:
   TSDoc that documents nothing or the wrong thing,
   comments citing what does not exist,
-  and characters in the source a reader cannot see.
+  characters in the source a reader cannot see,
+  and header sentences that the code did not make true.
 - [Audit ledger: text by code point, and words inside words](audit-ledger-code-points-and-word-boundaries.md):
   Text read by UTF-16 unit or ordered by locale where code points were meant,
   and fixed words found inside longer words.
@@ -175,7 +176,8 @@ named for that subject and listed here.
   Messages that named the wrong thing or stated a count wrongly:
   labels that did not fit,
   counts before a fixed plural,
-  and one field carrying two kinds of text.
+  one field carrying two kinds of text,
+  and a log line that reported nothing done and gave no reason.
 - [Audit ledger: values read back from text](audit-ledger-values-read-back-from-text.md):
   Numbers,
   fields and keys the code wrote into text and then read back more leniently,
@@ -202,13 +204,15 @@ named for that subject and listed here.
   or left no finding,
   and checks that vouched for a whole text on one part of it.
 - [Audit ledger: test cases that cannot fail](audit-ledger-test-cases-that-cannot-fail.md):
-  Cases and guards that would pass with the behaviour they name removed.
+  Cases and guards that would pass with the behaviour they name removed,
+  and a pass-through that no case depended on.
 - [Audit ledger: files a later run reads back](audit-ledger-files-a-later-run-reads-back.md):
   Caches,
   ledgers,
   locks and stored stage results that a later run read back,
   torn,
-  stale or holding what no writer writes.
+  stale or holding what no writer writes,
+  and a reader that throws where a changed locator no longer finds the slot.
 - [Audit ledger: tests touching the real world](audit-ledger-tests-touching-the-real-world.md):
   Tests that reached the real corpus,
   real keys,
@@ -230,7 +234,8 @@ named for that subject and listed here.
 - [Audit ledger: building the tense check](audit-ledger-tense-check.md):
   The record of building the tense candidates:
   what the review of the tense records and sheets found loose,
-  and what was fixed.
+  what was fixed,
+  and the rule that quoted words keep their speaker's tense.
 - [Audit ledger: building the consistency pass, repeat groups and the carry](audit-ledger-consistency-pass-repeat-groups-and-the-carry.md):
   The record of building the page-level consistency pass up to the independent review of its rebuild:
   how the repeated wording is located,
@@ -317,19 +322,34 @@ named for that subject and listed here.
   Span edges that cut a character reference or a backslash escape,
   took in text that only looks like a reference,
   or left half a word,
-  and the units the edges are made of now.
+  and the units the edges are made of now,
+  with the shown-word test and the word characters of any script that n159 landed.
+- [Audit ledger: the consistency pass, what the word test reads as shown](audit-ledger-consistency-pass-what-the-word-test-reads-as-shown.md):
+  What the review of n159 found the word test read wrongly,
+  all fixed by n161:
+  hidden stretches read unit by unit,
+  markup that separates or annotates read as invisible,
+  and inline code beside a text place,
+  with the rows of the twin check that stay open.
 - [Audit ledger: the consistency pass, elisions, quoted numbers and pairing](audit-ledger-consistency-pass-elisions-quoted-numbers-and-pairing.md):
   The pairing of single marks on a curly page:
   elisions inside a quotation,
   the quoted letter,
   nested quotations,
   opening marks beside markup and quoted numbers,
-  with the cases decided and not yet landed.
+  with the tie rule and the shown-text pairing that n159 landed.
 - [Audit ledger: the consistency pass, the prose mask and slices parsed alone](audit-ledger-consistency-pass-the-prose-mask-and-slices-parsed-alone.md):
   Typography only on the prose that the page parse shows,
-  the cache versions that moved with it,
+  the cache versions that moved with it and with the quoted-tense rule,
   and the readers that parse a slice alone,
-  with the findings decided and not yet landed.
+  with the page's definitions,
+  the fragment landing and the shared memory of the masks that n159 landed.
+- [Audit ledger: the consistency pass, definitions inside containers, fragment landings and the mask memory](audit-ledger-consistency-pass-definitions-landings-and-the-mask-memory.md):
+  What the review of n159 found in those readers:
+  the definitions inside containers that the shared reader still misses (open),
+  a fragment landing outside its slice,
+  and a text that could read another text's mask,
+  the last two fixed by n161.
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
   Sheets that lacked a block their role needs to judge or write.
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
@@ -452,6 +472,8 @@ named for that subject and listed here.
   and the six mistakes of the lead's briefs and rulings in them.
 - [Audit ledger: process mistakes, agents and briefs in the reference, edge and prose mask rounds](audit-ledger-process-agents-and-briefs-reference-edge-and-prose-mask-rounds.md):
   The rule breaches of the rounds from the review of n149 to the review of n156,
+  and of the rounds that built the deferred findings,
+  reviewed them and added the quoted-tense rule (n159 to n161),
   and two mistakes of the lead's own:
   ten fix rounds without a commit,
   and a review loop that was not stopped.
@@ -682,8 +704,10 @@ Filed in:
 - [Audit ledger: the consistency pass, the re-review and the refusal run](audit-ledger-consistency-pass-re-review-and-the-refusal-run.md)
 - [Audit ledger: the consistency pass, what the refusal run steps over](audit-ledger-consistency-pass-what-the-refusal-run-steps-over.md)
 - [Audit ledger: the consistency pass, span edges as whole units](audit-ledger-consistency-pass-span-edges-as-whole-units.md)
+- [Audit ledger: the consistency pass, what the word test reads as shown](audit-ledger-consistency-pass-what-the-word-test-reads-as-shown.md)
 - [Audit ledger: the consistency pass, elisions, quoted numbers and pairing](audit-ledger-consistency-pass-elisions-quoted-numbers-and-pairing.md)
 - [Audit ledger: the consistency pass, the prose mask and slices parsed alone](audit-ledger-consistency-pass-the-prose-mask-and-slices-parsed-alone.md)
+- [Audit ledger: the consistency pass, definitions inside containers, fragment landings and the mask memory](audit-ledger-consistency-pass-definitions-landings-and-the-mask-memory.md)
 
 ## Process mistakes in this audit
 

@@ -3,7 +3,10 @@
 Messages that named the wrong thing or stated a count wrongly:
 labels that did not fit,
 counts before a fixed plural,
-and one field carrying two kinds of text.
+one field carrying two kinds of text,
+and a log line that reported nothing done and gave no reason (B628).
+The entry B628 was written on 2026-10-15 (UTC) from the hand-back of n161 (`s232/handback-n161.md`),
+the lead's notes of that day and the header of `src/corpus-run/pass-consistency-group-line.ts` at `277145a862`.
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -113,7 +116,8 @@ check every refusal built from it gives that answer its own.
 
 Found with B54,
 casing the relabel's reorder note.
-`reorderFootnoteDefinitions` (`archive-footnote-order.ts`) noted that the definitions were interleaved with other blocks,
+`reorderFootnoteDefinitions` (`archive-footnote-order.ts`)
+noted that the definitions were interleaved with other blocks,
 or shared container delimiters,
 before testing whether they already followed the order asked for.
 Definitions already in the original's order with prose among them came back with the note,
@@ -715,3 +719,93 @@ the alternative tells a failed write from a failed removal and says the text is 
 Recurrence:
 `mistake-prevention.md`,
 "Claims without their evidence".
+
+## B628: a consistency group line where nothing was carried named no reason
+
+Found on 2026-10-15 by the lead,
+in the read of `TianqiChen66624`.
+
+Outcome written on 2026-10-15.
+Red `5fe3173cc5`,
+fixed in `277145a862`;
+the fix is the round n161.
+
+What a reader of the run would have seen:
+the settled `TianqiChen66624` run logged a line that began
+`group 1 of 2: refrain verdict=asked placed=4 unplaced=0`
+and went on with the columns
+`replaced=0 consistent=0 kept-context=0 kept-floor=0 overlapped=0 unlocated=0`,
+all of them zero.
+The bench was asked and nothing changed,
+and the line said nothing of why,
+because the outcomes `chosen`,
+`kept-current` and `untouched` had no column,
+and the reasons that the record holds were not printed.
+
+The lead ruled on 2026-10-15:
+the group line names why nothing was carried.
+
+Fixed by n161.
+The line is now `<repeat.kind> verdict=<kind> placed=N unplaced=N`
+followed by the nine columns
+`replaced= consistent= kept-context= kept-floor= overlapped= unlocated= chosen= kept-current= untouched=`,
+so the nine outcomes add up to the places placed,
+and,
+when a place ended `kept-current` or the bench was not asked,
+failed or named no winner,
+it ends with `because=` and each distinct reason,
+comma separated,
+in the order the places stand.
+A group already consistent names no reason.
+Every reason is the code's own decision,
+read from the record and not decided again by the line.
+The code is the new `src/corpus-run/pass-consistency-group-line.ts`,
+which `src/corpus-run/pass-consistency.ts` imports
+(its old local `groupLine` and `placesEndingIn` are removed),
+exported through `src/consistency-apply-barrel.ts`.
+The reasons,
+as the header of that file lists them:
+- `not-asked:too-few-placed` and `not-asked:no-english`:
+  the bench was not asked (`src/corpus-run/pass-consistency-unasked.ts`).
+- `failed:<detail>`:
+  trouble stopped the group before the ballots could be counted,
+  and the detail names no corpus text.
+- `no-winner:<reason>`:
+  the bench was asked and no place won,
+  with the `NoWinnerReason` `no-quorum`,
+  `no-majority`,
+  `chosen-unlocated`,
+  `run-off-no-quorum` or `run-off-tied`,
+  and every place stays as it stood.
+- `carry:<reason>`:
+  a place was to receive the chosen rendering and the carry left its English as it stood,
+  for `no-alternative` (no text but the current one to choose among),
+  `no-quorum` or `no-majority` (the choice reached no decision),
+  `failed` (trouble stopped the carry),
+  `chose-current` (the choice kept the English as it stands),
+  `splice-cannot-reach-place`
+  (the choice was the code splice and the place has no words that code can move the chosen words into),
+  `chose-writer-text` (a writer's text was chosen and no replacement of this place was made),
+  or `unrecorded` (the record holds no carry for the place).
+- `kept:<reason>`:
+  the pass left the place as it stood after the splice was chosen,
+  for one of the `gain-` or `edge-` reasons of `ConsistencyKeptReason`
+  (`gain-pairs`,
+  `gain-unproves`,
+  `gain-floors`,
+  `gain-overlaps`,
+  `gain-refused`,
+  `edge-second-mark`,
+  `edge-reading-changes` and `edge-reference-mark`),
+  named ahead of the carry's own decision.
+
+Test:
+`src/corpus-run/pass-consistency-group-line.unit.test.ts` (new)
+drives every path with a hand-built record and reads each line.
+It failed with "groupLine is not a function" on the build before the fix,
+then with 28 rows once the function existed without the `because=` clause,
+which is the guard run.
+
+Recurrence:
+`mistake-prevention-messages-labels-and-counts.md`,
+"Log lines that report nothing done".

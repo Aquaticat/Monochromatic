@@ -314,7 +314,8 @@ a commit of test files alone.
 
 Found on 2026-10-05 (UTC),
 checking the fourth review's note on `reportedSpendFieldsOf`.
-The trial cut the three conditional spreads of `chatText` (`openrouter-client.ts`) into an exported helper and cased the helper,
+The trial cut the three conditional spreads of `chatText` (`openrouter-client.ts`)
+into an exported helper and cased the helper,
 on the reason,
 recorded under T8,
 that the cached field's only observable is a spend line `chatText` discards.
@@ -820,3 +821,36 @@ fixed in `36ada23b21`.
 then ends at the stated refusal code naming each control that read false,
 an absent control entry counting as failed (`failedControlsOf`,
 with tests of its own).
+
+## B626: the definitions that the refinement replies hand on had no case that depends on them
+
+Found on 2026-10-15 by the review of n159
+(n160,
+finding Y8),
+after the lead's notes had listed it as owed.
+
+Outcome written on 2026-10-15.
+Fixed by n161 with a case that is red only by guard removal,
+and landed on 2026-10-15 in the tests `5fe3173cc5` and the code `277145a862`.
+
+`src/refine-stage-replies.ts` hands the page's `definitions` to `restoreTypography`,
+and the case in `src/refine-stage-replies.unit.test.ts` passed them to `resolveReply`
+and asserted nothing that depends on them.
+The author's account of n159 listed the pass-through as not guarded by a test,
+and the cache account of `REFINE_CACHE_VERSION` 7 (B623) relies on it.
+The reader sees nothing of this directly:
+without the pass-through a shortcut reference whose definition stands in another slice
+would be curled at the reference only,
+the defect of B615 on the refinement path.
+
+The lead ruled on 2026-10-15:
+add the behaviour test.
+
+Fixed by n161:
+`src/refine-stage-replies-definitions.unit.test.ts` (new)
+uses a shortcut reference `[dogs' bowl]` whose definition stands in another slice.
+It passes on the build before the fix,
+since the pass-through exists,
+so its failure is shown by guard removal:
+with `definitions,` removed from the call,
+1 row passes and 2 fail.

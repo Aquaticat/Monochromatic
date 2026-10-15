@@ -304,3 +304,53 @@ and the off-roster sentence goes through `wordForCount`.
 Recurrence:
 `mistake-prevention.md`,
 "Lint and edits" and "Counts in printed text".
+
+## B625: header sentences that the code did not make true
+
+Found on 2026-10-15 by the review of n159
+(n160,
+finding Y6,
+with the sentences of Y1,
+Y4 and Y7 that the code did not make true).
+
+Outcome written on 2026-10-15.
+Fixed by n161;
+red `5fe3173cc5`,
+fixed in `277145a862`.
+
+Two header sentences were untrue,
+and a third and fourth rested on code that B616 and B621 changed:
+- The header of `src/consistency-shown-edge.ts` said that the first or last character of the quoted words
+  "is a Latin letter or digit".
+  The code uses `isSpacedScriptWordCharacter`,
+  any script that spaces its words,
+  which n159 changed for B598.
+  The Greek and Cyrillic rows of the review's probes follow the code.
+- The header of `src/consistency-unread-units.ts`,
+  and the account of n159,
+  said that the inline-code floor refuses a word of code beside a word of text,
+  which it does not (B618).
+- The same header said that a character reference "is not here",
+  which only the filter of `cutsShownWord` made true while B616 stood.
+- The TSDoc of `fragmentProseMask` said one flag per unit of the fragment,
+  which an out-of-range landing broke (B621).
+The review ran the examples of the TSDoc of `transparentUnitsOf`,
+`unreadUnitsOf`,
+`cutsShownWord`,
+`pageDefinitionsOf`,
+`withDefinitions`,
+`shownViewOf`,
+`writtenBack`,
+`textNamed`,
+`fragmentProseMask` and `isSpacedScriptWordCharacter`,
+and they return what their comments say.
+It did not read the headers of the other changed files line by line.
+
+Fixed by n161:
+the header of `src/consistency-shown-edge.ts` now says "word character of a script that sets its words apart by spaces",
+and the header of `src/consistency-unread-units.ts` no longer says
+that the inline-code floor refuses a word of code beside a word of text.
+Test:
+`src/consistency-header-claims.unit.test.ts` (new),
+2 red on the build made before any source edit,
+and the guard that restores the old sentence fails 2 rows.

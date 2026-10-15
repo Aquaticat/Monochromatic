@@ -50,7 +50,8 @@ The red cases failed at the build of `cd3cab768`,
 and pass here.
 
 Reach:
-the built gather over the 240 stored directories holding JSON read 202 entries with 45 refused at the build before this fix,
+the built gather over the 240 stored directories holding JSON
+read 202 entries with 45 refused at the build before this fix,
 and 244 entries,
 all eligible,
 with 3 refused here:
@@ -206,7 +207,8 @@ Recurrence:
 Red in `83355d3a3`,
 fixed in `fa2813de4`.
 Found on 2026-10-05 (UTC) by the agent of B134 in the same audit.
-`openNamespacedCache` (`corpus-run/slice-cache-namespace.ts`) rewrote its lane's marker with a plain `writeFile` on every open,
+`openNamespacedCache` (`corpus-run/slice-cache-namespace.ts`)
+rewrote its lane's marker with a plain `writeFile` on every open,
 also when the marker already named the running generation,
 and a comment called the failure direction safe.
 It was safe for correctness and not for cost.
@@ -287,7 +289,8 @@ F6).
 `settleConsolidation` writes no gate on its five exits before the gate,
 and `gateAndShip` always writes one,
 naming the terminal from what that gate ships.
-`isConsolidationSettlement` (`corpus-run/consolidate-cache-store.ts`) checked each field's shape and never the two together.
+`isConsolidationSettlement` (`corpus-run/consolidate-cache-store.ts`)
+checked each field's shape and never the two together.
 A file with terminal `consolidated` and no gate was resumed,
 and its `text` shipped under an artifact saying no gate was asked;
 so was `consolidated` beside a gate shipping `standing`,
@@ -458,7 +461,8 @@ read the live holder's empty lock as unreadable,
 moved it aside,
 claimed its own,
 and both passes held the directory:
-two starters at once on a fresh directory in one process both acquired it in 28 of 200 rounds (the fixing agent's measurement),
+two starters at once on a fresh directory in one process both acquired it in 28 of 200 rounds
+(the fixing agent's measurement),
 and four starters in 3 of 30 rounds (the fixing agent's measurement).
 The module takes no seam to pause a claim,
 so the case runs both starters in a child process that replaces `open` and `link` of `node:fs/promises`,
@@ -496,7 +500,8 @@ with no refusal that names the baseline.
 
 The fix:
 `readBaselineFile` (`corpus-run/coverage-census-input.ts`) reads the file and hands its text to `readBaselineCensus`,
-and a failed read throws `CensusBaselineError` naming the path and the filesystem code (`it could not be read (ENOENT)`),
+and a failed read throws `CensusBaselineError` naming the path and the filesystem code
+(`it could not be read (ENOENT)`),
 with the failure as `cause`;
 `runCoverageCensus` calls it.
 Cases read a missing path and a directory under a scratch folder;
@@ -744,7 +749,8 @@ New cases pin the slot bounds,
 two places of one slice said to read alike,
 each refrain quote's slot,
 and the death and names in the consistency key.
-The region comment of `pass-consistency-apply.ts` now says a replacement already left out as overlapping stays `overlapped`.
+The region comment of `pass-consistency-apply.ts` now says
+a replacement already left out as overlapping stays `overlapped`.
 
 Kept by the lead under the owner's instruction of 2026-10-11:
 `recordFits` states no quorum bound,
@@ -758,3 +764,70 @@ whatever the bench;
 they now say the floor is a short bench's,
 and that a bench of one or two seats closes on one voice,
 which the code has always done.
+
+## B624: the artifact reader throws where the old locator found the slot once
+
+Found on 2026-10-15 by the review of n159
+(n160,
+finding Y3),
+the one finding of that review that can stop a run and not only leave a place uncarried.
+
+Outcome written on 2026-10-15.
+The lead ruled that nothing changes,
+and n161 did not touch the reader;
+no commit.
+
+A stored rendering whose quote holds markup inside one shown word,
+with a slot that is one side of it,
+read as `once` before n159 and as `none` after:
+`kit*tens* ate` with the slot `kit` or `tens`,
+`the *kit*tens` with `kit`,
+`a [kit](u)tens b` with `kit`,
+`a_b_c` with `b`,
+and `reload a save file<rt>OVERLOAD</rt>` with `OVERLOAD`.
+The reader in `src/corpus-run/artifact-two-lane-read-consistency-span-located.ts`
+calls `locateWords` on the quote with `apostrophes: 'outside'`
+and throws `ArtifactParseError`
+("a slot that stands exactly once in the words of its quote")
+when the answer is not `once`.
+The shown-edge test already ran inside that call (n156),
+and n159 widened what it refuses (`cutsShownWord` in `src/consistency-shown-edge.ts`,
+reached from `locateWords` in `src/consistency-fold.ts`),
+so an artifact written under the old reading with such a slot,
+or one written by the branch while the corpus pass runs,
+may no longer read.
+`src/consistency-count.ts` treats the same answer as no slot and degrades,
+and the reader does not.
+A reader of a page sees nothing,
+since a stored artifact that fails to load stops the replay or the verify step that reads it.
+
+Reach on the corpus:
+not shown by the review.
+The replay of `TianqiChen66623` read its artifacts without a throw
+(`matched=1`,
+`wordings=24`,
+`missing=0`),
+and the review did not read any other run's artifacts,
+which its brief put out of bounds.
+
+The lead ruled on 2026-10-15:
+no change.
+The throw guards the integrity of what is stored,
+and both stored runs read clean on the n159 build
+(`TianqiChen66624`:
+`wordings=24`,
+`chars=8490`,
+`missing=0`,
+with no throw),
+so the finding reaches neither stored run.
+The replays on the build of n161 gave the same:
+`TianqiChen66623` with `chars=8607` and `read-at-generation=15`,
+and `TianqiChen66624` with `chars=8490` and `read-at-generation=17`,
+each with 24 wordings,
+2 consistency groups and none missing.
+n161 restored the `<rt>` shape of the list and its shorter twin `file<rt>OVERLOAD</rt>` (B617),
+which went from `none` to `once`.
+
+Accepted limit:
+an artifact whose slot a later reading of the word test refuses fails to load,
+and the artifacts of runs other than the two replayed are unchecked.

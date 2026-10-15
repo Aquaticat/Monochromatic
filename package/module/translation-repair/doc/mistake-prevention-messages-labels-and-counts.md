@@ -359,3 +359,30 @@ What enforces it:
 habit and review;
 `front-matter-slice.unit.test.ts` carries a refused original and a refused page beside a sound candidate,
 and each narrowing's own cases reach its rethrow.
+
+## Log lines that report nothing done
+
+What happened:
+the consistency pass logs one line per group with the counts of what became of each place.
+For a group of a settled run the bench was asked and nothing changed,
+and the line read `verdict=asked placed=4 unplaced=0 replaced=0` and a row of zeros.
+Three of the nine outcomes had no column,
+and no reason was printed,
+so no reader could tell a group with no alternative to choose from
+from one whose choice was refused
+or one whose places a gain rule kept (ledger B628).
+
+The rule:
+a log line that reports nothing done names why.
+Its columns count every outcome,
+so they add up to the places the line speaks of,
+and when nothing was done it ends with `because=` and each distinct reason.
+Each reason is the code's own decision,
+read from the record and never decided again by the line,
+and a place whose record holds no reason says so (`carry:unrecorded`) and does not stay silent.
+
+What enforces it:
+`corpus-run/pass-consistency-group-line.unit.test.ts` drives every path with a hand-built record and reads each line,
+and 28 rows fail with the `because=` clause removed.
+A reason that the record never held is outside what it can see,
+and no scan finds another log line that reports nothing done without a reason.

@@ -14,10 +14,11 @@ the nesting of quotations,
 an opening mark followed by markup,
 and a quoted two-digit number.
 The rounds that fixed them are n151,
-n154 and n156.
-Three findings of the last review are decided and not yet landed:
-`'the '90s'`,
-and the opening marks beside markup (X7).
+n154,
+n156 and n159.
+The two findings of the review of n156 that were decided and not yet landed,
+`'the '90s'` (B604) and the opening marks beside markup (B605),
+were built by n159 and landed on 2026-10-15 with the fixes of n161.
 
 The first rulings on elisions are filed in
 [Audit ledger: the consistency pass, the tenth review](audit-ledger-consistency-pass-tenth-review.md)
@@ -39,6 +40,16 @@ Written on 2026-10-15 (UTC) from the four reviews
 the hand-backs of n151 (`s219/handback-draft-items.md` and `s219/handback-n151-rest.md`),
 n154 (`s222/handback-n154.md`) and n156 (`s225/handback-n156.md`),
 and the lead's notes of 2026-10-14 and 2026-10-15.
+The landing text of B604 and B605 was added on 2026-10-15 from the review of n159 (`s231/review.md`),
+the hand-back of n159 (`s230/handback-n159.md`) and the lead's notes of the landing.
+The functions and constants it names
+(`restoreTypography`,
+`LineState`,
+`EMPTY_LINE`,
+`withMark`,
+`withQuotedNumber`,
+`distinctDepths` and `bestPairsOf`)
+were found declared in non-test source of the tree `w153` at `277145a862`.
 The labels V2,
 U5,
 U6,
@@ -390,10 +401,10 @@ on the output of n156 (`'the '90s'` shipped `'the ‘90s’`),
 and confirmed by the review of n156
 (n157).
 
-Decided on 2026-10-15;
-not yet landed;
-commit:
-pending.
+Decided on 2026-10-15.
+Built by n159;
+landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`,
+in one landing with the fixes of n161.
 
 What a reader of the page would see:
 the outer opener of a quotation that holds a quoted decade stays straight,
@@ -409,12 +420,67 @@ between the elision reading and the quoted-number reading of `'NN`,
 take the one that leaves fewer marks unpaired,
 and a tie keeps the elision.
 
-Not landed.
-The plan is that it is built after the launch and landed as its own commit.
-The lead recorded no corpus count for the shape;
-the nearest measure is the elision recount of n156,
-which finds one original elision mark in the 92 pages (`’round`),
-still restored.
+Built by n159,
+and landed with the fixes of n161 and not as its own commit.
+- The reading of a line is chosen in the new `src/nested-single-line-readings.ts`
+  (pure arrays:
+  `LineState`,
+  `EMPTY_LINE`,
+  `withMark`,
+  `withQuotedNumber`,
+  `distinctDepths` and `bestPairsOf`),
+  which `src/nested-single-quotes.ts` uses,
+  and the header of that file states the tie rule.
+  `'the '90s'` gives `‘the ’90s’`,
+  and `'a '42' b` gives `‘a ’42’ b`.
+- Tests:
+  `src/nested-single-line-readings.unit.test.ts` (new),
+  `src/nested-single-quotes.unit.test.ts` and `src/restore-typography.unit.test.ts`.
+  The guards that make equal pair counts keep the first reading,
+  or that keep the quoted-number-only reading,
+  fail 3 and 3 rows in the readings test,
+  2 and 2 in the nested-quotes test,
+  and 2 and 2 in the restore-typography test.
+- Overridden pins,
+  each a behaviour that the shown-text principle of B597 or the tie rule now overrides,
+  flagged by the author and accepted by the lead:
+  the elision row of `src/restore-typography.unit.test.ts`
+  (`He said 'the '90s' and left.` is now `He said ‘the ’90s’ and left.`),
+  its class-seventy row
+  (`*Cat Chorus*'sad tune'` now curls both marks,
+  as the plain-text twin `Cat Chorus'sad tune'` does),
+  the U6 rows of `src/nested-single-quotes.unit.test.ts` for `*Cat Chorus*'sad tune'` and `_Cat Chorus_'sad tune'`
+  (the earlier ruling that they stay read as before is overridden by B605,
+  and the row name changed),
+  and its W7 row 2:
+  `the 1990s and '90s and '90s' music` is now `the 1990s and ‘90s and ’90s’ music`,
+  since the literal tie rule keeps the elision reading and the old code always paired the quoted number.
+
+The review of n159 (n160) tried the rule on handpicked lines and on every string of up to eight units over `'`,
+`a`,
+`9` and a space (87,381 strings):
+12 differ from the build before n159,
+all of the shape `'<words> '<digits>'` where that build left the first mark straight
+(`'a '99'` was `'a ‘99’` and is now `‘a ’99’`).
+Two ties keep the outer pair:
+`'99 '99'` gives `‘99 ’99’` where the old build gave `’99 ‘99’`,
+and `the '70s and '80s'` gives `the ‘70s and ’80s’`.
+The ruling can be read either way for those two,
+and both outputs pair every mark.
+No new output curls one mark of a pair and leaves its partner straight.
+
+Corpus effect:
+typography changed 0 characters on the 92 pages.
+The elision recount is the same on the build before n159 and on the new one
+(115 mismatches:
+63 `'` to `’`,
+48 `’` to `'`,
+4 `‘` to `'`,
+and the one original elision mark),
+with no newly refused site,
+and the 50 run sites are unchanged.
+The count of 70 of the earlier recount differs from both,
+since the mask of n156 left more marks straight.
 
 ## B605: opening marks beside markup stay straight, and a quoted `n` between emphasis marks takes the wrong glyph
 
@@ -422,10 +488,10 @@ Found on 2026-10-15 by the review of n156
 (n157,
 finding X7).
 
-Decided on 2026-10-15;
-not yet landed;
-commit:
-pending.
+Decided on 2026-10-15.
+Built by n159 and corrected by n161 (B616 to B618);
+landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`,
+in one landing with the fixes of n161.
 
 What a reader of the page would see,
 on a curly page,
@@ -459,6 +525,37 @@ the pairing context of typography reads shown text,
 and the units that the prose view does not read as words are transparent.
 This fixes `<b>'hi'</b>` and `rock *'n'* roll` (`’n’`).
 
-Not landed.
-The plan is that it is built after the launch and landed as its own commit.
-No corpus reach was measured for it.
+Built by n159,
+with B597,
+and landed with the fixes of n161 and not as its own commit.
+`restoreTypography` in `src/restore-typography.ts` reads the shown text of the replacement
+through `src/typography-shown-view.ts`
+and writes the curled marks back (its header gained a paragraph),
+so emphasis,
+strike and code delimiters,
+link brackets with destination and title,
+tags,
+comments and expressions are transparent to the pairing.
+`src/restore-ellipsis.ts` and `src/quote-normalize.ts` changed for B613 only.
+The tests are those of B597,
+with the same red and guard counts for the shown view.
+Probe `p-opening-marks`:
+the mixed outputs went from 15,542 to 13,757,
+the `<b>` prefix class from 38 to 0,
+`rock *'n'* roll` now ships `’n’`,
+`'the '90s'` ships `‘the ’90s’` (B604),
+and `<b>'hi'</b>` is curled.
+The mixed classes that remain (an opener after `"`,
+`/`,
+`@`,
+`#`,
+`$` or `\*`) predate the round,
+and their counts went down.
+The review of n159 found the plain forms `/'hi'` and `@'hi'` fully straight on both builds,
+and `/'*hi*'` improved (the old build curled only the closer).
+Its twin probe found no case where invisible delimiters change the curling:
+0 against 4,360 on the build before n159.
+
+Corpus effect:
+typography changed 0 characters on the 92 pages.
+No separate corpus count was measured for the shapes of this finding.

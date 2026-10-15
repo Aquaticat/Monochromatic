@@ -771,3 +771,54 @@ and says which are covered;
 the census is part of the fix.
 No scan finds a result ordered by arrival,
 nor a line logged from inside a member.
+
+## Orders and seats that a prompt hash decides
+
+What happened:
+the bench is asked in an order rotated by the hash of the prompt,
+with a window of quorum plus one seats (`stage-fanout-window.ts`),
+so any edit to a sheet moves the hash,
+and with it the order the voices answer in and which seats stand in a round's window.
+The quoted-tense rule changed the text of the sheets (ledger B627),
+and ten tests that had pinned the old order or the old seats failed in the whole suite,
+all of them green in the run before.
+They named three voices in the order a report lists them,
+read slate entries by position,
+compared ballots,
+claims,
+claimants or renderings by position,
+looked for the first seat asked by position,
+or expected particular editor seats to be seated
+(`hf:moonshotai/Kimi-K3` was seated where `glm-5.3` had been).
+n161 made each independent of the rotation,
+and wrote the reason in a comment.
+
+The rule:
+a test never pins an order or a seat set that a prompt hash decides,
+since any sheet edit moves the hash.
+It compares by seat:
+ballots,
+claims,
+claimants and renderings sorted by model id in code-point order,
+a seat found by its name,
+and a seated set checked for membership in the roster's list of seats that can do the job.
+The content checks stay whole:
+what a ballot says,
+which credit lines match the seats seated
+and how many distinct seats sit are asserted as before.
+The rule of "Output decided by arrival order" stands:
+an order that a stage promises (roster order,
+input order) is asserted exactly and never after a sort of the case's own,
+and what a command prints does not depend on which operation ended first.
+This rule covers only the order in which a rotated bench is asked and the seats its window holds,
+which no stage promises.
+
+What enforces it:
+habit and review.
+`model-order.test-fixture.ts` (`sortedByModelId`)
+and `SEATS_THAT_CAN_EDIT` in `roster-seats.test-fixture.ts` hold the comparison,
+and the ten test files of ledger B627 use them.
+The two editor calibration cases are weaker on which seats sit,
+by necessity,
+and the review of n161 was asked to show that each still fails when the behaviour it names breaks.
+No scan finds a test that pins a rotated order.
