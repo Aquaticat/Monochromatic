@@ -44,19 +44,34 @@ const l = tagged({ tag: 'auto-mode-prepared-executable' });
  @example wrapPreparedTools({ tools, ordinalByID, serial, waitForTurn, active, failures, batchState, executionJudgment, executeWithOwnedContext, NativeExecutionGuardError, PreparedBatchContractError });
  */
 export function wrapPreparedTools({
-  tools, ordinalByID, serial, waitForTurn, active, failures, batchState, executionJudgment,
-  executeWithOwnedContext, NativeExecutionGuardError, PreparedBatchContractError,
+  tools,
+  ordinalByID,
+  serial,
+  waitForTurn,
+  active,
+  failures,
+  batchState,
+  executionJudgment,
+  executeWithOwnedContext,
+  NativeExecutionGuardError,
+  PreparedBatchContractError,
 }: PreparedExecutableInput): PreparedExecutableTool[] {
   /**
    Wrapper construction keeps original context ownership private to the dispatcher.
    */
-  const wl = tagged({ tag: wrapPreparedTools.name, l });
+  const wl = tagged({
+    tag: wrapPreparedTools.name,
+    l
+  });
   wl.debug('wrapping original prepared native definitions');
   return tools.map(function wrapOwnedTool(original) {
     /**
      Each copied definition keeps its own original native execution closure.
      */
-    const tl = tagged({ tag: wrapOwnedTool.name, l: wl });
+    const tl = tagged({
+      tag: wrapOwnedTool.name,
+      l: wl
+    });
     tl.debug('binding original prepared execution callback');
     /**
      Execute an admitted native member using its original context owner.
@@ -73,16 +88,29 @@ export function wrapPreparedTools({
 
      @throws Error for original ordinal, currentness, turn, or native execution failures
      */
-    async function execute(toolCallId: string, params: unknown, nativeSignal: unknown, nativeOnUpdate: unknown): Promise<unknown> {
+    async function execute(
+      toolCallId: string,
+      params: unknown,
+      nativeSignal: unknown,
+      nativeOnUpdate: unknown
+    ): Promise<unknown> {
       /**
        Execution tracing preserves the wrapper boundary without inspecting native values.
        */
-      const el = tagged({ tag: execute.name, l: tl });
+      const el = tagged({
+        tag: execute.name,
+        l: tl
+      });
       el.debug('entering original prepared execution callback');
       /**
        Native positional arguments are forwarded as one original unfrozen tuple.
        */
-      const args: PreparedExecutionArguments = [toolCallId, params, nativeSignal, nativeOnUpdate];
+      const args: PreparedExecutionArguments = [
+        toolCallId,
+        params,
+        nativeSignal,
+        nativeOnUpdate
+      ];
       /**
        Queue and native admission share the original declared ordinal.
        */
@@ -104,7 +132,11 @@ export function wrapPreparedTools({
         throw error;
       }
       try {
-        return await executeWithOwnedContext({ judgment: executionJudgment, tool: original, args });
+        return await executeWithOwnedContext({
+          judgment: executionJudgment,
+          tool: original,
+          args
+        });
       } catch (error) {
         if (error instanceof NativeExecutionGuardError) {
           batchState.executionGuardFailed = true;
@@ -113,7 +145,10 @@ export function wrapPreparedTools({
         throw error;
       }
     }
-    return { ...original, execute };
+    return {
+      ...original,
+      execute
+    };
   });
 }
 //endregion

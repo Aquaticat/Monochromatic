@@ -5,7 +5,12 @@
 /**
  Original positional native execution arguments retain their exact opaque payload identities.
  */
-export type PreparedExecutionArguments = [toolCallId: string, params: unknown, signal: unknown, onUpdate: unknown];
+export type PreparedExecutionArguments = [
+  toolCallId: string,
+  params: unknown,
+  signal: unknown,
+  onUpdate: unknown
+];
 
 /**
  Context establishment remains owned by the original native execution helper.

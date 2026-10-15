@@ -13,9 +13,11 @@ await describe({ name: 'prepared native wrappers', children: [
     const inherited = Object.create({ inherited: true });
     Object.defineProperties(inherited, {
       name: { value: 'tool', enumerable: true },
-      label: { get() { reads.push('label'); return 'original label'; }, enumerable: true },
+      label: { get() { reads.push('label');
+      return 'original label'; }, enumerable: true },
       hidden: { value: true },
-      execute: { get() { reads.push('execute'); return 'replaced callback'; }, enumerable: true },
+      execute: { get() { reads.push('execute');
+      return 'replaced callback'; }, enumerable: true },
       [symbol]: { value: fixture.original, enumerable: true },
     });
     const [tool] = fixture.wrap({ tools: [inherited] });
@@ -27,7 +29,7 @@ await describe({ name: 'prepared native wrappers', children: [
     assert.equal(Object.hasOwn(tool, 'inherited'), false);
     assert.deepEqual(reads, ['label', 'execute']);
     const params = { value: true };
-    const signal = new AbortController().signal;
+    const {signal} = new AbortController();
     const onUpdate = Object.freeze({ opaque: 'native callback' });
     assert.equal(await tool.execute('one', params, signal, onUpdate), 'native result');
     const [invocation] = fixture.invocations;

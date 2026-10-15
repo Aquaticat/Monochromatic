@@ -6,12 +6,21 @@ import { PreparedBatchContractError } from './native-prepared-completion-fixture
 /**
  Native execution preserves the original judgment, definition, and mutable positional argument list.
  */
-type OwnedInput = Readonly<{ judgment: unknown; tool: unknown; args: unknown[] }>;
+type OwnedInput = Readonly<{
+  judgment: unknown;
+  tool: unknown;
+  args: unknown[]
+}>;
 /**
  Built wrapper metadata remains inspectable while native inputs remain opaque.
  */
 type ExecutableTool = Readonly<Record<PropertyKey, unknown>> & Readonly<{
-  execute: (id: string, params?: unknown, signal?: unknown, onUpdate?: unknown) => Promise<unknown>;
+  execute: (
+    id: string,
+    params?: unknown,
+    signal?: unknown,
+    onUpdate?: unknown
+  ) => Promise<unknown>;
 }>;
 /**
  The independent consumer accepts runtime probes without importing implementation declarations.
@@ -24,7 +33,10 @@ type ExecutableModule = Readonly<{
  */
 type GuardModule = Readonly<{
   NativeExecutionGuardError: new (input: Readonly<{
-    errors: readonly unknown[]; phase: string; toolCallId: string; toolName: string;
+    errors: readonly unknown[];
+    phase: string;
+    toolCallId: string;
+    toolName: string
   }>) => AggregateError;
 }>;
 
@@ -38,7 +50,8 @@ type GuardModule = Readonly<{
  @throws Error when the wrapper export is absent
  */
 function assertExecutableModule(value: unknown): asserts value is ExecutableModule {
-  if ((value === null) || ((typeof value) !== 'object') || (!('wrapPreparedTools' in value))
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('wrapPreparedTools' in value))
     || ((typeof value.wrapPreparedTools) !== 'function')) throw new Error('Built prepared executable wrapper is unavailable');
 }
 /**
@@ -51,13 +64,17 @@ function assertExecutableModule(value: unknown): asserts value is ExecutableModu
  @throws Error when the original native guard constructor is absent
  */
 function assertGuardModule(value: unknown): asserts value is GuardModule {
-  if ((value === null) || ((typeof value) !== 'object') || (!('NativeExecutionGuardError' in value))
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('NativeExecutionGuardError' in value))
     || ((typeof value.NativeExecutionGuardError) !== 'function')) throw new Error('Built native execution guard is unavailable');
 }
 /**
  Wrapper behavior is consumed from the rebuilt native artifact.
  */
-const loaded: unknown = await import(new URL('../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/prepared-executable.ts', import.meta.url).href);
+const loaded: unknown = await import(new URL(
+  '../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/prepared-executable.ts',
+  import.meta.url
+).href);
 assertExecutableModule(loaded);
 /**
  Explicit contract preserves narrowed callable ownership across fixture construction.
@@ -66,7 +83,10 @@ const executable: ExecutableModule = loaded;
 /**
  Guard identity comes from the original native execution owner.
  */
-const guard: unknown = await import(new URL('../dist/native/contract/lifecycle/execution-context-carrier/execute.mjs', import.meta.url).href);
+const guard: unknown = await import(new URL(
+  '../dist/native/contract/lifecycle/execution-context-carrier/execute.mjs',
+  import.meta.url
+).href);
 assertGuardModule(guard);
 /**
  Original guard constructor remains available to consumer assertions.
@@ -81,7 +101,12 @@ export const NativeExecutionGuardError: GuardModule['NativeExecutionGuardError']
  @example createGuard();
  */
 export function createGuard(): AggregateError {
-  return new NativeExecutionGuardError({ errors: ['original native failure'], phase: 'entry', toolCallId: 'one', toolName: 'tool' });
+  return new NativeExecutionGuardError({
+    errors: ['original native failure'],
+    phase: 'entry',
+    toolCallId: 'one',
+    toolName: 'tool'
+  });
 }
 
 /**
@@ -95,7 +120,10 @@ export function createExecutableFixture() {
   /**
    Original tool metadata is copied while native execution receives this exact object.
    */
-  const original = { name: 'tool', label: 'original tool' };
+  const original = {
+    name: 'tool',
+    label: 'original tool'
+  };
   /**
    Judgment identity remains opaque to the wrapping boundary.
    */
@@ -137,7 +165,9 @@ export function createExecutableFixture() {
    */
   function wrap(overrides: Readonly<Record<string, unknown>> = {}): readonly ExecutableTool[] {
     return executable.wrapPreparedTools({
-      tools: [original], ordinalByID: new Map([['one', 0], ['two', 1]]), serial: false,
+      tools: [original],
+      ordinalByID: new Map([['one', 0], ['two', 1]]),
+      serial: false,
       waitForTurn(ordinal: number) {
         events.push(`turn:${ordinal}`);
         return control.waitForTurn(ordinal);
@@ -151,9 +181,22 @@ export function createExecutableFixture() {
         invocations.push(input);
         return control.execute(input);
       },
-      failures, batchState, executionJudgment: judgment, ...overrides,
-      NativeExecutionGuardError, PreparedBatchContractError,
+      failures,
+      batchState,
+      executionJudgment: judgment,
+      ...overrides,
+      NativeExecutionGuardError,
+      PreparedBatchContractError,
     });
   }
-  return { original, judgment, events, invocations, failures, batchState, control, wrap };
+  return {
+    original,
+    judgment,
+    events,
+    invocations,
+    failures,
+    batchState,
+    control,
+    wrap
+  };
 }
