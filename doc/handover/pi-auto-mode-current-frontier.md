@@ -1711,10 +1711,30 @@ invalid membership,
 exact byte boundaries,
 original primitive prepared inputs,
 and serializer failures.
-Their owned build,
+The owned build,
 type check,
-built consumer checks,
-and comparison against the saved original validation blocks remain pending.
+four built snapshot suites,
+domain consumers,
+and execution suites pass in
+`${HOME}/temp/agent/pi-membership-consumers-first-20261015.log`.
+All four snapshot suites also pass against the exact response and prepared validation blocks
+taken from the saved original constructor in
+`${HOME}/temp/agent/pi-membership-original-blocks-20261015.log`.
+Those process-local comparison wrappers expose the original blocks without rewriting their statements.
+They do not substitute the rest of the constructor.
+The complete original-versus-current constructor comparison separately matches all six domain scenarios,
+including native execution counts and the permission-versus-prohibition positive control.
+All 17 process-local snapshot guard omissions fail their assertions;
+all seven built artifacts retain their original hashes.
+The receipts are `typed-membership-constructor-comparison.json`
+and `typed-membership-omissions.json`
+in `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The three implementation modules and five consumer files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-judgment-membership-format-third-20261015.log`
+and `${HOME}/temp/agent/pi-membership-tests-format-third-20261015.log`.
+The final mutable-group contrast,
+type check,
+and full maintained lint recount are running.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
