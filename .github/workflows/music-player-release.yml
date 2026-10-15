@@ -1,0 +1,742 @@
+name: music-player-release
+
+# Releases the music player (package/music-player): the desktop app for Windows, macOS and Linux
+# and the Android app, all in one GitHub pre-release. Decision and rationale:
+# doc/decision/music-player-releases.md. How to cut a release: doc/runbook/release-the-music-player.md.
+#
+# - Trigger: a push to main that changes the product version in
+#   package/music-player/desktop-app/Cargo.toml (the single version source; the Android app reads it
+#   too) or the Android native crate manifest, or a manual dispatch. The detect job compares the
+#   version before and after the push, exactly like cargo-publish.yml.
+# - Dry run: the dispatch input dry-run defaults to true. A dry run builds, packages and signs
+#   everything, uploads workflow artifacts for one day, and prints the release command and notes
+#   instead of running them. It skips attestation and creates no tag and no release.
+# - A real release happens only on main, from a push that bumped the version or a dispatch with
+#   dry-run false, and only if the tag music-player-v<version> does not exist yet. An existing tag
+#   skips the release without failing. Releases are immutable: assets cannot be replaced later.
+# - Every release is flagged as a pre-release: the project is under active development.
+# - Android is signed with the project release key from repository secrets. The secrets are read
+#   only in the Android job, and only on main; every other ref signs with a throwaway key.
+# - Windows and macOS binaries are not signed with a developer identity.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Dry run (build, package and sign, but no attestation, no tag, no GitHub release)'
+        type: boolean
+        default: true
+  push:
+    branches:
+    - 'main'
+    - 'feat/music-player-release-workflow' # TEMP: removed before merge
+    paths:
+    - 'package/music-player/desktop-app/Cargo.toml'
+    - 'package/music-player/android-app/rust/Cargo.toml'
+    - '.github/workflows/music-player-release.yml' # TEMP: removed before merge
+
+permissions: {}
+
+env:
+  # The root mise config lists heavy dev tools with auto_install on; every mise run or mise exec
+  # would try to build them on the runner. Off, each job uses only the tools it installs itself.
+  # Same pattern as npm-release.yml and toml-edit-fuzz.yml.
+  MISE_AUTO_INSTALL: 'false'
+  # Android release certificate (public) that a real release must be signed with. A real release
+  # fails if the APK carries any other certificate, so a debug-signed or throwaway-signed APK can
+  # never be published. Changes only when the key is rotated: doc/runbook/release-the-music-player.md.
+  EXPECTED_ANDROID_CERT_SHA256: '9de6e9a475f182c36f2513179fd4b14763b0e00fe068c9b8f3e6f08103616926'
+
+# Serialize runs so a second version bump landing while a release is still building does not race
+# the first. cancel-in-progress=false keeps the running release alive; the second run queues.
+concurrency:
+  group: music-player-release
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    if: ${{ !github.event.repository.fork }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      should_build: ${{ steps.detect.outputs.should_build }}
+      dry_run: ${{ steps.detect.outputs.dry_run }}
+      use_release_key: ${{ steps.detect.outputs.use_release_key }}
+      version: ${{ steps.detect.outputs.version }}
+      version_code: ${{ steps.detect.outputs.version_code }}
+      tag: ${{ steps.detect.outputs.tag }}
+      tag_exists: ${{ steps.detect.outputs.tag_exists }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        # need before+after revs to detect a version bump on push events.
+        # fetch-depth: 2 holds `before` for a one-generation push; the detect
+        # step fetches it when a push carries more, and treats a first push
+        # (no `before`) as a bump.
+        fetch-depth: 2
+        persist-credentials: false
+
+    - name: Detect version bump
+      id: detect
+      env:
+        BEFORE_SHA: ${{ github.event.before }}
+        EVENT_NAME: ${{ github.event_name }}
+        REF: ${{ github.ref }}
+        INPUT_DRY_RUN: ${{ github.event.inputs.dry-run }}
+        REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+      run: |
+        set -euo pipefail
+        desktop_toml='package/music-player/desktop-app/Cargo.toml'
+        android_toml='package/music-player/android-app/rust/Cargo.toml'
+        # The first `version = "..."` line of the [package] table.
+        package_version() {
+          awk -F'"' '/^\[/ { in_package = ($0 == "[package]") } in_package && /^version = / { print $2; exit }'
+        }
+        version_code() {
+          IFS=. read -r major minor patch <<< "$1"
+          echo $((major * 10000 + minor * 100 + patch))
+        }
+        after=$(package_version < "$desktop_toml")
+        android=$(package_version < "$android_toml")
+        before=''
+        if [ -n "${BEFORE_SHA:-}" ] \
+          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ]; then
+          # A push can carry several generations, such as a merge whose second parent
+          # holds commits that were not on origin yet, so the pre-push head can lie
+          # outside the depth-2 checkout. Fetch it instead of reading its absence as
+          # a version bump; a failed fetch fails this job, so nothing is released.
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 "$REPO_URL" "$BEFORE_SHA"
+          fi
+          if git cat-file -e "${BEFORE_SHA}:${desktop_toml}" 2>/dev/null; then
+            before=$(git show "${BEFORE_SHA}:${desktop_toml}" | package_version)
+          fi
+        fi
+        printf 'before=%s\nafter=%s\nandroid=%s\n' "$before" "$after" "$android"
+
+        # One version for the product: it must be plain MAJOR.MINOR.PATCH so the Android
+        # versionCode (major*10000 + minor*100 + patch) is unique and never decreases.
+        if ! [[ "$after" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]{0,1})\.(0|[1-9][0-9]{0,1})$ ]]; then
+          echo "::error::Version '$after' in $desktop_toml must be MAJOR.MINOR.PATCH with minor and patch at most 99."
+          exit 1
+        fi
+        if [ "$android" != "$after" ]; then
+          echo "::error::Version mismatch: $desktop_toml has '$after' but $android_toml has '$android'. Bump both."
+          exit 1
+        fi
+        code=$(version_code "$after")
+        if [ -n "$before" ] && [ "$before" != "$after" ]; then
+          if [[ "$before" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && [ "$(version_code "$before")" -ge "$code" ]; then
+            echo "::error::Version went from '$before' to '$after'; it must increase, or the Android versionCode would not."
+            exit 1
+          fi
+        fi
+
+        tag="music-player-v${after}"
+        tag_exists=false
+        if [ -n "$(git ls-remote --tags "$REPO_URL" "refs/tags/${tag}")" ]; then
+          tag_exists=true
+        fi
+
+        # A real release runs only on main. Everything else is a dry run, whatever the input says.
+        dry_run=true
+        if [ "$REF" = 'refs/heads/main' ]; then
+          if [ "$EVENT_NAME" = 'push' ]; then
+            dry_run=false
+          elif [ "$EVENT_NAME" = 'workflow_dispatch' ] && [ "$INPUT_DRY_RUN" = 'false' ]; then
+            dry_run=false
+          fi
+        elif [ "$EVENT_NAME" = 'workflow_dispatch' ] && [ "$INPUT_DRY_RUN" = 'false' ]; then
+          echo "::error::A real release runs only from main; this run is on $REF. Dispatch with dry-run true."
+          exit 1
+        fi
+
+        # The release key is read only for runs on main.
+        use_release_key=false
+        if [ "$REF" = 'refs/heads/main' ]; then
+          use_release_key=true
+        fi
+
+        # A push builds only when the version changed; a dispatch always builds, and a real
+        # dispatch builds only if the tag is free. An existing tag skips, it never fails.
+        should_build=false
+        if [ "$EVENT_NAME" = 'workflow_dispatch' ]; then
+          should_build=true
+        elif [ "$EVENT_NAME" = 'push' ] && [ "$REF" != 'refs/heads/main' ]; then # TEMP: removed before merge
+          should_build=true
+        elif [ "$EVENT_NAME" = 'push' ] && [ "$before" != "$after" ]; then
+          should_build=true
+        fi
+        if [ "$should_build" = 'true' ] && [ "$dry_run" = 'false' ] && [ "$tag_exists" = 'true' ]; then
+          echo "::notice::Tag $tag already exists; skipping the release. Releases are immutable, so it is never overwritten."
+          should_build=false
+        fi
+        {
+          echo "should_build=$should_build"
+          echo "dry_run=$dry_run"
+          echo "use_release_key=$use_release_key"
+          echo "version=$after"
+          echo "version_code=$code"
+          echo "tag=$tag"
+          echo "tag_exists=$tag_exists"
+        } >> "$GITHUB_OUTPUT"
+        printf 'should_build=%s dry_run=%s tag=%s tag_exists=%s version_code=%s\n' \
+          "$should_build" "$dry_run" "$tag" "$tag_exists" "$code"
+
+  build-desktop:
+    needs: detect
+    if: ${{ needs.detect.outputs.should_build == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - { os: linux, arch: x64, target: x86_64-unknown-linux-gnu, runner: ubuntu-24.04 }
+        - { os: linux, arch: arm64, target: aarch64-unknown-linux-gnu, runner: ubuntu-24.04-arm }
+        - { os: macos, arch: arm64, target: aarch64-apple-darwin, runner: macos-15 }
+        - { os: macos, arch: x64, target: x86_64-apple-darwin, runner: macos-15-intel }
+        - { os: windows, arch: x64, target: x86_64-pc-windows-msvc, runner: windows-2025 }
+        # Native Windows arm64 runner, free for public repositories (GA 2025-08-07):
+        # doc/decision/forbidden-strings-windows-arm64-release-target.md
+        - { os: windows, arch: arm64, target: aarch64-pc-windows-msvc, runner: windows-11-arm }
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    env:
+      TARGET: ${{ matrix.target }}
+      OS: ${{ matrix.os }}
+      ARCH: ${{ matrix.arch }}
+      VERSION: ${{ needs.detect.outputs.version }}
+      # The Slint UI uses experimental builtins (FlexboxLayout); also set by the repository's .cargo/config.toml.
+      SLINT_ENABLE_EXPERIMENTAL_FEATURES: '1'
+      # The oldest macOS the app declares in macos/Info.plist (LSMinimumSystemVersion).
+      MACOSX_DEPLOYMENT_TARGET: '11.0'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+        persist-credentials: false
+
+    # The repository pins its Rust toolchain in mise.lock (a dated nightly, shared by every
+    # package). Read it from there so the release never drifts from what developers build with.
+    # rustup comes with every runner image, which keeps one mechanism on all six platforms.
+    - name: Install the Rust toolchain pinned in mise.lock
+      shell: bash
+      run: |
+        set -euo pipefail
+        toolchain=$(awk -F'"' '/^\[\[tools\.rust\]\]$/ { in_rust = 1; next } in_rust && /^version = / { print $2; exit }' mise.lock)
+        case "$toolchain" in
+          nightly-????-??-?? | [0-9]*.[0-9]*.[0-9]*) ;;
+          *) echo "::error::Unexpected Rust version in mise.lock: '$toolchain'"; exit 1 ;;
+        esac
+        rustup toolchain install "$toolchain" --profile minimal --target "$TARGET" --no-self-update
+        echo "RUSTUP_TOOLCHAIN=$toolchain" >> "$GITHUB_ENV"
+        rustc "+$toolchain" -Vv
+        host=$(rustc "+$toolchain" -vV | awk '/^host: / { print $2 }')
+        if [ "$host" != "$TARGET" ]; then
+          echo "::error::Runner host is $host but this job builds $TARGET natively."
+          exit 1
+        fi
+
+    # Ubuntu equivalents of the Fedora -devel packages in the desktop-app Containerfile:
+    # pipewire (the audio backend, bindgen needs libclang), fontconfig and freetype (Slint fonts).
+    # Windowing (Wayland, X11, xkbcommon) and GL are loaded at run time and need no headers.
+    - name: Install system libraries (Linux)
+      if: ${{ matrix.os == 'linux' }}
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          pkg-config clang libclang-dev cmake \
+          libpipewire-0.3-dev libspa-0.2-dev \
+          libfontconfig1-dev libfreetype-dev
+
+    # .cargo/config.toml pins lld-link.exe as the x86_64 Windows linker; the runner image ships LLVM.
+    - name: Put LLVM on PATH (Windows x64)
+      if: ${{ matrix.target == 'x86_64-pc-windows-msvc' }}
+      shell: bash
+      run: echo 'C:\Program Files\LLVM\bin' >> "$GITHUB_PATH"
+
+    - name: Build the desktop binary
+      shell: bash
+      working-directory: package/music-player/desktop-app
+      run: |
+        set -euo pipefail
+        if [ "$TARGET" = 'x86_64-pc-windows-msvc' ]; then
+          lld-link.exe --version
+        fi
+        cargo build --release --locked --target "$TARGET"
+
+    - name: Smoke test the binary (--version)
+      shell: bash
+      run: |
+        set -euo pipefail
+        bin="package/music-player/desktop-app/target/${TARGET}/release/music-player"
+        if [ "$OS" = 'windows' ]; then bin="${bin}.exe"; fi
+        ls -la "$bin"
+        out=$("$bin" --version)
+        echo "$out"
+        if [ "$out" != "music-player ${VERSION}" ]; then
+          echo "::error::Expected 'music-player ${VERSION}' from --version, got '$out'."
+          exit 1
+        fi
+
+    - name: Package (Linux tarball)
+      if: ${{ matrix.os == 'linux' }}
+      id: pkg-linux
+      shell: bash
+      run: |
+        set -euo pipefail
+        app='package/music-player/desktop-app'
+        stage_name="music-player-${VERSION}-linux-${ARCH}"
+        stage="dist/${stage_name}"
+        mkdir -p "${stage}/bin" "${stage}/share/applications" "${stage}/share/icons/hicolor/scalable/apps"
+        cp "${app}/target/${TARGET}/release/music-player" "${stage}/bin/"
+        # The repository's launcher names the generic theme icon; the archive ships its own icon instead.
+        sed 's/^Icon=.*/Icon=music-player/' "${app}/share/applications/monochromatic.music-player.desktop" \
+          > "${stage}/share/applications/monochromatic.music-player.desktop"
+        cp "${app}/asset/icon.svg" "${stage}/share/icons/hicolor/scalable/apps/music-player.svg"
+        cp LICENSE "${stage}/LICENSE"
+        cat > "${stage}/INSTALL.txt" <<'INSTALL'
+        Music Player for Linux (pre-release, built by CI)
+
+        Run it in place:
+          ./bin/music-player /path/to/music-folder
+
+        Install for your user (menu entry and icon):
+          mkdir -p ~/.local/bin ~/.local/share/applications ~/.local/share/icons/hicolor/scalable/apps
+          cp bin/music-player ~/.local/bin/
+          cp share/applications/monochromatic.music-player.desktop ~/.local/share/applications/
+          cp share/icons/hicolor/scalable/apps/music-player.svg ~/.local/share/icons/hicolor/scalable/apps/
+
+        Needs a Wayland or X11 session, PipeWire, fontconfig, and a CPU with AES instructions.
+        The binary is linked against glibc of Ubuntu 24.04 or newer.
+        INSTALL
+        asset="${stage_name}.tar.gz"
+        # Fixed order, owner and timestamps so the same inputs give the same tar stream.
+        epoch=$(git log -1 --format=%ct)
+        tar --sort=name --owner=0 --group=0 --numeric-owner --mtime="@${epoch}" \
+          --create --file - --directory dist "${stage_name}" | gzip --no-name --best > "dist/${asset}"
+        echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
+        tar --list --verbose --file "dist/${asset}"
+
+    - name: Package (Windows executable)
+      if: ${{ matrix.os == 'windows' }}
+      id: pkg-windows
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p dist
+        asset="music-player-${VERSION}-windows-${ARCH}.exe"
+        cp "package/music-player/desktop-app/target/${TARGET}/release/music-player.exe" "dist/${asset}"
+        # List the DLLs the executable imports (ASCII names in the import table). The C runtime is linked
+        # in statically (.cargo/config.toml), so no Visual C++ runtime DLL may be required.
+        grep --text --only-matching --ignore-case '[A-Za-z0-9_.-]*\.dll' "dist/${asset}" | sort --unique --ignore-case | tee dll-imports.txt
+        if grep --ignore-case --extended-regexp '^(vcruntime|msvcp|concrt|vccorlib)[0-9]*' dll-imports.txt; then
+          echo "::error::The executable imports a Visual C++ runtime DLL; it is not self-contained."
+          exit 1
+        fi
+        echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
+        ls -la dist
+
+    - name: Install node (runs the repository's bundle:macos task)
+      if: ${{ matrix.os == 'macos' }}
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Resolve "latest" through the GitHub releases API, published releases only,
+        # one day old like pnpm's minimumReleaseAge. Without it the action installs
+        # whatever mise.jdx.dev/VERSION names, which runs ahead of the GitHub release
+        # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
+        minimum_release_age: 1d
+        install: false
+        # A release is built cold: no restored cache can change its bytes.
+        cache: false
+
+    - name: Package (macOS disk image)
+      if: ${{ matrix.os == 'macos' }}
+      id: pkg-macos
+      shell: bash
+      run: |
+        set -euo pipefail
+        app='package/music-player/desktop-app'
+        mise install node
+        # The repository's own task builds Music Player.app from macos/Info.plist, the icon and the binary.
+        mkdir -p "${app}/dist"
+        cp "${app}/target/${TARGET}/release/music-player" "${app}/dist/music-player"
+        MP_MACOS_BINARY=dist/music-player mise run //package/music-player/desktop-app:bundle:macos
+        # Ad-hoc signature (no developer identity, no notarization): it seals the bundle contents so Apple
+        # silicon accepts the code, but Gatekeeper still asks for confirmation on the first launch.
+        codesign --force --deep --sign - "${app}/dist/Music Player.app"
+        codesign --verify --deep --strict --verbose=2 "${app}/dist/Music Player.app"
+        plutil -p "${app}/dist/Music Player.app/Contents/Info.plist"
+        stage=$(mktemp -d)
+        cp -R "${app}/dist/Music Player.app" "${stage}/"
+        ln -s /Applications "${stage}/Applications"
+        mkdir -p dist
+        asset="music-player-${VERSION}-macos-${ARCH}.dmg"
+        hdiutil create -volname 'Music Player' -srcfolder "$stage" -fs HFS+ -format UDZO -ov "dist/${asset}"
+        hdiutil verify "dist/${asset}"
+        # Open the finished image the way a user does and start the app inside it.
+        mount_point=$(mktemp -d)
+        hdiutil attach "dist/${asset}" -mountpoint "$mount_point" -nobrowse -readonly
+        "${mount_point}/Music Player.app/Contents/MacOS/music-player" --version
+        hdiutil detach "$mount_point"
+        echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
+        ls -la dist
+
+    - name: Attest provenance
+      if: ${{ needs.detect.outputs.dry_run == 'false' }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: ${{ steps.pkg-linux.outputs.asset || steps.pkg-windows.outputs.asset || steps.pkg-macos.outputs.asset }}
+
+    - name: Upload asset as workflow artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: asset-${{ matrix.os }}-${{ matrix.arch }}
+        path: ${{ steps.pkg-linux.outputs.asset || steps.pkg-windows.outputs.asset || steps.pkg-macos.outputs.asset }}
+        if-no-files-found: error
+        retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
+
+  build-android:
+    needs: detect
+    if: ${{ needs.detect.outputs.should_build == 'true' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    env:
+      VERSION: ${{ needs.detect.outputs.version }}
+      VERSION_CODE: ${{ needs.detect.outputs.version_code }}
+      USE_RELEASE_KEY: ${{ needs.detect.outputs.use_release_key }}
+      DRY_RUN: ${{ needs.detect.outputs.dry_run }}
+      # Dependencies are downloaded fresh and no build cache is restored, so a release is built cold.
+      GRADLE_OPTS: '-Dorg.gradle.caching=false'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+        persist-credentials: false
+
+    - name: Install the Rust toolchain pinned in mise.lock
+      shell: bash
+      run: |
+        set -euo pipefail
+        toolchain=$(awk -F'"' '/^\[\[tools\.rust\]\]$/ { in_rust = 1; next } in_rust && /^version = / { print $2; exit }' mise.lock)
+        case "$toolchain" in
+          nightly-????-??-?? | [0-9]*.[0-9]*.[0-9]*) ;;
+          *) echo "::error::Unexpected Rust version in mise.lock: '$toolchain'"; exit 1 ;;
+        esac
+        rustup toolchain install "$toolchain" --profile minimal \
+          --target aarch64-linux-android --target x86_64-linux-android --no-self-update
+        echo "RUSTUP_TOOLCHAIN=$toolchain" >> "$GITHUB_ENV"
+        rustc "+$toolchain" -Vv
+
+    - name: Set up mise (skip auto-install of all tools)
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Resolve "latest" through the GitHub releases API, published releases only,
+        # one day old like pnpm's minimumReleaseAge. Without it the action installs
+        # whatever mise.jdx.dev/VERSION names, which runs ahead of the GitHub release
+        # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
+        minimum_release_age: 1d
+        install: false
+        # A release is built cold: no restored cache can change its bytes.
+        cache: false
+
+    # The versions come from mise.lock: Temurin 21 (AGP 9 and Gradle 9 need 17 to 21), the Android
+    # command-line tools, cargo-ndk, and node, which runs the repository's mise tasks.
+    - name: Install the Android toolchain
+      run: |
+        mise install cargo-binstall node java android-sdk
+        mise install cargo:cargo-ndk
+
+    # The repository task installs exactly the SDK components the app builds against (platform 37.0,
+    # build-tools 37.0.0, NDK 29.0.13846066, platform-tools) into the mise-managed SDK.
+    - name: Install the Android SDK components
+      run: mise run prepare:android
+
+    - name: Restore the project release key
+      if: ${{ needs.detect.outputs.use_release_key == 'true' }}
+      env:
+        # The only step that reads the signing secrets, and it runs only for main. GitHub masks their
+        # values in every log line, including after they are passed on through the environment.
+        KEYSTORE_BASE64: ${{ secrets.MUSIC_PLAYER_KEYSTORE_BASE64 }}
+        KEYSTORE_PASSWORD: ${{ secrets.MUSIC_PLAYER_KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.MUSIC_PLAYER_KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.MUSIC_PLAYER_KEY_PASSWORD }}
+      run: |
+        set -euo pipefail
+        umask 077
+        printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/music-player-release.p12"
+        {
+          echo "MUSIC_PLAYER_KEYSTORE_FILE=$RUNNER_TEMP/music-player-release.p12"
+          echo "MUSIC_PLAYER_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+          echo "MUSIC_PLAYER_KEY_ALIAS=$KEY_ALIAS"
+          echo "MUSIC_PLAYER_KEY_PASSWORD=$KEY_PASSWORD"
+        } >> "$GITHUB_ENV"
+
+    # Every other ref gets a key generated for this run only. Its APK carries no project identity.
+    - name: Create a throwaway key
+      if: ${{ needs.detect.outputs.use_release_key != 'true' }}
+      run: |
+        set -euo pipefail
+        umask 077
+        password=$(openssl rand -base64 24 | tr -d '/+=\n')
+        echo "::add-mask::$password"
+        mise exec java -- keytool -genkeypair -alias throwaway -keyalg RSA -keysize 2048 -validity 2 \
+          -dname 'CN=Music Player throwaway, O=Monochromatic dry run' \
+          -keystore "$RUNNER_TEMP/throwaway.p12" -storetype PKCS12 \
+          -storepass "$password" -keypass "$password"
+        {
+          echo "MUSIC_PLAYER_KEYSTORE_FILE=$RUNNER_TEMP/throwaway.p12"
+          echo "MUSIC_PLAYER_KEYSTORE_PASSWORD=$password"
+          echo "MUSIC_PLAYER_KEY_ALIAS=throwaway"
+          echo "MUSIC_PLAYER_KEY_PASSWORD=$password"
+        } >> "$GITHUB_ENV"
+
+    - name: Build the signed release APK
+      env:
+        # The key steps before this one exported the four MUSIC_PLAYER_* signing values; with this set,
+        # Gradle fails instead of falling back to the debug key.
+        MUSIC_PLAYER_REQUIRE_RELEASE_SIGNING: 'true'
+      run: mise run //package/music-player/android-app:build:release
+
+    - name: Verify and package the APK
+      id: pkg
+      env:
+        EXPECTED_PACKAGE: dev.monochromatic.musicplayer
+      run: |
+        set -euo pipefail
+        sdk=$(mise where android-sdk)
+        tools="${sdk}/build-tools/37.0.0"
+        built='package/music-player/android-app/app/build/outputs/apk/release/app-release.apk'
+        mkdir -p dist
+        asset="music-player-${VERSION}-android.apk"
+        cp "$built" "dist/${asset}"
+
+        # Version rule: the APK must carry the version the detect job computed.
+        badging=$("${tools}/aapt2" dump badging "dist/${asset}")
+        sed -n '1,3p' <<< "$badging"
+        expected="package: name='${EXPECTED_PACKAGE}' versionCode='${VERSION_CODE}' versionName='${VERSION}'"
+        if ! sed -n '1p' <<< "$badging" | grep --fixed-strings --quiet "$expected"; then
+          echo "::error::APK identity differs from: $expected"
+          exit 1
+        fi
+        if grep --quiet '^application-debuggable' <<< "$badging"; then
+          echo "::error::The release APK is debuggable."
+          exit 1
+        fi
+
+        # Both native libraries must be inside.
+        listing=$(unzip -Z1 "dist/${asset}")
+        for abi in arm64-v8a x86_64; do
+          if ! grep --fixed-strings --line-regexp --quiet "lib/${abi}/libmusicplayer_native.so" <<< "$listing"; then
+            echo "::error::lib/${abi}/libmusicplayer_native.so is missing from the APK."
+            exit 1
+          fi
+        done
+
+        # Signature and certificate.
+        certs=$(mise exec java -- "${tools}/apksigner" verify --verbose --print-certs "dist/${asset}")
+        echo "$certs"
+        fingerprint=$(awk -F': ' '/certificate SHA-256 digest/ { print $2; exit }' <<< "$certs")
+        if [ "$USE_RELEASE_KEY" = 'true' ]; then
+          if [ "$fingerprint" != "$EXPECTED_ANDROID_CERT_SHA256" ]; then
+            echo "::error::APK certificate ${fingerprint} is not the project release certificate."
+            exit 1
+          fi
+        elif [ "$fingerprint" = "$EXPECTED_ANDROID_CERT_SHA256" ]; then
+          echo "::error::A throwaway build carries the release certificate."
+          exit 1
+        fi
+        echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
+
+    - name: Delete the key material
+      if: ${{ always() }}
+      run: rm -f "$RUNNER_TEMP/music-player-release.p12" "$RUNNER_TEMP/throwaway.p12"
+
+    - name: Attest provenance
+      if: ${{ needs.detect.outputs.dry_run == 'false' }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: ${{ steps.pkg.outputs.asset }}
+
+    - name: Upload asset as workflow artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: asset-android
+        path: ${{ steps.pkg.outputs.asset }}
+        if-no-files-found: error
+        retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
+
+  # SHA256SUMS covers every asset and is attested like them. It is computed only after every
+  # build succeeded, so a partial release cannot get a checksum file.
+  checksums:
+    needs: [detect, build-desktop, build-android]
+    if: ${{ needs.detect.outputs.should_build == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    env:
+      VERSION: ${{ needs.detect.outputs.version }}
+    steps:
+    - name: Download all assets
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        pattern: asset-*
+        path: assets
+        merge-multiple: true
+
+    - name: Check the asset set and write SHA256SUMS
+      run: |
+        set -euo pipefail
+        expected=$(printf '%s\n' \
+          "music-player-${VERSION}-android.apk" \
+          "music-player-${VERSION}-linux-arm64.tar.gz" \
+          "music-player-${VERSION}-linux-x64.tar.gz" \
+          "music-player-${VERSION}-macos-arm64.dmg" \
+          "music-player-${VERSION}-macos-x64.dmg" \
+          "music-player-${VERSION}-windows-arm64.exe" \
+          "music-player-${VERSION}-windows-x64.exe")
+        actual=$(ls -1 assets | LC_ALL=C sort)
+        if [ "$actual" != "$expected" ]; then
+          echo "::error::Unexpected asset set."
+          diff <(echo "$expected") <(echo "$actual") || true
+          exit 1
+        fi
+        mkdir -p checksums
+        (cd assets && sha256sum -- *) > checksums/SHA256SUMS
+        cat checksums/SHA256SUMS
+
+    - name: Attest SHA256SUMS provenance
+      if: ${{ needs.detect.outputs.dry_run == 'false' }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: checksums/SHA256SUMS
+
+    - name: Upload SHA256SUMS as workflow artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: checksums
+        path: checksums/SHA256SUMS
+        if-no-files-found: error
+        retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
+
+  # Immutable releases (repo setting) means `gh release create` must include every asset at
+  # creation time; you cannot add files later. So we wait for every build, collect all assets,
+  # then create the release in one shot. In a dry run the same script prints the command instead.
+  release:
+    needs: [detect, checksums]
+    if: ${{ needs.detect.outputs.should_build == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DRY_RUN: ${{ needs.detect.outputs.dry_run }}
+      VERSION: ${{ needs.detect.outputs.version }}
+      TAG: ${{ needs.detect.outputs.tag }}
+      SHA: ${{ github.sha }}
+      REF: ${{ github.ref }}
+      REPO: ${{ github.repository }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+    - name: Download all assets
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        pattern: '*'
+        path: assets
+        merge-multiple: true
+
+    - name: Write the release notes
+      run: |
+        set -euo pipefail
+        cert="$EXPECTED_ANDROID_CERT_SHA256"
+        cat > notes.md <<'NOTES'
+        Music Player @VERSION@, a **pre-release**. The project is under active development.
+
+        Built by CI from commit @SHA@ ([workflow run](@RUN_URL@)). Source: [@TAG@](https://github.com/@REPO@/tree/@TAG@).
+
+        ## Downloads
+
+        - Windows: `music-player-@VERSION@-windows-x64.exe` and `music-player-@VERSION@-windows-arm64.exe`, one standalone program each.
+        - macOS: `music-player-@VERSION@-macos-arm64.dmg` (Apple silicon) and `music-player-@VERSION@-macos-x64.dmg` (Intel).
+        - Linux: `music-player-@VERSION@-linux-x64.tar.gz` and `music-player-@VERSION@-linux-arm64.tar.gz`, with the program, a launcher file and an icon.
+        - Android: `music-player-@VERSION@-android.apk` (Android 8.0 or newer).
+        - `SHA256SUMS`: the SHA-256 of every file above.
+
+        ## What has been tested
+
+        The maintainers have run the Linux x86_64 build on Wayland with PipeWire and the Android app on emulators.
+        Every other platform is **built by CI, not yet tested on this platform**: CI starts each desktop program with `--version` and nothing more.
+        No build has run on a real Android device, on macOS or on Windows.
+        Expect problems and report them as issues.
+
+        ## Unsigned builds and first launch
+
+        - **Windows**: the programs are not signed with a developer identity. SmartScreen may show "Windows protected your PC": choose "More info", then "Run anyway".
+        - **macOS**: the app is not notarized, and carries only an ad-hoc signature with no developer identity. Open the disk image, drag Music Player to Applications, and try to open it once. Then open System Settings, go to Privacy & Security, scroll down and click "Open Anyway", and click "Open" when the warning appears again. macOS remembers the choice. These are the steps in [Apple's guide](https://support.apple.com/en-us/102445).
+        - **Android**: the APK is signed with the project release key. Allow installing from your browser or file manager when Android asks. Updates install over this app only when they carry the same key. Certificate SHA-256: `@CERT@`.
+        - **Linux**: extract the archive and run `bin/music-player`. `INSTALL.txt` inside shows how to add a menu entry. It needs PipeWire and a CPU with AES instructions.
+
+        ## Verify a download
+
+        Every file is attested with GitHub build provenance. With the [GitHub CLI](https://cli.github.com/):
+
+        ```
+        gh attestation verify <file> --repo @REPO@
+        sha256sum --check --ignore-missing SHA256SUMS
+        ```
+        NOTES
+        sed --in-place \
+          --expression="s|@VERSION@|${VERSION}|g" \
+          --expression="s|@SHA@|${SHA}|g" \
+          --expression="s|@RUN_URL@|${RUN_URL}|g" \
+          --expression="s|@TAG@|${TAG}|g" \
+          --expression="s|@REPO@|${REPO}|g" \
+          --expression="s|@CERT@|${cert}|g" \
+          notes.md
+        cat notes.md
+
+    - name: Create the GitHub pre-release with all assets (a dry run only prints the command)
+      run: |
+        set -euo pipefail
+        # The one place a release is created. A dry run prints the command instead of running it.
+        run_gh() {
+          if [ "$DRY_RUN" = 'true' ]; then
+            printf 'DRY RUN, would run: gh'
+            printf ' %q' "$@"
+            printf '\n'
+          else
+            gh "$@"
+          fi
+        }
+        ls -la assets/
+        if [ "$DRY_RUN" = 'false' ]; then
+          if [ "$REF" != 'refs/heads/main' ]; then
+            echo "::error::A real release runs only from main, not $REF."
+            exit 1
+          fi
+          # Re-check right before creating: a tag created since the detect job must not be touched.
+          if gh api "repos/${REPO}/git/ref/tags/${TAG}" >/dev/null 2>&1; then
+            echo "::notice::Tag ${TAG} exists now; leaving it alone."
+            exit 0
+          fi
+        fi
+        echo "tag: ${TAG}"
+        echo "assets:"
+        ls -1 assets
+        run_gh release create "$TAG" assets/* \
+          --repo "$REPO" \
+          --title "Music Player ${VERSION} (pre-release)" \
+          --notes-file notes.md \
+          --target "$SHA" \
+          --prerelease
