@@ -31,7 +31,7 @@ export class PolicySlotBindingError extends Error {
 // callback, without a second global source/session registry.
 const constructionKey=Object.freeze({});
 class SystemPolicyInput {
- readonly #state;
+ #state;
  constructor({
    key,
    state
