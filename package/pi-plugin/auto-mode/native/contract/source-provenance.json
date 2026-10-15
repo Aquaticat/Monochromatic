@@ -985,7 +985,7 @@
     },
     {
       "original": "policy-index.mjs",
-      "maintained": "policy-index.mjs",
+      "maintained": "policy-index.ts",
       "sha256": "673c676492e3e6e9cfc24253ea0fa605b665c35eda734139f4ea20e8f5663072",
       "origin": "authored-source",
       "relocatedLiterals": 0

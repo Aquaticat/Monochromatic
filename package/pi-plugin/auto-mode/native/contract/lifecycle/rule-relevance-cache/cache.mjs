@@ -1,4 +1,4 @@
-import {indexPolicyDocument} from '../../policy-index.mjs';
+import {indexPolicyDocument} from '../../policy-index.ts';
 import {
   RELEVANCE_QUESTION,
   RuleRelevanceCacheError

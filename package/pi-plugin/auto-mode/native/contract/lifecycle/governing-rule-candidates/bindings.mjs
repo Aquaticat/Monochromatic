@@ -1,5 +1,5 @@
 import {createHash} from 'node:crypto';
-import {indexPolicyDocument} from '../../policy-index.mjs';
+import {indexPolicyDocument} from '../../policy-index.ts';
 
 export class GoverningRuleBindingError extends Error {
   constructor(
