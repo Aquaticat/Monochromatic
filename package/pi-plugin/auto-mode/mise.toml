@@ -232,6 +232,13 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-runner-facade-drain.unit.test.ts",
 ]
 
+[tasks."test:native:input-seal"]
+description = "Verify original prepared input admission, bounded freezing, descriptors, and failure identity"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-input-seal.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-input-seal-descriptor.unit.test.ts",
+]
+
 [tasks."test:native:group-lifetime"]
 description = "Verify original collector retirement, draining, and retained inspection"
 run = [
