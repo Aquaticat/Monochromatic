@@ -277,6 +277,13 @@ which Maven metadata does not carry).
 - The Windows programs are single files,
   so their notices are the embedded copy and a release file of their own,
   `music-player-<version>-desktop-third-party-licenses.txt`.
+  The embedded copy reaches a Windows user only from a terminal:
+  a double-click opens no console,
+  and PowerShell's `>` leaves an empty file for a GUI-subsystem program
+  (`doc/decision/music-player-windows-gui-subsystem.md`),
+  so the README and the release notes name `| Out-File`,
+  `cmd.exe` redirection and the release file.
+  The release workflow's check runs `--licenses` under bash.
 - The APK holds the Android file as `assets/THIRD-PARTY-LICENSES.txt`
   (`ThirdPartyLicensesAssetTask` in `app/build.gradle.kts`,
   release variant only),

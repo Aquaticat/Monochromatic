@@ -1375,7 +1375,7 @@ jobs:
         The complete source code of this release is the tree at [@TAG@](https://github.com/@REPO@/tree/@TAG@); every Rust crate it uses is published on crates.io under the name and version its notices give.
 
         Each program carries the license notices of everything built into it: the program's own license texts, the bundled typeface (desktop) and icons, the Rust standard library, every Rust crate and, for Android, every Android library.
-        - Desktop: `music-player --licenses` prints them; the Linux and Alpine archives hold them as `THIRD-PARTY-LICENSES.txt`, and the disk image beside the app and inside it (`Contents/Resources`). The Windows programs are single files, so their notices are `music-player-@VERSION@-desktop-third-party-licenses.txt` here and `--licenses`.
+        - Desktop: `music-player --licenses` prints them; the Linux and Alpine archives hold them as `THIRD-PARTY-LICENSES.txt`, and the disk image beside the app and inside it (`Contents/Resources`). The Windows programs are single files, so their notices are `music-player-@VERSION@-desktop-third-party-licenses.txt` here and `--licenses` (in PowerShell, `music-player.exe --licenses | Out-File licenses.txt`; `>` leaves an empty file there, as for every Windows program without a console).
         - Android: inside the APK as `assets/THIRD-PARTY-LICENSES.txt`, and `music-player-@VERSION@-android-third-party-licenses.txt` here. The app has no screen that shows them yet.
 
         ## Verify a download

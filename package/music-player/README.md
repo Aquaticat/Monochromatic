@@ -931,6 +931,11 @@ and for Android every Android library with its NOTICE files.
    the disk image beside the app and in `Contents/Resources`,
    and the release file `music-player-<version>-desktop-third-party-licenses.txt` serves the single-file Windows
   programs.
+  On Windows,
+   PowerShell leaves an empty file for `music-player.exe --licenses > licenses.txt`;
+   use `music-player.exe --licenses | Out-File licenses.txt`,
+   `cmd.exe` redirection,
+   or the release file.
 - Android:
    the APK holds them as `assets/THIRD-PARTY-LICENSES.txt`,
    and the release file is `music-player-<version>-android-third-party-licenses.txt`.
