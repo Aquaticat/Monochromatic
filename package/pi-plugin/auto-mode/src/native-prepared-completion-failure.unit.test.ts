@@ -9,7 +9,9 @@ await describe({ name: 'prepared completion failures', children: [
     const decision = { block: true, reason: 'original failure' };
     const failure = Object.freeze({ original: 'opaque failure' });
     const failures = [failure, undefined, null, failure];
-    const settled = [{ get status() { throw new Error('Native status was read before retained failure'); } }];
+    const settled = [{ get status() {
+      throw new Error('Native status was read before retained failure');
+    } }];
     assert.throws(function reject() {
       complete({ batchState: { decision }, failures, settled, snapshots: undefined });
     }, function originalError(error: unknown) {
@@ -29,10 +31,10 @@ await describe({ name: 'prepared completion failures', children: [
   } }),
   it({ name: 'uses the second original decision read in retained failure diagnostics', fn: async function failureDecision() {
     const decisions = [{ block: false }, { block: true }];
-    let reads = 0;
+    const observed: unknown[] = [];
     const batchState = { get decision() {
-      const decision = decisions[reads];
-      reads += 1;
+      const decision = decisions[observed.length];
+      observed.push(decision);
       return decision;
     } };
     assert.throws(function reject() {
@@ -42,7 +44,7 @@ await describe({ name: 'prepared completion failures', children: [
       assert.equal(error.diagnosticRecord.assessmentDecision, decisions[1]);
       return true;
     });
-    assert.equal(reads, 2);
+    assert.deepEqual(observed, decisions);
   } }),
   //endregion
   //region Unhandled rejections retain declaration order and original reason values without deduplication.
@@ -91,7 +93,9 @@ await describe({ name: 'prepared completion failures', children: [
   it({ name: 'preserves opaque rejected-reason getter failure without aggregate wrapping', fn: async function reasonFailure() {
     const failure: unknown = Object.freeze({ reason: 'original rejection getter' });
     assert.throws(function reject() {
-      complete({ settled: [{ status: 'rejected', get reason() { throw failure; } }] });
+      complete({ settled: [{ status: 'rejected', get reason() {
+        throw failure;
+      } }] });
     }, function originalFailure(error: unknown) {
       return error === failure;
     });
