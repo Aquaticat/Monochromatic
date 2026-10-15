@@ -2345,6 +2345,23 @@ qualified facade and scope work,
 and the still-open maintained quality queue.
 No additional human input is needed for this queue.
 
+`fe97ed7482` moves original group completion retention into typed implementation and record contracts.
+`ef8f58d922` adds independent native outcome,
+conditional delivery,
+and cleanup-failure consumers.
+`6973251c83` separates readonly completion counting from mutable record ownership.
+The first consumer type check rejects an empty-array assertion that narrows later event inspection to `never`;
+the fixture now checks the empty count and preserves explicit string-array typing.
+Opaque rejection tests use independently issued native tickets,
+keeping rejection identity without treating it as an authored application error.
+Full completion qualification remains in progress.
+
+Auto-pushing `6973251c83` was separately rejected with `GH006` and no detailed requirement.
+The original local signature verified,
+the current protection settings were read,
+and one unchanged ordinary retry succeeded.
+The incident record preserves this as a distinct unknown-cause remote rejection.
+
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
 Its `cli-git` push-wait notice was initially misread as a timeout.
