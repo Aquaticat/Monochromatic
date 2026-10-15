@@ -104,6 +104,21 @@ converter.
    `default_policy`:
    the shipped policy and the identity tuple
   that keys cache rows.
+- `track_fingerprint`,
+   `FINGERPRINT_DOMAIN_TAG`
+  (behind the `fingerprint` feature):
+   the opaque `u64` cache key both apps derive from a file's path,
+  size,
+  and modified-time.
+  It is XXH3-64 (`twox-hash`, default seed 0) over a domain tag,
+  the path length,
+  the path,
+  the size,
+  and the mtime nanoseconds,
+  so desktop and Android hash identical inputs identically by construction.
+  Known answers from the xxHash reference C implementation pin it in `src/fingerprint_tests.rs`.
+  Decision:
+  [`doc/decision/music-player-fingerprint-hash.md`](../../../doc/decision/music-player-fingerprint-hash.md).
 
 ## Policy identity
 
@@ -119,12 +134,15 @@ behavior,
 platform's decoder behavior,
  supplied by the platform),
  and `schema_version` (the row
-layout).
+layout and the fingerprint hash that fills the key column).
  These stay separate so a decoder bump does not churn unrelated rows.
  The
 `policy_id` is derived from the policy parameters,
  so changing a constant cannot silently
 reuse a stale cache row.
+ `DecisionCache::open` deletes every row whose `schema_version` is below the shipped one,
+so rows left by a retired fingerprint hash do not accumulate.
+ Version 2 is the switch from the gxhash fingerprint to XXH3-64.
 
 `default_policy` holds the decided policy from the Stage-two corpus search:
  a full scan
