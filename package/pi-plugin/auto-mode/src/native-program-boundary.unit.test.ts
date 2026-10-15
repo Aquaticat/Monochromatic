@@ -22,7 +22,7 @@ await describe({
           if (kind === 'returned') fixture.record.execution.state = 'returned';
           if (kind === 'dependencies') fixture.state.dependencyFailure = failure;
           if (kind === 'cancelled') fixture.parent.abort(failure);
-          assert.throws(function rejectOriginalOpening() { fixture.owner.openProgram({ parentToken, toolNames: ['read', 'write'] }); }, function originalFailure(error) { return kind === 'returned' ? (error instanceof Error) && (error.message === 'Program parent execution has returned') : error === failure; });
+          assert.throws(function rejectOriginalOpening() { fixture.owner.openProgram({ parentToken, toolNames: ['read', 'write'] }); }, function originalFailure(error) { return kind === 'returned' ? (Error.isError(error)) && (error.message === 'Program parent execution has returned') : error === failure; });
           assert.equal(fixture.record.program, undefined);
         },
       });
@@ -150,7 +150,7 @@ await describe({
         const producer = createProgramGroupFixture({ fixture, program });
         producer.bind();
         producer.prepare();
-        const outcome = producer.outcomes[0];
+        const [outcome] = producer.outcomes;
         assert.ok(outcome);
         outcome.result.content = [{ type: 'text', text: 'x'.repeat(65_536) }];
         await producer.invoke();
@@ -169,7 +169,7 @@ await describe({
         const group = createProgramGroupFixture({ fixture, program });
         group.bind();
         group.prepare();
-        const outcome = group.outcomes[0];
+        const [outcome] = group.outcomes;
         assert.ok(outcome);
         outcome.result.content = [];
         await group.invoke();

@@ -119,15 +119,19 @@ export function createProgramGroupFixture({
     }
   }
   /**
-   Fixed native runner returns exact original objects after independent child completion.
-
-   @param call - original native call passed by the built consumer
-
-   @param originalOptions - exact original options
-
-   @returns original native outcome
+   Fixed native callbacks preserve the positional signature supplied by the original native consumer.
    */
-  function runOriginalNative(
+  const nativeRunner = {
+    /**
+     Fixed native runner returns exact original objects after independent child completion.
+  
+     @param call - original native call passed by the built consumer
+  
+     @param originalOptions - exact original options
+  
+     @returns original native outcome
+     */
+      runNative: function runOriginalNative(
     call: FixtureProgramCall,
     originalOptions: unknown
   ): unknown {
@@ -147,6 +151,7 @@ export function createProgramGroupFixture({
     markReturned();
     return outcomes[index];
   }
+  };
   /**
    Bind the complete original native group through the built owner.
 
@@ -154,7 +159,7 @@ export function createProgramGroupFixture({
 
    @returns original native slot handles
    */
-  function bind({ runNative = runOriginalNative }: Readonly<{ runNative?: typeof runOriginalNative }> = {}): readonly object[] {
+  function bind({ runNative = nativeRunner.runNative }: Readonly<{ runNative?: typeof nativeRunner.runNative }> = {}): readonly object[] {
     const slots = owner.bindProgramCalls({
       group: reached.handle,
       calls,

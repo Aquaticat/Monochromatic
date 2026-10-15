@@ -25,7 +25,7 @@ await describe({
         assert.equal(fixture.owner.inspectProgram(program).producerValueReady, false);
         assert.equal(producer.value(), 'original producer text');
         assert.equal(producer.value(), 'original producer text');
-        const original = producer.outcomes[0];
+        const [original] = producer.outcomes;
         assert.ok(original);
         original.result.content = [{ type: 'text', text: 'later native mutation' }];
         assert.equal(producer.value(), 'original producer text');
@@ -128,7 +128,7 @@ await describe({
           const group = createProgramGroupFixture({ fixture, program, structured: kind === 'unsupported-value' });
           const slots = group.bind();
           const members = group.prepare();
-          const outcome = group.outcomes[0];
+          const [outcome] = group.outcomes;
           assert.ok(outcome);
           if (kind === 'unsupported-value') outcome.result.structuredContent = {};
           if (kind === 'oversized-value') outcome.result.content = [{ type: 'text', text: 'x'.repeat(65_537) }];
@@ -156,7 +156,7 @@ await describe({
         const group = createProgramGroupFixture({ fixture, program });
         group.bind();
         group.prepare();
-        const outcome = group.outcomes[0];
+        const [outcome] = group.outcomes;
         assert.ok(outcome);
         outcome.isError = true;
         await group.invoke();
