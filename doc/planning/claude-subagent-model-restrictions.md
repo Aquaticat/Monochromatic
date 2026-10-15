@@ -10,7 +10,7 @@ The user selected ordinary Agent delegation only and requested Sonnet for the ge
 Forks,
 subagent skills,
 and teammates are outside the selected scope.
-The accepted general-purpose default has not yet been installed.
+The accepted general-purpose default and explicit model deny rules were installed on 2026-10-15.
 
 The user corrected the ordering of the discussion:
 enumerate supported mechanisms before asking which delegation paths to include.
@@ -153,7 +153,7 @@ not a tested enforcement result.
 Q3 is settled:
 ordinary Agent delegation only.
 The user requested Sonnet for the general-purpose agent to cover omitted-model inheritance.
-The proposed account-wide settings edit uses `CLAUDE_CODE_SUBAGENT_MODEL=sonnet`
+The installed account-wide settings edit uses `CLAUDE_CODE_SUBAGENT_MODEL=sonnet`
 and deny rules `Agent(model:*opus*)` and `Agent(model:*fable*)`.
 This retains the built-in general-purpose instructions rather than replacing its definition.
 The documented selection order gives the environment default priority over parent-model inheritance,
@@ -162,10 +162,23 @@ The deny rules address explicit Opus/Fable selections.
 Custom definitions selecting either prohibited family or `inherit` remain an unresolved path.
 No complete prohibition across named agents has been demonstrated.
 
-The settings write was blocked before execution by automatic approval review.
-The reviewer accepted the settings edit as authorized but rejected the launcher's cgroup PID write,
-stating that the previous cgroup approval covered only a documentation commit.
-Approval for this invocation is pending.
+Automatic approval review initially blocked the launcher's cgroup PID write.
+After the question widget failed to appear for the user,
+the agent restated the exact approval question in chat and the user approved it.
+The settings write completed successfully.
+Its readback showed the Sonnet subagent default,
+both deny rules,
+and unchanged `advisorModel: fable`.
+`claude doctor` on native version 2.1.300 exited successfully with no installation issues.
+This is configuration and installation verification,
+not a runtime proof of model selection or denial.
+
+The user subsequently requested that resumes remain allowed,
+then deferred removal of the repository's existing blanket resume guard.
+They reported that the guard does not appear to work and requested README documentation only.
+The observation and verification limits are recorded in the
+[guardrail README](../../package/claude-code-plugin/guardrail/README.md#resume-blocking-status).
+The guardrail implementation remains unchanged.
 
 Validation must exercise accepted and rejected calls through the installed Claude Code host,
 including omitted models,
@@ -205,9 +218,10 @@ It has not been accepted or applied.
 
 ## Next action
 
-Apply the authorized general-purpose default and explicit model denials after launcher approval.
-Verify settings through the installed host and resolve the remaining named-agent inheritance path.
-No implementation commits exist for this request.
+The authorized account settings edit is installed outside repository version control.
+Runtime verification of model selection and rejection remains outstanding.
+Custom named-agent inheritance remains an unresolved limitation.
+Do not remove the resume guard based on the unverified observation.
 
 [permissions]: https://code.claude.com/docs/en/permissions#match-by-input-parameter
 [hooks]: https://code.claude.com/docs/en/hooks
