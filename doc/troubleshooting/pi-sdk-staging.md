@@ -1,12 +1,14 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
-## Sequential native judgment retries
+## Sequential native judgment retries in Oxlint 1.88.0
 
 ### Symptom
 
 Oxlint reports `eslint(no-await-in-loop): Unexpected await inside a loop`
 for the original judgment transport attempt in
 `package/pi-plugin/auto-mode/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs`.
+The implementation moved to `candidate.ts` on 2026-10-15;
+the sequential transport loop now lives in sibling `dispatch.ts`.
 The complete diagnostic includes backticks around `await`.
 The package denies warnings,
 so this finding fails lint even when the runtime consumer passes.
@@ -42,14 +44,25 @@ the original preparation-inclusive deadline remains five seconds.
 
 ### Verification and exception
 
-The typed budget alone originally reported 55 warnings.
+The budget module originally reported 55 warnings.
 Adding boundary and retained-state types removed its unsafe-value warnings;
 subsequent statement and error-definition cleanup left the sequential-await diagnostic
 and one return-shape warning.
 The return branch now explicitly returns its never-returning failure helper.
 A next-line `eslint/no-await-in-loop` exception covers only the original transport await.
 The exception retains sequential behavior and does not change any configured rule or admission limit.
-Its final focused lint and rebuilt consumer verification are pending.
+The JavaScript budget and its new consumer built and passed their runtime checks.
+The overlap-guard omission control failed its expected rejection assertion without changing the built artifact.
+The complete JavaScript subset still had 139 warnings,
+including unchecked imports in the new consumer.
+After migration to the existing TypeScript setup,
+package type checking and lint of all eight budget implementation and consumer files pass.
+The focused lint report contains no warnings or errors.
+The rebuilt typed consumers pass;
+removing the overlap guard in memory makes the typed consumer fail its expected rejection assertion.
+The built candidate and dispatcher hashes remain unchanged.
+`${HOME}/temp/agent/pi-native-budget-operator-lint-20261015.log`
+and `pi-native-budget-checked-consumer-20261015.log` in the same directory retain those results.
 
 Reproduce with the package's `lint:oxlint` task and the explicit budget path.
 `${HOME}/temp/agent/pi-native-budget-shape-lint-20261014.log`

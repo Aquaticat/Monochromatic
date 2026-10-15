@@ -1,16 +1,9 @@
+import {RootLeaseError,RootLeaseOwnershipError,RootLeaseSuspendedError,RootLeaseRetiredError,RootTransitionError} from './lifecycle-errors.mjs';
+import {createLifecycleDiagnostics} from './lifecycle-diagnostics.mjs';
+import {createRootTransitions} from './lifecycle-transitions.mjs';
+import {createRootConstructions} from './lifecycle-constructions.mjs';
+export {RootLeaseError,RootLeaseOwnershipError,RootLeaseSuspendedError,RootLeaseRetiredError,RootTransitionError} from './lifecycle-errors.mjs';
 //region Lifecycle leases share registry-owned epochs, not IDs, roles or mutable action metadata.
-export class RootLeaseError extends Error {constructor(
-  message,
-  options
-){super(
-  message,
-  options
-);this.name=this.constructor
-  .name;}}
-export class RootLeaseOwnershipError extends RootLeaseError {}
-export class RootLeaseSuspendedError extends RootLeaseError {}
-export class RootLeaseRetiredError extends RootLeaseError {}
-export class RootTransitionError extends RootLeaseError {}
 function reference(value){return (value!==null)&&(((typeof value)==='object')||((typeof value)==='function'));}
 
 /** Observe the trusted native root occurrence while preserving registry ownership and transient suspension. */
@@ -25,24 +18,7 @@ export function createLifecyclePath({
     const sessionManagers=new WeakMap();
     const constructions=new WeakMap();
     const abandonedSessions=new WeakSet();
-    const traceFailures=[];
-  let busy=false;
-    let suppressedTraceEvents=0;
-    let traceDisabled=false;
-  // Diagnostics cannot hide a returned handle or change an operation's completion outcome.
-  function emit(event){
-    if(traceDisabled){suppressedTraceEvents+=1;return;}
-    try{trace(event);}catch(error){traceFailures.push(error);if(traceFailures.length===64)traceDisabled=true;}
-  }
-  function diagnostics(){return Object.freeze({
-    traceFailures:Object.freeze([...traceFailures]),
-    traceDisabled,
-    suppressedTraceEvents
-  });}
-  function exclusive(operation){
-    if(busy)throw new RootTransitionError('Lifecycle operations cannot reenter through callbacks');
-    busy=true;try{return operation();}finally{busy=false;}
-  }
+  const {emit,diagnostics,exclusive}=createLifecycleDiagnostics(trace);
   function ownedPair({
     session,
     manager
@@ -103,17 +79,17 @@ export function createLifecyclePath({
       .construction
       ?.candidate
       ===root);}
+  function readObservedNativeOccurrence(root){
+    try{return nativeOccurrence({session:root.session,manager:root.manager});}
+    catch(error){retireObserved(root);throw error;}
+  }
   function observeNative(root){
     if((root.status==='retired')||exhausted(root.canonical)
       ||(root.canonical
         .epoch
         !==root.epoch)
       ||(!currentRoot(root)))return;
-    let current;
-    try{current=nativeOccurrence({
-      session:root.session,
-      manager:root.manager
-    });}catch(error){retireObserved(root);throw error;}
+    const current=readObservedNativeOccurrence(root);
     if(current!==root.nativeOccurrence){retireObserved(root);emit('lifecycle.native-occurrence.changed');}
   }
   function retired(root){observeNative(root);return (root.status==='retired')||exhausted(root.canonical)
@@ -208,316 +184,17 @@ export function createLifecyclePath({
       const root=construction.candidate;active(root);const lease=issue(root);active(root);return lease;
     }
     if(canonical.pendingTransition)throw new RootLeaseSuspendedError('Manager transition is pending');
-    let root=canonical.lifecycleRoot;
-    if(!root)root=createRoot({
+    const root=canonical.lifecycleRoot??createRoot({
       session,
       manager,
       canonical
     });
-    else if(root.session!==session)throw new RootLeaseOwnershipError('Manager has another session root; use an explicit transition or reopening');
+    if(root.session!==session)throw new RootLeaseOwnershipError('Manager has another session root; use an explicit transition or reopening');
     active(root);const lease=issue(root);active(root);return lease;
   }
   function assertActive(lease){emit('lifecycle.assert.entry');const root=rootFor(lease);active(root);emit('lifecycle.assert.active');active(root);}
-  function begin(lease) {
-    emit('lifecycle.begin.entry');const root=rootFor(lease);active(root);
-    if(root.canonical
-      .construction)throw new RootTransitionError('Constructing root cannot begin another transition');
-    if(root.canonical
-      .pendingTransition)throw new RootTransitionError('Manager already has a pending transition');
-    const token=Object.freeze({});
-    const operation={
-      root,
-      token,
-      expectedEpoch:root.canonical
-        .epoch,
-      state:'pending',
-      dirty:false
-    };
-    root.status='suspended';root.canonical
-      .pendingTransition=operation;transitions.set(
-      token,
-      operation
-    );emit('lifecycle.begin.suspended');
-    try{
-      observeNative(root);
-      if(root.canonical
-        .epoch
-        !==operation.expectedEpoch)throw new RootTransitionError('Manager epoch changed before transition publication');
-      if(retired(root))throw new RootLeaseRetiredError('Root retired before transition publication');
-      return token;
-    }catch(error){
-      // The token never escaped, so failure cleanup belongs here rather than to the caller.
-      const changed=retireRecord(root);operation.state='failed';root.canonical
-        .pendingTransition=undefined;
-      if(changed)emit('lifecycle.root.retired');emit('lifecycle.transition.failed');throw error;
-    }
-  }
-  /** Terminal cleanup invalidates an owned current root without requiring a usable native liveness reader. */
-  function beginRetirement(lease){
-    emit('retirement.begin.entry');const root=rootFor(lease);
-    const {canonical} = root;
-    if(canonical.lifecycleRoot!==root)throw new RootTransitionError('Terminal retirement requires this manager\'s current canonical root');
-    if(canonical.pendingTransition||canonical.construction)throw new RootTransitionError('Terminal retirement cannot overlap another transition or construction');
-    const changed=retireRecord(root);
-    const token=Object.freeze({});
-    const operation={
-      root,
-      token,
-      expectedEpoch:canonical.epoch,
-      state:'pending',
-      dirty:true,
-      terminalOnly:true
-    };
-    canonical.pendingTransition=operation;transitions.set(
-      token,
-      operation
-    );
-    try{
-      if(changed)emit('lifecycle.root.retired');emit('retirement.begin.prepared');
-      unchangedEpoch(operation);pending(token);
-      if((canonical.lifecycleRoot!==root)||canonical.construction)throw new RootTransitionError('Terminal root changed before retirement publication');
-      return token;
-    }catch(error){operation.state='failed';if(canonical.pendingTransition===operation)canonical.pendingTransition=undefined;throw error;}
-  }
-  function retireRoot(operation) {if(retireRecord(operation.root)){operation.expectedEpoch=operation.root
-    .canonical
-    .epoch;emit('lifecycle.root.retired');}}
-  function finish({
-    operation,
-    state
-  }){operation.state=state;operation.root
-    .canonical
-    .pendingTransition=undefined;emit(`lifecycle.transition.${state}`);}
-  function markMutation(token) {
-    emit('lifecycle.mark.entry');const operation=pending(token);unchangedEpoch(operation);
-    if(operation.dirty)throw new RootTransitionError('Possible mutation was already marked');
-    operation.dirty=true;retireRoot(operation);emit('lifecycle.mark.possible-mutation');
-  }
-  function assertCancellable(operation){
-    unchangedEpoch(operation);
-    if(operation.dirty||retired(operation.root))throw new RootTransitionError('A possibly mutating transition cannot restore its old lease');
-  }
-  /** Only the trusted managed operation owner can establish unchanged cancellation. Absence of an event is insufficient. */
-  function cancelUnchanged(token) {
-    emit('lifecycle.cancel.entry');const operation=pending(token);assertCancellable(operation);
-    emit('lifecycle.cancel.prepared');assertCancellable(operation);
-    // Publication tail has no callbacks; failed preparation leaves cleanup available.
-    operation.root
-      .status='active';operation.state='cancelled';operation.root
-        .canonical
-        .pendingTransition=undefined;
-  }
-  function commit({
-    transition,
-    session,
-    manager
-  }) {
-    emit('lifecycle.commit.entry');const operation=pending(transition);
-    if(operation.terminalOnly)throw new RootTransitionError('Terminal retirement cannot publish a replacement');
-    unchangedEpoch(operation);
-    const canonical=ownedPair({
-      session,
-      manager
-    }); const existing=canonical.lifecycleRoot;
-    if(canonical.construction)throw new RootTransitionError('Replacement manager belongs to a pending construction');
-    if(exhausted(canonical)||(canonical.epoch===Number.MAX_SAFE_INTEGER))throw new RootTransitionError('Replacement epoch cannot issue another root; retire this transition');
-    if(canonical.pendingTransition&&(canonical.pendingTransition!==operation))throw new RootTransitionError('Replacement manager has another pending transition');
-    if(existing&&(existing!==operation.root)
-      &&(!retired(existing)))throw new RootTransitionError('Replacement manager already has an active root');
-    unchangedEpoch(operation);
-    if(exhausted(canonical)||(canonical.epoch===Number.MAX_SAFE_INTEGER))throw new RootTransitionError('Observed replacement epoch cannot issue another root; retire this transition');
-    const replacementEpoch=canonical.epoch;
-    const replacementOccurrence=nativeOccurrence({
-      session,
-      manager
-    });
-    unchangedEpoch(operation);
-    if((canonical.epoch!==replacementEpoch)||(canonical.lifecycleRoot!==existing))throw new RootTransitionError('Replacement changed during native observation');
-    retireRoot(operation);unchangedEpoch(operation);
-    const expectedEpoch=canonical
-      ===operation.root
-      .canonical?operation.expectedEpoch:replacementEpoch;
-    const root={
-      session,
-      manager,
-      canonical,
-      epoch:expectedEpoch,
-      nativeOccurrence:replacementOccurrence,
-      status:'active'
-    }; const lease=Object.freeze({});
-    emit('lifecycle.commit.root-prepared');emit('lifecycle.commit.lease-prepared');emit('lifecycle.commit.prepared');
-    unchangedEpoch(operation);
-    if(exhausted(canonical)||(canonical.epoch!==expectedEpoch)
-      ||(canonical.lifecycleRoot!==existing)
-      ||(canonical.pendingTransition&&(canonical.pendingTransition!==operation)))throw new RootTransitionError('Replacement changed before root publication');
-    if(nativeOccurrence({
-      session,
-      manager
-    })!==replacementOccurrence)throw new RootTransitionError('Replacement native occurrence changed before root publication');
-    unchangedEpoch(operation);
-    // All allocation, native reads and callbacks precede this non-callback publication tail.
-    canonical.lifecycleRoot=root;operation.state='committed';operation.root
-      .canonical
-      .pendingTransition=undefined;leases.set(
-      lease,
-      root
-    );return lease;
-  }
-  /** Finish an already-retired transition without issuing a replacement root. */
-  function completeRetirement(transition) {
-    emit('lifecycle.close.entry');const operation=pending(transition);unchangedEpoch(operation);
-    if((!operation.dirty)||(operation.root
-      .status
-      !=='retired'))throw new RootTransitionError('Terminal completion requires pre-effect retirement');
-    emit('lifecycle.close.prepared');unchangedEpoch(operation);
-    // No callback or fallible reader follows successful terminal publication.
-    operation.state='closed';operation.root
-      .canonical
-      .pendingTransition=undefined;
-  }
-  function retireFailed(transition) {
-    emit('lifecycle.fail.entry');const operation=pending(transition);
-    // Even an unexpected epoch advance or exhaustion can terminate the pending state, never restore it.
-    retireRoot(operation);finish({
-      operation,
-      state:'failed'
-    });
-  }
-  /** Explicit constructor-owner recovery creates another occurrence; it never revives an earlier lease. */
-  function reopen({
-    session,
-    manager
-  }) {
-    emit('lifecycle.reopen.entry');const canonical=ownedPair({
-      session,
-      manager
-    }); const root=canonical.lifecycleRoot;
-    if(canonical.construction)throw new RootLeaseSuspendedError('Manager construction is pending');
-    if(canonical.pendingTransition)throw new RootLeaseSuspendedError('Manager transition is pending');
-    if((!root)||(!retired(root)))throw new RootTransitionError('Reopening requires a previously retired root');
-    const next=createRoot({
-      session,
-      manager,
-      canonical
-    }); const lease=issue(next);active(next);return lease;
-  }
-
-  //region Factory occurrences share canonical manager state; observation does not confer human authority.
-  function beginConstruction({
-    manager,
-    transition
-  }){
-    emit('construction.begin.entry');
-    const canonical=stateFor(manager);
-    const operation=transition===undefined?undefined:pending(transition);
-    if(operation?.terminalOnly)throw new RootTransitionError('Terminal retirement cannot start a construction');
-    if(operation){unchangedEpoch(operation);if((!operation.dirty)||(operation.root
-      .status
-      !=='retired'))throw new RootTransitionError('Replacement construction requires pre-effect retirement');}
-    if(canonical.construction)throw new RootTransitionError('Manager already has a pending construction');
-    if(canonical.pendingTransition&&(canonical.pendingTransition!==operation))throw new RootTransitionError('Construction manager has another pending transition');
-    const previousRoot=canonical.lifecycleRoot;
-    if(previousRoot&&(!retired(previousRoot)))throw new RootTransitionError('Construction manager already has an active root');
-    if(exhausted(canonical)||(canonical.epoch===Number.MAX_SAFE_INTEGER))throw new RootTransitionError('Construction epoch cannot issue another root');
-    const token=Object.freeze({});
-      const record={
-      token,
-      manager,
-      canonical,
-      operation,
-      previousRoot,
-      expectedEpoch:canonical.epoch,
-      state:'reserved',
-      candidate:undefined,
-      session:undefined
-    };
-    canonical.construction=record;constructions.set(
-      token,
-      record
-    );
-    try{emit('construction.begin.prepared');constructionCurrent(record);return token;}
-    catch(error){record.state='abandoned';if(canonical.construction===record)canonical.construction=undefined;throw error;}
-  }
-  function bindConstruction({
-    construction,
-    session
-  }){
-    emit('construction.bind.entry');const record=constructionFor(construction);constructionCurrent(record);
-    if(record.state!=='reserved')throw new RootTransitionError('Construction session registration was already attempted');
-    record.state='binding';
-    const canonical=ownedPair({
-      session,
-      manager:record.manager
-    });
-    if(canonical!==record.canonical)throw new RootLeaseOwnershipError('Construction manager pairing changed');
-    if(record.previousRoot
-      ?.session
-      ===session)throw new RootLeaseOwnershipError('Construction cannot reuse a previous root session');
-    record.session=session;
-    const occurrence=nativeOccurrence({
-      session,
-      manager:record.manager
-    });
-    const candidate={
-      session,
-      manager:record.manager,
-      canonical,
-      epoch:record.expectedEpoch,
-      nativeOccurrence:occurrence,
-      status:'active'
-    };
-    emit('construction.bind.prepared');constructionCurrent(record);
-    if(nativeOccurrence({
-      session,
-      manager:record.manager
-    })!==occurrence)throw new RootTransitionError('Construction native occurrence changed during registration');
-    constructionCurrent(record);
-    record.candidate=candidate;record.state='bound';
-  }
-  function publishConstruction(construction){
-    emit('construction.publish.entry');const record=constructionFor(construction);constructionCurrent(record);
-    if(record.state!=='bound')throw new RootTransitionError('Construction has no registered candidate session');
-    const {candidate} = record;
-    const lease=Object.freeze({});
-    function validate(){
-      const canonical=ownedPair({
-        session:record.session,
-        manager:record.manager
-      });
-      if(canonical!==record.canonical)throw new RootLeaseOwnershipError('Construction manager pairing changed');
-      constructionCurrent(record);active(candidate);constructionCurrent(record);
-    }
-    validate();emit('construction.publish.prepared');validate();
-    // All callbacks and native reads precede publication. Preserve existing candidate observation leases.
-    record.canonical
-      .lifecycleRoot=candidate;record.canonical
-        .construction=undefined;record.state='published';
-    if(record.operation){record.operation
-      .state='committed';record.operation
-        .root
-        .canonical
-        .pendingTransition=undefined;}
-    leases.set(
-      lease,
-      candidate
-    );return lease;
-  }
-  function abandonConstruction(construction){
-    emit('construction.abandon.entry');const record=constructionFor(construction);
-    if(record.state==='abandoned')return Object.freeze({session:record.session});
-    if(record.state==='published')throw new RootTransitionError('Published construction cannot be abandoned');
-    if(record.canonical
-      .construction
-      !==record)throw new RootTransitionError('Construction lost its manager reservation');
-    // Failure cleanup does not depend on an unchanged epoch or a usable native reader.
-    if(record.candidate)retireRecord(record.candidate);
-    if(record.session)abandonedSessions.add(record.session);
-    record.state='abandoned';record.canonical
-      .construction=undefined;
-    return Object.freeze({session:record.session});
-  }
-  //endregion
-
+  const {begin,beginRetirement,markMutation,cancelUnchanged,commit,completeRetirement,retireFailed,reopen}=createRootTransitions({emit,rootFor,active,transitions,observeNative,retired,retireRecord,unchangedEpoch,pending,ownedPair,exhausted,nativeOccurrence,leases,createRoot,issue});
+  const {beginConstruction,bindConstruction,publishConstruction,abandonConstruction}=createRootConstructions({emit,stateFor,pending,unchangedEpoch,retired,exhausted,constructions,constructionCurrent,constructionFor,ownedPair,nativeOccurrence,active,leases,retireRecord,abandonedSessions});
   return Object.freeze({
     beginConstruction:function beginExclusiveConstruction(input) { return (exclusive(function reserveConstruction() { return (beginConstruction(input)); })); },
     bindConstruction:function bindExclusiveConstruction(input) { return (exclusive(function bindReservedConstruction() { bindConstruction(input); })); },

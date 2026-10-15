@@ -292,6 +292,12 @@ before saying it matches, QAB):
   kept, the `lld-link.exe` pin kept for the Windows agent to remove) and run the desktop suite three times plus clippy
   and the Android checks fresh as unit `verify-xxh3-final`. Not verified: aarch64 NEON known answers, real Android
   device, macOS and Windows builds. One surviving mutant: the call site of `measureDeleteLegacyDurationFiles`.
+  MERGED to `main` on 2026-10-15 (issue 545 closed by `Closes #545`). My fresh run on the merged head: desktop suite
+  three times, each 1445 run, 1445 passed, 1 skipped (no timing test failed in any of them, so the two earlier
+  failures did not recur; the cause stays unestablished), clippy clean; Android detekt, 1289 unit tests and lint
+  clean. Released as `music-player-v0.1.1` (bump commit `5fe8e8e2e5`, push run `38679233251`): same checks as 0.1.0
+  passed (`sha256sum --check` for six files, attestation exit 0 for the Linux x64 tarball and the APK, APK
+  certificate `9de6e9a4...6926`, Linux x64 prints `music-player 0.1.1`).
 - Task 97, existing CI caching: MERGED to `main` at `56d268686a` on 2026-10-15 (policy `doc/decision/ci-caching.md`,
   actionlint clean, the agent's cold and warm dispatch runs recorded there; I did not rerun them). Findings: the
   `cargo-publish.yml` cache never hit (keys hashed `Cargo.lock`, which every version bump changes), now keyed with a

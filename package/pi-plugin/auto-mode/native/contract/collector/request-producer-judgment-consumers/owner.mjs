@@ -34,12 +34,17 @@ export function createRequestProducerOwner({
     .description
     .kind
     !=='main-agent')throw new RequestProducerError('Auxiliary request output is not a main-agent tool response');}
-  let beginningJudgment=false;
+  const constructionState={beginning:false};
   function beginJudgment(input){
-    if(beginningJudgment)throw new RequestProducerError('Judgment construction cannot reenter');
+    if(constructionState.beginning)throw new RequestProducerError('Judgment construction cannot reenter');
     if((typeof now)!=='function')throw new RequestProducerError('Owned judgment clock and constructor are unavailable');
-    beginningJudgment=true;
-    try{
+    constructionState.beginning=true;
+    using constructionScope={
+      [Symbol.dispose]() {
+        constructionState.beginning=false;
+      }
+    };
+    {
       const startedAt=now();
       if(!Number.isFinite(startedAt))throw new RequestProducerError('Judgment start clock is not finite');
       if((!input)||((typeof input)!=='object'))throw new RequestProducerError('Judgment entry requires an owned response/consumer input');
@@ -92,7 +97,7 @@ export function createRequestProducerOwner({
         })!==record)||(record.judgment!==slot))throw new RequestProducerError('Judgment response binding changed during construction');
         slot.value=value;slot.state='active';return value;
       }catch(error){slot.error=error;slot.state='failed';throw error;}
-    }finally{beginningJudgment=false;}
+    }
   }
   function judgmentFor({
     response,
@@ -117,7 +122,8 @@ export function createRequestProducerOwner({
   }){
     if((typeof handle)!=='function')throw new RequestProducerError('Producer consumer must be an owned function');
     const identity=Object.freeze({construct});
-    async function stream(
+    function createStreamCallback() {
+      return async function stream(
       model,
       context,
       options
@@ -164,7 +170,9 @@ export function createRequestProducerOwner({
         );return response;
       };
       return returned;
+      };
     }
+    const stream=createStreamCallback();
     consumers.set(
       stream,
       identity
@@ -214,11 +222,16 @@ export function createRequestProducerOwner({
       stamped,
       claim
     );
-    try{return await stream(
+    using invocationScope={
+      [Symbol.dispose]() {
+        claim.open=false;
+      }
+    };
+    return await stream(
       model,
       context,
       stamped
-    );}finally{claim.open=false;}
+    );
   }
   return Object.freeze({
     bindConsumer,

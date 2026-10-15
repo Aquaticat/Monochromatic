@@ -124,6 +124,37 @@ pub fn project_binds(project: &Path, spellings: &[PathBuf]) -> Result<Vec<String
     return Ok(options);
 }
 
+/// What:
+///  The mount options that show read-only directories inside:
+///  each directory that lies below a location the sandbox replaced,
+///  at its own path,
+///  always read-only.
+/// Why:
+///  A directory elsewhere is already visible through the read-only root,
+///  so only these need a mount.
+///  They are tool directories of mise,
+///  and the program of a server may be in one;
+///  they are never writable,
+///  whatever the project mount is.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function readOnlyBinds(directories: string[]): string[] // throws to refuse
+/// ```
+pub fn read_only_binds(directories: &[PathBuf]) -> Result<Vec<String>, String> {
+    let mut options = Vec::new();
+    for directory in directories {
+        if replaced_location(directory).is_none() {
+            continue;
+        }
+        let text = text(directory, "the read-only directory")?;
+        options.push("--ro-bind".to_string());
+        options.push(text.to_string());
+        options.push(text.to_string());
+    }
+    return Ok(options);
+}
+
 /// Mount options per project spelling,
 ///  the one mount option,
 ///  and whole-component location checks.

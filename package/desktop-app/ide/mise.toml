@@ -672,6 +672,15 @@ runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect', '--
 execFileSync('node', ['bin/inspect-language-confinement.mjs'], { stdio: 'inherit' })
 """
 
+[tasks."inspect:language-mise"]
+description = "Run real servers found through the mise tools of disposable projects: a Node and a binary server started confined, an untrusted configuration that falls back to PATH with its notice, a folder without mise that keeps the PATH message, a hung mise that is stopped, and project trees compared before and after"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect'])
+execFileSync('node', ['bin/inspect-language-mise.mjs'], { stdio: 'inherit' })
+"""
+
 [tasks."inspect:language-guards"]
 description = "Remove Language fencing, readiness, edit-refusal, ask-again, hint-window, diagnostics-hold, and start-allowance guards only in a disposable copy and observe named regression failures"
 usage = '''

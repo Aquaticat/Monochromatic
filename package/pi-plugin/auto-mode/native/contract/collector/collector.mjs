@@ -18,8 +18,10 @@ function digest(value) { return createHash('sha256')
   .digest('hex'); }
 /** Require immutable primitives before retaining a borrowed value. */
 function text(
+  {
   value,
   label
+}
 ) {
   if ((typeof value) !== 'string') throw new SourceCollectionError(`${label} must provide text`);
   if (Buffer.byteLength(value) > limits.sourceBytes) throw new SourceCollectionError(`${label} exceeds source byte cap`);
@@ -29,8 +31,10 @@ function text(
 function path(value) {
   if ((value === undefined) || (value === null)) return null;
   return text(
-    value.path,
-    'Source path'
+    {
+      value: value.path,
+      label: 'Source path'
+    }
   );
 }
 /** Ordinary contexts expose rendered text; arbitrary extra properties are deliberately not inspected. */
@@ -83,13 +87,17 @@ function inventory(owner) {
   if ((!Array.isArray(appendSources)) || (appendSources.length > limits.appendTexts)) throw new SourceCollectionError('Append path inventory exceeds its profile');
   const files = Object.freeze(agents.map(function captureResourceFile(file)  {
     const content = text(
-      file.content,
-      'Resource file'
+      {
+      value: file.content,
+      label: 'Resource file'
+    }
     );
     return Object.freeze({
       path: text(
-        file.path,
-        'Resource file path'
+        {
+      value: file.path,
+      label: 'Resource file path'
+    }
       ),
       content,
       sha256: digest(content)
@@ -98,8 +106,10 @@ function inventory(owner) {
   const system = owner.getSystemPrompt();
   const inline = Object.freeze({
     content: system === undefined ? null : text(
-      system,
-      'Base prompt'
+      {
+      value: system,
+      label: 'Base prompt'
+    }
     ),
     path: path(owner.getSystemPromptSource())
   });
@@ -108,8 +118,10 @@ function inventory(owner) {
     files,
     inline,
     appendTexts: Object.freeze(appendTexts.map(function validateAppendText(value) { return ( text(
-      value,
-      'Append text'
+      {
+      value: value,
+      label: 'Append text'
+    }
     )); })),
     appendSourcePaths: Object.freeze(appendSources.map(function validateSkillPath(value) { return ( path(value)); })),
     appendTextPathLinks: 'not-established',
@@ -128,17 +140,23 @@ export function createCollector({
     if (signal?.aborted) throw new SourceCollectionError('Collection cancelled');
     const policy = readPolicy();
     const policyText = text(
-      policy.content,
-      'Complete mandatory policy'
+      {
+      value: policy.content,
+      label: 'Complete mandatory policy'
+    }
     );
     const policyIdentity = text(
-      policy.identity,
-      'Mandatory policy identity'
+      {
+      value: policy.identity,
+      label: 'Mandatory policy identity'
+    }
     );
     const resources = inventory(adapter.owner);
     const rendered = text(
-      adapter.render(),
-      'Current rendered prompt'
+      {
+      value: adapter.render(),
+      label: 'Current rendered prompt'
+    }
     );
     const gaps = [
       'run-producer-inventory',

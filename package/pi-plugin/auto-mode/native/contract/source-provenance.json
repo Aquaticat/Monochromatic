@@ -792,7 +792,7 @@
     },
     {
       "original": "lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs",
-      "maintained": "lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs",
+      "maintained": "lifecycle/judgment-budget-error-occurrences/controls-private/candidate.ts",
       "sha256": "058ddda6855d4d54053e6986f29d159d1fd97f1e0d708e536ff1ff3d0c493fb8",
       "origin": "authored-source",
       "relocatedLiterals": 0

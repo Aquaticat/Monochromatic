@@ -168,10 +168,17 @@ run = "node --max-old-space-size=512 ./dist/native/contract/collector/program-ru
 
 [tasks."test:native:judgment-budget"]
 description = "Verify built judgment attempt accounting, sequential retries, lifetime and cleanup"
-run = "node --max-old-space-size=512 ./dist/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.test.mjs"
+run = [
+  "node src/native-judgment-budget.unit.test.ts",
+  "node src/native-judgment-budget-lifetime.unit.test.ts",
+]
 
 [tasks."test:native:cli-manager"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/cli-manager.test.mjs"
+
+[tasks."test:native:authorization-inputs"]
+description = "Verify original authorization bindings, accessor refusal and permanent retirement"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/action-policy/authorization-inputs.test.mjs"
 
 [tasks."test:native:event-receipts"]
 description = "Exercise original native event dispatch, complete grouped sources, and observation freshness"
