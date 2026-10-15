@@ -1378,8 +1378,21 @@ actual `GoverningRuleBindingError` versus expected `TypeError`,
 in `${HOME}/temp/agent/pi-native-governing-error-category-before-20261015.log`.
 The saved original binding and set implementations pass the same complete consumer tests in
 `${HOME}/temp/agent/pi-native-governing-baseline-consumers-20261015.log`.
-The typed error now derives its name from the actual constructor;
-the regression remains committed and post-fix verification is pending.
+The attempt to retain constructor-derived naming in `55ebbbcda2`
+then triggered `unicorn(custom-error-definition)`.
+The installed Oxlint 1.88.0 source explicitly requires a literal class name for minification stability.
+The owner adopts a stable `GoverningRuleBindingError` operation category as an explicit unpublished design change;
+derived construction no longer supplies the category automatically.
+The current consumer asserts that deliberate difference while preserving original message and cause identity.
+No lint rule or suppression changed.
+The [source-audited troubleshooting entry](../troubleshooting/oxlint-custom-error-name.md)
+records the deciding source,
+failing and passing forms,
+and rejected preservation attempt.
+All 14 governing-source implementation and consumer files now have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-native-governing-bindings-final-lint-20261015.log`.
+The final rebuild and constructor-contract consumer verification are running in
+`${HOME}/temp/agent/pi-native-governing-bindings-final-consumers-20261015.log`.
 Saved-baseline comparison,
 guard-omission controls,
 and final lint remain pending for this port.
