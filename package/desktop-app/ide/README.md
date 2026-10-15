@@ -1029,6 +1029,156 @@ stays a zombie until the application exits.
 with the reaping and with the fixed 50 ms pause it replaced;
 `doc/troubleshooting/tokio-dropped-child-zombie-after-last-park.md` has the source trace and the measurements.
 
+### Servers from mise
+
+When the project folder has a mise configuration at or above it,
+the language servers are looked up in the tool directories mise prints for that folder
+and started from there;
+a folder without one keeps the plain `PATH` lookup.
+The desktop launcher's `PATH` is a snapshot of the login session:
+it holds the mise shims directory but not the tool directories of a repository,
+and a shim run inside the sandbox stops with "No version is set for shim".
+Nothing of any repository is named in the code:
+no path, no tool list, no server name.
+`src/language/mise.rs` has the decision,
+`src/language/mise/command.rs` the sandboxed run,
+`src/language/mise/parse.rs` what mise prints,
+`src/language/mise/search.rs` the lookup,
+and `src/language/config/toolchain.rs` the registry's use of the answer.
+
+#### What is asked, once per registry build
+
+Mise itself is found as `mise` in the application's `PATH`,
+else at `~/.local/bin/mise`;
+without one the folder is not a mise project as far as the application can tell.
+Three commands run in the folder (never with the folder as an argument,
+so a name that starts with a dash cannot become an option):
+
+- `mise config ls --json` from the project folder and again from `/`.
+  The files the first lists and the second does not are the project's own configuration,
+  whatever their names or layout (`mise.toml`, `.mise/config.toml`, `.tool-versions`, a parent's file);
+  the user's global configuration appears in both and says nothing about this folder.
+  No file name is built into the code.
+- `mise bin-paths`, only when the project has a configuration of its own.
+  It prints the directories of the tools the configuration lists,
+  one per line.
+  Only absolute entries that are existing directories are kept.
+
+The answer is kept for the session.
+It is asked again only when it may have changed:
+two seconds or more after a failure,
+or two seconds or more after the last answer when a server of the file's language is missing
+(the user may have run `mise install`).
+A folder mise does not serve stays that way until the application restarts.
+All runs of one resolution share a limit of 10 seconds (`TIME_LIMIT`),
+and they run on the language thread,
+so a hung mise never blocks the window.
+
+#### Why not `mise exec`
+
+`mise exec -- SERVER` as the launched command would give every server the project's whole `[env]`.
+`mise env --json` in this repository prints 42 variables,
+26 of them with a name that contains `KEY` or `TOKEN` (names only were read, never values):
+decrypted secrets.
+That bypasses the cleared environment and allowlist of `src/language/confine/recipe.rs`.
+So mise is used only to say where the tools are,
+and the servers start from those directories with the same environment as before plus a `PATH`.
+
+#### Mise runs in the servers' sandbox
+
+A trusted configuration's `[env]` templates run shell commands on every mise command,
+including `mise config ls`
+(probe: a template that touches a marker file ran for `config ls`, `bin-paths`, `which`, `env` and `exec`;
+a `[hooks]` entry did not run for any of them).
+Run on the bare host,
+that is project code with network access and write access.
+So mise runs through `confine_with`,
+the function every server goes through:
+bubblewrap, no network, the whole file system and the project read-only,
+a cleared environment plus the allowlist,
+a private `/tmp`,
+and the mise state kept read-only (mise's attempt to link the configuration into its state directory fails;
+that line is dropped from messages).
+This is a deviation from "resolve outside the sandbox" and was measured:
+
+- `mise bin-paths` in a two-tool project: 235 ms plain (standard deviation 43), 319 ms sandboxed (41), 15 runs each.
+- The same in this repository: 413 ms plain (80), 387 ms sandboxed (152); inside the spread.
+- `mise config ls --json`: 24 ms plain, `mise which taplo`: 35 ms plain, `mise exec -- true`: 114 ms plain.
+- Production run on a loaded host (load average about 60): 179 to 545 ms for all three commands together.
+
+Variables set for every mise run (`SAFE_ENVIRONMENT` in `command.rs`; an environment variable beats a project's `[settings]`,
+measured with `mise settings get`):
+`MISE_AUTO_INSTALL`, `MISE_EXEC_AUTO_INSTALL`, `MISE_NOT_FOUND_AUTO_INSTALL`, `MISE_TASK_RUN_AUTO_INSTALL`,
+`MISE_LOCKFILE` and `MISE_YES` are `false`,
+`MISE_OFFLINE` is `true`,
+and colors and the update notice are off.
+Control: in a disposable data directory,
+`mise exec -- true` with auto install on exits 1 while trying to fetch versions,
+and with it off exits 0.
+Variables that only name places (`MISE_DATA_DIR`, `MISE_CONFIG_DIR`, `MISE_STATE_DIR`, `MISE_GLOBAL_CONFIG_FILE`,
+`MISE_ENV`, `XDG_CONFIG_HOME`, `XDG_DATA_HOME`, `XDG_STATE_HOME` and a few others) are passed on when set;
+every other variable of the application is cleared.
+The application never runs `mise trust`, `mise install` or `mise exec`.
+
+#### Trust
+
+Mise's own rule decides.
+A configuration with only `[tools]` needs no trust (measured);
+one with `[env]`, `[settings]`, hooks or templates is refused until the user runs `mise trust` on it.
+The state is read from mise's state directory,
+which the sandbox can read.
+When mise refuses or fails,
+the servers are looked up on `PATH` as before,
+mise shims are skipped,
+and every file with servers gets this in its language support notice:
+that mise could not be used for the folder,
+mise's own message (without its version footer),
+and the remedy.
+For an untrusted file the remedy names the file mise named and says the user runs `mise trust` on it
+(the IDE never does),
+then displays a file again.
+For any other failure it points at `mise doctor`.
+A mise that does not finish in 10 seconds is stopped and reported the same way.
+A sandbox that cannot be set up is not a mise failure:
+the servers are refused for that reason anyway.
+
+#### What the servers get
+
+Mise's directories lead the lookup, then the application's `PATH`;
+the first executable regular file that is not a mise shim wins.
+A shim is a symbolic link whose final target is named `mise`.
+The `PATH` inside the sandbox is the same list (mise's directories, then the definition's or the application's `PATH`),
+so a Node launcher's `#!/usr/bin/env node` finds the project's `node`.
+Directories whose name holds a colon cannot stand in a `PATH` and are left out with a warning.
+A tool directory below `/tmp`, `/run` or `/dev` is bound again read-only after the sandbox replaced those locations,
+before the state bind,
+and never writable (`read_only_binds` in `LaunchRequest`, `src/language/confine/project.rs`).
+A tool that the configuration lists but that is not installed is reported with mise's own warning
+(`mise WARN missing: taplo@0.9.0`) in the reason of the server that is missing.
+Variables a tool would add to its environment (`GOROOT`, `JAVA_HOME`) are not passed.
+
+#### Checks
+
+`test:language` holds the unit rules:
+listings, directories with spaces, quotes, newlines and leading dashes, messages with escape sequences,
+the sandbox request for mise (every safety variable, read-only mounts, the project never an argument),
+the time limit, the lookup order, the shim refusal, the retry rule and the notice text.
+`inspect:language-mise` runs the production setup on disposable projects with the launcher's `PATH`:
+a Node server (`bash-language-server`) answers a hover,
+a binary server (`taplo`) and the Markdown server (`marksman`, which also answers a hover on a wiki link) start,
+an untrusted configuration gives the notice,
+a folder without mise keeps "was not found on PATH" for a server nobody installed,
+a fake `mise` that never answers is stopped at 10 seconds,
+no process remains,
+and every project tree is the same before and after (a control proves the comparison sees a created `mise.lock`).
+The Markdown server roots its workspace at a folder with `.marksman.toml` or `.git`;
+without one it answers no hover.
+
+Details of the probes, the failure causes and the tradeoffs are in
+`doc/troubleshooting/mise-servers-for-the-confined-ide.md`.
+Mise run outside the sandbox with `MISE_TRUSTED_CONFIG_PATHS` left trust records in
+`~/.local/state/mise/trusted-configs`; the sandboxed run cannot write there, so the application never trusts anything.
+
 ## Language navigation
 
 In the source view,
