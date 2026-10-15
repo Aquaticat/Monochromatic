@@ -262,11 +262,15 @@ Where it lives:
   and `MUSIC_PLAYER_KEY_PASSWORD`.
   A PKCS12 keystore uses one password for the store and the key, so the two password secrets hold the same value.
   Secrets cannot be read back from GitHub.
-- A backup outside GitHub:
-  the keystore file and a text file with its alias and password,
-  made on 2026-10-14 in `~/.local/share/music-player-release-keys` on the maintainer's primary machine
-  (directory mode 700, files mode 600).
-  Copy both into the password manager and keep them there.
+- A backup outside GitHub, encrypted with sops to the age identity at `~/.config/mise/age.txt`:
+  `music-player-release.p12.sops.json` (the keystore) and `credentials.txt.sops.json` (its alias and password),
+  in `~/.local/share/music-player-release-keys` on the maintainer's primary machine
+  (directory mode 700, files mode 600; made on 2026-10-14, encrypted on 2026-10-15 with the plaintext deleted).
+  Restore the keystore with
+  `SOPS_AGE_KEY_FILE=~/.config/mise/age.txt sops --decrypt --input-type json --output-type binary <file>.sops.json`
+  and write the output to the file name without the `.sops.json` suffix.
+  The backup is only as safe as that age identity:
+  keep a copy of `age.txt` outside the machine, or the signing key is lost with the machine.
 - The public certificate fingerprint is written in the workflow as `EXPECTED_ANDROID_CERT_SHA256`.
   A real release fails if the APK carries any other certificate.
   Print the fingerprint of a keystore with `keytool -list -v -keystore <file>`.

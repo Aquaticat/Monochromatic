@@ -255,9 +255,12 @@ before saying it matches, QAB):
   macOS binaries (no such machine here; CI ran `--version`), the arm64 Linux binary, any real device. Next releases
   follow the version bump of the fingerprint migration (task 99) and the Windows linkers (task 96).
   Open for the human: (1) nothing for releasing itself (`0.1.0` is on main with no tag; a push that leaves the version
-  unchanged never releases it, only a dispatch with dry-run false on main does); (2) copy
-  `~/.local/share/music-player-release-keys` (`music-player-release.p12`, plaintext `credentials.txt`) into KeePassXC
-  and delete the plaintext; (3) vetoable choices: macOS ad-hoc signing, no Android SDK cache (measured 17 s restore
+  unchanged never releases it, only a dispatch with dry-run false on main does); (2) the
+  key backup is done with sops, not KeePassXC (the human: "We don't need KeePassXC when we have sops", 2026-10-15):
+  `~/.local/share/music-player-release-keys` holds `music-player-release.p12.sops.json` and
+  `credentials.txt.sops.json`, encrypted to the age identity in `~/.config/mise/age.txt`; each decrypted to the same
+  sha256 as its original before I deleted the plaintext. Open: a copy of `age.txt` outside this machine, which the
+  human has not mentioned (without it the backup dies with the machine); (3) vetoable choices: macOS ad-hoc signing, no Android SDK cache (measured 17 s restore
   against 25 s install), macOS x64 dropped, and AppImage (the human ruled 2026-10-15: not needed while the program ships as a single
   executable application; the placeholder icon is fine too, so both are settled); (4) product gaps the agent found:
   the Windows exe is a console-subsystem binary (a console window opens), the apk is about 160 MB, no third-party

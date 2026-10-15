@@ -339,8 +339,10 @@ and stored as four repository secrets:
 `MUSIC_PLAYER_KEYSTORE_PASSWORD`,
 `MUSIC_PLAYER_KEY_ALIAS`,
 and `MUSIC_PLAYER_KEY_PASSWORD`.
-A backup of the keystore and a text file with the alias and password is in `~/.local/share/music-player-release-keys`
-on the maintainer's machine, for the owner to copy into the password manager.
+The backup is two sops files encrypted to the maintainer's age identity,
+`music-player-release.p12.sops.json` and `credentials.txt.sops.json`,
+in `~/.local/share/music-player-release-keys` on the maintainer's machine (the owner chose sops over a password
+manager on 2026-10-15; the plaintext copies were deleted after a decrypt-and-compare of both files).
 
 `app/build.gradle.kts` has a `release` signing config that reads the four values from the environment or Gradle
 properties.
