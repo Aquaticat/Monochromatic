@@ -129,18 +129,19 @@ export function materializePattern({
     {condition:patterns.has(pattern),
 message:'pattern was not created by this source decoder'}
   );
-  switch(pattern.kind){
-    case 'literal':return pattern.value;
-    case 'result':requireProfile(
+  if(pattern.kind==='literal')return pattern.value;
+  if(pattern.kind==='result'){
+    requireProfile(
       {condition:((typeof result)==='string')&&(Buffer.byteLength(result)<=65_536),
 message:'owned string result required'}
     );return result;
-    case 'array':return Object.freeze(pattern.items
+  }
+  if(pattern.kind==='array')return Object.freeze(pattern.items
       .map(function materializeArrayItem(item) { return (materializePattern({
         pattern:item,
         result
       })); }));
-    case 'object':return Object.freeze(
+  if(pattern.kind==='object')return Object.freeze(
       Object.fromEntries(pattern.entries
         .map(function materializeObjectEntry(entry) { return ([
           entry.key,
@@ -150,7 +151,6 @@ message:'owned string result required'}
           })
         ]); })),
     );
-    default:throw new ResultProgramProfileError('unknown owned pattern kind');
-  }
+  throw new ResultProgramProfileError('unknown owned pattern kind');
 }
 //endregion

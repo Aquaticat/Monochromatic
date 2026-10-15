@@ -8,8 +8,17 @@ import {
 
 const declarations=new WeakSet();
 
-
-
+/** Scan the original ASCII callable profile once with constant stack usage. */
+function isCallableIdentifier(name){
+  if((typeof name)!=='string'||name.length===0||name.startsWith('__owned_flow_'))return false;
+  for(let index=0;index<name.length;index++){
+    const code=name.charCodeAt(index);
+    const letter=(code>=65&&code<=90)||(code>=97&&code<=122)||code===95||code===36;
+    const digit=index>0&&code>=48&&code<=57;
+    if(!letter&&!digit)return false;
+  }
+  return true;
+}
 /** Preserve complete source coverage and original callsite ownership for each adopted profile. */
 export function declareResultProgram({
   source,
@@ -23,8 +32,7 @@ export function declareResultProgram({
   requireProfile(
     {condition:Array.isArray(toolNames)&&(toolNames.length<=64)
       &&(new Set(toolNames).size===toolNames.length)
-      &&toolNames.every(function isCallableIdentifier(name) { return (((typeof name)==='string')&&/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name)
-        &&(!name.startsWith('__owned_flow_'))); }),
+      &&toolNames.every(isCallableIdentifier),
     message:'unique exact callable identifiers required'}
   );
   const prefix='async function __owned_parent(){';
