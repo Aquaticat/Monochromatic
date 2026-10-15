@@ -2410,8 +2410,16 @@ The five-file focused report has zero diagnostics,
 and the owned native rebuild and package type check pass in
 `${HOME}/temp/agent/pi-group-failures-build-first-20261015.log`
 and `pi-group-failures-types-first-20261015.log`.
-Direct consumer tests,
-original-body comparison,
+`cc9b52248a`,
+`3143a1cb05`,
+and `7cbe2818ca` add independent built failure consumers.
+The initial direct suites and type check pass.
+The fixture now declares pending rejection at the native factory boundary,
+preserving receiver observations without a positional declaration or variable function expression.
+The three consumer files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-group-failure-tests-format-third-20261015.log`.
+Final rebuild and consumer verification,
+original-body replay,
 the explicit diagnostic-category contrast,
 and omission controls remain pending.
 
