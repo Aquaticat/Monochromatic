@@ -104,8 +104,8 @@ export function createInstructionBatches({
       || ((typeof unitAdoptions) !== 'boolean')
       || ((!clauseRelations)
       && (!requestMaterial)
-      && (!headingContexts)
-      && (!unitAdoptions))) throw new JudgmentConstructionError('Bound policy batch requires explicit code-selected semantic uses');
+        && (!headingContexts)
+        && (!unitAdoptions))) throw new JudgmentConstructionError('Bound policy batch requires explicit code-selected semantic uses');
     /**
      Validated clause-use choice remains Boolean across the synchronous callback.
      */

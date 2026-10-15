@@ -25,9 +25,9 @@ import type {
  @throws Error for an absent original constructor export
  */
 function assertInstructionModule(value: unknown): asserts value is FixtureInstructionModule {
-  if ((value === null) || (typeof value) !== 'object'
+  if ((value === null) || ((typeof value) !== 'object')
     || (!('createJudgmentInstructions' in value))
-    || (typeof value.createJudgmentInstructions) !== 'function') throw new Error('Built native instruction constructor is unavailable');
+    || ((typeof value.createJudgmentInstructions) !== 'function')) throw new Error('Built native instruction constructor is unavailable');
 }
 
 /**
