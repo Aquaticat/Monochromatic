@@ -3,12 +3,12 @@
 //!  the gutter's wrap indicator,
 //!  and the setters that run after the state borrow ends.
 
-/// The window, the source state, the find presentation, and the annotation readings.
+/// The window,
+///  the source state,
+///  the find presentation,
+///  and the annotation readings.
 use crate::native::{
-    AppWindow, State, annotate,
-    find::present::present,
-    rows,
-    ui::SourceSelection,
+    AppWindow, State, annotate, find::present::present, rows, ui::SourceSelection,
 };
 /// The rectangles a frame hands to the window.
 use ide_app::shaped_text::ReadingRect;
@@ -79,7 +79,10 @@ pub(in crate::native) struct Frame {
 /// ```ts
 /// function ensureSign(current: State, factor: number): Pixels | undefined;
 /// ```
-pub(super) fn ensure_sign(current: &mut State, factor: f32) -> Option<SharedPixelBuffer<Rgba8Pixel>> {
+pub(super) fn ensure_sign(
+    current: &mut State,
+    factor: f32,
+) -> Option<SharedPixelBuffer<Rgba8Pixel>> {
     if current.sign_scale == Some(factor.to_bits()) {
         return None;
     }

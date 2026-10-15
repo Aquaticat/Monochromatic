@@ -1,16 +1,20 @@
 //! Starting one project window:
-//!  logging, the project and its language worker, the window with every binding,
+//!  logging,
+//!  the project and its language worker,
+//!  the window with every binding,
 //!  and the event loop until the window closes.
 
-/// The window, the shared state, and the modules whose bindings are installed at startup.
-use super::{
-    AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, find, frame_trace, language, minimap,
-    navigation, reload, render,
-};
 /// Inspection-only hint and diagnostic injection from a JSON file;
 ///  debug builds only.
 #[cfg(debug_assertions)]
 use super::inspect;
+/// The window,
+///  the shared state,
+///  and the modules whose bindings are installed at startup.
+use super::{
+    AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, find, frame_trace,
+    language, minimap, navigation, reload, render,
+};
 /// Source-open errors identify their input instead of exposing an unlabelled I/O failure.
 use anyhow::{Context, bail};
 /// The Language module's handle,

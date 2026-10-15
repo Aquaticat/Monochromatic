@@ -158,7 +158,10 @@ pub(in crate::native) fn build_tile(
 }
 
 /// Whether two typographies make the same glyphs.
-pub(in crate::native) fn same_typography(left: &SourceTypography, right: &SourceTypography) -> bool {
+pub(in crate::native) fn same_typography(
+    left: &SourceTypography,
+    right: &SourceTypography,
+) -> bool {
     return left.weight == right.weight
         && left.italic == right.italic
         && left.features == right.features;

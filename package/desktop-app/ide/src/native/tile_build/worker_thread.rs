@@ -2,11 +2,11 @@
 //!  the loop that builds jobs and carries on the whole-text pass between them,
 //!  and the shaper and raster it owns.
 
-/// The messages and shared slots the thread's owner also reads.
-use super::{Command, Shared, WorkerReply};
 /// The tile job and result types,
 ///  and the construction every build runs.
 use super::job::{TileBuilt, TileJob, build_tile, same_typography};
+/// The messages and shared slots the thread's owner also reads.
+use super::{Command, Shared, WorkerReply};
 /// The background measurement of the whole text.
 use crate::native::tile_pass::{PassJob, PassOutput, PassRun};
 /// Worker-start and build failures stay visible diagnostics.
@@ -104,12 +104,14 @@ impl Tiler {
 
 /// Test-only gate: the next build waits for one message before it starts, so a test can hold a job in flight.
 #[cfg(test)]
-pub(in crate::native) static BUILD_GATE: std::sync::Mutex<Option<Receiver<()>>> = std::sync::Mutex::new(None);
+pub(in crate::native) static BUILD_GATE: std::sync::Mutex<Option<Receiver<()>>> =
+    std::sync::Mutex::new(None);
 
 /// Test-only gate: each chunk of the pass waits for one message before it starts, so a test can release chunks
 /// one at a time. Closing the sender releases the pass for good.
 #[cfg(test)]
-pub(in crate::native) static PASS_GATE: std::sync::Mutex<Option<Receiver<()>>> = std::sync::Mutex::new(None);
+pub(in crate::native) static PASS_GATE: std::sync::Mutex<Option<Receiver<()>>> =
+    std::sync::Mutex::new(None);
 
 /// Wait on the test gate once, if a test installed one; the sender stays with the test.
 #[cfg(test)]

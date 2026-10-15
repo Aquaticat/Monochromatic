@@ -2,7 +2,10 @@
 //!  the tile that holds only lines whose heights the map has,
 //!  and the offset the view moved to while the heights settled.
 
-/// The source state, the rows' map, the tile bounds, and the allowance a new width is measured within.
+/// The source state,
+///  the rows' map,
+///  the tile bounds,
+///  and the allowance a new width is measured within.
 use crate::native::{
     State,
     rewrap::Allowance,

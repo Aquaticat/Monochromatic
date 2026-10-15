@@ -240,7 +240,11 @@ mod sidebar_tests;
 /// Source typography reaches the actual image and selection bindings.
 #[cfg(test)]
 mod source_font_tests;
-/// Starting one project window: logging, the language worker, every binding, and the event loop.
+/// Starting one project window:
+///  logging,
+///  the language worker,
+///  every binding,
+///  and the event loop.
 mod start;
 /// The initial reading state of a window.
 mod state;

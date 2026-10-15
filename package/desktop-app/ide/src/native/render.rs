@@ -2,13 +2,7 @@
 
 /// Virtual-row texts and diagnostic marks are positioned against the frame's shaped rows.
 /// Child modules can borrow their parent's private state and generated UI.
-use super::{
-    AppWindow, State,
-    rewrap, rows,
-    tile,
-    tile_build::build_tile,
-    viewport::place,
-};
+use super::{AppWindow, State, rewrap, rows, tile, tile_build::build_tile, viewport::place};
 /// Selected-text ink is chosen from the selection fill,
 ///  not from the color scheme.
 use ide_app::selection_ink::{legible_ink, luminance};
@@ -30,7 +24,8 @@ mod present;
 use measure::measure_requested;
 /// The paint inputs and tile geometry that the tile worker and the tests also use.
 pub(super) use paint::{Paint, job, stamp_for, tile_cap, viewport_of};
-/// The gutter's wrap indicator, painted before the frame is presented.
+/// The gutter's wrap indicator,
+///  painted before the frame is presented.
 use present::ensure_sign;
 /// The frame a tile swap or a render hands to the window.
 pub(super) use present::{Frame, show};

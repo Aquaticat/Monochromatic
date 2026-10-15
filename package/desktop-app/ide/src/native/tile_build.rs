@@ -1,12 +1,12 @@
 //! Source tile construction, shared by the UI thread and the tile worker,
 //!  and the named worker thread that builds scroll re-centers off the UI thread.
 
+/// The background measurement of the whole text, its slots, and its walk.
+use super::tile_pass::{PassControl, PassJob, PassOutbox, PassOutput};
 /// Worker-start and build failures stay visible diagnostics.
 use anyhow::{Context, Result, bail};
 /// The shaper a worker is started with.
 use ide_app::shaped_text::TextShaper;
-/// The background measurement of the whole text, its slots, and its walk.
-use super::tile_pass::{PassControl, PassJob, PassOutbox, PassOutput};
 /// Owned snapshots are shared between the UI and worker threads.
 use std::{
     panic::{AssertUnwindSafe, catch_unwind},
@@ -18,9 +18,12 @@ use std::{
     thread::{self, JoinHandle},
 };
 
-/// The inputs and result of one tile, and the construction both threads run.
+/// The inputs and result of one tile,
+///  and the construction both threads run.
 mod job;
-/// The worker thread's loop, its shaper, and the test gates that hold it.
+/// The worker thread's loop,
+///  its shaper,
+///  and the test gates that hold it.
 mod worker_thread;
 
 /// The tile types and the construction the window thread and the minimap worker also use.
@@ -36,7 +39,8 @@ enum WorkerReply {
     Ready,
     /// The finished tile or its failure.
     Built(
-        /// The build's own result, boxed so the enum stays small.
+        /// The build's own result,
+        ///  boxed so the enum stays small.
         Box<Result<TileBuilt>>,
     ),
 }
@@ -46,7 +50,8 @@ enum WorkerReply {
 enum Command {
     /// Build this tile.
     Tile(
-        /// The job's inputs, boxed so the enum stays small.
+        /// The job's inputs,
+        ///  boxed so the enum stays small.
         Box<TileJob>,
     ),
     /// A newer pass waits in the pass slot.

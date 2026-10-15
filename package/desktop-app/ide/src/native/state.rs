@@ -1,7 +1,9 @@
 //! The initial reading state of a window:
 //!  the source state the application and the headless native event tests both start from.
 
-/// The source state that is constructed, the toolkit list models of the gutter, and the minimap beside the text.
+/// The source state that is constructed,
+///  the toolkit list models of the gutter,
+///  and the minimap beside the text.
 use super::{State, minimap, rows, tile::TileBounds};
 /// Hint and diagnostic snapshots with their position index.
 use ide_app::annotation::Annotations;

@@ -8,7 +8,9 @@
 //! number by a row height.
 //!  The markup only scrolls and draws at positions handed to it.
 
-/// The source state, the stamp of the displayed text, and the tile and view the map decides.
+/// The source state,
+///  the stamp of the displayed text,
+///  and the tile and view the map decides.
 use super::{State, annotate::displayed, tile::requested, viewport::place};
 /// The rank that orders severities.
 use ide_app::annotation::rank;
@@ -23,7 +25,8 @@ use ide_app::wrap::has_wrap_width;
 use ide_app::{language::identity::DocumentStamp, virtual_row::Block};
 /// `VecModel` is the toolkit's growable list model that the placement names.
 use slint::VecModel;
-/// Line ranges, shared pointers to the persistent models and the blocks,
+/// Line ranges,
+///  shared pointers to the persistent models and the blocks,
 ///  and the clock of the expiry check.
 use std::{ops::Range, rc::Rc, sync::Arc, time::Instant};
 
@@ -43,7 +46,8 @@ pub(super) use quiet::hold_clock;
 pub(super) use quiet::quiet_now;
 /// Whether the reader scrolled so recently that a wheel animation may still be running.
 use quiet::scrolling;
-/// The persistent models, and handing a placement to the window.
+/// The persistent models,
+///  and handing a placement to the window.
 pub(super) use window::{mark_model, present, top_model};
 
 /// What:

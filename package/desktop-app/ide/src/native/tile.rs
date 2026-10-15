@@ -22,10 +22,13 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// What the measurements are valid for, posting the pass, and applying what it measured.
+/// What the measurements are valid for,
+///  posting the pass,
+///  and applying what it measured.
 mod pass;
 
-/// Applying what a pass measured, from the poll.
+/// Applying what a pass measured,
+///  from the poll.
 use pass::apply_pass;
 /// The measurement key and the pass request that the render and the tests also use.
 pub(super) use pass::{current_key, sync_pass};

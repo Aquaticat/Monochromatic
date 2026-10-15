@@ -1,8 +1,9 @@
 //! The window's models and setters for the vertical mapping:
-//!  the persistent row models, updating them row by row,
+//!  the persistent row models,
+//!  updating them row by row,
 //!  and handing a collected `Placement` to the window.
 
-/// The window the setters run on, and the `Placement` collected while the state was borrowed.
+/// The `Placement` collected while the state was borrowed.
 use super::Placement;
 /// The window that receives the models and the anchor.
 use crate::native::AppWindow;

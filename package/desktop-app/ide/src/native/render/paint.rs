@@ -4,14 +4,13 @@
 //!  the viewport of a tile,
 //!  and the stamp and job a tile is built from.
 
-/// The window, the source state, and the palette read from the window.
+/// The window,
+///  the source state,
+///  and the palette read from the window.
 use super::code_colors;
 /// Virtual-row texts and diagnostic marks are positioned against the frame's shaped rows.
 use crate::native::{
-    AppWindow, State, annotate,
-    find::present::present,
-    tile::TileBounds,
-    tile_build::TileJob,
+    AppWindow, State, annotate, find::present::present, tile::TileBounds, tile_build::TileJob,
 };
 /// Paint identity and the frame rectangles come from the same shaped rows.
 use ide_app::annotation_layout::AnnotationColors;
@@ -129,7 +128,11 @@ pub(in crate::native) fn viewport_of(bounds: TileBounds, scale: f32) -> Viewport
 }
 
 /// The paint identity of a tile at `bounds`, from the current document and the paint inputs.
-pub(in crate::native) fn stamp_for(current: &State, bounds: TileBounds, paint: &Paint) -> FrameStamp {
+pub(in crate::native) fn stamp_for(
+    current: &State,
+    bounds: TileBounds,
+    paint: &Paint,
+) -> FrameStamp {
     return FrameStamp::new(
         &current.document,
         viewport_of(bounds, paint.scale),

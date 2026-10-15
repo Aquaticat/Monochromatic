@@ -2,11 +2,12 @@
 //!  what an external change carries over,
 //!  and how the held space is installed once the new text is shown.
 
-/// The source state, and the map refresh that follows holding.
+/// The map refresh that follows holding.
 use super::refresh;
 /// The stamp of the displayed text.
 use crate::native::{State, annotate::displayed};
-/// `ChangeSet` is Helix's edit list, and `Assoc` says which side of inserted text a mapped position stays on.
+/// `ChangeSet` is Helix's edit list,
+///  and `Assoc` says which side of inserted text a mapped position stays on.
 use helix_core::{Assoc, ChangeSet};
 /// Space held open above a line of a reloaded text.
 use ide_app::annotation::Held;

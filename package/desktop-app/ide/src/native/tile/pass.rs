@@ -3,21 +3,24 @@
 //!  posting a pass to the tile worker,
 //!  and applying what a pass measured.
 
-/// Parent state and the window.
-use crate::native::{AppWindow, State};
+/// Starting the worker and its poll when a pass is posted.
+use super::{start_poll, warm};
 /// Applying a pass renders again when a count changed.
 use crate::native::render::render;
 /// The vertical mapping's side of the window: measured rows and keeping the view still.
 use crate::native::rows;
-/// What a background measurement is valid for, what it is given, and what it produced.
+/// What a background measurement is valid for,
+///  what it is given,
+///  and what it produced.
 use crate::native::tile_pass::{PassJob, PassKey, PassOutput};
-/// Starting the worker and its poll when a pass is posted.
-use super::{start_poll, warm};
+/// Parent state and the window.
+use crate::native::{AppWindow, State};
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
 /// The window's display scale for the measurement key.
 use slint::ComponentHandle;
-/// The shared window state, and the snapshots a pass job owns.
+/// The shared window state,
+///  and the snapshots a pass job owns.
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 /// What:
