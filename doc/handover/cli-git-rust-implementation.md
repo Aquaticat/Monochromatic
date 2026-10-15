@@ -1669,26 +1669,49 @@ that is verification, not a decision for the user.
   Verification so far: host Clippy clean; container gate 1713 unit, 119 binary and 1 consumer test passed;
   the concurrent e2e passed 36 scenario runs on Git 2.55.0 with 2 skipped (the gate task now builds Git 2.55.0 only,
   because the wrapper refuses older Git and the 2.39.5 and 2.40.0 rows failed by design).
-  Tests that hold a lock now end a stuck coordinator after a ceiling and fail instead of hanging the run.
-  Mutation campaign d (four lanes, started 2026-10-14 20:04 EDT, finished 23:51 EDT, about 3h45m, six of them in
-  parallel at one mutant per minute each) ran the source from before the controls below: 8 missed in lane A, 24 in B1,
-  14 in B2, 38 in C. Controls for the first 55 are in `a39daccaf4` and `82b5395334`; the survivors not yet handled
-  when the campaign ended are:
-  - lane A: `bounded_push.rs` 211 (`ask_to_stop` body), 238 (`<`), 301 (`>`);
-  - lane B1: `worktree_copy_lock.rs` 289 (`Drop for WorktreeCopyLease`), 321, 434 (`unit_random` x3), 509:42, 593:38;
-  - lane B2: `recovery_scan.rs` 348:25;
-  - lane C: `worktree_copy_stage_claim.rs` 134, 215, 270; `worktree_copy_transaction.rs` 90 x2, 94;
-    `worktree_copy_recovery.rs` 122, 123, 153; `worktree_copy_journal.rs` 875, 885.
-  To justify with code instead of a test: `recovery_files.rs` 214 (reading into an empty slice returns 0, same result),
-  `index_writer_coordination.rs` 373 (`OwnerLock::drop` performs the same release), and the `#[cfg(not(unix))]` and
-  `#[cfg(not(target_os = "linux"))]` mutants in `worktree_copy_stage.rs` (90, 122, 227) that the Linux gate never
-  compiles. `worktree_copy_stage.rs` 104 is killed only on a reflink-capable filesystem.
-  Lesson: `&&` binds tighter than `||`, so reason about those mutants with explicit parentheses; and run parallel
-  container gates under distinct `GIT_POLICY_NATIVE_IMAGE_TAG` values.
-  Next: control the survivors above, run the container gate (`hardeningW` is running; its first attempt failed only on
-  a Clippy `unwrap` in a test, fixed in `86af44e9c5`), rerun the scoped mutation over the changed files to show the
-  kills, land with the landing pattern, bump the wrapper to 0.1.3, push to trigger the `gpc-*` release jobs, then
-  verify with a real-credential commit and push.
+  Tests that hold a lock now end a stuck coordinator after a ceiling and fail instead of hanging the run, and a
+  watchdog ends a unit-test run after two minutes, so a mutant that hangs counts as a failed test and not a timeout.
+  Issue 990 (abandoned worktree-copy stage containers): a stage claim file is written before staging
+  (`worktree_copy_stage_claim.rs`) and the recovery pass, which holds the settlement lock, removes every container a
+  claim names that no journal names. The one arm no test reaches is a journal-creation failure after a successful
+  staging; its cleanup is the same claim reaping.
+  Final newline CI (user, 2026-10-14: "Delete the final newline CI check. We don't need to re-compile so often."):
+  `.github/workflows/final-newline.yml` and `bin/final-newline-workflow.mjs` are deleted in `e441028636`, with removal
+  notes in the three docs that described them. Pull request 992 (`chore/ci-caching`, a caching measurement) still
+  carries the workflow, so it conflicts on that file once this branch lands; leave that pull request alone.
+  Mutation campaign d (four lanes, started 2026-10-14 20:04 EDT, finished 23:51 EDT, about 3h45m, four in parallel at
+  one mutant per minute each) ran the source from before the controls: 8 missed in lane A, 24 in B1, 14 in B2, 38 in C.
+  Controls, each written to fail on its mutant, are in `a39daccaf4`, `82b5395334`, `05c70c9e79` (push stop),
+  `a19830af2e` (settlement lock), `ea206984ea` (landing pass hand-off), `44377010c3` (stage claim) and
+  `2eeb8ba3f3` (journal, transaction, recovery). Seams added so a race or the machine's filesystem is not needed:
+  `retire_dead_lock_with`, `rename_directory`, `limit_reached`, `copy_file_exclusive_with`, `nested_under`,
+  `grace_remains`, `is_flood`, `handled_by_the_landing_pass`. Refusals other than "absent" are provoked without
+  root by putting a file where a directory belongs (ENOTDIR), and with a read-only parent where that is the only way
+  (the test skips itself when run as root).
+  To justify with code instead of a test: `recovery_files.rs` 214 (`<` to `<=`: reading into an empty slice returns 0
+  and breaks, same result), `index_writer_coordination.rs` 373 (`release_quietly` body removed: the by-value lock is
+  dropped at the end of the function and `OwnerLock::drop` performs the same release), and the
+  `#[cfg(not(unix))]` and `#[cfg(not(target_os = "linux"))]` mutants in `worktree_copy_stage.rs` (90, 122, 227) that
+  the Linux gate never compiles. `worktree_copy_stage.rs` `try_clone` to `false` is killed only on a filesystem
+  that supports reflinks.
+  Container gate on head `2eeb8ba3f3` (tag `hardeningX`): 1767 unit, 120 binary, 1 consumer test passed, Clippy
+  finished. The two `FAILED` lines inside `live_lock` output are helper processes that fail on purpose.
+  Verification rerun of every survivor's function and the new seams: unit `cli-git-hardening-verify`, driver
+  `~/temp/agent/hardening-verify-20261015.ts`, status `~/temp/agent/hardening-verify.status` (ends with
+  `verification done`), logs `hardening-verify-R{1,2,3,4}.log`, started 2026-10-15 00:08 EDT, 55 to 70 mutants per
+  lane, about an hour. Lanes use image tags `hardeningR1` to `hardeningR4`, aliases of the tested image
+  `hardeningX`: a mutation run needs `localhost/git-policy-native-test:<tag>` from a gate on the same head, which it
+  copies the source snapshot from. Read every MISSED or TIMEOUT line; anything left needs another control or a
+  code-based justification added to the list above.
+  Lessons: `&&` binds tighter than `||`, so reason about those mutants with explicit parentheses; run parallel
+  container runs under distinct `GIT_POLICY_NATIVE_IMAGE_TAG` values; Clippy here rejects `serde_json::json!` in tests
+  (it expands to `unwrap`); an auto-push can fail with "missing necessary objects" while another session repacks the
+  shared object store, and a retry succeeds; the shared `.git` has a commit-graph entry for an unreadable commit
+  (`a2e8a99c`), left alone because other sessions use it.
+  Next: read the verification results, then land with the landing pattern (merge `main`, check the gated paths are
+  byte-identical to the tested head `2eeb8ba3f3`, fast-forward the main checkout, push; "Closes #990" must close the
+  issue), bump the wrapper to 0.1.3, push to trigger the `gpc-*` release jobs, then verify with a real-credential commit
+  and push, and finally merge the pathBytes branch.
   Not verified: Windows (the target is not installed here; `tempfile` and `libc` are unix-only dependencies that
   `bounded_child.rs` already relied on).
   A podman cleanup by the user (`podman image prune --all`) removed `rust:1.97-bookworm`; pull it back, and pin it with
