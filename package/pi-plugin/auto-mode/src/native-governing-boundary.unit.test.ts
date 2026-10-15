@@ -10,7 +10,7 @@ await describe({
   name: '',
   children: [
     it({
-      name: 'retains original error message, cause, and derived constructor category',
+      name: 'retains original error message and cause with a stable operation category',
       fn: async function preservesErrorConstruction() {
         /** Original cause identity must survive both ordinary and derived construction. */
         const cause = new Error('original binding cause');
@@ -19,10 +19,10 @@ await describe({
         assert.equal(error.name, 'GoverningRuleBindingError');
         assert.equal(error.message, 'original binding diagnostic');
         assert.equal(error.cause, cause);
-        /** A different new target exercises the original constructor-derived category contract. */
+        /** A different new target cannot replace the stable operation category. */
         const derived: unknown = Reflect.construct(GoverningBindingError, ['derived binding diagnostic', { cause }], TypeError);
         assert.ok(derived instanceof TypeError);
-        assert.equal(derived.name, 'TypeError');
+        assert.equal(derived.name, 'GoverningRuleBindingError');
         assert.equal(derived.message, 'derived binding diagnostic');
         assert.equal(derived.cause, cause);
       },

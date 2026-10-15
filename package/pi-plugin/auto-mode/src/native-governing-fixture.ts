@@ -99,7 +99,10 @@ type GoverningBindingsModule = Readonly<{
     readSource: unknown;
     parse: unknown
   }>) => FixtureGoverningBindings;
-  GoverningRuleBindingError: new (message: string, options?: ErrorOptions) => Error;
+  GoverningRuleBindingError: new (
+    message: string,
+    options?: ErrorOptions
+  ) => Error;
 }>;
 
 /**
@@ -195,7 +198,7 @@ assertParserModule(parserModule);
  */
 export const createGoverningBindings: GoverningBindingsModule['createGoverningRuleBindings'] = bindingModule.createGoverningRuleBindings;
 /**
- Original error construction retains message, cause, and derived constructor names.
+ Original error construction retains message and cause with a stable operation category.
  */
 export const GoverningBindingError: GoverningBindingsModule['GoverningRuleBindingError'] = bindingModule.GoverningRuleBindingError;
 /**
@@ -219,7 +222,9 @@ export const governingParser: Readonly<{ parse: FixturePolicyParser }> = await p
 export function createGoverningSource(content: string): FixtureGoverningSource {
   return Object.freeze({
     content,
-    sha256: createHash('sha256').update(content).digest('hex'),
+    sha256: createHash('sha256')
+      .update(content)
+      .digest('hex'),
     occurrence: Object.freeze({})
   });
 }
