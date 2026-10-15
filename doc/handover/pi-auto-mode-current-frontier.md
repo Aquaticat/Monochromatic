@@ -246,6 +246,17 @@ The complete report is
 `${HOME}/temp/agent/pi-maintained-typed-runner-events-final-lint-20261015.log`.
 Continue reached-group execution and native queue ownership.
 
+Reached-group execution is now extracted to `program-runner-execution.ts`,
+with separate callback and contract files.
+The original runner delegates execution while retaining its declared-program facade.
+Queue selection,
+parent currentness after acquisition,
+native cancellation,
+complete dispatch,
+and scope disposal await independent consumer qualification.
+The original method and runner are retained under
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+
 ## Tool-call scope correction
 
 The user clarified that automatic mode is meant to check model-initiated tool calls.
