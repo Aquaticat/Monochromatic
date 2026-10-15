@@ -105,4 +105,30 @@ await describe({ name: '', children: [
     assert.deepEqual(fixture.run.inspect(), { retainedOnly: true, closed: true, reachedGroups: [] });
   } }),
   //endregion
+  //region Native entry rechecks the original runtime after source reaching callbacks.
+  it({ name: 'checks parent currentness again after original group reaching publishes a failure', fn: async () => {
+    const fixture = createProgramRuntimeFixture();
+    const failure = new Error('original parent failed after reaching');
+    fixture.control.onStep = function invalidateParent(point): void {
+      if (point !== 'reach:1') return;
+      fixture.control.failAt = 'parent';
+      fixture.control.failure = failure;
+    };
+    const settled = await awaitCollectorResult(Promise.allSettled([fixture.invoke(2)]));
+    assert.deepEqual(settled, [{ status: 'rejected', reason: failure }]);
+    assert.equal(fixture.calls.length, 0);
+    assert.deepEqual(fixture.marked, []);
+    assert.equal(fixture.run.inspect().reachedGroups[0]?.collector.failed, true);
+  } }),
+  it({ name: 'passes the original member cancellation context through the source tool', fn: async () => {
+    const fixture = createProgramRuntimeFixture();
+    const native = fixture.native[2];
+    assert.ok(native);
+    const failure = new Error('original native member cancelled');
+    native.abort(failure);
+    const settled = await awaitCollectorResult(Promise.allSettled([fixture.invoke(2)]));
+    assert.deepEqual(settled, [{ status: 'rejected', reason: failure }]);
+    assert.equal(fixture.calls.length, 0);
+  } }),
+  //endregion
 ] });
