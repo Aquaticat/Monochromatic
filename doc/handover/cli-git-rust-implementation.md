@@ -1725,9 +1725,13 @@ that is verification, not a decision for the user.
   `serde_json::json!` in tests (it expands to `unwrap`); an auto-push can fail with "missing necessary objects"
   while another session repacks the shared object store, and a retry succeeds; the shared `.git` has a
   commit-graph entry for an unreadable commit (`a2e8a99c`), left alone because other sessions use it.
-  Next: verify the installed 0.1.3 at the user boundary (a real-credential commit and push through it, and a
-  disposable fixture showing it reaps an abandoned stage), then merge the pathBytes branch (merge `main` into it, rerun
-  its gated source) and clean up the retag aliases and merged branches.
+  Verified at the user boundary with the installed 0.1.3: a commit and its auto-push from this worktree went through
+  with real credentials, and a disposable fixture (driver `~/temp/agent/verify-reap-fixture.ts`, fixture removed)
+  showed an abandoned stage named by a claim file removed with the notice, while the same `git worktree add` copied
+  its ignored files. A fixture path must be canonical (`/home/user` is a symlink here), or the wrapper refuses the
+  stage as unsafe.
+  Next: merge the pathBytes branch (merge `main` into it, rerun its gated source), then clean up the retag aliases
+  and merged branches.
   Not verified: Windows (the target is not installed here; `tempfile` and `libc` are unix-only dependencies that
   `bounded_child.rs` already relied on).
   A podman cleanup by the user (`podman image prune --all`) removed `rust:1.97-bookworm`; pull it back, and pin it with
