@@ -78,8 +78,6 @@ export function registerNativeBypass(pi: ForeignHostCapability<ExtensionAPI>): v
   /**
    Restore the existing visible status from the currently selected branch.
 
-   @param _event - native lifecycle notification
-
    @param ctx - current native session context
 
    @mutates ctx - updates displayed bypass status

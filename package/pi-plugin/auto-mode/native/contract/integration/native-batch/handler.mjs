@@ -133,6 +133,7 @@ export function createNativeBatchHandler({
     if(bypass){
      assertFresh();
      judgment.finalize();
+     observer.retainExecutionSources(assistantMessage);
      reviewState.bypassed=true;
      return {block:false};
     }
@@ -143,7 +144,7 @@ export function createNativeBatchHandler({
       ==='resolved')&&(reviewState.reviewed.outcome
         .verdict
         ==='approve')){
-     observer.retainApprovedSources(assistantMessage);
+     observer.retainExecutionSources(assistantMessage);
      reviewState.reviewed.assertCurrent();
      return {block:false};
     }

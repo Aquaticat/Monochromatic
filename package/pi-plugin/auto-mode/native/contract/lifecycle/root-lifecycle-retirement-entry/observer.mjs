@@ -183,12 +183,12 @@ export function createRequestObservationOwner({
    scope.sourcePreparationClosed=true;
    return scope.judgmentBinding;
   }
-  /** Bind approved execution to the assessed collection while retaining later inputs for subsequent decisions. */
-  function retainApprovedSources(response){
+  /** Bind admitted execution to sealed sources without asserting a policy verdict; later inputs belong to subsequent decisions. */
+  function retainExecutionSources(response){
    const scope=object(response)?responses.get(response):undefined;
    if((!scope?.sourcePreparationClosed)||scope.preparingSources)throw new RequestObservationProfileError('Approved execution requires sealed original judgment sources');
    validate({scope:scope});
-   collector.retainApprovedSources(scope.judgmentBinding
+   collector.retainExecutionSources(scope.judgmentBinding
      .sources);
    validate({scope:scope});
   }
@@ -214,7 +214,7 @@ export function createRequestObservationOwner({
     bindJudgmentSources,
     beginJudgmentSources,
     sealJudgmentSources,
-    retainApprovedSources,
+    retainExecutionSources,
     invalidate
   });
 }

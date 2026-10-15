@@ -168,8 +168,8 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
     if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Original extension tool inputs changed during source finalization');
    }catch(error){saved.failure??={cause:error};throw error;}
   }
-  /** Called only at the original resolved approval handoff; never selects new sources or revives failed ones. */
-  function retainApprovedSources(snapshot){
+  /** Called at resolved approval or explicit bypass handoff; retains dependencies without selecting sources or issuing permission. */
+  function retainExecutionSources(snapshot){
    assertObservedFresh(snapshot);
    const saved=snapshots.get(snapshot);
    if(saved.approved)throw new PolicySlotBindingError('Original selected sources were already retained for approved execution');
@@ -240,7 +240,7 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
   return Object.freeze({
     capture,
     assertObservedFresh,
-    retainApprovedSources,
+    retainExecutionSources,
     captureJudgmentSources
   });
  }
