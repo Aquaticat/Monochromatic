@@ -125,12 +125,12 @@ await describe({
         fn: async function rejectedOriginalValue() {
           const fixture = createProgramOwnerFixture();
           const program = fixture.open();
-          const group = createProgramGroupFixture({ fixture, program });
+          const group = createProgramGroupFixture({ fixture, program, structured: kind === 'unsupported-value' });
           const slots = group.bind();
           const members = group.prepare();
           const outcome = group.outcomes[0];
           assert.ok(outcome);
-          if (kind === 'unsupported-value') outcome.result.content = [];
+          if (kind === 'unsupported-value') outcome.result.structuredContent = {};
           if (kind === 'oversized-value') outcome.result.content = [{ type: 'text', text: 'x'.repeat(65_537) }];
           await group.invoke();
           if (kind === 'unreturned-member') {

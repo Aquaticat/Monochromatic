@@ -40,21 +40,24 @@ export type ProgramGroupFixture = Readonly<{
 
  @param ordinal - original declared source group
 
+ @param structured - whether original native tools declare structured output
+
  @returns independent native group and direct built-owner operations
 
  @example createProgramGroupFixture({ fixture, program });
  */
-export function createProgramGroupFixture({ fixture, program, ordinal = 0 }: Readonly<{
+export function createProgramGroupFixture({ fixture, program, ordinal = 0, structured = false }: Readonly<{
   fixture: ProgramOwnerFixture;
   program: object;
   ordinal?: number;
+  structured?: boolean;
 }>): ProgramGroupFixture {
   const { owner, bindings } = fixture;
   const reached = owner.reachProgramGroup({ program, ordinal });
   const calls = Object.freeze(reached.members.map(function originalCall(site, index): FixtureProgramCall {
     return Object.freeze({ type: 'toolCall', id: `group-${ordinal}-call-${index}`, name: site.name, arguments: site.args });
   }));
-  const tools = Object.freeze(calls.map(function originalTool(call) { return Object.freeze({ name: call.name }); }));
+  const tools = Object.freeze(calls.map(function originalTool(call) { return Object.freeze({ name: call.name, ...(structured ? { outputSchema: {} } : {}) }); }));
   const members = Object.freeze(calls.map(function preparedMember(call) { return Object.freeze({ id: call.id, name: call.name, input: call.arguments }); }));
   const controllers = calls.map(function originalCancellation() { return new AbortController(); });
   const signals = controllers.map(function originalSignal(controller) { return controller.signal; });
