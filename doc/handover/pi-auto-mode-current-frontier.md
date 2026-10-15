@@ -255,10 +255,22 @@ semantic admission,
 authority,
 delegation,
 and operation premises remain independent.
-Native permit,
-prohibit,
-unspecified,
-and omission controls are pending.
+The native request-derivation suite now passes permission,
+prohibition,
+and unspecified-policy cases while the request interpretation remains `potential-instruction`.
+Permission executes three fixture children;
+the other outcomes execute none.
+Unsupported protocol and message fields,
+added or removed messages,
+removed tools,
+copied system inputs,
+unsupported roles,
+and copied serialized system or tool values all retain unresolved request use and execute no children.
+Every case makes zero provider requests.
+The built source-contribution and request-obligation regressions pass,
+including preservation of independent premises;
+package type checking also passes.
+Process-local guard omissions and the final isolated CLI recheck remain pending.
 
 ## Original native RPC approval verification
 
