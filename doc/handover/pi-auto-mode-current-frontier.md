@@ -2211,9 +2211,32 @@ and the same consumers pass against saved original constructor and publication s
 and `${HOME}/temp/agent/pi-publication-original-20261015.log`.
 All four new consumer files have zero focused diagnostics in
 `${HOME}/temp/agent/pi-constructor-tests-format-final-20261015.log`.
-Process-local omission controls,
-the affected-owner consumer sweep,
-and the full maintained recount remain pending.
+All 59 process-local construction and publication changes trigger consumer failures;
+all five built artifacts retain their starting hashes in `typed-constructor-omissions.json`.
+The final rebuild,
+type check,
+constructor,
+publication,
+program,
+execution,
+instruction,
+lifecycle,
+dependency,
+preparation,
+inspection,
+source,
+and public API consumers pass in
+`${HOME}/temp/agent/pi-constructor-consumers-final-20261015.log`.
+The full maintained recount covers 685 files and 486 rules:
+zero errors and 11145 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-constructor-lint-20261015.log`.
+All eighteen changed implementation,
+contract,
+bridge,
+and direct consumer files have zero diagnostics in that full report.
+Typed original constructor composition is qualified at these tested boundaries.
+Continue the maintained-package quality queue with the dependency facade body;
+its composition declaration remains separate from implementation qualification.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
