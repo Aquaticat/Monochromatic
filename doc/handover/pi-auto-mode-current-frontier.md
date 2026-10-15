@@ -1437,10 +1437,29 @@ accessor rejection,
 safe ordinal boundaries,
 fresh copies,
 and opaque companion strings.
-Formatting,
-rebuilt consumers,
-source comparison,
-and guard-removal controls are pending for the input-position port.
+The focused report has zero diagnostics across all nine source and consumer files in
+`${HOME}/temp/agent/pi-native-input-location-format-third-20261015.log`.
+The rebuilt consumers,
+request claims,
+domain contrasts,
+authored manual approval paths,
+and package type check pass in
+`${HOME}/temp/agent/pi-native-input-location-consumers-20261015.log`.
+The saved original implementation also passes the consumer suite,
+with only the derived-error category assertion adapted to its explicit historical behavior,
+in `${HOME}/temp/agent/pi-native-input-location-baseline-20261015.log`.
+The baseline and typed implementation agree across 360 authored cases on copied values,
+errors,
+descriptor events,
+property-read order,
+and freeze state.
+The changed-value positive control distinguishes a different original named-text slot value.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-input-location-comparison.json`
+retains the comparison and artifact hashes.
+`77854a77ff` adds null-source and disappearing-proxy-descriptor controls;
+their rebuilt verification,
+guard-removal controls,
+and the complete maintained lint recount remain pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
