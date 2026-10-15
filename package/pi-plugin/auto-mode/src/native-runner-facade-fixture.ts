@@ -72,20 +72,26 @@ const guardModule: GuardModule = loadedGuard;
  @example createRunnerFacadeFixture();
  */
 export function createRunnerFacadeFixture(): RunnerFacadeFixture {
+  /**
+   Original callback order stays local to this fixture.
+   */
   const steps: string[] = [];
+  /**
+   Original argument identities remain inspectable without reconstruction.
+   */
   const observations: unknown[][] = [];
+  /**
+   Tests independently select failures and pending native work.
+   */
   const control: FacadeFixtureControl = { failure: Object.freeze({ original: 'failure' }) };
+  /**
+   Original program identity is supplied only by the judgment owner.
+   */
   const program = Object.freeze({ original: 'program' });
+  /**
+   Opaque conversion return distinguishes forwarding from reconstruction.
+   */
   const value = Object.freeze({ original: 'converted' });
-  const bound: FacadeFixtureBinding = {
-    slots: [{ original: 'first slot' }, { original: 'second slot' }],
-    tickets: [0, 1].map(function ticket(ordinal) {
-    return { promise: Promise.resolve({ ordinal }), reject(error: unknown): void { 
-      observations.push(['reject', ordinal, error]); 
-      step(`reject:${ordinal}`); 
-    } };
-  })
-  };
   /** Record callback entry before optional original failure or reentry.
    @param point - original callback boundary
    *
@@ -96,6 +102,21 @@ export function createRunnerFacadeFixture(): RunnerFacadeFixture {
     control.onStep?.(point); 
     if (control.failAt === point) throw control.failure; 
   }
+  /**
+   Original slots and member tickets remain independently observable.
+   */
+  const bound: FacadeFixtureBinding = {
+    slots: [{ original: 'first slot' }, { original: 'second slot' }],
+    tickets: [0, 1].map(function ticket(ordinal) {
+    return { promise: Promise.resolve({ ordinal }), reject(error: unknown): void { 
+      observations.push(['reject', ordinal, error]); 
+      step(`reject:${ordinal}`); 
+    } };
+  })
+  };
+  /**
+   Original runtime publication supplies exact method and object identities.
+   */
   const runtime: FacadeFixtureRun = {
     declaration: Object.freeze({ original: 'declaration' }),
     tools: Object.freeze([{ original: 'source tool' }]),
@@ -116,7 +137,13 @@ export function createRunnerFacadeFixture(): RunnerFacadeFixture {
       return control.drain?.() ?? Promise.resolve(); 
     },
   };
+  /**
+   Runtime constructor input is published only after construction reaches that boundary.
+   */
   const state: { runtimeInput?: FacadeFixtureRuntimeInput } = {};
+  /**
+   Original judgment callbacks verify their receiver before recording arguments.
+   */
   const judgment = {
     openProgram(input: unknown): object { 
       assert.equal(
@@ -143,6 +170,9 @@ export function createRunnerFacadeFixture(): RunnerFacadeFixture {
       return value; 
     },
   };
+  /**
+   Each facade capability belongs to this isolated original parent occurrence.
+   */
   const input: FacadeFixtureInput = {
     tools: Object.freeze([{ name: 'first' }, { name: 'first' }, { name: 'last' }]),
     code: 'original source',
@@ -164,9 +194,9 @@ export function createRunnerFacadeFixture(): RunnerFacadeFixture {
       step('execute'); 
       return control.execution?.() ?? Promise.resolve(); 
     },
-    createReachedProgramRun(runtimeInput: FacadeFixtureRuntimeInput): FacadeFixtureRun { 
+    createReachedProgramRun(originalInput: FacadeFixtureRuntimeInput): FacadeFixtureRun { 
       assert.equal(this, undefined); 
-      state.runtimeInput = runtimeInput; 
+      state.runtimeInput = originalInput; 
       step('runtime'); 
       return runtime; 
     },

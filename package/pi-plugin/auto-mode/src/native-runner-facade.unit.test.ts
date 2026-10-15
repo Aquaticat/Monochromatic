@@ -29,8 +29,8 @@ await describe({ name: '', children: [
     await run.drain();
     assert.deepEqual(fixture.steps.slice(-4), ['inspect', 'retire', 'drain', 'drain']);
   } }),
-  ...[undefined, null, {}, Object.freeze({ length: 0 }), []].map(function invalidTools(tools) {
-    return it({ name: `rejects unavailable original tool snapshot ${String(tools)}`, fn: async () => {
+  ...[undefined, null, {}, Object.freeze({ length: 0 }), []].map(function invalidTools(tools, ordinal) {
+    return it({ name: `rejects unavailable original tool snapshot ${ordinal}`, fn: async () => {
       const fixture = createRunnerFacadeFixture();
       fixture.input.tools = tools;
       assert.throws(fixture.create, { message: 'Original request tool snapshot is unavailable' });
@@ -98,7 +98,7 @@ await describe({ name: '', children: [
     const input = fixture.runtimeInput();
     assert.equal(input.judgment, judgment);
     const group = { handle: {} };
-    input.dispatchGroup(group);
+    assert.equal(input.dispatchGroup(group).length, 2);
     assert.equal(input.scriptValueFor({ group: group.handle, ordinal: 0, outcome: undefined }), fixture.value);
     await run.drain();
   } }),
@@ -109,7 +109,7 @@ await describe({ name: '', children: [
     const group = { handle: {} };
     fixture.control.failAt = 'bind';
     assert.throws(function dispatch() { 
-      input.dispatchGroup(group); 
+      assert.equal(input.dispatchGroup(group).length, 2); 
     }, function original(error) { 
       return error === fixture.control.failure; 
     });

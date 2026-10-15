@@ -26,13 +26,13 @@ await describe({ name: '', children: [
     await draining;
     assert.equal(fixture.steps.at(-1), 'drain');
   } }),
-  ...[undefined, null, Object.freeze({ original: 'opaque failure' })].map(function opaqueFailure(failure) {
-    return it({ name: `retains ${String(failure)} execution failure and rejects every original ticket on repeated drains`, fn: async () => {
+  ...[undefined, null, Object.freeze({ original: 'opaque failure' })].map(function opaqueFailure(failure, ordinal) {
+    return it({ name: `retains ${ordinal} execution failure and rejects every original ticket on repeated drains`, fn: async () => {
       const fixture = createRunnerFacadeFixture();
       fixture.control.failure = failure;
       fixture.control.failAt = 'execute';
       const run = fixture.create();
-      const promises = fixture.runtimeInput().dispatchGroup({ handle: {} });
+      const promises = assert.equal(fixture.runtimeInput().dispatchGroup({ handle: {} }).length, 2);
       assert.equal(promises[0], fixture.bound.tickets[0]?.promise);
       assert.deepEqual(fixture.steps.slice(-4), ['bind', 'execute', 'reject:0', 'reject:1']);
       /** Require aggregate identity and original retained values rather than diagnostic text. */
@@ -52,7 +52,7 @@ await describe({ name: '', children: [
   }),
   it({ name: 'keeps execution failure before runtime and ticket-rejection failures without deduplication', fn: async () => {
     const fixture = createRunnerFacadeFixture();
-    const nativeFailure = Object.freeze({ original: 'native failure' });
+    const nativeFailure: unknown = Object.freeze({ original: 'native failure' });
     const rejectFailure = Object.freeze({ original: 'ticket rejection failure' });
     fixture.control.execution = async function execute() { 
       throw nativeFailure; 
@@ -63,7 +63,7 @@ await describe({ name: '', children: [
     fixture.control.failAt = 'reject:0';
     fixture.control.failure = rejectFailure;
     const run = fixture.create();
-    fixture.runtimeInput().dispatchGroup({ handle: {} });
+    assert.equal(fixture.runtimeInput().dispatchGroup({ handle: {} }).length, 2);
     await assert.rejects(run.drain, function aggregate(error) {
       assert.ok(error instanceof AggregateError);
       assert.deepEqual(error.errors, [nativeFailure, nativeFailure, rejectFailure]);
@@ -79,7 +79,7 @@ await describe({ name: '', children: [
     };
     const run = fixture.create();
     fixture.control.onStep = function duringDrain(point) { 
-      if (point === 'drain') fixture.runtimeInput().dispatchGroup({ handle: {} }); 
+      if (point === 'drain') assert.equal(fixture.runtimeInput().dispatchGroup({ handle: {} }).length, 2); 
     };
     const draining = run.drain();
     assert.equal(await Promise.race([draining, setImmediate('pending')]), 'pending');
@@ -103,12 +103,12 @@ await describe({ name: '', children: [
       return first.promise; 
     };
     const run = fixture.create();
-    fixture.runtimeInput().dispatchGroup({ handle: {} });
+    assert.equal(fixture.runtimeInput().dispatchGroup({ handle: {} }).length, 2);
     const draining = run.drain();
     fixture.control.execution = function executeLater() { 
       return late.promise; 
     };
-    fixture.runtimeInput().dispatchGroup({ handle: {} });
+    assert.equal(fixture.runtimeInput().dispatchGroup({ handle: {} }).length, 2);
     first.resolve();
     await draining;
     late.resolve();
