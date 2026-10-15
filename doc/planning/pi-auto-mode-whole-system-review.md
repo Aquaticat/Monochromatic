@@ -4,10 +4,11 @@
 
 The user requested a review of the whole auto-mode design on 2026-10-15,
 including whether replacement is preferable to continued repair.
-This is a review and proposal, not authorization to delete or rebuild the implementation.
+The user accepted decision-core replacement on 2026-10-15 and requested avoiding overengineering.
+The [accepted decision](../decision/pi-auto-mode-decision-core.md) authorizes implementation.
 The source snapshot is `02078ea5f8cf60434695a4c5a92ed23b7b6f9d9f`.
 The unrelated working-tree `mise.lock` change is outside the review.
-Production edits are paused during the review.
+Production edits resumed after acceptance.
 
 ## Review work
 

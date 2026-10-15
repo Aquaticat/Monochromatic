@@ -10,7 +10,16 @@ Updated 2026-10-15.
 ## Active work on 2026-10-15
 
 The user subsequently requested a whole-system re-review and consideration of rebuilding.
-Production patching is paused for that review.
+The review is complete.
+The user accepted decision-core replacement and requested avoiding overengineering.
+The [accepted decision](../decision/pi-auto-mode-decision-core.md) fixes implementation scope.
+
+- [ ] Select current context before semantic candidates and exclude retained archives from model input.
+- [ ] Replace decision composition and re-resolve scoped confirmation without erasing independent prerequisites.
+- [ ] Separate explicit bypass from semantic profile admission while retaining native execution checks.
+- [ ] Verify prepared-operation identity, freshness, cancellation, deadlines, and configured-host behavior.
+- [ ] Verify activation preserves a usable artifact after build failure and record remaining feature scope.
+- [ ] Remove superseded paths, run relevant lint and tests, and update consumer documentation.
 The [whole-system review](../planning/pi-auto-mode-whole-system-review.md)
 recommends replacing the decision core and correcting bypass routing,
 while retaining and requalifying useful native ownership controls.
@@ -18,7 +27,7 @@ It records the context-selection defect,
 a built approval-router witness that generic Allow overrides an unrelated unsatisfied prerequisite,
 and a built-host bypass regression against an upstream Codemode positive control.
 The earlier `generic` control sent Deny and did not prove prerequisite preservation after Allow.
-No replacement or teardown is implemented by this review.
+Implementation is in progress; the review itself made no production edits.
 
 The user corrected the assessment scope:
 never send the full transcript at every decision point,
