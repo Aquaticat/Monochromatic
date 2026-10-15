@@ -108,6 +108,40 @@ await describe({
         assert.equal(instructions.resolveBinding(recovered).projection.memberOrdinal, 0);
       },
     }),
+    it({
+      name: 'retains absent claim bindings on reached child records and the original missing projection error',
+      fn: async function childBindingAbsence() {
+        /** Child program publication shares the original member map without a root claim binding. */
+        const f = createInstructionFixture();
+        /** Isolated map admits both root and child record shapes from original construction. */
+        const bindings = new WeakMap<object, object>();
+        /** Root handle is the original prepared-member identifier target. */
+        const [root] = f.members;
+        assert.ok(root);
+        /** Original root binding remains observable after a failed projection read. */
+        const rootRecord = f.bindings.get(root);
+        assert.ok(rootRecord);
+        bindings.set(root, rootRecord);
+        /** Reached child has a native prepared record without an instruction binding. */
+        const child = Object.freeze({});
+        bindings.set(child, { prepared: Object.freeze({}), parent: Object.freeze({}) });
+        /** Built instruction owner borrows the same mixed membership map. */
+        const instructions = createFixtureInstructions({ ...f.input, bindings });
+        assert.equal(instructions.resolveBinding(root), rootRecord.binding);
+        assert.equal(instructions.resolveBinding(child), undefined);
+        /** Replacing the root record exposes the incumbent projection failure boundary. */
+        const [rule] = instructions.indexedRuleCandidates();
+        assert.ok(rule);
+        bindings.set(root, {});
+        assert.throws(function missingBindingProjection() {
+          instructions.claimRuleCandidate({ definitionId: 'fixture', memberId: 'member-0', rule });
+        }, { name: 'TypeError', message: "Cannot read properties of undefined (reading 'projection')" });
+        bindings.set(root, rootRecord);
+        /** Failed projection access must not publish a partial claim handle. */
+        const recovered = instructions.claimRuleCandidate({ definitionId: 'fixture', memberId: 'member-0', rule });
+        assert.equal(instructions.resolveBinding(recovered).projection.memberOrdinal, 0);
+      },
+    }),
     ...['clause', 'heading', 'adoption'].map(function originalDependency(kind) {
       return it({
         name: `rejects ${kind} resolution after original source-list replacement`,
