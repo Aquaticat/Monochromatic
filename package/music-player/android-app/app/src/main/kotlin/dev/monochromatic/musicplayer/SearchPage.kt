@@ -1507,7 +1507,7 @@ private fun searchResultRow(
     startInset: Dp,
     endInset: Dp,
 ) {
-    /** Spoken kind, action and playback state of this row; a track that is not current is played with the setting on. */
+    /** Spoken kind, action and playback state of this row; with the setting on, another track is played. */
     val rowSpeech: SearchRowSemantics = searchRowSemantics(
         result = result,
         currentTrackIndex = currentTrackIndex,
