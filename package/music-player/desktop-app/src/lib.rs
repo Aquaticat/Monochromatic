@@ -130,8 +130,26 @@ pub mod opus;
 /// ```ts
 /// export * as output from "./output_pipewire"; // only on Linux builds
 /// ```
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", not(feature = "alsa-fallback")))]
 #[path = "output_pipewire.rs"]
+pub mod output;
+
+/// What:
+///      `#[cfg(all(target_os = "linux", feature = "alsa-fallback"))]` compiles the next item only on Linux builds
+///           made with the `alsa-fallback` cargo feature (the Alpine build). `all(...)` is true when every listed
+///           predicate is true. `#[path = "output_linux.rs"]` sources the `output` module from the file that tries
+///           PipeWire first and falls back to ALSA.
+/// Why:
+///       Alpine and other minimal Linux installs run no sound server by default, so a PipeWire-only build is silent
+///           there. The feature keeps every other Linux build exactly as it was (no new link-time dependency) while
+///           exposing the IDENTICAL `output::Output` surface to the engine and the controller.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as output from "./output_linux"; // only Linux builds with the alsa-fallback feature
+/// ```
+#[cfg(all(target_os = "linux", feature = "alsa-fallback"))]
+#[path = "output_linux.rs"]
 pub mod output;
 
 /// What:

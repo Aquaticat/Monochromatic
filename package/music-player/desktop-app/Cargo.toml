@@ -168,6 +168,10 @@ pipewire = { version = "0.10", features = ["v0_3_49"] }
 # blocking API and async-io backend. macOS has no D-Bus session bus, so it is
 # gated to Linux alongside the launcher integration it powers.
 zbus = "5"
+# ALSA fallback for Linux (src/output_linux.rs), OPTIONAL and compiled only with the `alsa-fallback` feature below.
+# cpal drives ALSA on Linux and links libasound, so a default Linux build, which needs only PipeWire, gets no new
+# link-time or run-time dependency. Same 0.18 line as the non-Linux table, so Cargo.lock holds one cpal.
+cpal = { version = "0.18", optional = true }
 
 # Non-Linux native backend. cpal drives the OS audio engine (src/output_cpal.rs):
 # CoreAudio on macOS, WASAPI on Windows, the counterpart to the PipeWire path. One
@@ -213,6 +217,13 @@ libc = "0.2"
 # covers both. Built natively on x13-win.
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Threading", "Win32_UI_Shell"] }
+
+# `alsa-fallback` makes the Linux output try PipeWire first and the default ALSA device second (src/output_linux.rs).
+# Alpine Linux and other minimal installs run no sound server by default, so the Alpine build turns it on
+# (`cargo build --features alsa-fallback`); it needs libasound (Alpine `alsa-lib-dev` to build, `alsa-lib` to run).
+# Off by default so every other Linux build is unchanged. See ../../../doc/decision/music-player-alpine.md.
+[features]
+alsa-fallback = ["dep:cpal"]
 
 # Headless UI regression tests (src/ui_binding_tests.rs). ElementHandle locates the
 # seek/volume Sliders in the compiled AppWindow, fires the widget's imperative

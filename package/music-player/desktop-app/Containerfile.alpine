@@ -28,7 +28,7 @@ FROM docker.io/library/alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b
 #   cargo-nextest          the test runner (RNQ), from Alpine so aarch64 needs no prebuilt download.
 #   dbus                   dbus-daemon for the notification tests, which start a private session bus.
 RUN apk add --no-cache \
-      rust cargo \
+      rust cargo rust-clippy \
       build-base cmake samurai pkgconf linux-headers \
       clang21-libclang \
       pipewire-dev alsa-lib-dev \
