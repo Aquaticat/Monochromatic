@@ -128,7 +128,9 @@ export function bindReachedProgramGroup<const Recorder extends object>({
    */
   const nativeRun = runner.host
     .runOwnedToolCall;
-  /** Original native adapter retains its externally dictated positional callback signature. */
+  /**
+   Original native adapter retains its externally dictated positional callback signature.
+   */
   const nativeCallbacks = {
   /** Forward original native call after copying options and resolving its member signal.
    @param call - original native call identity supplied by the judgment
@@ -145,7 +147,8 @@ export function bindReachedProgramGroup<const Recorder extends object>({
        Native callback logs identify the boundary without inspecting opaque options or arguments.
        */
       const nl = tagged({
-          tag: nativeCallbacks.runNative.name,
+          tag: nativeCallbacks.runNative
+            .name,
         l: rl
       });
       nl.debug('forwarding original native member with its associated cancellation');
