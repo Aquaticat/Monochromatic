@@ -13,7 +13,7 @@ The user explicitly said looking at Claude transcripts is unnecessary; transcrip
 ## Answers to preserve
 
 - Motivation: GitHub Actions is slow.
-- Rejection criteria, budget, and acceptable wait: not known yet.
+- Spending ceiling: $200 per month. Acceptable wait and other rejection criteria remain open.
 - The user confirmed that the music-player release taking about 24 minutes is a relevant example.
 - The user clarified that it was blocking Claude from working on the music player.
   Waiting to download a personal build was an interviewer hypothesis, not a confirmed requirement.
@@ -33,6 +33,11 @@ The user explicitly said looking at Claude transcripts is unnecessary; transcrip
   Paid GitHub cache expansion is not an accepted fallback.
 - Whether app/device checks should run on every push or at agent-requested checkpoints remains undecided.
   The user answered that they are not sure; no scheduling preference was accepted.
+- The user identifies Depot's $200 Startup plan as the most they are willing to spend.
+  Current published pricing includes usage allowances and charges overages; it is not unlimited usage for $200.
+- The interviewer checked current GitHub cache pricing and gave a 50 GB total-cache example costing $2.80 extra monthly.
+  The user explicitly said this does not change their view of GitHub's total costs and described GitHub as wasteful.
+  The preference concerns total cost and repeated work, not just cache storage unit pricing.
 
 ## Measured release example
 
@@ -100,6 +105,27 @@ The user's objection to expansion is cost.
 `depot org list --output json` succeeded and returned the user's Depot organization.
 CLI access is verified without printing credentials or modifying authentication.
 
+## Cost constraint and published allowances
+
+[Depot pricing][depot-pricing], checked October 15, lists Startup at $200 per month with:
+
+- 250 GB shared cache and registry storage.
+- 20,000 Depot CI minutes, with larger machines consuming allowances faster.
+- 20,000 GitHub Actions runner minutes.
+- 5,000 container build minutes.
+- 1,000,000 passing test results.
+
+Overage charges apply beyond included usage.
+The $200 ceiling is a requirement, not authorization to purchase a subscription or consume additional paid resources.
+A read-only investigation is checking whether Depot usage caps can enforce that ceiling and what they include.
+Current account plan, trial credits, and cap settings have not been inspected.
+
+[GitHub billing][github-billing] lists cache overage at $0.07 per GB-month,
+where its GB unit is a GiB.
+The illustrative calculation was `(50 - 10) * 0.07 = 2.80` for constant full-month occupancy.
+This storage-only calculation does not estimate the cost of the desired comprehensive CI.
+The user rejected it as a reason to change their preference.
+
 ## Concrete coverage gaps
 
 The read-only inventory compared workflow declarations, root tasks, and selected music-player tasks.
@@ -129,6 +155,7 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
 - Establish device-test runtime and cost before asking the user again to choose a frequency.
 - Establish what result Claude actually needs before its next dependent step, through discussion and repository evidence.
 - Identify desired checks, platform coverage, trial scope, success criteria, and spending constraints.
+- Compare the desired broader CI against the $200 ceiling and repeated work, rather than reopening cache unit pricing.
 - Keep proposals separate from accepted decisions; confirm shared understanding before implementation.
 
 No workflow, Depot resource, credential, or billing setting has been changed in this interview.
@@ -151,3 +178,5 @@ that those artifacts can answer.
 [gate-run]: https://github.com/Aquaticat/Monochromatic/actions/runs/38806855827/job/116669815274
 [depot-orchestration]: https://depot.dev/blog/building-ci-with-durable-lambda
 [github-cache]: https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching
+[github-billing]: https://docs.github.com/en/billing/concepts/product-billing/github-actions
+[depot-pricing]: https://depot.dev/pricing
