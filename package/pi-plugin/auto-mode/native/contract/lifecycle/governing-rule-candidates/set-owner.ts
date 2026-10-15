@@ -161,7 +161,11 @@ export function createGoverningRuleSet({
       });
       records.set(
         handle,
-        { index, original, projection }
+        {
+          index,
+          original,
+          projection
+        }
       );
       instructionHandles.push(handle);
       if (projection.code !== undefined) {
@@ -191,7 +195,11 @@ export function createGoverningRuleSet({
       });
       records.set(
         handle,
-        { index, original, projection }
+        {
+          index,
+          original,
+          projection
+        }
       );
       headingHandles.push(handle);
     }
@@ -290,7 +298,8 @@ export function createGoverningRuleSet({
       return Object.freeze({
         ...index.inspect(),
         sourceOrdinal,
-        sourceOccurrence: nonNullishOrThrow(sources[sourceOrdinal]).occurrence
+        sourceOccurrence: nonNullishOrThrow(sources[sourceOrdinal])
+          .occurrence
       });
     }));
   }

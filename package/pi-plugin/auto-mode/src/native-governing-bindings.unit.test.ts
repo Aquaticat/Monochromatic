@@ -158,7 +158,7 @@ await describe({
             binding.read(handle); 
           }, governingBindingError('Governing-rule binding is no longer current'));
           /** Diagnostic inspection itself must not invoke the unavailable source reader. */
-          const reads = control.reads;
+          const {reads} = control;
           /** The first source failure remains available without replacing its cause. */
           const snapshot = binding.inspect();
           assert.equal(control.reads, reads);

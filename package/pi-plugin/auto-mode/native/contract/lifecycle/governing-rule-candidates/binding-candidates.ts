@@ -172,9 +172,9 @@ export function captureGoverningCandidates({
     right
   ) { 
     return left.projection
-    .start
-    - right.projection
-    .start; 
+      .start
+      - right.projection
+      .start; 
   });
   /**
    Public enumeration exposes only original handles, never private sort records.

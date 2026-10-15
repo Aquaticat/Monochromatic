@@ -95,7 +95,7 @@ await describe({
             return kind === 'throwing' ? error === failure : governingBindingError('Original governing source list changed')(error);
           });
           /** Retired operations must not call the source reader again after apparent recovery. */
-          const reads = control.reads;
+          const {reads} = control;
           control.sources = original;
           control.failing = false;
           assert.throws(function recoveredSetRead() { 

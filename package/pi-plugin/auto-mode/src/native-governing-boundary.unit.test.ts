@@ -3,12 +3,30 @@
  */
 import assert from 'node:assert/strict';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
-import { createGoverningBindings, createGoverningSource, governingBindingError, governingParser } from './native-governing-fixture.ts';
+import { createGoverningBindings, createGoverningSource, GoverningBindingError, governingBindingError, governingParser } from './native-governing-fixture.ts';
 
 //region Original source admission retains the existing reader and representation guards.
 await describe({
   name: '',
   children: [
+    it({
+      name: 'retains original error message, cause, and derived constructor category',
+      fn: async function preservesErrorConstruction() {
+        /** Original cause identity must survive both ordinary and derived construction. */
+        const cause = new Error('original binding cause');
+        /** Ordinary construction retains the exported original error category. */
+        const error = new GoverningBindingError('original binding diagnostic', { cause });
+        assert.equal(error.name, 'GoverningRuleBindingError');
+        assert.equal(error.message, 'original binding diagnostic');
+        assert.equal(error.cause, cause);
+        /** A different new target exercises the original constructor-derived category contract. */
+        const derived: unknown = Reflect.construct(GoverningBindingError, ['derived binding diagnostic', { cause }], TypeError);
+        assert.ok(derived instanceof TypeError);
+        assert.equal(derived.name, 'TypeError');
+        assert.equal(derived.message, 'derived binding diagnostic');
+        assert.equal(derived.cause, cause);
+      },
+    }),
     ...[null, undefined, false, 0, '', 'unowned text', {},
       { content: 'AAA: Original rule.', sha256: 'unowned' },
       Object.freeze({ content: 2, sha256: 'unowned' }),

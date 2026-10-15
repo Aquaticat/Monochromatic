@@ -6,7 +6,11 @@ import { createHash } from 'node:crypto';
 /**
  Fixture occurrence identity is independently owned even when source text repeats.
  */
-export type FixtureGoverningSource = Readonly<{ content: string; sha256: string; occurrence: object }>;
+export type FixtureGoverningSource = Readonly<{
+  content: string;
+  sha256: string;
+  occurrence: object
+}>;
 
 /**
  Consumers distinguish ordinary clauses, retained spans, and contextual-heading aggregates.
@@ -38,9 +42,20 @@ export type FixtureGoverningSnapshot = Readonly<{
   sourceOrdinal?: number;
   sourceOccurrence?: unknown;
   codes: readonly string[];
-  unclassified: readonly Readonly<{ candidate: object; start: number; end: number; text: string; type: string }>[];
+  unclassified: readonly Readonly<{
+    candidate: object;
+    start: number;
+    end: number;
+    text: string;
+    type: string
+  }>[];
   instructionCandidates: readonly object[];
-  contextualHeadings: readonly Readonly<{ start: number; end: number; text: string; depth: number }>[];
+  contextualHeadings: readonly Readonly<{
+    start: number;
+    end: number;
+    text: string;
+    depth: number
+  }>[];
   headingContextCandidate?: object;
   structuralCoverage: string;
   authorityEstablishedByIndex: false;
@@ -71,20 +86,30 @@ export type FixtureGoverningSet = CandidateOperations & Readonly<{ inspect: () =
 /**
  Built parser results remain opaque to the fixture; the original binding validates their structural index.
  */
-export type FixturePolicyParser = (input: Readonly<{ source: string; mdx: boolean }>) => unknown;
+export type FixturePolicyParser = (input: Readonly<{
+  source: string;
+  mdx: boolean
+}>) => unknown;
 
 /**
  Independent consumer signature deliberately permits runtime malformed source and parser inputs.
  */
 type GoverningBindingsModule = Readonly<{
-  createGoverningRuleBindings: (input: Readonly<{ readSource: unknown; parse: unknown }>) => FixtureGoverningBindings;
+  createGoverningRuleBindings: (input: Readonly<{
+    readSource: unknown;
+    parse: unknown
+  }>) => FixtureGoverningBindings;
+  GoverningRuleBindingError: new (message: string, options?: ErrorOptions) => Error;
 }>;
 
 /**
  Source-list admission is tested through the original exported constructor.
  */
 type GoverningSetModule = Readonly<{
-  createGoverningRuleSet: (input: Readonly<{ readSources: () => unknown; parse: unknown }>) => FixtureGoverningSet;
+  createGoverningRuleSet: (input: Readonly<{
+    readSources: () => unknown;
+    parse: unknown
+  }>) => FixtureGoverningSet;
 }>;
 
 /**
@@ -104,8 +129,11 @@ type ParserModule = Readonly<{
  @throws Error for an absent built source-binding export
  */
 function assertBindingsModule(value: unknown): asserts value is GoverningBindingsModule {
-  if ((value === null) || ((typeof value) !== 'object') || (!('createGoverningRuleBindings' in value))
-    || ((typeof value.createGoverningRuleBindings) !== 'function')) throw new Error('Built governing-source binding export is unavailable');
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('createGoverningRuleBindings' in value))
+    || ((typeof value.createGoverningRuleBindings) !== 'function')
+    || (!('GoverningRuleBindingError' in value))
+    || ((typeof value.GoverningRuleBindingError) !== 'function')) throw new Error('Built governing-source binding export is unavailable');
 }
 
 /**
@@ -118,7 +146,8 @@ function assertBindingsModule(value: unknown): asserts value is GoverningBinding
  @throws Error for an absent built source-set export
  */
 function assertSetModule(value: unknown): asserts value is GoverningSetModule {
-  if ((value === null) || ((typeof value) !== 'object') || (!('createGoverningRuleSet' in value))
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('createGoverningRuleSet' in value))
     || ((typeof value.createGoverningRuleSet) !== 'function')) throw new Error('Built governing-source set export is unavailable');
 }
 
@@ -132,7 +161,8 @@ function assertSetModule(value: unknown): asserts value is GoverningSetModule {
  @throws Error for an absent built native parser export
  */
 function assertParserModule(value: unknown): asserts value is ParserModule {
-  if ((value === null) || ((typeof value) !== 'object') || (!('createNativeMarkdownParser' in value))
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('createNativeMarkdownParser' in value))
     || ((typeof value.createNativeMarkdownParser) !== 'function')) throw new Error('Built native Markdown parser export is unavailable');
 }
 
@@ -140,22 +170,23 @@ function assertParserModule(value: unknown): asserts value is ParserModule {
  Tests consume the original native entry paths after the owned artifact is rebuilt.
  */
 const loaded: readonly unknown[] = await Promise.all([
-  import(new URL('../dist/native/contract/lifecycle/governing-rule-candidates/bindings.mjs', import.meta.url).href),
-  import(new URL('../dist/native/contract/lifecycle/governing-rule-candidates/set.mjs', import.meta.url).href),
-  import(new URL('../dist/native/contract/native-index/native-parser.ts', import.meta.url).href),
+  import(new URL(
+    '../dist/native/contract/lifecycle/governing-rule-candidates/bindings.mjs',
+    import.meta.url
+  ).href),
+  import(new URL(
+    '../dist/native/contract/lifecycle/governing-rule-candidates/set.mjs',
+    import.meta.url
+  ).href),
+  import(new URL(
+    '../dist/native/contract/native-index/native-parser.ts',
+    import.meta.url
+  ).href),
 ]);
 /**
- Original source-binding consumer namespace awaits runtime export admission.
+ Original source-binding, source-set, and parser namespaces await runtime export admission.
  */
-const bindingModule = loaded[0];
-/**
- Original source-set consumer namespace awaits runtime export admission.
- */
-const setModule = loaded[1];
-/**
- Incumbent parser namespace awaits runtime export admission.
- */
-const parserModule = loaded[2];
+const [bindingModule, setModule, parserModule] = loaded;
 assertBindingsModule(bindingModule);
 assertSetModule(setModule);
 assertParserModule(parserModule);
@@ -163,6 +194,10 @@ assertParserModule(parserModule);
  Named test helpers retain the admitted source-binding callable.
  */
 export const createGoverningBindings: GoverningBindingsModule['createGoverningRuleBindings'] = bindingModule.createGoverningRuleBindings;
+/**
+ Original error construction retains message, cause, and derived constructor names.
+ */
+export const GoverningBindingError: GoverningBindingsModule['GoverningRuleBindingError'] = bindingModule.GoverningRuleBindingError;
 /**
  Named test helpers retain the admitted source-set callable.
  */
@@ -182,7 +217,11 @@ export const governingParser: Readonly<{ parse: FixturePolicyParser }> = await p
  @example createGoverningSource('AAA: Original clause');
  */
 export function createGoverningSource(content: string): FixtureGoverningSource {
-  return Object.freeze({ content, sha256: createHash('sha256').update(content).digest('hex'), occurrence: Object.freeze({}) });
+  return Object.freeze({
+    content,
+    sha256: createHash('sha256').update(content).digest('hex'),
+    occurrence: Object.freeze({})
+  });
 }
 
 /**
@@ -196,6 +235,7 @@ export function createGoverningSource(content: string): FixtureGoverningSource {
  */
 export function governingBindingError(message: string): (error: unknown) => boolean {
   return function originalBindingDiagnostic(error: unknown): boolean {
-    return Error.isError(error) && (error.name === 'GoverningRuleBindingError') && (error.message === message);
+    return Error.isError(error) && (error.name === 'GoverningRuleBindingError')
+      && (error.message === message);
   };
 }
