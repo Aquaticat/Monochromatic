@@ -8,6 +8,7 @@ import {NativeSourceBuildError,nativeBuildLog} from './build-contract.ts';
 /** Absence is valid for the first installation; other filesystem failures remain errors. */
 async function hasPreviousDirectory(active:string):Promise<boolean>{
  try{
+  /** The entry itself determines migration; a symlink's target must remain untouched. */
   const previous=await lstat(active);
   if(!previous.isDirectory()&&!previous.isSymbolicLink())
    throw new NativeSourceBuildError('Native activation requires an existing directory or release link');
