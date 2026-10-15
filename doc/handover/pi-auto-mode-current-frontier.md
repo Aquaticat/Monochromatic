@@ -1073,6 +1073,33 @@ retains that result.
 The complete maintained lint recount covers 521 files and 486 rules:
 zero errors and 13583 warnings in
 `${HOME}/temp/agent/pi-maintained-typed-store-lint-20261015.log`.
+Commits `1e54dbf7d6`,
+`fbebc54443`,
+`65ccb967e6`,
+and `6fa1a6dce3` type the relevance refresh owner,
+materialized rule keys,
+untrusted answer admission,
+and source-bound publication work.
+The original `cache.mjs` is now `cache.ts` as of 2026-10-15.
+The completion handle is still registered before injected callbacks can recursively refresh.
+The final source and cancellation checks still precede synchronous owner publication without a yield.
+Commit `1f81821698` captures the original caller signal once and excludes later caller-option changes.
+Focused formatting of the typed refresh sources passes with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-refresh-format-20261015.log`.
+Commit `aba3229861` extends built consumers with complete malformed-answer membership,
+no partial publication,
+retained failed-job identity,
+ordered original work and reporting failures,
+single signal capture,
+and source replacement or cancellation during classification and final view preparation.
+The rebuilt store,
+refresh,
+domain,
+semantic-policy,
+manual-review,
+source-freshness,
+and package type sequence is running in
+`${HOME}/temp/agent/pi-native-typed-refresh-consumer-20261015.log`.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
