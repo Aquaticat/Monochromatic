@@ -172,23 +172,38 @@ The image build downloads hundreds of megabytes of packages (gcc, mingw, Wine).
 ## Wine differs from Windows in ways the real runners do not show
 
 These were seen in `mise run //package/music-player/desktop-app:test:windows-gnu`
- (cross-built GNU binaries run by `wine64` in `localhost/monochromatic/music-player-windows-gnu`).
-The same tests pass on the real Windows runners (1383 tests run, 1382 passed, 1 skipped).
+ (cross-built GNU binaries run by `wine64` in `localhost/monochromatic/music-player-windows-gnu`, Fedora 44, Wine 11.0).
+The same tests pass on the real Windows runners (1383 tests run, 1382 passed, 1 skipped, on all jobs in the green runs).
 
-- Without system fonts in the Wine prefix, Slint's software renderer panics in `systemfonts.rs:71`
-  ("no system font") in three `ui_focus_ring_pages_tests`.
-  The image installs the `wine-*-winefonts` packages.
-- A deleted-but-open file stays visible under Wine, so two tests that assert playback and selection react to a removed
-  file fail (`controller_flow::...removing_the_selected_file_reports_it_and_stops_playback` and
-  `controller_measures::refresh_tests::flow::the_selected_track_follows_its_path_...`).
-  The cause was not proven.
-- The test timed out waiting for the event (Wine's `ReadDirectoryChangesW` is the suspect, not proven) for
-  `watch::tests::a_file_written_in_place_is_reported_by_its_own_path` within its timeout.
-- `refresh_scale_tests::one_replaced_file_in_a_million_tracks_costs_milliseconds_not_a_walk` failed with
-  "the folder is created: File not found" under Wine only.
+The last full Wine run (fonts installed) ended with 1383 tests run: 1377 passed (2 flagged leaky), 4 failed, 2 killed,
+ 1 skipped, in 1855 s.
+
+- Without system fonts in the Wine prefix, three `ui_focus_ring_pages_tests` panicked inside Slint
+  (`systemfonts.rs:71`) in an earlier run. The image now installs the `wine-*-winefonts` packages and they pass.
+- `controller_flow::tests::removing_the_selected_file_reports_it_and_stops_playback` fails at
+  `src/controller_flow_tests.rs:288` (`assert!(!controller.playing)`), and
+  `controller_measures::refresh_tests::flow::the_selected_track_follows_its_path_...` fails at
+  `src/controller_refresh_flow_tests.rs:104` (`current_path().is_none()`).
+  Both remove the file that the decoder holds open and expect the next rescan not to find it.
+  Under Wine the rescan still finds it (consistent with a delete-pending file that stays listed while open;
+   the listing behavior was not probed).
+- `watch::tests::a_file_written_in_place_is_reported_by_its_own_path` fails at `src/watch_tests.rs:222` with
+  "a change is reported: Timeout". Wine's `ReadDirectoryChangesW` is the suspect; not proven.
+- `refresh_scale_tests::one_replaced_file_in_a_million_tracks_costs_milliseconds_not_a_walk` fails at
+  `src/refresh_scale_tests.rs:95` with `Os { code: 2, kind: NotFound, message: "File not found." }` from
+  `create_dir_all`. The cause was not probed.
+- `ui_search_ingest_tests::an_answer_to_an_older_query_is_dropped` and
+  `ui_search_ingest_tests::no_match_is_not_claimed_before_the_scan_is_complete` hang until killed (1668 s, SIGKILL).
+  The sibling tests in the same file pass in under a second.
+  At about 1650 s the test process had every thread asleep and its CPU time not growing (read from `/proc/<pid>/task/*/stat`),
+  so it is blocked, not spinning. The 20 s `PATIENCE` deadline of `Scan::pump` did not fire, so the block is outside
+  that loop. Both tests apply a hand-built `SearchState::NoMatch` answer. The cause was not found.
+- The nextest `--config` override `slow-timeout.terminate-after=5` did not end the hung tests after five periods;
+  the run reported slow tests up to 1620 s, and they were killed by hand. Do not rely on that flag for Wine runs.
 
 A Wine failure that the real runners do not reproduce is not a defect of the Windows build.
-Treat the real runners as the authority, and Wine as a cross-compile proof that the binary starts and mostly passes.
+Treat the real runners as the authority, and Wine as a cross-compile proof that the binary builds, starts, and passes
+ the large majority of the suite.
 
 ## Upstream filing decision
 
