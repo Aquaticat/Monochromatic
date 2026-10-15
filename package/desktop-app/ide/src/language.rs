@@ -93,6 +93,12 @@ mod root;
 ///  and the bounded rule for asking again.
 mod owed;
 
+/// The reason a displayed file has no hover,
+///  hints,
+///  or definitions,
+///  published as one `Information` entry of its diagnostics.
+pub mod notice;
+
 /// What the worker thread remembers.
 mod session;
 

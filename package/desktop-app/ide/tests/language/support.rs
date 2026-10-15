@@ -11,6 +11,7 @@
 
 use helix_core::Rope;
 use ide_app::document::Document;
+use ide_app::language::notice::SOURCE as NOTICE_SOURCE;
 use ide_app::language::{
     LanguageWorker,
     config::LanguageSetup,
@@ -406,18 +407,33 @@ impl Probe {
         return found;
     }
 
-    /// Every message of the displayed diagnostics,
-    ///  in group and position order.
+    /// Every message of the servers' own diagnostics on display,
+    ///  in group and position order;
+    ///  the entry that explains missing language support is not one of them (see `notice`).
     pub fn messages(&self) -> Vec<String> {
         let mut found = Vec::new();
         if let Some(snapshot) = &self.diagnostics {
             for group in &snapshot.groups {
+                if group.source == NOTICE_SOURCE {
+                    continue;
+                }
                 for item in &group.items {
                     found.push(item.message.clone());
                 }
             }
         }
         return found;
+    }
+
+    /// The message of the entry that explains missing language support,
+    ///  when the displayed diagnostics hold it.
+    pub fn notice(&self) -> Option<String> {
+        let snapshot = self.diagnostics.as_ref()?;
+        let group = snapshot
+            .groups
+            .iter()
+            .find(|group| return group.source == NOTICE_SOURCE)?;
+        return group.items.first().map(|item| return item.message.clone());
     }
 }
 

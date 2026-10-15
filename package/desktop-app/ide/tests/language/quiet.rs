@@ -309,6 +309,25 @@ fn a_server_that_ends_during_its_start_is_logged_with_its_stderr_lines() {
     probe.until("the failed-start state", |seen| {
         return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
     });
+    // The server's last lines reach the reason once its standard error ended, after the first state.
+    probe.until("the cause in the reason", |seen| {
+        return matches!(
+            seen.state(SERVER),
+            Some(ServerState::FailedToStart { reason }) if reason.contains("cannot read the configuration")
+        );
+    });
+    assert_eq!(
+        probe.state(SERVER),
+        Some(&ServerState::FailedToStart {
+            reason: "the server process ended before it finished starting; the server wrote this to its standard error:\ncannot read the configuration".to_string()
+        })
+    );
+    // The same words are on screen as the entry that says why nothing works.
+    probe.until("the cause in the entry", |seen| {
+        return seen
+            .notice()
+            .is_some_and(|entry| return entry.contains("cannot read the configuration"));
+    });
     drop(probe);
     support::children_until_none();
     let text = capture.text();
@@ -353,7 +372,7 @@ fn a_timed_out_start_is_logged_with_its_stderr_lines() {
     assert_eq!(
         probe.state(SERVER),
         Some(&ServerState::FailedToStart {
-            reason: "scripted-ls did not answer initialize within 3 seconds".to_string()
+            reason: "scripted-ls did not answer initialize within 3 seconds; the server wrote this to its standard error:\nindexing the workspace".to_string()
         })
     );
     drop(probe);
