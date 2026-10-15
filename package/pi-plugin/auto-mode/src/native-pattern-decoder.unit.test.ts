@@ -56,7 +56,7 @@ await describe({ name: 'original pattern decoding', children: [
     assert.equal(Object.isFrozen(elements), false);
   } }),
   it({ name: 'accepts escaped binding names and falsy literal metadata without added restrictions', fn: async function originalMetadata() {
-    assert.deepEqual(decode({ node: parseArgument('res\\u0075lt'), bindingName: 'result' }), { kind: 'result' });
+    assert.deepEqual(decode({ node: parseArgument(String.raw`res\u0075lt`), bindingName: 'result' }), { kind: 'result' });
     for (const value of [undefined, null, false, 0, '', Number.NaN]) {
       assert.deepEqual(decode({ node: { type: 'Literal', value: 1, regex: value, bigint: value } }), { kind: 'literal', value: 1 });
     }

@@ -55,7 +55,7 @@ await describe({ name: 'original pattern rejection', children: [
       rejects({ input: { node: objectNode(input) }, message: 'ordinary data property required' });
     } });
   }),
-  ...['{ 0: 1 }', '{ __proto__: null }', '{ "__pr\\u006fto__": 1 }', '{ a: 1, "a": 2 }', '{ a: 1, "\\u0061": 2 }'].map(function key(source) {
+  ...['{ 0: 1 }', '{ __proto__: null }', String.raw`{ "__pr\u006fto__": 1 }`, '{ a: 1, "a": 2 }', String.raw`{ a: 1, "\u0061": 2 }`].map(function key(source) {
     return it({ name: `rejects original unsupported key ${source}`, fn: async function keyShape() {
       rejects({ input: { node: parseArgument(source) }, message: 'duplicate, prototype-setting or unsupported key' });
     } });

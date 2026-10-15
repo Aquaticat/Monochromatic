@@ -55,7 +55,8 @@ await describe({ name: 'original pattern ownership', children: [
   it({ name: 'retains already published children when a later child fails and never publishes its parent', fn: async function partialPublication() {
     const seen: Pattern[] = [];
     assert.throws(function laterChildFailure() {
-      decode({ node: parseArgument('[1, other]'), owned(value: Pattern) { seen.push(value); return value; } });
+      decode({ node: parseArgument('[1, other]'), owned(value: Pattern) { seen.push(value);
+      return value; } });
     }, { constructor: patterns.ResultProgramProfileError });
     assert.deepEqual(seen, [{ kind: 'literal', value: 1 }]);
   } }),
@@ -63,26 +64,38 @@ await describe({ name: 'original pattern ownership', children: [
   //region Getter order preserves the original syntax boundary and failure identity.
   it({ name: 'reads literal value before metadata and short circuits rejected regex metadata', fn: async function literalReads() {
     const reads: string[] = [];
-    const node = { get type() { reads.push('type'); return 'Literal'; }, get value() { reads.push('value'); return 1; },
-      get regex() { reads.push('regex'); return undefined; }, get bigint() { reads.push('bigint'); return undefined; } };
+    const node = { get type() { reads.push('type');
+    return 'Literal'; }, get value() { reads.push('value');
+    return 1; },
+      get regex() { reads.push('regex');
+      return undefined; }, get bigint() { reads.push('bigint');
+      return undefined; } };
     assert.deepEqual(decode({ node }), { kind: 'literal', value: 1 });
     assert.deepEqual(reads, ['type', 'type', 'value', 'regex', 'bigint']);
     const rejectedReads: string[] = [];
     assert.throws(function rejectedRegex() {
-      decode({ node: { type: 'Literal', get value() { rejectedReads.push('value'); return 1; },
-        get regex() { rejectedReads.push('regex'); return {}; }, get bigint() { rejectedReads.push('bigint'); return '1'; } } });
+      decode({ node: { type: 'Literal', get value() { rejectedReads.push('value');
+      return 1; },
+        get regex() { rejectedReads.push('regex');
+        return {}; }, get bigint() { rejectedReads.push('bigint');
+        return '1'; } } });
     }, { constructor: patterns.ResultProgramProfileError });
     assert.deepEqual(rejectedReads, ['value', 'regex']);
   } }),
   it({ name: 'retains repeated unary argument and property key reads', fn: async function repeatedReads() {
     const reads: string[] = [];
-    const argument = { type: 'Literal', get value() { reads.push('value'); return reads.filter(function values(item) { return item === 'value'; }).length; } };
-    assert.deepEqual(decode({ node: { type: 'UnaryExpression', operator: '-', get argument() { reads.push('argument'); return argument; } } }), { kind: 'literal', value: -2 });
+    const argument = { type: 'Literal', get value() { reads.push('value');
+    return reads.filter(function values(item) { return item === 'value'; }).length; } };
+    assert.deepEqual(decode({ node: { type: 'UnaryExpression', operator: '-', get argument() { reads.push('argument');
+    return argument; } } }), { kind: 'literal', value: -2 });
     assert.deepEqual(reads, ['argument', 'argument', 'value', 'argument', 'value']);
     const keyReads: string[] = [];
-    const key = { get type() { keyReads.push('type'); return 'Literal'; }, get value() { keyReads.push('value'); return 'x'; } };
+    const key = { get type() { keyReads.push('type');
+    return 'Literal'; }, get value() { keyReads.push('value');
+    return 'x'; } };
     const node = { type: 'ObjectExpression', properties: [{ type: 'Property', computed: false, method: false, kind: 'init', shorthand: false,
-      get key() { keyReads.push('key'); return key; }, value: { type: 'Literal', value: true } }] };
+      get key() { keyReads.push('key');
+      return key; }, value: { type: 'Literal', value: true } }] };
     assert.deepEqual(decode({ node }), { kind: 'object', entries: [{ key: 'x', pattern: { kind: 'literal', value: true } }] });
     assert.deepEqual(keyReads, ['key', 'type', 'key', 'type', 'key', 'value', 'key', 'value']);
   } }),
@@ -93,7 +106,8 @@ await describe({ name: 'original pattern ownership', children: [
       { node: objectNode({ key: { get type() { throw failure; } } }) },
       { node: parseArgument('[1]'), owned() { throw failure; } },
     ]) {
-      assert.throws(function originalFailure() { decode(input); }, function sameFailure(error: unknown) { assert.equal(error, failure); return true; });
+      assert.throws(function originalFailure() { decode(input); }, function sameFailure(error: unknown) { assert.equal(error, failure);
+      return true; });
     }
   } }),
   //endregion
