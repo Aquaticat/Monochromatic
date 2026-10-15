@@ -19,7 +19,7 @@ not a measured accuracy guarantee.
 
 Complete assessments are split into provider requests of at most 200 questions,
 with up to three parallel calls per bundle and three sequential bundles per judgment.
-Every call shares the original five-second preparation-inclusive deadline.
+Every call shares the original fifteen-second preparation-inclusive deadline.
 No average USD 0.001 per judgment cost limit applies.
 Question identities and complete shared context survive partitioning;
 partial answer sets cannot authorize execution.

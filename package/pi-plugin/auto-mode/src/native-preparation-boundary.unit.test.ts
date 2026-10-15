@@ -81,7 +81,7 @@ await describe({ name: '', children: [
       const reason = new Error('original cancellation reason');
       f.state.onStep = function retireBeforePublication(point) {
         if (point !== 'checkpoint:4') return;
-        if (kind === 'deadline') f.clock.at = 5_000;
+        if (kind === 'deadline') f.clock.at = 15_000;
         else f.controller.abort(reason);
       };
       assert.throws(function retiredPublication() {

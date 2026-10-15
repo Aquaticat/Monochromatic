@@ -20,7 +20,7 @@ const l = tagged({ tag: 'auto-mode-assessment-sender', },);
  Original preparation-inclusive budget and byte limit also bound conversion.
  */
 const conversionLimits = {
-  durationMs: 5_000,
+  durationMs: 15_000,
 } as const;
 
 //region Conversion consumes the original judgment deadline and one original attempt

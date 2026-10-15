@@ -27,7 +27,7 @@ await describe({name:'',children:[
   }}),
   it({name:'retains deadline expiry after the clock is reset',fn:function keepOriginalRetirement() {
     const {budget,clock}=createBudgetFixture();
-    clock.at=5_000;
+    clock.at=15_000;
     assert.throws(function expiredCheckpoint() { 
       budget.checkpoint(); 
     },JudgmentDeadlineError);
@@ -49,7 +49,7 @@ await describe({name:'',children:[
   it({name:'discards a response after the original deadline',fn:async function discardLateResponse() {
     const {budget,clock}=createBudgetFixture();
     const error=await captureBudgetRejection(budget.dispatch(function completeAfterDeadline() {
-      clock.at=5_000;
+      clock.at=15_000;
       return Promise.resolve('late response');
     }));
     assert.ok(error instanceof JudgmentDeadlineError);

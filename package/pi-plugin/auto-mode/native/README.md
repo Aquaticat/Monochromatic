@@ -407,7 +407,7 @@ preserves every original state value and named question in the Decisions wire fo
 retains the original deadline,
 and partitions complete assessments into requests containing at most 200 questions.
 One judgment permits at most three sequential bundles with at most three parallel HTTP calls each.
-Every bundle uses the original five-second preparation-inclusive deadline.
+Every bundle uses the original fifteen-second preparation-inclusive deadline.
 Failed bundles consume their allowance;
 later dispatches and the single eligible retry share the same counters.
 Each request retains complete shared context and original question names.

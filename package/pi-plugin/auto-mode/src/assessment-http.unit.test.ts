@@ -75,7 +75,7 @@ await describe({
           const input = {
             body: '{"state":"original \\u003c payload"}',
             signal: controller.signal,
-            deadlineAt: performance.now() + (mode === 'deadline' ? 1_000 : 5_000),
+            deadlineAt: performance.now() + (mode === 'deadline' ? 1_000 : 15_000),
             attempt: 1,
           };
           if (mode === 'success') expect(await send(input,),).toBe(raw,);

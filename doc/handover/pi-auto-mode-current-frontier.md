@@ -9,6 +9,12 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+The latest user decision raises the preparation-inclusive assessment deadline to 15 seconds.
+The three sequential bundles of at most three parallel calls remain unchanged.
+Native ownership, conversion, and HTTP lifetime guards now use the accepted duration.
+The five-second results in this evidence ledger describe the superseded deadline.
+Rebuild, updated deadline regressions, and live replay of the unchanged complete workspace request are next.
+
 The user rejected treating normal workspace size as grounds to abandon automatic assessment.
 The process-local assessment probe measured 615 instruction candidates,
 617 total questions,
@@ -18,7 +24,7 @@ The one-question-per-candidate, one-request implementation is the active design 
 The unverified manual-capacity fallback in `8fe7e33410` is withdrawn.
 The user now permits three sequential bundles with at most three parallel calls per bundle.
 The user removed only the average USD 0.001 per judgment cost limit.
-The existing five-second preparation-inclusive hard deadline remains.
+At that point the five-second preparation-inclusive hard deadline remained.
 Complete attributed request partitioning and shared bundle accounting are implemented.
 The configured-workspace CLI now assesses 617 questions in requests of 200, 200, 200, and 17,
 using two sequential bundles.

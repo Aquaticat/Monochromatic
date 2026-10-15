@@ -67,7 +67,7 @@ The capture regression is `test:native:prompt-capacity`.
 Complete assessments use at most three sequential bundles of up to three parallel provider calls.
 Each provider request contains at most 200 questions and complete shared context.
 Keep exact question names, answer ordering, shared cancellation, retired capability rejection,
-and the original five-second preparation-inclusive deadline.
+and the original fifteen-second preparation-inclusive deadline.
 Failed bundles and eligible retries consume the same allowance.
 The average USD 0.001 per judgment cost limit was removed.
 The built regression is `test:assessment-bundles`.

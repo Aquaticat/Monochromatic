@@ -21,7 +21,7 @@ await describe({ name: '', children: [
     assert.equal(f.attempts.length, 1);
     assert.equal(f.attempts[0]?.request, request);
     assert.equal(f.attempts[0]?.signal, f.controller.signal);
-    assert.equal(f.attempts[0]?.deadlineAt, 5_000);
+    assert.equal(f.attempts[0]?.deadlineAt, 15_000);
     assert.equal(f.attempts[0]?.attempt, 1);
     assert.ok(Object.isFrozen(f.attempts[0]));
     assert.deepEqual(f.events, ['segment:readBatchRequest:enter', 'selection', 'segment:readBatchRequest:exit', 'dispatch', 'send', 'segment:settleAssessmentAnswer:enter', 'selection', 'segment:settleAssessmentAnswer:exit']);

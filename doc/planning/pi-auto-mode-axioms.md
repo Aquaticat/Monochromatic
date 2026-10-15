@@ -2,6 +2,12 @@
 
 ## Authority and current status
 
+On 2026-10-15 the user raised the preparation-inclusive assessment budget to 15 seconds.
+This supersedes the five-second deadline recorded in the historical decisions and measurements.
+The accepted ceiling remains three sequential bundles with at most three parallel calls in each bundle.
+The average USD 0.001 per judgment constraint remains removed.
+Preparation, retries, conversion, and all bundles share one original deadline.
+
 The user corrected the design:
 
 > These are NOT reasoning models.

@@ -107,7 +107,7 @@ await describe({
 await describe({
   name: 'original assessment lifetime',
   children: [
-    ...[5_000, 5_001, -1, Number.NaN, Number.POSITIVE_INFINITY,].map(function elapsedClock(clock) {
+    ...[15_000, 15_001, -1, Number.NaN, Number.POSITIVE_INFINITY,].map(function elapsedClock(clock) {
       return it({
         name: `rejects original clock ${String(clock)} before HTTP`,
         fn: async () => {
@@ -132,7 +132,7 @@ await describe({
         let calls = 0;
         const send = assessmentSender({
           now: function originalClock() { return clock; },
-          readCredential: function prepareCredential() { clock = 5_000;
+          readCredential: function prepareCredential() { clock = 15_000;
           return assessmentFixtureKey; },
           fetchImpl: async function countDispatch() { calls++;
           return new Response('{}',); },
@@ -189,7 +189,7 @@ await describe({
         let clock = 0;
         const send = assessmentSender({
           now: function originalClock() { return clock; },
-          fetchImpl: async function lateResponse() { clock = 5_000;
+          fetchImpl: async function lateResponse() { clock = 15_000;
           return new Response('{}',); },
         },);
         const error = await assessmentFailure(async function dispatch() {
@@ -242,7 +242,7 @@ await describe({
           cancel() { cancelled = true; },
         }, { highWaterMark: 0, },);
         const send = assessmentSender({now:()=>clock, fetchImpl: async function streamedResponse() {
-          clock=5_000;
+          clock=15_000;
           return new Response(stream,);
         }, },);
         const error = await assessmentFailure(async function dispatch() {

@@ -201,7 +201,7 @@ await describe({
       expect(reads,).toHaveLength(0,);
     }, },),
     it({ name: 'does not reset an expired original deadline for conversion', fn: async () => {
-      const send = createAssessmentSender({ now: () => 5_000, readCredential: () => assessmentFixtureKey,
+      const send = createAssessmentSender({ now: () => 15_000, readCredential: () => assessmentFixtureKey,
         fetchImpl: async function unexpectedHttp() { throw new Error('Unexpected HTTP',); }, },);
       const error = await assessmentFailure(async function expiredOriginal() {
         return await send({ ...assessmentInput(), body: JSON.stringify(decisionFixtureRequest(),), },);

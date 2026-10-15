@@ -42,7 +42,7 @@ const endpoint = 'https://api.llmgateway.io/v1/decisions';
  Inherited judgment and transport bounds remain fixed at bootstrap.
  */
 const limits = {
-  durationMs: 5_000,
+  durationMs: 15_000,
   attempts: 9,
   successfulStatus: 200,
 } as const;
@@ -110,12 +110,12 @@ export function createAssessmentHttpSender({
       .aborted)
       throw new AssessmentTransportError('Original assessment was cancelled',);
     /**
-     Preparation time has already consumed part of the original five-second budget.
+     Preparation time has already consumed part of the original fifteen-second budget.
      */
     const left = input.deadlineAt - now();
     if ((!Number.isFinite(left,)) || (left < 1)
       || (left > limits.durationMs))
-      throw new AssessmentTransportError('Original assessment deadline is expired or outside its five-second budget',);
+      throw new AssessmentTransportError('Original assessment deadline is expired or outside its fifteen-second budget',);
     return left;
   }
 

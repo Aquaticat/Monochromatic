@@ -27,7 +27,7 @@ export {
 /**
  Original preparation-inclusive duration in milliseconds.
  */
-const durationMs = 5_000;
+const durationMs = 15_000;
 
 /**
  Own one preparation-inclusive deadline and client-attempt ceiling.

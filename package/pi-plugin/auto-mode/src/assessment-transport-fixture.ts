@@ -29,7 +29,7 @@ export function assessmentInput(): AssessmentTransportInput {
   return {
     body: '{"model":"typesafe/jev-1.13.0","state":"exact \\u003c bytes"}',
     signal: new AbortController().signal,
-    deadlineAt: 5_000,
+    deadlineAt: 15_000,
     attempt: 1,
   };
 }

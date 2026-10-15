@@ -47,7 +47,7 @@ await describe({ name: '', children: [
     /** Completed judgments do not reuse the expired decision clock for dependency release. */
     const f = createDependencyFixture();
     f.preparation.finished = true;
-    f.clock.at = 5_000;
+    f.clock.at = 15_000;
     f.state.failures.set('checkpoint', new Error('retained release must not checkpoint'));
     f.state.failures.set('finalize', new Error('retained release must not finalize live dependencies'));
     assert.equal(f.owner.assertDependenciesCurrent(), f.retainedProjection);
@@ -90,7 +90,7 @@ await describe({ name: '', children: [
     return it({ name: `retains actual built budget ${kind} failure for live authentication`, fn: async function retiresLifetime() {
       /** Actual original budget decides its own lifetime failure category. */
       const f = createDependencyFixture();
-      if (kind === 'deadline') f.clock.at = 5_000;
+      if (kind === 'deadline') f.clock.at = 15_000;
       else f.controller.abort(new Error('original cancellation'));
       assert.throws(function expiredActive() { 
         f.owner.active(); 
