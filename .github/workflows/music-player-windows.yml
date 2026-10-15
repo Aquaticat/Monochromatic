@@ -671,6 +671,325 @@ jobs:
             raise SystemExit("failed: " + "; ".join(failures))
         PYTHON
 
+    # Two checks from doc/decision/music-player-windows-gui-subsystem.md, both run against a console this step creates.
+    # Console colors: the step clears ENABLE_VIRTUAL_TERMINAL_PROCESSING on its console (the msvc-arm64 runner's console
+    # starts that way, the x64 ones do not), then the program's log line and clap's error text must reach the console
+    # screen buffer without a literal ESC character, and a log written to a file must hold no ESC byte.
+    # Startup failure: a debug build reads MUSIC_PLAYER_FORCE_STARTUP_FAILURE and fails at that startup step on purpose
+    # (release builds do not contain that code). With no console and no standard handle (a double-click start) the program
+    # must show a Windows message box naming the failed step; the step finds that box by its process id, reads its title
+    # and text, presses OK and expects exit status 1 (101 after a panic). With a console or with stderr in a file there must
+    # be no box, and the text must be printed there instead. Nobody looks at the box: it is read through Win32 calls.
+    - name: Check console colors and the startup failure message
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
+      working-directory: package/music-player/desktop-app
+      run: |
+        set -euo pipefail
+        exe="$(cygpath --windows "$PWD/target/${TARGET}/debug/music-player.exe")"
+        python - "$exe" "$(cygpath --windows "$RUNNER_TEMP")" <<'PYTHON'
+        import ctypes
+        import os
+        import sys
+        import time
+        import winreg
+        from ctypes import wintypes
+
+        exe, temp_dir = sys.argv[1], sys.argv[2]
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        user32 = ctypes.WinDLL("user32", use_last_error=True)
+        STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE = (wintypes.DWORD(-10).value, wintypes.DWORD(-11).value, wintypes.DWORD(-12).value)
+        STARTF_USESTDHANDLES = 0x100
+        GENERIC_READ, GENERIC_WRITE = 0x80000000, 0x40000000
+        FILE_SHARE_READ, FILE_SHARE_WRITE = 1, 2
+        CREATE_ALWAYS, OPEN_EXISTING = 2, 3
+        INFINITE = 0xFFFFFFFF
+        WAIT_TIMEOUT = 0x102
+        ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x4
+        WM_GETTEXT, WM_GETTEXTLENGTH, WM_COMMAND, IDOK = 0x000D, 0x000E, 0x0111, 1
+        FORCE = "MUSIC_PLAYER_FORCE_STARTUP_FAILURE"
+
+
+        class SecurityAttributes(ctypes.Structure):
+            _fields_ = [("nLength", wintypes.DWORD), ("lpSecurityDescriptor", wintypes.LPVOID), ("bInheritHandle", wintypes.BOOL)]
+
+
+        class StartupInfo(ctypes.Structure):
+            _fields_ = [
+                ("cb", wintypes.DWORD), ("lpReserved", wintypes.LPWSTR), ("lpDesktop", wintypes.LPWSTR), ("lpTitle", wintypes.LPWSTR),
+                ("dwX", wintypes.DWORD), ("dwY", wintypes.DWORD), ("dwXSize", wintypes.DWORD), ("dwYSize", wintypes.DWORD),
+                ("dwXCountChars", wintypes.DWORD), ("dwYCountChars", wintypes.DWORD), ("dwFillAttribute", wintypes.DWORD),
+                ("dwFlags", wintypes.DWORD), ("wShowWindow", wintypes.WORD), ("cbReserved2", wintypes.WORD),
+                ("lpReserved2", ctypes.c_void_p), ("hStdInput", wintypes.HANDLE), ("hStdOutput", wintypes.HANDLE), ("hStdError", wintypes.HANDLE),
+            ]
+
+
+        class ProcessInformation(ctypes.Structure):
+            _fields_ = [("hProcess", wintypes.HANDLE), ("hThread", wintypes.HANDLE), ("dwProcessId", wintypes.DWORD), ("dwThreadId", wintypes.DWORD)]
+
+
+        class Coord(ctypes.Structure):
+            _fields_ = [("X", wintypes.SHORT), ("Y", wintypes.SHORT)]
+
+
+        class SmallRect(ctypes.Structure):
+            _fields_ = [("Left", wintypes.SHORT), ("Top", wintypes.SHORT), ("Right", wintypes.SHORT), ("Bottom", wintypes.SHORT)]
+
+
+        class ScreenBufferInfo(ctypes.Structure):
+            _fields_ = [("dwSize", Coord), ("dwCursorPosition", Coord), ("wAttributes", wintypes.WORD), ("srWindow", SmallRect), ("dwMaximumWindowSize", Coord)]
+
+
+        EnumWindowsProc = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+        kernel32.GetStdHandle.restype = wintypes.HANDLE
+        kernel32.GetStdHandle.argtypes = [wintypes.DWORD]
+        kernel32.SetStdHandle.argtypes = [wintypes.DWORD, wintypes.HANDLE]
+        kernel32.CreateFileW.restype = wintypes.HANDLE
+        kernel32.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+        kernel32.CreateProcessW.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, ctypes.c_void_p, ctypes.c_void_p, wintypes.BOOL, wintypes.DWORD, ctypes.c_void_p, wintypes.LPCWSTR, ctypes.POINTER(StartupInfo), ctypes.POINTER(ProcessInformation)]
+        kernel32.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+        kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
+        kernel32.GetConsoleMode.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+        kernel32.SetConsoleMode.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+        kernel32.GetConsoleScreenBufferInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(ScreenBufferInfo)]
+        kernel32.ReadConsoleOutputCharacterW.argtypes = [wintypes.HANDLE, wintypes.LPWSTR, wintypes.DWORD, Coord, ctypes.POINTER(wintypes.DWORD)]
+        user32.EnumWindows.argtypes = [EnumWindowsProc, wintypes.LPARAM]
+        user32.EnumChildWindows.argtypes = [wintypes.HWND, EnumWindowsProc, wintypes.LPARAM]
+        user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
+        user32.GetClassNameW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
+        user32.SendMessageW.restype = ctypes.c_ssize_t
+        user32.SendMessageW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, ctypes.c_void_p]
+        user32.PostMessageW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
+
+        failures = []
+
+
+        def check(name, condition, detail):
+            # Non-ASCII characters (an ESC shows as a left arrow in the screen buffer) are escaped so the print cannot fail.
+            print(f"{'ok  ' if condition else 'FAIL'} {name}: {detail.encode('ascii', 'backslashreplace').decode()}", flush=True)
+            if not condition:
+                failures.append(name)
+
+
+        def has_escape(text):
+            """A literal ESC: the byte itself, or the left arrow a console without VT processing stores for it."""
+            return "\x1b" in text or "←[" in text
+
+
+        def console_output():
+            return kernel32.CreateFileW("CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, None, OPEN_EXISTING, 0, None)
+
+
+        def console_mode():
+            screen = console_output()
+            mode = wintypes.DWORD(0)
+            kernel32.GetConsoleMode(screen, ctypes.byref(mode))
+            kernel32.CloseHandle(screen)
+            return mode.value
+
+
+        def fresh_console(virtual_terminal):
+            """An empty console of this process, with VT processing on or off as asked."""
+            kernel32.FreeConsole()
+            if not kernel32.AllocConsole():
+                raise SystemExit(f"AllocConsole failed with error {ctypes.get_last_error()}")
+            screen = console_output()
+            mode = wintypes.DWORD(0)
+            kernel32.GetConsoleMode(screen, ctypes.byref(mode))
+            wanted = (mode.value | ENABLE_VIRTUAL_TERMINAL_PROCESSING) if virtual_terminal else (mode.value & ~ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+            if not kernel32.SetConsoleMode(screen, wanted):
+                raise SystemExit(f"SetConsoleMode failed with error {ctypes.get_last_error()}")
+            kernel32.CloseHandle(screen)
+            return mode.value
+
+
+        def console_text():
+            screen = console_output()
+            info = ScreenBufferInfo()
+            if not kernel32.GetConsoleScreenBufferInfo(screen, ctypes.byref(info)):
+                raise SystemExit(f"GetConsoleScreenBufferInfo failed with error {ctypes.get_last_error()}")
+            rows = []
+            for row in range(info.dwCursorPosition.Y + 1):
+                buffer = ctypes.create_unicode_buffer(info.dwSize.X)
+                read = wintypes.DWORD(0)
+                kernel32.ReadConsoleOutputCharacterW(screen, buffer, info.dwSize.X, Coord(0, row), ctypes.byref(read))
+                rows.append(buffer.value.rstrip())
+            kernel32.CloseHandle(screen)
+            return "\n".join(rows).strip()
+
+
+        def open_inheritable_file(path):
+            attributes = SecurityAttributes(ctypes.sizeof(SecurityAttributes), None, True)
+            handle = kernel32.CreateFileW(path, GENERIC_WRITE, FILE_SHARE_READ, ctypes.byref(attributes), CREATE_ALWAYS, 0, None)
+            if handle in (None, wintypes.HANDLE(-1).value):
+                raise SystemExit(f"CreateFileW failed for {path} with error {ctypes.get_last_error()}")
+            return handle
+
+
+        def launch(argument, inherit, use_std_handles, stdout_file=None, stderr_file=None):
+            startup = StartupInfo()
+            startup.cb = ctypes.sizeof(StartupInfo)
+            if use_std_handles:
+                startup.dwFlags = STARTF_USESTDHANDLES
+                startup.hStdOutput = stdout_file
+                startup.hStdError = stderr_file
+            info = ProcessInformation()
+            command = ctypes.create_unicode_buffer(f'"{exe}" {argument}'.rstrip())
+            if not kernel32.CreateProcessW(exe, command, None, None, inherit, 0, None, None, ctypes.byref(startup), ctypes.byref(info)):
+                raise SystemExit(f"CreateProcessW failed with error {ctypes.get_last_error()}")
+            kernel32.CloseHandle(info.hThread)
+            return info.hProcess, info.dwProcessId
+
+
+        def finish(process, wait_ms):
+            """The exit code, or None when the process was still running after wait_ms (it is then ended)."""
+            code = None
+            if kernel32.WaitForSingleObject(process, wait_ms) == WAIT_TIMEOUT:
+                kernel32.TerminateProcess(process, 1)
+                kernel32.WaitForSingleObject(process, INFINITE)
+            else:
+                exit_code = wintypes.DWORD(0)
+                kernel32.GetExitCodeProcess(process, ctypes.byref(exit_code))
+                code = exit_code.value
+            kernel32.CloseHandle(process)
+            return code
+
+
+        def window_text(hwnd):
+            # WM_GETTEXT, not GetWindowTextW: GetWindowTextW does not read the controls of another process.
+            length = user32.SendMessageW(hwnd, WM_GETTEXTLENGTH, 0, None)
+            buffer = ctypes.create_unicode_buffer(length + 1)
+            user32.SendMessageW(hwnd, WM_GETTEXT, length + 1, ctypes.cast(buffer, ctypes.c_void_p))
+            return buffer.value
+
+
+        def class_name(hwnd):
+            buffer = ctypes.create_unicode_buffer(256)
+            user32.GetClassNameW(hwnd, buffer, 256)
+            return buffer.value
+
+
+        def find_dialog(pid, seconds):
+            """The first dialog-class (#32770) top-level window of the process, or None after the wait."""
+            deadline = time.monotonic() + seconds
+            while time.monotonic() < deadline:
+                found = []
+
+                def visit(hwnd, _):
+                    owner = wintypes.DWORD(0)
+                    user32.GetWindowThreadProcessId(hwnd, ctypes.byref(owner))
+                    if owner.value == pid and class_name(hwnd) == "#32770":
+                        found.append(hwnd)
+                    return True
+
+                user32.EnumWindows(EnumWindowsProc(visit), 0)
+                if found:
+                    return found[0]
+                time.sleep(0.2)
+            return None
+
+
+        def dialog_message(hwnd):
+            texts = []
+
+            def visit(child, _):
+                if class_name(child) == "Static":
+                    texts.append(window_text(child))
+                return True
+
+            user32.EnumChildWindows(hwnd, EnumWindowsProc(visit), 0)
+            return "\n".join(text for text in texts if text)
+
+
+        # What decides how the console treats escape sequences on this runner, printed for the record.
+        kernel32.FreeConsole()
+        kernel32.AllocConsole()
+        print(f"a new console starts with mode 0x{console_mode():x} (0x4 is ENABLE_VIRTUAL_TERMINAL_PROCESSING)", flush=True)
+        try:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Console") as key:
+                print(f"HKCU\\Console VirtualTerminalLevel = {winreg.QueryValueEx(key, 'VirtualTerminalLevel')[0]!r}", flush=True)
+        except OSError as error:
+            print(f"HKCU\\Console VirtualTerminalLevel is not set ({error})", flush=True)
+        for name in ("TERM", "NO_COLOR", "CLICOLOR", "CLICOLOR_FORCE"):
+            print(f"environment {name}={os.environ.get(name)!r}", flush=True)
+
+        # Console colors.
+        os.environ["RUST_LOG"] = "debug"
+        os.environ.pop(FORCE, None)
+        fresh_console(False)
+        process, _ = launch("--no-such-option", False, False)
+        code = finish(process, 20000)
+        text = console_text()
+        check("colors, no handles, console without VT, bad argument", code == 2 and "no-such-option" in text and "attached to the console" in text and not has_escape(text), f"exit code {code}, console mode now 0x{console_mode():x}, console shows {text!r}")
+        fresh_console(False)
+        path = os.path.join(temp_dir, "colors-stdout.txt")
+        stdout_file = open_inheritable_file(path)
+        kernel32.SetStdHandle(STD_INPUT_HANDLE, None)
+        kernel32.SetStdHandle(STD_OUTPUT_HANDLE, stdout_file)
+        kernel32.SetStdHandle(STD_ERROR_HANDLE, None)
+        process, _ = launch("--no-such-option", True, False)
+        code = finish(process, 20000)
+        kernel32.CloseHandle(stdout_file)
+        text = console_text()
+        check("colors, stdout file, stderr on a console without VT, bad argument", code == 2 and "no-such-option" in text and not has_escape(text), f"exit code {code}, console shows {text!r}")
+        out_file = open_inheritable_file(os.path.join(temp_dir, "colors-out.txt"))
+        err_file = open_inheritable_file(os.path.join(temp_dir, "colors-err.txt"))
+        process, _ = launch("--no-such-option", True, True, out_file, err_file)
+        code = finish(process, 20000)
+        kernel32.CloseHandle(out_file)
+        kernel32.CloseHandle(err_file)
+        with open(os.path.join(temp_dir, "colors-err.txt"), "rb") as handle:
+            logged = handle.read()
+        check("colors, stderr in a file, bad argument", code == 2 and b"console attach skipped" in logged and b"no-such-option" in logged and b"\x1b" not in logged, f"exit code {code}, stderr file holds {logged[:400]!r}")
+
+        # Startup failure with somewhere to print: no message box, the text is printed, exit status 1.
+        os.environ["RUST_LOG"] = "info"
+        os.environ[FORCE] = "window-system"
+        fresh_console(True)
+        process, pid = launch("", False, False)
+        dialog = find_dialog(pid, 8)
+        code = finish(process, 20000)
+        text = console_text()
+        check("startup failure, console of the parent", dialog is None and code == 1 and "Music Player could not start" in text, f"dialog {dialog}, exit code {code}, console shows {text[-600:]!r}")
+        out_file = open_inheritable_file(os.path.join(temp_dir, "failure-out.txt"))
+        err_file = open_inheritable_file(os.path.join(temp_dir, "failure-err.txt"))
+        process, pid = launch("", True, True, out_file, err_file)
+        dialog = find_dialog(pid, 8)
+        code = finish(process, 20000)
+        kernel32.CloseHandle(out_file)
+        kernel32.CloseHandle(err_file)
+        with open(os.path.join(temp_dir, "failure-err.txt"), encoding="utf-8", errors="replace") as handle:
+            logged = handle.read()
+        check("startup failure, stderr in a file", dialog is None and code == 1 and "Music Player could not start" in logged, f"dialog {dialog}, exit code {code}, stderr file ends with {logged[-600:]!r}")
+
+        # Startup failure in a double-click start: no console, no standard handle. The message box must appear.
+        kernel32.FreeConsole()
+        for step, phrase, wanted_code in (
+            ("window-system", "connection to the Windows desktop", 1),
+            ("window", "could not create its window", 1),
+            ("event-loop", "window stopped working", 1),
+            ("panic", "internal error", 101),
+        ):
+            os.environ[FORCE] = step
+            process, pid = launch("", False, False)
+            dialog = find_dialog(pid, 20)
+            title = message = ""
+            if dialog is not None:
+                title = window_text(dialog)
+                message = dialog_message(dialog)
+                user32.PostMessageW(dialog, WM_COMMAND, IDOK, 0)
+            code = finish(process, 20000)
+            for line in message.splitlines():
+                print(f"    {step} message: {line}".encode("ascii", "backslashreplace").decode(), flush=True)
+            good = dialog is not None and title.startswith("Music Player") and phrase in message and FORCE in message and code == wanted_code
+            check(f"double-click start, forced {step} failure, message box", good, f"dialog {dialog}, title {title!r}, exit code {code} after OK")
+        os.environ.pop(FORCE, None)
+
+        if failures:
+            raise SystemExit("failed: " + "; ".join(failures))
+        PYTHON
+
     # The program must stay up when started on a folder, with no audio device on the runner. A start that
     # exits within the wait fails the job.
     - name: Launch the program and check it stays up
@@ -692,6 +1011,12 @@ jobs:
           exit 1
         fi
         head -n 40 "${RUNNER_TEMP}/launch.log"
+        # The log went to a file, so it must hold plain text: no ESC byte of an ANSI color sequence.
+        if grep --quiet --fixed-strings $'\x1b' "${RUNNER_TEMP}/launch.log"; then
+          echo "::error::the log written to a file holds ANSI escape sequences"
+          exit 1
+        fi
+        echo "the log file holds no escape sequence"
 
     - name: Run the tests (cargo nextest)
       working-directory: package/music-player/desktop-app
