@@ -25,7 +25,7 @@ function captureProgramTool(tool: NativeReturnTool): NativeReturnTool {
   /**
    Original name is read before inspecting the structured-output declaration.
    */
-  const name = tool.name;
+  const {name} = tool;
   /**
    Native truthiness determines the original conversion branch without interpreting the schema.
    */
