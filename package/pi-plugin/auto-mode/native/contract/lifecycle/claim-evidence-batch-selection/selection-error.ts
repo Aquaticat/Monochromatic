@@ -6,6 +6,8 @@
  Invalid definition, response attribution, or relation estimate.
  */
 export class QuestionSelectionError extends Error {
-  /** Stable category retained by native boundary consumers. */
+  /**
+   Stable category retained by native boundary consumers.
+   */
   override readonly name: string = 'QuestionSelectionError';
 }

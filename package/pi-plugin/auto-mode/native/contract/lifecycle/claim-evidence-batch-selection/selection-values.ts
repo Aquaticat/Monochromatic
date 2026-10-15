@@ -66,19 +66,27 @@ export function readAssessmentResponse(input: unknown): AssessmentResponse {
     ))) {
     throw new QuestionSelectionError('Assessment response requires answer text and its serving-model attribution');
   }
-  /** Original answer property, inspected without invoking accessors. */
+  /**
+   Original answer property, inspected without invoking accessors.
+   */
   const answer = Object.getOwnPropertyDescriptor(
     input,
     'answerText'
   );
-  /** Original model property, inspected without invoking accessors. */
+  /**
+   Original model property, inspected without invoking accessors.
+   */
   const model = Object.getOwnPropertyDescriptor(
     input,
     'model'
   );
-  /** Untrusted descriptor payload narrowed before publication. */
+  /**
+   Untrusted descriptor payload narrowed before publication.
+   */
   const answerText: unknown = answer?.value;
-  /** Untrusted serving identity narrowed before its byte bound is checked. */
+  /**
+   Untrusted serving identity narrowed before its byte bound is checked.
+   */
   const modelText: unknown = model?.value;
   if ((answer?.enumerable !== true) || (!Object.hasOwn(
     answer,
@@ -108,7 +116,9 @@ export function readAssessmentResponse(input: unknown): AssessmentResponse {
  @throws QuestionSelectionError for mismatched options or invalid probabilities
  */
 function assertChoiceEstimate(input: RelationEstimateInput): asserts input is RelationEstimateInput & Readonly<{ value: ChoiceEstimate }> {
-  /** Captured definition and original answer from the reader boundary. */
+  /**
+   Captured definition and original answer from the reader boundary.
+   */
   const {
     definition,
     value
@@ -125,9 +135,13 @@ function assertChoiceEstimate(input: RelationEstimateInput): asserts input is Re
     ))) {
     throw new QuestionSelectionError('Choice answer must select an option from its original definition');
   }
-  /** Original distribution object, retained for freezing without a copy. */
+  /**
+   Original distribution object, retained for freezing without a copy.
+   */
   const { probabilities } = value;
-  /** Complete option set supplied by the original fixed definition. */
+  /**
+   Complete option set supplied by the original fixed definition.
+   */
   const labels = Object.keys(definition.criteria);
   if ((!object(probabilities))
     || Array.isArray(probabilities)
@@ -143,13 +157,17 @@ function assertChoiceEstimate(input: RelationEstimateInput): asserts input is Re
     })) {
     throw new QuestionSelectionError('Choice probabilities differ from the original option set');
   }
-  /** Accumulate numeric evidence without rewriting any probability. */
+  /**
+   Accumulate numeric evidence without rewriting any probability.
+   */
   const distribution = {
     largest: 0,
     total: 0
   };
   for (const label of labels) {
-    /** Untrusted original member must be finite and bounded. */
+    /**
+     Untrusted original member must be finite and bounded.
+     */
     const probability = probabilities[label];
     if (((typeof probability) !== 'number') || (!Number.isFinite(probability))
       || (probability < 0)
@@ -180,7 +198,9 @@ function assertChoiceEstimate(input: RelationEstimateInput): asserts input is Re
  @example readRelationEstimate({ definition: { type: 'noul', criteria: {} }, value: 0.5 });
  */
 export function readRelationEstimate(input: RelationEstimateInput): number | ChoiceEstimate {
-  /** Capture caller properties once before choosing the validation branch. */
+  /**
+   Capture caller properties once before choosing the validation branch.
+   */
   const {
     definition,
     value
@@ -192,7 +212,9 @@ export function readRelationEstimate(input: RelationEstimateInput): number | Cho
     throw new QuestionSelectionError('Scalar answer must be a bounded numeric estimate');
   }
   if (definition.type !== 'choice') throw new QuestionSelectionError('Estimate definition type is unsupported');
-  /** Stable holder permits an assertion without reading caller properties again. */
+  /**
+   Stable holder permits an assertion without reading caller properties again.
+   */
   const original = {
     definition,
     value
