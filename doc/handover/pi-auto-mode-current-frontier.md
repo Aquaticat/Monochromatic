@@ -629,8 +629,14 @@ the package type check also passes.
 Commit `81ecaf586b` separates dependency eligibility and synchronous binding checks into
 `judgment-dependencies.mjs`,
 with preparation and finalization state still supplied by the original constructor.
-Its rebuilt approval and changed-dependency consumers are running;
-the source-work bound remains unchanged.
+Its rebuilt manual-review,
+approval-context,
+and changed-dependency consumers pass.
+The same source-work fixture passes at 9046 policy-file opens.
+`${HOME}/temp/agent/pi-native-dependency-owner-consumer-20261014.log` retains those results.
+Commit `33c1c35cd8` groups runtime publication state and judgment accounting in their respective owners
+and scopes budget cleanup with synchronous disposal.
+Focused lint and rebuilt lifecycle verification remain pending for that change.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
