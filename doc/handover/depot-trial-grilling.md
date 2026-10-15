@@ -557,6 +557,13 @@ collect every sizing result,
 separate fixed-job-count hardware effects from increased Cargo concurrency,
 calculate provider charges and the user's combined time cost,
 and update the allocation recommendation with spread and limitations.
+The container-product follow-up also runs two isolated cold builds and unchanged repeats
+with 16 Cargo jobs on the existing default builder.
+It uses the dedicated trial project,
+fresh Cargo cache scopes,
+the production runtime version assertion,
+and the existing 1,800-second Cargo execution bound.
+This measures the no-size-upgrade concurrency option instead of extrapolating GitHub-runner measurements to it.
 The independent coverage queue also runs the existing `test:alpine` task through
 `.github/workflows/depot-trial-alpine-checks.yml` on a disposable four-CPU Depot GitHub runner,
 in [run 38820372915](https://github.com/Aquaticats/Monochromatic/actions/runs/38820372915)
