@@ -278,6 +278,14 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-execution-lifetime.unit.test.ts",
 ]
 
+[tasks."test:native:judgment-preparation"]
+description = "Verify original source sealing, preparation failure, and complete native member publication"
+run = [
+  'node --max-old-space-size=512 src/native-preparation.unit.test.ts',
+  'node --max-old-space-size=512 src/native-preparation-failure.unit.test.ts',
+  'node --max-old-space-size=512 src/native-preparation-boundary.unit.test.ts',
+]
+
 [tasks."test:native:judgment-lifecycle"]
 description = "Verify original lifecycle evidence, transport exclusion, failure retention, and terminal closure"
 run = [
