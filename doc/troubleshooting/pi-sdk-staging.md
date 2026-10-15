@@ -1,5 +1,60 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.2.0 Hyper selection succeeds while the configured fixture rejects startup diagnostics
+
+### Symptom and cause
+
+The October 14 Hyper default-selection fixture returned the requested
+`hyper/gemma-4-26b-a4b-it` RPC state and exited zero,
+then its controller failed `AssertionError [ERR_ASSERTION]` while comparing stderr with an empty string.
+This was an overbroad local assertion,
+not a failed model selection.
+The controller at `${HOME}/temp/agent/pi-hyper-model-20261014/state.ts:80` contains:
+
+```ts
+// Private configured-host fixture, state.ts
+assert.equal(state.isStreaming,false);assert.equal(state.pendingMessageCount,0);assert.equal(stderr,'');
+```
+
+The fixture deliberately rejects external fetches and copies only the Hyper model catalogue.
+The retained startup diagnostics include the Synthetic extension's blocked model discovery,
+Pi's `No models match pattern` warnings for other configured providers,
+and ordinary extension lifecycle logging.
+The related [Synthetic startup diagnosis](pi-synthetic-provider-startup-model-scope.md)
+retains the separate historical scope-resolution incident;
+this fixture's deliberate network boundary does not reproduce that historical root cause.
+
+### Verification and bounded recovery
+
+`${HOME}/temp/agent/pi-hyper-state-MD0Lvx/events.json` retains the original successful RPC response.
+Its `stderr.txt` retains every diagnostic byte.
+The controller's exit,
+model identity,
+idle state,
+and pending-message assertions passed before the empty-stderr assertion.
+The disposable host loaded all 17 configured packages under network isolation.
+It made zero provider requests.
+
+The separate `verify-state` task in `${HOME}/temp/agent/pi-hyper-model-20261014/mise.toml`
+reads those original artifacts and the saved defaults without rerunning the host.
+Its `state-verification.json` records successful selection and failed empty-stderr verification separately.
+This recovers the selection result only;
+it neither claims a live Gemma response nor qualifies an empty-stderr lifecycle.
+Discarding the diagnostics or treating all startup output as a shutdown defect is rejected.
+
+### Upstream filing decision
+
+1.  Fault: the failing assertion belongs to our disposable controller.
+2.  Fixability: our verifier can distinguish model selection from its separate diagnostic assertion.
+3.  Supported use: ordinary model selection is supported;
+    silence from every configured extension is our additional fixture expectation.
+4.  Contribution policy: no external code change or report is proposed for this local assertion.
+5.  Upstream disposition: this result establishes no new upstream defect to assess or search for duplicates.
+6.  Prototype: the local artifact verifier passes while retaining the original failed assertion and all diagnostics.
+
+Nothing is filed upstream.
+The existing Synthetic troubleshooting record remains a separate incident.
+
 ## Pi 1.2.0 direct generated manager import reaches an uninitialized owned bootstrap constructor
 
 ### Symptom
