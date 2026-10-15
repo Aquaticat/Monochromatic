@@ -44,10 +44,9 @@ export async function capturePolicyInputs({
  function sourceViewFor(handle){
   const rule=readRule(handle);
   for(const source of sources){
+   if(rule.sourceOccurrence!==source.view.sourceOccurrence)continue;
    source.assertCurrent(source.view);
-   if(rule.sourceOccurrence
-     ===source.view
-     .sourceOccurrence)return source.view;
+   return source.view;
   }
   return Object.freeze({
     kind:'unresolved-instruction-source',
@@ -58,10 +57,9 @@ export async function capturePolicyInputs({
   const rule=readRule(handle);
   for(const source of sources){
    if(!source.authority)continue;
+   if(rule.sourceOccurrence!==source.authority.sourceOccurrence)continue;
    source.assertAuthorityCurrent(source.authority);
-   if(rule.sourceOccurrence
-     ===source.authority
-     .sourceOccurrence)return source.authority;
+   return source.authority;
   }
   return Object.freeze({
     kind:'unresolved-instruction-authority',
