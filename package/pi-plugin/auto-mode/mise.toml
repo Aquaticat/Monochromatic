@@ -584,4 +584,5 @@ description = "Verify original instruction identities, source selection, admissi
 run = [
   'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction.unit.test.ts',
   'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction-lifetime.unit.test.ts',
+  'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction-batch.unit.test.ts',
 ]
