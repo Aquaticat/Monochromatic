@@ -731,10 +731,16 @@ and invoke an independently typed consumer interface.
 They do not add copied output to the TypeScript source project.
 The final formatting pass reports zero errors and 27 remaining warnings;
 the following edits separate callback statements and complete the fixture assertion documentation.
-Final package type checking and focused lint are running on those edits.
-Rebuilt typed-consumer repetition,
-the updated TypeScript overlap omission,
-and original approval-consumer checks remain queued.
+Commit `feb3b62cec` separates the remaining compound export assertion operators.
+Package type checking passes;
+focused lint passes all eight budget implementation and consumer files with zero warnings or errors.
+`${HOME}/temp/agent/pi-native-budget-operator-lint-20261015.log` retains the complete report.
+The rebuilt typed consumers pass in
+`${HOME}/temp/agent/pi-native-budget-checked-consumer-20261015.log`.
+Removing the dispatch overlap guard in memory makes the typed consumer fail its expected rejection assertion.
+The unchanged artifact hashes and result are recorded in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/budget-overlap-typescript-omission.json`.
+Original source-work and approval-consumer checks are running on the rebuilt typed budget.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

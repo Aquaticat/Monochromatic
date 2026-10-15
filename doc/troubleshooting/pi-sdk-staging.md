@@ -55,7 +55,14 @@ The JavaScript budget and its new consumer built and passed their runtime checks
 The overlap-guard omission control failed its expected rejection assertion without changing the built artifact.
 The complete JavaScript subset still had 139 warnings,
 including unchecked imports in the new consumer.
-Typed implementation and consumer checks are now pending after migration to the existing TypeScript setup.
+After migration to the existing TypeScript setup,
+package type checking and lint of all eight budget implementation and consumer files pass.
+The focused lint report contains no warnings or errors.
+The rebuilt typed consumers pass;
+removing the overlap guard in memory makes the typed consumer fail its expected rejection assertion.
+The built candidate and dispatcher hashes remain unchanged.
+`${HOME}/temp/agent/pi-native-budget-operator-lint-20261015.log`
+and `pi-native-budget-checked-consumer-20261015.log` in the same directory retain those results.
 
 Reproduce with the package's `lint:oxlint` task and the explicit budget path.
 `${HOME}/temp/agent/pi-native-budget-shape-lint-20261014.log`
