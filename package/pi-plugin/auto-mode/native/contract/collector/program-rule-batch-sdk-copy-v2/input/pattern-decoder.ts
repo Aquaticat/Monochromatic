@@ -14,13 +14,22 @@ import type {
 const l = tagged({ tag: 'auto-mode-pattern-decoder' });
 
 /**
+ Original structural depth bound permits finite recursive inspection.
+ */
+const maxDepth = 8;
+/**
+ Original collection bound limits inspected argument members.
+ */
+const maxMembers = 64;
+
+/**
  Narrow original literal metadata with only the original discriminant access.
 
  @param node - original optional parser node
 
  @returns whether original literal validation applies
  */
-function isPatternLiteral(node: PatternDecoderInput['node']): node is PatternLiteral {
+function isPatternLiteral(node?: Readonly<{ type: string }>): node is PatternLiteral {
   return node?.type === 'Literal';
 }
 
@@ -32,6 +41,9 @@ function isPatternLiteral(node: PatternDecoderInput['node']): node is PatternLit
  @returns whether original truthiness treats metadata as absent
  */
 function isAbsent(value: unknown): boolean {
+  /**
+   Boolean conversion retains the original metadata truthiness.
+   */
   const present = Boolean(value);
   return !present;
 }
@@ -63,15 +75,21 @@ export function readOwnedPattern({
   owned,
   ResultProgramProfileError
 }: PatternDecoderInput): DecodedPattern {
+  /**
+   Tracing observes entry without reading original payload fields.
+   */
   const cl = tagged({
     tag: readOwnedPattern.name,
     l
   });
   cl.debug('decoding original argument pattern');
-  if (!(depth <= 8)) throw new ResultProgramProfileError('argument nesting exceeds profile');
+  if (!(depth <= maxDepth)) throw new ResultProgramProfileError('argument nesting exceeds profile');
   if ((node?.type === 'Identifier') && (bindingName !== undefined)
     && (node.name === bindingName)) return owned({ kind: 'result' });
   if (isPatternLiteral(node)) {
+    /**
+     Original literal value is read before metadata validation.
+     */
     const { value } = node;
     if (!(isAbsent(node.regex) && isAbsent(node.bigint)
       && ((value === null) || ((typeof value) === 'string')
@@ -87,6 +105,9 @@ export function readOwnedPattern({
   if ((node?.type === 'UnaryExpression') && (node.operator === '-')
     && (node.argument?.type === 'Literal')
     && ((typeof node.argument.value) === 'number')) {
+    /**
+     Negation repeats the original argument and numeric value reads.
+     */
     const value = -node.argument
       .value;
     if (!(Number.isFinite(value) && (!Object.is(
@@ -101,7 +122,10 @@ export function readOwnedPattern({
   if (node?.type === 'ArrayExpression') {
     if (!(node.elements
       .length
-      <= 64)) throw new ResultProgramProfileError('array size bound');
+      <= maxMembers)) throw new ResultProgramProfileError('array size bound');
+    /**
+     Original array mapping retains child order and sparse synthetic elements.
+     */
     const items = node.elements
       .map(function readArrayPattern(item) {
       if ((item === null) || (item.type === 'SpreadElement')) throw new ResultProgramProfileError('array hole or spread');
@@ -114,10 +138,16 @@ export function readOwnedPattern({
   }
   if (!((node?.type === 'ObjectExpression') && (node.properties
     .length
-    <= 64))) {
+    <= maxMembers))) {
     throw new ResultProgramProfileError('literal object or earlier result reference required');
   }
+  /**
+   Previously accepted keys reject duplicates before shorthand and child decoding.
+   */
   const keys = new Set<string>();
+  /**
+   Accepted entries retain original property order and child ownership.
+   */
   const entries = [];
   for (const property of node.properties) {
     if ((property.type !== 'Property') || property.computed
@@ -125,6 +155,9 @@ export function readOwnedPattern({
       || (property.kind !== 'init')) {
       throw new ResultProgramProfileError('ordinary data property required');
     }
+    /**
+     Original key selection preserves repeated parser property reads.
+     */
     const key = property.key
       .type
       === 'Identifier' ? property.key

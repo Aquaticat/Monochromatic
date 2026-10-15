@@ -23,11 +23,19 @@ export type DecodedPattern = Readonly<
 >;
 
 /**
+ Optional source fields retain explicit absence when forwarded to recursive decoding.
+ */
+type PatternSyntax = Readonly<{
+  node?: Node;
+  bindingName?: string;
+}>;
+
+/**
  Parser input and borrowed callbacks preserve the original decoding boundary.
  */
 export type PatternDecoderInput = Readonly<{
-  node: Node | undefined;
-  bindingName: string | undefined;
+  node: PatternSyntax['node'];
+  bindingName: PatternSyntax['bindingName'];
   depth: number;
   owned: (value: DecodedPattern) => DecodedPattern;
   ResultProgramProfileError: new (message: string) => Error;

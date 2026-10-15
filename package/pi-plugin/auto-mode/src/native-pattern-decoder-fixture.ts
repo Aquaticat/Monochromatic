@@ -74,6 +74,9 @@ const decoder: Decoder = loaded;
  @example parseArgument('{ value: 1 }');
  */
 export function parseArgument(source: string): unknown {
+  /**
+   Original direct call provides its untouched argument node.
+   */
   const call = parseCall(`tools.tool(${source})`);
   assert.ok((call !== null) && ((typeof call) === 'object')
     && ('arguments' in call)
