@@ -11,8 +11,14 @@ import type {
   InstructionAdoptionPair,
   SelectedInstruction,
   ProgramInstruction,
-  BoundPolicySelection
+  BoundPolicySelection,
+  InstructionMember
 } from './instruction-types.ts';
+
+/**
+ Claimed instructions have canonical bindings; reached-child member records retain their absent binding result.
+ */
+export type InstructionBindingLookup = QuestionBinding | InstructionMember['binding'];
 
 /**
  One frozen selection retains every independently owned source subject and coverage record.
@@ -72,5 +78,5 @@ export type InstructionBatchOperations = Readonly<{
  Public instruction operations share one original owner without exposing private maps.
  */
 export type JudgmentInstructions = Omit<InstructionSourceOperations, 'ensureRuleBindings'> & ProgramInstructionOperations & MemberInstructionOperations & InstructionBatchOperations & Readonly<{
-  resolveBinding: (handle: object) => QuestionBinding;
+  resolveBinding: (handle: object) => InstructionBindingLookup;
 }>;

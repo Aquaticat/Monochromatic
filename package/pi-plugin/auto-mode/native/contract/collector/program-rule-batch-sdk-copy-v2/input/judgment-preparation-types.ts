@@ -32,7 +32,7 @@ export type JudgmentPreparationState = {
 /**
  Published root membership shares one original binding across instruction and execution owners.
  */
-export type JudgmentPreparedBinding = ProgramMemberRecord & InstructionMember;
+export type JudgmentPreparedBinding = ProgramMemberRecord & Required<InstructionMember>;
 
 /**
  Original preparation capabilities remain lazy until the corresponding native boundary.
@@ -61,7 +61,7 @@ export type JudgmentPreparationInput<Source extends JudgmentPreparationSources =
   catalogText: string;
   catalogSHA256: string;
   resolveBinding: QuestionSelectionInput['resolveBinding'];
-  bindings: WeakMap<object, JudgmentPreparedBinding>;
+  bindings: Pick<WeakMap<object, JudgmentPreparedBinding>, 'set'>;
   byMember: Map<string, object>;
 }>;
 

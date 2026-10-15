@@ -16,10 +16,10 @@ import type { QuestionSelection } from '../../../lifecycle/claim-evidence-batch-
 export type InstructionAdoptionPair = UnitAdoptionPair<ReturnType<ReadonlyMap<string, object>['get']>>;
 
 /**
- Original prepared-member projection is borrowed, never reconstructed.
+ Root claim bindings are borrowed; reached child records omit the root-only binding.
  */
 export type InstructionMember = Readonly<{
-  binding: Readonly<{
+  binding?: Readonly<{
     identity: object;
     projection: Readonly<{ memberOrdinal: number }>
   }>;
@@ -41,7 +41,7 @@ export type JudgmentInstructionsInput = Readonly<{
     name: string
   }>[];
   byMember: ReadonlyMap<string, object>;
-  bindings: WeakMap<object, InstructionMember>;
+  bindings: Pick<WeakMap<object, InstructionMember>, 'get' | 'has'>;
   knownSelection: () => Pick<QuestionSelection, 'declare'>;
   parsePolicy?: GoverningSetInput['parse'];
   receipt: Readonly<{ request: object }>;

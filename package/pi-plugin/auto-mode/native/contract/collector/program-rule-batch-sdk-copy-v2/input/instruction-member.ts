@@ -25,10 +25,12 @@ import type { InstructionSources } from './instruction-sources.ts';
 
  @throws TypeError when original member ownership has disappeared
  */
-function memberProjection(memberRecord?: InstructionMember) : InstructionMember['binding']['projection'] {
+function memberProjection(memberRecord?: InstructionMember) : NonNullable<InstructionMember['binding']>['projection'] {
   if (memberRecord === undefined) throw new TypeError("Cannot read properties of undefined (reading 'binding')");
-  return memberRecord.binding
-    .projection;
+  /** Original root projection access fails before claim publication when its binding is absent. */
+  const { binding } = memberRecord;
+  if (binding === undefined) throw new TypeError("Cannot read properties of undefined (reading 'projection')");
+  return binding.projection;
 }
 
 //region Instruction meaning shares clause identity while member predicates retain separate original handles.

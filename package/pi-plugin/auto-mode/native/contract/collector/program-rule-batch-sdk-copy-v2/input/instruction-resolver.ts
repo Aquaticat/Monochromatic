@@ -4,7 +4,7 @@
 import { JudgmentConstructionError } from './judgment-error.ts';
 import { retainedInstructionRules } from './instruction-ownership.ts';
 import type { InstructionContext } from './instruction-types.ts';
-import type { QuestionBinding } from '../../../lifecycle/claim-evidence-batch-selection/selection-owner-types.ts';
+import type { InstructionBindingLookup } from './instruction-api.ts';
 
 //region Retained instruction records require the same original request, member, and source units.
 /**
@@ -21,7 +21,7 @@ import type { QuestionBinding } from '../../../lifecycle/claim-evidence-batch-se
 export function createInstructionResolver({
   input,
   state
-}: InstructionContext) : (bindingHandle: object) => QuestionBinding {
+}: InstructionContext) : (bindingHandle: object) => InstructionBindingLookup {
   /**
    Original judgment capabilities remain borrowed without reading lazy request or source content.
    */
@@ -39,7 +39,7 @@ export function createInstructionResolver({
 
    @throws JudgmentConstructionError for foreign or changed ownership
    */
-  function resolveBinding(bindingHandle: object): QuestionBinding {
+  function resolveBinding(bindingHandle: object): InstructionBindingLookup {
     ready();
     /**
      Private original record selects the exact dependencies that must remain current.
