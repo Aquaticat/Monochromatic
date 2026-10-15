@@ -203,12 +203,14 @@ class SearchFieldCaretWiringTest {
         show()
         type("lan")
         placeCaret(0)
+        // The lookup happens before the press: a semantics lookup inside the block can wait for a frame, which would
+        // let a caret that is moved in a later frame arrive before the character.
+        /** Action that inserts text at the field's caret, as the keyboard does. */
+        val insert = composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).fetchSemanticsNode().config
+            .getOrNull(SemanticsActions.InsertTextAtCursor)?.action
+        checkNotNull(insert) { "the field offers no insert-at-cursor action" }
         composeTestRule.runOnUiThread {
             shortcutPort.press()
-            /** Action that inserts text at the field's caret, as the keyboard does. */
-            val insert = composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).fetchSemanticsNode().config
-                .getOrNull(SemanticsActions.InsertTextAtCursor)?.action
-            checkNotNull(insert) { "the field offers no insert-at-cursor action" }
             insert(AnnotatedString("y"))
         }
         composeTestRule.waitForIdle()
