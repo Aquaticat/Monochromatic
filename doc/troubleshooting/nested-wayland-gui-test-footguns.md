@@ -127,6 +127,27 @@ session.
 - Treating the control socket's `ok` as delivery confirmation:
    it confirms injection only.
 
+## Scrolling by hand: the steps cap and the client's scaling of fast scrolls (2026-10-15)
+
+Two traps met while driving the music player's lists with the compositor's `scroll` command for the release-build
+measurements (`doc/audit/music-player-release-build-measurements-2026-10-15.md`).
+
+- The `steps=` argument of `scroll` (and of `drag`) is limited to 1 through 1000
+  (`package/cli/nested-wayland-session/src/protocol_click.rs`, `rest.number("steps", 1, (1, 1_000))`).
+  A larger value answers `err scroll steps= must be from 1 to 1000`.
+  To travel farther, send several `scroll` commands, each with at most 1000 steps.
+- The distance a pixel scroll moves a Slint list is not the distance requested when the events are fast.
+  A scroll of 50 logical pixels per event at 16 ms intervals moved the track list about 1.8 times the requested
+  distance, and 100 pixels per event at 5 ms intervals moved it between about 1.1 and 2.3 times,
+  varying from run to run.
+  A single large jump (one `scroll` with a large DY) landed on the end of a 501-folder panel instead of the middle.
+  The scaling depends on the event rate, which this repository did not measure further.
+
+Workaround that held: reach a deep position with chunks of 50 logical pixels per event, then take a screenshot and
+check the position from the picture, and verify movement with a before and after screenshot compared with
+`magick compare -metric AE`.
+Tradeoff: the landing row is only known from the picture, so a measurement that needs an exact row cannot use this.
+
 ## Upstream filing decision
 
 `.out-of-scope/` was checked:
