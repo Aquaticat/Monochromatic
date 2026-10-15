@@ -329,9 +329,13 @@ before saying it matches, QAB):
   hardware, a real GPU, X11, other compositors, edge and postmarketOS. Alpine clippy flags `src/oklch.rs`
   `manual_range_contains` where host clippy does not (the Alpine guard runs no clippy; not fixed, lint not loosened).
   The Alpine CI cache entries are 0.93 to 0.95 GB each, over the 650 MB guide, and the agent added the Alpine family
-  to `cache-prune.yml`. Release artifact: task 100 (agent `a08518253f8af06ab`, branch `feat/music-player-release-musl`,
-  worktree `music-player-relmusl`) adds `music-player-<version>-linux-musl-x64.tar.gz` and `-arm64.tar.gz` to the
-  release workflow and proves it with a dry run from its branch.
+  to `cache-prune.yml`. Release artifact (task 100): MERGED to `main` at `ff743f8b7e` on 2026-10-15, job `build-desktop-musl` in
+  the release workflow adds `music-player-<version>-linux-musl-x64.tar.gz` and `-arm64.tar.gz` (Alpine build image,
+  `--version` checked in the runtime image). The agent's two dry runs from its branch passed (38684256021 and
+  38686797998); it measured the Alpine x86_64 job at 15 to 20 minutes, which now sets a release's length (about 7
+  minutes before); the job is uncached because the repo cache was at 9.98 of 10 GB (a cache would save at most the
+  9 minutes of the dependency phase on x86_64). Its attestation path ran only as skipped until a real release; the
+  `0.1.2` release (bump commit `c75435f772`, run `38688512043`) is the first real run of it.
 - Task 96, Windows linkers, branch `feat/music-player-windows-linkers`, worktree `music-player-win`: Windows MSVC
   uses `link.exe` instead of `lld-link.exe`, plus a non-MSVC build for `x86_64-pc-windows-gnu`, a Windows CI workflow;
   Linux stays on rust-lld because mold links ELF only (upstream README, mold 3.0.0, and
