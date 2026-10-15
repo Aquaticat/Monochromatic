@@ -42,17 +42,15 @@ await describe({ name: 'original prepared member decisions', children: [
     assert.deepEqual(fixture.failures, []);
   } }),
   it({ name: 'preserves inherited decision fields without adding property-existence probes', fn: async function inheritedDecision() {
-    const fixture = createMemberFixture();
     const prototype = { block: false };
     const inherited: unknown = Object.create(prototype);
     const value = new Proxy({ block: false }, { has() { throw new Error('Unexpected property existence probe'); } });
-    for (const assessed of [inherited, value]) {
+    await Promise.all([inherited, value].map(async function originalDecision(assessed) {
       const current = createMemberFixture();
       current.control.assess = function original() { return assessed; };
       assert.equal(await current.run(), undefined);
       assert.deepEqual(current.failures, []);
-    }
-    assert.equal(fixture.ready.size, 0);
+    }));
   } }),
   it({ name: 'preserves repeated original blocking and reason getter order', fn: async function decisionReadOrder() {
     const fixture = createMemberFixture();

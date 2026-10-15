@@ -22,7 +22,11 @@ await describe({ name: 'original prepared member values', children: [
       assert.equal(fixture.batchState.assessmentStarted, true);
       return { block: false, ignored: true };
     };
-    assert.equal(await fixture.run(), undefined);
+    const running = fixture.run();
+    const result = await Promise.race([running, immediate('pending')]);
+    fixture.gate.resolve({ block: false });
+    await running;
+    assert.equal(result, undefined);
     const member = fixture.ready.get('one');
     assert.ok(member);
     assert.equal(member.id, 'one');
@@ -133,7 +137,7 @@ await describe({ name: 'original prepared member values', children: [
       fixture.control.prepare = function blocked() { return { block: 'truthy', reason }; };
       const result = await fixture.run();
       assert.equal(result, fixture.batchState.decision);
-      assert.deepEqual(fixture.blockReasons, [reason || 'A member preparation blocked this complete group']);
+      assert.deepEqual(fixture.blockReasons, [ordinal === 6 ? reason : 'A member preparation blocked this complete group']);
       assert.deepEqual(fixture.events, ['active:prepare-entry', 'prepare', 'block']);
       assert.equal(fixture.ready.size, 0);
       assert.deepEqual(fixture.assessments, []);

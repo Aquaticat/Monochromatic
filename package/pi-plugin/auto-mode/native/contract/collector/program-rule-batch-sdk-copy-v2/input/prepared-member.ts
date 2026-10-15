@@ -4,6 +4,7 @@
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import type {
   PreparedDecisionProperties,
+  PreparedMember,
   PreparedMemberInput
 } from './prepared-member-types.ts';
 
@@ -40,6 +41,9 @@ function isAssessmentObject(value: unknown): value is PreparedDecisionProperties
  @returns whether original truthiness treats this value as absent
  */
 function isAbsent(value: unknown): boolean {
+  /**
+   Boolean conversion retains original falsy values without re-reading a property.
+   */
   const present = Boolean(value);
   return !present;
 }
@@ -126,7 +130,11 @@ export async function preparePreparedMember({
      */
     const prepared = await prepare(hook);
     if (hasPreparationProperties(prepared) && (!isAbsent(prepared.block))) {
-      block(prepared.reason || 'A member preparation blocked this complete group');
+      /**
+       Original fallback observes the native reason only once.
+       */
+      const reason = prepared.reason;
+      block(isAbsent(reason) ? 'A member preparation blocked this complete group' : reason);
       return await gate.promise;
     }
     active('input-prepared');
@@ -138,7 +146,7 @@ export async function preparePreparedMember({
     /**
      The manifest records the exact original call and a separately sealed cloned input.
      */
-    const member = Object.freeze({
+    const member: PreparedMember = Object.freeze({
       groupExecutionMode: serial ? 'sequential' : 'parallel',
       id: call.id,
       name: call.name,

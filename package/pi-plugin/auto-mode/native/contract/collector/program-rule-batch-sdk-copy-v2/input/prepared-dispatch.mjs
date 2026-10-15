@@ -124,8 +124,9 @@ export async function dispatchPreparedBatch({
             partial,
             call
           )); },
-          beforeToolCall:async function prepareNativeMember(hook) {
-        return await preparePreparedMember({hook,call,memberState,batchState,ready,scheduled,snapshots,failures,serial,signal,gate,active,prepare,block,sealInput,releasePreparation,assess,PreparedBatchContractError});
+          /** {@inheritDoc preparePreparedMember} */
+          beforeToolCall:function prepareNativeMember(hook) {
+        return preparePreparedMember({hook,call,memberState,batchState,ready,scheduled,snapshots,failures,serial,signal,gate,active,prepare,block,sealInput,releasePreparation,assess,PreparedBatchContractError});
       }
         }
       );

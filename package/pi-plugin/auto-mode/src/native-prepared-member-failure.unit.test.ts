@@ -44,7 +44,8 @@ await describe({ name: 'original prepared member failure ownership', children: [
   ...[undefined, null, { original: 'preparation failure' }].map(function preparationFailure(failure, ordinal) {
     return it({ name: `retains opaque native preparation failure ${ordinal}`, fn: async function prepareFailure() {
       const fixture = createMemberFixture();
-      fixture.control.prepare = async function rejectedPreparation() { throw failure; };
+      const originalFailure: unknown = failure;
+      fixture.control.prepare = async function rejectedPreparation() { throw originalFailure; };
       const result = await fixture.run();
       assertRetained({ fixture, result, failure });
       assert.equal(fixture.ready.size, 0);
@@ -66,15 +67,15 @@ await describe({ name: 'original prepared member failure ownership', children: [
     return it({ name: `retains original sealing failure at invocation ${ordinal}`, fn: async function sealFailure() {
       const fixture = createMemberFixture();
       const failure: unknown = Object.freeze({ ordinal });
-      let count = 0;
+      const counter = { count: 0 };
       fixture.control.seal = function original(input) {
-        count++;
-        if (count === ordinal) throw failure;
+        counter.count++;
+        if (counter.count === ordinal) throw failure;
         return input;
       };
       const result = await fixture.run();
       assertRetained({ fixture, result, failure });
-      assert.equal(count, ordinal);
+      assert.equal(counter.count, ordinal);
       assert.equal(fixture.ready.size, 0);
       assert.equal(fixture.events.includes('release'), false);
     } });
@@ -137,7 +138,7 @@ await describe({ name: 'original prepared member failure ownership', children: [
   it({ name: 'rejects entry marker publication without retaining or blocking it', fn: async function entryPublication() {
     const fixture = createMemberFixture();
     const failure: unknown = Object.freeze({ reason: 'original marker setter' });
-    await assert.rejects(fixture.run({ memberState: { set entered(_value: boolean) { throw failure; } } }), function original(error: unknown) {
+    await assert.rejects(fixture.run({ memberState: { get entered() { return false; }, set entered(_value: boolean) { throw failure; } } }), function original(error: unknown) {
       assert.equal(error, failure);
       return true;
     });
