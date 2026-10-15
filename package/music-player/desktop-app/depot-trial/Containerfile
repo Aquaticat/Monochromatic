@@ -29,7 +29,9 @@ RUN --mount=type=cache,id=music-player-trial-cargo,target=/cargo,sharing=locked 
     && if [ "${TRIAL_LINKER}" = mold ]; then export RUSTFLAGS="-C link-arg=-fuse-ld=mold"; mold --version >> /out/toolchain.txt; fi \
     && timeout 1800 cargo build --release --locked --features alsa-fallback --jobs "${BUILD_JOBS}" \
     && cp Cargo.lock /out/Cargo.lock \
-    && cp /target/release/music-player /out/music-player
+    && cp /target/release/music-player /out/music-player \
+    && readelf --string-dump=.comment /out/music-player > /out/linker.txt \
+    && du -sk /target /cargo > /out/cache-usage-kib.txt
 
 FROM runtime AS verify
 COPY --from=compile /out /out
