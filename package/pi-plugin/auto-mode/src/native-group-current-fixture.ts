@@ -81,10 +81,28 @@ export function createCurrentFixture(): CurrentFixture {
   /** Construction itself must not invoke original currentness callbacks. */
   const owner = currentModule.createGroupCurrent({
     group, view, signal: controller.signal, groupState: state, records,
-    assertParentCurrent(): void { assert.equal(this, undefined); step('parent'); },
-    readGroup(original): object { assert.equal(this, undefined); assert.equal(original, group); step('read'); return state.view; },
-    recordFailure(input): object { assert.equal(this, undefined); recorded.push(input); step('record'); return recordedToken; },
-    abortOccurrence(input): object { assert.equal(this, undefined); aborted.push(input); step('abort'); return abortedToken; },
+    assertParentCurrent(): void { 
+      assert.equal(this, undefined); 
+      step('parent'); 
+    },
+    readGroup(original): object { 
+      assert.equal(this, undefined); 
+      assert.equal(original, group); 
+      step('read'); 
+      return state.view; 
+    },
+    recordFailure(input): object { 
+      assert.equal(this, undefined); 
+      recorded.push(input); 
+      step('record'); 
+      return recordedToken; 
+    },
+    abortOccurrence(input): object { 
+      assert.equal(this, undefined); 
+      aborted.push(input); 
+      step('abort'); 
+      return abortedToken; 
+    },
   });
   return { state, controller, records, events, recorded, aborted, recordedToken, abortedToken, owner };
 }

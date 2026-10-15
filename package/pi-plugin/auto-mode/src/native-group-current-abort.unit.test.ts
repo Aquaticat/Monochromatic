@@ -13,11 +13,19 @@ await describe({ name: '', children: [
     f.owner.checkAbort({ observed: member.signal, at: 'member boundary' });
     assert.equal(f.events.length, 0);
     member.abort('native');
-    assert.throws(function check() { f.owner.checkAbort({ observed: member.signal, at: 'member boundary' }); }, function same(error: unknown) { return error === f.abortedToken; });
+    assert.throws(function check() { 
+      f.owner.checkAbort({ observed: member.signal, at: 'member boundary' }); 
+    }, function same(error: unknown) { 
+      return error === f.abortedToken; 
+    });
     assert.equal(f.aborted[0]?.observed, member.signal);
     assert.equal(f.aborted[0]?.at, 'member boundary');
     f.state.failAt = 'abort';
-    assert.throws(function check() { f.owner.checkAbort({ observed: member.signal, at: 'again' }); }, function same(error: unknown) { return error === f.state.failure; });
+    assert.throws(function check() { 
+      f.owner.checkAbort({ observed: member.signal, at: 'again' }); 
+    }, function same(error: unknown) { 
+      return error === f.state.failure; 
+    });
   } }),
   ...['closed', 'settled', 'complete', 'empty', 'partial', 'failed', 'active'].map(function listenerCases(mode) {
     return it({ name: `retains original parent listener behavior for ${mode} group`, fn: async function parent() {

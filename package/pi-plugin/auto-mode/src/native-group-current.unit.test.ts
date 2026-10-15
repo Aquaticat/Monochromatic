@@ -23,7 +23,11 @@ await describe({ name: '', children: [
     f.state.primary = f.recordedToken;
     f.state.closed = true;
     f.controller.abort('original');
-    assert.throws(function current() { f.owner.current(); }, function same(error: unknown) { return error === f.recordedToken; });
+    assert.throws(function current() { 
+      f.owner.current(); 
+    }, function same(error: unknown) { 
+      return error === f.recordedToken; 
+    });
     assert.equal(f.events.length, 0);
   } }),
   it({ name: 'closure precedes cancellation and reports the original category and message', fn: async function closed() {
@@ -31,14 +35,20 @@ await describe({ name: '', children: [
     const f = createCurrentFixture();
     f.state.closed = true;
     f.controller.abort('original');
-    assert.throws(function current() { f.owner.current(); }, { name: 'DeclaredGroupCollectionError', message: 'Declared parent group has returned' });
+    assert.throws(function current() { 
+      f.owner.current(); 
+    }, { name: 'DeclaredGroupCollectionError', message: 'Declared parent group has returned' });
     assert.equal(f.events.length, 0);
   } }),
   it({ name: 'initial parent cancellation retains its original signal before reading currentness', fn: async function aborted() {
     /** Initial cancellation stops before either original parent callback. */
     const f = createCurrentFixture();
     f.controller.abort('original');
-    assert.throws(function current() { f.owner.current(); }, function same(error: unknown) { return error === f.abortedToken; });
+    assert.throws(function current() { 
+      f.owner.current(); 
+    }, function same(error: unknown) { 
+      return error === f.abortedToken; 
+    });
     assert.deepEqual(f.events, ['abort']);
     assert.equal(f.aborted[0]?.observed, f.controller.signal);
     assert.equal(f.aborted[0]?.at, 'original-cancellation');
@@ -58,8 +68,14 @@ await describe({ name: '', children: [
             f.controller.abort('original');
           }
         };
-        if (publication === 'closed') assert.throws(function current() { f.owner.current(); }, { name: 'DeclaredGroupCollectionError', message: 'Declared parent group has returned' });
-        else assert.throws(function current() { f.owner.current(); }, function same(error: unknown) { return error === (publication === 'abort' ? f.abortedToken : f.recordedToken); });
+        if (publication === 'closed') assert.throws(function current() { 
+          f.owner.current(); 
+        }, { name: 'DeclaredGroupCollectionError', message: 'Declared parent group has returned' });
+        else assert.throws(function current() { 
+          f.owner.current(); 
+        }, function same(error: unknown) { 
+          return error === (publication === 'abort' ? f.abortedToken : f.recordedToken); 
+        });
         assert.deepEqual(f.events, publication === 'abort' ? ['parent', 'read', 'abort'] : ['parent', 'read']);
         assert.equal(f.recorded.length, 0);
       } });
@@ -71,7 +87,11 @@ await describe({ name: '', children: [
       const f = createCurrentFixture();
       f.state.failAt = point;
       f.state.failure = undefined;
-      assert.throws(function current() { f.owner.current(); }, function same(error: unknown) { return error === f.recordedToken; });
+      assert.throws(function current() { 
+        f.owner.current(); 
+      }, function same(error: unknown) { 
+        return error === f.recordedToken; 
+      });
       assert.deepEqual(f.events, point === 'parent' ? ['parent', 'record'] : ['parent', 'read', 'record']);
       assert.equal(f.recorded[0]?.error, undefined);
       assert.equal(f.recorded[0]?.at, 'parent-current-reader');
@@ -84,7 +104,11 @@ await describe({ name: '', children: [
     /** Equal-shaped replacement views cannot substitute for original reached identity. */
     const f = createCurrentFixture();
     f.state.view = Object.freeze({ original: 'view' });
-    assert.throws(function current() { f.owner.current(); }, function same(error: unknown) { return error === f.recordedToken; });
+    assert.throws(function current() { 
+      f.owner.current(); 
+    }, function same(error: unknown) { 
+      return error === f.recordedToken; 
+    });
     /** Mismatch diagnostic must retain its original category and message. */
     const recorded = f.recorded[0]?.error;
     assert.ok(recorded instanceof Error);
@@ -92,7 +116,11 @@ await describe({ name: '', children: [
     assert.equal(recorded.message, 'Reached group view changed during native collection');
     assert.deepEqual(f.events, ['parent', 'read', 'record']);
     f.state.failAt = 'record';
-    assert.throws(function current() { f.owner.current(); }, function same(error: unknown) { return error === f.state.failure; });
+    assert.throws(function current() { 
+      f.owner.current(); 
+    }, function same(error: unknown) { 
+      return error === f.state.failure; 
+    });
   } }),
 ] });
 //endregion
