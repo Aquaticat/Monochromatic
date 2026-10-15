@@ -805,8 +805,18 @@ and host-lifecycle consumers pass in
 Native syntax passes all 274 modules at that artifact.
 Root lifecycle construction,
 transition publication,
-and diagnostic isolation are the next separated boundaries;
-their lint and consumer checks are pending.
+and diagnostic isolation are separated by commit `4d2b8c4748`.
+Their focused lint has zero errors and 607 warnings.
+The rebuilt manager-constructor,
+CLI-manager,
+host-lifecycle,
+and changed-dependency consumers pass in
+`${HOME}/temp/agent/pi-native-root-lifecycle-consumer-20261015.log`.
+The policy compiler now delegates output packaging and remaining-premise filtering to `compilation-result.mjs`.
+The compiler retains the original evidence and input validation before that final filtering call.
+A full maintained lint recount is running in
+`${HOME}/temp/agent/pi-maintained-observation-splits-lint-20261015.log`.
+Rebuilt compiler consumers remain queued after the recount.
 The remaining full lint gate is still open.
 The handover,
 troubleshooting entry,
