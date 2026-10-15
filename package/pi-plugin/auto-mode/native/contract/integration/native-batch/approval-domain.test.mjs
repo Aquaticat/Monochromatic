@@ -17,6 +17,7 @@ const {
 }=await import(maintainedPolicyEntry);
 await flushPolicyDiagnostics();
 const mode=process.argv[2]??'allow';
+const freshSessionApproval=process.argv.includes('--fresh-session-approval');
 const useNativeContext=process.argv
   .includes('--native-context');
 const reloadContext=process.argv
@@ -35,7 +36,7 @@ assert.ok([
   'retired'
 ].includes(mode));
 const permission=mode==='bare'?'Use sentence case in the final response.':mode==='prohibited'?'The complete proposed operation is prohibited.':'The complete proposed operation is permitted.';
-const policyText=`RUL:\n ${permission}\n\nCNF:\n Require the original session Allow confirmation for this prepared group.\n`;
+const policyText=`RUL:\n ${permission}\n\nCNF:\n Require a fresh Allow response from the current Pi session user for this exact prepared group.\n`;
 let nativePi;
 const env=await createEnvironment({
   policyText,
@@ -104,6 +105,7 @@ const runtime=bindNativePolicyRuntime({
   headingContextAdmissionPolicy:policy('heading_instruction_content'),
   effectOwnerFor:function omitFixtureAuthorizationOwner() { return (undefined); },
   authorizationOwnerFor({judgment,rule,source,request}){
+  if(freshSessionApproval)return undefined;
   if(mode==='missing'||judgment.readRuleCandidate(rule).code!=='CNF')return undefined;
   assert.equal(source.source.content,policyText);
   assert.equal(source.request,request);
@@ -124,7 +126,8 @@ const runtime=bindNativePolicyRuntime({
   assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,originalBody);
   const answers=Object.fromEntries(Object.entries(wire.questions).map(function answerAuthoredApprovalQuestion([slot,question]) {
    const id=question.instructions.selectedRule?.id;
-   const choice=question.instructions.selectedMaterial==='originalRequestBody'?'none':id==='CNF'?'prerequisite':id==='RUL'?(mode==='bare'?'none':mode==='prohibited'?'prohibition':'permission'):'none';
+   assert.notEqual(question.instructions.selectedMaterial,'originalRequestBody');
+   const choice=id==='CNF'?(freshSessionApproval?'fresh-session-approval':'prerequisite'):id==='RUL'?(mode==='bare'?'none':mode==='prohibited'?'prohibition':'permission'):'none';
    assert(Object.hasOwn(question.criteria,choice));
    return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(function scoreAuthoredApprovalChoice(label) { return ([label,label===choice?1:0]); }))}];
   }));
@@ -184,7 +187,7 @@ try{
  );
  assert.equal(
    authorizationCaptures,
-   mode==='missing'?0:1
+   freshSessionApproval||mode==='missing'?0:1
  );
  assert.equal(
    approvalCaptures,
@@ -258,6 +261,7 @@ try{
    reloadedNativeContext:reloadContext,
    presentationIsFixture:true,
    authoredIndependentRequirementFacts:true,
+   freshSessionApproval,
    genuineHumanApprovals:0,
    providerRequests:0
  }));

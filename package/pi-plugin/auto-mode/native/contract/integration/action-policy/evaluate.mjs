@@ -5,6 +5,7 @@ import {
 } from './approval.mjs';
 import {capturePolicyInputs} from './inputs.mjs';
 import {captureAuthorizationInputs} from './authorization-inputs.mjs';
+import {capturePendingSessionApproval} from './pending-session-approval.ts';
 import {compileBoundClauseProgram} from './compiler.mjs';
 import {
   captureSemanticAdmissionPolicy,
@@ -59,6 +60,7 @@ async function evaluateOriginalPolicy({
    inputs,
    ownerFor:authorizationOwnerFor
  });
+ const pendingSessionApproval=capturePendingSessionApproval({judgment,host:approvalHost});
  const scope=semanticAdmissionScope({
    policy,
    inputs
@@ -114,6 +116,7 @@ async function evaluateOriginalPolicy({
      judgment,
      inputs,
      authorizationInputs,
+     pendingSessionApproval,
      policy,
      scope,
      evidence,
@@ -125,7 +128,7 @@ async function evaluateOriginalPolicy({
    return compiled.program;
   }
  });
- function assertCurrent(){inputs.assertCurrent();authorizationInputs.assertCurrent();result.assertCurrent();}
+ function assertCurrent(){inputs.assertCurrent();authorizationInputs.assertCurrent();pendingSessionApproval.assertCurrent();result.assertCurrent();}
  assertCurrent();
  return Object.freeze({
    ...result,

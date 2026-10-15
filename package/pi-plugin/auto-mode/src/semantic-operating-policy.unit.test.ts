@@ -11,7 +11,7 @@ import { createNativeSemanticOperatingPolicies, } from '../dist/final/node/index
  */
 const cases = [
   { key: 'semanticAdmissionPolicy', definition: 'clause_operation_relation',
-    supported: ['permission', 'prohibition', 'prerequisite', 'none',], unresolved: ['unknown', 'unsupported',], },
+    supported: ['permission', 'prohibition', 'prerequisite', 'fresh-session-approval', 'none',], unresolved: ['unknown', 'unsupported',], },
   { key: 'headingContextAdmissionPolicy', definition: 'heading_instruction_content',
     supported: ['none', 'potential-instruction',], unresolved: ['unknown',], },
   { key: 'unitAdoptionAdmissionPolicy', definition: 'unit_adoption',

@@ -50,6 +50,7 @@ export function compileBoundClauseProgram({
   judgment,
   inputs,
   authorizationInputs,
+  pendingSessionApproval,
   policy,
   scope,
   evidence,
@@ -218,7 +219,8 @@ export function compileBoundClauseProgram({
    }));
    continue;
   }
-  const authorization=record.answer
+  const authorization=record.answer.value.choice==='fresh-session-approval'
+    ?pendingSessionApproval?.authorization:record.answer
     .value
     .choice
     ==="prerequisite"?authorizationInputs?.forClause(rule):undefined;
@@ -252,6 +254,7 @@ export function compileBoundClauseProgram({
     'permission',
     'prohibition',
     'prerequisite',
+    'fresh-session-approval',
     'none'
   ].includes(record.answer
     .value
