@@ -22,14 +22,17 @@ Provider switching fails the observer's fixed startup-endpoint comparison;
 tree navigation retires the root captured by the next ordinary prompt.
 Retry, reload, and abort-after-completion controls pass.
 The user then identified the repeated failures as an architectural problem.
-Production fixes are paused pending the
-[operation-scoped host-isolation proposal](../planning/pi-auto-mode-host-isolation.md).
+The user accepted replacement of the integration rather than targeted endpoint/navigation repairs.
+Implementation follows the
+[host-isolation decision](../decision/pi-auto-mode-host-isolation.md)
+and its [consumer matrix](../planning/pi-auto-mode-host-isolation.md).
 The [incident record](../troubleshooting/pi-auto-mode-session-interference.md)
 contains the exact emitters, reproductions, and limitations.
 
 - [ ] Reproduce and fix the connection failure after selecting another provider.
 - [ ] Reproduce and fix retired-root failure after native navigation and retry.
-- [ ] Resolve the host-isolation design choice and update the accepted integration scope.
+- [x] Resolve the host-isolation design choice and update the accepted integration scope.
+- [ ] Move primary observation failures to tool admission and use operation-scoped native currentness.
 - [ ] Verify original host operations, install the corrected artifact, and document the evidence.
 
 Scratch reproductions live under `${HOME}/temp/agent/pi-reported-errors-20261015/`.

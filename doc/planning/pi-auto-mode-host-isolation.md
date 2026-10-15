@@ -6,8 +6,9 @@ Proposed on 2026-10-15 after reproduced provider-switch and tree-navigation fail
 The user identified the recurring breakages as an architectural problem.
 This proposal revises the integration scope recommended in the
 [whole-system review](pi-auto-mode-whole-system-review.md).
-It does not claim acceptance or an implemented replacement.
-The current two functional failures remain unfixed.
+The user accepted alternative A, "Replace the integration", on 2026-10-15.
+The [accepted decision](../decision/pi-auto-mode-host-isolation.md) authorizes implementation.
+The two functional failures remain unfixed until the consumer matrix passes.
 
 ## What the new evidence changes
 
@@ -116,6 +117,5 @@ B precedes C because it retains useful tested behavior rather than replacing unr
 
 ## Next decision
 
-Choose the integration correction before writing production patches.
-The recommendation is A.
+Implement accepted alternative A and verify the consumer matrix before activation.
 No change to the accepted policy cutoff, budget, approval semantics, or inspected program profiles is proposed.

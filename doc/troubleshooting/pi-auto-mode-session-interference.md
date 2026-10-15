@@ -158,9 +158,9 @@ Do not recommend reload as a demonstrated remedy for this incident.
 - Declaring the decision-core replacement complete without ordinary provider-selection and navigation consumers.
 
 The user identified an architectural problem after these reproductions.
-Production fixes are paused while the
-[host-isolation proposal](../planning/pi-auto-mode-host-isolation.md)
-is reviewed.
+The user accepted the
+[host-isolation proposal](../planning/pi-auto-mode-host-isolation.md).
+Its replacement is being implemented; neither failure is claimed fixed yet.
 
 ## Upstream filing decision
 
