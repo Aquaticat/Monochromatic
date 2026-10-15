@@ -32,6 +32,32 @@ function assertNativeProgramValue(value: unknown): asserts value is NativeProgra
 }
 
 /**
+ Named inputs reach the unchanged original positional converter in the generated module.
+ */
+type GeneratedConverter = {
+  /** Preserve caller arguments through the generated adapter. */
+  readonly convertNativeOutcome: (input: {
+    readonly tool: string;
+    readonly outcome: string;
+  }) => unknown;
+};
+
+/**
+ Require the generated adapter before executing adversarial literal contents.
+
+ @param value - generated module imported through its encoded source URL
+
+ @throws Error when the adapter export is unavailable
+ */
+function assertGeneratedConverter(value: unknown): asserts value is GeneratedConverter {
+  if (((typeof value) !== 'object') || (value === null)
+    || (!('convertNativeOutcome' in value))
+    || ((typeof value.convertNativeOutcome) !== 'function')) {
+    throw new Error('Generated native converter lacks its named-input adapter');
+  }
+}
+
+/**
  Runtime import targets the same copied preparation module as the native build.
  */
 const built: unknown = await import(new URL('../dist/native/contract/integration/native-batch/program-value-source.ts', import.meta.url).href);
@@ -60,9 +86,9 @@ await describe({
          */
         const helper = `function textOf(value) { return value + ${literal}; }`;
         /**
-         The exported converter retains its original reference to the private helper.
+         The original converter retains its positional arguments and private helper reference.
          */
-        const converter = 'function toScriptValue(value) { return textOf(value); }';
+        const converter = 'function toScriptValue(tool, outcome) { return textOf(tool) + outcome; }';
         /**
          Similar syntax outside top-level function declarations cannot become a converter.
          */
@@ -74,11 +100,18 @@ await describe({
           helper,
         ].join('\n');
         /**
-         Extraction orders the original helper before the exported converter without changing either body.
+         Extraction orders the original functions without changing their bodies.
          */
         const output = nativeScriptValueSource({ source, parse });
-        expect(output).toBe(`${helper}\n\nexport ${converter}\n`);
+        expect(output).toContain(`${helper}\n\n${converter}\n`);
         expect(parse(output, { sourceType: 'module', semanticErrors: true }).diagnostics).toEqual([]);
+        /**
+         Executing the generated module proves named inputs reach the original converter unchanged.
+         */
+        const generated: unknown = await import(`data:text/javascript,${encodeURIComponent(output)}`);
+        assertGeneratedConverter(generated);
+        expect(generated.convertNativeOutcome({ tool: 'original-tool:', outcome: ':original-outcome' }))
+          .toBe(`original-tool:${JSON.parse(literal)}:original-outcome`);
       },
     }),
     ...['textOf', 'toScriptValue'].map(function missingFunction(name) {

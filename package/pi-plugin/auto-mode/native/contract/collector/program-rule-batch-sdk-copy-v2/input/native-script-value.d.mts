@@ -19,7 +19,10 @@ import type {
 
  @throws Error when the native tool reports an ordinary text failure
  */
-export function toScriptValue(
-  tool: NativeReturnTool,
-  outcome: NativeReturnOutcome
-): unknown;
+export function convertNativeOutcome({
+  tool,
+  outcome
+}: {
+  readonly tool: NativeReturnTool;
+  readonly outcome: NativeReturnOutcome;
+}): unknown;
