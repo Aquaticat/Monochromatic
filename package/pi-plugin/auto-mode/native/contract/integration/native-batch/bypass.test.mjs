@@ -47,8 +47,10 @@ await session.bindExtensions({uiContext:{
  assert.deepEqual(statuses.at(-1),{key:'auto-mode:bypass',value:undefined});
  fixtureState.requests=0;
  await session.prompt('Exercise the same prohibited operation with bypass disabled.');
+ if(fixtureState.abortTask)await fixtureState.abortTask;
  assert.equal(fixtureState.executions,expectedExecutions,'Disabling bypass must restore guarded admission');
  assert.equal(fixtureState.assessments,outsideProfile?0:1);
+ assert.equal(fixtureState.selections,outsideProfile?1:0,'Unsupported automatic analysis must fall back to manual approval');
  const fixedWhileDisabled=await session.extensionRunner.emitToolCall({type:'tool_call',toolName:'bash',toolCallId:'disabled-guard-probe',input:{command:'ydotool key 1:1 1:0'}});
  assert.equal(fixedWhileDisabled?.block,true);
  console.log(JSON.stringify({complete:true,shortcut:true,bypassExecutions:expectedExecutions,bypassAssessments:0,disabledRestoresGuard:true,outsideProfile,audit:true,status:true,reload:true,fixedGuard:true}));

@@ -1,4 +1,4 @@
-import { mode, freshSessionApproval, uncertainContext, headless, useNativeContext, reloadContext, policyText, programProfile, code, fixtureState } from './approval-fixture-options.mjs';
+import { mode, freshSessionApproval, uncertainContext, headless, useNativeContext, reloadContext, policyText, programProfile, code, fixtureState, outsideProfile } from './approval-fixture-options.mjs';
 //region Original session, runtime and authored approval responses.
 import assert from 'node:assert/strict';
 import {createEnvironment} from './environment.mjs';
@@ -105,6 +105,7 @@ function createFixtureSelector() {
   fixtureState.abortTask=session.abort();
   return undefined;
  }
+ if(outsideProfile&&mode==='prohibited')return 'Stop';
  return mode==='deny'?'Deny':mode==='stop'?'Stop':'Allow';
   };
 }
