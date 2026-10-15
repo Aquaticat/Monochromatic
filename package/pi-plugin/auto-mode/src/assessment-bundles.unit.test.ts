@@ -37,7 +37,7 @@ function respond(body: string): Response {
 //endregion
 
 /** Require the actual transport body to retain its string identity. */
-function readHttpBody(options: RequestInit|undefined): string {
+function readHttpBody(options?: RequestInit): string {
  const body=options?.body;
  if(typeof body!=='string')throw new Error('Expected exact provider request text');
  return body;
