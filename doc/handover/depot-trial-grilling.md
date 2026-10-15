@@ -3,7 +3,9 @@
 ## Purpose and current state
 
 The user is trialing Depot and requested a grilling interview on 2026-10-15.
-The conversation is still gathering requirements; no migration or vendor decision has been accepted.
+The user has delegated the technical recommendation after establishing priorities and budget.
+The [trial proposal](../planning/depot-ci-trial.md) records the next evidence-gathering scope.
+No migration or vendor adoption has been accepted.
 The user explicitly requested this handover.
 
 The user is inexperienced with CI/CD and wants concrete explanations and probing questions.
@@ -13,7 +15,8 @@ The user explicitly said looking at Claude transcripts is unnecessary; transcrip
 ## Answers to preserve
 
 - Motivation: GitHub Actions is slow.
-- Spending ceiling: $200 per month. Acceptable wait and other rejection criteria remain open.
+- Provider-spending ceiling: USD $200 per month.
+  The time-value objective now guides latency tradeoffs; no absolute wait threshold has been chosen.
 - The user confirmed that the music-player release taking about 24 minutes is a relevant example.
 - The user clarified that it was blocking Claude from working on the music player.
   Waiting to download a personal build was an interviewer hypothesis, not a confirmed requirement.
@@ -38,6 +41,13 @@ The user explicitly said looking at Claude transcripts is unnecessary; transcrip
 - The interviewer checked current GitHub cache pricing and gave a 50 GB total-cache example costing $2.80 extra monthly.
   The user explicitly said this does not change their view of GitHub's total costs and described GitHub as wasteful.
   The preference concerns total cost and repeated work, not just cache storage unit pricing.
+- The user values each second while relevant CI remains unfinished at half Ontario's general minimum wage.
+  They accepted counting elapsed time even while other useful work continues, with overlapping jobs counted once.
+- Ontario's current general minimum is CAD $17.95 per hour.
+  The resulting time value is CAD $8.975 per hour or approximately CAD $0.002493056 per second.
+  The observed 1,448-second release interval represents CAD $3.609944 under this model.
+- When asked to choose a comprehensive technical coverage target, the user delegated the recommendation to the agent.
+  Further questions should seek user preferences or constraints, not ask the user to design CI machinery.
 
 ## Measured release example
 
@@ -117,14 +127,28 @@ CLI access is verified without printing credentials or modifying authentication.
 
 Overage charges apply beyond included usage.
 The $200 ceiling is a requirement, not authorization to purchase a subscription or consume additional paid resources.
-A read-only investigation is checking whether Depot usage caps can enforce that ceiling and what they include.
+Public documentation establishes some per-product minute caps, but not a guaranteed aggregate USD $200 bill.
+Already-running jobs, storage, and CI-specific cap behavior require account-level verification.
 Current account plan, trial credits, and cap settings have not been inspected.
+The browser skill's account inspection returned `No browser is available`; browser discovery returned an empty list.
+No Depot page opened and no authentication or billing setting changed.
 
 [GitHub billing][github-billing] lists cache overage at $0.07 per GB-month,
 where its GB unit is a GiB.
 The illustrative calculation was `(50 - 10) * 0.07 = 2.80` for constant full-month occupancy.
 This storage-only calculation does not estimate the cost of the desired comprehensive CI.
 The user rejected it as a reason to change their preference.
+
+## Evaluation objective
+
+Compare provider charges plus valued elapsed CI time for equivalent coverage and the same stream of changes.
+The provider bill alone must remain within USD $200 per month.
+Convert provider charges and the Ontario-based time value into the same currency with a dated exchange rate.
+An exact CAD/USD rate has not been established in this session.
+
+The time rate comes from [Ontario's general minimum wage][ontario-wage], effective October 1, 2026.
+Intervals with overlapping relevant CI jobs contribute elapsed time once.
+Failed setup or skipped required checks are not successful performance results.
 
 ## Concrete coverage gaps
 
@@ -150,11 +174,10 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
 
 ## Open questions and next work
 
-- Explain reusable tool environments, compiled dependency caches, and compilation in plain language.
-- Use the measured release example and concrete coverage gaps when designing the trial.
-- Establish device-test runtime and cost before asking the user again to choose a frequency.
+- Use the [trial proposal](../planning/depot-ci-trial.md) to collect comparable runtime, coverage, and cost evidence.
+- Establish device-test runtime and cost before recommending its frequency.
 - Establish what result Claude actually needs before its next dependent step, through discussion and repository evidence.
-- Identify desired checks, platform coverage, trial scope, success criteria, and spending constraints.
+- Make the technical coverage recommendation, preserving supported platforms and recording missing behavior tests.
 - Compare the desired broader CI against the $200 ceiling and repeated work, rather than reopening cache unit pricing.
 - Keep proposals separate from accepted decisions; confirm shared understanding before implementation.
 
@@ -180,3 +203,4 @@ that those artifacts can answer.
 [github-cache]: https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching
 [github-billing]: https://docs.github.com/en/billing/concepts/product-billing/github-actions
 [depot-pricing]: https://depot.dev/pricing
+[ontario-wage]: https://www.ontario.ca/document/your-guide-employment-standards-act-0/minimum-wage
