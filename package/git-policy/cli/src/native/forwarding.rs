@@ -222,6 +222,7 @@ pub fn replace_process_with_real_git(
         use std::os::unix::process::CommandExt;
         return git_command(real_git, arguments, overlay).exec();
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         // `match` unpacks the run: success exits this process with Git's code.

@@ -429,9 +429,13 @@ the items after it are the record of 2026-10-05 and older.
     `rust/require-rustdoc` gaps the combined lint found (`annotation.rs`, `shaped_text.rs`, `text_raster.rs`,
     `native.rs`, `native/render.rs`, `native/rows.rs`, `native/tile.rs`, `native/tile_build.rs`; rustdocs in
     `name_order.rs`, `tab_layout.rs`, `text_projection.rs`, `wrap.rs`, `wrap_sign.rs`, `shaped_text.rs`,
-    `native/tile_build.rs`). Next after they land: merge both, rerun every guard task on the combined tree.
-    The user approved the bulk reformat on 2026-10-15 ("Yes fix both directly in main."): the repo's pinned linter
-    0.1.3 (`mise which monochromatic-lint`; the PATH of a stale shell finds 0.1.1, which rejects the config) counts
+    `native/tile_build.rs`). The native agent reported done (branch `refactor/ide-split-native`, gates green on its
+    tree); a third agent (`refactor/ide-split-minimap`) splits `native/minimap.rs` and adds the rustdocs the combined
+    lint still found in the minimap, `git_ignore` and `language` files. Next after all land: merge them, rerun every
+    guard task on the combined tree.
+    The user approved the bulk reformat on 2026-10-15 ("Yes fix both directly in main."): the mise managed linter,
+    declared `latest` (never pinned; `mise.lock` only records that it resolved to 0.1.3),
+    found by `mise which monochromatic-lint` (the PATH of a stale shell finds 0.1.1, which rejects the config), counts
     2654 `markdown/semantic-line-breaks` errors (1291 in `README.md` and `design/README.md`, the rest in Markdown
     inside Rust doc comments, which the rule checks too and `--fix` repairs) and 1135 `rust/no-anonymous-functions`
     warnings (not fixable by the tool) in `package/desktop-app/ide`. Order: after both splits land, run

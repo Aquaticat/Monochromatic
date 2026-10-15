@@ -52,6 +52,7 @@ fn copy_tree(source: &Path, destination: &Path) -> std::io::Result<()> {
         } else if kind.is_symlink() {
             #[cfg(unix)]
             std::os::unix::fs::symlink(std::fs::read_link(entry.path())?, &target)?;
+            // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
             #[cfg(not(unix))]
             std::fs::copy(entry.path(), &target).map(|_| ())?;
         } else {

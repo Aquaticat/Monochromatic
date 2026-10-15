@@ -165,7 +165,46 @@ run = [
 
 [tasks."test:native:program-queue"]
 description = "Verify original recorder ownership and native queue release on normal and failed dispatch"
-run = "node --max-old-space-size=512 ./dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/program-runner-scope.test.mjs"
+run = [
+ "node --max-old-space-size=512 ./dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/program-runner-scope.test.mjs",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-scope.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-queue.unit.test.ts",
+]
+
+[tasks."test:native:group-current"]
+description = "Verify original collector currentness and cancellation observation"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-current.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-current-abort.unit.test.ts",
+]
+
+[tasks."test:native:group-dispatch"]
+description = "Verify original drainable dispatch, complete association, and retained unbound outcomes"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-dispatch.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-unbound.unit.test.ts",
+]
+
+[tasks."test:native:group-lifetime"]
+description = "Verify original collector retirement, draining, and retained inspection"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-lifetime.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-retained.unit.test.ts",
+]
+
+[tasks."test:native:group-failures"]
+description = "Verify original group failure retention and cancellation publication"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-failure.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-abort.unit.test.ts",
+]
+
+[tasks."test:native:group-completions"]
+description = "Verify original retained completions, conditional delivery, and listener cleanup"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-completion.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-completion-failure.unit.test.ts",
+]
 
 [tasks."test:native:judgment-budget"]
 description = "Verify built judgment attempt accounting, sequential retries, lifetime and cleanup"
@@ -664,6 +703,15 @@ run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/nativ
 [tasks."test:native:publication"]
 description = "Verify every public method is connected to its independently recorded original owner"
 run = 'node --max-old-space-size=512 src/native-publication.unit.test.ts'
+
+[tasks."test:native:dependency-facade"]
+description = "Verify original dependency ownership, live and retained checks, and callback failure ordering"
+run = [
+  'node --max-old-space-size=512 src/native-facade.unit.test.ts',
+  'node --max-old-space-size=512 src/native-facade-lifetime.unit.test.ts',
+  'node --max-old-space-size=512 src/native-facade-file.unit.test.ts',
+  'node --max-old-space-size=512 src/native-facade-profile.unit.test.ts',
+]
 
 [tasks."test:native:instructions"]
 description = "Verify original instruction identities, source selection, admission, and lifetime through built consumers"

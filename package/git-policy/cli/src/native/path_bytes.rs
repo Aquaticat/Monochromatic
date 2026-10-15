@@ -35,6 +35,7 @@ pub fn os_from_path_bytes(bytes: &[u8]) -> OsString {
         use std::os::unix::ffi::OsStringExt;
         return OsString::from_vec(bytes.to_vec());
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         return OsString::from(String::from_utf8_lossy(bytes).into_owned());

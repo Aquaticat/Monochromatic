@@ -269,6 +269,7 @@ fn kill_self() -> ! {
 /// ```ts
 /// process.kill(process.pid, 'SIGKILL');
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(not(unix))]
 fn kill_self() -> ! {
     std::process::exit(137)

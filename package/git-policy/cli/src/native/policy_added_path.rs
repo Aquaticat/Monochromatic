@@ -103,6 +103,7 @@ fn executable_matches(metadata: &std::fs::Metadata, mode: CandidateMode) -> bool
         use std::os::unix::fs::PermissionsExt;
         return (metadata.permissions().mode() & 0o100 != 0) == (mode == CandidateMode::Executable);
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         let _ = (metadata, mode);

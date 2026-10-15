@@ -270,6 +270,10 @@ under 2 GiB,
 128 PIDs,
 and a 4,096-byte input limit.
 A target must exit 0 and report at least one executed unit.
+A longer campaign passes the time per target after the task name,
+for example `mise run //package/git-policy/cli.fuzz:smoke -- --seconds-per-target=1800`;
+the value is a whole number of seconds from 1 to 86,400,
+and the manifest in the evidence directory records it.
 Corpora,
 artifacts,
 and logs are retained under `target/verification/campaign-*`.

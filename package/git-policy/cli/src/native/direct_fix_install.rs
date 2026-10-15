@@ -224,6 +224,7 @@ fn write_new(path: &Path, bytes: &[u8], mode: CandidateMode) -> std::io::Result<
         };
         options.mode(permissions);
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         // Only Unix records an executable bit; the mode decides nothing elsewhere.

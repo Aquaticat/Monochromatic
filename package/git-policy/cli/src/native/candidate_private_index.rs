@@ -143,6 +143,7 @@ fn create_private_directory(directory: &Path) -> std::io::Result<()> {
         // `.mode(0o700)` configures the temporary builder; `.create` makes the directory.
         return std::fs::DirBuilder::new().mode(0o700).create(directory);
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         // Other systems have no mode bits to set; the directory is created as it is.

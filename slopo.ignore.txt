@@ -7,11 +7,14 @@
 # This inventory was refreshed against the voyage/voyage-code-4 report.
 # Entries mapped by historical unit identity unless marked as semantic remaps.
 
-# State as of 2026-10-09, second revision.
+# State as of 2026-10-15, third revision.
 #
 # 67 entries were accepted from the four dismissal issues (#656, #657, #658,
 # #659) after every concept behind them was classified by whether its pattern propagates.
-# They are live keys: each matches a cluster in the report generated 2026-10-07 22:36:47.
+# They were live keys: each matched a cluster in the report generated 2026-10-07 22:36:47.
+# Seven were removed on 2026-10-15 and 60 remain: each of the seven named a cluster with a member in the git-policy
+# TypeScript implementation (perf scripts, trust and policy-engine modules) that the native cutover deleted, so the
+# cluster no longer exists and the key matches nothing.
 # 80 further clusters are held back in those issues, awaiting an owner or a policy decision,
 # and no hash is recorded here for them.
 #
@@ -37,21 +40,11 @@
 # the Kotlin/Rust divergence is gone. (Cross-language code cannot share a function, so these
 # are not extract-a-helper candidates; the remediation is the rewrite, not an ignore entry.)
 
-# ── INTENTIONAL-VARIANT (9 live, 10 dead pending a decision) ──
+# ── INTENTIONAL-VARIANT (6 live, 10 dead pending a decision) ──
 # Intentional sibling variants (sync/async, single/batch, get/set,
 # plain-vs-from constructors, mirror event handlers). Meant to mirror each
 # other and stay separate; merging would hurt clarity.
 # Accepted 2026-10-09 from #657, #658.
-# concurrentConflict (git-policy/cli/perf/concurrent-commit-latency-scenarios.ts) and
-# serializedConflict call conflictBatch with the same repository,
-# sequence and markerRoot and differ only in the serialized flag.
-# They are the two arms of one latency comparison.
-fd8e709c61cb
-# concurrentSameFile (git-policy/cli/perf/concurrent-commit-latency-scenarios.ts) and
-# serializedSameFile call sameFileBatch with the same repository,
-# sequence and markerRoot and differ only in the serialized flag,
-# the same-file counterpart of cluster 724.
-ca593422f3b5
 # standardTableBlockArbitrary (module/toml-edit.fuzz/src/arb-documents.ts) renders `[owner]` plus
 # an optional body,
 # while the array-of-tables instance closure renders `[[owner]]` plus the same optional body.
@@ -66,11 +59,6 @@ ca593422f3b5
 # kernels: single-byte sheng vs pair sheng2') and f498089d4a03 ('batch_sheng/batch_sheng2
 # SIMD-variant twins').
 f8cbcd443ae9
-# concurrentDisjoint (git-policy/cli/perf/concurrent-commit-latency-scenarios.ts) and
-# serializedDisjoint call disjointBatch with the same repository,
-# concurrency and sequence and differ only in the serialized flag;
-# they are the disjoint-paths arms of the same comparison as clusters 724 and 735.
-5e87bcf79430
 # iterableOrThrow (module/or-throw/src/iterable-or-throw.ts) narrows to T & Iterable<unknown>
 # while maybeAsyncIterableOrThrow (src/maybe-async-iterable-or-throw.ts) narrows to T &
 # (Iterable<unknown> | AsyncIterable<unknown>); both special-case strings, reject null,
@@ -124,7 +112,7 @@ fedafcaaa399
 # DEAD 2026-10-09: successor C730(#657) is held, not accepted.
 a1b664fb91ed
 
-# ── STRUCTURAL-IDIOM (30 live) ──
+# ── STRUCTURAL-IDIOM (29 live) ──
 # Structural idioms mandated by conventions. Shared skeleton (oxlint createOnce
 # rule scaffolding and per-locale i18n grammar renderers) where each body's actual
 # logic differs. Not extractable without a false abstraction.
@@ -197,13 +185,6 @@ c4d268e2d926
 # for an aborted transaction ('IndexedDB transaction aborted without an error object');
 # both reject with transaction.error when present.
 2ad70a51a4ba
-# Three prepared-request builders in git-policy/cli/perf/lifecycle-latency-definitions.ts write a
-# benchmark file and return commandPair with dryRunCommitArgs: scannerRequest writes
-# `scanner-${iteration}` plus a newline into TYPESCRIPT_REPOSITORY,
-# normalizerRequest writes `normalizer-${iteration}` plus a newline into MJS_REPOSITORY,
-# and normalizerChangedRequest writes `changed-${iteration}` with no trailing newline into
-# MJS_REPOSITORY.
-9dec8705a47d
 # Two coverage probe sequences in module/toml-edit.fuzz/src/coverage-probes.ts: pendingReadOps
 # nests two tomlSet edits and then exercises tomlHas, tomlGet,
 # tomlGetValue and tomlKeys over the pending edit at several paths including the root;
@@ -291,7 +272,7 @@ b4653374047d
 # versus one fixed value 2).
 427736c3c51b
 
-# ── COINCIDENTAL-SHAPE (11 live) ──
+# ── COINCIDENTAL-SHAPE (9 live) ──
 # Coincidental shape matches. Units share an implementation idiom but do
 # unrelated work; no common logic to extract.
 # Accepted 2026-10-09 from #659.
@@ -305,12 +286,6 @@ b4653374047d
 # wireSearch (dev-script/deps-cube/src/script/controller-toggle-events.ts) attaches an input
 # listener that writes session.state.search and commits.
 8ec42a29af25
-# Three one-line template formatters with nothing in common but their shape: sourceLine
-# (git-policy/cli/src/trust/explicit-typescript-trust.ts) renders a tracked-source evidence line
-# with a canonical path and byte size;
-# property (module/deepmerge-ts.fuzz/src/declared-type-sample.ts) renders a key source and a
-# sampled source; entrySource (same file) renders a JSON-stringified key with a sampled source.
-74ee494d751c
 # isExtraKey (pi-plugin/advisor/src/tool-params.ts) rejects the keys 'model' and 'question';
 # isKept (config/pnpr/src/publish-plan.ts) rejects 'provenance' and 'registry'.
 # Same two-inequality shape, unrelated key sets and opposite polarity of naming.
@@ -320,12 +295,6 @@ a4464eda8f4c
 # the Symbol.iterator generator (module/conf-fork/src/conf.ts) yields [key,
 # value] pairs from Object.entries of a config store with two casts.
 459efdb938e8
-# Three unrelated git wire-format line builders: record
-# (git-policy/cli/src/policy-engine/commit-replay-subsumption-text.ts) emits an index record
-# `100644 blob ${oid}\t${index}\0`;
-# createLine (src/shadow-repository/shadow-refs.ts) emits a batch-ref-update create line;
-# packedLine (same file) emits a packed-refs line with the oid first.
-28df67a9ddbf
 # toSummary (webapp-productivity/done/src/server/page/task-details.ts) projects id,
 # title and status; toMinimal projects id and title.
 # Two deliberately different projections of the same candidate in one file,
@@ -354,7 +323,7 @@ c323905b9f2c
 # root.
 9dc1bbab917a
 
-# ── BOILERPLATE-TRIVIAL (16 live, 1 dead pending a decision) ──
+# ── BOILERPLATE-TRIVIAL (15 live, 1 dead pending a decision) ──
 # Trivial boilerplate fragments. One-line wrappers/forwarders, tiny fixer stubs,
 # From impls, and cleanup fragments where extraction costs more than it saves.
 # Accepted 2026-10-09 from #656, #659.
@@ -370,11 +339,6 @@ f33fa65f95fe
 # rejectError (module/logger/src/sink/indexed-db-util.ts) rejects with request.error or a new
 # Error('IndexedDB request failed without an error object').
 6c2299e81729
-# createIndices (git-policy/cli/perf/manual-push-latency-collection.ts) and range
-# (module/deepmerge-ts.fuzz/src/surface-type-cost-family.ts) are both Array.from({length: count},
-# (_, index) => index), one in a latency perf script and one in a fuzz type-cost family,
-# with different callback names and parameter spellings.
-24a1be12cae0
 # eof (rust-module/forbidden-regex/src/parse/cursor.rs,
 # pos >= src.len()) and is_finished (cli/forbidden-strings/src/runtime_cache/envelope.rs,
 # position == bytes.len()) are one-line cursor predicates on unrelated types in unrelated crates,

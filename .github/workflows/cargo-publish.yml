@@ -1334,8 +1334,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
+        # The archive links the glibc of its build host (pidfd_spawnp needs glibc 2.39), so the runner is named, not
+        # ubuntu-latest: GitHub moves that label to Ubuntu 26.04 (glibc 2.43) in November 2026, which would raise the
+        # floor of every release archive. The arm64 runner below is named for the same glibc.
         - target: x86_64-unknown-linux-gnu
-          runner: ubuntu-latest
+          runner: ubuntu-24.04
         - target: aarch64-unknown-linux-gnu
           runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}

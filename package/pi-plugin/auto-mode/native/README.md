@@ -11,6 +11,54 @@ The [file-observation contract](file-observation.md)
 documents synchronous policy snapshots,
 descriptor cleanup,
 and the scoped filesystem lint exceptions.
+`test:native:dependency-facade` exercises the typed original dependency owner through its native bridge.
+It verifies opaque handle ownership,
+root and source identity,
+ordered callback failures,
+every file checkpoint,
+and exact retained file bytes in disposable roots.
+Live checks enforce the original deadline;
+retained checks preserve cancellation and freshness after that deadline expires.
+Mechanical projections explicitly withhold instruction authority and human permission.
+`test:native:program-queue` checks original recorder reuse,
+private token and public label membership,
+immediate queue-tail publication,
+and normal or exceptional dispatch release.
+An original rejected predecessor retains its exact failure and leaves its already published successor unresolved.
+`test:native:group-completions` verifies that original native outcomes remain retained after delivery closes.
+It checks every delivery state,
+original value and failure identity,
+listener detachment,
+and failures inside result delivery or cleanup.
+Closed or failed groups retain outcomes without being relabeled as successfully settled transport.
+`test:native:group-failures` checks occurrence identity and order,
+first-failure publication before rejection and cancellation,
+already-recorded token propagation,
+and signal caching after callback completion.
+Reentrant cancellation records its inner observation before the outer observation reaches the cache.
+A throwing rejection callback leaves the primary failure retained without publishing cancellation or that cache entry.
+The internal `RecordedGroupFailureError` token retains the original caught value in its occurrence.
+`test:native:group-lifetime` verifies retirement callback order,
+incomplete-membership failure retention,
+work capture at drain invocation,
+and frozen retained snapshots.
+Failures during listener detachment or incomplete-membership recording leave retirement unpublished.
+A pending rejection callback failure occurs after closure,
+so a later retirement call does not retry that callback or publish cancellation.
+Snapshots retain original failure and native completion identities without claiming execution effects.
+`test:native:group-current` verifies original failure,
+closure,
+and cancellation precedence around parent-currentness and reached-view callbacks.
+Callback-published state is re-read after both callbacks.
+Parent cancellation observation stops for closed transport or fully retained outcomes,
+while partial outcomes and existing failures preserve the original cancellation callback.
+`test:native:group-dispatch` verifies drainable work publication before callbacks,
+complete original member association,
+opaque callback failures,
+and observation after transport closes.
+Invalid returned arrays retain every enumerable completion,
+including extra named properties while skipping holes and inherited positions.
+These unassociated outcomes stay inspectable without acquiring a declared member association.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 

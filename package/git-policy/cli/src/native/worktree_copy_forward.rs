@@ -160,6 +160,7 @@ pub fn run_forwarded_git(
             return run_settled(real_git, arguments, overlay, facts);
         }
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         let _ = copy;
