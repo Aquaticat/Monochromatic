@@ -13,11 +13,12 @@ export function registerOwnedExecutionTools({
   session,
   producerOwner,
   stream,
-  wrapToolDefinition
+  wrapToolDefinition,
+  readBypass
 }){
  const {agent} = session;
  const previous=agent.prepareRequest;
- const wrappers=createExecutionWrappers({wrapToolDefinition});
+ const wrappers=createExecutionWrappers({wrapToolDefinition,readBypass});
  const installationState={active:true};
  /** Capture the positional native callback without detaching a method or changing its receiver. */
  function createRequestHook(){

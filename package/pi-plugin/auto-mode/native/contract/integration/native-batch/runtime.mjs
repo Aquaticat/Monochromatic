@@ -178,7 +178,8 @@ export function bindNativePolicyRuntime({
      session,
      producerOwner,
      stream,
-     wrapToolDefinition
+     wrapToolDefinition,
+     readBypass
    })); },
    isSessionDisposed:function hasCompletedNativeDisposal() { return (readSessionDisposalState(session)
      .completed

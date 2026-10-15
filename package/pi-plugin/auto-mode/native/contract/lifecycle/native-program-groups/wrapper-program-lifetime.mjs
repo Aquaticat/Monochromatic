@@ -8,7 +8,7 @@ import {NativeExecutionGuardError} from '../execution-context-carrier/execute.mj
 
 //region Explicit native context carriage; opaque occurrence ownership is not permission.
 /** Fixed session-specific reader must resolve the actual producer judgment and its active execution token. */
-export function createExecutionWrappers({wrapToolDefinition}) {
+export function createExecutionWrappers({wrapToolDefinition,readBypass=function readNoBypass(){return false;}}) {
   const native=createRegisteredWrappers({wrapToolDefinition});
     const contexts=new WeakMap();
     const issued=new WeakMap();
@@ -44,6 +44,7 @@ export function createExecutionWrappers({wrapToolDefinition}) {
       onUpdate
     }){return operation(function bindNativeProgramContext() {
       const origin=readOrigin(carrier);
+      const bypass=readBypass()===true;
       if((origin.prepared
         .id
         !==toolCallId)||(origin.prepared
@@ -82,6 +83,7 @@ export function createExecutionWrappers({wrapToolDefinition}) {
           ?.value)!=='function')throw new ExecutionContextOwnershipError('Native context factory omitted executeTool');
         function assertParentCurrent(){return operation(function requireRunningParent() {
           if(record.state!=='running')throw new ExecutionContextOwnershipError('Parent native execution is not active for a declared program');
+          if(bypass&&readBypass()!==true)throw new ExecutionContextOwnershipError('Explicit bypass was disabled during native execution');
           current(record);
         });}
         const context=Object.defineProperties(
@@ -90,9 +92,15 @@ export function createExecutionWrappers({wrapToolDefinition}) {
             ...descriptors,
             executeTool:{
               ...descriptors.executeTool,
-              value:async function rejectUnsupportedNestedGroup() {assertParentCurrent();throw new NestedGroupSupportError();}
+              value:async function executeNativeBypassedChild(...args) {
+                assertParentCurrent();
+                if(!bypass)throw new NestedGroupSupportError();
+                const result=await Reflect.apply(descriptors.executeTool.value,base,args);
+                assertParentCurrent();
+                return result;
+              }
             },
-            createDeclaredProgram:{
+            ...(bypass?{}:{createDeclaredProgram:{
               enumerable:true,
               configurable:false,
               writable:false,
@@ -122,7 +130,7 @@ export function createExecutionWrappers({wrapToolDefinition}) {
               toolName:name
             });}
           }
-            }
+            }})
           }
         );
         current(record);record.context=context;record.state='issued';contexts.set(
