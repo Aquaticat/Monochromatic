@@ -200,6 +200,21 @@ The browser skill's account inspection returned `No browser is available`;
 browser discovery returned an empty list.
 No Depot page opened and no authentication or billing setting changed.
 
+A subsequent read-only probe used Depot CLI 2.102.22 and the documented `UsageService.GetUsage` endpoint.
+The request covered October 1 through October 15 at 21:00 UTC.
+Depot rejected the existing user token with code `unauthenticated`:
+"This endpoint requires an organization token,
+but a user token was provided.
+Create an organization token in Organization Settings > API Tokens".
+No organization token was available in `DEPOT_TOKEN`,
+and none was created.
+The inspected organization response exposes identity rather than billing configuration.
+Current usage and an enforceable aggregate cap remain unknown.
+Q18 asks the user for visible plan or trial status,
+expiry,
+usage,
+and spending-limit details because the inspected access paths did not provide them.
+
 [GitHub billing][github-billing] lists cache overage at $0.07 per GB-month,
 where its GB unit is a GiB.
 The illustrative calculation was `(50 - 10) * 0.07 = 2.80` for constant full-month occupancy.
@@ -287,9 +302,11 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
 
 - The ownership question remains unresolved;
   no repository transfer is authorized.
-- The factual exploration agent is checking supported read-only account metadata and usage access
-  before proposing feasible Depot spending controls.
-- Define explicit-release handling separately from the accepted cancellation policy for intermediate checks.
+- Await Q18 account details;
+  the supported usage endpoint rejected the available user-token credential.
+- Preserve existing explicit-release handling during the proposed trial.
+  The current release workflow serializes runs with `cancel-in-progress: false`;
+  Q16 changes only the proposed policy for intermediate checks.
 - Use the [trial proposal](../planning/depot-ci-trial.md) to collect comparable runtime,
   coverage,
   and cost evidence.

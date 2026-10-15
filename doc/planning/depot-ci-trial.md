@@ -34,7 +34,7 @@ including broken intermediate states,
 remain part of the development workflow.
 Agent-requested cloud checks are part of the desired workflow.
 The user accepts stopping superseded intermediate checks to prioritize the newest version.
-Explicit release builds require separate handling.
+Existing explicit-release handling stays unchanged during the proposed trial.
 
 ## Technical coverage target
 
@@ -123,7 +123,8 @@ outputs,
 and a completion result.
 A deliberately failing fixture must produce a visible failure,
 so a successful empty run cannot masquerade as coverage.
-The same task definitions should remain usable locally and through agent-requested cloud execution.
+Prefer reusing task definitions locally and through agent-requested cloud execution;
+provider-specific checks remain acceptable when measured benefits justify them.
 
 ### Preserve release and platform behavior
 
@@ -163,6 +164,9 @@ must be inspectable so the proposed run budget can fit the user's ceiling.
 Published per-product limits do not yet prove an aggregate billing cap.
 The current browser connection could not inspect account settings;
 CLI authentication itself is verified.
+The documented usage endpoint rejected the available user token because it requires an organization token.
+No token was created;
+account-specific budget facts remain outstanding.
 
 ## Result and adoption boundary
 
