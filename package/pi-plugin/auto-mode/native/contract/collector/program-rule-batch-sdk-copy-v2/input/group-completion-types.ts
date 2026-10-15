@@ -31,7 +31,7 @@ export type DispatchedCompletionRecord<Outcome> = GroupCompletionRecord<Outcome>
  */
 export type GroupCompletionInput<Outcome> = Readonly<{
   groupState: {
-    readonly primary?: object;
+    readonly primary?: object | undefined;
     readonly closed: boolean;
     phase: 'collecting' | 'dispatching' | 'settled' | 'failed';
   };
