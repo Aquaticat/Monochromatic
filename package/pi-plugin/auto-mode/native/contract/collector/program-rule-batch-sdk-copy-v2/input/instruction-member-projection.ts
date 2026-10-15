@@ -1,4 +1,6 @@
-/** Original root projection access distinguishes absent records from absent claim bindings. @module */
+/**
+ Original root projection access distinguishes absent records from absent claim bindings. @module
+ */
 import type { InstructionMember } from './instruction-types.ts';
 
 /**
@@ -14,7 +16,9 @@ import type { InstructionMember } from './instruction-types.ts';
  */
 export function memberProjection(memberRecord?: InstructionMember): NonNullable<InstructionMember['binding']>['projection'] {
   if (memberRecord === undefined) throw new TypeError("Cannot read properties of undefined (reading 'binding')");
-  /** Original root projection access fails before claim publication when its binding is absent. */
+  /**
+   Original root projection access fails before claim publication when its binding is absent.
+   */
   const { binding } = memberRecord;
   if (binding === undefined) throw new TypeError("Cannot read properties of undefined (reading 'projection')");
   return binding.projection;
