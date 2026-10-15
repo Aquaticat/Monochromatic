@@ -306,6 +306,35 @@ impl Drop for WorktreeCopyLease {
 /// await removeLockOf({ lockDirectory, leaseToken });
 /// ```
 fn remove_lock_of(lock: &Path, lease_token: &str) -> Result<bool, WorktreeCopyError> {
+    return remove_lock_of_with(lock, lease_token, rename_lock);
+}
+
+/// The rename that frees a published lock name,
+///  as a plain function so a test can supply another.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await rename(from, to);
+/// ```
+fn rename_lock(from: &Path, to: &Path) -> std::io::Result<()> {
+    return std::fs::rename(from, to);
+}
+
+/// What:
+///  `remove_lock_of` with the rename that frees the published name supplied by the caller.
+/// Why:
+///   A lock that vanishes between the read and the rename, and a rename that is refused, are races and faults a test
+///  cannot otherwise provoke on demand.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await removeLockOf({ lockDirectory, leaseToken, rename });
+/// ```
+fn remove_lock_of_with(
+    lock: &Path,
+    lease_token: &str,
+    rename: fn(&Path, &Path) -> std::io::Result<()>,
+) -> Result<bool, WorktreeCopyError> {
     match read_published(lock)? {
         Published::Owner(owner) if owner.lease_token == lease_token => {}
         _ => return Ok(false),
@@ -316,7 +345,7 @@ fn remove_lock_of(lock: &Path, lease_token: &str) -> Result<bool, WorktreeCopyEr
         random_uuid().map_err(|error| return raw_failure(&error.0))?
     ));
     // `match` on the rename: a vanished lock is simply not ours to remove; any other failure is fatal.
-    match std::fs::rename(lock, retired.as_path()) {
+    match rename(lock, retired.as_path()) {
         Ok(()) => {}
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
         Err(error) => return Err(raw_failure(&error)),

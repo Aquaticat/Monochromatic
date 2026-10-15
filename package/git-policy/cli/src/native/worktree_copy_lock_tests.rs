@@ -394,11 +394,44 @@ fn a_refused_retirement_is_an_error() {
     let outcome: Result<bool, WorktreeCopyError> = remove_lock_of(lock.as_path(), "dead-token");
     std::fs::set_permissions(&parent, std::fs::Permissions::from_mode(0o700)).expect("unlock");
     // A superuser renames anyway, so only an ordinary user shows the refusal.
-    if outcome.is_ok() {
+    if unsafe { libc::geteuid() } == 0 {
         remove(root.as_path());
         return;
     }
-    assert!(outcome.is_err());
+    outcome.expect_err("the rename is refused");
+    assert!(lock.join(OWNER_RECORD_NAME).exists(), "the lock stays");
+    remove(root.as_path());
+}
+
+/// A lock that names another owner is left alone.
+#[cfg(unix)]
+#[test]
+fn a_lock_of_another_owner_is_not_removed() {
+    let root: PathBuf = fixture("lock-other-owner");
+    let lock: PathBuf = root.join("settlement.lock");
+    publish(lock.as_path(), DEAD_OWNER);
+    assert!(!remove_lock_of(lock.as_path(), "someone-else").expect("checked"));
+    assert!(lock.join(OWNER_RECORD_NAME).exists(), "the lock stays");
+    assert!(remove_lock_of(lock.as_path(), "dead-token").expect("removed"));
+    assert!(!lock.exists());
+    remove(root.as_path());
+}
+
+/// A rename that finds the lock gone means another process removed it first; any other refusal is a fault.
+#[cfg(unix)]
+#[test]
+fn a_vanished_lock_is_not_ours_to_remove_and_a_refused_rename_is_a_fault() {
+    let root: PathBuf = fixture("lock-rename-outcomes");
+    let lock: PathBuf = root.join("settlement.lock");
+    publish(lock.as_path(), DEAD_OWNER);
+    let vanished = remove_lock_of_with(lock.as_path(), "dead-token", |_from, _to| {
+        return Err(std::io::Error::from(std::io::ErrorKind::NotFound));
+    });
+    assert!(!vanished.expect("not ours to remove"));
+    let refused = remove_lock_of_with(lock.as_path(), "dead-token", |_from, _to| {
+        return Err(std::io::Error::from(std::io::ErrorKind::PermissionDenied));
+    });
+    refused.expect_err("a refused rename is a fault");
     assert!(lock.join(OWNER_RECORD_NAME).exists(), "the lock stays");
     remove(root.as_path());
 }

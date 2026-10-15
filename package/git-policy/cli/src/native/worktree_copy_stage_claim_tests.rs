@@ -273,6 +273,15 @@ fn an_unlistable_journal_root_is_a_failure_and_not_an_empty_one() {
     remove(root.as_path());
 }
 
+/// Making a directory durable is fine when it succeeded or the directory was never created, and a fault otherwise.
+#[test]
+fn only_an_absent_directory_may_skip_its_sync() {
+    absent_is_fine(Ok(())).expect("done");
+    absent_is_fine(Err(std::io::Error::from(std::io::ErrorKind::NotFound))).expect("absent");
+    absent_is_fine(Err(std::io::Error::from(std::io::ErrorKind::PermissionDenied)))
+        .expect_err("refused");
+}
+
 /// A claim whose container cannot be examined (a file stands in the way) fails and keeps its claim,
 ///  instead of being taken for a claim whose container was never created.
 #[test]

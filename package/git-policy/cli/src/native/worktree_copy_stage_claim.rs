@@ -226,6 +226,25 @@ fn remove_unfinished_claims(root: &Path) -> Result<(), WorktreeCopyError> {
 }
 
 /// What:
+///  Accepts a finished action, or one that found its directory absent, and reports every other failure.
+/// Why:
+///   A root that was never created holds nothing to make durable, while any other refusal means the durable state is
+///  unknown.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// try { await action(); } catch (e) { if (e.code !== 'ENOENT') throw e; }
+/// ```
+fn absent_is_fine(outcome: std::io::Result<()>) -> Result<(), WorktreeCopyError> {
+    // `match` on the failure kind: only absence is accepted.
+    match outcome {
+        Ok(()) => return Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(raw_failure(&error)),
+    }
+}
+
+/// What:
 ///  Removes every stage container that a claim names and no journal does, then the claims, and says what it removed.
 /// Why:
 ///   The caller holds the settlement lock, so no live copy is between claiming and journaling;
@@ -264,12 +283,7 @@ pub fn reap_abandoned_stages(common_dir: &Path) -> Result<Vec<String>, WorktreeC
         }
     }
     remove_unfinished_claims(root.as_path())?;
-    // `match` skips the sync of a root that was never created, which holds nothing to make durable.
-    match sync_directory(root.as_path()) {
-        Ok(()) => {}
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-        Err(error) => return Err(raw_failure(&error)),
-    }
+    absent_is_fine(sync_directory(root.as_path()))?;
     return Ok(notices);
 }
 
