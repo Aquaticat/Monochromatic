@@ -242,13 +242,22 @@ before saying it matches, QAB):
   macOS x64 is culled by the human's decision. Gate: nothing real is released without asking the human first (releases
   are immutable). The Alpine (task 95) and Windows (task 96) agents write the artifact names and job steps that must
   be forwarded to this agent when they report.
-- Task 93, auto-play on select (D129), branch `feat/auto-play-on-select`, worktree `music-player-aps`, based on the
-  Search select-only branch: a Settings switch row, default off, both platforms; the Settings gallery images must be
-  retaken (desktop and Android).
-- Task 94, Android row text alignment, branch `fix/android-row-text-alignment`, worktree `music-player-ral`: on the
-  unfolded display the track row text sits about 26 dp right of the headings (my ring work, `TrackListPane.kt`). The
-  human's ruling: beside the crease only text dodges it; fills, state layers and rings may reach the crease and the pane
-  edge; text columns win. Search's rounded result shape (D126) was left alone and is a candidate if the human asks.
+- Task 93, auto-play on select (D129), branch `feat/auto-play-on-select`, worktree `music-player-aps`: built and
+  reported on both platforms (desktop 1444 passed, Android 1268 tests, real runs on both). Main, including D130, was
+  merged into it at `2285fca73c`; the agent was told to rerun the Android verification fresh on that head and retake
+  `android-inner-settings-dark.png` from the merged build (both branches changed it). Then I merge it: rerun
+  verification, view the four Settings PNGs, ff-merge, push. Open to the human's veto: the setting's name, the
+  "Playback" group, the supporting lines, and the Search action label ("Select track" or "Play track"). Known and
+  left alone: `desktop-e2e` `lint:oxlint` has errors in files this branch did not touch (`wide-select.ts` and others).
+- Task 94, Android row text alignment (D130): MERGED to `main` at `3e7d03e7c2` on 2026-10-15 (detekt, 1249 unit tests
+  and lint passed fresh on the merged head; I viewed the three retaken PNGs). The human's ruling: beside the crease
+  only text dodges it; fills, state layers and rings may reach the crease and the pane edge; text columns win. Two
+  changes beyond the brief are open to the human's veto: the template editor's hairlines now start at the pane edge,
+  and its field rows lost 3 dp of ring padding. Search's rounded result shape (D126) was left alone and is a candidate
+  if the human asks. Not verified on a device: the keyboard ring on a template field row.
+- Task 97, existing CI caching, branch `chore/ci-caching`, worktree `ci-caching` (agent started 2026-10-15): restore-keys
+  for `cargo-publish.yml`, a pnpm store cache for the three pnpm workflows, `doc/decision/ci-caching.md`, proven by
+  dispatching cold and warm runs from the branch (never cargo-publish with dry-run false).
 - Task 95, Alpine, branch `feat/music-player-alpine`, worktree `music-player-alp`: the desktop app must run on Alpine
   (musl, dynamic link expected because Slint loads libwayland and libxkbcommon at run time); the real-window proof uses
   our own nested compositor `monochromatic-nested-wayland-session`, never sway or weston; if the compositor needs
@@ -262,12 +271,11 @@ before saying it matches, QAB):
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
-- Task 97, existing CI caching: `cargo-publish.yml` caches are exact-key only (no `restore-keys`), so any lockfile
-  change rebuilds everything and stores a new 130 to 420 MB entry (28 caches, 5.5 GB of the 10 GB cap on 2026-10-15);
+- Evidence behind task 97: `cargo-publish.yml` caches are exact-key only (no `restore-keys`), so any lockfile change
+  rebuilds everything and stores a new 130 to 420 MB entry (28 caches, 5.5 GB of the 10 GB cap on 2026-10-15);
   `logger-fuzz.yml`, `toml-edit-fuzz.yml` and `readonly-semantic-bridge.yml` run `pnpm install --frozen-lockfile`
-  with no pnpm store cache. Fix with restore-keys, a pnpm store cache and a short written caching policy, proven with
-  a cold and a warm run each. The new workflows of tasks 92, 95 and 96 were told to cache properly and prove it.
-- Gallery retakes owed after task 93 (Settings images) and after task 94 if committed images differ.
+  with no pnpm store cache. The new workflows of tasks 92, 95 and 96 were told to cache properly and prove it.
+- Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
 - Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
 
 Standing rulings of the human in this effort (2026-10-14 and 15): click rule D124; Search results select only D127; the
