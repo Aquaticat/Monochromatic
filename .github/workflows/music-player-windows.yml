@@ -255,12 +255,13 @@ jobs:
       run: cargo nextest run --locked --target "$TARGET" --no-run
 
     - name: Build the binary
+      id: build-binary
       working-directory: package/music-player/desktop-app
       run: cargo build --locked --target "$TARGET"
 
     # Keep the entry lean: this package's own outputs change on every commit and are rebuilt anyway.
     - name: Prune this package's own artifacts from the cache directory
-      if: ${{ always() && steps.cargo-cache.outputs.cache-hit != 'true' && steps.policy.outputs.save == 'true' }}
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' && steps.cargo-cache.outputs.cache-hit != 'true' && steps.policy.outputs.save == 'true' }}
       working-directory: package/music-player/desktop-app
       run: |
         set -euo pipefail
@@ -272,7 +273,7 @@ jobs:
         du -sh target "$HOME/.cargo/registry/index" "$HOME/.cargo/registry/cache" "$HOME/.cargo/git/db" 2>/dev/null || true
 
     - name: Save the cargo and target cache
-      if: ${{ always() && steps.cargo-cache.outputs.cache-hit != 'true' && steps.policy.outputs.save == 'true' }}
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' && steps.cargo-cache.outputs.cache-hit != 'true' && steps.policy.outputs.save == 'true' }}
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
         path: |
@@ -283,7 +284,7 @@ jobs:
         key: ${{ steps.cargo-cache.outputs.cache-primary-key }}
 
     - name: Save the MSYS2 package cache
-      if: ${{ always() && matrix.flavor == 'gnu' && steps.msys2-cache.outputs.cache-hit != 'true' && steps.policy.outputs.save == 'true' }}
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' && matrix.flavor == 'gnu' && steps.msys2-cache.outputs.cache-hit != 'true' && steps.policy.outputs.save == 'true' }}
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
         path: C:\msys64\var\cache\pacman\pkg

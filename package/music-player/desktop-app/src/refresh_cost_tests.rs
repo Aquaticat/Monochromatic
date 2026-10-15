@@ -95,12 +95,27 @@ fn summary(label: &str, samples: &mut [Duration]) {
 
 /// What: `cpu_seconds` is the CPU time (user and system) this process has used so far, in seconds.
 /// Why: a refresh sweep runs at idle priority on other threads, so its cost on a busy host is its CPU time, not its latency.
+#[cfg(not(windows))]
 fn cpu_seconds() -> f64 {
     let mut usage: libc::rusage = unsafe { std::mem::zeroed() };
     let status = unsafe { libc::getrusage(libc::RUSAGE_SELF, &mut usage) };
     assert_eq!(status, 0, "getrusage works");
     let seconds = |value: libc::timeval| return value.tv_sec as f64 + value.tv_usec as f64 / 1_000_000.0;
     return seconds(usage.ru_utime) + seconds(usage.ru_stime);
+}
+
+/// What: `cpu_seconds` is the CPU time (user and kernel) this process has used so far, in seconds, from `GetProcessTimes`.
+/// Why: the same measurement as on Unix. The `libc` crate is not a dependency on Windows, so the test module did not compile
+///      there until this version existed.
+#[cfg(windows)]
+fn cpu_seconds() -> f64 {
+    use windows::Win32::Foundation::FILETIME;
+    use windows::Win32::System::Threading::{GetCurrentProcess, GetProcessTimes};
+    let (mut created, mut exited, mut kernel, mut user) = (FILETIME::default(), FILETIME::default(), FILETIME::default(), FILETIME::default());
+    unsafe { GetProcessTimes(GetCurrentProcess(), &mut created, &mut exited, &mut kernel, &mut user) }.expect("GetProcessTimes works");
+    // A FILETIME counts 100-nanosecond ticks split over two 32-bit halves.
+    let seconds = |value: FILETIME| return ((u64::from(value.dwHighDateTime) << 32) | u64::from(value.dwLowDateTime)) as f64 / 10_000_000.0;
+    return seconds(kernel) + seconds(user);
 }
 
 /// What: `dispatch` tells the controller that `paths` changed, the way the watcher does; with `MP_REFRESH_EVERYTHING` set it
