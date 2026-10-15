@@ -2,11 +2,13 @@
 
 ## Status and decision being tested
 
-The initial bounded trial executions have finished.
-A runner-size and Cargo-parallelism follow-up is executing in
-[run 38819692881](https://github.com/Aquaticats/Monochromatic/actions/runs/38819692881).
-The allocation ranking remains provisional until its measurements are incorporated.
-Graphical testing and account-wide billing visibility remain unresolved acceptance gaps.
+The bounded trial and runner-size follow-up have finished.
+All ten corrected runner configurations passed,
+as did the default-container-builder concurrency repetitions.
+The [sizing report](depot-runner-sizing-2026-10-15.md) records the measured results and allocation recommendation.
+Full desktop interaction,
+Android instrumentation,
+and account-wide billing visibility remain unresolved acceptance gaps.
 This report follows the [confirmed trial brief](../planning/depot-ci-trial.md).
 The user prefers the USD $20 Developer plan if intentional GitHub routing keeps it useful and convenient.
 USD $200 is the monthly ceiling,
@@ -14,7 +16,17 @@ not a target spend.
 The current Startup trial remains available for evaluating options.
 No subscription change or production migration has been made.
 
-The evidence favors Developer with selective routing before paying for Startup.
+The user's clarification is explicit:
+this is not an apples-to-apples migration.
+The objective is broader CI coverage,
+reusable environments,
+agent-requested experiments,
+and a convenient workflow within the spending ceiling.
+Existing-job timings isolate performance effects;
+they do not price the value of additional capabilities or define the target workload.
+The [confirmed brief](../planning/depot-ci-trial.md) preserves that distinction.
+
+Developer with selective routing remains the first arrangement to evaluate for that expanded workload.
 This is a provisional allocation recommendation,
 not a complete technology-adoption verdict.
 The container build,
@@ -30,7 +42,10 @@ The runtime-name guard rejected this output in run `38819692881`.
 The individual successful observations remain valid,
 but they do not establish safe cache reuse across repeated source snapshots.
 Trial commit `4648e5ad3d` adds source-content invalidation of the local packages;
-the full rerun is pending.
+the full corrected reruns passed all 100 runtime assertions,
+including both source changes in every configuration.
+[Main rerun](https://github.com/Aquaticats/Monochromatic/actions/runs/38822116503),
+[large-runner rerun](https://github.com/Aquaticats/Monochromatic/actions/runs/38822116510)
 The [cache investigation](../troubleshooting/cargo-buildkit-source-timestamps.md)
 preserves the minimal failing case and its verified package-clean remedy.
 
@@ -40,7 +55,7 @@ The disposable branch is `trial/depot-20261015`,
 based on application revision `46effff65ab4193b4311d7675e301c97007176d1`.
 Its trial files live under `package/music-player/desktop-app/depot-trial/`.
 The same Alpine toolchain and runtime stages feed the GitHub and Depot builds.
-Cargo uses four build jobs in each.
+The initial provider comparison uses four Cargo build jobs in each.
 Depot's default builder has 16 CPUs and 32 GB RAM;
 this is not a comparison of identical hardware.
 

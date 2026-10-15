@@ -32,7 +32,17 @@ Overlapping jobs count once,
 even when other useful work continues.
 One dated exchange rate will put provider charges and time value in the same currency.
 
-Comparisons use equivalent checks and the same stream of changes.
+The user clarified that this is not an apples-to-apples migration.
+Equivalent-check comparisons isolate performance effects;
+they do not define the migration's value or restrict its coverage target.
+Evaluate the expanded workflow's coverage,
+reusable environments,
+agent-requested experiments,
+convenience,
+and total cost against the user's budget.
+Today's GitHub workload is a reference measurement,
+not the target feature set.
+Performance comparisons use equivalent checks and the same stream of changes.
 Missing tests,
 failed setup,
 and skipped required checks cannot count as performance improvements.
