@@ -2,9 +2,12 @@
 // Write the third-party license notices of one music player binary as one plain-text file.
 // Decision and allow-list: doc/decision/music-player-third-party-licenses.md.
 //
-// Usage, from the folder of the crate whose about.toml lists the targets and accepted licenses:
+// Usage (--crate names the folder of the crate whose about.toml lists the targets and accepted licenses; it defaults
+// to the current folder, and every relative path is resolved against the current folder):
 //   node <this file> --product desktop --output target/THIRD-PARTY-LICENSES.txt [--features alsa-fallback]
-//   node <this file> --product android --output <file> [--android-libraries <licensee artifacts.json>]
+//   node <this file> --product android --crate rust --output <file> \
+//     --android-libraries <licensee artifacts.json> --android-library-notices <collected NOTICE files>
+// The mise tasks `notices` of desktop-app and android-app run it.
 //
 // What it does, in order, stopping with an error at the first failure:
 //   1. `cargo fetch --locked` (network), so every crate of every listed target has its source on disk.
@@ -25,8 +28,10 @@ const { values: options } = parseArgs({
   options: {
     product: { type: 'string' },
     output: { type: 'string' },
+    crate: { type: 'string', default: '.' },
     features: { type: 'string', default: '' },
     'android-libraries': { type: 'string' },
+    'android-library-notices': { type: 'string' },
     'skip-fetch': { type: 'boolean', default: false },
   },
 });
@@ -34,10 +39,13 @@ if (options.product !== 'desktop' && options.product !== 'android') {
   throw new Error('--product must be desktop or android, got ' + JSON.stringify(options.product));
 }
 if (!options.output) throw new Error('--output names the notice file to write');
-if (options['android-libraries'] && options.product !== 'android') {
-  throw new Error('--android-libraries applies only to --product android');
+if (options.product === 'android' && !(options['android-libraries'] && options['android-library-notices'])) {
+  throw new Error('--product android needs --android-libraries and --android-library-notices (the Gradle outputs)');
 }
-const crateDirectory = process.cwd();
+if (options.product !== 'android' && (options['android-libraries'] || options['android-library-notices'])) {
+  throw new Error('--android-libraries and --android-library-notices apply only to --product android');
+}
+const crateDirectory = resolve(options.crate);
 const scriptDirectory = dirname(new URL(import.meta.url).pathname);
 const musicPlayer = resolve(scriptDirectory, '..', '..');
 const repository = resolve(musicPlayer, '..', '..');
@@ -219,10 +227,28 @@ sections.push([
   htmlToText(readFileSync(stdNotice, 'utf8')),
   '',
 ].join(newline));
+
+if (options.product === 'desktop') {
+  // The x86_64-pc-windows-gnu program links the MinGW-w64 startup code and runtime libraries statically (its release
+  // check refuses any MinGW runtime DLL import). Their texts are kept in notices/ beside this script's package.
+  sections.push([
+    heading('MinGW-w64 runtime (in the Windows x64 program built with MinGW-w64 only)'),
+    'The windows-x64-gnu program is linked with the MinGW-w64 C runtime startup code and libraries, which are',
+    'linked into it statically. The GCC support library (libgcc) linked with it is covered by the GCC Runtime Library',
+    'Exception, which asks for no notice.',
+    '',
+    subheading('MinGW-w64 runtime (mingw-w64 13.0.0, file COPYING)'),
+    readText(join(musicPlayer, 'desktop-app', 'notices', 'mingw-w64-runtime.txt')),
+    '',
+    subheading('winpthreads (mingw-w64-libraries/winpthreads/COPYING)'),
+    readText(join(musicPlayer, 'desktop-app', 'notices', 'winpthreads.txt')),
+    '',
+  ].join(newline));
+}
 //endregion
 
 //region Android libraries
-if (options['android-libraries']) {
+if (options.product === 'android') {
   const artifacts = JSON.parse(readFileSync(resolve(options['android-libraries']), 'utf8'));
   if (!Array.isArray(artifacts) || artifacts.length === 0) throw new Error('No Android library in ' + options['android-libraries']);
   const byLicense = new Map();
@@ -247,6 +273,15 @@ if (options['android-libraries']) {
       '',
     );
   }
+  // Apache License 2.0 section 4(d): NOTICE files inside the libraries travel with the app. APK packaging drops
+  // META-INF/NOTICE* files, so the Gradle task collectAndroidLibraryNotices copies them out of the resolved release
+  // libraries first; an empty file means none of them carries one.
+  const libraryNotices = readText(resolve(options['android-library-notices']));
+  androidSection.push(
+    subheading('NOTICE files carried by the Android libraries'),
+    libraryNotices.length > 0 ? libraryNotices : 'None of the Android libraries carries a NOTICE file.',
+    '',
+  );
   sections.push(androidSection.join(newline));
 }
 //endregion
