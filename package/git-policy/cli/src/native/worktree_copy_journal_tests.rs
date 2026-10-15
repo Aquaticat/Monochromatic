@@ -202,7 +202,7 @@ fn identities_are_canonical_decimals() {
     for refused in ["", "00", "01", "-1", "+1", "1.0", "a", "1 ", "18446744073709551616"] {
         assert_eq!(decimal_identity(&text(refused)), None, "{refused:?}");
     }
-    assert_eq!(decimal_identity(&serde_json::json!(7)), None);
+    assert_eq!(decimal_identity(&serde_json::Value::from(7_u64)), None);
 }
 
 /// Each relation between the stage and the destination refuses on its own,
