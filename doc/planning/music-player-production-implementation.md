@@ -558,8 +558,11 @@ Decision numbers D122 to D130 are taken; the next free one is D131.
 - Stale docs: the gallery images in the bullet above; otherwise none known. The README gallery and the Android
   page-control text were rewritten on 2026-10-13, and the peak-sweep start path in
   `android-app/HANDOVER.peak-sweep-optimization.md` and `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
-- Hygiene: `~/temp/agent/agent-polish2/work/` and `~/temp/agent/agent-refresh-cost/lib-1m` (12 GB) hold scratch libraries
-  that can be deleted. A failed decode is retried at every library change, one decode per failed file per change.
+- Hygiene (2026-10-15): I removed the 21 music-player worktrees whose branches are merged into `main` and clean, the
+  `ral`, `xxh3` and `bannerfit` Gradle homes (4.7 to 4.8 GB each) and `agent-refresh-cost` (17 GB). Kept: the worktrees
+  `music-player-production`, `-cover-picker`, `-first-run-access`, `-theme-compose-prototype`, `-relgnu` (in flight),
+  the Gradle homes `aps-gradle-home` (my verify scripts use it) and `tap-gradle-home`, and
+  `~/temp/agent/agent-polish2/work/` (not inspected). The branches themselves were not deleted. A failed decode is retried at every library change, one decode per failed file per change.
 - Rate limit: on 2026-10-12 the Sonnet weekly limit stopped five agents mid-run; a re-login lifted it and they were
   resumed. Their work is committed; check `git log` before relaunching anything.
 - Never verified: a real Plasma session, macOS, Windows, real Android hardware, Android API 33 to 36 for D107 and for
