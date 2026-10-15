@@ -28,6 +28,13 @@ function conversation(wire){
  return JSON.parse(selected[0].content);
 }
 
+/** Pi's native prompt path represents user text as content blocks. */
+function userText(message){
+ if(typeof message.content==='string')return message.content;
+ return message.content.filter(function text(block){return block.type==='text';})
+   .map(function value(block){return block.text;}).join('');
+}
+
 try{
  for(const message of messages)session.sessionManager.appendMessage(message);
  session.agent.state.messages=messages;
@@ -38,10 +45,10 @@ try{
  assert.ok(fixtureState.originalBody.includes(oldMarker),'Positive control: the main-agent request still contains the old prefix');
  const first=conversation(fixtureState.wires[0]);
  assert.equal(first.length,5,'The current user span retains the five-message floor');
- assert.ok(first.some(function fullCurrentUser(message){return message.role==='user'&&message.content===longUser;}));
+ assert.equal(first.some(function fullCurrentUser(message){return message.role==='user'&&userText(message)===longUser;}),true);
  const last=conversation(fixtureState.wires[3]);
  assert.equal(last[0].role,'user');
- assert.equal(last[0].content,longUser);
+ assert.equal(userText(last[0]),longUser);
  assert.equal(last.length,8,'All messages since the latest user survive once the span exceeds the floor');
  assert.equal(last.filter(function assistant(message){return message.role==='assistant';}).length,4);
  assert.equal(last.filter(function result(message){return message.role==='toolResult';}).length,3);
@@ -53,7 +60,7 @@ try{
  assert.equal(fixtureState.wires.length,5);
  const followup=conversation(fixtureState.wires[4]);
  assert.equal(followup.length,5);
- assert.ok(followup.some(function currentUser(message){return message.role==='user'&&message.content===next;}));
+ assert.equal(followup.some(function currentUser(message){return message.role==='user'&&userText(message)===next;}),true);
  assert.equal(JSON.stringify(fixtureState.wires[4]).includes(longUser),false,'A superseded long user message must not return through archived receipts');
 
  await session.reload();
