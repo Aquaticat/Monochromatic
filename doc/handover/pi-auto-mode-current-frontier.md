@@ -1573,9 +1573,34 @@ All 18 implementation,
 bridge,
 and consumer files touched by this port have zero diagnostics in that full report.
 The instruction-owner port is qualified.
-Next is original program ownership in `judgment-programs.mjs` (547 warnings),
-then `child-constructor.mjs` (471 warnings),
-while preserving the existing behavior and consumer boundaries.
+Original program ownership in `judgment-programs.mjs` (547 warnings in that report)
+now routes through typed owner modules in `d14153d57f`.
+`0dce710cd3` retains declaration and native return contracts;
+`bc985d13f4`,
+`db749fa089`,
+and `362f24ef07` separate custody,
+opening,
+reached groups,
+native calls,
+value access,
+and retained inspection.
+The original source is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/judgment-programs-before-types.mjs`,
+with SHA-256 `3744591589d89ba1aa3586b10cea037374310a9f9b177d4b24a225f3bbe67b83`.
+The operation contracts compile in
+`${HOME}/temp/agent/pi-program-owner-types-second-20261015.log`.
+`722dae4094` prevents native array admission from widening already declared elements to `any`.
+The native README records the scoped nullish-return alias for the original `preparedProgramFor` API;
+no lint configuration was loosened.
+Private uninitialized record slots now begin absent;
+public retained inspection still includes its original undefined-valued fields.
+Focused lint completion,
+rebuilt native consumers,
+independent owner tests,
+original-baseline comparison,
+and guard controls remain required before qualifying program ownership.
+Then continue `child-constructor.mjs` (471 warnings in the instruction-port report),
+preserving existing behavior and consumer boundaries.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
