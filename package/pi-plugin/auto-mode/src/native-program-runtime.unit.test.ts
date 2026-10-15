@@ -12,7 +12,11 @@ await describe({ name: '', children: [
     assert.equal(fixture.run.declaration, fixture.declaration);
     assert.equal(Object.isFrozen(fixture.run), true);
     assert.equal(Object.isFrozen(fixture.run.tools), true);
-    assert.deepEqual(fixture.run.tools.map(function alias(tool) { return tool.name; }), fixture.declaration.sites.map(function alias(site) { return site.alias; }));
+    assert.deepEqual(fixture.run.tools.map(function alias(tool) { 
+      return tool.name; 
+    }), fixture.declaration.sites.map(function alias(site) { 
+      return site.alias; 
+    }));
     for (const tool of fixture.run.tools) assert.equal(Object.isFrozen(tool), true);
     const snapshot = fixture.run.inspect();
     assert.deepEqual(snapshot, { retainedOnly: true, closed: false, reachedGroups: [] });
@@ -27,12 +31,18 @@ await describe({ name: '', children: [
     const fixture = createProgramRuntimeFixture();
     const later = fixture.invoke(2);
     const second = fixture.invoke(1);
-    assert.deepEqual(fixture.run.inspect().reachedGroups.map(function ordinal(group) { return group.ordinal; }), [1, 0]);
+    assert.deepEqual(fixture.run.inspect().reachedGroups.map(function ordinal(group) { 
+      return group.ordinal; 
+    }), [1, 0]);
     assert.equal(fixture.calls.length, 1);
     const first = fixture.invoke();
     assert.equal(fixture.calls.length, 2);
-    assert.deepEqual(fixture.calls.map(function handle(call) { return call.handle; }), [fixture.views[1]?.handle, fixture.views[0]?.handle]);
-    assert.equal(fixture.events.filter(function firstGroupRead(event) { return event === 'reach:0'; }).length, 2);
+    assert.deepEqual(fixture.calls.map(function handle(call) { 
+      return call.handle; 
+    }), [fixture.views[1]?.handle, fixture.views[0]?.handle]);
+    assert.equal(fixture.events.filter(function firstGroupRead(event) { 
+      return event === 'reach:0'; 
+    }).length, 2);
     const firstValue = Object.freeze({ original: 'first' });
     const secondValue = Object.freeze({ original: 'second' });
     const laterValue = Object.freeze({ original: 'later' });
@@ -47,7 +57,9 @@ await describe({ name: '', children: [
     assert.deepEqual(await awaitCollectorResult(Promise.all([first, second, later])), [firstValue, secondValue, laterValue]);
     await awaitCollectorResult(fixture.run.drain());
     const snapshot = fixture.run.inspect();
-    assert.equal(snapshot.reachedGroups.every(function settled(group) { return group.collector.phase === 'settled'; }), true);
+    assert.equal(snapshot.reachedGroups.every(function settled(group) { 
+      return group.collector.phase === 'settled'; 
+    }), true);
     for (const group of snapshot.reachedGroups) assert.equal(Object.isFrozen(group), true);
     assert.deepEqual(fixture.marked, []);
   } }),

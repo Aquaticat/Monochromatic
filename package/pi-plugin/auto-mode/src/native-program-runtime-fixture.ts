@@ -62,7 +62,9 @@ export function createProgramRuntimeFixture(): ProgramRuntimeFixture {
   const views = [0, 1].map(function reachedView(ordinal) {
     return Object.freeze({
       handle: Object.freeze({ original: 'group', ordinal }), declaration,
-      members: Object.freeze(sites.filter(function belongs(site) { return site.group === ordinal; }).map(function reachedMember(site) {
+      members: Object.freeze(sites.filter(function belongs(site) { 
+        return site.group === ordinal; 
+      }).map(function reachedMember(site) {
         const args = Object.freeze({ site: site.alias });
         return Object.freeze({ ...site, args, argsJSON: JSON.stringify(args) });
       })),
@@ -71,9 +73,15 @@ export function createProgramRuntimeFixture(): ProgramRuntimeFixture {
   /** Original parent cancellation is independent from every native member signal. */
   const parent = new AbortController();
   /** Original native callbacks each retain their independently controlled signal. */
-  const native = sites.map(function cancellation() { return new AbortController(); });
+  const native = sites.map(function cancellation() { 
+    return new AbortController(); 
+  });
   /** Every reached group has independently controlled original native outcomes. */
-  const tickets = views.map(function completionsForGroup(view) { return view.members.map(function nativeCompletion() { return Promise.withResolvers<unknown>(); }); });
+  const tickets = views.map(function completionsForGroup(view) { 
+    return view.members.map(function nativeCompletion() { 
+    return Promise.withResolvers<unknown>(); 
+  }); 
+  });
   /** Complete-group inputs are retained without replacing their member association. */
   const calls: RuntimeFixtureCall[] = [];
   /** Script-value callbacks expose the exact original native outcome they receive. */
@@ -89,8 +97,12 @@ export function createProgramRuntimeFixture(): ProgramRuntimeFixture {
   /** Reader outputs may change independently while source publication remains fixed. */
   const control: RuntimeFixtureControl = {
     programView: Object.freeze({ declaration }),
-    views: new Map(views.map(function groupView(view, ordinal) { return [ordinal, view]; })),
-    currentViews: new Map(views.map(function originalReader(view) { return [view.handle, view]; })),
+    views: new Map(views.map(function groupView(view, ordinal) { 
+      return [ordinal, view]; 
+    })),
+    currentViews: new Map(views.map(function originalReader(view) { 
+      return [view.handle, view]; 
+    })),
     failure: new Error('original callback failure'), value: 'original converted value',
   };
   /** Observe one original callback before its optional publication or failure.
@@ -104,26 +116,64 @@ export function createProgramRuntimeFixture(): ProgramRuntimeFixture {
   }
   /** Original judgment callbacks retain their receiver and exact program identity. */
   const judgment = {
-    programFor(original: object): unknown { assert.equal(this, judgment); assert.equal(original, program); step('program'); return control.programView; },
-    reachProgramGroup({ program: original, ordinal }: Readonly<{ program: object; ordinal: number }>): unknown { assert.equal(this, judgment); assert.equal(original, program); step(`reach:${ordinal}`); return control.views.get(ordinal); },
-    reachedGroupFor(handle: object): unknown { assert.equal(this, judgment); step('read-group'); return control.currentViews.get(handle); },
-    markProgramGuard(input: RuntimeFixtureFailure): Error { assert.equal(this, judgment); assert.equal(input.program, program); marked.push(input); step('mark'); guards.push(guard); return guard; },
-    inspectProgram(original: object): Readonly<{ guardFailures: readonly Error[] }> { assert.equal(this, judgment); assert.equal(original, program); step('inspect-program'); return { guardFailures: guards }; },
+    programFor(original: object): unknown { 
+      assert.equal(this, judgment); 
+      assert.equal(original, program); 
+      step('program'); 
+      return control.programView; 
+    },
+    reachProgramGroup({ program: original, ordinal }: Readonly<{ program: object; ordinal: number }>): unknown { 
+      assert.equal(this, judgment); 
+      assert.equal(original, program); 
+      step(`reach:${ordinal}`); 
+      return control.views.get(ordinal); 
+    },
+    reachedGroupFor(handle: object): unknown { 
+      assert.equal(this, judgment); 
+      step('read-group'); 
+      return control.currentViews.get(handle); 
+    },
+    markProgramGuard(input: RuntimeFixtureFailure): Error { 
+      assert.equal(this, judgment); 
+      assert.equal(input.program, program); 
+      marked.push(input); 
+      step('mark'); 
+      guards.push(guard); 
+      return guard; 
+    },
+    inspectProgram(original: object): Readonly<{ guardFailures: readonly Error[] }> { 
+      assert.equal(this, judgment); 
+      assert.equal(original, program); 
+      step('inspect-program'); 
+      return { guardFailures: guards }; 
+    },
   };
   /** Original parent and native consumer functions are independently bound input capabilities. */
   const input = {
     judgment, program, signal: parent.signal,
-    assertParentCurrent(): void { assert.equal(this, undefined); step('parent'); },
+    assertParentCurrent(): void { 
+      assert.equal(this, undefined); 
+      step('parent'); 
+    },
     dispatchGroup(call: RuntimeFixtureCall): unknown {
       assert.equal(this, undefined);
       calls.push(call);
       step('dispatch');
-      const ordinal = views.findIndex(function originalHandle(view) { return view.handle === call.handle; });
+      const ordinal = views.findIndex(function originalHandle(view) { 
+        return view.handle === call.handle; 
+      });
       const groupTickets = tickets[ordinal];
       assert.ok(groupTickets);
-      return groupTickets.map(function completion(ticket) { return ticket.promise; });
+      return groupTickets.map(function completion(ticket) { 
+        return ticket.promise; 
+      });
     },
-    scriptValueFor(value: RuntimeFixtureValue): unknown { assert.equal(this, undefined); converted.push(value); step('convert'); return control.value; },
+    scriptValueFor(value: RuntimeFixtureValue): unknown { 
+      assert.equal(this, undefined); 
+      converted.push(value); 
+      step('convert'); 
+      return control.value; 
+    },
   };
   /** Construction reads original program publication before exposing runtime tools. */
   const run = runtimeFixtureModule.createReachedProgramRun(input);

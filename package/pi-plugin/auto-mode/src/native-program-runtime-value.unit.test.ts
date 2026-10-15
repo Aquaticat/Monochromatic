@@ -9,7 +9,11 @@ await describe({ name: '', children: [
   ...[null, undefined, false, {}, Object.freeze({ name: 'first' })].map(function foreignTool(tool) {
     return it({ name: `marks unowned tool ${JSON.stringify(tool)} before result conversion`, fn: async () => {
       const fixture = createProgramRuntimeFixture();
-      assert.throws(function consumeForeignResult() { fixture.run.valueFor({ tool, outcome: {} }); }, function originalGuard(error: unknown) { return error === fixture.guard; });
+      assert.throws(function consumeForeignResult() { 
+        fixture.run.valueFor({ tool, outcome: {} }); 
+      }, function originalGuard(error: unknown) { 
+        return error === fixture.guard; 
+      });
       const [marked] = fixture.marked;
       assert.ok(Error.isError(marked?.error));
       assert.equal(marked.error.message, 'Script result tool is not an owned program callsite');
@@ -19,12 +23,20 @@ await describe({ name: '', children: [
   it({ name: 'does not reconstruct original tool custody from copied callable metadata', fn: async () => {
     const fixture = createProgramRuntimeFixture();
     const tool = Object.freeze({ ...fixture.tool() });
-    assert.throws(function copiedTool() { fixture.run.valueFor({ tool, outcome: {} }); }, function originalGuard(error: unknown) { return error === fixture.guard; });
+    assert.throws(function copiedTool() { 
+      fixture.run.valueFor({ tool, outcome: {} }); 
+    }, function originalGuard(error: unknown) { 
+      return error === fixture.guard; 
+    });
     assert.deepEqual(fixture.converted, []);
   } }),
   it({ name: 'marks owned tool whose original source group has never been reached', fn: async () => {
     const fixture = createProgramRuntimeFixture();
-    assert.throws(function unreachedGroup() { fixture.run.valueFor({ tool: fixture.tool(), outcome: {} }); }, function originalGuard(error: unknown) { return error === fixture.guard; });
+    assert.throws(function unreachedGroup() { 
+      fixture.run.valueFor({ tool: fixture.tool(), outcome: {} }); 
+    }, function originalGuard(error: unknown) { 
+      return error === fixture.guard; 
+    });
     const [marked] = fixture.marked;
     assert.ok(Error.isError(marked?.error));
     assert.equal(marked.error.message, 'Script result group was not reached');
@@ -64,7 +76,9 @@ await describe({ name: '', children: [
       try {
         fixture.run.valueFor({ tool: fixture.tool(2), outcome: 'native result' });
         assert.fail('Original conversion failure was discarded');
-      } catch (error) { assert.equal(error, failure); }
+      } catch (error) { 
+        assert.equal(error, failure); 
+      }
       assert.deepEqual(fixture.events, ['parent', 'program', 'convert']);
       assert.deepEqual(fixture.marked, []);
     } });
@@ -79,7 +93,11 @@ await describe({ name: '', children: [
     const nativeGuard = createRuntimeFixtureGuard(Object.freeze({ original: 'value guard cause' }));
     fixture.control.failAt = 'convert';
     fixture.control.failure = nativeGuard;
-    assert.throws(function consumeGuardedValue() { fixture.run.valueFor({ tool: fixture.tool(2), outcome: 'native result' }); }, function originalGuard(error: unknown) { return error === fixture.guard; });
+    assert.throws(function consumeGuardedValue() { 
+      fixture.run.valueFor({ tool: fixture.tool(2), outcome: 'native result' }); 
+    }, function originalGuard(error: unknown) { 
+      return error === fixture.guard; 
+    });
     assert.deepEqual(fixture.marked, [{ program: fixture.program, error: nativeGuard }]);
     assert.deepEqual(await awaitCollectorResult(Promise.allSettled([fixture.run.drain()])), [{ status: 'rejected', reason: fixture.guard }]);
   } }),
@@ -95,13 +113,23 @@ await describe({ name: '', children: [
       fixture.control.onStep = function changeAfterConversion(point): void {
         if (point !== 'convert') return;
         if (change === 'retire') fixture.run.retire();
-        else { fixture.control.failAt = 'parent'; fixture.control.failure = failure; }
+        else { 
+          fixture.control.failAt = 'parent'; 
+          fixture.control.failure = failure; 
+        }
       };
-      assert.throws(function rejectChangedTail() { fixture.run.valueFor({ tool: fixture.tool(2), outcome: 'native result' }); }, function originalGuard(error: unknown) { return error === fixture.guard; });
+      assert.throws(function rejectChangedTail() { 
+        fixture.run.valueFor({ tool: fixture.tool(2), outcome: 'native result' }); 
+      }, function originalGuard(error: unknown) { 
+        return error === fixture.guard; 
+      });
       assert.equal(fixture.converted.length, 1);
       const [marked] = fixture.marked;
       assert.ok(marked);
-      if (change === 'retire') { assert.ok(Error.isError(marked.error)); assert.equal(marked.error.message, 'Native program body has returned'); }
+      if (change === 'retire') { 
+        assert.ok(Error.isError(marked.error)); 
+        assert.equal(marked.error.message, 'Native program body has returned'); 
+      }
       else assert.equal(marked.error, failure);
     } });
   }),
@@ -110,8 +138,13 @@ await describe({ name: '', children: [
     const failure = Object.freeze({ original: 'guard retention failed' });
     fixture.control.failAt = 'mark';
     fixture.control.failure = failure;
-    try { fixture.run.valueFor({ tool: {}, outcome: undefined }); assert.fail('Original retention callback failure was discarded'); }
-    catch (error) { assert.equal(error, failure); }
+    try { 
+      fixture.run.valueFor({ tool: {}, outcome: undefined }); 
+      assert.fail('Original retention callback failure was discarded'); 
+    }
+    catch (error) { 
+      assert.equal(error, failure); 
+    }
     assert.equal(fixture.marked.length, 1);
     assert.deepEqual(fixture.guards, []);
   } }),

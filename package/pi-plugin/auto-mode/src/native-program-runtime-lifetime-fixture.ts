@@ -85,12 +85,31 @@ export function createRuntimeLifetimeFixture(): RuntimeLifetimeFixture {
      @param point - original child boundary
      @throws Error when the fixture selects a failing child callback
      */
-    function step(point: string): void { events.push(`${ordinal}:${point}`); state.onStep?.(point); if (state.throwAt === point) throw state.failure; }
+    function step(point: string): void { 
+      events.push(`${ordinal}:${point}`); 
+      state.onStep?.(point); 
+      if (state.throwAt === point) throw state.failure; 
+    }
     /** Original child callbacks retain their receiver even when the runtime extracts map entries. */
     const run = {
-      retire(): void { assert.equal(this, run); assert.equal(lifetime.closed, true); state.retired++; step('retire'); },
-      drain(): Promise<unknown> { assert.equal(this, run); state.drained++; step('drain'); return state.work; },
-      inspect(): RuntimeLifetimeInspection { assert.equal(this, run); state.inspected++; step('inspect'); return inspection; },
+      retire(): void { 
+        assert.equal(this, run); 
+        assert.equal(lifetime.closed, true); 
+        state.retired++; 
+        step('retire'); 
+      },
+      drain(): Promise<unknown> { 
+        assert.equal(this, run); 
+        state.drained++; 
+        step('drain'); 
+        return state.work; 
+      },
+      inspect(): RuntimeLifetimeInspection { 
+        assert.equal(this, run); 
+        state.inspected++; 
+        step('inspect'); 
+        return inspection; 
+      },
     };
     /** Entry retains the exact original callback owner and mutable inspection object. */
     const entry = { run, inspection, state };

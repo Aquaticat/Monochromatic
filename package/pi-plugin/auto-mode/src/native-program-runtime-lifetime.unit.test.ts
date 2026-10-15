@@ -21,8 +21,13 @@ await describe({ name: '', children: [
       const fixture = createRuntimeLifetimeFixture();
       const entry = fixture.entry(ordinal);
       entry.state.throwAt = 'retire';
-      try { fixture.owner.retire(); assert.fail('Original child retirement failure was discarded'); }
-      catch (error) { assert.equal(error, entry.state.failure); }
+      try { 
+        fixture.owner.retire(); 
+        assert.fail('Original child retirement failure was discarded'); 
+      }
+      catch (error) { 
+        assert.equal(error, entry.state.failure); 
+      }
       assert.equal(fixture.lifetime.closed, true);
       assert.equal(fixture.entry(7).state.retired, 1);
       assert.equal(fixture.entry(2).state.retired, ordinal === 7 ? 0 : 1);
@@ -33,7 +38,9 @@ await describe({ name: '', children: [
   }),
   it({ name: 'retires a group added by an original retirement callback in the same live traversal', fn: async () => {
     const fixture = createRuntimeLifetimeFixture();
-    fixture.entry(7).state.onStep = function publishGroup(point): void { if (point === 'retire') fixture.add(9); };
+    fixture.entry(7).state.onStep = function publishGroup(point): void { 
+      if (point === 'retire') fixture.add(9); 
+    };
     fixture.owner.retire();
     assert.deepEqual(fixture.events, ['7:retire', '2:retire', '9:retire']);
     assert.equal(fixture.entry(9).state.retired, 1);
@@ -99,7 +106,9 @@ await describe({ name: '', children: [
     assert.notEqual(first.reachedGroups, second.reachedGroups);
     assert.equal(Object.isFrozen(first), true);
     assert.equal(Object.isFrozen(first.reachedGroups), true);
-    assert.deepEqual(first.reachedGroups.map(function ordinal(group) { return group.ordinal; }), [7, 2]);
+    assert.deepEqual(first.reachedGroups.map(function ordinal(group) { 
+      return group.ordinal; 
+    }), [7, 2]);
     for (const group of first.reachedGroups) {
       assert.equal(Object.isFrozen(group), true);
       assert.equal(group.collector, fixture.entry(group.ordinal).inspection);
@@ -112,7 +121,9 @@ await describe({ name: '', children: [
     assert.equal(first.closed, false);
     assert.equal(current.closed, true);
     assert.equal(current.retainedOnly, true);
-    assert.deepEqual(current.reachedGroups.map(function ordinal(group) { return group.ordinal; }), [2, 9]);
+    assert.deepEqual(current.reachedGroups.map(function ordinal(group) { 
+      return group.ordinal; 
+    }), [2, 9]);
     assert.equal(fixture.events.includes('inspect-program'), false);
     assert.deepEqual(fixture.marked, []);
   } }),
