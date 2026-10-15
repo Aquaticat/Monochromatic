@@ -217,6 +217,19 @@ makes its corresponding assertion fail.
 records both failures and the unchanged built-artifact hash.
 The serialized system derivation consumer remains the next step;
 these original input publications alone do not establish complete request coverage.
+The isolated Qwen CLI also passes with zero provider requests and clean shutdown.
+The retained-input consumer now handles system and tool publications through the same original membership checks.
+Its built contribution regressions,
+package types,
+and six-file scoped lint pass.
+`src/source-contribution-tool.ts` moved to `src/source-contribution-retained-input.ts` on 2026-10-14.
+The first derivation integration probe found the original system input publication,
+but rejected its emitted system message because the new identity check used the wrong normalization stage.
+Pi normalizes once in `stream` and again inside `convertMessages`;
+the emitted message comes from the latter's transformed transcript.
+The producer receipt now retains that exact inner normalized and transformed transcript,
+and the consumer checks both original identities.
+Native revalidation of that correction is pending.
 
 ## Original native RPC approval verification
 

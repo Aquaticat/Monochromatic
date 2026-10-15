@@ -412,7 +412,9 @@ export function prepareNativeSourceAssociation({
    const systemSerialization=readNativeSystemPayload(original);
    const originalSystem=(systemSerialization!==undefined)
      &&(systemSerialization.messages===origin.normalizedMessages)
-     &&(systemSerialization.message===origin.normalizedMessages[0])
+     &&(systemSerialization.ordinal===0)
+     &&(systemSerialization.message===systemSerialization.normalizedMessages[0])
+     &&(systemSerialization.message===systemSerialization.transformedMessages[0])
      &&(systemSerialization.role===original?.role)
      &&(systemSerialization.text===original?.content);
    if((origins||systemDerivation)&&!originalSystem)payloadOriginFailure??='System content lacks its original native rendering and message emission';
