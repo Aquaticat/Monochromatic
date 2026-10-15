@@ -19,9 +19,9 @@ const durationMs = 5_000;
 const attemptLimit = 3;
 
 /**
- * Own one preparation-inclusive deadline and client-attempt ceiling.
- * Trusted transport classification never reads model claims.
- * @param {{now: () => number, signal: AbortSignal, isRetryableTransportFailure: (error: unknown) => boolean}} input - original clock, cancellation and transport classification
+ Own one preparation-inclusive deadline and client-attempt ceiling.
+ Trusted transport classification never reads model claims.
+ @param {{now: () => number, signal: AbortSignal, isRetryableTransportFailure: (error: unknown) => boolean}} input - original clock, cancellation and transport classification
  */
 export function createJudgmentBudget({
   now,
@@ -59,7 +59,11 @@ export function createJudgmentBudget({
     if(accounting.finished)throw new JudgmentBudgetError('Judgment evidence collection already finished');
     if(accounting.checking)throw new JudgmentBudgetError('Judgment clock checks cannot reenter');
     accounting.checking=true;
-    using checkScope={ [Symbol.dispose]() { accounting.checking=false; } };
+    using checkScope={
+      [Symbol.dispose]() {
+        accounting.checking=false;
+      }
+    };
     try {
       if(signal.aborted)throw new JudgmentCancelledError(
         'Judgment was cancelled',
@@ -74,29 +78,38 @@ export function createJudgmentBudget({
         {cause:signal.reason}
       );
       return deadlineAt-current;
-    } catch(error) {accounting.retired=true;accounting.retirement=error;throw error;}
+    } catch(error) {
+      accounting.retired=true;
+      accounting.retirement=error;
+      throw error;
+    }
 
   }
   /**
-   * Check lifetime after a failed attempt without replacing its original error.
-   * @param {unknown} error - original transport failure
+   Check lifetime after a failed attempt without replacing its original error.
+   @param {unknown} error - original transport failure
    */
   function retainFailureAtCheckpoint(error) {
     const alreadyRetired=accounting.retired;
-    try {checkpoint();}
-    catch(terminal) {if(alreadyRetired&&(terminal===error))throw error;throw new AggregateError(
+    try {
+      checkpoint();
+    }
+    catch(terminal) {
+      if(alreadyRetired&&(terminal===error))throw error;
+      throw new AggregateError(
       [
         error,
         terminal
       ],
       'Transport failure and judgment boundary failure',
       { cause: terminal }
-    );}
+      );
+    }
   }
   /**
-   * Preserve transport, classifier and boundary failures together.
-   * @param {{error: unknown, classificationError: unknown}} input - failed attempt and classification
-   * @returns {never} no successful classification
+   Preserve transport, classifier and boundary failures together.
+   @param {{error: unknown, classificationError: unknown}} input - failed attempt and classification
+   @returns {never} no successful classification
    */
   function throwClassificationFailure({
     error,
@@ -105,9 +118,14 @@ export function createJudgmentBudget({
     const failures=[
       error,
       classificationError
-    ]; const alreadyRetired=accounting.retired;
-    try {checkpoint();}
-    catch(terminal){if((!alreadyRetired)||(!failures.includes(terminal)))failures.push(terminal);}
+    ];
+    const alreadyRetired=accounting.retired;
+    try {
+      checkpoint();
+    }
+    catch(terminal){
+      if((!alreadyRetired)||(!failures.includes(terminal)))failures.push(terminal);
+    }
     throw new AggregateError(
       failures,
       'Transport failure and classifier failure'
@@ -119,21 +137,32 @@ export function createJudgmentBudget({
    @returns {boolean} fixed transport classifier decision
    */
   function classifyRetry(error) {
-    try { return isRetryableTransportFailure(error); }
-    catch(classificationError) { throwClassificationFailure({error,classificationError}); }
+    try {
+      return isRetryableTransportFailure(error);
+    }
+    catch(classificationError) {
+      throwClassificationFailure({
+        error,
+        classificationError
+      });
+    }
   }
   /**
-   * Return only a response completed inside the original attempt and lifetime limits.
-   * @template Result
-   * @param {(input: Readonly<{signal: AbortSignal, deadlineAt: number, attempt: number}>) => Promise<Result>} operation - original transport attempt
-   * @returns {Promise<Result>} response belonging to the completed attempt
+   Return only a response completed inside the original attempt and lifetime limits.
+   @template Result
+   @param {(input: Readonly<{signal: AbortSignal, deadlineAt: number, attempt: number}>) => Promise<Result>} operation - original transport attempt
+   @returns {Promise<Result>} response belonging to the completed attempt
    */
   async function dispatch(operation) {
     if(accounting.running||accounting.checking)throw new JudgmentBudgetError('Judgment attempts cannot overlap or reenter');
     if((typeof operation)!=='function')throw new JudgmentBudgetError('Judgment transport operation must be an owned function');
     checkpoint();
     accounting.running=true;
-    using attemptScope={ [Symbol.dispose]() { accounting.running=false; } };
+    using attemptScope={
+      [Symbol.dispose]() {
+        accounting.running=false;
+      }
+    };
     {
       // At most one retry can occur across every dispatch through this boundary.
       for(let invocation=0;invocation<attemptLimit;invocation+=1){
@@ -152,11 +181,13 @@ export function createJudgmentBudget({
         );
         /** @type {{value: Result | undefined}} */
         const response={value:undefined};
-        try {response.value=await operation(Object.freeze({
+        try {
+          response.value=await operation(Object.freeze({
           signal,
           deadlineAt,
           attempt
-        }));}
+          }));
+        }
         catch(error) {
           records.set(
             attempt,
@@ -179,8 +210,11 @@ export function createJudgmentBudget({
           accounting.retryUsed=true;
           continue;
         }
-        try {checkpoint();}
-        catch(error){records.set(
+        try {
+          checkpoint();
+        }
+        catch(error){
+          records.set(
           attempt,
           Object.freeze({
             attempt,
@@ -188,7 +222,9 @@ export function createJudgmentBudget({
             state:'discarded',
             error
           })
-        );throw error;}
+          );
+          throw error;
+        }
         records.set(
           attempt,
           Object.freeze({
@@ -202,7 +238,8 @@ export function createJudgmentBudget({
       throw new JudgmentBudgetError('Judgment retry loop ended without an outcome');
     }
   }
-  function diagnostics(){return Object.freeze({
+  function diagnostics(){
+    return Object.freeze({
     startedAt,
     deadlineAt,
     attempts:accounting.attempts,
@@ -211,8 +248,14 @@ export function createJudgmentBudget({
     finished:accounting.finished,
     retired:accounting.retired,
     records:Object.freeze([...records.values()])
-  });}
-  function finish(){if(accounting.running||accounting.checking)throw new JudgmentBudgetError('Judgment cannot finish during an attempt or clock callback');checkpoint();accounting.finished=true;return diagnostics();}
+    });
+  }
+  function finish(){
+    if(accounting.running||accounting.checking)throw new JudgmentBudgetError('Judgment cannot finish during an attempt or clock callback');
+    checkpoint();
+    accounting.finished=true;
+    return diagnostics();
+  }
   return Object.freeze({
     checkpoint,
     dispatch,
