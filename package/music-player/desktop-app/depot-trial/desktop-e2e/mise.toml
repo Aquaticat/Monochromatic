@@ -1,0 +1,20 @@
+[tasks.probe]
+description = "Inspect the disposable runner's user-session and desktop prerequisites"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync } = await import('node:child_process')
+const { existsSync } = await import('node:fs')
+console.log(JSON.stringify({ trialDesktopProbe: true, uid: process.getuid(), runtimeDir: process.env.XDG_RUNTIME_DIR, display: process.env.WAYLAND_DISPLAY, pidOneSystemd: existsSync('/run/systemd/system') }))
+for (const [command, args] of [
+  ['systemctl', ['--version']],
+  ['systemctl', ['--user', 'is-system-running']],
+  ['loginctl', ['show-user', String(process.getuid())]],
+  ['sudo', ['--non-interactive', 'true']],
+  ['cargo', ['--version']],
+  ['magick', ['--version']],
+  ['apt-cache', ['policy', 'pipewire', 'pipewire-pulse', 'wireplumber', 'dbus-user-session', 'libclang-dev', 'libpipewire-0.3-dev', 'wl-clipboard']],
+]) {
+  const result = spawnSync(command, args, { encoding: 'utf8' })
+  console.log(JSON.stringify({ command, args, status: result.status, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }))
+}
+'''

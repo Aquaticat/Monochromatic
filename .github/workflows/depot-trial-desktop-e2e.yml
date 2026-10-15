@@ -1,0 +1,31 @@
+name: Depot trial desktop interaction
+
+on:
+  push:
+    branches: [trial/depot-20261015]
+    paths: [.github/workflows/depot-trial-desktop-e2e.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    runs-on: depot-ubuntu-24.04-16
+    timeout-minutes: 10
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Pin for this trial: release discovery returned HTTP 403.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - name: Install the probe runtime
+      run: mise install node
+    - name: Probe desktop session prerequisites
+      run: mise run //package/music-player/desktop-app/depot-trial/desktop-e2e:probe
