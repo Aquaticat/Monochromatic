@@ -31,7 +31,7 @@ The published `rust-v0.163.0-alpha.11` source registers the correct key in
 `codex-rs/features/src/lib.rs:2031` ([source][alpha-features]):
 
 ```rust
-// codex-rs/features/src/lib.rs:2031
+//! Feature registry excerpt from codex-rs/features/src/lib.rs:2031.
         id: Feature::AsyncCompaction,
         key: "async_compaction",
         stage: Stage::UnderDevelopment,
@@ -42,7 +42,7 @@ The stable implementation ignores unknown feature keys while recording a tracing
 `codex-rs/features/src/lib.rs:688` ([source][stable-features]):
 
 ```rust
-// codex-rs/features/src/lib.rs:688
+//! Unknown-key handling excerpt from codex-rs/features/src/lib.rs:688.
                 None => {
                     tracing::warn!("unknown feature key in config: {k}");
                 }
