@@ -27,7 +27,7 @@ const l = tagged({ tag: 'auto-mode-judgment-sources' });
 
  @example createJudgmentSources(input);
  */
-export function createJudgmentSources(input: JudgmentSourcesInput): JudgmentSources {
+export function createJudgmentSources<const Source extends JudgmentPreparationSources>(input: JudgmentSourcesInput<Source>): JudgmentSources<Source> {
   /**
    Factory diagnostics precede the original observer and request boundaries.
    */
@@ -65,7 +65,7 @@ export function createJudgmentSources(input: JudgmentSourcesInput): JudgmentSour
 
    @returns current original source collection by reference
    */
-  function readSourceSnapshot(): JudgmentPreparationSources {
+  function readSourceSnapshot(): Source {
     return state.sources;
   }
   /**
@@ -73,7 +73,7 @@ export function createJudgmentSources(input: JudgmentSourcesInput): JudgmentSour
 
    @param sources - original sealed source collection after receipt authentication
    */
-  function publishJudgmentSources(sources: JudgmentPreparationSources): void {
+  function publishJudgmentSources(sources: Source): void {
     state.sources = sources;
   }
   /**
@@ -85,7 +85,7 @@ export function createJudgmentSources(input: JudgmentSourcesInput): JudgmentSour
 
    @throws JudgmentConstructionError when dependency capture supplies foreign cancellation
    */
-  function capture(options: Readonly<{ signal: AbortSignal }>): JudgmentPreparationSources {
+  function capture(options: Readonly<{ signal: AbortSignal }>): Source {
     if (options.signal !== signal) throw new JudgmentConstructionError('Dependency sources require original judgment cancellation');
     collector.assertObservedFresh(state.sources);
     return state.sources;
@@ -97,7 +97,7 @@ export function createJudgmentSources(input: JudgmentSourcesInput): JudgmentSour
 
    @throws JudgmentConstructionError when dependency collection identity has changed
    */
-  function assertObservedFresh(snapshot: JudgmentPreparationSources): void {
+  function assertObservedFresh(snapshot: Source): void {
     if (snapshot !== state.sources) throw new JudgmentConstructionError('Dependencies require the original assessed source collection');
     collector.assertObservedFresh(snapshot);
   }
@@ -106,7 +106,7 @@ export function createJudgmentSources(input: JudgmentSourcesInput): JudgmentSour
 
    @returns frozen binding containing current original identities
    */
-  function readCurrentSourceBinding(): JudgmentSourceBinding {
+  function readCurrentSourceBinding(): JudgmentSourceBinding<Source> {
     assertDependenciesCurrent();
     return Object.freeze({
       request: receipt,

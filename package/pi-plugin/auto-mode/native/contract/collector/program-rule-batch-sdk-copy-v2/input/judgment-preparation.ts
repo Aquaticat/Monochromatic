@@ -10,6 +10,7 @@ import type {
   JudgmentPreparationInput,
   JudgmentPreparationState,
   JudgmentPreparation,
+  JudgmentPreparationSources,
 } from './judgment-preparation-types.ts';
 
 /**
@@ -27,7 +28,7 @@ const l = tagged({ tag: 'auto-mode-judgment-preparation' });
 
  @example createJudgmentPreparation(input);
  */
-export function createJudgmentPreparation(input: JudgmentPreparationInput): JudgmentPreparation {
+export function createJudgmentPreparation<const Source extends JudgmentPreparationSources>(input: JudgmentPreparationInput<Source>): JudgmentPreparation {
   /**
    Entry diagnostics do not inspect original source or prepared-member contents.
    */

@@ -37,7 +37,7 @@ export type JudgmentPreparedBinding = ProgramMemberRecord & InstructionMember;
 /**
  Original preparation capabilities remain lazy until the corresponding native boundary.
  */
-export type JudgmentPreparationInput = Readonly<{
+export type JudgmentPreparationInput<Source extends JudgmentPreparationSources = JudgmentPreparationSources> = Readonly<{
   active: () => void;
   budget: JudgmentBudget;
   declaredNames: readonly JudgmentDeclaredMember[];
@@ -45,13 +45,13 @@ export type JudgmentPreparationInput = Readonly<{
     beginJudgmentSources?: unknown;
     sealJudgmentSources: (response: object) => Readonly<{
       request: object;
-      sources: JudgmentPreparationSources;
+      sources: Source;
     }>;
   }>;
   response: object;
   receipt: Readonly<{ request: Readonly<{ body: unknown }> }>;
-  readJudgmentSources: () => JudgmentPreparationSources;
-  publishJudgmentSources: (sources: JudgmentPreparationSources) => void;
+  readJudgmentSources: () => Source;
+  publishJudgmentSources: (sources: Source) => void;
   facade: Readonly<{
     prepare: (input: Readonly<{ signal: AbortSignal }>) => object;
     finalize: (handle: object) => unknown;
