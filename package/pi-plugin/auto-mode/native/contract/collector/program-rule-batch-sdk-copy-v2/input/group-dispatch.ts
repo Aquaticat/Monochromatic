@@ -1,5 +1,6 @@
 /** Original complete-group dispatch retains outcomes independently of transport lifetime. @module */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import { DeclaredGroupCollectionError } from './group-collection-error.ts';
 import type { DispatchedCompletionRecord } from './group-completion-types.ts';
 import type { GroupDispatch, GroupDispatchInput, GroupDispatchRecord } from './group-dispatch-types.ts';
@@ -53,14 +54,16 @@ export function createGroupDispatch<const Declaration, const Member>({
         return Object.freeze({ handle: record.handle, declaration: record.member, signal: record.signal });
       }));
       /** Native consumer output remains opaque until its original array association check. */
-      let completions: unknown;
+      let completions: unknown = undefined;
       try {
         completions = await dispatchGroup(Object.freeze({ handle, declaration, members }));
       } catch (error) {
         throw recordFailure({ error, at: 'group-consumer' });
       }
       if ((!Array.isArray(completions)) || (completions.length !== records.length)
-        || records.some(function isMissingCompletion(record, index) { return !Object.hasOwn(completions, index); })) {
+        || records.some(function isMissingCompletion(_record, index) { 
+          return !Object.hasOwn(completions, index); 
+        })) {
         /** Association failure is published before unassociated returned work is awaited. */
         const failure = recordFailure({
           error: new DeclaredGroupCollectionError('Complete group consumer returned a different member set'),
@@ -73,9 +76,11 @@ export function createGroupDispatch<const Declaration, const Member>({
           const entries = Object.entries(returned);
           groupState.unboundPending = entries.length;
           /** All issued unassociated work remains drainable after failure closes delivery. */
-          const settled = await Promise.allSettled(entries.map(function readUnboundCompletion([, completion]) { return completion; }));
+          const settled = await Promise.allSettled(entries.map(function readUnboundCompletion([, completion]) { 
+            return completion; 
+          }));
           groupState.unboundOutcomes = Object.freeze(settled.map(function retainUnboundOutcome(outcome, index) {
-            return Object.freeze({ retainedOnly: true as const, sourceKey: entries[index][0], ...outcome });
+            return Object.freeze({ retainedOnly: true as const, sourceKey: nonNullishOrThrow(entries[index])[0], ...outcome });
           }));
           groupState.unboundPending = 0;
           dl.debug('retained all unassociated original completions');
@@ -90,8 +95,12 @@ export function createGroupDispatch<const Declaration, const Member>({
       });
       // Returned parents cannot receive more transport results. Observe already-issued completions regardless.
       if (!groupState.closed) {
-        try { current(); }
-        catch (error) { retainBoundaryFailure({ error, at: 'group-consumer-tail' }); }
+        try { 
+          current(); 
+        }
+        catch (error) { 
+          retainBoundaryFailure({ error, at: 'group-consumer-tail' }); 
+        }
       }
       await Promise.allSettled(settlements);
       dl.debug('observed complete original member settlements');
@@ -111,9 +120,15 @@ export function createGroupDispatch<const Declaration, const Member>({
     /** Resolve original work after ordinary dispatch or its boundary retention failure. */
     async function run(): Promise<void> {
       /** Cleanup preserves original drain completion even when dispatch boundary retention throws. */
-      using dispatchCompletion = { [Symbol.dispose](): void { completion.resolve(); } };
-      try { await dispatch(); }
-      catch (error) { retainBoundaryFailure({ error, at: 'dispatcher-completion' }); }
+      using dispatchCompletion = { [Symbol.dispose](): void { 
+        completion.resolve(); 
+      } };
+      try { 
+        await dispatch(); 
+      }
+      catch (error) { 
+        retainBoundaryFailure({ error, at: 'dispatcher-completion' }); 
+      }
     }
     void run();
   }
