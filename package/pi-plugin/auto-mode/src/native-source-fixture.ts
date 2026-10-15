@@ -91,7 +91,9 @@ export function createSourceFixture(): SourceFixture {
   function step(point: string): void {
     events.push(point);
     state.onStep?.(point);
-    /** Fault map belongs to the current observation boundary. */
+    /**
+     Fault map belongs to the current observation boundary.
+     */
     const { failures } = state;
     if (failures.has(point)) throw failures.get(point);
   }
