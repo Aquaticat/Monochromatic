@@ -1,7 +1,8 @@
 // The on-disk form of the duration cache: one line per track, keyed by the track's fingerprint.
 // The fingerprint already hashes the URI, size, and modified time, so a changed file misses the
 // cache by itself. A change of the fingerprint hash (gxhash to XXH3-64) renames the file, because
-// the old keys can never match again; the old file is deleted on first load. This file holds only the text codec; the file I/O lives in the platform layer.
+// the old keys can never match again; the old file is deleted on first load. This file holds only the
+// text codec and that cleanup; the cache file I/O lives in the platform layer.
 
 // What:     `package dev.monochromatic.musicplayer.core` places the codec beside the measure model.
 // Why:      The codec is platform-free, so its round trip and its malformed-line handling are JVM tests.
