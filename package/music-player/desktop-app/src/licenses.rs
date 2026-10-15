@@ -8,7 +8,8 @@
 //! Without that variable a build embeds a short text that says how to get the notices;
 //! the release workflow sets `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true`,
 //!  which turns a missing file into a build failure.
-//! Decision: `doc/decision/music-player-third-party-licenses.md`.
+//! Decision:
+//! `doc/decision/music-player-third-party-licenses.md`.
 
 /// What:
 ///      `use std::io::{ErrorKind, Write};`.
@@ -58,7 +59,10 @@ pub const NOTICES: &str = include_str!(concat!(env!("OUT_DIR"), "/third_party_li
 /// }
 /// ```
 pub fn write_notices(sink: &mut impl Write) -> std::io::Result<()> {
-    let written = sink.write_all(NOTICES.as_bytes()).and_then(|()| return sink.flush());
+    let written = match sink.write_all(NOTICES.as_bytes()) {
+        Ok(()) => sink.flush(),
+        Err(error) => Err(error),
+    };
     return match written {
         Err(error) if error.kind() == ErrorKind::BrokenPipe => Ok(()),
         other => other,
