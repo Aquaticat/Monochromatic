@@ -296,6 +296,16 @@ Continue the runner's declared-program facade,
 including reached-group settlement,
 retained failures,
 and aggregate draining.
+The facade extraction and independent consumers are now committed;
+build,
+type checking,
+original replay,
+omission controls,
+and the complete lint recount remain pending.
+The original facade runner is retained as `program-runner-before-facade-types.mjs`,
+and its original method is retained as `program-runner-facade-original-method.txt`.
+The typed facade adds an explicit null check for missing script-value slots;
+measure that malformed-input diagnostic separately from valid-call equivalence.
 The original method and runner are retained under
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 
