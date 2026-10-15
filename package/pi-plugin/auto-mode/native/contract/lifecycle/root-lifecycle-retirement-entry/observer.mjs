@@ -2,7 +2,7 @@ import {RootLeaseSuspendedError} from './lifecycle.mjs';
 import {inspect} from 'node:util';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
 import {RequestObservationError,RequestObservationOwnershipError,RequestObservationUnavailableError,RequestObservationStaleError,RequestObservationProfileError} from './observation-errors.mjs';
-import {object,parseObservationEndpoint} from './observation-shape.mjs';
+import {object} from './observation-shape.mjs';
 import {createObservationStream} from './observation-stream.mjs';
 export {RequestObservationError,RequestObservationOwnershipError,RequestObservationUnavailableError,RequestObservationStaleError,RequestObservationProfileError} from './observation-errors.mjs';
 const l=tagged({tag:'auto-mode-request-observation'});
@@ -14,7 +14,6 @@ export function createRequestObservationOwner({
   lifecycle,
   root,
   collector,
-  endpoint,
   maxBodyBytes=1_048_576,
   prepareSourceAssociation
 }) {
@@ -24,16 +23,7 @@ export function createRequestObservationOwner({
       ||(!object(root?.manager)))
     ||((typeof collector?.capture)!=='function')
     ||((typeof collector?.assertObservedFresh)!=='function'))throw new RequestObservationProfileError('Trusted stream, terminal sender, constructor-owned root, lifecycle registry and source collector are required');
-  if(((typeof endpoint)!=='string')||(!Number.isSafeInteger(maxBodyBytes))
-    ||(maxBodyBytes<1)
-    ||(maxBodyBytes>1_048_576))throw new RequestObservationProfileError('Endpoint and bounded JSON body profile are required');
-  const parsedEndpoint=parseObservationEndpoint(endpoint);
-  if((![
-    'http:',
-    'https:'
-  ].includes(parsedEndpoint.protocol))||(parsedEndpoint.href!==endpoint)
-    ||parsedEndpoint.username
-    ||parsedEndpoint.password)throw new RequestObservationProfileError('Declared endpoint must be a canonical credential-free HTTP URL');
+  if(!Number.isSafeInteger(maxBodyBytes)||maxBodyBytes<1||maxBodyBytes>1_048_576)throw new RequestObservationProfileError('Bounded JSON body profile is required');
   const boundRoot=Object.freeze({
     session:root.session,
     manager:root.manager
@@ -105,13 +95,11 @@ export function createRequestObservationOwner({
   function validate(
     {scope,verifySources}
   ) {
-    assertScope(
-      {scope:scope,verifySources:verifySources}
-    );
     if(scope.failed)throw new RequestObservationUnavailableError(
-      'No usable terminal request observation',
+      'Tool execution requires usable request evidence; primary chat transport remains available',
       {cause:scope.failure}
     );
+    assertScope({scope,verifySources});
     if(scope.claim
       ?.ambiguous)throw new RequestObservationOwnershipError('Response object was reused across request occurrences');
     if(!scope.receipt)throw new RequestObservationUnavailableError('Response completed without a terminal request observation');
@@ -198,7 +186,6 @@ export function createRequestObservationOwner({
     lifecycle,
     boundRoot,
     collector,
-    endpoint,
     maxBodyBytes,
     prepareSourceAssociation,
     observationState,
