@@ -10,7 +10,12 @@ name: music-player-windows
 #   links the program. No Visual Studio tool is used to build that job's program.
 #
 # Every job runs cargo nextest for its target, builds the real binary, prints the linker rustc ran,
-# inspects the PE import table, and starts the program.
+# inspects the PE header (import table and Subsystem field), runs the program with --version from bash and from
+# PowerShell, with and without output redirection, and starts the program.
+#
+# The program is a GUI-subsystem executable (Subsystem 2): double-clicking it opens no console window. It attaches to
+# the console of its parent process when it has one, so --version still prints in a terminal. Decision and sources:
+# doc/decision/music-player-windows-gui-subsystem.md.
 #
 # Caches (one entry per job): the cargo registry index and downloaded crates, the git db, and the package
 # target directory. The key holds the runner OS and architecture, the target, the Rust toolchain version
@@ -308,8 +313,18 @@ jobs:
         if [ "$FLAVOR" = 'gnu' ]; then
           grep --quiet -e '-fuse-ld=bfd' "${RUNNER_TEMP}/link-args.txt"
         fi
+        # The #![windows_subsystem = "windows"] attribute reaches the linker as /SUBSYSTEM:windows (link.exe) or as
+        # --subsystem windows (GNU ld, through the gcc driver as -Wl,--subsystem,windows).
+        if [ "$FLAVOR" = 'gnu' ]; then
+          grep --quiet -e '--subsystem,windows' "${RUNNER_TEMP}/link-args.txt"
+        else
+          grep --quiet --ignore-case -e '/SUBSYSTEM:windows' "${RUNNER_TEMP}/link-args.txt"
+        fi
+        echo "the linker was told to build a GUI-subsystem program"
 
+    # The checks from here to the launch check run even when an earlier check failed, so one run reports every failure.
     - name: Inspect the PE file
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
       working-directory: package/music-player/desktop-app
       run: |
         set -euo pipefail
@@ -326,6 +341,11 @@ jobs:
         ])
         header = pe.OPTIONAL_HEADER
         print(f"linker version in the PE header: {header.MajorLinkerVersion}.{header.MinorLinkerVersion}")
+        # IMAGE_SUBSYSTEM_WINDOWS_GUI is 2 and IMAGE_SUBSYSTEM_WINDOWS_CUI (console) is 3; Windows opens a console
+        # window for a double-clicked program with 3 and none for one with 2.
+        subsystem = header.Subsystem
+        subsystem_name = pefile.SUBSYSTEM_TYPE.get(subsystem, "unknown")
+        print(f"Subsystem in the PE header: {subsystem} ({subsystem_name})")
         names = sorted({
             entry.dll.decode().lower()
             for attribute in ("DIRECTORY_ENTRY_IMPORT", "DIRECTORY_ENTRY_DELAY_IMPORT")
@@ -335,22 +355,73 @@ jobs:
         crt = sorted(n for n in names if n == "msvcrt.dll" or n.startswith(("ucrtbase", "api-ms-win-crt", "vcruntime", "msvcp")))
         print("C runtime imports:", ", ".join(crt) or "none")
         gcc_runtime = [n for n in names if n.startswith(("libgcc_s", "libwinpthread", "libstdc++"))]
+        problems = []
+        if subsystem != 2:
+            problems.append(f"the Subsystem field is {subsystem} ({subsystem_name}), expected 2 (IMAGE_SUBSYSTEM_WINDOWS_GUI)")
         if gcc_runtime:
-            raise SystemExit(f"the program needs MinGW runtime DLLs next to it: {gcc_runtime}")
+            problems.append(f"the program needs MinGW runtime DLLs next to it: {gcc_runtime}")
+        if problems:
+            raise SystemExit("; ".join(problems))
         PYTHON
 
-    - name: Run the binary (--version)
+    # The program is a GUI-subsystem executable, so a shell that does not capture its output does not wait for it. These
+    # steps capture or redirect the output, which is what a script does with --version. The version text must still
+    # reach a pipe (command substitution), a file (> and 2>) and the PowerShell pipeline.
+    - name: Run the binary (--version and a bad argument, bash)
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
       working-directory: package/music-player/desktop-app
       run: |
         set -euo pipefail
-        out=$("target/${TARGET}/debug/music-player.exe" --version)
-        echo "$out"
+        exe="target/${TARGET}/debug/music-player.exe"
         expected="music-player $(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head --lines=1 | tr --delete '\r')"
+        out=$("$exe" --version)
+        echo "pipe: $out"
         test "$out" = "$expected"
+        "$exe" --version > "${RUNNER_TEMP}/version-stdout.txt"
+        echo "file: $(cat "${RUNNER_TEMP}/version-stdout.txt")"
+        test "$(tr --delete '\r' < "${RUNNER_TEMP}/version-stdout.txt")" = "$expected"
+        # clap prints an argument error on stderr and exits with 2; stderr redirected to a file must hold the text.
+        status=0
+        "$exe" --no-such-option > "${RUNNER_TEMP}/bad-stdout.txt" 2> "${RUNNER_TEMP}/bad-stderr.txt" || status=$?
+        echo "bad argument exit status: $status"
+        cat "${RUNNER_TEMP}/bad-stderr.txt"
+        test "$status" = 2
+        grep --quiet -e 'no-such-option' "${RUNNER_TEMP}/bad-stderr.txt"
+
+    - name: Run the binary (--version, PowerShell)
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
+      shell: pwsh
+      working-directory: package/music-player/desktop-app
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $PSNativeCommandUseErrorActionPreference = $true
+        $exe = Join-Path (Get-Location) "target/$env:TARGET/debug/music-player.exe"
+        $version = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"$' | Select-Object -First 1).Matches.Groups[1].Value
+        $expected = "music-player $version"
+        # The output is captured, so PowerShell waits for the program and the text reaches the step output.
+        $captured = (& $exe --version | Out-String).Trim()
+        Write-Output "captured in the pipeline: $captured"
+        if ($captured -cne $expected) { throw "captured '$captured', expected '$expected'" }
+        # The output goes to a file through PowerShell's redirection operator.
+        $file = Join-Path $env:RUNNER_TEMP 'out.txt'
+        & $exe --version > $file
+        $fromFile = (Get-Content -Raw -Path $file).Trim()
+        Write-Output "out.txt holds: $fromFile"
+        if ($fromFile -cne $expected) { throw "out.txt holds '$fromFile', expected '$expected'" }
+        # The same through the 2>&1 merge that scripts use to log both streams.
+        $merged = (& $exe --version 2>&1 | Out-String).Trim()
+        Write-Output "merged streams: $merged"
+        if ($merged -cne $expected) { throw "merged '$merged', expected '$expected'" }
+        # Not captured: PowerShell does not wait for a GUI program, but the program writes to the handle it inherited, so
+        # the text still lands in this step's log. The sleep keeps this step open until the program has written.
+        Write-Output 'uncaptured run follows; the next line is printed by the program itself'
+        & $exe --version
+        Start-Sleep -Seconds 5
 
     # The program must stay up when started on a folder, with no audio device on the runner. A start that
     # exits within the wait fails the job.
     - name: Launch the program and check it stays up
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
       working-directory: package/music-player/desktop-app
       env:
         RUST_LOG: info
