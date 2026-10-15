@@ -2,6 +2,7 @@ import { sealPreparedInput } from './prepared-input-seal.ts';
 import { schedulePreparedCalls } from './prepared-schedule.ts';
 import { completePreparedBatch } from './prepared-completion.ts';
 import { wrapPreparedTools } from './prepared-executable.ts';
+import { preparePreparedMember } from './prepared-member.ts';
 
 export class PreparedBatchContractError extends Error {}
 export class PreparedBatchExecutionError extends Error {
@@ -124,50 +125,7 @@ export async function dispatchPreparedBatch({
             call
           )); },
           beforeToolCall:async function prepareNativeMember(hook) {
-        memberState.entered=true;
-        try{
-          active('prepare-entry');
-          const prepared=await prepare(hook);
-          if(prepared?.block){block(prepared.reason || 'A member preparation blocked this complete group');return await gate.promise;}
-          active('input-prepared');
-          if(ready.has(call.id))throw new PreparedBatchContractError('Member reached preparation twice');
-          const sealed=sealInput(hook.args);
-          const member=Object.freeze({groupExecutionMode:serial?"sequential":"parallel",
-            id:call.id,
-            name:call.name,
-            input:sealInput(structuredClone(sealed))
-          });
-          ready.set(
-            call.id,
-            member
-          );
-          // The next native preparation may start now; execution still waits for complete admission.
-          releasePreparation();
-          if((ready.size===scheduled.length) && (batchState.decision===undefined)
-            && (!batchState.assessmentStarted)){
-            batchState.assessmentStarted=true;
-            const manifest=Object.freeze(scheduled.map(function readPreparedManifest(value) { return (ready.get(value.id)); }));
-            snapshots.push(manifest);
-            const assessed=await assess({
-              members:manifest,
-              signal
-            });
-            active('assessment-returned');
-            if((assessed===null) || ((typeof assessed)!=='object')
-              || ((typeof assessed.block)!=='boolean')
-              || (assessed.block && (((typeof assessed.reason)!=='string') || (!assessed.reason))))throw new PreparedBatchContractError('Combined assessment returned an invalid decision');
-            if(batchState.decision===undefined){batchState.decision=Object.freeze(assessed.block?{
-              block:true,
-              reason:assessed.reason
-            }:{block:false});gate.resolve(batchState.decision);}
-          }
-          const selected=await gate.promise;
-          active('member-release');
-          return selected.block?selected:undefined;
-        }catch(error){failures.push(error);block('Complete group preparation or assessment failed');return {
-          block:true,
-          reason:'Complete group preparation or assessment failed'
-        };}
+        return await preparePreparedMember({hook,call,memberState,batchState,ready,scheduled,snapshots,failures,serial,signal,gate,active,prepare,block,sealInput,releasePreparation,assess,PreparedBatchContractError});
       }
         }
       );
