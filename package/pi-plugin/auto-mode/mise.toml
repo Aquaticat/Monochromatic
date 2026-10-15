@@ -574,3 +574,7 @@ run = [
   "node --max-old-space-size=512 src/native-input-location.unit.test.ts",
   "node --max-old-space-size=512 src/native-input-location-boundary.unit.test.ts",
 ]
+
+[tasks."test:native:judgment-input"]
+description = "Verify original native JSON value preservation and construction error identity"
+run = 'node --max-old-space-size=512 src/native-judgment-input.unit.test.ts'
