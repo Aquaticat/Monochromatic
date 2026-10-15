@@ -480,7 +480,7 @@ its template text,
 and the fields that can be inserted,
 each with an example value and its `mi(...)` name.
 
-![Settings with the Track rows template on the inner display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/d09cd01cfc17b434647a0cf10a59b0e70646e737d670501d8a44d61075dd3174/package/music-player/asset/readme/android-inner-settings-dark.png)
+![Settings with the Track rows template on the inner display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/4155db09c791b09eb0bfb78bbc8a05e1b645cdc8b19f55cb53d0d88120cf6baf/package/music-player/asset/readme/android-inner-settings-dark.png)
 
 ## Design record
 
