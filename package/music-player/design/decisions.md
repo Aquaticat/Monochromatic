@@ -3680,20 +3680,28 @@ It states the rule that D58, D110 and D120 already imply for flush rows, and cor
   pane edge to edge on every display, as the fill always did on the cover. No clearance applies to it.
 - The cause: the D120 ring work started a flush row's box at the pane clearance and kept at least 8 dp between the ring
   and the text (`ROW_RING_TEXT_START_MIN`, 11 dp from the box edge). Beside the crease the clearance already equalled
-  the text inset, so the text was pushed right by that minimum, to 33.64 dp (84 px at 2.4375) while the headings sat at
-  22.64 dp (55 px), and the fill began at the clearance instead of the pane edge.
+  the text inset, so the text was pushed right by that minimum, to 33.64 dp (82 px at density 2.4375) while the
+  headings sat at 22.64 dp (55 px), and the fill began at the clearance instead of the pane edge.
+  Measured from pixels on the emulator, glyph edges stood 84 px and 56 px from the pane edge, and the fill began 55 px
+  from it.
 - With the box at the pane edge the ring's gap to the text is 13 dp on the cover and 19.64 dp beside the crease, so
   the 8 dp minimum between the ring's inner edge and the text holds with no clamp. `trackRowColumns` keeps the floor
   (ring depth plus gap) for an ordinary inset below 11 dp, so the text never moves off the column while that inset is
   16 dp.
-- The same rule fixed the template editor's field rows, whose 3 dp padding for the ring put their text at 19 dp while
-  the section headings stayed at 16 dp, with or without the crease inset; the ring lies inside the row edge (D120) and
-  needs no padding.
+- The same rule fixed the template editor's field rows in two ways. Their 3 dp padding for the ring put their text at
+  19 dp while the section headings stayed at 16 dp, with or without the crease inset; the ring lies inside the row edge
+  (D120) and needs no padding. And the crease inset padded the whole scrolling column, so a row's box began at the
+  inset; each text now takes the inset itself and the field row applies it after its clickable, so the box spans the
+  pane. The hairlines between the rows are not text and now start at the pane edge too.
 - Audited and unchanged: Search result rows (D126, D58), whose rounded shape starts 8 dp after the clear zone by the
-  human's earlier decision and whose content already sits at the header's column, so they are a candidate for this
-  rule only if the human wants the shape to reach the crease; folder names (outside ring, 16 dp text column in the
-  left pane, which has its crease clearance at the end only); the letter rail cells (ring inside a circle, no crease
-  beside them); Settings rows (fill may span the center, D110).
+  human's earlier decision and whose content already sits at the header's column (measured on the device: query text
+  and result titles 1 px apart), so they are a candidate for this rule only if the human wants the shape to reach the
+  crease.
+  Search's own column is half the crease plus 16 dp plus the 48 dp glyph slot, which is not the player pane's inset, and
+  this change does not touch it.
+  Also unchanged: the folder names (outside ring, text column at 12 dp plus the 4 dp name padding, in the left pane,
+  which has its crease clearance at the end only), the letter rail cells (ring inside a circle, no crease beside them)
+  and the Settings list rows (the fill spans the pane and only the text end takes the extra inset, D110).
 - Code: `core/TrackRowGeometry.kt` (`trackRowColumns`), `TrackListPane.kt`, `TemplateEditor.kt`.
   Tests: `TrackRowGeometryTest`, `RowAlignmentWiringTest` (bounds and pixels of the real pane) and
   `TemplateEditorAlignmentWiringTest`.

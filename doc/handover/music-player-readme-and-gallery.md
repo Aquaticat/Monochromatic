@@ -93,7 +93,8 @@ The committed pair showed the defect itself: the row text 11 dp right of the sub
 starting at the crease clearance.
 `android-cover-player-dark.png` was compared with the fixed build instead of retaken: the cover list region of the
 fixed build is pixel-identical to the build before the change (zero differing pixels in four captures), and the
-committed image differs from it only by the 4 to 7 px row offset noted earlier.
+committed image differs from it by the 4 to 7 px row offset and the playing fill starting about 8 px in from the
+pane edge, both recorded by the earlier retake and neither caused by this change.
 The new files are `164afb146209` (light) and `bdfe6255fecb` (dark) by their sha256, the README oids were changed to
 match, `git cli-git fix --policy markdown/autofix` rewrote nothing, and all twenty embedded oids were checked against
 the files again (zero mismatches).
