@@ -9,6 +9,17 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+The user subsequently requested a whole-system re-review and consideration of rebuilding.
+Production patching is paused for that review.
+The [whole-system review](../planning/pi-auto-mode-whole-system-review.md)
+recommends replacing the decision core and correcting bypass routing,
+while retaining and requalifying useful native ownership controls.
+It records the context-selection defect,
+a built approval-router witness that generic Allow overrides an unrelated unsatisfied prerequisite,
+and a built-host bypass regression against an upstream Codemode positive control.
+The earlier `generic` control sent Deny and did not prove prerequisite preservation after Allow.
+No replacement or teardown is implemented by this review.
+
 The user corrected the assessment scope:
 never send the full transcript at every decision point,
 and inspect the legacy auto-mode implementation before redesigning context selection.

@@ -17,7 +17,7 @@ Production edits are paused during the review.
 - [x] Trace policy, confirmation, cancellation, and exact prepared-operation execution.
 - [x] Assess test coverage at the actual consumer and identify unsupported completion claims.
 - [x] Compare repair, replacement of the decision core, and rebuilding around the legacy caller.
-- [ ] Publish evidence, limitations, a ranked recommendation, and concrete acceptance checks.
+- [x] Publish evidence, limitations, a ranked recommendation, and concrete acceptance checks.
 
 ## Current constraints
 
@@ -123,6 +123,36 @@ its driver sends Deny in that mode, so withholding execution does not test an Al
 Repair must preserve the distinction between semantic uncertainty and independent unsatisfied prerequisites.
 An Allow supplies only its specifically scoped confirmation fact.
 Resolve the operation again with that fact rather than overwriting the entire outcome.
+
+### Blocker: bypass still requires a supported semantic program profile
+
+`native/contract/integration/native-batch/handler.mjs:129`
+calls `prepareProgramInputs` before selecting its bypass branch.
+The program decoder therefore rejects unsupported semantic profiles even during explicit bypass.
+
+A disposable built-SDK consumer and a direct built upstream Codemode baseline reproduced this:
+
+- Supported program with bypass off: no child executions, one assessment, prohibited.
+- Supported program with bypass on: three child executions, no assessment.
+- A three-statement program outside the inspected profiles: no child executions, assessments,
+  or dialogs with bypass either off or on.
+- The exact same three-statement program through upstream Codemode: two inert child executions and `Script completed`.
+
+The deciding diagnostic is `ResultProgramProfileError`:
+`Result-derived program is outside the inspected profile: exact parent boundary and one or two inspected statements required; use a returned awaited literal call or an immutable result binding`.
+`PreparedBatchExecutionError` wraps it,
+and the tool displays `Complete group preparation or assessment failed`.
+Network was blocked and all child functions were inert.
+The final consumers exited successfully without bare shutdown errors.
+`mise run verify-bypass-review` in `${HOME}/temp/agent/pi-tool-call-scope-20261014`
+runs the retained probes;
+their fixtures are in `${HOME}/temp/agent/auto-mode-bypass-review/`.
+
+Separate guarded semantic-profile admission from explicit bypass execution.
+Preserve fixed guards and native execution identity,
+but do not require bypassed operations to qualify for automatic semantic approval.
+This requires requalifying host routing as well as replacing the decision core;
+retaining useful ownership mechanisms does not mean preserving their current composition unchanged.
 
 ### Warning: historical capture also grows preparation work
 
@@ -250,6 +280,7 @@ The name of the entry point does not move the start of accounting:
 preparation must remain inside the original shared assessment budget.
 The retained host owns actual tool definitions, argument preparation, response identity,
 source freshness, cancellation, native execution, and UI capability capture.
+Its bypass route must be separated from guarded semantic program-profile admission.
 The new core selects decision context from those originals and returns only through that owned execution route.
 
 Use a private selected-context value containing current operation, complete governing policy,
