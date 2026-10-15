@@ -1,27 +1,18 @@
 import {SourceCollectionError} from '../../collector/collector.mjs';
 
-/**
- Resolve original run republications by original base frame and native field position.
- Call only inside the incumbent collector after original snapshot authentication.
- Source occurrences link canonical sources without duplicating their text in every carrier.
- */
-export function linkRunInputCarriers({
+/** Resolve one native field against its original base and run input occurrences. */
+function readCarrierSources({
   run,
   input,
-  hostPrompt
+  hostPrompt,
+  carrier,
+  base
 }){
- if(!run)return Object.freeze([]);
- const base=run.inputBase;
- if(base.resourceFrame!==input.frame)throw new SourceCollectionError('Run base carriers require this original resource frame');
- return Object.freeze(run.baseInputCarriers
-   .map(function linkOriginalRunCarrier(carrier) {
-  if((carrier.runOccurrence!==run.occurrence)||(carrier.baseOccurrence!==base.occurrence))throw new SourceCollectionError('Run carrier differs from its original run or base occurrence');
   const {
     field,
     ordinal,
     path
   }=carrier.inputLocation;
-  let sources;
   if(field==='customPrompt'){
    const source=input.slot==='customPrompt'?input.source:hostPrompt??input.resourceSystemInput;
    if((!source)||(base.options
@@ -30,9 +21,9 @@ export function linkRunInputCarriers({
      ||(run.options
        .customPrompt
        !==source.content))throw new SourceCollectionError('Run system carrier has no original system-stage source');
-   sources=[source];
+   return [source];
   }else if(field==='appendSystemPrompt'){
-   sources=input.appendInputs;
+   const sources=input.appendInputs;
    const joined=sources.map(function readCarrierSourceContent(source) { return (source.content); })
      .join('\n\n');
    if((base.options
@@ -40,6 +31,7 @@ export function linkRunInputCarriers({
      !==joined)||(run.options
        .appendSystemPrompt
        !==joined))throw new SourceCollectionError('Run appendix carrier differs from the complete original append sequence');
+   return sources;
   }else if(field==='contextFiles'){
    const source=input.contextInputs[ordinal];
      const entry=base.options
@@ -52,10 +44,24 @@ export function linkRunInputCarriers({
      ||(published.path!==path)
      ||(source.content!==entry.content)
      ||(published.content!==entry.content))throw new SourceCollectionError('Run context carrier differs from its original context position');
-   sources=[source.carrier
+   return [source.carrier
      ?.source
      ??source];
   }else throw new SourceCollectionError('Run base carrier has an unsupported native field');
+}
+
+/**
+ Resolve original run republications by original base frame and native field position.
+ Call only inside the incumbent collector after original snapshot authentication.
+ Source occurrences link canonical sources without duplicating their text in every carrier.
+ */
+export function linkRunInputCarriers({run,input,hostPrompt}){
+ if(!run)return Object.freeze([]);
+ const base=run.inputBase;
+ if(base.resourceFrame!==input.frame)throw new SourceCollectionError('Run base carriers require this original resource frame');
+ return Object.freeze(run.baseInputCarriers.map(function linkOriginalRunCarrier(carrier){
+  if((carrier.runOccurrence!==run.occurrence)||(carrier.baseOccurrence!==base.occurrence))throw new SourceCollectionError('Run carrier differs from its original run or base occurrence');
+  const sources=readCarrierSources({run,input,hostPrompt,carrier,base});
   return Object.freeze({
     kind:'governing-run-input-carrier',
     carrier,
