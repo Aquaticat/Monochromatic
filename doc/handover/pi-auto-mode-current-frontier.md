@@ -16,8 +16,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 782 files and 486 rules,
-with zero errors and 10376 warnings.
+The latest complete lint report covers 787 files and 486 rules,
+with zero errors and 10349 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -81,7 +81,20 @@ Six domain comparisons preserve public outcomes and native execution counts,
 including the permission-versus-prohibition positive control.
 All 21 process-local omissions or substitutions produce assertion failures,
 with the built dispatcher and scheduler hashes unchanged.
-The full maintained lint recount is running.
+The complete lint recount has zero diagnostics in the scheduler,
+its types,
+and its three consumer files.
+The first recount found a multiline TSDoc warning;
+the final recount follows its correction.
+Final native rebuild,
+package type check,
+built consumers,
+and original replay also pass with the added sparse-array fixture.
+That fixture preserves original scheduling of an array hole when no tool lookup observes it;
+it does not establish complete dispatch for a sparse group.
+The remaining dispatcher has 151 warnings.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-prepared-schedule-final-lint-20261015.log`.
 Receipts are `typed-prepared-schedule-comparison.json` and `typed-prepared-schedule-omissions.json`
 under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 The saved original dispatcher has SHA-256

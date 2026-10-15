@@ -141,6 +141,8 @@ Only the first matching tool definition determines context support and execution
 Every context capability is checked before reading serial policy.
 An explicit sequential mode skips tool policy reads.
 All execution capabilities remain uninvoked during scheduling.
+Original sparse-array scheduling is retained when no tool lookup observes an array hole.
+This admission behavior does not establish successful complete dispatch for sparse input.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 
