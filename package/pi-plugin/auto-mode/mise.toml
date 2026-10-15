@@ -185,6 +185,14 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-unbound.unit.test.ts",
 ]
 
+[tasks."test:native:group-collector"]
+description = "Verify original collector construction, exact arrival, reentry, and native cancellation"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-collector.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-arrival.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-arrival-abort.unit.test.ts",
+]
+
 [tasks."test:native:group-lifetime"]
 description = "Verify original collector retirement, draining, and retained inspection"
 run = [

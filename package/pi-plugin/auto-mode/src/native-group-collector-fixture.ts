@@ -1,5 +1,6 @@
 /** Independent collector consumers own original arguments, cancellation, and native completions. @module */
 import assert from 'node:assert/strict';
+import { getEventListeners } from 'node:events';
 
 /** Source members expose only fields the original collector consumes. */
 type CollectorFixtureMember = Readonly<{ ordinal: number; alias: string; argsJSON: string }>;
@@ -75,6 +76,25 @@ assertCollectorModule(loaded);
 export const collectorFixtureModule: CollectorFixtureModule = loaded;
 
 //region Independent callbacks expose exact original arrival, reader, and native completion ordering.
+/** Require an installed original abort callback before testing its retained guards.
+ @param value - independently inspected native event listener
+ @returns narrowed original callable identity
+ @throws Error when the expected original abort listener is absent
+ */
+function assertAbortListener(value: unknown): asserts value is () => void {
+  if ((typeof value) !== 'function') throw new Error('Original abort listener is unavailable');
+}
+/** Capture the actual installed callback without replacing native event delivery.
+ @param signal - fixture-owned original native signal
+ @returns original installed callback identity
+ @example originalCollectorAbortListener(signal);
+ */
+export function originalCollectorAbortListener(signal: AbortSignal): () => void {
+  /** Node inspection returns the actual listener installed on this disposable original signal. */
+  const listener: unknown = getEventListeners(signal, 'abort')[0];
+  assertAbortListener(listener);
+  return listener;
+}
 /** Create original native inputs whose lifetimes remain controlled by the consumer.
  @param memberCount - declared original native member cardinality
  @param startAborted - whether original parent cancellation precedes construction
