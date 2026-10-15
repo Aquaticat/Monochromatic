@@ -52,6 +52,13 @@ The repository was not caching nothing, but the caches that existed did little.
   The release build leaves 684 MB of cargo home and 2.3 GB of target directory before any trim, and the compressed
   size of a trimmed entry was not measured (the Alpine guard's debug-build entries are 949 MB and 928 MB).
   Details: `doc/decision/music-player-releases.md`.
+- `music-player-release.yml`, the Windows GNU job (`x86_64-pc-windows-gnu`, release asset `windows-x64-gnu.exe`):
+  no cargo or target cache, decided 2026-10-15 while the repository held 11.4 GB of 10 GB.
+  The cold job took 16 min 07 s, of which a cache could save at most the 7 min 14 s of dependency compilation, and
+  it finished before the slowest job of the run. It restores and saves only the MSYS2 package downloads (70 MB) under
+  the key `music-player-windows.yml` uses. Details: `doc/decision/music-player-releases.md`.
+- `music-player-release.yml`, both `jdx/mise-action` steps: pinned to mise 2026.10.9 without `minimum_release_age`, so
+  they make no GitHub API call to resolve the version (a 403 from that call failed two jobs of run 38688512043).
 
 ## Key shapes
 
@@ -225,7 +232,8 @@ Restoring costs as much as the whole install, so the cache is reverted on the br
 - Restore attempt 2 s and a miss in every run; no save ever. Rust toolchain installation takes 15.5 s and Node plus pnpm
   3 to 4 s on Linux. The `cache: false` set in `cargo-publish.yml` removes the inert restore.
 - Resolving the mise version through `minimum_release_age` takes about 10 s per job (log lines `Selected mise` after the
-  restore line). A fixed `version` skips that lookup. This is not a cache and is left as is.
+  restore line). A fixed `version` skips that lookup. This is not a cache; the two steps of
+  `music-player-release.yml` use it since 2026-10-15 (see above), and the other workflows are left as they were.
 
 ## Not verified
 

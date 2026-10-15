@@ -70,6 +70,9 @@ and whether the executable runs on a clean machine
 ## Verified workarounds
 
 The release workflow exports `CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe` for the x64 build.
+Update 2026-10-15: that export is removed from the workflow, because `.cargo/config.toml` no longer sets a
+`linker` key for the MSVC targets, so `link.exe` is the default (`doc/decision/music-player-windows-linkers.md`).
+The paragraph below describes the state when the export existed.
 The environment variable takes precedence over the `linker` key of the config file, so developers keep their
 `lld-link.exe` pin.
 

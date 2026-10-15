@@ -129,6 +129,16 @@ To repeat that by hand,
 mount the binary into `alpine:3.24`, run the `apk add` line of `INSTALL.txt` first,
 and bound the container with `podman run --memory=2g --cpus=2 --rm`.
 
+Check the Windows files of a dry run the same way, in a new empty directory.
+The three `.exe` files print their imports in the log of the step "Package (Windows executable)",
+and the step "Check the linker rustc ran (Windows)" prints the linker program: `link.exe` for the two MSVC files,
+`x86_64-w64-mingw32-gcc` (GNU ld) for `windows-x64-gnu.exe`.
+To repeat the import check on a download, parse the import tables with a PE reader such as the Python `pefile` package
+in a throwaway virtual environment (`objdump -p` from mingw-w64 also works).
+The MSVC files must import no `vcruntime*` or `msvcp*` DLL;
+the GNU file imports the Windows C runtime (`api-ms-win-crt-*`) and system DLLs,
+and must import none of `libgcc_s*`, `libwinpthread*` and `libstdc++*`.
+
 ## When a job fails
 
 Before the release job started,
