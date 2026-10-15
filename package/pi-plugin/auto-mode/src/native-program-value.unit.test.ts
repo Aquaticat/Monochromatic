@@ -80,7 +80,11 @@ await describe({
         /**
          The literal crosses quote, newline, comment, path, and interpolation boundaries.
          */
-        const literal = JSON.stringify(`quote'"; /* function textOf() {} */\n\\path/../\` \${globalThis.injected=true}\u0000🚀`);
+        const originalText = `quote'"; /* function textOf() {} */\n\\path/../\` \${globalThis.injected=true}\u0000🚀`;
+        /**
+         Source interpolation uses the destination JavaScript string grammar.
+         */
+        const literal = JSON.stringify(originalText);
         /**
          These complete original declarations must survive byte-for-byte.
          */
@@ -111,7 +115,7 @@ await describe({
         const generated: unknown = await import(`data:text/javascript,${encodeURIComponent(output)}`);
         assertGeneratedConverter(generated);
         expect(generated.convertNativeOutcome({ tool: 'original-tool:', outcome: ':original-outcome' }))
-          .toBe(`original-tool:${JSON.parse(literal)}:original-outcome`);
+          .toBe(`original-tool:${originalText}:original-outcome`);
       },
     }),
     ...['textOf', 'toScriptValue'].map(function missingFunction(name) {
