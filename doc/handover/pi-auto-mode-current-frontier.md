@@ -2480,9 +2480,25 @@ The owned rebuild,
 package type check,
 and both direct consumer suites pass in
 `${HOME}/temp/agent/pi-group-lifetime-final-20261015.log`.
-Original-function replay,
-domain comparison,
-and omission qualification remain pending.
+Both direct suites pass against the exact original lifetime statements in
+`${HOME}/temp/agent/pi-group-lifetime-original-20261015.log`.
+Six original/current domain scenarios preserve public outcomes and native execution counts,
+including the permission/prohibition positive control,
+in `typed-group-lifetime-comparison.json`.
+The saved original collector has SHA-256
+`f1ea72c6c995e3d9186be79a8d658d5dd15649cfe3631d8c0e736257cbf2636d`.
+All twenty-nine process-local changes fail the consumer assertions;
+all three built artifact hashes remain unchanged in `typed-group-lifetime-omissions.json`.
+The first control run stopped because its snapshot replacement selector also matched a nested member snapshot.
+After narrowing that selector,
+the complete control sequence passed with a fresh artifact-hash comparison.
+`typed-group-collection-category.json` directly verifies unchanged base diagnostic names and messages,
+and the intentionally stable subclass category.
+The original lifetime extraction is qualified at these tested boundaries.
+The full maintained lint recount remains pending.
+Continue original collector currentness,
+dispatch,
+and arrival composition before the reached-program runtime and runner.
 
 Auto-pushing `6973251c83` was separately rejected with `GH006` and no detailed requirement.
 The original local signature verified,

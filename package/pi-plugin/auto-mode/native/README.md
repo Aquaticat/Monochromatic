@@ -38,6 +38,14 @@ and signal caching after callback completion.
 Reentrant cancellation records its inner observation before the outer observation reaches the cache.
 A throwing rejection callback leaves the primary failure retained without publishing cancellation or that cache entry.
 The internal `RecordedGroupFailureError` token retains the original caught value in its occurrence.
+`test:native:group-lifetime` verifies retirement callback order,
+incomplete-membership failure retention,
+work capture at drain invocation,
+and frozen retained snapshots.
+Failures during listener detachment or incomplete-membership recording leave retirement unpublished.
+A pending rejection callback failure occurs after closure,
+so a later retirement call does not retry that callback or publish cancellation.
+Snapshots retain original failure and native completion identities without claiming execution effects.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 
