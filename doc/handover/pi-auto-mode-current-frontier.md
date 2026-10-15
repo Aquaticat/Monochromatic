@@ -1506,7 +1506,10 @@ nonfinite-number,
 or negative-zero checks fails the committed tests;
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-judgment-input-omissions.json`
 records the controls and unchanged artifact hashes.
-The complete lint recount is running.
+The complete maintained lint recount covers 570 files and 486 rules:
+zero errors and 12726 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-judgment-input-lint-20261015.log`.
+All four judgment-input source and consumer files have zero diagnostics in that full report.
 Next is instruction-claim construction using the now-typed governing-source and JSON owners.
 The handover,
 troubleshooting entry,
