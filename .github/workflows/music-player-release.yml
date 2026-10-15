@@ -1168,7 +1168,7 @@ jobs:
 
         ## Unsigned builds and first launch
 
-        - **Windows**: the programs are not signed with a developer identity. SmartScreen may show "Windows protected your PC": choose "More info", then "Run anyway". The executable opens no console window; started from a terminal, it prints there.
+        - **Windows**: the programs are not signed with a developer identity. SmartScreen may show "Windows protected your PC": choose "More info", then "Run anyway". The executable opens no console window; started from a terminal, it prints there. In PowerShell, redirect with `| Out-File file.txt`, because PowerShell does not read the output of a program like this one through `>`.
         - **macOS**: the app is not notarized, and carries only an ad-hoc signature with no developer identity. Open the disk image, drag Music Player to Applications, and try to open it once. Then open System Settings, go to Privacy & Security, scroll down and click "Open Anyway", and click "Open" when the warning appears again. macOS remembers the choice. These are the steps in [Apple's guide](https://support.apple.com/en-us/102445).
         - **Android**: the APK is signed with the project release key. Allow installing from your browser or file manager when Android asks. Updates install over this app only when they carry the same key. Certificate SHA-256: `@CERT@`.
         - **Linux**: extract the archive and run `bin/music-player`. `INSTALL.txt` inside shows how to add a menu entry. It needs PipeWire and glibc 2.39 or newer (it is built on Ubuntu 24.04).

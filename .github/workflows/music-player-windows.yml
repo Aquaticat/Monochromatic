@@ -457,9 +457,15 @@ jobs:
     # This step makes that parent a Python process with a console of its own, starts the program with exactly the
     # handles each case needs through CreateProcessW, and reads the console screen buffer back. Cases:
     # - no handles: --version and a bad argument must print on the console (the AttachConsole branch);
-    # - stdout inherited as a file, stderr missing, no STARTF_USESTDHANDLES: stdout must stay in the file (the attach
-    #   replaces it with the console, the program puts it back) and the bad argument text must reach the console;
-    # - the same with STARTF_USESTDHANDLES.
+    # - stdout inherited as a file, stderr missing, no STARTF_USESTDHANDLES: stdout must stay in the file and the bad
+    #   argument text must reach the console;
+    # - the same with STARTF_USESTDHANDLES;
+    # - RUST_LOG=debug makes the program log what the attach did (which action each standard handle got), and the step
+    #   prints those lines, so the branch that ran is measured and not assumed;
+    # - a double-click start: the parent has no console at all (FreeConsole), so the attach fails as it does under
+    #   Explorer. A bad argument must exit with status 2 (not a panic, 101), and a start without a path and a start on the
+    #   fixture folder must both still be running after 15 seconds. A sibling start of the no-path case with both output
+    #   handles in files prints the startup log lines, to show it takes the first-run path.
     - name: Run the binary with missing standard handles against a real console
       if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
       working-directory: package/music-player/desktop-app
@@ -467,13 +473,13 @@ jobs:
         set -euo pipefail
         exe="$(cygpath --windows "$PWD/target/${TARGET}/debug/music-player.exe")"
         expected="music-player $(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head --lines=1 | tr --delete '\r')"
-        python - "$exe" "$expected" "$(cygpath --windows "$RUNNER_TEMP")" <<'PYTHON'
+        python - "$exe" "$expected" "$(cygpath --windows "$RUNNER_TEMP")" "$(cygpath --windows "$PWD/fixture")" <<'PYTHON'
         import ctypes
         import os
         import sys
         from ctypes import wintypes
 
-        exe, expected, temp_dir = sys.argv[1], sys.argv[2], sys.argv[3]
+        exe, expected, temp_dir, fixture = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
         kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
         STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE = (wintypes.DWORD(-10).value, wintypes.DWORD(-11).value, wintypes.DWORD(-12).value)
         STARTF_USESTDHANDLES = 0x100
@@ -481,6 +487,7 @@ jobs:
         FILE_SHARE_READ, FILE_SHARE_WRITE = 1, 2
         CREATE_ALWAYS, OPEN_EXISTING = 2, 3
         INFINITE = 0xFFFFFFFF
+        WAIT_TIMEOUT = 0x102
 
 
         class SecurityAttributes(ctypes.Structure):
@@ -522,6 +529,7 @@ jobs:
         kernel32.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
         kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
         kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
         kernel32.GetConsoleScreenBufferInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(ScreenBufferInfo)]
         kernel32.ReadConsoleOutputCharacterW.argtypes = [wintypes.HANDLE, wintypes.LPWSTR, wintypes.DWORD, Coord, ctypes.POINTER(wintypes.DWORD)]
 
@@ -558,23 +566,30 @@ jobs:
             return handle
 
 
-        def start(argument, inherit, use_std_handles, stdout_file):
-            """Starts the program and returns its exit code. stdout_file is the inheritable file handle or None."""
+        def start(argument, inherit, use_std_handles, stdout_file, stderr_file=None, wait_ms=INFINITE):
+            """Starts the program. Returns its exit code, or None when it is still running after wait_ms (it is then ended)."""
             startup = StartupInfo()
             startup.cb = ctypes.sizeof(StartupInfo)
             if use_std_handles:
                 startup.dwFlags = STARTF_USESTDHANDLES
                 startup.hStdOutput = stdout_file
+                startup.hStdError = stderr_file
             info = ProcessInformation()
-            command = ctypes.create_unicode_buffer(f'"{exe}" {argument}')
+            command = ctypes.create_unicode_buffer(f'"{exe}" {argument}'.rstrip())
             if not kernel32.CreateProcessW(exe, command, None, None, inherit, 0, None, None, ctypes.byref(startup), ctypes.byref(info)):
                 raise SystemExit(f"CreateProcessW failed with error {ctypes.get_last_error()}")
-            kernel32.WaitForSingleObject(info.hProcess, INFINITE)
-            code = wintypes.DWORD(0)
-            kernel32.GetExitCodeProcess(info.hProcess, ctypes.byref(code))
+            waited = kernel32.WaitForSingleObject(info.hProcess, wait_ms)
+            code = None
+            if waited == WAIT_TIMEOUT:
+                kernel32.TerminateProcess(info.hProcess, 1)
+                kernel32.WaitForSingleObject(info.hProcess, INFINITE)
+            else:
+                exit_code = wintypes.DWORD(0)
+                kernel32.GetExitCodeProcess(info.hProcess, ctypes.byref(exit_code))
+                code = exit_code.value
             kernel32.CloseHandle(info.hProcess)
             kernel32.CloseHandle(info.hThread)
-            return code.value
+            return code
 
 
         # clap decides between plain text, console attributes and ANSI escape sequences from these variables and the
@@ -582,7 +597,15 @@ jobs:
         for name in ("TERM", "COLORTERM", "CLICOLOR", "CLICOLOR_FORCE", "NO_COLOR", "ANSICON", "WT_SESSION"):
             print(f"environment {name}={os.environ.get(name)!r}", flush=True)
 
+        # The program logs what the console attach did at debug level, before it parses the arguments.
+        os.environ["RUST_LOG"] = "debug"
+
         failures = []
+
+
+        def attach_lines(text):
+            """The program's own report of the attach, taken from the console text."""
+            return " | ".join(line.strip() for line in text.splitlines() if "console attach" in line or "attached to the console" in line)
 
 
         def check(name, condition, detail):
@@ -598,7 +621,7 @@ jobs:
             fresh_console()
             code = start(argument, False, False, None)
             text = console_text()
-            check(f"no handles, {argument}", code == wanted_code and wanted_text in text, f"exit code {code}, console shows {text!r}")
+            check(f"no handles, {argument}", code == wanted_code and wanted_text in text and "attached to the console" in text, f"exit code {code}, console shows {text!r}")
 
         # Cases 2 and 3: stdout is a file, stderr and stdin are missing, with and without STARTF_USESTDHANDLES.
         for label, use_std_handles in (("inherited from the parent process", False), ("STARTF_USESTDHANDLES", True)):
@@ -617,7 +640,29 @@ jobs:
                 good = code == wanted_code
                 good = good and (in_file in file_text if in_file else file_text == "")
                 good = good and (in_console in text if in_console else expected not in text)
-                check(f"stdout file, stderr missing, {label}, {argument}", good, f"exit code {code}, file holds {file_text!r}, console shows {text!r}")
+                good = good and "attached to the console" in text
+                check(f"stdout file, stderr missing, {label}, {argument}", good, f"exit code {code}, file holds {file_text!r}, attach report {attach_lines(text)!r}")
+
+        # Double-click start: no console in the parent, no standard handle, so the attach fails with ERROR_INVALID_HANDLE.
+        kernel32.FreeConsole()
+        code = start("--no-such-option", False, False, None)
+        check("double-click start, bad argument", code == 2, f"exit code {code} (101 would be a panic)")
+        for label, argument in (("no path", ""), ("fixture folder", f'"{fixture}"')):
+            code = start(argument, False, False, None, wait_ms=15000)
+            check(f"double-click start, {label}, alive after 15 seconds", code is None, f"exit code {code} (None means still running)")
+
+        # The no-path start with both output handles in files, to read the startup log lines of the first-run path.
+        os.environ["RUST_LOG"] = "info"
+        out_file = open_inheritable_file(os.path.join(temp_dir, "first-run-out.txt"))
+        err_file = open_inheritable_file(os.path.join(temp_dir, "first-run-err.txt"))
+        code = start("", True, True, out_file, err_file, wait_ms=10000)
+        kernel32.CloseHandle(out_file)
+        kernel32.CloseHandle(err_file)
+        with open(os.path.join(temp_dir, "first-run-err.txt"), encoding="utf-8", errors="replace") as handle:
+            log_lines = [line.strip() for line in handle if "music folder" in line or "folder" in line.lower()]
+        for line in log_lines[:6]:
+            print("first-run log: " + line.encode("ascii", "backslashreplace").decode(), flush=True)
+        check("no-path start with output in files, alive after 10 seconds", code is None, f"exit code {code}, {len(log_lines)} folder log lines")
 
         if failures:
             raise SystemExit("failed: " + "; ".join(failures))

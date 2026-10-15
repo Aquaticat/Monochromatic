@@ -115,7 +115,7 @@ One release holds, with `<version>` filled in:
    so rustc runs `link.exe` by default,
    the export is removed,
   and the build step now prints the linker command and fails unless the program is `link.exe`.
-  The executable was built as a console program until release 0.1.3 (no `windows_subsystem` attribute existed in the
+  The executable was built as a console program through release 0.1.3 (no `windows_subsystem` attribute existed in the
   source), so Windows opened a console window next to the app.
   Since the change recorded in `doc/decision/music-player-windows-gui-subsystem.md` the executable is a GUI-subsystem
   program that attaches to the console of its parent process, and the release workflow fails when the Subsystem field

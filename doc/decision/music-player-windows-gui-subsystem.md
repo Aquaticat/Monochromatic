@@ -2,6 +2,8 @@
 
 Status:
  Implemented on branch `feat/music-player-windows-gui-subsystem`, proven on GitHub's Windows runners, not merged.
+ Awaiting acceptance of one tradeoff: in PowerShell, `music-player --version > out.txt` leaves an empty file
+ (it worked with the console-subsystem build of release 0.1.3); see "Consequences for users".
 Decided:
  2026-10-15 (the details; the release agent proposed the approach after release 0.1.3).
 Applies to `package/music-player/desktop-app` and the three Windows release files.
