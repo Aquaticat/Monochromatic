@@ -1420,8 +1420,27 @@ records all 11 process-local controls and unchanged built artifact hashes.
 The complete maintained lint report covers 559 files and 486 rules:
 zero errors and 12834 warnings in
 `${HOME}/temp/agent/pi-maintained-typed-governing-lint-20261015.log`.
-Structured diagnostics are being captured to verify the migrated files independently.
-The next boundary is native source-input location serialization used by policy request construction.
+The structured report independently confirms zero diagnostics in all 14 migrated source and consumer files:
+`${HOME}/temp/agent/pi-maintained-typed-governing-json-lint-20261015.log`.
+Native source-input location serialization used by policy request construction is the next typed boundary.
+Commits `71200e9fc7`,
+`97de715341`,
+and `6dad42e12c` preserve ordinary-record admission,
+exact native slot shapes,
+and original property-read ordering behind the existing entry path.
+The error category follows the documented stable-name design decision.
+The first focused check rejected a switch and a positional function declaration;
+the owner now retains the original ordered branch checks and an inline sorting callback.
+`ed4316f871` adds built consumers for every native slot,
+missing and hidden properties,
+accessor rejection,
+safe ordinal boundaries,
+fresh copies,
+and opaque companion strings.
+Formatting,
+rebuilt consumers,
+source comparison,
+and guard-removal controls are pending for the input-position port.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
