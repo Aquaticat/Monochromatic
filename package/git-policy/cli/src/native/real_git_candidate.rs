@@ -213,6 +213,7 @@ pub fn is_executable(metadata: &std::fs::Metadata) -> bool {
         // `&` here is bitwise AND; `0o111` is octal for the three execute bits.
         return metadata.permissions().mode() & 0o111 != 0;
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         // `let _ = ...` states that the metadata is deliberately not consulted here.
@@ -241,6 +242,7 @@ fn same_inode(first: &std::fs::Metadata, second: &std::fs::Metadata) -> bool {
         use std::os::unix::fs::MetadataExt;
         return first.dev() == second.dev() && first.ino() == second.ino();
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         // Neither record is consulted where no inode is available.

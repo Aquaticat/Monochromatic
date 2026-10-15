@@ -29,7 +29,7 @@
 /// ```ts
 /// import { stripWrapperControls } from 'git-policy-cli';
 /// ```
-use crate::control_tables::{CONTROL_TOKENS, POSSIBLE_ALIASES, TABLE_COMMANDS, VALUELESS_TOKENS};
+use crate::control_tables::{CONTROL_TOKENS, TABLE_COMMANDS, VALUELESS_TOKENS};
 use git_policy_cli::candidate_error::{CandidateError, CandidateFailure};
 use git_policy_cli::candidate_prediction::{CandidateRequest, PreparedCandidates};
 use git_policy_cli::command_commit::parse_commit_region;
@@ -655,9 +655,7 @@ pub enum FrontierSeen {
 ///  a forwarded command must not be a real commit,
 ///  a
 ///       publishing push with a policy on,
-///  an unchecked `git add`,
-///  or a worktree creation
-///       or possible alias run from a linked worktree without the opt-out.
+///  or an unchecked `git add`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -728,31 +726,7 @@ pub fn check_frontier(arguments: &[OsString], mode: u8) -> FrontierSeen {
             "git add was forwarded while a content policy could not read it: {arguments:?}"
         );
     }
-    // `.first()` is the token after `worktree`, or nothing for an empty region.
-    let creates: bool =
-        word == b"worktree" && region.first().is_some_and(names_worktree_registration);
-    if creates || POSSIBLE_ALIASES.contains(&word) {
-        assert!(
-            stripped.controls.skip_worktree_copy,
-            "a worktree creation or possible alias was forwarded from a linked worktree: {arguments:?}"
-        );
-    }
     return FrontierSeen::Forwarded;
-}
-
-/// What:
-///  Whether a token is `add` or `move`,
-///  the `git worktree` actions that register a path.
-/// Why:
-///   Restated here so the check does not lean on the subject's own list.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const namesWorktreeRegistration = (token: string) => token === 'add' || token === 'move';
-/// ```
-fn names_worktree_registration(token: &OsString) -> bool {
-    let bytes: &[u8] = token.as_encoded_bytes();
-    return bytes == b"add" || bytes == b"move";
 }
 
 /// Generator reach and fixed hard cases stay out of the fuzz targets.

@@ -5,7 +5,99 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-14.
+Updated 2026-10-15.
+
+## Active work on 2026-10-15
+
+The tool-call scope correction,
+live Hyper/Gemma assessment,
+Luna question execution,
+and genuine human Allow verification are complete.
+Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
+
+The maintained package remains unfinished.
+The latest complete lint report covers 730 files and 486 rules,
+with zero errors and 10841 warnings.
+The strict warning gate still fails.
+Clean extracted pieces do not establish package completeness.
+The preceding 10902-warning report was audited by category:
+8421 unsafe-value diagnostics,
+1409 formatting diagnostics,
+674 strict-boolean diagnostics,
+and 398 other diagnostics.
+Its warning distribution and the subsequent recounts are recorded in this handover's evidence chronology.
+
+Original failure ownership,
+collector lifetime,
+and collector currentness are qualified through built consumers,
+original-code replay,
+domain comparisons,
+and deliberate omission controls.
+Continue the remaining collector construction and arrival implementation,
+then reached-program runtime and runner contracts.
+The last report retains 81 warnings in `program-collector.mjs`,
+133 in `program-runtime.mjs`,
+and 266 in `program-runner.mjs`.
+Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
+No current user-input blocker exists.
+
+The dispatch extraction is implemented in `group-dispatch.ts` and `group-dispatch-types.ts`.
+Its production scope passes focused lint with zero diagnostics.
+The original collector delegates dispatch while retaining its existing arrival code.
+Independent consumer tests cover original callback order,
+work publication before callbacks,
+complete member association,
+opaque failure propagation,
+closed transport,
+and retained unassociated array outcomes.
+The native build,
+package type check,
+and built consumer suites pass.
+The same consumers pass against the exact saved original dispatch body.
+Six domain comparisons retain identical public results and native execution counts,
+with a permission-versus-prohibition positive control.
+All 32 process-local dispatch omissions or substitutions are detected;
+the collector and dispatch artifacts retain their original hashes.
+The first omission harness stopped on a selector matching both currentness calls.
+After anchoring the selector to its exact line,
+a phase-publication omission exposed an unbounded observation wait in a test.
+The corrected test checks for missing observation through the package's existing Node scheduling checkpoint.
+The final complete omission run passes with assertion failures for every deliberate change.
+The complete lint report has zero diagnostics in the new dispatch implementation and consumers.
+The package-wide warning gate remains failing.
+Receipts are `typed-group-dispatch-comparison.json` and `typed-group-dispatch-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+Build,
+type check,
+consumer replay,
+and omission output are retained in
+`${HOME}/temp/agent/pi-group-dispatch-bounded-final-20261015.log`.
+The unchanged original collector is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-collector-before-dispatch-types.mjs`,
+with SHA-256 `740fd23a569b058f0d46e7c7b12ff9ffcfed85bd6f519f5d5de5408d7fa13912`.
+
+Collector construction and member arrival are now extracted to `group-collector.ts` and `group-arrival.ts`.
+The original `program-collector.mjs` path delegates to those typed owners.
+The native listener retains its original identity for installation,
+manual replay,
+and detachment.
+Completion input now consumes the shared original primary-failure slot,
+including the collector's explicit pre-failure `undefined` value.
+Independent consumers cover capability and frozen-view checks,
+out-of-order arrivals,
+argument serialization,
+replay and reentry,
+combined cancellation,
+late native outcomes,
+and cancellation during final currentness or listener installation.
+Build,
+type checking,
+consumer execution,
+original replay,
+and omission controls remain pending for this extraction.
+The preceding collector body is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-collector-before-arrival-types.mjs`,
+with SHA-256 `eada90c16fdb852469c4079f7fea850afbf54c52e55eec199d4f997a3fb9d419`.
 
 ## Tool-call scope correction
 
@@ -2344,6 +2436,231 @@ The user's subsequent status request was answered with the completed live host b
 qualified facade and scope work,
 and the still-open maintained quality queue.
 No additional human input is needed for this queue.
+
+`fe97ed7482` moves original group completion retention into typed implementation and record contracts.
+`ef8f58d922` adds independent native outcome,
+conditional delivery,
+and cleanup-failure consumers.
+`6973251c83` separates readonly completion counting from mutable record ownership.
+The first consumer type check rejects an empty-array assertion that narrows later event inspection to `never`;
+the fixture now checks the empty count and preserves explicit string-array typing.
+Opaque rejection tests use independently issued native tickets,
+keeping rejection identity without treating it as an authored application error.
+`571e76379d` retains opaque rejection tickets and adds strict outcome identity assertions.
+The final five-file implementation/test formatting pass reports zero diagnostics.
+The owned native rebuild,
+package type check,
+both consumer suites,
+and exact original-body replay pass.
+All nineteen process-local completion changes fail the expected consumer assertions,
+with both artifact hashes unchanged in `typed-group-completion-omissions.json`.
+The controls remove listener cleanup,
+allow premature settled publication,
+alter delivery states,
+omit ticket settlement,
+or replace retained identities.
+Six original/current domain comparisons preserve public results and native execution counts,
+with the permission/prohibition positive control still distinguishing execution from denial.
+The saved original helper has SHA-256
+`8b74e711ae1f065768149c111463b57b4d5396dec0abd977fe19fe5dcda66612`.
+The original completion owner is qualified at these tested boundaries.
+The full-package recount covers 707 files and 486 rules,
+with zero errors and 10958 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-group-completions-lint-20261015.log`.
+All thirteen changed scope/completion implementation,
+declaration,
+bridge,
+fixture,
+and direct consumer files have zero diagnostics in that report.
+Continue original group-failure occurrence ownership,
+then the remaining collector,
+runtime,
+and reached-program runner composition.
+
+The next original failure-owner body is now behind `group-failures.ts`,
+with dedicated occurrence/state contracts and the original native bridge.
+The original helper is retained in `program-collector-failures-before-types.mjs`.
+Occurrence append,
+primary failure publication,
+pending rejection,
+and cancellation retain their original order.
+Abort caching remains after callback completion,
+so callback reentry and failure must be checked before qualifying the port.
+The internal token now has stable diagnostic category `RecordedGroupFailureError`;
+the original `RecordedFailure` inherited `Error` as its `name`.
+This is an intentional unpublished diagnostic change under the existing literal error-category convention,
+not an equivalence claim for the token's name or constructor identity.
+The underlying occurrence's original error identity must remain unchanged.
+Read-only inspection of
+`${HOME}/temp/agent/oxc-oxlint188-20261015/crates/oxc_linter/src/rules/unicorn/custom_error_definition.rs`
+confirms that the rule requires the class naming convention and a literal matching name.
+The [existing error-category investigation](../troubleshooting/oxlint-custom-error-name.md)
+records that convention and lack of a preserving per-rule configuration.
+`2439fc3802` introduces the typed owner;
+`f5b768de69` formats its source.
+The five-file focused report has zero diagnostics,
+and the owned native rebuild and package type check pass in
+`${HOME}/temp/agent/pi-group-failures-build-first-20261015.log`
+and `pi-group-failures-types-first-20261015.log`.
+`cc9b52248a`,
+`3143a1cb05`,
+and `7cbe2818ca` add independent built failure consumers.
+The initial direct suites and type check pass.
+The fixture now declares pending rejection at the native factory boundary,
+preserving receiver observations without a positional declaration or variable function expression.
+The three consumer files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-group-failure-tests-format-third-20261015.log`.
+`875e78efe6` records final callback formatting.
+The rebuilt native artifact,
+package type check,
+and both direct consumer suites pass in
+`${HOME}/temp/agent/pi-group-failures-final-20261015.log`.
+Both suites also pass against the saved original failure helper in
+`${HOME}/temp/agent/pi-group-failures-original-20261015.log`.
+The original helper has SHA-256
+`2a539ec0ddb66c0d393eddc1aebbf29771b4be345f70e206e04e531507c6556b`.
+All twenty process-local changes fail their consumer checks;
+all three built artifact hashes remain unchanged in `typed-group-failure-omissions.json`.
+Controls cover occurrence freezing and identity,
+history and primary publication,
+closed/settled guards,
+rejection and cancellation order,
+cached signals,
+and already-recorded boundary propagation.
+An added rejection for uncancelled signals also fails the original consumer contract.
+Six original/current domain scenarios preserve public outcomes and native execution counts,
+with a permission/prohibition positive control,
+in `typed-group-failure-comparison.json`.
+`typed-group-failure-category.json` directly measures the intentional change from
+`Error`/`RecordedFailure` to `RecordedGroupFailureError`/`RecordedGroupFailureError`
+for name/constructor,
+while verifying the unchanged message and underlying caught-value identity.
+The failure owner is qualified at these tested boundaries.
+The full maintained recount covers 714 files and 486 rules,
+with zero errors and 10920 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-group-failures-lint-20261015.log`.
+All eight changed failure implementation,
+declaration,
+bridge,
+fixture,
+and consumer files have zero diagnostics in that report.
+Continue original collector composition,
+then reached-program runtime and runner composition.
+
+`ed4178bf49` extracts original collector retirement,
+draining,
+and retained inspection into `group-lifetime.ts` and its independent state contracts.
+Arrival and dispatch still reside in the original collector body.
+The saved collector baseline is `program-collector-before-lifetime-types.mjs`;
+`group-lifetime-original-functions.txt` retains its exact lifetime function statements for direct replay.
+The exported `DeclaredGroupCollectionError` now declares its literal diagnostic category in a typed class.
+Its base constructor still requires the original message;
+subclasses now retain that category instead of deriving it from their constructor name.
+This is an unpublished diagnostic design change under the existing literal error-category convention.
+`64b99f24ac` adds independently declared built consumers for retirement,
+callback failures,
+work observation,
+and retained snapshot publication.
+The first focused source pass found only `eslint(no-useless-constructor)`.
+Assigning the original literal name in the constructor retains explicit message-only construction
+without a redundant superclass-only constructor.
+`b10fb56679` retains explicit diagnostic initialization;
+`4e03644092` records final fixture formatting.
+All six changed source and consumer files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-group-lifetime-format-second-20261015.log`.
+The owned rebuild,
+package type check,
+and both direct consumer suites pass in
+`${HOME}/temp/agent/pi-group-lifetime-final-20261015.log`.
+Both direct suites pass against the exact original lifetime statements in
+`${HOME}/temp/agent/pi-group-lifetime-original-20261015.log`.
+Six original/current domain scenarios preserve public outcomes and native execution counts,
+including the permission/prohibition positive control,
+in `typed-group-lifetime-comparison.json`.
+The saved original collector has SHA-256
+`f1ea72c6c995e3d9186be79a8d658d5dd15649cfe3631d8c0e736257cbf2636d`.
+All twenty-nine process-local changes fail the consumer assertions;
+all three built artifact hashes remain unchanged in `typed-group-lifetime-omissions.json`.
+The first control run stopped because its snapshot replacement selector also matched a nested member snapshot.
+After narrowing that selector,
+the complete control sequence passed with a fresh artifact-hash comparison.
+`typed-group-collection-category.json` directly verifies unchanged base diagnostic names and messages,
+and the intentionally stable subclass category.
+The original lifetime extraction is qualified at these tested boundaries.
+The full maintained recount covers 720 files and 486 rules,
+with zero errors and 10902 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-group-lifetime-lint-20261015.log`.
+All six changed lifetime implementation and consumer files have zero diagnostics in that report.
+Continue original collector currentness,
+dispatch,
+and arrival composition before the reached-program runtime and runner.
+
+The currentness extraction now has `group-current.ts` and separate original input contracts.
+It preserves the original first-failure,
+closure,
+cancellation,
+parent-reader,
+and reached-view checks in their original order.
+The original collector baseline is `program-collector-before-current-types.mjs`;
+its exact extracted statements are `group-current-original-functions.txt`.
+`1ccc58cb0c` introduces the original currentness owner;
+`1d1935e4c6` re-reads failure and closure through a shared helper after callbacks can publish state.
+The helper preserves original checks while preventing TypeScript from retaining pre-callback narrowing.
+`c6aaab1bbc`,
+`b1a75a47dd`,
+and `07336598f6` add and format independently declared currentness consumers.
+All five changed implementation and consumer files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-group-current-lint-final-20261015.log`.
+The owned rebuild,
+package type check,
+and both currentness suites pass in
+`${HOME}/temp/agent/pi-group-current-final-20261015.log`.
+Both direct suites pass against the exact original currentness statements in
+`${HOME}/temp/agent/pi-group-current-original-20261015.log`.
+Six original/current domain scenarios match public outcomes and native execution counts,
+with the permission/prohibition positive control,
+in `typed-group-current-comparison.json`.
+The saved collector baseline has SHA-256
+`acce762fc8e61341662b53454db84c446ce74907503796df0d3d0cada3c74707`.
+All twenty-four process-local currentness changes fail the consumer checks;
+both built artifacts retain their starting hashes in `typed-group-current-omissions.json`.
+The verifier initially required an assertion diagnostic for an added unconditional cancellation check,
+although that check correctly caused the unexpected original cancellation token to escape.
+The completed verifier requires that exact token cause for this control
+and assertion diagnostics for the other controls.
+The original currentness owner is qualified at these tested boundaries.
+The full maintained recount covers 725 files and 486 rules,
+with zero errors and 10889 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-group-current-lint-20261015.log`.
+All five changed currentness implementation and consumer files have zero diagnostics in that report.
+The remaining collector body has 129 warnings;
+the connected runtime has 133 and reached-program runner has 266.
+The status response on 2026-10-15 confirms that the live model and approval verification are already complete,
+failure and lifetime owners are qualified,
+and the maintained-package quality queue remains unfinished without a current user-input blocker.
+The follow-up concern about the warning count prompted a complete structured-report breakdown.
+`warning-distribution-20261015.json` reconciles all 10902 warnings:
+8421 unsafe-value type diagnostics,
+905 multiple-statements-per-line diagnostics,
+504 other formatting diagnostics,
+674 strict-boolean diagnostics,
+and 398 other findings.
+Path classification places 10077 in native implementation files,
+443 in test files,
+and 382 in fixture files.
+The largest individual counts are the policy-input collector (284),
+reached-program runner (266),
+and root lifecycle transitions (231).
+Formatting alone cannot resolve the measured unsafe-value majority.
+Continue the active collector extraction,
+then prioritize the connected dispatch/runtime/runner contracts and remaining high-count native boundaries.
+Status reports must distinguish clean extracted pieces from the still-failing package-wide warning gate.
+
+Auto-pushing `6973251c83` was separately rejected with `GH006` and no detailed requirement.
+The original local signature verified,
+the current protection settings were read,
+and one unchanged ordinary retry succeeded.
+The incident record preserves this as a distinct unknown-cause remote rejection.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.

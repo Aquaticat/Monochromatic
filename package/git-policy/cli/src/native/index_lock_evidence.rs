@@ -211,6 +211,7 @@ pub fn read_lock_metadata(lock_path: &Path) -> std::io::Result<Option<LockMetada
             ctime_ms: metadata.ctime() * 1000 + metadata.ctime_nsec() / 1_000_000,
         }));
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         let changed: i64 = match metadata.modified() {

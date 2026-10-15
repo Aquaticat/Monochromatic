@@ -139,6 +139,7 @@ pub fn retained_mode(metadata: &std::fs::Metadata) -> u32 {
 /// ```ts
 /// stats.mode & 0o7777
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(not(unix))]
 pub fn retained_mode(_metadata: &std::fs::Metadata) -> u32 {
     return 0;
@@ -243,6 +244,7 @@ pub fn apply_entry_modes(
 /// ```ts
 /// async function applyEntryModes({ root, entries }): Promise<void>;
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(not(unix))]
 pub fn apply_entry_modes(
     _root: &Path,

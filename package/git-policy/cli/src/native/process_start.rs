@@ -265,6 +265,7 @@ pub fn process_exists(pid: i64) -> bool {
             Err(error) => return error.kind() == std::io::ErrorKind::PermissionDenied,
         }
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         let _ = pid;
@@ -293,6 +294,7 @@ pub fn resolve_process_start(pid: i64) -> ProcessStart {
     {
         return darwin_start(pid);
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(windows)]
     {
         return windows_start(pid);
@@ -359,6 +361,7 @@ fn darwin_start(pid: i64) -> ProcessStart {
 /// ```ts
 /// async function win32Start(pid: number): Promise<ProcessStart>;
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(windows)]
 fn windows_start(pid: i64) -> ProcessStart {
     let command: String = format!("(Get-Process -Id {pid}).StartTime.ToUniversalTime().Ticks");

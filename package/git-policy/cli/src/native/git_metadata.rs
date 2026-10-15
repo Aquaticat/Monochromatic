@@ -155,6 +155,7 @@ pub fn path_from_git_bytes(bytes: &[u8]) -> Option<PathBuf> {
         // `.to_vec()` copies the borrowed bytes into an owned list.
         return Some(PathBuf::from(OsString::from_vec(bytes.to_vec())));
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         // `match` unpacks the decoding: text becomes a path, other bytes are not one.

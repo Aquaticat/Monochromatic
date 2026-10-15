@@ -137,6 +137,7 @@ pub fn protect_path(path: &Path, mode: u32) -> std::io::Result<()> {
         std::fs::set_permissions(path, std::fs::Permissions::from_mode(mode))?;
     }
     // `let _ = mode;` marks the argument as used where no mode exists.
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     let _ = (path, mode);
     return Ok(());
@@ -235,6 +236,7 @@ fn private_directory_builder() -> std::fs::DirBuilder {
 /// ```ts
 /// const builder = {};
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(not(unix))]
 fn private_directory_builder() -> std::fs::DirBuilder {
     return std::fs::DirBuilder::new();
@@ -260,6 +262,7 @@ pub fn sync_directory(path: &Path) -> std::io::Result<()> {
         let directory: File = File::open(path)?;
         directory.sync_all()?;
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     let _ = path;
     return Ok(());

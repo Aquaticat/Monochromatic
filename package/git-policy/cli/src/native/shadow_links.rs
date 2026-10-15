@@ -89,6 +89,7 @@ fn share_entry(source: &Path, destination: &Path, directory: bool) -> std::io::R
         let _ = directory;
         return std::os::unix::fs::symlink(source, destination);
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(windows)]
     {
         if directory {
@@ -204,6 +205,7 @@ fn set_private_directory(path: &Path) -> std::io::Result<()> {
 }
 
 /// Windows has no mode bits for this directory; the incumbent's ACL work is not ported.
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(windows)]
 fn set_private_directory(_path: &Path) -> std::io::Result<()> {
     return Ok(());

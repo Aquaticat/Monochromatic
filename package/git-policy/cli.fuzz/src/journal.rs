@@ -65,7 +65,7 @@ fn added(cursor: &mut Cursor<'_>) -> Vec<AddedPath> {
     let mut records: Vec<AddedPath> = Vec::new();
     for _ in 0..cursor.byte() % 3 {
         records.push(AddedPath {
-            path: cursor.text(false),
+            path: cursor.text(false).into_bytes(),
             git_mode: String::from(if cursor.flip() { "100644" } else { "100755" }),
             original_oid: cursor.text(false),
             intended_oid: cursor.text(false),
@@ -84,9 +84,9 @@ fn base(cursor: &mut Cursor<'_>) -> Base {
 
 /// A preparing record from the cursor.
 pub fn generated_preparing(cursor: &mut Cursor<'_>) -> PreparingRecord {
-    let mut pathspecs: Vec<String> = Vec::new();
+    let mut pathspecs: Vec<Vec<u8>> = Vec::new();
     for _ in 0..cursor.byte() % 3 {
-        pathspecs.push(cursor.text(false));
+        pathspecs.push(cursor.text(false).into_bytes());
     }
     return PreparingRecord {
         transaction_id: cursor.text(false),

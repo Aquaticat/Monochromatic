@@ -87,57 +87,34 @@ Character,
 line,
 and column coordinates are intentionally absent because policies inspect exact bytes.
 
-A patch is valid only when all conditions hold:
+A fix is a correction and not a diff:
+the repository path,
+the file mode (which the fix keeps),
+the bytes the policy read,
+and the complete bytes the file should hold.
+The retired TypeScript wrapper carried a textual unified Git diff and applied it with `git apply --cached --3way`;
+the native engine already holds the corrected bytes, so it writes them directly.
+A commit transaction stores them with `git hash-object -w --stdin` and points the private index entry at the blob with
+`git update-index --add --cacheinfo`;
+a direct fix writes the worktree file.
+The crate has no patch parser or applier for policy corrections.
+A correction that the private index cannot take is a failure of the pass and names its path.
+The engine does not compare a correction's bytes with the candidate's:
+a pass counts as changed only when its resulting state differs from the preceding state
+(see "Whole-sequence fixing").
 
-- trigger is `pre-forward` or `direct-fix`;
-- finding has `path`;
-- patch path equals finding path;
-- patch target ID identifies the same mutable candidate and path;
-- revision is absent;
-- patch bytes are one textual unified Git diff;
-- old and new paths resolve to exactly the candidate path;
-- no rename,
-  copy,
-  mode change,
-  submodule,
-  binary patch,
-  absolute path,
-  traversal,
-  or second path is present;
-- applying with Git three-way semantics changes bytes;
-- resulting candidate remains a regular or executable file;
-- direct fix preserves the original file mode.
-
-`trackedFiles` lists index entries of the lifecycle's current candidate state that match Git pathspecs,
-glob magic included,
-with their `HEAD` counterparts;
-inside a commit transaction the counterpart is the recorded preparation base,
-not live `HEAD`.
-Commit transactions read the private commit index,
-add and direct lifecycles read their private projection,
-and post-commit and manual-push lifecycles return no tracked files.
-Bytes load through one lazy batch.
-
-A patch whose target ID names a tracked file that is not a candidate adds that path to the commit.
-It is valid only when,
-in addition to the candidate rules:
-
-- the lifecycle is a commit transaction outside read-only selection;
-- the real index captured at invocation,
-  the private commit index,
-  and the preparation base hold the same ordinary blob and mode for the path;
-- the worktree copy is a regular file whose bytes and executable bit match that blob.
-
+A correction for a tracked file that the fix did not select (an added path) exists only for a direct fix.
+It is valid only when `HEAD` holds the file as an ordinary file with the blob the correction was computed against,
+the real index holds that same blob with `HEAD`'s mode,
+and the worktree copy is a regular file whose bytes and executable bit match that blob.
 Otherwise the engine exits `2` with `patch-conflict`,
 naming the path,
 which state differs,
 and the remedies:
-stage the path so the fix applies to the staged copy,
-or restore it to match `HEAD`.
-A tracked target naming a candidate path at the candidate's exact revision applies as that candidate.
-
-A patch that applies but produces identical bytes is invalid rather than a convergence change.
-Patch validation failure exits `2` and identifies the policy and path without echoing patch bytes.
+include the path in the fix pathspecs so the fix applies to its worktree copy,
+or restore it to match `HEAD` (`git restore --staged --worktree -- <path>`).
+A commit transaction journals only the paths it selected:
+its records carry an empty list of added paths.
 
 ## Configuration validation
 
@@ -149,7 +126,7 @@ The file is JSON with comments,
 Without the file the defaults apply.
 Legacy executable configuration files (`cli-git.config.mjs`,
  `cli-git.config.ts`) are never read or executed:
-beside a JSONC file they produce a `legacy-config-ignored` configuration warning,
+beside a JSONC file `git cli-git check` reports a `legacy-config-ignored` configuration warning (other commands and `fix` stay silent),
 and alone they are a configuration failure that asks for the translation.
 
 Config parsing validates the following.
@@ -261,7 +238,8 @@ The retired forms `trust [--yes]`,
  `untrust` and `status` still parse.
 They print an explanation to stderr,
  change nothing and exit `0`;
-with `--help` the explanation goes to stdout.
+`trust --help` sends the explanation to stdout,
+while `untrust --help` and `status --help` are usage errors that exit `2`.
 They read no configuration and need no Git.
 
 Rules:
@@ -329,7 +307,10 @@ An invocation targeting the main worktree bypasses administrative observation,
 journal recovery,
 settlement locking,
 and synchronization,
-even when real Git creates a linked worktree.
+even when real Git creates a linked worktree,
+with one exception:
+a command that creates or moves a worktree copies the configured `rulesFile` of the `security/forbidden-strings`
+policy from the main checkout into the new worktree, under the settlement lock and the journal.
 After real Git and its hooks return for an applicable source,
 cli-git compares the administrative set again.
 Every new identity is a synchronization destination,
@@ -351,9 +332,10 @@ Ignored sockets,
 FIFOs,
 and device nodes are selected only to produce a copy failure without opening them.
 A bare repository has no source root and synchronizes an empty set.
-There is no repository configuration for this behavior.
+The only repository configuration that touches this behavior is that `rulesFile` path.
 The wrapper-only flag `--no-worktree-copy` skips synchronization for one invocation.
-It is recognized only in flag position after the subcommand and before Git's `--` pathspec separator,
+It is recognized in flag position after the subcommand and before Git's `--` pathspec separator,
+and, like the other wrapper controls, among Git's global options before the subcommand,
 is stripped before real Git runs,
 and leaves value-position tokens with the same bytes untouched.
 An opted-out invocation performs no journal recovery;
@@ -501,7 +483,8 @@ Never re-read live `HEAD`:
 after concurrent landings it can name another invocation's commit.
 Run applicable post-commit policies against committed ground truth.
 `landedCommitOid()` returns the exact resolved commit;
-`candidates()` lazily enumerates its complete recursive tree and reads blobs by object ID rather than worktree path.
+`candidates()` enumerates the commit's changed entries (its delta against each parent, every entry of a root commit)
+and reads blobs by object ID rather than worktree path.
 Only a clean or warning-only result allows auto-push.
 A policy or engine failure leaves the commit intact,
 blocks push,
@@ -580,6 +563,7 @@ and distinct on case-insensitive filesystems.
   Past the deadline the push is asked to end,
   killed after a five second grace,
   and recorded as a failed attempt with exit code 124 whose output ends with a line naming the deadline.
+  A push whose output grows past 4 MiB is stopped the same way, and only the first 4 MiB are kept.
   The commit stays saved and the exit contract below holds.
   Git's low-speed abort is added to the push's environment
   (`GIT_HTTP_LOW_SPEED_LIMIT=1000`, `GIT_HTTP_LOW_SPEED_TIME=60`)
@@ -653,6 +637,9 @@ at most four per-update `git rev-list --stdin` or `git ls-tree` processes run co
 one `git diff-tree --stdin` reads every range commit's delta,
 and one `git cat-file --batch` reads every blob.
 Never spawn one process per commit.
+Not yet met by the native executable: it handles updates one after another, runs `git rev-list <local> --not <published>`
+with arguments, and reads each range commit's delta with its own `git diff-tree` process; the handover lists this as an
+open divergence.
 
 ### Direct check
 
@@ -686,7 +673,8 @@ The built-in order is
 `require-root`,
 `linked-worktree-only`,
 `branch-worktree-only`,
-then `add-explicit`.
+`add-explicit`,
+then `final-newline`.
 The transform order is atomic push,
 commit only,
 then status hints off.
@@ -705,7 +693,7 @@ A pass begins with one exact candidate state.
 Later policies see earlier patches.
 Any changed candidate makes every finding in that pass provisional and restarts the complete order.
 
-The engine retains up to eight candidate states in private temporary storage.
+The engine retains the initial candidate state and up to eight changed states in private temporary storage.
 States serialize as ordered entries of repository path,
 mode,
 revision identity,
@@ -716,7 +704,8 @@ After each pass:
 
 - exact equality with the preceding state means stable;
 - exact equality with any non-adjacent retained state means cycle failure;
-- a changed eighth pass means pass-limit failure;
+- after eight changed passes the engine runs one more pass:
+  it settles when that pass proposes nothing and is a pass-limit failure when it still proposes a change;
 - otherwise start the next pass at the first built-in policy.
 
 Stable warning-only or clean state exits `0` when Git does not run.
@@ -750,7 +739,8 @@ export type EventBase = {
 };
 ```
 
-`sequence` starts at `0` for each cli-git invocation and increments by one in emission order.
+`sequence` starts at `0` for each batch of events and increments by one in emission order.
+A commit invocation can emit two batches (the pre-commit run and the post-commit run), each starting at `0`.
 
 ### Finding event
 
@@ -801,10 +791,13 @@ not the corrected finding.
 ```ts
 export type ConfigurationWarningEvent = EventBase & {
   readonly type: 'configuration-warning';
-  readonly trigger: PolicyTrigger;
-  readonly policyId: string;
   readonly code: 'warn-unsafe' | 'legacy-config-ignored';
   readonly message: string;
+  // `warn-unsafe` carries the trigger and policy it came from:
+  readonly trigger?: PolicyTrigger;
+  readonly policyId?: string;
+  // `legacy-config-ignored` carries the legacy file instead and has no trigger or policy:
+  readonly path?: string;
 };
 ```
 
@@ -1140,7 +1133,8 @@ the transaction records:
   honoring a caller-set `GIT_INDEX_FILE`,
   `GIT_DIR`,
   `GIT_WORK_TREE`,
-  and global `--git-dir` and `--work-tree`;
+  and the effective directory of `-C`;
+  global `--git-dir` and `--work-tree` do not reach these queries;
 - the selected paths;
 - the reflog nonce;
 - the invocation start time.
@@ -1164,7 +1158,7 @@ so capture order can keep every landed-capture record a transaction may replay o
     and `captured.json` is written.
 
 Every private index copy and every index install carries the source index's access and modification times
-(`index-file-timestamps.ts`):
+(`copy_index_with_timestamps` in `commit_index.rs`):
 Git re-hashes a cached entry only when its mtime is not older than the index file's mtime,
 so a fresh timestamp would hide same-size edits made in the second Git cached their stat
 (`doc/troubleshooting/git-racy-index-copy.md`,
@@ -1179,8 +1173,8 @@ named by a random UUID.
 The directory is built under a reserved staging name and published by rename
 only after `owner.json` is complete,
 so every published transaction names its owner.
-Enumeration ignores staging names;
-an unpublished staging directory never blocks recovery and remains for diagnosis.
+Enumeration lists staging directories as staging entries;
+recovery never recovers one whose owner is dead and leaves it in place for diagnosis.
 
 ```text
 <git-dir>/cli-git-transactions/
@@ -1190,19 +1184,18 @@ an unpublished staging directory never blocks recovery and remains for diagnosis
     owner.json             PID, process-birth identity, schema version, invocation start time
     preparing.json         invocation capture facts
     prepared.json          shadow repository path, prepared OID, signed flag, intended tree
-    reservation-request    empty marker written when the transaction asks for the reservation
+    reservation-request    JSON state record written when the transaction asks for the reservation
     index-lock-<n>.json    identity of the real index.lock attempt <n> created, written right after creating it
     landing-<n>.json       one per landing attempt inside the critical section
     ref-updated.json       exact landed OID
     index-installed        empty completion marker
-    hooks/                 hook dispatcher shim: dispatch.mjs, plan.json, and one entry per preparation event
+    hooks/                 plan.json and one entry per preparation event, each a link to the executable
     captured.index         real index at invocation
     commit.index           private commit index native preparation commits
     pre-landing-<n>.index  exact copy of the real index attempt <n> computed against
     post-<n>.index         post-index attempt <n> installs
-    install-<n>.index      post-index hard link attempt <n> renames over the real index
-    candidate-<k>.state, patch-<k>.diff   convergence snapshots and patch files
-    replay-<r>/            replay <r>: commit.index of the replayed tree, candidate-*.state, patch-*.diff
+    install.index          post-index hard link the install renames over the real index
+    replay-<r>/            replay <r>: commit.index of the replayed tree
     replay-message-<r>     exact message bytes a signed replay passes to git commit-tree -F
     captured.json          capture stamp, next sequence before the base, worktree-captured paths
 
@@ -1227,12 +1220,13 @@ before the private index exists
 
 State files are created exclusively and never rewritten,
 so a crash leaves the newest complete state readable.
-Journal records use schema version 2.
+Per-transaction state records use schema version 2;
+landed-capture records and `plan.json` use schema version 1.
 Directories are mode `0700`,
 files are mode `0600`,
 and every read uses no-follow checks that reject symbolic links,
 non-regular files,
-and unsafe ownership.
+and files over the read size limit.
 
 A path in a record is the exact pathname bytes.
 Where it is a JSON string,
@@ -1259,8 +1253,9 @@ the migrated pack name
 (see "Object migration"),
 and the added-path and selected-worktree records.
 
-The legacy single-journal `<git-dir>/cli-git-transaction` directory is recovered read-only
-until no retained legacy directory can exist.
+The legacy single-journal `<git-dir>/cli-git-transaction` directory is not recovered:
+a command that meets one stops with exit `2` and asks for any Git command through the previous cli-git executable,
+which recovers it.
 
 ### Private preparation
 
@@ -1427,7 +1422,8 @@ The shadow `config` has this layout:
   repositoryformatversion = <copied value>
   hooksPath = <git-common-dir>/hooks
 [extensions]
-  ; every extensions.* key of the real repository, copied with its value
+  ; every extensions.* key of the real repository, copied with its value;
+  ; the section is omitted when the repository has none
 [include]
   path = <git-common-dir>/config
 [core]
@@ -1531,16 +1527,16 @@ and `core.hooksPath` alone does not disable config-based hooks
 (`doc/troubleshooting/git-hook-disable-switches.md`),
 so both are required.
 
-- The shim is a runtime-generated Node program,
-  not a shell script,
-  and nothing new ships in the tarball.
-  `<tx>/hooks/dispatch.mjs` holds the program text,
-  and `<tx>/hooks/plan.json` holds the dispatch plan,
-  encoded with `JSON.stringify` at the final interpolation.
+- Each hook entry is the native executable itself.
+  `<tx>/hooks/plan.json` holds the dispatch plan,
+  encoded at the final interpolation,
+  and Git starts the entry under the event's name,
+  so the executable dispatches by the name it was started under.
+  Nothing new ships beyond the executable.
 - `<tx>/hooks/pre-commit`,
   `prepare-commit-msg`,
-  and `commit-msg` are executable files whose first line is `#!<process.execPath>`
-  and whose body imports `dispatch.mjs` by absolute file URL with the event name.
+  and `commit-msg` are those entries (symbolic links on Unix;
+  on Windows, which has not been run, hard links or copies named `<event>.exe`).
   `post-commit` is intentionally absent,
   so it never runs during preparation.
 - The plan records the repository's own `core.hooksPath`
@@ -1574,10 +1570,6 @@ so both are required.
   and an index writer whose `GIT_INDEX_FILE` names the transaction's private index
   never takes the landing lock.
 
-The shebang form for Windows,
-where Git for Windows parses shebangs itself,
-and for a `process.execPath` containing spaces is pending verification.
-
 Hooks observe the branch state listed in "Private `HEAD` shape".
 A `pre-commit` hook that runs `git stash` writes its entry to the shadow's private `refs/stash`
 but still transiently touches the shared worktree;
@@ -1597,8 +1589,7 @@ and when a valid preparation lease is inherited.
 ### Policy evaluation during preparation
 
 Preparation constructs candidate facts from the private index,
-validates one-target ordinary text patches,
-applies them sequentially through `git apply --cached --3way`,
+writes each policy's corrections into the private index,
 and restarts the whole ordered policy sequence after exact candidate changes.
 Only the final unchanged pass emits findings.
 Revalidation after a replay runs every policy again
@@ -1623,7 +1614,7 @@ Unmerged indexes block automatic correction.
 For ordinary index semantics:
 
 1.  Copy the real index captured at invocation.
-2.  Apply selected patches to the copy with `git apply --cached --3way`.
+2.  Write the selected corrections into the copy.
 3.  Run native `git commit` privately with the copied index.
 4.  Record `prepared.json`.
 
@@ -1647,33 +1638,21 @@ and revert conclusions use index-commit semantics only.
 
 #### Added paths
 
-Paths added by policy patches join the candidate paths of every later pass,
-the explicit-path post-index selection,
-and the prepared journal,
-which records each path's mode,
-original blob,
-and intended blob.
-After the landing installs the real index and writes `index-installed`,
-and before cleanup,
-each added path's worktree copy is compared with both blobs:
-intended bytes are left alone,
-original bytes are replaced through a same-directory temporary file and rename with the recorded mode,
-and any other bytes are kept with a warning,
-because the commit has landed and overwriting would discard a concurrent edit.
-Unsupported interactive/include modes use read-only checks and direct-fix guidance when needed.
+A commit transaction adds no paths of its own:
+its prepared record carries an empty list of added paths,
+and only the selected paths and the hook-staged changes below reach the landing.
+The record field remains from the retired design,
+in which policy patches could add tracked files to the commit.
 
-Direct fix admits added paths under the same precondition,
+Direct fix admits added paths under the precondition in "Finding and patch validation":
 `HEAD`,
-real index,
-private index,
-and worktree all holding the target blob,
-through `createAddedPathTracker`,
-which commit transactions share.
+the real index,
+and the worktree copy all hold the blob the correction was computed against.
 It has no journal or index step:
 converged bytes of added paths join the direct-fix worktree installation.
 Precondition failures are `patch-conflict` with direct-fix remedies
-(select the path,
- or restore it to `HEAD`).
+(include the path in the pathspecs,
+or restore it to `HEAD`).
 
 #### Hook-staged changes
 
@@ -1827,7 +1806,7 @@ landing copies every object the new commit reaches that exists only in the shado
 into the real object store:
 
 ```text
-git --git-dir=<shadow> pack-objects --revs --local --stdout
+git --git-dir=<shadow> pack-objects --revs --local --stdout --quiet
   | git index-pack --stdin --keep=<keep message>
 ```
 
@@ -2208,7 +2187,7 @@ in the worktree's own Git directory
 
 - The capture lock `capture.lock` is an owner lock
   (see "Locks"):
-  unbounded wait while its owner lives,
+  a wait while its owner lives, bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800),
   and a dead or zombie owner's lock is retired by the next acquirer.
   A transaction holds it only while it allocates its sequence number and captures:
   the private index built from the preparation base and the selected worktree paths,
@@ -2282,7 +2261,7 @@ and runs no process when no shared path is among the transaction's worktree-capt
 Otherwise it lists the first-parent history since the preparation base once
 (`git rev-list --first-parent <current> ^<base>`,
 without `^<base>` for an unborn base,
-and one `git diff-tree --stdin --root -r -z --raw --no-renames -m --first-parent`),
+and one `git diff-tree --stdin --root -r -z --raw --no-abbrev --no-renames -m --first-parent`),
 and reads the record of each listed commit.
 For a shared path:
 
@@ -2344,16 +2323,17 @@ After both locks are released:
     (`run_auto_maintenance` in Git's `builtin/commit.c`):
     `git maintenance run --auto --quiet` with `--detach` or `--no-detach`.
     The decision mirrors `prepare_auto_maintenance` in Git's `run-command.c`:
-    `maintenance.auto`,
-    falling back to a positive `gc.auto`,
-    enables it;
+    an explicit `maintenance.auto` decides alone;
+    otherwise a positive `gc.auto` enables it,
+    and neither key set enables it as well;
     `maintenance.autoDetach`,
     falling back to `gc.autoDetach`,
     then to `true`,
     selects detaching.
     Git before 2.47 rejects `--detach` with exit status 129,
     so the step retries without it,
-    the form native `git commit` used there.
+    the form native `git commit` used there
+    (unreachable under the 2.55.0 gate).
     `--quiet` is fixed,
     so the background notice never interleaves with JSONL output.
     Its exit status is ignored,
@@ -2431,23 +2411,24 @@ is retired by the next acquirer.
 
 - Landing lock,
   `<git-dir>/cli-git-transactions/landing.lock`:
-  unbounded wait while its owner lives.
+  a wait while its owner lives, bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800).
 - Reservation lock,
   `<git-dir>/cli-git-transactions/reservation.lock`:
-  unbounded wait while its owner lives.
+  a wait while its owner lives, bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800).
 - Hook lock,
   `<git-common-dir>/cli-git/hook.lock`:
-  unbounded wait while its owner lives.
+  a wait while its owner lives, bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800).
 - Capture lock,
   `<git-dir>/cli-git-captures/capture.lock`:
-  unbounded wait while its owner lives,
+  a wait while its owner lives, bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800),
   held only while one transaction captures
   (see "Capture order").
 - Push locks,
   `<git-common-dir>/cli-git/push/<encoded-ref>.lock`:
-  unbounded wait while their owner lives.
+  a wait while their owner lives, bounded by the push deadline plus the grace plus 60 seconds
+  or by `CLI_GIT_PUSH_LOCK_WAIT_SECONDS` when that is set.
 - Worktree-copy settlement lock:
-  unbounded wait while its owner lives,
+  a wait while its owner lives, bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800),
   bounded wait for an owner record without evidence,
   held only by applicable sources
   (see "Linked-worktree ignored-state synchronization").
@@ -2484,8 +2465,8 @@ by appending it through `GIT_CONFIG_COUNT`,
 and `GIT_CONFIG_VALUE_<n>` while preserving existing entries,
 so native Git leaves an owner PID file beside each lock
 and the shim's restoration of `GIT_CONFIG_PARAMETERS` does not remove the setting.
-The wrapper installs the entry into its own environment at startup,
-so every Git it forwards or spawns inherits it.
+The wrapper adds the entry to the environment of each child it forwards or spawns,
+not to its own environment.
 Nothing is appended when the last numbered `core.lockfilePid` entry already reads as true,
 or when `GIT_CONFIG_COUNT` is malformed,
 so Git still reports the caller's error.
@@ -2524,7 +2505,7 @@ The verdict is proven alive,
 dead,
 or evidence-free:
 
-- A proven-alive owner gets an unbounded wait with one human-readable stderr line naming the holder.
+- A proven-alive owner gets a wait bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800) with one human-readable stderr line naming the holder.
 - A dead or evidence-free owner gets Git-style quadratic backoff with jitter up to
   `indexLock.unprovenOwnerTimeoutMs`,
   then `index-lock-unproven-owner` with exit `2`,
@@ -2595,8 +2576,9 @@ A nested commit transaction lands under the ancestor's landing lock the same way
 
 At wrapper startup,
 before config loading or forwarding,
-recovery enumerates every published transaction under `<git-dir>/cli-git-transactions/`
-and the legacy directory.
+recovery enumerates every published transaction under `<git-dir>/cli-git-transactions/`.
+A legacy `<git-dir>/cli-git-transaction` directory is not enumerated:
+the command stops with exit `2` and instructions.
 Management help returns before recovery.
 
 - An owner that is alive with a matching birth identity is skipped at debug log level;
@@ -2891,7 +2873,7 @@ and configuration:
 - a lock whose owner is a zombie is retired by the owner-lock acquirer,
   the hook dispatcher shim,
   and the transaction-owner liveness check;
-- an unbounded wait released when the holder exits,
+- a wait released when the holder exits (and abandoned after `CLI_GIT_LOCK_WAIT_SECONDS`),
   and a leftover lock from a killed Git producing `index-lock-unproven-owner` after the timeout with the lock retained;
 - a concurrent `git add` during a landing waits and then succeeds;
 - `git cli-git fix` concurrent with a landing keeps its real index check valid;
@@ -2914,7 +2896,7 @@ Recovery:
   after the index install,
   and before added-path worktree completion,
   each leaving no shadow repository and no `.keep` carrying the transaction's keep message after recovery;
-- a legacy `cli-git-transaction` directory still recovers.
+- a legacy `cli-git-transaction` directory stops the command with exit `2` and instructions instead of recovering.
 
 Auto-push:
 
@@ -2941,15 +2923,10 @@ so this suite is an inherent part of the transaction protocol.
 
 - A mise task (`test:e2e:concurrent:native`) builds the release executable into an image and runs a consumer script
   inside `podman` with stated memory and CPU bounds.
-- The image provides Git 2.39.5,
-   2.40.0 and 2.55.0.
+- The image provides Git 2.55.0 only.
   The native executable requires Git 2.55.0
   (see "Compatibility and degradation"),
-  so the supported run is `--git 2.55.0`,
-   which runs the whole catalog.
-  The two older versions stay in the image from the retired wrapper's suite;
-  the native executable refuses them,
-   so runs on them fail by design.
+  so the run covers the whole catalog on that version.
   Distribution images that ship an older Git do not qualify as the only Git.
 - Each run creates new repositories and a local bare remote inside the container,
   never touching host repositories.
@@ -3060,7 +3037,7 @@ A pushed commit with no known published commit on its destination scans its fina
 Directly pushed tree and blob targets scan their complete content.
 Deduplicate exact candidate identities across updates.
 Load unique Git blobs through one `git cat-file --batch` process per evaluation.
-Materialize scanner files with no more than 64 concurrent lanes.
+The scanner reads candidate content in process, and no scanner file is materialized.
 Wrapper-added latency for every forwarded real Git command must remain strictly less than `2,000 ms`.
 Explicit dry runs bypass manual-push policies.
 Pure ref deletion is clean.
@@ -3074,8 +3051,7 @@ Do not exclude unrelated nested files sharing those basenames.
 Findings are redacted;
 the scanner must not expose matched bytes.
 A missing rules file named by configuration,
-a scanner failure,
-and a materialized-file read failure are engine failures that exit `2`;
+and a scanner failure are engine failures that exit `2`;
 an incomplete policy result emits `policy-incomplete`.
 The policy defaults to error and is warn-unsafe.
 Preserve the independent SLSA-attested CI invocation.
@@ -3113,7 +3089,9 @@ Every real index entry remains exact during direct fix.
 Issue #356 records measured budgets;
 this specification does not invent numeric thresholds.
 
-The benchmark harness uses built production artifacts and disposable repositories.
+The benchmark harness that produced the records in `perf/` and its `perf:*` task no longer exist;
+a new measurement needs a new harness.
+A harness uses built production artifacts and disposable repositories.
 Each scenario has a paired direct-real-Git baseline using the same executable,
 repository,
 command,
@@ -3192,7 +3170,7 @@ Earlier sweeps,
 superseded because every landing then left one more pack in the real store
 (see "Post-landing"),
 so later batches in a sweep ran against more packs than earlier ones:
-four sweeps of one build (`2ec229081`,
+four sweeps (the first at revision `2ec229081`, the other three at `d42a4fab3`,
 Git 2.47.3,
 concurrency 8,
 30 recorded batches per setting,
@@ -3204,7 +3182,9 @@ so the run-to-run band of either setting
 (about 1150 to 1270 ms)
 is more than ten times the 91 ms between their means,
 and `1` had the lower p95 in only two of the four runs.
-`4` (5257 to 5392 ms) and `8` (5615 to 5806 ms) were slower than both in every run.
+`8` (5615 to 5806 ms) was slower than both in every run,
+and `4` (5257 to 5392 ms) was slower than both in three runs;
+in the second run its p95 (5318 ms) was below both.
 Per-commit medians do separate:
 `1` gave 2586 to 2767 ms and `2` gave 3024 to 3106 ms in every run,
 with 1.16 to 1.24 against 1.63 to 1.71 lost races per commit.

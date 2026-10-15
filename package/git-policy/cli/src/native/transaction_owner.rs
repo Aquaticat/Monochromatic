@@ -188,6 +188,7 @@ fn process_exists(pid: i64) -> Result<bool, OwnerLivenessError> {
     {
         return super::process_identity::signal_probe(pid).map_err(OwnerLivenessError::Probe);
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         let _ = pid;

@@ -377,10 +377,12 @@ impl Drop for SignalGuard {
 ///  Non-Unix guard: no signal relay exists, so the child runs and the wrapper waits.
 /// Why:
 ///   Callers keep one API; Windows ends a console child differently and is not covered by these controls.
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(not(unix))]
 pub struct SignalGuard;
 
 /// Methods over the non-Unix guard.
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(not(unix))]
 impl SignalGuard {
     /// What:

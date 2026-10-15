@@ -79,6 +79,7 @@ fn write_entry(executable: &Path, entry: &Path) -> std::io::Result<()> {
     {
         std::os::unix::fs::symlink(executable, entry)?;
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(windows)]
     {
         if std::fs::hard_link(executable, entry).is_err() {

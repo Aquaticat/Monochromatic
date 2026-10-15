@@ -235,6 +235,15 @@ in the worktree, rerun that platform's verification as a systemd unit, forced fr
 files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
 before saying it matches, QAB):
 
+- In flight on 2026-10-15, started after the human ran the desktop app and said "I have no major complaints":
+  (a) agent `ad05bc0301c37d399`, branch `feat/music-player-windows-gui-subsystem`, worktree `music-player-wgui`: the
+  Windows exe becomes a GUI-subsystem binary (no console window on double click) with the parent console attached so
+  `--version` still prints, proven on the real Windows runners with a PE Subsystem check and a positive control;
+  (b) agent `a36ecdbfa335190de`, branch `docs/music-player-release-measurements`, worktree `music-player-relmeasure`:
+  measures the release builds from the `0.1.3` artifacts (desktop in our nested compositor at 100, 1,000 and 10,000
+  tracks; Android release APK on a headful emulator) into `doc/audit/music-player-release-build-measurements-2026-10-15.md`.
+  After each reports: merge main into its branch, fresh verification, ff-merge, push; the Windows change needs a
+  version bump and a release after it merges.
 - Task 92, release workflow: MERGED to `main` at `ab725bd924` on 2026-10-15 (actionlint 1.7.12 clean; Android
   detekt, 1287 unit tests and lint fresh on the merged head; the merge touched neither version manifest, so it started
   no release, confirmed with `gh run list`). Workflow `.github/workflows/music-player-release.yml`, decision
