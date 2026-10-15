@@ -38,8 +38,8 @@ zero errors,
 and 10151 warnings.
 Those numbers are a historical reference,
 not a current baseline.
-The replacement's final focused check covered 40 changed files,
-with zero errors and 2149 warnings.
+The subsequent host-isolation focused check covered 40 changed files,
+with zero errors and 2709 warnings.
 It exited nonzero for warnings and is not a complete-package count.
 The replacement's type checking and relevant built-consumer regressions passed.
 Live configured-host Luna checks verified scoped Allow, prohibition, and independent external approval requirements.
@@ -56,9 +56,19 @@ Invoke package tasks as `mise run //package/pi-plugin/auto-mode:<task>`.
 
 ### Preserve the repaired behavior
 
+Pi owns ordinary chat, provider switching, retries, navigation, reload, and native callback effects.
+Auto-mode starts the judgment at complete-group dispatch and captures operation-local native currentness.
+Preserve passive prompt, event, and transport observation when capture fails.
+Unavailable observation or assessment evidence falls back to manual approval of the exact prepared group.
+An established policy decision or approval remains binding when its dependencies become stale;
+the fallback must not open a second dialog that bypasses it.
+Use `test:native:session-actions`, `test:native:host-isolation`, and `test:native:manual-group`
+when changing these boundaries.
+
 Shift+Tab now toggles explicit bypass through `src/native-bypass.ts` and native resource registration.
 Enabled bypass executes native tools and nested programs without semantic assessments or fabricated approvals.
 Disabled bypass restores normal policy enforcement.
+Programs outside automatic inspection then require manual approval; Stop executes nothing.
 Session reload preserves state;
 the visible status and session audit entries remain meaningful.
 The fixed virtual-input guard runs in both modes.
