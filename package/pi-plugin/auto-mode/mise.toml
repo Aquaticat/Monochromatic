@@ -286,6 +286,13 @@ run = [
   'node --max-old-space-size=512 src/native-dependency-binding.unit.test.ts',
 ]
 
+[tasks."test:native:judgment-sources"]
+description = "Verify original source handoff, publication, and freshness observation boundaries"
+run = [
+  'node --max-old-space-size=512 src/native-source.unit.test.ts',
+  'node --max-old-space-size=512 src/native-source-collection.unit.test.ts',
+]
+
 [tasks."test:native:judgment-inspection"]
 description = "Verify current member access and retained immutable judgment inspection"
 run = [
