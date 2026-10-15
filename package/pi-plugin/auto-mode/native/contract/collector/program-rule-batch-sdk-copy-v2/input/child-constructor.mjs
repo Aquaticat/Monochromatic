@@ -280,6 +280,11 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       return facade.originalFile({handle,absolutePath:record.prepared.input.path});
     }
     function assertExecutionEntry(token){const record=knownExecution(token);if(record.execution.state!=='active')throw new JudgmentConstructionError('Execution occurrence has returned before native entry');assertDependenciesCurrent();parentCurrent(record);}
+    /** Read the original execution origin after authenticating this exact native entry. */
+    function executionEntryFor(token){
+      assertExecutionEntry(token);
+      return knownExecution(token).execution.origin;
+    }
     /** Reserve once only after evidence closes; scope identity is not an execution permission. */
     function beginExecution(member){
       const record=knownMember(member);
@@ -321,6 +326,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       originalFileFor: guardWithInput(originalFileFor),
       preparedMemberFor: guardWithInput(preparedMemberFor),
       assertExecutionEntry: guardWithInput(assertExecutionEntry),
+      executionEntryFor: guardWithInput(executionEntryFor),
       inspectProgram,
       memberFor: guardWithInput(memberFor),
       beginExecution: guardWithInput(beginExecution),

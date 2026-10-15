@@ -169,8 +169,7 @@ export function registerOwnedExecutionTools({
       response:carrier.response,
       stream
     });
-    judgment.assertExecutionEntry(carrier.token);
-    const origin=judgment.executionFor(carrier.token);
+    const origin=judgment.executionEntryFor(carrier.token);
     current();return origin;
    }
    function capturePreparedProgram({
