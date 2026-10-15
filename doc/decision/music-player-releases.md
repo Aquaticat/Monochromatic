@@ -184,6 +184,12 @@ One release holds, with `<version>` filled in:
 - Android: `music-player-<version>-android.apk`, signed with the release key,
   holding the `arm64-v8a` and `x86_64` native libraries.
 - `SHA256SUMS`, produced by a job that runs only after every build succeeded.
+- Since 2026-10-15 the release also ships `music-player-<version>-desktop-third-party-licenses.txt` and
+  `music-player-<version>-android-third-party-licenses.txt`,
+  every Linux archive,
+  the `.dmg` and the APK carry the matching file,
+  and every desktop executable prints its notices with `--licenses`;
+  `doc/decision/music-player-third-party-licenses.md` records how they are written and checked.
 
 ### Build mechanics
 
@@ -512,6 +518,9 @@ nothing was saved;
   After the repository extraction the workflow, the secrets and the tag prefix must move with the package.
 - Bundled Rust crates carry their own licenses, and no third-party notice file is generated yet.
   The archives ship the project license only.
+  Superseded on 2026-10-15:
+  the release workflow writes the third-party notices for every asset
+  (`doc/decision/music-player-third-party-licenses.md`).
 
 ## Alternatives rejected
 

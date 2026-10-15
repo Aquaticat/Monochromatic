@@ -235,6 +235,21 @@ in the worktree, rerun that platform's verification as a systemd unit, forced fr
 files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
 before saying it matches, QAB):
 
+- 2026-10-15, agent `a861ba9cb4849c4bd`, branch `feat/music-player-license-notices`, worktree
+  `music-player-licenses` (head `56ea2b8611` plus this entry): third-party license notices for every release
+  asset, closing product gap (4) "no third-party license notices" of task 92. Decision
+  `doc/decision/music-player-third-party-licenses.md`. cargo-about 0.9.2 (mise tool) writes the Rust crate texts
+  against an accepted list in `desktop-app/about.toml` and `android-app/rust/about.toml`; `app.cash.licensee` 1.14.1
+  fails the Gradle build on any Android library outside Apache-2.0; `desktop-app/bin/third-party-notices.mjs`
+  composes one file per platform and checks every crate `cargo tree` links for each release target. The desktop
+  binary embeds the file and prints it with `--licenses`; the release workflow gains a `notices` job, ships
+  `music-player-<version>-desktop-third-party-licenses.txt` and `-android-third-party-licenses.txt`, puts the file
+  in the Linux archives, the `.dmg` and the APK assets, and compares each executable's `--licenses` output with the
+  file. No in-app screen: the design has no About screen, so that is a design decision for the human. Open for the
+  human: (1) Slint under GPL-3.0-only (chosen, the IDE precedent) or the royalty-free license with its attribution
+  badge; (2) the GPL source offer, the tag tree plus crates.io or an attached `cargo vendor` archive; (3) an in-app
+  licenses surface. Merge steps: merge main, desktop and Android verification fresh, a green release dry run on the
+  final head, ff-merge, push; the next version bump releases the notices.
 - 2026-10-15, agent `ad05bc0301c37d399` reported (head `1ce3b426e8`): GUI subsystem proven on all three Windows
   runner jobs (Subsystem 2, positive control failed as intended, release dry run green). Unmet by design: PowerShell
   `--version > out.txt` gives an empty file; I accepted that tradeoff (recorded in
