@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import {copyMessageData,copyToolMetadata} from '../../collector/run-prompt-custody/messages.mjs';
 import {SourceCollectionError} from '../../collector/collector.mjs';
+import {captureFailureMessage} from '../../collector/capture-failure-message.mjs';
+import {RunPromptCustodyError} from '../../collector/run-prompt-custody-v3/failures.mjs';
+import {SessionInputCaptureError} from '../../collector/run-prompt-custody-v3/loaded-inputs.mjs';
 
 //region Complete capture crosses every former copier ceiling without changing the input.
 const text='Original metadata. '.repeat(70_000);
@@ -59,5 +62,17 @@ assert.equal(reads,1);assert.equal(traps,1);
 const hidden=Object.defineProperty({},'text',{value:'preserved'});
 assert.deepEqual(copyToolMetadata(hidden),{text:'preserved'});
 assert.throws(()=>copyMessageData(hidden),SourceCollectionError);
+//endregion
+//region Host-visible errors retain deciding causes without invoking borrowed getters.
+const cause=new SourceCollectionError('Tool metadata contains a cycle');
+const sessionFailure=new SessionInputCaptureError(cause);
+const runFailure=new RunPromptCustodyError([{at:'session-inputs',error:sessionFailure}]);
+assert.ok(runFailure.message.includes(cause.message));
+assert.equal(runFailure.errors[0],sessionFailure);
+assert.equal(sessionFailure.errors[0],cause);
+const hostile=Object.defineProperty(new Error('initial'),'message',{get(){throw new Error('Unexpected getter');}});
+assert.equal(captureFailureMessage([hostile]),'');
+const recursive=new AggregateError([],'recursive');recursive.errors.push(recursive,cause);
+assert.equal(captureFailureMessage([recursive]),'recursive\n'+cause.message);
 //endregion
 console.log(JSON.stringify({complete:true,completeText:true,completeLists:true,deepCopy:true,cyclesRejected:true,borrowedInputsUnchanged:true}));

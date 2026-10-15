@@ -1,10 +1,11 @@
 import {createInputPool} from './loaded-pool.mjs';
+import {captureFailureMessage} from '../capture-failure-message.mjs';
 //region Native load boundaries retain their original failure classes.
 /** Native loading and message construction continue independently; capture failures are raised on source use. */
 export class SessionInputCaptureError extends AggregateError {
  constructor(error){super(
    [error],
-   'Original session inputs exceed the supported source capture profile'
+   'Pi could not retain the complete session inputs. '+captureFailureMessage([error])
  );this.name=this.constructor
    .name;}
 }
@@ -17,7 +18,7 @@ export function captureLoadedInputs(entries){return createInputPool({
 export class ResourceToolInputCaptureError extends AggregateError {
  constructor(error){super(
    [error],
-   'Original extension tool inputs exceed the supported resource capture profile'
+   'Pi could not retain the complete extension tool inputs. '+captureFailureMessage([error])
  );this.name=this.constructor
    .name;}
 }
