@@ -57,21 +57,27 @@ await describe({ name: 'prepared schedule policy', children: [
     const events: string[] = [];
     const calls = ['one', 'two'].map(function call(id) { return { type: 'toolCall', id, name: id, arguments: {} }; });
     const tools = ['one', 'two'].map(function tool(name) {
-      return { name, get createExecutionContext() { events.push(`context:${name}`); return unexpectedExecution; },
-        get executionMode() { events.push(`policy:${name}`); return 'sequential'; } };
+      return { name, get createExecutionContext() { events.push(`context:${name}`);
+      return unexpectedExecution; },
+        get executionMode() { events.push(`policy:${name}`);
+        return 'sequential'; } };
     });
     assert.equal(schedule({ calls, tools }).serial, true);
     assert.deepEqual(events, ['context:one', 'context:two', 'policy:one']);
   } }),
   it({ name: 'retains judgment, context, and policy getter ordering for a parallel group', fn: async function parallelOrder() {
     const events: string[] = [];
-    const executionJudgment = new Proxy(judgment(), { get(target, name, receiver) { events.push(String(name)); return Reflect.get(target, name, receiver); } });
-    const tools = [{ name: 'tool', get createExecutionContext() { events.push('context'); return unexpectedExecution; }, get executionMode() { events.push('policy'); return 'parallel'; } }];
+    const executionJudgment = new Proxy(judgment(), { get(target, name, receiver) { events.push(String(name));
+    return Reflect.get(target, name, receiver); } });
+    const tools = [{ name: 'tool', get createExecutionContext() { events.push('context');
+    return unexpectedExecution; }, get executionMode() { events.push('policy');
+    return 'parallel'; } }];
     assert.equal(schedule({ executionJudgment, tools }).serial, false);
     assert.deepEqual(events, ['memberFor', 'beginExecution', 'executionFor', 'finishExecution', 'context', 'policy']);
   } }),
   it({ name: 'uses the frozen cloned name after original call mutation', fn: async function clonedName() {
-    const call = { type: 'toolCall', id: 'one', name: 'tool', get arguments() { this.name = 'changed'; return {}; } };
+    const call = { type: 'toolCall', id: 'one', name: 'tool', get arguments() { this.name = 'changed';
+    return {}; } };
     const result = schedule({ calls: [call], tools: [{ name: 'tool', createExecutionContext: unexpectedExecution, executionMode: 'sequential' }] });
     assert.equal(call.name, 'changed');
     assert.equal(result.scheduled[0]?.name, 'tool');

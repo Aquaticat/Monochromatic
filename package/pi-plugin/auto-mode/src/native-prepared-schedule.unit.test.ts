@@ -65,7 +65,8 @@ await describe({ name: 'prepared schedule admission', children: [
   } }),
   it({ name: 'reads cloned data before rejecting mode and mode before judgment support', fn: async function failureOrder() {
     const events: string[] = [];
-    const call = { type: 'toolCall', id: 'one', name: 'tool', get arguments() { events.push('clone'); return {}; } };
+    const call = { type: 'toolCall', id: 'one', name: 'tool', get arguments() { events.push('clone');
+    return {}; } };
     assert.throws(function invalidMode() { schedule({ calls: [call], executionMode: 'invalid', executionJudgment: null }); }, { message: 'Unknown batch execution mode' });
     assert.deepEqual(events, ['clone']);
   } }),
