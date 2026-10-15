@@ -22,7 +22,7 @@ type RequestModule = Readonly<{
  @throws Error when original native request entry is unavailable
  */
 function assertRequestModule(value: unknown): asserts value is RequestModule {
-  if ((value === null) || ((typeof value) !== 'object') || !('readMainAgentRequest' in value))
+  if ((value === null) || ((typeof value) !== 'object') || (!('readMainAgentRequest' in value)))
     throw new Error('Built original request reader is unavailable');
   /** Callable export is observed only after namespace membership is established. */
   const reader = value.readMainAgentRequest;
@@ -39,8 +39,7 @@ assertRequestModule(loaded);
 const requestModule: RequestModule = loaded;
 
 //region Authentication must finish before original observation is even looked up.
-await describe({ name: '', children: [
-  ...['success', 'producer', 'observer'].map(function handoffCase(mode) {
+await describe({ name: '', children: ['success', 'producer', 'observer'].map(function handoffCase(mode) {
     return it({ name: `preserves original request ${mode} order and identities`, fn: async function requestHandoff() {
       /** Original producer and observer share no synthesized receipt state. */
       const events: string[] = [];
@@ -93,6 +92,5 @@ await describe({ name: '', children: [
       assert.equal(requestModule.readMainAgentRequest(input), receipt);
       assert.deepEqual(events, ['producer.lookup', 'producer.call', 'observer.lookup', 'observer.call']);
     } });
-  }),
-] });
+  }) });
 //endregion

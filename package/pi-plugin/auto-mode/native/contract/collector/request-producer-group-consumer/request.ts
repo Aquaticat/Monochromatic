@@ -1,8 +1,12 @@
-/** Original request handoff preserves producer authentication and observer callback receivers. @module */
+/**
+ Original request handoff preserves producer authentication and observer callback receivers. @module
+ */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import type { MainAgentRequestInput } from './request-types.ts';
 
-/** Request diagnostics omit original source and response contents. */
+/**
+ Request diagnostics omit original source and response contents.
+ */
 const l = tagged({ tag: 'auto-mode-main-agent-request' });
 
 //region Producer custody precedes current request observation without creating permission.
@@ -27,10 +31,18 @@ export function readMainAgentRequest<const Receipt extends object>({
   stream,
   response
 }: MainAgentRequestInput<Receipt>): Receipt {
-  /** Logging does not inspect original receipt or callback properties. */
-  const rl = tagged({ tag: readMainAgentRequest.name, l });
+  /**
+   Logging does not inspect original receipt or callback properties.
+   */
+  const rl = tagged({
+    tag: readMainAgentRequest.name,
+    l
+  });
   rl.debug('authenticating original request handoff');
-  producerOwner.assertMainAgentResponse({ stream, response });
+  producerOwner.assertMainAgentResponse({
+    stream,
+    response
+  });
   return observer.observationFor(response);
 }
 //endregion

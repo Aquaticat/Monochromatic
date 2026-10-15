@@ -1,5 +1,9 @@
 /** Type boundary for the original mechanically checked dependency facade. @module */
-import type { DependencySources, DependencyFacadeInput, DependencyFacade } from './dependency-types.ts';
+import type {
+  DependencySources,
+  DependencyFacadeInput,
+  DependencyFacade
+} from './dependency-types.ts';
 
 /**
  Bind original root, source, file, deadline, and cancellation observers.
