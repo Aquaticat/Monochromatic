@@ -184,6 +184,46 @@ zig = "0.15.2"
 # because bubblewrap uses Linux namespaces and conda-forge has no Windows build.
 "conda:bubblewrap" = { version = "latest", os = ["linux"] }
 
+# Language servers the read-only Slint IDE (package/desktop-app/ide) looks up by program name on PATH, one block per
+# language family (the IDE's table is Helix's built-in languages.toml at the revision pinned in the IDE's Cargo.toml,
+# plus src/language/config). A language shows hover and inlay hints only when one of its servers is found. The IDE runs
+# every server in a sandbox without network access, so none of these may fetch anything at start. None is pinned:
+# mise.lock records the resolved versions. TypeScript (TypeScript 7 in the project), rust-analyzer, slint-lsp and qmlls
+# are provided elsewhere. The npm servers need node, which this file provides.
+
+# TOML (toml, and mise.toml, Cargo.toml and similar). `taplo` is the aqua release binary, which includes `taplo lsp`
+# (the cargo crate `taplo-cli` needs the `lsp` feature and a source build). `tombi` is the aqua release binary.
+taplo = "latest"
+tombi = "latest"
+
+# Markdown. `marksman` and `rumdl` have aqua release binaries. markdown-oxide is not on crates.io, so its GitHub
+# release binary is used.
+marksman = "latest"
+rumdl = "latest"
+"github:Feel-ix-343/markdown-oxide" = "latest"
+
+# YAML and GitHub Actions workflows. `zizmor` has an aqua release binary. The Actions server is the npm package
+# `@actions/languageserver`; the YAML and Ansible servers are npm packages as well.
+zizmor = "latest"
+"npm:yaml-language-server" = "latest"
+"npm:@actions/languageserver" = "latest"
+"npm:@ansible/ansible-language-server" = "latest"
+
+# JSON, CSS and HTML. `vscode-langservers-extracted` provides vscode-json-language-server, vscode-css-language-server and
+# vscode-html-language-server. `superhtml` is the GitHub release binary (the registry has no aqua entry for it).
+"npm:vscode-langservers-extracted" = "latest"
+superhtml = "latest"
+
+# Shell scripts.
+"npm:bash-language-server" = "latest"
+
+# Dockerfile and Compose. `dockerfile-language-server-nodejs` provides docker-langserver and
+# `@microsoft/compose-language-service` provides docker-compose-langserver. docker-language-server has a GitHub release
+# binary and no registry entry.
+"npm:dockerfile-language-server-nodejs" = "latest"
+"npm:@microsoft/compose-language-service" = "latest"
+"github:docker/docker-language-server" = "latest"
+
 # AI inference server for local development (package/webapp-productivity/done).
 # Pinned (not "latest") because llama.cpp's release pipeline tags before the
 # Linux build finishes uploading, so any "latest" install run during that
