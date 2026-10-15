@@ -2354,7 +2354,66 @@ The first consumer type check rejects an empty-array assertion that narrows late
 the fixture now checks the empty count and preserves explicit string-array typing.
 Opaque rejection tests use independently issued native tickets,
 keeping rejection identity without treating it as an authored application error.
-Full completion qualification remains in progress.
+`571e76379d` retains opaque rejection tickets and adds strict outcome identity assertions.
+The final five-file implementation/test formatting pass reports zero diagnostics.
+The owned native rebuild,
+package type check,
+both consumer suites,
+and exact original-body replay pass.
+All nineteen process-local completion changes fail the expected consumer assertions,
+with both artifact hashes unchanged in `typed-group-completion-omissions.json`.
+The controls remove listener cleanup,
+allow premature settled publication,
+alter delivery states,
+omit ticket settlement,
+or replace retained identities.
+Six original/current domain comparisons preserve public results and native execution counts,
+with the permission/prohibition positive control still distinguishing execution from denial.
+The saved original helper has SHA-256
+`8b74e711ae1f065768149c111463b57b4d5396dec0abd977fe19fe5dcda66612`.
+The original completion owner is qualified at these tested boundaries.
+The full-package recount covers 707 files and 486 rules,
+with zero errors and 10958 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-group-completions-lint-20261015.log`.
+All thirteen changed scope/completion implementation,
+declaration,
+bridge,
+fixture,
+and direct consumer files have zero diagnostics in that report.
+Continue original group-failure occurrence ownership,
+then the remaining collector,
+runtime,
+and reached-program runner composition.
+
+The next original failure-owner body is now behind `group-failures.ts`,
+with dedicated occurrence/state contracts and the original native bridge.
+The original helper is retained in `program-collector-failures-before-types.mjs`.
+Occurrence append,
+primary failure publication,
+pending rejection,
+and cancellation retain their original order.
+Abort caching remains after callback completion,
+so callback reentry and failure must be checked before qualifying the port.
+The internal token now has stable diagnostic category `RecordedGroupFailureError`;
+the original `RecordedFailure` inherited `Error` as its `name`.
+This is an intentional unpublished diagnostic change under the existing literal error-category convention,
+not an equivalence claim for the token's name or constructor identity.
+The underlying occurrence's original error identity must remain unchanged.
+Read-only inspection of
+`${HOME}/temp/agent/oxc-oxlint188-20261015/crates/oxc_linter/src/rules/unicorn/custom_error_definition.rs`
+confirms that the rule requires the class naming convention and a literal matching name.
+The [existing error-category investigation](../troubleshooting/oxlint-custom-error-name.md)
+records that convention and lack of a preserving per-rule configuration.
+`2439fc3802` introduces the typed owner;
+`f5b768de69` formats its source.
+The five-file focused report has zero diagnostics,
+and the owned native rebuild and package type check pass in
+`${HOME}/temp/agent/pi-group-failures-build-first-20261015.log`
+and `pi-group-failures-types-first-20261015.log`.
+Direct consumer tests,
+original-body comparison,
+the explicit diagnostic-category contrast,
+and omission controls remain pending.
 
 Auto-pushing `6973251c83` was separately rejected with `GH006` and no detailed requirement.
 The original local signature verified,
