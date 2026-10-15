@@ -178,6 +178,13 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-current-abort.unit.test.ts",
 ]
 
+[tasks."test:native:group-dispatch"]
+description = "Verify original drainable dispatch, complete association, and retained unbound outcomes"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-dispatch.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-unbound.unit.test.ts",
+]
+
 [tasks."test:native:group-lifetime"]
 description = "Verify original collector retirement, draining, and retained inspection"
 run = [
