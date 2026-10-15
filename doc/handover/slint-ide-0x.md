@@ -414,6 +414,16 @@ the items after it are the record of 2026-10-05 and older.
     `test:native` the test `the_view_follows_the_caret_through_every_visual_row` failed 3 of 23 times on this branch
     and 1 of 10 on `main` (same assertion, 120 against 147), and `find_box_context_menu_runs_each_entry` failed once
     on this branch; filtered (serial) runs never failed. Details are in the README section Minimap.
+    Landed on `main` as `2255008ede` after the coordinating session reran the gates on the merged tree (IDE tree
+    `7d11076a05`; rustfmt, clippy, slint, release, test, test:cli, test:minimap, test:language, test:native 197, bundle,
+    inspect:bundle, inspect:bundle-guards, language-mise, language-confinement, and the source (108), sidebar (18),
+    theme (7), find, annotation (65) and language (31) guards, all status 0) and a frame run of its own on the final
+    bundle against the installed `main` bundle (three runs a side, alternated, start load 0.7 to 1.6): wheel longest
+    gap 16.7 to 17 ms and 228 of 230 slots painted in every run of both builds; width drag longest gap 17 to 17.3 ms
+    outside the duplicate slot, 75 to 77 of 78 painted, settle 24 to 26 ms in both. The harness's own "frames not
+    fitting" detector reads 68 to 73 of 102 for the minimap build against 33 to 52 for `main`; the detector looks for
+    ink in the last columns, which the minimap fills, so those counts do not compare (the border signature detector
+    the agent used reads 37 to 70). The installed `~/.local/bin/monochromatic-ide` is that build (sha256 `9c4d6047`).
     Markdown and MDX highlighting (branch `feat/ide-markdown-highlight`, worktree `.claude/worktrees/ide-markdown`):
     a copy of `.agents/skills/choosing-technology/SKILL.md` showed only the YAML frontmatter colored. The language, the
     `markdown`, `markdown_inline` and `yaml` grammars and the injections all worked; `syntax::SCOPES` had no `markup`
