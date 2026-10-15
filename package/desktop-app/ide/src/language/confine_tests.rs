@@ -22,6 +22,7 @@ fn request(server: &str, environment: &[(&str, &str)]) -> LaunchRequest {
         settings: Some(json!({ "kept": true })),
         project_root: PathBuf::from("/work/project"),
         project_spellings: Vec::new(),
+        read_only_binds: Vec::new(),
         state_root: Some(PathBuf::from("/state")),
     };
 }
@@ -142,6 +143,44 @@ fn typescript_server_runs_without_a_pid_namespace_and_without_type_acquisition()
         }))
     );
     assert_eq!(launch.directories.len(), 3);
+}
+
+#[test]
+fn node_servers_that_watch_the_client_run_without_a_pid_namespace_but_without_network() {
+    let watchers = [
+        "yaml-language-server",
+        "actions-language-server",
+        "ansible-language-server",
+        "vscode-json-language-server",
+        "vscode-css-language-server",
+        "vscode-html-language-server",
+        "bash-language-server",
+        "docker-langserver",
+        "docker-compose-langserver",
+    ];
+    for server in watchers {
+        let state = PathBuf::from(format!("/state/project-0/{server}"));
+        let launch = recipe(&request(server, &[]), &state, "/usr/bin/bwrap", &[]).expect("recipe");
+        assert!(
+            !launch.args.contains(&"--unshare-pid".to_string()),
+            "{server} exits about 3 s after start when the client's process id is invisible"
+        );
+        assert!(
+            launch.args.contains(&"--unshare-net".to_string()),
+            "{server} kept network access"
+        );
+    }
+    let other = recipe(
+        &request("taplo", &[]),
+        Path::new("/state/project-0/taplo"),
+        "/usr/bin/bwrap",
+        &[],
+    )
+    .expect("recipe");
+    assert!(
+        other.args.contains(&"--unshare-pid".to_string()),
+        "a server that does not watch the client lost its process-id namespace"
+    );
 }
 
 #[test]

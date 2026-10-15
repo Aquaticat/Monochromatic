@@ -14,7 +14,8 @@
 use super::diagnostic_log::debug;
 use super::forwarding::git_command;
 use super::hook_dispatch_plan::HookDispatchPlan;
-use super::owner_lock::{DEFAULT_POLL_DELAY, OwnerLock, SilentWait, acquire_owner_lock};
+use super::live_lock::acquire_live_owner_lock;
+use super::owner_lock::OwnerLock;
 use super::transaction_git::{GitContext, GitRequest, run_git};
 use std::ffi::OsString;
 use std::path::Path;
@@ -131,7 +132,7 @@ fn acquire_hook_lock(lock_path: &str) -> Result<OwnerLock, PostCommitHookError> 
             return PostCommitHookError(format!("creating {} failed: {error}", parent.display()));
         })?;
     }
-    return acquire_owner_lock(directory, DEFAULT_POLL_DELAY, &mut SilentWait)
+    return acquire_live_owner_lock(directory, "the hook lock")
         .map_err(|error| return PostCommitHookError(error.to_string()));
 }
 

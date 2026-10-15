@@ -36,6 +36,10 @@ export const NO_INDEX = -1;
  One observable state of the app, as it logged it.
  */
 export type UiState = {
+  /**
+   Whether the Auto-play on select setting is on (D129).
+   */
+  readonly auto_play_on_select: boolean;
   readonly badges: readonly string[];
   readonly current_index: number;
   /**
@@ -350,6 +354,10 @@ export function decodeUiState(value: unknown,): UiState {
   if (!isFields(value,))
     throw new UiStateShapeError('the state is not an object',);
   return {
+    auto_play_on_select: flagField({
+      fields: value,
+      key: 'auto_play_on_select',
+    },),
     badges: badgesField(value,),
     current_index: indexField({
       fields: value,

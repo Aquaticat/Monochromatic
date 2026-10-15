@@ -213,6 +213,8 @@ fn help_version_and_usage_errors_use_the_documented_statuses() {
         assert!(help.stdout.contains(flag), "{flag}");
     }
     assert_eq!(help.stderr, "");
+    // Read the version from the manifest so a release bump cannot leave this assertion stale.
+    let expected_version: String = format!("monochromatic-lint {}\n", env!("CARGO_PKG_VERSION"));
     let version: Run = run(&fixture.path, &["--version"], b"");
     assert_eq!(
         (
@@ -220,7 +222,7 @@ fn help_version_and_usage_errors_use_the_documented_statuses() {
             version.stdout.as_str(),
             version.stderr.as_str()
         ),
-        (0, "monochromatic-lint 0.1.0\n", "")
+        (0, expected_version.as_str(), "")
     );
     for arguments in [
         vec!["--bogus"],
@@ -891,9 +893,9 @@ fn rules_init_print_config_and_debug_modes() {
     let rules: Run = run(&fixture.path, &["--rules"], b"");
     assert_eq!((rules.status, rules.stderr.as_str()), (0, ""));
     let listed: Vec<serde_json::Value> = records(rules.stdout.as_str());
-    assert_eq!(listed.len(), 17);
+    assert_eq!(listed.len(), 18);
     assert_eq!(listed[0]["id"], "rust/max-lines");
-    assert_eq!(listed[16]["id"], "markdown/lfs-image-url");
+    assert_eq!(listed[17]["id"], "markdown/lfs-image-url");
     let init: Run = run(&fixture.path, &["--init"], b"");
     assert_eq!((init.status, init.stderr.as_str()), (0, ""));
     assert_eq!(

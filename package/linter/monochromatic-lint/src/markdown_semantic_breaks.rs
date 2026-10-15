@@ -1,11 +1,11 @@
 //! What:
-//!  Add-only semantic line breaks at verified prose boundaries.
+//!  Semantic line breaks at verified prose boundaries, each replacing the single space it breaks at.
 //! Why:
 //!  Text-node tails must be interpreted through their inline delimiters and surrounding block syntax.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
-//! // For each eligible text node, insert source-aware breaks without changing any existing byte.
+//! // For each eligible text node, replace the separating space with a source-aware break and keep every other byte.
 //! ```
 
 /// Import the established diagnostic/fix model and native source.
@@ -24,6 +24,20 @@ use crate::markdown_prose_context::{continuation_prefix, delimiter_tail, paragra
 use crate::markdown_source::MarkdownSource;
 /// Import the parsed Markdown source that paragraphs are read from.
 use satteri_ast::mdast::MdastNodeType;
+
+/// Whether a character is whitespace to a JavaScript `trim`,
+///  which the rule this one replaces used:
+///  the byte order mark counts as whitespace there and the next-line control does not.
+fn is_script_whitespace(character: char) -> bool {
+    return (character.is_whitespace() && character != '\u{85}') || character == '\u{feff}';
+}
+
+/// Whether a paragraph's whole source is one tag-like element, such as a component written with JSX braces.
+///  CommonMark does not read such a tag as HTML, so it parses as prose that has nothing to break.
+fn is_tag_like_paragraph(context: &MarkdownSource, paragraph: u32) -> bool {
+    let text: &str = context.slice(paragraph).trim_matches(is_script_whitespace);
+    return text.starts_with('<') && text.ends_with('>');
+}
 
 /// Report missing line breaks at their insertion points,
 ///  not at the paragraph's beginning.
@@ -54,6 +68,9 @@ pub fn semantic_line_breaks(context: &MarkdownSource, severity: Severity) -> Vec
         let Some(paragraph): Option<u32> = paragraph_for(context, ancestors.as_slice()) else {
             continue;
         };
+        if is_tag_like_paragraph(context, paragraph) {
+            continue;
+        }
         let tail: u32 = delimiter_tail(context, *id, ancestors.as_slice());
         let (_, tail_end): (usize, usize) = context.offsets(tail);
         let (_, paragraph_end): (usize, usize) = context.offsets(paragraph);
@@ -73,6 +90,10 @@ pub fn semantic_line_breaks(context: &MarkdownSource, severity: Severity) -> Vec
             if starts_block_construct(context.source.as_str(), at) {
                 continue;
             }
+            // A space right after the break point is the separator the break replaces;
+            //  keeping it would open every continuation line with a stray space.
+            //  A break at the very end of a line has no space after it.
+            let separator: usize = usize::from(context.source.as_bytes().get(at) == Some(&b' '));
             let mut diagnostic: Diagnostic = Diagnostic::new(
                 "markdown/semantic-line-breaks",
                 severity,
@@ -80,11 +101,11 @@ pub fn semantic_line_breaks(context: &MarkdownSource, severity: Severity) -> Vec
                 context.filename.clone(),
                 context.span(at, 0),
             );
-            // The insertion consumes no authored bytes; the grouped editor resolves competing fixes.
+            // The fix consumes at most the one separating space; the grouped editor resolves competing fixes.
             diagnostic.fix = Some(Fix {
                 edits: vec![Edit {
                     start: at,
-                    end: at,
+                    end: at + separator,
                     replacement: format!("{newline}{prefix}"),
                 }],
             });

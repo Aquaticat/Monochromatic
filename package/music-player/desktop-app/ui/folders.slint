@@ -3,7 +3,7 @@
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
 import { Focus, PlayerStop, FocusRing, KeyBadge, Keys } from "focus.slint";
-import { Scrollbar, LastInput } from "scrollbar.slint";
+import { LastInput } from "scrollbar.slint";
 import { FullNameTip } from "name_tip.slint";
 
 // One rail cell. `key` identifies the cell in callbacks; `label` is the text drawn in the rail.
@@ -28,9 +28,9 @@ export global FolderLayout {
     in-out property <length> scroll-y: 0px;
 }
 
-// Folder picker: the rail on the left (48 px wide, scrolls on its own, no scrollbar) and the
-// wrapped names on the right. Names wrap in one flow; heading rows span the full width so each
-// cell starts on a new line.
+// Folder picker: the rail on the left (48 px wide, scrolls on its own) and the wrapped names on the right. Neither
+// column draws a scrollbar (D22, D125). Names wrap in one flow; heading rows span the full width so each cell starts on a
+// new line.
 export component FolderPickerPane inherits Rectangle {
     // Rail cells in rail order, one 48 px target each.
     in property <[FolderRailCell]> cells;
@@ -76,8 +76,6 @@ export component FolderPickerPane inherits Rectangle {
         root.tapped-cell = "";
         root.reveal-tick += 1;
     }
-    // Width of the scrollbar's grab zone (D22). Names end 16 px from the right edge, so they never reach the bar.
-    property <length> bar-width: 12px;
 
     // Records the cell to scroll to and bumps the tick so every heading row re-checks it.
     function request-scroll(key: string) {
@@ -287,7 +285,7 @@ export component FolderPickerPane inherits Rectangle {
                             accessible-checkable: true;
                             accessible-checked: name-row.selected;
                             mouse-cursor: pointer;
-                            // The scrollbars follow the kind of input the names saw last (D22).
+                            // The scrollbars of the other lists follow the kind of input the names saw last (D22).
                             pointer-event(event) => {
                                 LastInput.touch = event.touch-finger-id != 0;
                             }
@@ -355,19 +353,6 @@ export component FolderPickerPane inherits Rectangle {
             Rectangle {
                 height: 16px;
             }
-        }
-    }
-
-    // Scrollbar of the names (D22): always visible and draggable for the pointer, a fading non-interactive bar for touch.
-    // The letter rail has none, because its cells are self-describing. It is above the names, so the wheel still reaches them.
-    Scrollbar {
-        x: root.width - self.width;
-        y: 0px;
-        height: root.height;
-        content-y: names-flick.content-y;
-        content-height: names-flick.content-height;
-        scroll-to(y) => {
-            names-flick.content-y = y;
         }
     }
 

@@ -54,7 +54,7 @@ depends = ["test:container"]
 run = "node bin/mutate-container.mjs"
 
 [tasks."mutation:rust-style"]
-description = "Mutate the anonymous-function rule with its focused baseline in the bounded source snapshot"
+description = "Mutate the anonymous-function and sidecar test rules with their focused baseline in the bounded source snapshot"
 depends = ["test:rust-style"]
 run = "node bin/mutate-container.mjs --rust-style"
 
@@ -123,7 +123,7 @@ run = "node bin/test-container.mjs"
 
 [tasks."test:rust-style"]
 description = "Verify the Rust style rule independently of unfinished Markdown adapters, under the same container bounds"
-run = "node bin/test-container.mjs rust_no_anonymous_functions"
+run = ["node bin/test-container.mjs rust_no_anonymous_functions", "node bin/test-container.mjs rust_tests_in_sidecars"]
 
 [tasks."test:markdown"]
 description = "Run only the Markdown test modules, the same slice the Markdown mutation scope uses, under the container bounds"

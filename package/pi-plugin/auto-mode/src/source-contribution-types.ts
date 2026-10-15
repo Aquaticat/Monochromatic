@@ -3,6 +3,7 @@
 
  @module
  */
+import type { RequestSourceDerivation } from './request-source-derivation-types.ts';
 
 //region Original input and publication identities are not authority declarations
 
@@ -17,22 +18,26 @@ export type ContributionSource = {
   /**
    Original emitting run when this input was produced by a run.
    */
-  readonly runOccurrence?: object | undefined;
+  readonly runOccurrence?: object;
+  /**
+   Original session input occurrence retained by the manager publication.
+   */
+  readonly sessionInputOccurrence?: object;
   /**
    Original builder render when this input was generated.
    */
-  readonly renderOccurrence?: object | undefined;
+  readonly renderOccurrence?: object;
   /**
    Native processing location selects a supported contribution profile, not authority.
    */
   readonly inputLocation: {
-    readonly field?: string | undefined;
+    readonly field?: string;
     readonly slot?: string
   };
   /**
    Native insertion observation, independent of semantic interpretation.
    */
-  readonly nativeRuleInsertion?: string | undefined;
+  readonly nativeRuleInsertion?: string;
 };
 
 /**
@@ -40,17 +45,21 @@ export type ContributionSource = {
  */
 export type ContributionPublication = {
   /**
+   Original manager input whose declaration objects this publication retains.
+   */
+  readonly sessionInputOccurrence?: object;
+  /**
    Source occurrence authenticated by message publication.
    */
-  readonly sourceOccurrence?: object | undefined;
+  readonly sourceOccurrence?: object;
   /**
    Emitting run occurrence, absent for input-only Session origins.
    */
-  readonly runOccurrence?: object | undefined;
+  readonly runOccurrence?: object;
   /**
    Builder render whose generated contribution was published.
    */
-  readonly renderOccurrence?: object | undefined;
+  readonly renderOccurrence?: object;
 };
 
 /**
@@ -58,17 +67,21 @@ export type ContributionPublication = {
  */
 export type RetainedContributionOrigin = {
   /**
+   Original manager input identity remains separate from active run ancestry.
+   */
+  readonly sessionInputOccurrence?: object;
+  /**
    Original input reference.
    */
   readonly source: ContributionSource;
   /**
    Original publication reference.
    */
-  readonly publication?: ContributionPublication | undefined;
+  readonly publication?: ContributionPublication;
   /**
    Required for a retained run material contribution.
    */
-  readonly runOccurrence?: object | undefined;
+  readonly runOccurrence?: object;
 };
 
 /**
@@ -82,19 +95,19 @@ export type ContributionMessageRun = {
   /**
    Original handler message inputs on this run.
    */
-  readonly handlerMessageInputs?: readonly ContributionSource[] | undefined;
+  readonly handlerMessageInputs?: readonly ContributionSource[];
   /**
    Original handler message publications on this run.
    */
-  readonly handlerPublications?: readonly ContributionPublication[] | undefined;
+  readonly handlerPublications?: readonly ContributionPublication[];
   /**
    Original expanded prompt input.
    */
-  readonly expandedPromptInput?: ContributionSource | undefined;
+  readonly expandedPromptInput?: ContributionSource;
   /**
    Original expanded prompt publication.
    */
-  readonly expandedPromptPublication?: ContributionPublication | undefined;
+  readonly expandedPromptPublication?: ContributionPublication;
 };
 
 /**
@@ -104,11 +117,11 @@ export type ContributionRun = ContributionMessageRun & {
   /**
    Original native builder render.
    */
-  readonly renderOccurrence?: object | undefined;
+  readonly renderOccurrence?: object;
   /**
    Published system composition.
    */
-  readonly systemPublication?: ContributionPublication | undefined;
+  readonly systemPublication?: ContributionPublication;
   /**
    Original system replacements, including distinct equal inputs.
    */
@@ -116,39 +129,39 @@ export type ContributionRun = ContributionMessageRun & {
   /**
    Original forced input and its publication remain paired.
    */
-  readonly forcedPromptInput?: ContributionSource | undefined;
+  readonly forcedPromptInput?: ContributionSource;
   /**
    Original publication of the forced system message.
    */
-  readonly forcedPublication?: ContributionPublication | undefined;
+  readonly forcedPublication?: ContributionPublication;
   /**
    Original mapped sections and tool snippets.
    */
-  readonly mappedPromptInputs?: readonly ContributionSource[] | undefined;
+  readonly mappedPromptInputs?: readonly ContributionSource[];
   /**
    Original generated builder fragments.
    */
-  readonly builtInPromptInputs?: readonly ContributionSource[] | undefined;
+  readonly builtInPromptInputs?: readonly ContributionSource[];
   /**
    Original skill descriptions.
    */
-  readonly skillDescriptionInputs?: readonly ContributionSource[] | undefined;
+  readonly skillDescriptionInputs?: readonly ContributionSource[];
   /**
    Original prompt guidelines, separately observed for insertion.
    */
-  readonly promptGuidelineInputs?: readonly ContributionSource[] | undefined;
+  readonly promptGuidelineInputs?: readonly ContributionSource[];
   /**
    Original tool guidelines, separately observed for insertion.
    */
-  readonly toolGuidelineInputs?: readonly ContributionSource[] | undefined;
+  readonly toolGuidelineInputs?: readonly ContributionSource[];
   /**
    Active original ancestors, excluding retained history.
    */
-  readonly ancestors?: readonly ContributionMessageRun[] | undefined;
+  readonly ancestors?: readonly ContributionMessageRun[];
   /**
    Existing owner-retained historical message origins.
    */
-  readonly retainedMessageOrigins?: readonly RetainedContributionOrigin[] | undefined;
+  readonly retainedMessageOrigins?: readonly RetainedContributionOrigin[];
 };
 
 /**
@@ -180,6 +193,14 @@ export type ContributionRunCarrier = {
  */
 export type SourceContributionAssociation = {
   /**
+   Original manager system publication authenticated at native serialization.
+   */
+  readonly systemInputPublication?: ContributionPublication;
+  /**
+   Original manager declaration publication authenticated at native serialization.
+   */
+  readonly toolPublication?: ContributionPublication;
+  /**
    Original source input reference.
    */
   readonly source: ContributionSource;
@@ -190,39 +211,39 @@ export type SourceContributionAssociation = {
   /**
    Original base run carrier, when present.
    */
-  readonly runCarrier?: ContributionRunCarrier | undefined;
+  readonly runCarrier?: ContributionRunCarrier;
   /**
    Original base source carrier, when present.
    */
-  readonly carrier?: ContributionCarrier | undefined;
+  readonly carrier?: ContributionCarrier;
   /**
    Original current run composition.
    */
-  readonly run?: ContributionRun | undefined;
+  readonly run?: ContributionRun;
   /**
    Original system publication.
    */
-  readonly publication?: ContributionPublication | undefined;
+  readonly publication?: ContributionPublication;
   /**
    Original forced publication.
    */
-  readonly forcedPublication?: ContributionPublication | undefined;
+  readonly forcedPublication?: ContributionPublication;
   /**
    Original current or ancestor run that emitted a message.
    */
-  readonly emittingRun?: ContributionMessageRun | undefined;
+  readonly emittingRun?: ContributionMessageRun;
   /**
    Original handler message publication.
    */
-  readonly handlerPublication?: ContributionPublication | undefined;
+  readonly handlerPublication?: ContributionPublication;
   /**
    Original expanded prompt publication.
    */
-  readonly expandedPromptPublication?: ContributionPublication | undefined;
+  readonly expandedPromptPublication?: ContributionPublication;
   /**
    Original retained historical message origin.
    */
-  readonly retainedMessageOrigin?: RetainedContributionOrigin | undefined;
+  readonly retainedMessageOrigin?: RetainedContributionOrigin;
 };
 
 /**
@@ -244,13 +265,21 @@ export type SourceContribution = {
   /**
    Missing association remains an unresolved origin, never guessed from role or text.
    */
-  readonly association?: SourceContributionAssociation | null | undefined;
+  readonly association?: SourceContributionAssociation;
 };
 
 /**
  Original request receipt exposes its owner's contribution list.
  */
 export type ContributionRequestObservation = {
+  /**
+   Complete native field derivation is separate from partial contribution records.
+   */
+  readonly sourceDerivation?: RequestSourceDerivation;
+  /**
+   Unsupported native request fields retain their original diagnostic.
+   */
+  readonly sourceDerivationFailure?: string;
   /**
    Original serialized request occurrence.
    */
@@ -284,7 +313,7 @@ export type ContributionSourceView = {
   /**
    Original historical origin, when the view binds a retained message.
    */
-  readonly retainedMessageOrigin?: RetainedContributionOrigin | undefined;
+  readonly retainedMessageOrigin?: RetainedContributionOrigin;
 };
 
 /**
@@ -294,11 +323,11 @@ export type SourceContributionInputs = {
   /**
    Missing request receipt cannot authenticate a nonempty contribution list.
    */
-  readonly requestObservation?: ContributionRequestObservation | undefined;
+  readonly requestObservation?: ContributionRequestObservation;
   /**
    Absent contributions produce an empty partial result, not a completeness claim.
    */
-  readonly requestSourceContributions?: readonly SourceContribution[] | undefined;
+  readonly requestSourceContributions?: readonly SourceContribution[];
   /**
    Original source views used by this judgment.
    */

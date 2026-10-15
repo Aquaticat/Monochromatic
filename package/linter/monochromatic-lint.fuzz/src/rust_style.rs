@@ -1,5 +1,5 @@
 //! What:
-//!  Structured and malformed-source invariants for the anonymous-function rule.
+//!  Structured and malformed-source invariants for the anonymous-function and sidecar test rules.
 //! Why:
 //!  A raw-only fuzzer can spend its entire budget in invalid syntax without reaching real closures.
 //!
@@ -15,6 +15,8 @@ use monochromatic_lint::diagnostic::{Diagnostic, Severity, Span};
 use monochromatic_lint::rust_no_anonymous_functions::check_no_anonymous_functions;
 /// Import the parser-owning input shared by all Rust rules.
 use monochromatic_lint::rust_source::RustSource;
+/// Import the actual sidecar test checker used by the linter.
+use monochromatic_lint::rust_tests_in_sidecars::check_tests_in_sidecars;
 
 /// What:
 ///  Grammar fragments paired with independently known closure counts.
@@ -42,6 +44,10 @@ const CASES: &[(&str, usize)] = &[
     ("let future = async { return 1; };\n", 0),
     ("let text: &str = \"move || {}\"; /* |x| x */\n", 0),
 ];
+
+/// An inline test module appended to generated source so the sidecar rule has one known finding.
+const INLINE_TEST_MODULE: &str =
+    "\n#[cfg(test)]\nmod tests {\n    #[test]\n    fn generated() {}\n}\n";
 
 /// Build at most 64 grammar fragments while retaining the expected closure count.
 pub fn generated_source(data: &[u8]) -> (String, usize) {
@@ -92,12 +98,39 @@ fn check_source(source: &str) -> usize {
     return findings.len();
 }
 
+/// Check the sidecar rule's findings and byte ranges for one source under one file name.
+fn check_sidecar_source(source: &str, filename: &str) -> usize {
+    let context: RustSource = RustSource::new(String::from(filename), String::from(source));
+    let findings: Vec<Diagnostic> = check_tests_in_sidecars(&context, Severity::Error);
+    for finding in &findings {
+        assert_eq!(finding.code, "rust/tests-in-sidecars");
+        assert_eq!(finding.filename, filename);
+        assert_eq!(finding.severity, Severity::Error);
+        assert!(finding.fix.is_none());
+        assert_eq!(finding.labels.len(), 1);
+        let span: &Span = &finding.labels[0].span;
+        assert!(span.offset <= source.len());
+        assert!(span.length <= source.len() - span.offset);
+        assert!(source.is_char_boundary(span.offset));
+        assert!(source.is_char_boundary(span.offset + span.length));
+    }
+    return findings.len();
+}
+
 /// Exercise generated syntax on every draw,
 ///  including non-UTF-8 byte inputs.
 pub fn check_rust_style(data: &[u8]) {
     let (source, expected): (String, usize) = generated_source(data);
     // Borrow the generated String as a string slice for the real parser.
     assert_eq!(check_source(source.as_str()), expected);
+    // Generated fragments hold no tests, so the sidecar rule finds nothing until a test module is appended.
+    assert_eq!(check_sidecar_source(source.as_str(), "fuzz.rs"), 0);
+    let with_module: String = format!("{source}{INLINE_TEST_MODULE}");
+    assert_eq!(check_sidecar_source(with_module.as_str(), "fuzz.rs"), 1);
+    assert_eq!(
+        check_sidecar_source(with_module.as_str(), "fuzz_tests.rs"),
+        0
+    );
     // What: UTF-8 decoding returns Ok(text) or Err(details), rather than throwing.
     // Why: Only valid UTF-8 is a Rust source string; every rejected byte draw still ran generated syntax.
     //
@@ -107,6 +140,7 @@ pub fn check_rust_style(data: &[u8]) {
     // ```
     if let Ok(raw) = std::str::from_utf8(data) {
         check_source(raw);
+        check_sidecar_source(raw, "fuzz.rs");
     }
 }
 
@@ -127,4 +161,16 @@ fn every_rust_style_generator_branch_has_a_positive_or_negative_control() {
     check_rust_style(&[255, 254, 253]);
     // Borrow a byte literal containing Unicode before a real closure.
     check_rust_style("fn main() { /* 🚀 */ let f = || {}; }".as_bytes());
+}
+
+/// The sidecar rule has a positive control, a sidecar-name negative control and a no-test negative control.
+#[test]
+fn the_sidecar_rule_has_positive_and_negative_controls() {
+    assert_eq!(check_sidecar_source(INLINE_TEST_MODULE, "fuzz.rs"), 1);
+    assert_eq!(check_sidecar_source(INLINE_TEST_MODULE, "fuzz_tests.rs"), 0);
+    assert_eq!(check_sidecar_source("fn main() {}\n", "fuzz.rs"), 0);
+    assert_eq!(
+        check_sidecar_source("#[test]\nfn stray() {}\n", "fuzz.rs"),
+        1
+    );
 }

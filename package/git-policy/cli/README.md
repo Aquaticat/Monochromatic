@@ -86,7 +86,7 @@ Install it as a `cargo:` tool of [mise][mise],
 ```toml
 # mise.toml
 [tools]
-"cargo:monochromatic-git-policy-cli" = { version = "0.1.2", os = ["linux"] }
+"cargo:monochromatic-git-policy-cli" = { version = "0.1.3", os = ["linux"] }
 ```
 
 `mise install` downloads the release archive of the crate's GitHub release when one exists for the host.
@@ -269,11 +269,55 @@ A policy whose protection `warn` would remove produces a configuration warning e
 
 The concurrent transaction itself cannot be turned off.
 
+### Waiting and time limits
+
+The wrapper never waits for another process without a limit.
+Three environment variables set the limits,
+each a positive whole number of seconds;
+a zero,
+negative,
+fractional or non-numeric value is ignored.
+
+- `CLI_GIT_LOCK_WAIT_SECONDS`,
+   default `1800`.
+  How long a command waits for a lock that a live process holds:
+   the capture,
+   landing,
+   hook and registry locks,
+   the landing reservation,
+   the worktree-copy settlement and a live `index.lock` holder.
+  After five seconds of waiting the command prints one line naming the process and the limit.
+  At the limit it stops with a message that names the holder,
+   leaves the lock in place and changes nothing else,
+   so the command can simply be run again.
+- `CLI_GIT_PUSH_DEADLINE_SECONDS`,
+   default `600`.
+  How long the push after a landed commit may run before it is stopped.
+  The commit stays saved,
+   the failure is reported,
+   and `git push` can be run by hand.
+  Git's own read-only queries before the push stop at this deadline or 120 seconds,
+   whichever is shorter.
+- `CLI_GIT_PUSH_LOCK_WAIT_SECONDS`,
+   default the push deadline plus 65.
+  How long a commit waits behind another process's push before it gives up and reports its push as failed.
+
+A command that passes through to Git unchanged,
+ and the user's own hooks,
+ run as long as they run and receive Ctrl-C like any Git command.
+
 ## State on disk
 
 The wrapper keeps its state beside the repository's Git data under `cli-git*` paths in the common Git directory.
 Delete nothing there while a Git command is running.
 The next invocation recovers what an interrupted one left.
+
+The ignored-state copy into a new linked worktree stages its files in a `.cli-git-worktree-copy-*` directory
+beside the new worktree, which can hold gigabytes.
+The wrapper records that directory's name in the common Git directory before it creates it,
+so a copy that was killed while staging cannot leak it:
+the next invocation in the repository removes the directory and says so on stderr.
+Delete a `.cli-git-worktree-copy-*` directory by hand only when no `git` command is running in that repository.
 
 ## Development
 

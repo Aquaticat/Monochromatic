@@ -22,6 +22,8 @@
 //! const directory = await publishTransactionDirectory({ root, transactionId, ownerBytes });
 //! ```
 
+/// Debug diagnostics.
+use super::diagnostic_log::debug;
 /// Private creation,
 ///  writing,
 ///  syncing and removal.
@@ -543,6 +545,14 @@ pub fn remove_transaction_directory(directory: &Path) -> Result<(), RecoveryErro
     retired_name.push(RETIRED_SUFFIX);
     let retired: PathBuf = PathBuf::from(retired_name);
     if let Err(error) = std::fs::rename(directory, retired.as_path()) {
+        // Another recoverer of the same dead transaction retired it first: the end state is the same.
+        if error.kind() == std::io::ErrorKind::NotFound {
+            debug(
+                "removeTransactionDirectory",
+                format!("transaction already retired by another recoverer: {}", directory.display()).as_str(),
+            );
+            return Ok(());
+        }
         return Err(io_failure(
             "retiring the transaction directory",
             directory,

@@ -146,6 +146,11 @@ mod focus_tests;
 /// Native font instance changes must repaint rather than reuse stale glyphs.
 #[cfg(test)]
 mod font_tests;
+/// Debug records of the moments a window frame passes through.
+mod frame_trace;
+/// Tree rows that git ignores draw their name at 0.8 opacity and nothing else of the row changes.
+#[cfg(test)]
+mod ignored_row_tests;
 /// Source selection and keyboard callbacks.
 mod input;
 /// Inspection-only hint and diagnostic injection from a JSON file;
@@ -197,6 +202,8 @@ mod refresh_latency_tests;
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
 mod render;
+/// The window thread's counted step when the wrap width changes.
+mod rewrap;
 /// The window's side of the vertical mapping between pixels and source lines.
 mod rows;
 /// The search box's 48px clear cell empties the query and the results and keeps focus.
@@ -279,6 +286,10 @@ mod wrap_clip_tests;
 /// Home, End, Up, Down, paging, word motion, drags, and multi-clicks on wrapped lines.
 #[cfg(test)]
 mod wrap_keys_tests;
+/// A new window width: the window thread breaks the lines near the view again and paints the tile for it before the
+///  next frame, within a counted allowance, and what does not fit goes to the tile worker.
+#[cfg(test)]
+mod wrap_resize_tests;
 /// Always-on soft wrap in the window:
 ///  the wrap width,
 ///  the gutter's indicator,
@@ -485,6 +496,9 @@ struct State {
     shown: TileBounds,
     /// Scroll re-center the reader's last viewport change asked for, until it is shown or superseded.
     scroll_wanted: Option<TileBounds>,
+    /// A viewport report changed the wrap width and the next render is to take it on the window thread within an
+    /// allowance; the render clears it.
+    rewrap: bool,
     /// Bounds of the tile last queued for the worker and not cancelled; its result is accepted only while set.
     tile_job: Option<TileBounds>,
     /// The tile worker thread, started on the first scroll re-center.
@@ -511,6 +525,18 @@ struct State {
     /// Source images set on the window, counted in debug builds.
     #[cfg(debug_assertions)]
     images_set: u64,
+    /// Kept rows the window thread broke again at a new width, counted in debug builds.
+    #[cfg(debug_assertions)]
+    rows_rebroken: u64,
+    /// Changes of width the window thread took at once, counted in debug builds.
+    #[cfg(debug_assertions)]
+    rewrapped: u64,
+    /// Changes of width left to the tile worker because they did not fit the allowance, counted in debug builds.
+    #[cfg(debug_assertions)]
+    rewrap_deferred: u64,
+    /// Lines and work the last immediate change of width was charged, counted in debug builds.
+    #[cfg(debug_assertions)]
+    rewrap_spent: (usize, usize),
     /// Scroll re-center tiles completed by the tile worker, counted in debug builds when their result arrives.
     #[cfg(debug_assertions)]
     worker_tiles: u64,
@@ -594,6 +620,7 @@ impl State {
                 clip: None,
             },
             scroll_wanted: None,
+            rewrap: false,
             tile_job: None,
             tile_worker: None,
             tile_poll: Timer::default(),
@@ -605,6 +632,14 @@ impl State {
             rows_shaped: 0,
             #[cfg(debug_assertions)]
             images_set: 0,
+            #[cfg(debug_assertions)]
+            rows_rebroken: 0,
+            #[cfg(debug_assertions)]
+            rewrapped: 0,
+            #[cfg(debug_assertions)]
+            rewrap_deferred: 0,
+            #[cfg(debug_assertions)]
+            rewrap_spent: (0, 0),
             #[cfg(debug_assertions)]
             worker_tiles: 0,
             #[cfg(debug_assertions)]
@@ -747,6 +782,7 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     window.set_file_label(SharedString::from(label));
     bind_pointer(&window, &state);
     bind_viewport(&window, &state);
+    frame_trace::bind(&window);
     bind_keys(&window, &state);
     // Retain the timer until window shutdown; its Drop also closes and joins the worker.
     let _reload_timer = reload::bind(&window, &state)?;

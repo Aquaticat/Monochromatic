@@ -5,7 +5,7 @@
  Three subcommands, selected by the first argument:
 
  - `base` builds `localhost/cli-git-concurrent-e2e:<base tag>` from `e2e/concurrent-commits.Containerfile`:
-   Node 24.11.0, Git 2.39.5, 2.40.0 and 2.55.0 under `/opt/git`, and `ssh-keygen`.
+   Node 24.11.0, Git 2.55.0 under `/opt/git`, and `ssh-keygen`.
    It needs a network (package manager and Git source downloads); the suite itself does not.
    The base tag is `latest` unless `GIT_POLICY_E2E_BASE_TAG` names another, so a trial build never replaces the
    image other runs use.

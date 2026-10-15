@@ -120,19 +120,29 @@ await describe({
           f.view.retainedMessageOrigin = { ...f.retained, };
           expectUnresolved(f,);
           f.view.retainedMessageOrigin = f.retained;
-          f.retained.runOccurrence = undefined;
-          f.source.runOccurrence = undefined;
-          f.publication.runOccurrence = undefined;
+          delete f.retained.runOccurrence;
+          delete f.source.runOccurrence;
+          delete f.publication.runOccurrence;
           expectUnresolved(f,);
         },
       },);
     },),
+    it({
+      name: 'absent association retains the original unresolved contribution',
+      fn: async function absentAssociation() {
+        /** The declared optional field is omitted from the original fixture object. */
+        const f = createContributionFixture('base');
+        delete f.contribution.association;
+        expectUnresolved(f);
+      },
+    }),
     ...[null, undefined,].map(function noAssociation(association, index,) {
       return it({
         name: `missing association ${index} retains the original unresolved contribution`,
         fn: async function missingAssociation() {
           const f = createContributionFixture('base',);
-          f.contribution.association = association;
+          /** Malformed JavaScript callers still cannot turn nullish values into source authority. */
+          Reflect.set(f.contribution, 'association', association);
           expectUnresolved(f,);
         },
       },);

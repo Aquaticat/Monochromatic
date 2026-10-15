@@ -16,16 +16,21 @@
 /// The single-flight coordinator, its Git command builder and its error type.
 use super::auto_push_single_flight::{
     PushAttempt, PushGit, SingleFlightError, SingleFlightKind, SingleFlightOutcome, git_command,
-    run_single_flight_push,
+    resolve_push_coordination_paths, run_query, run_single_flight_push,
+};
+/// The deadline-bound push runner and the limits it applies.
+use super::bounded_push::{
+    LOCK_WAIT_VARIABLE, STOP_GRACE, apply_low_speed_defaults, lock_wait_limit, push_deadline,
+    run_bounded_push,
 };
 /// The diagnostic log of the wrapper.
 use super::diagnostic_log::debug;
+/// The lock record whose owner the waiting notice names.
+use super::owner_lock_record::{PublishedOwner, read_owner_lock_record};
 /// Owned OS strings for Git arguments.
 use std::ffi::OsString;
-/// `Read` drains a pipe; `Write` is the stderr sink the terminal lines go to.
-use std::io::{Read, Write};
-/// `Stdio` connects the child's standard input.
-use std::process::Stdio;
+/// `Write` is the stderr sink the terminal lines go to.
+use std::io::Write;
 
 /// Tag used for diagnostics from this module.
 const TAG: &str = "cli-git";
@@ -119,13 +124,7 @@ pub fn filter_push_output(output: &str, exit_code: i64) -> String {
 /// ```
 fn query_succeeds(git: &PushGit, arguments: &[&str]) -> Result<bool, SingleFlightError> {
     let argv: Vec<OsString> = arguments.iter().map(OsString::from).collect();
-    let status = git_command(git, &argv)
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .status()
-        .map_err(SingleFlightError::Start)?;
-    return Ok(status.success());
+    return Ok(run_query(git, &argv)?.code == Some(0));
 }
 
 /// What:
@@ -142,11 +141,8 @@ fn read_symbolic_head(git: &PushGit) -> Result<Option<String>, SingleFlightError
         .iter()
         .map(OsString::from)
         .collect();
-    let output = git_command(git, &argv)
-        .stdin(Stdio::null())
-        .output()
-        .map_err(SingleFlightError::Start)?;
-    if !output.status.success() {
+    let output = run_query(git, &argv)?;
+    if output.code != Some(0) {
         return Ok(None);
     }
     return Ok(Some(
@@ -155,10 +151,12 @@ fn read_symbolic_head(git: &PushGit) -> Result<Option<String>, SingleFlightError
 }
 
 /// What:
-///  Run one real `git push` and capture its interleaved output, with one trailing line break removed.
+///  Run one real `git push` and capture its interleaved output, with one trailing line break removed,
+///  stopping it when its deadline passes.
 /// Why:
-///   Git's output of stdout and stderr shares one pipe so the lines interleave in the order they were written,
-///  and the trailing line break is removed as the incumbent's captured output is.
+///   Git's output of stdout and stderr shares one file so the lines interleave in the order they were written,
+///  the trailing line break is removed as the incumbent's captured output is,
+///  and a push that stalls must not hold the branch's push lock forever.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -166,39 +164,45 @@ fn read_symbolic_head(git: &PushGit) -> Result<Option<String>, SingleFlightError
 /// ```
 fn run_push_command(git: &PushGit, arguments: &[&str]) -> Result<PushAttempt, SingleFlightError> {
     let argv: Vec<OsString> = arguments.iter().map(OsString::from).collect();
-    let (mut reader, writer) = std::io::pipe().map_err(SingleFlightError::Start)?;
-    let writer_for_stderr = writer.try_clone().map_err(SingleFlightError::Start)?;
     let mut command = git_command(git, &argv);
-    command
-        .stdin(Stdio::null())
-        .stdout(writer)
-        .stderr(writer_for_stderr);
-    let mut child = command.spawn().map_err(SingleFlightError::Start)?;
-    drop(command);
-    let mut bytes: Vec<u8> = Vec::new();
-    reader
-        .read_to_end(&mut bytes)
-        .map_err(SingleFlightError::Start)?;
-    let status = child.wait().map_err(SingleFlightError::Start)?;
-    let text = String::from_utf8_lossy(&bytes);
-    return Ok(PushAttempt {
-        exit_code: i64::from(status.code().unwrap_or(1)),
-        output: strip_one_line_break(&text).to_owned(),
-    });
+    apply_low_speed_defaults(&mut command, &git.environment);
+    return run_bounded_push(command, push_deadline(&git.environment), STOP_GRACE);
 }
 
-/// Remove exactly one trailing `\n` or `\r\n`, as the captured output of the incumbent does.
+/// What:
+///  The stderr line shown when this commit has to wait behind another process's push.
+/// Why:
+///   A silent wait looks like a hang; the line names the process to look at and how long the wait lasts,
+///  and says the commit is already saved.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// output.endsWith('\n') ? output.slice(0, output.endsWith('\r\n') ? -2 : -1) : output
+/// `cli-git: waiting for process ${pid} to finish pushing ${branchRef}; giving up after ${seconds} seconds`
 /// ```
-fn strip_one_line_break(text: &str) -> &str {
-    let without_lf = match text.strip_suffix('\n') {
-        Some(stripped) => stripped,
-        None => return text,
+fn waiting_line(git: &PushGit, branch_ref: &str) -> String {
+    let holder: String = match holder_pid(git, branch_ref) {
+        Some(pid) => format!("process {pid}"),
+        None => String::from("another cli-git process"),
     };
-    return without_lf.strip_suffix('\r').unwrap_or(without_lf);
+    return format!(
+        "cli-git: waiting for {holder} to finish pushing {branch_ref}; giving up after {} seconds \
+         ({LOCK_WAIT_VARIABLE} changes this). The commit is already saved.",
+        lock_wait_limit(&git.environment).as_secs()
+    );
+}
+
+/// The process that holds the branch's push lock, when its record can be read.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// (await readOwnerLockRecord(lockDirectory))?.ownerPid
+/// ```
+fn holder_pid(git: &PushGit, branch_ref: &str) -> Option<i64> {
+    let paths = resolve_push_coordination_paths(git, branch_ref).ok()?;
+    return match read_owner_lock_record(&paths.lock_directory) {
+        Ok(PublishedOwner::Owner(record)) => Some(record.owner_pid),
+        Ok(PublishedOwner::Busy) | Err(_) => None,
+    };
 }
 
 /// What:
@@ -313,10 +317,10 @@ pub fn auto_push(
             return run_push_command(git, push_arguments);
         };
         let mut on_wait = || {
-            return debug(
-                TAG,
-                &format!("waiting for the in-flight push of {branch_ref}"),
-            );
+            let line = waiting_line(git, &branch_ref);
+            debug(TAG, &line);
+            // Terminal output error: the notice is advisory; a failed write to stderr must not stop the wait.
+            let _written = writeln!(err, "{line}");
         };
         run_single_flight_push(git, &branch_ref, landed_oid, &mut push, &mut on_wait)
     };

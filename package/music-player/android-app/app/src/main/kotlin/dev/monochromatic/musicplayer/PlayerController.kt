@@ -117,12 +117,12 @@ import dev.monochromatic.musicplayer.core.Session
 // import { PlaybackMode } from "./core/PlaybackMode";
 // ```
 import dev.monochromatic.musicplayer.core.PlaybackMode
+import dev.monochromatic.musicplayer.core.RowActivation
+import dev.monochromatic.musicplayer.core.rowActivationFor
 
 import dev.monochromatic.musicplayer.core.buildLibrary
 /** Stable page identity distinguishes duplicate displayed labels. */
 import dev.monochromatic.musicplayer.core.pageIdentity
-import dev.monochromatic.musicplayer.core.playbackEntryIds
-import dev.monochromatic.musicplayer.core.trackTitleFor
 
 // What:     `import dev.monochromatic.musicplayer.core.TrackMeasure` imports the per-track duration and peak value.
 // Why:      The controller publishes the measures the library rows read.
@@ -358,6 +358,9 @@ class PlayerController(private val engine: AudioEngine) {
 
     /** Artist tags read so far by track URI, kept for the few tracks that played, for the media notification. */
     private val trackArtists: MutableMap<String, String> = LinkedHashMap()
+
+    /** Timeline rows of the playback snapshot, kept between snapshots so a track change does not rebuild the queue. */
+    private val snapshotItems: SnapshotItemCache = SnapshotItemCache()
 
     /** Called with the URI of each track that is loaded, so the service can read its tags off the main thread. */
     var onTrackLoaded: ((String) -> Unit)? = null
@@ -882,12 +885,13 @@ class PlayerController(private val engine: AudioEngine) {
 
     // What:     `fun playIndex(index: Int) { ... }` declares a public method taking a
     //           load-order `Int` index, block body, `Unit` return.
-    // Why:      Load and play the track at load-order index `index` (a tap on a non-current
-    //           row).
+    // Why:      Load and play the track at load-order index `index` (the track menu's Play, and a tap on a
+    //           non-current row when Auto-play on select is on). An index past the library does nothing, so the
+    //           track that was current is not started by mistake.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // playIndex(index: number): void { this.queue.playIndex(index); this.playCurrent(); }
+    // playIndex(index: number): void { if (this.queue.playIndex(index) === null) return; this.playCurrent(); }
     // ```
     /**
      * Defines play index behavior for this music-player component; the TypeScript-oriented notes above explain
@@ -902,7 +906,9 @@ class PlayerController(private val engine: AudioEngine) {
         // ```ts
         // this.queue.playIndex(index);
         // ```
-        queue.playIndex(index)
+        if (queue.playIndex(index) == null) {
+            return
+        }
         // What:     `playCurrent()` loads and plays the now-current track.
         // Why:      Start playback of the tapped track.
         //
@@ -911,6 +917,60 @@ class PlayerController(private val engine: AudioEngine) {
         // this.playCurrent();
         // ```
         playCurrent()
+    }
+
+    // What:     `fun selectIndex(index: Int) { ... }` declares a public method taking a load-order `Int` index,
+    //           block body, `Unit` return.
+    // Why:      Make the track at `index` the current one WITHOUT starting it (D124): pause whatever plays, point the
+    //           queue at the track, and load it paused so the deck shows it. An index past the library does nothing.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // selectIndex(index: number): void {
+    //   if (this.queue.playIndex(index) === null) return;
+    //   this.engine.pause(); this.loadedUri = this.uris[index]; this.engine.load(this.uris[index], false);
+    //   this.onTrackLoaded?.(this.uris[index]); this.refresh(true);
+    // }
+    // ```
+    /** Selects the track at [index] and loads it paused, stopping a playing track; an unknown index does nothing. */
+    fun selectIndex(index: Int) {
+        if (queue.playIndex(index) == null) {
+            return
+        }
+        engine.pause()
+        loadedUri = uris[index]
+        engine.load(uris[index], play = false)
+        onTrackLoaded?.invoke(uris[index])
+        refresh(followCurrent = true)
+    }
+
+    // What:     `fun activateRow(index: Int, autoPlayOnSelect: Boolean)` declares a public method taking a load-order
+    //           `Int` index and the Auto-play on select setting.
+    // Why:      The one rule for a tap, Enter or Search result on a track (D124, D127, D129): the current row toggles
+    //           play and pause through the same `togglePlay` as the deck's Play button, so a restored row that was
+    //           never loaded starts and a row whose load failed tries again; any other row is only selected and stays
+    //           paused, or is selected and started at once when Auto-play on select is on. `rowActivationFor` decides.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // activateRow(index: number, autoPlayOnSelect: boolean): void {
+    //   switch (rowActivationFor(autoPlayOnSelect, this.queue.currentIndex() === index)) {
+    //     case "togglePlay": this.togglePlay(); break;
+    //     case "selectAndPlay": this.playIndex(index); break;
+    //     case "selectOnly": this.selectIndex(index); break;
+    //   }
+    // }
+    // ```
+    /**
+     * Handles a tap, Enter or Search result on the row of [index]: toggles play on the current row, otherwise selects
+     * the row and also starts it when [autoPlayOnSelect] is on.
+     */
+    fun activateRow(index: Int, autoPlayOnSelect: Boolean) {
+        when (rowActivationFor(autoPlayOnSelect = autoPlayOnSelect, isCurrent = queue.currentIndex() == index)) {
+            RowActivation.TOGGLE_PLAY -> togglePlay()
+            RowActivation.SELECT_AND_PLAY -> playIndex(index)
+            RowActivation.SELECT_ONLY -> selectIndex(index)
+        }
     }
 
     // What:     `fun seekToScopeIndex(scopeIndex: Int, positionSec: Double = 0.0) { ... }`
@@ -1461,53 +1521,23 @@ class PlayerController(private val engine: AudioEngine) {
          * source and use.
          */
         val display: List<String> = queue.displayPaths()
-        // What:     `val entryIds: List<Long> = playbackEntryIds(order)` gives each history position its own id.
-        // Why:      A shuffle history repeats tracks, and the media timeline rejects two entries with one id.
+        // What:     `snapshotItems.itemsFor(...)` returns the timeline rows from a cache that rebuilds only what
+        //           changed.
+        // Why:      Building a row per queue position on every media session refresh made a track change cost time
+        //           proportional to the queue size; the order, display and URI lists are replaced when they change,
+        //           so identical instances mean identical rows, and an artist tag patches only its own rows.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const entryIds: bigint[] = playbackEntryIds(order);
+        // const items = this.snapshotItems.itemsFor({ order, display, uris: this.uris, artists: this.trackArtists });
         // ```
-        /** One timeline id per playback position; repeats of a track get distinct ids. */
-        val entryIds: List<Long> = playbackEntryIds(order)
-        // What:     `val items: List<SnapshotItem> = order.mapIndexed { position, loadIndex -> SnapshotItem(...) }`
-        //           builds the timeline rows. `order.map { ... }` transforms each element;
-        //           the trailing lambda names its parameter `loadIndex` (a load-order index)
-        //           before `->`. `SnapshotItem(uri = ..., title = ..., loadIndex = ...)` is a
-        //           constructor call with NAMED arguments: `uris[loadIndex]` is the playback
-        //           URI, `display[loadIndex]` the title, `loadIndex` the index itself.
-        // Why:      Produce one `SnapshotItem` per scope track for the session timeline.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const items: SnapshotItem[] = order.map((loadIndex) => ({
-        //   uri: this.uris[loadIndex],
-        //   title: display[loadIndex],
-        //   loadIndex,
-        // }));
-        // ```
-        /**
-         * Defines items value for this music-player component; the TypeScript-oriented notes above explain its
-         * source and use.
-         */
-        val items: List<SnapshotItem> = order.mapIndexed { position, loadIndex ->
-            // What:     `SnapshotItem(uri = ..., title = ..., loadIndex = ..., entryId = entryIds[position])`
-            //           constructs one timeline item (no `new`) with named args. It is the
-            //           lambda's tail expression, so it is the value `map` collects.
-            // Why:      One scope track described for the session.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // ({ uri: this.uris[loadIndex], title: display[loadIndex], loadIndex })
-            // ```
-            SnapshotItem(
-                uri = uris[loadIndex],
-                title = trackTitleFor(display[loadIndex]),
-                loadIndex = loadIndex,
-                entryId = entryIds[position],
-                artist = trackArtists[uris[loadIndex]],
-            )
-        }
+        /** Timeline rows in playback order, shared with the previous snapshot where nothing changed. */
+        val items: List<SnapshotItem> = snapshotItems.itemsFor(
+            order = order,
+            display = display,
+            uris = uris,
+            artists = trackArtists,
+        )
         // What:     `return PlaybackSnapshot( ... )` constructs and returns the snapshot with
         //           NAMED arguments. Two of them convert seconds to milliseconds:
         //           `(durationSec() * MILLIS_PER_SEC).toLong()` multiplies a `Double` by the

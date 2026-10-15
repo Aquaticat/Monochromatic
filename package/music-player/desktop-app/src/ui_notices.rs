@@ -1,35 +1,19 @@
-//! Plain-language messages for events the user did not ask about: a file that cannot be played, a file that left the
-//! folder.
+//! Plain-language message for an event the user did not ask about: a file that left the folder.
 //!
-//! What: pure functions that turn an engine report into the one or two lines a message shows.
+//! What: a pure function that turns an engine report into the one or two lines a message shows.
 //! Why: D83 says a failure is explained in a floating message that names the file and fits two lines; keeping the words
 //! apart from the window code lets tests read them without a window.
+//! The report of files that cannot be played is no longer a message in the window (D122):
+//! its words are in `unplayable_notification_logic` and it goes to the desktop as a system notification.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
-//! const unplayableMessage = (paths: string[]) => paths.length === 1 ? `${basename(paths[0])} can't be played.` : `${paths.length} files can't be played, including ${basename(paths[0])}.`;
+//! const fileGoneMessage = (path: string, wasPlaying: boolean) => `${basename(path)} was removed from the folder.`;
 //! ```
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-/// What: `file_name_text` is the last component of a path as text, or the whole path when it has none.
-/// Why: a message names the file, not its long folder path (D83: two visible lines).
-fn file_name_text(path: &Path) -> String {
-    return path
-        .file_name()
-        .map_or_else(|| return path.display().to_string(), |name| return name.to_string_lossy().into_owned());
-}
-
-/// What: `unplayable_message` words the report of files that could not be opened for playback.
-/// Why: one file is named; several collapse to a count with the first named (D9: a count, not one message per file).
-/// An empty report gives an empty message, which the caller does not show.
-pub(crate) fn unplayable_message(paths: &[PathBuf]) -> String {
-    return match paths {
-        [] => String::new(),
-        [only] => format!("{} can't be played.", file_name_text(only)),
-        [first, rest @ ..] => format!("{} files can't be played, including {}.", rest.len() + 1, file_name_text(first)),
-    };
-}
+use music_player::unplayable_notification_logic::file_name_text;
 
 /// What: `file_gone_message` words the report that the selected track's file left the folder.
 /// Why: the row disappears and playback stops, so the message says which file and, when it was playing, that playback
@@ -40,6 +24,13 @@ pub(crate) fn file_gone_message(path: &Path, was_playing: bool) -> String {
         return format!("{name} was removed from the folder, so playback stopped.");
     }
     return format!("{name} was removed from the folder.");
+}
+
+/// What: `audio_unavailable_message` words the report that no audio output could be opened.
+/// Why: the player keeps working without sound, so the person needs the cause and what to start; the wording
+/// names both Linux sound systems the player can use and avoids developer words.
+pub(crate) fn audio_unavailable_message() -> &'static str {
+    return "No sound output is available, so nothing will be heard. Start a sound server such as PipeWire, or set up an ALSA sound card, then restart the player.";
 }
 
 #[cfg(test)]

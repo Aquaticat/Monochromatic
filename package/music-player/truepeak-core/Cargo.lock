@@ -1909,6 +1909,7 @@ dependencies = [
  "tokio",
  "tracing",
  "turso",
+ "twox-hash",
 ]
 
 [[package]]

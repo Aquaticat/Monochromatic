@@ -33,6 +33,7 @@ import { runCommand, } from './command.ts';
 import { compositorVersionProblem, } from './compositor-version.ts';
 import type { RunConfig, } from './config.ts';
 import type { RunContext, } from './context.ts';
+import { runAutoPlaySession, } from './auto-play-session.ts';
 import { runDialogSession, } from './dialog-session.ts';
 import { expect, } from './errors.ts';
 import { pathExists, } from './files.ts';
@@ -79,6 +80,7 @@ const SESSION_RUNNERS: Readonly<Record<SessionName, (context: RunContext,) => Pr
   wide: runWideSession,
   narrow: runNarrowSession,
   dialog: runDialogSession,
+  'auto-play': runAutoPlaySession,
   quit: runQuitSession,
   states: runStatesSession,
   visual: runVisualSessions,

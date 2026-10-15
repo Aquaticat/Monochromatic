@@ -130,8 +130,26 @@ pub mod opus;
 /// ```ts
 /// export * as output from "./output_pipewire"; // only on Linux builds
 /// ```
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", not(feature = "alsa-fallback")))]
 #[path = "output_pipewire.rs"]
+pub mod output;
+
+/// What:
+///      `#[cfg(all(target_os = "linux", feature = "alsa-fallback"))]` compiles the next item only on Linux builds
+///           made with the `alsa-fallback` cargo feature (the Alpine build). `all(...)` is true when every listed
+///           predicate is true. `#[path = "output_linux.rs"]` sources the `output` module from the file that tries
+///           PipeWire first and falls back to ALSA.
+/// Why:
+///       Alpine and other minimal Linux installs run no sound server by default, so a PipeWire-only build is silent
+///           there. The feature keeps every other Linux build exactly as it was (no new link-time dependency) while
+///           exposing the IDENTICAL `output::Output` surface to the engine and the controller.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as output from "./output_linux"; // only Linux builds with the alsa-fallback feature
+/// ```
+#[cfg(all(target_os = "linux", feature = "alsa-fallback"))]
+#[path = "output_linux.rs"]
 pub mod output;
 
 /// What:
@@ -1015,6 +1033,25 @@ pub mod analysis_notification_wire;
 /// Why: the system notification replaces the in-app banner; off Linux the handle does nothing.
 pub mod analysis_notification;
 
+/// What: `pub mod unplayable_notification_logic;` the wording and the told-before rule of the "cannot be played" report.
+/// Why: D122 sends that report to the desktop instead of drawing it in the window; what it says and when it repeats need
+/// no bus, so they are tested without one.
+pub mod unplayable_notification_logic;
+
+/// What: `pub mod unplayable_notification_wire;` the D-Bus call of the "cannot be played" notification, Linux only.
+/// Why: the freedesktop notification service exists only on Linux desktops; `zbus` is a Linux-only dependency.
+#[cfg(target_os = "linux")]
+pub mod unplayable_notification_wire;
+
+/// What: `pub mod unplayable_notification;` the "cannot be played" notification's handle and its D-Bus thread (D122).
+/// Why: the report leaves the engine thread without waiting on the bus; off Linux the handle does nothing.
+pub mod unplayable_notification;
+
+/// What: `unplayable_notification_bus_support`, a private session bus and a recording notification service (test builds).
+/// Why: the wire and thread tests of the "cannot be played" notification must never touch the user's session bus.
+#[cfg(all(test, target_os = "linux"))]
+pub(crate) mod unplayable_notification_bus_support;
+
 /// What:
 ///      `pub mod settings_layout;` the Settings page's layout numbers (`src/settings_layout.rs`).
 /// Why:
@@ -1026,3 +1063,14 @@ pub mod analysis_notification;
 /// export * as settingsLayout from "./settings_layout";
 /// ```
 pub mod settings_layout;
+
+/// What:
+///      `pub mod row_activation;` the rule for a click, Enter or Search result on a track (`src/row_activation.rs`).
+/// Why:
+///       Auto-play on select (D129) changes what that activation does, and the window wiring asks one pure function.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as rowActivation from "./row_activation";
+/// ```
+pub mod row_activation;

@@ -65,7 +65,7 @@ const JOURNAL_SUFFIX: &str = ".json";
 /// ```ts
 /// const TEMPORARY_SUFFIX = '.tmp';
 /// ```
-const TEMPORARY_SUFFIX: &str = ".tmp";
+pub const TEMPORARY_SUFFIX: &str = ".tmp";
 
 /// What:
 ///  The group and other permission bits a private path must not have.
@@ -598,10 +598,23 @@ pub fn ensure_journal_root(common_dir: &Path) -> Result<PathBuf, WorktreeCopyErr
 /// await writeJournal({ path, record });
 /// ```
 pub fn write_journal(path: &Path, journal: &Journal) -> Result<(), WorktreeCopyError> {
+    return write_atomic(path, encode_journal(journal).as_bytes(), "journal");
+}
+
+/// What:
+///  Writes one private file atomically beside its final name; a failure names `subject` and leaves no temporary.
+/// Why:
+///   Journals and stage claims share one rule: a reader sees a complete file or none.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await writeFileAtomically({ path, bytes, subject });
+/// ```
+pub fn write_atomic(path: &Path, bytes: &[u8], subject: &str) -> Result<(), WorktreeCopyError> {
     let unique: String = random_uuid().map_err(|error| {
         return failure_with_cause(
             format!(
-                "cli-git: could not persist worktree-copy journal {}.",
+                "cli-git: could not persist worktree-copy {subject} {}.",
                 quote(path.to_string_lossy().as_ref())
             )
             .as_str(),
@@ -613,7 +626,7 @@ pub fn write_journal(path: &Path, journal: &Journal) -> Result<(), WorktreeCopyE
         path.to_string_lossy()
     ));
     let persisted: std::io::Result<()> =
-        write_exclusive_synced(temporary.as_path(), encode_journal(journal).as_bytes())
+        write_exclusive_synced(temporary.as_path(), bytes)
             .and_then(|()| return std::fs::rename(temporary.as_path(), path))
             .and_then(|()| match path.parent() {
                 Some(parent) => return sync_directory(parent),
@@ -624,7 +637,7 @@ pub fn write_journal(path: &Path, journal: &Journal) -> Result<(), WorktreeCopyE
         let _ignored_removal: std::io::Result<()> = std::fs::remove_file(temporary.as_path());
         return Err(failure_with_cause(
             format!(
-                "cli-git: could not persist worktree-copy journal {}.",
+                "cli-git: could not persist worktree-copy {subject} {}.",
                 quote(path.to_string_lossy().as_ref())
             )
             .as_str(),
@@ -774,6 +787,20 @@ pub fn prepare_stage_removal(stage_container: &Path) -> Result<(), WorktreeCopyE
 }
 
 /// What:
+///  Removes a stage container with everything in it, whatever modes the installed directories carry.
+/// Why:
+///   Completed transactions and abandoned stages are removed the same way, and an absent stage is already removed.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await prepareStageRemoval(stageContainer); await rm(stageContainer, { recursive: true, force: true });
+/// ```
+pub fn remove_stage(stage_container: &Path) -> Result<(), WorktreeCopyError> {
+    prepare_stage_removal(stage_container)?;
+    return remove_tree_if_present(stage_container);
+}
+
+/// What:
 ///  Removes one completed transaction: its stage, its unfinished temporaries, and its journal.
 /// Why:
 ///   A complete phase is written first, so an interruption during cleanup resumes as cleanup, not as installation.
@@ -790,9 +817,7 @@ pub fn remove_pending_journal(pending: &PendingJournal) -> Result<(), WorktreeCo
         };
         write_journal(pending.path.as_path(), &completed)?;
     }
-    let stage: PathBuf = PathBuf::from(pending.journal.stage_container.as_str());
-    prepare_stage_removal(stage.as_path())?;
-    remove_tree_if_present(stage.as_path())?;
+    remove_stage(Path::new(pending.journal.stage_container.as_str()))?;
     remove_file_if_present(pending.path.as_path())?;
     remove_unfinished_writes(pending.path.as_path())?;
     if let Some(parent) = pending.path.parent() {
@@ -828,7 +853,7 @@ fn remove_tree_if_present(path: &Path) -> Result<(), WorktreeCopyError> {
 /// ```ts
 /// await rm(path, { force: true });
 /// ```
-fn remove_file_if_present(path: &Path) -> Result<(), WorktreeCopyError> {
+pub fn remove_file_if_present(path: &Path) -> Result<(), WorktreeCopyError> {
     // `match` accepts absence and reports every other removal failure.
     match std::fs::remove_file(path) {
         Ok(()) => return Ok(()),

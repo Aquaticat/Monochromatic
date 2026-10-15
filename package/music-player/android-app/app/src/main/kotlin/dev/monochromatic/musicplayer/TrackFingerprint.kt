@@ -5,7 +5,8 @@
 // This file computes the opaque peak-cache KEY for a track from its content
 // URI: the Android source for the desktop player's filesystem
 // `path + size + mtime` fingerprint. The native crate (reached via
-// `NativeBridge.nativeFingerprint`) gxhashes the pieces; the platform-specific
+// `NativeBridge.nativeFingerprint`) hashes the pieces with the shared XXH3-64 fingerprint
+// function; the platform-specific
 // pieces (the file's size and modified-time) are read from the Android content
 // provider HERE.
 // Because the result is hashed, no path, name, or tag is ever stored.
@@ -85,8 +86,8 @@ import android.provider.OpenableColumns
 // What:     No import is needed for the fingerprint helper anymore. `of` now calls
 //           `NativeBridge.nativeFingerprint(...)`, and `NativeBridge` is in THIS file's
 //           package (`dev.monochromatic.musicplayer`), so it is visible with no import.
-//           The old pure-Kotlin `core.fingerprint` was removed: gxhash (the new hash)
-//           has no JVM port, so the computation moved into the native crate.
+//           The old pure-Kotlin `core.fingerprint` was removed: the hash is XXH3-64 from
+//           the shared `truepeak-core` crate, so the computation lives in the native crate.
 // Why:      Document why the formerly-imported `core.fingerprint` is gone, so a reader
 //           does not look for it.
 //
@@ -272,11 +273,11 @@ object TrackFingerprint {
         //             `Long`, so 64-bit integer multiply) to get nanoseconds, passed as
         //             a plain `Long`.
         //           - `NativeBridge.nativeFingerprint(...)` calls into the native crate
-        //             (src/fingerprint.rs) over JNI, which gxhashes the three into the
-        //             cache key `String`.
+        //             (src/fingerprint.rs) over JNI, which hashes the three into the
+        //             `Long` cache key.
         // Why:      Produce the opaque, hashed cache key from the URI plus the two read
         //           file attributes, matching the desktop's `path + size + mtime` key
-        //           and its gxhash, so Android and desktop agree on identical inputs.
+        //           and its shared XXH3-64 function, so Android and desktop agree on identical inputs.
         // Gotcha:   `Long * Long` is 64-bit integer multiply that WRAPS silently on
         //           overflow (no auto-widening like JS numbers); using `Long` for the
         //           constant is what keeps it 64-bit. The conversion to unsigned now

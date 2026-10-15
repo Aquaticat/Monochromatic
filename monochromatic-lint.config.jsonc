@@ -27,6 +27,30 @@
       "rust/no-anonymous-functions": {
         "severity": "warn",
       },
+      // Unit tests live in sidecar files (`<name>_tests.rs` declared with `#[cfg(test)] #[path = ...] mod tests;`).
+      // Decision record: doc/planning/rust-test-sidecar-enforcement.md.
+      "rust/tests-in-sidecars": {
+        "severity": "error",
+      },
+    },
+  },
+  // Sidecar crates hold their smoke tests in `src`, and the troubleshooting probe is a recorded reproduction,
+  // not package source; the other rules stay selected for both.
+  {
+    "name": "tests-in-sidecars-exemptions",
+    "files": [
+      "**/fuzz/**/*.rs",
+      "**/*.fuzz/**/*.rs",
+      "doc/troubleshooting/**/*.rs",
+    ],
+    "ignores": [
+      "**/*.md/**",
+      "**/*.mdx/**",
+    ],
+    "rules": {
+      "rust/tests-in-sidecars": {
+        "severity": "off",
+      },
     },
   },
   {

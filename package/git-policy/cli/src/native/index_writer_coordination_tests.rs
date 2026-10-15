@@ -181,6 +181,54 @@ fn a_writer_takes_the_landing_lock_and_hands_over_a_lease() {
     remove(root.as_path());
 }
 
+/// A release that cannot prove the lock is still this writer's is reported to the caller, not swallowed.
+#[test]
+fn a_release_that_finds_the_lock_changed_is_reported() {
+    let (root, repo): (PathBuf, PathBuf) = scene("coordination-release-reported");
+    let command: ResolvedCommand = command_in(repo.as_path(), &["add", "a.txt"]);
+    let input: CoordinationInput<'_> = CoordinationInput {
+        context: &context(),
+        identity: &identity_of(repo.as_path()),
+        command: &command,
+        environment: &[],
+        timeout_ms: 100,
+    };
+    let coordination: Coordination = coordinate_index_writer(&input)
+        .expect("no failure")
+        .expect("an index writer coordinates");
+    let record: PathBuf = coordination
+        .lock
+        .directory()
+        .join(crate::owner_lock_record::OWNER_LOCK_RECORD_FILENAME);
+    std::fs::write(&record, b"{").expect("damage the record");
+    let message: String = coordination.release().expect_err("the lock no longer proves its owner");
+    assert!(!message.is_empty());
+    remove(root.as_path());
+}
+
+/// A direct fix holds the repository's landing lock until it releases it,
+///  and holds nothing outside a repository.
+#[test]
+fn a_direct_fix_holds_the_landing_lock() {
+    let (root, repo): (PathBuf, PathBuf) = scene("coordination-hold");
+    let held: OwnerLock = hold_landing_lock(&context(), &identity_of(repo.as_path()))
+        .expect("no failure")
+        .expect("a repository has a landing lock to hold");
+    let contested: Option<OwnerLock> = try_acquire_owner_lock(
+        repo.join(".git/cli-git-transactions/landing.lock").as_path(),
+        None,
+    )
+    .expect("a readable lock");
+    assert!(contested.is_none(), "the direct fix holds the landing lock");
+    held.release().expect("release");
+    assert!(
+        hold_landing_lock(&context(), &WorktreeIdentity::OutsideWorktree)
+            .expect("no failure")
+            .is_none()
+    );
+    remove(root.as_path());
+}
+
 /// The repository the waiter thread coordinates in;
 ///  set once by the test that starts it.
 static WAITER_REPO: OnceLock<PathBuf> = OnceLock::new();

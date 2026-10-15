@@ -71,6 +71,8 @@ fn add_message(kind: FeedbackKind, text: &str, hold: Hold, action_label: Option<
         if let Some(path) = undo_path {
             state.undo_targets.push((id.clone(), path));
         }
+        // The text is not logged: it can name a file. The id and kind show that a message appeared.
+        tracing::info!(id = %id, kind = ?kind, duration_ms, "feedback message shown in the window");
         return Some(id);
     });
     return outcome;

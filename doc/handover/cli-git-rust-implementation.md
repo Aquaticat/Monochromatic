@@ -1567,7 +1567,10 @@ that is verification, not a decision for the user.
   The repository installs the crate as a `cargo:` mise tool whose postinstall links `.cache/cli-git-bin/git`,
   placed first in `_.path`; the hk cleanup task, the performance harness and the CI jobs that needed the wrapper are
   retired or migrated (record: `doc/planning/cli-git-native-cutover.md`).
-  The switch is live: the pin is 0.1.2, the link in the main checkout is installed, and the installed wrapper was
+  The switch is live: `mise.lock` holds 0.1.2 and the tool entry is unpinned (user, 2026-10-14: "You don't need to
+  pin anything we control"; `monochromatic-lint` is unpinned the same way, and mise's 24 hour minimum release age
+  delays a new release until the lock is refreshed), the link in the main checkout is installed, and the installed
+  wrapper was
   verified at the user boundary (a signed commit auto-pushed with real credentials, a manual push and a Markdown
   commit); every process of the user is on the native `PATH` (the count of sessions on the old `PATH` is zero).
   The user's decisions are no hybrid, the old TypeScript goes, and the rollback window ended with that verification.
@@ -1586,10 +1589,20 @@ that is verification, not a decision for the user.
   `node_modules/.bin/git` shim and an empty `package/git-policy/cli/node_modules/.bin`) were removed on 2026-10-14 by
   explicit path, never with `git clean -X`, which would remove the live `.cache/cli-git-bin` link and the rules file;
   afterwards `mise run sync:files` leaves the repository unchanged.
-  Still open from the retirement: `native:interop` cannot run until an incumbent provisioning step builds the pinned
-  revision (trailing gate), the `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324, 373)
-  wait for a fresh `slopo analyze` report, and the SPEC sections the plan did not name were not re-verified line by
-  line.
+  Audit of 2026-10-14 (user: the old wrapper must be nowhere to be found and unusable): the main checkout has no old
+  entry point (the package is a private verification harness without `bin`, `main` or `dist`, and its `node_modules`
+  link and the `.changeset` ignore entry name that harness), `type -a git` resolves to the native link first, and no
+  old process runs.
+  The old shims and built output were removed by explicit ignored path from every other worktree (13 shims, 6 `dist`
+  directories; the lane worktrees `cli-git-lane-interop` and `-pathbytes` had none), the tracked old copies at older
+  branch heads stay history, and the zero-byte `node_modules/.bin/git` in `Monochromatic-but-every-file-0-bytes`
+  (not a repository) cannot run.
+  Interop decision (user): the interop matrix ran once against an incumbent rebuilt in a throwaway container from the
+  pinned revision, the results are recorded, and everything that can build or run the old wrapper was then deleted
+  (`doc/handover/cli-git-native-interop.md`), leaving static captured fixtures.
+  Still open from the retirement: the `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324,
+  373) wait for a fresh `slopo analyze` report, and the SPEC sections the plan did not name were not re-verified line
+  by line.
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
@@ -1600,26 +1613,148 @@ that is verification, not a decision for the user.
   commit have passed.
   CPU cap (user, 2026-10-14; the hold of 2026-10-13 was released on 2026-10-14): the host is a 16 core, 32 thread
   Ryzen 9 7950X with 62 GiB RAM, and Claude tool commands and gates share one cap.
-  The cap started at 75 percent (30 of 32 threads) and was lowered to 28 on 2026-10-14 after temperature and
-  CPU-pressure alerts; the user service `claude-cpu-watch.service` enforces the value in
+  The cap started at 75 percent (30 of 32 threads), was lowered to 28 on 2026-10-14 after temperature and
+  CPU-pressure alerts, and was back at 30 later that day; the shared `claude-code-bash` memory limit was raised
+  from 8 GB to 32 GB (verified: `memory.max` 32000000000 and `CLAUDE_CODE_TOOL_MEMORY_LIMIT` in
+  `~/.claude/settings.json`); the user service `claude-cpu-watch.service` enforces the value in
   `~/.config/claude-cpu-cap/threads` (the file holds the current value and persists across reboots;
   to lower it, write the new integer to that file, never write `cpu.max` by hand).
   The service also prints ALERT and CLEAR lines for CPU, memory and IO pressure, scheduler lag and temperature;
   details and the follow command are in `doc/runbook/claude-cpu-cap.md`.
-  Agents need no per-job throttles but keep heavy parallelism modest (at most two heavy jobs at once, none while
-  the load average is above about 40); heavy gates run through `~/temp/agent/gate-slot.ts` (six slots) because their
-  time limits assume bounded host load.
+  Agents need no per-job throttles and no limit on heavy jobs beyond the shared cap (user, 2026-10-14: all Claude Code
+  bash is limited together); heavy gates still run through `~/temp/agent/gate-slot.ts` (six slots) because their
+  time limits assume bounded host load, and memory (62 GiB, not bounded by the cap) is the resource to watch.
   Commands started with `systemd-run` leave the shared cap, so do not use it for work that should count.
   `nproc` reports 16 inside shells with a restricted affinity; use `nproc --all` or `lscpu` for the real count.
+  Linter 0.1.2 (released 2026-10-14 at the request of the translation-repair session, confirmed by the user):
+  `markdown/semantic-line-breaks` now replaces the one separating space with the break and leaves a paragraph that
+  starts with `<` and ends with `>` unbroken, as the two fixes on the `translation-repair-rebased` branch did
+  (`9a46438774`, `66345a0925`); the old shape with a stray space is left as it is.
+  Gate: 392 library and 13 binary tests, Clippy, and the Markdown-scope mutation run (752 mutants, 708 caught,
+  44 unviable, none missed); release run 38486199846 published the crate and eight archives.
+  Not measured here: byte parity with the branch's TypeScript rule over its full unit-test inputs (the
+  translation-repair session measures that before switching its wrap to `--stdin --fix`).
+  Linter 0.1.3 (released 2026-10-14): the `rust/tests-in-sidecars` rule, enabled at `error` in the root config with
+  exemptions for the fuzz crates and `doc/troubleshooting`; the four inline test modules were moved to sidecars.
+  Record: `doc/planning/rust-test-sidecar-enforcement.md`.
+  Parity of the Rust semantic-line-break rule with the TypeScript one, measured by the translation-repair session:
+  591 of 598 inputs byte-identical, the 7 differences are breaks after non-BMP characters where the Rust rule is right.
+  The interop lane landed on `main` as `78d23d18a4` (container gate rerun: 1666 unit and 118 binary tests, Clippy clean).
+  mise holds new releases back for 24 hours; the repository exempts its own crates by exact name
+  (`minimum_release_age_excludes` in `mise.no-env.toml`, commit `4059fc9925`).
+  The pathBytes lane finished on `feat/cli-git-native-pathbytes` (head `e629ab99ff8e`, evidence in
+  `doc/handover/cli-git-native-pathbytes.md`) and is not merged; it merges after the hardening branch, and its gated
+  source must be rerun on the merge because both branches change `package/git-policy/cli`.
+  Hardening (user, 2026-10-14: "You own the cli git series of crates ... If cli git is robust, it shouldn't ever get
+  stuck."), branch `fix/cli-git-hardening`.
+  Trigger: another session's `git push` stalled for minutes holding the wrapper's single-flight push lock, and every
+  commit on that branch waited behind it without any output.
+  Rule now in force: nothing waits for another process without a bound, a notice and a named holder.
+  - The auto-push's `git push` runs under `CLI_GIT_PUSH_DEADLINE_SECONDS` (600 by default): asked to end, killed after
+    a 5 second grace, recorded as a failed attempt with exit code 124, commit kept (`src/native/bounded_push.rs`).
+    Git's low-speed abort is added to its environment unless the invocation sets it (it also overrides the
+    `http.lowSpeed*` configuration).
+    The read-only queries before the push stop at the same deadline or 120 seconds (`bounded_query.rs`).
+  - Waiting for the push lock gives up after the deadline plus 65 seconds, or `CLI_GIT_PUSH_LOCK_WAIT_SECONDS`, and
+    prints one line naming the pushing process.
+  - Every wait on a live holder (capture, landing, hook and registry locks, the landing reservation, the worktree-copy
+    settlement, a proven-alive `index.lock` holder) is bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (1800 by default),
+    prints a line after 5 seconds, fails closed and never takes the holder's lock (`live_lock.rs`,
+    `owner_lock::acquire_owner_lock_for`, `replay_reservation.rs`, `worktree_copy_lock.rs`, `index_lock_wait.rs`).
+  - Not bounded on purpose: passthrough Git commands, the user's own hooks and the wrapped real Git (the user's
+    children; Ctrl-C reaches them).
+    Not waits: the chunked file comparison in `recovery_files.rs`, the capped reads, and `await_release` in
+    `transaction_phase.rs`, which runs only when the test marker variable is armed.
+    Bounded by their own counters: `retry_while_active` and the budgeted `wait_for_lock`.
+    The landing loop `run_loop` has no attempt cap: each lost race means another landing advanced the target and the
+    reservation gives the next slot to the oldest requester, so it terminates; only a bug that reports a lost race for
+    every landing makes it replay forever (seen under the pathBytes mutants `landing_attempt.rs:419` and `:592`).
+  Documented in `package/git-policy/cli/README.md` ("Waiting and time limits") and `SPEC.md` ("Auto-push").
+  Verification so far: host Clippy clean; container gate 1713 unit, 119 binary and 1 consumer test passed;
+  the concurrent e2e passed 36 scenario runs on Git 2.55.0 with 2 skipped (the gate task now builds Git 2.55.0 only,
+  because the wrapper refuses older Git and the 2.39.5 and 2.40.0 rows failed by design).
+  Tests that hold a lock now end a stuck coordinator after a ceiling and fail instead of hanging the run, and a
+  watchdog ends a unit-test run after two minutes, so a mutant that hangs counts as a failed test and not a timeout.
+  Issue 990 (abandoned worktree-copy stage containers): a stage claim file is written before staging
+  (`worktree_copy_stage_claim.rs`) and the recovery pass, which holds the settlement lock, removes every container a
+  claim names that no journal names. The one arm no test reaches is a journal-creation failure after a successful
+  staging; its cleanup is the same claim reaping.
+  Final newline CI (user, 2026-10-14: "Delete the final newline CI check. We don't need to re-compile so often."):
+  `.github/workflows/final-newline.yml` and `bin/final-newline-workflow.mjs` are deleted in `e441028636`, with removal
+  notes in the three docs that described them. Pull request 992 (`chore/ci-caching`, a caching measurement) still
+  carries the workflow, so it conflicts on that file once this branch lands; leave that pull request alone.
+  Mutation campaign d (four lanes, started 2026-10-14 20:04 EDT, finished 23:51 EDT, about 3h45m, four in parallel at
+  one mutant per minute each) ran the source from before the controls: 8 missed in lane A, 24 in B1, 14 in B2, 38 in C.
+  Controls, each written to fail on its mutant, are in `a39daccaf4`, `82b5395334`, `05c70c9e79` (push stop),
+  `a19830af2e` (settlement lock), `ea206984ea` (landing pass hand-off), `44377010c3` (stage claim) and
+  `2eeb8ba3f3` (journal, transaction, recovery). Seams added so a race or the machine's filesystem is not needed:
+  `retire_dead_lock_with`, `rename_directory`, `limit_reached`, `copy_file_exclusive_with`, `nested_under`,
+  `grace_remains`, `is_flood`, `handled_by_the_landing_pass`. Refusals other than "absent" are provoked without
+  root by putting a file where a directory belongs (ENOTDIR), and with a read-only parent where that is the only way
+  (the test skips itself when run as root).
+  Verification rerun R1 to R4 (head `2eeb8ba3f3`, 254 mutants, 00:08 to 01:17 EDT): 242 caught or unviable, 12 missed.
+  Lane R4 (`worktree_copy_journal.rs`) had none. The misses were:
+  - Real gaps, fixed: the refused-retirement test skipped itself whenever the call succeeded, which a mutant also
+    does (it now skips only for a superuser, by `geteuid`); `remove_lock_of` had no direct test, so it gained the
+    seams `remove_lock_of_with` and `rename_lock`; the sync-absence arm of `reap_abandoned_stages` became
+    `absent_is_fine`. A second rerun of those 25 mutants (head `dda72f677c`, 05:26 to 05:49 UTC) left one miss, the
+    foreign-owner guard of `remove_lock_of_with`, which the re-check after the rename hides from outcome tests; it
+    is caught by asserting the rename is never asked for (`a_lock_of_another_owner_is_never_moved`). The guard after
+    the rename is caught by `a_replacement_that_raced_the_rename_is_put_back`. Both guards were shown to fail on a
+    hand-applied mutant on the host.
+  - Justified from the code, no test: `recovery_files.rs` 214 (`<` to `<=`: reading into an empty slice returns 0
+    and breaks, same result); `index_writer_coordination.rs` 373 (`release_quietly` body removed: the by-value lock
+    is dropped at the end of the function and `OwnerLock::drop` performs the same release); `worktree_copy_stage.rs`
+    `create_private_tree` (90), `try_clone` (122, both values) and `symlink_at` (246), which are
+    `#[cfg(not(unix))]` or `#[cfg(not(target_os = "linux"))]` code the Linux gate never compiles.
+  - Filesystem-dependent: `worktree_copy_stage.rs` `try_clone` to `false` (104) is equivalent on the gate
+    container's filesystem, which refuses clones (the copy falls back to the same bytes). The test
+    `the_clone_request_succeeds_where_the_filesystem_clones` asks the kernel directly and fails on that mutant when
+    `TMPDIR` is on a cloning filesystem; shown on btrfs (`TMPDIR=~/temp/agent/clone-probe`) with the mutant applied
+    by hand.
+  Container gate on the final tested head `2272d27212` (tag `hardeningZ`, log `hardening-container-8.log`): 1773 unit,
+  120 binary and 1 consumer test passed, Clippy finished. The two `FAILED` lines inside `live_lock` output are
+  helper processes that fail on purpose.
+  Landed 2026-10-15 01:58 EDT: merge `10646ded96` on `main` (the only conflict was `final-newline.yml`, which main had
+  changed for caching; the deletion won). Of the gated paths only `.github/workflows/cargo-publish.yml` differs from the
+  tested head, by main's caching change. Issue 990 closed by the merge.
+  Released 0.1.3 (`7cf21e15d6`): dry-run publish passed, run 38689892958 passed every `gpc-*` job, crates.io lists
+  0.1.3, the GitHub release `monochromatic-git-policy-cli-v0.1.3` carries both Linux archives, and
+  `mise upgrade cargo:monochromatic-git-policy-cli` installed it (`.cache/cli-git-bin/git` points at it).
+  Lessons: `&&` binds tighter than `||`, so reason about those mutants with explicit parentheses; run parallel
+  container runs under distinct `GIT_POLICY_NATIVE_IMAGE_TAG` values; a mutation run needs
+  `localhost/git-policy-native-test:<tag>` from a gate on the same head (alias it with `podman tag` for parallel
+  lanes); a test that skips itself on "the call succeeded" cannot tell a superuser from a mutant, so skip on the
+  cause; a guard that an outcome re-check duplicates needs a test of the call it saves; Clippy here rejects
+  `serde_json::json!` in tests (it expands to `unwrap`); an auto-push can fail with "missing necessary objects"
+  while another session repacks the shared object store, and a retry succeeds; the shared `.git` has a
+  commit-graph entry for an unreadable commit (`a2e8a99c`), left alone because other sessions use it.
+  Verified at the user boundary with the installed 0.1.3: a commit and its auto-push from this worktree went through
+  with real credentials, and a disposable fixture (driver `~/temp/agent/verify-reap-fixture.ts`, fixture removed)
+  showed an abandoned stage named by a claim file removed with the notice, while the same `git worktree add` copied
+  its ignored files. A fixture path must be canonical (`/home/user` is a symlink here), or the wrapper refuses the
+  stage as unsafe.
+  Next: merge the pathBytes branch (merge `main` into it, rerun its gated source), then clean up the retag aliases
+  and merged branches.
+  Not verified: Windows (the target is not installed here; `tempfile` and `libc` are unix-only dependencies that
+  `bounded_child.rs` already relied on).
+  A podman cleanup by the user (`podman image prune --all`) removed `rust:1.97-bookworm`; pull it back, and pin it with
+  a sleeping container while a prune may still be running.
   Open: the `replay-core` branch holds unmerged mutation work, `monochromatic-lint` shim lookup fails outside the
-  repository (the linter must be on `PATH` as a real binary), and the trailing gates below are untouched.
+  repository (the linter must be on `PATH` as a real binary), and the trailing gates below, except the interop matrix, are untouched.
 - [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
   the Windows checks and the release-artifact performance gates;
-  the old-and-new wrapper interop matrix (one-direction fixtures where the incumbent writes and native reads stay);
   the long fuzz campaigns (fuzz targets, planted-defect controls and a short smoke run stay in the gate);
   mutation campaigns on non-core modules (hooks plumbing, auto-push, automatic maintenance, signals);
-  and the `pathBytes` field for non-UTF-8 paths in events
-  (run on branch `feat/cli-git-native-pathbytes`, awaiting merge: `doc/handover/cli-git-native-pathbytes.md`).
+  and the `pathBytes` field for non-UTF-8 paths in events (done on branch `feat/cli-git-native-pathbytes`, merged:
+  `doc/handover/cli-git-native-pathbytes.md`).
+  Done: the old-and-new wrapper interop matrix and the old-format fixtures (user decision 2026-10-10, run once on
+  2026-10-13): crash recovery, lock waits, hook dispatch and the old-format fixtures pass in both directions;
+  the mixed-concurrency scenario with a killed worker still fails sometimes, because the incumbent's startup
+  recovery releases a native lander's `index.lock` without the landing lock (recorded as an open finding, the
+  incumbent is not fixed), and five native recovery races found on the way are fixed.
+  By the user's decision the incumbent tooling and the drivers that need it were then deleted; the plain-file
+  fixtures and their native-only reader stay (`doc/handover/cli-git-native-interop.md`).
   Locks, journal, capture, shadow repository, preparation, policies, landing, replay, recovery and the worktree copy
   keep full mutation gating.
   Features do not trail: signals, automatic maintenance and the linked-worktree copy are part of the cutover.
@@ -1630,8 +1765,8 @@ that is verification, not a decision for the user.
   Each lane records what it skipped under a `Trailing gates` heading in its evidence file.
   Trailing is not stopping (user, 2026-10-10): the cutover does not end the work.
   Right after it, without a pause, the queue continues with these gates in the order listed
-  (the interop matrix and the old-format fixtures first, then fuzz campaigns, non-core mutation,
-  the Windows checks and the release-artifact performance gates; the `pathBytes` field has run on its branch),
+  (fuzz campaigns, non-core mutation, the Windows checks and the release-artifact performance gates; the interop
+  matrix, the old-format fixtures and the `pathBytes` field are done),
   each recorded and closed like any other gate,
   and then the retirement of the old TypeScript implementation is verified complete.
 - [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands

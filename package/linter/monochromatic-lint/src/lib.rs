@@ -110,7 +110,7 @@ pub mod markdown_links;
 mod markdown_parity_tests;
 /// Owned Markdown line and UTF-16 position indexes.
 mod markdown_positions;
-/// Paragraph/container ancestry for add-only prose fixes.
+/// Paragraph/container ancestry for prose line-break fixes.
 mod markdown_prose_context;
 /// Heading punctuation checks with complete source escape/entity edits.
 #[doc(hidden)]
@@ -118,7 +118,7 @@ pub mod markdown_punctuation;
 /// Typed Markdown rule selection from validated merged JSONC.
 #[doc(hidden)]
 pub mod markdown_rule_settings;
-/// Add-only prose line breaks with token,
+/// Prose line breaks that replace their separating space, with token,
 ///  delimiter and block guards.
 #[doc(hidden)]
 pub mod markdown_semantic_breaks;
@@ -227,6 +227,9 @@ pub mod rust_semantic_session;
 /// Internal shared Rust parse and code-line indexing.
 #[doc(hidden)]
 pub mod rust_source;
+/// Internal syntax-only requirement that unit tests live in sidecar files.
+#[doc(hidden)]
+pub mod rust_tests_in_sidecars;
 /// Read-only compiler and installed rust-src discovery.
 #[doc(hidden)]
 pub mod rust_toolchain;

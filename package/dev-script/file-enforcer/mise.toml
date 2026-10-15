@@ -22,6 +22,14 @@ extends = "lint"
 [tasks.'lint:types']
 extends = "lint:types"
 
+[tasks."lint:config:types"]
+description = "Type-check the repository's file-enforcer configuration and its imported owners"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('package/dev-script/task-util', 'tsc-filter', ['--build', 'tsconfig.repository.json'])
+"""
+
 [tasks.'test:unit']
 extends = "test:unit"
 

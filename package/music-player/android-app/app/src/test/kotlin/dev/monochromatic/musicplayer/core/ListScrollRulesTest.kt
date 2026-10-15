@@ -280,37 +280,52 @@ class ListScrollRulesTest {
         assertNotEquals(entryKeyOf(row(5)), entryKeyOf(header("5")))
     }
 
-    // What:     `@Test fun currentPositionIsFirstPlayingRow()` checks which row is the playing row's position.
-    // Why:      Only the first playing row gives the scroll position, and headers never count as playing.
+    // What:     `@Test fun currentPositionFollowsThePlayingIndexNotTheRowFlags()` checks how the playing row is found.
+    // Why:      The rows of a page carry no playing flag that stays true, so the position must come from the library
+    //           index alone, even when some row still holds a stale flag.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("first playing row", () => {
-    //   expect(currentPositionOf([row(0), header("Live"), row(1, true), row(2, true)])).toBe(2);
+    // test("position follows the index", () => {
+    //   expect(currentPositionOf([row(0, true), header("Live"), row(1), row(2)], 2)).toBe(3);
     // });
     // ```
-    /** The position of the first playing row among the entries is returned, skipping headers. */
+    /** The position of the row with the playing library index is returned, skipping headers and stale flags. */
     @Test
-    fun currentPositionIsFirstPlayingRow() {
-        /** Two rows under a subfolder header, both flagged as playing. */
-        val entries: List<TrackListEntry> =
-            listOf(row(0), header("Live"), row(1, current = true), row(2, current = true))
-        assertEquals(2, currentPositionOf(entries))
+    fun currentPositionFollowsThePlayingIndexNotTheRowFlags() {
+        /** A flagged first row, then a subfolder header with two rows under it. */
+        val entries: List<TrackListEntry> = listOf(row(0, current = true), header("Live"), row(1), row(2))
+        assertEquals(3, currentPositionOf(entries, playingIndex = 2))
     }
 
-    // What:     `@Test fun currentPositionIsNullWithoutPlayingRow()` checks a page with no playing row.
+    // What:     `@Test fun currentPositionIsNullWhenThePlayingIndexIsNotOnThePage()` checks a page without that track.
     // Why:      A page without the playing track has no row position to scroll to.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("no playing row", () => expect(currentPositionOf([header("Live"), row(1)])).toBeNull());
+    // test("not on the page", () => expect(currentPositionOf([header("Live"), row(1)], 7)).toBeNull());
     // ```
-    /** A page with no playing row gives a null position. */
+    /** A playing index that no row of the page has gives a null position. */
     @Test
-    fun currentPositionIsNullWithoutPlayingRow() {
-        /** Subfolder header and its track, neither playing. */
+    fun currentPositionIsNullWhenThePlayingIndexIsNotOnThePage() {
+        /** Subfolder header and its track, neither of which is library index 7. */
         val entries: List<TrackListEntry> = listOf(header("Live"), row(1))
-        assertNull(currentPositionOf(entries))
+        assertNull(currentPositionOf(entries, playingIndex = 7))
+    }
+
+    // What:     `@Test fun currentPositionIsNullWithoutAPlayingIndex()` checks that nothing playing gives no position.
+    // Why:      With no track loaded, a row that still holds a stale flag must not be taken as the playing row.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("nothing playing", () => expect(currentPositionOf([row(1, true)], null)).toBeNull());
+    // ```
+    /** A null playing index gives a null position, whatever the rows' own flags say. */
+    @Test
+    fun currentPositionIsNullWithoutAPlayingIndex() {
+        /** One track whose own flag still says playing. */
+        val entries: List<TrackListEntry> = listOf(row(1, current = true))
+        assertNull(currentPositionOf(entries, playingIndex = null))
     }
 
     // What:     `@Test fun pageTargetIsPlayingRowWhenOnPage()` checks a page that holds the playing track.
@@ -319,15 +334,15 @@ class ListScrollRulesTest {
     // In TS you'd write (pseudocode):
     // ```ts
     // test("target is playing row", () => {
-    //   expect(pageEntryScrollTarget([row(0), header("Live"), row(1, true)])).toBe(2);
+    //   expect(pageEntryScrollTarget([row(0), header("Live"), row(1)], 1)).toBe(2);
     // });
     // ```
     /** A page holding the playing row targets that row's position. */
     @Test
     fun pageTargetIsPlayingRowWhenOnPage() {
         /** First track, then a subfolder header with the playing track under it. */
-        val entries: List<TrackListEntry> = listOf(row(0), header("Live"), row(1, current = true))
-        assertEquals(2, pageEntryScrollTarget(entries))
+        val entries: List<TrackListEntry> = listOf(row(0), header("Live"), row(1))
+        assertEquals(2, pageEntryScrollTarget(entries, playingIndex = 1))
     }
 
     // What:     `@Test fun pageTargetIsTopWhenNoRowPlaying()` checks a page without the playing track.
@@ -335,14 +350,14 @@ class ListScrollRulesTest {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("target is top", () => expect(pageEntryScrollTarget([row(0), row(1)])).toBe(0));
+    // test("target is top", () => expect(pageEntryScrollTarget([row(0), row(1)], 9)).toBe(0));
     // ```
-    /** A page without a playing row targets the top of the list. */
+    /** A page without the playing track targets the top of the list. */
     @Test
     fun pageTargetIsTopWhenNoRowPlaying() {
-        /** Two tracks, neither playing. */
+        /** Two tracks, neither of which is library index 9. */
         val entries: List<TrackListEntry> = listOf(row(0), row(1))
-        assertEquals(0, pageEntryScrollTarget(entries))
+        assertEquals(0, pageEntryScrollTarget(entries, playingIndex = 9))
     }
 
     // What:     `@Test fun pageTargetIsTopForEmptyPage()` checks a page with no entries.
@@ -350,11 +365,72 @@ class ListScrollRulesTest {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("empty target", () => expect(pageEntryScrollTarget([])).toBe(0));
+    // test("empty target", () => expect(pageEntryScrollTarget([], 0)).toBe(0));
     // ```
     /** An empty page targets the top of the list. */
     @Test
     fun pageTargetIsTopForEmptyPage() {
-        assertEquals(0, pageEntryScrollTarget(emptyList()))
+        assertEquals(0, pageEntryScrollTarget(emptyList(), playingIndex = 0))
+    }
+
+    // What:     `@Test fun libraryIndexNearIsTheRowAtThePosition()` checks a position that holds a row.
+    // Why:      The measure refresh starts at the library index of the first visible row.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("row at position", () => expect(libraryIndexNear([row(5), header("Live"), row(8)], 2)).toBe(8));
+    // ```
+    /** A position on a row gives that row's library index. */
+    @Test
+    fun libraryIndexNearIsTheRowAtThePosition() {
+        /** A row, a subfolder header, and a row. */
+        val entries: List<TrackListEntry> = listOf(row(5), header("Live"), row(8))
+        assertEquals(8, libraryIndexNear(entries, position = 2))
+    }
+
+    // What:     `@Test fun libraryIndexNearSkipsAHeaderToTheNextRow()` checks a position that holds a header.
+    // Why:      A header has no library index, and the rows under it are what the user sees next.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("header skips down", () => expect(libraryIndexNear([row(5), header("Live"), row(8)], 1)).toBe(8));
+    // ```
+    /** A position on a header gives the library index of the next row. */
+    @Test
+    fun libraryIndexNearSkipsAHeaderToTheNextRow() {
+        /** A row, a subfolder header, and a row. */
+        val entries: List<TrackListEntry> = listOf(row(5), header("Live"), row(8))
+        assertEquals(8, libraryIndexNear(entries, position = 1))
+    }
+
+    // What:     `@Test fun libraryIndexNearFallsBackToTheRowBefore()` checks a position with no row after it.
+    // Why:      A list that ends in a header, or a position past the end, still names the closest row.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("falls back", () => expect(libraryIndexNear([row(5), header("Live")], 1)).toBe(5));
+    // ```
+    /** With no row at or after the position, the last row before it is named. */
+    @Test
+    fun libraryIndexNearFallsBackToTheRowBefore() {
+        /** A row followed by a header with no rows under it. */
+        val entries: List<TrackListEntry> = listOf(row(5), header("Live"))
+        assertEquals(5, libraryIndexNear(entries, position = 1))
+        assertEquals(5, libraryIndexNear(entries, position = 7))
+    }
+
+    // What:     `@Test fun libraryIndexNearIsNullWithoutRows()` checks lists with no row.
+    // Why:      An empty page or one with only headers has no track on screen.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("no rows", () => { expect(libraryIndexNear([], 0)).toBeNull(); expect(libraryIndexNear([header("a")], 0)).toBeNull(); });
+    // ```
+    /** A list without rows gives null, and a negative position is treated as the start. */
+    @Test
+    fun libraryIndexNearIsNullWithoutRows() {
+        assertNull(libraryIndexNear(emptyList(), position = 0))
+        assertNull(libraryIndexNear(listOf(header("Live")), position = 0))
+        assertEquals(5, libraryIndexNear(listOf(row(5)), position = -3))
     }
 }

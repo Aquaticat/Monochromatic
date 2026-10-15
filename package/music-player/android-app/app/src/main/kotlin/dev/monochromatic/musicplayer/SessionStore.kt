@@ -145,6 +145,17 @@ object SessionStore {
     /** Prefix of the preference key that holds one template's stored text. */
     private const val KEY_TEMPLATE_PREFIX: String = "template_"
 
+    // What:     `private const val KEY_AUTO_PLAY_ON_SELECT: String = "auto_play_on_select"` names the setting key.
+    // Why:      D129 keeps Auto-play on select beside the templates in this preference file; a file without the key
+    //           reads as off, so an old file loads unchanged and nothing needs migrating.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const KEY_AUTO_PLAY_ON_SELECT = "auto_play_on_select";
+    // ```
+    /** Preference key of the Auto-play on select setting. */
+    private const val KEY_AUTO_PLAY_ON_SELECT: String = "auto_play_on_select"
+
     // What:     `private val TEMPLATE_VALIDATION_TRACKS` are the stand-in tracks plus one track with no values.
     // Why:      A stored template must apply to a track whose duration and peak are unknown, which is every row
     //           before analysis, so the blank track is checked alongside the samples.
@@ -293,6 +304,33 @@ object SessionStore {
         audioAccessRequestedCache = requested
         prefs(context).edit {
             putBoolean(KEY_AUDIO_ACCESS_REQUESTED, requested)
+        }
+    }
+
+    // What:     `fun loadAutoPlayOnSelect(context: Context): Boolean` reads the Auto-play on select setting.
+    // Why:      The host reads it when it first composes, and a missing key means off (D129). `warmUp` has already
+    //           loaded the preference file, so the read is from memory and needs no cache of its own.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function loadAutoPlayOnSelect(context: Context): boolean { return storage.getBoolean(KEY, false); }
+    // ```
+    /** Returns whether selecting a track also starts it, or false when nothing was saved. */
+    fun loadAutoPlayOnSelect(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_AUTO_PLAY_ON_SELECT, false)
+
+    // What:     `fun saveAutoPlayOnSelect(context: Context, enabled: Boolean)` writes the setting.
+    // Why:      The Settings switch calls this on every toggle, so the choice survives a restart; it sits outside
+    //           `Session`, so the controller's session saves cannot overwrite it with an older value.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function saveAutoPlayOnSelect(context: Context, enabled: boolean): void { storage.setBoolean(KEY, enabled); }
+    // ```
+    /** Persists the Auto-play on select setting under its own preference key. */
+    fun saveAutoPlayOnSelect(context: Context, enabled: Boolean) {
+        prefs(context).edit {
+            putBoolean(KEY_AUTO_PLAY_ON_SELECT, enabled)
         }
     }
 

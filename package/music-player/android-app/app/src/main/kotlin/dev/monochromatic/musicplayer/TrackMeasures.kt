@@ -41,13 +41,12 @@ import androidx.core.net.toUri
 // ```ts
 // import { nextBatch, peakFromReply, encodeDurations, decodeDurations } from "./core/TrackMeasure";
 // ```
-import dev.monochromatic.musicplayer.core.MEASURE_BATCH_SIZE
 import dev.monochromatic.musicplayer.core.MEASURE_DURATION_FILE_NAME
 import dev.monochromatic.musicplayer.core.MeasurePeakReading
 import dev.monochromatic.musicplayer.core.TrackMeasure
 import dev.monochromatic.musicplayer.core.measureDecodeDurations
+import dev.monochromatic.musicplayer.core.measureDeleteLegacyDurationFiles
 import dev.monochromatic.musicplayer.core.measureEncodeDurations
-import dev.monochromatic.musicplayer.core.measureNextBatch
 import dev.monochromatic.musicplayer.core.measurePeakFromReply
 
 // What:     `import java.io.File` and `IOException` name the file and the failure it raises.
@@ -77,8 +76,8 @@ import kotlinx.coroutines.withContext
 // ```ts
 // const MEASURE_TAG = "TrackMeasures";
 // ```
-/** Logcat tag of the track measure log lines. */
-private const val MEASURE_TAG: String = "TrackMeasures"
+/** Logcat tag of the track measure log lines, which the page refresh in the host shares. */
+internal const val MEASURE_TAG: String = "TrackMeasures"
 
 // What:     `private const val MEASURE_MS_PER_SEC: Double = 1000.0` converts a stored duration to seconds.
 // Why:      The retriever and MediaStore report milliseconds, and the template formats seconds.
@@ -95,7 +94,7 @@ private const val MEASURE_MS_PER_SEC: Double = 1000.0
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const TrackMeasures = { readMeasures, refreshPage };
+// const TrackMeasures = { readMeasures };
 // ```
 /**
  * Reads the duration and true peak of library tracks, caching durations by fingerprint and never decoding for a peak.
@@ -154,48 +153,6 @@ object TrackMeasures {
             saveDurations(context)
             return@withContext measured
         }
-
-    // What:     `suspend fun refreshPage(...)` reads the page's unmeasured tracks in batches, publishing each batch.
-    // Why:      A batch lands on screen as soon as it is read, and each track is attempted at most once per pass.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // async function refreshPage(tracks, known, publish): Promise<void> { /* batches until none is left */ }
-    // ```
-    /**
-     * Reads the tracks of one page that still lack a measure, batch by batch, handing each batch to [publish].
-     *
-     * @param known returns the measures already published, read again before each batch
-     * @param publish receives the measures of one batch
-     */
-    suspend fun refreshPage(
-        context: Context,
-        tracks: List<Track>,
-        known: () -> Map<String, TrackMeasure>,
-        publish: (Map<String, TrackMeasure>) -> Unit,
-    ) {
-        /** URIs already read in this pass, so a track without a peak is not read twice in one pass. */
-        val attempted: MutableSet<String> = mutableSetOf()
-        while (true) {
-            /** Next tracks to read in this pass, in page order. */
-            // The choice scans the whole page, so it runs off the main thread: a page of thousands of tracks would
-            // otherwise cost the main thread a full scan per batch.
-            val batch: List<Track> = withContext(Dispatchers.Default) {
-                measureNextBatch(
-                    page = tracks,
-                    known = known(),
-                    attempted = attempted,
-                    batchSize = MEASURE_BATCH_SIZE,
-                )
-            }
-            if (batch.isEmpty()) {
-                Log.i(MEASURE_TAG, "page measures are complete attempted=${attempted.size}")
-                return
-            }
-            attempted += batch.map { track -> track.uri }
-            publish(readMeasures(context, batch))
-        }
-    }
 
     // What:     `private suspend fun measureOf(context, track): TrackMeasure` reads one track's duration and peak.
     // Why:      The duration and the peak are read by different paths, and each one may be absent without the other.
@@ -338,6 +295,11 @@ object TrackMeasures {
         val current: MutableMap<Long, Long>? = durations
         if (current != null) {
             return current
+        }
+        /** Retired duration cache files (gxhash-era keys) deleted now, so they do not accumulate. */
+        val deletedLegacy: Int = measureDeleteLegacyDurationFiles(context.applicationContext.filesDir)
+        if (deletedLegacy > 0) {
+            Log.i(MEASURE_TAG, "deleted $deletedLegacy retired duration cache file(s)")
         }
         /** Cache file under the app's private files directory. */
         val file = File(context.applicationContext.filesDir, MEASURE_DURATION_FILE_NAME)

@@ -106,7 +106,9 @@ How to use it:
   pin the last incumbent revision (its hash goes in the retirement commit and the behavior ledger);
   delete the commit,
    configuration and dependent-version differentials;
-  keep `native:interop` and give it an incumbent-provisioning step from the pinned revision.
+  keep `native:interop` and give it an incumbent-provisioning step from the pinned revision
+  (superseded: the matrix ran once against a rebuilt incumbent and the user then had the incumbent tooling deleted,
+  `doc/handover/cli-git-native-interop.md`).
 - Release and CI jobs:
   build the crate from the checkout with `cargo build --release --locked`.
   Done for `final-newline.yml` and for the `version` job of `npm-release.yml`.
@@ -589,6 +591,7 @@ The main checkout's `.claude/settings.json` has no hit;
 - `.github/workflows/cli-git-performance.yml` is deleted (install branch),
    with the performance harness;
    `perf/*.json` stays.
+- (Removed on 2026-10-14 at the owner's request, together with `package/git-policy/cli/bin/final-newline-workflow.mjs`: the check rebuilt the wrapper on every pull request.)
 - `.github/workflows/final-newline.yml` builds the crate from the checkout (`cargo build --release --locked`) and runs
   `package/git-policy/cli/bin/final-newline-workflow.mjs <executable>`,
   which clones the checkout,
@@ -844,6 +847,10 @@ and `/opt/cli-git` into the image (`bin/interop-native-container.mjs:55-79,146,2
    so they cannot run
 unchanged until an incumbent-provisioning step from the pinned revision exists.
 
+Note (2026-10-13): deleted at the user's request and readable at commit `5d61d7b442`:
+The incumbent-provisioning step and the incumbent drivers.
+The results are in `doc/handover/cli-git-native-interop.md`.
+
 ### Keep inside `package/git-policy/cli`
 
 - The crate:
@@ -1004,6 +1011,9 @@ revision).
 7.  The trailing gates in `doc/handover/cli-git-rust-implementation.md` (`Gates that trail the cutover`) include the
     old-and-new interop matrix,
      which needs a runnable incumbent after the retirement.
+    Note (2026-10-13): deleted at the user's request and readable at commit `5d61d7b442`:
+    The runnable incumbent and its provisioning step.
+    The results are in `doc/handover/cli-git-native-interop.md`.
 8.  `package/git/executable` treats native executables as real Git (see `Sibling packages`).
 9.  `cli-git.config.ts` imports the `./ts` export that the retirement deletes,
     so after the deletion nothing can load it:
@@ -1280,6 +1290,11 @@ Results for 0.1.1,
    staged control refused).
 
 ### Why the pin is 0.1.1
+
+Update 2026-10-14: the user decided that nothing this repository publishes needs a pin
+("You don't need to pin anything we control"), so `mise.no-env.toml` now says `latest` for the wrapper and the
+linter and `mise.lock` records the resolved version (0.1.2).
+The section below stays as the record of why 0.1.0 must never be installed.
 
 Version 0.1.0 landed a Markdown commit and then exited 2:
  in the throwaway repository with the repository's configuration (which lists `markdown/autofix`),

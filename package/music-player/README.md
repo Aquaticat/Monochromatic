@@ -10,8 +10,9 @@ a server,
 or an import step.
 
 Status:
-under active development,
-build from source.
+under active development.
+Pre-release builds are published for download,
+and the source is there to build.
 
 Version `0.1.0` builds a Slint desktop application and a Jetpack Compose Android application.
 They provide corresponding product behaviour through separate platform implementations and share true-peak metering.
@@ -24,6 +25,7 @@ and audio output remain native to each platform.
 - [What works today](#what-works-today)
 - [Gallery](#gallery)
 - [Design record](#design-record)
+- [Install](#install)
 - [Build from source](#build-from-source)
 - [Architecture](#architecture)
 - [Contributing](#contributing)
@@ -42,7 +44,8 @@ It saves the root,
 the selected track,
 the position,
 the playback mode,
-and the two template texts,
+the two template texts,
+and the Auto-play on select setting,
 but not the queue,
 so a relaunch rebuilds the queue from disk.
 
@@ -130,11 +133,20 @@ The transport deck shows the playing track with its folder,
 the seek bar,
 and the playback mode.
 
-On desktop,
-clicking a row other than the playing one plays it at once,
-and clicking the playing row toggles play and pause.
-On Android,
-tapping a row plays it.
+On both platforms,
+clicking or tapping a track row that is not the current track selects it and leaves it paused,
+and any track that was playing stops (D124),
+unless the Auto-play on select setting is on (D129),
+which also starts the track at once.
+Clicking or tapping the current row toggles play and pause,
+which also starts a track restored from the last session.
+A track that failed to open stays selected on both platforms and the next click or tap tries it again (D128);
+Next, Previous and the end of a track still skip unreadable files and report them.
+`Enter` on the focused row does the same.
+A Search result for a track follows the same rule (D127):
+the first activation selects the track and leaves it paused, and the second toggles play and pause,
+or, with Auto-play on select on, the first activation also starts it.
+The Play item of the track menu starts a track at once with the setting on or off.
 
 One playback mode of four applies on both platforms,
 and the app saves it:
@@ -218,6 +230,13 @@ template's editor on the other,
 so selecting a row never navigates.
 A narrower window shows the list,
 and a row opens that template's editor page.
+Under the templates, a Playback group holds one switch row,
+Auto-play on select, which is off by default.
+With it on, a click, tap or `Enter` on a track that is not the current track, and a Search result for one,
+selects the track and starts it at once (D129).
+The row toggles in place by click, tap, `Space` or `Enter`,
+opens no editor and leaves the selected template as it is;
+in a narrow list pane the switch sits under the supporting line.
 The page is drawn on the one canvas color,
 pure white in light and pure black in dark.
 
@@ -253,9 +272,12 @@ It measures non-current tracks in a background sweep and uses a bounded current-
 
 The desktop build uses Slint with winit on every desktop target.
 Linux targets Wayland and uses PipeWire,
-with no ALSA or PulseAudio backend.
+with no PulseAudio backend.
+The Alpine build also falls back to the default ALSA device when no PipeWire daemon answers.
 macOS targets Apple Silicon and uses CoreAudio.
-Windows targets `x86_64` and uses WASAPI through cpal.
+Windows targets `x86_64` and `arm64` and uses WASAPI through cpal.
+Only the Linux `x86_64` build has been run by the project;
+the other desktop targets are built by CI and have not been tested on their platform.
 
 The desktop source implements LauncherEntry D-Bus taskbar progress on Linux and native taskbar progress on Windows.
 These shell integrations are best-effort and are not shown in the gallery.
@@ -308,9 +330,9 @@ In order,
 Shuffle the folder,
 and Shuffle all.
 
-![Two-pane window in light appearance with a playing track](https://monochromatic-lfs.aquaticat.workers.dev/11389787a678c3204a331e24f41086c6b86667e938d0945831b2fb7d487140e8/package/music-player/asset/readme/desktop-two-pane-light.png)
+![Two-pane window in light appearance with a playing track](https://monochromatic-lfs.aquaticat.workers.dev/b5403787cf65072d0d2c9cfe18009016e35fb4632d8008642481377af9d4af10/package/music-player/asset/readme/desktop-two-pane-light.png)
 
-![Two-pane window in dark appearance with a playing track](https://monochromatic-lfs.aquaticat.workers.dev/ddba79bac4be96b743db6691afa2b1dcc40ef73841fe8d5a512b9fd15f4ee2a0/package/music-player/asset/readme/desktop-two-pane-dark.png)
+![Two-pane window in dark appearance with a playing track](https://monochromatic-lfs.aquaticat.workers.dev/531d61ba09fe7eb7d514a3b49c813884b31df36890fec730a195fa29d1fb0be4/package/music-player/asset/readme/desktop-two-pane-dark.png)
 
 #### Search
 
@@ -321,9 +343,9 @@ and a track with its parent folder,
 each with the matching text highlighted.
 The ring on the first result shows keyboard focus.
 
-![Search results for a query in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/63ba17ebabc151776d4507e814ec839369a8e355a76eeff7beda8de470d80a41/package/music-player/asset/readme/desktop-search-light.png)
+![Search results for a query in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/31bce84b95e2d27efc5a081447eab47f75d585fef0634faff8ac5b435afa6399/package/music-player/asset/readme/desktop-search-light.png)
 
-![Search results for a query in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/babc2d7c1b94a2a85e1b60117d9a775e9bab3bf9b36487c58f8c5e17b534555b/package/music-player/asset/readme/desktop-search-dark.png)
+![Search results for a query in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/3a69f0b9b347366cb600654e5210f891585f5e3eee92b640f90e911be4f85da5/package/music-player/asset/readme/desktop-search-dark.png)
 
 #### Settings
 
@@ -331,10 +353,11 @@ The Track rows template is selected when Settings opens.
 Its editor,
 a preview from the open library,
 and the list of insertable fields fill the second pane.
+The Playback group under the templates holds the Auto-play on select switch.
 
-![Settings with the Track rows template in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/2aebcf0a532bd80b74b94f8a3080f7dd4e25c0ffa8f7facb949e32d54f230c6e/package/music-player/asset/readme/desktop-settings-light.png)
+![Settings with the Track rows template and the Auto-play on select switch off in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/2848bc4d7c2d10a659f5708a26f7da6d70e3d419be264efbe8b0a9f4fe13b34a/package/music-player/asset/readme/desktop-settings-light.png)
 
-![Settings with the Track rows template in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/eb725dda5b69c22394904bf5cf10c27c10dc812d92d1f8a39a5680b754632277/package/music-player/asset/readme/desktop-settings-dark.png)
+![Settings with the Track rows template and the Auto-play on select switch off in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/44d7735d2401ece941e3aa4f94bf5546f4f033c8e3e92b56f12ece8d42ac2364/package/music-player/asset/readme/desktop-settings-dark.png)
 
 #### Track menu and key hints
 
@@ -342,9 +365,9 @@ The menu was opened on the playing row with the `Menu` key.
 Each row has an underlined access letter,
 and the rows that have a shortcut show it.
 
-![Track menu opened with the keyboard in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/637bda0a02bc474baaed39d100e6fd57ca54b2d82c0fb83d1b3a623f327fc879/package/music-player/asset/readme/desktop-menu-light.png)
+![Track menu opened with the keyboard in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/d0225b90acf06c3f0e925cd568bee8c15e30ac616828fe9e6dc49d24cf426e06/package/music-player/asset/readme/desktop-menu-light.png)
 
-![Track menu opened with the keyboard in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/9b6327d950aff7890a868cb3eeb09ca38c0a2ad74fc54bd3e8c232bbe28bf418/package/music-player/asset/readme/desktop-menu-dark.png)
+![Track menu opened with the keyboard in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/f3e68dda2676018e3a6412c5e8490ebe6c77ddc537edf77cb81dfa70a8aa91bb/package/music-player/asset/readme/desktop-menu-dark.png)
 
 Holding `Ctrl` shows a badge on each control that a `Ctrl` chord triggers:
 `F` on Search,
@@ -353,7 +376,7 @@ Holding `Ctrl` shows a badge on each control that a `Ctrl` chord triggers:
 and `Left` and `Right` on previous and next.
 The ring on the track row shows keyboard focus.
 
-![Key hint badges while Ctrl is held](https://monochromatic-lfs.aquaticat.workers.dev/85b1c6e6648f84384e835cef9127d0a81e73b6185605f852af004cb9a5c00fec/package/music-player/asset/readme/desktop-hints-dark.png)
+![Key hint badges while Ctrl is held](https://monochromatic-lfs.aquaticat.workers.dev/7a2a9c6a23db12b2a8cdea1deaae9f6f29643c7f1e7aafff72d13ede839cc26e/package/music-player/asset/readme/desktop-hints-dark.png)
 
 #### Narrow window
 
@@ -368,7 +391,7 @@ and Settings.
 The folder button opens the folder list in place of the track list,
 and the deck stays in view.
 
-![Narrow window with the folder list open in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/bb95684ccd34f954143784071729b4cea92b71ed38e447547b158ccdf39bcff2/package/music-player/asset/readme/desktop-narrow-folders-light.png)
+![Narrow window with the folder list open in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/bda22d27984c754117e63e8a0be1fb0f8283512b39fef7691ccb8ed832f64fe4/package/music-player/asset/readme/desktop-narrow-folders-light.png)
 
 #### Empty library
 
@@ -431,25 +454,31 @@ The query `lan` finds a loose track,
 a folder,
 and a track with its parent folder,
 each with the matching text highlighted.
+The header, the status strip and the results share one tone,
+a thin divider closes the header,
+and each result keeps its glyph in a round tonal disc.
 The on-screen keyboard was closed before the capture so that the results fill the display.
 
-![Search results for a query on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/582ac24c13d7449c7219890dbfd8c39fd3b85b9fee8f2dd3186688df8661f909/package/music-player/asset/readme/android-cover-search-light.png)
+![Search results for a query on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/b83ee72ae828794c5aa7b8ae7b471d232440f11417517328930db95d2b39a736/package/music-player/asset/readme/android-cover-search-light.png)
 
 The menu was opened on the playing row with the `Menu` key,
 after `Alt+2` had focused the track list.
-A ring around the row and a ring around Start shuffle from here show keyboard focus,
+A ring just inside the edges of the row and a ring around Start shuffle from here show keyboard focus,
 which the `Down` and `Up` keys move through the six rows.
+Rings appear only while the keyboard drives focus,
+and no other capture in this Android section shows one.
 Each row has an underlined access letter,
 and Move to trash has a red label and a trash icon.
 
-![Track menu opened with the keyboard on the cover display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/d1b1acaf10655d3e57fdbdb10695db9940578131b9cd7d742eabb2376ef6aa1a/package/music-player/asset/readme/android-cover-menu-dark.png)
+![Track menu opened with the keyboard on the cover display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/98007d69d82c56fdf7d154d21279e0a020ab660e29cf49f16d8049ffb2b834e8/package/music-player/asset/readme/android-cover-menu-dark.png)
 
 On the cover display Settings is a single pane.
 It lists the two templates,
 Track rows and Playing track,
-each with a preview line.
+each with a preview line,
+and the Auto-play on select switch under a Playback heading.
 
-![Settings on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/38060578083a8d54d0789ac615244bdddaaf8e8add7fb05c9e3f6c1296b703d1/package/music-player/asset/readme/android-cover-settings-light.png)
+![Settings with the Auto-play on select switch off on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/eafa459ad9fd32bf09cf26e3b6d04c277ba94cd282b6a7fd2169a2be10b4fb92/package/music-player/asset/readme/android-cover-settings-light.png)
 
 #### Inner display
 
@@ -459,17 +488,18 @@ and the right pane holds the tracks of the selected folder under their subfolder
 The playing track has bold text and a soft fill,
 and the mode group wraps to two rows.
 
-![Inner display with two panes in light appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/120a5d39518743b6d91e935507c9ce2202dc01108ed2341f62cee6ae30f29860/package/music-player/asset/readme/android-inner-two-pane-light.png)
+![Inner display with two panes in light appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/164afb1462092d47ba2acda0961a2ab2df717790f1c65d45eda0b7c6fb2db797/package/music-player/asset/readme/android-inner-two-pane-light.png)
 
-![Inner display with two panes in dark appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/4384c24aa25790016829801c5e13c7b8ef6d631b9aadbdd476d1b9c219e4d30d/package/music-player/asset/readme/android-inner-two-pane-dark.png)
+![Inner display with two panes in dark appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/bdfe6255fecba3dca4a8ebb349494e8ee2282c80757e011eeda75f5f2eeb2825/package/music-player/asset/readme/android-inner-two-pane-dark.png)
 
-On the inner display Settings keeps the template list on the left with Track rows selected.
+On the inner display Settings keeps the template list on the left with Track rows selected,
+and the Auto-play on select switch under it, below the Playback heading.
 The right pane shows that template's preview from the open library,
 its template text,
 and the fields that can be inserted,
 each with an example value and its `mi(...)` name.
 
-![Settings with the Track rows template on the inner display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/d09cd01cfc17b434647a0cf10a59b0e70646e737d670501d8a44d61075dd3174/package/music-player/asset/readme/android-inner-settings-dark.png)
+![Settings with the Track rows template and the Auto-play on select switch off on the inner display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/0d57342b59f546353cae871dbd8d771fd0d9d943f2b62058c4e6c46d4bb6628a/package/music-player/asset/readme/android-inner-settings-dark.png)
 
 ## Design record
 
@@ -501,6 +531,133 @@ decoding,
 output,
 and platform integration still have platform-specific implementations.
 
+## Install
+
+Pre-release builds are attached to the GitHub releases of
+[`Aquaticat/Monochromatic`](https://github.com/Aquaticat/Monochromatic/releases),
+because this package still lives in that repository.
+Look for a release titled `Music Player <version> (pre-release)` with a tag named `music-player-v<version>`;
+the same page lists releases of other packages.
+If it lists no Music Player release yet,
+[build from source](#build-from-source).
+
+Every release is a pre-release,
+because the project is under active development.
+A release holds one file per platform and a `SHA256SUMS` file:
+
+- Windows: `music-player-<version>-windows-x64.exe` and `music-player-<version>-windows-arm64.exe`.
+- macOS: `music-player-<version>-macos-arm64.dmg`, for Apple silicon Macs only.
+  Intel Macs have no download: build from source.
+- Linux: `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz`.
+- Alpine Linux: `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz`.
+  These are for Alpine 3.24 or newer (musl libc) on x86_64 or aarch64;
+  the Linux archives above do not run on Alpine.
+- Android: `music-player-<version>-android.apk`.
+
+### What has been tested
+
+The project has run the Linux `x86_64` build on Wayland with PipeWire,
+and the Android app on emulators.
+Every other file is built by CI, not yet tested on this platform:
+CI starts each desktop program once with `--version` and does nothing more.
+No build has run on a real Android device, on macOS or on Windows.
+The Alpine files have more checking than the other CI-built files, though not on real hardware:
+the Alpine workflow runs the unit tests and a headless window and sound check in Alpine containers on both
+architectures, on debug builds, and the release run starts each Alpine program with `--version` in an Alpine image.
+Treat those downloads as unverified and report what you find as issues.
+
+### Windows
+
+Download the `.exe` that matches your processor and run it.
+It is one standalone program that needs no installer and no Visual C++ runtime.
+It is not signed with a developer identity,
+so SmartScreen may show "Windows protected your PC":
+choose "More info",
+then "Run anyway".
+The executable is built as a console program,
+so Windows opens a console window next to the app.
+The program takes one optional folder or file to open: `music-player.exe C:\Music`.
+
+### macOS
+
+Open the `.dmg` and drag Music Player to Applications.
+The app is not notarized by Apple and has only an ad-hoc signature (no developer identity),
+so the first launch needs your confirmation:
+
+1.  Try to open Music Player once.
+    macOS shows a warning and does not start it.
+2.  Open System Settings, go to Privacy & Security, scroll down and click "Open Anyway".
+3.  Click "Open" when the warning appears again.
+
+macOS remembers the choice after that.
+These are the steps in [Apple's guide](https://support.apple.com/en-us/102445).
+The app needs macOS 11 or newer.
+
+### Linux
+
+Extract the archive and run `bin/music-player`,
+or follow `INSTALL.txt` inside it to add a menu entry and an icon for your user.
+It needs a Wayland or X11 session,
+PipeWire,
+and fontconfig.
+The program is built on Ubuntu 24.04 and needs a glibc of that age or newer.
+There is no AppImage:
+the program links PipeWire from the host,
+so an AppImage would depend on the host as much as the archive does.
+
+### Alpine Linux download
+
+Use the `linux-musl` archive that matches your processor (`x86_64` is `x64`, `aarch64` is `arm64`).
+Install the runtime packages as root,
+then extract the archive and run `bin/music-player`:
+
+```sh
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
+  mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+```
+
+`INSTALL.txt` inside the archive shows the runtime directory a plain Alpine install lacks and how to add a menu entry.
+Without PipeWire the player plays through the default ALSA device.
+It needs a Wayland compositor;
+the X11 path is untested.
+The binary is dynamically linked against musl and runs only on musl systems.
+The other differences from a Fedora desktop (fonts, the folder chooser, notifications) are in
+[Alpine Linux](#alpine-linux).
+
+### Android
+
+Download the `.apk` on the device,
+open it,
+and allow installing from that app when Android asks.
+It needs Android 8.0 (API 26) or newer,
+and the `arm64-v8a` or `x86_64` instruction set.
+
+The APK is signed with the project's release key,
+and an update installs over it only if it carries the same key.
+The certificate's SHA-256 fingerprint is
+`9de6e9a475f182c36f2513179fd4b14763b0e00fe068c9b8f3e6f08103616926`;
+compare it with `apksigner verify --print-certs <file>.apk`.
+A debug build made from source uses a different key,
+so Android refuses to update one into the other:
+uninstall first.
+
+### Verify a download
+
+Every file is attested with GitHub build provenance,
+which binds its exact bytes to the workflow run that built it:
+
+```bash
+# Fails if the file was changed after the workflow built it.
+gh attestation verify <file> --repo Aquaticat/Monochromatic
+
+# Compare against the checksum file attached to the release.
+sha256sum --check --ignore-missing SHA256SUMS
+```
+
+The runbook [`doc/runbook/release-the-music-player.md`](../../doc/runbook/release-the-music-player.md)
+describes how releases are made,
+and [`doc/decision/music-player-releases.md`](../../doc/decision/music-player-releases.md) records why.
+
 ## Build from source
 
 [Mise](https://mise.jdx.dev/) owns the supported build,
@@ -525,7 +682,9 @@ mise run //package/music-player/desktop-app:test
 
 Linux builds use host development libraries when available and otherwise use the package's Fedora container.
 The application itself runs on the host session.
- Linux requires Wayland and PipeWire.
+ Linux requires Wayland and PipeWire;
+ Alpine Linux also runs the player over ALSA
+(see [Alpine Linux](#alpine-linux)).
  macOS builds target Apple
 Silicon,
  and Windows builds target `x86_64`;
@@ -540,6 +699,51 @@ See [`desktop-app/README.md`](desktop-app/README.md) for platform prerequisites,
 session locations,
  build verification,
  and signing work.
+
+### Alpine Linux
+
+The player runs on Alpine Linux (musl libc) on x86_64 and aarch64 as a dynamically linked build;
+a static binary cannot open a window.
+Install the runtime packages,
+then run it with a runtime directory:
+
+```sh
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
+  mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}"
+mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+music-player path/to/music-folder
+```
+
+Expect these differences from a Fedora desktop:
+
+- A font package is required;
+  with none installed the player panics at startup.
+- Sound uses PipeWire when a daemon runs (`apk add pipewire wireplumber`),
+  otherwise the default ALSA device.
+  With neither,
+  the window says that no sound output is available.
+- "Open folder" needs a desktop portal or `zenity`;
+  without either the window says so,
+  and a folder can be passed on
+  the command line.
+- Notifications and the appearance setting need a D-Bus session bus.
+
+Build from source on Alpine:
+
+```sh
+apk add rust cargo build-base cmake samurai pkgconf linux-headers clang21-libclang \
+  pipewire-dev alsa-lib-dev fontconfig-dev freetype-dev
+cd package/music-player/desktop-app
+SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 cargo build --release --locked --features alsa-fallback
+```
+
+`mise run //package/music-player/desktop-app:test:alpine` runs the unit tests and a smoke test in Alpine containers,
+and a GitHub workflow runs it on both architectures.
+The full list of packages,
+results and limits is in
+[`desktop-app/README.md`](desktop-app/README.md#alpine-linux) and
+[`doc/decision/music-player-alpine.md`](../../doc/decision/music-player-alpine.md).
 
 ### Android
 
@@ -694,6 +898,10 @@ at commit `49d4db35df873165d6bd6ba09b063c7dafbac2f4`:
   for the Track rows template.
 - `play_circle`,
   for the Playing track template.
+- `autoplay`,
+  for the Auto-play on select row,
+  and `check` and `close`,
+  for the marks in the switch thumb.
 
 Each app embeds the path data as vector code,
 with no icon font and no network access at run time.

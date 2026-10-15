@@ -15,7 +15,8 @@ await describe({
       return it({
         name: `accounts for original ${profile} without authority or completeness`,
         fn: async function checkOriginal() {
-          const f = createContributionFixture(profile,), result = consumeSourceAssociations(f.inputs,);
+          const f = createContributionFixture(profile,);
+          const result = consumeSourceAssociations(f.inputs,);
           expect(result.issues.length,).toBe(0,);
           expect(result.uses.length,).toBe(1,);
           expect(result.uses[0]?.state,).toBe('accounted',);
@@ -40,8 +41,10 @@ await describe({
       name: 'empty or absent contribution selection supplies no completeness assertion',
       fn: async function checkEmpty() {
         const f = createContributionFixture('base',);
-        for (const requestSourceContributions of [[], undefined,]) {
-          const result = consumeSourceAssociations({ ...f.inputs, requestObservation: undefined, requestSourceContributions, },);
+        delete f.inputs.requestObservation;
+        delete f.inputs.requestSourceContributions;
+        for (const input of [f.inputs, { ...f.inputs, requestSourceContributions: [] }]) {
+          const result = consumeSourceAssociations(input);
           expect(result,).toEqual({ uses: [], issues: [], },);
           expect(Object.hasOwn(result, 'complete',),).toBe(false,);
         }
@@ -51,20 +54,26 @@ await describe({
       name: 'foreign request, list and request-bound source view reject',
       fn: async function checkRequestIdentity() {
         const f = createContributionFixture('base',);
+        /** Omitted request identity exercises the ordinary optional-field contract. */
+        const missing = { ...f.inputs };
+        delete missing.requestObservation;
         for (const input of [
-          { ...f.inputs, requestObservation: undefined, },
+          missing,
           { ...f.inputs, requestObservation: { ...f.observation, request: {}, }, },
           { ...f.inputs, requestSourceContributions: [...f.observation.sourceContributions,], },
           { ...f.inputs, instructionSources: [{ ...f.view, request: { ...f.observation, }, },], },
         ]) {
-          expect(function invoke() { consumeSourceAssociations(input,); },).toThrow(PolicyInputBindingError,);
+          expect(function invoke() {
+            consumeSourceAssociations(input);
+          }).toThrow(PolicyInputBindingError);
         }
       },
     },),
     it({
       name: 'equal-looking independent sources retain their distinct original contributions',
       fn: async function checkIndependentSources() {
-        const first = createContributionFixture('base',), second = createContributionFixture('base',);
+        const first = createContributionFixture('base',);
+        const second = createContributionFixture('base',);
         second.contribution.request = first.observation.request;
         first.observation.sourceContributions = [first.contribution, second.contribution,];
         second.view.request = first.observation;
@@ -74,7 +83,9 @@ await describe({
           instructionCarriers: [first.carrier, second.carrier,],
           runInstructionCarriers: [first.runCarrier, second.runCarrier,],
         },);
-        expect(result.uses.map(function state(use,) { return use.state; },),).toEqual(['accounted', 'accounted',],);
+        expect(result.uses.map(function state(use) {
+          return use.state;
+        })).toEqual(['accounted', 'accounted']);
         expect(result.uses[0]?.sourceOccurrence,).not.toBe(result.uses[1]?.sourceOccurrence,);
         expect(result.uses[0]?.contribution,).not.toBe(result.uses[1]?.contribution,);
       },
@@ -84,8 +95,16 @@ await describe({
         name: `preserves exact original request reader failure ${index}`,
         fn: async function checkReader() {
           const f = createContributionFixture('base',);
-          const inputs = { ...f.inputs, get requestObservation(): never { throwNativeValue(original,); throw new Error('Native throw must not return',); }, };
-          const failures = thrownValues(function invoke() { consumeSourceAssociations(inputs,); },);
+          const inputs = {
+            ...f.inputs,
+            get requestObservation(): never {
+              throwNativeValue(original);
+              throw new Error('Native throw must not return');
+            }
+          };
+          const failures = thrownValues(function invoke() {
+            consumeSourceAssociations(inputs);
+          });
           expect(failures.length,).toBe(1,);
           expect(failures[0],).toBe(original,);
         },

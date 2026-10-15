@@ -20,7 +20,8 @@ use super::hook_dispatch_plan::{
 /// The hook entry naming rule on Windows.
 use super::hook_dispatch_entries::hook_entry_name;
 /// Lock acquisition and release shared with the other owner locks.
-use super::owner_lock::{DEFAULT_POLL_DELAY, OwnerLock, SilentWait, acquire_owner_lock};
+use super::live_lock::acquire_live_owner_lock;
+use super::owner_lock::OwnerLock;
 /// Bounded no-follow reads of the plan.
 use super::private_storage::read_regular_file;
 /// Preparation lease variable name.
@@ -195,11 +196,7 @@ pub fn run_hook_dispatch(
     let lock: Option<OwnerLock> = if plan.skip_hook_lock {
         None
     } else {
-        match acquire_owner_lock(
-            Path::new(plan.hook_lock_path.as_str()),
-            DEFAULT_POLL_DELAY,
-            &mut SilentWait,
-        ) {
+        match acquire_live_owner_lock(Path::new(plan.hook_lock_path.as_str()), "the hook lock") {
             Ok(acquired) => Some(acquired),
             Err(error) => return dispatch_failure(error.to_string().as_str()),
         }

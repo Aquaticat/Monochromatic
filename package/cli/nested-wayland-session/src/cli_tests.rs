@@ -196,7 +196,8 @@ fn invalid_option_values_are_rejected() {
     }
 }
 
-/// The launcher log flag is off by default and turns on alone, without a color scheme.
+/// The launcher log flag is off by default and turns on alone,
+/// without a color scheme.
 #[test]
 fn launcher_log_flag_is_off_by_default_and_parses_alone() {
     assert!(!parse_args(&args(&["app"])).unwrap().launcher_log);
@@ -240,10 +241,109 @@ fn accent_color_option_takes_six_hex_digits() {
     }
 }
 
-/// The new options leave the child command alone, like every other parent option.
+/// Headless is off by default and turns on only with the flag,
+/// before the child command.
+#[test]
+fn headless_flag_is_off_by_default_and_opt_in() {
+    assert!(!parse_args(&args(&["app"])).unwrap().headless);
+    assert!(!parse_args(&args(&["--size", "800x600", "--", "app"])).unwrap().headless);
+    let config = parse_args(&args(&["--headless", "--size", "800x600", "app"])).unwrap();
+    assert!(config.headless);
+    assert_eq!(config.child_command, ["app"]);
+}
+
+/// The flag belongs to the parent only until the child command begins,
+/// with or without the separator.
+#[test]
+fn headless_after_the_child_command_is_forwarded_to_the_child() {
+    let config = parse_args(&args(&["app", "--headless"])).unwrap();
+    assert!(!config.headless);
+    assert_eq!(config.child_command, ["app", "--headless"]);
+    let separated = parse_args(&args(&["--", "app", "--headless"])).unwrap();
+    assert!(!separated.headless);
+    assert_eq!(separated.child_command, ["app", "--headless"]);
+    let both = parse_args(&args(&["--headless", "--", "app", "--headless"])).unwrap();
+    assert!(both.headless);
+    assert_eq!(both.child_command, ["app", "--headless"]);
+}
+
+/// The new options leave the child command alone,
+/// like every other parent option.
 #[test]
 fn new_options_stop_at_the_child_command() {
     let config = parse_args(&args(&["--notifications", "kde", "app", "--notifications", "none"])).unwrap();
     assert_eq!(config.notifications, NotificationMode::Kde);
     assert_eq!(config.child_command, ["app", "--notifications", "none"]);
+}
+
+/// Headless without `--gpu` selects `auto`,
+/// the behavior headless had before the option existed,
+/// and so does the nested window's unused default.
+#[test]
+fn headless_without_gpu_selects_auto() {
+    use crate::gpu_choice::GpuChoice;
+    let config = parse_args(&args(&["--headless", "app"])).unwrap();
+    assert_eq!(config.gpu, GpuChoice::Auto);
+    assert!(!config.list_gpus);
+    assert_eq!(parse_args(&args(&["app"])).unwrap().gpu, GpuChoice::Auto);
+}
+
+/// `--gpu` takes `auto`,
+/// `software`,
+/// or a render node path with `--headless`,
+/// and stops at the child command.
+#[test]
+fn gpu_option_parses_with_headless() {
+    use crate::gpu_choice::GpuChoice;
+    use std::path::PathBuf;
+    let node = parse_args(&args(&["--headless", "--gpu", "/dev/dri/renderD128", "--", "app"])).unwrap();
+    assert_eq!(node.gpu, GpuChoice::RenderNode(PathBuf::from("/dev/dri/renderD128")));
+    assert_eq!(parse_args(&args(&["--gpu", "software", "--headless", "app"])).unwrap().gpu, GpuChoice::Software);
+    assert_eq!(parse_args(&args(&["--headless", "--gpu", "auto", "app"])).unwrap().gpu, GpuChoice::Auto);
+    let forwarded = parse_args(&args(&["--headless", "app", "--gpu", "software"])).unwrap();
+    assert_eq!(forwarded.gpu, GpuChoice::Auto);
+    assert_eq!(forwarded.child_command, ["app", "--gpu", "software"]);
+}
+
+/// A bad value is refused by the parser with the accepted forms.
+#[test]
+fn gpu_option_rejects_a_bad_value_naming_the_choices() {
+    for bad in ["amd", "renderD128", "relative/path"] {
+        let error = parse_args(&args(&["--headless", "--gpu", bad, "app"])).err().expect("rejected");
+        let text = format!("{error:#}");
+        assert!(text.contains("auto, software"), "{bad}: {text}");
+        assert!(text.contains("--list-gpus"), "{bad}: {text}");
+    }
+}
+
+/// Without `--headless` the nested window uses its parent's GPU,
+/// so `--gpu` fails and says so.
+#[test]
+fn gpu_option_without_headless_is_an_error_naming_headless() {
+    for value in ["auto", "software", "/dev/dri/renderD128"] {
+        let error = parse_args(&args(&["--gpu", value, "app"])).err().expect("rejected");
+        let text = format!("{error:#}");
+        assert!(text.contains("--gpu is only valid together with --headless"), "{value}: {text}");
+        assert!(text.contains("parent"), "{value}: {text}");
+    }
+}
+
+/// `--list-gpus` needs no client command and conflicts with a command or `--gpu`.
+#[test]
+fn list_gpus_needs_no_command() {
+    let config = parse_args(&args(&["--list-gpus"])).unwrap();
+    assert!(config.list_gpus);
+    assert!(config.child_command.is_empty());
+    assert_eq!(error_kind(&["--list-gpus", "app"]), clap::error::ErrorKind::ArgumentConflict);
+    assert_eq!(
+        error_kind(&["--list-gpus", "--headless", "--gpu", "software"]),
+        clap::error::ErrorKind::ArgumentConflict,
+    );
+    assert!(!parse_args(&args(&["app"])).unwrap().list_gpus);
+}
+
+/// A missing command is still an error without `--list-gpus`.
+#[test]
+fn missing_command_is_still_an_error() {
+    assert_eq!(error_kind(&["--headless"]), clap::error::ErrorKind::MissingRequiredArgument);
 }

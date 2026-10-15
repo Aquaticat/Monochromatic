@@ -491,7 +491,7 @@ fn replay_error_text(error: &ReplayError) -> String {
 /// throw error
 /// ```
 fn reservation_stop(error: ReservationError) -> TransactionStop {
-    return failed(format!("the landing reservation failed: {error:?}"));
+    return failed(format!("the landing reservation failed: {error}"));
 }
 
 /// What:

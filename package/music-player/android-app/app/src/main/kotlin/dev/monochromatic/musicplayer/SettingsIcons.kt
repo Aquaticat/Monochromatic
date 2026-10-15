@@ -129,3 +129,77 @@ internal val SETTINGS_PLAYING_TRACK_ICON: ImageVector = settingsIcon(
     name = "Settings.PlayingTrack",
     pathData = PLAY_CIRCLE_PATH,
 )
+
+// What:     `private val AUTOPLAY_PATH: String` holds the Material Symbols `autoplay` outline.
+// Why:      The text is the `d` attribute of
+//           `symbols/web/autoplay/materialsymbolsoutlined/autoplay_24px.svg` (weight 400, grade 0, optical
+//           size 24, unfilled) from google/material-design-icons at commit 49d4db35df873165d6bd6ba09b063c7dafbac2f4,
+//           copied unchanged; Apache 2.0, see `LICENSES/Apache-2.0.txt`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const AUTOPLAY_PATH = "<svg path data>";
+// ```
+/** SVG path data for the `autoplay` icon on the upstream 960 unit grid, whose y axis starts at -960. */
+private val AUTOPLAY_PATH: String = listOf(
+    "M380-300v-360l280 180-280 180ZM480-40q-108 0-202.5-49.5T120-228v108H40v-240h240v80h-98q51 75 129.5 117.5T480-120",
+    "q115 0 208.5-66T820-361l78 18q-45 136-160 219.5T480-40ZM42-520q7-67 32-128.5T143-762l57 57q-32 41-52 87.5T123-520",
+    "H42Zm214-241-57-57q53-44 114-69.5T440-918v80q-51 5-97 25t-87 52Zm449 0q-41-32-87.5-52T520-838v-80q67 6 128.5 31",
+    "T762-818l-57 57Zm133 241q-5-51-25-97.5T761-705l57-57q44 52 69 113.5T918-520h-80Z",
+).joinToString(separator = "")
+
+// What:     `private const val CHECK_PATH: String` holds the Material Symbols `check` outline.
+// Why:      The text is the `d` attribute of `symbols/web/check/materialsymbolsoutlined/check_24px.svg` (weight 400,
+//           grade 0, optical size 24, unfilled) from the same commit, copied unchanged; Apache 2.0.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const CHECK_PATH = "<svg path data>";
+// ```
+/** SVG path data for the `check` icon on the upstream 960 unit grid, drawn in the thumb of an on switch. */
+private const val CHECK_PATH: String = "M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+
+// What:     `private const val CLOSE_PATH: String` holds the Material Symbols `close` outline.
+// Why:      The text is the `d` attribute of `symbols/web/close/materialsymbolsoutlined/close_24px.svg` (weight 400,
+//           grade 0, optical size 24, unfilled) from the same commit, copied unchanged; Apache 2.0.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const CLOSE_PATH = "<svg path data>";
+// ```
+/** SVG path data for the `close` icon on the upstream 960 unit grid, drawn in the thumb of an off switch. */
+private const val CLOSE_PATH: String =
+    "m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
+
+// What:     `internal val SETTINGS_AUTO_PLAY_ICON: ImageVector` is the icon of the Auto-play on select row.
+// Why:      D129 picked `autoplay` (a play triangle inside a circling arrow), which no other screen uses.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SETTINGS_AUTO_PLAY_ICON = settingsIcon("Settings.AutoPlay", AUTOPLAY_PATH);
+// ```
+/** Play triangle inside a circular arrow, the icon of the Auto-play on select row. */
+internal val SETTINGS_AUTO_PLAY_ICON: ImageVector = settingsIcon(
+    name = "Settings.AutoPlay",
+    pathData = AUTOPLAY_PATH,
+)
+
+// What:     `internal val SETTINGS_SWITCH_ON_ICON: ImageVector` is the mark in the thumb of an on switch.
+// Why:      A check in the thumb is a second channel for the on state besides the thumb position and the track fill.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SETTINGS_SWITCH_ON_ICON = settingsIcon("Settings.SwitchOn", CHECK_PATH);
+// ```
+/** Check mark drawn in the thumb of an on switch. */
+internal val SETTINGS_SWITCH_ON_ICON: ImageVector = settingsIcon(name = "Settings.SwitchOn", pathData = CHECK_PATH)
+
+// What:     `internal val SETTINGS_SWITCH_OFF_ICON: ImageVector` is the mark in the thumb of an off switch.
+// Why:      A cross in the thumb is a second channel for the off state besides the thumb position and the track fill.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SETTINGS_SWITCH_OFF_ICON = settingsIcon("Settings.SwitchOff", CLOSE_PATH);
+// ```
+/** Cross drawn in the thumb of an off switch. */
+internal val SETTINGS_SWITCH_OFF_ICON: ImageVector = settingsIcon(name = "Settings.SwitchOff", pathData = CLOSE_PATH)

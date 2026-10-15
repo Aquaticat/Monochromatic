@@ -230,9 +230,92 @@ fn removal_retires_registry_directories() {
     std::fs::write(legacy.join("journal.json"), b"{}").expect("journal");
     remove_transaction_directory(legacy.as_path()).expect("legacy removal");
     assert!(!legacy.exists());
+    remove(git_dir.as_path());
+}
+
+/// Two recoverers retire one dead transaction:
+///  the one that loses the rename finds the directory gone and has nothing left to do.
+#[test]
+fn removing_a_directory_a_peer_already_retired_succeeds() {
+    let git_dir: PathBuf = fixture("registry-remove-peer");
+    let root: PathBuf = git_dir.join(TRANSACTION_ROOT_NAME);
+    ensure_transaction_root(root.as_path()).expect("create");
+    assert!(remove_transaction_directory(root.join(ID).as_path()).is_ok());
+    let directory: PathBuf =
+        publish_transaction_directory(root.as_path(), ID, b"{}\n").expect("publish");
+    remove_transaction_directory(directory.as_path()).expect("first removal");
+    assert!(remove_transaction_directory(directory.as_path()).is_ok());
     assert!(
-        remove_transaction_directory(root.join(ID).as_path()).is_err(),
-        "a missing registry directory cannot be retired"
+        list_transaction_entries(root.as_path())
+            .expect("listing")
+            .is_empty()
+    );
+    remove(git_dir.as_path());
+}
+
+/// Whether a directory is removed in place or retired first shows only when its parent is missing:
+///  the retiring rename finds nothing and succeeds, while the in-place removal must still sync the parent and fails.
+///  Only a registry directory named by a transaction ID is retired.
+#[test]
+fn only_a_registry_directory_with_a_transaction_name_is_retired() {
+    let git_dir: PathBuf = fixture("registry-remove-kinds");
+    // A transaction ID under the registry's name is retired, so the missing registry is not an error.
+    remove_transaction_directory(git_dir.join(TRANSACTION_ROOT_NAME).join(ID).as_path())
+        .expect("a retired transaction whose registry vanished");
+    // A transaction ID under another name is removed in place, and the missing parent cannot be synced.
+    let plain: String = remove_transaction_directory(git_dir.join("plain").join(ID).as_path())
+        .expect_err("another parent")
+        .0;
+    assert!(plain.starts_with("syncing the transaction registry"), "{plain}");
+    // Another name under the registry's name is removed in place as well.
+    let legacy: String = remove_transaction_directory(
+        git_dir.join(TRANSACTION_ROOT_NAME).join("legacy").as_path(),
+    )
+    .expect_err("another entry name")
+    .0;
+    assert!(legacy.starts_with("syncing the transaction registry"), "{legacy}");
+    remove(git_dir.as_path());
+}
+
+/// A path whose parent is a file cannot be inspected,
+///  and that is a failure rather than an absent directory.
+#[cfg(unix)]
+#[test]
+fn an_uninspectable_path_is_not_an_absent_directory() {
+    let git_dir: PathBuf = fixture("registry-real-directory");
+    let file: PathBuf = git_dir.join("file");
+    std::fs::write(&file, b"x").expect("file");
+    assert!(real_directory(file.join("child").as_path()).is_err());
+    assert_eq!(
+        real_directory(git_dir.join("absent").as_path()).expect("absent"),
+        None
+    );
+    assert_eq!(real_directory(git_dir.as_path()).expect("directory"), Some(true));
+    assert_eq!(real_directory(file.as_path()).expect("file"), Some(false));
+    remove(git_dir.as_path());
+}
+
+/// A registry that cannot be created for a reason other than already existing is reported as a creation failure,
+///  not as an unsafe registry.
+#[cfg(unix)]
+#[test]
+fn a_registry_that_cannot_be_created_is_reported_as_such() {
+    use std::os::unix::fs::PermissionsExt;
+    let git_dir: PathBuf = fixture("registry-create-refused");
+    let canonical: PathBuf = std::fs::canonicalize(&git_dir).expect("canonical");
+    std::fs::set_permissions(&canonical, std::fs::Permissions::from_mode(0o500)).expect("lock");
+    let outcome = ensure_transaction_root(canonical.join(TRANSACTION_ROOT_NAME).as_path());
+    std::fs::set_permissions(&canonical, std::fs::Permissions::from_mode(0o700)).expect("unlock");
+    // A superuser creates the directory anyway, so only an ordinary user shows the refusal.
+    if outcome.is_ok() {
+        remove(git_dir.as_path());
+        return;
+    }
+    assert!(
+        outcome
+            .expect_err("refused")
+            .0
+            .contains("creating the transaction registry")
     );
     remove(git_dir.as_path());
 }

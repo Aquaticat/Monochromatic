@@ -286,18 +286,31 @@ fun measureDetailsValue(measure: TrackMeasure?): String {
 /** True when the track has no measure yet, or its peak is still unknown. */
 fun measureNeedsRead(measure: TrackMeasure?): Boolean = measure == null || measure.peakDbtp == null
 
-// What:     `fun measureNextBatch(...)` chooses the next tracks to read, in page order, skipping those already
-//           attempted.
+// What:     `fun measureNextBatch(...)` chooses the next tracks to read, starting at one position of the page and
+//           wrapping around to its start, skipping those already attempted.
 // Why:      A pass reads each track at most once, so a track that never gets a peak cannot loop the refresh forever.
+//           Starting at the first visible track gives the rows the user is looking at their measures first, on a page
+//           of thousands of tracks where reading from the top made a row deep in the page wait for every row above it.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function nextBatch(page: Track[], known: Map<string, TrackMeasure>, attempted: Set<string>, size: number): Track[] {
-//   ... }
+// function nextBatch(
+//   page: Track[], known: Map<string, TrackMeasure>, attempted: Set<string>, size: number, startAt = 0,
+// ): Track[] {
+//   const batch: Track[] = [];
+//   for (let offset = 0; offset < page.length && batch.length < size; offset++) {
+//     const track = page[(startAt + offset) % page.length];
+//     if (!attempted.has(track.uri) && needsRead(known.get(track.uri))) batch.push(track);
+//   }
+//   return batch;
+// }
 // ```
 /**
- * Returns up to [batchSize] tracks of [page] that need a read and were not attempted yet, in page order.
+ * Returns up to [batchSize] tracks of [page] that need a read and were not attempted yet, in page order from [startAt]
+ * to the end of the page and then from its start up to [startAt].
  *
+ * @param startAt position in [page] where the scan begins, clamped into the page; a negative value or one past the
+ *     end begins at the start of the page
  * @throws IllegalArgumentException when [batchSize] is below one
  */
 fun measureNextBatch(
@@ -305,12 +318,24 @@ fun measureNextBatch(
     known: Map<String, TrackMeasure>,
     attempted: Set<String>,
     batchSize: Int,
+    startAt: Int = 0,
 ): List<Track> {
     require(batchSize >= 1) { "Measure batch size must be at least 1, was $batchSize." }
-    return page
-        .filter { track -> track.uri !in attempted }
-        .filter { track -> measureNeedsRead(known[track.uri]) }
-        .take(batchSize)
+    /** Position where the scan begins, or the start of the page when [startAt] is outside it. */
+    val start: Int = if (startAt in page.indices) startAt else 0
+    /** Tracks chosen so far, in scan order. */
+    val batch: MutableList<Track> = mutableListOf()
+    /** Count of positions scanned since [start]. */
+    var offset: Int = 0
+    while (offset < page.size && batch.size < batchSize) {
+        /** Track at this step of the scan, wrapping from the end of the page to its start. */
+        val track: Track = page[(start + offset) % page.size]
+        if (track.uri !in attempted && measureNeedsRead(known[track.uri])) {
+            batch += track
+        }
+        offset += 1
+    }
+    return batch
 }
 
 // What:     `fun measuresByIndex(...)` keys the page's measures by load-order index.

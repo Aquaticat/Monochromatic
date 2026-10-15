@@ -99,6 +99,45 @@ fn fingerprint_is_stable_and_change_sensitive() {
     let _ = fs::remove_file(&other);
 }
 
+// What:     `#[test]` the wrapper hands the right inputs to the shared fingerprint function.
+// Why:      The digest itself is pinned to the xxHash reference by the known-answer tests in
+//           `truepeak-core`; this test pins the desktop plumbing: path text, file size, and
+//           mtime nanoseconds reach `track_fingerprint` in the right slots. The mtime is set
+//           explicitly so the expected value is computed from known inputs.
+#[test]
+fn fingerprint_feeds_path_size_and_mtime_to_the_shared_function() {
+    // What:     a real temp file of exactly 5 bytes with a chosen modified-time.
+    // Why:      Known size and mtime make the expected key computable.
+    let file = unique_path("plumbing.flac");
+    fs::write(&file, b"hello").expect("plumbing fixture should be written");
+    let mtime = UNIX_EPOCH + Duration::new(1_700_000_000, 123_456_789);
+    fs::File::options()
+        .write(true)
+        .open(&file)
+        .expect("plumbing fixture should reopen")
+        .set_modified(mtime)
+        .expect("plumbing fixture mtime should be set");
+
+    // What:     compute the expected key from the same inputs through the shared function.
+    // Why:      A swapped size/mtime, a missing path, or a wrong unit in the wrapper changes it.
+    let expected = track_fingerprint(&file.to_string_lossy(), 5, 1_700_000_000_123_456_789);
+    assert_eq!(fingerprint(&file), Some(expected));
+
+    // What:     a different mtime with the same size and path changes the key.
+    // Why:      Positive control that the mtime is part of the key.
+    fs::File::options()
+        .write(true)
+        .open(&file)
+        .expect("plumbing fixture should reopen")
+        .set_modified(UNIX_EPOCH + Duration::new(1_700_000_001, 123_456_789))
+        .expect("plumbing fixture mtime should be set again");
+    assert_ne!(fingerprint(&file), Some(expected));
+
+    // What:     clean up.
+    // Why:      No droppings.
+    let _ = fs::remove_file(&file);
+}
+
 // What:     `#[test]` Turso round-trip across handles.
 // Why:      An upsert must persist to disk and be readable after the handle is dropped
 //           and the database reopened.

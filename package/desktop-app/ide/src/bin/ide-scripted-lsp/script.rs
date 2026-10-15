@@ -102,7 +102,7 @@ pub enum Hover {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Step = 'answer' | 'silent' | 'hold' | 'modified' | 'modifiedThenNotify';
+/// type Step = 'answer' | 'silent' | 'hold' | 'modified' | 'modifiedThenNotify' | 'failed';
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Step {
@@ -117,6 +117,9 @@ pub enum Step {
     /// Answer with error `-32801`,
     ///  then send a `window/logMessage` notification.
     ModifiedThenNotify,
+    /// Answer with error `-32603` (internal error),
+    ///  which the client does not ask again for.
+    Failed,
 }
 
 /// What:
@@ -145,6 +148,7 @@ fn steps(name: &str) -> Vec<Step> {
             "hold" => Step::Hold,
             "modified" => Step::Modified,
             "modified-notify" => Step::ModifiedThenNotify,
+            "error" => Step::Failed,
             _ => Step::Answer,
         };
         found.push(step);

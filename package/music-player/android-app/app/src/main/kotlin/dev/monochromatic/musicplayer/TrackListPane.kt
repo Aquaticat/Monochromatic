@@ -47,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -93,17 +94,22 @@ import dev.monochromatic.musicplayer.core.KeyActivateRow
 import dev.monochromatic.musicplayer.core.KeyOpenRowMenu
 import dev.monochromatic.musicplayer.core.KeyRowAction
 import dev.monochromatic.musicplayer.core.ListKeyCommand
+import dev.monochromatic.musicplayer.core.TRACK_ROW_RING_TEXT_GAP_DP
 import dev.monochromatic.musicplayer.core.TrackListEntry
 import dev.monochromatic.musicplayer.core.TrackMenuAction
 import dev.monochromatic.musicplayer.core.ringAfter
 import dev.monochromatic.musicplayer.core.startFocus
 import dev.monochromatic.musicplayer.core.TrackRowLineSource
+import dev.monochromatic.musicplayer.core.TrackRowColumns
 import dev.monochromatic.musicplayer.core.TrackRowModel
 import dev.monochromatic.musicplayer.core.currentPositionOf
 import dev.monochromatic.musicplayer.core.entryKeyOf
 import dev.monochromatic.musicplayer.core.isSamePageUpdate
 import dev.monochromatic.musicplayer.core.pageEntryScrollTarget
 import dev.monochromatic.musicplayer.core.pageIdentityOf
+import dev.monochromatic.musicplayer.core.reportFirstVisibleTrack
+import dev.monochromatic.musicplayer.core.rowWithPlayingFlag
+import dev.monochromatic.musicplayer.core.trackRowColumns
 
 // What:     `private val ROW_MIN_HEIGHT: Dp = 48.dp` is the smallest height of a track row and a header.
 // Why:      The row meets the 48dp touch target, and a row with a supporting line grows past it.
@@ -124,28 +130,6 @@ private val ROW_MIN_HEIGHT: Dp = 48.dp
 // ```
 /** Horizontal inset of a row's text from the pane edges. */
 private val ROW_HORIZONTAL_PADDING: Dp = 16.dp
-
-// What:     `private val ROW_RING_TEXT_GAP: Dp = 8.dp` is the least space between a row's focus ring and its text.
-// Why:      Beside the crease the row's box starts at the crease clearance, which is as far as the text used to start,
-//           so without this gap the ring, which lies just inside the box (D120), would touch the first letters.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const ROW_RING_TEXT_GAP = 8;
-// ```
-/** Least distance from the inner edge of a row's focus ring to the start and end of its text. */
-private val ROW_RING_TEXT_GAP: Dp = 8.dp
-
-// What:     `private val ROW_RING_TEXT_START_MIN: Dp = ROW_RING_TEXT_GAP + FOCUS_RING_OUTSET` is the least padding
-//           between a row's box and its text.
-// Why:      The ring lies within the box edge by FOCUS_RING_OUTSET, and the text keeps ROW_RING_TEXT_GAP beyond it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const ROW_RING_TEXT_START_MIN = ROW_RING_TEXT_GAP + FOCUS_RING_OUTSET;
-// ```
-/** Least distance from a row's box edge to the start and end of its text: the ring's depth plus the gap. */
-private val ROW_RING_TEXT_START_MIN: Dp = ROW_RING_TEXT_GAP + FOCUS_RING_OUTSET
 
 // What:     `private val ROW_VERTICAL_PADDING: Dp = 12.dp` insets a row's text from its top and bottom.
 // Why:      A one-line row with this inset reaches the 48dp minimum height.
@@ -202,6 +186,28 @@ internal val LocalTrackRowMenuOpener: ProvidableCompositionLocal<((Int, MenuAnch
 internal val LocalTrackRowLines: ProvidableCompositionLocal<TrackRowLineSource?> =
     staticCompositionLocalOf { null }
 
+// What:     `internal val LocalPlayingIndex` carries the library index of the playing track from the host to the list.
+// Why:      The host builds the rows of a page once, so a track change must not rebuild thousands of rows. The list and
+//           each visible row read the playing index from here instead, and a change recomposes only what shows it.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const LocalPlayingIndex = createContext<number | null>(null);
+// ```
+/** Composition local holding the playing track's library index, or null when no track is loaded. */
+internal val LocalPlayingIndex: ProvidableCompositionLocal<Int?> = compositionLocalOf { null }
+
+// What:     `internal val LocalFirstVisibleTrack` carries the cell where the list reports its first visible track.
+// Why:      The measure refresh reads the tracks on screen first, so it needs to know which ones they are. The list
+//           writes the library index of its first visible track here, and the host reads it between batches.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const LocalFirstVisibleTrack = createContext<{ value: number } | null>(null);
+// ```
+/** Composition local holding the cell the list writes its first visible track's library index to, or null. */
+internal val LocalFirstVisibleTrack: ProvidableCompositionLocal<MutableIntState?> = staticCompositionLocalOf { null }
+
 // What:     `val HostKeyLocalRevealFolder: ProvidableCompositionLocal<Int>` carries the folder reveal count.
 // Why:      The host bumps the count when the deck's folder part is tapped, and the track list scrolls to the playing
 //           track's subfolder header. It sits here, not beside HostKeyLocalReveal, because the list is its only reader.
@@ -238,8 +244,12 @@ fun trackListPane(
     val listState = rememberLazyListState()
     /** Source of each row's supporting line, or null when the entries already carry theirs. */
     val rowLines: TrackRowLineSource? = LocalTrackRowLines.current
+    /** Library index of the playing track, which the entries do not carry so that a track change keeps them. */
+    val playingIndex: Int? = LocalPlayingIndex.current
     /** Position of the playing row among the entries, or null when no row in this list is playing. */
-    val currentPosition: Int? = currentPositionOf(entries)
+    val currentPosition: Int? = currentPositionOf(entries, playingIndex)
+    /** Cell the host reads the first visible track from, or null when no host asks for it. */
+    val firstVisibleSink: MutableIntState? = LocalFirstVisibleTrack.current
     /** Page identity the page effect last handled, or null before its first run. */
     var shownPage: List<String>? by remember { mutableStateOf<List<String>?>(null) }
     /** Identity of the shown page, which follows the folder's tracks and not the playing row, measures, or indexes. */
@@ -251,7 +261,7 @@ fun trackListPane(
         val sameAsHandled: Boolean = isSamePageUpdate(previous = shownPage, next = pageIdentity)
         shownPage = pageIdentity
         if (!sameAsHandled) {
-            listState.scrollToItem(pageEntryScrollTarget(entries))
+            listState.scrollToItem(pageEntryScrollTarget(entries, playingIndex))
         }
     }
     /** Focus state of the list as one keyboard stop, whose focus ring marks one row. */
@@ -276,6 +286,15 @@ fun trackListPane(
             listState.scrollToItem(at)
         }
     }
+    LaunchedEffect(listState, entries, firstVisibleSink) {
+        if (firstVisibleSink != null) {
+            reportFirstVisibleTrack(
+                positions = snapshotFlow { listState.firstVisibleItemIndex },
+                entries = entries,
+                report = { index -> firstVisibleSink.intValue = index },
+            )
+        }
+    }
     /** Count of reveal requests from the host, each of which scrolls to and focuses the playing row. */
     val revealToken: Int = HostKeyLocalReveal.current
     /** Reveal count when this list entered composition, so that entering the list never reveals by itself. */
@@ -294,7 +313,7 @@ fun trackListPane(
     /** Folder reveal count when this list entered composition, so that entering the list never scrolls by itself. */
     val folderRevealAtEntry: Int = remember { folderRevealToken }
     /** Item a folder reveal scrolls to: the playing track's subfolder header, or the first item for a root track. */
-    val folderTargetIndex: Int = folderScrollIndexFor(entries)
+    val folderTargetIndex: Int = folderScrollIndexFor(entries, playingIndex)
     LaunchedEffect(folderRevealToken) {
         if (folderRevealToken != folderRevealAtEntry && currentPosition != null) {
             listState.scrollToItem(folderTargetIndex)
@@ -342,7 +361,10 @@ fun trackListPane(
         itemsIndexed(items = entries, key = { _, entry -> entryKeyOf(entry) }) { position, entry ->
             when (entry) {
                 is TrackListEntry.RowEntry -> trackRow(
-                    row = rowWithLine(row = entry.row, lines = rowLines),
+                    row = rowWithLine(
+                        row = rowWithPlayingFlag(row = entry.row, playingIndex = playingIndex),
+                        lines = rowLines,
+                    ),
                     onPlay = onPlay,
                     onOpenMenu = onOpenMenu,
                     ringed = zone.focused && ringPosition == position,
@@ -353,16 +375,16 @@ fun trackListPane(
     }
 }
 
-// What:     `internal fun folderScrollIndexFor(entries: List<TrackListEntry>): Int` finds the item the folder reveal
-//           scrolls to.
+// What:     `internal fun folderScrollIndexFor(entries: List<TrackListEntry>, playingIndex: Int?): Int` finds the item
+//           the folder reveal scrolls to.
 // Why:      The folder's own tracks come before its subfolder headers, and each subfolder's tracks follow its header.
 //           So the nearest header above the playing row is the subfolder that holds it. A playing row with no header
 //           above it sits in the folder itself, and the first item is the target.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const folderScrollIndexFor = (entries: TrackListEntry[]): number => {
-//   const current = currentPositionOf(entries);
+// const folderScrollIndexFor = (entries: TrackListEntry[], playingIndex: number | null): number => {
+//   const current = currentPositionOf(entries, playingIndex);
 //   if (current === null) return 0;
 //   for (let i = current; i >= 0; i--) if (entries[i].kind === "header") return i;
 //   return 0;
@@ -371,8 +393,8 @@ fun trackListPane(
 /**
  * Runs one list command of the key table on the track list and reports whether it consumed the key.
  *
- * Movement keys put the focus ring on another row; Enter plays the ringed row, the menu keys open its menu, and a
- * row chord runs its menu action, all on the row under the ring.
+ * Movement keys put the focus ring on another row; Enter acts on the ringed row like a tap, the menu keys open its
+ * menu, and a row chord runs its menu action, all on the row under the ring.
  *
  * @param command list command that the key resolved to.
  * @param entries entries of the shown page, rows and subfolder headers.
@@ -380,7 +402,7 @@ fun trackListPane(
  * @param ringPosition entry the ring is on now, or null.
  * @param page rows that a page key moves by.
  * @param onRing moves the ring to an entry.
- * @param onPlay plays a track by library index.
+ * @param onPlay handles a tap or Enter on a track by library index: select it, or toggle play on the current row.
  * @param refocus gives keyboard focus back to the list, which the host's play path hands to the playback area.
  * @param openMenuAt opens the context menu of the row at an entry position.
  * @param runRowAction runs a menu action for a library index, or null when the host provides none.
@@ -432,9 +454,9 @@ private fun trackListCommand(
 }
 
 /** Index of the subfolder header that holds the playing row, or 0 when no header holds it or no row is playing. */
-internal fun folderScrollIndexFor(entries: List<TrackListEntry>): Int {
+internal fun folderScrollIndexFor(entries: List<TrackListEntry>, playingIndex: Int?): Int {
     /** Position of the playing row among the entries, or null when no row in this list is playing. */
-    val current: Int? = currentPositionOf(entries)
+    val current: Int? = currentPositionOf(entries, playingIndex)
     if (current == null) {
         return 0
     }
@@ -486,7 +508,9 @@ private fun rowWithLine(row: TrackRowModel, lines: TrackRowLineSource?): TrackRo
 }
 
 // What:     `@Composable private fun trackRow(...)` draws one playable track row.
-// Why:      The current row gets the D42 surface background and a bold title, and every row plays on tap.
+// Why:      The current row gets the D42 surface background and a bold title, and a tap selects a row (and starts it
+//           with Auto-play on select on, D129), or toggles play on the current one (D124). Its box spans the pane
+//           and its text sits in the heading column (D130).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -494,7 +518,8 @@ private fun rowWithLine(row: TrackRowModel, lines: TrackRowLineSource?): TrackRo
 // ```
 /**
  * Draws one track row with its title, optional supporting line, and current-row treatment.
- * Tap plays the row; long press, a secondary-button press, or the menu key opens its context menu.
+ * Tap selects the row (and starts it with Auto-play on select on, D129), or toggles play and pause on the current
+ * row (D124); long press, a secondary-button press, or the menu key opens its context menu.
  */
 @Composable
 private fun trackRow(
@@ -513,10 +538,17 @@ private fun trackRow(
     val titleWeight: FontWeight? = if (row.isCurrent) FontWeight.Bold else null
     /** Window-space bounds of this row from its last layout, or null before the row is first placed. */
     var rowBounds: MenuAnchorRect? by remember { mutableStateOf<MenuAnchorRect?>(null) }
-    /** Start of the row's box, which is the pane's clearance; the focus ring is drawn just inside it (D120). */
-    val boxStart: Dp = LocalPaneStartClearance.current
-    /** End of the row's box, likewise. */
-    val boxEnd: Dp = LocalPaneEndClearance.current
+    /**
+     * Box and text insets of this row (D130): the box (fill, state layers, the ring just inside its edge, D120) spans
+     * the pane even beside the crease, and the text takes the heading column, the only thing the crease moves.
+     */
+    val columns: TrackRowColumns = trackRowColumns(
+        startClearanceDp = LocalPaneStartClearance.current.value,
+        endClearanceDp = LocalPaneEndClearance.current.value,
+        ordinaryInsetDp = ROW_HORIZONTAL_PADDING.value,
+        ringDepthDp = FOCUS_RING_OUTSET.value,
+        ringTextGapDp = TRACK_ROW_RING_TEXT_GAP_DP,
+    )
     /** Action that opens this row's menu anchored to the row, or null when no menu opener is provided. */
     val openMenuForRow: (() -> Unit)? = onOpenMenu?.let { open ->
         {
@@ -527,7 +559,7 @@ private fun trackRow(
         modifier = Modifier
             .fillMaxWidth()
             .onGloballyPositioned { coordinates -> rowBounds = menuAnchorOfRect(coordinates.boundsInWindow()) }
-            .padding(start = boxStart, end = boxEnd)
+            .padding(start = columns.boxStartDp.dp, end = columns.boxEndDp.dp)
             .heightIn(min = ROW_MIN_HEIGHT)
             .background(rowBackground)
             .keyboardFocusRing(visible = ringed, shape = RectangleShape, placement = FocusRingPlacement.INSIDE)
@@ -550,8 +582,8 @@ private fun trackRow(
             }
             .semantics { selected = row.isCurrent }
             .padding(
-                start = (paneStartInset(ROW_HORIZONTAL_PADDING) - boxStart).coerceAtLeast(ROW_RING_TEXT_START_MIN),
-                end = (paneEndInset(ROW_HORIZONTAL_PADDING) - boxEnd).coerceAtLeast(ROW_RING_TEXT_START_MIN),
+                start = columns.textStartDp.dp - columns.boxStartDp.dp,
+                end = columns.textEndDp.dp - columns.boxEndDp.dp,
                 top = ROW_VERTICAL_PADDING,
                 bottom = ROW_VERTICAL_PADDING,
             ),

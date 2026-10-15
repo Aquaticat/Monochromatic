@@ -414,9 +414,15 @@ Installation cost therefore grows linearly with the entry count.
 A trailing log fragment without a line terminator is an unfinished append;
 recovery ignores it and truncates it before appending.
 A completion phase makes stage removal and journal removal recoverable in either crash order.
+Staging takes minutes and gigabytes, and the journal is written only after it,
+so the stage's name is recorded first:
+a claim file `<id>.stage` beside the journals names the stage container before the container is created,
+with the same temporary file, synchronization and rename as a journal write.
+The claim is removed once a journal names the stage, or once a failed copy has removed the stage.
 A process-birth-identity lock serializes installation and recovery.
-An applicable source waits for an owner proven alive without a time limit,
-after writing one stderr line naming the owner's PID and the lock;
+An applicable source waits for an owner proven alive for at most `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800),
+after writing one stderr line naming the owner's PID and the lock,
+and then fails naming the owner, leaving the lock in place;
 while that owner lives the waiter only reads the owner record,
 and it attempts publication again once the owner releases,
 replaces,
@@ -430,9 +436,9 @@ then fails with a diagnostic listing that evidence and leaves the lock in place.
 The lock is released and retired by renaming it to a unique name before deleting it,
 so a concurrent publication is never emptied in place.
 
-Every later linked-worktree or bare-repository invocation checks for pending journals before forwarding
+Every later linked-worktree or bare-repository invocation checks for pending journals and stage claims before forwarding
 without taking the settlement lock,
-and takes it only to recover when a pending journal exists.
+and takes it only to recover when one exists.
 An invocation that neither creates nor moves worktrees does not wait for the lock:
 while another live process owns it,
 that owner is still writing its own journal or already recovering,
@@ -461,8 +467,19 @@ Every pending transaction then reaches an end:
   and the recovering invocation writes the failure as a notice and continues.
 - Completed cleanup is resumed without reinstalling entries.
 
+After the journals, recovery removes every stage container that a claim names and no pending journal names:
+the lock proves that no live copy is between claiming and journaling,
+so a copy that died while staging (a signal, the out-of-memory killer, a power loss) left it.
+Recovery requires the claim to be a private file naming an absolute path whose last component starts with the reserved
+stage prefix, and the container to be a private directory owned by the user,
+removes it with its read-only subdirectories,
+writes one notice line naming it,
+and removes the claim.
+A claim whose container was never created is removed without a notice.
+
 Malformed or unsafe journal,
 install-log,
+stage claim,
 or stage state fails closed without deleting the journal or a path outside the validated private stage.
 
 After all newly registered destinations settle successfully,
@@ -553,6 +570,35 @@ and distinct on case-insensitive filesystems.
   and the child's later update of an older tip left the remote at the takeover tip.
   A takeover push that races the child on the remote ref can fail,
   and it is then surfaced like any other failed push.
+- No step of auto-push waits without a bound.
+  The push runs under a deadline,
+  `CLI_GIT_PUSH_DEADLINE_SECONDS` whole seconds,
+  600 by default;
+  a zero,
+  negative,
+  fractional or non-numeric value is ignored.
+  Past the deadline the push is asked to end,
+  killed after a five second grace,
+  and recorded as a failed attempt with exit code 124 whose output ends with a line naming the deadline.
+  The commit stays saved and the exit contract below holds.
+  Git's low-speed abort is added to the push's environment
+  (`GIT_HTTP_LOW_SPEED_LIMIT=1000`, `GIT_HTTP_LOW_SPEED_TIME=60`)
+  for each variable the invocation's environment does not set,
+  which also overrides `http.lowSpeedLimit` and `http.lowSpeedTime` from Git configuration.
+  Each read-only Git query before the push
+  (`rev-parse`,
+  `remote get-url`,
+  `symbolic-ref`,
+  `merge-base`)
+  stops at the push deadline or 120 seconds,
+  whichever is shorter,
+  and a stopped query is a coordination failure that names it.
+- A waiter gives up on the lock after the push deadline plus the grace plus 60 seconds,
+  or after `CLI_GIT_PUSH_LOCK_WAIT_SECONDS` when that is set.
+  It never takes a live holder's lock.
+  The commit is reported with the push-failed note and a message naming the lock and the holder's PID.
+  A waiter prints one line naming the pushing process,
+  the branch and the limit as soon as it starts waiting.
 - A joined commit's own `pre-push` hook does not run separately;
   the joined push ran it once for its tip.
 - The existing exit contract holds:
@@ -2556,14 +2602,16 @@ Management help returns before recovery.
 - An owner that is alive with a matching birth identity is skipped at debug log level;
   its transaction is not an error.
   PID reuse counts as a dead owner.
-- A dead owner without a landing record:
+- A dead owner without a landing record and without the record of a real `index.lock` it created:
   remove every `.keep` in the real `objects/pack` whose message is `cli-git <transaction-id>`,
   retire any reservation or reservation request it owns,
   remove the shadow repository,
   and then remove the transaction directory.
   The real index and real refs were never touched.
-- A dead owner with a landing record is recovered only while holding the landing lock,
-  so recovery never races a live lander.
+- A dead owner with a landing record, or with the record of a real `index.lock` it created
+  (it was killed holding the landing lock and that lock, before any landing record),
+  is recovered only while holding the landing lock,
+  so recovery never races a live lander and never releases an `index.lock` that a later lander created.
   Recovery removes the transaction's `.keep` files as for an owner without a landing record,
   then either discards an unlanded attempt,
   installs the recorded post-index for a landed commit whose index install was interrupted,

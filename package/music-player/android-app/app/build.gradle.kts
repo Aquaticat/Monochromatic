@@ -5,6 +5,57 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// One version for the whole product. The desktop crate's Cargo.toml is the single source of truth, so the Android
+// versionName is read from it and the Android versionCode is derived from it, and neither can be edited here to
+// disagree. The release workflow (.github/workflows/music-player-release.yml) reads the same file.
+// versionCode = major * 10000 + minor * 100 + patch, which never decreases while the version never decreases, and
+// stays unique because the workflow rejects any version that is not plain MAJOR.MINOR.PATCH with minor and patch
+// at most 99. Layout assumption: package/music-player/{android-app,desktop-app}, which the repository extraction
+// plan keeps.
+val productVersionManifest: File = rootDir.resolve("../desktop-app/Cargo.toml")
+val productVersionParts: List<Int> = run {
+    if (!productVersionManifest.isFile) {
+        throw GradleException("Product version source not found: $productVersionManifest")
+    }
+    val packageSection = productVersionManifest.readText().substringAfter("[package]").substringBefore("\n[")
+    val match = Regex("""(?m)^version\s*=\s*"(\d+)\.(\d+)\.(\d+)"\s*$""").find(packageSection)
+        ?: throw GradleException(
+            "No plain MAJOR.MINOR.PATCH version in the [package] table of $productVersionManifest",
+        )
+    val parts = match.groupValues.drop(1).map { it.toInt() }
+    if (parts[1] > 99 || parts[2] > 99) {
+        throw GradleException("Minor and patch must be at most 99 for the derived versionCode: ${parts.joinToString(".")}")
+    }
+    parts
+}
+val productVersionName: String = productVersionParts.joinToString(".")
+val productVersionCode: Int = productVersionParts[0] * 10000 + productVersionParts[1] * 100 + productVersionParts[2]
+
+// Release signing comes from the environment (or a Gradle property of the same name), so a local build without the
+// secrets keeps producing the debug-signed release APK it always did. The release workflow sets all four values and
+// MUSIC_PLAYER_REQUIRE_RELEASE_SIGNING=true, which turns a missing key into a build failure instead of a silent
+// debug-signed APK.
+fun releaseSigningValue(name: String): String? =
+    providers.environmentVariable(name).orNull?.takeIf { it.isNotEmpty() }
+        ?: providers.gradleProperty(name).orNull?.takeIf { it.isNotEmpty() }
+
+val releaseKeystoreFile: String? = releaseSigningValue("MUSIC_PLAYER_KEYSTORE_FILE")
+val releaseKeystorePassword: String? = releaseSigningValue("MUSIC_PLAYER_KEYSTORE_PASSWORD")
+val releaseKeyAlias: String? = releaseSigningValue("MUSIC_PLAYER_KEY_ALIAS")
+val releaseKeyPassword: String? = releaseSigningValue("MUSIC_PLAYER_KEY_PASSWORD")
+val releaseSigningValues: List<String?> =
+    listOf(releaseKeystoreFile, releaseKeystorePassword, releaseKeyAlias, releaseKeyPassword)
+val hasReleaseSigning: Boolean = releaseSigningValues.all { it != null }
+if (!hasReleaseSigning && releaseSigningValues.any { it != null }) {
+    throw GradleException(
+        "Release signing is partly configured: set all of MUSIC_PLAYER_KEYSTORE_FILE, MUSIC_PLAYER_KEYSTORE_PASSWORD, " +
+            "MUSIC_PLAYER_KEY_ALIAS and MUSIC_PLAYER_KEY_PASSWORD, or none of them.",
+    )
+}
+if (!hasReleaseSigning && providers.environmentVariable("MUSIC_PLAYER_REQUIRE_RELEASE_SIGNING").orNull == "true") {
+    throw GradleException("MUSIC_PLAYER_REQUIRE_RELEASE_SIGNING is true but the release signing values are not set.")
+}
+
 android {
     namespace = "dev.monochromatic.musicplayer"
     // compileSdk 37: the current androidx (core-ktx 1.19.1, Compose 1.12.1 from the BOM, Material3 1.5.0-beta01)
@@ -26,8 +77,8 @@ android {
         // build:native), so the artifact itself loads on the floor.
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = productVersionCode
+        versionName = productVersionName
         // On-device instrumented tests (the offline true-peak decoder needs a real MediaCodec).
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,19 +87,41 @@ android {
     // existed only to install all three engines side by side for the head-to-head
     // measurement comparison; that comparison is decided (the full-Rust variant
     // won decisively), so the flavor dimension is gone and this is a single app.
+    // The project release key, present only when the four MUSIC_PLAYER_* signing values are set (see the top of this
+    // file). Its storeType stays the PKCS12 default: the keystore the workflow restores is PKCS12, which uses one
+    // password for the store and the key.
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(requireNotNull(releaseKeystoreFile))
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            // Sign the release build with the debug key so it installs on the owner's device without a
-            // separate keystore. release is not debuggable, so ART optimizes the numeric DSP loops it
-            // runs (the true-peak scan), which a debuggable build does not; this is the build the
-            // owner actually runs.
-            signingConfig = signingConfigs.getByName("debug")
+            // With the release key configured, sign with it. Without it, sign with the debug key so a local build
+            // installs on the owner's device without a separate keystore. release is not debuggable, so ART
+            // optimizes the numeric DSP loops it runs (the true-peak scan), which a debuggable build does not;
+            // this is the build the owner actually runs.
+            signingConfig = signingConfigs.getByName(if (hasReleaseSigning) "release" else "debug")
         }
     }
 
     buildFeatures {
         compose = true
+    }
+
+    // Robolectric needs the merged manifest and resources on the unit-test classpath, and ui-test-manifest (below)
+    // adds the empty ComponentActivity that createComposeRule launches; without this the rule finds no activity.
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
     }
 
     compileOptions {
@@ -71,6 +144,44 @@ android {
 tasks.withType<Test>().configureEach {
     maxHeapSize = "3g"
     jvmArgs("-XX:+UseSerialGC")
+}
+
+// Robolectric runs each wiring test on a real Android framework jar for API 36. By default it downloads that jar
+// itself at test time, outside Gradle, into ~/.m2, which needs the network on every fresh home and bypasses Gradle's
+// dependency cache. This configuration lets Gradle resolve the jar like any other dependency (so an offline run works
+// from a warm Gradle cache), a Sync task copies it under its Maven file name, and the tests read it from there
+// through `robolectric.dependency.dir` (see `LegacyDependencyResolver` at tag robolectric-4.17).
+val robolectricRuntime: Configuration by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
+/** Directory holding the Robolectric framework jar under the file name Robolectric looks for. */
+val robolectricRuntimeDir: Provider<Directory> = layout.buildDirectory.dir("robolectric-runtime")
+
+/** Copies the resolved Robolectric framework jar into [robolectricRuntimeDir]. */
+val syncRobolectricRuntime by tasks.registering(Sync::class) {
+    from(robolectricRuntime)
+    into(robolectricRuntimeDir)
+}
+
+tasks.withType<Test>().configureEach {
+    dependsOn(syncRobolectricRuntime)
+    systemProperty("robolectric.dependency.dir", robolectricRuntimeDir.get().asFile.absolutePath)
+    // Robolectric reaches internal OpenJDK classes (for example jdk.internal.access.SharedSecrets, which the first
+    // run failed on) and the JVM refuses that on Java 17 and later without these flags; the list is the one under
+    // "Running with Java 17 and higher" on robolectric.org/getting-started.
+    jvmArgs(
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens=java.base/java.net=ALL-UNNAMED",
+        "--add-opens=java.base/java.security=ALL-UNNAMED",
+        "--add-opens=java.base/java.text=ALL-UNNAMED",
+        "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+        "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
+        "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    )
 }
 
 dependencies {
@@ -96,6 +207,20 @@ dependencies {
     // Host JVM unit tests for the pure-logic `core` package (ported from the
     // desktop's `_tests.rs` vectors). These run via testDebugUnitTest with no device.
     testImplementation("junit:junit:4.13.2")
+
+    // Host JVM Compose wiring tests (src/test/.../wiring): the real track list pane and player host rendered
+    // under Robolectric with the Compose test rule, so the Compose-boundary wiring that no pure function can
+    // reach is tested without an emulator. Robolectric is pinned to 4.17, the newest release, because its
+    // `DefaultSdkProvider.java` (tag robolectric-4.17) maps API 36, the app's targetSdk, to the runtime jar
+    // android-all-instrumented 16-robolectric-13921718-i7 (JDK 21 or newer) and API 37, the compileSdk, to its sibling.
+    // The Compose test artifacts take their version from the BOM above; ui-test-manifest is debug-only because it
+    // adds a test activity to the manifest that the release APK must not carry.
+    testImplementation("org.robolectric:robolectric:4.17")
+    // The API 36 framework jar of that release, with the exact version string it derives (Android version,
+    // Robolectric build, preinstrumented version 7); resolved through Gradle for the offline-capable run above.
+    "robolectricRuntime"("org.robolectric:android-all-instrumented:16-robolectric-13921718-i7")
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // On-device instrumented tests (the RustEngine and the native decode/true-peak
     // bridge drive real MediaStore content and the native .so, which only exist on a

@@ -1,7 +1,7 @@
 //! What:
 //!  Waiting for a foreign `index.lock` under the classification rules:
 //!  a proven-alive owner
-//!       is waited for without limit,
+//!       is waited for up to this process's wait limit (`CLI_GIT_LOCK_WAIT_SECONDS`, 30 minutes by default),
 //!  a dead or evidence-free owner is retried on Git's backoff
 //!       schedule until the unproven budget runs out.
 //! Why:
@@ -17,6 +17,8 @@
 //! await waitForIndexLock({ realIndexPath, timeoutMs, consequence, attempt });
 //! ```
 
+/// The backstop every wait on a live process is bounded by.
+use super::live_lock::{LIVE_WAIT_VARIABLE, live_wait_limit};
 /// Foreign-lock evidence and its verdicts.
 use super::index_lock_evidence::{
     Evidence, Verdict, classify_index_lock, describe_index_lock_evidence, proven_holder_line,
@@ -139,6 +141,22 @@ pub enum WaitFailure {
         /// What cli-git therefore did not do.
         consequence: String,
     },
+    /// A proven-alive owner kept the lock until the wait limit ran out.
+    LiveHolderTimedOut {
+        /// The lock that stayed in place.
+        lock_path: std::path::PathBuf,
+        /// The owner's process ID.
+        pid: i64,
+        /// The owner's command name when readable.
+        command: Option<String>,
+        /// Milliseconds spent waiting for a proven-alive owner.
+        waited_ms: u64,
+        /// The limit that ran out,
+        ///  in milliseconds.
+        limit_ms: u64,
+        /// What cli-git therefore did not do.
+        consequence: String,
+    },
     /// The lock or its evidence could not be read.
     Read(String),
 }
@@ -189,15 +207,18 @@ struct LoopState {
     backoff: BackoffState,
     /// Milliseconds spent without a proven owner.
     unproven_ms: f64,
+    /// Milliseconds spent waiting for a proven-alive owner.
+    live_ms: f64,
     /// Whether the holder line was written.
     reported: bool,
 }
 
 /// What:
 ///  Wait until the lock is gone,
-///  or fail once a dead or unproven owner outlasts `timeout_ms`.
+///  or fail once a dead or unproven owner outlasts `timeout_ms`
+///  or a live owner outlasts this process's wait limit.
 /// Why:
-///   A live holder gets an unbounded wait with one diagnostic;
+///   A live holder gets one diagnostic and the process's wait limit;
 ///  other holders get the budget,
 ///       which includes the evidence gathering because a `/proc` scan is not free.
 ///
@@ -210,10 +231,30 @@ pub fn wait_for_index_lock(
     timeout_ms: u64,
     consequence: &str,
 ) -> Result<(), WaitFailure> {
+    let limit_ms: u64 = u64::try_from(live_wait_limit().as_millis()).unwrap_or(u64::MAX);
+    return wait_for_index_lock_within(effects, timeout_ms, limit_ms, consequence);
+}
+
+/// What:
+///  The wait with an explicit limit on the time spent behind a proven-alive owner.
+/// Why:
+///   The default wait and the tests share one loop; only the limit differs.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await waitForIndexLock({ realIndexPath, timeoutMs, liveLimitMs, consequence, attempt, effects });
+/// ```
+pub fn wait_for_index_lock_within(
+    effects: &mut dyn WaitEffects,
+    timeout_ms: u64,
+    live_limit_ms: u64,
+    consequence: &str,
+) -> Result<(), WaitFailure> {
     // `mut` lets each iteration advance the loop state.
     let mut state: LoopState = LoopState {
         backoff: INITIAL_BACKOFF,
         unproven_ms: 0.0,
+        live_ms: 0.0,
         reported: false,
     };
     loop {
@@ -257,6 +298,17 @@ pub fn wait_for_index_lock(
                 PROVEN_BY_PID_FILE_POLL_CAP_MS
             };
             effects.sleep(backoff_ms.min(cap));
+            state.live_ms += effects.now_ms() - iteration_started;
+            if state.live_ms >= live_limit_ms as f64 {
+                return Err(WaitFailure::LiveHolderTimedOut {
+                    lock_path: evidence.lock_path.clone(),
+                    pid: *pid,
+                    command: command.clone(),
+                    waited_ms: state.live_ms as u64,
+                    limit_ms: live_limit_ms,
+                    consequence: String::from(consequence),
+                });
+            }
             continue;
         }
         state.unproven_ms += effects.now_ms() - iteration_started;
@@ -301,6 +353,34 @@ pub fn unproven_owner_message(
         "Another process left {}, {owner}; after {timeout_ms} ms (indexLock.unprovenOwnerTimeoutMs) the lock was still there. cli-git left the lock in place and {consequence}. Evidence: {}. Remove the lock only after confirming no Git process is using this repository.",
         evidence.lock_path.display(),
         describe_index_lock_evidence(evidence),
+    );
+}
+
+/// What:
+///  The diagnostic text of a live-owner timeout.
+/// Why:
+///   The person needs the lock path, the owner to look at, the limit and its setting,
+///  and what was not done.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// new IndexLockLiveOwnerTimeoutError({ lockPath, pid, command, waitedMs, limitMs, consequence }).message
+/// ```
+pub fn live_holder_timeout_message(
+    lock_path: &std::path::Path,
+    pid: i64,
+    command: Option<&str>,
+    waited_ms: u64,
+    consequence: &str,
+) -> String {
+    let owner: String = match command {
+        Some(name) => format!("PID {pid} ({name})"),
+        None => format!("PID {pid}"),
+    };
+    return format!(
+        "Gave up after waiting {} seconds for {owner}, which still holds {}; {LIVE_WAIT_VARIABLE} sets how long cli-git waits. cli-git left the lock in place and {consequence}. Look at that process, or raise the limit.",
+        waited_ms / 1_000,
+        lock_path.display(),
     );
 }
 

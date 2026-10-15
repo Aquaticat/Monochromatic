@@ -34,8 +34,9 @@ type InputUsage = {
 
 /**
  Shared source occurrence bound across resource and Session owners.
+ The configured native extension fixture requires 81 retained receipts for one complete operation.
  */
-const INPUT_COUNT_LIMIT = 64;
+const INPUT_COUNT_LIMIT = 128;
 
 /**
  Shared serialized-record bound, independent of per-source and resource limits.
@@ -172,7 +173,7 @@ export function assertOriginalInputBudget(
     || ((resourceUsage.bytes + sessionUsage.bytes) > INPUT_BYTE_LIMIT)) {
     rl.debug('combined resource and Session receipts exceed the original aggregate budget',);
     throw new InputReceiptBudgetError(
-      'Combined original resource and session receipts exceed the shared 64-input or four-MiB budget',
+      'Combined original resource and session receipts exceed the shared 128-input or four-MiB budget',
     );
   }
   rl.debug('combined original input counters fit the aggregate budget; source ownership remains independent',);

@@ -19,14 +19,12 @@ use super::config::{LanguageSetup, Languages};
 use super::watched_files::WatchedFiles;
 /// The steps a command or event is dispatched to,
 ///  and the wait that ends the thread.
-use super::{attach, forward, lifecycle, reap, request, session::Session, traffic};
-/// Latest-value results the worker publishes.
-use super::{diagnostics::DiagnosticsSnapshot, hints::HintsSnapshot, status::LanguageStatus};
+use super::{attach, forward, lifecycle, notice, reap, request, session::Session, traffic};
 /// Commands and one-shot replies.
 use super::{
     hints::HintWindow,
-    identity::DocumentStamp,
-    reply::{LanguageReply, PositionRequest},
+    identity::{DocumentStamp, ServerIdentity},
+    reply::PositionRequest,
     sync::{DocumentOpen, DocumentReload},
 };
 /// The changes the change watcher forwards.
@@ -91,7 +89,7 @@ use std::{
 /// ```ts
 /// const commands = boundedQueue<Command>(64); const status = latestValue<LanguageStatus>();
 /// ```
-use tokio::sync::{mpsc, watch};
+use tokio::sync::mpsc;
 
 /// Longest wait for servers to exit after `shutdown` and `exit` were sent,
 ///  as Helix allows on quit.
@@ -189,44 +187,19 @@ pub(super) enum Internal {
     ),
     /// Gathered file changes may be due for sending.
     ForwardFiles,
+    /// The last standard-error lines of a server whose start failed are complete.
+    EndCause(
+        /// The server process that ended.
+        ServerIdentity,
+        /// Its last standard-error lines,
+        ///  oldest first.
+        Vec<String>,
+    ),
 }
 
 /// The sending ends of every channel the interface thread polls.
-pub(super) struct Outputs {
-    /// One-shot replies to position requests.
-    pub(super) replies: mpsc::Sender<LanguageReply>,
-    /// Latest status.
-    pub(super) status: watch::Sender<Arc<LanguageStatus>>,
-    /// Latest diagnostics;
-    ///  nothing while no file is displayed.
-    pub(super) diagnostics: watch::Sender<Option<Arc<DiagnosticsSnapshot>>>,
-    /// Latest hints;
-    ///  nothing until a server answered for the displayed text.
-    pub(super) hints: watch::Sender<Option<Arc<HintsSnapshot>>>,
-    /// Whether some server registered file watchers,
-    ///  so the project's folders are worth watching.
-    pub(super) watching: watch::Sender<bool>,
-}
-
-/// Publishing.
-impl Outputs {
-    /// What:
-    ///  Queue one reply without waiting.
-    ///  `try_send` returns `Err` when the queue is full or
-    ///       the handle is gone.
-    /// Why:
-    ///  The worker must never block on an interface thread that stopped polling.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// reply(reply: LanguageReply) { if (!queue.offer(reply)) log.warn('dropped'); }
-    /// ```
-    pub(super) fn reply(&self, reply: LanguageReply) {
-        if let Err(error) = self.replies.try_send(reply) {
-            tracing::warn!(%error, "dropped a language reply because the reply queue is full or closed");
-        }
-    }
-}
+mod outputs;
+pub(super) use outputs::Outputs;
 
 /// All state of the worker thread.
 pub(super) struct Worker {
@@ -283,15 +256,30 @@ impl Worker {
             if **current == status {
                 return false;
             }
-            *current = Arc::new(status);
+            *current = Arc::new(status.clone());
             return true;
         });
         // `as_ref()` borrows the document inside the `Option`; `and_then` continues with it when present.
-        let diagnostics = self
+        // What: The servers' own diagnostics plus, when a feature is missing or failing, the one entry
+        //       that says why (`notice`); `troubles` pairs each attached server with its kept failures.
+        // Why: Nothing else on screen explains a resting pointer or a file without hints.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const diagnostics = withNotice(store.snapshot(text), stamp, status, troubles);
+        // ```
+        let troubles: Vec<_> = self
             .session
-            .document
-            .as_ref()
-            .and_then(|document| return self.session.diagnostics.snapshot(&document.text));
+            .servers
+            .iter()
+            .filter(|record| return record.attached)
+            .map(|record| return (record.identity.clone(), record.trouble.clone()))
+            .collect();
+        let advisory = self.languages.mise_advisory();
+        let diagnostics = self.session.document.as_ref().and_then(|document| {
+            let stored = self.session.diagnostics.snapshot(&document.text);
+            return notice::with_notice(stored, document.stamp, &status, &troubles, &advisory);
+        });
         self.outputs.diagnostics.send_if_modified(|current| {
             // `as_deref()` compares the stored snapshot by value instead of by pointer.
             if current.as_deref() == diagnostics.as_ref() {
@@ -370,6 +358,7 @@ impl Worker {
             // `*ticket` moves the value out of its heap box.
             Internal::Retry(ticket) => request::retry(self, *ticket),
             Internal::ForwardFiles => forward::due(self),
+            Internal::EndCause(server, lines) => attach::end_cause(self, &server, lines),
         }
         self.publish();
     }

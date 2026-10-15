@@ -16,6 +16,8 @@ use clap::{Arg, ArgAction, Command};
 use clap::builder::{RangedU64ValueParser, ValueParser};
 /// The output-scale grammar shared with the runtime `scale` verb.
 use crate::screen_geometry::OutputScale;
+/// The `--gpu` grammar.
+use crate::gpu_choice::GpuChoice;
 
 /// Construct the CLI independently of process arguments or a display server.
 pub(super) fn command() -> Command {
@@ -154,8 +156,36 @@ pub(super) fn command() -> Command {
     );
     command = command.arg(repeat_delay);
 
+    let mut headless = Arg::new("headless");
+    headless = headless.long("headless").action(ArgAction::SetTrue);
+    headless = headless.help(
+        "Render with surfaceless EGL on the GPU render node instead of a nested window: \
+         no parent display is used or needed and no window appears; the default is the nested window"
+    );
+    command = command.arg(headless);
+
+    let mut gpu = Arg::new("gpu");
+    gpu = gpu.long("gpu").value_name("GPU");
+    gpu = gpu.help(
+        "With --headless, the device that renders: auto (the default: Mesa's default render node, then the other \
+         render nodes, then software), software (Mesa's CPU rasterizer), or a render node such as \
+         /dev/dri/renderD128; an explicit choice never falls back. Invalid without --headless: the nested window \
+         renders on its parent compositor's GPU, which this tool cannot choose"
+    );
+    gpu = gpu.value_parser(ValueParser::new(GpuChoice::parse));
+    command = command.arg(gpu);
+
+    let mut list_gpus = Arg::new("list-gpus");
+    list_gpus = list_gpus.long("list-gpus").action(ArgAction::SetTrue);
+    list_gpus = list_gpus.conflicts_with_all(["gpu", "command"]);
+    list_gpus = list_gpus.help(
+        "Print the render nodes (with PCI id, kernel driver and Mesa renderer) and the software renderer this host \
+         offers to --gpu, name the one auto uses, and exit"
+    );
+    command = command.arg(list_gpus);
+
     let mut child = Arg::new("command");
-    child = child.value_name("COMMAND").required(true);
+    child = child.value_name("COMMAND").required_unless_present("list-gpus");
     // What: 1.. accepts at least one positional value; trailing_var_arg hands
     // subsequent tokens to the child, including tokens that look like our flags.
     // Why: app --help must reach app, while parent --help still belongs to clap.

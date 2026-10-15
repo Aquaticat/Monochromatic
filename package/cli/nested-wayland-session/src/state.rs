@@ -66,7 +66,7 @@ use crate::frame_pacing::FramePacing;
 
 /// The logical screen size and output scale,
 ///  and the globals that tell clients the scale.
-use crate::{screen::ScreenState, screen_geometry::ScreenGeometry};
+use crate::{render_backend::RenderBackend, screen::ScreenState, screen_geometry::ScreenGeometry};
 
 /// What:
 ///      A grouped `use` of Smithay items.
@@ -81,8 +81,7 @@ use crate::{screen::ScreenState, screen_geometry::ScreenGeometry};
 /// import { Space, Window, Seat, ... } from "smithay";
 /// ```
 use smithay::{
-    backend::renderer::{damage::OutputDamageTracker, gles::{GlesRenderer, GlesTexture}},
-    backend::winit::WinitGraphicsBackend,
+    backend::renderer::{damage::OutputDamageTracker, gles::GlesTexture},
     desktop::{PopupManager, Space, Window},
     input::{Seat, SeatState},
     output::Output,
@@ -311,14 +310,16 @@ pub struct Compositor {
     ///  the nested window plus its GLES/EGL renderer.
     ///
     /// What:
-    ///      `pub backend: WinitGraphicsBackend<GlesRenderer>`.
+    ///      `pub backend: RenderBackend`.
+    ///  The winit window with its renderer,
+    ///           or the surfaceless renderer in `--headless` mode.
     ///  Parameterised by
     ///           the renderer type it drives.
     /// Why:
     ///       Rendering,
     ///  dmabuf import,
     ///  and screenshot readback all go through it.
-    pub backend: WinitGraphicsBackend<GlesRenderer>,
+    pub backend: RenderBackend,
 
     /// Offscreen texture screenshots and recordings render into,
     ///  reused while its size fits.
@@ -557,8 +558,8 @@ pub struct Compositor {
 /// type BackendPieces = { backend; output; dmabufState; dmabufGlobal; dmabufFeedback; geometry };
 /// ```
 pub struct BackendPieces {
-    /// The winit backend (window + GLES renderer).
-    pub backend: WinitGraphicsBackend<GlesRenderer>,
+    /// The winit backend (window + GLES renderer) or the surfaceless renderer.
+    pub backend: RenderBackend,
     /// The nested output.
     pub output: Output,
     /// dmabuf protocol state.

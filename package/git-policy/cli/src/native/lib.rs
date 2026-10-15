@@ -804,6 +804,15 @@ pub mod auto_push_branch_key;
 /// The per-branch `last-pushed` record: validation, tolerant reads and atomic publication.
 pub mod auto_push_record;
 
+/// Waiting for a lock a live process holds: a slow-wait notice naming the holder and a configurable backstop.
+pub mod live_lock;
+
+/// Read-only Git queries of the auto-push, each with a deadline and separate output streams.
+pub mod bounded_query;
+
+/// The auto-push's real `git push` with a deadline, its low-speed abort and the lock wait limit derived from it.
+pub mod bounded_push;
+
 /// Single-flight push coordination per branch: owner lock, record joins and the push itself.
 pub mod auto_push_single_flight;
 
@@ -854,6 +863,10 @@ pub mod worktree_copy_rollback;
 /// The durable journal of one copy: exact encoding, strict validation, private storage and removal.
 #[cfg(unix)]
 pub mod worktree_copy_journal;
+
+/// The durable claim on a stage container's name, and the removal of stages an interrupted copy left behind.
+#[cfg(unix)]
+pub mod worktree_copy_stage_claim;
 
 /// The append-only install log of one stage: per-batch intents and creations, with resumption.
 #[cfg(unix)]

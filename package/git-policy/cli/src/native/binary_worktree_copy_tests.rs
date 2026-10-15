@@ -18,7 +18,8 @@ use super::support::{
 };
 use git_policy_cli::worktree_copy_journal::{create_journal, read_pending_journals};
 use git_policy_cli::worktree_copy_selection::CopySelection;
-use git_policy_cli::worktree_copy_stage::{StagedSnapshot, stage_ignored_snapshot};
+use git_policy_cli::worktree_copy_stage::{StagedSnapshot, new_stage_container, stage_ignored_snapshot};
+use git_policy_cli::worktree_copy_stage_claim::{claim_stage, stage_claims_exist};
 use git_policy_cli::transaction_git::GitContext;
 use std::ffi::OsStr;
 use std::os::unix::fs::PermissionsExt;
@@ -261,7 +262,7 @@ fn an_interrupted_copy_is_recovered_by_the_next_command() {
     let snapshot: StagedSnapshot = stage_ignored_snapshot(
         &context,
         std::fs::canonicalize(repo.as_path()).expect("canonical source").as_path(),
-        one.as_path(),
+        new_stage_container(one.as_path()).expect("container").as_path(),
         &[],
         &CopySelection::Paths(vec![String::from(RULES_FILE)]),
     )
@@ -280,6 +281,39 @@ fn an_interrupted_copy_is_recovered_by_the_next_command() {
     assert!(one.join(RULES_FILE).exists());
     assert_scanner_has_rules(&check_all(&fixture, one.as_path()));
     // Recovery is not repeated.
+    let again: Observed = run_wrapped(&fixture, one.as_path(), &["rev-parse", "--is-inside-work-tree"]);
+    assert!(again.stderr.is_empty(), "{}", stderr_of(&again));
+    remove(&fixture);
+}
+
+/// A copy killed while it was still staging, before any journal existed, leaves a stage that the next command removes:
+/// the stage is reported once, its claim goes, and the command then runs as usual.
+#[test]
+fn a_stage_abandoned_before_its_journal_is_removed_by_the_next_command() {
+    let fixture: Fixture = fixture("copy-abandoned-stage");
+    let repo: PathBuf = repository_with_rules(&fixture, true);
+    let opted_out: Observed = run_wrapped(
+        &fixture,
+        repo.as_path(),
+        &["worktree", "add", "--no-worktree-copy", "--quiet", "-b", "one", "../one"],
+    );
+    assert_eq!(opted_out.code, Some(0));
+    let one: PathBuf = std::fs::canonicalize(fixture.root.join("one")).expect("canonical worktree");
+    let common: PathBuf = std::fs::canonicalize(repo.join(".git")).expect("common directory");
+    // The state a killed copy leaves: the claim, and a half-filled private stage that no journal names.
+    let claim = claim_stage(common.as_path(), one.as_path()).expect("claim");
+    let stage: PathBuf = claim.container().to_path_buf();
+    std::fs::create_dir(stage.as_path()).expect("stage");
+    std::fs::set_permissions(stage.as_path(), std::fs::Permissions::from_mode(0o700)).expect("private");
+    std::fs::create_dir(stage.join("payload")).expect("payload");
+    std::fs::write(stage.join("payload/partial"), b"copied so far").expect("partial copy");
+    let status: Observed = run_wrapped(&fixture, one.as_path(), &["rev-parse", "--is-inside-work-tree"]);
+    assert_eq!(status.code, Some(0), "{}", stderr_of(&status));
+    assert_eq!(status.stdout, b"true\n");
+    assert!(stderr_of(&status).starts_with("cli-git: removed the stage "), "{}", stderr_of(&status));
+    assert!(!stage.exists());
+    assert!(!stage_claims_exist(common.as_path()).expect("claims"));
+    // Removal is not repeated.
     let again: Observed = run_wrapped(&fixture, one.as_path(), &["rev-parse", "--is-inside-work-tree"]);
     assert!(again.stderr.is_empty(), "{}", stderr_of(&again));
     remove(&fixture);
@@ -367,7 +401,7 @@ fn an_interrupted_main_checkout_copy_is_recovered_by_the_next_creation() {
     let snapshot: StagedSnapshot = stage_ignored_snapshot(
         &context,
         std::fs::canonicalize(repo.as_path()).expect("canonical source").as_path(),
-        one.as_path(),
+        new_stage_container(one.as_path()).expect("container").as_path(),
         &[],
         &CopySelection::Paths(vec![String::from(RULES_FILE)]),
     )

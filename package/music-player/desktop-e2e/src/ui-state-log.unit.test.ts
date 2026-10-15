@@ -63,6 +63,7 @@ function stateLine(seq: number, fields: Readonly<Record<string, unknown>> = {},)
     deck_disabled: false,
     first_run_title: '',
     badges: [],
+    auto_play_on_select: false,
     ...fields,
   };
   return `\u001B[32m INFO\u001B[0m music_player::ui_state_log: ui_state ${JSON.stringify(state,)}\n`;

@@ -330,7 +330,6 @@ async function evaluate(
         action,
         approvalFingerprint,
         explanation: verdict.reason,
-        reflectExplanationOnDeny: true,
       },),
     };
   }

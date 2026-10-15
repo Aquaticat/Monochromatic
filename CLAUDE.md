@@ -121,6 +121,12 @@ Write only the real task or a bare sentinel;
  when fired,
  re-derive actions + stop conditions from user instructions + state.
 
+QWD:
+ Saying work is queued,
+ deferred,
+ or waiting for a free slot means writing it to the handover in the same turn;
+ an unwritten queue item is lost at compaction.
+
 DCK:
  Long sessions:
  after each correction,
@@ -282,8 +288,10 @@ DVP:
  external sources only explain probe results or fill gaps.
 
 QAB:
- Predicting a change's (or revert's) effect from unchanged code is inference:
- apply it in a fork,
+ Predicting a change's (or revert's) effect,
+ or saying current behavior already matches a request,
+ from reading code is inference:
+ run the built app or apply it in a fork,
  measure,
  then conclude.
 
@@ -738,7 +746,9 @@ SCR:
  put task logic inline via `shell = "node --input-type=module-typescript -e"` or in a package bin.
 
 PIN:
- Pin tool versions only with a comment explaining why.
+ Pin tool versions only with a comment explaining why;
+ never pin tools this repository publishes,
+ since `mise.lock` records them.
 
 SPG:
  Automation that spawns agent sessions needs explicit recursion guards (env var flag,
@@ -1131,6 +1141,11 @@ SBS:
 ## Before declaring work complete
 
 ### Package completeness
+
+RNQ:
+ Rust packages use Rust tests through nextest,
+ never TypeScript tests.
+Use nextest's default build and test concurrency unless the user specifies otherwise.
 
 PKG:
  A package is complete only with `README.md`,

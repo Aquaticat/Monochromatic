@@ -131,16 +131,18 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
             });
             project(app);
         }
+        // The window marks the rows only (D122): the words about these files go to the desktop as a system notification,
+        // which main.rs hands to the unplayable notifier on the engine thread, so no message is drawn here.
         Update::Unplayable(paths) => {
-            tracing::warn!(files = paths.len(), "files that cannot be played are marked and announced");
+            tracing::warn!(files = paths.len(), "files that cannot be played are marked on their rows");
             update_state(|state| {
                 state.unplayable.extend(paths.iter().cloned());
             });
             project(app);
-            let message = crate::ui_notices::unplayable_message(paths);
-            if !message.is_empty() {
-                crate::ui_overlays::show_error(app, &message);
-            }
+        }
+        Update::AudioUnavailable { reason } => {
+            tracing::warn!(%reason, "no audio output is available; the window tells the person");
+            crate::ui_overlays::show_notice(app, crate::ui_notices::audio_unavailable_message());
         }
         Update::FileGone { path, was_playing } => {
             tracing::info!(path = %path.display(), was_playing, "the selected track's file left the folder");

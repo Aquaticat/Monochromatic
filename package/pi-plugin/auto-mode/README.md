@@ -4,10 +4,48 @@
 > `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
-LLM-as-judge guardrail for pi.
- Replaces pi-safeguard with fixed path handling and a structured-output judge.
+Automatic review of model-initiated Pi tool calls.
+The installed native host evaluates the proposed operation against applicable instructions and authorization.
+Luna estimates instruction meanings;
+code resolves the decision and preserves the original operation through confirmation and execution.
 
-## Architecture
+## Current native behavior
+
+The installed `pi` command uses the maintained native host described in [the native README](native/README.md).
+It uses `openai/gpt-6-luna-decisions` through the Gateway Decisions endpoint,
+with the adopted `0.60` selected-option probability cutoff and a unique leading meaning.
+This threshold is an operating rule,
+not a measured accuracy guarantee.
+
+Established permission allows the operation automatically.
+An established governing prohibition blocks it.
+An explicit fresh-confirmation requirement or uncertain assessment opens the original operation's dialog
+when an interactive approval channel is available.
+The dialog offers `Allow` and `Stop`.
+`Allow` authorizes only that prepared group;
+`Stop`,
+dismissal,
+and a legacy denial response abort the current run.
+An unavailable approval channel leaves an uncertain operation blocked.
+
+Manual confirmation cannot override an established prohibition at the strongest known applicable priority.
+Original source,
+operation,
+authorization,
+and cancellation checks remain active.
+Malformed assessments,
+transport failures,
+and expired judgment deadlines still stop before decision closure;
+they are not successful uncertain assessments.
+Provider request metadata supplies context and is not independently subject to tool-call approval.
+
+The extension export remains available for legacy consumers.
+The remaining sections describe that legacy implementation;
+its flagger,
+model fallback,
+and approval reuse are not the installed native policy.
+
+## Legacy extension architecture
 
 Three-stage pipeline:
 
@@ -428,6 +466,26 @@ source,
 judgment,
 and human-approval owners remain required before any result can authorize execution.
 
+## Migration original prerequisite evidence
+
+`captureAuthorizationInputs` collects independent satisfaction and channel facts
+through a factory fixed by trusted bootstrap.
+Each original record must belong to the same judgment,
+clause,
+request-bound source,
+and request.
+Owner methods and primitive facts remain subject to freshness checks;
+the first eligibility failure permanently retires the collection.
+Borrowed owners and records remain mutable.
+
+`MISSING_AUTHORIZATION_EVIDENCE` identifies a clause without captured facts.
+It grants no permission and does not satisfy an approval requirement.
+`captureAuthorizationOwnerFactory` validates configured callables;
+native bootstrap handles absent configuration before calling it.
+The compiler admits clause meaning separately from these facts.
+The private native consumer now delegates to the maintained artifact.
+This evidence API does not supply a production fact owner or install the migrated host.
+
 ## Migration query observation
 
 `createNativeQueryObservation` retains the first unexpected input or output observation failure.
@@ -623,7 +681,9 @@ This is not a maintained host launcher or installed judge cutover.
 ## Migration input accounting
 
 `assertOriginalInputBudget` validates resource and Session receipt counters,
-then enforces their shared 64-occurrence/four-MiB serialized-record limit.
+then enforces their shared 128-occurrence/four-MiB serialized-record limit.
+The user approved this occurrence limit on 2026-10-14 after the configured extension fixture retained 81 receipts.
+Resource-local capture remains limited to 64 receipts.
 It preserves the original counter profile without invoking accessors,
 reflecting on proxies,
 or freezing borrowed records.

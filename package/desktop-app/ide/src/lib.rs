@@ -149,6 +149,10 @@ pub mod workspace;
 /// Lazy tree rows and expansion state consume background directory snapshots without I/O.
 pub mod file_tree;
 
+/// Which listed entries git ignores,
+///  decided from the rule files with ripgrep's `ignore` crate and without a git process.
+pub mod git_ignore;
+
 /// Bounded background directory reads apply only current tree-request replies.
 pub mod directory_worker;
 

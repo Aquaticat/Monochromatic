@@ -1,29 +1,23 @@
 /**
  Shared helpers of the native-interoperability drivers.
  They run only inside the image `bin/interop-native-container.mjs` builds,
- where `/opt/cli-git/node_modules/.bin/git` is the incumbent wrapper,
- `/opt/native/bin/git` is the native wrapper,
- and `/usr/bin/git` is Git 2.56.0.
- Every repository is created under a fresh directory below `/work/scratch` and never leaves the container.
+ where `/opt/native/bin/git` is the native wrapper and `/usr/bin/git` is Git 2.56.0.
+ Every repository is restored below `/work/scratch` and never leaves the container.
  */
 /// <reference types="node" />
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import {
-  mkdir,
-  mkdtemp,
-  readFile,
-  writeFile,
+  readdir,
+  stat,
 } from 'node:fs/promises';
 import { join } from 'node:path';
 
-/** Directory whose `git` is the incumbent wrapper. */
-export const INCUMBENT_BIN = '/opt/cli-git/node_modules/.bin';
 /** Directory whose `git` is the native wrapper. */
 export const NATIVE_BIN = '/opt/native/bin';
 /** Real Git 2.56.0. */
 export const REAL_GIT = '/usr/bin/git';
-/** The system search path without either wrapper. */
+/** The system search path without the wrapper. */
 export const SYSTEM_PATH = '/usr/local/bin:/usr/bin:/bin';
 
 /** A driver step whose result contradicts what it proves. */
@@ -32,7 +26,7 @@ export class InteropError extends Error {
 }
 
 /**
- Environment of one run: no host configuration, fixed identities, the chosen wrapper first on `PATH`.
+ Environment of one run: no host configuration, fixed identities, the native wrapper first on `PATH` when asked.
 
  @param {{ home: string, wrapperBin?: string, extra?: Record<string, string> }} request -
    disposable home, the directory whose `git` the run starts (none means real Git), and added variables
@@ -127,289 +121,169 @@ export async function run({
 }
 
 /**
- Run a command that must succeed, returning its standard output.
+ Run `git` through the native wrapper in a fixture and return the outcome without judging it.
 
- @param {{ command: string, args: readonly string[], cwd: string, env: Record<string, string>, input?: string }} request -
-   as for `run`
- @returns {Promise<string>} standard output
+ @param {{ wrapper: 'native', fixture: { repository: string, home: string }, args: readonly string[],
+   extra?: Record<string, string> }} request - wrapper, repository, Git arguments and added variables
+ @returns {Promise<RunOutcome>} exit state and output
  */
-export async function runOk(request) {
-  const outcome = await run(request);
+export function runThrough({
+  wrapper,
+  fixture,
+  args,
+  extra = {},
+}) {
+  if (wrapper !== 'native')
+    throw new InteropError(`Only the native wrapper exists in this image, not ${String(wrapper)}.`);
+  return run({
+    command: 'git',
+    args,
+    cwd: fixture.repository,
+    env: runEnvironment({
+      home: fixture.home,
+      wrapperBin: NATIVE_BIN,
+      extra: { MONOCHROMATIC_WARN: 'false', ...extra },
+    }),
+  });
+}
+
+/**
+ Run real Git in a fixture and return its trimmed output.
+
+ @param {{ repository: string, home: string }} fixture - repository and home
+ @param {readonly string[]} args - Git arguments
+ @returns {Promise<string>} trimmed standard output
+ */
+export async function realGit(fixture, args) {
+  const outcome = await run({
+    command: REAL_GIT,
+    args,
+    cwd: fixture.repository,
+    env: runEnvironment({ home: fixture.home }),
+  });
   if (outcome.status !== 0)
     throw new InteropError(
-      `${request.command} ${request.args.join(' ')} exited ${String(outcome.status)} (${String(outcome.signal)}):\n`
+      `${REAL_GIT} ${args.join(' ')} exited ${String(outcome.status)} (${String(outcome.signal)}):\n`
         + `${outcome.stdout}${outcome.stderr}`,
     );
-  return outcome.stdout;
+  return outcome.stdout.trim();
 }
 
 /**
- Create a disposable repository with one commit made by real Git.
+ Entry names of a directory, or none when it does not exist.
 
- @param {{ name: string }} request - label for the fresh directory
- @returns {Promise<{ root: string, repository: string, home: string }>} parent directory, repository and home
+ @param {string} directory - directory to list
+ @returns {Promise<string[]>} entry names
  */
-export async function createRepository({ name }) {
-  await mkdir(
-    '/work/scratch',
-    { recursive: true },
-  );
-  const root = await mkdtemp(join(
-    '/work/scratch',
-    `${name}-`,
-  ));
-  const repository = join(
-    root,
-    'repository',
-  );
-  const home = join(
-    root,
-    'home',
-  );
-  await mkdir(
-    repository,
-    { recursive: true },
-  );
-  await mkdir(
-    home,
-    { recursive: true },
-  );
-  const env = runEnvironment({ home });
-  await runOk({
-    command: REAL_GIT,
-    args: [
-      'init',
-      '--quiet',
-      '--initial-branch=main',
-    ],
-    cwd: repository,
-    env,
-  });
-  await writeFile(
-    join(
-      repository,
-      'a.txt',
-    ),
-    'first\n',
-  );
-  await runOk({
-    command: REAL_GIT,
-    args: [
-      'add',
-      '--',
-      'a.txt',
-    ],
-    cwd: repository,
-    env,
-  });
-  await runOk({
-    command: REAL_GIT,
-    args: [
-      'commit',
-      '--quiet',
-      '--message=initial',
-    ],
-    cwd: repository,
-    env,
-  });
-  return {
-    root,
-    repository,
-    home,
-  };
-}
-
-/**
- Fail the driver unless a condition holds.
-
- @param {{ condition: boolean, message: string }} request - the fact checked and what it proves
- */
-export function expect({
-  condition,
-  message,
-}) {
-  if (!condition)
-    throw new InteropError(message);
-  console.log(`ok: ${message}`);
-}
-
-/**
- A process started in the background with its eventual outcome.
- @typedef {{ child: import('node:child_process').ChildProcess, outcome: Promise<RunOutcome> }} BackgroundRun
- */
-
-/**
- Start one argument array in the background, capturing its output.
-
- @param {{ command: string, args: readonly string[], cwd: string, env: Record<string, string> }} request -
-   executable, arguments, working directory and complete environment
- @returns {BackgroundRun} the child and a promise of its outcome
- */
-export function startBackground({
-  command,
-  args,
-  cwd,
-  env,
-}) {
-  const child = spawn(
-    command,
-    [...args],
-    {
-      cwd,
-      env,
-      stdio: [
-        'ignore',
-        'pipe',
-        'pipe',
-      ],
-    },
-  );
-  /** @type {Buffer[]} */
-  const out = [];
-  /** @type {Buffer[]} */
-  const err = [];
-  child.stdout.on(
-    'data',
-    function collectStdout(chunk) {
-      out.push(chunk);
-    },
-  );
-  child.stderr.on(
-    'data',
-    function collectStderr(chunk) {
-      err.push(chunk);
-    },
-  );
-  const outcome = once(
-    child,
-    'close',
-  )
-    .then(function finished([status, signal]) {
-      return {
-        status,
-        signal,
-        stdout: Buffer.concat(out)
-          .toString('utf8'),
-        stderr: Buffer.concat(err)
-          .toString('utf8'),
-      };
-    });
-  return {
-    child,
-    outcome,
-  };
-}
-
-/**
- Wait until a file exists, failing after a bound.
-
- @param {{ path: string, timeoutMs?: number }} request - file to wait for and the bound
- @returns {Promise<string>} the file's text
- */
-export async function waitForFile({
-  path,
-  timeoutMs = 60_000,
-}) {
-  const started = Date.now();
-  for (;;) {
-    try {
-      return await readFile(
-        path,
-        'utf8',
-      );
-    }
-    catch (error) {
-      if (error.code !== 'ENOENT')
-        throw error;
-    }
-    if (Date.now() - started > timeoutMs)
-      throw new InteropError(`${path} did not appear within ${String(timeoutMs)} ms`);
-    await sleep(20);
+export async function namesIn(directory) {
+  try {
+    return await readdir(directory);
+  }
+  catch (error) {
+    if ((error instanceof Error) && ('code' in error) && (error.code === 'ENOENT'))
+      return [];
+    throw error;
   }
 }
 
 /**
- Pause for a while.
+ Whether a path exists.
 
- @param {number} milliseconds - delay
- @returns {Promise<void>} settles after the delay
+ @param {string} path - path to test
+ @returns {Promise<boolean>} true when something is there
  */
-export function sleep(milliseconds) {
-  return new Promise(function schedule(resolveSleep) {
-    setTimeout(
-      resolveSleep,
-      milliseconds,
-    );
-  });
-}
-
-/** Directory of the native crate inside the image, where its release test binary was built. */
-export const NATIVE_CRATE = '/work/package/git-policy/cli';
-
-/**
- Path of the release library test binary, which holds the native interoperability probes.
-
- @returns {Promise<string>} absolute executable path
- */
-export async function nativeProbeBinary() {
-  const listed = await runOk({
-    command: 'cargo',
-    args: [
-      'test',
-      '--offline',
-      '--locked',
-      '--release',
-      '--lib',
-      '--no-run',
-      '--message-format=json',
-    ],
-    cwd: NATIVE_CRATE,
-    env: {
-      ...process.env,
-    },
-  });
-  for (const line of listed.split('\n')) {
-    if (!line.startsWith('{'))
-      continue;
-    const message = JSON.parse(line);
-    if (message.reason === 'compiler-artifact' && typeof message.executable === 'string')
-      return message.executable;
+export async function pathExists(path) {
+  try {
+    await stat(path);
+    return true;
   }
-  throw new InteropError('cargo listed no library test executable');
+  catch (error) {
+    if ((error instanceof Error) && ('code' in error) && (error.code === 'ENOENT'))
+      return false;
+    throw error;
+  }
 }
 
 /**
- Run one native probe test with its parameters and return its answer lines.
+ Everything a wrapper may leave behind in a repository after a transaction ends.
 
- @param {{ binary: string, test: string, env: Record<string, string>, cwd: string }} request -
-   test binary, exact test path, probe variables and working directory
- @returns {Promise<string[]>} the probe's own output lines, harness lines removed
+ Lock directories whose holder died are retired lazily, by the next command that acquires the lock, so a command
+ that never takes that lock (a `status`, an `add` that needs no landing) leaves them in place by design.
+ `staleLocks` accepts them for such a command.
+
+ @param {{ repository: string }} fixture - repository
+ @param {{ staleLocks?: boolean }} [options] - whether lock directories count as leftovers
+ @returns {Promise<string[]>} descriptions of each leftover, none when the repository is quiescent
  */
-export async function runNativeProbe({
-  binary,
-  test,
-  env,
-  cwd,
-}) {
-  const stdout = await runOk({
-    command: binary,
-    args: [
-      '--exact',
-      test,
-      '--ignored',
-      '--nocapture',
-      '--test-threads=1',
-      '--quiet',
-    ],
-    cwd,
-    env: {
-      PATH: SYSTEM_PATH,
-      HOME: process.env.HOME ?? '/home/tester',
-      ...env,
+export async function leftovers(fixture, { staleLocks = false } = {}) {
+  const gitDir = join(
+    fixture.repository,
+    '.git',
+  );
+  const found = [];
+  for (const name of await namesIn(join(
+    gitDir,
+    'cli-git-transactions',
+  ))) {
+    if (!(staleLocks && name.endsWith('.lock')))
+      found.push(`cli-git-transactions/${name}`);
+  }
+  for (const name of await namesIn(join(
+    gitDir,
+    'cli-git',
+    'shadow',
+  )))
+    found.push(`cli-git/shadow/${name}`);
+  for (const name of await namesIn(gitDir)) {
+    if (name === 'index.lock')
+      found.push('index.lock');
+  }
+  for (const name of await namesIn(join(
+    gitDir,
+    'objects',
+    'pack',
+  ))) {
+    if (name.endsWith('.keep'))
+      found.push(`objects/pack/${name}`);
+  }
+  if (!staleLocks && await pathExists(join(
+    gitDir,
+    'cli-git-captures',
+    'capture.lock',
+  )))
+    found.push('cli-git-captures/capture.lock');
+  return found;
+}
+
+/**
+ Collects every check of a driver instead of stopping at the first failure,
+ so one failing check never hides the others; the driver ends with `finish`.
+
+ @returns {{ check: (request: { condition: boolean, message: string }) => boolean, finish: () => void }} recorder
+ */
+export function createMatrix() {
+  /** @type {string[]} */
+  const failures = [];
+  let passed = 0;
+  return {
+    check({
+      condition,
+      message,
+    }) {
+      if (condition) {
+        passed += 1;
+        console.log(`ok: ${message}`);
+      }
+      else {
+        failures.push(message);
+        console.log(`FAIL: ${message}`);
+      }
+      return condition;
     },
-  });
-  return stdout.split('\n')
-    .filter(function isAnswer(line) {
-      return /^(identity|busy|acquired|released)/u.test(line);
-    });
+    finish() {
+      console.log(`${String(passed)} checks passed, ${String(failures.length)} failed`);
+      if (failures.length > 0)
+        throw new InteropError(`${String(failures.length)} checks failed:\n${failures.join('\n')}`);
+    },
+  };
 }

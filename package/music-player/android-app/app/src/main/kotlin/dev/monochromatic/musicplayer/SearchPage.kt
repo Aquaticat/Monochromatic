@@ -18,9 +18,13 @@ package dev.monochromatic.musicplayer
 // ```ts
 // import { background } from "compose/foundation";
 // ```
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 
 // What:     `import androidx.compose.foundation.clickable` makes each result row one activatable target.
 // Why:      The row is the single action target, so the click handler and its label live on one modifier (D77).
@@ -39,15 +43,6 @@ import androidx.compose.foundation.clickable
 // import { isSystemInDarkTheme } from "compose/foundation";
 // ```
 import androidx.compose.foundation.isSystemInDarkTheme
-
-// What:     `import androidx.compose.foundation.layout.Arrangement` centers the cover status vertically.
-// Why:      The cover status sits in the middle of the remaining height, as in the reviewed capture.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Arrangement } from "compose/foundation/layout";
-// ```
-import androidx.compose.foundation.layout.Arrangement
 
 // What:     `import androidx.compose.foundation.layout.Box` stacks a status or list over its region.
 // Why:      Each region of the page is a box whose content is chosen by the search state.
@@ -256,14 +251,42 @@ import androidx.compose.foundation.lazy.items
 // ```
 import androidx.compose.foundation.text.BasicTextField
 
-// What:     `import androidx.compose.foundation.text.KeyboardActions` names the IME action handler.
-// Why:      The Search action on the keyboard does nothing, so the keyboard stays open (D63).
+// What:     `import androidx.compose.foundation.text.input.placeCursorAtEnd` collapses the selection after the text.
+// Why:      The Search shortcut puts the caret at the end of the query and selects nothing (D126).
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const onSearch = () => {};
+// input.setSelectionRange(input.value.length, input.value.length);
 // ```
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.input.placeCursorAtEnd
+
+// What:     `import androidx.compose.foundation.text.input.TextFieldDecorator` wraps the field's inner text.
+// Why:      The placeholder is drawn behind the text while the field is empty (D63).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const decorator = (input: UIElement) => <div>{empty && <Placeholder />}{input}</div>;
+// ```
+import androidx.compose.foundation.text.input.TextFieldDecorator
+
+// What:     `import androidx.compose.foundation.text.input.TextFieldLineLimits` keeps the query on one line.
+// Why:      The query is one line, as the earlier `singleLine` flag made it.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// <input type="search" />
+// ```
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+
+// What:     `import androidx.compose.foundation.text.input.TextFieldState` is the field's text and selection.
+// Why:      A state that edits apply to at once lets the Search shortcut place the caret before the next key is read.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const input = { value: "lan", selectionStart: 3, selectionEnd: 3 }; // mutated in place
+// ```
+import androidx.compose.foundation.text.input.TextFieldState
+
 
 // What:     `import androidx.compose.foundation.text.KeyboardOptions` labels the keyboard action as Search.
 // Why:      The IME action is Search, not playback, so the keyboard shows the search key.
@@ -275,7 +298,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 
 // What:     `import androidx.compose.material3.HorizontalDivider` draws the header boundary.
-// Why:      The 1dp outline divider separates the header from the status or results.
+// Why:      The 1dp outline-variant divider separates the header from the status or results (D126).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -327,6 +350,8 @@ import androidx.compose.material3.Text
 // type Component = () => JSX.Element;
 // ```
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.compositionLocalOf
 
 // What:     `import androidx.compose.runtime.LaunchedEffect` runs the focus request after composition.
 // Why:      The query field can take focus only after it is attached to the layout.
@@ -337,6 +362,42 @@ import androidx.compose.runtime.Composable
 // ```
 import androidx.compose.runtime.LaunchedEffect
 
+// What:     `import androidx.compose.runtime.DisposableEffect` registers the field with the Search shortcut port.
+// Why:      The registration must end when the page leaves composition, so a later shortcut finds no stale field.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// useEffect(() => { port.onShortcut = handler; return () => { port.onShortcut = null; }; }, []);
+// ```
+import androidx.compose.runtime.DisposableEffect
+
+// What:     `import androidx.compose.runtime.snapshotFlow` turns the field's text into a flow of changes.
+// Why:      The page mirrors every edit of the field into the host's kept query.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// observe(() => input.value).subscribe(onQueryChange);
+// ```
+import androidx.compose.runtime.snapshotFlow
+
+// What:     `import androidx.compose.runtime.saveable.Saver` describes how the field state is saved and restored.
+// Why:      A saved field state is restored only while it still holds the host's query, so a stale one is dropped.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const saver = { save: (input) => input.snapshot(), restore: (saved) => (saved.text === query ? saved : null) };
+// ```
+import androidx.compose.runtime.saveable.Saver
+
+// What:     `import androidx.compose.runtime.saveable.rememberSaveable` keeps the field state across a recreation.
+// Why:      The query survives an activity recreation in the host, and the caret should survive it with the query.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const input = useSessionState(() => ({ value: query, caret: query.length }), saver);
+// ```
+import androidx.compose.runtime.saveable.rememberSaveable
+
 // What:     `import androidx.compose.runtime.remember` keeps the focus requester across recomposition.
 // Why:      A new focus requester on every frame would lose the field's focus binding.
 //
@@ -345,6 +406,27 @@ import androidx.compose.runtime.LaunchedEffect
 // const ref = useRef(null);
 // ```
 import androidx.compose.runtime.remember
+
+// What:     `import androidx.compose.runtime.getValue` lets the header read its field state with `by`.
+// Why:      The field value is a delegated property, so the read operator must be in scope.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const [value, setValue] = useState(...); // the read half
+// ```
+import androidx.compose.runtime.getValue
+
+// What:     `import androidx.compose.runtime.mutableStateOf` holds the field value, selection included.
+// Why:      The caret is part of the value, and a `String` keeps none.
+//
+// What:     `import androidx.compose.runtime.rememberUpdatedState` gives a long-lived effect the newest query.
+// Why:      The refocus effect outlives recompositions, and must put the caret at the end of the query as it is then.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const latest = useRef(query); latest.current = query;
+// ```
+import androidx.compose.runtime.rememberUpdatedState
 
 // What:     `import androidx.compose.ui.Alignment` centers the header row and the empty-state content.
 // Why:      Icons and text sit on the vertical center line of their rows.
@@ -480,6 +562,15 @@ import androidx.compose.ui.text.AnnotatedString
 // { background: fill, fontWeight: 700 }
 // ```
 import androidx.compose.ui.text.SpanStyle
+
+// What:     `import androidx.compose.ui.text.TextRange` names a caret or a selection by character offsets.
+// Why:      The field value is rebuilt with its caret at the end of the kept query.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const caretAtEnd = { start: query.length, end: query.length };
+// ```
+import androidx.compose.ui.text.TextRange
 
 // What:     `import androidx.compose.ui.text.buildAnnotatedString` builds the annotated title and detail.
 // Why:      The builder appends the unchanged text first, then adds one style per range.
@@ -647,6 +738,12 @@ import dev.monochromatic.musicplayer.core.leftPaneClearance
 import dev.monochromatic.musicplayer.core.SEARCH_BACK_LABEL
 import dev.monochromatic.musicplayer.core.SEARCH_CLEAR_LABEL
 import dev.monochromatic.musicplayer.core.SEARCH_FIELD_LABEL
+import dev.monochromatic.musicplayer.core.SEARCH_ROW_ICON_CIRCLE_DP
+import dev.monochromatic.musicplayer.core.SEARCH_ROW_ICON_SLOT_DP
+import dev.monochromatic.musicplayer.core.SEARCH_ROW_RADIUS_DP
+import dev.monochromatic.musicplayer.core.SEARCH_STATUS_CIRCLE_DP
+import dev.monochromatic.musicplayer.core.SEARCH_STATUS_GLYPH_DP
+import dev.monochromatic.musicplayer.core.searchRowInsets
 
 // What:     `private val SEARCH_EDGE_INSET: Dp = 16.dp` is the page's standard edge inset.
 // Why:      Header and row content start at the same 16dp inset on the cover and beside the crease.
@@ -708,14 +805,14 @@ private val SEARCH_HEADER_HEIGHT: Dp = 72.dp
 /** Minimum height of one result row. */
 private val SEARCH_ROW_MIN_HEIGHT: Dp = 72.dp
 
-// What:     `private val SEARCH_STATUS_TOP: Dp = 72.dp` offsets the inner status headline from the top.
-// Why:      The inner status starts below the header, as in the reviewed inner capture.
+// What:     `private val SEARCH_STATUS_TOP: Dp = 72.dp` offsets the status circle from the divider.
+// Why:      Both panels start the status circle the same distance under the divider, above the keyboard (D126).
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // const SEARCH_STATUS_TOP = 72;
 // ```
-/** Distance from the top of the inner Search pane to its status headline. */
+/** Distance from the divider to the top of the status circle, on the cover and on the inner panel. */
 private val SEARCH_STATUS_TOP: Dp = 72.dp
 
 // What:     `private val SEARCH_STATUS_DETAIL_TOP: Dp = 12.dp` separates a status headline from its detail.
@@ -728,14 +825,14 @@ private val SEARCH_STATUS_TOP: Dp = 72.dp
 /** Gap between a status headline and its support line. */
 private val SEARCH_STATUS_DETAIL_TOP: Dp = 12.dp
 
-// What:     `private val SEARCH_COVER_TITLE_TOP: Dp = 24.dp` separates the cover glyph from the headline.
-// Why:      The cover status stacks its glyph, headline and detail, with the headline 24dp below the glyph.
+// What:     `private val SEARCH_COVER_TITLE_TOP: Dp = 24.dp` separates the status circle from the headline.
+// Why:      The status stacks its circle, headline and detail, with the headline 24dp below the circle.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // const SEARCH_COVER_TITLE_TOP = 24;
 // ```
-/** Gap between the cover status glyph and its headline. */
+/** Gap between the status circle and its headline. */
 private val SEARCH_COVER_TITLE_TOP: Dp = 24.dp
 
 // What:     `private val SEARCH_COVER_DETAIL_TOP: Dp = 8.dp` separates the cover headline from its detail.
@@ -767,6 +864,32 @@ private val SEARCH_SEAM: Dp = 1.dp
 // ```
 /** True black canvas used behind the page in dark mode. */
 private val SEARCH_TRUE_BLACK: Color = Color(0xFF000000)
+
+// What:     `internal const val SEARCH_*_TAG` name the test tags of the page's regions.
+// Why:      The wiring tests find the header, the divider, the status strip, the status block and the circles by
+//           tag, so a restyle cannot move them unnoticed.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SEARCH_HEADER_TAG = "searchHeader"; // data-testid
+// ```
+/** Test tag of the 72 dp header row. */
+internal const val SEARCH_HEADER_TAG: String = "searchHeader"
+
+/** Test tag of the divider under the header. */
+internal const val SEARCH_DIVIDER_TAG: String = "searchDivider"
+
+/** Test tag of the strip that reserves the status bar above the header. */
+internal const val SEARCH_STATUS_STRIP_TAG: String = "searchStatusStrip"
+
+/** Test tag of the scrolling status block of the empty and no-result states. */
+internal const val SEARCH_STATUS_TAG: String = "searchStatus"
+
+/** Test tag of the 72 dp circle of the status block. */
+internal const val SEARCH_STATUS_CIRCLE_TAG: String = "searchStatusCircle"
+
+/** Test tag of the 40 dp circle of a result row. */
+internal const val SEARCH_ROW_CIRCLE_TAG: String = "searchRowCircle"
 
 // What:     `class SearchLayoutException` signals a layout input that cannot be measured.
 // Why:      A non-positive density has no physical meaning, so the page throws instead of guessing a crease.
@@ -860,6 +983,17 @@ internal fun searchHighlightedText(
     }
 }
 
+// What:     `internal val LocalAutoPlayOnSelect` carries the Auto-play on select setting from the host to the results.
+// Why:      A result for a track that is not current says "Play track" with the setting on and "Select track" with it
+//           off (D77, D129); the setting reaches the row's spoken action without five parameters in between.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const LocalAutoPlayOnSelect = createContext<boolean>(false);
+// ```
+/** Composition local holding whether activating another track's result also starts it; false by default. */
+internal val LocalAutoPlayOnSelect: ProvidableCompositionLocal<Boolean> = compositionLocalOf { false }
+
 // What:     `@Composable fun searchPage(...)` draws the Search page for the available width.
 // Why:      One entry point serves both layouts, so the caller wires the page once and the width picks the arrangement.
 //
@@ -941,9 +1075,16 @@ private fun searchCoverPage(
     complete: Boolean,
 ) {
     Column(modifier = Modifier.fillMaxSize().background(canvas)) {
-        Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
+        Box(
+            modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars)
+                .testTag(SEARCH_STATUS_STRIP_TAG),
+        )
         searchHeader(query = query, actions = actions, startInset = SEARCH_EDGE_INSET, endInset = SEARCH_EDGE_INSET)
-        HorizontalDivider(thickness = SEARCH_SEAM, color = MaterialTheme.colorScheme.outline)
+        HorizontalDivider(
+            modifier = Modifier.testTag(SEARCH_DIVIDER_TAG),
+            thickness = SEARCH_SEAM,
+            color = MaterialTheme.colorScheme.outlineVariant,
+        )
         /** Status line for this state, or null when the state draws a result list. */
         val line: SearchStatusLine? = searchStatusLine(state, complete)
         if (line != null) {
@@ -1006,14 +1147,21 @@ private fun searchInnerPage(
             }
         }
         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-            Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
+            Box(
+                modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars)
+                    .testTag(SEARCH_STATUS_STRIP_TAG),
+            )
             searchHeader(
                 query = query,
                 actions = actions,
                 startInset = halfCrease + SEARCH_EDGE_INSET,
                 endInset = SEARCH_EDGE_INSET,
             )
-            HorizontalDivider(thickness = SEARCH_SEAM, color = MaterialTheme.colorScheme.outline)
+            HorizontalDivider(
+                modifier = Modifier.testTag(SEARCH_DIVIDER_TAG),
+                thickness = SEARCH_SEAM,
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
             if (line != null) {
                 searchInnerStatus(
                     line = line,
@@ -1037,6 +1185,24 @@ private fun searchInnerPage(
     }
 }
 
+// What:     `private fun restoreOnlyWhileHolding(query: String): Saver<TextFieldState, Any>` saves a field state as the
+//           standard saver does, and refuses to restore one whose text is not [query].
+// Why:      Compose keeps a saved value that no composable consumed, and saves it again with the next recreation, so a
+//           header that returns to an earlier layout position gets back the state it had when it last stood there. That
+//           state is older than the host's query, and the field would then overwrite the newer query with it (D126).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const restoreOnlyWhileHolding = (query) => ({ save, restore: (s) => (text(s) === query ? restore(s) : null) });
+// ```
+/** Saver of a field state that restores a saved state only when its text equals the first [query] it was given. */
+private fun restoreOnlyWhileHolding(query: String): Saver<TextFieldState, Any> = Saver(
+    save = { state -> with(TextFieldState.Saver) { save(state) } },
+    restore = { saved ->
+        TextFieldState.Saver.restore(saved)?.takeIf { restored -> restored.text.toString() == query }
+    },
+)
+
 // What:     `@Composable private fun searchHeader(...)` draws the Back, query field, and Clear row.
 // Why:      One header holds all three controls (D48), and the field takes focus and the keyboard on entry (D63).
 //
@@ -1044,7 +1210,14 @@ private fun searchInnerPage(
 // ```ts
 // function Header(props): UIElement { return <div><button /><input /><button /></div>; }
 // ```
-/** Draws the integrated Search header, requesting focus for the field when the page opens. */
+/**
+ * Draws the integrated Search header, requesting focus for the field when the page opens.
+ *
+ * The field is a [TextFieldState], the source of the query while the page is open and mirrored into the host: a header
+ * rebuilt for the other panel (a fold change) starts the field with the caret at the end of the kept query, and the
+ * Search shortcut on an open page puts it there in the key event itself, through [SearchFocusPort], so a character
+ * typed right after the chord continues after the text instead of before it (D126).
+ */
 @Composable
 private fun searchHeader(
     query: String,
@@ -1054,21 +1227,50 @@ private fun searchHeader(
 ) {
     /** Focus requester attached to the query field so the page can focus it on entry. */
     val focusRequester = remember { FocusRequester() }
-    /** Count of same-visit refocus requests from the Search shortcut, which refocus the field without clearing it. */
-    val focusToken: Int = HostKeyLocalSearchFocus.current
+    /** Port that the Search shortcut presses on an open page, which refocuses the field without clearing it. */
+    val shortcutPort: SearchFocusPort = HostKeyLocalSearchFocus.current
     /** Callback that reports the query field's focus to the host, which needs it to know the key owner. */
     val reportFieldFocus: (Boolean) -> Unit = HostKeyLocalSearchField.current
     /** Software keyboard controller, or null when the platform offers none. */
     val keyboard = LocalSoftwareKeyboardController.current
-    LaunchedEffect(focusToken) {
+    /** Field text and caret, saved across an activity recreation; starts from the kept query, caret at its end. */
+    val fieldState: TextFieldState = rememberSaveable(saver = restoreOnlyWhileHolding(query)) {
+        TextFieldState(initialText = query, initialSelection = TextRange(query.length))
+    }
+    /** Newest query, for the mirror below, which outlives the composition that started it. */
+    val latestQuery: String by rememberUpdatedState(query)
+    /** Newest actions, for the mirror below, which outlives the composition that started it. */
+    val latestActions: SearchPageActions by rememberUpdatedState(actions)
+    LaunchedEffect(Unit) {
         focusRequester.requestFocus()
         keyboard?.show()
+    }
+    DisposableEffect(shortcutPort, fieldState, focusRequester, keyboard) {
+        /** What the Search shortcut does here: caret to the end with nothing selected, then focus and the keyboard. */
+        val onShortcut: () -> Unit = {
+            fieldState.edit { placeCursorAtEnd() }
+            focusRequester.requestFocus()
+            keyboard?.show()
+        }
+        shortcutPort.onShortcut = onShortcut
+        onDispose {
+            if (shortcutPort.onShortcut === onShortcut) {
+                shortcutPort.onShortcut = null
+            }
+        }
+    }
+    LaunchedEffect(fieldState) {
+        snapshotFlow { fieldState.text.toString() }.collect { text ->
+            if (text != latestQuery) {
+                latestActions.onQueryChange(text)
+            }
+        }
     }
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(SEARCH_HEADER_HEIGHT)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .testTag(SEARCH_HEADER_TAG)
             .padding(start = startInset, end = endInset),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -1079,22 +1281,21 @@ private fun searchHeader(
             Icon(imageVector = SEARCH_BACK_ICON, contentDescription = SEARCH_BACK_LABEL)
         }
         BasicTextField(
-            value = query,
-            onValueChange = actions.onQueryChange,
+            state = fieldState,
             modifier = Modifier
                 .weight(1f)
                 .height(SEARCH_TOUCH_TARGET)
                 .focusRequester(focusRequester)
                 .onFocusChanged { focusState -> reportFieldFocus(focusState.isFocused) }
                 .semantics { contentDescription = SEARCH_FIELD_LABEL },
-            singleLine = true,
+            lineLimits = TextFieldLineLimits.SingleLine,
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = {}),
-            decorationBox = { field ->
+            onKeyboardAction = { },
+            decorator = TextFieldDecorator { field ->
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-                    if (query.isEmpty()) {
+                    if (fieldState.text.isEmpty()) {
                         Text(
                             text = SEARCH_FIELD_LABEL,
                             style = MaterialTheme.typography.bodyLarge,
@@ -1107,7 +1308,10 @@ private fun searchHeader(
         )
         if (isClearVisible(query)) {
             IconButton(
-                onClick = actions.onClear,
+                onClick = {
+                    fieldState.edit { replace(0, length, "") }
+                    actions.onClear()
+                },
                 modifier = Modifier.size(SEARCH_TOUCH_TARGET).focusRing(CircleShape),
             ) {
                 Icon(imageVector = SEARCH_CLEAR_ICON, contentDescription = SEARCH_CLEAR_LABEL)
@@ -1116,32 +1320,79 @@ private fun searchHeader(
     }
 }
 
-// What:     `@Composable private fun searchCoverStatus(...)` draws a centered status on the cover.
-// Why:      The cover status stacks a glyph, headline and detail in the middle of the screen, as in the review.
+// What:     `@Composable private fun searchStatusCircle()` draws the glyph circle of the empty and no-result states.
+// Why:      D126 puts the glyph in a plain 72 dp circle of the secondary container role, so the state has one tonal
+//           anchor above its title instead of a bare small glyph.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function CoverStatus({ line }): UIElement { return <Center><Icon/><h2>{title}</h2><p>{detail}</p></Center>; }
+// function StatusCircle(): UIElement { return <div class="circle72"><Icon name="search" size={32} /></div>; }
 // ```
-/** Draws a centered status with a glyph, a headline, and an optional support line. */
+/** Draws the 72 dp secondary-container circle with the 32 dp magnifier glyph in on-secondary-container. */
 @Composable
-private fun searchCoverStatus(line: SearchStatusLine, modifier: Modifier) {
-    Column(
-        modifier = modifier.padding(horizontal = SEARCH_EDGE_INSET),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+private fun searchStatusCircle() {
+    Box(
+        modifier = Modifier.size(SEARCH_STATUS_CIRCLE_DP.dp).clip(CircleShape)
+            .background(MaterialTheme.colorScheme.secondaryContainer).testTag(SEARCH_STATUS_CIRCLE_TAG),
+        contentAlignment = Alignment.Center,
     ) {
         Icon(
             imageVector = SEARCH_ICON,
             contentDescription = null,
-            modifier = Modifier.size(SEARCH_ICON_DP),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(SEARCH_STATUS_GLYPH_DP.dp),
+            tint = MaterialTheme.colorScheme.onSecondaryContainer,
         )
-        Text(
+    }
+}
+
+// What:     `@Composable private fun searchStatusTitle(...)` draws the headline of a status.
+// Why:      D126 lightens the headline from semibold title large to medium title medium, so the state reads quietly.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function StatusTitle({ text }): UIElement { return <h2 style={{ font: "titleMedium", weight: 500 }}>{text}</h2>; }
+// ```
+/** Draws a status headline in the title medium role at the medium weight. */
+@Composable
+private fun searchStatusTitle(text: String, modifier: Modifier, textAlign: TextAlign) {
+    Text(
+        text = text,
+        modifier = modifier,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Medium,
+        textAlign = textAlign,
+    )
+}
+
+// What:     `@Composable private fun searchCoverStatus(...)` draws a status centered under the header on the cover.
+// Why:      The block starts a fixed distance under the header instead of centering in the whole body, so it stays
+//           above the keyboard at any text size, and it pads by the keyboard and navigation insets like the list.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function CoverStatus({ line }): UIElement {
+//   return <Scroll insets={ime + nav}><Circle/><h2>{title}</h2><p>{detail}</p></Scroll>;
+// }
+// ```
+/**
+ * Draws a status with a circle, a headline, and an optional support line, lifted clear of the keyboard.
+ *
+ * The block scrolls when the space above the keyboard is shorter than the block, so no line is cut off at large text.
+ */
+@Composable
+private fun searchCoverStatus(line: SearchStatusLine, modifier: Modifier) {
+    Column(
+        modifier = modifier
+            .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars))
+            .testTag(SEARCH_STATUS_TAG)
+            .verticalScroll(rememberScrollState())
+            .padding(start = SEARCH_EDGE_INSET, end = SEARCH_EDGE_INSET, top = SEARCH_STATUS_TOP),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        searchStatusCircle()
+        searchStatusTitle(
             text = line.title,
             modifier = Modifier.padding(top = SEARCH_COVER_TITLE_TOP),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
         )
         line.detail?.let { detail ->
@@ -1157,22 +1408,29 @@ private fun searchCoverStatus(line: SearchStatusLine, modifier: Modifier) {
 }
 
 // What:     `@Composable private fun searchInnerStatus(...)` draws a left-aligned status in the inner pane.
-// Why:      The inner status starts at the header's start inset, below the header, as in the reviewed capture.
+// Why:      The inner status starts at the header's start inset, below the header, with the same circle and headline as
+//           the cover; the inner row already lifts above the keyboard, so only the scroll is added here.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function InnerStatus({ line }): UIElement { return <div><h2>{line.title}</h2><p>{line.detail}</p></div>; }
+// function InnerStatus({ line }): UIElement {
+//   return <Scroll><Circle/><h2>{line.title}</h2><p>{line.detail}</p></Scroll>;
+// }
 // ```
-/** Draws a left-aligned status headline with an optional support line below it. */
+/** Draws a left-aligned circle, headline and optional support line, scrolling when the pane is short. */
 @Composable
 private fun searchInnerStatus(line: SearchStatusLine, startInset: Dp, endInset: Dp, modifier: Modifier) {
     Column(
-        modifier = modifier.padding(start = startInset, end = endInset, top = SEARCH_STATUS_TOP),
+        modifier = modifier
+            .testTag(SEARCH_STATUS_TAG)
+            .verticalScroll(rememberScrollState())
+            .padding(start = startInset, end = endInset, top = SEARCH_STATUS_TOP),
     ) {
-        Text(
+        searchStatusCircle()
+        searchStatusTitle(
             text = line.title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(top = SEARCH_COVER_TITLE_TOP),
+            textAlign = TextAlign.Start,
         )
         line.detail?.let { detail ->
             Text(
@@ -1224,13 +1482,22 @@ private fun searchResultList(
 }
 
 // What:     `@Composable private fun searchResultRow(...)` draws one result as one merged action row.
-// Why:      The row shares the header's start inset so its icon and title line up with Back and the query (D58).
+// Why:      The row shares the header's start inset so its icon and title line up with Back and the query (D58); its
+//           rounded shape starts a margin before the content, and bounds the press indication and the focus ring.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function ResultRow({ result }): UIElement { return <button><Icon/><div><p>{t}</p><p>{p}</p></div></button>; }
+// function ResultRow({ result }): UIElement {
+//   return <button><Circle><Icon/></Circle><div><p>{t}</p><p>{p}</p></div></button>;
+// }
 // ```
-/** Draws one result row with its glyph, highlighted title, optional parent line, and one merged accessible action. */
+/**
+ * Draws one result row with its glyph in a 40 dp circle, highlighted title, optional parent line, and one merged
+ * accessible action.
+ *
+ * The row is flat on the canvas. Its rounded 21.3 dp shape bounds the press indication and the keyboard ring just
+ * inside its edge (D120), and starts 8 dp before the content, so the glyph and the title keep the header's columns.
+ */
 @Composable
 private fun searchResultRow(
     result: SearchResult,
@@ -1240,17 +1507,28 @@ private fun searchResultRow(
     startInset: Dp,
     endInset: Dp,
 ) {
-    /** Spoken kind, action and playback state of this row. */
-    val rowSpeech: SearchRowSemantics = searchRowSemantics(result, currentTrackIndex, isPlaying)
+    /** Spoken kind, action and playback state of this row; with the setting on, another track is played. */
+    val rowSpeech: SearchRowSemantics = searchRowSemantics(
+        result = result,
+        currentTrackIndex = currentTrackIndex,
+        isPlaying = isPlaying,
+        autoPlayOnSelect = LocalAutoPlayOnSelect.current,
+    )
     /** Match fill derived from the accent in OKLCH and fitted for contrast by the theme (D59, D108). */
     val fill: Color = LocalThemeRoles.current.matchFill.toComposeColor()
     /** Ink color for the emphasized and plain text of this row. */
     val ink: Color = MaterialTheme.colorScheme.onSurface
+    /** Margins of the rounded shape and the padding that returns the content to the page insets. */
+    val insets = searchRowInsets(startInsetDp = startInset.value, endInsetDp = endInset.value)
+    /** Rounded shape of the press indication and the keyboard ring. */
+    val shape = RoundedCornerShape(SEARCH_ROW_RADIUS_DP.dp)
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(start = insets.outerStartDp.dp, end = insets.outerEndDp.dp)
             .heightIn(min = SEARCH_ROW_MIN_HEIGHT)
-            .focusRing(RectangleShape, placement = FocusRingPlacement.INSIDE)
+            .focusRing(shape, placement = FocusRingPlacement.INSIDE)
+            .clip(shape)
             .clickable(role = Role.Button, onClickLabel = rowSpeech.actionLabel) { onOpenResult(result) }
             .semantics(mergeDescendants = true) {
                 /** Current-track state read from the row's speech, or null when the row is not current. */
@@ -1259,19 +1537,22 @@ private fun searchResultRow(
                     stateDescription = state
                 }
             }
-            .padding(
-                start = startInset,
-                end = endInset,
-            ),
+            .padding(horizontal = insets.innerDp.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(modifier = Modifier.size(SEARCH_TOUCH_TARGET), contentAlignment = Alignment.Center) {
-            Icon(
-                imageVector = if (result.kind == SearchResultKind.FOLDER) FOLDER_OPEN_ICON else SEARCH_TRACK_ICON,
-                contentDescription = rowSpeech.kindLabel,
-                modifier = Modifier.size(SEARCH_ICON_DP),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        Box(modifier = Modifier.size(SEARCH_ROW_ICON_SLOT_DP.dp), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.size(SEARCH_ROW_ICON_CIRCLE_DP.dp).clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.secondaryContainer).testTag(SEARCH_ROW_CIRCLE_TAG),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = if (result.kind == SearchResultKind.FOLDER) FOLDER_OPEN_ICON else SEARCH_TRACK_ICON,
+                    contentDescription = rowSpeech.kindLabel,
+                    modifier = Modifier.size(SEARCH_ICON_DP),
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+            }
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(

@@ -113,21 +113,20 @@ cargo-binstall = "latest"
 "cargo:cargo-nextest" = "latest"
 
 # The unified Rust, Markdown and MDX linter behind the root lint:monochromatic-lint
-# and format:monochromatic-lint tasks and the Markdown commit policy. Pinned because a
-# new version can add or change rules, which must land together with the repository's
-# monochromatic-lint.config.jsonc. The cargo backend resolves through cargo-binstall
-# to the prebuilt release archive when one exists for the platform.
-"cargo:monochromatic-lint" = "0.1.1"
+# and format:monochromatic-lint tasks and the Markdown commit policy. Not pinned, because this
+# repository publishes it: mise.lock records the resolved version. The cargo backend resolves
+# through cargo-binstall to the prebuilt release archive when one exists for the platform.
+"cargo:monochromatic-lint" = "latest"
 
-# The Git policy wrapper (package/git-policy/cli), installed from the published crate. Pinned so a release of the
-# wrapper reaches the repository only together with its configuration and policies. The crate's binary is
+# The Git policy wrapper (package/git-policy/cli), installed from the published crate. Not pinned, because this
+# repository publishes it: mise.lock records the resolved version. The crate's binary is
 # `cli-git-native`; the postinstall links it as `git` in the gitignored per-worktree directory `.cache/cli-git-bin`,
 # which file-enforcer puts first in `_.path`. The link never lives in the tool's own `bin/`, because mise would then
 # create a global `git` shim. `when = "always"` relinks on every `mise install`, so a new worktree gets its link even
 # when the tool is already installed. The link is made under a temporary name and moved over `git`, so a concurrent
 # `git` never sees a missing file. `os = ["linux"]` because only Linux archives are released and the code was never
 # built elsewhere. Details: doc/planning/cli-git-native-cutover.md, section `Install the published tool`.
-"cargo:monochromatic-git-policy-cli" = { version = "0.1.2", os = ["linux"], postinstall = { run = "mkdir --parents \"$MISE_CONFIG_ROOT/.cache/cli-git-bin\" && ln --symbolic \"$MISE_TOOL_INSTALL_PATH/bin/cli-git-native\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" && mv --no-target-directory \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/git\"", when = "always" } }
+"cargo:monochromatic-git-policy-cli" = { version = "latest", os = ["linux"], postinstall = { run = "mkdir --parents \"$MISE_CONFIG_ROOT/.cache/cli-git-bin\" && ln --symbolic \"$MISE_TOOL_INSTALL_PATH/bin/cli-git-native\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" && mv --no-target-directory \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/git\"", when = "always" } }
 
 # The nested Wayland compositor that hosts one GUI app for screenshots and synthetic input
 # (package/cli/nested-wayland-session). Not pinned: mise.lock records the resolved version. The crate's
@@ -178,6 +177,53 @@ zig = "0.15.2"
 # editor). Also installed from crates.io so it matches slint-lsp without using
 # the old cargo-git rev/ref path that made mise.lock oscillate.
 "cargo:slint-viewer" = "latest"
+
+# Bubblewrap (`bwrap`), the unprivileged sandbox that package/cli/nested-wayland-session's inspect:headless-gpu uses to
+# hide /dev/dri and the network from a session. There is no aqua, github or cargo release of it, and the distro copy is
+# not on a mise-only machine; the conda-forge build runs unprivileged on user namespaces and needs no setuid. `os = ["linux"]`
+# because bubblewrap uses Linux namespaces and conda-forge has no Windows build.
+"conda:bubblewrap" = { version = "latest", os = ["linux"] }
+
+# Language servers the read-only Slint IDE (package/desktop-app/ide) looks up by program name on PATH, one block per
+# language family (the IDE's table is Helix's built-in languages.toml at the revision pinned in the IDE's Cargo.toml,
+# plus src/language/config). A language shows hover and inlay hints only when one of its servers is found. The IDE runs
+# every server in a sandbox without network access, so remote schemas and catalogs (for example taplo's and
+# yaml-language-server's schemastore lookups) are not fetched and only local schemas apply. None is pinned:
+# mise.lock records the resolved versions. TypeScript (TypeScript 7 in the project), rust-analyzer, slint-lsp and qmlls
+# are provided elsewhere. The npm servers need node, which this file provides.
+
+# TOML (toml, and mise.toml, Cargo.toml and similar). `taplo` is the aqua release binary, which includes `taplo lsp`
+# (the cargo crate `taplo-cli` needs the `lsp` feature and a source build). `tombi` is the aqua release binary.
+taplo = "latest"
+tombi = "latest"
+
+# Markdown. `marksman` and `rumdl` have aqua release binaries. markdown-oxide is not on crates.io, so its GitHub
+# release binary is used.
+marksman = "latest"
+rumdl = "latest"
+"github:Feel-ix-343/markdown-oxide" = "latest"
+
+# YAML and GitHub Actions workflows. `zizmor` has an aqua release binary. The Actions server is the npm package
+# `@actions/languageserver`; the YAML and Ansible servers are npm packages as well.
+zizmor = "latest"
+"npm:yaml-language-server" = "latest"
+"npm:@actions/languageserver" = "latest"
+"npm:@ansible/ansible-language-server" = "latest"
+
+# JSON, CSS and HTML. `vscode-langservers-extracted` provides vscode-json-language-server, vscode-css-language-server and
+# vscode-html-language-server. `superhtml` is the GitHub release binary (the registry has no aqua entry for it).
+"npm:vscode-langservers-extracted" = "latest"
+superhtml = "latest"
+
+# Shell scripts.
+"npm:bash-language-server" = "latest"
+
+# Dockerfile and Compose. `dockerfile-language-server-nodejs` provides docker-langserver and
+# `@microsoft/compose-language-service` provides docker-compose-langserver. docker-language-server has a GitHub release
+# binary and no registry entry.
+"npm:dockerfile-language-server-nodejs" = "latest"
+"npm:@microsoft/compose-language-service" = "latest"
+"github:docker/docker-language-server" = "latest"
 
 # AI inference server for local development (package/webapp-productivity/done).
 # Pinned (not "latest") because llama.cpp's release pipeline tags before the
@@ -277,6 +323,16 @@ disable_backends = [
 # verbose = true
 
 status.missing_tools = "always"
+
+# The crates this repository publishes are not held back by mise's minimum release age, so a release
+# is usable at once and needs no pin (user decision 2026-10-14). The age rule stays on for every other tool.
+# Only exact tool names match: a prefix glob such as "cargo:monochromatic-*" was tried and matched nothing,
+# so a newly published crate must be added to this list.
+minimum_release_age_excludes = [
+  "cargo:monochromatic-lint",
+  "cargo:monochromatic-git-policy-cli",
+  "cargo:monochromatic-nested-wayland-session",
+]
 
 # Matches the package/*/* directory depth (e.g. package/module/logger = 3 segments).
 task.monorepo_depth = 3

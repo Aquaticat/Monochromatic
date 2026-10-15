@@ -281,10 +281,14 @@ pub(super) fn band_clip(first_top: f32, bottom: f32, band: (f32, f32), cap: f32)
 }
 
 /// What:
-///  `place` for the reader's own scrolling: a tile it changes is a scroll re-center,
-///  which the worker may build while the displayed tile stays on screen.
+///  `place` for the view's own reports: a tile it changes for the same width is a scroll re-center,
+///  which the worker may build while the displayed tile stays on screen,
+///  and a tile it changes for a new width is built by the window thread before the next frame, within an allowance.
 /// Why:
 ///  Keyboard, pointer, and reveal moves call `place` directly and keep the synchronous path.
+///  A frame of the old width's text in a window of the new width overflows its edge or stops short of it,
+///  so the render that follows a new width paints the tile for it (`rewrap::begin`) and leaves only the lines
+///  far from the view to the worker; a tile that does not fit the allowance is queued for the worker as before.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -300,7 +304,11 @@ pub(super) fn place_scrolled(
     // The first width the view reports replaces a tile that was never wrapped; it is built at once, so the
     // window never shows long lines unwrapped.
     if changed && current.shown.width > 0.0 {
-        current.scroll_wanted = Some(tile::requested(current));
+        if current.shown.width == current.width {
+            current.scroll_wanted = Some(tile::requested(current));
+        } else {
+            current.rewrap = true;
+        }
     }
     return changed;
 }
@@ -335,6 +343,12 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let reported = weak
             .upgrade()
             .map(|window| return window.window().scale_factor());
+        tracing::debug!(
+            target: "monochromatic_ide::native::frame",
+            viewport_width,
+            height,
+            "the view reported its size"
+        );
         let mut current = state.borrow_mut();
         if let Some(factor) = reported {
             // The size limit of the tile depends on the display scale.

@@ -28,6 +28,11 @@ it lists the `HOME`, `ANDROID_USER_HOME` and `ANDROID_AVD_HOME` the copy needs.
 
 ## Use and shutdown
 
+EMA:
+ Always allow USB debugging on an emulator:
+ accept the authorization dialog with always allow from this computer ticked,
+ and never ask the user to approve it.
+
 EMS:
  Never run `wm density` or `wm size` on an emulator;
  change display size through Settings,
