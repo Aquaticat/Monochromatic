@@ -1104,10 +1104,11 @@ This is a deviation from "resolve outside the sandbox" and was measured:
 - `mise bin-paths` in a two-tool project: 235 ms plain (standard deviation 43), 319 ms sandboxed (41), 15 runs each.
 - The same in this repository: 413 ms plain (80), 387 ms sandboxed (152); inside the spread.
 - `mise config ls --json`: 24 ms plain, `mise which taplo`: 35 ms plain, `mise exec -- true`: 114 ms plain.
-- Production run on a loaded host (load average about 60): 179 to 545 ms for all three commands together.
+- Production runs on a loaded host (load average about 60): 179 to 639 ms for all three commands together
+  over four `inspect:language-mise` runs, and 415 ms in a headless window run.
 
-Variables set for every mise run (`SAFE_ENVIRONMENT` in `command.rs`; an environment variable beats a project's `[settings]`,
-measured with `mise settings get`):
+Variables set for every mise run (`SAFE_ENVIRONMENT` in `command.rs`;
+an environment variable beats a project's `[settings]`, measured with `mise settings get`):
 `MISE_AUTO_INSTALL`, `MISE_EXEC_AUTO_INSTALL`, `MISE_NOT_FOUND_AUTO_INSTALL`, `MISE_TASK_RUN_AUTO_INSTALL`,
 `MISE_LOCKFILE` and `MISE_YES` are `false`,
 `MISE_OFFLINE` is `true`,

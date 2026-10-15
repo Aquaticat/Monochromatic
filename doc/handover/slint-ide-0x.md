@@ -128,7 +128,7 @@ What is implemented, and why it differs from the literal wording:
   Measured, no distinguishable cost:
   `bin-paths` 235 ms plain (standard deviation 43) against 319 ms sandboxed (41) in a two-tool project;
   413 ms (80) against 387 ms (152) in this repository;
-  production resolution 179 to 639 ms on a host at load about 60.
+  production resolution 179 to 639 ms over four runs on a host at load about 60, 415 ms in a headless window run.
 - Safety variables for every mise run:
   `MISE_AUTO_INSTALL`, `MISE_EXEC_AUTO_INSTALL`, `MISE_NOT_FOUND_AUTO_INSTALL`, `MISE_TASK_RUN_AUTO_INSTALL`,
   `MISE_LOCKFILE` and `MISE_YES` false, `MISE_OFFLINE` true;
@@ -151,10 +151,11 @@ What is implemented, and why it differs from the literal wording:
   `bash-language-server` from mise's directories; a folder without mise keeps "was not found on PATH";
   an untrusted folder shows mise's words).
   Failure causes and probes: `doc/troubleshooting/mise-servers-for-the-confined-ide.md`.
+- Verified: the IDE writes no `mise.lock` and no trust record (trees compared before and after, trust directory
+  listed after the window runs).
 - Open: variables a tool adds to its environment (`GOROOT`, `JAVA_HOME`) are not passed;
   mise's global tools come with the project's directories (56 directories in the e2e project);
-  an `[env]` template that needs the network fails inside the sandbox;
-  `mise.lock` and trust records are never written by the IDE;
+  an `[env]` template runs without network (not measured for a template that needs one);
   unconfined mise runs outside the IDE persisted trust records (see the troubleshooting doc).
 
 ### Handoff state

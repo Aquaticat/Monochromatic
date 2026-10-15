@@ -1,4 +1,4 @@
-# mise 2026.10.0: the desktop launcher's PATH has shims that fail in the IDE sandbox, and every mise command runs a trusted project's `[env]` commands
+# mise 2026.10.0: launcher shims fail in the IDE sandbox and every mise command runs trusted `[env]` commands
 
 ## Symptom
 
@@ -33,24 +33,27 @@ The mise source was not read, so the explanation of each probe below is the obse
   Handing those to a server would bypass the cleared environment of `src/language/confine/recipe.rs`.
 - Trust: a configuration with `[env]`, `[hooks]` or `[settings]` is refused until trusted:
   exit status 1 and
-  `mise ERROR Config files in /path/mise.toml are not trusted.`
-  followed by `Trust them with `mise trust`. See https://mise.jdx.dev/cli/trust.html for more information.`
+  ``mise ERROR Config files in /path/mise.toml are not trusted.``
+  followed by ``Trust them with `mise trust`. See https://mise.jdx.dev/cli/trust.html for more information.``
   A configuration with only `[tools]`, in a folder that is not trusted
   (`mise trust --show` printed `untrusted`), resolved without refusal.
 - Settings: an environment variable wins over a project's `[settings]`.
   `mise settings get auto_install` printed `true` in the repository
   (its `mise.toml` sets `auto_install = true`) and `false` with `MISE_AUTO_INSTALL=false` in the environment.
   The same holds for `exec_auto_install`, `not_found_auto_install`, `task.run_auto_install`, `lockfile` and `offline`.
-- Installing: in a disposable `MISE_DATA_DIR`, `mise exec -- true` with `MISE_AUTO_INSTALL=true` and `MISE_EXEC_AUTO_INSTALL=true`
-  and `MISE_OFFLINE=1` exited 1 (it tried to resolve versions and created a `downloads` directory);
-  with both false it exited 0.
+- Installing: in a disposable `MISE_DATA_DIR`, `mise exec -- true` with auto install on
+  exited 1 (it tried to fetch); with `MISE_AUTO_INSTALL=false` it exited 0.
   With `MISE_AUTO_INSTALL=false`, a listed tool that is not installed gives exit 0 and the warning
   `mise WARN  missing: taplo@0.9.0` on standard error.
 - A sandboxed mise cannot record the configuration: it prints
   `mise WARN  tracking config: failed to ln -sf ...` because the sandbox keeps `~/.local/state/mise` read-only.
-- Unsandboxed probe runs with `MISE_TRUSTED_CONFIG_PATHS` set left trust records
-  (`~/.local/state/mise/trusted-configs/ide-mise-servers-proj-a-...`, `-proj-b-...`, `-proj-c-...`) for three scratch folders.
-  Why the records appeared, and why one of them is for a folder whose path was not in that variable, was not determined.
+- Unsandboxed probe runs with `MISE_TRUSTED_CONFIG_PATHS` set left trust records for three scratch folders
+  (`~/.local/state/mise/trusted-configs/ide-mise-servers-proj-a-...`, `-proj-b-...`, `-proj-c-...`).
+  Why the records appeared, and why one of them is for a folder whose path was not in that variable,
+  was not determined.
+  The trust page (https://mise.jdx.dev/cli/trust.html, fetched 2026-10-14) says commands that run project code,
+  such as `mise run` and `mise install`, "trust their active config automatically";
+  whether `config ls` or `bin-paths` do the same was not determined.
   Removing the three links restored the refusal for the folder with `[env]`.
   The sandboxed run in the IDE cannot write that directory, so it cannot trust anything.
 
@@ -61,10 +64,11 @@ Measured with `hyperfine` (15 runs, 2 warmups), host load average about 60 to 80
 - `mise bin-paths`, project with two tools: 235 ms plain (standard deviation 43), 319 ms in the sandbox (41).
 - `mise bin-paths`, the Monochromatic repository: 413 ms plain (80), 387 ms in the sandbox (152).
 - `mise config ls --json`: 24 ms (4); `mise which taplo`: 35 ms (4); `mise exec -- true`: 114 ms (24).
-- The IDE's resolution (three commands, sandboxed, on the language thread): 179, 479 and 545 ms in three runs of
-  `inspect:language-mise`.
+- The IDE's resolution (three commands, sandboxed, on the language thread): 179 to 639 ms over four runs of
+  `inspect:language-mise` (179, 479, 545, 639), and 415 ms in the headless window run.
 
-`inspect:language-mise` (`package/desktop-app/ide/bin/inspect-language-mise.mjs`) passed 43 of 43 checks with the launcher's `PATH`:
+`inspect:language-mise` (`package/desktop-app/ide/bin/inspect-language-mise.mjs`) passed 43 of 43 checks
+with the launcher's `PATH`:
 `bash-language-server` answered a hover (`Function: **greet**`),
 `taplo` and `marksman` started, and `marksman` answered a hover on a wiki link;
 an untrusted configuration gave the notice with mise's message;
@@ -73,8 +77,8 @@ a fake `mise` that sleeps was stopped at 10 seconds with no process left;
 every project tree was the same before and after.
 
 Marksman gives no hover when its workspace has no root marker:
-a project with `notes.md` and `other.md` answered nothing to 17 hover requests until `.marksman.toml` was added,
-then answered the linked note's text at the first request.
+a project with `notes.md` and `other.md` answered no hover on a wiki link until `.marksman.toml` was added,
+then answered the linked note's text.
 
 ## Verified workarounds
 
@@ -83,7 +87,7 @@ The fix is in the IDE (`doc` of it: README section "Servers from mise"):
 - Ask mise for the directories (`config ls --json` twice, `bin-paths` once), inside the servers' sandbox,
   with auto install, lockfile writes and network off, and look servers up in those directories first.
   Tradeoff: three runs at project start (about 0.2 to 0.6 s on the language thread, never the window thread),
-  and a project `[env]` template runs confined, so a template that needs the network fails inside.
+  and a project `[env]` template runs confined, without network (a template that needs one was not tried).
 - Skip mise shims in a project mise serves.
   Tradeoff: a tool that exists only as a shim is reported missing with the shim named, never started.
 - Put mise's directories first on the sandbox `PATH`.
@@ -92,17 +96,36 @@ The fix is in the IDE (`doc` of it: README section "Servers from mise"):
 
 ## What does not work
 
-- `mise exec -- SERVER` as the launched command: it hands the project's `[env]` (the 26 secret-like variables above) to the server.
+- `mise exec -- SERVER` as the launched command: it hands the project's `[env]`
+  (the 26 secret-like variables above) to the server.
 - Running mise on the bare host: the `[env]` templates of a trusted project run with network and write access.
-- `mise which SERVER` for every server: about 35 ms each, so 15 servers or more cost more than one `bin-paths`,
-  and it does not give `node` for the launcher's shebang.
+- `mise which SERVER` for every server: about 35 ms each, and it does not give `node` for the launcher's shebang.
 - `paranoid = true`: not tried; it would make every configuration need trust, including the tools-only ones.
 - Detecting the project's configuration by file names: mise's own listing gives it without a name list.
-- Comparing a project's listing with a listing from `/`: needed because the user's global configuration is in every listing.
+- Using the project's listing alone: the user's global configuration is in every listing,
+  so the files the listing from `/` lacks are the project's own.
 
 ## Upstream filing decision
 
-Nothing to file.
-The behaviors above are mise's documented trust and environment model (templates run when the configuration is loaded;
-`mise exec` applies `[env]`), not defects, and the IDE works around them at its own boundary.
-`.out-of-scope/` was not searched for mise because no issue is drafted.
+Nothing to file; the audit stops at the first constraint, and the rest are walked for the record.
+
+1. Is it really upstream's fault?
+   No.
+   The trust page (https://mise.jdx.dev/cli/trust.html, fetched 2026-10-14) says "Trust lets mise load the parts of a
+   config file that can run code or change your environment", and exempts only plain-version `[tools]` entries.
+   The behaviors above (refusal without trust, every command loading a trusted file) match that page;
+   the evaluation of `[env]` templates by `config ls` and `bin-paths` was observed, not found stated on the pages read
+   (https://mise.jdx.dev/configuration.html does not mention `exec()`).
+   The failure the IDE had was its own: it accepted a shim and ran no resolution at all.
+2. Can upstream fix it?
+   Not applicable, nothing to fix upstream.
+3. Are they supporting this use case?
+   Not determined; the pages read do not address a sandboxed caller.
+4. Would the repo welcome our contribution?
+   Not checked; no issue is drafted.
+5. Will they likely fix it?
+   Not applicable.
+6. Prototyped a minimal fix?
+   Not applicable.
+
+`.out-of-scope/` was not searched for mise, and no tracker search was made, because no issue is drafted.
