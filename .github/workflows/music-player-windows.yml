@@ -346,7 +346,8 @@ jobs:
         set -euo pipefail
         out=$("target/${TARGET}/debug/music-player.exe" --version)
         echo "$out"
-        test "$out" = 'music-player 0.1.0'
+        expected="music-player $(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head --lines=1 | tr --delete '\r')"
+        test "$out" = "$expected"
 
     # The program must stay up when started on a folder, with no audio device on the runner. A start that
     # exits within the wait fails the job.
