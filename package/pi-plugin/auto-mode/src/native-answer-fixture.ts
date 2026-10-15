@@ -11,7 +11,10 @@ type Readers = Readonly<{
   text: (value: unknown) => boolean;
   readAssessmentResponse: (value: unknown) => unknown;
   readRelationEstimate: (input: Readonly<{
-    definition: Readonly<{type: string; criteria: Readonly<Record<string, string>>}>;
+    definition: Readonly<{
+      type: string;
+      criteria: Readonly<Record<string, string>>
+    }>;
     value: unknown;
   }>) => unknown;
 }>;
