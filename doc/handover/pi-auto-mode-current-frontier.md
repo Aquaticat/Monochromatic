@@ -23,12 +23,33 @@ other omissions execute their entire selected consumer suite.
 The first complete recount found `no-restricted-syntax(no-variable-function-expression)`
 in the added callable-result fixture.
 That fixture now uses a function declaration;
-the final recount and consumer verification are pending.
+final package type checking,
+all built consumers,
+and original replay pass.
+The final complete recount has zero diagnostics in the member helper,
+its types,
+and its four consumer files.
+The remaining dispatcher has 85 warnings;
+`result-pattern.mjs` has 103 and is the next native boundary.
+Receipts are `typed-prepared-member-comparison.json` and `typed-prepared-member-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-prepared-member-final-lint-20261015.log`.
+The saved original dispatcher has SHA-256
+`a702ad6088db1055149724cf4a26ac59127d6c1d8183215a5d4bb4fc8e196cc0`.
 Consumers cover original hook entry,
 input sealing,
 declaration-ordered manifests,
 shared assessment admission,
 and retained preparation failures.
+They preserve first-decision ownership when assessment settles after another decision,
+original gate rejection handling,
+opaque preparation reasons,
+callable preparation results,
+and changing assessment getters.
+The native callback directly forwards the helper's asynchronous result.
+Currentness and preparation-release callbacks retain their synchronous return semantics.
+Entry publication remains outside retained-failure handling.
 The call-inspection evidence recorded here is complete.
 
 Original call inspection now delegates to `profile-call.ts` and `profile-call-types.ts`.
@@ -74,8 +95,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 802 files and 486 rules,
-with zero errors and 10293 warnings.
+The latest complete lint report covers 808 files and 486 rules,
+with zero errors and 10257 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:

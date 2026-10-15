@@ -176,6 +176,20 @@ Validation preserves original property-read order and opaque thrown values.
 Synthetic parser nodes retain the original fractional end-position admission;
 this does not establish that the parser emits such positions.
 The computed-member fixture `tools[tool]` isolates computed syntax rejection from property-kind rejection.
+
+`test:native:prepared-member` verifies original native preparation,
+independent sealed input snapshots,
+and complete-group admission.
+Manifests follow declaration order even when readiness insertion order differs.
+Native preparation and assessment are awaited;
+currentness and preparation-release return values remain synchronous.
+Original blocking preparation bypasses sealing and group assessment.
+The first shared decision survives a later assessment settlement.
+Assessment validation retains original getter ordering and repeated reads.
+Preparation failures remain retained with their original identity and produce a fresh fallback block.
+Entry-marker publication failures reject before retention begins.
+Failures in the retention or blocking owner still reject the native member.
+
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 
