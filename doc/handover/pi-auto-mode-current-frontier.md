@@ -9,7 +9,7 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
-The next dispatcher boundary is in progress:
+The dispatcher member-lifecycle boundary is complete:
 `prepared-lifecycle.ts` and `prepared-lifecycle-types.ts` now own original member callback sequencing.
 The dispatcher retains shared group state and passes original queue operations through borrowed callbacks.
 Built consumers cover ordering,
@@ -31,7 +31,17 @@ Receipts are `typed-prepared-lifecycle-comparison.json` and `typed-prepared-life
 under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 The original dispatcher is saved as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-lifecycle-types.mjs`.
-The complete lint recount is running before this boundary can be marked complete.
+The complete lint recount covers 826 files with zero errors and 10151 warnings.
+All six lifecycle files have zero diagnostics.
+The remaining dispatcher glue has 88 warnings,
+compared with 85 before extraction;
+the additional borrowed callbacks still reside in the untyped original module.
+The next boundary is that remaining dispatcher ownership and queue setup.
+`program-profile-reviewed.mjs` remains the following profile boundary with 74 warnings.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-prepared-lifecycle-final-lint-20261015.log`.
+The saved original dispatcher has SHA-256
+`e7a2feb4f3093675fb0b2ea3e4be5570d66720dc260106340903ffbc82a83ce1`.
 
 The next extraction delegates original parallel successor inspection to `profile-successors.ts`.
 Its borrowed call inspector and private pattern ownership remain unchanged.
