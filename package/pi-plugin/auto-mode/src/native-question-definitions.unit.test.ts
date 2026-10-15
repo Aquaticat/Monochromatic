@@ -12,8 +12,8 @@ type CatalogModule = Readonly<{
 }>;
 
 function assertCatalogModule(value: unknown): asserts value is CatalogModule {
-  assert.ok(typeof value === 'object' && value !== null);
-  assert.ok('readQuestionDefinitions' in value && typeof value.readQuestionDefinitions === 'function');
+  assert.ok(((typeof value) === 'object') && (value !== null));
+  assert.ok(('readQuestionDefinitions' in value) && ((typeof value.readQuestionDefinitions) === 'function'));
 }
 
 const loaded: unknown = await import(new URL('../dist/native/contract/lifecycle/claim-evidence-batch-selection/selection-definitions.ts', import.meta.url).href);
@@ -90,8 +90,8 @@ await describe({ name: '', children: [
   ...[
     { name: 'non-text catalog', fields: { catalogText: null } },
     { name: 'empty catalog text', fields: { catalogText: '' } },
-    { name: 'ill-formed catalog text', fields: { catalogText: '\ud800' } },
-    { name: 'oversized UTF-8 catalog', fields: { catalogText: '😀'.repeat(262145) } },
+    { name: 'ill-formed catalog text', fields: { catalogText: '\uD800' } },
+    { name: 'oversized UTF-8 catalog', fields: { catalogText: '😀'.repeat(262_145) } },
     { name: 'missing resolver', fields: { resolveBinding: null } },
   ].map(function boundaryCase(testCase) {
     return it({ name: `rejects ${testCase.name}`, fn: async function rejectBoundary() {
