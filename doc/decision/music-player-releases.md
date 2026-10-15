@@ -448,6 +448,16 @@ nothing was saved;
    Linux arm64 3m58s,
    macOS arm64 6m20s,
    Android 2m18s.
+- Dry run 38695662196 on the same branch at the head that changed only the notes wording
+ (35c1617a48),
+ about 30 minutes later:
+ Windows GNU 16m27s (20 s from the first run,
+ so the cold GNU time is 16 to 16.5 minutes),
+ Windows x64 (MSVC) 15m13s with 449 crates compiled again and no cache save,
+ which confirms that a dispatch of the same version stays slow until the lock file changes.
+ Alpine x86_64 took 20m41s there.
+ The GNU executables of the two runs differ in their SHA-256 (the build is not reproducible byte for byte),
+ and both passed the import check.
 - All nine files passed `sha256sum --check` against `SHA256SUMS` after download,
    and the `release` job's printed
   `gh release create` command listed all nine files and `SHA256SUMS`.
