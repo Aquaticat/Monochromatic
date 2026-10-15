@@ -18,15 +18,15 @@ const l = tagged({ tag: 'auto-mode-program-runner-events' });
 //region Original recorder publication and asynchronous host event delivery preserve callback order.
 /** Create native callbacks over the original bound scope and preallocated record map.
  @param runner - original host whose event callback retains its receiver
- *
+ 
  @param bound - original recorder and member ticket association
- *
+ 
  @param parentId - original prepared parent event identifier
- *
+ 
  @param records - original map allocated before queue selection
- *
+ 
  @returns native start, update, and finish callbacks
- *
+ 
  @example createProgramRunnerEvents({ runner, bound, parentId, records });
  */
 export function createProgramRunnerEvents({
@@ -66,13 +66,15 @@ export function createProgramRunnerEvents({
        Entry diagnostics precede recorder publication.
        */
       const sl = tagged({
-        tag: callbacks.onStart.name,
+        tag: callbacks.onStart
+          .name,
         l: el
       });
       sl.debug('recording original native entry');
       records.set(
         call.id,
-        scope.recorder.start(call)
+        scope.recorder
+          .start(call)
       );
       await runner.host
         .emit({
@@ -96,7 +98,8 @@ export function createProgramRunnerEvents({
        Update diagnostics do not inspect partial results.
        */
       const ul = tagged({
-        tag: callbacks.onUpdate.name,
+        tag: callbacks.onUpdate
+          .name,
         l: el
       });
       ul.debug('publishing original native update');
@@ -121,7 +124,8 @@ export function createProgramRunnerEvents({
        Completion diagnostics identify the boundary without traversing native content.
        */
       const fl = tagged({
-        tag: callbacks.onFinish.name,
+        tag: callbacks.onFinish
+          .name,
         l: el
       });
       fl.debug('recording original native completion');
@@ -132,7 +136,9 @@ export function createProgramRunnerEvents({
       /**
        Original text extraction deliberately preserves join coercion and excludes non-text parts.
        */
-      const text = (outcome.result.content ?? []).filter(function isTextPart(part) {
+      const text = (outcome.result
+        .content
+        ?? []).filter(function isTextPart(part) {
         return part.type === 'text';
       })
         .map(function readTextPart(part) {
@@ -140,14 +146,19 @@ export function createProgramRunnerEvents({
       })
         .join('\n');
       scope.recorder
-        .finish(records.get(call.id), outcome.isError, text);
+        .finish(
+          records.get(call.id),
+          outcome.isError,
+          text
+        );
       /**
        Original usage truthiness is captured without replacing its second getter read.
        */
       const hasUsage = Boolean(outcome.result
         .usage);
       if (hasUsage) scope.recorder
-        .addUsage(outcome.result.usage);
+        .addUsage(outcome.result
+          .usage);
       await runner.host
         .emit({
         type: 'tool_execution_end',

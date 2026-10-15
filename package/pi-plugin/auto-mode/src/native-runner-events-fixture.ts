@@ -12,8 +12,9 @@ import type {
 
 /** Require the built export before using its independent consumer signature.
  @param value - built native namespace
- @returns narrowed original native event factory
  *
+ @returns narrowed original native event factory
+ 
  @throws Error when the original event factory is absent
  */
 function assertEventModule(value: unknown): asserts value is EventModule {
@@ -37,7 +38,7 @@ export const eventModule: EventModule = loaded;
 //region Test-owned observations distinguish record publication from awaited host publication.
 /** Construct original callbacks with independent recorder and ticket observations.
  @returns fixture with independently owned calls, records, events, and failure controls
- *
+ 
  @example createRunnerEventsFixture();
  */
 export function createRunnerEventsFixture(): EventFixture {
@@ -67,7 +68,7 @@ export function createRunnerEventsFixture(): EventFixture {
   };
   /** Observe each callback before a selected failure or caller-side publication.
    @param point - externally observable callback boundary
-   *
+   
    @throws Error when the selected fixture callback fails
    */
   function step(point: string): void {
@@ -182,7 +183,10 @@ export function createRunnerEventsFixture(): EventFixture {
     runner: { host },
     bound: {
       scope: { recorder },
-      ordinals: new Map([['parent/1', 0], ['parent/2', 1]]),
+      ordinals: new Map([
+        ['parent/1', 0],
+        ['parent/2', 1]
+      ]),
       tickets
     },
     records: new Map(),
