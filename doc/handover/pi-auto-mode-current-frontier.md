@@ -1234,6 +1234,12 @@ and build config have zero errors and one `tsdoc(multiline-blocks)` warning in
 `${HOME}/temp/agent/pi-native-policy-entry-final-lint-20261015.log`.
 The added config comment needs multiline formatting;
 the earlier zero-warning statement in `12a4a8a00c` was incorrect.
+Commit `6701c3937d` expands that comment.
+The repeated focused lint now passes with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-policy-entry-clean-lint-20261015.log`.
+The full maintained recount before that comment correction covers 532 files and 486 rules:
+zero errors and 13325 warnings in
+`${HOME}/temp/agent/pi-maintained-policy-entry-lint-20261015.log`.
 The direct generated import cycle is resolved;
 continue the remaining native type cleanup at question settlement and selection.
 The handover,

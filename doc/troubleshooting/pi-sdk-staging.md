@@ -552,6 +552,9 @@ and build config have zero errors and one `tsdoc(multiline-blocks)` warning in
 `${HOME}/temp/agent/pi-native-policy-entry-final-lint-20261015.log`.
 The added config comment needs multiline formatting;
 the earlier zero-warning statement in `12a4a8a00c` was incorrect.
+Commit `6701c3937d` expands that comment.
+The repeated focused lint now passes with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-policy-entry-clean-lint-20261015.log`.
 
 Reproduce the committed entry checks after building:
 
