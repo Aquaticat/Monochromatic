@@ -40,7 +40,6 @@ export function appendClauseQuestion({sources,head,binding,definition,index,seen
   if(seen.has(key))throw new RuleAssessmentWireError('Mixed batch repeats a source-specific logical question');
   seen.add(key);membership.hasOperation||=head.definitionId==='operation_violates_rule';
   if(categorical)clauseRelations.add(candidateKey);
-  if(clauseRelations.size>256)throw new RuleAssessmentWireError('Clause interpretation exceeds the fixed 256-clause profile');
   const slot=`head_${index}`;
   const selectedRule={
     ...(unclassified?{
