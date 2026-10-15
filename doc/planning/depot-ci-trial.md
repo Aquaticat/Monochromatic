@@ -1,19 +1,19 @@
-# Depot CI trial proposal
+# Depot CI trial brief
 
 ## Purpose and status
 
-Proposed on 2026-10-15 after the [trial interview](../handover/depot-trial-grilling.md).
+Confirmed on 2026-10-15 through the [trial interview](../handover/depot-trial-grilling.md),
+including its correction for current GitHub organization ownership.
 The user wants more comprehensive CI with less repeated setup,
 rebuilding,
 and scheduling overhead.
 They delegated the technical recommendation and set a USD $200 monthly provider-spending ceiling.
-The interview remains open.
 The user wants intentional routing between GitHub and Depot based on measured benefit and budget,
 not a complete migration or a fallback used only after exhausting Depot allowances.
 They accept deeper Depot dependence when evidence justifies it;
 portability is not a hard requirement.
-This document defines evidence to collect;
-it does not recommend vendor adoption or authorize migration.
+This document records the agreed evidence to collect;
+it does not establish vendor adoption or authorize migration.
 
 ## What success means
 

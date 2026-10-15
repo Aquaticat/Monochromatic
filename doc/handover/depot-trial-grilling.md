@@ -4,9 +4,10 @@
 
 The user is trialing Depot and requested a grilling interview on 2026-10-15.
 The user has delegated the technical recommendation after establishing priorities and budget.
-The interview remains open:
-the user explicitly requested further questions even when their answer might be uncertain.
-The [trial proposal](../planning/depot-ci-trial.md) records the next evidence-gathering scope.
+The user explicitly requested further questions even when their answer might be uncertain.
+They then confirmed Q19 and its corrected ownership clause,
+establishing shared understanding of the trial brief.
+The [trial brief](../planning/depot-ci-trial.md) records the agreed evidence-gathering scope.
 No migration or vendor adoption has been accepted.
 The user explicitly requested this handover.
 
@@ -91,6 +92,11 @@ transcript investigation was stopped.
   and no usage so far.
   These are user-reported account facts.
   Exact expiry and configured spending controls remain unverified.
+- Q19 and its ownership correction are confirmed.
+  Evaluate both Depot CI and Depot GitHub Actions runners where applicable,
+  using the intentional hybrid and combined cost objective.
+  This confirms the trial brief,
+  not vendor adoption or a measured result.
 
 ## Measured release example
 
@@ -316,15 +322,8 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
 
 ## Open questions and next work
 
-- Await Q19 confirmation of the trial brief:
-  intentional hybrid routing,
-  broader coverage,
-  reuse across relevant input changes,
-  rolling budgets without current counting overhead,
-  correct outputs and failure detection,
-  and the combined cost objective within USD $200/month.
-  A replacement question corrects the ownership clause after GitHub reported the repository move:
-  evaluate both Depot CI and Depot GitHub Actions runners where applicable.
+- The trial brief and corrected ownership scope are confirmed.
+  No interview question is pending.
 - Verify account spending controls before resource-consuming execution;
   the supported usage endpoint rejected the available user-token credential.
 - Preserve existing explicit-release handling during the proposed trial.
@@ -339,8 +338,7 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
   preserving supported platforms and recording missing behavior tests.
 - Compare the desired broader CI against the $200 ceiling and repeated work,
   rather than reopening cache unit pricing.
-- Keep proposals separate from accepted decisions;
-  confirm shared understanding before implementation.
+- Keep the agreed trial requirements separate from unproven performance claims and vendor-adoption decisions.
 
 No workflow,
 Depot resource,
