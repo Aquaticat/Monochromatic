@@ -9,6 +9,14 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+The next extraction targets the dispatcher's original `beforeToolCall` member preparation.
+It must preserve original hook entry,
+input sealing,
+declaration-ordered manifests,
+shared assessment admission,
+and retained preparation failures.
+The call-inspection evidence recorded here is complete.
+
 Original call inspection now delegates to `profile-call.ts` and `profile-call-types.ts`.
 The original pattern decoder and diagnostic constructor remain borrowed from `result-pattern.mjs`.
 Native build,
