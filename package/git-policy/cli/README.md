@@ -70,7 +70,8 @@ Read-only commands,
   (measured on the 0.1.4 x86_64 archive with `objdump -T`), so they do not start on Debian 12 or Ubuntu 22.04.
   The crate does not compile for Windows: `cargo check --target x86_64-pc-windows-gnu --lib` fails with 16 errors in
   eight files (the `tempfile` and `ignore` dependencies are unix-only and several modules use `std::os::unix`),
-  so the Windows-specific branches in the sources have never run.
+  so the Windows-specific branches in the sources have never run; each is marked `UNTESTED ON WINDOWS` in the source.
+  A Windows port is deferred to a later version (owner decision, 2026-10-15).
 - Real Git 2.55.0 or newer on `PATH` after the wrapper.
   The wrapper checks the version before work that depends on Git's behavior,
    such as a commit,
