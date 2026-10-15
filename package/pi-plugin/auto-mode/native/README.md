@@ -256,9 +256,10 @@ now contain their integrated implementations directly.
 The build exports them through bridges without patching their source bodies.
 Imports were relocated to this package graph without changing policy decisions.
 
-The maintained build emits the qualified Pi 1.2.0 source and owned transformations to `dist/native`.
+The maintained build emits qualified Pi 1.2.0 source and owned transformations into an immutable release directory.
+The stable `dist/native` link selects the verified active release.
 The package `build` task builds maintained exports before building this native artifact.
-Native policy consumers use the dedicated `./native-policy` package export.
+Native policy consumers use the release's copy of the dedicated `./native-policy` package export.
 It shares policy implementations with the extension entry through common build chunks,
 without importing the extension's SDK-dependent transcript code.
 `test:native:direct-imports` starts each generated manager and SDK entry in a fresh process,
@@ -336,7 +337,13 @@ foreign identities,
 and primitive queries.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
-Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
+Each release contains a fresh contract tree and matching maintained policy bundle.
+The build loads its actual CLI before replacing the active link.
+Generation or loading failure preserves the previous command;
+the first migration retains the former directory and restores it if publication fails.
+Older release directories remain available to processes already using them.
+`test:native:build-activation` verifies failed generation, failed CLI loading,
+directory migration, and subsequent link replacement in a disposable installation.
 The native CLI entry is `dist/native/cli.mjs`.
 `native/command.ts` and `bin/pi` route the ordinary command to that maintained build.
 The `install:native` task retains a private settings backup,

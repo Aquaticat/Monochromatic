@@ -24,6 +24,13 @@ No average USD 0.001 per judgment cost limit applies.
 Question identities and complete shared context survive partitioning;
 partial answer sets cannot authorize execution.
 
+Assessment context keeps complete current instructions and the larger of the latest five visible messages
+or the complete span from the latest user message.
+Selected messages remain complete.
+Older conversation receipts stay local for provenance;
+the raw provider request is not sent as another policy source.
+Each clause question includes the complete proposed operation beside the selected clause.
+
 Established permission allows the operation automatically.
 An established governing prohibition blocks it.
 An explicit fresh-confirmation requirement or uncertain assessment opens the original operation's dialog
@@ -36,6 +43,8 @@ and a legacy denial response abort the current run.
 An unavailable approval channel leaves an uncertain operation blocked.
 
 Manual confirmation cannot override an established prohibition at the strongest known applicable priority.
+It also cannot satisfy an independent authorization requirement whose channel does not accept that confirmation.
+Allow re-resolves the captured policy with only the original prepared group's confirmation added.
 Original source,
 operation,
 authorization,
@@ -45,6 +54,10 @@ transport failures,
 and expired judgment deadlines still stop before decision closure;
 they are not successful uncertain assessments.
 Provider request metadata supplies context and is not independently subject to tool-call approval.
+
+Native Shift+Tab bypass executes supported native programs without semantic profile admission.
+The fixed virtual-input guard, original execution ownership, cancellation, status, and audit entries remain active.
+With bypass disabled, automatic review retains the documented inspected program profiles in the native README.
 
 The extension export remains available for legacy consumers.
 The remaining sections describe that legacy implementation;

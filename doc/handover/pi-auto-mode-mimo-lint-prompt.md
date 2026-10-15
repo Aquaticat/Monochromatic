@@ -3,8 +3,8 @@
 ## Purpose
 
 Paste the task section into a new MiMo v2.6 Pro coding session in this repository.
-It hands off the remaining auto-mode lint work after restoring native Shift+Tab bypass.
-It also preserves the repaired complete prompt capture and bundled assessment path.
+It hands off remaining auto-mode lint work after replacing the decision core and restoring native behavior.
+It preserves selected decision context, scoped confirmation, bypass, and verified release activation.
 Review the measured diagnostics and behavioral evidence in the resulting commits.
 The prompt itself has not been benchmarked against alternative prompts.
 
@@ -58,6 +58,26 @@ Session reload preserves state;
 the visible status and session audit entries remain meaningful.
 The fixed virtual-input guard runs in both modes.
 The integration regression test is `test:native:bypass`.
+Bypass also supports ordinary native programs outside the guarded semantic profiles.
+Do not move semantic profile preparation back ahead of the bypass branch.
+
+`native/contract/integration/action-policy/decision-core.mjs` now owns decision composition.
+The former `evaluate.mjs`, `index.mjs`, and `reviewer.mjs` forwarding paths were removed on 2026-10-15.
+Preserve this consolidation rather than restoring a parallel decision framework.
+Assessment context selects the legacy five-message floor or complete latest-user span before candidate issuance.
+Keep complete current instructions and complete selected messages;
+retained archives and the raw provider request must not return as additional model input.
+Each clause question also carries the complete proposed operation.
+The regression is `test:native:decision-context`.
+
+Allow re-resolves captured policy and satisfies only requirements accepting current-session confirmation.
+Independent missing or unsatisfied authorization must remain blocked.
+Use `test:native:approval` and `test:native:manual-review` when changing this boundary.
+
+Native builds stage immutable releases, including their matching maintained policy bundle,
+and validate CLI loading before changing the active link.
+Use `test:native:build-activation` for changes to build publication.
+Do not relocate or delete a release referenced by a running process.
 
 Normal prompt capture retains complete text, source lists, tool metadata, and follow-up history
 without fixture-derived byte or occurrence ceilings.
