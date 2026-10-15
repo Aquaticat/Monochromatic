@@ -235,8 +235,16 @@ in the worktree, rerun that platform's verification as a systemd unit, forced fr
 files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
 before saying it matches, QAB):
 
+- 2026-10-15, agent `ad05bc0301c37d399` reported (head `1ce3b426e8`): GUI subsystem proven on all three Windows
+  runner jobs (Subsystem 2, positive control failed as intended, release dry run green). Unmet by design: PowerShell
+  `--version > out.txt` gives an empty file; I accepted that tradeoff (recorded in
+  `doc/decision/music-player-windows-gui-subsystem.md`, veto open). Merge steps: main merged cleanly at `3a8a2c9277`,
+  actionlint clean, desktop verification unit `verify-wgui` running; then ff-merge, push, bump to 0.1.4 in both
+  manifests plus both lockfiles, release, verify assets. Follow-ups from its report, not done: ANSI escapes on
+  arm64 Windows consoles (`src/logging.rs` colors; gate on a VT-enabled console), 9 pre-existing Windows clippy
+  findings (no Windows clippy task exists), a double-click startup failure shows no message and logs nowhere.
 - In flight on 2026-10-15, started after the human ran the desktop app and said "I have no major complaints":
-  (a) agent `ad05bc0301c37d399`, branch `feat/music-player-windows-gui-subsystem`, worktree `music-player-wgui`: the
+  (a) agent `ad05bc0301c37d399` (reported, see above), branch `feat/music-player-windows-gui-subsystem`, worktree `music-player-wgui`: the
   Windows exe becomes a GUI-subsystem binary (no console window on double click) with the parent console attached so
   `--version` still prints, proven on the real Windows runners with a PE Subsystem check and a positive control;
   (b) agent `a36ecdbfa335190de`, branch `docs/music-player-release-measurements`, worktree `music-player-relmeasure`:

@@ -1,9 +1,14 @@
 # music-player: the Windows executable is a GUI-subsystem program that attaches to the console of its parent
 
 Status:
- Implemented on branch `feat/music-player-windows-gui-subsystem`, proven on GitHub's Windows runners, not merged.
- Awaiting acceptance of one tradeoff: in PowerShell, `music-player --version > out.txt` leaves an empty file
- (it worked with the console-subsystem build of release 0.1.3); see "Consequences for users".
+ Implemented on branch `feat/music-player-windows-gui-subsystem`, proven on GitHub's Windows runners.
+ One tradeoff accepted by the coordinating session on 2026-10-15 under the owner's standing instruction to make
+ other decisions itself, open to the owner's veto: in PowerShell, `music-player --version > out.txt` leaves an
+ empty file (it worked with the console-subsystem build of release 0.1.3); see "Consequences for users".
+ Reason for accepting: every GUI-subsystem Windows program behaves this way in PowerShell (a probe with no console
+ code gave 0 bytes), the working forms (`| Out-File`, `| Out-String`, `Start-Process -RedirectStandardOutput`, and
+ `cmd.exe` redirection) are documented in the README and release notes, and the alternative of a second console
+ binary adds a fourth Windows file to every release for a rarely used flag.
 Decided:
  2026-10-15 (the details; the release agent proposed the approach after release 0.1.3).
 Applies to `package/music-player/desktop-app` and the three Windows release files.
