@@ -360,8 +360,11 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
     then 1.975 and 1.716 seconds for same-job warm repeats.
     The Depot runner attempt failed with lost communication and no step results.
     Minimal runner run `38815232329` subsequently executed `uname` successfully.
-    The original Depot build job was retried once and is running as job `116700352199`.
+    The original Depot build job passed on retry as job `116700352199`.
+    Its cold build took 757.394 seconds;
+    warm repeats took 1.173 and 1.093 seconds.
     This later execution does not establish the first failure's cause.
+    See the [reliability record](../troubleshooting/depot-github-runner-communication.md).
   - Broader checks and deliberate failure detection:
     Run `wjr4cmpjvs` passed logger build/types/unit tests and all 80 shared audio-core tests.
     Its creation-to-finish interval was 152 seconds.
@@ -370,6 +373,10 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
     run `jp9w8gw62r` inspected 127 cached XML suites containing 1,289 tests from that first execution.
     Branch `trial/depot-20261015` contains the disposable workflows without release credentials.
     A GitHub reference job uses the identical Alpine build definition and unchanged-source repetitions.
+    Real-test negative control `2clfb5npj3` failed as intended:
+    79 tests passed and `window::tests::window_frames_floors_and_clamps` failed
+    with actual `192000` and deliberately incorrect expected `192001`.
+    The fixture changed only its disposable remote source and restored it during cleanup.
   - Scheduling and rolling budgets:
     the existing script passed fixture replays for allowed and rejected windows,
     exact expiry,
@@ -382,7 +389,11 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
     this exposes a missing reservation in that modeled interval,
     not a demonstrated live incident.
   - Runtime and monthly cost:
-    collect bounded-run evidence and retain the USD $200 ceiling.
+    explicit scenarios and dated CAD/USD conversion are recorded in the
+    [trial report](../audit/depot-trial-2026-10-15.md).
+    Developer with intentional GitHub routing ranks ahead of selective overage,
+    then Startup for the measured workload.
+    The report records excluded costs and unmeasured cross-platform completion effects.
   - Non-CI experiments and parallel throughput:
     the user proposed benchmarking `lld` against `mold` and highlighted unlimited concurrency.
     Evaluate direct remote execution separately from CI dispatch;
@@ -413,9 +424,22 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
   `pactl`,
   or Weston executables.
   No emulator was launched and no graphical interaction coverage is claimed.
-- Dependency invalidation build `41xd3lwh8d` is running with Cargo regenerating a disposable lockfile
+- Dependency invalidation build `41xd3lwh8d` passed in 382 seconds with Cargo regenerating a disposable lockfile
   from `log` version `0.4.34` to `0.4.33`.
   The source checkout's lockfile is untouched.
+- Toolchain invalidation build `14trfrrxg6` passed in 473 seconds.
+  The exported ELF comment identifies `mold 2.39.1` and the runtime prints `music-player 0.1.4`.
+  This recompilation does not constitute a controlled linker benchmark.
+- Bounded execution is finished;
+  remaining acceptance gaps are graphical/device execution,
+  account-wide usage and spending controls,
+  complete cross-platform history replay,
+  and a validated rolling-budget replacement.
+  The environment preflight found missing graphical prerequisites;
+  the usage endpoint requires an organization credential unavailable to this trial.
+  No production migration or recurring automation is installed.
+  Standalone sandboxes are stopped;
+  the dedicated cache and reusable CI snapshot remain for trial review.
 - The trial brief and corrected ownership scope are confirmed.
   No interview question is pending.
 - Account-wide spending controls remain unverified;

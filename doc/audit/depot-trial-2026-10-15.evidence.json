@@ -1,12 +1,12 @@
 {
-  "measuredAt": "2026-10-15T22:31:08.221Z",
+  "measuredAt": "2026-10-15T22:37:38.794Z",
   "applicationRevision": "46effff65ab4193b4311d7675e301c97007176d1",
   "trialBranch": "trial/depot-20261015",
   "containerBuilds": [
     {
       "id": "14trfrrxg6",
-      "durationSeconds": 210,
-      "status": "running"
+      "durationSeconds": 473,
+      "status": "finished"
     },
     {
       "id": "41xd3lwh8d",
@@ -55,6 +55,66 @@
     ],
     "version": "music-player 0.1.4"
   },
+  "depotGithubRunner": {
+    "run": 38813764705,
+    "attempt": 2,
+    "job": 116700352199,
+    "runner": "depot-ubuntu-24.04-4",
+    "runnerVersion": "2.337.0",
+    "coldSeconds": 757.3936661490001,
+    "warmSeconds": [
+      1.1733453809999628,
+      1.0926900100000203
+    ],
+    "version": "music-player 0.1.4",
+    "originalAttempt": {
+      "job": 116693196264,
+      "conclusion": "failure",
+      "diagnostic": "The self-hosted runner lost communication with the server.",
+      "recordedSteps": 0,
+      "rootCause": "unresolved"
+    }
+  },
+  "dependencyChange": {
+    "build": "41xd3lwh8d",
+    "package": "log",
+    "originalVersion": "0.4.34",
+    "testedVersion": "0.4.33",
+    "cargoSeconds": 323,
+    "runtimeVersion": "music-player 0.1.4"
+  },
+  "toolchainChange": {
+    "build": "14trfrrxg6",
+    "linker": "mold 2.39.1",
+    "elfCommentVerified": true,
+    "cargoSeconds": 432,
+    "runtimeVersion": "music-player 0.1.4",
+    "restoredLogVersion": "0.4.34",
+    "targetCacheKiB": 5719616,
+    "cargoCacheKiB": 700660
+  },
+  "realTestNegativeControl": {
+    "run": "2clfb5npj3",
+    "conclusion": "failure",
+    "passed": 79,
+    "failed": 1,
+    "test": "window::tests::window_frames_floors_and_clamps",
+    "actual": 192000,
+    "deliberatelyIncorrectExpected": 192001
+  },
+  "standaloneSandboxes": {
+    "singleSuccessfulLifecycleSeconds": 4.396,
+    "concurrentCommands": 2,
+    "overlapMilliseconds": 9882,
+    "allStopped": true,
+    "benchmarkPerformed": false
+  },
+  "unresolvedAcceptanceGaps": [
+    "desktop graphical E2E and Android instrumented execution",
+    "aggregate account usage, storage, trial expiry, and spending cap",
+    "full cross-platform elapsed-time replay",
+    "replacement rolling-budget admission mechanism"
+  ],
   "coverageJobs": [
     {
       "key": "_inline_0.yaml:audio-core",
