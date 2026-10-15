@@ -38,6 +38,8 @@ function memberProjection(memberRecord?: InstructionMember) : InstructionMember[
  @param sources - original lazy source owner
 
  @returns member claim operations
+ 
+ @example createMemberInstructions({ context, sources });
  */
 export function createMemberInstructions({
   context,
@@ -46,16 +48,25 @@ export function createMemberInstructions({
   context: InstructionContext;
   sources: InstructionSources
 }>) : MemberInstructionOperations {
+  /**
+   Helpers share original input capabilities and private instruction state.
+   */
   const {
     input,
     state
   } = context;
+  /**
+   Original judgment capabilities remain borrowed without reading lazy request or source content.
+   */
   const {
     ready,
     byMember,
     bindings,
     knownSelection
   } = input;
+  /**
+   Source selectors retain one original lazy governing-rule owner.
+   */
   const { ensureRuleBindings } = sources;
   /**
    Select direct prepared-member predicates without bypassing dedicated content selectors.
@@ -80,6 +91,9 @@ export function createMemberInstructions({
     ].includes(definitionId)) throw new JudgmentConstructionError('Whole-request material requires its original request selector; heading content requires its original source-group selector');
     if (definitionId === 'operation_violates_rule') throw new JudgmentConstructionError('Whole-program rule relation requires claimProgramRuleCandidate');
     if (definitionId === 'states_approval_prerequisite') throw new JudgmentConstructionError('Instruction meaning requires claimInstruction and its original clause');
+    /**
+     Canonical opaque handle preserves original scope identity across repeated declarations.
+     */
     const bindingHandle = byMember.get(memberId);
     if (!bindingHandle) throw new JudgmentConstructionError('Requested member was not in the prepared native group');
     return knownSelection()
@@ -114,23 +128,46 @@ export function createMemberInstructions({
       'heading_instruction_content',
       'unit_adoption'
     ].includes(definitionId)) throw new JudgmentConstructionError('Whole-program rule relation cannot be selected through a member');
+    /**
+     Original prepared-member selection remains separate from source ownership.
+     */
     const member = byMember.get(memberId);
     if (!member) throw new JudgmentConstructionError('Instruction claim member is outside the original prepared group');
+    /**
+     Authenticated member identity remains narrowed inside deferred record capture.
+     */
     const originalMember: object = member;
     ensureRuleBindings();
+    /**
+     Original source projection is retained by reference for later revalidation.
+     */
     const projection = retainedInstructionRules(state)
       .read(rule);
     if (projection.kind === 'source-heading-context') throw new JudgmentConstructionError('Heading groups cannot be selected as individual clauses');
+    /**
+     Clause meaning shares original identity independently of prepared-member selection.
+     */
     const instructionOnly = definitionId === 'states_approval_prerequisite';
+    /**
+     Canonical mapping distinguishes member-bound clauses from member-independent meaning.
+     */
     const pairs = instructionOnly ? state.instructionMeaningPairs : memberInstructionPairs({
       state,
       member
     });
     /**
      Capture the original member lookup even for member-independent clause meaning.
+     
+     @returns original dependency record before handle publication
      */
     function createRecord() : InstructionRecord {
+      /**
+       Original private member lookup precedes projection capture.
+       */
       const memberRecord = bindings.get(originalMember);
+      /**
+       Member predicates retain original member fields while clause meaning has its own scope.
+       */
       const claimProjection = instructionOnly ? {
         claimScope: 'instruction',
         governingRule: projection
@@ -138,6 +175,9 @@ export function createMemberInstructions({
         ...memberProjection(memberRecord),
         governingRule: projection
       };
+      /**
+       Frozen question binding retains original occurrence identity and projection.
+       */
       const binding = Object.freeze({
         identity: Object.freeze({}),
         projection: Object.freeze(claimProjection)
@@ -149,6 +189,9 @@ export function createMemberInstructions({
         binding
       };
     }
+    /**
+     Canonical opaque handle preserves original scope identity across repeated declarations.
+     */
     const bindingHandle = retainInstructionHandle({
       state,
       map: pairs,

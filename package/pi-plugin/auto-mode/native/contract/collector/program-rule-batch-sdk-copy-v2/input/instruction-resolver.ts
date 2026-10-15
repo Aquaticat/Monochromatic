@@ -15,11 +15,16 @@ import type { QuestionBinding } from '../../../lifecycle/claim-evidence-batch-se
  @param state - private original instruction records
 
  @returns original dependency resolver
+ 
+ @example createInstructionResolver({ input, state });
  */
 export function createInstructionResolver({
   input,
   state
 }: InstructionContext) : (bindingHandle: object) => QuestionBinding {
+  /**
+   Original judgment capabilities remain borrowed without reading lazy request or source content.
+   */
   const {
     ready,
     bindings,
@@ -36,6 +41,9 @@ export function createInstructionResolver({
    */
   function resolveBinding(bindingHandle: object): QuestionBinding {
     ready();
+    /**
+     Private original record selects the exact dependencies that must remain current.
+     */
     const instruction = state.instructionBindings
       .get(bindingHandle);
     if (instruction) {
@@ -53,6 +61,9 @@ export function createInstructionResolver({
         !== instruction.projection)) throw new JudgmentConstructionError('Instruction claim lost its original member or source clause');
       return instruction.binding;
     }
+    /**
+     Foreign instruction handles may resolve only through original prepared-member ownership.
+     */
     const value = bindings.get(bindingHandle);
     if (!value) throw new JudgmentConstructionError('Prepared member binding is not owned by this judgment');
     return value.binding;

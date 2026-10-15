@@ -34,6 +34,8 @@ const MAX_HEADING_GROUPS = 64;
  @param member - original member claim declaration
 
  @returns bounded original batch operations
+ 
+ @example createInstructionBatches({ input, sources, program, member });
  */
 export function createInstructionBatches({
   input,
@@ -46,23 +48,35 @@ export function createInstructionBatches({
   program: ProgramInstructions;
   member: MemberInstructions;
 }>) : InstructionBatchOperations {
+  /**
+   Original judgment capabilities remain borrowed without reading lazy request or source content.
+   */
   const {
     bindingSegment,
     issue,
     declaredNames
   } = input;
+  /**
+   Source selectors retain one original lazy governing-rule owner.
+   */
   const {
     indexedInstructionCandidates,
     indexedHeadingContextCandidates,
     indexedUnitAdoptionPairs,
     indexedRuleCandidates
   } = sources;
+  /**
+   Program claim functions retain canonical original occurrence identities.
+   */
   const {
     claimProgramRuleCandidate,
     claimRequestMaterial,
     claimHeadingContext,
     claimUnitAdoption
   } = program;
+  /**
+   Member claim functions retain original group membership and clause selection.
+   */
   const { claimRuleCandidate } = member;
   /**
    Admit explicit code-selected uses before collecting their complete original claims.
@@ -88,20 +102,46 @@ export function createInstructionBatches({
     if (((typeof clauseRelations) !== 'boolean') || ((typeof requestMaterial) !== 'boolean') || ((typeof headingContexts) !== 'boolean') || ((typeof unitAdoptions) !== 'boolean') || ((!clauseRelations) && (!requestMaterial)
       && (!headingContexts)
       && (!unitAdoptions))) throw new JudgmentConstructionError('Bound policy batch requires explicit code-selected semantic uses');
+    /**
+     Validated clause-use choice remains Boolean across the synchronous callback.
+     */
     const includeClauses: boolean = clauseRelations;
+    /**
+     Validated request-use choice retains its original Boolean value.
+     */
     const includeRequest: boolean = requestMaterial;
+    /**
+     Validated heading-use choice retains its original Boolean value.
+     */
     const includeHeadings: boolean = headingContexts;
+    /**
+     Validated adoption-use choice retains its original Boolean value.
+     */
     const includeAdoptions: boolean = unitAdoptions;
     /**
      Preserve clauses, request, headings, and adoption declaration order.
+     
+     @returns issued original batch in semantic-use order
      */
     function buildRuleAssessmentClaims() : object {
+      /**
+       Complete original candidate sequence determines both admission bounds and declaration order.
+       */
       const candidates = includeClauses ? indexedInstructionCandidates() : [];
+      /**
+       Original heading aggregates remain separate from clause candidates.
+       */
       const headings = includeHeadings ? indexedHeadingContextCandidates() : [];
+      /**
+       Original structural pairs retain selected occurrence identities.
+       */
       const adoptions = includeAdoptions ? indexedUnitAdoptionPairs() : [];
       if (includeAdoptions && (adoptions.length === 0)) throw new JudgmentConstructionError('No bounded original same-source adoption pairs are available');
       if (includeClauses && ((candidates.length === 0) || (candidates.length > MAX_INSTRUCTION_CANDIDATES))) throw new JudgmentConstructionError('Clause relation requires one through 256 original instruction candidates');
       if (includeHeadings && ((headings.length === 0) || (headings.length > MAX_HEADING_GROUPS))) throw new JudgmentConstructionError('Heading content requires one through 64 original source groups');
+      /**
+       Original clauses are declared before request, heading, and adoption claims.
+       */
       const claims = candidates.map(function claimOperationRelation(rule) { return claimProgramRuleCandidate({
         definitionId: 'clause_operation_relation',
         rule
@@ -129,8 +169,13 @@ export function createInstructionBatches({
     ].includes(definitionId)) throw new JudgmentConstructionError('Unsupported whole-program rule relation definition');
     /**
      Relation predicates differ only in their original candidate enumeration.
+     
+     @returns issued original program relation batch
      */
     function issueCandidateClaims() : object {
+      /**
+       Complete original candidate sequence determines both admission bounds and declaration order.
+       */
       const candidates = definitionId === 'clause_operation_relation' ? indexedInstructionCandidates() : indexedRuleCandidates();
       if ((definitionId === 'clause_operation_relation') && ((candidates.length === 0) || (candidates.length > MAX_INSTRUCTION_CANDIDATES))) throw new JudgmentConstructionError('Clause relation requires one through 256 indexed clauses');
       return issue(candidates.map(function claimCandidateRule(rule) { return claimProgramRuleCandidate({
@@ -142,15 +187,26 @@ export function createInstructionBatches({
   }
   /**
      Tagged clauses retain independent fixed predicate identities.
+     
+     @returns issued original meanings followed by original operation relations
      */
     function buildApprovalMeaningClaims() : object {
+      /**
+       Complete original candidate sequence determines both admission bounds and declaration order.
+       */
       const candidates = indexedRuleCandidates();
       if ((candidates.length === 0) || (candidates.length > MAX_INSTRUCTION_CANDIDATES)) throw new JudgmentConstructionError('Mixed rule assessment requires one through 256 indexed clauses; unclassified prose and larger batches remain unsupported');
+      /**
+       Original clause meanings are declared before operation relations.
+       */
       const meanings = candidates.map(function claimApprovalMeaning(rule) { return claimRuleCandidate({
         definitionId: 'states_approval_prerequisite',
         memberId: firstInstructionMemberId(declaredNames[0]),
         rule
       }); });
+      /**
+       Original program relations retain the same tagged candidate order.
+       */
       const operations = candidates.map(function claimOperationViolation(rule) { return claimProgramRuleCandidate({
         definitionId: 'operation_violates_rule',
         rule
@@ -162,6 +218,8 @@ export function createInstructionBatches({
     }
 /**
    Issue original clause meanings before original operation relations in one batch.
+   
+   @returns issued complete original tagged-clause assessment
    */
   function issueRuleAssessmentBatch() : object {
     

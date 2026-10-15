@@ -20,6 +20,8 @@ import type { InstructionSources } from './instruction-sources.ts';
  @param sources - original lazy source selectors
 
  @returns program-level claim operations
+ 
+ @example createProgramInstructions({ context, sources });
  */
 export function createProgramInstructions({
   context,
@@ -28,22 +30,33 @@ export function createProgramInstructions({
   context: InstructionContext;
   sources: InstructionSources
 }>) : ProgramInstructionOperations {
+  /**
+   Helpers share original input capabilities and private instruction state.
+   */
   const {
     input,
     state
   } = context;
+  /**
+   Original judgment capabilities remain borrowed without reading lazy request or source content.
+   */
   const {
     ready,
     receipt,
     knownSelection,
     bindings
   } = input;
+  /**
+   Source selectors retain one original lazy governing-rule owner.
+   */
   const {
     ensureRuleBindings,
     indexedUnitAdoptionPairs
   } = sources;
   /**
    Read original whole-request material under the original lifetime.
+   
+   @returns original whole-request occurrence
    */
   function requestMaterialFor() : object {
     ready();
@@ -51,12 +64,20 @@ export function createProgramInstructions({
   }
   /**
    Retain original request occurrence before declaring its fixed predicate.
+   
+   @returns canonical original request claim
    */
   function claimRequestMaterial() : object {
     ready();
     if (!state.requestMaterialBinding) {
       state.requestMaterialBinding = Object.freeze({});
+      /**
+       Original request is read only at its established publication boundary.
+       */
       const {request} = receipt;
+      /**
+       Frozen question binding retains original occurrence identity and projection.
+       */
       const binding = Object.freeze({
         identity: request,
         projection: Object.freeze({
@@ -86,13 +107,21 @@ export function createProgramInstructions({
    @throws JudgmentConstructionError for a nonheading candidate
    */
   function claimHeadingContext({ candidate }: Readonly<{ candidate: object }>) : object {
+    /**
+     Original source projection is retained by reference for later revalidation.
+     */
     const projection = ensureRuleBindings()
       .read(candidate);
     if (projection.kind !== 'source-heading-context') throw new JudgmentConstructionError('Heading content requires an original contextual-heading group');
     /**
      Capture original heading identity before publishing its canonical handle.
+     
+     @returns original dependency record before handle publication
      */
     function createRecord() : InstructionRecord {
+      /**
+       Frozen question binding retains original occurrence identity and projection.
+       */
       const binding = Object.freeze({
         identity: candidate,
         projection: Object.freeze({
@@ -107,6 +136,9 @@ export function createProgramInstructions({
         binding
       };
     }
+    /**
+     Canonical opaque handle preserves original scope identity across repeated declarations.
+     */
     const bindingHandle = retainInstructionHandle({
       state,
       map: state.programInstructionPairs,
@@ -138,13 +170,21 @@ export function createProgramInstructions({
       'operation_violates_rule',
       'clause_operation_relation'
     ].includes(definitionId)) throw new JudgmentConstructionError('Unsupported whole-program rule relation definition');
+    /**
+     Original source projection is retained by reference for later revalidation.
+     */
     const projection = ensureRuleBindings()
       .read(rule);
     if (projection.kind === 'source-heading-context') throw new JudgmentConstructionError('Heading groups cannot be selected as individual clauses');
     /**
      Distinct original program-clause identity is shared across supported predicates.
+     
+     @returns original dependency record before handle publication
      */
     function createRecord() : InstructionRecord {
+      /**
+       Frozen question binding retains original occurrence identity and projection.
+       */
       const binding = Object.freeze({
         identity: Object.freeze({}),
         projection: Object.freeze({
@@ -159,6 +199,9 @@ export function createProgramInstructions({
         binding
       };
     }
+    /**
+     Canonical opaque handle preserves original scope identity across repeated declarations.
+     */
     const bindingHandle = retainInstructionHandle({
       state,
       map: state.programInstructionPairs,
@@ -183,24 +226,47 @@ export function createProgramInstructions({
   function claimUnitAdoption({ pair }: Readonly<{ pair: InstructionAdoptionPair }>) : object {
     if (!indexedUnitAdoptionPairs()
       .includes(pair)) throw new JudgmentConstructionError('Unit adoption requires an original selected pair from this judgment');
+    /**
+     Original structural pair retains independently selected member and source-unit handles.
+     */
     const {
       adopter,
       target,
       member
     } = pair;
+    /**
+     Original adopter projection is read before the target projection.
+     */
     const adopterProjection = ensureRuleBindings()
       .read(adopter);
+    /**
+     Original target projection must retain the adopter source occurrence.
+     */
     const targetProjection = ensureRuleBindings()
       .read(target);
+    /**
+     Original private member lookup precedes projection capture.
+     */
     const memberRecord = member === undefined ? undefined : bindings.get(member);
     if ((!memberRecord) || (member === undefined)
       || (adopterProjection.sourceOccurrence !== targetProjection.sourceOccurrence)) throw new JudgmentConstructionError('Unit adoption requires its original member and same-source units');
+    /**
+     Authenticated member identity remains narrowed inside deferred record capture.
+     */
     const originalMember: object = member;
+    /**
+     Authenticated original member record remains available inside deferred capture.
+     */
     const originalMemberRecord: InstructionMember = memberRecord;
     /**
      Retain both source projections and the authenticated original member ordinal.
+     
+     @returns original dependency record before handle publication
      */
     function createRecord() : InstructionRecord {
+      /**
+       Frozen question binding retains original occurrence identity and projection.
+       */
       const binding = Object.freeze({
         identity: pair,
         projection: Object.freeze({
@@ -221,6 +287,9 @@ export function createProgramInstructions({
         binding
       };
     }
+    /**
+     Canonical opaque handle preserves original scope identity across repeated declarations.
+     */
     const bindingHandle = retainInstructionHandle({
       state,
       map: state.programInstructionPairs,

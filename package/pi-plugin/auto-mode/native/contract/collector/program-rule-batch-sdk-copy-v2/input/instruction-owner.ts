@@ -23,28 +23,54 @@ const l = tagged({ tag: 'native-judgment-instructions' });
  @param input - original judgment capabilities with lazy source ownership
 
  @returns frozen original instruction operations
+ 
+ @example createJudgmentInstructions(input);
  */
 export function createJudgmentInstructions(input: JudgmentInstructionsInput) : JudgmentInstructions {
+  /**
+   Function-specific diagnostics contain operation names without source or request material.
+   */
   const rl = tagged({
     tag: createJudgmentInstructions.name,
     l
   });
   rl.debug('retaining original instruction ownership');
+  /**
+   Private maps retain original publication timing and lazy dependency ownership.
+   */
   const state = createInstructionState();
+  /**
+   Shared helpers borrow the same original capabilities and private state.
+   */
   const context = {
     input,
     state
   };
+  /**
+   Lazy source selectors retain original parser and source-occurrence checks.
+   */
   const sources = createInstructionSources(context);
+  /**
+   Original dependency resolver authenticates retained member, request, and source records.
+   */
   const resolveBinding = createInstructionResolver(context);
+  /**
+   Program selectors share original request, clause, heading, and adoption identities.
+   */
   const program = createProgramInstructions({
     context,
     sources
   });
+  /**
+   Original prepared-member selection remains separate from source ownership.
+   */
   const member = createMemberInstructions({
     context,
     sources
   });
+  /**
+   Batch selectors retain complete claim order and original bounds.
+   */
   const batches = createInstructionBatches({
     input,
     sources,

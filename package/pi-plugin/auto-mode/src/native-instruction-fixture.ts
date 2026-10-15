@@ -48,7 +48,7 @@ export function createInstructionFixture({ contents = [INSTRUCTION_POLICY], memb
   /** Exact declarations allow canonical selector identity and publication-order assertions. */
   const declarations: FixtureInstructionDeclaration[] = [];
   /** Each issued batch retains the exact ordered claims passed by the built owner. */
-  const batches: readonly object[][] = [];
+  const batches: (readonly object[])[] = [];
   /** Prepared member handles remain independently owned original objects. */
   const members = Array.from({ length: memberCount }, function originalMember() { return Object.freeze({}); });
   /** Declared names are immutable inputs to original member selection. */

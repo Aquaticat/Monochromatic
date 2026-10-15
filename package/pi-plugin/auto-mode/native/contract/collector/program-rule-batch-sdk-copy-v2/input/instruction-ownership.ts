@@ -29,6 +29,8 @@ export function firstInstructionMemberId(declared?: Readonly<{ id: string }>): s
  Construct private owner state without reading lazy source or request capabilities.
  
  @returns unpublished original instruction owner
+ 
+ @example createInstructionState();
  */
 export function createInstructionState(): InstructionState {
   return {
@@ -47,6 +49,8 @@ export function createInstructionState(): InstructionState {
  @returns initialized original source owner
  
  @throws Error if internal construction has not retained its source owner
+ 
+ @example retainedInstructionRules(state);
  */
 export function retainedInstructionRules(state: InstructionState): GoverningRuleSet {
   return nonNullishOrThrow(state.ruleBindings);
@@ -66,6 +70,8 @@ export function retainedInstructionRules(state: InstructionState): GoverningRule
  @returns canonical opaque handle
  
  @throws original dependency-capture failure without publishing the handle
+ 
+ @example retainInstructionHandle({ state, map, key, createRecord });
  */
 export function retainInstructionHandle({
   state,
@@ -78,8 +84,14 @@ export function retainInstructionHandle({
   key: object;
   createRecord: () => InstructionRecord;
 }>): object {
+  /**
+   Previously published canonical identity is reused without capturing dependencies again.
+   */
   const existing = map.get(key);
   if (existing) return existing;
+  /**
+   Canonical opaque handle preserves original scope identity across repeated declarations.
+   */
   const bindingHandle = Object.freeze({});
   state.instructionBindings
     .set(
@@ -101,6 +113,8 @@ export function retainInstructionHandle({
  @param member - original prepared-member handle
  
  @returns canonical mapping for this member alone
+ 
+ @example memberInstructionPairs({ state, member });
  */
 export function memberInstructionPairs({
   state,
@@ -109,9 +123,15 @@ export function memberInstructionPairs({
   state: InstructionState;
   member: object;
 }>): WeakMap<object, object> {
+  /**
+   Previously published canonical identity is reused without capturing dependencies again.
+   */
   const existing = state.instructionPairs
     .get(member);
   if (existing) return existing;
+  /**
+   Canonical mapping distinguishes member-bound clauses from member-independent meaning.
+   */
   const pairs = new WeakMap<object, object>();
   state.instructionPairs
     .set(
