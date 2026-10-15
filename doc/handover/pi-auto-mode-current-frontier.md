@@ -437,6 +437,22 @@ The current full report is `${HOME}/temp/agent/pi-maintained-resource-lint-retry
 the current running regression log is `${HOME}/temp/agent/pi-native-profile-cleanup-regressions-20261014.log`.
 The user requested another status update during cleanup;
 the answer distinguished the completed live installation from unfinished lint and intermittent deadline verification.
+The profile-cleanup regression run subsequently stopped at ordinary native-context Allow:
+`JudgmentDeadlineError: Judgment preparation and assessment deadline expired`
+led to the original selector assertion `0 !== 1`.
+Its preceding domain and manual-uncertainty suites passed.
+This recurrence remains unresolved;
+the earlier isolated passes do not establish a timing remedy.
+Commit `fe24956975` separates the run-prompt owner into emission,
+rendering,
+retained-input,
+context,
+publication,
+and lifecycle modules while retaining its original scope and failure maps.
+Its owned build passes.
+Focused structured lint reports zero errors and 1082 warnings across the eight changed modules;
+the warning gate still fails.
+Consumer verification is running in `${HOME}/temp/agent/pi-native-run-owner-regressions-20261014.log`.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

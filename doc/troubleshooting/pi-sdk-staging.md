@@ -7230,6 +7230,14 @@ and context receipts.
 `${HOME}/temp/agent/pi-native-resource-runtime-remaining-20261014.log` retains that sequence.
 This is verified recovery without a causal diagnosis or permanent timing fix.
 
+The later profile-cleanup build passed its domain and manual-uncertainty suites,
+then ordinary native-context Allow again reached
+`JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
+The native selector assertion was `ERR_ASSERTION: 0 !== 1`.
+`${HOME}/temp/agent/pi-native-profile-cleanup-regressions-20261014.log` retains the failure.
+The original five-second deadline remains unchanged;
+the isolated passes did not establish a permanent timing fix.
+
 A separate full lint attempt during this cleanup failed before producing diagnostics with
 `Error running tsgolint: "exit status: exit status: 2"`
 and `runtime: failed to create new OS thread (have 2 already; errno=11)`.
