@@ -172,6 +172,7 @@ jobs:
           save_cache=true
         fi
 
+        save_cache=false # PROBE: fallback test, saves nothing
         # A push builds only when the version changed; a dispatch always builds, and a real
         # dispatch builds only if the tag is free. An existing tag skips, it never fails.
         should_build=false
@@ -268,7 +269,7 @@ jobs:
           ~/.cargo/registry/cache
           ~/.cargo/git/db
           package/music-player/desktop-app/target
-        key: music-player-desktop-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock') }}
+        key: music-player-desktop-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock') }}-probe
         restore-keys: |
           music-player-desktop-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ env.RUSTUP_TOOLCHAIN }}-
 
@@ -541,7 +542,7 @@ jobs:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper/dists
-        key: music-player-gradle-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package/music-player/android-app/**/*.gradle.kts', 'package/music-player/android-app/gradle.properties', 'package/music-player/android-app/gradle/wrapper/gradle-wrapper.properties') }}
+        key: music-player-gradle-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package/music-player/android-app/**/*.gradle.kts', 'package/music-player/android-app/gradle.properties', 'package/music-player/android-app/gradle/wrapper/gradle-wrapper.properties') }}-probe
         restore-keys: |
           music-player-gradle-v1-${{ runner.os }}-${{ runner.arch }}-
 
@@ -554,7 +555,7 @@ jobs:
           ~/.cargo/registry/cache
           ~/.cargo/git/db
           package/music-player/android-app/rust/target
-        key: music-player-android-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.parts.outputs.toolchain }}-${{ steps.parts.outputs.components }}-${{ hashFiles('package/music-player/android-app/rust/Cargo.lock') }}
+        key: music-player-android-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.parts.outputs.toolchain }}-${{ steps.parts.outputs.components }}-${{ hashFiles('package/music-player/android-app/rust/Cargo.lock') }}-probe
         restore-keys: |
           music-player-android-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.parts.outputs.toolchain }}-${{ steps.parts.outputs.components }}-
 
