@@ -34,6 +34,9 @@ import org.robolectric.annotation.Config
 /** Qualifier of a 400 dp wide pane at one physical pixel per dp, so a pixel is a dp. */
 private const val EDITOR_QUALIFIER = "w400dp-h800dp-mdpi"
 
+/** Width of the pane in dp, from the qualifier above. */
+private const val EDITOR_PANE_WIDTH_DP: Float = 400f
+
 /** Slack in dp for two sizes that must be equal; layout rounds each edge to a pixel, and a pixel is a dp here. */
 private const val COLUMN_SLACK_DP: Float = 0.6f
 
@@ -150,5 +153,46 @@ class TemplateEditorAlignmentWiringTest {
         /** Distance from the ring's inner edge to the start of the label. */
         val gap: Float = firstFieldLabelBounds().left.value - firstFieldRowBounds().left.value - EDITOR_RING_DEPTH_DP
         assertTrue("gap from ring to text is $gap dp", gap >= EDITOR_RING_TEXT_GAP_DP)
+    }
+
+    // What:     `fieldRowBoxReachesThePaneEdgeBesideTheCrease` checks the box of a field row with the crease inset.
+    // Why:      The crease moves text only (D130): the row's box, its state layer and its inside ring keep the pane's
+    //           edges, so the row spans the pane while its label starts at the heading's x.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("field row box spans the pane", () => { expect(row.left).toBe(0); expect(row.right).toBe(paneWidth); });
+    // ```
+    /** With the crease inset the first field row still starts at x 0 and ends at the pane's end. */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun fieldRowBoxReachesThePaneEdgeBesideTheCrease() {
+        show(CREASE_INSET_DP.dp)
+        /** Bounds of the first field row's box. */
+        val box: DpRect = firstFieldRowBounds()
+        assertEquals("row box start", 0f, box.left.value, COLUMN_SLACK_DP)
+        assertEquals("row box end", EDITOR_PANE_WIDTH_DP, box.right.value, COLUMN_SLACK_DP)
+    }
+
+    // What:     `previewTextSitsUnderTheHeadingBesideTheCrease` checks the preview rows after the inset moved.
+    // Why:      The inset used to pad the whole scrolling column and is now added to each text, so every text must
+    //           still start in the heading column.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("preview under the heading", () => { expect(previewTitle.left).toBe(previewHeading.left); });
+    // ```
+    /** The first preview row's title starts at the x of the `Preview` heading. */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun previewTextSitsUnderTheHeadingBesideTheCrease() {
+        show(CREASE_INSET_DP.dp)
+        /** Bounds of the `Preview` heading. */
+        val heading: DpRect = composeTestRule.onAllNodes(hasText("Preview"), useUnmergedTree = true)[0]
+            .getUnclippedBoundsInRoot()
+        /** Bounds of the first preview row's title, the topmost node with that text. */
+        val title: DpRect = composeTestRule
+            .onAllNodes(hasText(state.previewRows.first().title), useUnmergedTree = true)[0]
+            .getUnclippedBoundsInRoot()
+        assertEquals("heading column", 16f + CREASE_INSET_DP, heading.left.value, COLUMN_SLACK_DP)
+        assertEquals("preview title column", heading.left.value, title.left.value, COLUMN_SLACK_DP)
     }
 }
