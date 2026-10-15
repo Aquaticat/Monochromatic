@@ -43,8 +43,9 @@ type PreparedMembershipModule = Readonly<{
  @returns assertion exposing the built response snapshot
  */
 function assertMembershipModule(value: unknown): asserts value is MembershipModule {
-  if ((value === null) || (typeof value) !== 'object' || (!('captureJudgmentMembership' in value))
-    || (typeof value.captureJudgmentMembership) !== 'function') throw new Error('Built native membership snapshot is unavailable');
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('captureJudgmentMembership' in value))
+    || ((typeof value.captureJudgmentMembership) !== 'function')) throw new Error('Built native membership snapshot is unavailable');
 }
 
 /**
@@ -55,8 +56,9 @@ function assertMembershipModule(value: unknown): asserts value is MembershipModu
  @returns assertion exposing the built prepared snapshot
  */
 function assertPreparedModule(value: unknown): asserts value is PreparedMembershipModule {
-  if ((value === null) || (typeof value) !== 'object' || (!('capturePreparedJudgmentJSON' in value))
-    || (typeof value.capturePreparedJudgmentJSON) !== 'function') throw new Error('Built native prepared snapshot is unavailable');
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('capturePreparedJudgmentJSON' in value))
+    || ((typeof value.capturePreparedJudgmentJSON) !== 'function')) throw new Error('Built native prepared snapshot is unavailable');
 }
 
 /**
@@ -97,8 +99,14 @@ export const capturePreparedMembership: PreparedMembershipModule['capturePrepare
 export function membershipNames(count: number): readonly MembershipIdentity[] {
   return Object.freeze(Array.from(
     { length: count },
-    function declaredIdentity(_value, index) {
-    return Object.freeze({ id: `call-${index}`, name: 'read' });
+    function declaredIdentity(
+      _value,
+      index
+    ) {
+    return Object.freeze({
+      id: `call-${index}`,
+      name: 'read'
+    });
   }
   ));
 }
