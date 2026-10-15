@@ -76,12 +76,14 @@ and failure identity against the copied native artifact.
 The current CLI bootstrap designates the working directory's `AGENTS.md` with user authority.
 Its semantic admission uses the
 [adopted operating policy](../../../../doc/decision/pi-auto-mode-semantic-admission.md):
-supported selected meanings require a score of at least `0.80` and a unique lead.
+supported selected meanings require a score of at least `0.60` and a unique lead.
 Unknown and unsupported meanings remain unresolved even at `1`.
 This operating cutoff carries no measured accuracy claim.
 Original authority,
-complete coverage,
+tool-operation premises,
 and authorization checks remain independent.
+The outbound provider request supplies context;
+its fields do not create an independent whole-request approval obligation.
 The bootstrap binds the maintained Luna adapter and direct HTTP sender
 for `openai/gpt-6-luna-decisions` through the Gateway `/v1/decisions` route.
 It reads `AUTO_MODE_LLMGATEWAY_API_KEY` only when an original configured assessment is dispatched,
@@ -140,8 +142,29 @@ Deny,
 Stop,
 cancellation during selection,
 and approval after reload with fixture UI responses.
-The context source supplies presentation capabilities only;
-it grants no permission and supplies no authorization facts.
+The context source supplies presentation capabilities only.
+The pending original channel supplies code-owned facts for an admitted `fresh-session-approval` clause;
+those facts remain unsatisfied until the original user response arrives.
+Generic prerequisites retain their separate fact owner.
+
+Unresolved and unspecified automatic assessments also reach the original dialog when a UI is available.
+An established prohibition at the strongest known applicable tier blocks even when other premises are uncertain.
+Headless uncertainty remains blocked.
+The dialog offers `Allow` and `Stop`;
+every non-Allow selection,
+including dismissal and a legacy denial value,
+aborts the current run.
+Source freshness,
+exact prepared-group identity,
+and cancellation remain checked during and after approval.
+Transport failures,
+malformed responses,
+and judgment expiry do not become manual approval requests.
+`test:native:manual-review` covers uncertainty,
+prohibition precedence,
+confirmation outcomes,
+and unavailable UI.
+`test:confirmation` checks the built selector and abort behavior.
 The package's TypeScript source set explicitly includes `native/**/*.ts`.
 The build helpers,
 module resolver,
@@ -265,7 +288,7 @@ The decoder accepts `return await tools.name({...})`
 and `const result = await tools.name({...}); return result;`.
 The existing awaited producer followed by `Promise.all` or `Promise.allSettled` remains supported.
 The fixed semantic scope `native-inspected-programs-v2` includes exactly the single-call and producer/successor profiles.
-Its supported-meaning cutoff is `0.80` with a unique leading score under the adopted Luna policy.
+Its supported-meaning cutoff is `0.60` with a unique leading score under the adopted Luna policy.
 
 `test:native:single-call` verifies complete original source,
 escaped identifiers and literal data,

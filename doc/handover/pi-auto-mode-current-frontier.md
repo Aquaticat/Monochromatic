@@ -214,8 +214,10 @@ and missing UI.
 The package type check and changed TypeScript lint pass.
 The original authorization fixture suite also passes.
 The approval-context suite passed its initial cases but its reload case exhausted the original judgment deadline.
-A standalone unchanged reload control is pending;
-the failed run remains preserved.
+The standalone unchanged reload control passes with one selection and three child calls.
+The failed run remains preserved;
+no cause for its deadline exhaustion has been established.
+`${HOME}/temp/agent/pi-manual-review-reload-control-20261014.log` records the successful control.
 
 Exact replay of the older Luna response in another configured session was rejected:
 captured event timestamps and durations changed the assessment input.
