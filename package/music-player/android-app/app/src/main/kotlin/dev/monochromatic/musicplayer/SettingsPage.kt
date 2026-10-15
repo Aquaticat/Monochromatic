@@ -18,6 +18,7 @@ package dev.monochromatic.musicplayer
 import dev.monochromatic.musicplayer.core.SETTINGS_GROUP_GAP_DP
 import dev.monochromatic.musicplayer.core.SETTINGS_ICON_CIRCLE_DP
 import dev.monochromatic.musicplayer.core.SETTINGS_PANE_FADE_MILLIS
+import dev.monochromatic.musicplayer.core.autoPlayOnSelectSupportingText
 import dev.monochromatic.musicplayer.core.SETTINGS_ICON_GLYPH_DP
 import dev.monochromatic.musicplayer.core.SETTINGS_ICON_TITLE_GAP_DP
 import dev.monochromatic.musicplayer.core.SETTINGS_PAGE_MARGIN_DP
@@ -61,6 +62,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -77,6 +79,9 @@ import androidx.compose.foundation.verticalScroll
 // ```
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchColors
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -181,6 +186,37 @@ private val SETTINGS_HEADING_BOTTOM: Dp = 8.dp
 /** Vertical inset above and below the two text lines of a row. */
 private val SETTINGS_ROW_VERTICAL_INSET: Dp = 12.dp
 
+// What:     `internal const val AUTO_PLAY_ON_SELECT_TITLE: String = "Auto-play on select"` is the switch row's title.
+// Why:      The title is the row's spoken label, so tests and the row share one text.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const AUTO_PLAY_ON_SELECT_TITLE = "Auto-play on select";
+// ```
+/** Title of the Auto-play on select row, which TalkBack reads as the switch's label. */
+internal const val AUTO_PLAY_ON_SELECT_TITLE: String = "Auto-play on select"
+
+// What:     `private val SETTINGS_SWITCH_GAP: Dp = 16.dp` is the space between the row text and the trailing switch.
+// Why:      Material switch rows keep 16 dp between the text column and the 52 dp switch.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SETTINGS_SWITCH_GAP = 16;
+// ```
+/** Space between the end of the text column and the switch. */
+private val SETTINGS_SWITCH_GAP: Dp = 16.dp
+
+// What:     `private const val SETTINGS_SWITCH_SUPPORTING_LINES: Int = 2` bounds the supporting text of a switch row.
+// Why:      The text fits one line on the 443 dp cover; in the narrow list pane of the unfolded screen it wraps to a
+//           second line, which grows the row like a larger text size does, instead of cutting the meaning off.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SETTINGS_SWITCH_SUPPORTING_LINES = 2;
+// ```
+/** Most lines the supporting text of a switch row takes before it is cut with an ellipsis. */
+private const val SETTINGS_SWITCH_SUPPORTING_LINES: Int = 2
+
 // What:     `internal fun settingsPageContent(...)` draws the single-column Settings page.
 // Why:      On a window narrower than the player's two-pane width, the page lists each template with the line it
 //           yields, and a tap opens that template's editor page.
@@ -197,6 +233,8 @@ private val SETTINGS_ROW_VERTICAL_INSET: Dp = 12.dp
 @Composable
 fun settingsPageContent(
     templateLines: Map<TemplateKind, String>,
+    autoPlayOnSelect: Boolean,
+    onToggleAutoPlay: () -> Unit,
     onBack: () -> Unit,
     onOpenTemplate: (TemplateKind) -> Unit,
     modifier: Modifier = Modifier,
@@ -205,6 +243,8 @@ fun settingsPageContent(
         templateLines = templateLines,
         selected = null,
         onChoose = onOpenTemplate,
+        autoPlayOnSelect = autoPlayOnSelect,
+        onToggleAutoPlay = onToggleAutoPlay,
         onBack = onBack,
         textEndExtra = 0.dp,
         modifier = modifier.fillMaxSize().background(canvasColor(dark = isSystemInDarkTheme())),
@@ -232,6 +272,8 @@ fun settingsWidePage(
     templateLines: Map<TemplateKind, String>,
     selected: TemplateKind,
     onSelect: (TemplateKind) -> Unit,
+    autoPlayOnSelect: Boolean,
+    onToggleAutoPlay: () -> Unit,
     onBack: () -> Unit,
     creaseWidthPx: Float?,
     editor: @Composable (kind: TemplateKind, startInset: Dp) -> Unit,
@@ -272,6 +314,8 @@ fun settingsWidePage(
                     templateLines = templateLines,
                     selected = selected,
                     onChoose = onSelect,
+                    autoPlayOnSelect = autoPlayOnSelect,
+                    onToggleAutoPlay = onToggleAutoPlay,
                     onBack = onBack,
                     textEndExtra = split.listTextEndExtraDp.dp,
                     modifier = Modifier.fillMaxSize(),
@@ -339,8 +383,10 @@ private fun settingsPaneRow(listWidthPx: Int, list: @Composable () -> Unit, edit
 //   onBack(): void; textEndExtra: number; modifier?: Modifier }): UIElement;
 // ```
 /**
- * Draws the status bar spacer, the header and the scrolling Templates group.
+ * Draws the status bar spacer, the header and the scrolling Templates and Playback groups.
  * [selected] is the chosen row in the wide form and null in the single form;
+ * [autoPlayOnSelect] and [onToggleAutoPlay] drive the Playback group's switch row, which toggles in place and never
+ * changes [selected] (D129);
  * [textEndExtra] is the extra end inset that keeps row text clear of the crease.
  */
 @Composable
@@ -348,6 +394,8 @@ private fun settingsListPane(
     templateLines: Map<TemplateKind, String>,
     selected: TemplateKind?,
     onChoose: (TemplateKind) -> Unit,
+    autoPlayOnSelect: Boolean,
+    onToggleAutoPlay: () -> Unit,
     onBack: () -> Unit,
     textEndExtra: Dp,
     modifier: Modifier = Modifier,
@@ -404,9 +452,126 @@ private fun settingsListPane(
                     }
                 }
             }
+            // What:     `Column` with a heading and one `settingsSwitchRow` is the Playback group.
+            // Why:      A switch under the Templates heading would be mislabelled, so the setting is its own group
+            //           (D129) 16 dp below the templates, with the same row size and corner rounding.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // <section><h2>Playback</h2><SwitchRow title="Auto-play on select" .../></section>
+            // ```
+            Column {
+                settingsSectionHeading(text = "Playback")
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = SETTINGS_PAGE_MARGIN_DP.dp)) {
+                    settingsSwitchRow(
+                        icon = SETTINGS_AUTO_PLAY_ICON,
+                        title = AUTO_PLAY_ON_SELECT_TITLE,
+                        supportingText = autoPlayOnSelectSupportingText(enabled = autoPlayOnSelect),
+                        checked = autoPlayOnSelect,
+                        radii = settingsRowRadii(index = 0, count = 1),
+                        textEndExtra = textEndExtra,
+                        onToggle = onToggleAutoPlay,
+                    )
+                }
+            }
         }
     }
 }
+
+// What:     `@Composable private fun settingsSwitchRow(...)` draws one switch row of the stock Settings form.
+// Why:      D129: the 72 dp row with the 40 dp icon circle, the title, one supporting line and a trailing Material
+//           switch. The whole row is the toggle target (role Switch, state on or off), so a tap, Space and Enter
+//           flip it in place, and it carries no `selected` state because choosing a template row is a different act.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function SwitchRow(props: { icon; title; supportingText; checked; radii; textEndExtra; onToggle(): void }): UIElement;
+// ```
+/**
+ * Draws one row: a 40 dp icon circle, the title, the supporting line and a trailing switch.
+ * The switch shows the state through its thumb position, its track fill and the mark in its thumb.
+ */
+@Composable
+private fun settingsSwitchRow(
+    icon: ImageVector,
+    title: String,
+    supportingText: String,
+    checked: Boolean,
+    radii: SettingsRowRadii,
+    textEndExtra: Dp,
+    onToggle: () -> Unit,
+) {
+    /** Corner shape of this row, with the group radius at each of its four corners. */
+    val shape: RoundedCornerShape = RoundedCornerShape(
+        topStart = radii.topDp.dp,
+        topEnd = radii.topDp.dp,
+        bottomStart = radii.bottomDp.dp,
+        bottomEnd = radii.bottomDp.dp,
+    )
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .defaultMinSize(minHeight = SETTINGS_ROW_HEIGHT_DP.dp)
+            .focusRing(shape)
+            .clip(shape)
+            .toggleable(value = checked, role = Role.Switch, onValueChange = { onToggle() })
+            .padding(
+                start = SETTINGS_ROW_INNER_PADDING_DP.dp,
+                end = SETTINGS_ROW_INNER_PADDING_DP.dp + textEndExtra,
+                top = SETTINGS_ROW_VERTICAL_INSET,
+                bottom = SETTINGS_ROW_VERTICAL_INSET,
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        settingsIconCircle(icon = icon, onChosenRow = false)
+        Spacer(modifier = Modifier.width(SETTINGS_ICON_TITLE_GAP_DP.dp))
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+            settingsRowTitle(text = title, bold = false)
+            Text(
+                text = supportingText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = SETTINGS_SWITCH_SUPPORTING_LINES,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Spacer(modifier = Modifier.width(SETTINGS_SWITCH_GAP))
+        // The row owns the toggle, so the switch only draws the state and has no click or semantics of its own.
+        Switch(
+            checked = checked,
+            onCheckedChange = null,
+            thumbContent = {
+                Icon(
+                    imageVector = if (checked) SETTINGS_SWITCH_ON_ICON else SETTINGS_SWITCH_OFF_ICON,
+                    contentDescription = null,
+                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                )
+            },
+            colors = settingsSwitchColors(),
+        )
+    }
+}
+
+// What:     `@Composable private fun settingsSwitchColors(): SwitchColors` maps the switch parts onto player roles.
+// Why:      The stock switch colors read slots such as the outline and the highest surface container; these explicit
+//           picks keep the on state in the accent pair and the off state on the canvas with an outline border,
+//           with no new color role (D129).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const settingsSwitchColors = () => ({ checkedTrack: primary, checkedThumb: onPrimary, uncheckedTrack: canvas, ... });
+// ```
+/** Switch colors: accent track with an on-accent thumb when on, canvas track with an outline border when off. */
+@Composable
+private fun settingsSwitchColors(): SwitchColors = SwitchDefaults.colors(
+    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+    checkedTrackColor = MaterialTheme.colorScheme.primary,
+    checkedBorderColor = MaterialTheme.colorScheme.primary,
+    checkedIconColor = MaterialTheme.colorScheme.primary,
+    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+    uncheckedTrackColor = MaterialTheme.colorScheme.surface,
+    uncheckedBorderColor = MaterialTheme.colorScheme.outline,
+    uncheckedIconColor = MaterialTheme.colorScheme.surface,
+)
 
 // What:     `@Composable private fun settingsHeader(...)` draws the static top bar with the round Back button
 //           and the title.

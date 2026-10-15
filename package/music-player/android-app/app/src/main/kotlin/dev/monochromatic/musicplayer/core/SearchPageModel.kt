@@ -138,7 +138,8 @@ const val SEARCH_CLEAR_LABEL: String = "Clear search"
 const val SEARCH_FOLDER_ACTION: String = "Open folder without autoplay"
 
 // What:     `const val SEARCH_TRACK_SELECT_ACTION: String` is the spoken action for a track that is not current.
-// Why:      A different track is only selected and loaded paused (D127), so the action label is Select track (D77).
+// Why:      A different track is only selected and loaded paused (D127), so the action label is Select track (D77);
+//           with Auto-play on select on (D129) it starts too and the label is Play track again.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -325,16 +326,21 @@ fun isCurrentTrackResult(result: SearchResult, currentTrackIndex: Int?): Boolean
 /**
  * Returns the spoken action of a result row.
  *
- * A folder opens without autoplay. Another track is selected. The current track pauses while playing and plays while
- * paused. When the page
+ * A folder opens without autoplay. Another track is selected, or played when [autoPlayOnSelect] is on (D129). The
+ * current track pauses while playing and plays while paused. When the page
  * does not know the playing state, the current track is labelled as a toggle rather than a claimed state.
  */
-fun searchRowActionLabel(result: SearchResult, currentTrackIndex: Int?, isPlaying: Boolean?): String {
+fun searchRowActionLabel(
+    result: SearchResult,
+    currentTrackIndex: Int?,
+    isPlaying: Boolean?,
+    autoPlayOnSelect: Boolean = false,
+): String {
     if (result.kind == SearchResultKind.FOLDER) {
         return SEARCH_FOLDER_ACTION
     }
     if (!isCurrentTrackResult(result, currentTrackIndex)) {
-        return SEARCH_TRACK_SELECT_ACTION
+        return if (autoPlayOnSelect) SEARCH_TRACK_PLAY_ACTION else SEARCH_TRACK_SELECT_ACTION
     }
     return when (isPlaying) {
         true -> SEARCH_TRACK_PAUSE_ACTION
@@ -370,10 +376,15 @@ fun searchRowStateLabel(result: SearchResult, currentTrackIndex: Int?, isPlaying
 // const searchRowSemantics = (r, idx, playing) => ({ kindLabel, actionLabel, stateLabel });
 // ```
 /** Bundles the spoken kind, action, and current-track state of one result row. */
-fun searchRowSemantics(result: SearchResult, currentTrackIndex: Int?, isPlaying: Boolean?): SearchRowSemantics =
+fun searchRowSemantics(
+    result: SearchResult,
+    currentTrackIndex: Int?,
+    isPlaying: Boolean?,
+    autoPlayOnSelect: Boolean = false,
+): SearchRowSemantics =
     SearchRowSemantics(
         kindLabel = searchRowKindLabel(result),
-        actionLabel = searchRowActionLabel(result, currentTrackIndex, isPlaying),
+        actionLabel = searchRowActionLabel(result, currentTrackIndex, isPlaying, autoPlayOnSelect),
         stateLabel = searchRowStateLabel(result, currentTrackIndex, isPlaying),
     )
 

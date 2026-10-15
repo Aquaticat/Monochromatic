@@ -350,6 +350,8 @@ import androidx.compose.material3.Text
 // type Component = () => JSX.Element;
 // ```
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.compositionLocalOf
 
 // What:     `import androidx.compose.runtime.LaunchedEffect` runs the focus request after composition.
 // Why:      The query field can take focus only after it is attached to the layout.
@@ -981,6 +983,17 @@ internal fun searchHighlightedText(
     }
 }
 
+// What:     `internal val LocalAutoPlayOnSelect` carries the Auto-play on select setting from the host to the results.
+// Why:      A result for a track that is not current says "Play track" with the setting on and "Select track" with it
+//           off (D77, D129); the setting reaches the row's spoken action without five parameters in between.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const LocalAutoPlayOnSelect = createContext<boolean>(false);
+// ```
+/** Composition local holding whether activating another track's result also starts it; false by default. */
+internal val LocalAutoPlayOnSelect: ProvidableCompositionLocal<Boolean> = compositionLocalOf { false }
+
 // What:     `@Composable fun searchPage(...)` draws the Search page for the available width.
 // Why:      One entry point serves both layouts, so the caller wires the page once and the width picks the arrangement.
 //
@@ -1494,8 +1507,13 @@ private fun searchResultRow(
     startInset: Dp,
     endInset: Dp,
 ) {
-    /** Spoken kind, action and playback state of this row. */
-    val rowSpeech: SearchRowSemantics = searchRowSemantics(result, currentTrackIndex, isPlaying)
+    /** Spoken kind, action and playback state of this row; a track that is not current is played with the setting on. */
+    val rowSpeech: SearchRowSemantics = searchRowSemantics(
+        result = result,
+        currentTrackIndex = currentTrackIndex,
+        isPlaying = isPlaying,
+        autoPlayOnSelect = LocalAutoPlayOnSelect.current,
+    )
     /** Match fill derived from the accent in OKLCH and fitted for contrast by the theme (D59, D108). */
     val fill: Color = LocalThemeRoles.current.matchFill.toComposeColor()
     /** Ink color for the emphasized and plain text of this row. */

@@ -82,6 +82,7 @@ class PlayerHostWiringTest {
         /** Application context that the host reads the saved templates through. */
         val context: Context = ApplicationProvider.getApplicationContext()
         SessionStore.saveTemplate(context, TemplateKind.TRACK_ROWS, EXTENSION_TEMPLATE)
+        SessionStore.saveAutoPlayOnSelect(context, enabled = false)
         SweepProgress.reset()
     }
 
