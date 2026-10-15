@@ -278,6 +278,14 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-execution-lifetime.unit.test.ts",
 ]
 
+[tasks."test:native:judgment-dependencies"]
+description = "Verify original live and retained dependency eligibility and synchronous binding postchecks"
+run = [
+  'node --max-old-space-size=512 src/native-dependency.unit.test.ts',
+  'node --max-old-space-size=512 src/native-dependency-retained.unit.test.ts',
+  'node --max-old-space-size=512 src/native-dependency-binding.unit.test.ts',
+]
+
 [tasks."test:native:judgment-inspection"]
 description = "Verify current member access and retained immutable judgment inspection"
 run = [

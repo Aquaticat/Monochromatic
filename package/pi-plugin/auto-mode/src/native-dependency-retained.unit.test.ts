@@ -70,7 +70,7 @@ await describe({ name: '', children: [
       const f = createDependencyFixture();
       if (kind === 'deadline') f.clock.at = 5_000;
       else f.controller.abort(new Error('original cancellation'));
-      assert.throws(function expiredActive() { f.owner.active(); }, { name: kind === 'deadline' ? 'JudgmentDeadlineError' : 'JudgmentCancellationError' });
+      assert.throws(function expiredActive() { f.owner.active(); }, { name: kind === 'deadline' ? 'JudgmentDeadlineError' : 'JudgmentCancelledError' });
       assert.deepEqual(f.events, ['state', 'checkpoint']);
       f.events.length = 0;
       assert.throws(function retiredActive() { f.owner.active(); }, { message: 'Original relation evidence lost dependency eligibility' });
