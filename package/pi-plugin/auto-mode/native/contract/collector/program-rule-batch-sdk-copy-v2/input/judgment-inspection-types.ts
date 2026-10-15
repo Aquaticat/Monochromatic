@@ -1,25 +1,39 @@
-/** Original judgment inspection distinguishes live member reads from retained lifecycle diagnostics. @module */
+/**
+ Original judgment inspection distinguishes live member reads from retained lifecycle diagnostics. @module
+ */
 import type { JudgmentBudget } from '../../../lifecycle/judgment-budget-error-occurrences/controls-private/types.ts';
 import type { JudgmentPreparationState } from './judgment-preparation-types.ts';
 import type { JudgmentLifecycleState } from './judgment-lifecycle-types.ts';
-import type { ProgramMemberRecord, ProgramGroup } from './program-state-types.ts';
+import type {
+  ProgramMemberRecord,
+  ProgramGroup
+} from './program-state-types.ts';
 import type { PreparedProgramView } from './program-declaration-types.ts';
-import type { PreparedProgramLookup, ProgramInspection } from './program-api.ts';
+import type {
+  PreparedProgramLookup,
+  ProgramInspection
+} from './program-api.ts';
 
-/** Current prepared-member reads preserve original data, cancellation, and optional source inspection. */
+/**
+ Current prepared-member reads preserve original data, cancellation, and optional source inspection.
+ */
 export type JudgmentPreparedMemberView = Readonly<{
   prepared: ProgramMemberRecord['prepared'];
   signal: AbortSignal;
   programInspection: PreparedProgramLookup;
 }>;
 
-/** Original execution diagnostics retain declaration order and unentered membership. */
+/**
+ Original execution diagnostics retain declaration order and unentered membership.
+ */
 export type JudgmentMemberExecutionView = Readonly<{
   id: string;
   state: 'unentered' | 'active' | 'returned';
 }>;
 
-/** Retained inspection never asserts that original evidence or execution remains eligible. */
+/**
+ Retained inspection never asserts that original evidence or execution remains eligible.
+ */
 export type JudgmentInspectionView = Readonly<{
   prepared: boolean;
   preparationFailed: boolean;
@@ -34,7 +48,9 @@ export type JudgmentInspectionView = Readonly<{
   childGroups: readonly ReturnType<ProgramInspection['inspectReachedGroup']>[];
 }>;
 
-/** Shared owners supply original member records and current versus retained access boundaries. */
+/**
+ Shared owners supply original member records and current versus retained access boundaries.
+ */
 export type JudgmentInspectionInput = Readonly<{
   preparation: JudgmentPreparationState;
   lifecycle: JudgmentLifecycleState;
@@ -54,7 +70,9 @@ export type JudgmentInspectionInput = Readonly<{
   inspectReachedGroup: ProgramInspection['inspectReachedGroup'];
 }>;
 
-/** Live reads and retained diagnostics preserve their separate original access requirements. */
+/**
+ Live reads and retained diagnostics preserve their separate original access requirements.
+ */
 export type JudgmentInspection = Readonly<{
   preparedMemberFor: (member: unknown) => JudgmentPreparedMemberView;
   originalFileFor: (member: unknown) => unknown;

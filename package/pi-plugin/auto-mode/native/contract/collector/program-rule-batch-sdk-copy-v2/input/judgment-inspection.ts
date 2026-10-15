@@ -1,4 +1,6 @@
-/** Original judgment views preserve current member access and retained terminal inspection. @module */
+/**
+ Original judgment views preserve current member access and retained terminal inspection. @module
+ */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import type { ProgramMemberRecord } from './program-state-types.ts';
@@ -10,7 +12,9 @@ import type {
   JudgmentInspectionView,
 } from './judgment-inspection-types.ts';
 
-/** Inspection diagnostics omit original source contents and prepared arguments. */
+/**
+ Inspection diagnostics omit original source contents and prepared arguments.
+ */
 const l = tagged({ tag: 'auto-mode-judgment-inspection' });
 
 //region Live member reads retain their original checks while diagnostic views remain inert.
@@ -24,13 +28,31 @@ const l = tagged({ tag: 'auto-mode-judgment-inspection' });
  @example createJudgmentInspection(input);
  */
 export function createJudgmentInspection(input: JudgmentInspectionInput): JudgmentInspection {
-  /** Entry diagnostics do not invoke currentness, accounting, or retained program readers. */
-  const rl = tagged({ tag: createJudgmentInspection.name, l });
+  /**
+   Entry diagnostics do not invoke currentness, accounting, or retained program readers.
+   */
+  const rl = tagged({
+    tag: createJudgmentInspection.name,
+    l
+  });
   rl.debug('binding original judgment inspection');
-  /** The same original state objects remain live after preparation, assessment, and execution finish. */
+  /**
+   The same original state objects remain live after preparation, assessment, and execution finish.
+   */
   const {
-    preparation, lifecycle, budget, byMember, bindings, childGroups, knownMember,
-    assertDependenciesCurrent, parentCurrent, ready, originalFile, inspectProgram, inspectReachedGroup,
+    preparation,
+    lifecycle,
+    budget,
+    byMember,
+    bindings,
+    childGroups,
+    knownMember,
+    assertDependenciesCurrent,
+    parentCurrent,
+    ready,
+    originalFile,
+    inspectProgram,
+    inspectReachedGroup,
   } = input;
   /**
    Require the shared record guaranteed by original member publication.
@@ -50,14 +72,17 @@ export function createJudgmentInspection(input: JudgmentInspectionInput): Judgme
    @returns frozen view retaining original member, signal, and source inspection identities
    */
   function preparedMemberFor(member: unknown): JudgmentPreparedMemberView {
-    /** Ownership rejection precedes any dependency observation. */
+    /**
+     Ownership rejection precedes any dependency observation.
+     */
     const record = knownMember(member);
     assertDependenciesCurrent();
     parentCurrent(record);
     return Object.freeze({
       prepared: record.prepared,
       signal: record.effectiveSignal,
-      programInspection: record.preparedProgram?.view,
+      programInspection: record.preparedProgram
+        ?.view,
     });
   }
   /**
@@ -69,10 +94,15 @@ export function createJudgmentInspection(input: JudgmentInspectionInput): Judgme
    */
   function originalFileFor(member: unknown): unknown {
     ready();
-    /** The file path comes from the original prepared record, never from a separate caller argument. */
+    /**
+     The file path comes from the original prepared record, never from a separate caller argument.
+     */
     const record = knownMember(member);
     parentCurrent(record);
-    return originalFile({ handle: preparation.handle, absolutePath: record.prepared.input.path });
+    return originalFile({
+      handle: preparation.handle,
+      absolutePath: record.prepared.input.path
+    });
   }
   /**
    Snapshot original root execution phases without consulting live eligibility.
@@ -81,7 +111,10 @@ export function createJudgmentInspection(input: JudgmentInspectionInput): Judgme
    */
   function memberExecutionStates(): readonly JudgmentMemberExecutionView[] {
     return Object.freeze([...byMember.entries()].map(function readExecutionState([id, handle]) {
-      return Object.freeze({ id, state: publishedRecord(handle).execution?.state ?? 'unentered' });
+      return Object.freeze({
+        id,
+        state: publishedRecord(handle).execution?.state ?? 'unentered'
+      });
     }));
   }
   /**
@@ -100,20 +133,30 @@ export function createJudgmentInspection(input: JudgmentInspectionInput): Judgme
       finalRecord: lifecycle.finalRecord,
       memberExecutions: memberExecutionStates(),
       preparedPrograms: Object.freeze([...byMember.values()].flatMap(function readPreparedProgramView(member) {
-        /** Optional original source inspection remains absent until explicitly bound. */
-        const inspection = publishedRecord(member).preparedProgram;
+        /**
+         Optional original source inspection remains absent until explicitly bound.
+         */
+        const inspection = publishedRecord(member)
+          .preparedProgram;
         return inspection ? [inspection.view] : [];
       })),
       rootPrograms: Object.freeze([...byMember.values()].flatMap(function readRootProgramView(member) {
-        /** Root inspection retains the original program occurrence and diagnostics. */
+        /**
+         Root inspection retains the original program occurrence and diagnostics.
+         */
         const record = publishedRecord(member);
-        return record.program ? [inspectProgram(record.program.handle)] : [];
+        return record.program ? [inspectProgram(record.program
+          .handle)] : [];
       })),
       childGroups: Object.freeze(childGroups.map(function inspectChildGroup(group) {
         return inspectReachedGroup(group.handle);
       })),
     });
   }
-  return { preparedMemberFor, originalFileFor, inspect };
+  return {
+    preparedMemberFor,
+    originalFileFor,
+    inspect
+  };
 }
 //endregion
