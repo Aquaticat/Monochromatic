@@ -245,7 +245,7 @@ export const runtime=bindNativePolicyRuntime({
     _input,
     init
   ){fixtureState.requests++;if(fixtureState.requests===1)fixtureState.originalBody=init.body;return fixtureResponse({
-    proposal:fixtureState.requests===1,
+    proposal:fixtureState.requests<=fixtureState.proposalLimit,
     code
   });}
 });

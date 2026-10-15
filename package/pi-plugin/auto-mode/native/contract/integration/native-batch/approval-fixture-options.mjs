@@ -46,6 +46,7 @@ export const fixtureState={
   notifications:0,
   originalBody:undefined,
   requests:0,
+  proposalLimit:1,
   selections:0,
   activeAuthorization:true,
   handlerFailure:undefined

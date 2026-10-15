@@ -844,6 +844,10 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/bypass.test.mjs prohibited --native-context --reload-context --bypass-fixture --outside-profile",
 ]
 
+[tasks."test:native:decision-context"]
+description = "Verify selected conversation and complete current policy in actual native assessment requests"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/decision-context.test.mjs satisfied --native-context --reload-context"
+
 [tasks."test:native:prompt-capacity"]
 description = "Verify original prompt and tool bundles retain their complete native input capacity"
 run = [
