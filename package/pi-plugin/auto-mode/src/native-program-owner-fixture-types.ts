@@ -7,7 +7,10 @@
  */
 export type FixtureProgramDeclaration = Readonly<{
   source: string;
-  groups: readonly Readonly<{ ordinal: number; members: readonly Readonly<{ name: string }>[] }>[];
+  groups: readonly Readonly<{
+    ordinal: number;
+    members: readonly Readonly<{ name: string }>[]
+  }>[];
   sites: readonly Readonly<{ name: string }>[];
 }>;
 
@@ -49,7 +52,10 @@ export type FixtureProgramRecord = {
   readonly effectiveSignal: AbortSignal;
   readonly group?: object;
   execution?: FixtureProgramExecution;
-  preparedProgram?: Readonly<{ view: FixturePreparedProgram; assertCurrent: () => void }>;
+  preparedProgram?: Readonly<{
+    view: FixturePreparedProgram;
+    assertCurrent: () => void
+  }>;
   program?: {
     readonly handle: object;
     readonly groups: readonly Readonly<{ handle: object }>[];
@@ -86,10 +92,16 @@ export type FixtureProgramCall = Readonly<{
  Native outcomes remain mutable to verify conversion and producer receipts retain original values.
  */
 export type FixtureProgramOutcome = {
-  readonly toolCall: Readonly<{ id: string; name: string }>;
+  readonly toolCall: Readonly<{
+    id: string;
+    name: string
+  }>;
   isError: boolean;
   result: {
-    content: Readonly<{ type: string; text: string }>[];
+    content: Readonly<{
+      type: string;
+      text: string
+    }>[];
     structuredContent?: unknown;
   };
 };
@@ -102,8 +114,14 @@ export type FixtureGroupInspection = Readonly<{
   ordinal: number;
   state: string;
   failure: unknown;
-  members: readonly Readonly<{ id: string; state: string }>[];
-  nativeReturns: readonly Readonly<{ state: string; conversionCount: number }>[];
+  members: readonly Readonly<{
+    id: string;
+    state: string
+  }>[];
+  nativeReturns: readonly Readonly<{
+    state: string;
+    conversionCount: number
+  }>[];
 }>;
 
 /**
@@ -155,7 +173,10 @@ export type FixtureProgramState = {
   dependencyFailure?: Error;
   toolFailure?: Error;
   judgmentFailure?: Error;
-  operationFailure?: Readonly<{ callback: string; error: Error }>;
+  operationFailure?: Readonly<{
+    callback: string;
+    error: Error
+  }>;
 };
 
 /**

@@ -7,13 +7,16 @@ import {createJudgmentDependencyChecks} from './judgment-dependencies.mjs';
 
 
 import {createJudgmentBudget} from "../../../lifecycle/judgment-budget-error-occurrences/controls-private/candidate.ts";
-import {createQuestionSelection,readAssessmentResponse} from "../../../lifecycle/claim-evidence-batch-selection/selection.mjs";
 import {createDependencyFacade} from "../../../lifecycle/native-text-read-contract/dependencies.mjs";
 import {readMainAgentRequest} from "../../request-producer-group-consumer/request.mjs";
 
-import {JudgmentConstructionError, requireJSONInput} from './judgment-input.mjs';
+import {JudgmentConstructionError} from './judgment-input.mjs';
 export {JudgmentConstructionError} from './judgment-input.mjs';
 import {createJudgmentPrograms} from './judgment-programs.mjs';
+import {createJudgmentExecutions} from './execution-owner.ts';
+import {createJudgmentLifecycle} from './judgment-lifecycle.ts';
+import {captureJudgmentMembership} from './judgment-membership.ts';
+import {createJudgmentPreparation} from './judgment-preparation.ts';
 
 //region Fixed session-bound creator; all inputs come from the owned native JSON/prepared-member profile.
 /** Bind one native consumer to source/root/file observers, fixed catalog and owned transport dependencies. */
@@ -27,15 +30,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     const receipt=readMainAgentRequest(input);
     let judgmentSources=sourceBinding?.sources??receipt.sources;
     if(sourceBinding&&sourceBinding.request!==receipt)throw new JudgmentConstructionError("Judgment sources do not belong to the original request receipt");
-    // SDK-produced content is an owned plain JSON tree in this finite profile, not arbitrary JavaScript objects.
-    for(const part of response.content)if(part.type==='toolCall')requireJSONInput(part.arguments);
-    const parentJSON=JSON.stringify(response.content);
-    if(typeof parentJSON!=='string'||Buffer.byteLength(parentJSON)>1048576)throw new JudgmentConstructionError('Native enclosing response exceeds the declared JSON profile');
-    const content=JSON.parse(parentJSON);
-    if(!Array.isArray(content))throw new JudgmentConstructionError('Native enclosing response has no content array');
-    const declared=content.filter(function isToolCall(value) { return (value&&value.type==='toolCall'); });
-    if(declared.length===0||declared.length>64||declared.some(function hasInvalidToolIdentity(value) { return (typeof value.id!=='string'||!value.id||typeof value.name!=='string'||!value.name); })||new Set(declared.map(function readDeclaredCallId(value) { return (value.id); })).size!==declared.length)throw new JudgmentConstructionError('Enclosing judgment requires complete unique native tool membership');
-    const declaredNames=Object.freeze(declared.map(function copyDeclaredToolIdentity(value) { return (Object.freeze({id:value.id,name:value.name})); }));
+    const {parentJSON,declaredNames}=captureJudgmentMembership(response);
     const judgmentCollector=Object.freeze({
       capture(options){
         if(options.signal!==signal)throw new JudgmentConstructionError('Dependency sources require original judgment cancellation');
@@ -48,21 +43,23 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       }
     });
     const facade=createDependencyFacade({collector:judgmentCollector,rootAdapter,deadlineAt:budget.diagnostics().deadlineAt,rootDirectory,files,trace,now});
-    const bindings=new WeakMap(),byMember=new Map(),executions=new WeakMap(),childGroups=[],issuedBatches=new Set(),attemptedBatches=new WeakSet();let operating=false,assessing=false,prepared=false,preparing=false,preparationFailed=false,preparationFailure,handle,selection,finished=false,closeFailed=false,finalRecord;
-    function operation(run){
-      if(operating)throw new JudgmentConstructionError('Judgment operations cannot reenter through callbacks');
-      operating=true;
-      using activity={ [Symbol.dispose](){operating=false;} };
-      return run();
-    }
+    const bindings=new WeakMap(),byMember=new Map(),childGroups=[];
     const {
       active, ready, dependencyCheck, bindingSegment, assertDependenciesCurrent, isBindingSegmentActive
     } = createJudgmentDependencyChecks({
       budget, input, receipt, facade, byMember, bindings, trace,
       readPreparation() {
-        return { prepared, preparationFailed, preparationFailure, finished, closeFailed, finalRecord, handle };
+        const {prepared,preparationFailed,preparationFailure,handle}=preparation.state;
+        return { prepared, preparationFailed, preparationFailure, finished:lifecycle.state.finished, closeFailed:lifecycle.state.closeFailed, finalRecord:lifecycle.state.finalRecord, handle };
       }
     });
+    const lifecycle=createJudgmentLifecycle({
+      knownSelection,ready,active,bindingSegment,assertDependenciesCurrent,budget,
+      finalizeDependencies(dependencyHandle){return facade.finalize(dependencyHandle);},
+      readDependencyHandle(){return preparation.state.handle;},
+      parentJSON,send
+    });
+    const {operation,issue,assess,finalize,captureBatchEvidence,assertBatchEvidence,captureClaimEvidence,assertClaimEvidence}=lifecycle;
     const {
       resolveBinding,
       indexedUnitAdoptionPairs,
@@ -97,108 +94,30 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     
     
     
-    function knownSelection(){if(!selection)throw new JudgmentConstructionError('Judgment question selection was not prepared');return selection;}
-    function prepare(members){
-      active();if(prepared||preparing)throw new JudgmentConstructionError('Prepared judgment membership cannot be replaced or reentered');preparing=true;
-      using preparation={ [Symbol.dispose](){preparing=false;} };
-      try {
-        if(!Array.isArray(members)||!Object.isFrozen(members)||members.length!==declaredNames.length)throw new JudgmentConstructionError('Prepared group differs from complete declared membership');
-        for(let index=0;index<members.length;index+=1){const member=members[index],expected=declaredNames[index];if(!member||!Object.isFrozen(member)||member.id!==expected.id||member.name!==expected.name||!Object.hasOwn(member,'input')||!Object.isFrozen(member.input))throw new JudgmentConstructionError('Prepared member identity or sealed input differs from the native group');}
-        for(const member of members)requireJSONInput(member.input);
-        const preparedJSON=JSON.stringify(members);
-        if(typeof preparedJSON!=='string'||Buffer.byteLength(preparedJSON)>1048576)throw new JudgmentConstructionError('Prepared member data exceeds the declared JSON profile');
-        if(observer.beginJudgmentSources){const binding=observer.sealJudgmentSources(response);if(binding.request!==receipt)throw new JudgmentConstructionError("Prepared sources lost their original request receipt");judgmentSources=binding.sources;}
-        const dependencyHandle=facade.prepare({signal});
-        active();facade.finalize(dependencyHandle);budget.checkpoint();
-        const mandatoryPolicy=judgmentSources.mandatoryPolicy;
-        if(!mandatoryPolicy||!Object.isFrozen(mandatoryPolicy)||typeof mandatoryPolicy.content!=='string')throw new JudgmentConstructionError('Original request lacks complete owned mandatory policy');
-        const envelope=Object.freeze({parentJSON,preparedJSON,requestBody:receipt.request.body,mandatoryPolicy,governingSources:judgmentSources.governingSources,instructionAuthority:'not-established'});
-        selection=createQuestionSelection({catalogText,catalogSHA256,budget,resolveBinding,envelope});
-        active();budget.checkpoint();
-        // Publish immutable occurrence records only after complete input and dependency checks.
-        for(const [ordinal,member] of members.entries()){
-          const bindingHandle=Object.freeze({}),identity=Object.freeze({});
-          const projection=Object.freeze({memberOrdinal:ordinal});
-          bindings.set(bindingHandle,{binding:Object.freeze({identity,projection}),prepared:member,execution:undefined,parent:undefined,program:undefined,effectiveSignal:signal});byMember.set(member.id,bindingHandle);
-        }
-        handle=dependencyHandle;prepared=true;
-      } catch(error){preparationFailed=true;preparationFailure=error;throw error;}
-    }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    /** Authenticate original batch and terminal phase before any eligibility failure can be retained. */
-    function captureBatchEvidence(batch){
-      if(!issuedBatches.has(batch))throw new JudgmentConstructionError('Question batch is not owned by this judgment');
-      knownSelection().assertCapturableBatch(batch);
-      return bindingSegment(function readBatchEvidence() { return (knownSelection().captureBatchEvidence(batch)); });
-    }
-    function assertBatchEvidence(evidence){
-      knownSelection().assertCapturedBatchIdentity(evidence);
-      assertDependenciesCurrent();
-    }
-    
-    
-    
-    function captureClaimEvidence(claim){ready();return knownSelection().captureEvidence(claim);}
-    function assertClaimEvidence(input){
-      knownSelection().assertCapturedIdentity(input);
-      assertDependenciesCurrent();
-    }
-    function issue(claims){ready();const batch=selection.issue(claims);issuedBatches.add(batch);return batch;}
-    async function assess(batch){
-      if(operating)throw new JudgmentConstructionError('Judgment operations cannot overlap or reenter');operating=true;
-      using activity={ [Symbol.dispose](){operating=false;} };
-      if(!issuedBatches.has(batch))throw new JudgmentConstructionError('Question batch is not owned by this judgment');
-      if(attemptedBatches.has(batch))throw new JudgmentConstructionError('Question batch cannot be assessed concurrently or sampled again');
-      attemptedBatches.add(batch);assessing=true;
-      using assessment={ [Symbol.dispose](){assessing=false;} };
-      try {
-        const request=bindingSegment(function readBatchRequest() { return (selection.requestFor(batch)); });
-        const answer=await budget.dispatch(function sendAssessmentAttempt(attempt) { return (send(Object.freeze({request,...attempt}))); });
-        return bindingSegment(function settleAssessmentAnswer() { return (selection.settle({batch,...readAssessmentResponse(answer)})); });
-      } catch(error) {
-        try {if(!selection.inspectBatch(batch).settled)selection.discard({batch,error});}
-        catch(retentionError){throw new AggregateError([error,retentionError],'Assessment failure and terminal retention failure');}
-        throw error;
-      }
-    }
-    function finalize(){
-      if(finished||closeFailed)throw new JudgmentConstructionError('Judgment already has a finalization outcome');
-      try {
-        for(const batch of issuedBatches)if(!selection.inspectBatch(batch).settled)selection.discard({batch,error:new JudgmentConstructionError('Judgment closed before this question batch was dispatched')});
-        ready();
-        const batches=bindingSegment(function readIssuedBatchResults() { return (Object.freeze([...issuedBatches].map(function readBatchResult(batch) { return (selection.resultFor(batch)); }))); });
-        const dependencies=facade.finalize(handle);active();
-        const accounting=budget.finish();finished=true;
-        finalRecord=Object.freeze({evidenceOnly:true,status:'evidence-closed',policyVerdict:'not-established',instructionAuthority:'not-established',humanPermission:false,dependencies,accounting,parentJSON,batches});return finalRecord;
-      } catch(error) {
-        closeFailed=true;
-        finalRecord=Object.freeze({retainedOnly:true,status:'close-failed',failure:error,accounting:budget.diagnostics(),batches:Object.freeze([...issuedBatches].map(function inspectIssuedBatch(batch) { return (selection.inspectBatch(batch)); }))});
-        throw error;
-      }
-    }
+    function knownSelection(){return preparation.knownSelection();}
+    const preparation=createJudgmentPreparation({
+      active,budget,declaredNames,observer,response,receipt,
+      readJudgmentSources(){return judgmentSources;},
+      publishJudgmentSources(sources){judgmentSources=sources;},
+      facade,signal,parentJSON,catalogText,catalogSHA256,resolveBinding,bindings,byMember
+    });
+    const {prepare}=preparation;
+
     /** Return original identities only after the complete current dependency check succeeds. */
     function readCurrentSourceBinding(){
       assertDependenciesCurrent();
       return Object.freeze({request:receipt,sources:judgmentSources});
     }
-    /** Selector returns the already-owned member handle, not proof derived from the identifier. */
-    function memberFor(memberId){assertDependenciesCurrent();const member=byMember.get(memberId);if(!member)throw new JudgmentConstructionError('Execution member was not in the prepared native group');return member;}
-    function knownMember(member){const record=bindings.get(member);if(!record)throw new JudgmentConstructionError('Execution member handle is not owned by this judgment');return record;}
-    function knownExecution(token){const record=executions.get(token);if(!record||record.execution.token!==token)throw new JudgmentConstructionError('Execution occurrence is not owned by this judgment');return record;}
-    /** Original parent is an entry dependency, not an ancestor-liveness condition on an already-active child. */
-    function parentCurrent(record){
-      if(record.parent!==undefined&&knownExecution(record.parent).execution.state!=='active')throw new JudgmentConstructionError('Immediate parent execution has returned before child entry');
-      record.effectiveSignal?.throwIfAborted();
-    }
+    const {
+      memberFor, knownMember, knownExecution, parentCurrent,
+      assertExecutionEntry, executionEntryFor, beginExecution, executionFor,
+      finishExecution, inspectExecution
+    }=createJudgmentExecutions({
+      bindings, byMember,
+      readClosure(){return {finished:lifecycle.state.finished,closeFailed:lifecycle.state.closeFailed};},
+      readJudgment(){return judgment;},
+      response, stream, assertDependenciesCurrent
+    });
     const {
       bindPreparedProgram,
       preparedProgramFor,
@@ -240,29 +159,10 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     }
     function originalFileFor(member){
       ready();const record=knownMember(member);parentCurrent(record);
-      return facade.originalFile({handle,absolutePath:record.prepared.input.path});
+      return facade.originalFile({handle:preparation.state.handle,absolutePath:record.prepared.input.path});
     }
-    function assertExecutionEntry(token){const record=knownExecution(token);if(record.execution.state!=='active')throw new JudgmentConstructionError('Execution occurrence has returned before native entry');assertDependenciesCurrent();parentCurrent(record);}
-    /** Read the original execution origin after authenticating this exact native entry. */
-    function executionEntryFor(token){
-      assertExecutionEntry(token);
-      return knownExecution(token).execution.origin;
-    }
-    /** Reserve once only after evidence closes; scope identity is not an execution permission. */
-    function beginExecution(member){
-      const record=knownMember(member);
-      if(!finished||closeFailed)throw new JudgmentConstructionError('Execution occurrence requires successfully closed evidence');
-      if(record.execution)throw new JudgmentConstructionError('Prepared member already reserved its execution occurrence');
-      assertDependenciesCurrent();parentCurrent(record);
-      const token=Object.freeze({}),origin=Object.freeze({judgment,response,stream,signal:record.effectiveSignal,member,prepared:record.prepared,permission:'not-established'});
-      record.execution={token,state:'active',origin};executions.set(token,record);return token;
-    }
-    function executionFor(token){const record=knownExecution(token);if(record.execution.state!=='active')throw new JudgmentConstructionError('Parent execution occurrence has returned');assertDependenciesCurrent();record.execution.origin.signal.throwIfAborted();return record.execution.origin;}
-    /** Terminal marking never invokes the source reader and is safe after cancellation or stale dependencies. */
-    function finishExecution(token){const record=knownExecution(token);record.execution.state='returned';}
-    function inspectExecution(token){const record=knownExecution(token);return Object.freeze({retainedOnly:true,state:record.execution.state});}
     function memberExecutionStates(){return Object.freeze([...byMember.entries()].map(function readExecutionState([id,handle]) { return (Object.freeze({id,state:bindings.get(handle).execution?.state??'unentered'})); }));}
-    function inspect(){return Object.freeze({prepared,preparationFailed,preparationFailure,finished,closeFailed,accounting:budget.diagnostics(),finalRecord,memberExecutions:memberExecutionStates(),preparedPrograms:Object.freeze([...byMember.values()].flatMap(function readPreparedProgramView(member) {const inspection=bindings.get(member).preparedProgram;return inspection?[inspection.view]:[];})),rootPrograms:Object.freeze([...byMember.values()].flatMap(function readRootProgramView(member) {const record=bindings.get(member);return record.program?[inspectProgram(record.program.handle)]:[];})),childGroups:Object.freeze(childGroups.map(function inspectChildGroup(group) { return (inspectReachedGroup(group.handle)); }))});}
+    function inspect(){return Object.freeze({prepared:preparation.state.prepared,preparationFailed:preparation.state.preparationFailed,preparationFailure:preparation.state.preparationFailure,finished:lifecycle.state.finished,closeFailed:lifecycle.state.closeFailed,accounting:budget.diagnostics(),finalRecord:lifecycle.state.finalRecord,memberExecutions:memberExecutionStates(),preparedPrograms:Object.freeze([...byMember.values()].flatMap(function readPreparedProgramView(member) {const inspection=bindings.get(member).preparedProgram;return inspection?[inspection.view]:[];})),rootPrograms:Object.freeze([...byMember.values()].flatMap(function readRootProgramView(member) {const record=bindings.get(member);return record.program?[inspectProgram(record.program.handle)]:[];})),childGroups:Object.freeze(childGroups.map(function inspectChildGroup(group) { return (inspectReachedGroup(group.handle)); }))});}
     /** Retain the original synchronous operation guard for one-input public methods. */
     function guardWithInput(run) {
       return function invokeJudgmentOperation(input) {

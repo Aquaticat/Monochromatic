@@ -52,6 +52,15 @@ declaration and batch limits,
 the UTF-8 request bound,
 reentry recovery,
 and current versus retained diagnostic reads.
+`test:native:judgment-lifecycle` combines the built selection and transport budget
+to verify original batch ownership,
+once-only assessment,
+shared operation exclusion,
+canonical evidence,
+and permanent closure outcomes.
+Assessment and retention failures remain ordered peers in an aggregate without a new `cause` property.
+Successful closure retains original dependency and batch identities
+while explicitly withholding policy authority and human permission.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
@@ -305,9 +314,11 @@ The approved combined and session receipt capacity is 128;
 resource-local capture remains limited to 64 receipts and all byte bounds remain unchanged.
 The isolated consumer with all 22 configured extensions passes through three child calls and cleanup.
 Its assessment uses authored replies and makes no provider requests.
-Complete lint verification,
-provider-backed governed execution,
-and genuine human approval remain outstanding.
+The installed Hyper primary,
+live Luna assessment,
+and genuine Allow for the original disposable read are verified in the
+[current migration handover](../../../../doc/handover/pi-auto-mode-current-frontier.md).
+Maintained native lint completion remains outstanding.
 Empirical semantic qualification is not established;
 the adopted operating policy does not require another paid trial.
 

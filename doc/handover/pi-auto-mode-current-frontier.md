@@ -1594,13 +1594,248 @@ The native README records the scoped nullish-return alias for the original `prep
 no lint configuration was loosened.
 Private uninitialized record slots now begin absent;
 public retained inspection still includes its original undefined-valued fields.
-Focused lint completion,
-rebuilt native consumers,
-independent owner tests,
-original-baseline comparison,
-and guard controls remain required before qualifying program ownership.
-Then continue `child-constructor.mjs` (471 warnings in the instruction-port report),
+The owned rebuild,
+native-return consumers,
+single-call consumers,
+domain contrasts,
+program queue,
+and package type check pass in
+`${HOME}/temp/agent/pi-program-owner-consumers-first-20261015.log`.
+All 17 implementation and bridge files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-program-owner-format-third-20261015.log`.
+The independent program owner,
+native group,
+result,
+and publication-boundary suites pass in
+`${HOME}/temp/agent/pi-program-owner-direct-third-20261015.log`;
+their package type check passes in
+`${HOME}/temp/agent/pi-program-owner-test-types-third-20261015.log`.
+Those suites also pass against the saved original in
+`${HOME}/temp/agent/pi-program-owner-baseline-20261015.log`.
+The original native converter turns an empty content array into supported empty text;
+the first result fixture incorrectly expected rejection.
+The corrected rejection supplies non-string structured output from a tool declaring an output schema,
+and a separate positive test confirms empty text can populate successor arguments.
+After adding opening preflight cases and formatting,
+all seven fixture and consumer files have zero lint diagnostics in
+`${HOME}/temp/agent/pi-program-owner-tests-format-fourth-20261015.log`.
+The final consumer and type checks pass in
+`${HOME}/temp/agent/pi-program-owner-direct-final-20261015.log`
+and `${HOME}/temp/agent/pi-program-owner-types-final-20261015.log`.
+The final suites also pass against the saved original in
+`${HOME}/temp/agent/pi-program-owner-baseline-final-20261015.log`.
+Eight original-versus-typed traces match across 250 observed calls,
+including values,
+errors,
+identities,
+frozen keys,
+and callback events.
+The dependency-retirement positive control changes the trace.
+All 28 process-local guard omissions fail their intended assertions;
+the 17 built artifacts retain their original SHA-256 hashes.
+Receipts are `typed-program-comparison.json` and `typed-program-omissions.json`
+in `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete maintained lint recount covers 608 files and 486 rules:
+zero errors and 11716 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-program-lint-20261015.log`.
+All 24 program implementation,
+bridge,
+fixture,
+and consumer files have zero diagnostics in that report.
+Program ownership is qualified for the tested original consumer boundaries.
+This does not establish unreachable trusted-internal misuse branches.
+Continue `child-constructor.mjs` (471 warnings in the instruction-port report),
 preserving existing behavior and consumer boundaries.
+Its original member and execution custody now delegates to typed execution ownership in
+`fc923515e3` and `ccee1949bf`.
+The saved original is
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/child-constructor-before-execution-types.mjs`.
+The typed modules preserve shared member records,
+once-only execution reservation,
+immediate-parent entry checks,
+and cancellation-independent terminal inspection.
+Execution origin types now describe the complete original identity record.
+The five implementation files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-execution-format-third-20261015.log`.
+Independent built consumers now cover original identity and check order,
+foreign handles,
+successful closure,
+dependency and cancellation failures,
+active children after parent return,
+and retained terminal state.
+Their first type check exposed fixture callable narrowing,
+the harness's required asynchronous callbacks,
+and stale assertion narrowing across a mutating call;
+the fixture corrections are committed.
+The rebuilt domain,
+single-call,
+program-queue,
+and program-owner consumers pass in
+`${HOME}/temp/agent/pi-execution-consumers-second-20261015.log`.
+The direct owner and lifetime suites pass in
+`${HOME}/temp/agent/pi-execution-direct-first-20261015.log`;
+the final type check passes in
+`${HOME}/temp/agent/pi-execution-types-final-20261015.log`.
+All three independent consumer files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-execution-tests-format-second-20261015.log`.
+Six complete domain scenarios produce identical public outcomes and native execution counts
+with the saved original constructor and the typed extraction.
+Permission versus prohibition is the positive control;
+this comparison does not establish per-call trace equivalence.
+The original constructor's SHA-256 is
+`a848a34bf40013014aeca7eb9eed41f6379a6fc5449847efad47e0137e1d414b`.
+All 14 process-local execution guard omissions fail their assertions,
+and all six built artifacts retain their SHA-256 hashes.
+The receipts are `typed-execution-constructor-comparison.json`
+and `typed-execution-omissions.json`
+in `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The full maintained lint recount covers 615 files and 486 rules:
+zero errors and 11625 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-execution-lint-20261015.log`.
+The constructor's remaining JavaScript paths are not yet qualified for lint completion.
+Then continue the remaining constructor preparation,
+assessment,
+finalization,
+and inspection paths.
+`fd6b78e388` and `19d2e8beda` extract original response membership and prepared-member JSON validation
+into typed snapshot modules.
+The response still validates native arguments before rereading and serializing original content;
+prepared validation still authenticates every identity before serializing any prepared input.
+The original one-MiB bounds,
+64-member response limit,
+native serializer behavior,
+and original failure messages remain the intended contract.
+Independent consumers in `ebddcfd5c0` cover complete frozen identities,
+serializer callback order,
+invalid membership,
+exact byte boundaries,
+original primitive prepared inputs,
+and serializer failures.
+The owned build,
+type check,
+four built snapshot suites,
+domain consumers,
+and execution suites pass in
+`${HOME}/temp/agent/pi-membership-consumers-first-20261015.log`.
+All four snapshot suites also pass against the exact response and prepared validation blocks
+taken from the saved original constructor in
+`${HOME}/temp/agent/pi-membership-original-blocks-20261015.log`.
+Those process-local comparison wrappers expose the original blocks without rewriting their statements.
+They do not substitute the rest of the constructor.
+The complete original-versus-current constructor comparison separately matches all six domain scenarios,
+including native execution counts and the permission-versus-prohibition positive control.
+All 17 process-local snapshot guard omissions fail their assertions;
+all seven built artifacts retain their original hashes.
+The receipts are `typed-membership-constructor-comparison.json`
+and `typed-membership-omissions.json`
+in `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The three implementation modules and five consumer files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-judgment-membership-format-third-20261015.log`
+and `${HOME}/temp/agent/pi-membership-tests-format-third-20261015.log`.
+The final mutable-group contrast and type check pass in
+`${HOME}/temp/agent/pi-membership-final-20261015.log`.
+The full maintained lint recount covers 623 files and 486 rules:
+zero errors and 11561 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-membership-lint-20261015.log`.
+All eight snapshot implementation and consumer files have zero diagnostics in that full report.
+`child-constructor.mjs` now has 322 warnings.
+Original snapshot extraction is qualified at the tested consumer boundaries.
+Continue the constructor's assessment,
+evidence closure,
+preparation publication,
+and retained inspection paths.
+`512fcf8523` and `3919aeb0ec` move original assessment,
+evidence capture,
+and finalization into typed lifecycle owners.
+The shared operation exclusion,
+issued and attempted batch memberships,
+original transport budget,
+failure aggregation,
+and retained closure record remain coupled to one judgment.
+`0fdd07f189` declares exact disposal and closure-result contracts.
+The saved pre-extraction constructor is
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/child-constructor-before-lifecycle-types.mjs`.
+All five lifecycle implementation files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-judgment-lifecycle-format-third-20261015.log`.
+Oxlint's `eslint(preserve-caught-error)` autofix initially added a `cause` property to an original aggregate failure.
+`89b85a975e` restores the original paired-error shape through `createAssessmentRetentionError`,
+keeping both failures in their original order without a new cause property.
+The [source-audited troubleshooting record](../troubleshooting/oxlint-aggregate-error-cause.md)
+contains the installed-version probe,
+the observed own-key change,
+and the verified factory alternative.
+That record was rendered and inspected with Pandoc.
+Owned rebuild,
+type check,
+domain,
+single-call,
+execution,
+and program-owner consumers pass in
+`${HOME}/temp/agent/pi-judgment-lifecycle-consumers-first-20261015.log`.
+`2fdb1ed4d5`,
+`84fc88caa3`,
+and `5e6d67724b` add independent lifecycle fixtures and direct evidence,
+assessment,
+and finalization suites using the actual built selection and budget.
+The first direct run caught an incorrect test expectation of 10000 milliseconds;
+the original budget's `durationMs` is 5000 milliseconds,
+and the built attempt supplied exactly 5000.
+The assertion now matches that original fixed budget.
+Type checking passes with the new fixtures.
+The complete saved constructor and the current artifact match all six domain scenarios,
+including native execution counts and the permission-versus-prohibition positive control.
+`typed-lifecycle-constructor-comparison.json` retains the saved original's SHA-256 and both result sets.
+The direct evidence and assessment suites pass against current typed modules and exact saved original function bodies.
+The original-body wrapper supplies instrumented selection lookup,
+dependency-handle access,
+and exposed state;
+it leaves extracted function statements unchanged.
+Both variants caught the same finalization-test recording mistake:
+its ordering assertion included the preceding issuance events.
+Clear the event record after issuance before asserting closure order.
+All five direct consumer files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-lifecycle-tests-lint-final-20261015.log`.
+All three direct suites now pass against both the current artifact and the saved original function bodies,
+as recorded in `${HOME}/temp/agent/pi-lifecycle-tests-third-20261015.log`
+and `${HOME}/temp/agent/pi-lifecycle-original-blocks-final-20261015.log`.
+The final type check also passes.
+All 29 process-local guard omissions trigger test failures;
+all six built artifacts retain their original hashes in `typed-lifecycle-omissions.json`.
+The first omission verifier incorrectly required the string `AssertionError` for foreign batch acceptance;
+the rejection helper correctly failed with `Expected original budget operation to reject` instead.
+The corrected verifier accepts that exact failure for that control and completes the full set.
+The full maintained recount covers 633 files and 486 rules:
+zero errors and 11466 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-lifecycle-lint-20261015.log`.
+All ten lifecycle implementation and consumer files have zero diagnostics in the full report.
+`child-constructor.mjs` retains 227 warnings.
+Original lifecycle extraction is qualified at these tested boundaries.
+Continue preparation publication,
+retained inspection,
+and the remaining source/dependency owners.
+`9ace41903a` and `33dda5e1d9` introduce typed preparation,
+shared retained preparation state,
+and final root-member publication.
+The original complete input checks,
+source seal,
+dependency finalization,
+selection creation,
+late publication,
+and failure retention remain in their original order.
+The saved constructor is `child-constructor-before-preparation-types.mjs`
+in `${HOME}/temp/agent/pi-tool-call-scope-20261014/`,
+with SHA-256 `b093cc1bd1602b9766fd5065d75e3cd50676fc7e0ea32f25773cdca180f9c556`.
+Private root records now omit unused `execution`,
+`parent`,
+and `program` fields until publication;
+their reads remain `undefined`,
+matching the existing typed member-owner representation.
+This is an intentional private own-key change,
+not a claim that every internal object is byte-for-byte identical.
+Focused lint,
+rebuild,
+consumer controls,
+and original-constructor comparison remain pending for preparation.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

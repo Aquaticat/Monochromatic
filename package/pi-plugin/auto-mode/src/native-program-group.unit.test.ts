@@ -19,7 +19,9 @@ await describe({
         const slots = group.bind();
         assert.equal(Object.isFrozen(slots), true);
         assert.equal(fixture.owner.inspectReachedGroup(group.reached.handle).state, 'bound');
-        assert.throws(function repeatedBinding() { group.bind(); }, { message: 'Reached group native calls cannot be rebound' });
+        assert.throws(function repeatedBinding() { 
+          group.bind(); 
+        }, { message: 'Reached group native calls cannot be rebound' });
         const members = group.prepare();
         assert.equal(Object.isFrozen(members), true);
         const [member] = members;
@@ -37,7 +39,9 @@ await describe({
         assert.deepEqual(inspection.members, [{ id: group.members[0]?.id, state: 'unentered' }]);
         assert.equal(inspection.nativeReturns[0]?.state, 'uninvoked');
         assert.equal(inspection.state, 'prepared');
-        assert.throws(function repeatedPreparation() { group.prepare(); }, { message: 'Reached group cannot be prepared again' });
+        assert.throws(function repeatedPreparation() { 
+          group.prepare(); 
+        }, { message: 'Reached group cannot be prepared again' });
       },
     }),
     ...['calls-array', 'calls-length', 'tools-array', 'tools-length', 'runner', 'call-null', 'call-type', 'call-id', 'call-name', 'tool-name', 'arguments'].map(function nativeAdmission(kind) {
@@ -48,7 +52,9 @@ await describe({
           const group = createProgramGroupFixture({ fixture, program: fixture.open() });
           const [call] = group.calls;
           assert.ok(call);
-          const input: Record<string, unknown> = { group: group.reached.handle, calls: group.calls, tools: group.tools, runNative: function originalNative() { throw new Error('Unreached native runner'); } };
+          const input: Record<string, unknown> = { group: group.reached.handle, calls: group.calls, tools: group.tools, runNative: function originalNative() { 
+            throw new Error('Unreached native runner'); 
+          } };
           if (kind === 'calls-array') input.calls = {};
           if (kind === 'calls-length') input.calls = [];
           if (kind === 'tools-array') input.tools = {};
@@ -60,12 +66,16 @@ await describe({
           if (kind === 'call-name') input.calls = [{ ...call, name: 'write' }];
           if (kind === 'tool-name') input.tools = [{ name: 'write' }];
           if (kind === 'arguments') input.calls = [{ ...call, arguments: { path: 'changed.txt' } }];
-          assert.throws(function rejectOriginalCall() { fixture.owner.bindProgramCalls(input); }, { name: 'JudgmentConstructionError' });
+          assert.throws(function rejectOriginalCall() { 
+            fixture.owner.bindProgramCalls(input); 
+          }, { name: 'JudgmentConstructionError' });
           const inspection = fixture.owner.inspectReachedGroup(group.reached.handle);
           assert.equal(inspection.state, 'failed');
           assert.deepEqual(inspection.nativeReturns, []);
           assert.equal(fixture.childGroups.length, 0);
-          assert.throws(function retryFailedBinding() { group.bind(); }, { message: 'Reached group failed permanently', cause: inspection.failure });
+          assert.throws(function retryFailedBinding() { 
+            group.bind(); 
+          }, { message: 'Reached group failed permanently', cause: inspection.failure });
         },
       });
     }),
@@ -92,13 +102,17 @@ await describe({
           if (kind === 'input-changed') input.members = Object.freeze([Object.freeze({ ...member, input: Object.freeze({ path: 'changed.txt' }) })]);
           if (kind === 'input-nonfinite') input.members = Object.freeze([Object.freeze({ ...member, input: Object.freeze({ value: Number.NaN }) })]);
           if (kind === 'signal-type') input.nativeSignals = [{}];
-          assert.throws(function rejectOriginalMember() { fixture.owner.prepareReachedMembers(input); }, { name: 'JudgmentConstructionError' });
+          assert.throws(function rejectOriginalMember() { 
+            fixture.owner.prepareReachedMembers(input); 
+          }, { name: 'JudgmentConstructionError' });
           const inspection = fixture.owner.inspectReachedGroup(group.reached.handle);
           assert.equal(inspection.state, 'failed');
           assert.deepEqual(inspection.members, []);
           assert.equal(inspection.nativeReturns[0]?.state, 'uninvoked');
           assert.equal(fixture.childGroups.length, 0);
-          assert.throws(function retryFailedPreparation() { group.prepare(); }, { message: 'Reached group failed permanently', cause: inspection.failure });
+          assert.throws(function retryFailedPreparation() { 
+            group.prepare(); 
+          }, { message: 'Reached group failed permanently', cause: inspection.failure });
         },
       });
     }),
@@ -115,7 +129,11 @@ await describe({
           assert.ok(controller);
           const failure = new Error('original cancellation reason');
           controller.abort(failure);
-          assert.throws(function prepareCancelledGroup() { group.prepare(); }, function exactFailure(error) { return error === failure; });
+          assert.throws(function prepareCancelledGroup() { 
+            group.prepare(); 
+          }, function exactFailure(error) { 
+            return error === failure; 
+          });
           assert.equal(fixture.owner.inspectReachedGroup(group.reached.handle).state, kind === 'parent' ? 'bound' : 'failed');
           assert.equal(fixture.childGroups.length, 0);
         },
@@ -130,7 +148,9 @@ await describe({
         const [member] = group.members;
         assert.ok(member);
         const members = Object.freeze([Object.freeze({ ...member, retainedMetadata: 'x'.repeat(1_048_576) })]);
-        assert.throws(function oversizedFinalGroup() { fixture.owner.prepareReachedMembers({ group: group.reached.handle, members, nativeSignals: group.signals }); }, { message: 'Final reached group exceeds one MiB' });
+        assert.throws(function oversizedFinalGroup() { 
+          fixture.owner.prepareReachedMembers({ group: group.reached.handle, members, nativeSignals: group.signals }); 
+        }, { message: 'Final reached group exceeds one MiB' });
         assert.equal(fixture.owner.inspectReachedGroup(group.reached.handle).state, 'failed');
         assert.equal(fixture.childGroups.length, 0);
       },
