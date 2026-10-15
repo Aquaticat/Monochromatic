@@ -37,7 +37,9 @@ export type ProgramNativeCall = NativeReturnCall & Readonly<{
   arguments: unknown;
 }>;
 
-/** Original tool-name lookup can leave an absent definition for judgment admission to reject. */
+/**
+ Original tool-name lookup can leave an absent definition for judgment admission to reject.
+ */
 export type ProgramNativeToolLookup = ReturnType<(readonly NativeReturnTool[])['find']>;
 
 /**
