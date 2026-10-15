@@ -397,7 +397,46 @@ It still exits with failure because warnings remain;
 Zero error-severity diagnostics therefore do not mean the lint task passes.
 Commit `fe77f1d9d6` retains base-composition and governing-source lifetime state explicitly.
 The adjacent policy reviewer now scopes review activity and retains compilation results in its review record.
-These subsequent source changes still need a rebuilt consumer check.
+The source-lifetime and native host-hook changes subsequently built successfully.
+The syntax task passed all 241 maintained native modules,
+and package type checking passed.
+The full lint attempt failed before producing diagnostics:
+`tsgolint` emitted `failed to create new OS thread (have 2 already; errno=11)`.
+The post-stress domain and manual-uncertainty suites passed;
+ordinary native-context Allow then exhausted the original judgment deadline.
+That exact case passed three unchanged isolated repeats,
+with total process durations from 7205.50 to 7954.08 milliseconds.
+These durations include setup and shutdown;
+they are not judgment-only timings or evidence of a permanent timing remedy.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/native-allow-repeat.json` retains each result and CPU counters.
+The subsequent approval-context,
+single-call,
+approved-dependency,
+event-receipt,
+host-lifecycle,
+CLI-process,
+queue,
+resource-reload,
+resource-copy,
+and context-receipt suites all passed on that unchanged artifact.
+The complete log is `${HOME}/temp/agent/pi-native-resource-runtime-remaining-20261014.log`.
+Later source changes name remaining profile callbacks,
+separate program inspection,
+replace profile regex scans,
+and retain the original reload and assessment await boundaries.
+Those later edits remain pending build and consumer verification.
+Their owned build subsequently passed;
+the expanded resource/runtime regression sequence is running again on that artifact.
+The full lint retry with `GOMAXPROCS=2` completed across 438 files,
+reporting 203 errors and 12801 warnings.
+All error-severity findings are in native source.
+The later request-hook callback correction and explicit input-key comparators still need their focused lint check.
+Direct source-consumer comparisons passed 456 identifier cases and 152 whitespace cases
+against the replaced regex behavior.
+The current full report is `${HOME}/temp/agent/pi-maintained-resource-lint-retry-20261014.log`;
+the current running regression log is `${HOME}/temp/agent/pi-native-profile-cleanup-regressions-20261014.log`.
+The user requested another status update during cleanup;
+the answer distinguished the completed live installation from unfinished lint and intermittent deadline verification.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

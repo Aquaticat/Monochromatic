@@ -19,7 +19,7 @@ export function registerOwnedExecutionTools({
  const previous=agent.prepareRequest;
  const wrappers=createExecutionWrappers({wrapToolDefinition});
  const installationState={active:true};
- const requestHooks={async prepareRequest(
+ const requestHooks={prepareRequest:async function prepareRequest(
    request,
    signal
  ){
