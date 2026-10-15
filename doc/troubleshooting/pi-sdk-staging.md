@@ -7449,6 +7449,42 @@ the same bounded full lint invocation completed across 455 files with 175 errors
 The report is `${HOME}/temp/agent/pi-maintained-source-boundaries-lint-20261014.log`.
 This remains a failing quality gate;
 the higher warning count exposes additional untyped module boundaries rather than qualifying those extractions.
+
+On 2026-10-15,
+overlapping event-fixture verification,
+lint,
+type checking,
+and an explicit-path commit produced separate failures.
+The Git commit reported `cannot fork()` for its transaction-local `pre-commit` hook,
+followed by `Resource temporarily unavailable`.
+Oxlint's TypeScript worker reported
+`runtime: failed to create new OS thread (have 33 already; errno=11)` and `fatal error: newosproc`.
+The native build's `nano-spawn` wrapper reported its preparation child terminated with `SIGABRT`;
+the child supplied no captured stdout or stderr.
+That missing child diagnostic does not establish the same cause as the thread-allocation failure.
+The logs are `pi-native-event-receipt-split-lint-20261015.log` and
+`pi-native-event-receipt-split-consumer-20261015.log` under `${HOME}/temp/agent/`.
+The type check passed in `pi-native-conversion-fixture-types-20261015.log`.
+The failing lint run produced no structured diagnostic report and cannot supply a source lint result.
+
+After the jobs ended,
+the parent slice reported 12 tasks,
+`pids.max=256`,
+and cumulative `pids.events: max 362`.
+There is no immediate pre-failure counter sample tying that counter to a particular allocation.
+The original event-fixture edits remained staged and the explicit-path commit retry succeeded.
+Recovery follows the existing sequential verification workaround with `GOMAXPROCS=2`.
+This serializes the jobs and bounds Go execution parallelism;
+it does not raise the cgroup limits or claim a bound on all operating-system threads.
+The original failed logs remain intact;
+the rebuilt event and converter retry is recorded separately in
+`${HOME}/temp/agent/pi-native-event-receipt-split-retry-consumer-20261015.log`.
+The standalone retry passes the rebuilt event suite and generated converter tests.
+The package's existing lint resource settings now also retain `GOMAXPROCS=2`,
+so subsequent lint invocations do not depend on a manually supplied shell prefix.
+No new upstream defect is established,
+so the existing upstream filing decision remains unchanged.
+
 The follow-up callback shape check first reported
 `no-restricted-syntax(no-variable-function-expression)` for direct variable-assigned callbacks.
 The existing rule source permits callback function expressions where external APIs dictate positional arguments.

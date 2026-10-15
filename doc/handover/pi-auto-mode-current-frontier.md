@@ -884,7 +884,16 @@ and domain consumers pass in
 `${HOME}/temp/agent/pi-native-conversion-adapter-consumer-20261015.log`.
 The first focused converter report has zero errors and 25 warnings;
 the fixture expectation now retains original text directly instead of parsing it back to an unchecked value.
-The next structural work separates the event-receipt and domain fixture assertions.
+Commit `18bc909876` separates event-receipt assertions under the original shared native fixture.
+The first concurrent lint,
+build,
+and commit attempt encountered resource-allocation failures before assertions;
+the separate diagnostics and recovery are recorded in `doc/troubleshooting/pi-sdk-staging.md`.
+The sequential rebuild passes the original event suite and revised generated converter test in
+`${HOME}/temp/agent/pi-native-event-receipt-split-retry-consumer-20261015.log`.
+The package type check also passes after the fixture expectation change.
+The event lint retry remains pending.
+The next structural work separates the domain fixture and its assertions.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
