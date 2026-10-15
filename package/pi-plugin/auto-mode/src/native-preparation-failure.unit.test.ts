@@ -40,7 +40,7 @@ await describe({ name: '', children: [
       assert.equal(f.owner.state.prepared, false);
       assert.equal(f.owner.state.handle, undefined);
       assert.equal(f.byMember.size, 0);
-      if (point === 'active:3' || point === 'checkpoint:4') assert.equal(f.owner.knownSelection(), f.owner.state.selection);
+      if ((point === 'active:3') || (point === 'checkpoint:4')) assert.equal(f.owner.knownSelection(), f.owner.state.selection);
       else assert.throws(function noOriginalSelection() {
         f.owner.knownSelection();
       }, { name: 'JudgmentConstructionError', message: 'Judgment question selection was not prepared' });

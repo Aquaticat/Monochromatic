@@ -1,8 +1,12 @@
-/** Independent built preparation contracts preserve native member and selection identities. @module */
+/**
+ Independent built preparation contracts preserve native member and selection identities. @module
+ */
 import type { FixtureSelection } from './native-selection-fixture.ts';
 import type { ExecutionFixtureMember } from './native-execution-fixture.ts';
 
-/** Original root records share canonical question bindings with native execution. */
+/**
+ Original root records share canonical question bindings with native execution.
+ */
 export type PreparationFixtureRecord = {
   readonly prepared: ExecutionFixtureMember;
   readonly effectiveSignal: AbortSignal;
@@ -15,7 +19,9 @@ export type PreparationFixtureRecord = {
   program?: unknown;
 };
 
-/** Native preparation retains original failure and publication state for later owners. */
+/**
+ Native preparation retains original failure and publication state for later owners.
+ */
 export type FixturePreparation = Readonly<{
   state: {
     prepared: boolean;
@@ -29,7 +35,9 @@ export type FixturePreparation = Readonly<{
   knownSelection: () => FixtureSelection;
 }>;
 
-/** Consumer capabilities are supplied independently of source implementation types. */
+/**
+ Consumer capabilities are supplied independently of source implementation types.
+ */
 type PreparationModule = Readonly<{
   createJudgmentPreparation: (input: Readonly<Record<string, unknown>>) => FixturePreparation;
 }>;
@@ -44,15 +52,20 @@ type PreparationModule = Readonly<{
  @throws Error when the original preparation factory is unavailable
  */
 function assertPreparationModule(value: unknown): asserts value is PreparationModule {
-  if ((value === null) || ((typeof value) !== 'object') || (!('createJudgmentPreparation' in value))
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('createJudgmentPreparation' in value))
     || ((typeof value.createJudgmentPreparation) !== 'function')) throw new Error('Built judgment preparation export is unavailable');
 }
 
-/** Native import uses the same artifact as the original judgment constructor. */
+/**
+ Native import uses the same artifact as the original judgment constructor.
+ */
 const loaded: unknown = await import(new URL(
   '../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/judgment-preparation.ts',
   import.meta.url,
 ).href);
 assertPreparationModule(loaded);
-/** Original factory remains fixed while each test supplies its own lifetime. */
+/**
+ Original factory remains fixed while each test supplies its own lifetime.
+ */
 export const preparationModule: PreparationModule = loaded;

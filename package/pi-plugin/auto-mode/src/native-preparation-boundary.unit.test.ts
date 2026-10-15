@@ -44,7 +44,9 @@ await describe({ name: '', children: [
     const f = createPreparationFixture();
     /** Exact accessor failure must remain available to retained inspection. */
     const failure = new Error('original policy getter failed');
-    f.state.sealedSources = Object.freeze({ mandatoryPolicy: Object.freeze({ get content() { throw failure; } }) });
+    f.state.sealedSources = Object.freeze({ mandatoryPolicy: Object.freeze({ get content() { 
+      throw failure; 
+    } }) });
     assert.throws(function failedPolicyRead() {
       f.owner.prepare(f.members);
     }, failure);

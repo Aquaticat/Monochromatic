@@ -68,8 +68,8 @@ await describe({ name: '', children: [
         instructionAuthority: 'not-established',
       });
       assert.ok(Object.isFrozen(request.envelope));
-      assert.ok(request.envelope !== null && typeof request.envelope === 'object');
-      assert.ok('requestBody' in request.envelope && 'mandatoryPolicy' in request.envelope && 'governingSources' in request.envelope);
+      assert.ok((request.envelope !== null) && ((typeof request.envelope) === 'object'));
+      assert.ok(('requestBody' in request.envelope) && ('mandatoryPolicy' in request.envelope) && ('governingSources' in request.envelope));
       assert.equal(request.envelope.requestBody, f.receipt.request.body);
       assert.equal(request.envelope.mandatoryPolicy, f.state.sealedSources.mandatoryPolicy);
       assert.equal(request.envelope.governingSources, f.state.sealedSources.governingSources);
