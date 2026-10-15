@@ -25,7 +25,7 @@ export function bindRunMessageSources({governing}){
    value.occurrence,
    value
  ]); }));
- return sources.map(function bindOriginalRunMessage(source) {
+ const bindings=sources.map(function bindOriginalRunMessage(source) {
   const publication=publications.get(source.runOccurrence);
     const expanded=source.kind==='native-run-expanded-prompt-input';
     const handlerOptions=source.kind==='native-run-handler-options-input';
@@ -101,11 +101,14 @@ if(value!==view)throw new GoverningPolicyBindingError('Message input view is not
 governing.assertCurrent(governing.view);
 assertBindingIdentity(value);
 }
-  assertCurrent(view);return Object.freeze({
+  assertBindingIdentity(view);return Object.freeze({
     view,
     authority:undefined,
     assertBindingIdentity,
 assertCurrent
   });
  });
+ // Local publication checks share their immutable parent; revalidate the complete collection at release.
+ governing.assertCurrent(governing.view);
+ return bindings;
 }

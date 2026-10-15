@@ -3,6 +3,7 @@ import {createDecisionGate,EstablishedPolicyDecisionError} from '../action-polic
 import {captureApprovalHostSource} from '../action-policy/approval.mjs';
 import {createManualGroup} from './manual-group.mjs';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
+import {inspect as inspectValue} from 'node:util';
 
 export class NativeBatchBindingError extends Error {}
 
@@ -107,6 +108,7 @@ export function createNativeBatchHandler({
   };
   function retainAutomaticFailure(error){
    tagged({tag:retainAutomaticFailure.name,l}).debug('automatic assessment failed; retaining cause for manual approval');
+   tagged({tag:retainAutomaticFailure.name,l}).debug(inspectValue(error,{depth:8,customInspect:false,getters:false}));
    reviewState.automaticFailure??={error};
   }
   try{reviewState.judgment=producerOwner.beginJudgment({response:assistantMessage,stream,signal});}
