@@ -855,7 +855,16 @@ The same rebuilt policy and source consumers pass in
 `${HOME}/temp/agent/pi-native-system-slot-split-consumer-20261015.log`.
 The fixed ASCII rule-code check agrees with the original pattern in 196623 comparisons,
 including every UTF-16 code unit in each tag position and line-ending controls.
-The next structural change separates message descriptor signatures from publication ownership.
+Commit `b6dfaf8981` separates message descriptor signatures from publication ownership.
+The original alias map remains private to the publication entry module;
+signature and ownership helpers receive the same original data and map.
+Focused lint has zero errors and 606 warnings across the helpers and their publication callers.
+Rebuilt serializer-receipt,
+event-receipt,
+approval-context,
+and source-work consumers pass in
+`${HOME}/temp/agent/pi-native-handler-publication-split-consumer-20261015.log`.
+The next structural change separates definition validation and answer settlement from question identity ownership.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
