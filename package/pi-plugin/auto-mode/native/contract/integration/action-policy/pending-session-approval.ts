@@ -28,6 +28,7 @@ export type PendingSessionApproval = {
  Original confirmation capabilities must remain bound to the same native review.
  */
 export class PendingSessionApprovalError extends Error {
+  /** Identify the native confirmation boundary without exposing session contents. */
   override name = 'PendingSessionApprovalError';
 }
 
@@ -52,32 +53,69 @@ const l = tagged({ tag: 'auto-mode-pending-session-approval' });
  @throws PendingSessionApprovalError when capture occurs after closure or execution, or capabilities change
 
  @throws original native dependency or stale-context failure
+
+ @example
+ ```ts
+ const pending = capturePendingSessionApproval({ judgment, host });
+ pending.assertCurrent();
+ ```
  */
-export function capturePendingSessionApproval({ judgment, host }: {
+export function capturePendingSessionApproval({
+  judgment,
+  host
+}: {
   readonly judgment: PreparedJudgment;
   readonly host?: NativeApprovalHost;
 }): PendingSessionApproval {
-  /** Keep native confirmation fact capture separate from semantic interpretation. */
-  const fl = tagged({ tag: capturePendingSessionApproval.name, l });
+  /**
+   Keep native confirmation fact capture separate from semantic interpretation.
+   */
+  const fl = tagged({
+    tag: capturePendingSessionApproval.name,
+    l
+  });
   fl.debug('capturing pending original session confirmation');
   judgment.assertDependenciesCurrent();
-  /** The current review has neither completed its decision nor entered a tool. */
+  /**
+   The current review has neither completed its decision nor entered a tool.
+   */
   const state = judgment.inspect();
-  if ((state.finalRecord !== undefined) || (state.memberExecutions.length === 0)
-    || state.memberExecutions.some(function entered(member) { return member.state !== 'unentered'; }))
+  if ((state.finalRecord !== undefined)
+    || (state.memberExecutions
+      .length
+      === 0)
+    || state.memberExecutions
+    .some(function entered(member) { return member.state !== 'unentered'; }))
     throw new PendingSessionApprovalError('Fresh session confirmation must be captured before the original prepared group is decided or entered');
-  /** Borrowed native capabilities retain identity through the existing approval binder. */
-  const ui = host?.ctx.ui;
-  /** The original host decides whether a live presentation channel exists. */
-  const hasUI = host?.ctx.hasUI === true;
-  /** Selection identity cannot be replaced during semantic assessment. */
-  const select = ui?.select;
-  /** Verdict recording is part of the original confirmation path. */
-  const appendEntry = host?.pi.appendEntry;
-  /** Stop must continue to abort the same native session. */
-  const abort = host?.ctx.abort;
-  /** An unavailable presentation path cannot satisfy an approval requirement. */
-  const available = hasUI && typeof select === 'function' && typeof appendEntry === 'function' && typeof abort === 'function';
+  /**
+   Borrowed native capabilities retain identity through the existing approval binder.
+   */
+  const ui = host?.ctx
+    .ui;
+  /**
+   The original host decides whether a live presentation channel exists.
+   */
+  const hasUI = host?.ctx
+    .hasUI
+    === true;
+  /**
+   Selection identity cannot be replaced during semantic assessment.
+   */
+  const select: unknown = ui === undefined ? undefined : Reflect.get(ui, 'select');
+  /**
+   Verdict recording is part of the original confirmation path.
+   */
+  const appendEntry: unknown = host === undefined ? undefined : Reflect.get(host.pi, 'appendEntry');
+  /**
+   Stop must continue to abort the same native session.
+   */
+  const abort: unknown = host === undefined ? undefined : Reflect.get(host.ctx, 'abort');
+  /**
+   An unavailable presentation path cannot satisfy an approval requirement.
+   */
+  const available = hasUI && ((typeof select) === 'function')
+    && ((typeof appendEntry) === 'function')
+    && ((typeof abort) === 'function');
 
   /**
    Recheck original capabilities without requesting a response or creating permission.
@@ -87,17 +125,35 @@ export function capturePendingSessionApproval({ judgment, host }: {
    @throws original dependency or stale native context failure
    */
   function assertCurrent(): void {
-    /** Currentness is checked again after assessment and at execution boundaries. */
-    const cl = tagged({ tag: assertCurrent.name, l: fl });
+    /**
+     Currentness is checked again after assessment and at execution boundaries.
+     */
+    const cl = tagged({
+      tag: assertCurrent.name,
+      l: fl
+    });
     cl.debug('checking original pending confirmation capabilities');
     judgment.assertDependenciesCurrent();
-    if ((host?.ctx.ui !== ui) || ((host?.ctx.hasUI === true) !== hasUI)
-      || (ui?.select !== select) || (host?.pi.appendEntry !== appendEntry) || (host?.ctx.abort !== abort))
+    if ((host?.ctx
+      .ui
+      !== ui) || ((host?.ctx
+        .hasUI
+        === true) !== hasUI)
+      || (ui?.select !== select)
+      || (host?.pi
+        .appendEntry
+        !== appendEntry)
+      || (host?.ctx
+        .abort
+        !== abort))
       throw new PendingSessionApprovalError('Original session confirmation capabilities changed during tool review');
   }
   assertCurrent();
   return Object.freeze({
-    authorization: Object.freeze({ satisfaction: 'unsatisfied', channel: available ? 'incumbent-approval' : 'unsupported' }),
+    authorization: Object.freeze({
+      satisfaction: 'unsatisfied',
+      channel: available ? 'incumbent-approval' : 'unsupported'
+    }),
     assertCurrent,
   });
 }
