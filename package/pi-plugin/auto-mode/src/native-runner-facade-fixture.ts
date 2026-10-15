@@ -14,9 +14,9 @@ import type {
 
 /** Require the built facade before exposing its independently declared fixture surface.
  @param value - original built module namespace
- *
+ 
  @returns checked independently declared facade module
- *
+ 
  @throws Error when built facade is unavailable
  */
 function assertFacade(value: unknown): asserts value is FacadeFixtureModule {
@@ -30,9 +30,9 @@ function assertFacade(value: unknown): asserts value is FacadeFixtureModule {
 type GuardModule = Readonly<{ NativeExecutionGuardError: FacadeFixtureInput['NativeExecutionGuardError'] }>;
 /** Require original aggregate error construction without copying diagnostic implementation.
  @param value - original built error namespace
- *
+ 
  @returns checked original guard namespace
- *
+ 
  @throws Error when original guard constructor is unavailable
  */
 function assertGuard(value: unknown): asserts value is GuardModule {
@@ -68,7 +68,7 @@ const guardModule: GuardModule = loadedGuard;
 //region Every test controls original native execution independently from runtime drainage.
 /** Create isolated facade owners and observable original callback boundaries.
  @returns original input, runtime callbacks, and independently controlled native work
- *
+ 
  @example createRunnerFacadeFixture();
  */
 export function createRunnerFacadeFixture(): RunnerFacadeFixture {
@@ -94,7 +94,7 @@ export function createRunnerFacadeFixture(): RunnerFacadeFixture {
   const value = Object.freeze({ original: 'converted' });
   /** Record callback entry before optional original failure or reentry.
    @param point - original callback boundary
-   *
+   
    @throws Error when this callback is selected as failing
    */
   function step(point: string): void { 
@@ -106,12 +106,21 @@ export function createRunnerFacadeFixture(): RunnerFacadeFixture {
    Original slots and member tickets remain independently observable.
    */
   const bound: FacadeFixtureBinding = {
-    slots: [{ original: 'first slot' }, { original: 'second slot' }],
-    tickets: [0, 1].map(function ticket(ordinal) {
-    return { promise: Promise.resolve({ ordinal }), reject(error: unknown): void { 
+    slots: [
+      { original: 'first slot' },
+      { original: 'second slot' }
+    ],
+    tickets: [
+      0,
+      1
+    ].map(function ticket(ordinal) {
+    return {
+      promise: Promise.resolve({ ordinal }),
+      reject(error: unknown): void { 
       observations.push(['reject', ordinal, error]); 
       step(`reject:${ordinal}`); 
-    } };
+    }
+    };
   })
   };
   /**
@@ -128,11 +137,17 @@ export function createRunnerFacadeFixture(): RunnerFacadeFixture {
       step('retire'); 
     },
     valueFor(input: unknown): unknown { 
-      observations.push(['value', input]); 
+      observations.push([
+        'value',
+        input
+      ]); 
       return value; 
     },
     drain(): Promise<void> { 
-      assert.equal(this, runtime); 
+      assert.equal(
+        this,
+        runtime
+      ); 
       step('drain'); 
       return control.drain?.() ?? Promise.resolve(); 
     },
@@ -174,28 +189,54 @@ export function createRunnerFacadeFixture(): RunnerFacadeFixture {
    Each facade capability belongs to this isolated original parent occurrence.
    */
   const input: FacadeFixtureInput = {
-    tools: Object.freeze([{ name: 'first' }, { name: 'first' }, { name: 'last' }]),
+    tools: Object.freeze([
+      { name: 'first' },
+      { name: 'first' },
+      { name: 'last' }
+    ]),
     code: 'original source',
     carrier: { token: Object.freeze({ original: 'parent token' }) },
-    origin: { prepared: { id: 'parent id', name: 'parent tool', input: { code: 'original source' } }, signal: new AbortController().signal, judgment },
+    origin: {
+      prepared: { id: 'parent id', name: 'parent tool', input: { code: 'original source' } },
+      signal: new AbortController().signal,
+      judgment
+    },
     assertParentCurrent(): void { 
-      assert.equal(this, undefined); 
+      assert.equal(
+        this,
+        undefined
+      ); 
       step('parent'); 
     },
     bindGroup(binding: unknown): FacadeFixtureBinding { 
-      assert.equal(this, undefined); 
-      observations.push(['bind', binding]); 
+      assert.equal(
+        this,
+        undefined
+      ); 
+      observations.push([
+        'bind',
+        binding
+      ]); 
       step('bind'); 
       return bound; 
     },
     executeGroup(execution: unknown): Promise<void> { 
-      assert.equal(this, undefined); 
-      observations.push(['execute', execution]); 
+      assert.equal(
+        this,
+        undefined
+      ); 
+      observations.push([
+        'execute',
+        execution
+      ]); 
       step('execute'); 
       return control.execution?.() ?? Promise.resolve(); 
     },
     createReachedProgramRun(originalInput: FacadeFixtureRuntimeInput): FacadeFixtureRun { 
-      assert.equal(this, undefined); 
+      assert.equal(
+        this,
+        undefined
+      ); 
       state.runtimeInput = originalInput; 
       step('runtime'); 
       return runtime; 

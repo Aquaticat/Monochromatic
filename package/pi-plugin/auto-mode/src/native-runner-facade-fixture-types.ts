@@ -24,7 +24,11 @@ export type FacadeFixtureRuntimeInput = Readonly<{
   signal: AbortSignal;
   assertParentCurrent: () => unknown;
   dispatchGroup: (group: Readonly<{ handle: object }>) => readonly Promise<unknown>[];
-  scriptValueFor: (input: Readonly<{ group: object; ordinal: number; outcome: unknown }>) => unknown
+  scriptValueFor: (input: Readonly<{
+    group: object;
+    ordinal: number;
+    outcome: unknown
+  }>) => unknown
 }>;
 /**
  Fixture runtime publication keeps opaque objects and methods for spread identity checks.
@@ -61,9 +65,16 @@ export type FacadeFixtureInput = {
   code: unknown;
   carrier: Readonly<{ token: object }>;
   origin: {
-    prepared: { id: string; name: string; input: { code: unknown } };
+    prepared: {
+      id: string;
+      name: string;
+      input: { code: unknown }
+    };
     signal: AbortSignal;
-    judgment: Readonly<{ openProgram: (input: unknown) => object; scriptValueFor: (input: unknown) => unknown }>;
+    judgment: Readonly<{
+      openProgram: (input: unknown) => object;
+      scriptValueFor: (input: unknown) => unknown
+    }>;
   };
   assertParentCurrent: () => void;
   bindGroup: (input: unknown) => FacadeFixtureBinding;
