@@ -136,7 +136,9 @@ export function createFailureFixture(): FailureFixture {
     events.push('abort');
   }
     );
-  /** Factory construction must leave every observable fixture input unchanged. */
+  /**
+   Factory construction must leave every observable fixture input unchanged.
+   */
   const owner = failureModule.createGroupFailures({
     groupState: state,
     failures,
