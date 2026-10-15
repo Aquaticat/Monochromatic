@@ -31,7 +31,9 @@ await describe({ name: '', children: [
   it({ name: 'retains original serialization failure without allocating delivery', fn: async () => {
     const fixture = createCollectorFixture();
     const failure = new Error('original native serialization failed');
-    const args = { toJSON(): never { throw failure; } };
+    const args = { toJSON(): never { 
+      throw failure; 
+    } };
     const [result] = await Promise.allSettled([fixture.invoke({ args })]);
     assert.deepEqual(result, { status: 'rejected', reason: failure });
     assert.equal(fixture.run.inspect().failure, failure);
@@ -42,7 +44,7 @@ await describe({ name: '', children: [
     const first = fixture.invoke();
     const repeated = fixture.invoke();
     const results = await Promise.allSettled([first, repeated]);
-    const failure = fixture.run.inspect().failure;
+    const {failure} = fixture.run.inspect();
     assert.ok(Error.isError(failure));
     assert.equal(failure.message, 'Declared member callback cannot be replayed');
     assert.deepEqual(results, [{ status: 'rejected', reason: failure }, { status: 'rejected', reason: failure }]);
@@ -85,13 +87,17 @@ await describe({ name: '', children: [
     const outer = fixture.invoke();
     const results = await Promise.allSettled([outer, ...inner]);
     assert.equal(results.length, 2);
-    assert.equal(results.every(function rejected(result) { return result.status === 'rejected'; }), true);
-    const failure = fixture.run.inspect().failure;
+    assert.equal(results.every(function rejected(result) { 
+      return result.status === 'rejected'; 
+    }), true);
+    const {failure} = fixture.run.inspect();
     assert.ok(Error.isError(failure));
     assert.equal(failure.message, 'Declared group collection cannot reenter through callbacks');
     assert.equal(fixture.control.parents, 1);
     assert.equal(fixture.calls.length, 0);
-    assert.equal(fixture.run.inspect().members.every(function unarrived(member) { return member.arrival === 'unarrived'; }), true);
+    assert.equal(fixture.run.inspect().members.every(function unarrived(member) { 
+      return member.arrival === 'unarrived'; 
+    }), true);
   } }),
   it({ name: 'releases the collection guard before synchronous dispatch callbacks reenter', fn: async () => {
     const fixture = createCollectorFixture({ memberCount: 1 });
@@ -103,7 +109,7 @@ await describe({ name: '', children: [
     const first = fixture.invoke();
     await Promise.allSettled([first, ...repeated]);
     await fixture.run.drain();
-    const failure = fixture.run.inspect().failure;
+    const {failure} = fixture.run.inspect();
     assert.ok(Error.isError(failure));
     assert.equal(failure.message, 'Declared member callback cannot be replayed');
     assert.deepEqual(fixture.run.inspect().members[0]?.completion, { status: 'fulfilled', value: 'original retained result' });

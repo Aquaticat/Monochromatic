@@ -12,7 +12,9 @@ await describe({ name: '', children: [
       const pending = Promise.allSettled([fixture.invoke(), fixture.invoke({ index: 1 })]);
       const [call] = fixture.calls;
       assert.ok(call);
-      assert.equal(call.members.every(function active(member) { return !member.signal.aborted; }), true);
+      assert.equal(call.members.every(function active(member) { 
+        return !member.signal.aborted; 
+      }), true);
       const reason = Object.freeze({ original: source });
       if (source === 'parent') fixture.parent.abort(reason);
       if (source === 'native') {
@@ -22,12 +24,16 @@ await describe({ name: '', children: [
       }
       if (source === 'retire') fixture.run.retire();
       const results = await pending;
-      assert.equal(results.every(function rejected(result) { return result.status === 'rejected'; }), true);
+      assert.equal(results.every(function rejected(result) { 
+        return result.status === 'rejected'; 
+      }), true);
       const [first] = results;
       assert.ok(first?.status === 'rejected');
       if (source !== 'retire') assert.equal(first.reason, reason);
       assert.deepEqual(results[1], first);
-      assert.equal(call.members.every(function cancelled(member) { return member.signal.aborted; }), true);
+      assert.equal(call.members.every(function cancelled(member) { 
+        return member.signal.aborted; 
+      }), true);
       for (const member of call.members) assert.equal(member.signal.reason, first.reason);
       const [firstCompletion, secondCompletion] = fixture.completions;
       assert.ok(firstCompletion);
@@ -37,10 +43,14 @@ await describe({ name: '', children: [
       secondCompletion.reject(undefined);
       await fixture.run.drain();
       const snapshot = fixture.run.inspect();
-      assert.deepEqual(snapshot.members.map(function completion(member) { return member.completion; }), [
+      assert.deepEqual(snapshot.members.map(function completion(member) { 
+        return member.completion; 
+      }), [
         { status: 'fulfilled', value: retained }, { status: 'rejected', reason: undefined },
       ]);
-      assert.equal(snapshot.members.every(function terminal(member) { return member.state === (source === 'retire' ? 'cancelled' : 'rejected'); }), true);
+      assert.equal(snapshot.members.every(function terminal(member) { 
+        return member.state === (source === 'retire' ? 'cancelled' : 'rejected'); 
+      }), true);
       assert.equal(snapshot.phase, source === 'retire' ? 'closed' : 'failed');
     } });
   }),
@@ -80,7 +90,9 @@ await describe({ name: '', children: [
     const [native] = fixture.native;
     assert.ok(native);
     const failure = new Error('original listener installation failed');
-    Object.defineProperty(native.signal, 'addEventListener', { value(): never { throw failure; } });
+    Object.defineProperty(native.signal, 'addEventListener', { value(): never { 
+      throw failure; 
+    } });
     const result = await Promise.race([Promise.allSettled([fixture.invoke()]), setImmediate('missing-pending-rejection')]);
     assert.deepEqual(result, [{ status: 'rejected', reason: failure }]);
     assert.equal(fixture.run.inspect().members[0]?.arrival, 'matched');

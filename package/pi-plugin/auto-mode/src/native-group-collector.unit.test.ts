@@ -6,7 +6,7 @@ import { collectorFixtureModule, createCollectorFixture } from './native-group-c
 await describe({ name: '', children: [
   //region Construction validates original parent capabilities before reading the canonical group.
   ...['signal', 'assertParentCurrent', 'dispatchGroup', 'readGroup'].map(function missingCapability(key) {
-    return it({ name: `rejects missing ${key} before original group read`, fn: () => {
+    return it({ name: `rejects missing ${key} before original group read`, fn: async () => {
       const fixture = createCollectorFixture();
       assert.throws(function constructWithoutCapability() {
         collectorFixtureModule.createReachedGroupRun({ ...fixture.input, [key]: undefined });
@@ -15,12 +15,14 @@ await describe({ name: '', children: [
     } });
   }),
   ...['mutable-view', 'foreign-handle', 'mutable-members'].map(function changedView(change) {
-    return it({ name: `rejects original view with ${change}`, fn: () => {
+    return it({ name: `rejects original view with ${change}`, fn: async () => {
       const fixture = createCollectorFixture();
       const replacement = { ...fixture.view, ...(change === 'foreign-handle' ? { handle: {} } : {}), ...(change === 'mutable-members' ? { members: [...fixture.view.members] } : {}) };
       if (change !== 'mutable-view') Object.freeze(replacement);
       assert.throws(function constructWithView() {
-        collectorFixtureModule.createReachedGroupRun({ ...fixture.input, readGroup() { return replacement; } });
+        collectorFixtureModule.createReachedGroupRun({ ...fixture.input, readGroup() { 
+          return replacement; 
+        } });
       }, { message: 'Canonical reached group view is required' });
     } });
   }),
@@ -39,7 +41,9 @@ await describe({ name: '', children: [
     assert.equal(snapshot.phase, 'collecting');
     assert.equal(snapshot.failed, false);
     assert.equal(snapshot.dispatches, 0);
-    assert.deepEqual(snapshot.members.map(function memberState(member) { return [member.arrival, member.state, member.completion]; }), [
+    assert.deepEqual(snapshot.members.map(function memberState(member) { 
+      return [member.arrival, member.state, member.completion]; 
+    }), [
       ['unarrived', 'unarrived', undefined], ['unarrived', 'unarrived', undefined],
     ]);
     await fixture.run.drain();
@@ -48,15 +52,21 @@ await describe({ name: '', children: [
     const fixture = createCollectorFixture();
     const second = fixture.invoke({ index: 1 });
     assert.equal(fixture.calls.length, 0);
-    assert.deepEqual(fixture.run.inspect().members.map(function arrival(member) { return member.arrival; }), ['unarrived', 'matched']);
+    assert.deepEqual(fixture.run.inspect().members.map(function arrival(member) { 
+      return member.arrival; 
+    }), ['unarrived', 'matched']);
     const first = fixture.invoke();
     assert.equal(fixture.calls.length, 1);
     const [call] = fixture.calls;
     assert.ok(call);
     assert.equal(call.handle, fixture.group);
     assert.equal(call.declaration, fixture.run.declaration);
-    assert.deepEqual(call.members.map(function declaration(member) { return member.declaration; }), fixture.view.members);
-    const handles = call.members.map(function handle(member) { return member.handle; });
+    assert.deepEqual(call.members.map(function declaration(member) { 
+      return member.declaration; 
+    }), fixture.view.members);
+    const handles = call.members.map(function handle(member) { 
+      return member.handle; 
+    });
     assert.equal(new Set(handles).size, 2);
     for (const handle of handles) assert.equal(Object.isFrozen(handle), true);
     const outcomes = [{ original: 'first' }, { original: 'second' }];
@@ -67,7 +77,11 @@ await describe({ name: '', children: [
     assert.equal(snapshot.phase, 'settled');
     assert.equal(snapshot.dispatches, 1);
     assert.equal(snapshot.failed, false);
-    assert.deepEqual(snapshot.members.map(function retained(member) { return member.completion; }), outcomes.map(function fulfilled(value) { return { status: 'fulfilled', value }; }));
+    assert.deepEqual(snapshot.members.map(function retained(member) { 
+      return member.completion; 
+    }), outcomes.map(function fulfilled(value) { 
+      return { status: 'fulfilled', value }; 
+    }));
   } }),
   ...[undefined, null, 'opaque', Object.freeze({ original: 'native rejection' })].map(function rejectedOutcome(reason) {
     return it({ name: `retains native rejection ${JSON.stringify(reason)} independently of collection failure`, fn: async () => {

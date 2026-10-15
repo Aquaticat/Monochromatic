@@ -129,7 +129,7 @@ export function createGroupArrival({
         /**
          Preserve native cancellation after arrival unless transport or retained completion has ended observation.
          */
-        const nativeCallbacks = { onNativeAbort(): void {
+        const nativeCallbacks = { onNativeAbort(this: void): void {
           /**
            Original callback re-reads mutable transport and native completion presence.
            */
