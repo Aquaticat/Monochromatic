@@ -1289,6 +1289,34 @@ zero errors and 13258 warnings in
 All settlement implementation and consumer files have zero diagnostics in that report.
 The remaining warning gate is still open;
 the next boundary is the original question-selection owner in `selection.mjs`.
+Commits `0a7ae510e6`,
+`1c0bca211a`,
+`8c7922a5b8`,
+and `1a66229fc5` port that owner to typed ownership,
+declaration,
+issuance,
+inspection,
+and evidence modules while preserving the original entry path.
+The first focused check found an overlapping owner callback type that hid complete batch fields;
+`a42e76330f` replaces the inherited callback type explicitly.
+The rebuilt public selection consumers pass in
+`${HOME}/temp/agent/pi-native-selection-owner-tests-20261015.log`;
+the package type check passes in
+`${HOME}/temp/agent/pi-native-selection-owner-types-20261015.log`.
+The committed tests cover canonical claim and evidence identity,
+terminal failure retention,
+foreign handles,
+ordinary dense selection arrays,
+original resolver identity,
+reentry recovery,
+declaration and batch caps,
+the exact four MiB UTF-8 request boundary,
+and the distinction between retained diagnostics and current evidence.
+The latest focused source check has zero errors and seven warnings before final formatting corrections.
+Saved-implementation comparison,
+guard-omission controls,
+broader native consumers,
+and the maintained warning recount remain pending for this owner.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

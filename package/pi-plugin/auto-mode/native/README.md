@@ -45,6 +45,13 @@ and terminal discard on stale bindings or expired judgment budgets.
 Missing raw diagnostics use an absent `raw` property;
 the `failure` property retains the original caught value,
 including `undefined` for a successful decode.
+`test:native:question-selection` exercises the original public selection entry,
+canonical claim and evidence identities,
+ordinary dense membership,
+declaration and batch limits,
+the UTF-8 request bound,
+reentry recovery,
+and current versus retained diagnostic reads.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
