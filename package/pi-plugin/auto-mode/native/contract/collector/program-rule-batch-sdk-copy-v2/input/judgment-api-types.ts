@@ -2,6 +2,7 @@
  Original public judgment capabilities retain their separate operation boundaries. @module
  */
 import type { JudgmentPrograms } from './program-api.ts';
+import type { JudgmentDependencyChecks } from './judgment-dependency-types.ts';
 import type { JudgmentInstructions } from './instruction-api.ts';
 import type {
   JudgmentExecutionEntry,
@@ -24,7 +25,7 @@ export type JudgmentOwnedOperations<Source extends JudgmentPreparationSources = 
   & Pick<JudgmentExecutionOwnership, 'memberFor'> & JudgmentInspection
   & Omit<JudgmentLifecycle, 'state' | 'operation'> & Pick<JudgmentPreparation, 'prepare'>
   & Pick<JudgmentSources<Source>, 'readSourceSnapshot' | 'readCurrentSourceBinding'>
-  & Readonly<{ assertDependenciesCurrent: () => void }>;
+  & Pick<JudgmentDependencyChecks, 'assertDependenciesCurrent'>;
 
 /**
  Assembly captures original functions and resolves retained selection only at inspection time.

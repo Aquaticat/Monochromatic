@@ -1,15 +1,2 @@
-//region Combine independently issued origin and current wire observations without creating permission.
-/** Return current main-agent request receipt for the exact SDK response and bound stream consumer. */
-export function readMainAgentRequest({
-  producerOwner,
-  observer,
-  stream,
-  response
-}) {
-  producerOwner.assertMainAgentResponse({
-    stream,
-    response
-  });
-  return observer.observationFor(response);
-}
-//endregion
+/** Original request entry retains its native consumer path. @module */
+export { readMainAgentRequest } from './request.ts';
