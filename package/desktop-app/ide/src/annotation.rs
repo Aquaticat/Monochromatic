@@ -70,6 +70,9 @@ mod blocks;
 ///  default,
 ///  and the text of one problem.
 mod severity;
+/// The default for an omitted severity,
+///  used when the diagnostics are indexed.
+use severity::shown;
 /// What:
 ///  `pub use` re-exports the severity helpers under this module's name.
 /// Why:
@@ -80,9 +83,6 @@ mod severity;
 /// export { describe, rank, severityName } from './severity';
 /// ```
 pub use severity::{describe, rank, severity_name};
-/// The default for an omitted severity,
-///  used when the diagnostics are indexed.
-use severity::shown;
 
 /// What:
 ///  One diagnostic as a frame underlines it;
