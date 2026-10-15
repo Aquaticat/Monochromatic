@@ -136,12 +136,15 @@ export function createFailureFixture(): FailureFixture {
     events.push('abort');
   }
     );
-  /**
-   Pending delivery must see retained history and failed state before cancellation.
-
-   @param input - original pending delivery rejection
-   */
-  const rejectPending = function rejectPending(
+  /** Factory construction must leave every observable fixture input unchanged. */
+  const owner = failureModule.createGroupFailures({
+    groupState: state,
+    failures,
+    controller,
+    /** Pending delivery observes original history and state before cancellation.
+     @param input - original pending delivery rejection
+     */
+    rejectPending(
     this: unknown,
     input: Readonly<{
       error: unknown;
@@ -181,15 +184,7 @@ export function createFailureFixture(): FailureFixture {
     events.push('reject');
     state.reenter?.();
     if (state.failReject) throw callbackFailure;
-  };
-  /**
-   Factory construction must leave every observable fixture input unchanged.
-   */
-  const owner = failureModule.createGroupFailures({
-    groupState: state,
-    failures,
-    controller,
-    rejectPending
+    }
   });
   return {
     state,
