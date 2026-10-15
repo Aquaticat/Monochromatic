@@ -11,7 +11,7 @@ import {
 import {
   assertRetainedFile,
   observeDeclaredFile
-} from '../external-dependency-controls/file-observer.mjs';
+} from '../external-dependency-controls/file-observer.ts';
 
 //region One issuing root/deadline retains all dependencies behind opaque handles.
 /** Mechanical freshness is not instruction authority or a human grant. */

@@ -447,6 +447,24 @@ The successful entry order verifies the intended consumer;
 it does not fix direct generated-manager or generated-SDK imports.
 Removing this import-order coupling remains native-quality work.
 
+The 2026-10-15 domain-fixture split reproduced this same diagnostic at the same owned host constructor.
+The first static dependency became the assertion module that imports the generated manager,
+before the runtime's maintained policy dependency.
+The failed built run is
+`${HOME}/temp/agent/pi-native-domain-fixture-split-consumer-20261015.log`.
+The fixture now explicitly imports `../maintained-policy.mjs` before its generated-manager consumers.
+The rebuilt domain,
+unconfigured-policy,
+operating-policy,
+single-call,
+approved-dependency,
+next-decision,
+serializer,
+and context contrast sets pass in
+`${HOME}/temp/agent/pi-native-domain-fixture-entry-consumer-20261015.log`.
+This verifies the documented supported entry order after extraction;
+it still does not remove the underlying generated import cycle.
+
 The manager publication tests cover original append and context copies,
 separate equal-content owners,
 cross-owner reuse,
@@ -7428,6 +7446,16 @@ and whole-request claim checks to pass.
 No production configuration change was required.
 The evidence is `pi-native-source-boundaries-final-20261014.log`
 and `pi-native-source-boundaries-remaining-20261014.log` under `${HOME}/temp/agent/`.
+
+The typed file-observer verification reproduced the same scratch-task directory mistake on 2026-10-15.
+Its build,
+consumer checks,
+and type check had completed before the next scratch-owned lint command emitted the diagnostic.
+`${HOME}/temp/agent/pi-native-typed-observer-consumer-20261015.log` retains that boundary.
+The recovered `lint-typed-observer` task pins `dir` to the repository;
+only the failed lint step is resumed.
+Its first recovered pass produced ordinary lint diagnostics,
+confirming recovery of task discovery without rerunning the successful consumer sequence.
 
 A separate full lint attempt during this cleanup failed before producing diagnostics with
 `Error running tsgolint: "exit status: exit status: 2"`

@@ -743,7 +743,7 @@
     },
     {
       "original": "lifecycle/external-dependency-controls/file-observer.mjs",
-      "maintained": "lifecycle/external-dependency-controls/file-observer.mjs",
+      "maintained": "lifecycle/external-dependency-controls/file-observer.ts",
       "sha256": "ff75fe2843cebb54d3d9b1ff72f25dc2a1df062c3c6b4ae7f5298165d2fba4a1",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -894,7 +894,7 @@
     },
     {
       "original": "lifecycle/rule-relevance-cache/definition.mjs",
-      "maintained": "lifecycle/rule-relevance-cache/definition.mjs",
+      "maintained": "lifecycle/rule-relevance-cache/definition.ts",
       "sha256": "40176cd9ef3e106dae4e0bd881106f34b8897bde3faad6ecee44461907bbc700",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -908,7 +908,7 @@
     },
     {
       "original": "lifecycle/rule-relevance-cache/store.mjs",
-      "maintained": "lifecycle/rule-relevance-cache/store.mjs",
+      "maintained": "lifecycle/rule-relevance-cache/store.ts",
       "sha256": "a63f2c8d32d3686bced48f96de90a62073e0c7ddabbd6e9b33f6a148a5d057bc",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -985,7 +985,7 @@
     },
     {
       "original": "policy-index.mjs",
-      "maintained": "policy-index.mjs",
+      "maintained": "policy-index.ts",
       "sha256": "673c676492e3e6e9cfc24253ea0fa605b665c35eda734139f4ea20e8f5663072",
       "origin": "authored-source",
       "relocatedLiterals": 0
