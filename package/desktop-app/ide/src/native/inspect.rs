@@ -5,7 +5,7 @@
 //! without a language server.
 //!  Release builds do not contain this module,
 //!  and without the variable it does nothing.
-//! A window started this way runs without the language worker (`servers_wanted` in the parent module):
+//! A window started this way runs without the language worker (`servers_wanted` in the `start` module):
 //!  a worker
 //! without servers still publishes "no problems" for the displayed text,
 //!  which would replace the file's diagnostics.

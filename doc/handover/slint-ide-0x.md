@@ -368,6 +368,98 @@ the items after it are the record of 2026-10-05 and older.
   `src/minimap*`
   and `src/git_ignore*`,
   which other branches own.
+- The over-long native files are split on branch `refactor/ide-split-native`
+  (worktree `.claude/worktrees/ide-split-native`),
+  with no change of behavior.
+  Fixed:
+  `rust/max-lines` in `src/native.rs`,
+  `src/native/render.rs`,
+  `src/native/rows.rs`,
+  `src/native/tile.rs`,
+  and `src/native/tile_build.rs`,
+  and `rust/require-rustdoc` in `src/native/tile_build.rs`.
+  The rule counts lines that hold a token other than a comment or whitespace,
+  against a limit of 300 (`check_max_lines` in `package/linter/monochromatic-lint/src/rust_rules.rs`).
+  Docs and `//region` markers are free.
+  Each new module is re-exported by its parent,
+  so no caller changed.
+  `native/state.rs` holds `State::new`.
+  `native/start.rs` holds `servers_wanted` and `run`.
+  `native/render/paint.rs` holds the paint inputs,
+  `tile_cap`,
+  and the tile stamp and job.
+  `render/present.rs` holds `Frame`,
+  `show`,
+  and the gutter's wrap indicator.
+  `render/measure.rs` holds the measurement of the requested tile.
+  `native/rows/held.rs` holds the space held over a reload.
+  `rows/quiet.rs` holds the scrolling rule's clock.
+  `rows/window.rs` holds the window models and setters.
+  `native/tile/pass.rs` holds `current_key`,
+  `sync_pass`,
+  and `apply_pass`.
+  `native/tile_build/job.rs` holds the job,
+  the result,
+  and `build_tile`.
+  `tile_build/worker_thread.rs` holds the worker loop.
+  The test modules stay declared in `native.rs`,
+  so every test path such as `native::wrap_keys_tests::...` is unchanged.
+  Moved items that were `pub(super)` became `pub(in crate::native)`.
+  Two guard anchors moved:
+  `clip-cap` (now `src/native/render/paint.rs`),
+  and the `logging::install` mutation of `inspect:log-stall` (now `src/native/start.rs`).
+  The 16 `tracing` records in the moved code
+  (`tile/pass.rs` 5,
+  `render/present.rs` 3,
+  `rows/held.rs` 1,
+  `tile_build/worker_thread.rs` 7)
+  now carry the module path of their new file as target.
+  A search of `bin`,
+  `tests`,
+  `README.md`,
+  and `src` found no filter on the old targets.
+  Combined lint over `package/desktop-app/ide/src`:
+  `rust/max-lines` 9 to 4,
+  `rust/require-rustdoc` 33 to 30,
+  none of the remaining ones in these files.
+  The rest belong to `native/minimap.rs`,
+  `native/minimap_build.rs`,
+  `minimap.rs`,
+  and `minimap/raster.rs`,
+  which this change did not touch,
+  and to the files of the other split.
+  `markdown/semantic-line-breaks` stays at 1156 and `rust/no-anonymous-functions` at 862.
+  Gate on the branch tip,
+  all status 0:
+  lint:rustfmt,
+  lint:clippy,
+  lint:slint,
+  lint:release,
+  test,
+  test:cli,
+  test:native 197 of 197,
+  test:language,
+  test:minimap,
+  test:wrap,
+  test:annotations,
+  test:annotations-native,
+  test:syntax,
+  bundle,
+  inspect:bundle,
+  inspect:bundle-guards,
+  the source (108),
+  theme (7),
+  annotation (65),
+  language navigation (16),
+  find (39),
+  sidebar (18),
+  ignored (28),
+  watch (76),
+  search (17),
+  language (31),
+  and language lifecycle (28 runs) guards,
+  inspect:log-stall,
+  and inspect:refresh-latency.
 - The user approved installing into the real home on 2026-10-10:
   `bin/install.mjs` put `dist/monochromatic-ide` at `~/.local/bin/monochromatic-ide`
   (identical bytes, hash checked) and the launcher entry at `~/.local/share/applications/monochromatic.ide.desktop`
