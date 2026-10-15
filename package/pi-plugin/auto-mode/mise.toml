@@ -567,3 +567,10 @@ run = [
   "node --max-old-space-size=512 src/native-governing-boundary.unit.test.ts",
   "node --max-old-space-size=512 src/native-governing-set.unit.test.ts",
 ]
+
+[tasks."test:native:input-location"]
+description = "Verify original native position slots, descriptor admission, and opaque companion values"
+run = [
+  "node --max-old-space-size=512 src/native-input-location.unit.test.ts",
+  "node --max-old-space-size=512 src/native-input-location-boundary.unit.test.ts",
+]
