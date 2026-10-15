@@ -1,10 +1,18 @@
-/** Original native judgment source binding preserves handoff and current collection identity. @module */
+/**
+ Original native judgment source binding preserves handoff and current collection identity. @module
+ */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
 import type { JudgmentPreparationSources } from './judgment-preparation-types.ts';
-import type { JudgmentSourcesInput, JudgmentSources, JudgmentSourceBinding } from './judgment-source-types.ts';
+import type {
+  JudgmentSourcesInput,
+  JudgmentSources,
+  JudgmentSourceBinding
+} from './judgment-source-types.ts';
 
-/** Source ownership diagnostics omit request bodies and original file contents. */
+/**
+ Source ownership diagnostics omit request bodies and original file contents.
+ */
 const l = tagged({ tag: 'auto-mode-judgment-sources' });
 
 //region Source handoff precedes request authentication while publication retains original identity.
@@ -20,18 +28,38 @@ const l = tagged({ tag: 'auto-mode-judgment-sources' });
  @example createJudgmentSources(input);
  */
 export function createJudgmentSources(input: JudgmentSourcesInput): JudgmentSources {
-  /** Factory diagnostics precede the original observer and request boundaries. */
-  const rl = tagged({ tag: createJudgmentSources.name, l });
+  /**
+   Factory diagnostics precede the original observer and request boundaries.
+   */
+  const rl = tagged({
+    tag: createJudgmentSources.name,
+    l
+  });
   rl.debug('binding original judgment sources');
-  /** Original callbacks remain distinct so their invocation order stays observable. */
-  const { observer, response, readOriginalRequest, signal, collector, assertDependenciesCurrent } = input;
-  /** Native preparation handoff takes precedence over the legacy binding callback. */
+  /**
+   Original callbacks remain distinct so their invocation order stays observable.
+   */
+  const {
+    observer,
+    response,
+    readOriginalRequest,
+    signal,
+    collector,
+    assertDependenciesCurrent
+  } = input;
+  /**
+   Native preparation handoff takes precedence over the legacy binding callback.
+   */
   const sourceBinding = observer.beginJudgmentSources ? observer.beginJudgmentSources(response) : observer.bindJudgmentSources?.(response);
-  /** The request is authenticated only after the source handoff returns. */
+  /**
+   The request is authenticated only after the source handoff returns.
+   */
   const receipt = readOriginalRequest();
-  /** Shared collection changes only when original preparation publishes its sealed sources. */
+  /**
+   Shared collection changes only when original preparation publishes its sealed sources.
+   */
   const state = { sources: sourceBinding?.sources ?? receipt.sources };
-  if (sourceBinding && sourceBinding.request !== receipt) throw new JudgmentConstructionError('Judgment sources do not belong to the original request receipt');
+  if (sourceBinding && (sourceBinding.request !== receipt)) throw new JudgmentConstructionError('Judgment sources do not belong to the original request receipt');
   /**
    Return the current original collection without asserting live eligibility.
 
@@ -80,8 +108,20 @@ export function createJudgmentSources(input: JudgmentSourcesInput): JudgmentSour
    */
   function readCurrentSourceBinding(): JudgmentSourceBinding {
     assertDependenciesCurrent();
-    return Object.freeze({ request: receipt, sources: state.sources });
+    return Object.freeze({
+      request: receipt,
+      sources: state.sources
+    });
   }
-  return { receipt, collector: Object.freeze({ capture, assertObservedFresh }), readSourceSnapshot, publishJudgmentSources, readCurrentSourceBinding };
+  return {
+    receipt,
+    collector: Object.freeze({
+      capture,
+      assertObservedFresh
+    }),
+    readSourceSnapshot,
+    publishJudgmentSources,
+    readCurrentSourceBinding
+  };
 }
 //endregion
