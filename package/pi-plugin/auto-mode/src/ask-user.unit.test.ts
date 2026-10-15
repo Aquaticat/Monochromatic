@@ -82,7 +82,7 @@ function createInteractiveContext(
     choice,
     aborts = [],
   }: {
-    readonly choice: string | undefined;
+    readonly choice?: string;
     readonly aborts?: string[];
   },
 ): ExtensionContext {
@@ -95,7 +95,7 @@ function createInteractiveContext(
       async select(
         _title: string,
         options: string[],
-      ): Promise<string | undefined> {
+      ): ReturnType<ExtensionContext['ui']['select']> {
         expect(options,).toEqual(['Allow', 'Stop',],);
         return choice;
       },
@@ -199,7 +199,7 @@ await describe({
         /** Decision returned to the tool-call handler. */
         const decision = await askUser({
           pi: createMockApi({ entries, },),
-          ctx: createInteractiveContext({ choice, aborts, },),
+          ctx: createInteractiveContext({ ...(choice !== undefined ? { choice, } : {}), aborts, },),
           action: 'read .env',
           notificationInvoker: ignoreNotification,
           explanation,
