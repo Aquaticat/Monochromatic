@@ -19,7 +19,9 @@ await describe({ name: '', children: [
       /** Published method remains the exact original function. */
       const method = f.method({ name, api });
       assert.equal(method, original);
-      f.input[name] = function replacement() { throw new Error('unexpected replacement'); };
+      f.input[name] = function replacement() { 
+        throw new Error('unexpected replacement'); 
+      };
       /** Original direct invocation preserves arbitrary caller receiver. */
       const receiver = {};
       /** Full argument lists remain visible to original direct methods. */
@@ -37,7 +39,11 @@ await describe({ name: '', children: [
       /** Direct failures retain exact identity and remain independently recoverable. */
       const failure = new Error(name);
       f.failures.set(name, failure);
-      assert.throws(function failedDirect() { method(); }, function same(error: unknown) { return error === failure; });
+      assert.throws(function failedDirect() { 
+        method(); 
+      }, function same(error: unknown) { 
+        return error === failure; 
+      });
       f.failures.delete(name);
       assert.equal(method(), undefined);
     } });
@@ -52,7 +58,9 @@ await describe({ name: '', children: [
       assert.deepEqual(f.events, []);
       /** Public selection wrapper captures the original resolver without binding a selection early. */
       const method = f.method({ name, api });
-      f.input.knownSelection = function replacementResolver() { throw new Error('unexpected replacement resolver'); };
+      f.input.knownSelection = function replacementResolver() { 
+        throw new Error('unexpected replacement resolver'); 
+      };
       /** Original opaque inspection argument must be passed once. */
       const subject = {};
       for (const args of [[], [subject], [subject, {}]]) {
@@ -66,8 +74,14 @@ await describe({ name: '', children: [
       const originalMethod = f.state.selection[name];
       /** Getter access must follow resolution and retain the replacement object's receiver. */
       const replacement = {
-        get inspectBatch() { f.events.push('lookup'); return originalMethod; },
-        get inspectClaim() { f.events.push('lookup'); return originalMethod; },
+        get inspectBatch() { 
+          f.events.push('lookup');
+        return originalMethod; 
+        },
+        get inspectClaim() { 
+          f.events.push('lookup');
+        return originalMethod; 
+        },
       };
       f.state.selection = replacement;
       f.events.length = 0;
@@ -81,7 +95,11 @@ await describe({ name: '', children: [
         const failure = new Error(boundary);
         f.failures.set(boundary, failure);
         f.events.length = 0;
-        assert.throws(function failedInspection() { method(subject); }, function same(error: unknown) { return error === failure; });
+        assert.throws(function failedInspection() { 
+          method(subject); 
+        }, function same(error: unknown) { 
+          return error === failure; 
+        });
         assert.deepEqual(f.events, boundary === 'selection' ? ['selection'] : ['selection', 'lookup', name]);
         f.failures.delete(boundary);
       }

@@ -26,7 +26,9 @@ await describe({ name: '', children: [
       /** Public checkpoint uses the original active callback. */
       const ownerName = name === 'checkpoint' ? 'active' : name;
       /** No-input operations pass their original callback directly into the guard. */
-      const noInput = noInputKeys.some(function match(key) { return key === name; });
+      const noInput = noInputKeys.some(function match(key) { 
+        return key === name; 
+      });
       /** Original owner identity is captured at assembly time. */
       const original = f.input[ownerName];
       /** The built public method is exercised as a foreign caller would invoke it. */
@@ -34,7 +36,9 @@ await describe({ name: '', children: [
       /** Independently selected callback can receive any runtime arguments. */
       const method = f.method({ name, api });
       assert.notEqual(method, original);
-      f.input[ownerName] = function replacedOwner() { throw new Error('replacement must remain unobserved'); };
+      f.input[ownerName] = function replacedOwner() { 
+        throw new Error('replacement must remain unobserved'); 
+      };
       /** Arbitrary caller receiver must not leak into guarded owners. */
       const receiver = {};
       /** Opaque arguments distinguish forwarding from copying and extra-argument spreading. */
@@ -68,7 +72,11 @@ await describe({ name: '', children: [
         const failure = new Error(boundary);
         f.failures.set(boundary, failure);
         f.events.length = 0;
-        assert.throws(function failedOwner() { method(first); }, function same(error: unknown) { return error === failure; });
+        assert.throws(function failedOwner() { 
+          method(first); 
+        }, function same(error: unknown) { 
+          return error === failure; 
+        });
         /** Later phases must not run after the injected failure. */
         const phases = ['operation:before', ownerName, 'operation:after'];
         assert.deepEqual(f.events, phases.slice(0, phases.indexOf(boundary) + 1));
