@@ -27,6 +27,13 @@ const l = tagged({ tag: 'native-judgment-instructions' });
  @example createJudgmentInstructions(input);
  */
 export function createJudgmentInstructions(input: JudgmentInstructionsInput) : JudgmentInstructions {
+  /** Original bootstrap properties are read once in the incumbent constructor order. */
+  const { ready, bindingSegment, isBindingSegmentActive, readJudgmentSources, declaredNames, byMember, bindings, knownSelection, parsePolicy, receipt, issue } = input;
+  /** Helpers share captured capabilities without rereading caller-owned accessors. */
+  const originalInput: JudgmentInstructionsInput = {
+    ready, bindingSegment, isBindingSegmentActive, readJudgmentSources, declaredNames, byMember, bindings, knownSelection,
+    ...(parsePolicy === undefined ? {} : { parsePolicy }), receipt, issue,
+  };
   /**
    Function-specific diagnostics contain operation names without source or request material.
    */
@@ -43,7 +50,7 @@ export function createJudgmentInstructions(input: JudgmentInstructionsInput) : J
    Shared helpers borrow the same original capabilities and private state.
    */
   const context = {
-    input,
+    input: originalInput,
     state
   };
   /**
@@ -72,7 +79,7 @@ export function createJudgmentInstructions(input: JudgmentInstructionsInput) : J
    Batch selectors retain complete claim order and original bounds.
    */
   const batches = createInstructionBatches({
-    input,
+    input: originalInput,
     sources,
     program,
     member

@@ -10,6 +10,23 @@ await describe({
   children: [
     //region Lazy admission and original dependency retirement remain distinct from historical diagnostics.
     it({
+      name: 'reads original bootstrap properties once in constructor order without eager capability calls',
+      fn: async function originalBootstrapReads() {
+        const { input, events } = createInstructionFixture();
+        const properties = ['ready', 'bindingSegment', 'isBindingSegmentActive', 'readJudgmentSources', 'declaredNames', 'byMember', 'bindings', 'knownSelection', 'parsePolicy', 'receipt', 'issue'];
+        const reads: string[] = [];
+        const supplied = Object.create(null);
+        for (const property of properties) {
+          Object.defineProperty(supplied, property, { get() { reads.push(property); return input[property]; } });
+        }
+        const instructions = createFixtureInstructions(supplied);
+        assert.deepEqual(reads, properties);
+        assert.equal(events.length, 0);
+        instructions.claimRequestMaterial();
+        assert.deepEqual(reads, properties);
+      },
+    }),
+    it({
       name: 'requires qualified parsing and original host selection only when source claims are reached',
       fn: async function lazySourceAdmission() {
         const fixture = createInstructionFixture();
