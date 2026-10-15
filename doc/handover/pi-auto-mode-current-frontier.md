@@ -1111,6 +1111,20 @@ retains those results.
 The complete maintained lint recount covers 524 files and 486 rules:
 zero errors and 13465 warnings in
 `${HOME}/temp/agent/pi-maintained-typed-refresh-lint-20261015.log`.
+Commit `dcd7a9c176` types fixed-question answer admission and its error category.
+The original `selection-values.mjs` and `selection-error.mjs` are now
+`selection-values.ts` and `selection-error.ts` as of 2026-10-15.
+The reader retains scalar bounds,
+original choice-object identity,
+distribution freezing without normalization,
+and descriptor-based serving-model attribution.
+Commit `6e65184e92` adds built consumers for valid and rejected answers;
+`3b774e9be8` corrects their callback signatures to the harness's asynchronous contract.
+The fixture now describes its consumer contract independently of maintained source imports,
+because the artifact-import lint rule also rejects source imports used only for types.
+Built consumers,
+old/new artifact comparisons,
+and final package validation are pending for this typed boundary.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
