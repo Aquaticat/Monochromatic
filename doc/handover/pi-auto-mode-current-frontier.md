@@ -52,6 +52,13 @@ The disposable native release `native-release-xt65Kl` passes the maintained mode
 tree-navigation, retry, reload, and completed-abort tests.
 Authored permission, prohibition, and unspecified policy consumers also pass through native tool dispatch.
 Broader in-flight, combined-action, failure-isolation, configured-host, and live checks remain pending.
+The expanded native fixture registers a real `session_before_tree` handler.
+Its next prompt fails with `RunPromptCustodyError` because general event capture tries to copy the native `AbortSignal`.
+This demonstrates an additional primary-chat gate in generated prompt preparation,
+outside the transport observer already replaced.
+The acceptance matrix remains failing; do not activate this build.
+Next: remove capture enforcement from native prompt preparation and preserve its original callbacks,
+while retaining capture failures for tool admission.
 
 ### Replacement verification before the new report
 
