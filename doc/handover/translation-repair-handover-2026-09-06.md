@@ -385,22 +385,48 @@ At the launch of `TianqiChen66624`:
     and n169
     (brief `prompts/prompt-n169-empty-link-twins.md`,
     scratch `s240`,
-    running).
+    green:
+    suite 2,450 pass and 0 fail,
+    no real change on any corpus page).
     None of the three is committed.
-    Then a review of all three by an agent that wrote none of them,
+    Two rounds run on top of them at the same time:
+    n171 in `w161`
+    (brief `prompts/prompt-n171-consistency-voices.md`,
+    scratch `s242`)
+    builds the rulings on the investigation n170,
+    and n173 in `w164`,
+    a copy of `w161` after n169
+    (brief `prompts/prompt-n173-labelled-links-read-as-shown.md`,
+    scratch `s244`),
+    makes links with a label read as their plain-text twin
+    and gives every fold caller the page's definitions.
+    The fold files are reserved to n173,
+    and the lead merges n173 into `w161` after both hand back.
+    Then a review of all five rounds by an agent that wrote none of them,
     a gate,
     the landing,
     the cache-account audit
     (it reads only committed versions),
     and a relaunch.
+    The provider Hyper held 27 of balance after `TianqiChen66625`,
+    which spent 113;
+    the next pass runs with whatever it holds,
+    and a dry seat goes dark.
 3.  The docs round n163 landed in `537d79eaaf`
     (ledger B616 to B628,
-    M221 to M223).
-    The next docs batch records the lead's own mistakes of this round,
-    the rule breaches of n162 and n163,
-    n162's finding on B619,
-    and the ledger of n165 to n170;
+    M221 to M223),
+    and the docs round n172 in `3fdfa7422e`
+    (M224 to M233:
+    the lead's three mistakes of 2026-10-15 and the rule breaches of n162 to n168;
+    B619 brought up to n169's result).
+    The next docs batch files the B entries of n166 to n173 with their commits once they land,
+    the breaches of n169 and n172,
+    and the lead's mistakes in the n172 brief;
     the lead's notes for it are in `s228/next-docs-batch-notes.md`.
+    The branch worktree holds ignored leftovers that lack a permission
+    (624 read-only `.frozen-*` folders of 2026-09-13)
+    and dangling symbolic links in kept test-folder copies (M224);
+    removing them waits for the owner's word after a dry run.
 4.  Open items that still stand from the checkpoint headed "2026-10-13 after the hardware change":
     `blockStandingOf` throws `RangeError` on 80,000 inline siblings;
     whether judges quote a year slot bare is unmeasured;
