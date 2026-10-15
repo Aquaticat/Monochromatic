@@ -395,3 +395,70 @@ async fn a_current_row_hits_after_reopen() {
     drop(reopened);
     remove_scratch_db(&path);
 }
+
+//region Cold-write benchmark: the cost of storing a first analysis, measured on a real disk.
+
+// An invented fingerprint for row `index`: a splitmix64 mix, so keys land across the B-tree the way
+// real content hashes do, never in insertion order.
+fn invented_fingerprint(index: u64) -> u64 {
+    let mut mixed = index.wrapping_add(0x9E37_79B9_7F4A_7C15);
+    mixed = (mixed ^ (mixed >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+    mixed = (mixed ^ (mixed >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+    return mixed ^ (mixed >> 31)
+}
+
+// Read an environment variable the benchmark needs, or fail with how to set it.
+fn bench_setting(name: &str, fallback: Option<&str>) -> String {
+    if let Ok(value) = std::env::var(name) {
+        return value;
+    }
+    return fallback
+        .unwrap_or_else(|| panic!("set {name}; see the `bench:cache` task in truepeak-core/mise.toml"))
+        .to_string()
+}
+
+// Benchmark, skipped in normal runs: store `CACHE_BENCH_ROWS` (default 10,000) invented exact decisions into a
+// fresh database file under `CACHE_BENCH_DIR`, as a first analysis does, and print the wall time.
+// `CACHE_BENCH_MODE` picks the write path: `row` stores each decision with its own `put` (one commit per row),
+// `normal` does the same after `PRAGMA synchronous = NORMAL`.
+// The directory must be on a real disk: on tmpfs an fsync costs nothing and the benchmark measures nothing.
+#[tokio::test]
+#[ignore = "benchmark; run through the bench:cache mise task with CACHE_BENCH_DIR on a real disk"]
+async fn bench_cold_write() {
+    let directory = std::path::PathBuf::from(bench_setting("CACHE_BENCH_DIR", None));
+    let mode = bench_setting("CACHE_BENCH_MODE", Some("row"));
+    let rows: u64 = bench_setting("CACHE_BENCH_ROWS", Some("10000"))
+        .parse()
+        .expect("CACHE_BENCH_ROWS should be a whole number");
+    let path = directory.join(format!("bench-{}-{mode}.db", std::process::id()));
+    remove_scratch_db(&path);
+    let path_text = path.to_str().expect("bench path should be UTF-8");
+    let cache = DecisionCache::open(path_text)
+        .await
+        .expect("bench database should open");
+    if mode == "normal" {
+        cache
+            .conn
+            .execute("PRAGMA synchronous = NORMAL", ())
+            .await
+            .expect("synchronous pragma should apply");
+    }
+    let started = std::time::Instant::now();
+    if mode == "row" || mode == "normal" {
+        for index in 0..rows {
+            cache
+                .put(invented_fingerprint(index), identity(), &exact(0.5))
+                .await
+                .expect("bench decision should be cached");
+        }
+    } else {
+        panic!("unknown CACHE_BENCH_MODE {mode}");
+    }
+    let elapsed = started.elapsed();
+    assert_eq!(count_rows(&cache).await, i64::try_from(rows).expect("row count fits i64"));
+    println!("CACHE_BENCH mode={mode} rows={rows} wall_ms={:.1}", elapsed.as_secs_f64() * 1000.0);
+    drop(cache);
+    remove_scratch_db(&path);
+}
+
+//endregion
