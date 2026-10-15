@@ -253,6 +253,13 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-completion-failure.unit.test.ts",
 ]
 
+[tasks."test:native:profile-call"]
+description = "Verify original source call admission, spans, pattern ownership, and failure order"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-profile-call.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-profile-call-failure.unit.test.ts",
+]
+
 [tasks."test:native:prepared-executable"]
 description = "Verify original native wrapper snapshots, queue turns, and shared context-guard failures"
 run = [

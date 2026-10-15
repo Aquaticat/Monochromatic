@@ -57,7 +57,7 @@ export function inspectProfileCall({
   }
   const start = callee.start - prefix.length;
   const end = callee.end - prefix.length;
-  if (!Number.isSafeInteger(start) || start < 0 || end <= start || end > source.length) {
+  if (!(Number.isSafeInteger(start) && start >= 0 && end > start && end <= source.length)) {
     throw new ResultProgramProfileError('callee source span');
   }
   return Object.freeze({
