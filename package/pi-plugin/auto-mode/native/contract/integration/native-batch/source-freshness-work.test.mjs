@@ -6,17 +6,15 @@ import {syncBuiltinESMExports} from 'node:module';
 const observation={policyOpens:0};
 const {openSync:originalOpen}=fs;
 
-/**
+/*
  Keep native filesystem results while measuring repeated reads of the disposable policy.
- @type {typeof fs.openSync}
  */
-const countPolicyOpen=function observePolicyOpen(path,flags,mode){
+fs.openSync=function countPolicyOpen(path,flags,mode){
   if((typeof path==='string')&&path.includes('/pi-native-fixture-')&&path.endsWith('/workspace/AGENTS.md'))
     observation.policyOpens++;
   return Reflect.apply(originalOpen,fs,[path,flags,mode]);
 };
 
-fs.openSync=countPolicyOpen;
 syncBuiltinESMExports();
 process.argv.splice(2,process.argv.length,'allow','--native-context');
 await import('./approval-domain.test.mjs');

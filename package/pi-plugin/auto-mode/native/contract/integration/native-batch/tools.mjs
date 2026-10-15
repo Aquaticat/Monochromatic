@@ -19,7 +19,9 @@ export function registerOwnedExecutionTools({
  const previous=agent.prepareRequest;
  const wrappers=createExecutionWrappers({wrapToolDefinition});
  const installationState={active:true};
- const prepareRequest=async function prepareOriginalRequest(
+ /** Capture the positional native callback without detaching a method or changing its receiver. */
+ function createRequestHook(){
+ return async function prepareRequest(
    request,
    signal
  ){
@@ -244,6 +246,8 @@ export function registerOwnedExecutionTools({
     }
   };
  };
+ }
+ const prepareRequest=createRequestHook();
  agent.prepareRequest=prepareRequest;
  return function unregister(){
   installationState.active=false;
