@@ -79,7 +79,8 @@ export function createExecutionOwnership({
     const record = executions.get(token);
     if ((!record) || (!hasExecution(record))
       || (record.execution
-        .token !== token)) {
+        .token
+        !== token)) {
       throw new JudgmentConstructionError('Execution occurrence is not owned by this judgment');
     }
     return record;
