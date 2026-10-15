@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
-import { createCollectorFixture, originalCollectorAbortListener } from './native-group-collector-fixture.ts';
+import { awaitCollectorResult, createCollectorFixture, originalCollectorAbortListener } from './native-group-collector-fixture.ts';
 
 await describe({ name: '', children: [
   //region Parent, native, and collector cancellation preserve original transport and native lifetimes.
@@ -27,8 +27,8 @@ await describe({ name: '', children: [
       assert.equal(fixture.run.inspect().failed, false);
       fixture.run.retire();
       completion.resolve('original late completion');
-      await pending;
-      await fixture.run.drain();
+      await awaitCollectorResult(pending);
+      await awaitCollectorResult(fixture.run.drain());
     } });
   }),
   ...['parent', 'native', 'retire'].map(function cancellationSource(source) {
@@ -48,7 +48,7 @@ await describe({ name: '', children: [
         native.abort(reason);
       }
       if (source === 'retire') fixture.run.retire();
-      const results = await pending;
+      const results = await awaitCollectorResult(pending);
       assert.equal(results.every(function rejected(result) { 
         return result.status === 'rejected'; 
       }), true);
@@ -66,7 +66,7 @@ await describe({ name: '', children: [
       const retained = Object.freeze({ original: 'late native value' });
       firstCompletion.resolve(retained);
       secondCompletion.reject(undefined);
-      await fixture.run.drain();
+      await awaitCollectorResult(fixture.run.drain());
       const snapshot = fixture.run.inspect();
       assert.deepEqual(snapshot.members.map(function completion(member) { 
         return member.completion; 
@@ -147,7 +147,7 @@ await describe({ name: '', children: [
     assert.equal(installed.length, 1);
     assert.equal(originalCollectorAbortListener(native.signal), installed[0]);
     fixture.run.retire();
-    await pending;
+    await awaitCollectorResult(pending);
     assert.deepEqual(removed, installed);
   } }),
   //endregion
@@ -173,14 +173,14 @@ await describe({ name: '', children: [
       assert.deepEqual(fixture.run.inspect(), before);
       first.resolve(null);
       second.resolve(undefined);
-      await pending;
-      await fixture.run.drain();
+      await awaitCollectorResult(pending);
+      await awaitCollectorResult(fixture.run.drain());
     } });
   }),
   it({ name: 'releases reentry protection on admission failure before the next original callback', fn: async () => {
     const fixture = createCollectorFixture();
-    const first = await Promise.allSettled([fixture.invoke({ signal: null })]);
-    const again = await Promise.allSettled([fixture.invoke()]);
+    const first = await awaitCollectorResult(Promise.allSettled([fixture.invoke({ signal: null })]));
+    const again = await awaitCollectorResult(Promise.allSettled([fixture.invoke()]));
     assert.deepEqual(again, first);
     assert.equal(fixture.run.inspect().failures.length, 1);
   } }),
