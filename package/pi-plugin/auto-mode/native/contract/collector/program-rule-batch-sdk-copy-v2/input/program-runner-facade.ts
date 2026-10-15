@@ -4,7 +4,10 @@
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import type { ProgramFacadeInput } from './program-runner-facade-types.ts';
-import type { ProgramRunnerBinding, ProgramRunnerTool } from './program-runner-binding-types.ts';
+import type {
+  ProgramRunnerBinding,
+  ProgramRunnerTool
+} from './program-runner-binding-types.ts';
 import type { ProgramEventRecorder } from './program-runner-events-types.ts';
 import type { ProgramRuntime } from './program-runtime-types.ts';
 
@@ -16,27 +19,27 @@ const l = tagged({ tag: 'auto-mode-program-runner-facade' });
 //region Original declaration opens once and retains every reached native group and failure.
 /** Open the original declared program and retain its outstanding native execution work.
  @param tools - original frozen definition snapshot
- *
+ 
  @param origin - original prepared program and judgment
- *
+ 
  @param carrier - original parent occurrence token
- *
+ 
  @param code - exact original prepared program source
- *
+ 
  @param assertParentCurrent - original parent freshness callback
- *
+ 
  @param bindGroup - original private runner binding wrapper
- *
+ 
  @param executeGroup - original private asynchronous execution wrapper
- *
+ 
  @param createReachedProgramRun - original reached runtime constructor
- *
+ 
  @param NativeExecutionGuardError - original aggregate execution guard constructor
- *
+ 
  @returns frozen original runtime facade with aggregate native drainage
- *
+ 
  @throws Error when tool snapshot or declared source is unavailable
- *
+ 
  @example createDeclaredProgramFacade({ tools, origin, carrier, code, assertParentCurrent, bindGroup, executeGroup, createReachedProgramRun, NativeExecutionGuardError });
  */
 export function createDeclaredProgramFacade({
@@ -102,13 +105,32 @@ export function createDeclaredProgramFacade({
     signal: origin.signal,
     assertParentCurrent,
     dispatchGroup(group) {
-      /** Binding completes before native ownership is published. */
-      const bound = bindGroup({ tools, origin, carrier, group, assertParentCurrent });
-      nativeGroups.set(group.handle, bound);
-      /** Settle original execution before rejecting every original member ticket. */
+      /**
+       Binding completes before native ownership is published.
+       */
+      const bound = bindGroup({
+        tools,
+        origin,
+        carrier,
+        group,
+        assertParentCurrent
+      });
+      nativeGroups.set(
+        group.handle,
+        bound
+      );
+      /**
+       Settle original execution before rejecting every original member ticket.
+       */
       async function settle(): Promise<void> {
         try { 
-          await executeGroup({ origin, program, group, bound, assertParentCurrent }); 
+          await executeGroup({
+            origin,
+            program,
+            group,
+            bound,
+            assertParentCurrent
+          }); 
         }
         catch (error) {
           fl.debug('retaining original reached-group execution failure');
@@ -117,15 +139,26 @@ export function createDeclaredProgramFacade({
         }
       }
       works.push(settle());
-      return bound.tickets.map(function readResultTicket(ticket) { 
+      return bound.tickets
+        .map(function readResultTicket(ticket) { 
         return ticket.promise; 
       });
     },
-    scriptValueFor({ group, ordinal, outcome }) {
-      /** Only an originally bound reached group supplies native result slots. */
+    scriptValueFor({
+      group,
+      ordinal,
+      outcome
+    }) {
+      /**
+       Only an originally bound reached group supplies native result slots.
+       */
       const bound = nativeGroups.get(group);
       if (bound === undefined) throw new Error('Native group has no owned result slots');
-      return judgment.scriptValueFor({ group, slot: nonNullishOrThrow(bound.slots[ordinal]), outcome });
+      return judgment.scriptValueFor({
+        group,
+        slot: nonNullishOrThrow(bound.slots[ordinal]),
+        outcome
+      });
     }
   });
   return Object.freeze({
@@ -135,7 +168,13 @@ export function createDeclaredProgramFacade({
       /**
        Runtime drainage begins before the current native-work snapshot is read.
        */
-      const drained: readonly (Readonly<{ status: 'fulfilled'; value: void }> | Readonly<{ status: 'rejected'; reason: unknown }>)[] = await Promise.allSettled([
+      const drained: readonly (Readonly<{
+        status: 'fulfilled';
+        value: void
+      }> | Readonly<{
+        status: 'rejected';
+        reason: unknown
+      }>)[] = await Promise.allSettled([
         run.drain(),
         ...works
       ]);
@@ -146,15 +185,18 @@ export function createDeclaredProgramFacade({
         ...failures,
         ...drained.filter(function isRejected(value) { 
           return value.status === 'rejected'; 
-        }).map(function readRejection(value) { 
+        })
+          .map(function readRejection(value) { 
           return value.reason; 
         })
       ];
       if (errors.length > 0) throw new NativeExecutionGuardError({
         errors,
         phase: 'validation',
-        toolCallId: origin.prepared.id,
-        toolName: origin.prepared.name
+        toolCallId: origin.prepared
+          .id,
+        toolName: origin.prepared
+          .name
       });
       fl.debug('completed original declared program drainage');
     }
