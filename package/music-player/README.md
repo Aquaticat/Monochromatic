@@ -537,7 +537,8 @@ mise run //package/music-player/desktop-app:test
 
 Linux builds use host development libraries when available and otherwise use the package's Fedora container.
 The application itself runs on the host session.
- Linux requires Wayland and PipeWire; Alpine Linux also runs the player over ALSA
+ Linux requires Wayland and PipeWire;
+ Alpine Linux also runs the player over ALSA
 (see [Alpine Linux](#alpine-linux)).
  macOS builds target Apple
 Silicon,
@@ -558,7 +559,8 @@ session locations,
 
 The player runs on Alpine Linux (musl libc) on x86_64 and aarch64 as a dynamically linked build;
 a static binary cannot open a window.
-Install the runtime packages, then run it with a runtime directory:
+Install the runtime packages,
+then run it with a runtime directory:
 
 ```sh
 apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
@@ -570,10 +572,15 @@ music-player path/to/music-folder
 
 Expect these differences from a Fedora desktop:
 
-- A font package is required; with none installed the player panics at startup.
-- Sound uses PipeWire when a daemon runs (`apk add pipewire wireplumber`), otherwise the default ALSA device.
-  With neither, the window says that no sound output is available.
-- "Open folder" needs a desktop portal or `zenity`; without either the window says so, and a folder can be passed on
+- A font package is required;
+  with none installed the player panics at startup.
+- Sound uses PipeWire when a daemon runs (`apk add pipewire wireplumber`),
+  otherwise the default ALSA device.
+  With neither,
+  the window says that no sound output is available.
+- "Open folder" needs a desktop portal or `zenity`;
+  without either the window says so,
+  and a folder can be passed on
   the command line.
 - Notifications and the appearance setting need a D-Bus session bus.
 
@@ -588,7 +595,8 @@ SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 cargo build --release --locked --features a
 
 `mise run //package/music-player/desktop-app:test:alpine` runs the unit tests and a smoke test in Alpine containers,
 and a GitHub workflow runs it on both architectures.
-The full list of packages, results and limits is in
+The full list of packages,
+results and limits is in
 [`desktop-app/README.md`](desktop-app/README.md#alpine-linux) and
 [`doc/decision/music-player-alpine.md`](../../doc/decision/music-player-alpine.md).
 

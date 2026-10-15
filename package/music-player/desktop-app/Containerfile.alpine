@@ -48,8 +48,8 @@ RUN apk add --no-cache \
 
 FROM ${ALPINE} AS runtime
 
-# Runtime packages, one reason each (the direct DT_NEEDED libraries of the binary are fontconfig, libpipewire-0.3
-# and libgcc_s; the rest are libraries it opens with dlopen):
+# Runtime packages, one reason each (the direct DT_NEEDED libraries of the release binary are libfontconfig,
+# libasound, libpipewire-0.3 and libgcc_s plus their own dependencies; the rest are libraries it opens with dlopen):
 #   fontconfig, font-dejavu  font discovery and at least one font. With no font installed the app panics at
 #                          startup; any font package works, DejaVu is the small one.
 #   pipewire-libs          libpipewire-0.3, linked by the binary, and the SPA plugins it loads.
