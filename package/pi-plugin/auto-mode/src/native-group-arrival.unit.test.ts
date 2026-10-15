@@ -1,14 +1,14 @@
 /** Original member admission and failure ordering retain exact source and callback boundaries. @module */
 import assert from 'node:assert/strict';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
-import { createCollectorFixture } from './native-group-collector-fixture.ts';
+import { awaitCollectorResult, createCollectorFixture } from './native-group-collector-fixture.ts';
 
-await describe({ name: '', children: [
+await awaitCollectorResult(describe({ name: '', children: [
   //region Admission checks retain argument serialization, cancellation, and replay boundaries.
   ...[null, false, {}, 'signal'].map(function invalidSignal(signal) {
     return it({ name: `rejects invalid native signal ${JSON.stringify(signal)} before publishing arrival`, fn: async () => {
       const fixture = createCollectorFixture();
-      const [result] = await Promise.allSettled([fixture.invoke({ signal })]);
+      const [result] = await awaitCollectorResult(Promise.allSettled([fixture.invoke({ signal })]));
       assert.ok(result?.status === 'rejected');
       assert.ok(Error.isError(result.reason));
       assert.equal(result.reason.message, 'Native member cancellation is required');
@@ -19,7 +19,7 @@ await describe({ name: '', children: [
   ...[{}, null, { mode: 'read', path: 'member-0' }, { path: 'member-0', mode: 'write' }].map(function changedArguments(args) {
     return it({ name: `rejects changed original argument serialization ${JSON.stringify(args)}`, fn: async () => {
       const fixture = createCollectorFixture();
-      const [result] = await Promise.allSettled([fixture.invoke({ args })]);
+      const [result] = await awaitCollectorResult(Promise.allSettled([fixture.invoke({ args })]));
       assert.ok(result?.status === 'rejected');
       assert.ok(Error.isError(result.reason));
       assert.equal(result.reason.message, 'Native member arguments differ from the declared callsite');
@@ -34,7 +34,7 @@ await describe({ name: '', children: [
     const args = { toJSON(): never { 
       throw failure; 
     } };
-    const [result] = await Promise.allSettled([fixture.invoke({ args })]);
+    const [result] = await awaitCollectorResult(Promise.allSettled([fixture.invoke({ args })]));
     assert.deepEqual(result, { status: 'rejected', reason: failure });
     assert.equal(fixture.run.inspect().failure, failure);
     assert.equal(fixture.run.inspect().members[0]?.arrival, 'unarrived');
@@ -43,7 +43,7 @@ await describe({ name: '', children: [
     const fixture = createCollectorFixture();
     const first = fixture.invoke();
     const repeated = fixture.invoke();
-    const results = await Promise.allSettled([first, repeated]);
+    const results = await awaitCollectorResult(Promise.allSettled([first, repeated]));
     const {failure} = fixture.run.inspect();
     assert.ok(Error.isError(failure));
     assert.equal(failure.message, 'Declared member callback cannot be replayed');
@@ -58,9 +58,9 @@ await describe({ name: '', children: [
     assert.ok(completion);
     const pending = fixture.invoke();
     completion.resolve('original result');
-    assert.equal(await pending, 'original result');
-    await fixture.run.drain();
-    const [repeated] = await Promise.allSettled([fixture.invoke()]);
+    assert.equal(await awaitCollectorResult(pending), 'original result');
+    await awaitCollectorResult(fixture.run.drain());
+    const [repeated] = await awaitCollectorResult(Promise.allSettled([fixture.invoke()]));
     assert.ok(repeated?.status === 'rejected');
     assert.ok(Error.isError(repeated.reason));
     assert.equal(repeated.reason.message, 'Declared member callback cannot be replayed');
@@ -73,7 +73,7 @@ await describe({ name: '', children: [
     assert.ok(native);
     const reason = Object.freeze({ original: 'native cancellation' });
     native.abort(reason);
-    const [result] = await Promise.allSettled([fixture.invoke()]);
+    const [result] = await awaitCollectorResult(Promise.allSettled([fixture.invoke()]));
     assert.deepEqual(result, { status: 'rejected', reason });
     assert.equal(fixture.run.inspect().members[0]?.arrival, 'unarrived');
     assert.equal(fixture.control.parents, 1);
@@ -85,7 +85,7 @@ await describe({ name: '', children: [
       if (fixture.control.parents === 1) inner.push(fixture.invoke({ index: 1 }));
     };
     const outer = fixture.invoke();
-    const results = await Promise.allSettled([outer, ...inner]);
+    const results = await awaitCollectorResult(Promise.allSettled([outer, ...inner]));
     assert.equal(results.length, 2);
     assert.equal(results.every(function rejected(result) { 
       return result.status === 'rejected'; 
@@ -107,12 +107,12 @@ await describe({ name: '', children: [
       return ['original retained result'];
     };
     const first = fixture.invoke();
-    await Promise.allSettled([first, ...repeated]);
-    await fixture.run.drain();
+    await awaitCollectorResult(Promise.allSettled([first, ...repeated]));
+    await awaitCollectorResult(fixture.run.drain());
     const {failure} = fixture.run.inspect();
     assert.ok(Error.isError(failure));
     assert.equal(failure.message, 'Declared member callback cannot be replayed');
     assert.deepEqual(fixture.run.inspect().members[0]?.completion, { status: 'fulfilled', value: 'original retained result' });
   } }),
   //endregion
-] });
+] }));

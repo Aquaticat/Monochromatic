@@ -1,9 +1,9 @@
 /** Built collector construction retains original capabilities and complete source association. @module */
 import assert from 'node:assert/strict';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
-import { collectorFixtureModule, createCollectorFixture } from './native-group-collector-fixture.ts';
+import { awaitCollectorResult, collectorFixtureModule, createCollectorFixture } from './native-group-collector-fixture.ts';
 
-await describe({ name: '', children: [
+await awaitCollectorResult(describe({ name: '', children: [
   //region Construction validates original parent capabilities before reading the canonical group.
   ...['signal', 'assertParentCurrent', 'dispatchGroup', 'readGroup'].map(function missingCapability(key) {
     return it({ name: `rejects missing ${key} before original group read`, fn: async () => {
@@ -46,7 +46,7 @@ await describe({ name: '', children: [
     }), [
       ['unarrived', 'unarrived', undefined], ['unarrived', 'unarrived', undefined],
     ]);
-    await fixture.run.drain();
+    await awaitCollectorResult(fixture.run.drain());
   } }),
   it({ name: 'installs the original parent listener once and detaches it at retirement', fn: async () => {
     const fixture = createCollectorFixture({ memberCount: 0 });
@@ -70,7 +70,7 @@ await describe({ name: '', children: [
     assert.equal(installed.length, 1);
     run.retire();
     assert.deepEqual(removed, installed);
-    await run.drain();
+    await awaitCollectorResult(run.drain());
   } }),
   it({ name: 'collects out-of-order arrival once while retaining original declaration order', fn: async () => {
     const fixture = createCollectorFixture();
@@ -96,8 +96,8 @@ await describe({ name: '', children: [
     for (const handle of handles) assert.equal(Object.isFrozen(handle), true);
     const outcomes = [{ original: 'first' }, { original: 'second' }];
     for (const [index, completion] of fixture.completions.entries()) completion.resolve(outcomes[index]);
-    assert.deepEqual(await Promise.all([first, second]), outcomes);
-    await fixture.run.drain();
+    assert.deepEqual(await awaitCollectorResult(Promise.all([first, second])), outcomes);
+    await awaitCollectorResult(fixture.run.drain());
     const snapshot = fixture.run.inspect();
     assert.equal(snapshot.phase, 'settled');
     assert.equal(snapshot.dispatches, 1);
@@ -116,8 +116,8 @@ await describe({ name: '', children: [
       const [completion] = fixture.completions;
       assert.ok(completion);
       completion.reject(reason);
-      assert.deepEqual(await settled, [{ status: 'rejected', reason }]);
-      await fixture.run.drain();
+      assert.deepEqual(await awaitCollectorResult(settled), [{ status: 'rejected', reason }]);
+      await awaitCollectorResult(fixture.run.drain());
       const snapshot = fixture.run.inspect();
       assert.equal(snapshot.phase, 'settled');
       assert.equal(snapshot.failed, false);
@@ -129,7 +129,7 @@ await describe({ name: '', children: [
     const before = fixture.run.inspect();
     assert.equal(before.failed, true);
     assert.equal(before.failure, 'original pre-construction cancellation');
-    const [result] = await Promise.allSettled([fixture.invoke()]);
+    const [result] = await awaitCollectorResult(Promise.allSettled([fixture.invoke()]));
     assert.deepEqual(result, { status: 'rejected', reason: before.failure });
     assert.equal(fixture.calls.length, 0);
   } }),
@@ -138,9 +138,9 @@ await describe({ name: '', children: [
     assert.deepEqual(fixture.run.tools, []);
     assert.equal(fixture.run.inspect().failed, false);
     assert.equal(fixture.calls.length, 0);
-    await fixture.run.drain();
+    await awaitCollectorResult(fixture.run.drain());
     fixture.run.retire();
     assert.equal(fixture.run.inspect().phase, 'closed');
   } }),
   //endregion
-] });
+] }));
