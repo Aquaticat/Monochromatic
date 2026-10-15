@@ -17,7 +17,7 @@ The additional Actions cache was unnecessary for the intended image-reuse experi
 
 The [mise action source](https://github.com/jdx/mise-action),
 revision `c2a87611a18de5b3828c5652fe268e992400cb5c`,
-calls cache restoration before setup when the `cache` input is true in `src/index.ts:72`:
+calls cache restoration before setup when the `cache` input is true in `src/index.ts:67`:
 
 ```typescript
 // src/index.ts, run()
