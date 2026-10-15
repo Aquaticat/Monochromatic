@@ -2,6 +2,10 @@
 
 ## Purpose and current state
 
+The user subsequently requested immediate execution of the agreed trial.
+Execution has begun;
+the interview is complete.
+
 The user is trialing Depot and requested a grilling interview on 2026-10-15.
 The user has delegated the technical recommendation after establishing priorities and budget.
 The user explicitly requested further questions even when their answer might be uncertain.
@@ -322,6 +326,20 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
 
 ## Open questions and next work
 
+- Execution work items:
+  - Container compilation and cache reuse:
+    dedicated project created;
+    remote marker build and local artifact export succeeded.
+  - Depot CI and GitHub runner access:
+    canonical Git remote updated to `Aquaticats/Monochromatic`;
+    Depot Code Access is absent in the new organization.
+    The [connection runbook](../runbook/depot-github-connection.md) records the access step.
+  - Broader checks and deliberate failure detection:
+    prepare disposable workflows without release credentials.
+  - Scheduling and rolling budgets:
+    preserve the existing policy and test admission separately from execution.
+  - Runtime and monthly cost:
+    collect bounded-run evidence and retain the USD $200 ceiling.
 - The trial brief and corrected ownership scope are confirmed.
   No interview question is pending.
 - Verify account spending controls before resource-consuming execution;
