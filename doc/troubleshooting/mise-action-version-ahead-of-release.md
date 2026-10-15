@@ -477,3 +477,44 @@ The stale CDN archives (see "The CDN archives are not a way out") are a separate
  `jdx/mise`'s own installer downloads from GitHub releases (`packaging/standalone/install.envsubst:300`),
  and `mise-action` 4.3.0 no longer downloads them,
  so constraint 3 fails.
+
+## Upstream filing decision for the releases API 403
+
+Checked 2026-10-15 for the failure in "The release-age lookup can fail with 403".
+
+`.out-of-scope/` holds no entry for mise or mise-action (`rg -i mise .out-of-scope` matched only unrelated text in
+ `typescript-project-references.md` and `cargo-workspace.md`).
+Duplicate search with `gh search issues --repo jdx/mise-action`:
+ `"releases API"` found nothing;
+ `"403"` found [jdx/mise-action#200](https://github.com/jdx/mise-action/issues/200) (closed 2025-06-25),
+ which is about `mise` itself making unauthenticated requests and hitting the rate limit, not about the action's
+ release lookup;
+ `"minimum_release_age"` found #603, #617, #641, #664 and #538, none about a 403 from the lookup.
+So no existing report covers it.
+
+Walking the six constraints:
+
+1.   Is it really upstream's fault?
+     Not established.
+     The cause of the 403 is unknown: the job logs carry no response headers and no message body.
+     GitHub's documentation (`content/rest/using-the-rest-api/rate-limits-for-the-rest-api.md` in `github/docs`,
+     read 2026-10-15) says that exceeding either the primary or a secondary rate limit returns `403` or `429`.
+     If the 403 was a rate limit, the action's classification (any 4xx except 429 is final) turns a retryable
+     condition into a failure; if it was a token or permission problem, the action behaved correctly.
+2.   Can upstream fix it?
+     Yes: retry a 403 that carries rate-limit headers, or fall back to the version file.
+3.   Are they supporting this use case?
+     Yes: `minimum_release_age` is a shipped input and its lookup is the documented path.
+4.   Would the repo welcome our contribution?
+     `jdx/mise-action` has a `CLAUDE.md` for agent work and no `CONTRIBUTING.md` and no issue template in
+     its root or `.github` (checked by listing both); no ban on outside or AI-assisted reports was found.
+5.   Will they likely fix it?
+     No signal.
+     On #616 the maintainer defended the version file over the releases API for rate-limit reasons.
+6.   Have we prototyped a minimal fix?
+     No, and none is possible without knowing what the 403 was.
+
+Decision: do not file, and keep no draft.
+A report needs the response status text, `x-ratelimit-remaining`, `retry-after` and the body of a failing call,
+ which no log of this repository holds; the action does not print them.
+If the 403 recurs for a workflow that does not pin `version`, capture those headers first.
