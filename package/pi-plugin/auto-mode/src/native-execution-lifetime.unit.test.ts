@@ -40,9 +40,9 @@ await describe({
         f.events.length = 0;
         assert.equal(f.owner.executionFor(token), origin);
         assert.deepEqual(f.events, ['dependencies']);
-        assert.throws(() => f.owner.assertExecutionEntry(token), /Immediate parent execution has returned before child entry/);
-        assert.throws(() => f.owner.executionEntryFor(token), /Immediate parent execution has returned before child entry/);
-        assert.throws(() => f.owner.parentCurrent(record), /Immediate parent execution has returned before child entry/);
+        assert.throws(() => f.owner.assertExecutionEntry(token), { name: 'JudgmentConstructionError', message: 'Immediate parent execution has returned before child entry' });
+        assert.throws(() => f.owner.executionEntryFor(token), { name: 'JudgmentConstructionError', message: 'Immediate parent execution has returned before child entry' });
+        assert.throws(() => f.owner.parentCurrent(record), { name: 'JudgmentConstructionError', message: 'Immediate parent execution has returned before child entry' });
         f.owner.finishExecution(token);
         assert.deepEqual(f.owner.inspectExecution(token), { retainedOnly: true, state: 'returned' });
       }
@@ -62,13 +62,13 @@ await describe({
         const record: ExecutionFixtureRecord = { parent, prepared: f.record.prepared, effectiveSignal: f.controller.signal };
         f.bindings.set(child, record);
         f.events.length = 0;
-        assert.throws(() => f.owner.beginExecution(child), /Immediate parent execution has returned before child entry/);
+        assert.throws(() => f.owner.beginExecution(child), { name: 'JudgmentConstructionError', message: 'Immediate parent execution has returned before child entry' });
         assert.equal(record.execution, undefined);
         assert.deepEqual(f.events, ['closure', 'dependencies']);
         /** Foreign parent occurrence cannot acquire ownership through copied child metadata. */
         const foreign: ExecutionFixtureRecord = { ...record, parent: Object.freeze({}) };
         f.bindings.set(child, foreign);
-        assert.throws(() => f.owner.beginExecution(child), /Execution occurrence is not owned/);
+        assert.throws(() => f.owner.beginExecution(child), { name: 'JudgmentConstructionError', message: 'Execution occurrence is not owned by this judgment' });
         assert.equal(foreign.execution, undefined);
       }
     }),

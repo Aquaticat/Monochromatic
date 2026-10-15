@@ -39,7 +39,9 @@ await describe({
         assert.equal(origin.permission, 'not-established');
         assert.deepEqual(f.events, ['dependencies', 'closure', 'dependencies', 'judgment', 'dependencies', 'dependencies']);
         assert.deepEqual(f.owner.inspectExecution(token), { retainedOnly: true, state: 'active' });
-        assert.ok(Object.isFrozen(f.owner.inspectExecution(token)));
+        assert.ok(
+          Object.isFrozen(f.owner.inspectExecution(token)),
+        );
         f.owner.finishExecution(token);
         f.owner.finishExecution(token);
         assert.deepEqual(f.owner.inspectExecution(token), { retainedOnly: true, state: 'returned' });
@@ -54,12 +56,12 @@ await describe({
       fn: async () => {
         /** Independent closure flags reproduce open and permanently failed evidence. */
         const f = createExecutionFixture();
-        assert.throws(() => f.owner.beginExecution(f.member), /successfully closed evidence/);
+        assert.throws(() => f.owner.beginExecution(f.member), { name: 'JudgmentConstructionError', message: 'Execution occurrence requires successfully closed evidence' });
         assert.deepEqual(f.events, ['closure']);
         assert.equal(f.record.execution, undefined);
         f.state.finished = true;
         f.state.closeFailed = true;
-        assert.throws(() => f.owner.beginExecution(f.member), /successfully closed evidence/);
+        assert.throws(() => f.owner.beginExecution(f.member), { name: 'JudgmentConstructionError', message: 'Execution occurrence requires successfully closed evidence' });
         f.state.closeFailed = false;
         /** Original dependency failure must be returned unchanged before any reservation. */
         const failure = new Error('source retired');
@@ -70,7 +72,7 @@ await describe({
         /** Successful recovery still reserves the same original prepared member. */
         const token = f.owner.beginExecution(f.member);
         f.state.dependencyFailure = failure;
-        assert.throws(() => f.owner.beginExecution(f.member), /already reserved/);
+        assert.throws(() => f.owner.beginExecution(f.member), { name: 'JudgmentConstructionError', message: 'Prepared member already reserved its execution occurrence' });
         assert.equal(f.owner.knownExecution(token).execution?.token, token);
       }
     }),
@@ -80,14 +82,14 @@ await describe({
         fn: async () => {
           /** Each malformed value receives a fresh owner with no reserved occurrences. */
           const f = createExecutionFixture();
-          assert.throws(() => f.owner.knownMember(foreign), /member handle is not owned/);
-          assert.throws(() => f.owner.beginExecution(foreign), /member handle is not owned/);
-          assert.throws(() => f.owner.knownExecution(foreign), /Execution occurrence is not owned/);
-          assert.throws(() => f.owner.assertExecutionEntry(foreign), /Execution occurrence is not owned/);
-          assert.throws(() => f.owner.executionEntryFor(foreign), /Execution occurrence is not owned/);
-          assert.throws(() => f.owner.executionFor(foreign), /Execution occurrence is not owned/);
-          assert.throws(() => f.owner.finishExecution(foreign), /Execution occurrence is not owned/);
-          assert.throws(() => f.owner.inspectExecution(foreign), /Execution occurrence is not owned/);
+          assert.throws(() => f.owner.knownMember(foreign), { name: 'JudgmentConstructionError', message: 'Execution member handle is not owned by this judgment' });
+          assert.throws(() => f.owner.beginExecution(foreign), { name: 'JudgmentConstructionError', message: 'Execution member handle is not owned by this judgment' });
+          assert.throws(() => f.owner.knownExecution(foreign), { name: 'JudgmentConstructionError', message: 'Execution occurrence is not owned by this judgment' });
+          assert.throws(() => f.owner.assertExecutionEntry(foreign), { name: 'JudgmentConstructionError', message: 'Execution occurrence is not owned by this judgment' });
+          assert.throws(() => f.owner.executionEntryFor(foreign), { name: 'JudgmentConstructionError', message: 'Execution occurrence is not owned by this judgment' });
+          assert.throws(() => f.owner.executionFor(foreign), { name: 'JudgmentConstructionError', message: 'Execution occurrence is not owned by this judgment' });
+          assert.throws(() => f.owner.finishExecution(foreign), { name: 'JudgmentConstructionError', message: 'Execution occurrence is not owned by this judgment' });
+          assert.throws(() => f.owner.inspectExecution(foreign), { name: 'JudgmentConstructionError', message: 'Execution occurrence is not owned by this judgment' });
           assert.deepEqual(f.events, []);
         }
       });
@@ -97,7 +99,7 @@ await describe({
       fn: async () => {
         /** Missing identifier must still cross the original dependency boundary first. */
         const f = createExecutionFixture();
-        assert.throws(() => f.owner.memberFor('missing'), /not in the prepared native group/);
+        assert.throws(() => f.owner.memberFor('missing'), { name: 'JudgmentConstructionError', message: 'Execution member was not in the prepared native group' });
         /** Exact source failure takes precedence over absence of the identifier. */
         const failure = new Error('source unavailable');
         f.state.dependencyFailure = failure;
@@ -130,9 +132,9 @@ await describe({
         f.events.length = 0;
         f.owner.finishExecution(token);
         assert.deepEqual(f.owner.inspectExecution(token), { retainedOnly: true, state: 'returned' });
-        assert.throws(() => f.owner.executionFor(token), /Parent execution occurrence has returned/);
-        assert.throws(() => f.owner.executionEntryFor(token), /returned before native entry/);
-        assert.throws(() => f.owner.assertExecutionEntry(token), /returned before native entry/);
+        assert.throws(() => f.owner.executionFor(token), { name: 'JudgmentConstructionError', message: 'Parent execution occurrence has returned' });
+        assert.throws(() => f.owner.executionEntryFor(token), { name: 'JudgmentConstructionError', message: 'Execution occurrence has returned before native entry' });
+        assert.throws(() => f.owner.assertExecutionEntry(token), { name: 'JudgmentConstructionError', message: 'Execution occurrence has returned before native entry' });
         assert.deepEqual(f.events, []);
       }
     })
