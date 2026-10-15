@@ -237,14 +237,11 @@ never a person's own files.
 
 Unit tests inside Alpine:
 `cargo nextest run --features alsa-fallback`,
-1448 run,
-1448 passed,
+1449 run,
+1449 passed,
 1 skipped,
-on x86_64 and on aarch64 (native runner) in CI,
-and 1410 passed on the first local run before main's newer tests merged.
-The host run on glibc (`mise run //package/music-player/desktop-app:test`,
-after merging main) passes 1447 with the
-same 1 skipped;
+on x86_64 and on aarch64 (native runner) at the final tree (run 38681970548).
+The host run on glibc (`mise run //package/music-player/desktop-app:test`) passes 1448 with the same 1 skipped;
 the one extra test on Alpine is the one in `src/output_linux_tests.rs`,
 which exists only with `alsa-fallback`.
 The notification tests need `dbus-daemon` (apk `dbus`) and the UI tests need a font.
