@@ -548,6 +548,15 @@ collect every sizing result,
 separate fixed-job-count hardware effects from increased Cargo concurrency,
 calculate provider charges and the user's combined time cost,
 and update the allocation recommendation with spread and limitations.
+The independent coverage queue also runs the existing `test:alpine` task through
+`.github/workflows/depot-trial-alpine-checks.yml` on a disposable four-CPU Depot GitHub runner.
+It exercises application unit tests and the existing no-audio,
+ALSA,
+and PipeWire graphical smoke scenarios.
+The task bounds build containers to four CPUs and 12 GB memory,
+smoke containers to four CPUs and 4 GB,
+and the workflow to 60 minutes.
+This does not replace the full desktop keyboard suite or Android instrumented tests.
 No production size setting changed in response to this question.
 
 The parallel history check inspected complete October 15 API pages:
