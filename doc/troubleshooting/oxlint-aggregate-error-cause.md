@@ -30,7 +30,7 @@ commit `6941b4ed45ead21c45bc2164cb80a180eed85b43`.
 
 In `crates/oxc_linter/src/rules/eslint/preserve_caught_error.rs:58`,
 the catch visitor examines directly thrown construction and call expressions.
-At line 69,
+At line 68,
 it asks for the recognized constructor's options argument:
 
 ```rust

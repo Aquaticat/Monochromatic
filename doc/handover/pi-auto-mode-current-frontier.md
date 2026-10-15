@@ -1755,8 +1755,17 @@ and retained closure record remain coupled to one judgment.
 `0fdd07f189` declares exact disposal and closure-result contracts.
 The saved pre-extraction constructor is
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/child-constructor-before-lifecycle-types.mjs`.
-Final formatting,
-owned rebuild,
+All five lifecycle implementation files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-judgment-lifecycle-format-third-20261015.log`.
+Oxlint's `eslint(preserve-caught-error)` autofix initially added a `cause` property to an original aggregate failure.
+`89b85a975e` restores the original paired-error shape through `createAssessmentRetentionError`,
+keeping both failures in their original order without a new cause property.
+The [source-audited troubleshooting record](../troubleshooting/oxlint-aggregate-error-cause.md)
+contains the installed-version probe,
+the observed own-key change,
+and the verified factory alternative.
+That record was rendered and inspected with Pandoc.
+Owned rebuild,
 consumer coverage,
 original-constructor comparisons,
 and guard controls remain pending for this extraction.
