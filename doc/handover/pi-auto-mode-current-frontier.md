@@ -229,7 +229,36 @@ Pi normalizes once in `stream` and again inside `convertMessages`;
 the emitted message comes from the latter's transformed transcript.
 The producer receipt now retains that exact inner normalized and transformed transcript,
 and the consumer checks both original identities.
-Native revalidation of that correction is pending.
+Native revalidation passes with eight accounted contributions,
+including the complete captured system input,
+and three executed fixture children.
+The built emission test now verifies both actual normalization stages.
+All serializer substitution controls and the package type check pass.
+The request-level consumer is now implemented and under verification.
+It uses the observer's existing JSON parse,
+original producer cardinalities,
+complete system replay inputs,
+whole user-message publications,
+and original converted tool declarations.
+The supported envelope permits the original model and stream fields,
+known numeric controls,
+`store: false`,
+and the native usage-reporting shape.
+Unknown protocol fields,
+additional message fields,
+unsupported message roles,
+missing original sources,
+and changed cardinalities retain an unresolved request-use obligation.
+Successful field coverage can discharge only `request-material-instruction-use`;
+source-domain,
+semantic admission,
+authority,
+delegation,
+and operation premises remain independent.
+Native permit,
+prohibit,
+unspecified,
+and omission controls are pending.
 
 ## Original native RPC approval verification
 
