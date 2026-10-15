@@ -1619,11 +1619,32 @@ and a separate positive test confirms empty text can populate successor argument
 After adding opening preflight cases and formatting,
 all seven fixture and consumer files have zero lint diagnostics in
 `${HOME}/temp/agent/pi-program-owner-tests-format-fourth-20261015.log`.
-The final consumer and type checks,
-direct original-versus-typed callback traces,
-guard omission controls,
-and complete maintained lint recount remain required before qualifying program ownership.
-Then continue `child-constructor.mjs` (471 warnings in the instruction-port report),
+The final consumer and type checks pass in
+`${HOME}/temp/agent/pi-program-owner-direct-final-20261015.log`
+and `${HOME}/temp/agent/pi-program-owner-types-final-20261015.log`.
+The final suites also pass against the saved original in
+`${HOME}/temp/agent/pi-program-owner-baseline-final-20261015.log`.
+Eight original-versus-typed traces match across 250 observed calls,
+including values,
+errors,
+identities,
+frozen keys,
+and callback events.
+The dependency-retirement positive control changes the trace.
+All 28 process-local guard omissions fail their intended assertions;
+the 17 built artifacts retain their original SHA-256 hashes.
+Receipts are `typed-program-comparison.json` and `typed-program-omissions.json`
+in `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete maintained lint recount covers 608 files and 486 rules:
+zero errors and 11716 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-program-lint-20261015.log`.
+All 24 program implementation,
+bridge,
+fixture,
+and consumer files have zero diagnostics in that report.
+Program ownership is qualified for the tested original consumer boundaries.
+This does not establish unreachable trusted-internal misuse branches.
+Continue `child-constructor.mjs` (471 warnings in the instruction-port report),
 preserving existing behavior and consumer boundaries.
 The handover,
 troubleshooting entry,
