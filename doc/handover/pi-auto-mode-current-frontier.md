@@ -1312,11 +1312,46 @@ reentry recovery,
 declaration and batch caps,
 the exact four MiB UTF-8 request boundary,
 and the distinction between retained diagnostics and current evidence.
-The latest focused source check has zero errors and seven warnings before final formatting corrections.
-Saved-implementation comparison,
-guard-omission controls,
-broader native consumers,
-and the maintained warning recount remain pending for this owner.
+Formatting and descriptor-admission corrections are complete through `6b47e03aa8`.
+The focused lint reports zero diagnostics across all 12 selection source and consumer files in
+`${HOME}/temp/agent/pi-native-selection-owner-final-lint-20261015.log`.
+The saved original owner passes the same committed consumer tests through a process-local entry replacement in
+`${HOME}/temp/agent/pi-native-selection-owner-baseline-tests-20261015.log`.
+The old and new owners agree across 19 authored lifecycle scenarios on values,
+errors,
+checkpoint and resolver counts,
+freeze state,
+and retained identities.
+Both use the same already-qualified catalog and settlement helpers;
+the comparison isolates the selection-owner port.
+A changed-estimate positive control proves that comparison observes answer differences.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-selection-owner-comparison.json`
+retains the comparison and artifact hashes.
+The rebuilt selection and settlement consumers,
+request claims,
+domain contrasts,
+authored manual approvals,
+and package type check pass in
+`${HOME}/temp/agent/pi-native-typed-selection-consumers-20261015.log`.
+Removing reentry,
+binding currentness,
+canonical binding-record identity,
+final issuance lifetime,
+declaration count,
+batch count,
+wire bytes,
+ordinary-array admission,
+descriptor membership,
+canonical claim evidence,
+or canonical batch evidence guards makes the committed tests fail.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-selection-omissions.json`
+records all 11 process-local omissions and unchanged artifact hashes.
+The maintained lint recount covers 547 files and 486 rules:
+zero errors and 13007 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-selection-lint-20261015.log`.
+All selection source and consumer files have zero diagnostics in that full report.
+The warning gate remains open;
+continue typing the original judgment consumers and their retained owner boundaries.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
