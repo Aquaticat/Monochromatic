@@ -1,12 +1,9 @@
 import {createGroupFailures} from './program-collector-failures.mjs';
 import {createGroupCompletions} from './program-collector-completions.mjs';
 
-export class DeclaredGroupCollectionError extends Error {
-  constructor(message){super(message);this.name=this.constructor
-    .name;}
-}
-
-
+import {DeclaredGroupCollectionError} from './group-collection-error.ts';
+import {createGroupLifetime} from './group-lifetime.ts';
+export {DeclaredGroupCollectionError} from './group-collection-error.ts';
 
 //region Run-local collection and transport lifetime, separate from actual native execution lifetime.
 /**
@@ -261,41 +258,7 @@ export function createReachedGroupRun({
       nativeSignal:context.signal
     });}
   })); }));
-  function retire(){
-    if(groupState.closed)return;
-    detach();groupState.phaseAtReturn=groupState.phase;
-    if((groupState.phase==='collecting')&&(!groupState.primary))recordFailure({
-      error:new DeclaredGroupCollectionError('Parent returned before declared membership completed'),
-      at:'incomplete-membership-return'
-    });
-    groupState.closed=true;
-    const reason=new DeclaredGroupCollectionError('Declared parent group has returned');
-    rejectPending({
-      error:reason,
-      state:'cancelled'
-    });controller.abort(reason);
-  }
-  async function drain(){await groupState.work;}
-  function inspect(){return Object.freeze({
-    phase:groupState.closed?'closed':groupState.phase,
-    phaseAtReturn:groupState.phaseAtReturn,
-    failed:groupState.primary!==undefined,
-    failure:groupState.primary?.occurrence
-      .error,
-    failures:Object.freeze([...failures]),
-    dispatches:groupState.dispatches,
-    unboundPending:groupState.unboundPending,
-    unboundOutcomes:groupState.unboundOutcomes,
-    members:Object.freeze(records.map(function inspectMember(record) { return (Object.freeze({
-      ordinal:record.member
-        .ordinal,
-      arrival:record.arrival,
-      state:record.state,
-      completion:record.completion
-    })); })),
-    executionState:'owned-by-native-consumer-not-inferred',
-    effectQualification:'not-established'
-  });}
+  const {retire,drain,inspect}=createGroupLifetime({groupState,records,failures,controller,detach,recordFailure,rejectPending});
   return Object.freeze({
     declaration,
     tools,

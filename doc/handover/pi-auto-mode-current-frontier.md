@@ -2444,7 +2444,14 @@ in `typed-group-failure-comparison.json`.
 for name/constructor,
 while verifying the unchanged message and underlying caught-value identity.
 The failure owner is qualified at these tested boundaries.
-The full maintained lint recount remains pending.
+The full maintained recount covers 714 files and 486 rules,
+with zero errors and 10920 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-group-failures-lint-20261015.log`.
+All eight changed failure implementation,
+declaration,
+bridge,
+fixture,
+and consumer files have zero diagnostics in that report.
 Continue original collector composition,
 then reached-program runtime and runner composition.
 
