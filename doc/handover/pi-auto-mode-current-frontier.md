@@ -1006,7 +1006,29 @@ Commit `c1bd9b7bad` passes original coordinate values to the span checker
 and uses a bounded ASCII tag scan instead of spreading source text.
 The formatted index and its contracts pass focused lint with zero errors and warnings in
 `${HOME}/temp/agent/pi-native-typed-index-final-format-20261015.log`.
-The built old/new comparison and native policy-consumer checks are pending.
+The rebuilt relevance-cache,
+domain,
+semantic operating-policy,
+manual-review,
+and package type checks pass in
+`${HOME}/temp/agent/pi-native-typed-index-consumer-20261015.log`.
+The built old/new comparison matches complete index output or original diagnostic fields for
+12 real-parser documents and six invalid parser trees.
+It includes headings,
+unclassified text,
+quoted and fenced examples,
+astral characters,
+literal tag boundaries,
+duplicate tags,
+and invalid source positions.
+A changed-source control produces different rule handles and index output.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-policy-index-comparison.json`
+retains both artifact hashes and the results.
+The complete lint recount after the typed observer and index ports covers 519 files and 486 rules:
+zero errors and 13665 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-observer-index-lint-20261015.log`.
+The strict package gate remains failing on warnings;
+continue typing the remaining native boundaries and resolving their formatting diagnostics.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
