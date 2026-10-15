@@ -116,15 +116,18 @@ export function programRunnerSource(source: string): string {
   if (declaration.type !== 'ClassExpression') throw new NativeBatchBuildError('Original native runner is not a class expression');
   const create = originalMethod({ members: declaration.body.body, name: 'createDeclaredProgram' });
   const bind = originalMethod({ members: declaration.body.body, name: 'bindGroup' });
+  const createBody = create.value.body;
+  const bindBody = bind.value.body;
+  if ((createBody === null) || (bindBody === null)) throw new NativeBatchBuildError('Original native runner method body is unavailable');
   const edits: NativeSourceEdit[] = [
     methodTools({ method: create, names: ['origin', 'carrier', 'code', 'assertParentCurrent'] }),
     methodTools({ method: bind, names: ['origin', 'carrier', 'group', 'assertParentCurrent'] }),
-    { start: create.value.body.start + 1, end: create.value.body.start + 1,
+    { start: createBody.start + 1, end: createBody.start + 1,
       text: '\nif(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original request tool snapshot is unavailable");\n' },
   ];
   const reads: Node[] = [];
   const handoffs: Node[] = [];
-  for (const node of walkNativeSyntax(create.value.body)) {
+  for (const node of walkNativeSyntax(createBody)) {
     if ((node.type === 'VariableDeclarator') && (node.id.type === 'Identifier')
       && (node.id.name === 'toolNames') && (node.init !== null)) {
       for (const expression of walkNativeSyntax(node.init)) if (isOriginalHostTools(expression)) reads.push(expression);
@@ -141,7 +144,7 @@ export function programRunnerSource(source: string): string {
   const read = nonNullishOrThrow(reads[0]);
   edits.push({ start: read.start, end: read.end, text: 'tools' });
   edits.push(insertOriginalTools({ node: nonNullishOrThrow(handoffs[0]), names: ['origin', 'carrier', 'group', 'assertParentCurrent'] }));
-  const lookups = [...walkNativeSyntax(bind.value.body)].filter(function toolsDeclaration(node) {
+  const lookups = [...walkNativeSyntax(bindBody)].filter(function toolsDeclaration(node) {
     return (node.type === 'VariableDeclaration') && node.declarations.some(function declaresTools(value) {
       return (value.id.type === 'Identifier') && (value.id.name === 'tools');
     });
