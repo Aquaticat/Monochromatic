@@ -21,7 +21,7 @@ await describe({
     it({
       name: 'runs every session in order for an empty filter',
       fn: async ({ expect, }) => {
-        expect(sessionsFor({ only: '', },),).toEqual(['wide', 'narrow', 'dialog', 'quit', 'states', 'visual',],);
+        expect(sessionsFor({ only: '', },),).toEqual(['wide', 'narrow', 'dialog', 'auto-play', 'quit', 'states', 'visual',],);
       },
     },),
     it({
@@ -39,6 +39,7 @@ await describe({
         expect(sessionsFor({ only: 'click-through/search-narrow', },),).toEqual(['wide', 'narrow',],);
         expect(sessionsFor({ only: 'click-through/search-wide', },),).toEqual(['wide', 'narrow',],);
         expect(sessionsFor({ only: 'quit', },),).toEqual(['quit',],);
+        expect(sessionsFor({ only: 'auto-play/on-click-selects-and-plays', },),).toEqual(['auto-play',],);
         expect(sessionsFor({ only: 'states/in-order-stops', },),).toEqual(['states',],);
         expect(sessionsFor({ only: 'visual/dark', },),).toEqual(['visual',],);
       },
