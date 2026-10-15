@@ -31,8 +31,31 @@ The exported `Cargo.lock` records the resolved graph;
 the checked-in lockfile stays unchanged.
 `TRIAL_LINKER=mold` installs Alpine's packaged linker and selects it through GCC for a toolchain invalidation probe.
 Its version appears in `toolchain.txt`.
+`linker.txt` captures the executable's ELF comment section,
+and `cache-usage-kib.txt` measures the Cargo registry and target directories in KiB.
+Those directories are not the complete billed BuildKit or registry footprint.
 This probe checks rebuilding and executable compatibility;
 it is not a linker-only performance comparison.
+
+## CI trial entry points
+
+- `trial:depot:connection` verifies a repository checkout.
+- `trial:depot:coverage` runs logger and all-feature audio-core checks.
+- `trial:depot:android` runs JVM unit tests,
+  reports case counts,
+  and runs Android lint.
+- `trial:depot:snapshot` prepares or reuses the Node/dependency image and checks logger from it.
+- `trial:depot:validation` combines image reuse,
+  Android checks,
+  and display/audio/virtualization prerequisite inspection.
+- `trial:depot:negative-control` deliberately breaks one audio test inside its disposable sandbox.
+  A failed CI run with `window_frames_floors_and_clamps` is the expected result.
+  Do not include this job in normal validation.
+
+All these tasks belong to `//package/music-player/desktop-app`.
+The `.depot` workflow has manual dispatch only.
+The GitHub comparison workflows respond only to their trial-branch workflow-file changes or manual dispatch.
+They publish no releases.
 
 ## Interpretation
 
