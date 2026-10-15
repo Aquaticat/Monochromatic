@@ -59,8 +59,16 @@ type OriginalSourceProjection = Readonly<{
 /**
  Literal source tags and unclassified intervals remain distinct structural subjects.
  */
-export type ClauseClassification = Readonly<{ code: string; kind?: never; nodeType?: never }>
-  | Readonly<{ kind: 'unclassified-source-span'; nodeType: string; code?: never }>;
+export type ClauseClassification = Readonly<{
+  code: string;
+  kind?: never;
+  nodeType?: never
+}>
+  | Readonly<{
+    kind: 'unclassified-source-span';
+    nodeType: string;
+    code?: never
+  }>;
 
 /**
  Original clause projection keeps exact source offsets and contextual heading text.
@@ -87,7 +95,10 @@ export type GoverningRuleProjection = GoverningClause | GoverningHeadingContext;
 /**
  Unclassified diagnostics retain the same original candidate as instruction enumeration.
  */
-export type RetainedUnclassifiedClause = PolicySourceSpan & Readonly<{ candidate: Readonly<object>; type: string }>;
+export type RetainedUnclassifiedClause = PolicySourceSpan & Readonly<{
+  candidate: Readonly<object>;
+  type: string
+}>;
 
 /**
  Candidate retention combines an original interval with its structural classification.

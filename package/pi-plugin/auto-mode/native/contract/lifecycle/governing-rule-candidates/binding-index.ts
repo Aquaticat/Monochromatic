@@ -5,7 +5,11 @@ import { createHash } from 'node:crypto';
 import { indexPolicyDocument } from '../../policy-index.ts';
 import type { PolicyHeading } from '../../policy-index-types.ts';
 import { GoverningRuleBindingError } from './binding-error.ts';
-import type { GoverningBindingIndex, GoverningBindingInput, GoverningSource } from './binding-types.ts';
+import type {
+  GoverningBindingIndex,
+  GoverningBindingInput,
+  GoverningSource
+} from './binding-types.ts';
 
 /**
  One source cannot exceed the original question binding profile.
@@ -22,7 +26,8 @@ const MAX_SOURCE_CLAUSES = 512;
  @example assertGoverningSource(source);
  */
 export function assertGoverningSource(source: GoverningSource): void {
-  if ((source === null) || (source === undefined) || (!Object.isFrozen(source))
+  if ((source === null) || (source === undefined)
+    || (!Object.isFrozen(source))
     || ((typeof source.content) !== 'string')
     || ((typeof source.sha256) !== 'string')) throw new GoverningRuleBindingError('Governing-source reader returned no owned immutable text occurrence');
 }
@@ -40,7 +45,10 @@ export function assertGoverningSource(source: GoverningSource): void {
 
  @example readGoverningBindingIndex({ source, parse });
  */
-export function readGoverningBindingIndex({ source, parse }: Readonly<{
+export function readGoverningBindingIndex({
+  source,
+  parse
+}: Readonly<{
   source: GoverningSource;
   parse: GoverningBindingInput['parse'];
 }>): GoverningBindingIndex {
@@ -49,12 +57,23 @@ export function readGoverningBindingIndex({ source, parse }: Readonly<{
    */
   const index: GoverningBindingIndex = (source.kind === 'native-run-handler-message-input') && (source.contentFormat === 'native-content-json')
     ? {
-      sourceSha256: createHash('sha256').update(source.content).digest('hex'),
+      sourceSha256: createHash('sha256')
+        .update(source.content)
+        .digest('hex'),
       records: [],
-      unclassified: [{ start: 0, end: source.content.length, text: source.content, type: 'native-content-json' }],
+      unclassified: [{
+        start: 0,
+        end: source.content
+          .length,
+        text: source.content,
+        type: 'native-content-json'
+      }],
       structuralCoverage: 'unclassified-nodes-retained',
     }
-    : indexPolicyDocument({ source: source.content, parse });
+    : indexPolicyDocument({
+      source: source.content,
+      parse
+    });
   if (index.sourceSha256 !== source.sha256) throw new GoverningRuleBindingError('Indexed policy bytes differ from the original selected source');
   return index;
 }
@@ -75,13 +94,20 @@ export function referencedGoverningHeadings(index: GoverningBindingIndex): Reado
    Exact heading objects, rather than equal text, establish contextual membership.
    */
   const referenced = new Set<PolicyHeading>();
-  for (const record of [...index.records, ...index.unclassified]) {
+  for (const record of [
+    ...index.records,
+    ...index.unclassified
+  ]) {
     for (const heading of record.headings ?? []) referenced.add(heading);
   }
   /**
    Unreferenced headings consume individual candidate slots.
    */
   const orphanHeadings = (index.headings ?? []).filter(function isUnreferencedHeading(heading) { return !referenced.has(heading); });
-  if ((index.records.length + index.unclassified.length + orphanHeadings.length) > MAX_SOURCE_CLAUSES) throw new GoverningRuleBindingError('Policy clause count exceeds the original question binding profile');
+  if ((index.records
+    .length
+    + index.unclassified
+    .length
+    + orphanHeadings.length) > MAX_SOURCE_CLAUSES) throw new GoverningRuleBindingError('Policy clause count exceeds the original question binding profile');
   return referenced;
 }

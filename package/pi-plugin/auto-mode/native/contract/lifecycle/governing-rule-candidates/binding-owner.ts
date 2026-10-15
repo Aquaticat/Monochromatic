@@ -3,7 +3,11 @@
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { GoverningRuleBindingError } from './binding-error.ts';
-import { assertGoverningSource, readGoverningBindingIndex, referencedGoverningHeadings } from './binding-index.ts';
+import {
+  assertGoverningSource,
+  readGoverningBindingIndex,
+  referencedGoverningHeadings
+} from './binding-index.ts';
 import { captureGoverningCandidates } from './binding-candidates.ts';
 import type {
   GoverningBindingInput,
@@ -31,11 +35,17 @@ const l = tagged({ tag: 'auto-mode-governing-rule-binding' });
 
  @example createGoverningRuleBindings({ readSource, parse });
  */
-export function createGoverningRuleBindings({ readSource, parse }: GoverningBindingInput): GoverningRuleBindings {
+export function createGoverningRuleBindings({
+  readSource,
+  parse
+}: GoverningBindingInput): GoverningRuleBindings {
   /**
    Each original source has a distinct diagnostic scope.
    */
-  const sl = tagged({ tag: createGoverningRuleBindings.name, l });
+  const sl = tagged({
+    tag: createGoverningRuleBindings.name,
+    l
+  });
   sl.debug('binding original governing source');
   if (((typeof readSource) !== 'function') || ((typeof parse) !== 'function')) throw new GoverningRuleBindingError('Original governing-source reader and qualified Markdown parser are required');
   /**
@@ -46,7 +56,10 @@ export function createGoverningRuleBindings({ readSource, parse }: GoverningBind
   /**
    Source bytes determine retained structural intervals before handle construction.
    */
-  const index = readGoverningBindingIndex({ source, parse });
+  const index = readGoverningBindingIndex({
+    source,
+    parse
+  });
   /**
    Contextual heading membership uses original parser objects.
    */
@@ -54,11 +67,21 @@ export function createGoverningRuleBindings({ readSource, parse }: GoverningBind
   /**
    Original source capture owns every clause and contextual-heading handle.
    */
-  const capture = captureGoverningCandidates({ source, index, referenced });
+  const capture = captureGoverningCandidates({
+    source,
+    index,
+    referenced
+  });
   /**
    Once invalidated, this original source cannot regain eligibility through later recovery.
    */
-  const sourceState: { failure: unknown; stale: boolean } = { failure: undefined, stale: false };
+  const sourceState: {
+    failure: unknown;
+    stale: boolean
+  } = {
+    failure: undefined,
+    stale: false
+  };
   /**
    Check exact original source identity and permanently retain any failed source read.
 
@@ -68,15 +91,24 @@ export function createGoverningRuleBindings({ readSource, parse }: GoverningBind
     /**
      Source lifetime failures remain scoped to the original currentness check.
      */
-    const rl = tagged({ tag: current.name, l: sl });
-    if (sourceState.stale) throw new GoverningRuleBindingError('Original governing-rule source was already invalidated', { cause: sourceState.failure });
+    const rl = tagged({
+      tag: current.name,
+      l: sl
+    });
+    if (sourceState.stale) throw new GoverningRuleBindingError(
+      'Original governing-rule source was already invalidated',
+      { cause: sourceState.failure }
+    );
     try {
       if (readSource() !== source) throw new GoverningRuleBindingError('Original governing-source occurrence changed');
     } catch (error) {
       sourceState.stale = true;
       sourceState.failure = error;
       rl.debug('retained original governing-source invalidation');
-      throw new GoverningRuleBindingError('Governing-rule binding is no longer current', { cause: error });
+      throw new GoverningRuleBindingError(
+        'Governing-rule binding is no longer current',
+        { cause: error }
+      );
     }
   }
   /**
@@ -120,7 +152,8 @@ export function createGoverningRuleBindings({ readSource, parse }: GoverningBind
     /**
      Nonstring keys cannot match original literal source codes.
      */
-    const handle = (typeof code) === 'string' ? capture.byCode.get(code) : undefined;
+    const handle = (typeof code) === 'string' ? capture.byCode
+      .get(code) : undefined;
     if (!handle) throw new GoverningRuleBindingError('Requested clause is not in the original indexed policy');
     return handle;
   }
@@ -137,7 +170,8 @@ export function createGoverningRuleBindings({ readSource, parse }: GoverningBind
     /**
      Opaque original handles are objects; primitives and foreign objects have no membership.
      */
-    const projection = (handle !== null) && ((typeof handle) === 'object') ? capture.records.get(handle) : undefined;
+    const projection = (handle !== null) && ((typeof handle) === 'object') ? capture.records
+      .get(handle) : undefined;
     if (!projection) throw new GoverningRuleBindingError('Clause handle is not owned by this original governing-source binding');
     current();
     return projection;
@@ -153,17 +187,27 @@ export function createGoverningRuleBindings({ readSource, parse }: GoverningBind
       stale: sourceState.stale,
       failure: sourceState.failure,
       sourceSHA256: source.sha256,
-      codes: Object.freeze([...capture.byCode.keys()]),
+      codes: Object.freeze([...capture.byCode
+        .keys()]),
       unclassified: capture.retainedUnclassified,
       instructionCandidates: capture.instructionHandles,
       contextualHeadings: capture.retainedContextualHeadings,
       headingContextCandidate: capture.headingContextCandidate,
-      structuralCoverage: capture.retainedUnclassified.length > 0 ? 'unclassified-nodes-retained' : index.structuralCoverage,
+      structuralCoverage: capture.retainedUnclassified
+        .length
+        > 0 ? 'unclassified-nodes-retained' : index.structuralCoverage,
       authorityEstablishedByIndex: false,
       semanticQualification: 'not-established',
     });
   }
   current();
-  return Object.freeze({ select, read, indexedCandidates, indexedInstructionCandidates, indexedHeadingContextCandidates, inspect });
+  return Object.freeze({
+    select,
+    read,
+    indexedCandidates,
+    indexedInstructionCandidates,
+    indexedHeadingContextCandidates,
+    inspect
+  });
 }
 //endregion

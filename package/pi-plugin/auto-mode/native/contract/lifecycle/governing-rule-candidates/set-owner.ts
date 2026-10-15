@@ -5,8 +5,17 @@ import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import { createGoverningRuleBindings } from './binding-owner.ts';
 import { GoverningRuleBindingError } from './binding-error.ts';
-import type { GoverningRuleBindings, GoverningRuleProjection, GoverningSource } from './binding-types.ts';
-import type { GoverningRuleSet, GoverningSetInput, GoverningSetProjection, GoverningSetSnapshot } from './set-types.ts';
+import type {
+  GoverningRuleBindings,
+  GoverningRuleProjection,
+  GoverningSource
+} from './binding-types.ts';
+import type {
+  GoverningRuleSet,
+  GoverningSetInput,
+  GoverningSetProjection,
+  GoverningSetSnapshot
+} from './set-types.ts';
 
 /**
  One original judgment admits only the existing bounded source-list profile.
@@ -29,9 +38,10 @@ const l = tagged({ tag: 'auto-mode-governing-rule-set' });
  @throws GoverningRuleBindingError for mutable, empty, oversized, or repeated source membership
  */
 function assertOriginalSources(sources: readonly GoverningSource[]): void {
-  if ((!Array.isArray(sources)) || (!Object.isFrozen(sources)) || (sources.length === 0)
+  if ((!Array.isArray(sources)) || (!Object.isFrozen(sources))
+    || (sources.length === 0)
     || (sources.length > MAX_SOURCES)) throw new GoverningRuleBindingError('Original governing sources require a bounded immutable source list');
-  if (new Set(sources.map(function readGoverningSourceOccurrence(source) { return source.occurrence; })).size !== sources.length) throw new GoverningRuleBindingError('Original governing source occurrence is repeated');
+  if (new Set(sources.map(function readGoverningSourceOccurrence(source: GoverningSource) { return source.occurrence; })).size !== sources.length) throw new GoverningRuleBindingError('Original governing source occurrence is repeated');
 }
 
 //region Original source order and per-source candidate identity remain independently observable.
@@ -48,11 +58,17 @@ function assertOriginalSources(sources: readonly GoverningSource[]): void {
 
  @example createGoverningRuleSet({ readSources, parse });
  */
-export function createGoverningRuleSet({ readSources, parse }: GoverningSetInput): GoverningRuleSet {
+export function createGoverningRuleSet({
+  readSources,
+  parse
+}: GoverningSetInput): GoverningRuleSet {
   /**
    Each original source-set construction keeps its own lifecycle diagnostics.
    */
-  const sl = tagged({ tag: createGoverningRuleSet.name, l });
+  const sl = tagged({
+    tag: createGoverningRuleSet.name,
+    l
+  });
   sl.debug('composing original governing source indexes');
   /**
    Retain the original array itself so equal replacement lists cannot regain eligibility.
@@ -62,7 +78,13 @@ export function createGoverningRuleSet({ readSources, parse }: GoverningSetInput
   /**
    A failed source-set read permanently retires this original set.
    */
-  const sourceState: { failure: unknown; retired: boolean } = { failure: undefined, retired: false };
+  const sourceState: {
+    failure: unknown;
+    retired: boolean
+  } = {
+    failure: undefined,
+    retired: false
+  };
   /**
    Keep each exact per-source projection beside its augmented set projection.
    */
@@ -99,7 +121,10 @@ export function createGoverningRuleSet({ readSources, parse }: GoverningSetInput
    @throws original source-reader failure when that first failure retires the set
    */
   function current(): void {
-    if (sourceState.retired) throw new GoverningRuleBindingError('Original governing source set lost eligibility', { cause: sourceState.failure });
+    if (sourceState.retired) throw new GoverningRuleBindingError(
+      'Original governing source set lost eligibility',
+      { cause: sourceState.failure }
+    );
     try {
       if (readSources() !== sources) throw new GoverningRuleBindingError('Original governing source list changed');
     } catch (error) {
@@ -112,7 +137,10 @@ export function createGoverningRuleSet({ readSources, parse }: GoverningSetInput
     /**
      Per-source bindings use the same original set-lifetime gate.
      */
-    const index = createGoverningRuleBindings({ parse, readSource() { current(); return source; } });
+    const index = createGoverningRuleBindings({
+      parse,
+      readSource() { current(); return source; }
+    });
     indexes.push(index);
     for (const handle of index.indexedInstructionCandidates()) {
       /**
@@ -122,8 +150,14 @@ export function createGoverningRuleSet({ readSources, parse }: GoverningSetInput
       /**
        Ordinal augmentation does not replace original clause or source identity.
        */
-      const projection = Object.freeze({ ...original, sourceOrdinal });
-      records.set(handle, { index, original, projection });
+      const projection = Object.freeze({
+        ...original,
+        sourceOrdinal
+      });
+      records.set(
+        handle,
+        { index, original, projection }
+      );
       instructionHandles.push(handle);
       if (projection.code !== undefined) {
         handles.push(handle);
@@ -132,7 +166,10 @@ export function createGoverningRuleSet({ readSources, parse }: GoverningSetInput
          */
         const matches = byCode.get(projection.code) ?? [];
         matches.push(handle);
-        byCode.set(projection.code, matches);
+        byCode.set(
+          projection.code,
+          matches
+        );
       }
     }
     for (const handle of index.indexedHeadingContextCandidates()) {
@@ -143,8 +180,14 @@ export function createGoverningRuleSet({ readSources, parse }: GoverningSetInput
       /**
        The source ordinal preserves list position without changing contextual content.
        */
-      const projection = Object.freeze({ ...original, sourceOrdinal });
-      records.set(handle, { index, original, projection });
+      const projection = Object.freeze({
+        ...original,
+        sourceOrdinal
+      });
+      records.set(
+        handle,
+        { index, original, projection }
+      );
       headingHandles.push(handle);
     }
   }
@@ -166,19 +209,22 @@ export function createGoverningRuleSet({ readSources, parse }: GoverningSetInput
 
    @returns canonical frozen tagged candidate array
    */
-  function indexedCandidates(): readonly Readonly<object>[] { current(); return candidates; }
+  function indexedCandidates(): readonly Readonly<object>[] { current();
+  return candidates; }
   /**
    Enumerate every retained clause subject while the source list remains current.
 
    @returns canonical frozen complete candidate array
    */
-  function indexedInstructionCandidates(): readonly Readonly<object>[] { current(); return instructionCandidates; }
+  function indexedInstructionCandidates(): readonly Readonly<object>[] { current();
+  return instructionCandidates; }
   /**
    Enumerate independent contextual-heading subjects while the source list remains current.
 
    @returns canonical frozen aggregate candidate array
    */
-  function indexedHeadingContextCandidates(): readonly Readonly<object>[] { current(); return headingContextCandidates; }
+  function indexedHeadingContextCandidates(): readonly Readonly<object>[] { current();
+  return headingContextCandidates; }
   /**
    Authenticate original set membership and the unchanged per-source projection.
 
@@ -195,7 +241,9 @@ export function createGoverningRuleSet({ readSources, parse }: GoverningSetInput
     const record = (handle !== null) && ((typeof handle) === 'object') ? records.get(handle) : undefined;
     if (!record) throw new GoverningRuleBindingError('Clause handle is not owned by this original source set');
     current();
-    if (record.index.read(handle) !== record.original) throw new GoverningRuleBindingError('Original source clause changed');
+    if (record.index
+      .read(handle)
+      !== record.original) throw new GoverningRuleBindingError('Original source clause changed');
     return record.projection;
   }
   /**
@@ -224,10 +272,24 @@ export function createGoverningRuleSet({ readSources, parse }: GoverningSetInput
    */
   function inspect(): readonly GoverningSetSnapshot[] {
     current();
-    return Object.freeze(indexes.map(function snapshotOriginalSourceIndex(index, sourceOrdinal) {
-      return Object.freeze({ ...index.inspect(), sourceOrdinal, sourceOccurrence: nonNullishOrThrow(sources[sourceOrdinal]).occurrence });
+    return Object.freeze(indexes.map(function snapshotOriginalSourceIndex(
+      index,
+      sourceOrdinal
+    ) {
+      return Object.freeze({
+        ...index.inspect(),
+        sourceOrdinal,
+        sourceOccurrence: nonNullishOrThrow(sources[sourceOrdinal]).occurrence
+      });
     }));
   }
-  return Object.freeze({ indexedCandidates, indexedInstructionCandidates, indexedHeadingContextCandidates, read, select, inspect });
+  return Object.freeze({
+    indexedCandidates,
+    indexedInstructionCandidates,
+    indexedHeadingContextCandidates,
+    read,
+    select,
+    inspect
+  });
 }
 //endregion

@@ -23,7 +23,12 @@ import type {
 
  @example retainGoverningHeadings({ index, referenced, retain, unclassified });
  */
-export function retainGoverningHeadings({ index, referenced, retain, unclassified }: Readonly<{
+export function retainGoverningHeadings({
+  index,
+  referenced,
+  retain,
+  unclassified
+}: Readonly<{
   index: GoverningBindingIndex;
   referenced: ReadonlySet<PolicyHeading>;
   retain: (input: GoverningClauseRetention) => Readonly<object>;
@@ -38,20 +43,41 @@ export function retainGoverningHeadings({ index, referenced, retain, unclassifie
    */
   const contextual: PolicyHeading[] = [];
   for (const heading of index.headings ?? []) {
-    state.ancestry = state.ancestry.filter(function hasShallowerHeadingDepth(parent) { return parent.depth < heading.depth; });
+    state.ancestry = state.ancestry
+      .filter(function hasShallowerHeadingDepth(parent) { return parent.depth < heading.depth; });
     if (referenced.has(heading)) {
-      contextual.push(Object.freeze({ start: heading.start, end: heading.end, text: heading.text, depth: heading.depth }));
+      contextual.push(Object.freeze({
+        start: heading.start,
+        end: heading.end,
+        text: heading.text,
+        depth: heading.depth
+      }));
     } else {
       /**
        An orphan heading retains its original parents, not itself, as contextual text.
        */
       const candidate = retain({
-        record: { ...heading, headings: state.ancestry },
-        classification: { kind: 'unclassified-source-span', nodeType: 'heading' },
+        record: {
+          ...heading,
+          headings: state.ancestry
+        },
+        classification: {
+          kind: 'unclassified-source-span',
+          nodeType: 'heading'
+        },
       });
-      unclassified.push(Object.freeze({ candidate, start: heading.start, end: heading.end, text: heading.text, type: 'heading' }));
+      unclassified.push(Object.freeze({
+        candidate,
+        start: heading.start,
+        end: heading.end,
+        text: heading.text,
+        type: 'heading'
+      }));
     }
-    state.ancestry = [...state.ancestry, heading];
+    state.ancestry = [
+      ...state.ancestry,
+      heading
+    ];
   }
   return Object.freeze(contextual);
 }
