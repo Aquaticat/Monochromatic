@@ -32,7 +32,19 @@ const attemptLimit = 3;
 /**
  Own one preparation-inclusive deadline and client-attempt ceiling.
  Trusted transport classification never reads model claims.
- @param input - original clock, cancellation and transport classification
+ @param now - original monotonic clock
+ @param signal - original cancellation
+ @param isRetryableTransportFailure - fixed classification of actual transport errors
+ @returns original judgment budget without renewal or reset operations
+ @example
+ ```ts
+ const budget = createJudgmentBudget({
+   now: () => performance.now(),
+   signal: new AbortController().signal,
+   isRetryableTransportFailure: () => false,
+ });
+ budget.checkpoint();
+ ```
  */
 export function createJudgmentBudget({
   now,
@@ -40,11 +52,14 @@ export function createJudgmentBudget({
   isRetryableTransportFailure
 }: JudgmentBudgetInput): JudgmentBudget {
   if((typeof now)!=='function')throw new JudgmentBudgetError('Judgment requires an owned monotonic clock');
+  /** Original first clock reading includes all preparation in the budget. */
   const startedAt=now();
+  /** Fixed expiry never changes after creation. */
   const deadlineAt=startedAt+durationMs;
   if((!Number.isFinite(startedAt))||(!Number.isFinite(deadlineAt))
     ||(deadlineAt<=startedAt))throw new JudgmentBudgetError('Judgment clock cannot represent its deadline');
   if(((typeof signal?.aborted)!=='boolean')||((typeof isRetryableTransportFailure)!=='function'))throw new JudgmentBudgetError('Judgment requires cancellation and an owned transport classifier');
+  /** One original lifetime owns every mutable accounting field. */
   const accounting: {
     lastAt: number;
     attempts: number;
@@ -71,14 +86,20 @@ export function createJudgmentBudget({
     
     
     
+  /** Attempts retain their original failure and completion order. */
   const records=new Map<number, JudgmentAttemptRecord>();
+  /**
+   Reject expired, cancelled or previously retired evidence.
+   @returns remaining milliseconds in the original lifetime
+   */
   function checkpoint(): number {
     if(accounting.retired)throw accounting.retirement;
     if(accounting.finished)throw new JudgmentBudgetError('Judgment evidence collection already finished');
     if(accounting.checking)throw new JudgmentBudgetError('Judgment clock checks cannot reenter');
     accounting.checking=true;
+    /** Restore callback entry only when this clock check exits. */
     using checkScope={
-      [Symbol.dispose]() {
+      [Symbol.dispose](): void {
         accounting.checking=false;
       }
     };
@@ -87,6 +108,7 @@ export function createJudgmentBudget({
         'Judgment was cancelled',
         {cause:signal.reason}
       );
+      /** Read the original clock only after cancellation and reentrancy checks. */
       const current=now();
       if((!Number.isFinite(current))||(current<accounting.lastAt))throw new JudgmentBudgetError('Judgment clock moved backwards or became non-finite');
       accounting.lastAt=current;
@@ -108,6 +130,7 @@ export function createJudgmentBudget({
    @param error - original transport failure
    */
   function retainFailureAtCheckpoint(error: unknown): void {
+    /** Avoid retaining the same terminal failure twice. */
     const alreadyRetired=accounting.retired;
     try {
       checkpoint();
@@ -126,17 +149,19 @@ export function createJudgmentBudget({
   }
   /**
    Preserve transport, classifier and boundary failures together.
-   @param input - failed attempt and classification
-   @returns no successful classification
+   @param error - original failed attempt
+   @param classificationError - original classification failure
    */
   function throwClassificationFailure({
     error,
     classificationError
   }: { readonly error: unknown; readonly classificationError: unknown }): never {
+    /** Preserve errors in their original occurrence order. */
     const failures=[
       error,
       classificationError
     ];
+    /** Only newly observed boundary failures extend this aggregate. */
     const alreadyRetired=accounting.retired;
     try {
       checkpoint();
@@ -175,8 +200,9 @@ export function createJudgmentBudget({
     if((typeof operation)!=='function')throw new JudgmentBudgetError('Judgment transport operation must be an owned function');
     checkpoint();
     accounting.running=true;
+    /** Pending transport excludes overlapping dispatch and closure. */
     using attemptScope={
-      [Symbol.dispose]() {
+      [Symbol.dispose](): void {
         accounting.running=false;
       }
     };
@@ -186,7 +212,9 @@ export function createJudgmentBudget({
         checkpoint();
         if(accounting.attempts>=attemptLimit)throw new JudgmentAttemptLimitError('Judgment exhausted its three client attempts');
         accounting.attempts+=1;
+        /** Original judgment-wide invocation ordinal. */
         const attempt=accounting.attempts;
+        /** This dispatch has already consumed a failed transport invocation. */
         const retry=invocation>0;
         records.set(
           attempt,
@@ -196,7 +224,8 @@ export function createJudgmentBudget({
             state:'started'
           })
         );
-        const response: { value: Result | undefined }={value:undefined};
+        /** Only the successful transport path publishes a response field. */
+        const response: { value?: Result }={};
         try {
           // oxlint-disable-next-line eslint/no-await-in-loop -- Original failure classification gates the next attempt; see doc/troubleshooting/pi-sdk-staging.md, "Sequential native judgment retries".
           response.value=await operation(Object.freeze({
@@ -217,6 +246,7 @@ export function createJudgmentBudget({
           );
           retainFailureAtCheckpoint(error);
           if(accounting.retryUsed||(accounting.attempts>=attemptLimit))throw error;
+          /** The next attempt depends on classification of this actual failure. */
           const retryable=classifyRetry(error);
           if((typeof retryable)!=='boolean')throwClassificationFailure({
             error,
@@ -255,6 +285,10 @@ export function createJudgmentBudget({
       throw new JudgmentBudgetError('Judgment retry loop ended without an outcome');
     }
   }
+  /**
+   Copy retained evidence without invoking the clock or renewing its lifetime.
+   @returns immutable current accounting snapshot
+   */
   function diagnostics(): JudgmentBudgetSnapshot {
     return Object.freeze({
     startedAt,
@@ -267,6 +301,10 @@ export function createJudgmentBudget({
     records:Object.freeze([...records.values()])
     });
   }
+  /**
+   Close evidence only after pending work ends and lifetime remains valid.
+   @returns immutable final accounting snapshot
+   */
   function finish(): JudgmentBudgetSnapshot {
     if(accounting.running||accounting.checking)throw new JudgmentBudgetError('Judgment cannot finish during an attempt or clock callback');
     checkpoint();
