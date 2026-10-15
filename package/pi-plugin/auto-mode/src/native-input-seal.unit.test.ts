@@ -89,7 +89,7 @@ await describe({ name: seal.name, children: [
       const child = containers[index + 1];
       if (child !== undefined) container.child = child;
     }
-    const root = containers[0];
+    const [root] = containers;
     assert.notEqual(root, undefined);
     assert.doesNotThrow(function deepBound() {
       assert.equal(seal(root), root);
