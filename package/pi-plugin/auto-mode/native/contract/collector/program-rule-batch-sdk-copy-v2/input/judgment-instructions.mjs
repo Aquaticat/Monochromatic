@@ -125,7 +125,11 @@ function ensureRuleBindings(){
     }
 /** Enumeration is source-owned selection only, not authority, full-source coverage or permission. */
     function indexedRuleCandidates(){return ensureRuleBindings().indexedCandidates();}
-function readRuleCandidate(rule){return ensureRuleBindings().read(rule);}
+/** Keep nested rule ownership reads inside fresh entry and exit dependency checks. */
+function readRuleCandidate(rule){
+  function readOwnedRule(){return ensureRuleBindings().read(rule);}
+  return isBindingSegmentActive()?readOwnedRule():bindingSegment(readOwnedRule);
+}
 function indexedInstructionCandidates(){return ensureRuleBindings().indexedInstructionCandidates();}
 function indexedHeadingContextCandidates(){return ensureRuleBindings().indexedHeadingContextCandidates();}
 function inspectRuleSources(){return ensureRuleBindings().inspect();}
