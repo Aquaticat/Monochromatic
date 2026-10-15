@@ -128,10 +128,10 @@ export function createResourceInputOwner({
     fixed({
       loader,
       name:'reload',
-      async value(...args){return await reload({
+      async value(options){return await reload({
         record,
         receiver:this,
-        args
+        args:[options]
       });}
     });
     records.set(

@@ -1,9 +1,17 @@
 import {SourceCollectionError} from '../../collector.mjs';
-import {ResourceInputCustodyError,RecordedInputFailure,failed,publicFailure} from './resource-failures.mjs';
+import {RecordedInputFailure,failed} from './resource-failures.mjs';
 import {snapshotInput} from '../../resource-input-custody/values.ts';
 import {phases} from './resource-methods.mjs';
 /** Capture ordered synchronous callbacks under the original reload scope. */
 export function createResourceCapture(){
+  function captureValue({scope,kind,value,at}){
+    try{return snapshotInput({kind,value});}
+    catch(error){throw failed({scope,error,at});}
+  }
+  function invokeOverride({scope,callback,receiver,value}){
+    try{return callback===undefined?value:Reflect.apply(callback,receiver,[value]);}
+    catch(error){throw failed({scope,error,at:'configured-callback'});}
+  }
 function active(record){
     const scope=record.active;
     if(!scope)throw new SourceCollectionError('Resource callback has no active owned native reload');
@@ -32,31 +40,13 @@ function capturePhase({
       error:new SourceCollectionError('Resource callback does not match its owned native reload phase'),
       at:'callback-entry'
     });
-    scope.busy=true;let after;
-      let before;
-      let result;
-    try{
-      try{before=snapshotInput({
-        kind:phase.kind,
-        value
-      });}
-      catch(error){throw failed({
-        scope,
-        error,
-        at:'input-capture'
-      });}
-      try{result=callback===undefined?value:Reflect.apply(
-        callback,
-        receiver,
-        [value]
-      );}
-      catch(error){throw failed({
-        scope,
-        error,
-        at:'configured-callback'
-      });}
+    scope.busy=true;
+    using callbackActivity={ [Symbol.dispose](){scope.busy=false;} };
+      const before=captureValue({scope,kind:phase.kind,value,at:'input-capture'});
+      const result=invokeOverride({scope,callback,receiver,value});
       // Ordinary Promise output is unsupported, but observe its eventual result before closing the reload.
-      if((result instanceof Promise)&&(Object.getPrototypeOf(result)===Promise.prototype)){
+      const {prototype:ordinaryPromisePrototype}=Promise;
+      if((result instanceof Promise)&&(Object.getPrototypeOf(result)===ordinaryPromisePrototype)){
         scope.pending
           .push(Promise.allSettled([result]));
         throw failed({
@@ -65,15 +55,7 @@ function capturePhase({
           at:'callback-result'
         });
       }
-      try{after=snapshotInput({
-        kind:phase.kind,
-        value:result
-      });}
-      catch(error){throw failed({
-        scope,
-        error,
-        at:'output-capture'
-      });}
+      const after=captureValue({scope,kind:phase.kind,value:result,at:'output-capture'});
       if(scope.failures
         .length
         > 0)throw new RecordedInputFailure({
@@ -89,7 +71,6 @@ function capturePhase({
       scope.phases
         .push(observation);scope.returns
           .push(result);return result;
-    }finally{scope.busy=false;}
   }
 return {capturePhase};
 }

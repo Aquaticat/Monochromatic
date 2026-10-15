@@ -38,12 +38,13 @@ async function refreshGoverningRelevance({
     signal.throwIfAborted();
     const completion=Promise.withResolvers();record.relevancePending
       .add(completion.promise);
+    using relevanceActivity={ [Symbol.dispose](){
+      record.relevancePending.delete(completion.promise);completion.resolve();
+    } };
     try{
       const view=await selection.refreshRelevance({signal});
       signal.throwIfAborted();selection.assertRelevanceCurrent(view);return view;
     }catch(error){record.relevanceFailureCount+=1;throw error;}
-    finally{record.relevancePending
-      .delete(completion.promise);completion.resolve();}
   }
 function readGoverningRelevance(loader){
     const selection=known(loader)

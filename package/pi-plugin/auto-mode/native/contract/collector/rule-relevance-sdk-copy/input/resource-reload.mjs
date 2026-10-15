@@ -4,6 +4,27 @@ import {snapshotInput} from '../../resource-input-custody/values.ts';
 import {phases} from './resource-methods.mjs';
 /** Publish and retire original native resource reload occurrences. */
 export function createResourceReload({readers,discoveries,nativeReload}){
+  async function invokeNativeReload({scope,record,args}){
+    try{return await Reflect.apply(nativeReload,record.loader,args);}
+    catch(error){
+      if((error instanceof RecordedInputFailure)&&(error.scope===scope)
+        &&scope.failures.includes(error.occurrence))throw error;
+      throw failed({scope,error,at:'native-reload'});
+    }
+  }
+  function finishReload({record,scope}){
+    record.active=undefined;
+    if(scope.pending.length>0){
+      record.cleanup=scope;
+      async function finishUnbound(){
+        scope.unbound=Object.freeze((await Promise.all(scope.pending)).flat()
+          .map(function freezeUnboundResult(value){return Object.freeze(value);}));
+        record.cleanup=undefined;
+        scope.completion.resolve();
+      }
+      void finishUnbound();
+    }else scope.completion.resolve();
+  }
 function readOutputs(record){
     const {loader} = record;
     for(const name of [
@@ -107,6 +128,8 @@ async function reload({
       at:'reload-entry'
     });throw publicFailure(scope);}
     if(record.cleanup)throw new SourceCollectionError('Unsupported resource callback work is still pending; drain it before reloading');
+    /** Callback results must settle before reload cleanup can close. @type {Promise<PromiseSettledResult<unknown>[]>[]} */
+    const pending=[];
     const scope={
       identity:Object.freeze({}),
       ordinal:record.history
@@ -115,7 +138,7 @@ async function reload({
       phases:[],
       returns:[],
       failures:[],
-      pending:[],
+      pending,
       unbound:Object.freeze([]),
       completion:Promise.withResolvers(),
       busy:false,
@@ -123,23 +146,9 @@ async function reload({
     };
     record.current=undefined;record.active=scope;record.history
       .push(scope);
-    let result;
+    using reloadActivity={ [Symbol.dispose](){finishReload({record,scope});} };
     try{
-      try{result=await Reflect.apply(
-        nativeReload,
-        record.loader,
-        args
-      );}
-      catch(error){
-        if(!((error instanceof RecordedInputFailure)
-          &&(error.scope===scope)
-          &&scope.failures
-          .includes(error.occurrence)))failed({
-          scope,
-          error,
-          at:'native-reload'
-        });
-      }
+      const result=await invokeNativeReload({scope,record,args});
       if(scope.failures
         .length
         > 0)throw publicFailure(scope);
@@ -183,21 +192,6 @@ async function reload({
         at:'reload-close'
       });
       scope.status='failed';throw publicFailure(scope);
-    }finally{
-      record.active=undefined;
-      if(scope.pending
-        .length
-        > 0){
-        record.cleanup=scope;
-        async function finishUnbound(){
-          scope.unbound=Object.freeze((await Promise.all(scope.pending)).flat()
-            .map(function freezeUnboundResult(value) { return (Object.freeze(value)); }));
-          record.cleanup=undefined;scope.completion
-            .resolve();
-        }
-        void finishUnbound();
-      }else scope.completion
-        .resolve();
     }
   }
 return {current,reload};
