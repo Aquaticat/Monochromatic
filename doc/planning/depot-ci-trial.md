@@ -7,6 +7,11 @@ The user wants more comprehensive CI with less repeated setup,
 rebuilding,
 and scheduling overhead.
 They delegated the technical recommendation and set a USD $200 monthly provider-spending ceiling.
+The interview remains open.
+The user wants intentional routing between GitHub and Depot based on measured benefit and budget,
+not a complete migration or a fallback used only after exhausting Depot allowances.
+They accept deeper Depot dependence when evidence justifies it;
+portability is not a hard requirement.
 This document defines evidence to collect;
 it does not recommend vendor adoption or authorize migration.
 
@@ -28,6 +33,8 @@ Early commits,
 including broken intermediate states,
 remain part of the development workflow.
 Agent-requested cloud checks are part of the desired workflow.
+The user accepts stopping superseded intermediate checks to prioritize the newest version.
+Explicit release builds require separate handling.
 
 ## Technical coverage target
 
@@ -135,6 +142,9 @@ storage,
 and billable usage.
 The broader coverage target also needs measured costs for checks currently absent from GitHub workflows.
 Historical provider minutes alone cannot estimate that future workload.
+Compare hybrid allocations of workloads between GitHub and Depot,
+including the effect of stopping superseded intermediate checks.
+Account for each product's separate allowances and the costs of broader coverage.
 
 [Depot Startup pricing][depot-pricing] has a USD $200 base plus additional usage charges.
 Included usage is 250 GB combined cache/registry storage,

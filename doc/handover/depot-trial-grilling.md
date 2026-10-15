@@ -75,6 +75,14 @@ transcript investigation was stopped.
   intelligently route some CI to GitHub and some to Depot.
   Routing should use measured benefit and the provider-spending ceiling from the outset;
   GitHub is not merely a fallback after budget exhaustion.
+- Q15 remains unresolved:
+  the user does not yet know whether a future organization transfer is acceptable.
+  Evaluate currently available routes without assuming transfer permission.
+- Q16 accepts prioritizing the newest version and stopping superseded intermediate checks.
+  Explicit release builds remain separate from this intermediate-check policy.
+- Q17 accepts deeper Depot dependence when measured benefits justify it.
+  Portable checks are not a hard requirement;
+  the intentional GitHub/Depot split remains a requirement.
 
 ## Measured release example
 
@@ -198,6 +206,36 @@ The illustrative calculation was `(50 - 10) * 0.07 = 2.80` for constant full-mon
 This storage-only calculation does not estimate the cost of the desired comprehensive CI.
 The user rejected it as a reason to change their preference.
 
+## Recent overlap and branch-rule evidence
+
+A read-only workflow-history probe covered October 15 from 00:00:00 through 19:00:00 UTC.
+The API returned 75 runs and matching total counts:
+29 release runs,
+33 Windows runs,
+and 13 Alpine runs.
+Ten older runs had executing jobs after a newer descendant commit triggered the same workflow on the same branch.
+Commit ancestry and actual job completion timestamps were checked.
+Seven finished without cancellation;
+three release runs were cancelled.
+One successful overlapping release run only performed detection and skipped builds.
+The probe does not establish that older results were unnecessary or why cancellations happened.
+
+For example,
+newer Windows and Alpine runs were created at 15:59:37 UTC.
+The [older Windows run][overlap-windows] completed its last job at 16:09:01;
+the [older Alpine run][overlap-alpine] completed its last job at 16:05:42.
+These are elapsed overlaps,
+not billed runner minutes.
+Q16 initially called the newer-run creation time a start time;
+the interviewer corrected that distinction explicitly.
+
+At 21:27:05 UTC,
+the branch-protection API returned empty required-status-check lists for `main`.
+The effective rules API returned only a Copilot review rule.
+These responses do not establish any required music-player CI checks.
+This is background evidence,
+not a proposal to redesign branch governance.
+
 ## Evaluation objective
 
 Compare provider charges plus valued elapsed CI time for equivalent coverage and the same stream of changes.
@@ -247,12 +285,11 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
 
 ## Open questions and next work
 
-- Await the current interview round:
-  Q15 asks whether an evidence-backed future organization transfer is an acceptable option.
-  Recommendations are not accepted answers or authorization to transfer the repository.
-- The factual exploration agent is checking workflow cancellation settings,
-  bounded recent execution history,
-  and repository rules before the next scheduling questions.
+- The ownership question remains unresolved;
+  no repository transfer is authorized.
+- The factual exploration agent is checking supported read-only account metadata and usage access
+  before proposing feasible Depot spending controls.
+- Define explicit-release handling separately from the accepted cancellation policy for intermediate checks.
 - Use the [trial proposal](../planning/depot-ci-trial.md) to collect comparable runtime,
   coverage,
   and cost evidence.
@@ -314,3 +351,5 @@ that those artifacts can answer.
 [github-billing]: https://docs.github.com/en/billing/concepts/product-billing/github-actions
 [depot-pricing]: https://depot.dev/pricing
 [ontario-wage]: https://www.ontario.ca/document/your-guide-employment-standards-act-0/minimum-wage
+[overlap-windows]: https://github.com/Aquaticat/Monochromatic/actions/runs/38765128213
+[overlap-alpine]: https://github.com/Aquaticat/Monochromatic/actions/runs/38765128314
