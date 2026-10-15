@@ -1766,7 +1766,23 @@ the observed own-key change,
 and the verified factory alternative.
 That record was rendered and inspected with Pandoc.
 Owned rebuild,
-consumer coverage,
+type check,
+domain,
+single-call,
+execution,
+and program-owner consumers pass in
+`${HOME}/temp/agent/pi-judgment-lifecycle-consumers-first-20261015.log`.
+`2fdb1ed4d5`,
+`84fc88caa3`,
+and `5e6d67724b` add independent lifecycle fixtures and direct evidence,
+assessment,
+and finalization suites using the actual built selection and budget.
+The first direct run caught an incorrect test expectation of 10000 milliseconds;
+the original budget's `durationMs` is 5000 milliseconds,
+and the built attempt supplied exactly 5000.
+The assertion now matches that original fixed budget.
+Type checking passes with the new fixtures.
+Final direct-suite verification,
 original-constructor comparisons,
 and guard controls remain pending for this extraction.
 The handover,
