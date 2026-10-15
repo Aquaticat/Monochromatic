@@ -202,11 +202,11 @@ function inspectBody({
       &&[
       'all',
       'allSettled'
-    ].some(name=>member(
+    ].some(function isPromiseGroupMethod(name) { return (member(
       group.callee,
       'Promise',
       name
-    ))
+    )); })
       &&(group.arguments
         .length
         ===1),
@@ -222,10 +222,8 @@ function inspectBody({
     'complete successor member array required'
   );
   const successors=array.elements
-    .map((
-      call,
-      ordinal
-    )=>inspectCall({
+    .map(function inspectSuccessorCall(call,
+      ordinal) { return (inspectCall({
       call,
       group:1,
       ordinal,
@@ -234,7 +232,7 @@ function inspectBody({
       allowed,
       source,
       prefix
-    }));
+    })); });
   return {
     bindingName:declaration.id
       .name,
@@ -272,8 +270,8 @@ export function declareResultProgram({
   requireProfile(
     Array.isArray(toolNames)&&(toolNames.length<=64)
       &&(new Set(toolNames).size===toolNames.length)
-      &&toolNames.every(name=>((typeof name)==='string')&&/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name)
-        &&(!name.startsWith('__owned_flow_'))),
+      &&toolNames.every(function isCallableIdentifier(name) { return (((typeof name)==='string')&&/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name)
+        &&(!name.startsWith('__owned_flow_'))); }),
     'unique exact callable identifiers required'
   );
   const prefix='async function __owned_parent(){';
@@ -353,10 +351,10 @@ export function declareResultProgram({
     'compiled source byte bound'
   );
   const groups=Object.freeze(inspected.groups
-    .map(group=>Object.freeze({
+    .map(function freezeDeclaredGroup(group) { return (Object.freeze({
       ...group,
       members:Object.freeze(group.members)
-    })));
+    })); }));
   const result=Object.freeze({
     source,
     sourceSHA256:createHash('sha256')

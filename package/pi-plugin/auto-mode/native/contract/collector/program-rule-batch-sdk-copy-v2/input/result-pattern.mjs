@@ -58,7 +58,7 @@ export function readPattern({
       <=64,
     'array size bound'
   );const items=node.elements
-    .map(item=>{requireProfile(
+    .map(function readArrayPattern(item) {requireProfile(
       (item!==null)&&(item.type!=='SpreadElement'),
       'array hole or spread'
     );return readPattern({
@@ -137,19 +137,19 @@ export function materializePattern({
       'owned string result required'
     );return result;
     case 'array':return Object.freeze(pattern.items
-      .map(item=>materializePattern({
+      .map(function materializeArrayItem(item) { return (materializePattern({
         pattern:item,
         result
-      })));
+      })); }));
     case 'object':return Object.freeze(
       Object.fromEntries(pattern.entries
-        .map(entry=>[
+        .map(function materializeObjectEntry(entry) { return ([
           entry.key,
           materializePattern({
             pattern:entry.pattern,
             result
           })
-        ])),
+        ]); })),
     );
     default:throw new ResultProgramProfileError('unknown owned pattern kind');
   }

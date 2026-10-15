@@ -366,8 +366,38 @@ Commit `a66c5d5c96` applies named callbacks,
 owned state records,
 and scoped cleanup to both prepared dispatchers,
 preserving their separate root and child execution behavior.
-The current owned build and full native lint report are running;
-the latest cleanup still requires consumer regression checks.
+The dispatcher cleanup build passed;
+the full native structured lint report contains 312 errors.
+Its domain checks passed,
+but manual uncertainty Allow exhausted the original preparation deadline.
+The same built artifact passed that exact Allow case in isolation,
+with one selector call,
+three executions,
+and no provider calls.
+The cause remains unestablished;
+the interrupted sequence does not qualify the remaining consumer suites.
+Commits `17cd623ee4`,
+`4dddea7b46`,
+and `d3d0de3168` separate reached-group failure and completion ownership,
+retain delivery state explicitly,
+and represent idle group work with a settled promise.
+Their owned build and queue tests pass.
+The domain sequence stopped at `JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
+An unrelated bounded CPU stress task was active during this run;
+its overlap does not establish the cause.
+The complete regression sequence remains pending after that task finishes.
+Commits `443d6bc709` and `d4e52c5394` separate original resource capture,
+reload,
+binding,
+and governing-policy ownership and scope their cleanup.
+Their owned build passes.
+The focused structured lint report contains no errors across these resource modules and the group-runtime modules.
+It still exits with failure because warnings remain;
+`package/config/oxlint/src/config-base.ts:31` sets `denyWarnings: true`.
+Zero error-severity diagnostics therefore do not mean the lint task passes.
+Commit `fe77f1d9d6` retains base-composition and governing-source lifetime state explicitly.
+The adjacent policy reviewer now scopes review activity and retains compilation results in its review record.
+These subsequent source changes still need a rebuilt consumer check.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
