@@ -97,7 +97,9 @@ await describe({ name: '', children: [
     try {
       await draining;
       assert.fail('Original work rejection was discarded');
-    } catch (error) { assert.equal(error, original); }
+    } catch (error) { 
+      assert.equal(error, original); 
+    }
     assert.equal(f.events.length, 0);
     assert.equal(f.state.closed, false);
   } }),

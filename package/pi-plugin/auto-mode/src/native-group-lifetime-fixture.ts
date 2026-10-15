@@ -77,7 +77,9 @@ export function createLifetimeFixture(): LifetimeFixture {
     events.push(point);
     if (state.failAt === point) throw callbackFailure;
   }
-  controller.signal.addEventListener('abort', function actualAbort() { step('abort'); });
+  controller.signal.addEventListener('abort', function actualAbort() { 
+    step('abort'); 
+  });
   /** Construction binds callbacks without publishing retirement or inspecting original values. */
   const owner = lifetimeModule.createGroupLifetime({
     groupState: state, records, failures, controller,
