@@ -219,18 +219,64 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   Android side in `AnalysisFailureNotification.kt`, and `PlayerHostWiringTest`-style coverage in
   `wiring/AnalysisFailureWiringTest.kt`. The desktop app makes the same move as D122 on its own branch.
 
-### On a branch, awaiting merge
+### In flight and queued (written 2026-10-15 01:50 UTC; read this first after a context loss)
 
-- Desktop unplayable-file notification (2026-10-14, branch `feat/desktop-unplayable-notification`, not merged; D122): the
-  in-window "`name` can't be played." message is gone and the report is one freedesktop notification on Linux
-  (`src/unplayable_notification*.rs`, own thread and connection, title `Cannot play a file`, normal urgency, default
-  expiry, no buttons, each file told once per run, which is the implementer's reading open to the human's veto); the
-  row mark stays. A failed post logs one warning and shows nothing in the window. macOS and Windows show only the row
-  mark (no notification code there yet). The bus tests start a private `dbus-daemon`, so `:image` must be rebuilt
-  before `:test:container` can run them (the Containerfile now installs it). Open item, not fixed: the e2e suite runs
-  its app in a systemd user unit that inherits the real session bus (`DBUS_SESSION_BUS_ADDRESS` is
-  `unix:path=/run/user/1000/bus`), so `states/refresh-broken-file-once` now posts "d.wav can't be played." on the real
-  desktop on every run, as the analysis indicator already did.
+Merged on 2026-10-14 and 2026-10-15, all on `main`: the click rule (D124), Search select-only (D127), the desktop
+unreadable row that stays selected (D128), the Search restyle on both platforms (D126), the folders panel without a
+scrollbar (D125), the desktop notification for an unplayable file (D122, merged at `973572ea12`; the notification
+bus tests start a private `dbus-daemon`, so `:image` must be rebuilt before `:test:container` can run them), the
+Android analysis-failure notification (D123), the queue-cost fix, the legacy queue removal, the Compose wiring tests,
+and the gallery retakes. Open item from D122, not fixed: the e2e suite runs its app in a systemd user unit that
+inherits the real session bus (`unix:path=/run/user/1000/bus`), so `states/refresh-broken-file-once` posts
+"d.wav can't be played." on the real desktop on every run.
+
+Work in flight, each in its own worktree under `~/temp/agent/` (merge procedure for each: `git merge main --no-edit`
+in the worktree, rerun that platform's verification as a systemd unit, forced fresh, count tests from the result
+files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
+before saying it matches, QAB):
+
+- Task 92, release workflow, branch `feat/music-player-release-workflow`, worktree `music-player-rel`: GitHub release
+  of `.exe`, `.dmg`, Linux tarballs and `.apk` on the cargo-publish conventions (version bump on main or dispatch with
+  dry-run default true, tag `music-player-v<version>`, attestation, immutable pre-release, Android release keystore as
+  repository secrets with a backup under `~/.local/share/music-player-release-keys`, Windows and macOS unsigned).
+  macOS x64 is culled by the human's decision. Gate: nothing real is released without asking the human first (releases
+  are immutable). The Alpine (task 95) and Windows (task 96) agents write the artifact names and job steps that must
+  be forwarded to this agent when they report.
+- Task 93, auto-play on select (D129), branch `feat/auto-play-on-select`, worktree `music-player-aps`, based on the
+  Search select-only branch: a Settings switch row, default off, both platforms; the Settings gallery images must be
+  retaken (desktop and Android).
+- Task 94, Android row text alignment, branch `fix/android-row-text-alignment`, worktree `music-player-ral`: on the
+  unfolded display the track row text sits about 26 dp right of the headings (my ring work, `TrackListPane.kt`). The
+  human's ruling: beside the crease only text dodges it; fills, state layers and rings may reach the crease and the pane
+  edge; text columns win. Search's rounded result shape (D126) was left alone and is a candidate if the human asks.
+- Task 95, Alpine, branch `feat/music-player-alpine`, worktree `music-player-alp`: the desktop app must run on Alpine
+  (musl, dynamic link expected because Slint loads libwayland and libxkbcommon at run time); the real-window proof uses
+  our own nested compositor `monochromatic-nested-wayland-session`, never sway or weston; if the compositor needs
+  changes they are made in `package/cli/nested-wayland-session` without a version bump. The human authorized
+  publishing that crate whenever needed: after verification bump its version (patch or minor as the agent reports),
+  run the cargo-publish workflow as a dry run first, then let the merge to main publish it.
+- Task 96, Windows linkers, branch `feat/music-player-windows-linkers`, worktree `music-player-win`: Windows MSVC
+  uses `link.exe` instead of `lld-link.exe`, plus a non-MSVC build for `x86_64-pc-windows-gnu`, a Windows CI workflow;
+  Linux stays on rust-lld because mold links ELF only (upstream README, mold 3.0.0, and
+  `doc/audit/tech-mold-linker-vet-2026-10-05.md`) and the human declined it on Linux; macOS keeps its linker.
+
+Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
+
+- Task 97, existing CI caching: `cargo-publish.yml` caches are exact-key only (no `restore-keys`), so any lockfile
+  change rebuilds everything and stores a new 130 to 420 MB entry (28 caches, 5.5 GB of the 10 GB cap on 2026-10-15);
+  `logger-fuzz.yml`, `toml-edit-fuzz.yml` and `readonly-semantic-bridge.yml` run `pnpm install --frozen-lockfile`
+  with no pnpm store cache. Fix with restore-keys, a pnpm store cache and a short written caching policy, proven with
+  a cold and a warm run each. The new workflows of tasks 92, 95 and 96 were told to cache properly and prove it.
+- Gallery retakes owed after task 93 (Settings images) and after task 94 if committed images differ.
+- Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
+
+Standing rulings of the human in this effort (2026-10-14 and 15): click rule D124; Search results select only D127; the
+desktop keeps an unreadable row selected D128; Search restyled within the decisions with no section labels and no
+recents, desktop parity D126; no scrollbar on the folders panel D125; the unplayable and analysis-failure reports are
+system notifications with no in-app fallback when one cannot be posted (D122, D123), and a later unread failure
+notification replaces the earlier; USB debugging on emulators is always allowed (skill rule EMA); the repo's own nested
+compositor is the only nested compositor; CI must cache. Decision numbers D122 to D129 are taken; the next free one is
+D130.
 
 ### Open, not started
 
