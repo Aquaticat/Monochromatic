@@ -15,8 +15,12 @@ await describe({ name: '', children: [
     assert.equal(await Promise.race([start, setImmediate('pending')]), 'pending');
     assert.deepEqual(fixture.steps, ['start', 'tool_execution_start']);
     assert.deepEqual(fixture.recordings, [['start', call]]);
+    assert.equal(fixture.recordings[0]?.[1], call);
     assert.equal(fixture.input.records.get(call.id), fixture.control.record);
     assert.deepEqual(fixture.events, [{ type: 'tool_execution_start', toolCallId: call.id, toolName: call.name, args: call.arguments, parentToolCallId: 'parent' }]);
+    const [startEvent] = fixture.events;
+    assert.ok((startEvent !== null) && ((typeof startEvent) === 'object') && ('args' in startEvent));
+    assert.equal(startEvent.args, call.arguments);
     fixture.control.barrier.resolve();
     await start;
     fixture.control.barrier = Promise.withResolvers<void>();
@@ -25,6 +29,10 @@ await describe({ name: '', children: [
     const update = fixture.callbacks.onUpdate(partial, call);
     assert.equal(await Promise.race([update, setImmediate('pending')]), 'pending');
     assert.deepEqual(fixture.events[1], { type: 'tool_execution_update', toolCallId: call.id, toolName: call.name, args: call.arguments, partialResult: partial, parentToolCallId: 'parent' });
+    const updateEvent = fixture.events[1];
+    assert.ok((updateEvent !== null) && ((typeof updateEvent) === 'object') && ('partialResult' in updateEvent) && ('args' in updateEvent));
+    assert.equal(updateEvent.partialResult, partial);
+    assert.equal(updateEvent.args, call.arguments);
     fixture.control.barrier.resolve();
     await update;
     assert.deepEqual(fixture.steps, ['start', 'tool_execution_start', 'tool_execution_start:done', 'tool_execution_update', 'tool_execution_update:done']);
@@ -45,6 +53,11 @@ await describe({ name: '', children: [
     assert.equal(await Promise.race([finish, setImmediate('pending')]), 'pending');
     assert.deepEqual(fixture.recordings, [['start', second], ['finish', fixture.control.record, true, 'a\n\n7\n'], ['usage', usage]]);
     assert.deepEqual(fixture.events[1], { type: 'tool_execution_end', toolCallId: second.id, toolName: second.name, result: outcome.result, isError: true, parentToolCallId: 'parent' });
+    const endEvent = fixture.events[1];
+    assert.ok((endEvent !== null) && ((typeof endEvent) === 'object') && ('result' in endEvent));
+    assert.equal(endEvent.result, outcome.result);
+    assert.equal(fixture.recordings[1]?.[1], fixture.control.record);
+    assert.equal(fixture.recordings[2]?.[1], usage);
     assert.deepEqual(fixture.resolutions, []);
     fixture.control.barrier.resolve();
     await finish;
