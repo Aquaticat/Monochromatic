@@ -329,7 +329,9 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
    @returns original captured dispatcher input
    */
   function dispatch(): ExecutionDispatch { 
-    /** Original dispatcher must have entered before tests invoke its captured callbacks. */
+    /**
+     Original dispatcher must have entered before tests invoke its captured callbacks.
+     */
     const [captured] = dispatched;
   assert.ok(captured);
   return captured; 
