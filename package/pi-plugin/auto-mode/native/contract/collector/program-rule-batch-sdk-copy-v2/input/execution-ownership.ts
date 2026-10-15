@@ -2,6 +2,7 @@
  Native execution custody authenticates opaque occurrences independently of current dependencies. @module
  */
 import { JudgmentConstructionError } from './judgment-error.ts';
+import type { OriginalMembershipRead } from './membership-read.ts';
 import type {
   ProgramMemberRecord,
   ProgramExecutionRecord
@@ -55,11 +56,13 @@ export function createExecutionOwnership({
 
    @throws JudgmentConstructionError for foreign membership
    */
-  function knownMember(member: object): ProgramMemberRecord {
+  function knownMember(member: unknown): ProgramMemberRecord {
+    /** Read capability preserves native primitive lookup without adding a new rejection boundary. */
+    const memberBindings: OriginalMembershipRead<ProgramMemberRecord> = bindings;
     /**
      Original record remains shared with child program ownership.
      */
-    const record = bindings.get(member);
+    const record = memberBindings.get(member);
     if (!record) throw new JudgmentConstructionError('Execution member handle is not owned by this judgment');
     return record;
   }

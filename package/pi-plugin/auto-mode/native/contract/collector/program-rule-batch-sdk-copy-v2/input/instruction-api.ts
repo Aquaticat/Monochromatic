@@ -78,5 +78,5 @@ export type InstructionBatchOperations = Readonly<{
  Public instruction operations share one original owner without exposing private maps.
  */
 export type JudgmentInstructions = Omit<InstructionSourceOperations, 'ensureRuleBindings'> & ProgramInstructionOperations & MemberInstructionOperations & InstructionBatchOperations & Readonly<{
-  resolveBinding: (handle: object) => InstructionBindingLookup;
+  resolveBinding: (handle: unknown) => InstructionBindingLookup;
 }>;

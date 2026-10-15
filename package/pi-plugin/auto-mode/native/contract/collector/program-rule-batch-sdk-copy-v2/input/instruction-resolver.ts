@@ -4,6 +4,8 @@
 import { JudgmentConstructionError } from './judgment-error.ts';
 import { retainedInstructionRules } from './instruction-ownership.ts';
 import type { InstructionContext } from './instruction-types.ts';
+import type { InstructionRecord, InstructionMember } from './instruction-types.ts';
+import type { OriginalMembershipRead } from './membership-read.ts';
 import type { InstructionBindingLookup } from './instruction-api.ts';
 
 //region Retained instruction records require the same original request, member, and source units.
@@ -21,7 +23,7 @@ import type { InstructionBindingLookup } from './instruction-api.ts';
 export function createInstructionResolver({
   input,
   state
-}: InstructionContext) : (bindingHandle: object) => InstructionBindingLookup {
+}: InstructionContext) : (bindingHandle: unknown) => InstructionBindingLookup {
   /**
    Original judgment capabilities remain borrowed without reading lazy request or source content.
    */
@@ -39,13 +41,14 @@ export function createInstructionResolver({
 
    @throws JudgmentConstructionError for foreign or changed ownership
    */
-  function resolveBinding(bindingHandle: object): InstructionBindingLookup {
+  function resolveBinding(bindingHandle: unknown): InstructionBindingLookup {
     ready();
+    /** Native query capability retains primitive lookup after original readiness checks. */
+    const instructionBindings: OriginalMembershipRead<InstructionRecord> = state.instructionBindings;
     /**
      Private original record selects the exact dependencies that must remain current.
      */
-    const instruction = state.instructionBindings
-      .get(bindingHandle);
+    const instruction = instructionBindings.get(bindingHandle);
     if (instruction) {
       if (instruction.kind === 'unit-adoption') {
         if ((!bindings.has(instruction.member)) || (retainedInstructionRules(state)
@@ -68,7 +71,9 @@ export function createInstructionResolver({
     /**
      Foreign instruction handles may resolve only through original prepared-member ownership.
      */
-    const value = bindings.get(bindingHandle);
+    const memberBindings: OriginalMembershipRead<InstructionMember> = bindings;
+    /** Original fallback reads the same shared map even for foreign primitive queries. */
+    const value = memberBindings.get(bindingHandle);
     if (!value) throw new JudgmentConstructionError('Prepared member binding is not owned by this judgment');
     return value.binding;
   }

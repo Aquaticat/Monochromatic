@@ -8,6 +8,7 @@ import type {
 } from '../../../lifecycle/judgment-budget-error-occurrences/controls-private/types.ts';
 import type { QuestionSelection } from '../../../lifecycle/claim-evidence-batch-selection/selection-owner.ts';
 import type { QuestionRequest } from '../../../lifecycle/claim-evidence-batch-selection/selection-owner-types.ts';
+import type { JudgmentPreparationState } from './judgment-preparation-types.ts';
 
 /**
  Successful original evidence closure does not establish policy, instruction authority, or permission.
@@ -56,8 +57,8 @@ export type JudgmentLifecycleInput = Readonly<{
   bindingSegment: <Result>(run: () => Result) => Result;
   assertDependenciesCurrent: () => void;
   budget: JudgmentBudget;
-  finalizeDependencies: (handle: object) => unknown;
-  readDependencyHandle: () => object;
+  finalizeDependencies: (handle: JudgmentPreparationState['handle']) => unknown;
+  readDependencyHandle: () => JudgmentPreparationState['handle'];
   parentJSON: string;
   send: (input: JudgmentAttempt & Readonly<{ request: QuestionRequest }>) => Promise<unknown>;
 }>;

@@ -40,7 +40,7 @@ export type JudgmentExecutionInput = Readonly<{
  Authenticated readers return original records before phase-specific eligibility checks.
  */
 export type JudgmentExecutionOwnership = Readonly<{
-  knownMember: (member: object) => ProgramMemberRecord;
+  knownMember: (member: unknown) => ProgramMemberRecord;
   knownExecution: (token: object) => ProgramExecutionRecord;
   parentCurrent: (record: ProgramMemberRecord) => void;
   memberFor: (id: string) => object;
