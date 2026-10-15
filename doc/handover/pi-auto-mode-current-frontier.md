@@ -23,7 +23,17 @@ Pi's native settings owner has now saved `hyper` and `gemma-4-26b-a4b-it`
 as the global defaults,
 with every unrelated parsed setting preserved.
 `${HOME}/temp/agent/pi-hyper-model-20261014/selection.json` records the change.
-An isolated configured-host RPC check is pending.
+The isolated configured-host RPC check selected that exact provider and model without CLI overrides,
+using all 17 configured packages and the existing Hyper catalogue.
+The process exited zero and made zero provider requests inside its network namespace.
+The check verifies selection rather than a live model response.
+Its initial empty-stderr assertion was inappropriate for this configured fixture:
+the deliberately blocked Synthetic startup discovery,
+missing other-provider fixture catalogues,
+and ordinary extension lifecycle logs produced retained diagnostics.
+The original RPC result and complete stderr were inspected without replaying the completed host.
+`${HOME}/temp/agent/pi-hyper-model-20261014/state-verification.json`
+records the successful selection and failed empty-stderr assertion separately.
 
 ## Adopted Luna migration
 
