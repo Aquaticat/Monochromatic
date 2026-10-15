@@ -8,7 +8,6 @@ import {captureAuthorizationInputs} from './authorization-inputs.mjs';
 import {compileBoundClauseProgram} from './compiler.mjs';
 import {
   captureSemanticAdmissionPolicy,
-  captureRequestMaterialAdmissionPolicy,
   captureHeadingContextAdmissionPolicy,
   captureUnitAdoptionAdmissionPolicy,
   semanticAdmissionScope
@@ -21,7 +20,6 @@ export async function evaluatePolicy({
   readProgram,
   approvalContext,
   relationDefinitionId,
-  requestMaterialDefinitionId,
   headingContextDefinitionId,
   unitAdoptionDefinitionId
 }){
@@ -30,7 +28,6 @@ export async function evaluatePolicy({
    needsRelations,
    readProgram,
    relationDefinitionId,
-   requestMaterialDefinitionId,
    headingContextDefinitionId,
    unitAdoptionDefinitionId
  });
@@ -48,7 +45,6 @@ async function evaluateOriginalPolicy({
   authorizationOwnerFor,
   sourceContext,
   policy,
-  requestPolicy,
   headingPolicy,
   unitPolicy,
   approvalHost
@@ -66,11 +62,6 @@ async function evaluateOriginalPolicy({
  const scope=semanticAdmissionScope({
    policy,
    inputs
- });
- const requestScope=semanticAdmissionScope({
-   policy:requestPolicy,
-   inputs,
-   requireCandidates:false
  });
  const inspectedHeadingScope=semanticAdmissionScope({
    policy:headingPolicy,
@@ -111,11 +102,10 @@ async function evaluateOriginalPolicy({
  const result=await evaluatePolicy({
    judgment,
    approvalContext,
-   needsRelations:(scope.state==='matching')||(requestScope.state==='matching')
+   needsRelations:(scope.state==='matching')
      ||(headingScope.state==='matching')
      ||(unitScope.state==='matching'),
    relationDefinitionId:scope.state==='matching'?policy.definitionId:undefined,
-   requestMaterialDefinitionId:requestScope.state==='matching'?requestPolicy.definitionId:undefined,
    headingContextDefinitionId:headingScope.state==='matching'?headingPolicy.definitionId:undefined,
    unitAdoptionDefinitionId:unitScope.state==='matching'?unitPolicy.definitionId:undefined,
    readProgram({evidence}){
@@ -127,8 +117,6 @@ async function evaluateOriginalPolicy({
      policy,
      scope,
      evidence,
-     requestPolicy,
-     requestScope,
      headingPolicy,
      headingScope,
      unitPolicy,
@@ -145,12 +133,9 @@ async function evaluateOriginalPolicy({
    authorizationInputs,
    compiledPolicy:compiled.program,
    clauseInterpretations:compiled.clauses,
-   requestMaterialInterpretation:compiled.requestMaterialInterpretation,
-   requestMaterialAdmission:requestScope,
    headingContextInterpretations:compiled.headingContextInterpretations,
    headingContextAdmission:headingScope,
    requestSourceAssociationUses:compiled.requestSourceAssociationUses,
-   requestGoverningUse:compiled.requestGoverningUse,
    unitAdoptionInterpretations:compiled.unitAdoptionInterpretations,
    unitAdoptionAdmission:unitScope,
    semanticAdmission:compiled.semanticAdmission,
@@ -166,13 +151,11 @@ async function evaluateOriginalPolicy({
  */
 export function createBoundPolicyEvaluator({
   semanticAdmissionPolicy,
-  requestMaterialAdmissionPolicy,
   headingContextAdmissionPolicy,
   unitAdoptionAdmissionPolicy,
   approvalHost
 }={}){
  const policy=semanticAdmissionPolicy===undefined?undefined:captureSemanticAdmissionPolicy(semanticAdmissionPolicy);
- const requestPolicy=requestMaterialAdmissionPolicy===undefined?undefined:captureRequestMaterialAdmissionPolicy(requestMaterialAdmissionPolicy);
  const headingPolicy=headingContextAdmissionPolicy===undefined?undefined:captureHeadingContextAdmissionPolicy(headingContextAdmissionPolicy);
  const unitPolicy=unitAdoptionAdmissionPolicy===undefined?undefined:captureUnitAdoptionAdmissionPolicy(unitAdoptionAdmissionPolicy);
  const captureHost=captureApprovalHostSource(approvalHost);
@@ -188,7 +171,6 @@ export function createBoundPolicyEvaluator({
     authorizationOwnerFor,
     sourceContext,
     policy,
-    requestPolicy,
     headingPolicy,
     unitPolicy,
     approvalHost:captureHost()
