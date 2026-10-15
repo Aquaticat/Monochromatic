@@ -326,9 +326,10 @@ before saying it matches, QAB):
   `cargo-publish.yml`; pnpm store caches measured slower than no cache and reverted; `cli-git-native` is cached in
   `final-newline.yml` and `npm-release.yml`. Unverified: the `npm-release.yml` version job, a PR restoring a
   main-scoped entry, release-matrix caching. Repo cache usage went over the cap (11.1 to 11.3 GB). Follow-ups noted by
-  the agent, not done: remove the dead `cache: true` from `npm-release.yml`, `pnpr-publish.yml` and
-  `kotlin-linter-publish.yml`; `kotlin-linter-publish.yml` lacks `MISE_AUTO_INSTALL: false` (472 s install on
-  2026-08-16); `cargo-publish.yml` uses one concurrency group for all refs, so a branch dispatch can replace a pending
+  the agent: the dead `cache: true` in `npm-release.yml`, `pnpr-publish.yml` and `kotlin-linter-publish.yml` is
+  removed and `kotlin-linter-publish.yml` has `MISE_AUTO_INSTALL: 'false'` (DONE 2026-10-15, main `7845259345`; a
+  `kotlin-linter-publish` dry run from the branch, run `38765367059`, passed; the other two workflows were not run);
+  still not done: `cargo-publish.yml` uses one concurrency group for all refs, so a branch dispatch can replace a pending
   publish on main; `logger-fuzz.yml` fails its coverage gate (2026-09-24 and now). `cache-prune.yml` (daily, `actions:
   write`, deletes superseded cache entries, keeps the newest per family per ref): the human approved it with the
   music player families added, merged at `96728127aa`; its dispatch dry run (run `38676731033`) listed 24 entries in
@@ -399,6 +400,14 @@ before saying it matches, QAB):
   Independent PE parse with `pefile` 2024.8.26: MSVC x64 and arm64 linker 14.51, GNU exe linker 2.46, and none of
   the three imports `vcruntime*`, `msvcp*`, `libgcc_s*`, `libwinpthread*` or `libstdc++*`. Not run by me: any
   Windows or macOS binary, the arm64 Linux and musl binaries, anything on a real device.
+  RELEASED `music-player-v0.1.4` on 2026-10-15 (bump commit `9e4b09e2d1`, run `38765172415`, all jobs green): the
+  Windows executables are GUI-subsystem programs (no console window on double click; decision
+  `doc/decision/music-player-windows-gui-subsystem.md`). Ten files; `sha256sum --check` passed for nine, attestation
+  exit 0 for all nine, APK certificate `9de6e9a4...6926`, Linux x64 and the musl x64 binary (in `alpine:3.24`) print
+  `music-player 0.1.4`; `pefile` shows Subsystem 2 on all three Windows exes, MSVC linker 14.51, GNU linker 2.47,
+  and none import `vcruntime*`, `msvcp*`, `libgcc_s*`, `libwinpthread*` or `libstdc++*`. Not run by me: the window
+  itself (nobody looked at a Windows desktop), any Windows or macOS binary, arm64 binaries, a real device. The
+  0.1.4 notes keep the PowerShell redirection sentence (`| Out-File`).
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
