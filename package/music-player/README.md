@@ -552,11 +552,17 @@ A release holds one file per platform and a `SHA256SUMS` file:
 
 - Windows: `music-player-<version>-windows-x64.exe` and `music-player-<version>-windows-arm64.exe`.
   `music-player-<version>-windows-x64-gnu.exe` is the same source for x64 built with MinGW-w64 and GNU ld,
-  without Microsoft's toolchain; it needs no Visual C++ runtime either.
-- macOS: `music-player-<version>-macos-arm64.dmg`, for Apple silicon Macs only.
-  Intel Macs have no download: build from source.
-- Linux: `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz`.
-- Alpine Linux: `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz`.
+  without Microsoft's toolchain;
+   it needs no Visual C++ runtime either.
+- macOS:
+   `music-player-<version>-macos-arm64.dmg`,
+   for Apple silicon Macs only.
+  Intel Macs have no download:
+   build from source.
+- Linux:
+   `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz`.
+- Alpine Linux:
+   `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz`.
   These are for Alpine 3.24 or newer (musl libc) on x86_64 or aarch64;
   the Linux archives above do not run on Alpine.
 - Android: `music-player-<version>-android.apk`.
@@ -576,9 +582,12 @@ Treat those downloads as unverified and report what you find as issues.
 ### Windows
 
 Download the `.exe` that matches your processor and run it.
-On an x64 processor, `windows-x64.exe` (built with Visual Studio's linker) and `windows-x64-gnu.exe` (built with
-MinGW-w64 and GNU ld) are built from the same source; choose the GNU file if you want a build without Microsoft's toolchain.
-On an arm64 processor, use `windows-arm64.exe`.
+On an x64 processor,
+ `windows-x64.exe` (built with Visual Studio's linker) and `windows-x64-gnu.exe` (built with
+MinGW-w64 and GNU ld) are built from the same source;
+ choose the GNU file if you want a build without Microsoft's toolchain.
+On an arm64 processor,
+ use `windows-arm64.exe`.
 Each file is one standalone program that needs no installer and no Visual C++ runtime.
 It is not signed with a developer identity,
 so SmartScreen may show "Windows protected your PC":

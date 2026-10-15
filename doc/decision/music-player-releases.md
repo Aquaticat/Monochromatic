@@ -109,24 +109,40 @@ One release holds, with `<version>` filled in:
   The probe changed only the linker, so this shows a correlation with the linker, not a root cause;
   `doc/troubleshooting/windows-x64-lld-link-crt-static-dynamic-imports.md` records what is and is not established.
   The release build first worked around that with `CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe`.
-  Superseded on 2026-10-15: `desktop-app/.cargo/config.toml` no longer sets a `linker` key for either MSVC target
-  (`doc/decision/music-player-windows-linkers.md`), so rustc runs `link.exe` by default, the export is removed,
+  Superseded on 2026-10-15:
+   `desktop-app/.cargo/config.toml` no longer sets a `linker` key for either MSVC target
+  (`doc/decision/music-player-windows-linkers.md`),
+   so rustc runs `link.exe` by default,
+   the export is removed,
   and the build step now prints the linker command and fails unless the program is `link.exe`.
   The executable is built as a console program (no `windows_subsystem` attribute exists in the source),
   so Windows opens a console window next to the app; the notes and the README say so, and the source is unchanged.
   The icon is embedded by the existing `build.rs`.
-- Windows GNU: `music-player-<version>-windows-x64-gnu.exe`, a native build on `windows-2025` added on 2026-10-15
+- Windows GNU:
+   `music-player-<version>-windows-x64-gnu.exe`,
+   a native build on `windows-2025` added on 2026-10-15
   at the owner's request for a Windows build without Microsoft's toolchain
-  (job `build-desktop`, matrix entry `x64-gnu`, target `x86_64-pc-windows-gnu`).
+  (job `build-desktop`,
+   matrix entry `x64-gnu`,
+   target `x86_64-pc-windows-gnu`).
   It uses the GNU host toolchain `<mise.lock version>-x86_64-pc-windows-gnu` and MinGW-w64 gcc from the MSYS2 UCRT64
   environment that the runner image carries in `C:\msys64`
-  (`msys2/setup-msys2` is not an allowed action in this repository), so GNU ld links the program.
+  (`msys2/setup-msys2` is not an allowed action in this repository),
+   so GNU ld links the program.
   The steps follow the `gnu-x64-ucrt64` job of `.github/workflows/music-player-windows.yml`.
-  The job reads the import tables and fails if the executable imports `libgcc_s*`, `libwinpthread*` or `libstdc++*`,
-  because the program would then need those DLLs next to it; the C runtime is the UCRT
-  (`api-ms-win-crt-*`, a Windows system component), not a statically linked one, and `+crt-static` is not used.
-- macOS: `music-player-<version>-macos-arm64.dmg`, a native build on `macos-15`.
-  macOS x64 is not built: the owner decided on 2026-10-14 that the release ships Apple silicon only.
+  The job reads the import tables and fails if the executable imports `libgcc_s*`,
+   `libwinpthread*` or `libstdc++*`,
+  because the program would then need those DLLs next to it;
+   the C runtime is the UCRT
+  (`api-ms-win-crt-*`,
+   a Windows system component),
+   not a statically linked one,
+   and `+crt-static` is not used.
+- macOS:
+   `music-player-<version>-macos-arm64.dmg`,
+   a native build on `macos-15`.
+  macOS x64 is not built:
+   the owner decided on 2026-10-14 that the release ships Apple silicon only.
   Intel Mac users build from source (`mise run //package/music-player/desktop-app:build` on the Mac),
   and the README says so.
   Each holds `Music Player.app`, assembled by the repository's own `bundle:macos` task from `macos/Info.plist`
@@ -233,36 +249,64 @@ One release holds, with `<version>` filled in:
   If a later decision adds one, the key must start with `music-player-alpine-release-` and
   `.github/workflows/cache-prune.yml` needs a matching `FAMILIES` pattern, because the Alpine guard's pattern
   (`music-player-alpine-<arch>-rustc_`) does not match that prefix.
-- The Windows GNU job caches no cargo registry or target directory, decided on 2026-10-15 under
-  `doc/decision/ci-caching.md` (the owner asked for caching in general, so this is a deviation the owner may veto).
-  The repository's cache usage was 11.4 GB against the 10 GB cap when the dry run finished, and the rules there
+- The Windows GNU job caches no cargo registry or target directory,
+   decided on 2026-10-15 under
+  `doc/decision/ci-caching.md` (the owner asked for caching in general,
+   so this is a deviation the owner may veto).
+  The repository's cache usage was 11.4 GB against the 10 GB cap when the dry run finished,
+   and the rules there
   allow no new large family without an edit to that document.
-  The cold job took 16 min 07 s in dry run 38692770715: the build step 14 min 37 s, of which the dependencies took
+  The cold job took 16 min 07 s in dry run 38692770715:
+   the build step 14 min 37 s,
+   of which the dependencies took
   7 min 14 s (from the start of the step to `Compiling music-player`) and the final crate and its path dependency
-  7 min 23 s, which a cache does not remove.
-  So a cache could save at most about 7 minutes, and only if its entry is warm and not evicted (an entry unread for
-  seven days is evicted, and releases are rarer than that).
-  In that run the job finished 1 min 04 s before the slowest job (Alpine x86_64, 17 min 11 s), so it did not set the
-  length of the run; the Alpine jobs take 14 to 20 minutes (see the measurements below), which is the same range.
-  The compressed size of a GNU release entry was not measured; the debug entry of the same target in
-  `music-player-windows.yml` is about 652 MB, which is at the 650 MB guide.
-  If a later decision adds a cache, its key can keep the shape of the other desktop jobs
-  (`music-player-desktop-v1-Windows-X64-x86_64-pc-windows-gnu-<toolchain>-<lock hash>`), which the existing
+  7 min 23 s,
+   which a cache does not remove.
+  So a cache could save at most about 7 minutes,
+   and only if its entry is warm and not evicted (an entry unread for
+  seven days is evicted,
+   and releases are rarer than that).
+  In that run the job finished 1 min 04 s before the slowest job (Alpine x86_64,
+   17 min 11 s),
+   so it did not set the
+  length of the run;
+   the Alpine jobs take 14 to 20 minutes (see the measurements below),
+   which is the same range.
+  The compressed size of a GNU release entry was not measured;
+   the debug entry of the same target in
+  `music-player-windows.yml` is about 652 MB,
+   which is at the 650 MB guide.
+  If a later decision adds a cache,
+   its key can keep the shape of the other desktop jobs
+  (`music-player-desktop-v1-Windows-X64-x86_64-pc-windows-gnu-<toolchain>-<lock hash>`),
+   which the existing
   `music-player-desktop-v1-.+?-nightly-` pattern of `cache-prune.yml` already matches as its own family
-  (checked by reading the pattern: it captures everything before `-nightly-`, so the target is part of the family).
-  The job does cache the MSYS2 package downloads (70 MB; an exact hit in the dry run) under the key
-  `music-player-windows.yml` uses, so the two workflows share one entry per month.
-- Both `jdx/mise-action` steps (macOS node, Android) pin `version: 2026.10.9` and do not set `minimum_release_age`,
+  (checked by reading the pattern:
+   it captures everything before `-nightly-`,
+   so the target is part of the family).
+  The job does cache the MSYS2 package downloads (70 MB;
+   an exact hit in the dry run) under the key
+  `music-player-windows.yml` uses,
+   so the two workflows share one entry per month.
+- Both `jdx/mise-action` steps (macOS node,
+   Android) pin `version: 2026.10.9` and do not set `minimum_release_age`,
   decided on 2026-10-15.
-  Without a version, the release-age setting made every such job list mise releases through the GitHub API with
-  the workflow token; run 38688512043 failed attempt 1 in the Android and the macOS jobs with
+  Without a version,
+   the release-age setting made every such job list mise releases through the GitHub API with
+  the workflow token;
+   run 38688512043 failed attempt 1 in the Android and the macOS jobs with
   `GitHub releases API returned 403 Forbidden` and passed on rerun.
-  The action treats any 4xx except 429 as final, and ignores `minimum_release_age` when `version` is set
+  The action treats any 4xx except 429 as final,
+   and ignores `minimum_release_age` when `version` is set
   (source lines in `doc/troubleshooting/mise-action-version-ahead-of-release.md`).
-  The cost is a pin that a person must update; the owner and the steps are in the runbook section
+  The cost is a pin that a person must update;
+   the owner and the steps are in the runbook section
   "The mise version pin".
-  Dry run 38692770715: both steps logged `Download mise@2026.10.9` and
-  `Verified mise-v2026.10.9-...tar.zst against signed checksums`, no line `Selected mise`, and `mise --version`
+  Dry run 38692770715:
+   both steps logged `Download mise@2026.10.9` and
+  `Verified mise-v2026.10.9-...tar.zst against signed checksums`,
+   no line `Selected mise`,
+   and `mise --version`
   printed `2026.10.9` on macOS arm64 and Linux x64.
 - Each desktop binary is started with `--version` on its own runner, and the output must be the product version.
   This is the only run any non-Linux binary gets.
@@ -355,27 +399,57 @@ the other desktop jobs and the Android job restored their caches by exact key:
   so the Alpine x86_64 build now sets the length of a release run.
 - The release binaries are 54,189,848 bytes (x86_64) and the tarballs 22,211,539 and 20,855,451 bytes.
 
-Dry run 38692770715 on branch `feat/music-player-release-gnu`, 2026-10-15, wall time per job
-(version 0.1.2; the cargo caches of the other desktop jobs and the Android job were exact hits from `main`, so
-nothing was saved; the Alpine jobs and the Windows GNU job ran cold):
+Dry run 38692770715 on branch `feat/music-player-release-gnu`,
+ 2026-10-15,
+ wall time per job
+(version 0.1.2;
+ the cargo caches of the other desktop jobs and the Android job were exact hits from `main`,
+ so
+nothing was saved;
+ the Alpine jobs and the Windows GNU job ran cold):
 
-- Windows GNU x64 16m07s (build step 14m37s, MinGW-w64 install 35s, MSYS2 package cache an exact hit).
-  The linker it printed: `x86_64-w64-mingw32-gcc`; the PE header linker version is 2.46 (GNU ld).
-  Its imports are `api-ms-win-crt-*` (the Universal C Runtime of Windows) and system DLLs, none of `libgcc_s`,
-  `libwinpthread`, `libstdc++`, `vcruntime`, `msvcp`; `music-player.exe --version` printed `music-player 0.1.2`.
+- Windows GNU x64 16m07s (build step 14m37s,
+   MinGW-w64 install 35s,
+   MSYS2 package cache an exact hit).
+  The linker it printed:
+   `x86_64-w64-mingw32-gcc`;
+   the PE header linker version is 2.46 (GNU ld).
+  Its imports are `api-ms-win-crt-*` (the Universal C Runtime of Windows) and system DLLs,
+   none of `libgcc_s`,
+  `libwinpthread`,
+   `libstdc++`,
+   `vcruntime`,
+   `msvcp`;
+   `music-player.exe --version` printed `music-player 0.1.2`.
   The file is 44,017,152 bytes.
-- Windows x64 (MSVC) 12m13s, Windows arm64 5m46s.
-  Both printed a `link.exe` linker (Visual Studio 18, MSVC 14.51.36231, `HostX64\x64\link.exe` and
-  `HostARM64\arm64\link.exe`), PE header linker version 14.51, and no C runtime DLL among the imports.
-  The x64 job rebuilt 449 crates although its cache key was an exact hit, because the cached entry was built with
+- Windows x64 (MSVC) 12m13s,
+   Windows arm64 5m46s.
+  Both printed a `link.exe` linker (Visual Studio 18,
+   MSVC 14.51.36231,
+   `HostX64\x64\link.exe` and
+  `HostARM64\arm64\link.exe`),
+   PE header linker version 14.51,
+   and no C runtime DLL among the imports.
+  The x64 job rebuilt 449 crates although its cache key was an exact hit,
+   because the cached entry was built with
   `CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe` in the environment and the build no longer passes it:
   a changed linker setting makes cargo rebuild everything (a local control with a path dependency and a build script
-  did the same, and a second build with unchanged settings rebuilt nothing).
-  Because the key matched exactly, the job saves no new entry, so a dispatch for the same version stays slow until
-  `Cargo.lock` changes; a version bump changes it, so the next release restores the entry by prefix,
+  did the same,
+   and a second build with unchanged settings rebuilt nothing).
+  Because the key matched exactly,
+   the job saves no new entry,
+   so a dispatch for the same version stays slow until
+  `Cargo.lock` changes;
+   a version bump changes it,
+   so the next release restores the entry by prefix,
   rebuilds once and saves a fresh one.
-- Alpine x86_64 17m11s, Linux x64 3m08s, Linux arm64 3m58s, macOS arm64 6m20s, Android 2m18s.
-- All nine files passed `sha256sum --check` against `SHA256SUMS` after download, and the `release` job's printed
+- Alpine x86_64 17m11s,
+   Linux x64 3m08s,
+   Linux arm64 3m58s,
+   macOS arm64 6m20s,
+   Android 2m18s.
+- All nine files passed `sha256sum --check` against `SHA256SUMS` after download,
+   and the `release` job's printed
   `gh release create` command listed all nine files and `SHA256SUMS`.
 
 ## Consequences

@@ -18,7 +18,8 @@ The release workflow branch recorded a concrete defect of that pin in commit 24b
  an x86_64 exe built with `+crt-static` and linked by `lld-link.exe` still imports the dynamic C runtime
  (`VCRUNTIME140.dll`, `api-ms-win-crt-*`), while Visual Studio's `link.exe` links it statically.
  The release workflow first worked around that with `CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe`
- (removed on 2026-10-15, see "Instructions for the release workflow").
+ (removed on 2026-10-15,
+ see "Instructions for the release workflow").
 
 ## The mold question
 
@@ -152,8 +153,11 @@ Measured on the branch (the temporary branch trigger is removed):
 ## Instructions for the release workflow
 
 `.github/workflows/music-player-release.yml` is owned by the release work and was not edited here.
-Done on 2026-10-15 on branch `feat/music-player-release-gnu` (the export is removed, and the GNU asset
- `music-player-<version>-windows-x64-gnu.exe` is built); the list below is the original instruction, and
+Done on 2026-10-15 on branch `feat/music-player-release-gnu` (the export is removed,
+ and the GNU asset
+ `music-player-<version>-windows-x64-gnu.exe` is built);
+ the list below is the original instruction,
+ and
  `doc/decision/music-player-releases.md` records what was built.
 
 - Remove the `CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe` export and its comment about `.cargo/config.toml`

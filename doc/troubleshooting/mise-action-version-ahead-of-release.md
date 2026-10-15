@@ -233,13 +233,18 @@ Without the input,
 
 ### The release-age lookup can fail with 403
 
-Run 38688512043 (`music-player-release.yml`, a push to `main`, 2026-10-15) failed attempt 1 in two jobs with
+Run 38688512043 (`music-player-release.yml`,
+ a push to `main`,
+ 2026-10-15) failed attempt 1 in two jobs with
  `##[error]GitHub releases API returned 403 Forbidden`:
  the Android job at "Set up mise (skip auto-install of all tools)" (05:46:17Z)
  and the macOS desktop job at "Install node (runs the repository's bundle:macos task)" (05:51:20Z).
-Attempt 2 passed, and its Android job logged
+Attempt 2 passed,
+ and its Android job logged
  `Selected mise 2026.10.9, released 2026-10-13T14:53:38Z, with minimum_release_age=1d`.
-The cause of the 403 (a rate limit, a secondary limit, or the token) was not established:
+The cause of the 403 (a rate limit,
+ a secondary limit,
+ or the token) was not established:
  the job logs carry no response headers.
 
 The action treats the response as final.
@@ -258,7 +263,8 @@ In `githubMiseReleases` (`src/index.ts:985` at `c2a87611a18de5b3828c5652fe268e99
 ```
 
 so any 4xx except 429 fails the step without a retry.
-That function is called only from `latestMiseVersion` (`src/index.ts:1013`), which `setupMise` calls only when no
+That function is called only from `latestMiseVersion` (`src/index.ts:1013`),
+ which `setupMise` calls only when no
  `version` input is given (`src/index.ts:413`):
 
 ```ts
@@ -270,16 +276,22 @@ That function is called only from `latestMiseVersion` (`src/index.ts:1013`), whi
 ```
 
 and `useMinimumReleaseAge` is `!version && Boolean(minimumReleaseAge.trim())` (`src/index.ts:407`).
-With `version` set, the action logs "`minimum_release_age` is ignored because an explicit mise version was provided"
- (`src/index.ts:408`), so `minimum_release_age` does nothing and the pinned workflow does not set it.
+With `version` set,
+ the action logs "`minimum_release_age` is ignored because an explicit mise version was provided"
+ (`src/index.ts:408`),
+ so `minimum_release_age` does nothing and the pinned workflow does not set it.
 The remaining requests go to `github.com/jdx/mise/releases/download/` (the archive and `SHASUMS256.txt`
- with its `.minisig`, `src/index.ts:685` to `src/index.ts:740`); `rg api.github.com src/index.ts` finds the releases
+ with its `.minisig`,
+ `src/index.ts:685` to `src/index.ts:740`);
+ `rg api.github.com src/index.ts` finds the releases
  lookup as the only API call.
 The pinned version must be a published release with its assets:
- `gh release view v2026.10.9 --repo jdx/mise` shows `isDraft` false and the `linux-x64`, `macos-arm64` and
+ `gh release view v2026.10.9 --repo jdx/mise` shows `isDraft` false and the `linux-x64`,
+ `macos-arm64` and
  `windows-*` assets.
 The pin was checked only by reading the source and by the dry run of the pin's branch (recorded in
- `doc/decision/music-player-releases.md`); it has not met a 403 since.
+ `doc/decision/music-player-releases.md`);
+ it has not met a 403 since.
 
 ## Verification
 
@@ -364,13 +376,15 @@ Patterns that work:
      The action builds the GitHub URL from the pinned value and never reads the version file
      and never calls the releases API (see "The release-age lookup can fail with 403").
      Applied on 2026-10-15 to the two `jdx/mise-action` steps of `.github/workflows/music-player-release.yml`
-     (`version: 2026.10.9`, without `minimum_release_age`).
+     (`version: 2026.10.9`,
+      without `minimum_release_age`).
      Not applied to the other workflows.
      Tradeoff:
      the pin needs a maintenance rule (the repository's `PIN` rule wants a comment saying why),
      no bot in this repository bumps action inputs,
      so the owner of the workflow updates it by hand:
-     the steps are in `doc/runbook/release-the-music-player.md`, section "The mise version pin".
+     the steps are in `doc/runbook/release-the-music-player.md`,
+      section "The mise version pin".
 
 ## What does not work
 
@@ -487,34 +501,54 @@ Checked 2026-10-15 for the failure in "The release-age lookup can fail with 403"
 Duplicate search with `gh search issues --repo jdx/mise-action`:
  `"releases API"` found nothing;
  `"403"` found [jdx/mise-action#200](https://github.com/jdx/mise-action/issues/200) (closed 2025-06-25),
- which is about `mise` itself making unauthenticated requests and hitting the rate limit, not about the action's
+ which is about `mise` itself making unauthenticated requests and hitting the rate limit,
+ not about the action's
  release lookup;
- `"minimum_release_age"` found #603, #617, #641, #664 and #538, none about a 403 from the lookup.
+ `"minimum_release_age"` found #603,
+ #617,
+ #641,
+ #664 and #538,
+ none about a 403 from the lookup.
 So no existing report covers it.
 
 Walking the six constraints:
 
 1.   Is it really upstream's fault?
      Not established.
-     The cause of the 403 is unknown: the job logs carry no response headers and no message body.
+     The cause of the 403 is unknown:
+      the job logs carry no response headers and no message body.
      GitHub's documentation (`content/rest/using-the-rest-api/rate-limits-for-the-rest-api.md` in `github/docs`,
      read 2026-10-15) says that exceeding either the primary or a secondary rate limit returns `403` or `429`.
-     If the 403 was a rate limit, the action's classification (any 4xx except 429 is final) turns a retryable
-     condition into a failure; if it was a token or permission problem, the action behaved correctly.
+     If the 403 was a rate limit,
+      the action's classification (any 4xx except 429 is final) turns a retryable
+     condition into a failure;
+      if it was a token or permission problem,
+      the action behaved correctly.
 2.   Can upstream fix it?
-     Yes: retry a 403 that carries rate-limit headers, or fall back to the version file.
+     Yes:
+      retry a 403 that carries rate-limit headers,
+      or fall back to the version file.
 3.   Are they supporting this use case?
-     Yes: `minimum_release_age` is a shipped input and its lookup is the documented path.
+     Yes:
+      `minimum_release_age` is a shipped input and its lookup is the documented path.
 4.   Would the repo welcome our contribution?
      `jdx/mise-action` has a `CLAUDE.md` for agent work and no `CONTRIBUTING.md` and no issue template in
-     its root or `.github` (checked by listing both); no ban on outside or AI-assisted reports was found.
+     its root or `.github` (checked by listing both);
+      no ban on outside or AI-assisted reports was found.
 5.   Will they likely fix it?
      No signal.
      On #616 the maintainer defended the version file over the releases API for rate-limit reasons.
 6.   Have we prototyped a minimal fix?
-     No, and none is possible without knowing what the 403 was.
+     No,
+      and none is possible without knowing what the 403 was.
 
-Decision: do not file, and keep no draft.
-A report needs the response status text, `x-ratelimit-remaining`, `retry-after` and the body of a failing call,
- which no log of this repository holds; the action does not print them.
-If the 403 recurs for a workflow that does not pin `version`, capture those headers first.
+Decision:
+ do not file,
+ and keep no draft.
+A report needs the response status text,
+ `x-ratelimit-remaining`,
+ `retry-after` and the body of a failing call,
+ which no log of this repository holds;
+ the action does not print them.
+If the 403 recurs for a workflow that does not pin `version`,
+ capture those headers first.
