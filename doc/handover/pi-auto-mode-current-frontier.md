@@ -1850,10 +1850,46 @@ All five consumer files have zero focused diagnostics in
 The full saved-versus-current constructor comparison matches all six domain scenarios,
 including native execution counts and the permission-versus-prohibition positive control,
 in `typed-preparation-constructor-comparison.json`.
-Final direct verification,
-saved original-body controls,
-guard omissions,
-and the maintained lint recount remain pending.
+Final direct suites and type checking pass in
+`${HOME}/temp/agent/pi-preparation-tests-final-20261015.log`
+and `${HOME}/temp/agent/pi-preparation-types-final-20261015.log`.
+The same suites pass against the exact saved original preparation and selection-reader function bodies in
+`${HOME}/temp/agent/pi-preparation-original-blocks-20261015.log`.
+That wrapper instruments source publication and lookup while leaving the extracted statements unchanged;
+private optional own-key differences remain outside its equality claim.
+All 24 process-local omissions trigger test failures;
+all five built artifacts retain their original hashes in `typed-preparation-omissions.json`.
+The initial verifier rejected an expected original missing-selection error because it required `AssertionError`;
+the corrected verifier accepts that exact diagnostic for omitted selection publication,
+rechecks the saved starting hashes,
+and resumes the remaining controls without repeating completed runs.
+The full maintained recount covers 641 files and 486 rules:
+zero errors and 11401 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-preparation-lint-20261015.log`.
+All eight preparation implementation and consumer files have zero diagnostics in the full report.
+`child-constructor.mjs` retains 162 warnings.
+Original preparation extraction is qualified at the tested boundaries.
+
+`c2bcb12ea0` and `18451f1560` introduce typed current-member reads and retained judgment inspection.
+Prepared-member access retains ownership,
+dependency,
+and immediate-parent ordering;
+original-file access retains readiness before ownership and its original prepared input path.
+Retained inspection keeps preparation,
+closure,
+accounting,
+root execution,
+prepared programs,
+root programs,
+and reached groups separate from live eligibility.
+The saved constructor is `child-constructor-before-inspection-types.mjs`
+in the same scratch directory,
+with SHA-256 `bb100fcead79be4ad62a52867952e723d239686bd91babbbb285f5e7722e98c4`.
+Focused lint,
+rebuild,
+direct consumers,
+comparison,
+and guard controls remain pending for inspection.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.

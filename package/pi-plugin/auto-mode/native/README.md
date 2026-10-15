@@ -61,6 +61,12 @@ and permanent closure outcomes.
 Assessment and retention failures remain ordered peers in an aggregate without a new `cause` property.
 Successful closure retains original dependency and batch identities
 while explicitly withholding policy authority and human permission.
+`test:native:judgment-preparation` checks original source sealing,
+receipt identity,
+complete member publication,
+retained failures,
+and real budget cancellation or expiry before publication.
+The preparation owner shares original member records with instruction and execution owners.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
