@@ -262,6 +262,14 @@ run = "node src/native-members.unit.test.ts"
 description = "Verify original result conversion extraction and source qualification guards"
 run = "node src/native-program-value.unit.test.ts"
 
+[tasks."test:native:program-owner"]
+description = "Verify built original program declaration, reached-group, native result, and failure ownership"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-owner.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-group.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-result.unit.test.ts",
+]
+
 [tasks."test:native:resource-input"]
 description = "Verify built native resource copies preserve values, ownership, descriptors, and byte limits"
 run = [
