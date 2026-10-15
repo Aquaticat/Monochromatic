@@ -25,6 +25,8 @@ on:
   push:
     branches:
       - main
+      # TEMPORARY dry-run trigger, removed before the branch merges.
+      - feat/music-player-alpine
     paths:
       - 'package/music-player/desktop-app/**'
       - 'package/music-player/truepeak-core/**'
@@ -170,7 +172,7 @@ jobs:
         # Pull requests never save: a branch can only be read by itself, and
         # the repository's cache quota is small. The first condition line
         # that matches is enough; a hit on the exact key has nothing new.
-        if: ${{ steps.cache.outputs.cache-hit != 'true' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}
+        if: ${{ steps.cache.outputs.cache-hit != 'true' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.ref == 'refs/heads/feat/music-player-alpine') }}
         uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: |
