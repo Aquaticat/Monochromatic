@@ -68,7 +68,7 @@ export function preparedDispatcherSource({ source, originalUrl }: {
   const edits: NativeSourceEdit[] = names.map(function retainOriginalError(name) {
     const declarations = parsed.program.body.filter(function namedError(node) {
       return (node.type === 'ExportNamedDeclaration') && (node.declaration?.type === 'ClassDeclaration')
-        && (node.declaration.id.name === name);
+        && (node.declaration.id?.name === name);
     });
     if (declarations.length !== 1) throw new NativeBatchBuildError(`Original dispatcher error is absent or repeated: ${name}`);
     const declaration = nonNullishOrThrow(declarations[0]);
