@@ -255,11 +255,20 @@ The package README now distinguishes installed native behavior from the retained
 Native documentation uses the adopted `0.60` cutoff and current confirmation semantics.
 Rendered output has been inspected.
 
-A fresh real-model run is waiting for the user's response to the original native dialog in
+The user supplied Allow to the pending original native dialog in
 `pi-hyper-rpc-human-bFNRvU` under `${HOME}/temp/agent/`.
-Its exact operation is `return await tools.read({path: "proof.txt"});`.
-The response question is pending;
-do not invent or reuse permission for it.
+Its exact operation was `return await tools.read({path: "proof.txt"});`.
+The controller forwarded that response to the unchanged pending request identifier.
+The original tool executed once and returned the expected disposable file contents;
+the host exited zero.
+`verification.json` records one genuine human response,
+two actual Hyper requests,
+one actual Luna request,
+and no authored primary responses,
+semantic answers,
+or authorization facts.
+This completes the live production-host human-confirmation boundary.
+It grants no permission for another operation or session.
 
 The full package lint now reports 14,550 warnings and 454 errors across 425 files.
 `${HOME}/temp/agent/pi-native-full-lint-manual-review-20261014.log` retains the complete diagnostics.
