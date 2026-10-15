@@ -2,6 +2,7 @@
  Private program state retains original parent, group, slot, and result occurrences. @module
  */
 import type { NativeScriptValueGuardError } from './script-value-guard.ts';
+import type { JudgmentExecutionOrigin } from './execution-types.ts';
 import type {
   NativeReturnConsumer,
   NativeReturnSlot
@@ -21,7 +22,7 @@ import type {
 export type ProgramMemberExecution = {
   readonly token: object;
   state: 'active' | 'returned';
-  readonly origin: Readonly<{ signal: AbortSignal }>;
+  readonly origin: JudgmentExecutionOrigin;
 };
 
 /**
