@@ -2354,7 +2354,25 @@ The first consumer type check rejects an empty-array assertion that narrows late
 the fixture now checks the empty count and preserves explicit string-array typing.
 Opaque rejection tests use independently issued native tickets,
 keeping rejection identity without treating it as an authored application error.
-Full completion qualification remains in progress.
+`571e76379d` retains opaque rejection tickets and adds strict outcome identity assertions.
+The final five-file implementation/test formatting pass reports zero diagnostics.
+The owned native rebuild,
+package type check,
+both consumer suites,
+and exact original-body replay pass.
+All nineteen process-local completion changes fail the expected consumer assertions,
+with both artifact hashes unchanged in `typed-group-completion-omissions.json`.
+The controls remove listener cleanup,
+allow premature settled publication,
+alter delivery states,
+omit ticket settlement,
+or replace retained identities.
+Six original/current domain comparisons preserve public results and native execution counts,
+with the permission/prohibition positive control still distinguishing execution from denial.
+The saved original helper has SHA-256
+`8b74e711ae1f065768149c111463b57b4d5396dec0abd977fe19fe5dcda66612`.
+The original completion owner is qualified at these tested boundaries.
+The full-package recount is running before continuing original group-failure occurrence ownership.
 
 Auto-pushing `6973251c83` was separately rejected with `GH006` and no detailed requirement.
 The original local signature verified,

@@ -20,6 +20,17 @@ and exact retained file bytes in disposable roots.
 Live checks enforce the original deadline;
 retained checks preserve cancellation and freshness after that deadline expires.
 Mechanical projections explicitly withhold instruction authority and human permission.
+`test:native:program-queue` checks original recorder reuse,
+private token and public label membership,
+immediate queue-tail publication,
+and normal or exceptional dispatch release.
+An original rejected predecessor retains its exact failure and leaves its already published successor unresolved.
+`test:native:group-completions` verifies that original native outcomes remain retained after delivery closes.
+It checks every delivery state,
+original value and failure identity,
+listener detachment,
+and failures inside result delivery or cleanup.
+Closed or failed groups retain outcomes without being relabeled as successfully settled transport.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 
