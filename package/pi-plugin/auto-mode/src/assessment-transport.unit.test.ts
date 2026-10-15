@@ -67,9 +67,8 @@ await describe({
     }),
     ...[
       { name: 'credential in input', body: assessmentFixtureKey, attempt: 1, },
-      { name: 'UTF-8 byte overflow', body: 'é'.repeat(524_289,), attempt: 1, },
       { name: 'zero attempt', body: '{}', attempt: 0, },
-      { name: 'fourth attempt', body: '{}', attempt: 4, },
+      { name: 'tenth call', body: '{}', attempt: 10, },
       { name: 'fractional attempt', body: '{}', attempt: 1.5, },
     ].map(function rejectedInput({ name, body, attempt, }) {
       return it({
@@ -89,13 +88,13 @@ await describe({
       },);
     }),
     it({
-      name: 'admits the inherited request and response byte boundaries',
+      name: 'preserves complete request and response text beyond the removed byte ceilings',
       fn: async () => {
-        const raw = 'é'.repeat(32_768,);
+        const raw = 'é'.repeat(32_769,);
         const send = assessmentSender({ fetchImpl: async function boundedResponse() {
           return new Response(raw,);
         }, },);
-        expect(await send({ ...assessmentInput(), body: 'é'.repeat(524_288,), },),).toBe(raw,);
+        expect(await send({ ...assessmentInput(), body: 'é'.repeat(524_289,), attempt:9, },),).toBe(raw,);
       },
     },),
   ],
@@ -213,7 +212,6 @@ await describe({
       { name: 'missing body', response: function missingBody() { return new Response(null, { status: 204, },); }, },
       { name: 'HTTP failure', response: function httpFailure() { return new Response('private upstream error', { status: 503, },); }, },
       { name: 'credential echo', response: function credentialEcho() { return new Response(assessmentFixtureKey,); }, },
-      { name: 'UTF-8 response overflow', response: function oversizedResponse() { return new Response('é'.repeat(32_769,),); }, },
       { name: 'invalid UTF-8', response: function invalidEncoding() { return new Response(new Uint8Array([0xFF,],),); }, },
     ].map(function rejectedResponse(fixture) {
       return it({
@@ -234,15 +232,17 @@ await describe({
       },);
     }),
     it({
-      name: 'cancels an oversized response stream before consuming later chunks',
+      name: 'cancels an expired response stream before consuming later chunks',
       fn: async () => {
         let cancelled = false;
+        let clock=0;
         const stream = new ReadableStream<Uint8Array>({
           start(controller) { controller.enqueue(new Uint8Array(65_537,),); },
           pull(controller) { controller.close(); },
           cancel() { cancelled = true; },
         }, { highWaterMark: 0, },);
-        const send = assessmentSender({ fetchImpl: async function streamedResponse() {
+        const send = assessmentSender({now:()=>clock, fetchImpl: async function streamedResponse() {
+          clock=5_000;
           return new Response(stream,);
         }, },);
         const error = await assessmentFailure(async function dispatch() {
