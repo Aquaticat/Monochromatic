@@ -102,10 +102,12 @@ One release holds, with `<version>` filled in:
   (`+crt-static` in `package/music-player/desktop-app/.cargo/config.toml`),
   so a clean machine needs no Visual C++ Redistributable.
   The job reads the executable's import tables with `pefile` and fails if a Visual C++ runtime DLL is among them.
-  That check found that `+crt-static` is not enough on x86_64:
+  That check found that `+crt-static` was not enough on x86_64:
   the repository's config pins `lld-link.exe` for that target,
-  and an executable linked by it still imports `VCRUNTIME140.dll` and the `api-ms-win-crt` DLLs,
-  while the same code linked by the MSVC `link.exe` imports only system DLLs (the arm64 job, and an x64 probe run).
+  and the executable linked by it still imported `VCRUNTIME140.dll` and the `api-ms-win-crt` DLLs,
+  while the same code linked by the MSVC `link.exe` imported only system DLLs (the arm64 job, and an x64 probe run).
+  The probe changed only the linker, so this shows a correlation with the linker, not a root cause;
+  `doc/troubleshooting/windows-x64-lld-link-crt-static-dynamic-imports.md` records what is and is not established.
   The release build therefore sets `CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe`,
   which takes precedence over the config file and leaves the developers' `lld-link` pin alone.
   The executable is built as a console program (no `windows_subsystem` attribute exists in the source),
@@ -144,11 +146,17 @@ One release holds, with `<version>` filled in:
 - The Rust toolchain is read from `mise.lock` in each job and installed with `rustup`,
   so the release never drifts from what the repository builds with,
   and one mechanism works on every desktop platform.
-  The Android job installs Rust, JDK 21, the Android command-line tools and `cargo-ndk` with mise (versions from
-  `mise.lock`), installs the SDK components with the repository's `prepare:android` task, and builds with the existing
+  The Android job installs Rust, JDK 21, the Android command-line tools and `cargo-ndk` with mise,
+  installs the SDK components with the repository's `prepare:android` task, and builds with the existing
   `build:release` task.
-- The Linux jobs install the minimal development packages found by building:
+  Its Rust is the `mise.lock` toolchain: the log of the dry run 38669432843 prints
+  `rustc 1.101.0-nightly (e9bbadf68 2026-10-12)`, which is `nightly-2026-10-13`, the version in the native cache key.
+  mise 2026.10 refused to install `cargo-ndk` before Rust was installed through mise
+  (`doc/troubleshooting/mise-cargo-backend-needs-rust-installed.md`).
+- The Linux jobs install a package list that builds on the runner images:
   `pkg-config clang libclang-dev cmake libpipewire-0.3-dev libspa-0.2-dev libfontconfig1-dev libfreetype-dev`.
+  It was found by adding packages until the build passed.
+  No package was removed to test whether it is needed, so the list may hold more than the minimum.
   Windowing and GL libraries are loaded at run time and need no headers.
 - Every build uses `cargo build --release --locked`.
 - Caches, decided by the owner on 2026-10-15 over this document's first choice of cold builds.
@@ -263,11 +271,17 @@ evictions of other workflows' caches are possible, and the sizes should be reche
   and was not requested.
 - The Android APK is about 160 MB, because it carries two ABIs of the native engine and the two Turso libraries.
   Release assets allow far more.
-- The macOS arm64 job once failed with `hdiutil: create failed - Resource busy`, which passed in the next run;
-  the job now retries `hdiutil create` and `detach` up to five times.
+- The macOS arm64 job once failed with `hdiutil: create failed - Resource busy`,
+  which did not recur in the six later runs that built the image;
+  the job now retries `hdiutil create` and `detach` up to five times
+  (`doc/troubleshooting/macos-hdiutil-create-resource-busy.md`; the retry has not yet fired in CI, and the cause is
+  unknown).
 - Two version-bearing manifests must be bumped together,
   and their lock files refreshed with `cargo update --workspace`,
   because the release builds with `--locked`.
+  `file-enforcer` does not own the `version` field: `buildCargoManifestPlan` in `file-enforcer.config.ts` enforces
+  edition, license, publish, lints, shared dependencies, repository, readme, homepage and profiles, and a throwaway
+  copy with both versions bumped came out of `node file-enforcer.config.ts` with the bumps intact.
 - The repository's pinned Rust is a floating nightly recorded as a date in `mise.lock`.
   A date that Rust no longer serves would fail the build until `mise.lock` moves on.
 - Releases are built from the workflow's commit, which is in the monorepo today.
@@ -286,6 +300,9 @@ evictions of other workflows' caches are possible, and the sizes should be reche
   the owner asked for repository secrets; see the consequences.
 - Cold release builds with no cache: this document's first choice, overruled by the owner on 2026-10-15.
 - Caching the Android SDK and NDK:
+  the owner asked for caching in general, and this entry was part of that.
+  It was built and measured, then left out as a deviation the owner may veto:
   restoring the 1.0 GB entry took 17 seconds against 25 seconds to install the components,
-  so it saved 8 seconds for a fifth of the repository's cache budget.
-  It was built, measured and removed.
+  so it saved 8 seconds for a tenth of the repository's 10 GB cache budget.
+  Restoring it needs one more `actions/cache` pair in the Android job (path `$ANDROID_HOME`, key from the
+  component lines).

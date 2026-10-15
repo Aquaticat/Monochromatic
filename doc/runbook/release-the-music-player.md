@@ -46,14 +46,20 @@ The rules the workflow enforces, and fails loudly on:
 
 ## Cut a release
 
-1.  Pick the new version and edit both manifests:
+1.  Pick the new version and edit both manifests by hand:
     the `version` line in `package/music-player/desktop-app/Cargo.toml`
     and the one in `package/music-player/android-app/rust/Cargo.toml`.
+    Both files are managed by `file-enforcer`, but it does not own `version`:
+    `buildCargoManifestPlan` in `file-enforcer.config.ts` lists edition, license, publish, lints, shared dependencies,
+    repository, readme, homepage and profiles, and in a throwaway checkout with both versions bumped
+    `node file-enforcer.config.ts` left the bumps in place.
+    Run it after the edit anyway, as for any manifest change, and commit whatever it rewrites.
 2.  Refresh both lock files without touching any dependency,
     because the release builds with `--locked` and fails on a stale `Cargo.lock`:
     run `cargo update --workspace` in `package/music-player/desktop-app`
     and in `package/music-player/android-app/rust`.
-    Each lock file changes by exactly one line.
+    Each lock file changes by exactly one line (the crate's own `version` in its `[[package]]` entry;
+    checked offline on both crates, and `cargo metadata --locked --offline` then resolves).
 3.  Commit the four files and merge to `main`.
     A push to `main` that changes either manifest starts the workflow.
     The detect job compares the old and new version and starts the build only if the version changed.
