@@ -15,7 +15,6 @@ package dev.monochromatic.musicplayer
 // import { TemplateKind } from "core/TemplateEditorState";
 // import { settingsRowRadii, settingsPaneSplit } from "core/SettingsLayout";
 // ```
-import dev.monochromatic.musicplayer.core.SETTINGS_GROUP_GAP_DP
 import dev.monochromatic.musicplayer.core.SETTINGS_ICON_CIRCLE_DP
 import dev.monochromatic.musicplayer.core.SETTINGS_PANE_FADE_MILLIS
 import dev.monochromatic.musicplayer.core.autoPlayOnSelectSupportingText
@@ -216,6 +215,41 @@ private val SETTINGS_SWITCH_GAP: Dp = 16.dp
 // ```
 /** Most lines the supporting text of a switch row takes before it is cut with an ellipsis. */
 private const val SETTINGS_SWITCH_SUPPORTING_LINES: Int = 2
+
+// What:     `private const val SETTINGS_SWITCH_TITLE_LINES: Int = 2` bounds the title of a switch row.
+// Why:      A template row title is one line, but "Auto-play on select" wraps in a narrow list pane, and a cut title
+//           would hide the name of the setting.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SETTINGS_SWITCH_TITLE_LINES = 2;
+// ```
+/** Most lines the title of a switch row takes before it is cut with an ellipsis. */
+private const val SETTINGS_SWITCH_TITLE_LINES: Int = 2
+
+// What:     `private val SETTINGS_SWITCH_STACK_BELOW: Dp = 300.dp` is the row width under which the switch moves under
+//           the text.
+// Why:      Beside the text the switch leaves the text column 148 dp less than the row; the list pane of the unfolded
+//           screen is about 213 dp wide, which would leave the title no room. Below this width the switch sits under
+//           the supporting text instead, so the text keeps the row's width.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SETTINGS_SWITCH_STACK_BELOW = 300;
+// ```
+/** Row width below which the switch is placed under the text instead of after it. */
+private val SETTINGS_SWITCH_STACK_BELOW: Dp = 300.dp
+
+// What:     `private val SETTINGS_SWITCH_STACKED_GAP: Dp = 8.dp` is the space between the supporting text and a stacked
+//           switch.
+// Why:      A stacked switch needs the same breathing room as the heading has below its label.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SETTINGS_SWITCH_STACKED_GAP = 8;
+// ```
+/** Space between the supporting text and the switch when the switch sits under the text. */
+private val SETTINGS_SWITCH_STACKED_GAP: Dp = 8.dp
 
 // What:     `internal fun settingsPageContent(...)` draws the single-column Settings page.
 // Why:      On a window narrower than the player's two-pane width, the page lists each template with the line it
@@ -421,8 +455,9 @@ private fun settingsListPane(
         Column(
             modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())
                 .windowInsetsPadding(WindowInsets.navigationBars),
-            verticalArrangement = Arrangement.spacedBy(SETTINGS_GROUP_GAP_DP.dp),
         ) {
+            // The 16 dp between two groups is the top padding of the next group's heading (D109), so the column
+            // adds no gap of its own.
             // What:     `Column` with `spacedBy` stacks the heading and the template rows of the one group.
             // Why:      The 2 dp between rows is page canvas, so the group needs no card fill or divider line.
             //
@@ -485,7 +520,8 @@ private fun settingsListPane(
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function SwitchRow(props: { icon; title; supportingText; checked; radii; textEndExtra; onToggle(): void }): UIElement;
+// function SwitchRow(props: {
+//   icon; title; supportingText; checked; radii; textEndExtra; onToggle(): void }): UIElement;
 // ```
 /**
  * Draws one row: a 40 dp icon circle, the title, the supporting line and a trailing switch.
@@ -508,47 +544,76 @@ private fun settingsSwitchRow(
         bottomStart = radii.bottomDp.dp,
         bottomEnd = radii.bottomDp.dp,
     )
-    Row(
-        modifier = Modifier.fillMaxWidth()
-            .defaultMinSize(minHeight = SETTINGS_ROW_HEIGHT_DP.dp)
-            .focusRing(shape)
-            .clip(shape)
-            .toggleable(value = checked, role = Role.Switch, onValueChange = { onToggle() })
-            .padding(
-                start = SETTINGS_ROW_INNER_PADDING_DP.dp,
-                end = SETTINGS_ROW_INNER_PADDING_DP.dp + textEndExtra,
-                top = SETTINGS_ROW_VERTICAL_INSET,
-                bottom = SETTINGS_ROW_VERTICAL_INSET,
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        settingsIconCircle(icon = icon, onChosenRow = false)
-        Spacer(modifier = Modifier.width(SETTINGS_ICON_TITLE_GAP_DP.dp))
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-            settingsRowTitle(text = title, bold = false)
-            Text(
-                text = supportingText,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = SETTINGS_SWITCH_SUPPORTING_LINES,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        Spacer(modifier = Modifier.width(SETTINGS_SWITCH_GAP))
-        // The row owns the toggle, so the switch only draws the state and has no click or semantics of its own.
-        Switch(
-            checked = checked,
-            onCheckedChange = null,
-            thumbContent = {
-                Icon(
-                    imageVector = if (checked) SETTINGS_SWITCH_ON_ICON else SETTINGS_SWITCH_OFF_ICON,
-                    contentDescription = null,
-                    modifier = Modifier.size(SwitchDefaults.IconSize),
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        /** True when the row is too narrow for the switch beside the text. */
+        val stacked: Boolean = maxWidth < SETTINGS_SWITCH_STACK_BELOW
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .defaultMinSize(minHeight = SETTINGS_ROW_HEIGHT_DP.dp)
+                .focusRing(shape)
+                .clip(shape)
+                .toggleable(value = checked, role = Role.Switch, onValueChange = { onToggle() })
+                .padding(
+                    start = SETTINGS_ROW_INNER_PADDING_DP.dp,
+                    end = SETTINGS_ROW_INNER_PADDING_DP.dp + textEndExtra,
+                    top = SETTINGS_ROW_VERTICAL_INSET,
+                    bottom = SETTINGS_ROW_VERTICAL_INSET,
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            settingsIconCircle(icon = icon, onChosenRow = false)
+            Spacer(modifier = Modifier.width(SETTINGS_ICON_TITLE_GAP_DP.dp))
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                Text(
+                    text = title,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = SETTINGS_SWITCH_TITLE_LINES,
+                    overflow = TextOverflow.Ellipsis,
                 )
-            },
-            colors = settingsSwitchColors(),
-        )
+                Text(
+                    text = supportingText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = SETTINGS_SWITCH_SUPPORTING_LINES,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (stacked) {
+                    Spacer(modifier = Modifier.height(SETTINGS_SWITCH_STACKED_GAP))
+                    settingsSwitchControl(checked = checked)
+                }
+            }
+            if (!stacked) {
+                Spacer(modifier = Modifier.width(SETTINGS_SWITCH_GAP))
+                settingsSwitchControl(checked = checked)
+            }
+        }
     }
+}
+
+// What:     `@Composable private fun settingsSwitchControl(checked: Boolean)` draws the Material 3 switch of a row.
+// Why:      The row owns the toggle, so the switch only draws the state (thumb position, track fill and the mark in the
+//           thumb) and has no click or semantics of its own. One function serves the beside and the stacked place.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function SwitchControl(props: { checked: boolean }): UIElement;
+// ```
+/** Draws the switch for [checked] with the player's colors and a check or cross mark in the thumb. */
+@Composable
+private fun settingsSwitchControl(checked: Boolean) {
+    Switch(
+        checked = checked,
+        onCheckedChange = null,
+        thumbContent = {
+            Icon(
+                imageVector = if (checked) SETTINGS_SWITCH_ON_ICON else SETTINGS_SWITCH_OFF_ICON,
+                contentDescription = null,
+                modifier = Modifier.size(SwitchDefaults.IconSize),
+            )
+        },
+        colors = settingsSwitchColors(),
+    )
 }
 
 // What:     `@Composable private fun settingsSwitchColors(): SwitchColors` maps the switch parts onto player roles.

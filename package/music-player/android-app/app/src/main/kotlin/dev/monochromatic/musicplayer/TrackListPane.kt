@@ -527,8 +527,8 @@ private fun rowWithLine(row: TrackRowModel, lines: TrackRowLineSource?): TrackRo
 }
 
 // What:     `@Composable private fun trackRow(...)` draws one playable track row.
-// Why:      The current row gets the D42 surface background and a bold title, and a tap selects a row, or toggles
-//           play on the current one (D124).
+// Why:      The current row gets the D42 surface background and a bold title, and a tap selects a row (and starts it
+//           with Auto-play on select on, D129), or toggles play on the current one (D124).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -536,8 +536,8 @@ private fun rowWithLine(row: TrackRowModel, lines: TrackRowLineSource?): TrackRo
 // ```
 /**
  * Draws one track row with its title, optional supporting line, and current-row treatment.
- * Tap selects the row, or toggles play and pause on the current row (D124); long press, a secondary-button press, or
- * the menu key opens its context menu.
+ * Tap selects the row (and starts it with Auto-play on select on, D129), or toggles play and pause on the current
+ * row (D124); long press, a secondary-button press, or the menu key opens its context menu.
  */
 @Composable
 private fun trackRow(
