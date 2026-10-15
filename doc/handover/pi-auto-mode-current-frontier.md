@@ -847,7 +847,15 @@ resource-input,
 context-receipt,
 and retained-history consumers pass in
 `${HOME}/temp/agent/pi-native-wire-authority-consumer-20261015.log`.
-The next structural change separates loader publication state from collector snapshot ownership.
+Commit `42a7606059` separates loader publication state from collector snapshot ownership.
+The original private policy-input construction key remains in `system-slot.mjs`;
+the loader retains its publication record and each collector retains its own snapshot map.
+Focused lint has zero errors and 550 warnings.
+The same rebuilt policy and source consumers pass in
+`${HOME}/temp/agent/pi-native-system-slot-split-consumer-20261015.log`.
+The fixed ASCII rule-code check agrees with the original pattern in 196623 comparisons,
+including every UTF-16 code unit in each tag position and line-ending controls.
+The next structural change separates message descriptor signatures from publication ownership.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
