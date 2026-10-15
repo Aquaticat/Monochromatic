@@ -69,8 +69,13 @@ await describe({
             return undefined; 
           }));
         }, { name: 'JudgmentConstructionError' });
+        /**
+         A length-only array change creates a hole without an ambiguous constructor argument.
+         */
+        const sparse: unknown[] = [];
+        sparse.length = 1;
         assert.throws(function originalArrayHole() {
-          requireJSONInput(new Array(1));
+          requireJSONInput(sparse);
         }, { name: 'JudgmentConstructionError' });
       },
     }),

@@ -33,9 +33,15 @@ export function requireJSONInput(input: unknown): void {
   sl.debug('checking original native JSON value preservation');
   JSON.stringify(
     input,
-    function validateNativeJSONValue(_key: string, value: unknown): unknown {
+    function validateNativeJSONValue(
+      _key: string,
+      value: unknown
+    ): unknown {
     if ((value === undefined) || (((typeof value) === 'number')
-      && ((!Number.isFinite(value)) || Object.is(value, -0)))) throw new JudgmentConstructionError('Native tool input contains a value not preserved by the declared JSON profile');
+      && ((!Number.isFinite(value)) || Object.is(
+        value,
+        -0
+      )))) throw new JudgmentConstructionError('Native tool input contains a value not preserved by the declared JSON profile');
     return value;
   }
   );
