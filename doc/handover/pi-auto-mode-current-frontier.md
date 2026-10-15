@@ -1895,8 +1895,19 @@ execution,
 lifecycle,
 and preparation suites pass in
 `${HOME}/temp/agent/pi-judgment-inspection-consumers-first-20261015.log`.
-Direct inspection consumers,
-original comparison,
+The complete saved-constructor comparison matches six domain scenarios and native execution counts,
+including the permission/prohibition positive control,
+in `typed-inspection-constructor-comparison.json`.
+`f98f916b0f` and `bd71ac8abf` add independent current-member and retained-snapshot consumers.
+Both suites pass against the built owner and the exact saved original function statements in
+`${HOME}/temp/agent/pi-inspection-tests-first-20261015.log`
+and `${HOME}/temp/agent/pi-inspection-original-blocks-20261015.log`.
+The original wrapper only binds the shared state and supplied capabilities;
+it does not rewrite the extracted functions.
+The initial type check required an explicit fixture return contract under isolated declarations;
+`81a4bfd1af` adds that independent contract.
+Final formatting,
+type checking,
 guard controls,
 and the full maintained recount remain pending for inspection.
 

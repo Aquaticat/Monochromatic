@@ -11,8 +11,10 @@ import {
 //region Each fixture retains original records while callbacks expose observation order.
 /**
  Construct independent mutable owners and immutable identities for native inspection.
- *
+
  @returns built owner with observable capabilities and replaceable lifecycle state
+
+ @example createInspectionFixture();
  */
 export function createInspectionFixture(): InspectionFixture {
   /**
@@ -29,11 +31,9 @@ export function createInspectionFixture(): InspectionFixture {
   const state: { onStep?: (point: string) => void } = {};
   /**
    Record original callback order before effects or failure.
-   *
+
    @param point - capability boundary being observed
-   *
-   @returns nothing after completing boundary observation
-   *
+
    @throws Error when selected callback fails
    */
   function visit(point: string): void {
@@ -97,7 +97,8 @@ export function createInspectionFixture(): InspectionFixture {
       record.preparedProgram = { view };
       record.program = { handle: Object.freeze({}) };
       views.set(
-        record.program.handle,
+        record.program
+          .handle,
         Object.freeze({ root: id })
       );
     }
@@ -171,21 +172,48 @@ export function createInspectionFixture(): InspectionFixture {
     byMember,
     bindings,
     childGroups,
-    budget: { diagnostics() { visit('accounting'); return accounting; } },
-    knownMember(member: unknown) {
+    budget: { diagnostics(): object { 
+      visit('accounting'); 
+      return accounting; 
+    } },
+    knownMember(member: unknown): InspectionFixtureRecord {
       visit('ownership');
       assert.ok((member !== null) && ((typeof member) === 'object'));
-      /** Only this fixture's original handle resolves. */
+      /**
+       Only this fixture's original handle resolves.
+       */
       const record = bindings.get(member);
       assert.ok(record !== undefined);
       return record;
     },
-    assertDependenciesCurrent() { visit('dependencies'); },
-    parentCurrent(record: InspectionFixtureRecord) { visit('parent'); assert.ok(records.includes(record)); },
-    ready() { visit('ready'); },
-    originalFile(call: Readonly<{ handle: unknown; absolutePath: unknown }>) { visit('file'); fileCalls.push(call); return file; },
-    inspectProgram(handle: object) { visit('program'); assert.ok(views.has(handle)); return views.get(handle); },
-    inspectReachedGroup(handle: object) { visit('group'); assert.ok(views.has(handle)); return views.get(handle); },
+    assertDependenciesCurrent(): void { 
+      visit('dependencies'); 
+    },
+    parentCurrent(record: InspectionFixtureRecord): void { 
+      visit('parent'); 
+      assert.ok(records.includes(record)); 
+    },
+    ready(): void { 
+      visit('ready'); 
+    },
+    originalFile(call: Readonly<{
+      handle: unknown;
+      absolutePath: unknown;
+    }>): object { 
+      visit('file'); 
+      fileCalls.push(call); 
+      return file; 
+    },
+    inspectProgram(handle: object): unknown { 
+      visit('program'); 
+      assert.ok(views.has(handle)); 
+      return views.get(handle); 
+    },
+    inspectReachedGroup(handle: object): unknown { 
+      visit('group'); 
+      assert.ok(views.has(handle)); 
+      return views.get(handle); 
+    },
   };
   /**
    Factory must not eagerly call any supplied capability.

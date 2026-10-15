@@ -79,7 +79,11 @@ await describe({ name: '', children: [
       /** Exact error identity distinguishes propagation from reconstruction. */
       const failure = new Error(`original ${point} failure`);
       f.failures.set(point, failure);
-      assert.throws(function inspectFailed() { f.owner.inspect(); }, function originalFailure(error: unknown) { return error === failure; });
+      assert.throws(function inspectFailed() { 
+        f.owner.inspect(); 
+      }, function originalFailure(error: unknown) { 
+        return error === failure; 
+      });
       assert.deepEqual(f.events, events);
     } });
   }),

@@ -84,11 +84,11 @@ export type InspectionFixture = Readonly<{
 
 /**
  Require the original built export before supplying independent capabilities.
- *
+
  @param value - copied native namespace
- *
+
  @returns assertion exposing consumer contract
- *
+
  @throws Error when inspection export is unavailable
  */
 function assertInspectionModule(value: unknown): asserts value is InspectionModule {

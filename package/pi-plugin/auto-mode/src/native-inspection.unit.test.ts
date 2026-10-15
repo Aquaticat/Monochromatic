@@ -40,7 +40,7 @@ await describe({ name: '', children: [
       assert.equal(f.fileCalls.at(-1)?.handle, handle);
     }
     /** An absent original path is forwarded unchanged. */
-    const record = f.records[0];
+    const [record] = f.records;
     assert.ok(record !== undefined);
     delete record.prepared.input.path;
     delete f.state.onStep;
@@ -73,7 +73,9 @@ await describe({ name: '', children: [
         assert.throws(function readFailed() {
           if (operation === 'preparedMemberFor') f.owner.preparedMemberFor(f.byMember.get('z'));
           else f.owner.originalFileFor(f.byMember.get('z'));
-        }, function originalFailure(error: unknown) { return error === failure; });
+        }, function originalFailure(error: unknown) { 
+          return error === failure; 
+        });
         assert.deepEqual(f.events, steps.slice(0, ordinal + 1));
       } });
     });
