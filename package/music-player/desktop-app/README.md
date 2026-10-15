@@ -222,11 +222,6 @@ music-player path/to/music-folder
 - Settings,
   the session and the true-peak cache are written under `$XDG_CONFIG_HOME/musicplayer`
   (`~/.config/musicplayer` by default).
-- The player needs a CPU with AES acceleration (AES-NI on x86_64,
-  the crypto extension on aarch64),
-  as on every
-  platform;
-  a Raspberry Pi 3 or 4 does not have it.
 
 ### Build from source on Alpine
 

@@ -100,16 +100,13 @@ a different name from rustup's `x86_64-unknown-linux-musl`.
 Each was found by running the Alpine build or the app,
 not by reading.
 
-1. `gxhash` refuses to compile without the `aes` target feature.
-   `package/music-player/desktop-app/.cargo/config.toml` listed only gnu,
-   macOS and Windows triples,
-   so an Alpine build stopped with `Gxhash requires aes and sse2 intrinsics`.
-   One `[target.'cfg(all(target_os = "linux", target_env = "musl"))']` table now adds `-C target-feature=+aes`,
-   which matches every musl Linux triple including both Alpine host triples.
-   The cache fingerprint is identical across architectures:
-   the same 11 inputs gave the same 11 hashes on x86_64
-   and aarch64 (aarch64 under qemu),
-   so a peak cache written on one architecture reads on the other.
+1. `gxhash` refused to compile without the `aes` target feature,
+   so the first Alpine build stopped with `Gxhash requires aes and sse2 intrinsics`.
+   A `[target.'cfg(all(target_os = "linux", target_env = "musl"))']` table with `-C target-feature=+aes` fixed it,
+   and the same 11 inputs gave the same 11 hashes on x86_64 and aarch64 (under qemu).
+   Main then replaced `gxhash` with XXH3-64 from `twox-hash` (`doc/decision/music-player-fingerprint-hash.md`),
+   which picks its SIMD kernel at run time,
+   so the merge dropped the musl table and the Alpine build needs no target feature and no special CPU.
 2. The background sweep silently stayed at normal priority.
    musl's `sched_setscheduler` always returns -1 with errno 38 (ENOSYS),
    measured with a C program;
@@ -452,9 +449,7 @@ needs Alpine 3.24 or newer on musl,
 x86_64 or aarch64,
 and one line to install:
 `apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon mesa-egl mesa-gles mesa-dri-gallium alsa-lib`.
-They should also say that without PipeWire the player uses the default ALSA device,
-and that an aarch64 CPU must have
-the ARM crypto extension (see the consequences).
+They should also say that without PipeWire the player uses the default ALSA device.
 
 ## Consequences
 
@@ -463,14 +458,6 @@ the ARM crypto extension (see the consequences).
   reverse.
   Each architecture needs its own build,
   which the release job above does natively.
-- The musl build needs a CPU with AES acceleration:
-  x86_64 AES-NI,
-  or the ARM crypto extension on aarch64.
-  `gxhash` has no software fallback,
-  so a CPU without it fails with an illegal instruction at run time.
-  A Raspberry Pi 3 or 4 does not have the ARM crypto extension.
-  This was not run on such a device,
-  and the same limit already applies to every other `gxhash` build.
 - Without a portal or `zenity` there is no native folder chooser.
   The app says so in the window and the folder can be passed on the command line.
 - The ALSA fallback is behind a cargo feature,
@@ -497,4 +484,4 @@ the ARM crypto extension (see the consequences).
   Alpine edge,
   postmarketOS,
   the X11 path,
-  and Raspberry Pi class CPUs.
+  and Raspberry Pi class devices.
