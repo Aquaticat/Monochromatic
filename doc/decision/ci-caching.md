@@ -101,11 +101,10 @@ also evicts an entry unread for 7 days. The steady state below keeps the newest 
 
 That sums to about 9 GB with no headroom, so the rules for large entries below are binding.
 
-Superseded entries are removed by `.github/workflows/cache-prune.yml`, which keeps the newest entry of each family on
-each
-ref and deletes the rest (committed separately; see the not-verified list). Without it, superseded entries leave only
-through the 7-day
-idle rule or through cap eviction, which can pick a music player entry instead.
+Superseded entries are to be removed by `.github/workflows/cache-prune.yml`, a workflow proposed with this change and
+not yet committed on the branch. It keeps the newest entry of each family on each ref and deletes the rest. Without it,
+superseded entries leave only through the 7-day idle rule or through cap eviction, which can pick a music player entry
+instead.
 
 ## Rules for the music player workflows
 
