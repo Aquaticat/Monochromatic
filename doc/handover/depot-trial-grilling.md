@@ -552,6 +552,7 @@ lists sixteen CPUs on all plans;
 32 and 64 CPUs require Startup or Business and use two or four times the included minutes.
 This distinction matters to the Developer-plan preference.
 Active queue:
+finish the source-cache correctness investigation and rerun the sizing matrix with the fix,
 collect every sizing result,
 separate fixed-job-count hardware effects from increased Cargo concurrency,
 calculate provider charges and the user's combined time cost,
@@ -568,6 +569,20 @@ smoke containers to four CPUs and 4 GB,
 and the workflow to 60 minutes.
 This does not replace the full desktop keyboard suite or Android instrumented tests.
 No production size setting changed in response to this question.
+
+The first sizing matrix rejected stale output in the second source-change phase.
+The 8-CPU/8-job,
+16-CPU/8-job,
+and 16-CPU/16-job configurations independently returned `music-player 0.1.4`
+when the changed source required `music-player-sizing 0.1.4`.
+A disposable two-CPU,
+2 GiB container reproduced Cargo 1.96.1's stale result after restoring changed source with old timestamps.
+Cleaning the affected package restored the correct result.
+Trial commit `4648e5ad3d` hashes copied source content and invalidates `music-player` and `truepeak-core`
+when it differs from the target cache's recorded content.
+Dependency artifacts survive this invalidation.
+The full sizing rerun and troubleshooting record are required before completion.
+The completed-job GitHub log retrieval workaround also needs its troubleshooting record.
 
 The parallel history check inspected complete October 15 API pages:
 13 Alpine and 33 Windows runs.

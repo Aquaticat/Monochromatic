@@ -24,6 +24,14 @@ The Depot GitHub runner retry also completed the same build and runtime check.
 
 ## Compilation and cache behavior
 
+The later runner-sizing experiment exposed a correctness gap in the original cache design:
+replaying changed source through an older BuildKit layer can return an unchanged Cargo executable.
+The runtime-name guard rejected this output in run `38819692881`.
+The individual successful observations remain valid,
+but they do not establish safe cache reuse across repeated source snapshots.
+Trial commit `4648e5ad3d` adds source-content invalidation of the local packages;
+the full rerun is pending.
+
 These are observed executions,
 not vendor benchmark claims.
 The disposable branch is `trial/depot-20261015`,
