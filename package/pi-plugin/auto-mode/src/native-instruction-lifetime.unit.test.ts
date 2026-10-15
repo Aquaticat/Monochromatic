@@ -149,6 +149,33 @@ await describe({
         assert.equal(instructions.resolveBinding(instructions.claimUnitAdoption({ pair })).projection.memberOrdinal, 0);
       },
     }),
+    it({
+      name: 'retains readiness before primitive binding rejection and recovers original member lookup',
+      fn: async function primitiveBindingQueries() {
+        /** Actual native membership maps remain object-keyed even for arbitrary caller queries. */
+        const f = createInstructionFixture();
+        for (const foreign of [undefined, null, false, 0, 0n, 'member-0', Symbol('foreign instruction binding query')]) {
+          f.events.length = 0;
+          assert.throws(function unownedBinding() {
+            f.instructions.resolveBinding(foreign);
+          }, { name: 'JudgmentConstructionError', message: 'Prepared member binding is not owned by this judgment' });
+          assert.deepEqual(f.events, ['ready']);
+        }
+        /** Readiness failure must still precede native membership absence. */
+        const failure = new Error('original readiness failure');
+        f.state.failure = failure;
+        assert.throws(function retiredBinding() {
+          f.instructions.resolveBinding(null);
+        }, function same(error: unknown) {
+          return error === failure;
+        });
+        delete f.state.failure;
+        /** Owned members remain readable after foreign queries and temporary external failure. */
+        const [member] = f.members;
+        assert.ok(member);
+        assert.equal(f.instructions.resolveBinding(member), f.bindings.get(member)?.binding);
+      },
+    }),
     ...['clause', 'heading', 'adoption'].map(function originalDependency(kind) {
       return it({
         name: `rejects ${kind} resolution after original source-list replacement`,

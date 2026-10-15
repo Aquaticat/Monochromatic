@@ -47,7 +47,10 @@ export function createInstructionResolver({
     /**
      Private original record selects the exact dependencies that must remain current.
      */
-    const instruction = readOriginalMembership({ records: state.instructionBindings, handle: bindingHandle });
+    const instruction = readOriginalMembership({
+      records: state.instructionBindings,
+      handle: bindingHandle
+    });
     if (instruction) {
       if (instruction.kind === 'unit-adoption') {
         if ((!bindings.has(instruction.member)) || (retainedInstructionRules(state)
@@ -70,7 +73,10 @@ export function createInstructionResolver({
     /**
      Foreign instruction handles may resolve only through original prepared-member ownership.
      */
-    const value = readOriginalMembership({ records: bindings, handle: bindingHandle });
+    const value = readOriginalMembership({
+      records: bindings,
+      handle: bindingHandle
+    });
     if (!value) throw new JudgmentConstructionError('Prepared member binding is not owned by this judgment');
     return value.binding;
   }

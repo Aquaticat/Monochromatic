@@ -60,7 +60,10 @@ export function createExecutionOwnership({
     /**
      Original record remains shared with child program ownership.
      */
-    const record = readOriginalMembership({ records: bindings, handle: member });
+    const record = readOriginalMembership({
+      records: bindings,
+      handle: member
+    });
     if (!record) throw new JudgmentConstructionError('Execution member handle is not owned by this judgment');
     return record;
   }

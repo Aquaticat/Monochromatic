@@ -17,7 +17,7 @@ type MembershipModule = Readonly<{
  @throws Error when original membership reader is unavailable
  */
 function assertMembershipModule(value: unknown): asserts value is MembershipModule {
-  if ((value === null) || ((typeof value) !== 'object') || !('readOriginalMembership' in value))
+  if ((value === null) || ((typeof value) !== 'object') || (!('readOriginalMembership' in value)))
     throw new Error('Built original membership reader is unavailable');
   /** Original callable export follows namespace membership narrowing. */
   const reader = value.readOriginalMembership;
@@ -46,9 +46,11 @@ await describe({ name: '', children: [
     const records = new WeakMap<object, object>([[member, record], [callableMember, record]]);
     /** Foreign callable identity must remain absent just like a foreign object. */
     function foreignCallable(): void { /* Identity only; this member is never invoked. */ }
-    for (const handle of [member, callableMember, {}, foreignCallable, undefined, null, false, 0, 0n, '', Symbol('foreign'), Symbol.for('foreign')]) {
+    /** Native method keeps its original receiver before accepting arbitrary query arguments. */
+    const nativeRead = records.get.bind(records);
+    for (const handle of [member, callableMember, {}, foreignCallable, undefined, null, false, 0, 0n, '', Symbol('foreign primitive membership query'), Symbol.for('registered foreign membership query')]) {
       /** Native invocation accepts arbitrary query values without changing publication. */
-      const expected: unknown = Reflect.apply(records.get, records, [handle]);
+      const expected: unknown = Reflect.apply(nativeRead, records, [handle]);
       assert.equal(membershipModule.readOriginalMembership({ records, handle }), expected);
     }
     assert.equal(membershipModule.readOriginalMembership({ records, handle: member }), record);

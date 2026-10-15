@@ -13,7 +13,10 @@
 
  @example readOriginalMembership({ records, handle });
  */
-export function readOriginalMembership<Record extends object>({ records, handle }: Readonly<{
+export function readOriginalMembership<Record extends object>({
+  records,
+  handle
+}: Readonly<{
   records: Pick<WeakMap<object, Record>, 'get'>;
   handle: unknown;
 }>): ReturnType<WeakMap<object, Record>['get']> {
