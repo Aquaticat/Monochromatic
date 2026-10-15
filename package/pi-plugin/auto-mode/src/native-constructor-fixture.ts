@@ -89,7 +89,9 @@ export function createConstructorFixture(): ConstructorFixture {
    Reading content exposes membership capture order without changing the original tool data.
    */
   const response = {
-    /** Original content getter exposes the observation before returning native tool values. */
+    /**
+     Original content getter exposes the observation before returning native tool values.
+     */
     get content(): readonly object[] {
       step('content');
       return [{
@@ -104,7 +106,10 @@ export function createConstructorFixture(): ConstructorFixture {
    Source handoff and receipt observation retain their original receiver.
    */
   const observer = {
-    beginJudgmentSources(value: unknown): Readonly<{ sources: object; request: object }> {
+    beginJudgmentSources(value: unknown): Readonly<{
+      sources: object;
+      request: object
+    }> {
       assert.equal(
         this,
         observer
@@ -185,7 +190,12 @@ export function createConstructorFixture(): ConstructorFixture {
     controller,
     sources,
     failure,
-    occurrence: { startedAt: 100, signal: controller.signal, response, stream },
+    occurrence: {
+      startedAt: 100,
+      signal: controller.signal,
+      response,
+      stream
+    },
   };
 }
 //endregion

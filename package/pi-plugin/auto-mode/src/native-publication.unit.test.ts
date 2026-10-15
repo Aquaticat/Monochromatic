@@ -81,7 +81,9 @@ await describe({ name: '', children: publicKeys.map(function publicationCase(nam
     assert.equal(result, fixture.results.get(originalName));
     assert.equal(fixture.calls.length, 1);
     assert.equal(fixture.calls[0]?.name, originalName);
-    if (selectionKeys.some(function selection(key) { return key === name; })) {
+    if (selectionKeys.some(function selection(key) { 
+      return key === name; 
+    })) {
       assert.equal(fixture.events[0], 'selection');
     }
   } });
