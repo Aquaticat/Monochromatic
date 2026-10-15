@@ -4,6 +4,7 @@
 
 Paste the task section into a new MiMo v2.6 Pro coding session in this repository.
 It hands off the remaining auto-mode lint work after restoring native Shift+Tab bypass.
+It also preserves the repaired complete prompt capture and bundled assessment path.
 Review the measured diagnostics and behavioral evidence in the resulting commits.
 The prompt itself has not been benchmarked against alternative prompts.
 
@@ -57,6 +58,20 @@ Session reload preserves state;
 the visible status and session audit entries remain meaningful.
 The fixed virtual-input guard runs in both modes.
 The integration regression test is `test:native:bypass`.
+
+Normal prompt capture retains complete text, source lists, tool metadata, and follow-up history
+without fixture-derived byte or occurrence ceilings.
+Keep explicit cycle detection, accessor/proxy rejection, source ownership, and freshness checks.
+The capture regression is `test:native:prompt-capacity`.
+
+Complete assessments use at most three sequential bundles of up to three parallel provider calls.
+Each provider request contains at most 200 questions and complete shared context.
+Keep exact question names, answer ordering, shared cancellation, retired capability rejection,
+and the original five-second preparation-inclusive deadline.
+Failed bundles and eligible retries consume the same allowance.
+The average USD 0.001 per judgment cost limit was removed.
+The built regression is `test:assessment-bundles`.
+Do not reinstate size-triggered manual review as a workaround for request construction.
 
 Preserve original response,
 judgment,

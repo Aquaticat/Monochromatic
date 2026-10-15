@@ -19,8 +19,16 @@ The unverified manual-capacity fallback in `8fe7e33410` is withdrawn.
 The user now permits three sequential bundles with at most three parallel calls per bundle.
 The user removed only the average USD 0.001 per judgment cost limit.
 The existing five-second preparation-inclusive hard deadline remains.
-Next: implement complete attributed request partitioning and shared bundle accounting,
-then verify configured workspace tool execution.
+Complete attributed request partitioning and shared bundle accounting are implemented.
+The configured-workspace CLI now assesses 617 questions in requests of 200, 200, 200, and 17,
+using two sequential bundles.
+Allow executes the prepared read;
+Deny, Stop, dismissal, abort, generic unsatisfied prerequisites, prohibition, and bare-policy controls withhold it.
+All checks use authored provider responses in a disposable network-isolated home.
+No live-provider latency claim follows from these controls.
+The built bundle tests verify parallel starts, exact membership through 1800 questions,
+cancellation, malformed responses, stale capabilities, overlap rejection, and shared retry accounting.
+Final regression checks and documentation rendering are in progress.
 Do not present size-triggered manual review as the completed repair.
 
 The user explicitly accepted removal of arbitrary capture limits on 2026-10-15.
@@ -54,12 +62,12 @@ Type checking and the updated capture, resource, event, history, governing-index
 tool-publication, file-observer and native-bypass regressions pass.
 The configured native CLI's existing Allow, Deny, Stop, cancellation, abort,
 generic prerequisite, prohibition and bare-policy controls pass with their original small policy.
-The expanded full-workspace tool check found a separate downstream limit:
+The expanded full-workspace tool check originally found a separate downstream limit:
 `instruction-batches.ts:144` rejects more than 256 instruction candidates before assessment.
 Its exact error is `Clause relation requires one through 256 original instruction candidates`.
-Normal workspace tool use is therefore not yet qualified.
-The scratch `assessment-capacity-control` task measures the next boundary with process-local controls;
-no production assessment limits have changed.
+That limit and arbitrary aggregate claim/wire/response ceilings are now removed.
+The provider's per-request question limit is handled by complete attributed partitioning.
+The scratch `bundled-tool-controls` task verifies the repaired configured-workspace consumer.
 Do not claim live-provider or physical-terminal verification from these offline checks.
 
 The deciding pre-repair measurements were:

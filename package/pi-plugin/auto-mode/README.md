@@ -17,6 +17,13 @@ with the adopted `0.60` selected-option probability cutoff and a unique leading 
 This threshold is an operating rule,
 not a measured accuracy guarantee.
 
+Complete assessments are split into provider requests of at most 200 questions,
+with up to three parallel calls per bundle and three sequential bundles per judgment.
+Every call shares the original five-second preparation-inclusive deadline.
+No average USD 0.001 per judgment cost limit applies.
+Question identities and complete shared context survive partitioning;
+partial answer sets cannot authorize execution.
+
 Established permission allows the operation automatically.
 An established governing prohibition blocks it.
 An explicit fresh-confirmation requirement or uncertain assessment opens the original operation's dialog

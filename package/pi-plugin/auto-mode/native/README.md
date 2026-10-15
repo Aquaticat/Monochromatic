@@ -405,14 +405,24 @@ for `openai/gpt-6-luna-decisions` through the Gateway `/v1/decisions` route.
 It reads `AUTO_MODE_LLMGATEWAY_API_KEY` only when an original configured assessment is dispatched,
 preserves every original state value and named question in the Decisions wire format,
 retains the original deadline,
-and performs one HTTP request per client attempt.
+and partitions complete assessments into requests containing at most 200 questions.
+One judgment permits at most three sequential bundles with at most three parallel HTTP calls each.
+Every bundle uses the original five-second preparation-inclusive deadline.
+Failed bundles consume their allowance;
+later dispatches and the single eligible retry share the same counters.
+Each request retains complete shared context and original question names.
+The policy consumer receives a merged answer set only after every partition passes attribution checks.
+The average USD 0.001 per judgment cost target was removed on 2026-10-15.
 Gateway-internal retries remain separate from client attempt accounting.
 Categorical probabilities and independent confidence metadata remain unchanged.
 Refusals,
 missing or reordered answers,
 wrong serving identities,
-invalid distributions,
-and requests exceeding 200 questions fail without admitting partial estimates.
+and invalid distributions fail without admitting partial estimates.
+The single-request encoder rejects more than 200 questions;
+the composed sender partitions larger assessments without dropping questions.
+`test:assessment-bundles` verifies concurrency, exact answer membership, cancellation,
+bundle ceilings, retry accounting, and retired capability rejection.
 `test:decision-wire` checks conversion and the composed sender against authored fixtures.
 `test:assessment-transport` covers isolated and loopback HTTP behavior;
 `test:native:assessment-transport` connects it to original native policy review with authored responses.

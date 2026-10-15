@@ -37,7 +37,20 @@ On 2026-10-15 the user explicitly selected removal of arbitrary capture limits.
 This supersedes the earlier fixture-derived capture ceilings, including the 128-receipt limit.
 Implementation removes the capture and source-index ceilings.
 The configured native host now completes initial and follow-up prompts without capacity overrides.
-Tool controls and the updated regression suite are still being verified.
+Configured-workspace tool controls now pass complete assessment,
+Allow execution,
+prohibition,
+denial,
+cancellation,
+and unsatisfied-prerequisite handling with authored provider responses.
+Final regression checks and documentation rendering remain in progress.
+
+The user subsequently rejected workspace-size-triggered abandonment of automatic assessment.
+On 2026-10-15 they authorized three sequential bundles of up to three parallel provider calls,
+and removed only the average USD 0.001 per judgment cost limit.
+The five-second deadline remains.
+The measured 617-question workspace is partitioned into four complete attributed requests across two bundles.
+The unverified manual-capacity fallback in `8fe7e33410` was withdrawn by `95bd6db768`.
 
 Remove arbitrary byte and occurrence ceilings from normal instruction capture and source accounting.
 Preserve data-shape checks,
