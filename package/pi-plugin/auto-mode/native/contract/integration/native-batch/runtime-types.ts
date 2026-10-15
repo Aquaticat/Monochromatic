@@ -47,7 +47,6 @@ export type NativePolicyRuntimeInput = {
   readonly effectOwnerFor?: NativeForwardedFunction;
   readonly authorizationOwnerFor?: NativeForwardedFunction;
   readonly semanticAdmissionPolicy?: SemanticAdmissionPolicy;
-  readonly requestMaterialAdmissionPolicy?: SemanticAdmissionPolicy;
   readonly headingContextAdmissionPolicy?: SemanticAdmissionPolicy;
   readonly unitAdoptionAdmissionPolicy?: SemanticAdmissionPolicy;
   readonly approvalHost?: () => NativeApprovalHost;

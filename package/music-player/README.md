@@ -135,10 +135,12 @@ clicking or tapping a track row that is not the current track selects it and lea
 and any track that was playing stops (D124).
 Clicking or tapping the current row toggles play and pause,
 which also starts a track restored from the last session.
-On Android a track that failed to open stays selected and the next tap tries it again;
-on desktop selecting an unreadable file reports it and moves the selection to the next playable file.
+A track that failed to open stays selected on both platforms and the next click or tap tries it again (D128);
+Next, Previous and the end of a track still skip unreadable files and report them.
 `Enter` on the focused row does the same.
-The Play item of the track menu and a Search result start a track at once.
+A Search result for a track follows the same rule (D127):
+the first activation selects the track and leaves it paused, and the second toggles play and pause.
+Only the Play item of the track menu starts a track at once.
 
 One playback mode of four applies on both platforms,
 and the app saves it:

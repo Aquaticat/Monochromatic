@@ -205,7 +205,7 @@ class SearchPageModelTest {
             isPlaying = null,
         )
         assertEquals("Track", semantics.kindLabel)
-        assertEquals("Play track", semantics.actionLabel)
+        assertEquals("Select track", semantics.actionLabel)
         assertNull(semantics.stateLabel)
     }
 
@@ -279,18 +279,18 @@ class SearchPageModelTest {
         )
     }
 
-    // What:     `@Test fun otherTrackActionPlays()` checks a track that is not current.
-    // Why:      A different track starts playing (D73), so its label is Play track.
+    // What:     `@Test fun otherTrackActionSelects()` checks a track that is not current.
+    // Why:      A different track is only selected (D127), so its label is Select track and not Play track.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("other track plays", () => { /* ... */ });
+    // test("other track selects", () => { /* ... */ });
     // ```
-    /** A track that is not the current track speaks Play track. */
+    /** A track that is not the current track speaks Select track. */
     @Test
-    fun otherTrackActionPlays() {
+    fun otherTrackActionSelects() {
         assertEquals(
-            "Play track",
+            "Select track",
             searchRowActionLabel(trackResult("Night", "Live", 1), currentTrackIndex = 2, isPlaying = true),
         )
     }

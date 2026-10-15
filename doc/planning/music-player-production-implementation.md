@@ -484,4 +484,10 @@ Read these before repeating them. Each one cost the human a correction.
 - [x] Search page restyle on desktop (D126 addendum, 2026-10-14, branch `feat/desktop-search-restyle`): the same header,
   divider, rounded rows with tonal circle glyphs and status block in Slint, thirteen window tests, and the two desktop
   Search gallery images retaken.
+- [x] Search select only, unreadable rows and the Search caret (D127, D128 and a D126 note, 2026-10-14, branch
+  `feat/search-select-only`): a Search result for a track that is not current only selects it (both platforms), the
+  result of the current track toggles; desktop keeps an unreadable row selected like Android and a click retries it
+  (Next, Previous and the end of a track still skip unreadable files); the Android Search field keeps its caret at the
+  end of the kept query after a fold change and after `Ctrl+F`. The spoken action of a non-current result is now
+  "Select track" (D127, open to the human's veto).
 - [ ] Release builds, signing and distribution are outside this plan and were not touched.

@@ -682,7 +682,7 @@ impl Controller {
     /// ```ts
     /// installSource(source: Source, path: string): void { ... }
     /// ```
-    fn install_source(&mut self, source: Box<dyn Source>, path: &Path) {
+    pub(crate) fn install_source(&mut self, source: Box<dyn Source>, path: &Path) {
         let duration_secs: f64 = self.install_source_silently(source, path);
         // What:     `self.emit_now_playing(path, duration_secs);`. Tell the UI which track plays and put the seek bar at zero.
         // Why:      The same announcement is made when a track that was queued behind the audible one
@@ -854,7 +854,7 @@ impl Controller {
     /// ```ts
     /// emitNowPlaying(path: string, durationSecs: number): void { ... }
     /// ```
-    fn emit_now_playing(&self, path: &Path, duration_secs: f64) {
+    pub(crate) fn emit_now_playing(&self, path: &Path, duration_secs: f64) {
         // What:     `let index = self.queue.current_index();`. Its LOAD-ORDER position in the
         //           queue (an `Option<usize>`).
         // Why:      Lets the UI highlight the current row, and indexes the display paths for

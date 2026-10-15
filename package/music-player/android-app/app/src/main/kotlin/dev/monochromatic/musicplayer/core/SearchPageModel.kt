@@ -137,14 +137,24 @@ const val SEARCH_CLEAR_LABEL: String = "Clear search"
 /** Spoken action of a folder result, which opens the folder without starting playback (D72). */
 const val SEARCH_FOLDER_ACTION: String = "Open folder without autoplay"
 
-// What:     `const val SEARCH_TRACK_PLAY_ACTION: String` is the spoken action for a track that is not current.
-// Why:      A different track starts playing (D73), so the action label is Play track (D77).
+// What:     `const val SEARCH_TRACK_SELECT_ACTION: String` is the spoken action for a track that is not current.
+// Why:      A different track is only selected and loaded paused (D127), so the action label is Select track (D77).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export const SEARCH_TRACK_SELECT_ACTION = "Select track";
+// ```
+/** Spoken action of a track result that is not the current track (D127, D77). */
+const val SEARCH_TRACK_SELECT_ACTION: String = "Select track"
+
+// What:     `const val SEARCH_TRACK_PLAY_ACTION: String` is the spoken action for the paused current track.
+// Why:      The current track toggles playback (D127), and while it is paused the toggle starts it (D77).
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // export const SEARCH_TRACK_PLAY_ACTION = "Play track";
 // ```
-/** Spoken action of a track result that is not the current track (D73, D77). */
+/** Spoken action of the current track's result while it is paused (D127, D77). */
 const val SEARCH_TRACK_PLAY_ACTION: String = "Play track"
 
 // What:     `const val SEARCH_TRACK_PAUSE_ACTION: String` is the spoken action for the playing current track.
@@ -310,12 +320,13 @@ fun isCurrentTrackResult(result: SearchResult, currentTrackIndex: Int?): Boolean
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const searchRowActionLabel = (r, idx, playing) => ...; // folder, play, pause, or toggle
+// const searchRowActionLabel = (r, idx, playing) => ...; // folder, select, play, pause, or toggle
 // ```
 /**
  * Returns the spoken action of a result row.
  *
- * A folder opens without autoplay. The current track pauses while playing and plays while paused. When the page
+ * A folder opens without autoplay. Another track is selected. The current track pauses while playing and plays while
+ * paused. When the page
  * does not know the playing state, the current track is labelled as a toggle rather than a claimed state.
  */
 fun searchRowActionLabel(result: SearchResult, currentTrackIndex: Int?, isPlaying: Boolean?): String {
@@ -323,7 +334,7 @@ fun searchRowActionLabel(result: SearchResult, currentTrackIndex: Int?, isPlayin
         return SEARCH_FOLDER_ACTION
     }
     if (!isCurrentTrackResult(result, currentTrackIndex)) {
-        return SEARCH_TRACK_PLAY_ACTION
+        return SEARCH_TRACK_SELECT_ACTION
     }
     return when (isPlaying) {
         true -> SEARCH_TRACK_PAUSE_ACTION

@@ -251,14 +251,42 @@ import androidx.compose.foundation.lazy.items
 // ```
 import androidx.compose.foundation.text.BasicTextField
 
-// What:     `import androidx.compose.foundation.text.KeyboardActions` names the IME action handler.
-// Why:      The Search action on the keyboard does nothing, so the keyboard stays open (D63).
+// What:     `import androidx.compose.foundation.text.input.placeCursorAtEnd` collapses the selection after the text.
+// Why:      The Search shortcut puts the caret at the end of the query and selects nothing (D126).
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const onSearch = () => {};
+// input.setSelectionRange(input.value.length, input.value.length);
 // ```
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.input.placeCursorAtEnd
+
+// What:     `import androidx.compose.foundation.text.input.TextFieldDecorator` wraps the field's inner text.
+// Why:      The placeholder is drawn behind the text while the field is empty (D63).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const decorator = (input: UIElement) => <div>{empty && <Placeholder />}{input}</div>;
+// ```
+import androidx.compose.foundation.text.input.TextFieldDecorator
+
+// What:     `import androidx.compose.foundation.text.input.TextFieldLineLimits` keeps the query on one line.
+// Why:      The query is one line, as the earlier `singleLine` flag made it.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// <input type="search" />
+// ```
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+
+// What:     `import androidx.compose.foundation.text.input.TextFieldState` is the field's text and selection.
+// Why:      A state that edits apply to at once lets the Search shortcut place the caret before the next key is read.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const input = { value: "lan", selectionStart: 3, selectionEnd: 3 }; // mutated in place
+// ```
+import androidx.compose.foundation.text.input.TextFieldState
+
 
 // What:     `import androidx.compose.foundation.text.KeyboardOptions` labels the keyboard action as Search.
 // Why:      The IME action is Search, not playback, so the keyboard shows the search key.
@@ -332,6 +360,42 @@ import androidx.compose.runtime.Composable
 // ```
 import androidx.compose.runtime.LaunchedEffect
 
+// What:     `import androidx.compose.runtime.DisposableEffect` registers the field with the Search shortcut port.
+// Why:      The registration must end when the page leaves composition, so a later shortcut finds no stale field.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// useEffect(() => { port.onShortcut = handler; return () => { port.onShortcut = null; }; }, []);
+// ```
+import androidx.compose.runtime.DisposableEffect
+
+// What:     `import androidx.compose.runtime.snapshotFlow` turns the field's text into a flow of changes.
+// Why:      The page mirrors every edit of the field into the host's kept query.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// observe(() => input.value).subscribe(onQueryChange);
+// ```
+import androidx.compose.runtime.snapshotFlow
+
+// What:     `import androidx.compose.runtime.saveable.Saver` describes how the field state is saved and restored.
+// Why:      A saved field state is restored only while it still holds the host's query, so a stale one is dropped.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const saver = { save: (input) => input.snapshot(), restore: (saved) => (saved.text === query ? saved : null) };
+// ```
+import androidx.compose.runtime.saveable.Saver
+
+// What:     `import androidx.compose.runtime.saveable.rememberSaveable` keeps the field state across a recreation.
+// Why:      The query survives an activity recreation in the host, and the caret should survive it with the query.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const input = useSessionState(() => ({ value: query, caret: query.length }), saver);
+// ```
+import androidx.compose.runtime.saveable.rememberSaveable
+
 // What:     `import androidx.compose.runtime.remember` keeps the focus requester across recomposition.
 // Why:      A new focus requester on every frame would lose the field's focus binding.
 //
@@ -340,6 +404,27 @@ import androidx.compose.runtime.LaunchedEffect
 // const ref = useRef(null);
 // ```
 import androidx.compose.runtime.remember
+
+// What:     `import androidx.compose.runtime.getValue` lets the header read its field state with `by`.
+// Why:      The field value is a delegated property, so the read operator must be in scope.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const [value, setValue] = useState(...); // the read half
+// ```
+import androidx.compose.runtime.getValue
+
+// What:     `import androidx.compose.runtime.mutableStateOf` holds the field value, selection included.
+// Why:      The caret is part of the value, and a `String` keeps none.
+//
+// What:     `import androidx.compose.runtime.rememberUpdatedState` gives a long-lived effect the newest query.
+// Why:      The refocus effect outlives recompositions, and must put the caret at the end of the query as it is then.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const latest = useRef(query); latest.current = query;
+// ```
+import androidx.compose.runtime.rememberUpdatedState
 
 // What:     `import androidx.compose.ui.Alignment` centers the header row and the empty-state content.
 // Why:      Icons and text sit on the vertical center line of their rows.
@@ -475,6 +560,15 @@ import androidx.compose.ui.text.AnnotatedString
 // { background: fill, fontWeight: 700 }
 // ```
 import androidx.compose.ui.text.SpanStyle
+
+// What:     `import androidx.compose.ui.text.TextRange` names a caret or a selection by character offsets.
+// Why:      The field value is rebuilt with its caret at the end of the kept query.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const caretAtEnd = { start: query.length, end: query.length };
+// ```
+import androidx.compose.ui.text.TextRange
 
 // What:     `import androidx.compose.ui.text.buildAnnotatedString` builds the annotated title and detail.
 // Why:      The builder appends the unchanged text first, then adds one style per range.
@@ -1078,6 +1172,24 @@ private fun searchInnerPage(
     }
 }
 
+// What:     `private fun restoreOnlyWhileHolding(query: String): Saver<TextFieldState, Any>` saves a field state as the
+//           standard saver does, and refuses to restore one whose text is not [query].
+// Why:      Compose keeps a saved value that no composable consumed, and saves it again with the next recreation, so a
+//           header that returns to an earlier layout position gets back the state it had when it last stood there. That
+//           state is older than the host's query, and the field would then overwrite the newer query with it (D126).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const restoreOnlyWhileHolding = (query) => ({ save, restore: (s) => (text(s) === query ? restore(s) : null) });
+// ```
+/** Saver of a field state that restores a saved state only when its text equals the first [query] it was given. */
+private fun restoreOnlyWhileHolding(query: String): Saver<TextFieldState, Any> = Saver(
+    save = { state -> with(TextFieldState.Saver) { save(state) } },
+    restore = { saved ->
+        TextFieldState.Saver.restore(saved)?.takeIf { restored -> restored.text.toString() == query }
+    },
+)
+
 // What:     `@Composable private fun searchHeader(...)` draws the Back, query field, and Clear row.
 // Why:      One header holds all three controls (D48), and the field takes focus and the keyboard on entry (D63).
 //
@@ -1085,7 +1197,14 @@ private fun searchInnerPage(
 // ```ts
 // function Header(props): UIElement { return <div><button /><input /><button /></div>; }
 // ```
-/** Draws the integrated Search header, requesting focus for the field when the page opens. */
+/**
+ * Draws the integrated Search header, requesting focus for the field when the page opens.
+ *
+ * The field is a [TextFieldState], the source of the query while the page is open and mirrored into the host: a header
+ * rebuilt for the other panel (a fold change) starts the field with the caret at the end of the kept query, and the
+ * Search shortcut on an open page puts it there in the key event itself, through [SearchFocusPort], so a character
+ * typed right after the chord continues after the text instead of before it (D126).
+ */
 @Composable
 private fun searchHeader(
     query: String,
@@ -1095,15 +1214,44 @@ private fun searchHeader(
 ) {
     /** Focus requester attached to the query field so the page can focus it on entry. */
     val focusRequester = remember { FocusRequester() }
-    /** Count of same-visit refocus requests from the Search shortcut, which refocus the field without clearing it. */
-    val focusToken: Int = HostKeyLocalSearchFocus.current
+    /** Port that the Search shortcut presses on an open page, which refocuses the field without clearing it. */
+    val shortcutPort: SearchFocusPort = HostKeyLocalSearchFocus.current
     /** Callback that reports the query field's focus to the host, which needs it to know the key owner. */
     val reportFieldFocus: (Boolean) -> Unit = HostKeyLocalSearchField.current
     /** Software keyboard controller, or null when the platform offers none. */
     val keyboard = LocalSoftwareKeyboardController.current
-    LaunchedEffect(focusToken) {
+    /** Field text and caret, saved across an activity recreation; starts from the kept query, caret at its end. */
+    val fieldState: TextFieldState = rememberSaveable(saver = restoreOnlyWhileHolding(query)) {
+        TextFieldState(initialText = query, initialSelection = TextRange(query.length))
+    }
+    /** Newest query, for the mirror below, which outlives the composition that started it. */
+    val latestQuery: String by rememberUpdatedState(query)
+    /** Newest actions, for the mirror below, which outlives the composition that started it. */
+    val latestActions: SearchPageActions by rememberUpdatedState(actions)
+    LaunchedEffect(Unit) {
         focusRequester.requestFocus()
         keyboard?.show()
+    }
+    DisposableEffect(shortcutPort, fieldState, focusRequester, keyboard) {
+        /** What the Search shortcut does here: caret to the end with nothing selected, then focus and the keyboard. */
+        val onShortcut: () -> Unit = {
+            fieldState.edit { placeCursorAtEnd() }
+            focusRequester.requestFocus()
+            keyboard?.show()
+        }
+        shortcutPort.onShortcut = onShortcut
+        onDispose {
+            if (shortcutPort.onShortcut === onShortcut) {
+                shortcutPort.onShortcut = null
+            }
+        }
+    }
+    LaunchedEffect(fieldState) {
+        snapshotFlow { fieldState.text.toString() }.collect { text ->
+            if (text != latestQuery) {
+                latestActions.onQueryChange(text)
+            }
+        }
     }
     Row(
         modifier = Modifier
@@ -1120,22 +1268,21 @@ private fun searchHeader(
             Icon(imageVector = SEARCH_BACK_ICON, contentDescription = SEARCH_BACK_LABEL)
         }
         BasicTextField(
-            value = query,
-            onValueChange = actions.onQueryChange,
+            state = fieldState,
             modifier = Modifier
                 .weight(1f)
                 .height(SEARCH_TOUCH_TARGET)
                 .focusRequester(focusRequester)
                 .onFocusChanged { focusState -> reportFieldFocus(focusState.isFocused) }
                 .semantics { contentDescription = SEARCH_FIELD_LABEL },
-            singleLine = true,
+            lineLimits = TextFieldLineLimits.SingleLine,
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = {}),
-            decorationBox = { field ->
+            onKeyboardAction = { },
+            decorator = TextFieldDecorator { field ->
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-                    if (query.isEmpty()) {
+                    if (fieldState.text.isEmpty()) {
                         Text(
                             text = SEARCH_FIELD_LABEL,
                             style = MaterialTheme.typography.bodyLarge,
@@ -1148,7 +1295,10 @@ private fun searchHeader(
         )
         if (isClearVisible(query)) {
             IconButton(
-                onClick = actions.onClear,
+                onClick = {
+                    fieldState.edit { replace(0, length, "") }
+                    actions.onClear()
+                },
                 modifier = Modifier.size(SEARCH_TOUCH_TARGET).focusRing(CircleShape),
             ) {
                 Icon(imageVector = SEARCH_CLEAR_ICON, contentDescription = SEARCH_CLEAR_LABEL)

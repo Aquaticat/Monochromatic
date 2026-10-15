@@ -763,7 +763,7 @@ fn the_search_page_moves_through_results_opens_one_and_escape_leaves() {
     assert_eq!(app.get_search_ring(), 1);
     tap(&app, "Enter");
     assert_eq!(app.get_route(), Route::Player.to_int(), "Enter opened the result and left Search");
-    assert_eq!(host.sent_texts(), ["select 4", "play"]);
+    assert_eq!(host.sent_texts(), ["select 4"], "D127: a result that is not the current track is only selected, nothing plays");
     chord(&app, &["Ctrl"], "f");
     tap(&app, "Escape");
     assert_eq!(app.get_route(), Route::Player.to_int(), "Escape leaves Search");

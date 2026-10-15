@@ -179,11 +179,25 @@ pub const SEARCH_CLEAR_LABEL: &str = "Clear search";
 pub const SEARCH_FOLDER_ACTION: &str = "Open folder without autoplay";
 
 /// What:
-///      `pub const SEARCH_TRACK_PLAY_ACTION: &str`.
+///      `pub const SEARCH_TRACK_SELECT_ACTION: &str`.
 ///  The spoken action of a track that is not the current track.
 /// Why:
-///       A different track starts playing (D73),
-///  so the action label is Play track (D77).
+///       A different track is only selected and loaded paused (D127),
+///  so the action label is Select track (D77),
+///  not Play track.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const SEARCH_TRACK_SELECT_ACTION = "Select track";
+/// ```
+pub const SEARCH_TRACK_SELECT_ACTION: &str = "Select track";
+
+/// What:
+///      `pub const SEARCH_TRACK_PLAY_ACTION: &str`.
+///  The spoken action of the current track while it is paused.
+/// Why:
+///       The current track toggles playback (D127),
+///  and while it is paused the toggle starts it (D77).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -410,7 +424,7 @@ pub fn is_current_track_result(result: &SearchResult, current_track_index: Optio
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const searchRowActionLabel = (r, idx, playing) => ...; // folder, play, pause, or toggle
+/// const searchRowActionLabel = (r, idx, playing) => ...; // folder, select, play, pause, or toggle
 /// ```
 pub fn search_row_action_label(
     result: &SearchResult,
@@ -421,7 +435,7 @@ pub fn search_row_action_label(
         return SEARCH_FOLDER_ACTION;
     }
     if !is_current_track_result(result, current_track_index) {
-        return SEARCH_TRACK_PLAY_ACTION;
+        return SEARCH_TRACK_SELECT_ACTION;
     }
     return match is_playing {
         Some(true) => SEARCH_TRACK_PAUSE_ACTION,

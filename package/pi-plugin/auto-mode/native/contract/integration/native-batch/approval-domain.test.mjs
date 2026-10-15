@@ -101,7 +101,6 @@ const runtime=bindNativePolicyRuntime({
   readSessionDisposalState:env.readSessionDisposalState,
   trace(){},
   semanticAdmissionPolicy:policy('clause_operation_relation'),
-  requestMaterialAdmissionPolicy:policy('request_instruction_content'),
   headingContextAdmissionPolicy:policy('heading_instruction_content'),
   effectOwnerFor:function omitFixtureAuthorizationOwner() { return (undefined); },
   authorizationOwnerFor({judgment,rule,source,request}){

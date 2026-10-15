@@ -418,7 +418,11 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    A single click on a row other than the highlighted one selects it and loads it paused (D124),
    stopping whatever was playing;
    a click on the already-highlighted row toggles play and pause.
-   The Play item of the track menu and a Search result still start a row at once.
+   A Search result for a track follows the same rule (D127): a result that is not the current track selects it, and
+   the result of the current track toggles.
+   Only the Play item of the track menu starts a row at once.
+   A row whose file cannot be opened stays selected and paused, is reported once, and the next click on it tries to
+   load it again (D128); Next, Previous and the end of a track still walk past unreadable files.
    No double-click handling exists or is needed.
    The window title shows the playing track's title (the one the deck shows, without folder, extension or the prefix
   its folder's files share, D86) while audio plays,
@@ -844,7 +848,10 @@ gain are worked out again, the seek bar takes the new length, and no message is 
 changes nothing until the next event. A paused selected track keeps its position when the new file has it and starts again
 from zero when it does not.
 
-A file that cannot be decoded is skipped, and its row shows "Can't be played".
+A file that cannot be decoded is skipped by Next, Previous and the end of a track, and its row shows "Can't be played".
+A click, `Enter`, a Search result or the menu Play on such a row does not skip it: the row stays the selected row,
+paused with nothing loaded, and the next click on it tries to load it again (D128);
+if the file decodes by then it loads and plays, and the mark goes when a peak is measured for it.
 The window draws no message for it.
 On Linux the same report is one desktop notification titled "Cannot play a file", whose text is "`name` can't be
 played." (several files collapse to a count that names the first) (D122).

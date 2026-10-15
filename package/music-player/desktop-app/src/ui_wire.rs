@@ -220,12 +220,12 @@ pub(crate) fn open_folder_dialog(sender: music_player::engine::CommandSender) {
     });
 }
 
-/// What: `play_row` handles a click, a tap or Enter on a track row: the selected row toggles play and pause, any other
-/// row becomes the selected row and stays paused.
+/// What: `play_row` handles a click, a tap or Enter on a track row and the activation of a Search result that names a
+/// track: the selected row toggles play and pause, any other row becomes the selected row and stays paused.
 /// Why: the user's rule (D124) is that selecting and playing are separate intents; `SelectIndex` loads paused and
 /// pauses whatever was playing, and only a second click on the now-selected row starts it, so no double-click detection
 /// is needed. A selected row that was restored and never loaded, or whose load failed, starts or retries through the
-/// same toggle as the Play button.
+/// same toggle as the Play button; a row whose file cannot be opened stays the selected row (D128).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -240,10 +240,10 @@ pub(crate) fn play_row(engine: &dyn Host, index: usize) {
     engine.send(Command::SelectIndex(index));
 }
 
-/// What: `play_row_now` is the explicit Play of the track menu and of a Search result: the selected row toggles play and
-/// pause, any other row is selected and starts at once.
-/// Why: a menu item named Play and a Search result that names a track ask to hear that track (D73), unlike a click on a
-/// row, which only selects it (D124); `SelectIndex` loads paused, so `Play` follows it.
+/// What: `play_row_now` is the explicit Play item of the track menu: the selected row toggles play and pause, any other
+/// row is selected and starts at once.
+/// Why: a menu item named Play asks to hear that track, unlike a click on a row or a Search result, which only select
+/// it (D124, D127); `SelectIndex` loads paused, so `Play` follows it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

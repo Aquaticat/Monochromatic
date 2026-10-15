@@ -264,7 +264,6 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --observed-context",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution --sdk-stream --observed-context",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution --sdk-stream --observed-context",
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --observed-context --request-potential",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --observed-context --throwing-context",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --unobserved-event",
 ]
@@ -442,19 +441,13 @@ run = [
   "pandoc --from=commonmark --to=html --output=.cache/native-docs/integration.html README.md native/README.md ../../../doc/handover/pi-auto-mode-current-frontier.md ../../../doc/troubleshooting/pi-sdk-staging.md ../../../doc/decision/pi-auto-mode-semantic-admission.md ../../../doc/planning/pi-auto-mode-governing-domain-closure.md",
 ]
 
-[tasks."test:native:request-derivation"]
-description = "Verify complete original request use and missing field derivations without provider requests"
+[tasks."test:native:tool-call-scope"]
+description = "Verify provider metadata cannot change tool-call permission, prohibition, or unspecified policy"
 run = [
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --request-potential",
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution --sdk-stream --http-transport --operating-policy --request-potential",
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution --sdk-stream --http-transport --operating-policy --request-potential",
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --request-potential --request-derivation=protocol-field",
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --request-potential --request-derivation=message-field",
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --request-potential --request-derivation=appended-message",
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --request-potential --request-derivation=removed-message",
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --request-potential --request-derivation=removed-tools",
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --request-potential --request-derivation=copied-system-input",
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --request-potential --request-derivation=assistant-role",
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --request-potential --copied-tool",
-  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --request-potential --copied-system",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --provider-metadata=thinking",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution --sdk-stream --http-transport --operating-policy --provider-metadata=thinking",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution --sdk-stream --http-transport --operating-policy --provider-metadata=thinking",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --provider-metadata=extension",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution --sdk-stream --http-transport --operating-policy --provider-metadata=extension",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution --sdk-stream --http-transport --operating-policy --provider-metadata=extension",
 ]

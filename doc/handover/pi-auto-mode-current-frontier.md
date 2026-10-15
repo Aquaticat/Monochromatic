@@ -7,6 +7,115 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-14.
 
+## Tool-call scope correction
+
+The user clarified that automatic mode is meant to check model-initiated tool calls.
+The authorization subject is the proposed tool operation and its arguments,
+evaluated against applicable instructions and authorization.
+The model's outbound API request supplies context;
+its entire provider protocol is not a separate operation requiring automatic-mode approval.
+
+The agent's status update described complete API-request field derivation as remaining delivery work.
+That promoted an implementation mechanism into a product requirement.
+Do not continue extending provider-field coverage as a delivery objective.
+In particular,
+Hyper's `thinking` control is not a model-initiated tool call.
+
+The current implementation still contains the broader gate.
+`native/contract/integration/native-batch/request-derivation-envelope.ts` rejects unknown request fields,
+and `src/request-material-obligations.ts` can retain an independent whole-request instruction-use obligation.
+The exact isolated Hyper capture failed the built envelope check with
+`Request field thinking has no supported native instruction-use derivation`;
+the same captured object without that field passed.
+`${HOME}/temp/agent/pi-hyper-capture-20261014/envelope-before.json` retains this contrast.
+No production code was changed during that probe.
+This demonstrates the existing coupling,
+not a requirement to add Hyper protocol validation.
+
+The next implementation decision must narrow that coupling around tool-call policy evaluation.
+Preserve applicable instructions,
+the exact proposed operation,
+authorization,
+and cancellation checks.
+Reassess the earlier 84-question admission count against this corrected boundary before treating it as a delivery gate.
+The prior status estimate and provider-coverage next step are superseded by this correction.
+No further `AGENTS.md` edit is adopted;
+the user's existing decision to leave that file unchanged remains in force.
+
+After the user instructed continuation,
+commit `3ec320b8fa` removed whole-request admission from the native evaluator and compiler.
+Commit `09bf9f9080` removed provider-field derivation from the original observer path
+and replaced the old derivation-gate scenarios with tool-policy invariance checks.
+The semantic policy factory no longer configures a whole-request question.
+The original request remains contextual evidence;
+it no longer receives an independent approval obligation.
+
+The JavaScript and owned native builds,
+package type checking,
+and changed TypeScript lint scope pass.
+The native metadata suite passes permission,
+prohibition,
+and unspecified policy with both Hyper-style `thinking` and an unrecognized provider metadata object.
+The original approval-context suite passes Allow,
+Deny,
+Stop,
+cancellation,
+and Allow after reload with authored prerequisite facts and fixture UI responses.
+Policy replacement,
+cancellation,
+and argument replacement after approval also retain their existing guards.
+
+The actual configured Hyper CLI passes isolated permission,
+prohibition,
+and unspecified-policy controls with all 17 configured packages.
+The permission case executes the original `read` tool and returns the disposable file contents;
+the other cases execute no child tool.
+Each assessment contains 82 clause questions and no whole-request question.
+Primary responses and semantic answers are authored local inputs,
+so these results establish host integration rather than live model decision quality.
+All cases make zero provider requests.
+Receipts are under `${HOME}/temp/agent/pi-hyper-tool-call-permission-SAmMCJ/`,
+`pi-hyper-tool-call-prohibition-xgH6VW/`,
+and `pi-hyper-tool-call-none-4W2K6i/` in the same scratch directory.
+The permission controller originally miscounted nested completion events;
+the prohibition controller accidentally treated its imported verifier as a CLI.
+Both host runs had already finished successfully.
+Their preserved outputs were verified without replaying the hosts.
+
+The requested [Astra limitation entry](../limitation/astra.md) is committed as `930e3e854f`
+and checked in rendered output.
+Production prerequisite ownership,
+live semantic behavior,
+and the previously measured native lint backlog remain separate unfinished work.
+
+## Current Pi execution model
+
+On 2026-10-14,
+the user corrected the requested Pi execution model to `hyper/gemma-4-26b-a4b-it`.
+Use that provider and model for subsequent Pi work and configured-host verification.
+The decision model remains Luna with the separately adopted `0.60` selected-probability cutoff.
+Historical Qwen verification records retain their original model identities.
+
+The installed `@charmland/pi-hyper-provider` version is `0.4.2`.
+The existing native model store contains the exact requested Hyper model.
+Pi's saved default was `opencode-go/mimo-v2.6-pro`;
+Qwen had been selected explicitly by the earlier verification commands.
+Pi's native settings owner has now saved `hyper` and `gemma-4-26b-a4b-it`
+as the global defaults,
+with every unrelated parsed setting preserved.
+`${HOME}/temp/agent/pi-hyper-model-20261014/selection.json` records the change.
+The isolated configured-host RPC check selected that exact provider and model without CLI overrides,
+using all 17 configured packages and the existing Hyper catalogue.
+The process exited zero and made zero provider requests inside its network namespace.
+The check verifies selection rather than a live model response.
+Its initial empty-stderr assertion was inappropriate for this configured fixture:
+the deliberately blocked Synthetic startup discovery,
+missing other-provider fixture catalogues,
+and ordinary extension lifecycle logs produced retained diagnostics.
+The original RPC result and complete stderr were inspected without replaying the completed host.
+`${HOME}/temp/agent/pi-hyper-model-20261014/state-verification.json`
+records the successful selection and failed empty-stderr assertion separately.
+
 ## Adopted Luna migration
 
 The user subsequently lowered the selected-option probability cutoff from `0.80` to `0.60` on 2026-10-14.

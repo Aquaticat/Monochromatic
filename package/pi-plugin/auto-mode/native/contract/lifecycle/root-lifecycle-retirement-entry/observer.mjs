@@ -268,9 +268,6 @@ export function createRequestObservationOwner({
           ...value,
           request:scope.request
         })); }));
-        const derivation=sourceAssociation?.bindDerivation?.({request:scope.request,contributions:scope.sourceContributions});
-        scope.sourceDerivation=derivation?.sourceDerivation;
-        scope.sourceDerivationFailure=derivation?.sourceDerivationFailure;
         return await terminalFetch(
           input,
           init
@@ -319,8 +316,6 @@ export function createRequestObservationOwner({
           request:scope.request,
           sources:scope.sources,
           sourceContributions:scope.sourceContributions??Object.freeze([]),
-          ...(scope.sourceDerivation?{sourceDerivation:scope.sourceDerivation}:{}),
-          ...(scope.sourceDerivationFailure?{sourceDerivationFailure:scope.sourceDerivationFailure}:{}),
           requestedAPI,
           requestedModel,
           instructionAuthority:'not-established',

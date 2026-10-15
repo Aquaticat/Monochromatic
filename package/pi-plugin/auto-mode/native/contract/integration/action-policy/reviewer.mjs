@@ -20,14 +20,12 @@ export function createBoundPolicyReviewer({
   effectOwnerFor,
   authorizationOwnerFor,
   semanticAdmissionPolicy,
-  requestMaterialAdmissionPolicy,
   headingContextAdmissionPolicy,
   unitAdoptionAdmissionPolicy,
   approvalHost
 }){
  const evaluate=createBoundPolicyEvaluator({
    semanticAdmissionPolicy,
-   requestMaterialAdmissionPolicy,
    headingContextAdmissionPolicy,
    unitAdoptionAdmissionPolicy,
    approvalHost

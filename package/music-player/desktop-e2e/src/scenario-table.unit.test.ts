@@ -46,6 +46,7 @@ const SCENARIO_FILES: readonly { readonly file: string; readonly session: Sessio
   { file: 'wide-settings.ts', session: 'wide', },
   { file: 'wide-badges.ts', session: 'wide', },
   { file: 'wide-interaction.ts', session: 'wide', },
+  { file: 'wide-select.ts', session: 'wide', },
   { file: 'wide-lists.ts', session: 'wide', },
   { file: 'wide-breakpoint.ts', session: 'wide', },
   { file: 'narrow-interaction.ts', session: 'narrow', },
@@ -110,10 +111,10 @@ await describe({
   name: 'scenario table',
   children: [
     it({
-      name: 'declares 111 checks that run and 1 that is skipped as not injectable',
+      name: 'declares 113 checks that run and 1 that is skipped as not injectable',
       fn: async ({ expect, }) => {
         const declared = await allDeclared();
-        expect(declared.filter((entry,) => !entry.skipped,),).toHaveLength(111,);
+        expect(declared.filter((entry,) => !entry.skipped,),).toHaveLength(113,);
         expect(declared.filter((entry,) => entry.skipped,).map((entry,) => entry.id,).toSorted(),).toEqual([
           'double-shift/repeat',
         ],);
