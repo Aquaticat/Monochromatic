@@ -70,6 +70,8 @@ const loaded: unknown = await import(new URL(
   import.meta.url
 ).href);
 assertExecutionModule(loaded);
+/** Narrowed callable remains available to independently constructed fixture functions. */
+const createExecutionOwner: ExecutionFixtureModule['createJudgmentExecutions'] = loaded.createJudgmentExecutions;
 
 /**
  Construct an independent prepared root and mutable eligibility controls.
@@ -135,7 +137,7 @@ export function createExecutionFixture(): ExecutionFixture {
   /** Independent host capabilities are supplied to the built native owner. */
   const input = { bindings, byMember, readClosure, readJudgment, response, stream, assertDependenciesCurrent };
   /** Every tested operation is implemented by the built artifact. */
-  const owner = loaded.createJudgmentExecutions(input);
+  const owner = createExecutionOwner(input);
   return { owner, controller, judgment, response, stream, member, record, bindings, byMember, events, state, input };
 }
 

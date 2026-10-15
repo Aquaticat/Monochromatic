@@ -77,7 +77,9 @@ export function createExecutionOwnership({
      Only successful reservation publishes into this private map.
      */
     const record = executions.get(token);
-    if ((!record) || (!hasExecution(record)) || (record.execution.token !== token)) {
+    if ((!record) || (!hasExecution(record))
+      || (record.execution
+        .token !== token)) {
       throw new JudgmentConstructionError('Execution occurrence is not owned by this judgment');
     }
     return record;
@@ -90,7 +92,10 @@ export function createExecutionOwnership({
    @throws JudgmentConstructionError when immediate parent has returned
    */
   function parentCurrent(record: ProgramMemberRecord): void {
-    if ((record.parent !== undefined) && (knownExecution(record.parent).execution.state !== 'active')) {
+    if ((record.parent !== undefined) && (knownExecution(record.parent)
+      .execution
+      .state
+      !== 'active')) {
       throw new JudgmentConstructionError('Immediate parent execution has returned before child entry');
     }
     record.effectiveSignal

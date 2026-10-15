@@ -11,7 +11,7 @@ await describe({
     //region Successful reservation retains identities without granting execution permission.
     it({
       name: 'constructs without live reads and retains original lookup and entry identities',
-      fn: () => {
+      fn: async () => {
         /** Independent consumer supplies all original identities and eligibility. */
         const f = createExecutionFixture();
         assert.deepEqual(f.events, []);
@@ -23,7 +23,7 @@ await describe({
         const token = f.owner.beginExecution(f.member);
         assert.ok(Object.isFrozen(token));
         assert.equal(f.owner.knownExecution(token), f.record);
-        assert.equal(f.record.execution?.token, token);
+        assert.equal(f.owner.knownExecution(token).execution?.token, token);
         /** Current native entry returns exactly the origin retained in the shared record. */
         const origin = f.owner.executionEntryFor(token);
         assert.equal(origin, f.record.execution?.origin);
@@ -51,7 +51,7 @@ await describe({
     //region Admission rejects foreign handles and preserves original check ordering.
     it({
       name: 'requires successful closure before reservation and preserves retry after preflight failure',
-      fn: () => {
+      fn: async () => {
         /** Independent closure flags reproduce open and permanently failed evidence. */
         const f = createExecutionFixture();
         assert.throws(() => f.owner.beginExecution(f.member), /successfully closed evidence/);
@@ -71,13 +71,13 @@ await describe({
         const token = f.owner.beginExecution(f.member);
         f.state.dependencyFailure = failure;
         assert.throws(() => f.owner.beginExecution(f.member), /already reserved/);
-        assert.equal(f.record.execution?.token, token);
+        assert.equal(f.owner.knownExecution(token).execution?.token, token);
       }
     }),
     ...[undefined, null, 7, 'root', {}, Object.freeze({ id: 'root' })].map(function foreignOccurrence(foreign, ordinal) {
       return it({
         name: `rejects foreign membership and execution case ${String(ordinal)}`,
-        fn: () => {
+        fn: async () => {
           /** Each malformed value receives a fresh owner with no reserved occurrences. */
           const f = createExecutionFixture();
           assert.throws(() => f.owner.knownMember(foreign), /member handle is not owned/);
@@ -94,7 +94,7 @@ await describe({
     }),
     it({
       name: 'checks dependencies before identifier lookup and preserves missing-member rejection',
-      fn: () => {
+      fn: async () => {
         /** Missing identifier must still cross the original dependency boundary first. */
         const f = createExecutionFixture();
         assert.throws(() => f.owner.memberFor('missing'), /not in the prepared native group/);
@@ -109,7 +109,7 @@ await describe({
     //region Terminal operations preserve retained state after eligibility is lost.
     it({
       name: 'keeps retained inspection and terminal marking available after cancellation and source retirement',
-      fn: () => {
+      fn: async () => {
         /** Successful reservation precedes independent dependency and cancellation failures. */
         const f = createExecutionFixture();
         f.state.finished = true;

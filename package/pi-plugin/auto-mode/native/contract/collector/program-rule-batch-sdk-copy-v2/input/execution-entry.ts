@@ -184,7 +184,8 @@ export function createExecutionEntry({
     const record = knownExecution(token);
     return Object.freeze({
       retainedOnly: true,
-      state: record.execution.state
+      state: record.execution
+        .state
     });
   }
   return {

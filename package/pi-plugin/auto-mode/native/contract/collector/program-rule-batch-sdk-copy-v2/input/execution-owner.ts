@@ -4,7 +4,11 @@
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { createExecutionOwnership } from './execution-ownership.ts';
 import { createExecutionEntry } from './execution-entry.ts';
-import type { JudgmentExecutionInput, JudgmentExecutionOwnership, JudgmentExecutionEntry } from './execution-types.ts';
+import type {
+  JudgmentExecutionInput,
+  JudgmentExecutionOwnership,
+  JudgmentExecutionEntry
+} from './execution-types.ts';
 import type { ProgramMemberRecord } from './program-state-types.ts';
 
 /**
@@ -48,7 +52,10 @@ export function createJudgmentExecutions(input: JudgmentExecutionInput): Judgmen
   const ownership = createExecutionOwnership(context);
   return {
     ...ownership,
-    ...createExecutionEntry({ ...context, ownership })
+    ...createExecutionEntry({
+      ...context,
+      ownership
+    })
   };
 }
 //endregion

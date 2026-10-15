@@ -275,6 +275,7 @@ run = [
 description = "Verify original execution custody, native entry ordering, and retained terminal state"
 run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-execution.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-execution-lifetime.unit.test.ts",
 ]
 
 [tasks."test:native:resource-input"]
