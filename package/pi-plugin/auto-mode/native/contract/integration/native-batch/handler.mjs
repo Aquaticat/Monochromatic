@@ -1,5 +1,8 @@
 import {dispatchPreparedBatch} from "./generated/prepared-dispatch.mjs";
 import {createDecisionGate} from '../action-policy/decision-core.mjs';
+import {captureApprovalHostSource} from '../action-policy/approval.mjs';
+import {createManualGroup} from './manual-group.mjs';
+import {tagged} from '@monochromatic-dev/module-logger/ts';
 
 export class NativeBatchBindingError extends Error {}
 
@@ -55,9 +58,13 @@ export function createNativeBatchHandler({
   semanticAdmissionPolicy,
   headingContextAdmissionPolicy,
   unitAdoptionAdmissionPolicy,
-  approvalHost
+  approvalHost,
+  captureOperationCurrentness,
+  manualOrigins
   ,readBypass=function readNoBypass(){return false;}
 }){
+ const captureHost=captureApprovalHostSource(approvalHost);
+ const l=tagged({tag:createNativeBatchHandler.name,l:tagged({tag:'auto-mode-native-batch'})});
  const reviewer=createDecisionGate({
    producerOwner,
    stream,
@@ -87,18 +94,29 @@ export function createNativeBatchHandler({
     response:assistantMessage,
     stream
   });
-  const judgment=producerOwner.beginJudgment({
-    response:assistantMessage,
-    stream,
-    signal
-  });
+  const assertOperationCurrent=captureOperationCurrentness();
+  const manual=createManualGroup({response:assistantMessage,stream,signal,assertOperationCurrent,captureHost,origins:manualOrigins});
+  using operationLifetime={ [Symbol.dispose](){manual.close();} };
   const bypass=readBypass();
   const reviewState={
     reviewed:undefined,
-    bypassed:false
+    bypassed:false,
+    judgment:undefined,
+    automaticFailure:undefined,
+    manual:false
   };
+  function retainAutomaticFailure(error){
+   tagged({tag:retainAutomaticFailure.name,l}).debug('automatic assessment failed; retaining cause for manual approval');
+   reviewState.automaticFailure??={error};
+  }
+  try{reviewState.judgment=producerOwner.beginJudgment({response:assistantMessage,stream,signal});}
+  catch(error){retainAutomaticFailure(error);}
+  const {judgment}=reviewState;
   function assertFresh(){
+   manual.current();
    if(bypass&&(!readBypass()))throw new NativeBatchBindingError('Explicit bypass was disabled before this group completed; retry with guardrail checks');
+   if(reviewState.manual){reviewState.reviewed?.assertCurrent();return;}
+   if(reviewState.automaticFailure)return;
    if(producerOwner.judgmentFor({
      response:assistantMessage,
      stream
@@ -106,10 +124,18 @@ export function createNativeBatchHandler({
    if(reviewState.reviewed){reviewState.reviewed
      .assertCurrent();return;}
    if(reviewState.bypassed){judgment.assertDependenciesCurrent();return;}
-   judgment.checkpoint();
-   if(judgment.inspect()
-     .prepared)judgment.assertDependenciesCurrent();
+   try{
+    judgment.checkpoint();
+    if(judgment.inspect().prepared)judgment.assertDependenciesCurrent();
+   }catch(error){retainAutomaticFailure(error);}
   }
+  function executionOwner(){return reviewState.manual?manual:judgment;}
+  const execution={
+   memberFor(id){return executionOwner().memberFor(id);},
+   beginExecution(member){return executionOwner().beginExecution(member);},
+   executionFor(token){return executionOwner().executionFor(token);},
+   finishExecution(token){return executionOwner().finishExecution(token);}
+  };
   const dispatched=await dispatchPreparedBatch({
     calls:assistantMessage.content
       .filter(function isPreparedToolCall(part) { return (part.type==='toolCall'); }),
@@ -119,7 +145,7 @@ export function createNativeBatchHandler({
     signal,
     runToolCall,
     executionMode,
-    executionJudgment:judgment,
+    executionJudgment:execution,
     onStart,
     onFinish,
     onUpdate,
@@ -130,13 +156,15 @@ export function createNativeBatchHandler({
     after:afterToolCall,
     assertFresh,
     async assess({members}){
+    manual.prepare(members);
+    async function automaticReview(){
     judgment.prepare(members);
     if(bypass){
      assertFresh();
      judgment.finalize();
      observer.retainExecutionSources(assistantMessage);
      reviewState.bypassed=true;
-     return {block:false};
+     return;
     }
     prepareProgramInputs({
       judgment,
@@ -155,8 +183,19 @@ export function createNativeBatchHandler({
      observer.retainExecutionSources(assistantMessage);
      reviewState.reviewed
        .assertCurrent();
-     return {block:false};
+     return;
     }
+    }
+    if(!reviewState.automaticFailure){
+     try{await automaticReview();}
+     catch(error){retainAutomaticFailure(error);}
+    }
+    if(reviewState.automaticFailure){
+     manual.current();
+     reviewState.manual=true;
+     reviewState.reviewed=await manual.request(reviewState.automaticFailure.error);
+    }
+    if(reviewState.bypassed||reviewState.reviewed?.outcome.verdict==='approve')return {block:false};
     return {
       block:true,
       reason:reviewState.reviewed

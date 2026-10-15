@@ -14,7 +14,8 @@ export function registerOwnedExecutionTools({
   producerOwner,
   stream,
   wrapToolDefinition,
-  readBypass
+  readBypass,
+  manualOrigins
 }){
  const {agent} = session;
  const previous=agent.prepareRequest;
@@ -168,6 +169,8 @@ export function registerOwnedExecutionTools({
    }
    function readOrigin(carrier){
     if(carrier.stream!==stream)throw new ExecutionContextOwnershipError('Execution context belongs to another stream consumer');
+    const readManual=manualOrigins?.get(carrier.token);
+    if(readManual){current();return readManual(carrier);}
     const judgment=producerOwner.judgmentFor({
       response:carrier.response,
       stream

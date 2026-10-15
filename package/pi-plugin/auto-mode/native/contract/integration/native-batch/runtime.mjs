@@ -79,6 +79,7 @@ export function bindNativePolicyRuntime({
    prepareSourceAssociation:prepareNativeSourceAssociation
  });
  const producerOwner=createRequestProducerOwner({now});
+ const manualOrigins=new WeakMap();
  async function sendAttributedAssessment(input){
   const wire=bindRuleAssessmentWire(input.request);
   const raw=await sendWire(Object.freeze({
@@ -139,7 +140,12 @@ export function bindNativePolicyRuntime({
    semanticAdmissionPolicy,
    headingContextAdmissionPolicy,
    unitAdoptionAdmissionPolicy,
-   approvalHost
+   approvalHost,
+   manualOrigins,
+   captureOperationCurrentness(){
+    const operation=currentness.capture(root);
+    return function assertOperationCurrent(){currentness.assertActive(operation);};
+   }
    ,readBypass
  });
  async function executeToolBatch(input){
@@ -183,7 +189,8 @@ export function bindNativePolicyRuntime({
      producerOwner,
      stream,
      wrapToolDefinition,
-     readBypass
+     readBypass,
+     manualOrigins
    })); },
    isSessionDisposed:function hasCompletedNativeDisposal() { return (readSessionDisposalState(session)
      .completed

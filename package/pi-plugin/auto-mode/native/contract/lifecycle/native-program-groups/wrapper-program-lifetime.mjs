@@ -45,6 +45,7 @@ export function createExecutionWrappers({wrapToolDefinition,readBypass=function 
     }){return operation(function bindNativeProgramContext() {
       const origin=readOrigin(carrier);
       const bypass=readBypass()===true;
+      const nativeProgram=bypass||origin.manualApproval===true;
       if((origin.prepared
         .id
         !==toolCallId)||(origin.prepared
@@ -94,13 +95,13 @@ export function createExecutionWrappers({wrapToolDefinition,readBypass=function 
               ...descriptors.executeTool,
               value:async function executeNativeBypassedChild(name,args,options) {
                 assertParentCurrent();
-                if(!bypass)throw new NestedGroupSupportError();
+                if(!nativeProgram)throw new NestedGroupSupportError();
                 const result=await Reflect.apply(descriptors.executeTool.value,base,[name,args,options]);
                 assertParentCurrent();
                 return result;
               }
             },
-            ...(bypass?{}:{createDeclaredProgram:{
+            ...(nativeProgram?{}:{createDeclaredProgram:{
               enumerable:true,
               configurable:false,
               writable:false,
