@@ -181,6 +181,61 @@ using the expanded vocabulary and the adopted `0.60` operating rule.
 Its artifacts live under `${HOME}/temp/agent/pi-luna-current-confirmation-20261014/`.
 Do not replay those calls or replace their original responses.
 
+### Manual confirmation for uncertainty
+
+The user selected confirmation for uncertain automatic assessments on 2026-10-14.
+Commit `e39c3da741` records that decision;
+`7d04a67ea8` implements the native routing,
+with tests in `88c8b19010` and formatting in `c2b5f9ed89`.
+Unresolved and unspecified assessments reach the existing original-group dialog when a UI is available.
+An established prohibition at the strongest known applicable tier still blocks,
+even if another interpretation remains unresolved.
+Known stronger applicable permission may supersede a lower-priority prohibition.
+Original source and operation freshness checks remain mandatory.
+
+The unchanged captured assessment produced identical answer data in three live Luna calls.
+The adopted consumer admitted 22 of 84 answers each time,
+including original permission at `0.60`,
+fresh confirmation at `0.99`,
+and the duplicate confirmation at `1`.
+These are admission measurements,
+not accuracy estimates.
+The first local verifier incorrectly passed response metadata into the strict choice consumer.
+Its already-completed response was preserved and rescored with the actual choice/probability fields;
+only the remaining two planned calls were made.
+
+The native manual-review suite passes its priority cases,
+Allow,
+denial,
+Stop,
+cancellation,
+prohibition alongside uncertainty,
+and missing UI.
+The package type check and changed TypeScript lint pass.
+The original authorization fixture suite also passes.
+The approval-context suite passed its initial cases but its reload case exhausted the original judgment deadline.
+A standalone unchanged reload control is pending;
+the failed run remains preserved.
+
+Exact replay of the older Luna response in another configured session was rejected:
+captured event timestamps and durations changed the assessment input.
+No response was admitted in that failed replay.
+A fresh-request bridge then exercised the configured native Hyper host with live Luna responses,
+using scripted primary responses and scripted UI responses in a disposable network-isolated child.
+The parent sends only the actual captured assessment to Luna;
+the child receives no real credentials.
+Each case makes one Luna request.
+Allow executes the original read once;
+Stop and dismissal execute no child tool.
+Receipts are in `pi-hyper-rpc-allow-hRnQ6s`,
+`pi-hyper-rpc-stop-UJfsga`,
+and `pi-hyper-rpc-cancelled-9LsqI6` under `${HOME}/temp/agent/`.
+
+Next verify an actual Hyper-generated tool call,
+finish the targeted guard omission controls,
+and update the package-facing behavior documentation.
+Genuine human approval and the previously recorded native lint backlog remain outstanding.
+
 ## Current Pi execution model
 
 On 2026-10-14,
