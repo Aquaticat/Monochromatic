@@ -681,17 +681,22 @@ This is not a maintained host launcher or installed judge cutover.
 ## Migration input accounting
 
 `assertOriginalInputBudget` validates resource and Session receipt counters,
-then enforces their shared 128-occurrence/four-MiB serialized-record limit.
-The user approved this occurrence limit on 2026-10-14 after the configured extension fixture retained 81 receipts.
-Resource-local capture remains limited to 64 receipts.
+then checks that their combined arithmetic remains exactly representable.
+On 2026-10-15 the user approved removal of arbitrary instruction-capture size and count ceilings,
+superseding the 128-occurrence limit adopted on 2026-10-14.
+Normal configured prompts had exceeded several independently imposed fixture limits.
 It preserves the original counter profile without invoking accessors,
 reflecting on proxies,
 or freezing borrowed records.
 The counters must come from fixed native readers;
 valid shapes and arithmetic establish neither ownership nor governing-domain completeness.
-Resource-local,
-per-source,
-and copier limits remain separate.
+Complete resource text,
+callback inputs,
+tool metadata,
+source histories,
+and source indexes no longer have fixture-derived capacity ceilings.
+The iterative data copier rejects cycles explicitly and preserves supported shared metadata by occurrence.
+Provider request limits and executable-program admission constraints remain separate.
 
 This maintained helper is part of the ongoing migration.
 Its export does not activate the private native runtime or replace the installed judge pipeline.

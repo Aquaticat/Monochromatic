@@ -9,56 +9,45 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
-Prompt-submission repair supersedes the completed shortcut repair:
-the user restarted Pi and reported `Native run prompt derivation is incomplete or no longer current`
-when sending a prompt with bypass off.
-The installed CLI reproduction with repository instructions and the default tool loadout fails identically.
-The original CLI smoke test used a minimal policy and only `codemode,read`,
-so it did not establish normal-workspace prompt submission.
-The reproduction found an 83938-byte callback-option bundle rejected by a 65536-byte single-source cap.
-A process-local control then exposed a 113905-byte tool-loadout bundle rejected by the same-sized pool cap.
-Both payloads already pass their upstream one-MiB copy budgets.
-After those controls,
-the 2850095-byte base-linked snapshot hits a separate one-MiB aggregate cap.
-These are bounded-capture integration failures;
-no provider request or instruction permission is needed to reproduce the initial failure.
-Current scratch harness:
-`${HOME}/temp/agent/pi-tool-call-scope-20261014/prompt-derivation-repro.ts`.
-The controls are process-local hooks;
-production capture limits have not yet changed.
-Stop the lint queue until normal prompt submission is repaired and tested.
+The user explicitly accepted removal of arbitrary capture limits on 2026-10-15.
+Commits through `c65c7c9a3e` remove fixture-derived byte and occurrence limits from
+prompt options,
+tool metadata,
+event/session/resource receipts,
+run histories,
+governing source lists,
+and clause indexes.
+The data copier now uses an iterative work stack with explicit ancestor-cycle detection.
+Message aliases remain rejected;
+supported shared tool metadata remains copied by occurrence.
+Ownership,
+freshness,
+descriptor checks,
+and cancellation are retained.
+The generic prompt error now includes retained deciding error messages.
 
-Follow-up evidence:
-with the actual user and project skills mounted read-only,
-the callback options occupy 113164 bytes and the initial linked snapshot occupies 3400316 bytes.
-An event callback also exceeds the 65536-byte per-record limit.
-Process-local alignment of these limits permits the first prompt to complete.
-A second prompt then exceeds the run's four-MiB accounting limit at 5282773 bytes.
-After a further process-local control,
-the shared receipt check rejects resource usage of 13 records and 158177 bytes
-plus session usage of 110 records and 4298044 bytes.
-The count remains within the approved 128-record limit;
-the bytes exceed four MiB.
-Raising successive caps has therefore not established a production repair.
-The standard installed Pi SDK with the legacy auto-mode extension passes two prompts using
-the same configured packages,
-repository instructions,
-and user/project skills in a network-isolated disposable fixture.
-This is a recovery experiment,
-not an installed rollback or evidence that its tool guard has been requalified.
+The original regression was red at `49b0dd1b08` and passes after the removal.
+The installed native CLI fixture completes initial and follow-up prompts with bypass off,
+all configured packages,
+the copied repository instructions,
+default tools,
+and user/project skills.
+It uses local provider replies in a network-isolated disposable home,
+with no process-local capacity overrides.
+The fixture is `capture-removal-repro.ts` under
+`${HOME}/temp/agent/pi-tool-call-scope-20261014`.
+Type checking passes.
+Updated regression and tool-control verification remain active.
+Do not claim live-provider or physical-terminal verification from these offline checks.
 
-The user asked why these limits exist and whether Pi itself is at fault.
-The answer retracts the broader functionality claim:
-these are owned experimental capture limits carried into normal use,
-not upstream Pi requirements or financial/model-token budgets.
-The proposed direction is to remove arbitrary instruction-capture size/count ceilings
-while preserving structural validation,
-ownership,
-cancellation,
-and unrelated execution or provider constraints.
-This proposal has not been applied.
-See [the capture-capacity repair proposal](../planning/pi-native-capture-capacity-repair.md).
-The new committed native regression consumer in `49b0dd1b08` is intentionally red against the current build.
+The deciding pre-repair measurements were:
+83938-byte callback options and a 113905-byte tool-loadout bundle against 65536-byte limits;
+2850095-byte base snapshot against one MiB;
+5282773-byte follow-up run accounting against four MiB;
+and shared receipt bytes exceeding four MiB with only 123 receipts.
+These counted repeated serialized observations, not measured heap or model tokens.
+The smaller original smoke test had missed the configured workspace and follow-up interaction.
+See [the accepted capture repair](../planning/pi-native-capture-capacity-repair.md).
 
 The latest user instruction is to stop this agent's cleanup once Pi is functional,
 then draft a prompt for MiMo v2.6 Pro to continue lint fixes.

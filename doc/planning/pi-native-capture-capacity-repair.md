@@ -35,7 +35,9 @@ Repeatedly raising the thresholds moves the failure and leaves the same product 
 
 On 2026-10-15 the user explicitly selected removal of arbitrary capture limits.
 This supersedes the earlier fixture-derived capture ceilings, including the 128-receipt limit.
-Implementation and configured-host verification remain pending.
+Implementation removes the capture and source-index ceilings.
+The configured native host now completes initial and follow-up prompts without capacity overrides.
+Tool controls and the updated regression suite are still being verified.
 
 Remove arbitrary byte and occurrence ceilings from normal instruction capture and source accounting.
 Preserve data-shape checks,
