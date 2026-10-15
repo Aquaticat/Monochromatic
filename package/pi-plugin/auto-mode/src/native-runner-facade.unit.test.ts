@@ -30,21 +30,21 @@ await describe({ name: '', children: [
     assert.deepEqual(fixture.steps.slice(-4), ['inspect', 'retire', 'drain', 'drain']);
   } }),
   ...[undefined, null, {}, Object.freeze({ length: 0 }), []].map(function invalidTools(tools) {
-    return it({ name: `rejects unavailable original tool snapshot ${String(tools)}`, fn: () => {
+    return it({ name: `rejects unavailable original tool snapshot ${String(tools)}`, fn: async () => {
       const fixture = createRunnerFacadeFixture();
       fixture.input.tools = tools;
       assert.throws(fixture.create, { message: 'Original request tool snapshot is unavailable' });
       assert.deepEqual(fixture.steps, []);
     } });
   }),
-  it({ name: 'checks original parent before source equality and opening', fn: () => {
+  it({ name: 'checks original parent before source equality and opening', fn: async () => {
     const fixture = createRunnerFacadeFixture();
     fixture.input.code = 'different source';
     assert.throws(fixture.create, { message: 'Declared program differs from original prepared input' });
     assert.deepEqual(fixture.steps, ['parent']);
   } }),
   ...['parent', 'open', 'runtime'].map(function failedConstruction(point) {
-    return it({ name: `retains original ${point} construction failure without later callbacks`, fn: () => {
+    return it({ name: `retains original ${point} construction failure without later callbacks`, fn: async () => {
       const fixture = createRunnerFacadeFixture();
       fixture.control.failAt = point;
       assert.throws(fixture.create, function original(error) { return error === fixture.control.failure; });
