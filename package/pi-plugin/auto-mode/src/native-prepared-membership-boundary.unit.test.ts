@@ -9,7 +9,7 @@ await describe({
   name: 'original prepared membership boundaries',
   children: [
     //region Complete frozen group and member identities are required before any publication.
-    ...[undefined, null, {}, [], Object.freeze([]), Object.freeze([{}, {}])].map(function invalidGroup(members, ordinal) {
+    ...[undefined, null, {}, [], [Object.freeze({ id: 'call-0', name: 'read', input: Object.freeze({}) })], Object.freeze([]), Object.freeze([{}, {}])].map(function invalidGroup(members, ordinal) {
       return it({
         name: `rejects incomplete or mutable prepared group case ${String(ordinal)}`,
         fn: async () => {
