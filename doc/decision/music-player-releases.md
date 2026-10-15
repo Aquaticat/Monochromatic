@@ -139,6 +139,17 @@ One release holds, with `<version>` filled in:
   from this project's single Linux machine,
   so an AppImage without them is the archive with a different wrapper and one with them is untested.
   The question can be reopened with a distribution test matrix.
+- Alpine Linux: `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz`,
+  native builds on `ubuntu-24.04` and `ubuntu-24.04-arm` (job `build-desktop-musl`),
+  added on 2026-10-15 as `doc/decision/music-player-alpine.md` specifies.
+  The layout is the glibc archive's:
+  `bin/music-player`, the launcher file, the icon, `LICENSE` and an `INSTALL.txt` that names the Alpine packages
+  (the `apk add` list of the "Runtime packages" section of the Alpine decision, which the release notes repeat)
+  and the requirement of Alpine 3.24 or newer.
+  The glibc archives do not run on Alpine and these do not run on glibc systems, so the two are separate files.
+  The binary is dynamically linked against musl (a static musl binary cannot open a window or link PipeWire, see the
+  Alpine decision) and is built with the `alsa-fallback` feature, so it plays through the default ALSA device when no
+  PipeWire daemon runs.
 - Android: `music-player-<version>-android.apk`, signed with the release key,
   holding the `arm64-v8a` and `x86_64` native libraries.
 - `SHA256SUMS`, produced by a job that runs only after every build succeeded.

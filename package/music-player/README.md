@@ -549,6 +549,9 @@ A release holds one file per platform and a `SHA256SUMS` file:
 - macOS: `music-player-<version>-macos-arm64.dmg`, for Apple silicon Macs only.
   Intel Macs have no download: build from source.
 - Linux: `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz`.
+- Alpine Linux: `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz`.
+  These are for Alpine 3.24 or newer (musl libc) on x86_64 or aarch64;
+  the Linux archives above do not run on Alpine.
 - Android: `music-player-<version>-android.apk`.
 
 ### What has been tested
@@ -558,6 +561,9 @@ and the Android app on emulators.
 Every other file is built by CI, not yet tested on this platform:
 CI starts each desktop program once with `--version` and does nothing more.
 No build has run on a real Android device, on macOS or on Windows.
+The Alpine files have more checking than the rest, though not on real hardware:
+the Alpine workflow runs the unit tests and a headless window and sound check in Alpine containers on both
+architectures, on debug builds, and the release run starts each Alpine program with `--version` in an Alpine image.
 Treat those downloads as unverified and report what you find as issues.
 
 ### Windows
@@ -598,6 +604,25 @@ The program is built on Ubuntu 24.04 and needs a glibc of that age or newer.
 There is no AppImage:
 the program links PipeWire from the host,
 so an AppImage would depend on the host as much as the archive does.
+
+### Alpine Linux download
+
+Use the `linux-musl` archive that matches your processor (`x86_64` is `x64`, `aarch64` is `arm64`).
+Install the runtime packages as root,
+then extract the archive and run `bin/music-player`:
+
+```sh
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
+  mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+```
+
+`INSTALL.txt` inside the archive shows the runtime directory a plain Alpine install lacks and how to add a menu entry.
+Without PipeWire the player plays through the default ALSA device.
+It needs a Wayland compositor;
+the X11 path is untested.
+The binary is dynamically linked against musl and runs only on musl systems.
+The other differences from a Fedora desktop (fonts, the folder chooser, notifications) are in
+[Alpine Linux](#alpine-linux).
 
 ### Android
 
