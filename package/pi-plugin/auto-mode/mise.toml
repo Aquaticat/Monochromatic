@@ -176,6 +176,10 @@ run = [
 [tasks."test:native:cli-manager"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/cli-manager.test.mjs"
 
+[tasks."test:native:authorization-inputs"]
+description = "Verify original authorization bindings, accessor refusal and permanent retirement"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/action-policy/authorization-inputs.test.mjs"
+
 [tasks."test:native:event-receipts"]
 description = "Exercise original native event dispatch, complete grouped sources, and observation freshness"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/event-receipts.test.mjs"
