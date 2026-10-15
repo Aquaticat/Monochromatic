@@ -1608,14 +1608,16 @@ that is verification, not a decision for the user.
   pass limit, lock waits (bounded by `CLI_GIT_LOCK_WAIT_SECONDS`), recovery of the legacy directory, journal and
   staging files, the e2e image (Git 2.55.0 only) and the reserve-sweep summary. Divergences that remain in the code,
   not the SPEC: manual push spawns one `git diff-tree` per commit and updates run sequentially, where the SPEC asks
-  for one process; `policy_patch.rs` and `policy_patch_validate.rs` have no production caller; stale prose in
+  for one process; stale prose in
   `transaction_gate.rs:8-11`, `commit_recovery.rs:241-243` and `unported.rs:158-163`; capture ignores the global
   `--git-dir` and `--work-tree` options; `landing_findings.rs:69` has an unreachable merge-base message.
   Resumed on 2026-10-15 (user: the named trailing work is to be done, not listed): replay-core mutation campaign
   (`doc/handover/cli-git-native-replay-core.md`, unit `cli-git-replay-campaign`); measured the release archive's glibc
   floor (2.39) and the Windows compile failure (README); pinned the wrapper's x86_64 build to `ubuntu-24.04`; pruned
-  `slopo.ignore.txt`. Windows: user decision, port later, branches marked `UNTESTED ON WINDOWS`. Next after the replay
-  campaign: delete or justify the dead patch modules, long fuzz campaigns (not run while the mutation lanes load the
+  `slopo.ignore.txt`. Windows: user decision, port later, branches marked `UNTESTED ON WINDOWS`. The dead
+  `policy_patch.rs` and `policy_patch_validate.rs` are deleted on branch `chore/cli-git-drop-policy-patch` (host Clippy
+  clean; container gate tag `droppp` running 2026-10-15); the crate release (0.1.5) is bundled with the replay-core
+  landing. Next after the replay campaign: long fuzz campaigns (not run while the mutation lanes load the
   CPU cap), release-artifact performance gates (the harness is gone, a new one is needed), and the scanner Windows
   pathname mutation rerun (task 23, needs a Windows VM).
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
