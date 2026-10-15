@@ -2120,10 +2120,29 @@ Independent built request consumers cover successful handoff,
 producer failure before observer access,
 observer failure,
 and recovery.
-Boundary rebuild,
-consumer checks,
-formatting,
-and original request replay remain pending.
+`2b6019404d` records the initial request consumers;
+`8eec1bf371` records final boundary and consumer formatting.
+The boundary rebuild,
+type checking,
+request and API consumers,
+domain scenarios,
+and single-call checks pass in
+`${HOME}/temp/agent/pi-composition-boundaries-first-20261015.log`.
+Original request replay passes in `${HOME}/temp/agent/pi-request-original-20261015.log`.
+A process-local stream replacement escaped the initial test's deep equality assertion:
+both stream objects had no properties.
+The consumer now requires exact stream and response identities;
+the identity controls are being rerun before request qualification.
+
+`2deac389d9` aligns shared constructor capabilities with their actual native operations.
+Original weak membership reads accept foreign values without restricting publication to those values;
+the read capability preserves primitive queries without adding a new rejection boundary.
+Execution member lookup and instruction resolution retain the original map reads.
+Lifecycle dependency handles remain absent until original preparation publishes them.
+Retained dependency state accepts both successful and failed closure records.
+Type checking passes in
+`${HOME}/temp/agent/pi-composition-membership-types-first-20261015.log`.
+Built consumer checks and focused formatting remain pending for those shared capability changes.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
