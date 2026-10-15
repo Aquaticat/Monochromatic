@@ -34,6 +34,18 @@ Neither is substituted for the reproduced aggregate.
 - [ ] Correct the demonstrated cause and verify the real configured consumer boundary.
 - [ ] Retain regression evidence and update the MiMo handoff readiness.
 
+The candidate fix `5a8760d15f` passes the unchanged 40-tool replay and reduces binding parent checks
+from 257 to 2 for 256 retained inputs.
+The stale-parent and changed-during-construction controls pass;
+omitting the final parent check makes the adversarial test fail.
+The full cached catalog (66 BrowserOS tools and 74 Linear tools) exposed a separate request-preparation ceiling:
+`Original request tool schemas exceed the 10000-property profile`.
+This happens before the provider request and is not the original review-deadline exception.
+The candidate is not installed while this configured-consumer blocker remains open.
+Receipt: `${HOME}/temp/agent/pi-host-isolation-20261015/mimo-full-candidate.log`.
+Next action: remove the remaining schema-count ceiling while preserving descriptor freshness,
+then repeat the full catalog and installed-command checks.
+
 ### Host-isolation replacement complete
 
 The corrected native host is installed as `native-release-Yhc7sX` and verified through the original `pi` command.

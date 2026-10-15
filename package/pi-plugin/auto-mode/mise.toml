@@ -911,3 +911,6 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --assessment-failure --manual=cancel",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --assessment-failure --manual=headless",
 ]
+[tasks."test:native:tool-schema-capacity"]
+description = "Retain complete native schemas and reject changed descriptors without a property ceiling"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-tool-schema-capacity.test.mjs"
