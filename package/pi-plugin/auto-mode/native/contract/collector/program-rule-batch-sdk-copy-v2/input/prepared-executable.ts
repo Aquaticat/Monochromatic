@@ -103,7 +103,7 @@ export function wrapPreparedTools({
        Execution tracing preserves the wrapper boundary without inspecting native values.
        */
       const el = tagged({
-        tag: wrapped.execute.name,
+        tag: executionName,
         l: tl
       });
       el.debug('entering original prepared execution callback');
@@ -151,6 +151,10 @@ export function wrapPreparedTools({
       }
     },
     };
+    /**
+     Capture the callback name before callers can replace the returned tool's execution property.
+     */
+    const executionName = wrapped.execute.name;
     return wrapped;
   });
 }

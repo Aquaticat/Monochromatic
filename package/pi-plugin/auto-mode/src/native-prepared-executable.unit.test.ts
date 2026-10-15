@@ -64,6 +64,16 @@ await describe({ name: 'prepared native wrappers', children: [
     }, function sameFailure(error: unknown) { return error === failure; });
     assert.deepEqual(fixture.events, []);
   } }),
+  it({ name: 'retained execution callbacks do not reread the returned wrapper property', fn: async function retainedCallback() {
+    const fixture = createExecutableFixture();
+    const [tool] = fixture.wrap();
+    assert.ok(tool);
+    const callback = tool.execute;
+    Object.defineProperty(tool, 'execute', { get() {
+      throw new Error('Retained callback read a replaced wrapper property');
+    } });
+    assert.equal(await callback('one'), 'native result');
+  } }),
   //endregion
   //region Serial execution awaits the original indexed turn before checking currentness.
   it({ name: 'waits for the selected original turn before active admission and native execution', fn: async function serialTurn() {
