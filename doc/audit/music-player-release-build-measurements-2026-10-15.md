@@ -286,7 +286,8 @@ All of it stays far under the 16.7 ms budget, so the growth costs power, not smo
   the other four had 0 to 1 and 0.
 - 10,000 tracks (501 folders), top: interval 99th percentile 18.3, 18.7, 19.0 ms;
   callback to commit median 2.6, 2.7, 3.1 ms; CPU 19.9, 20.7, 23.1 percent.
-- 10,000 tracks, middle of the panel (reached with 10 down flicks, five `wl-fd` repeats; the verification flick changed 15,716 to 15,757 pixels, so the panel
+- 10,000 tracks, middle of the panel (reached with 10 down flicks, five `wl-fd` repeats;
+  the verification flick changed 15,716 to 15,757 pixels, so the panel
   was scrolling and not at its end):
   interval 99th percentile 18.2, 19.0, 22.1 ms; callback to commit median 2.5, 2.7, 2.9 ms;
   CPU 19.0, 21.1, 22.3 percent; 0 to 9 intervals over 20 ms and 0 to 2 over 34 ms.
