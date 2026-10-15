@@ -1391,11 +1391,37 @@ failing and passing forms,
 and rejected preservation attempt.
 All 14 governing-source implementation and consumer files now have zero focused lint diagnostics in
 `${HOME}/temp/agent/pi-native-governing-bindings-final-lint-20261015.log`.
-The final rebuild and constructor-contract consumer verification are running in
+The final rebuild,
+constructor-contract consumer verification,
+and package type check pass in
 `${HOME}/temp/agent/pi-native-governing-bindings-final-consumers-20261015.log`.
-Saved-baseline comparison,
-guard-omission controls,
-and final lint remain pending for this port.
+The saved baseline and typed implementation agree across 15 binding cases and 11 source-set cases on values,
+errors,
+reader/parser call counts,
+freeze state,
+and retained identities.
+A changed-source positive control demonstrates the comparison observes changed output.
+The deliberate derived-error category change is checked separately.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-governing-comparison.json`
+retains the comparison and source/artifact hashes.
+Removing source identity,
+permanent source invalidation,
+digest agreement,
+per-source clause count,
+final construction currentness,
+source-list identity,
+permanent set retirement,
+unique source occurrence,
+source-list count,
+combined clause count,
+or duplicate-code ambiguity guards makes the committed consumers fail.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-governing-omissions.json`
+records all 11 process-local controls and unchanged built artifact hashes.
+The complete maintained lint report covers 559 files and 486 rules:
+zero errors and 12834 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-governing-lint-20261015.log`.
+Structured diagnostics are being captured to verify the migrated files independently.
+The next boundary is native source-input location serialization used by policy request construction.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
