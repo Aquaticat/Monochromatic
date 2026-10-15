@@ -2537,7 +2537,12 @@ although that check correctly caused the unexpected original cancellation token 
 The completed verifier requires that exact token cause for this control
 and assertion diagnostics for the other controls.
 The original currentness owner is qualified at these tested boundaries.
-The full maintained lint recount remains pending.
+The full maintained recount covers 725 files and 486 rules,
+with zero errors and 10889 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-group-current-lint-20261015.log`.
+All five changed currentness implementation and consumer files have zero diagnostics in that report.
+The remaining collector body has 129 warnings;
+the connected runtime has 133 and reached-program runner has 266.
 The status response on 2026-10-15 confirms that the live model and approval verification are already complete,
 failure and lifetime owners are qualified,
 and the maintained-package quality queue remains unfinished without a current user-input blocker.
