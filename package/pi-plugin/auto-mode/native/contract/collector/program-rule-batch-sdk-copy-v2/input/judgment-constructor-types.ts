@@ -1,11 +1,20 @@
 /**
  Original constructor inputs compose owned capabilities without widening authority. @module
  */
-import type { DependencySources, DependencyFacadeInput } from '../../../lifecycle/native-text-read-contract/dependency-types.ts';
+import type {
+  DependencySources,
+  DependencyFacadeInput
+} from '../../../lifecycle/native-text-read-contract/dependency-types.ts';
 import type { JudgmentBudgetInput } from '../../../lifecycle/judgment-budget-error-occurrences/controls-private/types.ts';
 import type { MainAgentRequestInput } from '../../request-producer-group-consumer/request-types.ts';
-import type { JudgmentPreparationSources, JudgmentPreparationInput } from './judgment-preparation-types.ts';
-import type { JudgmentSourcesInput, JudgmentSourceReceipt } from './judgment-source-types.ts';
+import type {
+  JudgmentPreparationSources,
+  JudgmentPreparationInput
+} from './judgment-preparation-types.ts';
+import type {
+  JudgmentSourcesInput,
+  JudgmentSourceReceipt
+} from './judgment-source-types.ts';
 import type { JudgmentInstructionsInput } from './instruction-types.ts';
 import type { JudgmentLifecycleInput } from './judgment-lifecycle-types.ts';
 import type { JudgmentResponseInput } from './judgment-member-types.ts';

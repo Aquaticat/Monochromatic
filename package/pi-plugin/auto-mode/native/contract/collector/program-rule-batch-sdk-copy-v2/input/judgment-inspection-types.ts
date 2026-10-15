@@ -59,7 +59,7 @@ export type JudgmentInspectionInput = Readonly<{
   bindings: Pick<WeakMap<object, ProgramMemberRecord>, 'get'>;
   childGroups: readonly ProgramGroup[];
   knownMember: (member: unknown) => ProgramMemberRecord;
-  assertDependenciesCurrent: () => void;
+  assertDependenciesCurrent: () => unknown;
   parentCurrent: (record: ProgramMemberRecord) => void;
   ready: () => void;
   originalFile: (input: Readonly<{

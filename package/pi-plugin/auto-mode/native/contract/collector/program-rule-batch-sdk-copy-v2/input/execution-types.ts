@@ -33,7 +33,7 @@ export type JudgmentExecutionInput = Readonly<{
   readJudgment: () => object;
   response: object;
   stream: object;
-  assertDependenciesCurrent: () => void;
+  assertDependenciesCurrent: () => unknown;
 }>;
 
 /**

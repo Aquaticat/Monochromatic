@@ -3,6 +3,7 @@
  */
 import type { JudgmentBudget } from '../../../lifecycle/judgment-budget-error-occurrences/controls-private/types.ts';
 import type { ProgramMemberRecord } from './program-state-types.ts';
+import type { JudgmentPreparationState } from './judgment-preparation-types.ts';
 
 /**
  Shared preparation and closure values are read only at original operation boundaries.
@@ -13,11 +14,13 @@ export type JudgmentDependencyState = Readonly<{
   preparationFailure: unknown;
   finished: boolean;
   closeFailed: boolean;
-  finalRecord?: Readonly<{
-    failure?: unknown;
-    status?: 'evidence-closed' | 'close-failed'
-  }> | undefined;
-  handle?: object | undefined;
+  finalRecord?: Partial<Readonly<{
+    record: Readonly<{
+      failure?: unknown;
+      status?: 'evidence-closed' | 'close-failed'
+    }>;
+  }>>['record'];
+  handle?: JudgmentPreparationState['handle'];
 }>;
 
 /**

@@ -41,7 +41,7 @@ export type JudgmentSourcesInput<Source extends JudgmentPreparationSources = Jud
   readOriginalRequest: () => JudgmentSourceReceipt<Source>;
   signal: AbortSignal;
   collector: Pick<JudgmentSourceCollector<Source>, 'assertObservedFresh'>;
-  assertDependenciesCurrent: () => void;
+  assertDependenciesCurrent: () => unknown;
 }>;
 
 /**

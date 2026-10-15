@@ -2172,6 +2172,19 @@ The expanded instruction consumers pass against the saved original implementatio
 The full maintained count has not been refreshed since the API extraction report.
 Continue typed constructor ownership and the maintained-package quality queue.
 
+`bec0e3f129` moves the remaining original constructor into typed composition.
+The saved baseline is `child-constructor-before-owner-types.mjs`.
+The first type check reports `TS2322` and `TS2379`:
+the composition forwards explicitly absent optional values,
+and the preparation map capability exposed its full map return type despite ignoring that return.
+`275292b52f` narrows publication to its actual write capability and records the optional-value correction.
+Focused lint rejects explicit nullish unions,
+the constructor length,
+and void-only contracts for callbacks that return dependency projections.
+The current correction preserves optional indexed reads and actual callback results,
+and separates initial budget/source/membership observations into a typed foundation.
+The split and its original-versus-current consumer comparison are pending verification.
+
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
 Its `cli-git` push-wait notice was initially misread as a timeout.

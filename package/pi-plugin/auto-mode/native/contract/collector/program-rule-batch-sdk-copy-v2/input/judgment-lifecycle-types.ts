@@ -55,7 +55,7 @@ export type JudgmentLifecycleInput = Readonly<{
   ready: () => void;
   active: () => void;
   bindingSegment: <Result>(run: () => Result) => Result;
-  assertDependenciesCurrent: () => void;
+  assertDependenciesCurrent: () => unknown;
   budget: JudgmentBudget;
   finalizeDependencies: (handle: JudgmentPreparationState['handle']) => unknown;
   readDependencyHandle: () => JudgmentPreparationState['handle'];
