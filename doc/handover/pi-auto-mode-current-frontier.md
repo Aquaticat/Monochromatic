@@ -2045,10 +2045,25 @@ root projection failure,
 and recovery before that type contract is reconciled.
 The source/preparation rebuild,
 type check,
-and direct consumer sequence are running in
+and direct consumer sequence pass in
 `${HOME}/temp/agent/pi-source-generic-contract-first-20261015.log`.
-Constructor composition remains pending;
-the new generic source contracts have not yet received their final lint qualification.
+`1434f3905c` records the mixed-membership consumer.
+`4b05ea17ea` makes root claim bindings optional on shared instruction records
+and limits preparation to the root-record publication capability it uses.
+Type checking then identified the same root projection assumption in unit adoption (`TS18048`).
+`8b6fde2bc2` shares original projection access between member clauses and unit adoption,
+retaining the original missing-record and missing-binding error messages before publication.
+The rebuilt source,
+preparation,
+and instruction consumers and type checking pass in
+`${HOME}/temp/agent/pi-member-binding-contract-second-20261015.log`.
+The expanded consumers also pass against the saved original instruction implementation in
+`${HOME}/temp/agent/pi-member-binding-original-20261015.log`.
+All eleven changed contract and consumer files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-composition-contract-format-first-20261015.log`.
+Final post-format verification is running in
+`${HOME}/temp/agent/pi-composition-contract-final-20261015.log`.
+Constructor composition remains pending.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
