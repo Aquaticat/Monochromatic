@@ -830,6 +830,24 @@ semantic-operating-policy,
 and manual-review consumers also pass on that final extraction in
 `${HOME}/temp/agent/pi-native-operation-coverage-consumer-20261015.log`.
 The remaining full lint gate is still open.
+Commit `41a33c04cc` separates adoption,
+request,
+heading,
+and clause wire projections while retaining original binding checks and batch membership.
+Its focused lint has zero errors and 376 warnings.
+Commit `487e5ad3b0` separates resource,
+run,
+and generated prompt source bindings from authority assembly.
+Its focused lint has zero errors and 384 warnings.
+The rebuilt domain,
+semantic-operating-policy,
+manual-review,
+source-work,
+resource-input,
+context-receipt,
+and retained-history consumers pass in
+`${HOME}/temp/agent/pi-native-wire-authority-consumer-20261015.log`.
+The next structural change separates loader publication state from collector snapshot ownership.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
