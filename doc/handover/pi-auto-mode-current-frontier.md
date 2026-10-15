@@ -336,8 +336,21 @@ the focused lint report contains no errors in either runner module or the error/
 Commit `99886bdca1` retains governing binding failure and source selection in one lifecycle record.
 Commits `2e025dc5cc` and `d6c4d39496` share the original judgment operation wrappers
 and name the remaining judgment callbacks.
-Their build and focused lint checks are running;
-consumer regression verification remains required.
+Their owned build and complete direct-runtime regression sequence pass.
+The focused lint check found no errors in the runner or source-binding modules;
+the constructor retained file-length,
+mutable-binding,
+cleanup,
+and function-declaration findings.
+Commit `72a7e2ca36` adds original recorder ownership and queue-release tests.
+Normal and exceptional queue release both pass.
+The process-local omitted-release control fails with `queue-release-missing`,
+and the built helper hash remains unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-queue-omission.json` retains that receipt.
+Commits `25c6a6819f` and `813b9c1b35` separate original program ownership and instruction-claim ownership
+from the judgment constructor.
+Their owned build and focused lint checks are running;
+their consumer regression verification remains queued before any completion claim.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
