@@ -740,7 +740,29 @@ The rebuilt typed consumers pass in
 Removing the dispatch overlap guard in memory makes the typed consumer fail its expected rejection assertion.
 The unchanged artifact hashes and result are recorded in
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/budget-overlap-typescript-omission.json`.
-Original source-work and approval-consumer checks are running on the rebuilt typed budget.
+Original source-work,
+manual-review,
+approval-context,
+and changed-dependency consumers pass on the rebuilt typed budget in
+`${HOME}/temp/agent/pi-native-budget-approval-consumer-20261015.log`.
+The source-work check records 9045 policy-file opens within its unchanged 10000 limit;
+this count alone does not establish a performance change.
+Commit `a21d26fd12` separates host fixture construction and observations from lifecycle assertions
+and scopes runtime cleanup and failed-disconnection restoration.
+Its rebuilt host-lifecycle consumer passes replacement,
+cancellation,
+fork,
+persisted resume,
+and incomplete-disposal retry in
+`${HOME}/temp/agent/pi-native-host-fixture-consumer-20261015.log`.
+The subsequent full lint recount covers 464 files and 486 rules,
+with 107 errors and 13167 warnings.
+`${HOME}/temp/agent/pi-maintained-typed-budget-lint-20261015.log` retains the complete report.
+This remains a failing package gate.
+The next edits scope original producer construction and invocation claims,
+retain CLI manager observations in a fixture record,
+and name collector and manual-review helper inputs.
+Their focused lint and rebuilt consumer verification are pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
