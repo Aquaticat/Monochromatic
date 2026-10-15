@@ -19,7 +19,9 @@ await describe({ name: '', children: [
     return it({ name: `preserves original ${point} callback failure after ticket allocation`, fn: async () => {
       const fixture = createArrivalOwnerFixture();
       const installation = new Error('original listener installation failed');
-      Object.defineProperty(fixture.native.signal, 'addEventListener', { value(): never { throw installation; } });
+      Object.defineProperty(fixture.native.signal, 'addEventListener', { value(): never { 
+        throw installation; 
+      } });
       fixture.control.throwAt = point;
       fixture.control.failure = Object.freeze({ original: point });
       const result = await awaitCollectorResult(Promise.allSettled([fixture.owner.invoke({ record: fixture.record, args: {}, nativeSignal: fixture.native.signal })]));

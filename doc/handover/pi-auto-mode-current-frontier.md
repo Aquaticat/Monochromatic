@@ -90,11 +90,23 @@ replay and reentry,
 combined cancellation,
 late native outcomes,
 and cancellation during final currentness or listener installation.
-Build,
-type checking,
-consumer execution,
+The native build,
+package type checking,
+and composed collector,
+dispatch,
+and completion consumers pass.
+The composed collector consumers also pass with the exact saved original collector.
+Six domain comparisons retain identical public results and native execution counts,
+with a permission-versus-prohibition positive control.
+The first omission run detected its earlier changes but did not detect removal of arrival's pending-rejection callback:
+the composed failure owner had already rejected the same transport ticket.
+Independent arrival consumers now separate retention from rejection and exercise phase,
+closure,
+primary-failure,
+and native-listener guards independently.
+Their built execution,
 original replay,
-and omission controls remain pending for this extraction.
+and the complete expanded omission run remain pending.
 The preceding collector body is saved as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/program-collector-before-arrival-types.mjs`,
 with SHA-256 `eada90c16fdb852469c4079f7fea850afbf54c52e55eec199d4f997a3fb9d419`.
