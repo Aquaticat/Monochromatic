@@ -9,17 +9,17 @@ import type { QuestionBinding } from '../../../lifecycle/claim-evidence-batch-se
 //region Retained instruction records require the same original request, member, and source units.
 /**
  Bind dependency resolution to the private original judgment owner.
- *
+
  @param input - original member and request capabilities
- *
+
  @param state - private original instruction records
- *
+
  @returns original dependency resolver
  */
 export function createInstructionResolver({
   input,
   state
-}: InstructionContext) {
+}: InstructionContext) : (bindingHandle: object) => QuestionBinding {
   const {
     ready,
     bindings,
@@ -27,11 +27,11 @@ export function createInstructionResolver({
   } = input;
   /**
    Revalidate each original dependency before exposing its retained question binding.
-   *
+
    @param bindingHandle - original opaque member or instruction handle
-   *
+
    @returns retained original binding
-   *
+
    @throws JudgmentConstructionError for foreign or changed ownership
    */
   function resolveBinding(bindingHandle: object): QuestionBinding {

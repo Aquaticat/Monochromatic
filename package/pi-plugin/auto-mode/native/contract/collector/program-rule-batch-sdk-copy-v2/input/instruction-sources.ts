@@ -1,6 +1,9 @@
 /**
  Lazy original policy selection stays inside synchronous dependency boundaries. @module
  */
+import type { InstructionSourceOperations, InstructionPolicySelection } from './instruction-api.ts';
+import type { GoverningRuleSet, GoverningSetInput, GoverningSetProjection, GoverningSetSnapshot } from '../../../lifecycle/governing-rule-candidates/set-types.ts';
+import type { InstructionAdoptionPair } from './instruction-types.ts';
 import { selectUnitAdoptionPairs } from '../../../integration/action-policy/unit-adoption-profile.mjs';
 import { createGoverningRuleSet } from '../../../lifecycle/governing-rule-candidates/set-owner.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
@@ -10,17 +13,17 @@ import type { InstructionContext } from './instruction-types.ts';
 //region Enumeration selects source-owned structure without establishing authority or permission.
 /**
  Retain original source selection and lazy bounded adoption opportunities.
- *
+
  @param input - original judgment capabilities
- *
+
  @param state - private lazy owner records
- *
+
  @returns original source operations
  */
 export function createInstructionSources({
   input,
   state
-}: InstructionContext) {
+}: InstructionContext) : InstructionSourceOperations {
   const {
     ready,
     bindingSegment,
@@ -33,7 +36,7 @@ export function createInstructionSources({
   /**
    Initialize original governing sources once under the existing dependency segment.
    */
-  function ensureRuleBindings() {
+  function ensureRuleBindings() : GoverningRuleSet {
     ready();
     if (!state.ruleBindings) {
       if (((typeof parsePolicy) !== 'function') || (!Boolean(readJudgmentSources().hostGoverningPolicy))) throw new JudgmentConstructionError('Original host-selected policy and qualified parser are required for instruction claims');
@@ -41,7 +44,7 @@ export function createInstructionSources({
       /**
        Source reads retain the original judgment lifetime check.
        */
-      function readGoverningSources() {
+      function readGoverningSources() : ReturnType<GoverningSetInput['readSources']> {
         ready();
         return readJudgmentSources()
           .governingSources;
@@ -49,7 +52,7 @@ export function createInstructionSources({
       /**
        Capture original source ownership without moving its publication point.
        */
-      function createRuleBindings() {
+      function createRuleBindings() : GoverningRuleSet {
         return createGoverningRuleSet({
           parse,
           readSources: readGoverningSources
@@ -62,44 +65,44 @@ export function createInstructionSources({
   /**
    Enumerate original tagged candidates without assigning authority.
    */
-  function indexedRuleCandidates() { return ensureRuleBindings()
+  function indexedRuleCandidates() : readonly object[] { return ensureRuleBindings()
     .indexedCandidates(); }
   /**
    Keep original reads inside fresh entry and exit dependency checks.
    */
-  function readRuleCandidate(rule: object) {
+  function readRuleCandidate(rule: object) : GoverningSetProjection {
     /**
      Read the original source projection inside its selected segment.
      */
-    function readOwnedRule() { return ensureRuleBindings()
+    function readOwnedRule() : GoverningSetProjection { return ensureRuleBindings()
       .read(rule); }
     return isBindingSegmentActive() ? readOwnedRule() : bindingSegment(readOwnedRule);
   }
   /**
    Retain every original instruction candidate, including unclassified units.
    */
-  function indexedInstructionCandidates() { return ensureRuleBindings()
+  function indexedInstructionCandidates() : readonly object[] { return ensureRuleBindings()
     .indexedInstructionCandidates(); }
   /**
    Keep contextual heading aggregates distinct from individual clauses.
    */
-  function indexedHeadingContextCandidates() { return ensureRuleBindings()
+  function indexedHeadingContextCandidates() : readonly object[] { return ensureRuleBindings()
     .indexedHeadingContextCandidates(); }
   /**
    Preserve original structural coverage diagnostics without claiming authority.
    */
-  function inspectRuleSources() { return ensureRuleBindings()
+  function inspectRuleSources() : readonly GoverningSetSnapshot[] { return ensureRuleBindings()
     .inspect(); }
   /**
    Select structural opportunities only for the original sole declared member.
    */
-  function indexedUnitAdoptionPairs() {
+  function indexedUnitAdoptionPairs() : readonly InstructionAdoptionPair[] {
     ready();
     if (!state.unitAdoptionPairs) {
       /**
        Selection remains inside one original synchronous source boundary.
        */
-      function selectAdoptionCandidates() {
+      function selectAdoptionCandidates() : readonly InstructionAdoptionPair[] {
         return declaredNames.length === 1 ? selectUnitAdoptionPairs({
           candidates: indexedInstructionCandidates(),
           readRule: readRuleCandidate,
@@ -113,11 +116,11 @@ export function createInstructionSources({
   /**
    Read related selections inside one synchronous dependency boundary.
    */
-  function readPolicySelection() {
+  function readPolicySelection() : InstructionPolicySelection {
     /**
      Preserve original selection order before freezing its public aggregate.
      */
-    function readOriginalPolicySelection() {
+    function readOriginalPolicySelection() : InstructionPolicySelection {
       return Object.freeze({
         ruleCandidates: indexedRuleCandidates(),
         instructionCandidates: indexedInstructionCandidates(),

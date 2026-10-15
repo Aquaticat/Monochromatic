@@ -1,6 +1,8 @@
 /**
  Original member claims distinguish clause meaning from member-bound operation predicates. @module
  */
+import type { MemberInstructionOperations } from './instruction-api.ts';
+import type { InstructionRecord } from './instruction-types.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
 import {
   retainInstructionHandle,
@@ -16,14 +18,14 @@ import type { InstructionSources } from './instruction-sources.ts';
 
 /**
  Preserve the native missing-member failure at the original projection access boundary.
- *
+
  @param memberRecord - original private map read
- *
+
  @returns original prepared-member projection
- *
+
  @throws TypeError when original member ownership has disappeared
  */
-function memberProjection(memberRecord?: InstructionMember) {
+function memberProjection(memberRecord?: InstructionMember) : InstructionMember['binding']['projection'] {
   if (memberRecord === undefined) throw new TypeError("Cannot read properties of undefined (reading 'binding')");
   return memberRecord.binding
     .projection;
@@ -32,11 +34,11 @@ function memberProjection(memberRecord?: InstructionMember) {
 //region Instruction meaning shares clause identity while member predicates retain separate original handles.
 /**
  Bind member predicates to original prepared membership and source clause selection.
- *
+
  @param context - original judgment capabilities and private records
- *
+
  @param sources - original lazy source owner
- *
+
  @returns member claim operations
  */
 export function createMemberInstructions({
@@ -45,7 +47,7 @@ export function createMemberInstructions({
 }: Readonly<{
   context: InstructionContext;
   sources: InstructionSources
-}>) {
+}>) : MemberInstructionOperations {
   const {
     input,
     state
@@ -59,19 +61,19 @@ export function createMemberInstructions({
   const { ensureRuleBindings } = sources;
   /**
    Select direct prepared-member predicates without bypassing dedicated content selectors.
-   *
+
    @param definitionId - fixed member predicate
-   *
+
    @param memberId - original declared member identifier
-   *
+
    @returns original member claim
-   *
+
    @throws JudgmentConstructionError for dedicated selectors or unknown members
    */
   function claim({
     definitionId,
     memberId
-  }: Omit<SelectedInstruction, 'rule'>) {
+  }: Omit<SelectedInstruction, 'rule'>) : object {
     ready();
     if ([
       'request_instruction_content',
@@ -87,22 +89,22 @@ export function createMemberInstructions({
   }
   /**
    Retain canonical clause meaning or member-clause identity before declaration.
-   *
+
    @param definitionId - fixed selected predicate
-   *
+
    @param memberId - original declared member identifier
-   *
+
    @param rule - original selected clause handle
-   *
+
    @returns canonical predicate claim
-   *
+
    @throws JudgmentConstructionError for foreign membership or an invalid selector
    */
   function claimSelectedInstruction({
     definitionId,
     memberId,
     rule
-  }: SelectedInstruction) {
+  }: SelectedInstruction) : object {
     ready();
     if ([
       'operation_violates_rule',
@@ -126,7 +128,7 @@ export function createMemberInstructions({
     /**
      Capture the original member lookup even for member-independent clause meaning.
      */
-    function createRecord() {
+    function createRecord() : InstructionRecord {
       const memberRecord = bindings.get(originalMember);
       const claimProjection = instructionOnly ? {
         claimScope: 'instruction',
@@ -157,20 +159,20 @@ export function createMemberInstructions({
   }
   /**
    Authenticate original candidate membership before selecting its predicate.
-   *
+
    @param definitionId - original predicate
-   *
+
    @param memberId - original prepared member
-   *
+
    @param rule - original clause
-   *
+
    @returns canonical original claim
    */
   function claimRuleCandidate({
     definitionId,
     memberId,
     rule
-  }: SelectedInstruction) {
+  }: SelectedInstruction) : object {
     ensureRuleBindings()
       .read(rule);
     return claimSelectedInstruction({
@@ -181,20 +183,20 @@ export function createMemberInstructions({
   }
   /**
    Resolve an unambiguous original source tag before selecting its predicate.
-   *
+
    @param definitionId - fixed predicate
-   *
+
    @param memberId - original declared member
-   *
+
    @param ruleCode - original source tag
-   *
+
    @returns canonical original claim
    */
   function claimInstruction({
     definitionId,
     memberId,
     ruleCode
-  }: Omit<SelectedInstruction, 'rule'> & Readonly<{ ruleCode: unknown }>) {
+  }: Omit<SelectedInstruction, 'rule'> & Readonly<{ ruleCode: unknown }>) : object {
     return claimSelectedInstruction({
       definitionId,
       memberId,

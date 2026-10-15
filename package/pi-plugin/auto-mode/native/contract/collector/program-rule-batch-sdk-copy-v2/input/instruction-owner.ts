@@ -1,6 +1,7 @@
 /**
  Original instruction owner composes retained identities without reading lazy dependencies. @module
  */
+import type { JudgmentInstructions } from './instruction-api.ts';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { createInstructionState } from './instruction-ownership.ts';
 import { createInstructionSources } from './instruction-sources.ts';
@@ -18,12 +19,12 @@ const l = tagged({ tag: 'native-judgment-instructions' });
 //region Public selectors share one original request, member, source, and question owner.
 /**
  Own original instruction bindings and their shared semantic claim selectors.
- *
+
  @param input - original judgment capabilities with lazy source ownership
- *
+
  @returns frozen original instruction operations
  */
-export function createJudgmentInstructions(input: JudgmentInstructionsInput) {
+export function createJudgmentInstructions(input: JudgmentInstructionsInput) : JudgmentInstructions {
   const rl = tagged({
     tag: createJudgmentInstructions.name,
     l

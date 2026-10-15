@@ -1,6 +1,8 @@
 /**
  Original program claims retain request, heading, clause, and adoption identities. @module
  */
+import type { ProgramInstructionOperations } from './instruction-api.ts';
+import type { InstructionRecord } from './instruction-types.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
 import { retainInstructionHandle } from './instruction-ownership.ts';
 import type {
@@ -14,11 +16,11 @@ import type { InstructionSources } from './instruction-sources.ts';
 //region Canonical original program selectors cannot be resampled through another member.
 /**
  Bind program-level claim declaration to original request and source ownership.
- *
+
  @param context - original judgment capabilities and retained records
- *
+
  @param sources - original lazy source selectors
- *
+
  @returns program-level claim operations
  */
 export function createProgramInstructions({
@@ -27,7 +29,7 @@ export function createProgramInstructions({
 }: Readonly<{
   context: InstructionContext;
   sources: InstructionSources
-}>) {
+}>) : ProgramInstructionOperations {
   const {
     input,
     state
@@ -45,14 +47,14 @@ export function createProgramInstructions({
   /**
    Read original whole-request material under the original lifetime.
    */
-  function requestMaterialFor() {
+  function requestMaterialFor() : object {
     ready();
     return receipt.request;
   }
   /**
    Retain original request occurrence before declaring its fixed predicate.
    */
-  function claimRequestMaterial() {
+  function claimRequestMaterial() : object {
     ready();
     if (!state.requestMaterialBinding) {
       state.requestMaterialBinding = Object.freeze({});
@@ -69,21 +71,21 @@ export function createProgramInstructions({
   }
   /**
    Retain original source-wide heading content without selecting an individual clause.
-   *
+
    @param candidate - original contextual-heading aggregate
-   *
+
    @returns canonical fixed-predicate claim
-   *
+
    @throws JudgmentConstructionError for a nonheading candidate
    */
-  function claimHeadingContext({ candidate }: Readonly<{ candidate: object }>) {
+  function claimHeadingContext({ candidate }: Readonly<{ candidate: object }>) : object {
     const projection = ensureRuleBindings()
       .read(candidate);
     if (projection.kind !== 'source-heading-context') throw new JudgmentConstructionError('Heading content requires an original contextual-heading group');
     /**
      Capture original heading identity before publishing its canonical handle.
      */
-    function createRecord() {
+    function createRecord() : InstructionRecord {
       const binding = Object.freeze({
         identity: candidate,
         projection: Object.freeze({ claimScope: 'program-heading-context', headingContext: projection })
@@ -106,19 +108,19 @@ export function createProgramInstructions({
   }
   /**
    Bind the original enclosing program to one original instruction clause.
-   *
+
    @param definitionId - fixed whole-program relation
-   *
+
    @param rule - original instruction candidate
-   *
+
    @returns canonical fixed-predicate claim
-   *
+
    @throws JudgmentConstructionError for unsupported predicates or contextual headings
    */
   function claimProgramRuleCandidate({
     definitionId,
     rule
-  }: ProgramInstruction) {
+  }: ProgramInstruction) : object {
     if (![
       'operation_violates_rule',
       'clause_operation_relation'
@@ -129,7 +131,7 @@ export function createProgramInstructions({
     /**
      Distinct original program-clause identity is shared across supported predicates.
      */
-    function createRecord() {
+    function createRecord() : InstructionRecord {
       const binding = Object.freeze({
         identity: Object.freeze({}),
         projection: Object.freeze({ claimScope: 'program-instruction', governingRule: projection })
@@ -152,14 +154,14 @@ export function createProgramInstructions({
   }
   /**
    Declare an original structural pair only after member and same-source admission.
-   *
+
    @param pair - original selected structural opportunity
-   *
+
    @returns canonical adoption claim
-   *
+
    @throws JudgmentConstructionError for foreign pairs, members, or source units
    */
-  function claimUnitAdoption({ pair }: Readonly<{ pair: InstructionAdoptionPair }>) {
+  function claimUnitAdoption({ pair }: Readonly<{ pair: InstructionAdoptionPair }>) : object {
     if (!indexedUnitAdoptionPairs()
       .includes(pair)) throw new JudgmentConstructionError('Unit adoption requires an original selected pair from this judgment');
     const {
@@ -178,7 +180,7 @@ export function createProgramInstructions({
     /**
      Retain both source projections and the authenticated original member ordinal.
      */
-    function createRecord() {
+    function createRecord() : InstructionRecord {
       const binding = Object.freeze({
         identity: pair,
         projection: Object.freeze({ claimScope: 'member-unit-adoption', member, memberOrdinal: originalMemberRecord.binding.projection.memberOrdinal, adopter: adopterProjection, target: targetProjection })
