@@ -287,6 +287,34 @@ fn the_clone_request_reports_what_it_did() {
     remove(root.as_path());
 }
 
+/// Where the filesystem accepts a clone, the clone request accepts it too.
+///  The probe asks the kernel directly on a separate pair of files, so the answer does not depend on `try_clone`;
+///  on a filesystem without clones (tmpfs, overlay) both sides are refusals and the test shows nothing.
+#[cfg(target_os = "linux")]
+#[test]
+fn the_clone_request_succeeds_where_the_filesystem_clones() {
+    use std::os::unix::io::AsRawFd;
+    let root: PathBuf = fixture("stage-clone-supported");
+    std::fs::write(root.join("source"), vec![5_u8; 8192]).expect("source");
+    let pair = |name: &str| -> (std::fs::File, std::fs::File) {
+        let input: std::fs::File = std::fs::File::open(root.join("source")).expect("input");
+        let output: std::fs::File = std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(root.join(name))
+            .expect("output");
+        return (input, output);
+    };
+    let (probe_input, probe_output) = pair("probe");
+    // SAFETY: both descriptors are open for the call, and FICLONE takes the source descriptor as its argument.
+    let supported: bool = unsafe {
+        libc::ioctl(probe_output.as_raw_fd(), libc::FICLONE, probe_input.as_raw_fd())
+    } == 0;
+    let (input, output) = pair("clone");
+    assert_eq!(try_clone(&input, &output), supported);
+    remove(root.as_path());
+}
+
 /// Only the roots strictly inside the source are nested, and the source itself and its neighbours are not.
 #[test]
 fn only_strictly_nested_roots_are_nested() {
