@@ -1,7 +1,7 @@
 /** Direct arrival consumers distinguish original callback obligations hidden by composed owners. @module */
 import assert from 'node:assert/strict';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
-import { awaitCollectorResult } from './native-group-collector-fixture.ts';
+import { awaitCollectorResult, originalCollectorAbortListener } from './native-group-collector-fixture.ts';
 import { createArrivalOwnerFixture } from './native-group-arrival-owner-fixture.ts';
 
 await describe({ name: '', children: [
@@ -64,5 +64,17 @@ await describe({ name: '', children: [
     assert.equal(fixture.state.checking, false);
     assert.deepEqual(fixture.events, ['current', 'checkAbort', 'current', 'dispatch']);
   } }),
+  ...['settled', 'closed', 'null-completion'].map(function originalListenerGuard(guard) {
+    return it({ name: `retains native listener guard for ${guard} independently of other terminal state`, fn: async () => {
+      const fixture = createArrivalOwnerFixture();
+      await awaitCollectorResult(fixture.owner.invoke({ record: fixture.record, args: {}, nativeSignal: fixture.native.signal }));
+      const listener = originalCollectorAbortListener(fixture.native.signal);
+      if (guard === 'settled') fixture.state.phase = 'settled';
+      if (guard === 'closed') fixture.state.closed = true;
+      if (guard === 'null-completion') fixture.record.completion = null;
+      listener();
+      assert.equal(fixture.events.includes('nativeAbort'), false);
+    } });
+  }),
   //endregion
 ] });
