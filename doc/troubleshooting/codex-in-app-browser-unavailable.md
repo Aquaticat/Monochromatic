@@ -110,11 +110,17 @@ places Codex-specific harness bugs and integration work out of scope.
 The investigation therefore ends at the installed runtime evidence.
 No upstream tracker search or source clone was performed.
 
-1.  Upstream fault: unknown;
+1.  Upstream fault:
+    unknown;
     an empty discovery result alone does not establish a defect.
-2.  Upstream fixability: unassessed because the cause is unknown.
-3.  Supported use case: the runtime exposes URL selection,
+2.  Upstream fixability:
+    unassessed because the cause is unknown.
+3.  Supported use case:
+    the runtime exposes URL selection,
     but availability requirements for this host were not established.
-4.  Contribution policy: not investigated under the harness exemption.
-5.  Maintainer willingness: not investigated under the harness exemption.
-6.  Minimal fix: none prototyped because no defect or cause was established.
+4.  Contribution policy:
+    not investigated under the harness exemption.
+5.  Maintainer willingness:
+    not investigated under the harness exemption.
+6.  Minimal fix:
+    none prototyped because no defect or cause was established.
