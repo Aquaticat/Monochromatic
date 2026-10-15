@@ -238,6 +238,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 description = "Verify built native import transformations preserve source and encoding boundaries"
 run = "node src/native-build-imports.unit.test.ts"
 
+[tasks."test:native:direct-imports"]
+description = "Verify generated manager and SDK initialization without a maintained-policy preload"
+run = "node src/native-direct-import.unit.test.ts"
+
 [tasks."test:native:parser"]
 description = "Verify native Markdown qualification against installed and disposable parser packages"
 run = "node src/native-parser.unit.test.ts"
