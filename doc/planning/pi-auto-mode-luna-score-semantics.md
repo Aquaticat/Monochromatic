@@ -55,6 +55,49 @@ the hosted deployment's matching revision is unestablished.
 
 ## Implication for the threshold question
 
+### Measured local consumer
+
+The built `createNativeSemanticOperatingPolicies` consumer was called against every answer in
+the retained `baseline-1-response.json` with its original vocabulary on October 14,
+2026.
+The replay made no provider requests.
+`${HOME}/temp/agent/pi-luna-score-semantics-20261014/measurement.json`
+retains the original answer identifiers,
+selected probabilities,
+confidence fields,
+and actual built admission results.
+
+`package/pi-plugin/auto-mode/src/semantic-operating-choice.ts:143`
+selects `probabilities[choice]`;
+line 149 compares it with the `0.8` constant.
+The baseline contains 83 clause-operation questions and one whole-request content question.
+Only three clause answers and the content answer pass.
+The clause selections include 70 `none`,
+seven `permission`,
+and six `unknown` answers.
+These are model selections,
+not independently labeled ground truth.
+
+The primary permission answer has probability `0.83` and confidence `0.80`.
+A rejected `none` answer has probability `0.74` and confidence `0.69`.
+The whole-request answer selects `potential-instruction` at probability `0.96`
+and confidence `0.94`.
+Substituting a confidence-only `0.80` threshold in this baseline selects exactly the same four answer identifiers.
+That counterfactual is a calculation on retained outputs,
+not a production change or a new inference result.
+
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/clause-relation.mjs`
+asks what relationship one selected clause expresses toward the complete proposal.
+Its instructions explicitly exclude determining the final action verdict.
+`compiler.mjs:209` retains an unadmitted clause as an unresolved interpretation obligation.
+Thus the current cutoff concerns individual meanings,
+including claims that a clause contributes no operative rule.
+It does not estimate an overall probability that execution is permitted or that the whole decision is correct.
+The count of admitted answers measures coverage under this particular decomposition,
+not model accuracy or the fraction of actions that can be handled correctly.
+
+### Remaining policy question
+
 The [current local decision](../decision/pi-auto-mode-semantic-admission.md)
 defines admission of a supported selected meaning at `0.80` with a unique lead.
 Comparing the selected meaning's returned probability with that boundary is consistent with
@@ -76,6 +119,11 @@ It does not by itself establish which condition best meets this application's er
 That conclusion requires the local question definitions,
 actual admission consumers,
 and labeled examples rather than renaming probability as confidence.
+The user's accepted `0.8+` operating preference does not establish that requiring a uniquely selected meaning
+for every candidate is the best way to reduce manual request judgment.
+That decomposition remains a separate design question.
+Any alternative must demonstrate which unresolved distinctions can change the code-owned action result;
+it cannot simply discard low-scoring candidate restrictions or multiply these scores into a purported overall accuracy.
 
 [guide]: https://developers.openai.com/api/docs/guides/decisions
 [reference]: https://developers.openai.com/api/reference/resources/decisions/methods/create
