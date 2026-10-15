@@ -670,6 +670,13 @@ budget,
 and wrapper files now have no error-severity findings in that full scan.
 The warning gate remains open;
 these results do not establish package completion.
+Commit `9c28c21d7d` replaces synchronous fixture directory and file setup with awaited filesystem operations.
+It also records network requests by their URL and keeps provider-call accounting in one fixture-owned record.
+Focused lint reports zero errors and 64 warnings for `environment.mjs`.
+The rebuilt domain,
+context-receipt,
+resource-input,
+and approval-context checks are running against this change.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
