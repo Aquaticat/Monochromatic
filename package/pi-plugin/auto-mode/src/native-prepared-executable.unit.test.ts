@@ -82,7 +82,9 @@ await describe({ name: 'prepared native wrappers', children: [
     Object.defineProperty(tool, 'execute', { get() {
       throw new Error('Retained callback read a replaced wrapper property');
     } });
-    assert.equal(await retainedExecute('one'), 'native result');
+    await assert.doesNotReject(async function originalRetainedExecution() {
+      assert.equal(await retainedExecute('one'), 'native result');
+    });
   } }),
   //endregion
   //region Serial execution awaits the original indexed turn before checking currentness.
