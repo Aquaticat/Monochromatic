@@ -1,3 +1,4 @@
+import {createGroupDispatch} from './group-dispatch.ts';
 import {createGroupCurrent} from './group-current.ts';
 import {createGroupFailures} from './program-collector-failures.mjs';
 import {createGroupCompletions} from './program-collector-completions.mjs';
@@ -67,77 +68,7 @@ export function createReachedGroupRun({
   }
   
   
-  async function dispatch(){
-    try{
-      current();
-      if(!records.every(function hasArrived(record) { return (record.arrival==='matched'); }))throw new DeclaredGroupCollectionError('Declared member set is incomplete');
-      groupState.phase='dispatching';groupState.dispatches++;
-      const members=Object.freeze(records.map(function createDispatchMember(record) { return (Object.freeze({
-        handle:record.handle,
-        declaration:record.member,
-        signal:record.signal
-      })); }));
-      let completions;
-      try{completions=await dispatchGroup(Object.freeze({
-        handle,
-        declaration,
-        members
-      }));}
-      catch(error){throw recordFailure({
-        error,
-        at:'group-consumer'
-      });}
-      if((!Array.isArray(completions))||(completions.length!==records.length)
-        ||records.some(function isMissingCompletion(record,
-        index) { return (!Object.hasOwn(
-        completions,
-        index
-      )); })){
-        const failure=recordFailure({
-          error:new DeclaredGroupCollectionError('Complete group consumer returned a different member set'),
-          at:'group-dispatch'
-        });
-        if(Array.isArray(completions)){
-          // These outcomes have no admitted member association. Enumeration skips holes, not returned promises.
-          const entries=Object.entries(completions);groupState.unboundPending=entries.length;
-          const settled=await Promise.allSettled(entries.map(function readUnboundCompletion([,completion]) { return (completion); }));
-          groupState.unboundOutcomes=Object.freeze(settled.map(function retainUnboundOutcome(outcome,
-            index) { return (Object.freeze({
-            retainedOnly:true,
-            sourceKey:entries[index][0],
-            ...outcome
-          })); }));groupState.unboundPending=0;
-        }
-        throw failure;
-      }
-      const settlements=records.map(function observeMemberCompletion(record,
-        index) { return (observeCompletion({
-        record,
-        completion:completions[index]
-      })); });
-      // Returned parents cannot receive more transport results. Observe already-issued completions regardless.
-      if(!groupState.closed){try{current();}catch(error){retainBoundaryFailure({
-        error,
-        at:'group-consumer-tail'
-      });}}
-      await Promise.allSettled(settlements);
-    }catch(error){retainBoundaryFailure({
-      error,
-      at:'group-dispatch'
-    });}
-  }
-  function startDispatch(){
-    const completion=Promise.withResolvers();groupState.work=completion.promise;
-    // Publish work before any synchronous parent-reader or consumer callback can request its drain.
-    async function run(){
-      using dispatchCompletion={ [Symbol.dispose]() {completion.resolve();} };
-    try{await dispatch();}catch(error){retainBoundaryFailure({
-        error,
-        at:'dispatcher-completion'
-      });}
-    }
-    void run();
-  }
+  const {startDispatch}=createGroupDispatch({handle,declaration,records,groupState,current,dispatchGroup,recordFailure,retainBoundaryFailure,observeCompletion});
   async function invoke({
     record,
     args,
