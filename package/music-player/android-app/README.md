@@ -143,6 +143,18 @@ They cover the Compose call sites that no pure function can reach:
   because a Compose test starts in touch mode, in which buttons and rows cannot take focus.
   The host cannot draw a press ripple into a capture, so the shape of the indication is checked with Material's focus
   layer instead; a press on a device is part of the emulator pass.
+- the flush rows beside the crease (D130), in `RowAlignmentWiringTest` and `TemplateEditorAlignmentWiringTest`, which
+  render the real right pane (title bar, subfolder heading, rows) under a provided pane clearance with native graphics:
+  the title bar, the subfolder heading and the row text start at one x for no clearance, the 22.64 dp floor, a 10 dp
+  and a 60 dp clearance, the end side ends at one x under an end clearance, the playing row's fill begins at root
+  pixel 0 and its keyboard ring (outer ring at pixel 0, near ring inside it) keeps at least 8 dp from the text, and the
+  template editor's first field row starts its text under the `Fields` heading with and without the crease inset.
+
+- the Search field caret, in `SearchFieldCaretWiringTest`: typing after a layout change that rebuilds the header lands
+  after the kept query, `Ctrl+F` on an open page puts the caret at the end without selecting, a caret the person placed
+  in the middle is kept, and it comes back after the state is saved and restored,
+- a tap on a Search result through the real host, in `PlayerHostWiringTest`: the first tap selects the track paused,
+  the second starts it (D127).
 
 The waits for a scroll or for a background measure pass use `waitUntil` with a wall-clock limit,
 and every `@Test` has a `timeout`,
@@ -152,7 +164,7 @@ Robolectric loads its framework jar for that API from `app/build/robolectric-run
 which Gradle fills from the `robolectricRuntime` configuration (`org.robolectric:android-all-instrumented`),
 so a run needs the network only once, to fill the Gradle cache, and works with `--offline` afterwards.
 The test JVM also gets Robolectric's documented `--add-opens` flags (see `app/build.gradle.kts`).
-The wiring cases add about 8 s to the 1,167-test run.
+The wiring cases add about 13 s to the 1,202-test run (measured from the result files of the last full run).
 
 ## Lint and clean
 
@@ -180,7 +192,8 @@ Use durable decisions for architecture and maintenance context:
 
 ## Settings icons
 
-The Settings rows carry the Material Symbols `queue_music` and `play_circle` icons,
+The Settings rows carry the Material Symbols `queue_music`, `play_circle` and `autoplay` icons,
+and the switch thumb carries `check` and `close`,
 embedded as vector path data in [`SettingsIcons.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/SettingsIcons.kt).
 The icons are Apache License 2.0 material from `google/material-design-icons`,
 and the license text is `LICENSES/Apache-2.0.txt` at the repository root.
@@ -239,6 +252,9 @@ text in the right pane (header, track rows, subfolder headers, the empty notice,
 after it,
 and backgrounds and containers still span the band.
 A window with no crease keeps the ordinary insets.
+Beside the crease only text dodges it (D130): a track row's box (the current row's fill, the state layers and the ring)
+spans the pane from edge to edge, and its text starts in the column of the subfolder headings and the title bar
+([`core/TrackRowGeometry.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/TrackRowGeometry.kt)).
 
 ## Keyboard and focus
 
@@ -311,12 +327,19 @@ File details has no key of its own outside the menu.
 ## Tapping a track row (D124)
 
 A tap, or `Enter` on the row under the focus ring, goes through `PlayerController.activateRow`.
-On a row that is not the current track it only selects the row:
-`selectIndex` makes it current, pauses the engine, and loads the track paused, so the deck shows it and nothing plays.
+On a row that is not the current track it only selects the row,
+unless Auto-play on select is on (D129), which the host passes in:
+`rowActivationFor` in `core/RowActivation.kt` is the one rule, and `activateRow` maps it to the engine calls.
+With the setting off `selectIndex` makes the row current, pauses the engine, and loads the track paused, so the deck
+shows it and nothing plays; with it on `playIndex` selects and starts it.
 On the current track, playing or paused, it toggles play and pause through `togglePlay`, the call of the deck's Play
 button, so a track restored from the saved session starts, and a track whose last load failed is loaded again.
-The explicit Play row of the track menu and a Search result still start a track that is not current at once
-(`playIndex`; D73).
+The explicit Play row of the track menu still starts a track that is not current at once (`playIndex`).
+A Search result for a track follows the same rule (D127): `PlayerHost.openSearchResult` selects a result that is not
+the current track (`SearchActivation.SelectTrack`, through `activateRow`, so it also starts with the setting on) and
+toggles with `togglePlay` for the current one; `wiring/PlayerHostWiringTest` taps a result through the real host.
+The setting is stored by `SessionStore` in the `session` preferences under `auto_play_on_select`, outside `Session`
+(a missing key is off), and `AutoPlaySettingWiringTest` covers the switch row and the taps with it on and off.
 The desktop app follows the same rule.
 `PlayerControllerRowTest`, `PlayerControllerRowFailureTest` and `wiring/RowTapWiringTest` pin it.
 
@@ -370,6 +393,20 @@ which re-answers in place:
 the query, the caret and the scroll position stay,
 and results are keyed by track so a row the user is about to tap does not move.
 While a scan runs an empty answer reads "Still looking through your library" and the Search button stays enabled.
+
+### Search field caret
+
+The host keeps the query across a fold change (`rememberSaveable` next to the route), and D66 empties it for a new visit.
+The field in `searchHeader` is a `TextFieldState`, whose edits apply at once,
+and it is the source of the query while the page is open
+(the host's query only seeds it, and edits are mirrored to the host):
+a header rebuilt for the other panel starts with the caret at the end of the kept query,
+the caret the person placed survives an activity recreation,
+and `Ctrl+F` on an open Search page puts the caret at the end and selects nothing (D126).
+The key handler presses `SearchFocusPort` (`HostKeyboard.kt`) and the open page has registered the caret move,
+so a character typed right after the chord (7 ms later on the emulator) lands after the query, not before it.
+`restoreOnlyWhileHolding` keeps a field saved by an earlier layout from overwriting a newer kept query.
+`wiring/SearchFieldCaretWiringTest` pins the rendered field, including a press and a character in one event.
 
 ### Search page style
 

@@ -1045,3 +1045,14 @@ pub(crate) mod unplayable_notification_bus_support;
 /// export * as settingsLayout from "./settings_layout";
 /// ```
 pub mod settings_layout;
+
+/// What:
+///      `pub mod row_activation;` the rule for a click, Enter or Search result on a track (`src/row_activation.rs`).
+/// Why:
+///       Auto-play on select (D129) changes what that activation does, and the window wiring asks one pure function.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as rowActivation from "./row_activation";
+/// ```
+pub mod row_activation;

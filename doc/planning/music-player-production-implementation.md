@@ -196,7 +196,7 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 - A click or tap on a track row selects it paused and, on the selected row, toggles play and pause on both platforms
   (D124, decided by the human on 2026-10-14; Enter on the focused row follows it; the track menu's Play and Search
   results still start a track at once). `PlayerController.activateRow` (Android) and `play_row` (desktop) hold the rule;
-  the e2e suite declares one more check for it (111 declared).
+  the e2e suite declares one more check for it (111 declared; D129 adds a setting that also starts the track).
 
 - Since then (D113 to D119): library and analysis follow files automatically (D113: no rescan or re-analyze command;
   the watcher names changed paths and a planner edits the list in place; at 1M tracks a replaced file costs 0.12 ms on
@@ -219,18 +219,78 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   Android side in `AnalysisFailureNotification.kt`, and `PlayerHostWiringTest`-style coverage in
   `wiring/AnalysisFailureWiringTest.kt`. The desktop app makes the same move as D122 on its own branch.
 
-### On a branch, awaiting merge
+### In flight and queued (written 2026-10-15 01:50 UTC; read this first after a context loss)
 
-- Desktop unplayable-file notification (2026-10-14, branch `feat/desktop-unplayable-notification`, not merged; D122): the
-  in-window "`name` can't be played." message is gone and the report is one freedesktop notification on Linux
-  (`src/unplayable_notification*.rs`, own thread and connection, title `Cannot play a file`, normal urgency, default
-  expiry, no buttons, each file told once per run, which is the implementer's reading open to the human's veto); the
-  row mark stays. A failed post logs one warning and shows nothing in the window. macOS and Windows show only the row
-  mark (no notification code there yet). The bus tests start a private `dbus-daemon`, so `:image` must be rebuilt
-  before `:test:container` can run them (the Containerfile now installs it). Open item, not fixed: the e2e suite runs
-  its app in a systemd user unit that inherits the real session bus (`DBUS_SESSION_BUS_ADDRESS` is
-  `unix:path=/run/user/1000/bus`), so `states/refresh-broken-file-once` now posts "d.wav can't be played." on the real
-  desktop on every run, as the analysis indicator already did.
+Merged on 2026-10-14 and 2026-10-15, all on `main`: the click rule (D124), Search select-only (D127), the desktop
+unreadable row that stays selected (D128), the Search restyle on both platforms (D126), the folders panel without a
+scrollbar (D125), the desktop notification for an unplayable file (D122, merged at `973572ea12`; the notification
+bus tests start a private `dbus-daemon`, so `:image` must be rebuilt before `:test:container` can run them), the
+Android analysis-failure notification (D123), the queue-cost fix, the legacy queue removal, the Compose wiring tests,
+and the gallery retakes. Open item from D122, not fixed: the e2e suite runs its app in a systemd user unit that
+inherits the real session bus (`unix:path=/run/user/1000/bus`), so `states/refresh-broken-file-once` posts
+"d.wav can't be played." on the real desktop on every run.
+
+Work in flight, each in its own worktree under `~/temp/agent/` (merge procedure for each: `git merge main --no-edit`
+in the worktree, rerun that platform's verification as a systemd unit, forced fresh, count tests from the result
+files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
+before saying it matches, QAB):
+
+- Task 92, release workflow, branch `feat/music-player-release-workflow`, worktree `music-player-rel`: GitHub release
+  of `.exe`, `.dmg`, Linux tarballs and `.apk` on the cargo-publish conventions (version bump on main or dispatch with
+  dry-run default true, tag `music-player-v<version>`, attestation, immutable pre-release, Android release keystore as
+  repository secrets with a backup under `~/.local/share/music-player-release-keys`, Windows and macOS unsigned).
+  macOS x64 is culled by the human's decision. Gate: nothing real is released without asking the human first (releases
+  are immutable). The Alpine (task 95) and Windows (task 96) agents write the artifact names and job steps that must
+  be forwarded to this agent when they report.
+- Task 93, auto-play on select (D129): MERGED to `main` at `9a356efd02` on 2026-10-15. Desktop: 1444 passed, 1
+  skipped, clippy and slint lint clean (agent's run on the pre-merge head; the merges since touched no desktop
+  file). Android: I reran detekt, unit tests (1287, none failed, the test task executed) and lint fresh on the merged
+  head. Real runs on both platforms were the agent's (desktop in the nested compositor, Android on an emulator); I
+  viewed the four Settings PNGs. Open to the human's veto: the setting's name, the "Playback" group, the supporting
+  lines, and the Search action label ("Select track" or "Play track"). Known and left alone: `desktop-e2e` `lint:oxlint` has errors in files this branch did not touch (`wide-select.ts` and others).
+- Task 94, Android row text alignment (D130): MERGED to `main` at `3e7d03e7c2` on 2026-10-15 (detekt, 1249 unit tests
+  and lint passed fresh on the merged head; I viewed the three retaken PNGs). The human's ruling: beside the crease
+  only text dodges it; fills, state layers and rings may reach the crease and the pane edge; text columns win. Two
+  changes beyond the brief are open to the human's veto: the template editor's hairlines now start at the pane edge,
+  and its field rows lost 3 dp of ring padding. Search's rounded result shape (D126) was left alone and is a candidate
+  if the human asks. Not verified on a device: the keyboard ring on a template field row.
+- Issue 545, fingerprint hash migration, branch `feat/music-player-xxh3-128`, worktree `music-player-xxh3` (agent
+  started 2026-10-15): the human said "just migrate to XXH3-128", then "just `twox-hash`" (the only hash crate, 2.1.4),
+  then "if XXH3-64 is available in twox-hash use that". The last ruling stands: XXH3-64, the fingerprint stays a
+  64-bit value in every layer, the peak caches still re-key once (the function changes), the `+aes` target feature
+  goes away, the 128-bit width criterion of the issue is waived by the human, and the final commit body carries
+  `Closes #545`. If the crate lacks XXH3-64 the agent stops and reports. Merge procedure as for the others; the Windows
+  agent also edits `desktop-app/.cargo/config.toml`, so expect a trivial conflict.
+- Task 97, existing CI caching, branch `chore/ci-caching`, worktree `ci-caching` (agent started 2026-10-15): restore-keys
+  for `cargo-publish.yml`, a pnpm store cache for the three pnpm workflows, `doc/decision/ci-caching.md`, proven by
+  dispatching cold and warm runs from the branch (never cargo-publish with dry-run false).
+- Task 95, Alpine, branch `feat/music-player-alpine`, worktree `music-player-alp`: the desktop app must run on Alpine
+  (musl, dynamic link expected because Slint loads libwayland and libxkbcommon at run time); the real-window proof uses
+  our own nested compositor `monochromatic-nested-wayland-session`, never sway or weston; if the compositor needs
+  changes they are made in `package/cli/nested-wayland-session` without a version bump. The human authorized
+  publishing that crate whenever needed: after verification bump its version (patch or minor as the agent reports),
+  run the cargo-publish workflow as a dry run first, then let the merge to main publish it.
+- Task 96, Windows linkers, branch `feat/music-player-windows-linkers`, worktree `music-player-win`: Windows MSVC
+  uses `link.exe` instead of `lld-link.exe`, plus a non-MSVC build for `x86_64-pc-windows-gnu`, a Windows CI workflow;
+  Linux stays on rust-lld because mold links ELF only (upstream README, mold 3.0.0, and
+  `doc/audit/tech-mold-linker-vet-2026-10-05.md`) and the human declined it on Linux; macOS keeps its linker.
+
+Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
+
+- Evidence behind task 97: `cargo-publish.yml` caches are exact-key only (no `restore-keys`), so any lockfile change
+  rebuilds everything and stores a new 130 to 420 MB entry (28 caches, 5.5 GB of the 10 GB cap on 2026-10-15);
+  `logger-fuzz.yml`, `toml-edit-fuzz.yml` and `readonly-semantic-bridge.yml` run `pnpm install --frozen-lockfile`
+  with no pnpm store cache. The new workflows of tasks 92, 95 and 96 were told to cache properly and prove it.
+- Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
+- Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
+
+Standing rulings of the human in this effort (2026-10-14 and 15): click rule D124; Search results select only D127; the
+desktop keeps an unreadable row selected D128; Search restyled within the decisions with no section labels and no
+recents, desktop parity D126; no scrollbar on the folders panel D125; the unplayable and analysis-failure reports are
+system notifications with no in-app fallback when one cannot be posted (D122, D123), and a later unread failure
+notification replaces the earlier; USB debugging on emulators is always allowed (skill rule EMA); the repo's own nested
+compositor is the only nested compositor; CI must cache. Decision numbers D122 to D129 are taken; the next free one is
+D130.
 
 ### Open, not started
 
@@ -484,6 +544,18 @@ Read these before repeating them. Each one cost the human a correction.
 - [x] Search page restyle on desktop (D126 addendum, 2026-10-14, branch `feat/desktop-search-restyle`): the same header,
   divider, rounded rows with tonal circle glyphs and status block in Slint, thirteen window tests, and the two desktop
   Search gallery images retaken.
+- [x] Search select only, unreadable rows and the Search caret (D127, D128 and a D126 note, 2026-10-14, branch
+  `feat/search-select-only`): a Search result for a track that is not current only selects it (both platforms), the
+  result of the current track toggles; desktop keeps an unreadable row selected like Android and a click retries it
+  (Next, Previous and the end of a track still skip unreadable files); the Android Search field keeps its caret at the
+  end of the kept query after a fold change and after `Ctrl+F`. The spoken action of a non-current result is now
+  "Select track" (D127, open to the human's veto).
+- [x] Auto-play on select setting (D129, 2026-10-14, branch `feat/auto-play-on-select`): a Settings switch row under a
+  Playback heading, off by default and stored with the session on both platforms; with it on, a click, tap, `Enter` or
+  Search result for a track that is not current also starts it, and the current track, the menu Play, the rails and
+  an unreadable row behave as before. One pure rule per platform (`rowActivationFor`, `row_activation_for`), mutation
+  checked; the desktop e2e suite gains the `auto-play` session (117 declared); the switch moves under the text in a
+  narrow list pane.
 - [x] Release workflow (2026-10-14, branch `feat/music-player-release-workflow`): `.github/workflows/music-player-release.yml`
   builds the desktop app for Windows, macOS (Apple silicon) and Linux and the Android app and creates one pre-release,
   triggered by a version change in `package/music-player/desktop-app/Cargo.toml` or by a dispatch

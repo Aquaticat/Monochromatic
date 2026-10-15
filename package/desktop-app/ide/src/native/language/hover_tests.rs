@@ -175,6 +175,34 @@ fn resting_pointer_shows_hover_and_leaving_or_resting_on_nothing_hides_it() {
     assert_eq!(popup(&reader), "");
 }
 
+/// A resting pointer on a file whose server program is missing explains why hover is unavailable,
+///  once for the displayed file;
+///  the explanation ends like hover content and is drawn as a note.
+#[test]
+fn resting_pointer_explains_a_missing_server_once_for_each_file() {
+    let fixture = project(&[("main.scripted", &sample()), ("other.scripted", "other\n")]);
+    let languages = definitions(&[], Some("/definitely/missing/ide-scripted-lsp"));
+    let reader = reader(&fixture, "main.scripted", languages);
+    let x = caret_x(&reader, start(4) + 8) + 2.0;
+    move_to(&reader.window, point(&reader, 4, x));
+    eventually(
+        "the resting pointer did not explain the missing server",
+        || {
+            return popup(&reader)
+                .starts_with("Hover information needs scripted-ls, which is not available:");
+        },
+    );
+    assert!(reader.window.get_language_popup_note());
+    move_to(&reader.window, LogicalPosition::new(100.0, 300.0));
+    eventually("leaving the source did not end the explanation", || {
+        return popup(&reader).is_empty();
+    });
+    // The same file is not explained again.
+    move_to(&reader.window, point(&reader, 4, x));
+    idle(800);
+    assert_eq!(popup(&reader), "", "the same file was explained twice");
+}
+
 /// Ctrl+Q where the server has nothing explains that;
 ///  a resting pointer stays silent.
 #[test]

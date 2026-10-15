@@ -1,5 +1,5 @@
 /**
- Native tool associations retain original manager input membership without assigning permission. @module
+ Native system and tool associations retain original manager input membership without assigning permission. @module
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import type {
@@ -11,10 +11,10 @@ import type {
 /**
  Diagnostics never serialize original declarations or source text.
  */
-const l = tagged({ tag: 'auto-mode-source-contribution-tool' });
+const l = tagged({ tag: 'auto-mode-source-contribution-retained-input' });
 
 /**
- Check an original tool publication against its retained source and captured run memberships.
+ Check an original retained input publication against its retained source and captured run memberships.
  
  @param association - original serializer association authenticated by its native owner
  
@@ -26,10 +26,10 @@ const l = tagged({ tag: 'auto-mode-source-contribution-tool' });
  
  @example
  ```ts
- const linked = inspectToolContribution({ association, source, run });
+ const linked = inspectRetainedInputContribution({ association, source, run });
  ```
  */
-export function inspectToolContribution({
+export function inspectRetainedInputContribution({
   association,
   source,
   run
@@ -42,14 +42,15 @@ export function inspectToolContribution({
    Each membership check has a separate diagnostic boundary.
    */
   const fl = tagged({
-    tag: inspectToolContribution.name,
+    tag: inspectRetainedInputContribution.name,
     l
   });
-  fl.debug('checking original native tool declaration membership');
+  fl.debug('checking original native system or tool input membership');
   /**
    Original publication identity cannot be inferred from declaration text or tool names.
    */
-  const publication = association.toolPublication;
+  const publication = association.toolPublication ?? association.systemInputPublication;
+  if ((association.toolPublication !== undefined) && (association.systemInputPublication !== undefined)) return false;
   /**
    Input-only manager origins remain distinct from run-emitted handler messages.
    */

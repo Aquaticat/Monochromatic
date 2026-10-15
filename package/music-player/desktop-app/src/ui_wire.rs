@@ -7,6 +7,7 @@ use std::rc::Rc;
 
 use music_player::command::Command;
 use music_player::engine::Engine;
+use music_player::row_activation::{RowActivation, row_activation_for};
 use slint::ComponentHandle;
 
 use crate::ui_host::Host;
@@ -220,43 +221,50 @@ pub(crate) fn open_folder_dialog(sender: music_player::engine::CommandSender) {
     });
 }
 
-/// What: `play_row` handles a click, a tap or Enter on a track row: the selected row toggles play and pause, any other
-/// row becomes the selected row and stays paused.
+/// What: `play_row` handles a click, a tap or Enter on a track row and the activation of a Search result that names a
+/// track: the selected row toggles play and pause, any other row becomes the selected row and stays paused, or also
+/// starts at once when Auto-play on select is on.
 /// Why: the user's rule (D124) is that selecting and playing are separate intents; `SelectIndex` loads paused and
 /// pauses whatever was playing, and only a second click on the now-selected row starts it, so no double-click detection
-/// is needed. A selected row that was restored and never loaded, or whose load failed, starts or retries through the
-/// same toggle as the Play button.
+/// is needed. D129 lets the user ask for the old behavior, where the selection also starts the track. A selected row
+/// that was restored and never loaded, or whose load failed, starts or retries through the same toggle as the Play
+/// button; a row whose file cannot be opened stays the selected row (D128) with the setting on or off.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const playRow = (index: number) => current === index ? toggle() : select(index);
+/// const playRow = (index: number) => send(rowActivationFor(autoPlayOnSelect, current === index), index);
 /// ```
 pub(crate) fn play_row(engine: &dyn Host, index: usize) {
-    let current = read_state(|state| return state.current_index);
-    if current == Some(index) {
-        engine.send(Command::TogglePlay);
-        return;
-    }
-    engine.send(Command::SelectIndex(index));
+    let (current, auto_play_on_select) = read_state(|state| return (state.current_index, state.auto_play_on_select));
+    send_row_activation(engine, index, row_activation_for(auto_play_on_select, current == Some(index)));
 }
 
-/// What: `play_row_now` is the explicit Play of the track menu and of a Search result: the selected row toggles play and
-/// pause, any other row is selected and starts at once.
-/// Why: a menu item named Play and a Search result that names a track ask to hear that track (D73), unlike a click on a
-/// row, which only selects it (D124); `SelectIndex` loads paused, so `Play` follows it.
+/// What: `play_row_now` is the explicit Play item of the track menu: the selected row toggles play and pause, any other
+/// row is selected and starts at once, whatever Auto-play on select says.
+/// Why: a menu item named Play asks to hear that track, unlike a click on a row or a Search result, which only select
+/// it unless the user turned Auto-play on select on (D124, D127, D129).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const playRowNow = (index: number) => current === index ? toggle() : (select(index), play());
+/// const playRowNow = (index: number) => send(rowActivationFor(true, current === index), index);
 /// ```
 pub(crate) fn play_row_now(engine: &dyn Host, index: usize) {
     let current = read_state(|state| return state.current_index);
-    if current == Some(index) {
-        engine.send(Command::TogglePlay);
-        return;
+    send_row_activation(engine, index, row_activation_for(true, current == Some(index)));
+}
+
+/// What: `send_row_activation` maps what a row activation does to the engine commands that do it.
+/// Why: the row click, Enter, the Search result and the menu Play share the mapping, so they cannot differ; `SelectIndex`
+/// loads paused, so a start at once is `Play` after it.
+fn send_row_activation(engine: &dyn Host, index: usize, activation: RowActivation) {
+    match activation {
+        RowActivation::TogglePlay => engine.send(Command::TogglePlay),
+        RowActivation::SelectOnly => engine.send(Command::SelectIndex(index)),
+        RowActivation::SelectAndPlay => {
+            engine.send(Command::SelectIndex(index));
+            engine.send(Command::Play);
+        }
     }
-    engine.send(Command::SelectIndex(index));
-    engine.send(Command::Play);
 }
 
 /// What: `select_folder` selects the folder named `label`, closes the picker, and scopes the engine to it.

@@ -94,6 +94,10 @@ pub fn respond(wire: &Wire, id: &Value, step: Step, held: &mut Option<Value>) {
             return;
         }
         Step::Answer => send(wire, answer(id)),
+        Step::Failed => send(
+            wire,
+            json!({ "id": id, "error": { "code": -32603, "message": "scripted internal error" } }),
+        ),
         Step::Modified | Step::ModifiedThenNotify => {
             send(
                 wire,

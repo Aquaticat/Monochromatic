@@ -1,5 +1,266 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Owned native program builds depended on source formatting
+
+### Symptom and cause
+
+The October 14 formatting commit `2728f357f` changed maintained program source layout.
+The native build then emitted `Native SDK edit does not have one matching location`
+for the owned runner,
+prepared dispatcher,
+and judgment constructor.
+The deciding helper in
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/build-rebase.ts:63`
+matches literal source text:
+
+```ts
+// native/contract/integration/native-batch/build-rebase.ts
+const at = source.indexOf(from);
+```
+
+Those transformations patched repository-owned modules consumed only by this build.
+Formatting changed the search text without changing the intended implementation.
+This was an unnecessary owned-source transformation boundary,
+not installed Pi source drift.
+
+### Correction and verification
+
+Commit `26994ff789` maintains the integrated runner,
+dispatcher,
+and judgment directly in `native/contract/collector/program-rule-batch-sdk-copy-v2/input/`.
+`native/contract/integration/native-batch/prepare-program.ts:137` now emits an export bridge:
+
+```ts
+// native/contract/integration/native-batch/prepare-program.ts
+const programRunner = `export {createReachedRunnerClass} from ${JSON.stringify(programRunnerUrl.href)};\n`;
+```
+
+The installed-Pi executor and converter adaptations remain separate.
+Historical provenance hashes retain their original meaning.
+The intermediate parsed-source runner and dispatcher replacements were removed:
+they preserved an unnecessary transformation rather than removing its need.
+
+The native build and package type check pass.
+After correcting the separate JavaScript modifier recurrence documented in
+"Native source autofixes emit invalid JavaScript",
+the domain,
+manual review,
+approval context,
+single call,
+approved dependency,
+event receipt,
+host lifecycle,
+and actual CLI process tasks pass.
+The CLI fixture made zero provider requests and exited with clean shutdown.
+The syntax task checks 227 maintained modules after explicit TypeScript erasure.
+The retained log is `${HOME}/temp/agent/pi-native-direct-owned-regressions-syntax-fixed-20261014.log`.
+
+### Upstream filing decision
+
+- The failing transformation was repository-owned.
+- No upstream fix is required for the direct module boundary.
+- No unsupported Pi use case is inferred from this failure.
+- External contribution policy is irrelevant to this local correction.
+- No upstream maintainer position is inferred.
+- The owned correction has passing build and consumer evidence;
+  no upstream prototype or filing is proposed.
+
+## Pi 1.2.0 confirmation fixtures must preserve occurrence identity and exact assessment input
+
+### Symptoms and separate causes
+
+The October 14 confirmation verification encountered separate local controller errors.
+They did not establish an upstream Pi or Luna defect.
+
+The first authored RPC assessment matched the policy tag `CNF` without its source occurrence.
+It assigned `fresh-session-approval` both to the designated policy file
+and to an extension-produced composite prompt containing the same text.
+The compiler retained unresolved authority for that second occurrence,
+so the then-current strict policy blocked the read.
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/compiler.mjs:250`
+gives the retained reason:
+
+```js
+// native/contract/integration/action-policy/compiler.mjs:250, authority diagnostic
+'The original candidate has no established instruction authority and request scope; source registration does not resolve remaining unit-level delegation.'
+```
+
+The local fixture now selects the original occurrence as well as the tag.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/rpc-hook.mjs:44` contains:
+
+```js
+// Private configured-host fixture, rpc-hook.mjs:44
+const original=instruction.selectedRule?.sourceOrdinal===0;
+const rule=original&&instruction.selectedRule?.id==='RUL';
+```
+
+This corrects authored test inputs only.
+It does not authenticate the composite source or change a live model's interpretation.
+The later adopted manual-confirmation policy handles otherwise uncertain assessments separately.
+
+The first live-score verifier passed response metadata into the strict categorical consumer.
+It received `InstructionResolutionInputError: Policy record contains an unsupported field`
+after the HTTP request had completed.
+`package/pi-plugin/auto-mode/src/semantic-operating-choice.ts:122` selects only these fields:
+
+```ts
+// package/pi-plugin/auto-mode/src/semantic-operating-choice.ts, categorical input fields
+fields: [
+  'choice',
+  'probabilities',
+],
+```
+
+`package/pi-plugin/auto-mode/src/policy-data.ts:79` rejects every other own key:
+
+```ts
+// package/pi-plugin/auto-mode/src/policy-data.ts:79
+for (const key of Reflect.ownKeys(input,)) {
+  if (((typeof key) !== 'string') || (!fields.includes(key,)))
+    throw new InstructionResolutionInputError('Policy record contains an unsupported field',);
+```
+
+The verifier was corrected to pass the original `choice` and `probabilities` fields.
+It rescored the preserved response without repeating the completed provider call.
+
+A later replay correctly failed
+`AssertionError: Retained Luna answers require the unchanged complete assessment request`.
+The new session's observed event timestamps,
+durations,
+and dependent source identities differed from the saved assessment.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/rpc-hook.mjs:37` enforces:
+
+```js
+// Private configured-host fixture, rpc-hook.mjs:37
+assert.deepEqual(body,original,'Retained Luna answers require the unchanged complete assessment request');
+```
+
+Ignoring those differences would admit answers for another input.
+The corrected live bridge instead sends each session's actual assessment to Luna within its original deadline.
+
+### Verification and workarounds
+
+All controls use Node 26.11.1 and the maintained Pi 1.2.0 host.
+The failed composite-occurrence cases remain in `pi-hyper-rpc-allow-aIIepr`
+and `pi-hyper-rpc-allow-rKcQFn` under `${HOME}/temp/agent/`.
+The corrected authored controls in `pi-fresh-session-hyper-rpc-original-source-20261014.log`
+pass Allow,
+Stop,
+dismissal,
+and prohibition with zero provider requests.
+Their tradeoff is authored interpretation rather than live model evidence.
+
+`pi-luna-current-confirmation-20261014/failure.json` preserves the verifier failure.
+Its retained responses and summary show three unchanged live calls with identical answer data
+and 22 of 84 admitted meanings under the adopted `0.60` rule.
+Projection into the strict consumer discards transport metadata only at that boundary;
+the original provider responses remain intact.
+
+`pi-hyper-rpc-allow-KN9yYC` retains the rejected replay.
+The `compare-rpc` task reads its actual request and the earlier saved request without a provider call:
+
+```sh
+# Run from ${HOME}/temp/agent/pi-tool-call-scope-20261014
+mise run compare-rpc
+```
+
+The subsequent live bridge cases in `pi-manual-review-hyper-live-luna-20261014.log`
+pass Allow,
+Stop,
+and dismissal with one new assessment per current request.
+The primary responses remain authored in those cases.
+`pi-hyper-rpc-allow-Gt6QZx/verification.json` separately records an actual Hyper-generated read,
+live Luna review,
+scripted Allow,
+and the original read result.
+It used two Hyper requests and one Luna request.
+Its receipt originally counted only the assessment;
+the receipt was corrected from preserved primary-response records without rerunning the host.
+Live verification costs new provider requests and is unsuitable for unchanged-response replay claims.
+
+### What does not work
+
+Matching a tag without source identity confuses distinct instruction occurrences.
+Passing the whole decoded answer to a closed categorical consumer violates its input contract.
+Replaying a response after timestamp or source-identity changes violates exact request attribution.
+Repeating completed requests to repair a verifier discards usable evidence and changes the experiment.
+
+### Upstream filing decision
+
+1.  Fault: these failures belong to our authored inputs,
+    verifier projection,
+    and attempted cross-session replay.
+2.  Fixability: corrections belong in those local controllers;
+    the production identity and input checks remain intact.
+3.  Supported use: current-input assessment works through the native host;
+    applying old answers to different input is outside this verification contract.
+4.  Contribution policy: no third-party source change or public report is proposed.
+5.  Upstream disposition: no external defect is established,
+    so there is no candidate upstream issue or duplicate search to pursue.
+6.  Prototype: the occurrence-qualified fixture,
+    preserved-response projection,
+    and fresh-request bridge each have the passing controls named here.
+
+Nothing is filed upstream.
+These local incidents remain separate from model accuracy,
+source-authority design,
+and the package's broader lint work.
+
+## Pi 1.2.0 Hyper selection succeeds while the configured fixture rejects startup diagnostics
+
+### Symptom and cause
+
+The October 14 Hyper default-selection fixture returned the requested
+`hyper/gemma-4-26b-a4b-it` RPC state and exited zero,
+then its controller failed `AssertionError [ERR_ASSERTION]` while comparing stderr with an empty string.
+This was an overbroad local assertion,
+not a failed model selection.
+The controller at `${HOME}/temp/agent/pi-hyper-model-20261014/state.ts:80` contains:
+
+```ts
+// Private configured-host fixture, state.ts
+assert.equal(state.isStreaming,false);assert.equal(state.pendingMessageCount,0);assert.equal(stderr,'');
+```
+
+The fixture deliberately rejects external fetches and copies only the Hyper model catalogue.
+The retained startup diagnostics include the Synthetic extension's blocked model discovery,
+Pi's `No models match pattern` warnings for other configured providers,
+and ordinary extension lifecycle logging.
+The related [Synthetic startup diagnosis](pi-synthetic-provider-startup-model-scope.md)
+retains the separate historical scope-resolution incident;
+this fixture's deliberate network boundary does not reproduce that historical root cause.
+
+### Verification and bounded recovery
+
+`${HOME}/temp/agent/pi-hyper-state-MD0Lvx/events.json` retains the original successful RPC response.
+Its `stderr.txt` retains every diagnostic byte.
+The controller's exit,
+model identity,
+idle state,
+and pending-message assertions passed before the empty-stderr assertion.
+The disposable host loaded all 17 configured packages under network isolation.
+It made zero provider requests.
+
+The separate `verify-state` task in `${HOME}/temp/agent/pi-hyper-model-20261014/mise.toml`
+reads those original artifacts and the saved defaults without rerunning the host.
+Its `state-verification.json` records successful selection and failed empty-stderr verification separately.
+This recovers the selection result only;
+it neither claims a live Gemma response nor qualifies an empty-stderr lifecycle.
+Discarding the diagnostics or treating all startup output as a shutdown defect is rejected.
+
+### Upstream filing decision
+
+1.  Fault: the failing assertion belongs to our disposable controller.
+2.  Fixability: our verifier can distinguish model selection from its separate diagnostic assertion.
+3.  Supported use: ordinary model selection is supported;
+    silence from every configured extension is our additional fixture expectation.
+4.  Contribution policy: no external code change or report is proposed for this local assertion.
+5.  Upstream disposition: this result establishes no new upstream defect to assess or search for duplicates.
+6.  Prototype: the local artifact verifier passes while retaining the original failed assertion and all diagnostics.
+
+Nothing is filed upstream.
+The existing Synthetic troubleshooting record remains a separate incident.
+
 ## Pi 1.2.0 direct generated manager import reaches an uninitialized owned bootstrap constructor
 
 ### Symptom
@@ -6941,6 +7202,81 @@ Every completed mode reports zero provider calls and zero genuine human approval
 The isolated repeat did not change the five-second deadline or prove a permanent timing remedy.
 This is distinct from the earlier SIGABRT and Go thread-creation failures in this incident record.
 
+During the later owned-runtime cleanup,
+the domain run and manual uncertainty Allow separately exhausted the same original judgment deadline.
+The unchanged manual uncertainty case passed in isolation.
+After an unrelated bounded CPU stress process exited,
+the domain and manual uncertainty suites passed,
+but ordinary native-context Allow still exhausted its deadline.
+The stress overlap therefore does not establish the cause or a sufficient remedy.
+
+Three unchanged isolated ordinary Allow runs then passed.
+Total process durations were 7259.69,
+7205.50,
+and 7954.08 milliseconds;
+these include setup and shutdown rather than measuring only judgment time.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/native-allow-repeat.json`
+retains individual outcomes and enclosing CPU counters.
+The subsequent complete remaining consumer sequence passed,
+including approval context,
+single calls,
+approved dependencies,
+event receipts,
+host lifecycle,
+CLI shutdown,
+queue release,
+resource reload and copies,
+and context receipts.
+`${HOME}/temp/agent/pi-native-resource-runtime-remaining-20261014.log` retains that sequence.
+This is verified recovery without a causal diagnosis or permanent timing fix.
+
+The later profile-cleanup build passed its domain and manual-uncertainty suites,
+then ordinary native-context Allow again reached
+`JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
+The native selector assertion was `ERR_ASSERTION: 0 !== 1`.
+`${HOME}/temp/agent/pi-native-profile-cleanup-regressions-20261014.log` retains the failure.
+The original five-second deadline remains unchanged;
+the isolated passes did not establish a permanent timing fix.
+
+After the run-owner split,
+domain cases and manual uncertainty Allow,
+Deny,
+Stop,
+and cancellation passed.
+The prohibited case then exhausted the judgment deadline before producing its policy outcome.
+Its final assertion reported `undefined` rather than the expected outcome.
+`${HOME}/temp/agent/pi-native-run-owner-regressions-20261014.log` retains that separate occurrence.
+
+The unchanged loaded-input build then failed ordinary Allow twice and passed once.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-before.json`
+retains complete process durations and enclosing CPU counters.
+CPU profiles of separate Allow and prohibition cases both passed;
+they show repeated source-freshness validation and filesystem observation costs.
+An instrumented Allow case failed with
+`DependencyDeadlineError: Original dependency assessment deadline expired`
+after 23740 opens of the disposable `workspace/AGENTS.md`.
+It also recorded 47478 `lstatSync` calls each for the workspace and its policy file.
+The fixture-specific count log is
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/loaded-allow-fs.json`.
+The instrumentation preserves native filesystem results;
+its timing overhead means it is not an uninstrumented latency estimate.
+
+A separate full lint attempt during this cleanup failed before producing diagnostics with
+`Error running tsgolint: "exit status: exit status: 2"`
+and `runtime: failed to create new OS thread (have 2 already; errno=11)`.
+Its log is `${HOME}/temp/agent/pi-maintained-resource-lint-20261014.log`.
+A later parent-slice sample showed 50 tasks,
+`pids.max=256`,
+and cumulative `pids.events: max 340`.
+Without a pre-failure counter sample,
+these values do not attribute that particular failure.
+The current lint retry uses the previously probed `GOMAXPROCS=2` worker setting
+with no concurrent native consumer verification.
+That retry completed the full 438-file sweep with 203 errors and 12801 warnings.
+It verifies recovery of diagnostic collection,
+not a passing lint gate or a permanent thread-allocation remedy.
+The completed report is `${HOME}/temp/agent/pi-maintained-resource-lint-retry-20261014.log`.
+
 ### Symptoms and separate incident boundaries
 
 On 2026-10-14,
@@ -7374,6 +7710,19 @@ it does not fix either formatter.
 Reapplying the complete fixer to the JavaScript class can reintroduce the `readonly` error.
 The failed formatter's remaining diagnostic count cannot establish full lint coverage
 because syntax errors prevented complete analysis.
+
+Commit `2728f357f` repeated that known modifier insertion during the later formatting pass.
+The built domain test stopped at `SyntaxError: Unexpected identifier '#state'`
+before any test body ran.
+Commit `bbb1aa2f64` removed the modifier again.
+The rebuilt domain and subsequent native regression tasks passed.
+Do not treat a successful build or package type check as validation of copied JavaScript syntax.
+
+The expanded syntax task also passed `.ts` files directly to `node --check`.
+Node `26.11.1` rejected valid `override readonly` syntax in `process-network-guard.ts`.
+Commit `13ec2b134a` calls Node's `stripTypeScriptTypes` for TypeScript inputs before syntax checking;
+JavaScript remains unchanged.
+The corrected task passes all 227 maintained modules.
 
 ### Upstream filing decision
 

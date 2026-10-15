@@ -492,8 +492,8 @@ fun playerHost(
     }
     /** Callback that a list calls after it took focus for the pending request. */
     val clearPendingFocus: () -> Unit = remember { { pendingFocus = null } }
-    /** Count of same-visit Search refocus requests, read by the Search page's query field. */
-    var searchFocusToken: Int by remember { mutableIntStateOf(0) }
+    /** Link that the Search shortcut presses, which refocuses the open Search page's query field in the same event. */
+    val searchFocusPort: SearchFocusPort = remember { SearchFocusPort() }
     /** Count of reveal requests, read by the track list to scroll to and focus the playing row. */
     var revealToken: Int by remember { mutableIntStateOf(0) }
     /** Count of folder reveal requests, read by the track list to scroll to the playing track's folder header. */
@@ -506,6 +506,8 @@ fun playerHost(
     var templates: TemplateEditorState by remember {
         mutableStateOf(PlayerHostModel.restoredEditor(stored = loadStoredTemplates(context)))
     }
+    /** Auto-play on select (D129): whether selecting a track also starts it, loaded from the store on first compose. */
+    var autoPlayOnSelect: Boolean by remember { mutableStateOf(SessionStore.loadAutoPlayOnSelect(context)) }
     /** Template whose editor the wide Settings page shows; Track rows each time Settings opens (D110). */
     var settingsSelection: TemplateKind by rememberSaveable { mutableStateOf(TemplateKind.entries.first()) }
     /** Controller snapshot the host draws this frame. */
@@ -683,6 +685,21 @@ fun playerHost(
         Log.i(LOG_TAG, "template saved kind=${next.kind.name}")
     }
 
+    // What:     `fun toggleAutoPlayOnSelect()` flips the Auto-play on select setting and saves it.
+    // Why:      The Settings switch row toggles in place (D129); the new value takes effect for the next tap, Enter or
+    //           Search result, and survives a restart because the store holds it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const toggleAutoPlayOnSelect = () => { setAutoPlay(!autoPlay); store.saveAutoPlayOnSelect(!autoPlay); };
+    // ```
+    /** Flips Auto-play on select, keeps the new value in the host state and writes it to the store. */
+    fun toggleAutoPlayOnSelect() {
+        autoPlayOnSelect = !autoPlayOnSelect
+        SessionStore.saveAutoPlayOnSelect(context = context, enabled = autoPlayOnSelect)
+        Log.i(LOG_TAG, "auto-play on select set to $autoPlayOnSelect")
+    }
+
     // What:     `fun selectFolder(folder: String)` selects a folder by its name without starting a track.
     // Why:      Picking a folder shows its tracks and never autoplays, and the picker closes on the player.
     //
@@ -750,7 +767,12 @@ fun playerHost(
             currentIndex = state.currentIndex,
         )
         when (activation) {
-            is SearchActivation.PlayTrack -> controller.playIndex(activation.indexInLibrary)
+            // D127, D129: a result follows the row rule, so a track that is not current is only selected (paused at 0),
+            // or also started when Auto-play on select is on.
+            is SearchActivation.SelectTrack -> controller.activateRow(
+                index = activation.indexInLibrary,
+                autoPlayOnSelect = autoPlayOnSelect,
+            )
             SearchActivation.TogglePlayback -> controller.togglePlay()
             is SearchActivation.OpenFolder -> {
                 controller.selectPage(activation.page)
@@ -888,7 +910,7 @@ fun playerHost(
         onSettings = { go(PlayerRoute.Settings) },
         onPlay = { index ->
             Log.i(LOG_TAG, "player host row activated index=$index current=${controller.uiState.currentIndex}")
-            controller.activateRow(index)
+            controller.activateRow(index = index, autoPlayOnSelect = autoPlayOnSelect)
             returnFocusToPlayback()
         },
         deck = deckActions,
@@ -1486,11 +1508,11 @@ fun playerHost(
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // focusSearch(): void { searchFocusToken += 1; }
+        // focusSearch(): void { searchFocusPort.press(); }
         // ```
-        /** Asks the open Search page to refocus its query field, keeping the query text. */
+        /** Refocuses the open Search page's query field and puts its caret at the end, keeping the query text. */
         override fun focusSearch() {
-            searchFocusToken += 1
+            searchFocusPort.press()
         }
 
         // What:     `override fun toggleFolderPicker()` flips the picker flag, as the folder button does.
@@ -1738,7 +1760,7 @@ fun playerHost(
             .hostKeyboard(binding = keyBinding),
     ) {
         CompositionLocalProvider(
-            HostKeyLocalSearchFocus provides searchFocusToken,
+            HostKeyLocalSearchFocus provides searchFocusPort,
             HostKeyLocalReveal provides revealToken,
             HostKeyLocalRevealFolder provides folderRevealToken,
             HostKeyLocalSearchField provides reportSearchFieldFocus,
@@ -1857,37 +1879,39 @@ fun playerHost(
                     )
                     /** Playing track's URI, which marks its row among the results. */
                     val playingUri: String? = state.currentIndex?.let { index -> controller.uriAt(index) }
-                    searchPage(
-                        creaseWidthPx = creaseWidthPx,
-                        state = results,
-                        query = query,
-                        onQueryChange = { text -> query = text },
-                        onBack = { go(PlayerRoute.Player) },
-                        onClear = { query = "" },
-                        onOpenResult = { result -> openSearchResult(result) },
-                        currentTrackIndex = playingResultId(results, playingUri),
-                        deck = {
-                            transportDeck(
-                                model = model.deck,
-                                actions = deckActions.copy(onRevealPlaying = null, onRevealFolder = null),
-                            )
-                        },
-                        isPlaying = state.playing,
-                        complete = answer?.complete ?: true,
-                        folderBrowser = { browserModifier ->
-                            // The retained browser keeps its header (D51), which also pads for the status bar, so
-                            // the rail letters never draw over the clock while the keyboard shortens the viewport.
-                            Column(modifier = browserModifier) {
-                                unfoldedFoldersHeader(title = model.libraryName, onOpen = playerActions.onOpen)
-                                folderPickerPane(
-                                    sections = model.sections,
-                                    currentFolder = model.currentFolder,
-                                    onSelectFolder = { folder -> selectFolder(folder) },
-                                    modifier = Modifier.weight(1f),
+                    CompositionLocalProvider(LocalAutoPlayOnSelect provides autoPlayOnSelect) {
+                        searchPage(
+                            creaseWidthPx = creaseWidthPx,
+                            state = results,
+                            query = query,
+                            onQueryChange = { text -> query = text },
+                            onBack = { go(PlayerRoute.Player) },
+                            onClear = { query = "" },
+                            onOpenResult = { result -> openSearchResult(result) },
+                            currentTrackIndex = playingResultId(results, playingUri),
+                            deck = {
+                                transportDeck(
+                                    model = model.deck,
+                                    actions = deckActions.copy(onRevealPlaying = null, onRevealFolder = null),
                                 )
-                            }
-                        },
-                    )
+                            },
+                            isPlaying = state.playing,
+                            complete = answer?.complete ?: true,
+                            folderBrowser = { browserModifier ->
+                                // The retained browser keeps its header (D51), which also pads for the status bar, so
+                                // the rail letters never draw over the clock while the keyboard shortens the viewport.
+                                Column(modifier = browserModifier) {
+                                    unfoldedFoldersHeader(title = model.libraryName, onOpen = playerActions.onOpen)
+                                    folderPickerPane(
+                                        sections = model.sections,
+                                        currentFolder = model.currentFolder,
+                                        onSelectFolder = { folder -> selectFolder(folder) },
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                }
+                            },
+                        )
+                    }
                 }
                 PlayerRoute.Settings, is PlayerRoute.TemplateEditor -> {
                     /** Template kind a restored editor route names, or null when the route is Settings itself. */
@@ -1928,6 +1952,8 @@ fun playerHost(
                                 settingsSelection = kind
                                 templates = editor.open(kind)
                             },
+                            autoPlayOnSelect = autoPlayOnSelect,
+                            onToggleAutoPlay = { toggleAutoPlayOnSelect() },
                             onBack = { go(PlayerRoute.Player) },
                             creaseWidthPx = creaseWidthPx,
                             editor = { kind, startInset ->
@@ -1948,6 +1974,8 @@ fun playerHost(
                     } else {
                         settingsPageContent(
                             templateLines = editor.settingsLines,
+                            autoPlayOnSelect = autoPlayOnSelect,
+                            onToggleAutoPlay = { toggleAutoPlayOnSelect() },
                             onBack = { go(PlayerRoute.Player) },
                             onOpenTemplate = { kind -> openTemplate(kind) },
                         )

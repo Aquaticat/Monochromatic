@@ -888,8 +888,20 @@ The latest set pushed during the hold is shown when the hold ends,
 unless a set with the current version arrived first;
 a set naming a line the text does not have is discarded.
 
-The TypeScript family uses the project's own TypeScript 7 server (`node_modules/typescript/bin/tsc --lsp --stdio`);
-a project without it shows the missing-executable state.
+The TypeScript family uses the project's own TypeScript 7 server (`node_modules/typescript/bin/tsc --lsp --stdio`).
+The launcher is looked up for the displayed file,
+from the file's folder up to the project root,
+and the nearest `node_modules/typescript` decides,
+as Node and TypeScript resolve a package;
+a pnpm monorepo opened at its root, or a home folder opened as the project,
+therefore uses the install at the repository root.
+An install older than version 7 is reported as such and never skipped for a farther one.
+An install above the project root is never used,
+because the project root bounds what runs;
+the reason names it and says to open the folder that holds it as the project.
+The registry is built again when the launcher found for a file differs from the one it holds,
+and `Languages::refresh` is given the file for that.
+A project without any usable install shows the missing-executable state.
 Server-initiated workspace edits are refused.
 Every server launch passes through one launch policy in `src/language/launch.rs`.
 The default,
@@ -1026,7 +1038,9 @@ Ctrl+click goes to the definition of the character under the pointer.
 Ctrl+Q shows hover information for the caret,
 and a pointer resting 350 ms on one character shows it for that character.
 Nothing of this is visible until it is used:
-there is no status bar and no language indicator.
+there is no status bar and no language indicator,
+except the one entry that says why a file has no language support
+([Why a feature is missing](#why-a-feature-is-missing)).
 
 ### Definitions and references
 
@@ -1111,8 +1125,9 @@ Notes are declared as an assertive live region and hover content as a polite one
 announcement by a screen reader was not tested.
 A note closes like hover content,
 and a new action replaces it.
-A resting pointer never shows a note;
-its failures are only logged.
+A resting pointer shows a note only when the file's language support itself is missing or failing,
+and then once for each displayed file ([Why a feature is missing](#why-a-feature-is-missing));
+every other failure of a resting pointer is only logged.
 
 Each note names the reason and the remedy:
 
@@ -1159,6 +1174,99 @@ or an outside-project file without a ready server,
 and no server is ready,
 an explicit action first displays the file to the worker again,
 so the remedy "press Ctrl+B again" works without switching files.
+
+### Why a feature is missing
+
+Before 2026-10-14 a file whose server was missing, failing, or without hover or inlay hints looked like a file
+where the features were broken:
+a resting pointer logged every failure and nothing on screen mentioned hints at all.
+Measured with the installed build on a disposable copy of the repository,
+opening the TypeScript package folder, or a folder above the repository, as the project showed no hint
+and no hover for `index.unit.test.ts`,
+and left no `language` folder in the cache, the same as the user's real `~/.cache/monochromatic-ide`,
+while opening the repository root showed both.
+The reasons are now on screen in two places.
+
+The entry:
+the Language module adds one `Information` entry named `language support` to the displayed file's diagnostics
+(`src/language/notice.rs`, joined to the snapshot in `Worker::publish`),
+so the source view draws it as message rows over line 1 with the gutter letter `I`,
+for example `Information (language support): Hover, inlay hints, and go to definition are not available for this file.`
+Its range is empty at the first character, so no text is underlined.
+It is made from the status the window already polls and says what is lost,
+the server, the cause, and the remedy:
+
+- no server runs and none is starting:
+  that hover, inlay hints, and go to definition are not available,
+  then one line for each server naming its state:
+  a program not found (`the program 'taplo' for taplo was not found on PATH`),
+  the TypeScript install that was not found and where it was looked for,
+  a launch the confinement refused with its cause,
+  a start that failed,
+  a server that stopped,
+  one that cannot follow the file,
+  or one that would be rooted outside the project;
+  and, when displaying the file again can help,
+  that servers are looked up again when a file is displayed;
+- a server runs but offers no hover or no inlay hints:
+  `Inlay hints are not offered by slint-lsp, so none are shown.`
+  `slint-lsp` and `qmlls` both announce no inlay hints on this host;
+- a server runs and a request failed:
+  `The inlay hint request to typescript-native failed: the server answered with error -32603: ...`,
+  or `the server did not answer in time` after the retries the worker makes on its own.
+  The failure is kept for that server process until a later answer clears it.
+
+Nothing is drawn while a server is still starting,
+for a file without a recognized language or without a configured server,
+for a file outside the project,
+or when every feature works.
+The entry stands on line 1 and leaves the view with it when the file is scrolled.
+
+The resting pointer:
+the first rest on a displayed file whose answer is about the support itself,
+a failed request, a server that cannot follow the file, a feature the server does not offer,
+or no running server for a file that has servers configured,
+shows the same note Ctrl+Q shows, drawn as a note and ended like hover content.
+Each displayed file gets it once.
+An empty answer, a request the server set aside, and a server that is still starting stay silent,
+because they describe one position or one moment.
+Decided on 2026-10-14: the entry is the permanent surface and the pointer note is the pointer's answer,
+so a user who scrolled away from line 1 still learns why.
+
+A failed start states what the server wrote:
+`the server process ended before it finished starting` was all the window said,
+and the cause was in the log.
+The last four standard-error lines, each cut to 200 bytes, now follow the reason on lines of their own,
+once the server's standard error ended or the settle time of the log record passed (`Internal::EndCause`);
+the start deadline carries the lines directly.
+The log record of the ended server is unchanged because the hand-over reads a copy of the kept lines.
+For `rust-analyzer` on this host the lines read `info: falling back to ".../mise/shims/rust-analyzer"`
+and `error: infinite recursion detected`
+(`doc/troubleshooting/rustup-proxy-mise-shim-rust-analyzer-recursion.md`).
+
+Causes outside the IDE that the entry now names:
+a language server that is not installed,
+a project without TypeScript 7 in the project folder or below it,
+and a server version that does not announce the feature.
+Installing the server or the project's dependencies, then displaying the file again, ends the first two;
+the third is the server's own capability.
+
+Checks:
+`src/language/notice_tests.rs` holds the wording of every state without a server,
+`tests/language/notice.rs` the entry through the worker and the scripted server
+(`IDE_SCRIPTED_FEATURES=hover` for a server without hints, the hint step `error`, `IDE_SCRIPTED_HOVER=silent`),
+`tests/language/quiet.rs` the cause of a failed start,
+`src/language/config_tests.rs` the TypeScript lookup,
+and `native::language::hover_tests::resting_pointer_explains_a_missing_server_once_for_each_file` the pointer.
+`inspect:language-guards` removes the lookup from the file's folder, the nearest-install rule,
+the rebuild when the launcher moves, the publishing of the entry, its wait for a starting server,
+the kept hint failure, the copy of the lines for a failed start, and their arrival in the reason
+(`typescript-document-folder`, `typescript-nearest-install`, `typescript-launcher-moved`,
+`notice-published`, `notice-waits-for-start`, `hint-failure-kept`,
+`cause-hand-over-copies`, `cause-reaches-reason`),
+and `inspect:language-navigation-guards` the pointer note and its once-per-file rule
+(`pointer-explains-support-problem`, `pointer-explains-once`),
+each observed failing with the named test.
 
 ### Stale results
 
@@ -3176,7 +3284,9 @@ the start-deadline error is followed by the warning
 `language server wrote this to standard error before it was stopped`
 with the lines so far, and only when there are some.
 A clean shutdown, and a server the worker stops for any other reason, log nothing more.
-The lines appear only in the log, never in a note in the window.
+The log keeps all of them;
+the window shows the last four of a failed start, each cut to 200 bytes, in the reason of that start
+([Why a feature is missing](#why-a-feature-is-missing)).
 `helix-lsp` names a line's server by its configured name only, so two processes of one name share a tail;
 lines a process writes after its lines were reported, or after the worker stopped it,
 are dropped until its standard error ends, so they are never reported as a later process's words.

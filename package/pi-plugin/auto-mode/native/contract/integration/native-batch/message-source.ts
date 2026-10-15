@@ -152,7 +152,7 @@ export function handlerProviderSource({
  const systemMessages=replaceOnce({
    source:messages,
    from:'                params.push({ role: instructionRole, content: sanitizeSurrogates(text) });',
-   to:'                const systemMessage = {role:instructionRole,content:sanitizeSurrogates(text)};\n                nativeSystemPayloads.set(systemMessage,Object.freeze({messages:context.messages,message:msg,text}));\n                params.push(systemMessage);'
+   to:'                const systemMessage = {role:instructionRole,content:sanitizeSurrogates(text)};\n                nativeSystemPayloads.set(systemMessage,Object.freeze({messages:context.messages,normalizedMessages:normalizedContext.messages,transformedMessages,message:msg,text,role:instructionRole,ordinal:i}));\n                params.push(systemMessage);'
  });
  /**
   Tool serialization retains the exact declaration objects selected by the native transcript resolver.
@@ -184,7 +184,7 @@ export function handlerProviderSource({
  const observed=replaceOnce({
    source:toolOutputs,
    from:'            const nextParams = await options?.onPayload?.(params, model);',
-   to:'            nativeSerializedPayloads.set(params,Object.freeze({model,messages:context.messages,normalizedMessages:normalizedContext.messages}));\n            const nextParams = await options?.onPayload?.(params, model);'
+   to:'            nativeSerializedPayloads.set(params,Object.freeze({model,modelId:model.id,messages:context.messages,normalizedMessages:normalizedContext.messages,messageCount:params.messages.length,toolCount:params.tools?.length??0}));\n            const nextParams = await options?.onPayload?.(params, model);'
  });
  return `import {recordHandlerPayload,snapshotOriginalToolEmission} from ${JSON.stringify(publicationUrl)};\n`
   +`const nativeSerializedPayloads=new WeakMap(),nativeSystemPayloads=new WeakMap(),nativeToolPayloads=new WeakMap();\n`

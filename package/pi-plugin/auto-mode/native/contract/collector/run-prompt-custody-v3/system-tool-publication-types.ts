@@ -30,5 +30,8 @@ export type SystemToolAlias = {
   readonly kind: string;
   readonly message?: object;
   readonly tools?: readonly object[];
+  readonly content?: unknown;
+  readonly sections?: unknown;
+  readonly toolsRemoved?: unknown;
   readonly ordinal?: number;
 };

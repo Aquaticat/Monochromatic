@@ -13,15 +13,15 @@ export function createGoverningRuleSet({
    ||(sources.length===0)
    ||(sources.length>128))throw new GoverningRuleBindingError('Original governing sources require a bounded immutable source list');
  if(new Set(sources.map(function readGoverningSourceOccurrence(source) { return (source.occurrence); })).size!==sources.length)throw new GoverningRuleBindingError('Original governing source occurrence is repeated');
- let failure;
- let retired=false;
+ const sourceState={failure:undefined,retired:false};
+ 
  function current(){
-  if(retired)throw new GoverningRuleBindingError(
+  if(sourceState.retired)throw new GoverningRuleBindingError(
     'Original governing source set lost eligibility',
-    {cause:failure}
+    {cause:sourceState.failure}
   );
   try{if(readSources()!==sources)throw new GoverningRuleBindingError('Original governing source list changed');}
-  catch(error){retired=true;failure=error;throw error;}
+  catch(error){sourceState.retired=true;sourceState.failure=error;throw error;}
  }
  const records=new WeakMap();
    const byCode=new Map();

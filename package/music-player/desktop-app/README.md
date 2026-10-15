@@ -176,7 +176,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   (the Source Root,
    the selected track path,
    the position,
-   the playback mode and the two template texts;
+   the playback mode, the two template texts and the Auto-play on select flag, `auto_play_on_select`, which is off
+   when the field is missing;
    it keeps no queue,
    so nothing is pruned or remapped: the launch rescan rebuilds the queue).
 - `src/error.rs`:
@@ -416,9 +417,15 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    The highlighted row is the currently selected track, playing or paused,
    and the transport deck names it (folder and title).
    A single click on a row other than the highlighted one selects it and loads it paused (D124),
-   stopping whatever was playing;
-   a click on the already-highlighted row toggles play and pause.
-   The Play item of the track menu and a Search result still start a row at once.
+   stopping whatever was playing, or also starts it when the Auto-play on select setting is on (D129);
+   a click on the already-highlighted row toggles play and pause in both modes.
+   A Search result for a track follows the same rule (D127): a result that is not the current track selects it (and
+   starts it with the setting on), and the result of the current track toggles.
+   The Play item of the track menu starts a row at once with the setting on or off.
+   `src/row_activation.rs` holds the one pure rule, `row_activation_for`, used by `ui_wire::play_row` (click, Enter and
+   Search result) and by `play_row_now` (the menu Play, which always plays).
+   A row whose file cannot be opened stays selected and paused, is reported once, and the next click on it tries to
+   load it again (D128); Next, Previous and the end of a track still walk past unreadable files.
    No double-click handling exists or is needed.
    The window title shows the playing track's title (the one the deck shows, without folder, extension or the prefix
   its folder's files share, D86) while audio plays,
@@ -501,8 +508,8 @@ No `.slint` file may call `mix`, `brighter`, `darker` or `transparentize` (a tes
 
 ## Settings page
 
-Settings (`ui/settings.slint`, D87, D99, D109, D110) lists the two templates, Track rows and Playing track, under a
-Templates heading.
+Settings (`ui/settings.slint`, D87, D99, D109, D110, D129) lists the two templates, Track rows and Playing track, under
+a Templates heading, and the Auto-play on select switch row under a Playback heading.
 The whole page is drawn on the one canvas colour (pure white in light, pure black in dark): no page tint, card fill,
 header band, border or divider line, so the header, the heading and the rows are separated by spacing alone.
 Only state carries a fill: the hover and pressed layers, the 40 px icon circle (the secondary container role) and the
@@ -530,6 +537,17 @@ Back (the header arrow) and Escape close Settings in both forms.
 Escape closes Settings only while Settings is the visible page and no template line is being edited.
 Closing Settings, or selecting the other row, applies and saves the valid drafts.
 Widening the window on an editor page continues that editor in the right pane.
+
+The Playback group is one switch row in the same 72 px form: the `autoplay` icon circle, the title Auto-play on select,
+one supporting line that states what selecting does, and a Material 3 switch (52 by 32 px, a 24 px thumb).
+Click, Space and Enter toggle it in place and save `auto_play_on_select` at once; it opens no editor, is never a
+selected row, and in the wide form the detail pane keeps the selected template's editor.
+The state is shown by the thumb position, the track fill (the accent when on, the canvas with an outline border when
+off) and the check or cross mark in the thumb.
+The keyboard position reaches the row as the last stop of the list (Down and End), with the focus ring of the group
+corners.
+Under 300 px of row width, which is the list pane of a window between 600 and about 910 px, the switch sits under the
+supporting line and the text wraps; `AutoPlaySwitch` in `ui/settings.slint` draws the switch for both places.
 
 The row icons are Material Symbols Outlined (weight 400, grade 0, 24 px, unfilled) `queue_music` and `play_circle`
 from [google/material-design-icons][material-icons], commit `49d4db35df873165d6bd6ba09b063c7dafbac2f4`
@@ -844,7 +862,10 @@ gain are worked out again, the seek bar takes the new length, and no message is 
 changes nothing until the next event. A paused selected track keeps its position when the new file has it and starts again
 from zero when it does not.
 
-A file that cannot be decoded is skipped, and its row shows "Can't be played".
+A file that cannot be decoded is skipped by Next, Previous and the end of a track, and its row shows "Can't be played".
+A click, `Enter`, a Search result or the menu Play on such a row does not skip it: the row stays the selected row,
+paused with nothing loaded, and the next click on it tries to load it again (D128);
+if the file decodes by then it loads and plays, and the mark goes when a peak is measured for it.
 The window draws no message for it.
 On Linux the same report is one desktop notification titled "Cannot play a file", whose text is "`name` can't be
 played." (several files collapse to a count that names the first) (D122).

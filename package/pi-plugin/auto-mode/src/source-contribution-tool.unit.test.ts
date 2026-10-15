@@ -4,9 +4,10 @@ import { describe, expect, it } from '@monochromatic-dev/module-test/ts';
 
 /**
  Create one complete original tool source graph with no run-emitted or base-carrier alternatives.
+ @param publicationField - original native system or tool publication route
  @returns mutable test-owned memberships consumed through the built package
  */
-function fixture() {
+function fixture(publicationField: 'toolPublication' | 'systemInputPublication') {
   /** Original input identity is distinct from the source and run identities. */
   const inputOccurrence = {};
   /** The source carries no role-derived authority. */
@@ -18,7 +19,9 @@ function fixture() {
   /** No active ancestry or run-emitted source route can explain this input-only declaration. */
   const run = { occurrence: {}, replacementInputs: [], retainedMessageOrigins: [retained] };
   /** Original association includes exact native references, not equal serialized declarations. */
-  const association = { source, sourceOccurrence: source.occurrence, run, toolPublication: publication, retainedMessageOrigin: retained };
+  const publicationFields = publicationField === 'toolPublication' ? { toolPublication: publication } : { systemInputPublication: publication };
+  /** The association retains exactly one native emission route. */
+  const association = { source, sourceOccurrence: source.occurrence, run, ...publicationFields, retainedMessageOrigin: retained };
   /** Original serialized request occurrence remains opaque to contribution accounting. */
   const request = {};
   /** Distinct contributions may refer to one original manager input containing several declarations. */
@@ -37,10 +40,11 @@ function fixture() {
 
 //region Partial accounting does not become permission or whole-request coverage
 
-await describe({ name: '', children: [
+await describe({ name: '', children: (['toolPublication', 'systemInputPublication'] as const).map(function publicationRoute(publicationField) {
+  return describe({name: publicationField, children: [
   it({ name: 'accounts for original manager tool identity without granting permission or freezing inputs', fn: async function originalTool() {
     /** This fixture has no handler or run source route. */
-    const input = fixture();
+    const input = fixture(publicationField);
     /** Built consumption must retain the original contribution occurrence. */
     const result = consumeSourceAssociations(input.inputs);
     expect(result.issues).toHaveLength(0);
@@ -57,9 +61,9 @@ await describe({ name: '', children: [
     'retained input', 'absent input'].map(function invalidMembership(change) {
     return it({ name: `rejects changed ${change} after a positive original tool control`, fn: async function changedMembership() {
       /** Establish that this same graph is initially accounted through the tool route. */
-      const input = fixture();
+      const input = fixture(publicationField);
       expect(consumeSourceAssociations(input.inputs).uses[0]?.state).toBe('accounted');
-      if (change === 'publication') input.association.toolPublication = { ...input.publication };
+      if (change === 'publication') input.association[publicationField] = { ...input.publication };
       else if (change === 'source') input.association.source = { ...input.source };
       else if (change === 'source occurrence') input.association.sourceOccurrence = {};
       else if (change === 'run') input.association.run = { ...input.run };
@@ -86,6 +90,7 @@ await describe({ name: '', children: [
     } });
   }),
 ] });
+}) });
 await flushPolicyDiagnostics();
 
 //endregion Partial accounting does not become permission or whole-request coverage

@@ -208,16 +208,44 @@ internal fun Modifier.hostKeyboard(binding: HostKeyBinding): Modifier {
         }
 }
 
-// What:     `val HostKeyLocalSearchFocus: ProvidableCompositionLocal<Int>` carries the Search refocus count.
-// Why:      The host bumps the count on a same-visit Search shortcut, and the Search page refocuses its field when it
-//           changes. Passing it through a local keeps the Search page's signature unchanged.
+// What:     `class SearchFocusPort` hands the Search shortcut from the host's key handler to the open Search page.
+// Why:      The shortcut must refocus the query field and put its caret at the end before the next key is read. A
+//           counter that the page notices at its next composition and then reacts to in an effect needs two frames, and
+//           a character typed in that gap landed at the old caret (D126). The page registers what to do, and the key
+//           handler calls it directly, in the same event.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const HostKeyLocalSearchFocus = createContext(0);
+// class SearchFocusPort { onShortcut: (() => void) | null = null; press() { this.onShortcut?.(); } }
 // ```
-/** Count of same-visit Search refocus requests, read by the Search page's query field. */
-val HostKeyLocalSearchFocus: ProvidableCompositionLocal<Int> = compositionLocalOf { 0 }
+/** Synchronous link between the Search shortcut and the query field of the Search page that is open. */
+class SearchFocusPort {
+    /** What the open Search page does on the shortcut; null while no Search page is composed. */
+    var onShortcut: (() -> Unit)? = null
+
+    // What:     `fun press()` runs the registered shortcut action, if a Search page is open.
+    // Why:      With no Search page there is nothing to refocus, so the shortcut does nothing here.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // press(): void { this.onShortcut?.(); }
+    // ```
+    /** Runs the open Search page's shortcut action in the caller's event, or does nothing when none is open. */
+    fun press() {
+        onShortcut?.invoke()
+    }
+}
+
+// What:     `val HostKeyLocalSearchFocus: ProvidableCompositionLocal<SearchFocusPort>` carries the shortcut port.
+// Why:      The host presses the port on a same-visit Search shortcut, and the Search page registers its field with it.
+//           Passing it through a local keeps the Search page's signature unchanged.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const HostKeyLocalSearchFocus = createContext(new SearchFocusPort());
+// ```
+/** Port that the host presses on a same-visit Search shortcut, read by the Search page's query field. */
+val HostKeyLocalSearchFocus: ProvidableCompositionLocal<SearchFocusPort> = compositionLocalOf { SearchFocusPort() }
 
 // What:     `val HostKeyLocalReveal: ProvidableCompositionLocal<Int>` carries the count of reveal requests.
 // Why:      The host bumps the count on the reveal chord, and the track list scrolls to and focuses the playing row.
