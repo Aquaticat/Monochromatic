@@ -108,7 +108,7 @@ await describe({
         const program = fixture.open();
         const group = createProgramGroupFixture({ fixture, program });
         const failure = await nativeReturnFailure(function invokeUnboundGroup() { return fixture.owner.invokeProgramNative({ group: group.reached.handle, slot: {}, call: {} }); });
-        assert.ok(failure instanceof Error);
+        assert.ok(Error.isError(failure,));
         assert.equal(failure.message, 'Reached group has no fixed native consumer');
         assert.throws(function unboundValue() { fixture.owner.scriptValueFor({ group: group.reached.handle, slot: {}, outcome: {} }); }, { name: 'NativeScriptValueGuardError' });
         assert.throws(function foreignValue() { fixture.owner.scriptValueFor({ group: {}, slot: {}, outcome: {} }); }, { name: 'NativeScriptValueGuardError' });
@@ -163,7 +163,7 @@ await describe({
         const first = await nativeReturnFailure(function originalFailure() { return group.value(); });
         const second = await nativeReturnFailure(function repeatedFailure() { return group.value(); });
         assert.equal(first, second);
-        assert.ok(first instanceof Error);
+        assert.ok(Error.isError(first,));
         assert.notEqual(first.name, 'NativeScriptValueGuardError');
         assert.deepEqual(fixture.owner.inspectProgram(program).guardFailures, []);
         assert.equal(fixture.owner.programFor(program).declaration, fixture.declaration);

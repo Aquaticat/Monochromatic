@@ -22,7 +22,7 @@ await describe({
           if (kind === 'returned') fixture.record.execution.state = 'returned';
           if (kind === 'dependencies') fixture.state.dependencyFailure = failure;
           if (kind === 'cancelled') fixture.parent.abort(failure);
-          assert.throws(function rejectOriginalOpening() { fixture.owner.openProgram({ parentToken, toolNames: ['read', 'write'] }); }, function originalFailure(error) { return kind === 'returned' ? error instanceof Error && error.message === 'Program parent execution has returned' : error === failure; });
+          assert.throws(function rejectOriginalOpening() { fixture.owner.openProgram({ parentToken, toolNames: ['read', 'write'] }); }, function originalFailure(error) { return kind === 'returned' ? (error instanceof Error) && (error.message === 'Program parent execution has returned') : error === failure; });
           assert.equal(fixture.record.program, undefined);
         },
       });
@@ -93,7 +93,8 @@ await describe({
         const failure = new Error('original call dependency changed');
         const [call] = group.calls;
         assert.ok(call);
-        const tools = [{ name: call.name, get outputSchema() { fixture.state.dependencyFailure = failure; return undefined; } }];
+        const tools = [{ name: call.name, get outputSchema() { fixture.state.dependencyFailure = failure;
+        return undefined; } }];
         assert.throws(function changedCallDependency() { fixture.owner.bindProgramCalls({ group: group.reached.handle, calls: group.calls, tools, runNative: function originalNative() { throw new Error('Unreached original native runner'); } }); }, function exactFailure(error) { return error === failure; });
         const inspection = fixture.owner.inspectReachedGroup(group.reached.handle);
         assert.equal(inspection.state, 'failed');
@@ -110,7 +111,8 @@ await describe({
         const failure = new Error('original final child dependency changed');
         const [member] = group.members;
         assert.ok(member);
-        const members = Object.freeze([Object.freeze({ ...member, toJSON() { fixture.state.dependencyFailure = failure; return member; } })]);
+        const members = Object.freeze([Object.freeze({ ...member, toJSON() { fixture.state.dependencyFailure = failure;
+        return member; } })]);
         assert.throws(function changedFinalDependency() { fixture.owner.prepareReachedMembers({ group: group.reached.handle, members, nativeSignals: group.signals }); }, function exactFailure(error) { return error === failure; });
         const inspection = fixture.owner.inspectReachedGroup(group.reached.handle);
         assert.equal(inspection.state, 'failed');

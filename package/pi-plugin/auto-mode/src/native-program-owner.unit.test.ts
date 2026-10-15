@@ -16,7 +16,8 @@ await describe({
         const properties = ['readJudgment', 'response', 'stream', 'signal', 'knownMember', 'knownExecution', 'ready', 'dependencyCheck', 'assertDependenciesCurrent', 'parentCurrent', 'bindings', 'childGroups', 'operation'];
         const reads: string[] = [];
         const supplied: Record<string, unknown> = {};
-        for (const property of properties) Object.defineProperty(supplied, property, { get() { reads.push(property); return input[property]; } });
+        for (const property of properties) Object.defineProperty(supplied, property, { get() { reads.push(property);
+        return input[property]; } });
         const owner = createFixtureProgramOwner(supplied);
         assert.equal(Object.isFrozen(owner), true);
         assert.deepEqual(Object.keys(owner), ['bindPreparedProgram', 'preparedProgramFor', 'openProgram', 'programFor', 'reachProgramGroup', 'reachedGroupFor', 'bindProgramCalls', 'prepareReachedMembers', 'invokeProgramNative', 'scriptValueFor', 'markProgramGuard', 'inspectReachedGroup', 'inspectProgram']);
