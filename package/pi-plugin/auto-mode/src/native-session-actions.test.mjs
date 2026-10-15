@@ -12,8 +12,6 @@ assert.ok(['switch','tree','retry','reload','abort','inflight','combined','tree-
 env.options.modelRuntime.registerProvider('batch-fixture',{
  baseUrl:'https://fixture.invalid/v1',api:'openai-completions',streamSimple:nativeOpenAIStream,models:[{...env.options.model}]
 });
-if(mode==='automatic-retry')env.options.settingsManager.applyOverrides({retry:{enabled:true,maxRetries:1,baseDelayMs:1,provider:{maxRetries:0}}});
-if(mode==='provider-retry')env.options.settingsManager.applyOverrides({retry:{enabled:false,provider:{maxRetries:1}}});
 const requests=[];
 const entered=Promise.withResolvers();
 globalThis.fetch=async function fixtureFetch(input,init){
@@ -30,6 +28,10 @@ const {createAgentSessionRuntime}=await import(source('core/agent-session-runtim
 const manager=nativeHost.managers.inMemory(env.options.cwd);
 const runtime=await createAgentSessionRuntime(createRuntime,{cwd:env.options.cwd,agentDir:env.options.agentDir,sessionManager:manager});
 const session=runtime.session;
+if(mode==='automatic-retry')session.settingsManager.applyOverrides({retry:{enabled:true,maxRetries:1,baseDelayMs:1,provider:{maxRetries:0}}});
+if(mode==='provider-retry')session.settingsManager.applyOverrides({retry:{enabled:false,provider:{maxRetries:1}}});
+if(mode==='automatic-retry')assert.equal(session.settingsManager.getRetrySettings().enabled,true);
+if(mode==='provider-retry')assert.equal(session.settingsManager.getProviderRetrySettings().maxRetries,1);
 session.agent.getApiKey=function credential(){return process.env.FIXTURE_API_KEY;};
 const messages=[];
 session.subscribe(function response(event){if(event.type==='message_end')messages.push(event.message);});
@@ -42,7 +44,7 @@ assert.ok(first);
 const root={session,manager};
 const currentness=createOperationCurrentness(root);
 const initial=currentness.capture(root);
-assert.equal(messages.at(-1)?.stopReason,mode==='retry'?'error':['inflight','combined'].includes(mode)?'aborted':'stop');
+assert.equal(messages.at(-1)?.stopReason,mode==='retry'?'error':['inflight','combined'].includes(mode)?'aborted':'stop',messages.at(-1)?.errorMessage);
 if(['switch','combined'].includes(mode))await session.setModel({...env.options.model,baseUrl:'https://second.invalid/v1'});
 if(['reload','combined'].includes(mode))await session.reload();
 if(['tree','combined','tree-cancel','tree-summary'].includes(mode)){
