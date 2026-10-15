@@ -53,7 +53,7 @@ export function schedulePreparedCalls({
     const tool = tools.find(function matchesTool(value) {
       return value.name === call.name;
     });
-    if ((tool !== undefined) && ((typeof tool.createExecutionContext) !== 'function')) throw new PreparedBatchContractError(`Tool ${JSON.stringify(call.name)} lacks required native context support; the complete group was not started`);
+    if ((Boolean(tool) === true) && ((typeof tool?.createExecutionContext) !== 'function')) throw new PreparedBatchContractError(`Tool ${JSON.stringify(call.name)} lacks required native context support; the complete group was not started`);
   }
   /** An explicit sequential mode bypasses per-tool execution-mode reads after capability validation. */
   const serial = (executionMode === 'sequential') || scheduled.some(function requiresSequentialExecution(call) {

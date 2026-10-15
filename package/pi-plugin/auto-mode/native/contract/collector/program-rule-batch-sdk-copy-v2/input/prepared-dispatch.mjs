@@ -1,4 +1,5 @@
 import { sealPreparedInput } from './prepared-input-seal.ts';
+import { schedulePreparedCalls } from './prepared-schedule.ts';
 
 export class PreparedBatchContractError extends Error {}
 export class PreparedBatchExecutionError extends Error {
@@ -53,26 +54,7 @@ export async function dispatchPreparedBatch({
   executionJudgment,
   executionMode='parallel'
 }) {
-  if((!Array.isArray(calls)) || (calls.length===0)
-    || (calls.length>64)
-    || calls.some(function isInvalidCall(call) { return ((call.type!=='toolCall') || ((typeof call.id)!=='string')
-      || (!call.id)
-      || ((typeof call.name)!=='string')
-      || (!call.name)); })
-    || (new Set(calls.map(function readCallId(call) { return (call.id); })).size!==calls.length))throw new PreparedBatchContractError('Prepared batch requires one to64 unique named members');
-  const scheduled=Object.freeze(calls.map(function cloneScheduledCall(call) { return (Object.freeze(structuredClone(call))); }));
-  if((executionMode!=='parallel') && (executionMode!=='sequential'))throw new PreparedBatchContractError('Unknown batch execution mode');
-  if((!executionJudgment)||[
-    'memberFor',
-    'beginExecution',
-    'executionFor',
-    'finishExecution'
-  ].some(function isMissingExecutionSupport(name) { return ((typeof executionJudgment[name])!=='function'); }))throw new PreparedBatchContractError('Enclosing judgment lacks required native execution occurrence support');
-  for(const call of scheduled){const tool=tools.find(function matchesTool(value) { return (value.name===call.name); });if(tool&&((typeof tool.createExecutionContext)!=='function'))throw new PreparedBatchContractError(`Tool ${JSON.stringify(call.name)
-    } lacks required native context support; the complete group was not started`);}
-  const serial=(executionMode==='sequential') || scheduled.some(function requiresSequentialExecution(call) { return (tools.find(function matchesTool(tool) { return (tool.name===call.name); })
-    ?.executionMode
-    ==='sequential'); });
+  const { scheduled, serial } = schedulePreparedCalls({ calls, tools, executionJudgment, executionMode, PreparedBatchContractError });
   const turns=scheduled.map(function createExecutionTurn() { return (Promise.withResolvers()); });
   const preparationTurns=scheduled.map(function createPreparationTurn() { return (Promise.withResolvers()); });
   turns[0]
