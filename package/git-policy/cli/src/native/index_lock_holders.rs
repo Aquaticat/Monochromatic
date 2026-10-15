@@ -120,6 +120,7 @@ fn exited(error: &std::io::Error) -> bool {
     {
         return error.raw_os_error() == Some(libc::ESRCH);
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         return false;
@@ -285,6 +286,7 @@ pub fn scan_platform_holders(lock_path: &Path, device: u64, inode: u64) -> Holde
     {
         return scan_lsof_holders(lock_path, device, inode);
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(windows)]
     {
         let _ = (device, inode);
@@ -358,6 +360,7 @@ fn scan_lsof_holders(lock_path: &Path, device: u64, inode: u64) -> HolderEvidenc
 /// ```ts
 /// async function scanRestartManagerHolders(lockPath: string): Promise<LockHolderEvidence>;
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(windows)]
 fn scan_restart_manager_holders(lock_path: &Path) -> HolderEvidence {
     let output: std::io::Result<std::process::Output> = std::process::Command::new("powershell.exe")

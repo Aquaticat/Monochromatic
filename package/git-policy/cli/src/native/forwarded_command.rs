@@ -346,6 +346,7 @@ fn os_words(words: Vec<Vec<u8>>) -> Vec<OsString> {
             use std::os::unix::ffi::OsStringExt;
             owned.push(OsString::from_vec(word));
         }
+        // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
         #[cfg(not(unix))]
         {
             owned.push(OsString::from(String::from_utf8_lossy(word.as_slice()).into_owned()));

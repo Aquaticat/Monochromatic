@@ -69,6 +69,7 @@ fn set_private_file(path: &Path) -> std::io::Result<()> {
 }
 
 /// Windows has no mode bits for this file; the incumbent's ACL work is not ported.
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(windows)]
 fn set_private_file(_path: &Path) -> std::io::Result<()> {
     return Ok(());
@@ -195,6 +196,7 @@ fn set_private_directory_mode(path: &Path) -> std::io::Result<()> {
 }
 
 /// Windows has no mode bits for the shadow directory.
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(windows)]
 fn set_private_directory_mode(_path: &Path) -> std::io::Result<()> {
     return Ok(());

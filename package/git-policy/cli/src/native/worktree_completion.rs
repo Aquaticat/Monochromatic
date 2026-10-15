@@ -131,6 +131,7 @@ pub fn is_conflict_error(error: &std::io::Error) -> bool {
     {
         return error.raw_os_error() == Some(libc::ELOOP);
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         return false;
@@ -162,6 +163,7 @@ fn identity_of(metadata: &std::fs::Metadata) -> WorktreeFileIdentity {
             mode: metadata.mode() & 0o777,
         };
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         let modified: i128 = match metadata.modified() {
@@ -202,6 +204,7 @@ fn link_count(metadata: &std::fs::Metadata) -> u64 {
         use std::os::unix::fs::MetadataExt;
         return metadata.nlink();
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         let _ = metadata;

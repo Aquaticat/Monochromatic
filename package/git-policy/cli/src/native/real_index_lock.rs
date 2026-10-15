@@ -235,6 +235,7 @@ fn same_file_identity(path: &Path, identity: &LockIdentity) -> Result<(), String
 /// ```ts
 /// throw new TypeError('filesystem identity unavailable');
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(not(unix))]
 fn same_file_identity(path: &Path, _identity: &LockIdentity) -> Result<(), String> {
     return Err(format!("the index lock identity cannot be checked here: {}", path.display()));
@@ -273,6 +274,7 @@ fn create_exclusive(path: &Path) -> Result<bool, String> {
 /// ```ts
 /// open(lockPath, O_CREAT | O_EXCL | O_RDWR);
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(not(unix))]
 fn create_exclusive(path: &Path) -> Result<bool, String> {
     let mut options: std::fs::OpenOptions = std::fs::OpenOptions::new();
@@ -326,6 +328,7 @@ fn created_identity(lock_path: &Path, real_index: &Path) -> Result<LockIdentity,
 /// ```ts
 /// throw new TypeError('filesystem identity unavailable');
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(not(unix))]
 fn created_identity(lock_path: &Path, _real_index: &Path) -> Result<LockIdentity, String> {
     return Err(format!("the index lock identity cannot be recorded here: {}", lock_path.display()));

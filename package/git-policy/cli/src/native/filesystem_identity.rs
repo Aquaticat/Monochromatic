@@ -300,6 +300,7 @@ pub fn filesystem_identity(path: &Path) -> Option<String> {
     {
         return darwin_fs_id(canonical.as_path());
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(windows)]
     {
         return windows_fs_id(canonical.as_path());
@@ -364,6 +365,7 @@ fn darwin_fs_id(path: &Path) -> Option<String> {
 /// ```ts
 /// async function resolveWindowsFsId({ path }): Promise<FsIdResolution>;
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(windows)]
 fn windows_fs_id(path: &Path) -> Option<String> {
     let text: String = path.to_string_lossy().into_owned();

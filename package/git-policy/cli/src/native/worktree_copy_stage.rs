@@ -85,6 +85,7 @@ fn create_private_tree(path: &Path) -> Result<(), WorktreeCopyError> {
 /// ```ts
 /// await mkdir(path, { recursive: true, mode: 0o700 });
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(not(unix))]
 fn create_private_tree(path: &Path) -> Result<(), WorktreeCopyError> {
     return std::fs::create_dir_all(path).map_err(|error| raw_failure(&error));
@@ -117,6 +118,7 @@ fn try_clone(source: &std::fs::File, destination: &std::fs::File) -> bool {
 /// ```ts
 /// copyFile(source, destination, constants.COPYFILE_EXCL | constants.COPYFILE_FICLONE)
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(not(target_os = "linux"))]
 fn try_clone(_source: &std::fs::File, _destination: &std::fs::File) -> bool {
     return false;
@@ -241,6 +243,7 @@ fn symlink_at(target: &Path, link: &Path) -> Result<(), WorktreeCopyError> {
 /// ```ts
 /// await symlink(target, stagePath);
 /// ```
+// UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
 #[cfg(not(unix))]
 fn symlink_at(_target: &Path, _link: &Path) -> Result<(), WorktreeCopyError> {
     return Err(raw_failure(&std::io::Error::other(

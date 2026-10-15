@@ -318,6 +318,7 @@ pub fn process_birth_identity(pid: i64) -> Result<Option<String>, ProcessIdentit
             "darwin",
         ));
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(windows)]
     {
         return Ok(inspector_identity(

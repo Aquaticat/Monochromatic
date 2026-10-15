@@ -145,6 +145,7 @@ pub fn metadata_identity(metadata: &std::fs::Metadata) -> (String, String, bool)
             metadata.file_type().is_file(),
         );
     }
+    // UNTESTED ON WINDOWS: no gate compiles or runs this branch (the crate does not build for Windows; README, Requirements).
     #[cfg(not(unix))]
     {
         // Windows has no stable device and inode in the standard library; the identity is
