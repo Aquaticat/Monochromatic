@@ -38,8 +38,10 @@ type SourceFixture = Readonly<{
 //region Deferred construction lets each consumer select its original observer capabilities.
 /**
  Create original source capabilities without starting the source handoff.
- *
+
  @returns independent identities, fault controls, and deferred construction
+
+ @example createSourceFixture();
  */
 export function createSourceFixture(): SourceFixture {
   /**
@@ -81,32 +83,34 @@ export function createSourceFixture(): SourceFixture {
   };
   /**
    Record and optionally fail one externally supplied operation.
-   *
+
    @param point - original callback boundary
-   *
+
    @throws Error when fixture supplies an original failure
    */
   function step(point: string): void {
     events.push(point);
     state.onStep?.(point);
-    if (state.failures
-      .has(point)) throw state.failures
-      .get(point);
+    if (state.failures.has(point)) throw state.failures.get(point);
   }
   /**
    Fallback observation must remain after original request lookup.
    */
-  const receipt = Object.freeze({ get sources() { 
+  const receipt = Object.freeze({
+    /** Original fallback collection is observed only when bound sources are absent. */
+    get sources(): object {
     step('receiptSources'); 
     return fallback; 
   } });
   state.bindingRequest = receipt;
   state.bindingResult = {
-    get sources() { 
+    /** Bound source getter records selection before request authentication. */
+    get sources(): unknown {
       step('bindingSources'); 
       return state.bindingSources; 
     },
-    get request() { 
+    /** Bound request getter follows source selection. */
+    get request(): unknown {
       step('bindingRequest'); 
       return state.bindingRequest; 
     },
@@ -142,7 +146,7 @@ export function createSourceFixture(): SourceFixture {
   };
   /**
    Start source ownership only after the test has configured original handoff callbacks.
-   *
+
    @returns built source owner with original fixture capabilities
    */
   function construct(): FixtureSourceOwner {

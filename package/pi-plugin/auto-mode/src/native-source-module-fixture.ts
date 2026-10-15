@@ -28,16 +28,16 @@ type SourceModule = Readonly<{
 
 /**
  Require the built factory before exercising original source capabilities.
- *
+
  @param value - copied native module namespace
- *
+
  @returns assertion exposing independent consumer contract
- *
+
  @throws Error when original source factory is unavailable
  */
 function assertSourceModule(value: unknown): asserts value is SourceModule {
-  if ((value === null) || (typeof value) !== 'object'
-    || (!('createJudgmentSources' in value)) || (typeof value.createJudgmentSources) !== 'function')
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('createJudgmentSources' in value)) || ((typeof value.createJudgmentSources) !== 'function'))
     throw new Error('Built judgment source export is unavailable');
 }
 
