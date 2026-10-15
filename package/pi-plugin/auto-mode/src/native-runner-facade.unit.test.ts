@@ -47,7 +47,9 @@ await describe({ name: '', children: [
     return it({ name: `retains original ${point} construction failure without later callbacks`, fn: async () => {
       const fixture = createRunnerFacadeFixture();
       fixture.control.failAt = point;
-      assert.throws(fixture.create, function original(error) { return error === fixture.control.failure; });
+      assert.throws(fixture.create, function original(error) { 
+        return error === fixture.control.failure; 
+      });
       assert.equal(fixture.steps.at(-1), point);
     } });
   }),
@@ -71,16 +73,26 @@ await describe({ name: '', children: [
     assert.deepEqual(fixture.observations[2], ['execute', { origin: fixture.input.origin, program: fixture.program, group, bound: fixture.bound, assertParentCurrent: fixture.input.assertParentCurrent }]);
     assert.deepEqual(fixture.observations[3], ['convert', { group: group.handle, slot: fixture.bound.slots[1], outcome }]);
     await run.drain();
-    assert.throws(function missingGroup() { input.scriptValueFor({ group: {}, ordinal: 0, outcome }); }, { message: 'Native group has no owned result slots' });
+    assert.throws(function missingGroup() { 
+      input.scriptValueFor({ group: {}, ordinal: 0, outcome }); 
+    }, { message: 'Native group has no owned result slots' });
     fixture.control.failAt = 'convert';
-    assert.throws(function failedConversion() { input.scriptValueFor({ group: group.handle, ordinal: 0, outcome }); }, function original(error) { return error === fixture.control.failure; });
+    assert.throws(function failedConversion() { 
+      input.scriptValueFor({ group: group.handle, ordinal: 0, outcome }); 
+    }, function original(error) { 
+      return error === fixture.control.failure; 
+    });
   } }),
   it({ name: 'retains originally captured judgment after opening replaces parent judgment', fn: async () => {
     const fixture = createRunnerFacadeFixture();
     const {judgment} = fixture.input.origin;
     fixture.control.onStep = function replaceAtOpen(point) {
       if (point !== 'open') return;
-      fixture.input.origin.judgment = { openProgram(): never { throw new Error('replacement used'); }, scriptValueFor(): never { throw new Error('replacement used'); } };
+      fixture.input.origin.judgment = { openProgram(): never { 
+        throw new Error('replacement used'); 
+      }, scriptValueFor(): never { 
+        throw new Error('replacement used'); 
+      } };
     };
     const run = fixture.create();
     const input = fixture.runtimeInput();
@@ -96,9 +108,15 @@ await describe({ name: '', children: [
     const input = fixture.runtimeInput();
     const group = { handle: {} };
     fixture.control.failAt = 'bind';
-    assert.throws(function dispatch() { input.dispatchGroup(group); }, function original(error) { return error === fixture.control.failure; });
+    assert.throws(function dispatch() { 
+      input.dispatchGroup(group); 
+    }, function original(error) { 
+      return error === fixture.control.failure; 
+    });
     assert.deepEqual(fixture.steps.slice(-1), ['bind']);
-    assert.throws(function value() { input.scriptValueFor({ group: group.handle, ordinal: 0, outcome: null }); }, { message: 'Native group has no owned result slots' });
+    assert.throws(function value() { 
+      input.scriptValueFor({ group: group.handle, ordinal: 0, outcome: null }); 
+    }, { message: 'Native group has no owned result slots' });
     await run.drain();
   } }),
   //endregion

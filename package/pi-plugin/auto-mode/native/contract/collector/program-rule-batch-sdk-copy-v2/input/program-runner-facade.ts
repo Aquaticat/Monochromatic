@@ -107,7 +107,9 @@ export function createDeclaredProgramFacade({
       nativeGroups.set(group.handle, bound);
       /** Settle original execution before rejecting every original member ticket. */
       async function settle(): Promise<void> {
-        try { await executeGroup({ origin, program, group, bound, assertParentCurrent }); }
+        try { 
+          await executeGroup({ origin, program, group, bound, assertParentCurrent }); 
+        }
         catch (error) {
           fl.debug('retaining original reached-group execution failure');
           failures.push(error);
@@ -115,7 +117,9 @@ export function createDeclaredProgramFacade({
         }
       }
       works.push(settle());
-      return bound.tickets.map(function readResultTicket(ticket) { return ticket.promise; });
+      return bound.tickets.map(function readResultTicket(ticket) { 
+        return ticket.promise; 
+      });
     },
     scriptValueFor({ group, ordinal, outcome }) {
       /** Only an originally bound reached group supplies native result slots. */
@@ -140,7 +144,11 @@ export function createDeclaredProgramFacade({
        */
       const errors = [
         ...failures,
-        ...drained.filter(function isRejected(value) { return value.status === 'rejected'; }).map(function readRejection(value) { return value.reason; })
+        ...drained.filter(function isRejected(value) { 
+          return value.status === 'rejected'; 
+        }).map(function readRejection(value) { 
+          return value.reason; 
+        })
       ];
       if (errors.length > 0) throw new NativeExecutionGuardError({
         errors,

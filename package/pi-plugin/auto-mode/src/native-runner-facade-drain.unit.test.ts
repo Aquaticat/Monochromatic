@@ -10,8 +10,12 @@ await describe({ name: '', children: [
     const fixture = createRunnerFacadeFixture();
     const native = Promise.withResolvers<void>();
     const runtime = Promise.withResolvers<void>();
-    fixture.control.execution = function execute() { return native.promise; };
-    fixture.control.drain = function drain() { return runtime.promise; };
+    fixture.control.execution = function execute() { 
+      return native.promise; 
+    };
+    fixture.control.drain = function drain() { 
+      return runtime.promise; 
+    };
     const run = fixture.create();
     await Promise.all(fixture.runtimeInput().dispatchGroup({ handle: {} }));
     const draining = run.drain();
@@ -50,8 +54,12 @@ await describe({ name: '', children: [
     const fixture = createRunnerFacadeFixture();
     const nativeFailure = Object.freeze({ original: 'native failure' });
     const rejectFailure = Object.freeze({ original: 'ticket rejection failure' });
-    fixture.control.execution = async function execute() { throw nativeFailure; };
-    fixture.control.drain = async function drain() { throw nativeFailure; };
+    fixture.control.execution = async function execute() { 
+      throw nativeFailure; 
+    };
+    fixture.control.drain = async function drain() { 
+      throw nativeFailure; 
+    };
     fixture.control.failAt = 'reject:0';
     fixture.control.failure = rejectFailure;
     const run = fixture.create();
@@ -66,9 +74,13 @@ await describe({ name: '', children: [
   it({ name: 'retains native work created synchronously by runtime drain before capturing work snapshot', fn: async () => {
     const fixture = createRunnerFacadeFixture();
     const native = Promise.withResolvers<void>();
-    fixture.control.execution = function execute() { return native.promise; };
+    fixture.control.execution = function execute() { 
+      return native.promise; 
+    };
     const run = fixture.create();
-    fixture.control.onStep = function duringDrain(point) { if (point === 'drain') fixture.runtimeInput().dispatchGroup({ handle: {} }); };
+    fixture.control.onStep = function duringDrain(point) { 
+      if (point === 'drain') fixture.runtimeInput().dispatchGroup({ handle: {} }); 
+    };
     const draining = run.drain();
     assert.equal(await Promise.race([draining, setImmediate('pending')]), 'pending');
     native.resolve();
@@ -79,17 +91,23 @@ await describe({ name: '', children: [
     const fixture = createRunnerFacadeFixture();
     const run = fixture.create();
     fixture.control.failAt = 'drain';
-    await assert.rejects(run.drain, function original(error) { return error === fixture.control.failure; });
+    await assert.rejects(run.drain, function original(error) { 
+      return error === fixture.control.failure; 
+    });
   } }),
   it({ name: 'captures current work once but reads all retained failures after captured work settles', fn: async () => {
     const fixture = createRunnerFacadeFixture();
     const first = Promise.withResolvers<void>();
     const late = Promise.withResolvers<void>();
-    fixture.control.execution = function execute() { return first.promise; };
+    fixture.control.execution = function execute() { 
+      return first.promise; 
+    };
     const run = fixture.create();
     fixture.runtimeInput().dispatchGroup({ handle: {} });
     const draining = run.drain();
-    fixture.control.execution = function executeLater() { return late.promise; };
+    fixture.control.execution = function executeLater() { 
+      return late.promise; 
+    };
     fixture.runtimeInput().dispatchGroup({ handle: {} });
     first.resolve();
     await draining;

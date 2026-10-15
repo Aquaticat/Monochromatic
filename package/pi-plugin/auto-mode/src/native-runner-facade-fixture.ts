@@ -43,42 +43,94 @@ export function createRunnerFacadeFixture(): RunnerFacadeFixture {
   const program = Object.freeze({ original: 'program' });
   const value = Object.freeze({ original: 'converted' });
   const bound: FacadeFixtureBinding = { slots: [{ original: 'first slot' }, { original: 'second slot' }], tickets: [0, 1].map(function ticket(ordinal) {
-    return { promise: Promise.resolve({ ordinal }), reject(error: unknown): void { observations.push(['reject', ordinal, error]); step(`reject:${ordinal}`); } };
+    return { promise: Promise.resolve({ ordinal }), reject(error: unknown): void { 
+      observations.push(['reject', ordinal, error]); 
+      step(`reject:${ordinal}`); 
+    } };
   }) };
   /** Record callback entry before optional original failure or reentry.
    @param point - original callback boundary
    @throws Error when this callback is selected as failing
    */
-  function step(point: string): void { steps.push(point); control.onStep?.(point); if (control.failAt === point) throw control.failure; }
+  function step(point: string): void { 
+    steps.push(point); 
+    control.onStep?.(point); 
+    if (control.failAt === point) throw control.failure; 
+  }
   const runtime: FacadeFixtureRun = {
     declaration: Object.freeze({ original: 'declaration' }), tools: Object.freeze([{ original: 'source tool' }]),
-    inspect(): unknown { step('inspect'); return value; },
-    retire(): void { step('retire'); },
-    valueFor(input: unknown): unknown { observations.push(['value', input]); return value; },
-    drain(): Promise<void> { assert.equal(this, runtime); step('drain'); return control.drain?.() ?? Promise.resolve(); },
+    inspect(): unknown { 
+      step('inspect'); 
+      return value; 
+    },
+    retire(): void { 
+      step('retire'); 
+    },
+    valueFor(input: unknown): unknown { 
+      observations.push(['value', input]); 
+      return value; 
+    },
+    drain(): Promise<void> { 
+      assert.equal(this, runtime); 
+      step('drain'); 
+      return control.drain?.() ?? Promise.resolve(); 
+    },
   };
   const state: { runtimeInput?: FacadeFixtureRuntimeInput } = {};
   const judgment = {
-    openProgram(input: unknown): object { assert.equal(this, judgment); observations.push(['open', input]); step('open'); return program; },
-    scriptValueFor(input: unknown): unknown { assert.equal(this, judgment); observations.push(['convert', input]); step('convert'); return value; },
+    openProgram(input: unknown): object { 
+      assert.equal(this, judgment); 
+      observations.push(['open', input]); 
+      step('open'); 
+      return program; 
+    },
+    scriptValueFor(input: unknown): unknown { 
+      assert.equal(this, judgment); 
+      observations.push(['convert', input]); 
+      step('convert'); 
+      return value; 
+    },
   };
   const input: FacadeFixtureInput = {
     tools: Object.freeze([{ name: 'first' }, { name: 'first' }, { name: 'last' }]), code: 'original source', carrier: { token: Object.freeze({ original: 'parent token' }) },
     origin: { prepared: { id: 'parent id', name: 'parent tool', input: { code: 'original source' } }, signal: new AbortController().signal, judgment },
-    assertParentCurrent(): void { assert.equal(this, undefined); step('parent'); },
-    bindGroup(binding: unknown): FacadeFixtureBinding { assert.equal(this, undefined); observations.push(['bind', binding]); step('bind'); return bound; },
-    executeGroup(execution: unknown): Promise<void> { assert.equal(this, undefined); observations.push(['execute', execution]); step('execute'); return control.execution?.() ?? Promise.resolve(); },
-    createReachedProgramRun(runtimeInput: FacadeFixtureRuntimeInput): FacadeFixtureRun { assert.equal(this, undefined); state.runtimeInput = runtimeInput; step('runtime'); return runtime; },
+    assertParentCurrent(): void { 
+      assert.equal(this, undefined); 
+      step('parent'); 
+    },
+    bindGroup(binding: unknown): FacadeFixtureBinding { 
+      assert.equal(this, undefined); 
+      observations.push(['bind', binding]); 
+      step('bind'); 
+      return bound; 
+    },
+    executeGroup(execution: unknown): Promise<void> { 
+      assert.equal(this, undefined); 
+      observations.push(['execute', execution]); 
+      step('execute'); 
+      return control.execution?.() ?? Promise.resolve(); 
+    },
+    createReachedProgramRun(runtimeInput: FacadeFixtureRuntimeInput): FacadeFixtureRun { 
+      assert.equal(this, undefined); 
+      state.runtimeInput = runtimeInput; 
+      step('runtime'); 
+      return runtime; 
+    },
     NativeExecutionGuardError: guardModule.NativeExecutionGuardError,
   };
   /** Construct the built facade after test-specific input or callback changes.
    @returns frozen original runtime facade
    */
-  function create(): FacadeFixtureRun { return facadeFixtureModule.createDeclaredProgramFacade(input); }
+  function create(): FacadeFixtureRun { 
+    return facadeFixtureModule.createDeclaredProgramFacade(input); 
+  }
   /** Read original callbacks captured by the independently controlled runtime.
    @returns original runtime constructor input
    */
-  function runtimeInput(): FacadeFixtureRuntimeInput { assert.ok(state.runtimeInput); return state.runtimeInput; }
+  function runtimeInput(): FacadeFixtureRuntimeInput { 
+    assert.ok(state.runtimeInput); 
+    return state.runtimeInput; 
+  }
   return { input, steps, observations, control, program, bound, runtime, value, create, runtimeInput };
 }
 //endregion
