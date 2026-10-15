@@ -36,7 +36,7 @@ The later adopted manual-confirmation policy handles otherwise uncertain assessm
 The first live-score verifier passed response metadata into the strict categorical consumer.
 It received `InstructionResolutionInputError: Policy record contains an unsupported field`
 after the HTTP request had completed.
-`package/pi-plugin/auto-mode/src/semantic-operating-choice.ts:126` selects only these fields:
+`package/pi-plugin/auto-mode/src/semantic-operating-choice.ts:122` selects only these fields:
 
 ```ts
 // package/pi-plugin/auto-mode/src/semantic-operating-choice.ts, categorical input fields

@@ -233,10 +233,40 @@ Receipts are in `pi-hyper-rpc-allow-hRnQ6s`,
 `pi-hyper-rpc-stop-UJfsga`,
 and `pi-hyper-rpc-cancelled-9LsqI6` under `${HOME}/temp/agent/`.
 
-Next verify an actual Hyper-generated tool call,
-finish the targeted guard omission controls,
-and update the package-facing behavior documentation.
-Genuine human approval and the previously recorded native lint backlog remain outstanding.
+The real Hyper primary and live Luna assessment now pass together through the installed native CLI.
+The generated program reads `proof.txt` with the original `read` tool after a scripted Allow.
+All 17 configured packages are loaded,
+the read executes once,
+and the child exits zero.
+`pi-hyper-rpc-allow-Gt6QZx/verification.json` records two Hyper requests and one Luna request.
+The initial receipt counted only Luna;
+its provider total was corrected from retained responses without another host run.
+The first attempt stopped before any provider request because the saved Hyper OAuth access token had expired.
+The installed provider's `refreshHyperToken` and Pi's locked credential owner refreshed it normally.
+The disposable child still receives only fake credentials;
+the parent holds current credentials in memory for the exact bridged requests.
+
+Both new process-local omission controls pass:
+removing established-prohibition protection fails its named outcome assertion,
+and removing uncertainty routing fails the native confirmation assertions.
+`pi-tool-call-scope-20261014/manual-review-prohibition-verification.json`
+and `manual-review-uncertainty-verification.json` retain unchanged built-artifact hashes.
+The package README now distinguishes installed native behavior from the retained legacy extension.
+Native documentation uses the adopted `0.60` cutoff and current confirmation semantics.
+Rendered output has been inspected.
+
+A fresh real-model run is waiting for the user's response to the original native dialog in
+`pi-hyper-rpc-human-bFNRvU` under `${HOME}/temp/agent/`.
+Its exact operation is `return await tools.read({path: "proof.txt"});`.
+The response question is pending;
+do not invent or reuse permission for it.
+
+The full package lint now reports 14,550 warnings and 454 errors across 425 files.
+`${HOME}/temp/agent/pi-native-full-lint-manual-review-20261014.log` retains the complete diagnostics.
+This is a changed file set,
+not a controlled comparison with the older 389-file count.
+Continue the maintained native quality work;
+do not reinterpret this passing live operation as full package completion.
 
 ## Current Pi execution model
 
