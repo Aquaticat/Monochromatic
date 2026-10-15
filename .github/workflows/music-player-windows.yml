@@ -137,8 +137,7 @@ jobs:
         echo "version=$version" >> "$GITHUB_OUTPUT"
         rustc "+$toolchain" -vV
 
-    # Package download cache of the preinstalled MSYS2 (C:\msys64). setup-msys2 has its own cache, but it saves
-    # from every run including pull requests, so it is switched off and the same directory is cached here.
+    # Package download cache of the preinstalled MSYS2 (C:\msys64): the .pkg.tar.zst files pacman downloads.
     - name: Restore the MSYS2 package cache
       id: msys2-cache
       if: ${{ matrix.flavor == 'gnu' }}
@@ -149,18 +148,21 @@ jobs:
         restore-keys: |
           msys2-pkg-${{ runner.os }}-${{ runner.arch }}-${{ matrix.msystem }}-
 
+    # The runner image carries MSYS2 in C:\msys64 (not on PATH). It is used directly, without the
+    # msys2/setup-msys2 action, which this repository's allowed-actions list does not permit. The package
+    # database in the image is stale, so it is refreshed first (`-Sy`); only mingw-w64 packages, which are
+    # self-contained under /ucrt64 or /mingw64, are installed, so a partial MSYS2 upgrade is not a concern.
     # gcc brings binutils (GNU ld, as, dlltool, windres) and the MinGW-w64 runtime. cmake and ninja come from
     # the runner image: opusic-sys builds libopus with cmake and picks the Ninja generator when ninja runs.
-    - name: Install MinGW-w64 with MSYS2
-      id: msys2
+    - name: Install MinGW-w64 with the preinstalled MSYS2
       if: ${{ matrix.flavor == 'gnu' }}
-      uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e
-      with:
-        msystem: ${{ matrix.msystem }}
-        release: false
-        update: true
-        cache: false
-        pacboy: gcc:p
+      env:
+        MSYSTEM: ${{ matrix.msystem }}
+        MSYS2_PATH_TYPE: strict
+      run: |
+        set -euo pipefail
+        /c/msys64/usr/bin/bash.exe -lc 'pacman --sync --refresh --noconfirm --needed "${MINGW_PACKAGE_PREFIX}-gcc"'
+        du -sh /c/msys64/var/cache/pacman/pkg
 
     - name: Put the MinGW-w64 tools first on PATH and print them
       if: ${{ matrix.flavor == 'gnu' }}
