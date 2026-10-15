@@ -7313,6 +7313,23 @@ A process-local omission reproduced `ReferenceError: requestMaterialBinding is n
 without changing the built module;
 the receipt is `${HOME}/temp/agent/pi-tool-call-scope-20261014/request-claim-omission.json`.
 
+The broader regression sequence passed on `ac35a7c2ac`,
+including approved policy changes,
+cancellation,
+prepared argument mutation,
+native event receipts,
+host lifecycle,
+and the isolated CLI process.
+Batch selection consolidation measured 10208 opens;
+the original-approval validation consolidation measured 10086.
+Commit `f79ac0ea45` then passed the unchanged work bound with 9046 opens:
+the native tool wrapper reads its original execution origin through the required entry validation,
+instead of performing entry validation and then repeating dependency validation to read the origin.
+`${HOME}/temp/agent/pi-native-entry-origin-work-20261014.log` retains the passing output.
+This is work-count evidence for the fixed fixture,
+not a universal latency guarantee.
+The expanded final runtime regression sequence is still running.
+
 A separate full lint attempt during this cleanup failed before producing diagnostics with
 `Error running tsgolint: "exit status: exit status: 2"`
 and `runtime: failed to create new OS thread (have 2 already; errno=11)`.

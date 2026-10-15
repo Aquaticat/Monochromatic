@@ -559,6 +559,28 @@ the response reported the verified live flow,
 the remaining work-bound failure,
 the last full lint counts,
 and the absence of a reliable completion estimate.
+The first broader regression sequence passed on `ac35a7c2ac`:
+domain,
+manual review,
+approval context,
+single-call,
+changed-dependency,
+event-receipt,
+host-lifecycle,
+and CLI-process checks.
+Batch candidate selection consolidation then measured 10208 opens;
+removing duplicate decision-wrapper validation before original approval measured 10086.
+Commit `f79ac0ea45` reads execution origins through the already-required native entry check.
+Its built work-bound regression passes at 9046 opens without changing the 10000-open limit.
+The baseline required-red count remains 45637.
+`${HOME}/temp/agent/pi-native-entry-origin-work-20261014.log` records the passing consumer.
+The final expanded regression sequence is running in
+`${HOME}/temp/agent/pi-native-source-boundaries-final-20261014.log`.
+It adds program queue,
+resource reload,
+resource input,
+context receipts,
+and the whole-request claim consumer to the prior sequence.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
