@@ -131,8 +131,20 @@ export async function runPreparedLifecycle({
       context,
       signal,
       afterToolCall: after,
-      onUpdate: onUpdate === undefined ? undefined : function forwardPartialUpdate(partial): unknown { return onUpdate(partial, call); },
-      beforeToolCall: function prepareNativeMember(hook) { return prepareMember({ hook, call, memberState, releasePreparation }); },
+      onUpdate: onUpdate === undefined ? undefined : function forwardPartialUpdate(partial): unknown { 
+        return onUpdate(
+          partial,
+          call
+        ); 
+      },
+      beforeToolCall: function prepareNativeMember(hook) { 
+        return prepareMember({
+          hook,
+          call,
+          memberState,
+          releasePreparation
+        }); 
+      },
     }
     );
     if (!memberState.entered) block('A member failed native preparation before group admission');

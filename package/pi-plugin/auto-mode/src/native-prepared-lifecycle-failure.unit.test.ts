@@ -28,8 +28,12 @@ await describe({ name: 'original native lifecycle failure ownership', children: 
   it({ name: 'preserves ordinal lookup failure before disposal', fn: async function lookupFailure() {
     const fixture = createLifecycleFixture();
     const failure: unknown = { original: 'lookup' };
-    await assert.rejects(fixture.run({ ordinalByID: { get() { throw failure; } } }), function original(error: unknown) { assert.equal(error, failure);
-    return true; });
+    await assert.rejects(fixture.run({ ordinalByID: { get() { 
+      throw failure; 
+    } } }), function original(error: unknown) { 
+      assert.equal(error, failure);
+    return true; 
+    });
     assert.deepEqual(fixture.events, []);
     assert.deepEqual(fixture.failures, []);
   } }),
@@ -40,19 +44,25 @@ await describe({ name: 'original native lifecycle failure ownership', children: 
       return it({ name: `retains opaque ${boundary} failure ${ordinal}`, fn: async function retained() {
         const fixture = createLifecycleFixture();
         const originalFailure: unknown = failure;
-        async function reject(): Promise<never> { throw originalFailure; }
+        async function reject(): Promise<never> { 
+          throw originalFailure; 
+        }
         if (boundary === 'wait') fixture.control.wait = reject;
         if (boundary === 'start') fixture.control.start = reject;
         if (boundary === 'native') fixture.control.native = reject;
         if (boundary === 'prepare') fixture.control.prepare = reject;
         if (boundary === 'finish') fixture.control.finish = reject;
-        await assert.rejects(fixture.run(), function original(error: unknown) { assert.equal(error, failure);
-        return true; });
+        await assert.rejects(fixture.run(), function original(error: unknown) { 
+          assert.equal(error, failure);
+        return true; 
+        });
         assert.deepEqual(fixture.failures, [failure]);
         assert.equal(fixture.failures[0], failure);
         assert.deepEqual(fixture.blockReasons, ['Native member lifecycle failed']);
         assert.equal(fixture.events.at(-1), 'release-execution:3');
-        assert.equal(fixture.events.filter(function preparation(value) { return value === 'release-preparation:3'; }).length, 1);
+        assert.equal(fixture.events.filter(function preparation(value) { 
+          return value === 'release-preparation:3'; 
+        }).length, 1);
       } });
     });
   }),
@@ -60,12 +70,18 @@ await describe({ name: 'original native lifecycle failure ownership', children: 
     return it({ name: `preserves ${boundary} failure outside lifecycle catch`, fn: async function disposal() {
       const fixture = createLifecycleFixture();
       const failure: unknown = { original: boundary };
-      fixture.control.prepare = function retainTurn(input) { input.memberState.entered = true; };
-      function reject(): never { throw failure; }
+      fixture.control.prepare = function retainTurn(input) { 
+        input.memberState.entered = true; 
+      };
+      function reject(): never { 
+        throw failure; 
+      }
       if (boundary === 'releasePreparation') fixture.control.releasePreparation = reject;
       if (boundary === 'releaseExecution') fixture.control.releaseExecution = reject;
-      await assert.rejects(fixture.run(), function original(error: unknown) { assert.equal(error, failure);
-      return true; });
+      await assert.rejects(fixture.run(), function original(error: unknown) { 
+        assert.equal(error, failure);
+      return true; 
+      });
       assert.deepEqual(fixture.failures, []);
       assert.deepEqual(fixture.blockReasons, []);
       assert.equal(fixture.events.includes('finish'), true);
@@ -75,9 +91,13 @@ await describe({ name: 'original native lifecycle failure ownership', children: 
   it({ name: 'retains early preparation release failure once and still disposes execution', fn: async function earlyRelease() {
     const fixture = createLifecycleFixture();
     const failure: unknown = { original: 'early release' };
-    fixture.control.releasePreparation = function reject() { throw failure; };
-    await assert.rejects(fixture.run(), function original(error: unknown) { assert.equal(error, failure);
-    return true; });
+    fixture.control.releasePreparation = function reject() { 
+      throw failure; 
+    };
+    await assert.rejects(fixture.run(), function original(error: unknown) { 
+      assert.equal(error, failure);
+    return true; 
+    });
     assert.deepEqual(fixture.failures, [failure]);
     assert.deepEqual(fixture.events, ['wait:3', 'start', 'native', 'prepare', 'release-preparation:3', 'block', 'release-execution:3']);
   } }),
@@ -85,8 +105,12 @@ await describe({ name: 'original native lifecycle failure ownership', children: 
     const fixture = createLifecycleFixture();
     const failure: unknown = { original: 'native' };
     const disposal: unknown = { original: 'disposal' };
-    fixture.control.native = function reject() { throw failure; };
-    fixture.control.releaseExecution = function reject() { throw disposal; };
+    fixture.control.native = function reject() { 
+      throw failure; 
+    };
+    fixture.control.releaseExecution = function reject() { 
+      throw disposal; 
+    };
     await assert.rejects(fixture.run(), function original(error: unknown) {
       assert.ok(error instanceof SuppressedError);
       assert.equal(error.error, disposal);
@@ -101,9 +125,15 @@ await describe({ name: 'original native lifecycle failure ownership', children: 
     const fixture = createLifecycleFixture();
     const failure: unknown = { original: 'native' };
     const blocked: unknown = { original: 'block' };
-    fixture.control.native = function reject() { throw failure; };
-    await assert.rejects(fixture.run({ block() { throw blocked; } }), function original(error: unknown) { assert.equal(error, blocked);
-    return true; });
+    fixture.control.native = function reject() { 
+      throw failure; 
+    };
+    await assert.rejects(fixture.run({ block() { 
+      throw blocked; 
+    } }), function original(error: unknown) { 
+      assert.equal(error, blocked);
+    return true; 
+    });
     assert.deepEqual(fixture.failures, [failure]);
     assert.equal(fixture.events.at(-1), 'release-execution:3');
   } }),

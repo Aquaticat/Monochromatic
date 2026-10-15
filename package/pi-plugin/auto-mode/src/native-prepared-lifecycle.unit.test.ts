@@ -10,8 +10,12 @@ await describe({ name: 'original prepared native lifecycle', children: [
   //region Original native callbacks and borrowed values retain identity and ordering.
   it({ name: 'forwards original native arguments and releases preparation before finishing', fn: async function original() {
     const fixture = createLifecycleFixture();
-    fixture.control.start = function start(call) { assert.equal(call, fixture.call); };
-    fixture.control.finish = function finish(result) { assert.equal(result, fixture.result); };
+    fixture.control.start = function start(call) { 
+      assert.equal(call, fixture.call); 
+    };
+    fixture.control.finish = function finish(result) { 
+      assert.equal(result, fixture.result); 
+    };
     fixture.control.native = async function native(call, options) {
       assert.equal(call, fixture.call);
       assert.equal(options.tools, fixture.identities.executableTools);
@@ -40,14 +44,18 @@ await describe({ name: 'original prepared native lifecycle', children: [
       const fixture = createLifecycleFixture();
       const gate = Promise.withResolvers<unknown>();
       const settled = { value: false };
-      function pending(): Promise<unknown> { return gate.promise; }
+      function pending(): Promise<unknown> { 
+        return gate.promise; 
+      }
       if (boundary === 'wait') fixture.control.wait = pending;
       if (boundary === 'start') fixture.control.start = pending;
       if (boundary === 'finish') fixture.control.finish = pending;
       if (boundary === 'native') fixture.control.native = pending;
-      async function observe(): Promise<unknown> { const result = await fixture.run();
+      async function observe(): Promise<unknown> { 
+        const result = await fixture.run();
       settled.value = true;
-      return result; }
+      return result; 
+      }
       const running = observe();
       await immediate();
       const observed = [...fixture.events];
@@ -74,7 +82,9 @@ await describe({ name: 'original prepared native lifecycle', children: [
   }),
   it({ name: 'blocks missing native preparation while retaining result and finish callback', fn: async function noPreparation() {
     const fixture = createLifecycleFixture();
-    fixture.control.native = function noHook() { return fixture.result; };
+    fixture.control.native = function noHook() { 
+      return fixture.result; 
+    };
     assert.equal(await fixture.run(), fixture.result);
     assert.deepEqual(fixture.blockReasons, ['A member failed native preparation before group admission']);
     assert.deepEqual(fixture.events, ['wait:3', 'start', 'native', 'block', 'finish', 'release-preparation:3', 'release-execution:3']);

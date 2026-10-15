@@ -104,18 +104,26 @@ const lifecycle: LifecycleModule = loaded;
  @example createLifecycleFixture();
  */
 export function createLifecycleFixture(): LifecycleFixture {
-  /** Original declared call stays separate from prepared hook input. */
+  /**
+   Original declared call stays separate from prepared hook input.
+   */
   const call = {
     type: 'toolCall',
     id: 'one',
     name: 'tool',
     arguments: {}
   };
-  /** Native result remains opaque and unfrozen. */
+  /**
+   Native result remains opaque and unfrozen.
+   */
   const result = { original: 'result' };
-  /** Original native preparation receives this exact hook identity. */
+  /**
+   Original native preparation receives this exact hook identity.
+   */
   const hook = { args: {} };
-  /** Independent capabilities retain their original borrowed identities. */
+  /**
+   Independent capabilities retain their original borrowed identities.
+   */
   const identities = {
     executableTools: [{}],
     assistantMessage: {},
@@ -123,32 +131,58 @@ export function createLifecycleFixture(): LifecycleFixture {
     signal: {},
     after: {}
   };
-  /** Ordered observations remain local to this disposable consumer. */
+  /**
+   Ordered observations remain local to this disposable consumer.
+   */
   const events: string[] = [];
-  /** Shared failure storage retains opaque thrown identities. */
+  /**
+   Shared failure storage retains opaque thrown identities.
+   */
   const failures: unknown[] = [];
-  /** Complete-group block reasons remain independently observable. */
+  /**
+   Complete-group block reasons remain independently observable.
+   */
   const blockReasons: string[] = [];
-  /** Original preparation inputs reveal retained closure ownership. */
+  /**
+   Original preparation inputs reveal retained closure ownership.
+   */
   const preparations: NativePreparation[] = [];
-  /** Native SDK options retain their original property presence and identities. */
+  /**
+   Native SDK options retain their original property presence and identities.
+   */
   const options: NativeOptions[] = [];
-  /** Fixture callbacks independently control every fallible lifecycle boundary. */
+  /**
+   Fixture callbacks independently control every fallible lifecycle boundary.
+   */
   const control: LifecycleControl = {
-    wait() { return undefined; },
-    start() { return undefined; },
-    finish() { return undefined; },
+    wait() { 
+      return undefined; 
+    },
+    start() { 
+      return undefined; 
+    },
+    finish() { 
+      return undefined; 
+    },
     async native(
       _call,
       nativeOptions
-    ) { await nativeOptions.beforeToolCall(hook);
-    return result; },
-    prepare(input) { input.memberState
-      .entered = true;
+    ) { 
+      await nativeOptions.beforeToolCall(hook);
+    return result; 
+    },
+    prepare(input) { 
+      input.memberState
+        .entered = true;
     input.releasePreparation();
-    return undefined; },
-    releasePreparation() { return undefined; },
-    releaseExecution() { return undefined; },
+    return undefined; 
+    },
+    releasePreparation() { 
+      return undefined; 
+    },
+    releaseExecution() { 
+      return undefined; 
+    },
   };
   /**
    Invoke built lifecycle with disposable overrides and original callbacks.
@@ -158,7 +192,9 @@ export function createLifecycleFixture(): LifecycleFixture {
    @returns original lifecycle outcome
    */
   function run(overrides: Readonly<Record<string, unknown>> = {}): Promise<unknown> {
-    /** A noninitial member exposes accidental ordinal resets. */
+    /**
+     A noninitial member exposes accidental ordinal resets.
+     */
     const declaredOrdinal = 3;
     return lifecycle.runPreparedLifecycle({
       call,
@@ -169,30 +205,46 @@ export function createLifecycleFixture(): LifecycleFixture {
       ...identities,
       failures,
       PreparedBatchContractError,
-      waitForPreparation(ordinal: number) { events.push(`wait:${ordinal}`);
-      return control.wait(ordinal); },
-      releaseNextPreparation(ordinal: number) { events.push(`release-preparation:${ordinal}`);
-      return control.releasePreparation(ordinal); },
-      releaseNextExecution(ordinal: number) { events.push(`release-execution:${ordinal}`);
-      return control.releaseExecution(ordinal); },
-      onStart(input: unknown) { events.push('start');
-      return control.start(input); },
-      onFinish(input: unknown) { events.push('finish');
-      return control.finish(input); },
+      waitForPreparation(ordinal: number) { 
+        events.push(`wait:${ordinal}`);
+      return control.wait(ordinal); 
+      },
+      releaseNextPreparation(ordinal: number) { 
+        events.push(`release-preparation:${ordinal}`);
+      return control.releasePreparation(ordinal); 
+      },
+      releaseNextExecution(ordinal: number) { 
+        events.push(`release-execution:${ordinal}`);
+      return control.releaseExecution(ordinal); 
+      },
+      onStart(input: unknown) { 
+        events.push('start');
+      return control.start(input); 
+      },
+      onFinish(input: unknown) { 
+        events.push('finish');
+      return control.finish(input); 
+      },
       runToolCall(
         input: unknown,
         nativeOptions: NativeOptions
-      ) { events.push('native');
+      ) { 
+        events.push('native');
       options.push(nativeOptions);
       return control.native(
         input,
         nativeOptions
-      ); },
-      prepareNativeMember(input: NativePreparation) { events.push('prepare');
+      ); 
+      },
+      prepareNativeMember(input: NativePreparation) { 
+        events.push('prepare');
       preparations.push(input);
-      return control.prepare(input); },
-      block(reason: string) { events.push('block');
-      blockReasons.push(reason); },
+      return control.prepare(input); 
+      },
+      block(reason: string) { 
+        events.push('block');
+      blockReasons.push(reason); 
+      },
       ...overrides,
     });
   }
