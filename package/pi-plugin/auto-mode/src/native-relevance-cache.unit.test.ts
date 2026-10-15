@@ -37,7 +37,7 @@ await describe({name:'',children:[
   //endregion
 
   //region Original source and cancellation survive newly awaited filesystem stages.
-  ...['cache-hit','cache-published'].flatMap(function eventCases(boundary){
+  ...['cache-hit','cache-published','relevance-classify-batch','relevance-view-prepared'].flatMap(function eventCases(boundary){
     return ['policy','cancellation'].map(function mutationCase(mutation){
       return it({name:`rejects ${mutation} changes during ${boundary}`,fn:async function rejectLateChange(){
         await using fixture=await cacheFixture();
@@ -79,5 +79,77 @@ await describe({name:'',children:[
       owner.readCurrent();
     });
   }}),
+  it({name:'captures the caller signal once before recursive and asynchronous work',fn:async function originalSignal(){
+    await using fixture=await cacheFixture();
+    const owner=fixture.open();
+    const controller=new AbortController();
+    const cancellation=new Error('Original caller cancelled');
+    const reads:string[]=[];
+    const input={get signal(){
+      reads.push('signal');
+      return controller.signal;
+    }};
+    fixture.callbacks.onAssessment=function cancelOriginal(){
+      controller.abort(cancellation);
+    };
+    assert.equal(await cacheFailure(owner.refresh(input)),cancellation);
+    assert.deepEqual(reads,['signal']);
+  }}),
+  it({name:'retains classifier and failure-reporting errors in their original order',fn:async function reportingFailure(){
+    await using fixture=await cacheFixture();
+    const original=new Error('Classifier delivery failed');
+    const reporting=new Error('Failure reporting failed');
+    fixture.callbacks.onAssessment=function rejectDelivery(){
+      throw original;
+    };
+    fixture.callbacks.onEvent=function rejectReporting(event){
+      if(event==='relevance-refresh-failed')throw reporting;
+    };
+    const owner=fixture.open();
+    const pending=owner.refresh();
+    const error=await cacheFailure(pending);
+    assert.ok(error instanceof AggregateError);
+    assert.deepEqual(error.errors,[original,reporting]);
+    assert.equal(owner.refresh(),pending);
+    assert.throws(function noView(){
+      owner.readCurrent();
+    });
+  }}),
+  //endregion
+
+  //region Untrusted answer membership must be complete before the first publication.
+  ...[
+    {name:'non-array',answer:null},
+    {name:'missing answer',answer:[{id:'AAA',probability:0.25}]},
+    {name:'duplicate handle',answer:[{id:'AAA',probability:0.25},{id:'AAA',probability:0.5}]},
+    {name:'foreign handle',answer:[{id:'AAA',probability:0.25},{id:'CCC',probability:0.5}]},
+    {name:'non-object answer',answer:[{id:'AAA',probability:0.25},null]},
+    {name:'missing probability',answer:[{id:'AAA',probability:0.25},{id:'BBB'}]},
+    {name:'text probability',answer:[{id:'AAA',probability:0.25},{id:'BBB',probability:'0.5'}]},
+    {name:'non-finite probability',answer:[{id:'AAA',probability:0.25},{id:'BBB',probability:Number.NaN}]},
+    {name:'negative probability',answer:[{id:'AAA',probability:0.25},{id:'BBB',probability:-0.1}]},
+    {name:'oversized probability',answer:[{id:'AAA',probability:0.25},{id:'BBB',probability:1.1}]},
+  ].map(function invalidAnswers(testCase){
+    return it({name:`rejects ${testCase.name} before publishing any estimate`,fn:async function rejectAnswers(){
+      await using fixture=await cacheFixture();
+      const events:string[]=[];
+      fixture.callbacks.onEvent=function retainEvent(event){
+        events.push(event);
+      };
+      fixture.callbacks.answer=function deliverInvalid(){
+        return testCase.answer;
+      };
+      const owner=fixture.open();
+      const pending=owner.refresh();
+      const error=await cacheFailure(pending);
+      assert.ok(Error.isError(error));
+      assert.equal(error.name,'RuleRelevanceCacheError');
+      assert.equal(events.includes('cache-published'),false);
+      assert.equal(events.includes('relevance-view-prepared'),false);
+      assert.equal(owner.refresh(),pending);
+      delete fixture.callbacks.answer;
+      assert.deepEqual((await fixture.open().refresh()).requestedRuleIds,['AAA','BBB']);
+    }});
+  }),
   //endregion
 ]});
