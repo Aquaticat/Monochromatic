@@ -41,14 +41,18 @@ The out-of-profile bypass fixture requires the new manual fallback after disabli
 its scripted Stop response is now explicit instead of accidentally approving the fallback.
 Configured-host and live checks remain pending before installation.
 The configured-host candidate checks subsequently pass with all 17 packages in `configured-final.log`.
-Live verification and commits are currently blocked by the shared worker's 256-task limit:
+Live verification and commits were interrupted by the shared worker's 256-task limit:
 Mise reports failed thread creation and Git reports failed forks and threaded `lstat`.
 An unrelated portfolio Chromium preview consumes most slots.
 The user instead authorized increasing worker capacity on 2026-10-15.
 The hook requires the exact task limit, so raising systemd alone blocks every shell command.
 The kernel value was restored through the file-edit tool to recover shell access.
-The user then specified 2048 tasks; update the maintained hook and systemd configuration together to that value,
-retaining the 4 GiB memory cap, zero swap, and two-CPU quota; leave the preview running.
+The user then specified 2048 tasks.
+Commit `561ac46f20` updates the maintained hook; its Rust tests and Clippy pass.
+The installed hook, persistent slice definition, runtime parent, and existing `codex` child now agree on 2048 tasks.
+The 4 GiB memory cap, zero swap, and two-CPU quota remain unchanged; the preview stays running.
+Ordinary shell commands through the updated hook succeed.
+The exact manual-group identity/lifetime fixture also passes in `manual-group.log`.
 Pending queue: live configured controls, exact manual-group test, final bypass/context checks,
 focused lint/type checking, rendered documentation, native activation, and installed CLI verification.
 Use the candidate's canonical path and preload its own HTTP dispatcher in the configured fixture.

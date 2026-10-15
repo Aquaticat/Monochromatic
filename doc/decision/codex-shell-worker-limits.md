@@ -41,6 +41,16 @@ global hook-trust bypass is unnecessary.
 
 ## Evidence
 
+On 2026-10-15 the user increased task capacity to 2048 after concurrent verification and a browser preview
+exhausted the former 256-task limit.
+Commit `561ac46f20` updates the hook's exact check and disposable fixtures.
+The installed helper, persistent slice definition, runtime parent, and existing `codex` child use 2048 tasks.
+Memory, swap, and CPU limits are unchanged.
+The package's native test task passes five tests with the opt-in host test skipped;
+Clippy passes with warnings denied.
+Subsequent real shell calls pass through the installed hook and read both live task limits as 2048.
+These checks do not repeat the historical overhead benchmark.
+
 The installed CLI is `codex-cli 0.162.1`.
 Its source maps `exec_command` to the native Bash hook,
 then changes only the command string when consuming `updatedInput`.
