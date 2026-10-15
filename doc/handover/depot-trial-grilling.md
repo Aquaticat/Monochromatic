@@ -440,6 +440,16 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
   No production migration or recurring automation is installed.
   Standalone sandboxes are stopped;
   the dedicated cache and reusable CI snapshot remain for trial review.
+  The final report,
+  machine-readable evidence,
+  handover,
+  and runner incident record passed scoped `lint:monochromatic-lint`.
+  CommonMark rendering was inspected for the report,
+  changed handover sections,
+  incident record,
+  trial README,
+  and organization-policy troubleshooting record.
+  Trial implementation is retained at branch commit `7f0a8b6449`.
 - The trial brief and corrected ownership scope are confirmed.
   No interview question is pending.
 - Account-wide spending controls remain unverified;
