@@ -1185,7 +1185,13 @@ or choice-option-count rejection makes the committed consumer tests fail.
 The built artifact remains unchanged;
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-definition-omissions.json`
 retains those controls.
-The full maintained lint recount is pending for this boundary.
+The full maintained lint recount covers 530 files and 486 rules:
+zero errors and 13328 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-definitions-lint-20261015.log`.
+The warning gate remains open.
+Before continuing native type cleanup,
+revisit the documented direct generated-manager and generated-SDK bootstrap cycle,
+which earlier fixtures bypassed by entering through the maintained policy module.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
