@@ -87,6 +87,8 @@ await describe({
       '[]',
       '[null,null]',
       '[[],[]]',
+      JSON.stringify({ 0: { id: 'q0', status: 'estimate', value: 0.5 }, 1: { id: 'q1', status: 'estimate', value: 0.5 }, length: 2 }),
+      JSON.stringify([{ id: 'q0', status: 'estimate', value: 0.5 }, { id: 'q1', status: 'estimate', value: 0.5 }, { id: 'q2', status: 'estimate', value: 0.5 }]),
       '[{"id":"q1","status":"estimate","value":0.5},{"id":"q0","status":"estimate","value":0.5}]',
       '[{"id":"q0","status":"estimate","value":0.5},{"id":"q1","status":"estimate","value":2}]',
       '[{"id":"q0","status":"estimate","value":0.5},{"id":"q1","status":"estimate","value":0.5,"extra":true}]',
