@@ -7,7 +7,7 @@ import {dataField,messageMetadata} from './loaded-fields.mjs';
 export function createLoadedUserInputs({poolState,InputCaptureError,reserve,retainConstructedInput}){
 
 return {
-captureQueuedInput({
+captureQueuedInput:function captureQueuedInput({
     message,
     text,
     delivery
@@ -35,7 +35,7 @@ captureQueuedInput({
     });
    }catch(error){poolState.failure=new InputCaptureError(error);}
   },
-captureUninterceptedInput({
+captureUninterceptedInput:function captureUninterceptedInput({
     input,
     source,
     streamingBehavior
@@ -60,7 +60,7 @@ captureUninterceptedInput({
     });
    }catch(error){poolState.failure=new InputCaptureError(error);}
   },
-captureCallInput({
+captureCallInput:function captureCallInput({
     frame,
     method
   }){
@@ -90,7 +90,7 @@ captureCallInput({
     if(!(error instanceof SourceCollectionError))throw error;
    }
   },
-captureCommandInput({
+captureCommandInput:function captureCommandInput({
     context,
     text,
     commandName
@@ -111,7 +111,7 @@ captureCommandInput({
     if(!(error instanceof SourceCollectionError))throw error;
    }
   },
-captureTransformedInput({
+captureTransformedInput:function captureTransformedInput({
     input,
     source,
     streamingBehavior
@@ -136,7 +136,7 @@ captureTransformedInput({
     });
    }catch(error){poolState.failure=new InputCaptureError(error);}
   },
-captureInputEvent(event){
+captureInputEvent:function captureInputEvent(event){
    if(poolState.failure)return;
    try{
     reserve();
@@ -168,7 +168,7 @@ captureInputEvent(event){
     });
    }catch(error){poolState.failure=new InputCaptureError(error);}
   },
-captureCustomMessageInput(message){
+captureCustomMessageInput:function captureCustomMessageInput(message){
    if(poolState.failure)return;
    try{
     reserve();

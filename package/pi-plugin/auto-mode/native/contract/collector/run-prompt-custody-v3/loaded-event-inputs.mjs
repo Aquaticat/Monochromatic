@@ -8,7 +8,7 @@ export function createLoadedEventInputs({poolState,InputCaptureError,reserve,ret
 
 return {
 /** Group one native emission while copying each callback phase before its borrowed value can change. */
-  createEventHandlerCapture(){
+  createEventHandlerCapture:function createEventHandlerCapture(){
    const eventState={records:[],retainedBytes:0,part:0,closed:false};
    
    
@@ -73,7 +73,7 @@ return {
    });
   },
 /** Retain original context inputs and complete results under the existing manager budget. */
-  captureContextHandler(input){
+  captureContextHandler:function captureContextHandler(input){
    if(poolState.failure)return;
    try{
     reserve();
@@ -96,7 +96,7 @@ return {
    }
   },
 /** Preserve the complete received result before native callback field selection. */
-  captureHandlerResultOutput({frame}){
+  captureHandlerResultOutput:function captureHandlerResultOutput({frame}){
    if(poolState.failure)return;
    try{
     if(types.isProxy(frame)||(!types.isArgumentsObject(frame))

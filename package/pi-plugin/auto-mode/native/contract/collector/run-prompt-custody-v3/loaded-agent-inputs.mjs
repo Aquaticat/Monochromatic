@@ -8,7 +8,7 @@ import {dataField,agentMessageFields,systemInputFields,assertSystemInput,agentPr
 export function createLoadedAgentInputs({poolState,InputCaptureError,reserve,retainConstructedInput}){
 
 return {
-captureAgentInput({
+captureAgentInput:function captureAgentInput({
     frame,
     method
   }){

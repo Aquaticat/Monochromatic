@@ -100,11 +100,11 @@ export function createLoadedManagerInputs({poolState,InputCaptureError,reserve,r
    }
  }
 return {
-captureInitialManagerInput(input){captureManagerFrame({
+captureInitialManagerInput:function captureInitialManagerInput(input){captureManagerFrame({
     ...input,
     inputOrigin:'native-manager-initial-input'
   });},
-captureManagerInput(input){captureManagerFrame({
+captureManagerInput:function captureManagerInput(input){captureManagerFrame({
     ...input,
     inputOrigin:'native-manager-input'
   });}
