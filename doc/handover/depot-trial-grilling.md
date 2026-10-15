@@ -330,18 +330,27 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
   - Container compilation and cache reuse:
     dedicated project created;
     remote marker build and local artifact export succeeded.
-    The actual Alpine build is running as `ws40v1c9xt`,
-    using persistent Cargo caches and a 1,800-second compilation limit.
+    Alpine build `ws40v1c9xt` passed in 468 seconds total;
+    Cargo reported 7 minutes 13 seconds.
+    The exported executable reported `music-player 0.1.4` inside the production runtime stage.
+    Unchanged Cargo-input repetitions `t66qp9xk3l` and `5cfbvsmxz9` passed in 21 and 22 seconds,
+    including local artifact export.
+    The first warm Cargo invocation itself took 0.31 seconds.
+    Intentional failure control `wk649mjc2s` failed at `RUN test "1" = 0` and returned exit status 1.
+    Compilation has a 1,800-second limit.
     The dedicated project's requested 20 GB cache policy returned 25 GiB;
     treat the returned value as authoritative and the policy as a soft cache limit.
   - Depot CI and GitHub runner access:
     canonical Git remote updated to `Aquaticats/Monochromatic`;
     the user connected Depot Code Access.
     CLI preflight and the real checkout run `kbz7cjc5vt` succeeded.
-    The separate GitHub Actions runner app is absent from the installation listing.
-    The [runner connection runbook](../runbook/depot-github-runners.md) records that remaining access step.
+    The user subsequently connected `depot-managed-runners`,
+    verified in the organization installation listing.
+    Actual runner execution remains to be checked.
   - Broader checks and deliberate failure detection:
-    run `wjr4cmpjvs` exercises logger build/types/unit tests and the shared audio core's own all-feature tests.
+    Run `wjr4cmpjvs` passed logger build/types/unit tests and all 80 shared audio-core tests.
+    Its creation-to-finish interval was 152 seconds.
+    Android host tests and lint are running as `3tvq2wvskh`.
     Branch `trial/depot-20261015` contains the disposable workflows without release credentials.
     A GitHub reference job uses the identical Alpine build definition and unchanged-source repetitions.
   - Scheduling and rolling budgets:
@@ -355,6 +364,28 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
   The user authorized immediate execution and reported an unused seven-day trial.
   Execution is bounded to explicit trial runs with time limits;
   no recurring dispatch or billing setting has been enabled.
+  The user subsequently pasted the dashboard banner:
+  seven days remain and billing details are required to continue builds after the trial.
+- GitHub reference run `38812935669` failed before starting a job because organization policy allowed local actions only.
+  The user approved the pinned action exceptions and then deliberately saved broader organization patterns:
+  `actions/*`,
+  `jdx/*`,
+  `docker/*`,
+  GitHub-owned actions,
+  and verified creators.
+  They explicitly confirmed the broader choice.
+  The repository uses `selected` and retains SHA pinning;
+  its allowed-action list is inherited from the organization.
+  Do not narrow the user's deliberate policy choice.
+  The prepared trial workflow still pins every action to an exact revision.
+  The failed startup run could not be retried;
+  a new trial-branch push launches both runner variants.
+- The user pasted Depot's `High resource usage` warning during the cold build:
+  CPU 100% peak and 89% average,
+  memory 13% peak and 6% average,
+  hardware 16 CPUs and 32 GB RAM.
+  Preserve the hardware for this comparison;
+  the warning did not prevent the build from succeeding.
 - Preserve existing explicit-release handling during the proposed trial.
   The current release workflow serializes runs with `cancel-in-progress: false`;
   Q16 changes only the proposed policy for intermediate checks.
