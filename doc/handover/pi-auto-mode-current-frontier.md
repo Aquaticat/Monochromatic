@@ -213,6 +213,16 @@ The full report is
 `${HOME}/temp/agent/pi-maintained-typed-runner-binding-final-lint-20261015.log`.
 Continue the runner's native event callbacks and reached-group execution lifecycle.
 
+Runner event callbacks are now extracted to `program-runner-events.ts` and its contract file.
+The original record map remains allocated before queue selection.
+Recording precedes start and end event publication;
+the original member ticket resolves only after the end event finishes.
+Independent consumers,
+original-code replay,
+and malformed ticket diagnostics remain pending verification.
+The saved original runner and callback bodies are retained under
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+
 ## Tool-call scope correction
 
 The user clarified that automatic mode is meant to check model-initiated tool calls.
