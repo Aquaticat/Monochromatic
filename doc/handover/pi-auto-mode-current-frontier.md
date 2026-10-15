@@ -2455,6 +2455,30 @@ and consumer files have zero diagnostics in that report.
 Continue original collector composition,
 then reached-program runtime and runner composition.
 
+`ed4178bf49` extracts original collector retirement,
+draining,
+and retained inspection into `group-lifetime.ts` and its independent state contracts.
+Arrival and dispatch still reside in the original collector body.
+The saved collector baseline is `program-collector-before-lifetime-types.mjs`;
+`group-lifetime-original-functions.txt` retains its exact lifetime function statements for direct replay.
+The exported `DeclaredGroupCollectionError` now declares its literal diagnostic category in a typed class.
+Its base constructor still requires the original message;
+subclasses now retain that category instead of deriving it from their constructor name.
+This is an unpublished diagnostic design change under the existing literal error-category convention.
+`64b99f24ac` adds independently declared built consumers for retirement,
+callback failures,
+work observation,
+and retained snapshot publication.
+The first focused source pass found only `eslint(no-useless-constructor)`.
+Assigning the original literal name in the constructor retains explicit message-only construction
+without a redundant superclass-only constructor.
+Final lint,
+rebuild,
+type checking,
+consumer replay,
+domain comparison,
+and omission qualification remain pending.
+
 Auto-pushing `6973251c83` was separately rejected with `GH006` and no detailed requirement.
 The original local signature verified,
 the current protection settings were read,
