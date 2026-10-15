@@ -246,6 +246,13 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-schedule-policy.unit.test.ts",
 ]
 
+[tasks."test:native:prepared-completion"]
+description = "Verify original completion envelopes, native outcomes, and retained failure precedence"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-completion.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-completion-failure.unit.test.ts",
+]
+
 [tasks."test:native:group-lifetime"]
 description = "Verify original collector retirement, draining, and retained inspection"
 run = [
