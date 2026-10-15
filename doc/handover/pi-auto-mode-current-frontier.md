@@ -10,11 +10,26 @@ Updated 2026-10-14.
 ## Adopted Luna migration
 
 The user subsequently lowered the selected-option probability cutoff from `0.80` to `0.60` on 2026-10-14.
-The maintained cutoff and unit/native boundary fixtures are updated;
-build,
-type checking,
-consumer verification,
-and retained-response recount are pending.
+The maintained cutoff and unit/native boundary fixtures are updated and verified.
+Both maintained and native builds,
+package type checking,
+and the changed TypeScript lint scope pass.
+Built admission tests accept supported meanings at `0.60` and abstain at `0.599999`.
+Native HTTP fixtures pass permission,
+prohibition,
+unspecified,
+lower-score,
+unknown,
+and unsupported controls with zero provider requests.
+Removing the cutoff process-locally makes the boundary assertions fail;
+the built artifact remains unchanged.
+The isolated Qwen CLI also passes with clean shutdown and zero provider requests.
+Replaying the original baseline through the built consumer admits 29 of 84 answers,
+compared with four at `0.80`.
+There are 28 admitted clause meanings and one admitted request-content meaning;
+the other 55 answers remain unadmitted.
+`${HOME}/temp/agent/pi-luna-score-semantics-20261014/measurement-six.json`
+and `cutoff-verification.json` retain the recount and guard control.
 The `0.80` results in this section remain historical measurements.
 
 The user selected `gpt-6-luna-decisions`,

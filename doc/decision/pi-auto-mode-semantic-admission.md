@@ -34,6 +34,11 @@ but only four of its 84 answers met the initial `0.80` boundary.
 All distributions in that retained response satisfy the existing normalization tolerance;
 the largest measured sum deviation is `2.220446049250313e-16`.
 Changing the cutoff alone therefore does not complete native execution admission.
+At the subsequently adopted `0.60` boundary,
+the rebuilt consumer admits 29 of those same 84 answers:
+28 clause meanings and the whole-request content meaning.
+The remaining 55 are unadmitted;
+this retained-response replay made no provider calls and establishes no accuracy rate.
 
 Implementation must change the fixed serving identity,
 Gateway request and response conversion,
