@@ -53,7 +53,7 @@ await describe({
         assert.throws(function settleTwice() {
           fixture.settle({ batch: fixture.handle, answerText: validText });
         }, function terminalBatch(error) {
-          return (error instanceof Error) && (error.message === 'Question batch already has a terminal response');
+          return (Error.isError(error,)) && (error.message === 'Question batch already has a terminal response');
         });
         assert.equal(fixture.batch.record, record);
       },
@@ -194,7 +194,7 @@ await describe({
         assert.throws(function foreignBatch() {
           fixture.settle({ batch: {}, answerText: validText });
         }, function foreignError(error) {
-          return (error instanceof Error) && (error.message === 'Foreign fixture batch');
+          return (Error.isError(error,)) && (error.message === 'Foreign fixture batch');
         });
         assert.equal(fixture.batch.settled, false);
         assert.equal(fixture.batch.record, undefined);

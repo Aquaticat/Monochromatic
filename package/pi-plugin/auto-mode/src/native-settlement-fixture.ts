@@ -96,8 +96,6 @@ const settlementModule: SettlementModule = loaded;
 
 /**
  Keep fixture lifetime current unless a test supplies a failing owner callback.
-
- @returns unchanged fixture lifetime
  */
 function currentFixtureLifetime(): void {
   return undefined;
