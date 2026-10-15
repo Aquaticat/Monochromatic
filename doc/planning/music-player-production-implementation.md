@@ -361,10 +361,19 @@ before saying it matches, QAB):
   issue draft in `doc/troubleshooting/music-player-windows-build-and-test.md`; a human should rerun the reproduction
   first). Windows cache entries total about 2.0 GB (653.7, 635.1, 652.3 MB plus 72.8 MB MSYS2), saved only on main
   and dispatch; the first run on main is cold. Unverified: real Windows desktop, real arm64 hardware, audio under
-  Wine, the PR no-save rule, `link.exe` against `lld-link.exe` link time. Follow-up (task 101, agent
-  `a51ab5cde3a0f0ccc`, branch `feat/music-player-release-gnu`, worktree `music-player-relgnu`): pin the mise version in
-  the release workflow, remove its stale `CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe` export, add the GNU exe
-  `music-player-<version>-windows-x64-gnu.exe` as a release asset; then I bump to 0.1.3 and release.
+  Wine, the PR no-save rule, `link.exe` against `lld-link.exe` link time. Follow-up (task 101): MERGED to
+  `main` at `175aa6287e` on 2026-10-15 after two dry runs from its branch (38692770715, 38695662196; actionlint
+  clean): both `jdx/mise-action` steps set `version: 2026.10.9` and no longer use `minimum_release_age` (the action
+  ignores it once `version` is set; the runbook section "The mise version pin" says how to update it; the 403 root
+  cause stays unestablished); the stale `link.exe` export is gone (both MSVC jobs printed `link.exe`, imports hold no
+  Visual C++ runtime; the x64 MSVC job recompiled 449 crates once because the linker setting changed, 12 to 15
+  minutes, and the next version bump rebuilds and saves a fresh entry); the GNU exe
+  `music-player-<version>-windows-x64-gnu.exe` is a release asset (MinGW-w64, GNU ld 2.46, UCRT dynamic, imports only
+  `api-ms-win-crt-*` and system DLLs, 44 MB; uncached, 16 minutes; not byte-reproducible between two runs). On
+  Windows the build step is now `cargo rustc --release --locked --target ... -- --print link-args` for all targets so a
+  linker check costs no rebuild (arm64 restored main's `cargo build` entry and recompiled 2 crates). Attestation of the
+  GNU exe ran only skipped until the real release. Release `0.1.3` (bump commit `4144c6c933` carries it, run
+  `38698502487`): see the release record below once recorded.
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
