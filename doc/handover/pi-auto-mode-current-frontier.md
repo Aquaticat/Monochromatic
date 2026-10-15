@@ -1258,7 +1258,23 @@ and initial private claims and batches omit their absent `answer` and `record` f
 Original thrown failure values still occupy the `failure` field.
 The public inspection methods continue to expose their existing answer and record projections.
 The direct `discard` owner also omits absent raw text.
-Consumer verification and a differential comparison against the prior settlement implementation are pending.
+The rebuilt settlement consumers,
+request claims,
+domain contrasts,
+authored approvals,
+and package type check pass in
+`${HOME}/temp/agent/pi-native-typed-settlement-consumer-20261015.log`.
+The old and new settlement implementations agree across 37 authored cases on returned answer values,
+original errors,
+freeze state,
+claim-to-answer identity,
+and terminal transitions,
+with the documented absent-property change checked separately.
+A changed-estimate positive control proves the comparison observes answer differences.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-settlement-comparison.json`
+retains that comparison and artifact hashes.
+The added extra-answer and object-backed-array cases pass focused formatting without diagnostics;
+their final consumer/type run and process-local lifetime and membership omissions are running.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
