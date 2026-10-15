@@ -131,6 +131,8 @@ const eventObserverUrl=new URL(
   'event-observer.ts',
   import.meta.url
 ).href;
+/** Capture failure handling is supplied by this release's passive native event boundary. */
+const passiveEventsUrl=new URL('passive-events.mjs',import.meta.url).href;
 /**
  Qualified native manager edits are rebased onto the original module dependency graph.
  */
@@ -145,7 +147,8 @@ const manager=imports({
     [loadedInputsUrl]:loadedInputsUrl,
     [queryObserverUrl]:queryObserverUrl,
     [contextObserverUrl]:contextObserverUrl,
-    [eventObserverUrl]:eventObserverUrl
+    [eventObserverUrl]:eventObserverUrl,
+    [passiveEventsUrl]:passiveEventsUrl
   }
 });
 /**
