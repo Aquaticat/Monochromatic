@@ -1667,11 +1667,30 @@ Their first type check exposed fixture callable narrowing,
 the harness's required asynchronous callbacks,
 and stale assertion narrowing across a mutating call;
 the fixture corrections are committed.
-The rebuilt broad consumers,
-final type check,
-direct owner suites,
-guard controls,
-and original-constructor comparison remain pending.
+The rebuilt domain,
+single-call,
+program-queue,
+and program-owner consumers pass in
+`${HOME}/temp/agent/pi-execution-consumers-second-20261015.log`.
+The direct owner and lifetime suites pass in
+`${HOME}/temp/agent/pi-execution-direct-first-20261015.log`;
+the final type check passes in
+`${HOME}/temp/agent/pi-execution-types-final-20261015.log`.
+All three independent consumer files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-execution-tests-format-second-20261015.log`.
+Six complete domain scenarios produce identical public outcomes and native execution counts
+with the saved original constructor and the typed extraction.
+Permission versus prohibition is the positive control;
+this comparison does not establish per-call trace equivalence.
+The original constructor's SHA-256 is
+`a848a34bf40013014aeca7eb9eed41f6379a6fc5449847efad47e0137e1d414b`.
+All 14 process-local execution guard omissions fail their assertions,
+and all six built artifacts retain their SHA-256 hashes.
+The receipts are `typed-execution-constructor-comparison.json`
+and `typed-execution-omissions.json`
+in `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The full maintained lint recount is running;
+the constructor's remaining JavaScript paths are not yet qualified for lint completion.
 Then continue the remaining constructor preparation,
 assessment,
 finalization,
