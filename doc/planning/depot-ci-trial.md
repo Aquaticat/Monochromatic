@@ -3,43 +3,66 @@
 ## Purpose and status
 
 Proposed on 2026-10-15 after the [trial interview](../handover/depot-trial-grilling.md).
-The user wants more comprehensive CI with less repeated setup, rebuilding, and scheduling overhead.
+The user wants more comprehensive CI with less repeated setup,
+rebuilding,
+and scheduling overhead.
 They delegated the technical recommendation and set a USD $200 monthly provider-spending ceiling.
-This document defines evidence to collect; it does not recommend vendor adoption or authorize migration.
+This document defines evidence to collect;
+it does not recommend vendor adoption or authorize migration.
 
 ## What success means
 
 Compare provider charges plus the user's value of elapsed time while relevant CI is unfinished.
 The user chose half [Ontario's general minimum wage][ontario-wage]:
-CAD $8.975 per hour at the October 1, 2026 rate.
-Overlapping jobs count once, even when other useful work continues.
+CAD $8.975 per hour at the October 1,
+2026 rate.
+Overlapping jobs count once,
+even when other useful work continues.
 One dated exchange rate will put provider charges and time value in the same currency.
 
 Comparisons use equivalent checks and the same stream of changes.
-Missing tests, failed setup, and skipped required checks cannot count as performance improvements.
-Early commits, including broken intermediate states, remain part of the development workflow.
+Missing tests,
+failed setup,
+and skipped required checks cannot count as performance improvements.
+Early commits,
+including broken intermediate states,
+remain part of the development workflow.
 Agent-requested cloud checks are part of the desired workflow.
 
 ## Technical coverage target
 
 The proposed coverage target follows changed components and their consumers across supported platforms.
-It distinguishes whether code builds, whether behavior works, and whether packaged releases actually run.
+It distinguishes whether code builds,
+whether behavior works,
+and whether packaged releases actually run.
 The coverage inventory also records important behavior for which tests do not exist yet.
 
 Existing checks provide concrete starting points:
 
 - [Android tasks](../../package/music-player/android-app/mise.toml):
-  unit tests, device tests, Android lint, Kotlin checks, and native Rust checks.
+  unit tests,
+  device tests,
+  Android lint,
+  Kotlin checks,
+  and native Rust checks.
 - [Desktop interaction tests](../../package/music-player/desktop-e2e/README.md):
   real keyboard input and observable application behavior.
 - [Shared audio-core tasks](../../package/music-player/truepeak-core/mise.toml):
-  the core's own tests, in addition to tests of applications consuming it.
+  the core's own tests,
+  in addition to tests of applications consuming it.
 - [Repository task families](../../mise.toml):
-  build, code-quality checks, unit tests, browser tests, and end-to-end tests.
+  build,
+  code-quality checks,
+  unit tests,
+  browser tests,
+  and end-to-end tests.
 
 The first measurement slice uses music-player components.
-The eventual coverage target spans the repository; the initial slice is not a limit on that target.
-Check frequency remains an engineering recommendation to make from runtime, failure-detection, and cost evidence.
+The eventual coverage target spans the repository;
+the initial slice is not a limit on that target.
+Check frequency remains an engineering recommendation to make from runtime,
+failure-detection,
+and cost evidence.
 
 ## Independently verifiable trial areas
 
@@ -49,29 +72,50 @@ Compare the Alpine x64 release compilation on the same source revision and with 
 The observed GitHub run spent 18 minutes 46 seconds compiling and 28 seconds creating container images.
 This makes compilation and dependency reuse a separate measurement from tool installation reuse.
 
-Measure unchanged repetitions before comparing providers, so ordinary runtime variation is visible.
-Then exercise cold state, warm state, a source change, a dependency change, and a toolchain change.
-Record setup, downloads, cache restoration, compilation, validation, upload, and cache-save time separately.
+Measure unchanged repetitions before comparing providers,
+so ordinary runtime variation is visible.
+Then exercise cold state,
+warm state,
+a source change,
+a dependency change,
+and a toolchain change.
+Record setup,
+downloads,
+cache restoration,
+compilation,
+validation,
+upload,
+and cache-save time separately.
 Successful output must pass the existing consumer checks after every relevant change.
 
 ### Reduce scheduling overhead
 
 Use the existing [Scorecard budgets](../../.github/workflows/scorecard.yml):
-2 analyses per minute, 4 per hour, and 8 per day.
+2 analyses per minute,
+4 per hour,
+and 8 per day.
 The present policy skips rejected runs rather than scheduling them for later.
 Its counting step was still running more than three minutes after setup in an observed run.
 
 Measure the decision separately from the analysis.
-Replay allowed, rejected, and overlapping requests against disposable history before any live integration.
+Replay allowed,
+rejected,
+and overlapping requests against disposable history before any live integration.
 Check the selected behavior when a time window expires and when a run is cancelled or fails.
 Depot's documented concurrency waiting does not establish support for these rolling budgets.
 A native capability or an existing compatible mechanism needs evidence before proposing custom scheduling code.
 
 ### Add currently unwired checks
 
-Run existing Android, desktop-interaction, and audio-core checks through an isolated CI path.
-The resulting inventory links each task to triggers, required platforms, outputs, and a completion result.
-A deliberately failing fixture must produce a visible failure, so a successful empty run cannot masquerade as coverage.
+Run existing Android,
+desktop-interaction,
+and audio-core checks through an isolated CI path.
+The resulting inventory links each task to triggers,
+required platforms,
+outputs,
+and a completion result.
+A deliberately failing fixture must produce a visible failure,
+so a successful empty run cannot masquerade as coverage.
 The same task definitions should remain usable locally and through agent-requested cloud execution.
 
 ### Preserve release and platform behavior
@@ -85,26 +129,43 @@ Cross-platform migration therefore needs its own design and validation before re
 
 ### Measure the complete monthly cost
 
-Replay a representative change history and record elapsed CI intervals, machine sizes, storage, and billable usage.
+Replay a representative change history and record elapsed CI intervals,
+machine sizes,
+storage,
+and billable usage.
 The broader coverage target also needs measured costs for checks currently absent from GitHub workflows.
 Historical provider minutes alone cannot estimate that future workload.
 
 [Depot Startup pricing][depot-pricing] has a USD $200 base plus additional usage charges.
-Included usage is 250 GB combined cache/registry storage, 20,000 CI minutes,
-20,000 GitHub runner minutes, 5,000 container build minutes, and 1,000,000 passing test results.
+Included usage is 250 GB combined cache/registry storage,
+20,000 CI minutes,
+20,000 GitHub runner minutes,
+5,000 container build minutes,
+and 1,000,000 passing test results.
 Larger CI machines consume the allowance faster.
 
-Before resource-consuming execution, account plan, trial allowance, current usage, and applicable cap semantics
+Before resource-consuming execution,
+account plan,
+trial allowance,
+current usage,
+and applicable cap semantics
 must be inspectable so the proposed run budget can fit the user's ceiling.
 Published per-product limits do not yet prove an aggregate billing cap.
-The current browser connection could not inspect account settings; CLI authentication itself is verified.
+The current browser connection could not inspect account settings;
+CLI authentication itself is verified.
 
 ## Result and adoption boundary
 
-The trial report will distinguish measured savings, newly exercised checks, remaining gaps, and unverified claims.
+The trial report will distinguish measured savings,
+newly exercised checks,
+remaining gaps,
+and unverified claims.
 It will recommend check frequency and an execution arrangement using the user's combined cost objective.
 Unchanged-input variation and coverage parity must support any claimed improvement.
-Adoption, repository ownership changes, purchases, and production workflow changes require a separate action request.
+Adoption,
+repository ownership changes,
+purchases,
+and production workflow changes require a separate action request.
 
 [ontario-wage]: https://www.ontario.ca/document/your-guide-employment-standards-act-0/minimum-wage
 [depot-ci]: https://depot.dev/docs/ci/overview
