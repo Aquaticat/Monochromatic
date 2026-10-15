@@ -55,6 +55,8 @@ FROM ${ALPINE} AS runtime
 #   pipewire-libs          libpipewire-0.3, linked by the binary, and the SPA plugins it loads.
 #   libgcc                 libgcc_s, the unwinder every dynamically linked Rust program on musl needs.
 #   wayland-libs-client    libwayland-client, opened by winit.
+#   wayland-libs-egl       libwayland-egl, opened by winit to create the EGL window surface. mesa-egl does not
+#                          depend on it: without it the app panics with "Library libwayland-egl.so could not be loaded".
 #   libxkbcommon           keyboard handling, opened by winit.
 #   mesa-egl, mesa-gles, mesa-dri-gallium  the OpenGL ES stack the femtovg renderer draws with, and Mesa's
 #                          drivers (llvmpipe on a machine with no GPU).
@@ -62,7 +64,7 @@ FROM ${ALPINE} AS runtime
 RUN apk add --no-cache \
       fontconfig font-dejavu \
       pipewire-libs libgcc \
-      wayland-libs-client libxkbcommon \
+      wayland-libs-client wayland-libs-egl libxkbcommon \
       mesa-egl mesa-gles mesa-dri-gallium \
       alsa-lib
 

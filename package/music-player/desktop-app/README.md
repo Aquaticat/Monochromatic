@@ -139,13 +139,13 @@ and a static musl program cannot `dlopen` the Wayland, xkbcommon and EGL librari
 ### Install the runtime packages
 
 ```sh
-apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client libxkbcommon \
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
   mesa-egl mesa-gles mesa-dri-gallium alsa-lib
 ```
 
 - `fontconfig` and a font: with no font installed the player panics at startup, so install one (`font-dejavu`
   is the small one; any font package works).
-- `pipewire-libs`, `libgcc`, `wayland-libs-client`, `libxkbcommon`: libraries the binary links or opens at run time.
+- `pipewire-libs`, `libgcc`, `wayland-libs-client`, `wayland-libs-egl`, `libxkbcommon`: libraries the binary links or opens at run time.
 - `mesa-egl`, `mesa-gles`, `mesa-dri-gallium`: the OpenGL ES stack the window draws with
   (the software rasterizer on a machine with no GPU).
 - `alsa-lib`: the ALSA fallback when no PipeWire daemon runs.

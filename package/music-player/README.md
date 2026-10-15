@@ -561,7 +561,7 @@ a static binary cannot open a window.
 Install the runtime packages, then run it with a runtime directory:
 
 ```sh
-apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client libxkbcommon \
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
   mesa-egl mesa-gles mesa-dri-gallium alsa-lib
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}"
 mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"

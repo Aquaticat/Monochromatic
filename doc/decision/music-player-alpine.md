@@ -113,7 +113,7 @@ Installing any font fixes it (`font-dejavu` is the small one), so the runtime li
 The list a person installs to run the app on a Wayland desktop:
 
 ```sh
-apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client libxkbcommon \
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
   mesa-egl mesa-gles mesa-dri-gallium alsa-lib
 ```
 
@@ -223,7 +223,7 @@ Job steps, run once per architecture on `ubuntu-latest` (x86_64) and `ubuntu-24.
 8. Upload with `actions/upload-artifact`, name `music-player-<version>-linux-musl-<arch>`.
 
 The release notes should say: needs Alpine 3.24 or newer on musl, x86_64 or aarch64, and one line to install:
-`apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client libxkbcommon mesa-egl mesa-gles mesa-dri-gallium alsa-lib`.
+`apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon mesa-egl mesa-gles mesa-dri-gallium alsa-lib`.
 They should also say that without PipeWire the player uses the default ALSA device, and that an aarch64 CPU must have
 the ARM crypto extension (see the consequences).
 
