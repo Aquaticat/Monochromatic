@@ -117,7 +117,11 @@ export function createRunnerFacadeFixture(): RunnerFacadeFixture {
     return {
       promise: Promise.resolve({ ordinal }),
       reject(error: unknown): void { 
-      observations.push(['reject', ordinal, error]); 
+      observations.push([
+        'reject',
+        ordinal,
+        error
+      ]); 
       step(`reject:${ordinal}`); 
     }
     };
@@ -197,7 +201,11 @@ export function createRunnerFacadeFixture(): RunnerFacadeFixture {
     code: 'original source',
     carrier: { token: Object.freeze({ original: 'parent token' }) },
     origin: {
-      prepared: { id: 'parent id', name: 'parent tool', input: { code: 'original source' } },
+      prepared: {
+        id: 'parent id',
+        name: 'parent tool',
+        input: { code: 'original source' }
+      },
       signal: new AbortController().signal,
       judgment
     },
