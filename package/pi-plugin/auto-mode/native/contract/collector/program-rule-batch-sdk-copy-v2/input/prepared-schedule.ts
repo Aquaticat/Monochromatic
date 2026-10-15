@@ -28,10 +28,11 @@ const EXECUTION_METHODS = [
 
 /** Preserve original truthiness without changing property-read order.
  @param value - original observed value
- *
+ 
  @returns whether original admission treats the value as absent
  */
 function isAbsent(value: unknown): boolean {
+  /** Original truthiness is captured without additional property observations. */
   const present = Boolean(value);
   return !present;
 }

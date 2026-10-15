@@ -109,7 +109,7 @@ await describe({ name: 'prepared schedule policy', children: [
   } }),
   it({ name: 'retains judgment, context, and policy getter ordering for a parallel group', fn: async function parallelOrder() {
     const events: string[] = [];
-    const executionJudgment = new Proxy(judgment(), { get(target, name, receiver) { 
+    const executionJudgment = new Proxy(judgment(), { get(target, name, receiver): unknown { 
       events.push(String(name));
     return Reflect.get(target, name, receiver); 
     } });
