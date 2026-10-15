@@ -381,7 +381,23 @@ Commits `17cd623ee4`,
 and `d3d0de3168` separate reached-group failure and completion ownership,
 retain delivery state explicitly,
 and represent idle group work with a settled promise.
-Their build and consumer checks are next.
+Their owned build and queue tests pass.
+The domain sequence stopped at `JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
+An unrelated bounded CPU stress task was active during this run;
+its overlap does not establish the cause.
+The complete regression sequence remains pending after that task finishes.
+Commits `443d6bc709` and `d4e52c5394` separate original resource capture,
+reload,
+binding,
+and governing-policy ownership and scope their cleanup.
+Their owned build passes.
+The focused structured lint report contains no errors across these resource modules and the group-runtime modules.
+It still exits with failure because warnings remain;
+`package/config/oxlint/src/config-base.ts:31` sets `denyWarnings: true`.
+Zero error-severity diagnostics therefore do not mean the lint task passes.
+Commit `fe77f1d9d6` retains base-composition and governing-source lifetime state explicitly.
+The adjacent policy reviewer now scopes review activity and retains compilation results in its review record.
+These subsequent source changes still need a rebuilt consumer check.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
