@@ -175,12 +175,12 @@ Dispositions:
 - `:150`, `:180`, `:190`, `:100`: killed by the new reverse-apply controls (search backwards, restored lines,
   search start, middle line without a newline).
 
-The controls and the guard removal are committed (`ed641c4a1b`). Open: container gate on the merged head (tag `replayH`),
-then `mutation:scoped` over `replay_reverse_apply.rs` (`--examine 'find_position|reverse_hunk|matches_at'`),
-`replay_containment.rs` and `replay_patch.rs` to show each control failing on its mutant, then landing and the crate
-release 0.1.5 together with the deletion of the dead policy patch modules already on `main`.
-The container gate on the merged head (tag `replayH`) passed with 1812 unit, 137 binary and 1 consumer test; the scoped
-verification runs are the units `cli-git-replay-verify-r1` and `-r2` (logs `~/temp/agent/replay-verify-R1.log`, `-R2.log`).
+The controls and the guard removal are committed. Verification on the gate head (tag `replayI`: 1812 unit, 137 binary,
+1 consumer test): `replay_reverse_apply.rs` `find_position`, `reverse_hunk` and `matches_at` 54 mutants (2 missed before
+the long-image control was added), `replay_containment.rs` and `replay_patch.rs` 52 mutants with none missed, and a
+`find_position` rerun of 17 mutants with the single equivalent survivor at line 129 described above.
+Open: landing and the crate release 0.1.5 together with the deletion of the dead policy patch modules already on `main`.
+The container gate image bakes in the source snapshot, so a new test needs a new gate before a mutation run sees it.
 A long fuzz campaign (900 s per target, 15 targets) runs as the unit `cli-git-fuzz-campaign`
 (log `~/temp/agent/fuzz-campaign-20261015.log`); read it for crashes before the release.
 The fuzz sidecar had fallen behind the subject (stale lockfile version, byte paths in the journal helper, a refusal
