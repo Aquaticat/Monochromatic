@@ -131,12 +131,18 @@ type NativeBudgetModule = {
  @throws Error when an expected original callable is missing
  */
 function assertBudgetModule(value: unknown): asserts value is NativeBudgetModule {
-  if((value===null)||((typeof value)!=='object')
-    ||(!('createJudgmentBudget' in value))||((typeof value.createJudgmentBudget)!=='function')
-    ||(!('JudgmentBudgetError' in value))||((typeof value.JudgmentBudgetError)!=='function')
-    ||(!('JudgmentDeadlineError' in value))||((typeof value.JudgmentDeadlineError)!=='function')
-    ||(!('JudgmentCancelledError' in value))||((typeof value.JudgmentCancelledError)!=='function')
-    ||(!('JudgmentAttemptLimitError' in value))||((typeof value.JudgmentAttemptLimitError)!=='function')) {
+  if((value===null)
+    ||((typeof value)!=='object')
+    ||(!('createJudgmentBudget' in value))
+    ||((typeof value.createJudgmentBudget)!=='function')
+    ||(!('JudgmentBudgetError' in value))
+    ||((typeof value.JudgmentBudgetError)!=='function')
+    ||(!('JudgmentDeadlineError' in value))
+    ||((typeof value.JudgmentDeadlineError)!=='function')
+    ||(!('JudgmentCancelledError' in value))
+    ||((typeof value.JudgmentCancelledError)!=='function')
+    ||(!('JudgmentAttemptLimitError' in value))
+    ||((typeof value.JudgmentAttemptLimitError)!=='function')) {
     throw new Error('Built native judgment budget exports are unavailable');
   }
 }
