@@ -120,7 +120,7 @@ export function createJudgmentPreparation(input: JudgmentPreparationInput): Judg
        Original mandatory policy is retained by identity after its existing completeness check.
        */
       const {mandatoryPolicy} = readJudgmentSources();
-      if ((!mandatoryPolicy) || (!Object.isFrozen(mandatoryPolicy)) || (typeof mandatoryPolicy.content) !== 'string') {
+      if ((!mandatoryPolicy) || (!Object.isFrozen(mandatoryPolicy)) || ((typeof mandatoryPolicy.content) !== 'string')) {
         throw new JudgmentConstructionError('Original request lacks complete owned mandatory policy');
       }
       /**
