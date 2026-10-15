@@ -790,8 +790,24 @@ Focused lint has zero errors and 439 warnings across those modules.
 Rebuilt serializer-receipt,
 event-receipt,
 approval-context,
-and source-work checks are running;
-the remaining full lint gate is still open.
+and source-work checks pass in
+`${HOME}/temp/agent/pi-native-source-association-consumer-20261015.log`.
+The source-work count remains 9045.
+The request observer now separates its original stream and receipt publication from lifetime validation.
+The caller retains the same private response and receipt maps,
+and original observation generation remains shared through its owner.
+Focused lint has zero errors and 315 warnings across the observer modules.
+Its rebuilt source-work,
+domain,
+changed-dependency,
+and host-lifecycle consumers pass in
+`${HOME}/temp/agent/pi-native-observer-split-consumer-20261015.log`.
+Native syntax passes all 274 modules at that artifact.
+Root lifecycle construction,
+transition publication,
+and diagnostic isolation are the next separated boundaries;
+their lint and consumer checks are pending.
+The remaining full lint gate is still open.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
