@@ -559,3 +559,11 @@ run = [
   "node --max-old-space-size=512 src/native-selection-boundary.unit.test.ts",
   "node --max-old-space-size=512 src/native-selection-lifetime.unit.test.ts",
 ]
+
+[tasks."test:native:governing-bindings"]
+description = "Verify original source candidates, permanent invalidation, duplicate-code ambiguity, and source bounds"
+run = [
+  "node --max-old-space-size=512 src/native-governing-bindings.unit.test.ts",
+  "node --max-old-space-size=512 src/native-governing-boundary.unit.test.ts",
+  "node --max-old-space-size=512 src/native-governing-set.unit.test.ts",
+]
