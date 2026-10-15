@@ -195,11 +195,33 @@ The last full Wine run (fonts installed) ended with 1383 tests run: 1377 passed 
 - `ui_search_ingest_tests::an_answer_to_an_older_query_is_dropped` and
   `ui_search_ingest_tests::no_match_is_not_claimed_before_the_scan_is_complete` hang until killed (1668 s, SIGKILL).
   The sibling tests in the same file pass in under a second.
-  At about 1650 s the test process had every thread asleep and its CPU time not growing (read from `/proc/<pid>/task/*/stat`),
-  so it is blocked, not spinning. The 20 s `PATIENCE` deadline of `Scan::pump` did not fire, so the block is outside
-  that loop. Both tests apply a hand-built `SearchState::NoMatch` answer. The cause was not found.
+  At about 1650 s the test process had every thread asleep and its CPU time not growing
+  (read from `/proc/<pid>/task/*/stat`), so it is blocked, not spinning.
+  The 20 s `PATIENCE` deadline of `Scan::pump` did not fire, so the block is outside that loop.
+  Both tests apply a hand-built `SearchState::NoMatch` answer. The cause was not found.
 - The nextest `--config` override `slow-timeout.terminate-after=5` did not end the hung tests after five periods;
   the run reported slow tests up to 1620 s, and they were killed by hand. Do not rely on that flag for Wine runs.
+
+### Launching the release exe under Wine
+
+The cross-built `music-player.exe` (release, 43,460,608 bytes) imports only system DLLs and `msvcrt.dll` (no
+ `libgcc_s`, `libwinpthread` or `libstdc++`), and its PE linker version is 2.46 (GNU ld), read with
+ `x86_64-w64-mingw32-objdump -p`.
+`wine64 music-player.exe --version` prints `music-player 0.1.0`.
+
+- Started directly on a bare Xvfb screen, the app scanned the 8-track fixture, created its window and then panicked in
+  Slint `i-slint-backend-winit-1.18.1/frame_throttle.rs:58` with "attempt to divide by zero".
+  The line divides by `monitor.refresh_rate_millihertz()`, so Wine's virtual monitor reported a refresh rate of 0.
+  Real Windows monitors report a rate; this is the Wine and Xvfb pairing, not a defect found on Windows.
+- Started inside a Wine virtual desktop (`wine64 explorer /desktop=mp,1280x800 music-player.exe /work/fixture`) the
+  app stayed up for the 25 s observed, and `xdotool` listed a visible `Music Player` window of 488x634.
+  No screenshot was taken, so what the window drew is not verified.
+- The first start of a fresh Wine prefix took exactly 5 minutes (04:56:25 to 05:01:25) with the default Mono and HTML
+  engine handling, which showed a `Wine Mono Installer` window, and 7 seconds with
+  `WINEDLLOVERRIDES=mscoree,mshtml=d`. A round 5 minutes looks like a prompt timeout, not work;
+  not investigated further.
+- The app logged `audio init failed; degrading to silent mode` (`no default output device`) because the container has
+  no sound device; audio under Wine is not verified.
 
 A Wine failure that the real runners do not reproduce is not a defect of the Windows build.
 Treat the real runners as the authority, and Wine as a cross-compile proof that the binary builds, starts, and passes
