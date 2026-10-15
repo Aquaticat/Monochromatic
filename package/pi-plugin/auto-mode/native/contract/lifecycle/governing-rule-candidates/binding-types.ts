@@ -90,6 +90,14 @@ export type GoverningRuleProjection = GoverningClause | GoverningHeadingContext;
 export type RetainedUnclassifiedClause = PolicySourceSpan & Readonly<{ candidate: Readonly<object>; type: string }>;
 
 /**
+ Candidate retention combines an original interval with its structural classification.
+ */
+export type GoverningClauseRetention = Readonly<{
+  record: PolicySourceSpan & Readonly<{ headings?: readonly PolicyHeading[] }>;
+  classification: ClauseClassification;
+}>;
+
+/**
  Private candidate capture retains optional aggregate identity before public inspection.
  */
 export type GoverningCandidateCapture = Readonly<{
