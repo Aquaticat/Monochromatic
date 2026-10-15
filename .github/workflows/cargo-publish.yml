@@ -132,12 +132,14 @@ jobs:
     # Key shape, restore-keys rule, and size budget: doc/decision/ci-caching.md
     - name: Identify the Rust toolchain for the cache key
       id: toolchain
-      run: echo "id=$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
+      run: echo "id=${ImageOS}-$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
 
     - name: Cache cargo build artifacts
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
-        path: package/cli/forbidden-strings/target
+        path: |
+          package/cli/forbidden-strings/target
+          !package/cli/forbidden-strings/target/package
         key: cargo-v2-publish-fs-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/cli/forbidden-strings/Cargo.lock') }}
         restore-keys: |
           cargo-v2-publish-fs-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
@@ -429,12 +431,14 @@ jobs:
     # Key shape, restore-keys rule, and size budget: doc/decision/ci-caching.md
     - name: Identify the Rust toolchain for the cache key
       id: toolchain
-      run: echo "id=$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
+      run: echo "id=${ImageOS}-$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
 
     - name: Cache cargo build artifacts
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
-        path: package/cli/nested-wayland-session/target
+        path: |
+          package/cli/nested-wayland-session/target
+          !package/cli/nested-wayland-session/target/package
         key: cargo-v2-publish-nws-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/cli/nested-wayland-session/Cargo.lock') }}
         restore-keys: |
           cargo-v2-publish-nws-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
@@ -687,12 +691,14 @@ jobs:
     # Key shape, restore-keys rule, and size budget: doc/decision/ci-caching.md
     - name: Identify the Rust toolchain for the cache key
       id: toolchain
-      run: echo "id=$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
+      run: echo "id=${ImageOS}-$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
 
     - name: Cache cargo build artifacts
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
-        path: package/rust-module/forbidden-regex/target
+        path: |
+          package/rust-module/forbidden-regex/target
+          !package/rust-module/forbidden-regex/target/package
         key: cargo-v2-publish-fr-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/rust-module/forbidden-regex/Cargo.lock') }}
         restore-keys: |
           cargo-v2-publish-fr-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
@@ -827,12 +833,14 @@ jobs:
     # Key shape, restore-keys rule, and size budget: doc/decision/ci-caching.md
     - name: Identify the Rust toolchain for the cache key
       id: toolchain
-      run: echo "id=$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
+      run: echo "id=${ImageOS}-$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
 
     - name: Cache cargo build artifacts
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
-        path: package/rust-module/jsonc-edit/target
+        path: |
+          package/rust-module/jsonc-edit/target
+          !package/rust-module/jsonc-edit/target/package
         key: cargo-v2-publish-je-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/rust-module/jsonc-edit/Cargo.lock') }}
         restore-keys: |
           cargo-v2-publish-je-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
@@ -985,12 +993,14 @@ jobs:
     # Key shape, restore-keys rule, and size budget: doc/decision/ci-caching.md
     - name: Identify the Rust toolchain for the cache key
       id: toolchain
-      run: echo "id=$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
+      run: echo "id=${ImageOS}-$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
 
     - name: Cache cargo build artifacts
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
-        path: package/linter/monochromatic-lint/target
+        path: |
+          package/linter/monochromatic-lint/target
+          !package/linter/monochromatic-lint/target/package
         key: cargo-v2-publish-ml-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/linter/monochromatic-lint/Cargo.lock') }}
         restore-keys: |
           cargo-v2-publish-ml-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
@@ -1301,12 +1311,14 @@ jobs:
     # Key shape, restore-keys rule, and size budget: doc/decision/ci-caching.md
     - name: Identify the Rust toolchain for the cache key
       id: toolchain
-      run: echo "id=$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
+      run: echo "id=${ImageOS}-$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
 
     - name: Cache cargo build artifacts
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
-        path: package/git-policy/cli/target
+        path: |
+          package/git-policy/cli/target
+          !package/git-policy/cli/target/package
         key: cargo-v2-publish-gpc-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/git-policy/cli/Cargo.lock') }}
         restore-keys: |
           cargo-v2-publish-gpc-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
