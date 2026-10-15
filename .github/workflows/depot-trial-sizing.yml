@@ -34,7 +34,8 @@ jobs:
         persist-credentials: false
     - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
       with:
-        minimum_release_age: 1d
+        # Avoid the release-discovery API's observed 403 during this fixed-input trial.
+        version: 2026.10.9
         install: false
         cache: false
     - name: Install the task runtime
