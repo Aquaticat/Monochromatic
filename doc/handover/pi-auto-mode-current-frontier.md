@@ -2039,10 +2039,11 @@ with SHA-256 `43b0254ae670f11c8188567758ae565e2e7d9c121dc71193f02b3a731ec8d8d4`.
 without changing the source statements executed at runtime.
 The composition audit found that the original member map includes root records with claim bindings
 and reached-child records without claim bindings.
-The current instruction type describes only the root shape.
-A new built consumer checks original missing-child binding results,
+At the audit boundary,
+the instruction type described only the root shape.
+A built consumer checks original missing-child binding results,
 root projection failure,
-and recovery before that type contract is reconciled.
+and recovery before the type contract was reconciled.
 The source/preparation rebuild,
 type check,
 and direct consumer sequence pass in
