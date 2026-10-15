@@ -1070,7 +1070,8 @@ Removing the new publication guard through a process-local load hook makes the c
 the artifact hash stays unchanged.
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-store-publication-omission.json`
 retains that result.
-The complete maintained lint recount is running in
+The complete maintained lint recount covers 521 files and 486 rules:
+zero errors and 13583 warnings in
 `${HOME}/temp/agent/pi-maintained-typed-store-lint-20261015.log`.
 The handover,
 troubleshooting entry,
