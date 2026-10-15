@@ -195,7 +195,6 @@ jobs:
         - { os: linux, arch: x64, target: x86_64-unknown-linux-gnu, runner: ubuntu-24.04 }
         - { os: linux, arch: arm64, target: aarch64-unknown-linux-gnu, runner: ubuntu-24.04-arm }
         - { os: macos, arch: arm64, target: aarch64-apple-darwin, runner: macos-15 }
-        - { os: macos, arch: x64, target: x86_64-apple-darwin, runner: macos-15-intel }
         - { os: windows, arch: x64, target: x86_64-pc-windows-msvc, runner: windows-2025 }
         # Native Windows arm64 runner, free for public repositories (GA 2025-08-07):
         # doc/decision/forbidden-strings-windows-arm64-release-target.md
@@ -224,7 +223,7 @@ jobs:
 
     # The repository pins its Rust toolchain in mise.lock (a dated nightly, shared by every
     # package). Read it from there so the release never drifts from what developers build with.
-    # rustup comes with every runner image, which keeps one mechanism on all six platforms.
+    # rustup comes with every runner image, which keeps one mechanism on every desktop platform.
     - name: Install the Rust toolchain pinned in mise.lock
       shell: bash
       run: |
@@ -622,7 +621,6 @@ jobs:
           "music-player-${VERSION}-linux-arm64.tar.gz" \
           "music-player-${VERSION}-linux-x64.tar.gz" \
           "music-player-${VERSION}-macos-arm64.dmg" \
-          "music-player-${VERSION}-macos-x64.dmg" \
           "music-player-${VERSION}-windows-arm64.exe" \
           "music-player-${VERSION}-windows-x64.exe")
         actual=$(ls -1 assets | LC_ALL=C sort)
@@ -688,7 +686,7 @@ jobs:
         ## Downloads
 
         - Windows: `music-player-@VERSION@-windows-x64.exe` and `music-player-@VERSION@-windows-arm64.exe`, one standalone program each.
-        - macOS: `music-player-@VERSION@-macos-arm64.dmg` (Apple silicon) and `music-player-@VERSION@-macos-x64.dmg` (Intel).
+        - macOS: `music-player-@VERSION@-macos-arm64.dmg`, for Apple silicon Macs only. There is no Intel Mac build; build from source instead.
         - Linux: `music-player-@VERSION@-linux-x64.tar.gz` and `music-player-@VERSION@-linux-arm64.tar.gz`, with the program, a launcher file and an icon.
         - Android: `music-player-@VERSION@-android.apk` (Android 8.0 or newer).
         - `SHA256SUMS`: the SHA-256 of every file above.

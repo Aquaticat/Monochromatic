@@ -9,10 +9,10 @@ The workflow is `.github/workflows/music-player-release.yml`.
 
 ## What a release is
 
-One release holds seven files and a checksum file:
+One release holds one file per platform and a checksum file:
 
 - `music-player-<version>-windows-x64.exe` and `music-player-<version>-windows-arm64.exe`
-- `music-player-<version>-macos-arm64.dmg` and `music-player-<version>-macos-x64.dmg`
+- `music-player-<version>-macos-arm64.dmg` (there is no Intel Mac build)
 - `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz`
 - `music-player-<version>-android.apk`
 - `SHA256SUMS`
@@ -59,10 +59,10 @@ The rules the workflow enforces, and fails loudly on:
     The detect job compares the old and new version and starts the build only if the version changed.
 4.  Watch the run:
     `gh run list --workflow music-player-release.yml` and `gh run watch <run id>`.
-    A full run is six desktop builds in parallel with the Android build,
+    A full run is the desktop builds in parallel with the Android build,
     then a checksum job and the release job.
 5.  Open the release page `https://github.com/Aquaticat/Monochromatic/releases/tag/music-player-v<version>`
-    and check that seven files and `SHA256SUMS` are attached and that it is marked as a pre-release.
+    and check that every file listed above and `SHA256SUMS` are attached and that it is marked as a pre-release.
 6.  Verify one file as a user would (see the section on verifying attestations).
 
 If the tag already exists when the run starts,

@@ -260,7 +260,7 @@ It measures non-current tracks in a background sweep and uses a bounded current-
 The desktop build uses Slint with winit on every desktop target.
 Linux targets Wayland and uses PipeWire,
 with no ALSA or PulseAudio backend.
-macOS targets Apple Silicon and Intel and uses CoreAudio.
+macOS targets Apple Silicon and uses CoreAudio.
 Windows targets `x86_64` and `arm64` and uses WASAPI through cpal.
 Only the Linux `x86_64` build has been run by the project;
 the other desktop targets are built by CI and have not been tested on their platform.
@@ -529,7 +529,8 @@ because the project is under active development.
 A release holds one file per platform and a `SHA256SUMS` file:
 
 - Windows: `music-player-<version>-windows-x64.exe` and `music-player-<version>-windows-arm64.exe`.
-- macOS: `music-player-<version>-macos-arm64.dmg` (Apple silicon) and `music-player-<version>-macos-x64.dmg` (Intel).
+- macOS: `music-player-<version>-macos-arm64.dmg`, for Apple silicon Macs only.
+  Intel Macs have no download: build from source.
 - Linux: `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz`.
 - Android: `music-player-<version>-android.apk`.
 
@@ -554,7 +555,7 @@ The program takes one optional folder or file to open: `music-player.exe C:\Musi
 
 ### macOS
 
-Open the `.dmg` that matches your Mac and drag Music Player to Applications.
+Open the `.dmg` and drag Music Player to Applications.
 The app is not notarized by Apple and has only an ad-hoc signature (no developer identity),
 so the first launch needs your confirmation:
 

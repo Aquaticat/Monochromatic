@@ -485,7 +485,7 @@ Read these before repeating them. Each one cost the human a correction.
   divider, rounded rows with tonal circle glyphs and status block in Slint, thirteen window tests, and the two desktop
   Search gallery images retaken.
 - [x] Release workflow (2026-10-14, branch `feat/music-player-release-workflow`): `.github/workflows/music-player-release.yml`
-  builds the desktop app for six targets and the Android app and creates one pre-release,
+  builds the desktop app for Windows, macOS (Apple silicon) and Linux and the Android app and creates one pre-release,
   triggered by a version change in `package/music-player/desktop-app/Cargo.toml` or by a dispatch
   (`doc/decision/music-player-releases.md`, `doc/runbook/release-the-music-player.md`).
   The Android version now derives from that manifest, and a release signing config reads `MUSIC_PLAYER_*` values.

@@ -103,8 +103,10 @@ One release holds, with `<version>` filled in:
   so a clean machine needs no Visual C++ Redistributable.
   The job lists the DLLs the executable imports and fails if a Visual C++ runtime DLL is among them.
   The icon is embedded by the existing `build.rs`.
-- macOS: `music-player-<version>-macos-arm64.dmg` and `music-player-<version>-macos-x64.dmg`,
-  native builds on `macos-15` and `macos-15-intel`.
+- macOS: `music-player-<version>-macos-arm64.dmg`, a native build on `macos-15`.
+  macOS x64 is not built: the owner decided on 2026-10-14 that the release ships Apple silicon only.
+  Intel Mac users build from source (`mise run //package/music-player/desktop-app:build` on the Mac),
+  and the README says so.
   Each holds `Music Player.app`, assembled by the repository's own `bundle:macos` task from `macos/Info.plist`
   (bundle id `dev.monochromatic.musicplayer`, version, icon, high-resolution flag) and `asset/music-player.icns`,
   plus an `Applications` link.
@@ -133,7 +135,7 @@ One release holds, with `<version>` filled in:
 
 - The Rust toolchain is read from `mise.lock` in each job and installed with `rustup`,
   so the release never drifts from what the repository builds with,
-  and one mechanism works on all six platforms.
+  and one mechanism works on every desktop platform.
   The Android job installs Rust, JDK 21, the Android command-line tools and `cargo-ndk` with mise (versions from
   `mise.lock`), installs the SDK components with the repository's `prepare:android` task, and builds with the existing
   `build:release` task.
