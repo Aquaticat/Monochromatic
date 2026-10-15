@@ -2,7 +2,8 @@
 
 ## Status and decision being tested
 
-The bounded trial and runner-size follow-up have finished.
+The compilation measurements and runner-size follow-up have finished.
+The agreed broader evaluation remains open.
 All ten corrected runner configurations passed,
 as did the default-container-builder concurrency repetitions.
 The [sizing report](depot-runner-sizing-2026-10-15.md) records the measured results and allocation recommendation.

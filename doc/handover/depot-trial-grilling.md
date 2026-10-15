@@ -3,8 +3,8 @@
 ## Purpose and current state
 
 The user subsequently requested immediate execution of the agreed trial.
-The bounded trial and runner-sizing follow-up have completed;
-the interview is complete.
+The interview and runner-sizing follow-up are complete.
+The agreed broader evaluation remains open.
 The [trial report](../audit/depot-trial-2026-10-15.md)
 records remaining coverage and account-access limits.
 The user explicitly clarified that this is not an apples-to-apples migration.
@@ -439,7 +439,7 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
 - Toolchain invalidation build `14trfrrxg6` passed in 473 seconds.
   The exported ELF comment identifies `mold 2.39.1` and the runtime prints `music-player 0.1.4`.
   This recompilation does not constitute a controlled linker benchmark.
-- Bounded execution is finished;
+- The initial measured subset is finished;
   remaining acceptance gaps are graphical/device execution,
   account-wide usage and spending controls,
   complete cross-platform history replay,
@@ -560,7 +560,7 @@ The [container builder documentation](https://depot.dev/docs/container-builds/ov
 lists sixteen CPUs on all plans;
 32 and 64 CPUs require Startup or Business and use two or four times the included minutes.
 This distinction matters to the Developer-plan preference.
-The execution queue is complete:
+The runner-sizing subtask is complete:
 the source-cache investigation,
 corrected matrix,
 result collection,
@@ -656,7 +656,8 @@ It recommends `16/16` for cold builds determining completion;
 These are allocation findings,
 not a verdict on the broader migration's value.
 Original failed matrices remain separate evidence.
-No trial execution or result collection remains queued.
+No runner-sizing execution or collection remains queued.
+The broader evaluation queue remains active as recorded in the completion audit.
 
 The parallel history check inspected complete October 15 API pages:
 13 Alpine and 33 Windows runs.
@@ -670,6 +671,41 @@ Linux-only acceleration cannot advance those pairs' final completion while Windo
 The failed Linux pair is excluded from successful-completion comparisons.
 Evidence and a positive control for the upper-bound calculation are recorded in the
 [trial report](../audit/depot-trial-2026-10-15.md).
+
+## Completion audit
+
+The user asked whether everything was done.
+Comparing the agreed brief with the results showed that closing the entire trial queue was premature.
+The runner measurements and policy edit are complete;
+the broader evaluation still requires independently verifiable work:
+
+- Desktop interaction:
+  exercise the existing full keyboard suite through an isolated path,
+  including provisioning its documented prerequisites before treating their absence as a blocker.
+- Android device behavior:
+  inspect the available device and cloud constraints,
+  then exercise instrumented checks through a headed environment allowed by the emulator skill.
+- Coverage and routing inventory:
+  map the expanded target checks to triggers,
+  execution locations,
+  outputs,
+  and measured or explicitly missing completion evidence.
+- Scheduling:
+  finish the evidence-based recommendation for the rolling budgets,
+  including the observed missing reservation and history-query cost.
+- Monthly cost:
+  replay a representative change stream against the expanded target inventory,
+  separate measured usage from assumptions,
+  and compare hybrid allocations against the ceiling.
+- Account visibility:
+  recheck available bridges for aggregate usage,
+  storage,
+  trial expiry,
+  and spending controls;
+  identify the precise missing authorization if access remains blocked.
+
+The next action is provisioning and running the desktop interaction path.
+Production deployment remains outside the trial's authorization.
 
 ## Interview process correction
 
