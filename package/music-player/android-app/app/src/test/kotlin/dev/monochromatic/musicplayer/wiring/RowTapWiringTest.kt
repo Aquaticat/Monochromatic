@@ -12,9 +12,11 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
+import androidx.test.core.app.ApplicationProvider
 import dev.monochromatic.musicplayer.FeedbackHostState
 import dev.monochromatic.musicplayer.PlayerController
 import dev.monochromatic.musicplayer.ReportingAudioEngine
+import dev.monochromatic.musicplayer.SessionStore
 import dev.monochromatic.musicplayer.SweepProgress
 import dev.monochromatic.musicplayer.Track
 import dev.monochromatic.musicplayer.playerHost
@@ -45,9 +47,10 @@ class RowTapWiringTest {
     /** Controller over [engine], so no native library or audio device is involved. */
     private val controller = PlayerController(engine)
 
-    /** Clears the sweep progress that earlier cases of the process may have left. */
+    /** Clears the sweep progress and the Auto-play on select setting that earlier cases of the process may have left. */
     @Before
     fun resetProcessState() {
+        SessionStore.saveAutoPlayOnSelect(ApplicationProvider.getApplicationContext(), enabled = false)
         SweepProgress.reset()
     }
 

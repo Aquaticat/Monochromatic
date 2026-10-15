@@ -77,21 +77,29 @@ export async function finishWithApproval({
   decision,
   approvalContext
 }){
- function current(){
+ function assertDecisionIdentity(){
   if(judgment.inspect()
     .finalRecord
     !==decision.closure)throw new PolicyApprovalError('Policy decision belongs to a different original judgment closure');
+ }
+ function current(){
+  assertDecisionIdentity();
   judgment.assertDependenciesCurrent();
  }
  current();
- const uncertain=decision.outcome.state!=='resolved';
- if((!uncertain)&&(decision.outcome.verdict!=='ask')){
+ const uncertain=decision.outcome
+   .state
+   !=='resolved';
+ if((!uncertain)&&(decision.outcome
+   .verdict
+   !=='ask')){
   return Object.freeze({
     ...decision,
     assertCurrent:current
   });
  }
- if(uncertain&&(!approvalContext?.ctx.hasUI))return Object.freeze({
+ if(uncertain&&(!approvalContext?.ctx
+   .hasUI))return Object.freeze({
    ...decision,
    assertCurrent:current
  });
@@ -100,10 +108,11 @@ export async function finishWithApproval({
    ...approvalContext,
    judgment,
    explanation:uncertain
-     ?`Automatic review could not establish whether this operation is allowed. ${decision.outcome.reason} Review the complete prepared operation and choose Allow or Stop.`
+     ?`Automatic review could not establish whether this operation is allowed. ${decision.outcome
+       .reason} Review the complete prepared operation and choose Allow or Stop.`
      :decision.outcome
-     .reason
-     ??'Applicable instructions require approval'
+       .reason
+       ??'Applicable instructions require approval'
  });
  const response=await approval.request();
  if(response.closure!==decision.closure)throw new PolicyApprovalError('Approval belongs to a different original group');
@@ -122,7 +131,7 @@ export async function finishWithApproval({
   assertCurrent:current
  });
  function assertOriginalApproval(){
-  current();
+  assertDecisionIdentity();
   approval.assertOriginalAllow(response);
  }
  assertOriginalApproval();

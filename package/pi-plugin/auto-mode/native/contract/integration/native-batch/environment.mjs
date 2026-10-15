@@ -239,7 +239,10 @@ export async function createEnvironment({
      agentsFilesOverride,
      appendSystemPromptOverride,
      additionalPromptTemplatePaths:promptTemplateText===undefined?[]:[promptTemplatePath],
-     additionalExtensionPaths:[...additionalExtensionPaths,...(extensionModuleText===undefined?[]:[extensionModulePath])],
+     additionalExtensionPaths:[
+       ...additionalExtensionPaths,
+       ...(extensionModuleText===undefined?[]:[extensionModulePath])
+     ],
      extensionFactories,
      noExtensions:true,
      noSkills:true,

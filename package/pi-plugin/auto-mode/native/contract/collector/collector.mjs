@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import { SourceCollectionError } from './errors.ts';
+
 export { SourceCollectionError } from './errors.ts';
 /** Bindings can be made by bootstrap code, never by serialized action metadata. */
 const bindings = new WeakMap();

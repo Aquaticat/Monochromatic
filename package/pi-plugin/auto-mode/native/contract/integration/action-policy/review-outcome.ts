@@ -4,7 +4,10 @@
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import type { GuardOutcome } from '../../../../src/guard-outcome.ts';
 import type { InstructionRule } from '../../../../src/instruction-rule.ts';
-import { resolveGuardOutcome, resolveInstructionEffects } from '../maintained-policy.mjs';
+import {
+  resolveGuardOutcome,
+  resolveInstructionEffects
+} from '../maintained-policy.mjs';
 
 /**
  This internal program comes from the original native compiler, not a model-authored verdict.
@@ -42,7 +45,10 @@ export function resolveManualReviewOutcome(program: CompiledProgram): GuardOutco
   /**
    The pure resolver remains independent from the host's confirmation fallback.
    */
-  const rl = tagged({ tag: resolveManualReviewOutcome.name, l });
+  const rl = tagged({
+    tag: resolveManualReviewOutcome.name,
+    l
+  });
   rl.debug('resolving automatic outcome before manual confirmation');
   /**
    Resolved automatic decisions retain their existing precedence and authorization behavior.
@@ -57,8 +63,9 @@ export function resolveManualReviewOutcome(program: CompiledProgram): GuardOutco
    Membership uses original rule identities from the existing priority resolver.
    */
   const governing = new Set(resolution.highestKnownApplicableRuleIds);
-  if (program.rules.some(function establishedProhibition(rule) {
-    return governing.has(rule.id) && rule.effect === 'prohibit';
+  if (program.rules
+    .some(function establishedProhibition(rule) {
+    return governing.has(rule.id) && (rule.effect === 'prohibit');
   })) {
     rl.debug('retaining established prohibition despite other uncertain premises');
     return Object.freeze({

@@ -52,6 +52,7 @@ const SCENARIO_FILES: readonly { readonly file: string; readonly session: Sessio
   { file: 'narrow-interaction.ts', session: 'narrow', },
   { file: 'narrow-session.ts', session: 'narrow', },
   { file: 'dialog-session.ts', session: 'dialog', },
+  { file: 'auto-play-session.ts', session: 'auto-play', },
   { file: 'quit-session.ts', session: 'quit', },
   { file: 'states-main.ts', session: 'states', },
   { file: 'states-small.ts', session: 'states', },
@@ -111,10 +112,10 @@ await describe({
   name: 'scenario table',
   children: [
     it({
-      name: 'declares 113 checks that run and 1 that is skipped as not injectable',
+      name: 'declares 117 checks that run and 1 that is skipped as not injectable',
       fn: async ({ expect, }) => {
         const declared = await allDeclared();
-        expect(declared.filter((entry,) => !entry.skipped,),).toHaveLength(113,);
+        expect(declared.filter((entry,) => !entry.skipped,),).toHaveLength(117,);
         expect(declared.filter((entry,) => entry.skipped,).map((entry,) => entry.id,).toSorted(),).toEqual([
           'double-shift/repeat',
         ],);

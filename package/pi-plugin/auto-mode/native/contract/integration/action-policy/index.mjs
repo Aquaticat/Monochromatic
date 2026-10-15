@@ -22,6 +22,26 @@ export function decideAndClose({
  });
 }
 
+/** Issue only the relation kinds required by the original code-owned policy. */
+function issuePolicyBatch({
+  judgment,
+  relationDefinitionId,
+  requestMaterialDefinitionId,
+  headingContextDefinitionId,
+  unitAdoptionDefinitionId
+}){
+  judgment.assertDependenciesCurrent();
+  judgment.checkpoint();
+  const batch=(requestMaterialDefinitionId!==undefined)||(headingContextDefinitionId!==undefined)
+    ||(unitAdoptionDefinitionId!==undefined)?judgment.issueBoundPolicyBatch({
+    clauseRelations:relationDefinitionId!==undefined,
+    requestMaterial:requestMaterialDefinitionId!==undefined,
+    headingContexts:headingContextDefinitionId!==undefined,
+    unitAdoptions:unitAdoptionDefinitionId!==undefined
+  }):relationDefinitionId===undefined?judgment.issueRuleAssessmentBatch():judgment.issueProgramRuleBatch({definitionId:relationDefinitionId});
+  return batch;
+}
+
 /**
  Optionally collect rule meaning and whole-operation relations in one original batch.
  The caller chooses whether relations are needed; proven code facts avoid a request.
@@ -41,23 +61,18 @@ export async function assessAndDecide({
  if((requestMaterialDefinitionId!==undefined)&&(requestMaterialDefinitionId!=='request_instruction_content'))throw new InstructionResolutionInputError('Configured request-material definition is outside the implemented content consumer');
  if((headingContextDefinitionId!==undefined)&&(headingContextDefinitionId!=='heading_instruction_content'))throw new InstructionResolutionInputError('Configured heading definition is outside the implemented content consumer');
  if((unitAdoptionDefinitionId!==undefined)&&(unitAdoptionDefinitionId!=='unit_adoption'))throw new InstructionResolutionInputError('Configured unit-adoption definition is outside the implemented incorporation consumer');
- let evidence;
+ const assessment={evidence:undefined};
  if(needsRelations){
-  judgment.assertDependenciesCurrent();
-  judgment.checkpoint();
-  const batch=(requestMaterialDefinitionId!==undefined)||(headingContextDefinitionId!==undefined)
-    ||(unitAdoptionDefinitionId!==undefined)?judgment.issueBoundPolicyBatch({
-    clauseRelations:relationDefinitionId!==undefined,
-    requestMaterial:requestMaterialDefinitionId!==undefined,
-    headingContexts:headingContextDefinitionId!==undefined,
-    unitAdoptions:unitAdoptionDefinitionId!==undefined
-  }):relationDefinitionId===undefined?judgment.issueRuleAssessmentBatch():judgment.issueProgramRuleBatch({definitionId:relationDefinitionId});
-  await judgment.assess(batch);
-  evidence=judgment.captureBatchEvidence(batch);
-  judgment.assertBatchEvidence(evidence);
+   const batch=issuePolicyBatch({
+     judgment,relationDefinitionId,requestMaterialDefinitionId,headingContextDefinitionId,unitAdoptionDefinitionId
+   });
+   await judgment.assess(batch);
+   const evidence=judgment.captureBatchEvidence(batch);
+   judgment.assertBatchEvidence(evidence);
+   assessment.evidence=evidence;
  }
  return decideAndClose({
   judgment,
-  readProgram:function readOriginalProgram() { return (readProgram({evidence})); }
+  readProgram:function readOriginalProgram() { return (readProgram({evidence:assessment.evidence})); }
  });
 }

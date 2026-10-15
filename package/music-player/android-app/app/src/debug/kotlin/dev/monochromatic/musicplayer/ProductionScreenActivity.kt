@@ -627,6 +627,8 @@ private fun ProductionScreenHost(startWithPicker: Boolean, scene: String) {
             SCENE_SEARCH_NONE -> sampleSearchPage(query = SEARCH_NONE_QUERY, model = model, actions = actions)
             SCENE_SETTINGS -> settingsPageContent(
                 templateLines = TemplateEditorState.initial(emptyList()).settingsLines,
+                autoPlayOnSelect = false,
+                onToggleAutoPlay = {},
                 onBack = {},
                 onOpenTemplate = {},
             )

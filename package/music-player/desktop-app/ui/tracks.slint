@@ -6,8 +6,8 @@ import { Focus, PlayerStop, FocusRing, KeyBadge, Keys } from "focus.slint";
 import { Scrollbar, LastInput } from "scrollbar.slint";
 import { FullNameTip } from "name_tip.slint";
 
-// One entry of the flat list. A track row (kind 0) selects on tap, and toggles play and pause when it is already
-// selected (D124); a subfolder header (kind 1) only labels the tracks below it, with its name in `title` and its
+// One entry of the flat list. A track row (kind 0) selects on tap (and starts at once with Auto-play on select on, D129), and toggles play and
+// pause when it is already selected (D124); a subfolder header (kind 1) only labels the tracks below it, with its name in `title` and its
 // count text in `supporting`.
 export struct TrackListRow {
     // 0 for a playable track row, 1 for a subfolder header.

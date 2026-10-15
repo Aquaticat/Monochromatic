@@ -6,7 +6,12 @@ import { readHostResource } from './resource-reload.ts';
 import { isOwnedProgramDefinition } from '../native-batch/generated/program-definition.mjs';
 
 const env = await createEnvironment();
-function source(relative) { return pathToFileURL(join(env.packageRoot, 'dist', relative)).href; }
+function source(relative) { return pathToFileURL(join(
+  env.packageRoot,
+  'dist',
+  relative
+))
+  .href; }
 const { createSessionManager } = await import(source('main.js'));
 const {
   createAgentSessionServices,
@@ -35,26 +40,41 @@ async function createRuntime({
   const services = await createAgentSessionServices({
     cwd,
     agentDir,
-    modelRuntime: env.options.modelRuntime,
-    settingsManager: env.options.settingsManager,
-    resourceLoaderOptions: { noExtensions: true, noSkills: true, noPromptTemplates: true,
-      noThemes: true, extensionFactories: [observeExtensions, createCodemodeExtension()] },
-    resourceLoaderReloadOptions: { async resolveProjectTrust() { trustCalls++; return true; } },
+    modelRuntime: env.options
+      .modelRuntime,
+    settingsManager: env.options
+      .settingsManager,
+    resourceLoaderOptions: {
+      noExtensions: true,
+      noSkills: true,
+      noPromptTemplates: true,
+      noThemes: true,
+      extensionFactories: [
+        observeExtensions,
+        createCodemodeExtension()
+      ]
+    },
+    resourceLoaderReloadOptions: { async resolveProjectTrust() { trustCalls++;
+    return true; } },
   });
   const result = await createAgentSessionFromServices({
     services,
     sessionManager,
     sessionStartEvent,
-    model: env.options.model,
+    model: env.options
+      .model,
     noTools: true
   });
   constructions++;
   assert.equal(
-    typeof result.session.agent.executeToolBatch,
+    typeof result.session
+      .agent
+      .executeToolBatch,
     'function'
   );
   assert.equal(
-    isOwnedProgramDefinition(result.session.getToolDefinition('codemode')),
+    isOwnedProgramDefinition(result.session
+      .getToolDefinition('codemode')),
     true,
     'The native built-in extension must retain the original owned program definition'
   );
@@ -65,15 +85,21 @@ async function createRuntime({
 }
 const initialManager = await createSessionManager(
   { noSession: true },
-  env.options.cwd,
+  env.options
+    .cwd,
   undefined,
-  env.options.settingsManager
+  env.options
+    .settingsManager
 );
 const runtime = await createAgentSessionRuntime(
   createRuntime,
   {
-  cwd: env.options.cwd, agentDir: env.options.agentDir, sessionManager: initialManager,
-}
+    cwd: env.options
+      .cwd,
+    agentDir: env.options
+      .agentDir,
+    sessionManager: initialManager,
+  }
 );
 try {
   assert.equal(
@@ -83,7 +109,10 @@ try {
   );
   const initialSession = runtime.session;
   const initialLease = nativeHost.lifecycle
-    .capture({ session: initialSession, manager: initialManager });
+    .capture({
+      session: initialSession,
+      manager: initialManager
+    });
   const resource = readHostResource(runtime.services
     .resourceLoader);
   const previousInput = resource.policyInput
@@ -91,10 +120,11 @@ try {
   await runtime.session
     .reload();
   assert.notEqual(
-    resource.policyInput.readCurrent(),
+    resource.policyInput
+      .readCurrent(),
     previousInput
   );
-  assert.throws(function inspectRetiredPolicyInput() { return ( resource.policyInput
+  assert.throws(function inspectRetiredPolicyInput() { ; ( resource.policyInput
     .assertCurrent(previousInput)); });
   nativeHost.lifecycle
     .assertActive(initialLease);
@@ -121,10 +151,11 @@ try {
     initialSession
   );
   assert.equal(
-    env.readSessionDisposalState(initialSession).completed,
+    env.readSessionDisposalState(initialSession)
+      .completed,
     true
   );
-  assert.throws(function inspectRetiredHostLease() { return ( nativeHost.lifecycle
+  assert.throws(function inspectRetiredHostLease() { ; ( nativeHost.lifecycle
     .assertActive(initialLease)); });
   assert.equal(
     replacementCallbacks,
@@ -148,7 +179,8 @@ try {
     'Original fork input'
   );
   assert.equal(
-    runtime.session.sessionManager,
+    runtime.session
+      .sessionManager,
     forkManager
   );
   assert.notEqual(
@@ -156,7 +188,8 @@ try {
     beforeFork
   );
   assert.equal(
-    env.readSessionDisposalState(beforeFork).completed,
+    env.readSessionDisposalState(beforeFork)
+      .completed,
     true
   );
   assert.equal(
@@ -169,10 +202,22 @@ try {
   );
   await nativeHost.disposeSession(beforeFork);
   nativeHost.lifecycle
-    .assertActive(nativeHost.lifecycle.capture({ session: runtime.session, manager: forkManager }));
+    .assertActive(nativeHost.lifecycle
+      .capture({
+        session: runtime.session,
+        manager: forkManager
+      }));
 
   const persisted = nativeHost.managers
-    .create(env.options.cwd, join(env.options.agentDir, 'fixture-sessions'));
+    .create(
+      env.options
+        .cwd,
+      join(
+        env.options
+          .agentDir,
+        'fixture-sessions'
+      )
+    );
   persisted.appendMessage({
     role: 'user',
     content: 'Persisted original input',
@@ -189,11 +234,13 @@ try {
     beforeResume
   );
   assert.equal(
-    runtime.session.sessionFile,
+    runtime.session
+      .sessionFile,
     persistedPath
   );
   assert.equal(
-    env.readSessionDisposalState(beforeResume).completed,
+    env.readSessionDisposalState(beforeResume)
+      .completed,
     true
   );
 
@@ -206,15 +253,22 @@ try {
     function matchesHostDisposalFailure(error) { return ( error === failure); }
   );
   assert.equal(
-    env.readSessionDisposalState(closing).completed,
+    env.readSessionDisposalState(closing)
+      .completed,
     false
   );
   try {
     await assert.rejects(
       async function rejectConstructionDuringCleanup()  {
-      const unexpected = await nativeHost.createSession({ ...env.options,
-        resourceLoader: runtime.services.resourceLoader,
-        sessionManager: nativeHost.managers.inMemory(env.options.cwd), noTools: true });
+      const unexpected = await nativeHost.createSession({
+        ...env.options,
+        resourceLoader: runtime.services
+          .resourceLoader,
+        sessionManager: nativeHost.managers
+          .inMemory(env.options
+            .cwd),
+        noTools: true
+      });
       await nativeHost.disposeSession(unexpected.session);
     },
       /cleanup is incomplete/u
@@ -224,7 +278,8 @@ try {
   }
   await nativeHost.disposeSession(closing);
   assert.equal(
-    env.readSessionDisposalState(closing).completed,
+    env.readSessionDisposalState(closing)
+      .completed,
     true
   );
   await nativeHost.disposeSession(closing);

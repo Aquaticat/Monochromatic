@@ -173,6 +173,9 @@ export component AppWindow inherits Window {
     in property <[SettingsTemplateRow]> settings-rows: [];
     // Index of the selected Settings row, which is the template the right pane edits on a wide window.
     in property <int> settings-selected: 0;
+    // Whether Auto-play on select is on, and the line under its Settings row; the Rust side keeps both current (D129).
+    in property <bool> auto-play-on-select: false;
+    in property <string> auto-play-on-select-text: "";
     // Opacity of the right pane, 1 at rest. A new selection drops it to 0 at once and animates it back to 1 over 150 ms,
     // linear. The drop is made with a zero-length animation, because an `animate` block would otherwise also animate the
     // drop. Slint 1.18 exposes no reduced-motion setting, so the fade is always this short.
@@ -262,6 +265,8 @@ export component AppWindow inherits Window {
     callback settings-open-template(int);
     callback settings-select-template(int);
     callback settings-back();
+    // The Auto-play on select switch row was toggled by a click, Space or Enter; the Rust side flips and saves the setting.
+    callback settings-toggle-auto-play();
     callback editor-text-edited(string, int, int);
     callback editor-focus-changed(bool);
     callback editor-insert-field(int);
@@ -588,6 +593,9 @@ export component AppWindow inherits Window {
         focus-tick: root.focus-tick;
         wide: root.unfolded;
         selected-index: root.settings-selected;
+        auto-play-enabled: root.auto-play-on-select;
+        auto-play-text: root.auto-play-on-select-text;
+        toggle-auto-play => { root.settings-toggle-auto-play(); }
         open-template(i) => { root.settings-open-template(i); }
         select-template(i) => { root.settings-select-template(i); }
         back => { root.settings-back(); }

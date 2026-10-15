@@ -512,6 +512,7 @@ impl Rendered {
         // replaceSaver((_trackRows, _playing) => undefined);
         // ```
         crate::ui_settings::replace_saver(|_track_rows, _playing| return Ok(()));
+        crate::ui_settings::replace_auto_play_saver(|_enabled| return Ok(()));
         // What:     `let app = AppWindow::new().expect("...");` builds the window. `AppWindow::new()` answers a `Result`, and
         //           `.expect("...")` takes the success value or stops the thread with the message.
         // Why:      Every test needs the window; a failure to build it is a test failure.

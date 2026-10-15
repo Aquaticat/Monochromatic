@@ -177,7 +177,8 @@ fn jump_to_letter(window: &AppWindow, letter: char) -> bool {
 }
 
 /// What: `activate_track` selects the row under the track ring, or toggles play and pause when it is the selected row.
-/// Why: Enter on a list does what a click does (D124): selecting never starts playback, the second Enter does.
+/// Why: Enter on a list does what a click does (D124, D129): selecting starts playback only with Auto-play on
+/// select on, and otherwise the second Enter does.
 fn activate_track(window: &AppWindow, host: &dyn Host) -> bool {
     let Some(index) = read_state(|state| return state.ring_track).and_then(|ring| return usize::try_from(ring).ok()) else {
         return true;

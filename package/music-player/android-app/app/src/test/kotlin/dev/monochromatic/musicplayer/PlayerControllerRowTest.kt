@@ -41,7 +41,7 @@ class PlayerControllerRowTest {
     @Test
     fun anUnselectedRowIsSelectedAndStaysPaused() {
         openTwoFolders()
-        controller.activateRow(1)
+        controller.activateRow(1, autoPlayOnSelect = false)
         assertEquals(1, controller.uiState.currentIndex)
         assertFalse(controller.uiState.playing)
         assertEquals(listOf(uriAt(1) to false), engine.loads)
@@ -55,7 +55,7 @@ class PlayerControllerRowTest {
         assertTrue(controller.uiState.playing)
         /** Pause requests so far, to see that selecting asks the engine to stop before its asynchronous load. */
         val pausesBefore: Int = engine.pauseCount
-        controller.activateRow(2)
+        controller.activateRow(2, autoPlayOnSelect = false)
         assertTrue(engine.pauseCount > pausesBefore)
         assertEquals(2, controller.uiState.currentIndex)
         assertFalse(controller.uiState.playing)
@@ -67,8 +67,8 @@ class PlayerControllerRowTest {
     @Test
     fun theRowJustSelectedStartsOnTheSecondTapWithoutReloading() {
         openTwoFolders()
-        controller.activateRow(1)
-        controller.activateRow(1)
+        controller.activateRow(1, autoPlayOnSelect = false)
+        controller.activateRow(1, autoPlayOnSelect = false)
         assertTrue(controller.uiState.playing)
         assertEquals(1, engine.loads.size)
     }
@@ -80,7 +80,7 @@ class PlayerControllerRowTest {
         /** URIs reported as loaded, in order. */
         val reported: MutableList<String> = mutableListOf()
         controller.onTrackLoaded = { uri -> reported += uri }
-        controller.activateRow(4)
+        controller.activateRow(4, autoPlayOnSelect = false)
         assertEquals(listOf(uriAt(4)), reported)
     }
 
@@ -91,7 +91,7 @@ class PlayerControllerRowTest {
         val tracks: List<Track> = (0 until 3).map { number -> trackOf("Alpha", number) }
         controller.beginLoad()
         controller.reconcileLibrary(tracks.take(2))
-        controller.activateRow(0)
+        controller.activateRow(0, autoPlayOnSelect = false)
         controller.finishLoad(tracks = tracks, session = Session(selected = uriAt(1)))
         assertEquals(0, controller.uiState.currentIndex)
         assertFalse(controller.uiState.playing)
@@ -103,7 +103,7 @@ class PlayerControllerRowTest {
     fun thePlayingRowPausesOnATap() {
         openTwoFolders()
         controller.playIndex(1)
-        controller.activateRow(1)
+        controller.activateRow(1, autoPlayOnSelect = false)
         assertFalse(controller.uiState.playing)
         assertEquals(1, controller.uiState.currentIndex)
         assertEquals(1, engine.loads.size)
@@ -114,8 +114,8 @@ class PlayerControllerRowTest {
     fun thePausedCurrentRowResumesOnATap() {
         openTwoFolders()
         controller.playIndex(1)
-        controller.activateRow(1)
-        controller.activateRow(1)
+        controller.activateRow(1, autoPlayOnSelect = false)
+        controller.activateRow(1, autoPlayOnSelect = false)
         assertTrue(controller.uiState.playing)
         assertEquals(1, engine.loads.size)
     }
@@ -125,8 +125,8 @@ class PlayerControllerRowTest {
     fun anotherRowAfterAPauseIsSelectedPaused() {
         openTwoFolders()
         controller.playIndex(1)
-        controller.activateRow(1)
-        controller.activateRow(2)
+        controller.activateRow(1, autoPlayOnSelect = false)
+        controller.activateRow(2, autoPlayOnSelect = false)
         assertEquals(2, controller.uiState.currentIndex)
         assertFalse(controller.uiState.playing)
         assertEquals(uriAt(2) to false, engine.loads.last())
@@ -141,7 +141,7 @@ class PlayerControllerRowTest {
         )
         assertEquals(2, controller.uiState.currentIndex)
         assertFalse(controller.uiState.playing)
-        controller.activateRow(2)
+        controller.activateRow(2, autoPlayOnSelect = false)
         assertTrue(controller.uiState.playing)
         assertEquals(1, engine.loads.size)
     }
@@ -152,10 +152,10 @@ class PlayerControllerRowTest {
         openTwoFolders()
         controller.playIndex(1)
         controller.selectPage(1)
-        controller.activateRow(1)
+        controller.activateRow(1, autoPlayOnSelect = false)
         assertFalse(controller.uiState.playing)
         assertEquals(1, engine.loads.size)
-        controller.activateRow(4)
+        controller.activateRow(4, autoPlayOnSelect = false)
         assertEquals(4, controller.uiState.currentIndex)
         assertFalse(controller.uiState.playing)
         assertEquals(uriAt(4) to false, engine.loads.last())
@@ -166,7 +166,7 @@ class PlayerControllerRowTest {
     @Test
     fun anIndexOutsideTheLibraryIsIgnored() {
         openTwoFolders()
-        controller.activateRow(99)
+        controller.activateRow(99, autoPlayOnSelect = false)
         assertNull(controller.uiState.currentIndex)
         assertTrue(engine.loads.isEmpty())
         assertEquals(0, engine.pauseCount)

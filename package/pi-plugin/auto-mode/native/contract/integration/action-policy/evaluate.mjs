@@ -60,7 +60,10 @@ async function evaluateOriginalPolicy({
    inputs,
    ownerFor:authorizationOwnerFor
  });
- const pendingSessionApproval=capturePendingSessionApproval({judgment,host:approvalHost});
+ const pendingSessionApproval=capturePendingSessionApproval({
+   judgment,
+   host:approvalHost
+ });
  const scope=semanticAdmissionScope({
    policy,
    inputs
@@ -91,7 +94,7 @@ async function evaluateOriginalPolicy({
    state:'no-unit-pairs',
    reason:'No unambiguous bounded original same-source pair is available.'
  }):inspectedUnitScope;
- let compiled;
+ const compilation={current:undefined};
  // Host presentation is fixed at bootstrap; request owners come only from this original review.
  const approvalContext=approvalHost&&sourceContext?Object.freeze({
    ...approvalHost,
@@ -112,7 +115,7 @@ async function evaluateOriginalPolicy({
    unitAdoptionDefinitionId:unitScope.state==='matching'?unitPolicy.definitionId:undefined,
    readProgram({evidence}){
    inputs.assertCurrent();
-   compiled=compileBoundClauseProgram({
+   const compiled=compileBoundClauseProgram({
      judgment,
      inputs,
      authorizationInputs,
@@ -125,11 +128,13 @@ async function evaluateOriginalPolicy({
      unitPolicy,
      unitScope
    });
+   compilation.current=compiled;
    return compiled.program;
   }
  });
  function assertCurrent(){inputs.assertCurrent();authorizationInputs.assertCurrent();pendingSessionApproval.assertCurrent();result.assertCurrent();}
  assertCurrent();
+ const compiled=compilation.current;
  return Object.freeze({
    ...result,
    inputs,

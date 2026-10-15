@@ -2,17 +2,8 @@ import {
   readPolicyInput,
   assertPolicyInput
 } from './system-slot.mjs';
-
-export class GoverningPolicyBindingError extends Error {
- constructor(
-   message,
-   options
- ){super(
-   message,
-   options
- );this.name=this.constructor
-   .name;}
-}
+import { GoverningPolicyBindingError } from './governing-error.mjs';
+export { GoverningPolicyBindingError } from './governing-error.mjs';
 
 /**
  Bind the bootstrap-selected capture to the judgment's owned sources and unchanged original request.
@@ -24,18 +15,16 @@ export function bindGoverningPolicySource({
   judgment,
   producerOwner,
   observer,
-  collector,
   response,
   stream
 }){
  const link=readPolicyInput(policyInput);
    const receipt=observer.observationFor(response);
- let failure;
- let sources;
+ const bindingState={failure:undefined,sources:undefined};
  function current(){
-  if(failure)throw new GoverningPolicyBindingError(
+  if(bindingState.failure)throw new GoverningPolicyBindingError(
     'Original governing source lost eligibility',
-    {cause:failure.cause}
+    {cause:bindingState.failure.cause}
   );
   try{
    if(producerOwner.judgmentFor({
@@ -46,17 +35,19 @@ export function bindGoverningPolicySource({
      response,
      stream
    });
-   const currentSources=judgment.readSourceSnapshot?.()??judgment.sourceSnapshot??receipt.sources;
-   if(sources===undefined)sources=currentSources;
-   else if(sources!==currentSources)throw new GoverningPolicyBindingError('Original judgment source snapshot changed');
-   observer.assertFresh(receipt);collector.assertObservedFresh(sources);
-   judgment.assertDependenciesCurrent();assertPolicyInput({
+   const currentBinding=judgment.readCurrentSourceBinding();
+   if(currentBinding.request!==receipt)throw new GoverningPolicyBindingError('Original judgment request receipt changed');
+   const currentSources=currentBinding.sources;
+   if(bindingState.sources===undefined)bindingState.sources=currentSources;
+   else if(bindingState.sources!==currentSources)throw new GoverningPolicyBindingError('Original judgment source snapshot changed');
+   assertPolicyInput({
      input:policyInput,
      binding:link
    });
-  }catch(error){failure={cause:error};throw error;}
+  }catch(error){bindingState.failure={cause:error};throw error;}
  }
  current();judgment.checkpoint();
+ const {sources}=bindingState;
  if((sources.hostGoverningPolicy!==link.source)||(sources.resourceInputObservation!==link.frame))throw new GoverningPolicyBindingError('Judgment does not retain the original selected governing capture and resource frame');
  const view=Object.freeze({
    kind:'original-governing-source-view',

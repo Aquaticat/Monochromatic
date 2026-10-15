@@ -129,7 +129,7 @@ fn root_track_has_no_second_line() {
 #[test]
 fn root_track_semantics_names_no_library_root() {
     let semantics: SearchRowSemantics =
-        search_row_semantics(&track_result("Night", None, 0), None, None);
+        search_row_semantics(&track_result("Night", None, 0), None, None, false);
     assert_eq!(semantics.kind_label, "Track");
     assert_eq!(semantics.action_label, "Select track");
     assert_eq!(semantics.state_label, None);
@@ -185,7 +185,7 @@ fn no_current_track_means_no_current_row() {
 #[test]
 fn folder_action_opens_without_autoplay() {
     assert_eq!(
-        search_row_action_label(&folder_result("Camellia"), Some(2), Some(true)),
+        search_row_action_label(&folder_result("Camellia"), Some(2), Some(true), false),
         "Open folder without autoplay"
     );
 }
@@ -195,7 +195,7 @@ fn folder_action_opens_without_autoplay() {
 #[test]
 fn other_track_action_selects() {
     assert_eq!(
-        search_row_action_label(&track_result("Night", Some("Live"), 1), Some(2), Some(true)),
+        search_row_action_label(&track_result("Night", Some("Live"), 1), Some(2), Some(true), false),
         "Select track"
     );
 }
@@ -205,7 +205,7 @@ fn other_track_action_selects() {
 #[test]
 fn playing_current_track_action_pauses() {
     assert_eq!(
-        search_row_action_label(&track_result("Night", Some("Live"), 2), Some(2), Some(true)),
+        search_row_action_label(&track_result("Night", Some("Live"), 2), Some(2), Some(true), false),
         "Pause track"
     );
 }
@@ -218,7 +218,8 @@ fn paused_current_track_action_plays() {
         search_row_action_label(
             &track_result("Night", Some("Live"), 2),
             Some(2),
-            Some(false)
+            Some(false),
+            false
         ),
         "Play track"
     );
@@ -229,7 +230,7 @@ fn paused_current_track_action_plays() {
 #[test]
 fn unknown_state_current_track_action_toggles() {
     assert_eq!(
-        search_row_action_label(&track_result("Night", Some("Live"), 2), Some(2), None),
+        search_row_action_label(&track_result("Night", Some("Live"), 2), Some(2), None, false),
         "Play or pause track"
     );
 }
@@ -271,7 +272,7 @@ fn state_label_reports_playing_current_track() {
 #[test]
 fn semantics_bundle_combines_kind_action_and_state() {
     let semantics: SearchRowSemantics =
-        search_row_semantics(&track_result("Night", Some("Live"), 2), Some(2), Some(true));
+        search_row_semantics(&track_result("Night", Some("Live"), 2), Some(2), Some(true), false);
     assert_eq!(semantics.kind_label, "Track");
     assert_eq!(semantics.action_label, "Pause track");
     assert_eq!(semantics.state_label, Some("Current track, playing"));
@@ -379,4 +380,32 @@ fn clear_hidden_for_non_breaking_space_and_separator_only_query() {
 #[test]
 fn restored_results_start_at_first_index() {
     assert_eq!(SEARCH_RESTORED_RESULT_INDEX, 0);
+}
+
+// What:     `#[test]` marks the next function as a test case.
+// Why:      With Auto-play on select on (D129) a result for another track starts it, so the label is Play track again.
+#[test]
+fn other_track_action_plays_with_auto_play_on() {
+    assert_eq!(
+        search_row_action_label(&track_result("Night", Some("Live"), 1), Some(2), Some(true), true),
+        "Play track"
+    );
+    assert_eq!(
+        search_row_semantics(&track_result("Night", Some("Live"), 1), None, None, true).action_label,
+        "Play track"
+    );
+}
+
+// What:     `#[test]` marks the next function as a test case.
+// Why:      The setting changes only the label of a track that is not current.
+#[test]
+fn auto_play_does_not_change_the_folder_or_current_track_labels() {
+    assert_eq!(
+        search_row_action_label(&folder_result("Camellia"), Some(2), Some(true), true),
+        "Open folder without autoplay"
+    );
+    assert_eq!(
+        search_row_action_label(&track_result("Night", Some("Live"), 2), Some(2), Some(true), true),
+        "Pause track"
+    );
 }
