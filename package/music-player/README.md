@@ -593,8 +593,13 @@ It is not signed with a developer identity,
 so SmartScreen may show "Windows protected your PC":
 choose "More info",
 then "Run anyway".
-The executable is built as a console program,
-so Windows opens a console window next to the app.
+The executable opens no console window when you double-click it.
+Started from a terminal (Command Prompt or PowerShell), it attaches to that terminal,
+so `music-player.exe --version` and `--help` print there and its log lines appear there;
+`cmd.exe` and PowerShell return to the prompt at once instead of waiting for the program to end.
+With `> file.txt` or a pipe, the output goes to the file or the pipe as usual.
+Started by a double-click, the program has no console,
+so its log lines and startup error messages are not shown anywhere.
 The program takes one optional folder or file to open: `music-player.exe C:\Music`.
 
 ### macOS

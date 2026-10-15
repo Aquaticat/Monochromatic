@@ -143,6 +143,9 @@ The MSVC files must import no `vcruntime*` or `msvcp*` DLL;
 the GNU file imports the Windows C runtime (`api-ms-win-crt-*`) and system DLLs,
 and must import none of `libgcc_s*`,
  `libwinpthread*` and `libstdc++*`.
+The same step prints the `subsystem` value of each file and fails unless it is 2 (Windows GUI),
+because a console-subsystem file (3) opens a console window on a double-click;
+`objdump -p` prints the same field as `Subsystem`.
 
 ## When a job fails
 

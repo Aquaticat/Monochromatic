@@ -402,12 +402,34 @@ jobs:
         $captured = (& $exe --version | Out-String).Trim()
         Write-Output "captured in the pipeline: $captured"
         if ($captured -cne $expected) { throw "captured '$captured', expected '$expected'" }
-        # The output goes to a file through PowerShell's redirection operator.
+        # A redirection to a file hands the file to the program. Measured on the first run of this step: for a GUI-subsystem
+        # program PowerShell does not wait for the program then, so the file is empty for a moment after the command
+        # returns. The same holds for cmd.exe. The step therefore waits for the text and prints how long it took.
+        function Wait-ForText($path, $watch) {
+          $text = ''
+          while ($watch.Elapsed.TotalSeconds -lt 20) {
+            if (Test-Path -Path $path) { $text = (Get-Content -Raw -Path $path) }
+            if ($text) { break }
+            Start-Sleep -Milliseconds 100
+          }
+          return "$text".Trim()
+        }
         $file = Join-Path $env:RUNNER_TEMP 'out.txt'
+        Remove-Item -Path $file -ErrorAction SilentlyContinue
+        $watch = [System.Diagnostics.Stopwatch]::StartNew()
         & $exe --version > $file
-        $fromFile = (Get-Content -Raw -Path $file).Trim()
-        Write-Output "out.txt holds: $fromFile"
+        Write-Output "PowerShell > out.txt: the command returned after $($watch.ElapsedMilliseconds) ms"
+        $fromFile = Wait-ForText $file $watch
+        Write-Output "PowerShell > out.txt: held the text after $($watch.ElapsedMilliseconds) ms: $fromFile"
         if ($fromFile -cne $expected) { throw "out.txt holds '$fromFile', expected '$expected'" }
+        $fileCmd = Join-Path $env:RUNNER_TEMP 'out-cmd.txt'
+        Remove-Item -Path $fileCmd -ErrorAction SilentlyContinue
+        $watch = [System.Diagnostics.Stopwatch]::StartNew()
+        cmd.exe /d /c "`"$exe`" --version > `"$fileCmd`""
+        Write-Output "cmd.exe > out-cmd.txt: the command returned after $($watch.ElapsedMilliseconds) ms"
+        $fromCmd = Wait-ForText $fileCmd $watch
+        Write-Output "cmd.exe > out-cmd.txt: held the text after $($watch.ElapsedMilliseconds) ms: $fromCmd"
+        if ($fromCmd -cne $expected) { throw "out-cmd.txt holds '$fromCmd', expected '$expected'" }
         # The same through the 2>&1 merge that scripts use to log both streams.
         $merged = (& $exe --version 2>&1 | Out-String).Trim()
         Write-Output "merged streams: $merged"
