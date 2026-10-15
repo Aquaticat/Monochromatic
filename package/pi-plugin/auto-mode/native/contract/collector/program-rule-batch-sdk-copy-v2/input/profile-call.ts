@@ -57,16 +57,20 @@ export function inspectProfileCall({
     l
   });
   cl.debug('inspecting original tool call');
-  if ((call?.type !== 'CallExpression') || call.optional || (call.arguments.length !== 1)) {
+  if ((call?.type !== 'CallExpression') || call.optional
+    || (call.arguments.length !== 1)) {
     throw new ResultProgramProfileError('direct single-argument call required');
   }
   /**
    Original callee access follows direct-call admission.
    */
   const { callee } = call;
-  if ((callee.type !== 'MemberExpression') || callee.computed || callee.optional
-    || (callee.object.type !== 'Identifier') || (callee.object.name !== 'tools')
-    || (callee.property.type !== 'Identifier') || (!allowed.has(callee.property.name))) {
+  if ((callee.type !== 'MemberExpression') || callee.computed
+    || callee.optional
+    || (callee.object.type !== 'Identifier')
+    || (callee.object.name !== 'tools')
+    || (callee.property.type !== 'Identifier')
+    || (!allowed.has(callee.property.name))) {
     throw new ResultProgramProfileError('owned tool identifier required');
   }
   /**
@@ -77,9 +81,9 @@ export function inspectProfileCall({
    Original end retains the original predicate without an added integer check.
    */
   const end = callee.end - prefix.length;
-  if (!(Number.isSafeInteger(start) && start >= 0
-    && end > start
-    && end <= source.length)) {
+  if (!(Number.isSafeInteger(start) && (start >= 0)
+    && (end > start)
+    && (end <= source.length))) {
     throw new ResultProgramProfileError('callee source span');
   }
   return Object.freeze({
@@ -94,7 +98,10 @@ export function inspectProfileCall({
     callee: Object.freeze({
       start,
       end,
-      text: source.slice(start, end)
+      text: source.slice(
+        start,
+        end
+      )
     }),
     alias: `__owned_flow_${group}_${ordinal}`,
   });

@@ -62,7 +62,8 @@ type PatternModule = Readonly<{
  @throws Error for an absent call inspection export
  */
 function assertCallModule(value: unknown): asserts value is CallModule {
-  assert.ok((value !== null) && (typeof value) === 'object' && ('inspectProfileCall' in value)
+  assert.ok((value !== null) && (typeof value) === 'object'
+    && ('inspectProfileCall' in value)
     && (typeof value.inspectProfileCall) === 'function');
 }
 /**
@@ -75,7 +76,9 @@ function assertCallModule(value: unknown): asserts value is CallModule {
  @throws Error for an absent original parser
  */
 function assertParserModule(value: unknown): asserts value is ParserModule {
-  assert.ok((value !== null) && (typeof value) === 'object' && ('parse' in value) && (typeof value.parse) === 'function');
+  assert.ok((value !== null) && (typeof value) === 'object'
+    && ('parse' in value)
+    && (typeof value.parse) === 'function');
 }
 /**
  Check the original pattern owner and diagnostic exports.
@@ -88,9 +91,12 @@ function assertParserModule(value: unknown): asserts value is ParserModule {
  */
 function assertPatternModule(value: unknown): asserts value is PatternModule {
   assert.ok((value !== null) && (typeof value) === 'object'
-    && ('readPattern' in value) && (typeof value.readPattern) === 'function'
-    && ('materializePattern' in value) && (typeof value.materializePattern) === 'function'
-    && ('ResultProgramProfileError' in value) && (typeof value.ResultProgramProfileError) === 'function');
+    && ('readPattern' in value)
+    && (typeof value.readPattern) === 'function'
+    && ('materializePattern' in value)
+    && (typeof value.materializePattern) === 'function'
+    && ('ResultProgramProfileError' in value)
+    && (typeof value.ResultProgramProfileError) === 'function');
 }
 /**
  Built call inspection is loaded independently from the maintained source.
@@ -197,10 +203,13 @@ export function syntheticCall(input: CallInput = {}): object {
     optional: false,
     arguments: [{}],
     callee: {
-      type: 'MemberExpression', computed: false, optional: false,
+      type: 'MemberExpression',
+      computed: false,
+      optional: false,
       object: { type: 'Identifier', name: 'tools' },
       property: { type: 'Identifier', name: 'tool' },
-      start: 0, end: 10,
+      start: 0,
+      end: 10,
       ...input,
     },
   };

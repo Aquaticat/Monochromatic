@@ -13,7 +13,9 @@ import { inspect, parseCall, patterns, syntheticCall } from './native-profile-ca
  @param message - independently expected original profile failure
  */
 function rejects({ input, message }: Readonly<{ input: Readonly<Record<string, unknown>>; message: string }>): void {
-  assert.throws(function rejectedCall() { inspect(input); }, {
+  assert.throws(function rejectedCall() { 
+    inspect(input); 
+  }, {
     constructor: patterns.ResultProgramProfileError,
     name: 'ResultProgramProfileError',
     message: `Result-derived program is outside the inspected profile: ${message}`,
@@ -53,11 +55,19 @@ await describe({ name: 'original profile call admission', children: [
   it({ name: 'preserves opaque membership, node getter, and original decoder failures', fn: async function opaqueFailure() {
     const failure: unknown = Object.freeze({ reason: 'original inspection failure' });
     for (const input of [
-      { allowed: { has() { throw failure; } } },
-      { call: { get type() { throw failure; } } },
-      { readPattern() { throw failure; } },
+      { allowed: { has() { 
+        throw failure; 
+      } } },
+      { call: { get type() { 
+        throw failure; 
+      } } },
+      { readPattern() { 
+        throw failure; 
+      } },
     ]) {
-      assert.throws(function originalFailure() { inspect(input); }, function sameFailure(error: unknown) {
+      assert.throws(function originalFailure() { 
+        inspect(input); 
+      }, function sameFailure(error: unknown) {
         assert.equal(error, failure);
         return true;
       });

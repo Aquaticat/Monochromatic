@@ -39,16 +39,22 @@ await describe({ name: 'original profile call values', children: [
     const call = { type: 'CallExpression', optional: false, arguments: [argument], callee: {
       type: 'MemberExpression', computed: false, optional: false,
       object: { type: 'Identifier', name: 'tools' },
-      property: { type: 'Identifier', get name() { events.push('name');
-      return 'tool'; } },
-      get start() { events.push('start');
-      return 0; },
-      get end() { events.push('end');
-      return 10; },
+      property: { type: 'Identifier', get name() { 
+        events.push('name');
+      return 'tool'; 
+      } },
+      get start() { 
+        events.push('start');
+      return 0; 
+      },
+      get end() { 
+        events.push('end');
+      return 10; 
+      },
     } };
     const result = inspect({ call, bindingName: 'bound', readPattern(input: unknown) {
       assert.deepEqual(input, { node: argument, bindingName: 'bound' });
-      assert.ok((input !== null) && (typeof input) === 'object' && ('node' in input));
+      assert.ok((input !== null) && ((typeof input) === 'object') && ('node' in input));
       assert.equal(input.node, argument);
       events.push('pattern');
       return pattern;
@@ -59,13 +65,17 @@ await describe({ name: 'original profile call values', children: [
   } }),
   it({ name: 'preserves fractional end positions admitted by the original span predicate', fn: async function fractionalEnd() {
     assert.doesNotThrow(function originalFractionalEnd() {
-      const result = inspect({ call: syntheticCall({ end: 9.5 }), readPattern() { return {}; } });
+      const result = inspect({ call: syntheticCall({ end: 9.5 }), readPattern() { 
+        return {}; 
+      } });
       assert.deepEqual(result.callee, { start: 0, end: 9.5, text: 'tools.too' });
     });
   } }),
   it({ name: 'passes an argument-array hole to the original decoder without inventing a node', fn: async function hole() {
     const call = { ...syntheticCall(), arguments: Array.from({ length: 1 }) };
-    assert.throws(function originalHole() { inspect({ call }); }, patterns.ResultProgramProfileError);
+    assert.throws(function originalHole() { 
+      inspect({ call }); 
+    }, patterns.ResultProgramProfileError);
     assert.doesNotThrow(function observedHole() {
       inspect({ call, readPattern(input: unknown) {
         assert.deepEqual(input, { node: undefined, bindingName: undefined });
