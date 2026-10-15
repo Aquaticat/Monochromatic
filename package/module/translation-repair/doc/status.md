@@ -88,9 +88,8 @@ on which `TianqiChen66625` was launched.
 It settled with every check clean,
 and her last message keeps her present tense;
 its consistency pass carried the refrain to three of four places and left the other repeat,
-after most of its run-off and carry-choice voices were refused for their reply shape or ran away
-(under investigation,
-the handover's checkpoint of 2026-10-15).
+and seven replies were refused for naming a shown label in another form
+(the causes and fixes are in the handover's checkpoint of 2026-10-15).
 The two Bedrock Gemma seats answer with an expired token and are withheld after their first failed calls;
 no launch waits on them.
 

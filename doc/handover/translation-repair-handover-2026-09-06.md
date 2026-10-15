@@ -340,9 +340,11 @@ At the launch of `TianqiChen66624`:
 - It settled on 2026-10-15 with every check clean,
   and her last message keeps her present tense line for line.
   The consistency pass carried the refrain to three of its four places
-  and left the repeated sentence of source lines 35 and 55 as it stood,
-  after most of its run-off and carry-choice voices were refused for their reply shape
-  or ran away.
+  (the fourth place's carry choice split three ways)
+  and left the repeated sentence of source lines 35 and 55 as it stood
+  (its majority quoted three different spans).
+  Seven replies were refused for naming a shown label in another form,
+  such as `Occurrence 3` for `OCCURRENCE 3`.
   The read is in
   [the pass log for 2026-10-15](../planning/translation-repair-openrouter-2026-09-03-2026-10-15.md).
   Hyper's balance fell from 140 to 27 over the pass.
@@ -351,13 +353,19 @@ At the launch of `TianqiChen66624`:
 
 1.  The investigation n170
     (brief `prompts/prompt-n170-consistency-pass-voices-66625.md`,
-    scratch `s241`)
-    reads why the consistency pass of `TianqiChen66625` lost its voices:
-    the schema-guard refusals,
-    the run-off with no quorum,
-    the unlocated choice of group 2,
-    the runaway Qwen replies and the empty truncated MiniMax replies.
-    Rule on each cause it finds and fix them with the rounds of item 2.
+    notes `s241/notes-n170.md`)
+    read the consistency pass of `TianqiChen66625`.
+    The lead's rulings,
+    each fixed in the round after n169:
+    a reply naming exactly one shown label in another form counts as that label;
+    the sheets list the exact labels;
+    the run-off's final result gets its own log line;
+    a carry choice that splits is run off among its tied candidates,
+    as the owner's rule of 2026-10-11 does for contests;
+    a span that a majority of the chosen place's quotes contain is located;
+    the abandonment line reports answer and reasoning characters,
+    not wire length;
+    the re-ask's own failure is logged.
 2.  The review n162 of the n159 and n161 commits
     (brief `prompts/prompt-n162-review-of-n159-and-n161.md`,
     findings Z1 to Z11 in `s233/review.md`,

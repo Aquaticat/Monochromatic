@@ -166,9 +166,10 @@ The pass found the two groups TianqiChen66623 named
   not the title of a work,
   and the title rule's reach to game names is an open item in the handover.
 
-## TianqiChen66625 read, 2026-10-15: SETTLED, her last message keeps her tense, the consistency pass lost its voices
+## TianqiChen66625 read, 2026-10-15: SETTLED, her last message keeps her tense, the refrain carried to three places
 
-TianqiChen66625 launched on 2026-10-15 at 13:35 UTC at `277145a862`
+TianqiChen66625 launched on 2026-10-15 at 13:35 UTC at `5f6c8593d7`,
+whose package source is `277145a862`'s
 (the build with the quoted-words tense rule and the group line's reason),
 through the runbook's unit form into a fresh runs directory,
 and settled in 11,874,915 ms
@@ -222,28 +223,48 @@ TianqiChen66623 and TianqiChen66624 had moved the same lines into the past.
   still reads "So she must have been a gentle,
   sensitive girl."
   (`group 1 of 2: refrain ... replaced=2 chosen=1 kept-current=1 because=carry:no-majority`).
-  The first ask tied one ballot each across three places of three usable,
-  and the run-off heard 2 of 4 seats and reached no quorum.
+  The first ask tied one ballot each across three places of three usable.
+  The run-off's first window heard 2 of 4 seats,
+  its retry heard the other two,
+  and it chose OCCURRENCE 3 by 3 ballots of 4
+  (the artifact's `runOff`;
+  the log prints only the first window's "no quorum" line).
+  The fourth place was kept because its own carry choice split three ways:
+  three seats heard,
+  each naming a different candidate,
+  none the standing text.
 - The repeated sentence of source lines 35 and 55,
   which TianqiChen66624 carried,
   was left as it stood
   (`group 2 of 2: maximal ... untouched=2 because=no-winner:chosen-unlocated`).
+  Two of three ballots chose OCCURRENCE 1,
+  but the three quoted three different spans of its English,
+  and the locator counts only identical quotes,
+  so no span had a majority.
 
-The asks of this pass lost most of their voices:
-glm-5.3,
-minimax-m3,
-Mercury 2.5 and Kimi-K3 each sent a reply that parsed as JSON and failed the caller's schema guard
-on the run-off or the carry choice
-(log lines 9533 to 9650),
-Qwen3.8-27B was abandoned three times after delivering 0.98 to 1.31 million characters
-(log lines 9497,
-9661 and 9680),
-and minimax-m3 twice stopped at its token limit with an empty reply
-(log lines 9480 and 9524).
-Why each happened,
-and why group 2 found its chosen text nowhere,
-is under investigation (round n170);
-the result goes to the package's audit ledger.
+The investigation n170 read why voices were lost:
+
+- Seven replies were refused because they named a shown label in another form:
+  `Occurrence 3`,
+  `Candidate 2`,
+  or a bare `3`,
+  where the guard compares exactly against `OCCURRENCE 3` or `CANDIDATE 2`
+  (log lines 9533 to 9650).
+  Six of the seven named the option that won anyway.
+  TianqiChen66624 lost nine voices the same way.
+- Qwen3.8-27B was cut three times at the straggler deadline
+  (log lines 9497,
+  9661 and 9680).
+  The "delivered chars" those lines print,
+  0.98 to 1.31 million,
+  is the stream's wire length;
+  the replies held 36,301 to 49,293 characters of reasoning and no answer.
+- minimax-m3 spent its whole token cap reasoning and answered nothing
+  (log lines 9480 and 9524);
+  its re-asks on OpenRouter answered,
+  and were refused by the same label rule.
+
+The package's audit ledger carries the causes and the fixes.
 
 ### Time and spend
 
