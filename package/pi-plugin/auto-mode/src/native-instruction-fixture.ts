@@ -25,7 +25,9 @@ import type {
  @throws Error for an absent original constructor export
  */
 function assertInstructionModule(value: unknown): asserts value is FixtureInstructionModule {
-  if ((value === null) || (typeof value) !== 'object' || (!('createJudgmentInstructions' in value)) || (typeof value.createJudgmentInstructions) !== 'function') throw new Error('Built native instruction constructor is unavailable');
+  if ((value === null) || (typeof value) !== 'object'
+    || (!('createJudgmentInstructions' in value))
+    || (typeof value.createJudgmentInstructions) !== 'function') throw new Error('Built native instruction constructor is unavailable');
 }
 
 /**
@@ -72,7 +74,9 @@ export function createInstructionFixture({
    Original source list remains replaceable only through fixture-owned state.
    */
   const state: FixtureInstructionState = {
-    sources: Object.freeze(contents.map(function originalSource(content) { return createGoverningSource(content); })),
+    sources: Object.freeze(contents.map(function originalSource(content) { 
+      return createGoverningSource(content); 
+    })),
     active: false,
     hostPolicy: {},
   };
@@ -129,7 +133,10 @@ export function createInstructionFixture({
   ) { 
     return [
       member,
-      { binding: Object.freeze({ identity: Object.freeze({}), projection: Object.freeze({ memberOrdinal: index }) }) }
+      { binding: Object.freeze({
+        identity: Object.freeze({}),
+        projection: Object.freeze({ memberOrdinal: index })
+      }) }
     ]; 
   }));
   /**
@@ -145,18 +152,25 @@ export function createInstructionFixture({
   }
   /**
    Preserve original synchronous segment state and callback identity.
-   *
+   
    @param operation - original selection operation
-   *
+   
    @returns original operation result
    */
   function bindingSegment<Result>(operation: () => Result): Result {
     events.push(`enter:${operation.name}`);
-    /** Nested original source segments restore their caller's active state. */
+    /**
+     Nested original source segments restore their caller's active state.
+     */
     const previous = state.active;
     state.active = true;
-    /** Original fixture segment closes even when the selected operation fails. */
-    using segment = { [Symbol.dispose](): void { state.active = previous; events.push(`exit:${operation.name}`); } };
+    /**
+     Original fixture segment closes even when the selected operation fails.
+     */
+    using segment = { [Symbol.dispose](): void { 
+      state.active = previous; 
+      events.push(`exit:${operation.name}`); 
+    } };
     return operation();
   }
   /**
@@ -185,9 +199,9 @@ export function createInstructionFixture({
   }
   /**
    Preserve declarations without substituting built claim construction.
-   *
+   
    @param input - original predicate and opaque handle
-   *
+   
    @returns original declaration handle for independent identity assertions
    */
   function declare(input: FixtureInstructionDeclaration): object { 
@@ -206,15 +220,17 @@ export function createInstructionFixture({
   }
   /**
    Retain original batch order without invoking any remote assessment.
-   *
+   
    @param claims - original complete claim sequence
-   *
+   
    @returns original immutable fixture batch
    */
   function issue(claims: readonly object[]): object {
     events.push('issue');
     if (state.issueFailure) throw state.issueFailure;
-    /** Immutable batch retains the original declaration order. */
+    /**
+     Immutable batch retains the original declaration order.
+     */
     const batch = Object.freeze([...claims]);
     batches.push(batch);
     return batch;
