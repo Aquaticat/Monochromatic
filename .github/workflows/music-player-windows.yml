@@ -577,6 +577,11 @@ jobs:
             return code.value
 
 
+        # clap decides between plain text, console attributes and ANSI escape sequences from these variables and the
+        # console; they are printed because the arm64 runner showed escape sequences on a console without VT processing.
+        for name in ("TERM", "COLORTERM", "CLICOLOR", "CLICOLOR_FORCE", "NO_COLOR", "ANSICON", "WT_SESSION"):
+            print(f"environment {name}={os.environ.get(name)!r}", flush=True)
+
         failures = []
 
 
