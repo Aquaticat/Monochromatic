@@ -6,6 +6,7 @@ import {
   JudgmentAttemptLimitError,
   JudgmentBudgetError
 } from './errors.ts';
+import {createBundleDispatcher} from './bundles.ts';
 import type {
   JudgmentAccounting,
   JudgmentAttemptRecord,
@@ -60,6 +61,7 @@ export function createJudgmentDispatcher({
   readonly deadlineAt: number;
   readonly signal: AbortSignal;
 }): JudgmentBudget['dispatch'] {
+  const runBundle=createBundleDispatcher({accounting,checkpoint,signal,deadlineAt});
   /**
    Check lifetime after a failed attempt without replacing its original error.
    
@@ -188,6 +190,7 @@ export function createJudgmentDispatcher({
         try {
           // oxlint-disable-next-line eslint/no-await-in-loop -- Original failure classification gates the next attempt; see doc/troubleshooting/pi-sdk-staging.md, "Sequential native judgment retries".
           response.value=await operation(Object.freeze({
+          runBundle,
           signal,
           deadlineAt,
           attempt

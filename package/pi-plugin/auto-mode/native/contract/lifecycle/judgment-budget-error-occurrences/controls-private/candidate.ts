@@ -72,6 +72,8 @@ export function createJudgmentBudget({
    One original lifetime owns every mutable accounting field.
    */
   const accounting: JudgmentAccounting={
+    bundles:0,
+    calls:0,
     lastAt:startedAt,
     attempts:0,
     retryUsed:false,
@@ -152,6 +154,8 @@ export function createJudgmentBudget({
    */
   function diagnostics(): JudgmentBudgetSnapshot {
     return Object.freeze({
+    bundles:accounting.bundles,
+    calls:accounting.calls,
     startedAt,
     deadlineAt,
     attempts:accounting.attempts,

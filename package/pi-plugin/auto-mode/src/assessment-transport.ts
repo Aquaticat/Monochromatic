@@ -22,6 +22,12 @@ export class AssessmentTransportError extends Error {
  Original judgment supplies its already encoded body and preparation-inclusive deadline.
  */
 export type AssessmentTransportInput = {
+  /** Owned judgment capability accounts for every parallel provider invocation. */
+  readonly runBundle?: <Result>(operations: readonly ((input: {
+    readonly signal: AbortSignal;
+    readonly deadlineAt: number;
+    readonly attempt: number;
+  }) => Promise<Result>)[]) => Promise<readonly Result[]>;
   readonly body: string;
   readonly signal: AbortSignal;
   readonly deadlineAt: number;
@@ -37,9 +43,7 @@ const endpoint = 'https://api.llmgateway.io/v1/decisions';
  */
 const limits = {
   durationMs: 5_000,
-  attempts: 3,
-  requestBytes: 1_048_576,
-  responseBytes: 65_536,
+  attempts: 9,
   successfulStatus: 200,
 } as const;
 /**
@@ -153,8 +157,6 @@ export function createAssessmentHttpSender({
     for await (const chunk of response.body) {
       remaining(input,);
       received.length += chunk.byteLength;
-      if (received.length > limits.responseBytes)
-        throw new AssessmentTransportError('Assessment HTTP response exceeds 65536 bytes',);
       received.chunks
         .push(chunk,);
     }
@@ -187,9 +189,7 @@ export function createAssessmentHttpSender({
       remaining(input,);
       if ((!Number.isInteger(input.attempt,)) || (input.attempt < 1)
         || (input.attempt > limits.attempts))
-        throw new AssessmentTransportError('Assessment HTTP attempt is outside the original three-attempt budget',);
-      if (Buffer.byteLength(input.body,) > limits.requestBytes)
-        throw new AssessmentTransportError('Assessment HTTP request exceeds 1048576 bytes',);
+        throw new AssessmentTransportError('Assessment HTTP attempt is outside the original nine-call bundle budget',);
       /**
        Credentials are read only for a dispatch that already has an admissible consumer.
        */

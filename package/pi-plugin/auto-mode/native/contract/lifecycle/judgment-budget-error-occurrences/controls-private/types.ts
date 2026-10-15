@@ -8,6 +8,10 @@
  Private mutable accounting shared only by original clock and dispatch owners.
  */
 export type JudgmentAccounting = {
+  /** Consumed sequential bundles across successful and failed dispatches. */
+  bundles: number;
+  /** Actual parallel call slots consumed across all bundles. */
+  calls: number;
   /**
    Last accepted monotonic clock reading.
    */
@@ -46,6 +50,12 @@ export type JudgmentAccounting = {
  One actual transport invocation within the original judgment.
  */
 export type JudgmentAttempt = {
+  /** Dispatch at most three parallel calls under the original shared bundle allowance. */
+  readonly runBundle: <Result>(operations: readonly ((input: {
+    readonly signal: AbortSignal;
+    readonly deadlineAt: number;
+    readonly attempt: number;
+  }) => Promise<Result>)[]) => Promise<readonly Result[]>;
   /**
    Original caller cancellation.
    */
@@ -91,6 +101,10 @@ export type JudgmentAttemptRecord = {
  Immutable diagnostics never renew lifetime or replenish attempts.
  */
 export type JudgmentBudgetSnapshot = {
+  /** Sequential bundles consumed, including failed calls. */
+  readonly bundles: number;
+  /** Actual call slots consumed within those bundles. */
+  readonly calls: number;
   /**
    Original first clock reading.
    */
