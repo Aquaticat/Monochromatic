@@ -19,6 +19,7 @@ await describe({ name: 'original pattern decoding', children: [
     } });
   }),
   it({ name: 'preserves nested private ownership, binding references, shorthand, and inert keys', fn: async function nestedData() {
+    assert.doesNotThrow(function originalNestedBinding() {
     const node = parseArgument('{ result, text: [result, { "</script>../$(x)": "safe" }], "😀": true }');
     const pattern = patterns.readPattern({ node, bindingName: 'result' });
     const value = patterns.materializePattern({ pattern, result: 'owned output' });
@@ -27,8 +28,10 @@ await describe({ name: 'original pattern decoding', children: [
     const decoded = decode({ node, bindingName: 'result' });
     assert.equal(decoded.kind, 'object');
     assert.ok(Object.isFrozen(decoded));
+    });
   } }),
   it({ name: 'accepts original inclusive collection and nesting bounds', fn: async function bounds() {
+    assert.doesNotThrow(function originalInclusiveBounds() {
     const array = decode({ node: parseArgument(`[${Array.from({ length: 64 }, function item() { 
       return '0'; 
     }).join(',')}]`) });
@@ -46,9 +49,11 @@ await describe({ name: 'original pattern decoding', children: [
     }));
     assert.doesNotThrow(function inclusiveDepth() { 
       decode({ node: parseArgument(`${'['.repeat(8)}0${']'.repeat(8)}`) }); 
+      decode({ node: parseArgument(`${'{ a:'.repeat(8)}0${'}'.repeat(8)}`) });
     });
     assert.deepEqual(decode({ node: parseArgument('null'), depth: -1 }), { kind: 'literal', value: null });
     assert.deepEqual(decode({ node: parseArgument('null'), depth: 7.5 }), { kind: 'literal', value: null });
+    });
   } }),
   it({ name: 'retains empty structures and synthetic sparse array mapping', fn: async function sparseArray() {
     assert.deepEqual(decode({ node: parseArgument('[]') }), { kind: 'array', items: [] });

@@ -7,7 +7,7 @@ import { decode, objectNode, parseArgument, rejects } from './native-pattern-dec
 
 await describe({ name: 'original pattern rejection', children: [
   //region Reject unsupported literals and preserve original bounded recursion.
-  ...[undefined, null, {}, { type: 'Identifier', name: 'other' }, { type: 'Identifier', name: 'result' },
+  ...[undefined, null, {}, { type: 'Identifier', name: 'other' }, { type: 'Identifier', name: 'result' }, { type: 'Identifier' },
     { type: 'UnaryExpression', operator: '+', argument: { type: 'Literal', value: 1 } },
     { type: 'UnaryExpression', operator: '-', argument: { type: 'Identifier', value: 1 } },
     { type: 'UnaryExpression', operator: '-', argument: { type: 'Literal', value: '1' } },
@@ -38,6 +38,7 @@ await describe({ name: 'original pattern rejection', children: [
   it({ name: 'rejects original depth overflow before accessing input and rejects excessive child depth', fn: async function depth() {
     for (const value of [9, Number.NaN, Infinity]) rejects({ input: { depth: value, node: undefined }, message: 'argument nesting exceeds profile' });
     rejects({ input: { node: parseArgument(`${'['.repeat(9)}0${']'.repeat(9)}`) }, message: 'argument nesting exceeds profile' });
+    rejects({ input: { node: parseArgument(`${'{ a:'.repeat(9)}0${'}'.repeat(9)}`) }, message: 'argument nesting exceeds profile' });
   } }),
   it({ name: 'rejects excessive and nonnumeric lengths before inspecting collection contents', fn: async function collections() {
     for (const length of [65, Number.NaN, Infinity]) {
@@ -66,6 +67,7 @@ await describe({ name: 'original pattern rejection', children: [
     rejects({ input: { node: objectNode({ key: { type: 'PrivateIdentifier', name: 'x' } }) }, message: 'duplicate, prototype-setting or unsupported key' });
     for (const input of [
       { node: objectNode({ shorthand: true, value: { type: 'Identifier', name: 'result' } }) },
+      { node: objectNode({ shorthand: true, value: { type: 'Identifier' } }) },
       { node: objectNode({ shorthand: true, value: { type: 'Literal', name: 'result', value: 1 } }), bindingName: 'result' },
       { node: objectNode({ shorthand: true, value: { type: 'Identifier', name: 'other' } }), bindingName: 'result' },
     ]) rejects({ input, message: 'unbound shorthand' });

@@ -12,7 +12,15 @@ Updated 2026-10-15.
 Typed pattern decoding is in progress.
 `pattern-decoder.ts` borrows the original private pattern owner and diagnostic constructor.
 Original ownership and materialization stay in `result-pattern.mjs`.
-Built consumers, original replay, domain comparisons, omission controls, and recount are pending.
+Native build, package type checking, all built consumers, original replay, and six domain comparisons pass.
+Public syntax consumers also pass.
+The first complete recount covers 814 files with zero errors and 10194 warnings;
+all six new decoder files have zero diagnostics.
+Omission controls found an overlapping binding guard in the initial fixtures:
+removing the defined-binding check still rejected named identifiers through the name check.
+Added nameless synthetic identifiers isolate the defined-binding guard.
+Positive collection-bound and child-binding tests now assert successful completion explicitly.
+Final verification of those consumer additions and the omission controls is pending.
 
 The dispatcher now delegates original `beforeToolCall` member preparation to
 `prepared-member.ts` and `prepared-member-types.ts`.
