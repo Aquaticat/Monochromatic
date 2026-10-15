@@ -6,7 +6,7 @@ export function createPassiveCapture(){
  const state={failure:undefined};
  const l=tagged({tag:createPassiveCapture.name,l:tagged({tag:'auto-mode-passive-capture'})});
  function fail(error){
-  tagged({tag:fail.name,l}).debug(`retaining capture failure for manual fallback: ${String(error)}`);
+  tagged({tag:fail.name,l}).debug('retaining capture failure for manual fallback');
   state.failure??={error};
  }
  function assertCaptured(){if(state.failure)throw state.failure.error;}

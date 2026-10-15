@@ -112,7 +112,7 @@ function captureAgentInput({
     });
    }catch(error){
     poolState.failure=new InputCaptureError(error);
-    if(!(error instanceof SourceCollectionError))throw error;
+    // Capture failure is retained in the pool and enforced only by automatic assessment readers.
    }
   }
 return {

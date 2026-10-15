@@ -46,7 +46,7 @@ function createEventHandlerCapture(){
      eventState.records.push(record);eventState.retainedBytes+=addedBytes;poolState.pendingEventBytes+=addedBytes;
     }catch(error){
      poolState.failure=new InputCaptureError(error);
-     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+     // Capture failure is retained in the pool and enforced only by automatic assessment readers.
     }
    }
    function complete(){
@@ -57,7 +57,7 @@ function createEventHandlerCapture(){
      publish();
     }catch(error){
      poolState.failure=new InputCaptureError(error);
-     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+     // Capture failure is retained in the pool and enforced only by automatic assessment readers.
     }
    }
    return Object.freeze({
@@ -85,7 +85,7 @@ function captureContextHandler(input){
     });
    }catch(error){
     poolState.failure=new InputCaptureError(error);
-    if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+    // Capture failure is retained in the pool and enforced only by automatic assessment readers.
    }
   }
 /** Preserve the complete received result before native callback field selection. */
@@ -119,7 +119,7 @@ function captureHandlerResultOutput({frame}){
     });
    }catch(error){
     poolState.failure=new InputCaptureError(error);
-    if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+    // Capture failure is retained in the pool and enforced only by automatic assessment readers.
    }
   }
 return {
