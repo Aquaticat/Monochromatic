@@ -453,6 +453,23 @@ Its owned build passes.
 Focused structured lint reports zero errors and 1082 warnings across the eight changed modules;
 the warning gate still fails.
 Consumer verification is running in `${HOME}/temp/agent/pi-native-run-owner-regressions-20261014.log`.
+That run subsequently passed all domain cases and manual uncertainty Allow,
+Deny,
+Stop,
+and cancellation.
+Its prohibited case stopped at `JudgmentDeadlineError`,
+with the outcome assertion reporting `undefined` instead of a policy outcome.
+Commit `c3cb4b1f97` separates loaded-input field selection,
+history,
+manager frames,
+events,
+tools,
+Agent inputs,
+and user inputs while retaining the original pool budget.
+The first loaded-input build passed;
+focused lint exposed detached method references after extraction.
+Those callbacks now use named function values;
+the updated build and focused checks remain pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

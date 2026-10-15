@@ -7238,6 +7238,15 @@ The native selector assertion was `ERR_ASSERTION: 0 !== 1`.
 The original five-second deadline remains unchanged;
 the isolated passes did not establish a permanent timing fix.
 
+After the run-owner split,
+domain cases and manual uncertainty Allow,
+Deny,
+Stop,
+and cancellation passed.
+The prohibited case then exhausted the judgment deadline before producing its policy outcome.
+Its final assertion reported `undefined` rather than the expected outcome.
+`${HOME}/temp/agent/pi-native-run-owner-regressions-20261014.log` retains that separate occurrence.
+
 A separate full lint attempt during this cleanup failed before producing diagnostics with
 `Error running tsgolint: "exit status: exit status: 2"`
 and `runtime: failed to create new OS thread (have 2 already; errno=11)`.
