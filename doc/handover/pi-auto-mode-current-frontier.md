@@ -42,6 +42,52 @@ The prior status estimate and provider-coverage next step are superseded by this
 No further `AGENTS.md` edit is adopted;
 the user's existing decision to leave that file unchanged remains in force.
 
+After the user instructed continuation,
+commit `3ec320b8fa` removed whole-request admission from the native evaluator and compiler.
+Commit `09bf9f9080` removed provider-field derivation from the original observer path
+and replaced the old derivation-gate scenarios with tool-policy invariance checks.
+The semantic policy factory no longer configures a whole-request question.
+The original request remains contextual evidence;
+it no longer receives an independent approval obligation.
+
+The JavaScript and owned native builds,
+package type checking,
+and changed TypeScript lint scope pass.
+The native metadata suite passes permission,
+prohibition,
+and unspecified policy with both Hyper-style `thinking` and an unrecognized provider metadata object.
+The original approval-context suite passes Allow,
+Deny,
+Stop,
+cancellation,
+and Allow after reload with authored prerequisite facts and fixture UI responses.
+Policy replacement,
+cancellation,
+and argument replacement after approval also retain their existing guards.
+
+The actual configured Hyper CLI passes isolated permission,
+prohibition,
+and unspecified-policy controls with all 17 configured packages.
+The permission case executes the original `read` tool and returns the disposable file contents;
+the other cases execute no child tool.
+Each assessment contains 82 clause questions and no whole-request question.
+Primary responses and semantic answers are authored local inputs,
+so these results establish host integration rather than live model decision quality.
+All cases make zero provider requests.
+Receipts are under `${HOME}/temp/agent/pi-hyper-tool-call-permission-SAmMCJ/`,
+`pi-hyper-tool-call-prohibition-xgH6VW/`,
+and `pi-hyper-tool-call-none-4W2K6i/` in the same scratch directory.
+The permission controller originally miscounted nested completion events;
+the prohibition controller accidentally treated its imported verifier as a CLI.
+Both host runs had already finished successfully.
+Their preserved outputs were verified without replaying the hosts.
+
+The requested [Astra limitation entry](../limitation/astra.md) is committed as `930e3e854f`
+and checked in rendered output.
+Production prerequisite ownership,
+live semantic behavior,
+and the previously measured native lint backlog remain separate unfinished work.
+
 ## Current Pi execution model
 
 On 2026-10-14,
