@@ -203,6 +203,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
+      # Attest build provenance for the files this job uploads.
       id-token: write
       attestations: write
     env:
@@ -332,13 +333,26 @@ jobs:
         mkdir -p dist
         asset="music-player-${VERSION}-windows-${ARCH}.exe"
         cp "package/music-player/desktop-app/target/${TARGET}/release/music-player.exe" "dist/${asset}"
-        # List the DLLs the executable imports (ASCII names in the import table). The C runtime is linked
-        # in statically (.cargo/config.toml), so no Visual C++ runtime DLL may be required.
-        grep --text --only-matching --ignore-case '[A-Za-z0-9_.-]*\.dll' "dist/${asset}" | sort --unique --ignore-case | tee dll-imports.txt
-        if grep --ignore-case --extended-regexp '^(vcruntime|msvcp|concrt|vccorlib)[0-9]*' dll-imports.txt; then
-          echo "::error::The executable imports a Visual C++ runtime DLL; it is not self-contained."
-          exit 1
-        fi
+        # List the DLLs the executable imports, from its real import tables. The C runtime is linked in
+        # statically (.cargo/config.toml), so no Visual C++ runtime DLL may be among them.
+        python -m pip install --disable-pip-version-check --quiet pefile==2024.8.26
+        python - "dist/${asset}" <<'PY'
+        import sys
+        import pefile
+
+        pe = pefile.PE(sys.argv[1], fast_load=True)
+        pe.parse_data_directories(directories=[
+            pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IMPORT"],
+            pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT"],
+        ])
+        print("machine", hex(pe.FILE_HEADER.Machine), "subsystem", pe.OPTIONAL_HEADER.Subsystem)
+        names = sorted({entry.dll.decode().lower() for table in ("DIRECTORY_ENTRY_IMPORT", "DIRECTORY_ENTRY_DELAY_IMPORT") for entry in getattr(pe, table, [])})
+        print("imports:", " ".join(names))
+        runtime = [name for name in names if name.startswith(("vcruntime", "msvcp", "concrt", "vccorlib", "msvcr"))]
+        if runtime:
+            print("::error::The executable imports a Visual C++ runtime DLL, so it is not self-contained: " + " ".join(runtime))
+            sys.exit(1)
+        PY
         echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
         ls -la dist
 
@@ -407,6 +421,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
+      # Attest build provenance for the files this job uploads.
       id-token: write
       attestations: write
     env:
@@ -572,6 +587,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # Attest build provenance for the files this job uploads.
       id-token: write
       attestations: write
     env:
@@ -627,6 +643,7 @@ jobs:
     if: ${{ needs.detect.outputs.should_build == 'true' }}
     runs-on: ubuntu-latest
     permissions:
+      # Create the tag and the release: the only job that writes to the repository.
       contents: write
     env:
       GH_TOKEN: ${{ github.token }}
