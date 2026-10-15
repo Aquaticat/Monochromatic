@@ -110,6 +110,43 @@ await describe({name:'assessment call bundles',children:[
   assert.equal(calls,3);
   assert.equal(budget.diagnostics().bundles,1);
  }}),
+ it({name:'rejects overlapping bundles and retires their dispatch capability',fn:async function rejectOverlappingBundles(){
+  const {budget}=createBudgetFixture();
+  const pending=Promise.withResolvers<number>();
+  const owner=await budget.dispatch(async function useOwnedBundle({runBundle}){
+   const first=runBundle([async function pendingCall(){return await pending.promise;}]);
+   const overlap=await captureBudgetRejection(runBundle([async function excludedCall(){return 2;}]));
+   assert.match(String(overlap),/nonoverlapping/u);
+   pending.resolve(1);
+   assert.deepEqual(await first,[1]);
+   return runBundle;
+  });
+  const retired=await captureBudgetRejection(budget.dispatch(async function laterDispatch(){
+   return await owner([async function excludedCall(){return 3;}]);
+  }));
+  assert.match(String(retired),/completed assessment dispatch/u);
+  assert.equal(budget.diagnostics().calls,1);
+ }}),
+ it({name:'rejects a fourth parallel call before any invocation',fn:async function enforceParallelCeiling(){
+  const {budget}=createBudgetFixture();
+  let calls=0;
+  const error=await captureBudgetRejection(budget.dispatch(async function oversizedBundle({runBundle}){
+   return await runBundle(Array.from({length:4},()=>async function excludedCall(){calls+=1;return calls;}));
+  }));
+  assert.match(String(error),/one through three parallel calls/u);
+  assert.equal(calls,0);
+  assert.equal(budget.diagnostics().bundles,0);
+ }}),
+ it({name:'keeps consumed bundles across the one eligible transport retry',fn:async function retainRetryAccounting(){
+  const {budget}=createBudgetFixture({classify:()=>true});
+  const value=await budget.dispatch(async function retriedAssessment({attempt,runBundle}){
+   return await runBundle([async function transport(){if(attempt===1)throw new Error('retryable fixture');return 1;}]);
+  });
+  assert.deepEqual(value,[1]);
+  assert.equal(budget.diagnostics().retryUsed,true);
+  assert.equal(budget.diagnostics().bundles,2);
+  assert.equal(budget.diagnostics().calls,2);
+ }}),
  it({name:'a malformed answer prevents all partial evidence from escaping',fn:async function rejectMalformedPartition(){
   const {budget}=createBudgetFixture();
   let calls=0;
