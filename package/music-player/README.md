@@ -470,9 +470,9 @@ and the right pane holds the tracks of the selected folder under their subfolder
 The playing track has bold text and a soft fill,
 and the mode group wraps to two rows.
 
-![Inner display with two panes in light appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/120a5d39518743b6d91e935507c9ce2202dc01108ed2341f62cee6ae30f29860/package/music-player/asset/readme/android-inner-two-pane-light.png)
+![Inner display with two panes in light appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/164afb1462092d47ba2acda0961a2ab2df717790f1c65d45eda0b7c6fb2db797/package/music-player/asset/readme/android-inner-two-pane-light.png)
 
-![Inner display with two panes in dark appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/4384c24aa25790016829801c5e13c7b8ef6d631b9aadbdd476d1b9c219e4d30d/package/music-player/asset/readme/android-inner-two-pane-dark.png)
+![Inner display with two panes in dark appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/bdfe6255fecba3dca4a8ebb349494e8ee2282c80757e011eeda75f5f2eeb2825/package/music-player/asset/readme/android-inner-two-pane-dark.png)
 
 On the inner display Settings keeps the template list on the left with Track rows selected.
 The right pane shows that template's preview from the open library,
