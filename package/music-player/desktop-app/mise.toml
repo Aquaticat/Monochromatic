@@ -776,7 +776,7 @@ const originalName = 'name = "music-player",'
 if (!original.includes(originalName)) throw new Error('The CLI name fixture changed; inspect the source.')
 const buildJobs = Number(process.env.BUILD_JOBS)
 const runnerCpus = Number(process.env.TRIAL_RUNNER_CPUS)
-if (![4, 8, 16].includes(buildJobs) || ![4, 8, 16].includes(runnerCpus)) throw new Error('Unexpected sizing configuration.')
+if (![4, 8, 16, 32, 64].includes(buildJobs) || ![4, 8, 16, 32, 64].includes(runnerCpus)) throw new Error('Unexpected sizing configuration.')
 console.log(JSON.stringify({ trialHardware: true, runnerCpus, buildJobs, logicalCpus: cpus().length, cpuModel: cpus()[0]?.model, memoryBytes: totalmem() }))
 try {
   for (const round of [1, 2]) {

@@ -1,0 +1,42 @@
+name: Depot trial larger runner sizing
+
+on:
+  push:
+    branches: [trial/depot-20261015]
+    paths: [.github/workflows/depot-trial-sizing-large.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sizing:
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+        - {cpus: 32, jobs: 16}
+        - {cpus: 32, jobs: 32}
+        - {cpus: 64, jobs: 16}
+        - {cpus: 64, jobs: 64}
+    runs-on: depot-ubuntu-24.04-${{ matrix.cpus }}
+    timeout-minutes: 45
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      BUILD_JOBS: ${{ matrix.jobs }}
+      TRIAL_RUNNER_CPUS: ${{ matrix.cpus }}
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        minimum_release_age: 1d
+        install: false
+        cache: false
+    - name: Install the task runtime
+      run: mise install node
+    - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+    - name: Repeat cold, unchanged, and changed-source builds
+      run: mise run //package/music-player/desktop-app:trial:github:sizing
