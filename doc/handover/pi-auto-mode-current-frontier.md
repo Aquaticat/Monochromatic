@@ -624,7 +624,13 @@ and approval check has zero errors and 300 warnings;
 it remains a failing warning gate.
 The updated owned build and source-work/manual-review/approval/dependency consumers pass in
 `${HOME}/temp/agent/pi-native-callback-approval-consumer-20261014.log`.
-Native syntax and package type checks are now running before the next structural cleanup.
+Native syntax passes all 259 maintained modules;
+the package type check also passes.
+Commit `81ecaf586b` separates dependency eligibility and synchronous binding checks into
+`judgment-dependencies.mjs`,
+with preparation and finalization state still supplied by the original constructor.
+Its rebuilt approval and changed-dependency consumers are running;
+the source-work bound remains unchanged.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
