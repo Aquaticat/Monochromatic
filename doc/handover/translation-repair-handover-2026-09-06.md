@@ -195,9 +195,10 @@ Filed in:
 - [Translation repair handover 2026-09-06: the Mio12 wording follow-up of 2026-09-10](translation-repair-handover-2026-09-06-checkpoint-2026-09-10-mio12-wording-follow-up.md)
 - [Translation repair handover 2026-09-06: the Mio passes of 2026-09-09 and 2026-09-10 and the state before them](translation-repair-handover-2026-09-06-passes-mio8-to-mio12-and-handoff-state-2026-09-07-to-09-10.md)
 
-### 2026-10-15: the consistency pass landed, TianqiChen66624 launched
+### 2026-10-15: the consistency pass and the quoted-tense round landed, TianqiChen66625 launched
 
-This checkpoint is the lead's account of the state at the launch,
+This checkpoint is the lead's account of the state at the launch of `TianqiChen66625`,
+updated from its first version at the launch of `TianqiChen66624`,
 and it replaces the two checkpoints of 2026-10-13,
 now filed in
 [their own part](translation-repair-handover-2026-09-06-checkpoints-2026-10-13-hardware-change-and-linter-migration.md).
@@ -213,7 +214,34 @@ A path written `s<N>/...`,
   worktree `/var/home/user/worktrees/translation-repair`,
   pushed,
   clean.
-  The consistency pass landed in three commits,
+- The rounds n159 and n161 landed together in two commits,
+  oldest first:
+  `5fe3173cc5` (tests) and
+  `277145a862` (code).
+  n159 built the tenth review's deferred findings
+  (X1,
+  X2,
+  X4 to X11 and `'the '90s'`);
+  n161 built the lead's rulings after the read of `TianqiChen66624` and the review n160:
+  words quoted as their speaker wrote or said them keep the speaker's tense in every sheet that states the tense rule
+  (`QUOTED_WORDS_RULE` and `QUOTED_WORDS_REMINDER` in `english-usage-policy.ts`);
+  a consistency group line where nothing was carried ends with `because=` and the code's reason;
+  and the review findings Y1,
+  Y2,
+  Y4 and Y6 to Y9.
+  Cache versions after them:
+  `SLICE_CACHE_VERSION` 36,
+  `REFINE_CACHE_VERSION` 7,
+  `TRANSLATE_SLICE_CACHE_VERSION` 17,
+  `CONSOLIDATE_CACHE_VERSION` 23,
+  `LANE_CONTEST_CACHE_VERSION` 8 and
+  `PAGE_TITLE_CACHE_VERSION` 2,
+  all set in `277145a862`;
+  `CONSISTENCY_CACHE_VERSION` 4 stays because its key hashes the sheet,
+  and `PAIRING_CACHE_VERSION` 3 because the pairing sheets carry no tense rule
+  (read from `mise run //package/module/translation-repair:cache-account-audit` after the commit).
+  The commit that carries this checkpoint changes docs only.
+- The consistency pass had landed earlier the same day in three commits,
   oldest first:
   `7ae9914d3d` (tests),
   `1fb06389e1` (code) and
@@ -221,8 +249,7 @@ A path written `s<N>/...`,
   ledger B463 to B574 and M167 to M209,
   the consistency ledger filed by subject,
   and the troubleshooting doc on the V8 first-call compile at the stack edge).
-  The commit that carries this checkpoint changes docs only.
-- What the code commit does:
+- What that code commit does:
   a consistency splice carries an apostrophe in at an edge only when the whole-page proof reads it as an apostrophe on the page as it ships;
   the refusal run past an edge steps over what the prose view does not read as words;
   a page whose English holds a character reference that decodes to a quotation-like character refuses every splice;
@@ -230,7 +257,7 @@ A path written `s<N>/...`,
   and typography reads prose from the page parse
   (`typography-prose-mask.ts`),
   one mask for every typography reader.
-- Cache versions:
+- Cache versions at the launch of `TianqiChen66624`:
   `SLICE_CACHE_VERSION` 35,
   `REFINE_CACHE_VERSION` 6,
   `TRANSLATE_SLICE_CACHE_VERSION` 16,
@@ -247,6 +274,33 @@ A path written `s<N>/...`,
   Read from `mise run //package/module/translation-repair:cache-account-audit` on 2026-10-15.
 
 #### Verified, and where
+
+- Gate `g98` ran on the keyless worktree `w153` at the branch head `277145a862` (status empty):
+  2,435 `[PASS]` lines and 0 `[FAIL]` in the suite,
+  lint 0 warnings and 0 errors,
+  49 scans passed.
+- Read-only replays on the n161 build:
+  `TianqiChen66623` gave
+  `wordings=24 silent=0 chars=8607=expected missing=0 consistency-groups=2 read-at-generation=15`
+  and `TianqiChen66624` gave
+  `wordings=24 silent=0 chars=8490=expected missing=0 consistency-groups=2 read-at-generation=17`,
+  each with `matched=1 settledWithNoPage=0 pageWithNoArtifact=0 declined=0`
+  (`s232/verify-66623.log` and `s232/verify-66624.log`).
+- "Before a run launches" was walked again on 2026-10-15 for `TianqiChen66625`:
+  the branch was clean and level with its upstream;
+  the suite and lint lines are gate `g98`'s;
+  the cache-account audit's lines are in the Branch list;
+  no source file holds a control byte
+  (the same search found a scratch file written with one);
+  and the plan printed `PLAN ok tip=277145a862` with one entry pending.
+- An independent review of the n159 and n161 commits,
+  n162,
+  runs alongside the pass
+  (worktree `w152` at `277145a862`,
+  scratch `s233`).
+  Source it leads to lands only after `TianqiChen66625` settles.
+
+At the launch of `TianqiChen66624`:
 
 - Gate `g97` ran on the keyless worktree `w153`,
   whose tracked files equal the branch head `44c8f57784` (`git diff` empty)
@@ -277,46 +331,41 @@ A path written `s<N>/...`,
   as `TianqiChen66623`'s did (ledger M220).
   The read is in
   [the pass log for 2026-10-15](../planning/translation-repair-openrouter-2026-09-03-2026-10-15.md).
+- `TianqiChen66625`:
+  `--only TianqiChen666` through the runbook's unit form at `277145a862`,
+  into the fresh runs directory `/var/home/user/temp/agent/corpus-pass-TianqiChen66625`,
+  log `/var/home/user/temp/agent/corpus-pass-TianqiChen66625.log`,
+  unit `corpus-pass-corpus-pass-TianqiChen66625`.
+  It is the first pass with the quoted-tense rule.
 
 #### Next
 
-1.  The round that follows the read and the review,
-    n161,
-    builds in `w153` on top of n159's changes,
-    scratch `s232`,
-    from the rulings in `s159/ledger-notes-after-sixth-review-fixes.md`,
-    section "TianqiChen66624 read and n160 review of n159":
-    quoted speech keeps its speaker's tense (R1),
-    the consistency group line names why nothing was carried (R2),
-    and the review findings Y1,
-    Y2,
-    Y4 and Y6 to Y9.
-    Then a review by an agent that wrote none of it,
-    the gate `g98`,
-    landing as tests,
-    code and docs commits,
-    and a relaunch of `TianqiChen666` as `TianqiChen66625` after "Before a run launches" is walked again.
-2.  The findings of the tenth review that were decided and not landed
-    (X1,
-    X2,
-    X4 to X11 and `'the '90s'`)
-    are built after the launch as their own round,
-    from the rulings in `s159/ledger-notes-after-sixth-review-fixes.md`,
-    section "n157 review of n156",
-    then read by a reviewer who wrote none of it,
-    gated and landed as their own commits.
-    Source landed while the pass runs means stopping it and launching again
-    (the runbook's rule),
-    so these land after `TianqiChen66624` settles.
-    That round,
-    n159,
-    was built and handed back in the keyless worktree `w153`,
-    and the review n160 read it (`s231/review.md`)
-    (moved to `db6c26a486` with `git reset --mixed`,
-    so its status lists only n159's changes),
-    scratch `s230`,
-    brief `prompts/prompt-n159-tenth-review-deferred-findings.md`.
-3.  Open items that still stand from the checkpoint headed "2026-10-13 after the hardware change":
+1.  Read `TianqiChen66625` when it settles,
+    with the after-run checks,
+    and read her quoted words against the source
+    (`~/one-among-us/data/people/TianqiChen666/page.md` lines 71 to 75)
+    and the human archive line by line:
+    they must keep her present tense.
+    Record the read in the pass log.
+2.  The review n162 of the n159 and n161 commits
+    (brief `prompts/prompt-n162-review-of-n159-and-n161.md`,
+    findings Z1 onward in `s233/review.md`):
+    rule on each finding,
+    then a fix round,
+    a review by an agent that wrote none of it,
+    a gate,
+    and landing after `TianqiChen66625` settles.
+3.  The docs round n163
+    (brief `prompts/prompt-n163-docs-n159-to-n161.md`,
+    worktree `w153`,
+    scratch `s234`)
+    writes the ledger for n159 to n161
+    (B616 on,
+    M221 on);
+    the lead copies its docs to the branch,
+    runs the doc guards and the render check,
+    and lands them as a docs commit.
+4.  Open items that still stand from the checkpoint headed "2026-10-13 after the hardware change":
     `blockStandingOf` throws `RangeError` on 80,000 inline siblings;
     whether judges quote a year slot bare is unmeasured;
     a second independent reading of the history-archive fixes is owed.
@@ -341,11 +390,12 @@ landed in `2bb5d72bb5`.
 
 - Next free:
   worktree `w160`,
-  agent `n162` (`n161` is the author round in Next),
-  scratch `s233` (`s232` is that round's),
-  gate `g98`,
-  ledger `B616`,
-  mistake `M221`.
+  agent `n164` (`n162` is the review and `n163` the docs round in Next),
+  scratch `s235` (`s233` is the review's and `s234` the docs round's),
+  gate `g99`,
+  ledger `B616` and mistake `M221`,
+  both handed to `n163`,
+  which reports the next free ones.
 
 ### 2026-10-12: the four patches merged, reviewed, and the relaunch of TianqiChen666
 
@@ -722,11 +772,11 @@ each read off the pass log and the shipped page:
 As of 2026-10-15,
 the next action is the "Next" list of the checkpoint of 2026-10-15
 under "Where the work stands":
-`TianqiChen66624` is read;
-build the round n161,
-then review,
-gate and land it with n159's changes,
-and relaunch as `TianqiChen66625`.
+the rounds n159 and n161 landed and passed gate `g98`,
+and `TianqiChen66625` is running;
+read it when it settles,
+rule on the review n162,
+and land the docs round n163.
 The numbered items keep the queue as the sessions of 2026-09-08 to 2026-09-26 left it;
 read each against its date.
 

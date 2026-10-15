@@ -40,7 +40,9 @@ and her last message,
 quoted in her own words,
 shipped in the past tense,
 as it had in `TianqiChen66623` (ledger M220).
-The round that keeps quoted speech in its speaker's tense lands before the next launch.
+The round that keeps quoted speech in its speaker's tense landed in `277145a862`,
+and `TianqiChen66625` was launched on it the same day
+(the handover's checkpoint of 2026-10-15).
 The owner's answers it serves are in the package's
 [design commitments](../../package/module/translation-repair/doc/design-commitments.md)
 under 2026-10-11.
