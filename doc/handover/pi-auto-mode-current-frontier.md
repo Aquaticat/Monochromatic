@@ -994,7 +994,12 @@ and reproduced the documented missing-monorepo-root diagnostic.
 The separate lint task now pins its repository directory;
 its first pass found only a path-condition line-layout warning.
 That layout is corrected;
-final focused lint is pending.
+final focused lint passes with zero errors and warnings across the typed observer and new cache/observer fixtures in
+`${HOME}/temp/agent/pi-native-typed-observer-complete-lint-20261015.log`.
+The next typed boundary is structural policy indexing.
+Its original copied JavaScript module is retained under
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/policy-index-before-types.mjs`
+for direct comparison with the typed artifact before qualification.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

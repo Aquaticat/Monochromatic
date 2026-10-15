@@ -14,21 +14,32 @@ import type {
 } from './policy-index-types.ts';
 
 //region Structural admission preserves original diagnostics and coordinates.
-/** Structural admission failures retain their category without inventing an instruction interpretation. */
+/**
+ Structural admission failures retain their category without inventing an instruction interpretation.
+ */
 export class PolicyIndexError extends Error {
-  /** Original structural index error category. */
+  /**
+   Original structural index error category.
+   */
   override readonly name='PolicyIndexError';
-  /** Exact failed index invariant. */
+  /**
+   Exact failed index invariant.
+   */
   readonly code:string;
   /**
    Preserve original structural diagnostic and invariant identifier.
+   
    @param code - failed original index invariant
+   
    @param message - diagnostic explaining the missing or invalid structure
    */
   constructor({
     code,
     message
-  }:{readonly code:string;readonly message:string}) {
+  }:{
+    readonly code:string;
+    readonly message:string
+  }) {
     super(message);
     this.code = code;
   }
@@ -36,25 +47,33 @@ export class PolicyIndexError extends Error {
 
 /**
  Preserve source positions from the incumbent parser rather than searching rendered text.
- @param node - original parser node with source positions
+ 
+ @param node - original parser node retained only for its diagnostic category
+ 
  @param source - complete original text
+ 
+ @param start - original parser start offset
+ 
+ @param end - original parser exclusive end offset
+ 
  @returns exact original source interval
+ 
  @throws PolicyIndexError when source offsets are absent or invalid
  */
 function sourceSpan({
   node,
-  source
-}:{readonly node:MdastNode;readonly source:string}):PolicySourceSpan {
-  /** Positions are required for every indexed or unclassified top-level node. */
-  const start = node.position
-    ?.start
-    ?.offset;
-  /** End is exclusive in the parser's UTF-16 source representation. */
-  const end = node.position
-    ?.end
-    ?.offset;
-  if ((typeof start!=='number')||(typeof end!=='number')
-    ||(!Number.isSafeInteger(start)) || (!Number.isSafeInteger(end))
+  source,
+  start,
+  end
+}:{
+  readonly node:Readonly<Pick<MdastNode,'type'>>;
+  readonly source:string;
+  readonly start:unknown;
+  readonly end:unknown;
+}):PolicySourceSpan {
+  if (((typeof start)!=='number')||((typeof end)!=='number')
+    ||(!Number.isSafeInteger(start))
+    || (!Number.isSafeInteger(end))
     || (start < 0)
     || (end <= start)
     || (end > source.length)) {
@@ -73,15 +92,21 @@ function sourceSpan({
   };
 }
 
-/** Fixed source tag width, independent of semantic rule meaning. */
+/**
+ Fixed source tag width, independent of semantic rule meaning.
+ */
 const codeWidth=3;
 /**
  Admit only the literal project tag format; this assigns no instruction authority.
+ 
  @param text - exact original paragraph text
+ 
  @returns whether the paragraph starts with the admitted source tag spelling
  */
 function hasLiteralCodePrefix(text:string):boolean {
-  /** Project instruction tags occupy exactly three ASCII uppercase/digit characters. */
+  /**
+   Project instruction tags occupy exactly three ASCII uppercase/digit characters.
+   */
   const width = codeWidth;
   if ((text.length <= (width
     + 1)) || (text[width] !== ':')
@@ -91,22 +116,28 @@ function hasLiteralCodePrefix(text:string):boolean {
       '\r',
       '\n'
     ].includes(text.charAt(width + 1)))) return false;
-  /** Constant-width lexical check does not interpret Markdown or instruction meaning. */
-  const candidate = text.slice(
-    0,
-    width
-  );
-  return [...candidate].every(function isInstructionCodeCharacter(character) { return ( ((character >= 'A') && (character <= 'Z')) || ((character >= '0') && (character <= '9'))); });
+  // The tag grammar admits ASCII code units only; grapheme segmentation cannot add an admitted tag.
+  for(let index=0;index<width;index+=1){
+    /** Constant-width scan rejects every code unit outside the original literal alphabet. */
+    const character=text.charAt(index);
+    if(!'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.includes(character))return false;
+  }
+  return true;
 }
 //endregion
 
 //region Original source order retains headings, paragraphs, and every unclassified node.
 /**
  Index top-level tagged policy paragraphs while preserving headings and all unclassified nodes.
+ 
  @param source - complete original policy text
+ 
  @param parse - incumbent Markdown parser retaining source offsets
+ 
  @returns structural index without authority or semantic qualification
+ 
  @throws PolicyIndexError when parser structure, source offsets, or unique tag membership fail
+ 
  @example
  ```ts
  const index = indexPolicyDocument({ source, parse: parser.parse });
@@ -116,7 +147,9 @@ export function indexPolicyDocument({
   source,
   parse
 }:PolicyIndexInput):PolicyIndex {
-  /** Use the existing repository parser, including its astral offset correction. */
+  /**
+   Use the existing repository parser, including its astral offset correction.
+   */
   const tree = parse({
     source,
     mdx: false
@@ -125,7 +158,9 @@ export function indexPolicyDocument({
     code: 'root-node',
     message: 'Markdown parser did not return a root'
   });
-  /** Mutable owned accumulation avoids rebuilding arrays during this single top-level traversal. */
+  /**
+   Mutable owned accumulation avoids rebuilding arrays during this single top-level traversal.
+   */
   const state:{
     headingStack:PolicyHeading[];
     readonly headings:PolicyHeading[];
@@ -137,16 +172,24 @@ export function indexPolicyDocument({
     records: [],
     unclassified: []
   };
-  /** Duplicate handles must not silently overwrite an earlier source interval. */
+  /**
+   Duplicate handles must not silently overwrite an earlier source interval.
+   */
   const seen = new Set<string>();
   for (const node of tree.children) {
-    /** Even unsupported nodes retain their exact raw source interval. */
+    /**
+     Even unsupported nodes retain their exact raw source interval.
+     */
     const span = sourceSpan({
       node,
-      source
+      source,
+      start:node.position?.start?.offset,
+      end:node.position?.end?.offset
     });
     if (node.type === 'heading') {
-      /** Heading structure is recorded, not interpreted as authority or applicability. */
+      /**
+       Heading structure is recorded, not interpreted as authority or applicability.
+       */
       const heading = {
         ...span,
         depth: node.depth
@@ -170,8 +213,14 @@ export function indexPolicyDocument({
         });
       continue;
     }
-    /** Only the admitted literal prefix contributes a tag identity. */
-    const code=span.text.slice(0,codeWidth);
+    /**
+     Only the admitted literal prefix contributes a tag identity.
+     */
+    const code=span.text
+      .slice(
+        0,
+        codeWidth
+      );
     if (seen.has(code)) throw new PolicyIndexError({
       code: 'duplicate-code',
       message: `Duplicate policy handle: ${code}`

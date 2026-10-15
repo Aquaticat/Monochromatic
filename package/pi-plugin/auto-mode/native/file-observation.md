@@ -81,3 +81,10 @@ hashes confirm the copied artifacts are unchanged.
 retains the omission result and artifact identities.
 The focused source and fixture lint pass has no errors;
 its remaining warnings are recorded separately from consumer correctness.
+
+The subsequent typed observer port passes the rebuilt consumers and package type check in
+`${HOME}/temp/agent/pi-native-typed-observer-consumer-20261015.log`.
+The final focused lint pass has zero errors and warnings across the typed observer,
+its contracts,
+and the new cache/observer fixtures:
+`${HOME}/temp/agent/pi-native-typed-observer-complete-lint-20261015.log`.
