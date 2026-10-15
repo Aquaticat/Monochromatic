@@ -16,8 +16,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 764 files and 486 rules,
-with zero errors and 10511 warnings.
+The latest complete lint report covers 772 files and 486 rules,
+with zero errors and 10433 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -41,8 +41,9 @@ Continue reached-program runner contracts.
 The collector implementation and new consumers have zero diagnostics in the full report.
 The latest report has zero runtime,
 extracted runner-binding,
-or extracted runner-event diagnostics,
-and retains 150 warnings in `program-runner.mjs`.
+extracted runner-event,
+or extracted runner-execution diagnostics,
+and retains 72 warnings in `program-runner.mjs`.
 Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
 No current user-input blocker exists.
 
@@ -273,7 +274,28 @@ The diagnostic fixture intentionally does not validate slots,
 so its successful original callback return does not establish real judgment admission for malformed input.
 This change in malformed-input rejection ownership is recorded separately from valid-call equivalence.
 Comparison receipts are `typed-runner-execution-comparison.json` and `typed-runner-execution-diagnostics.json`.
-Omission controls and the complete maintained lint recount remain pending.
+All 33 deliberate execution omissions or substitutions cause assertion failures.
+The runner,
+execution owner,
+and callback implementation retain their starting artifact hashes.
+The complete maintained lint report has zero errors and 10433 warnings across 772 files and 486 rules.
+All nine execution implementation,
+shared contract,
+and consumer files have zero diagnostics.
+The strict package-wide warning gate remains failing.
+The omission receipt is `typed-runner-execution-omissions.json`.
+The original runner is saved as `program-runner-before-execution-types.mjs`,
+and its original method is saved as `program-runner-execution-original-method.txt`.
+Final build,
+type checking,
+and consumer results are in
+`${HOME}/temp/agent/pi-runner-execution-final-verification-20261015.log`.
+The complete lint report is
+`${HOME}/temp/agent/pi-maintained-typed-runner-execution-final-lint-20261015.log`.
+Continue the runner's declared-program facade,
+including reached-group settlement,
+retained failures,
+and aggregate draining.
 The original method and runner are retained under
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 
