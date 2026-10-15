@@ -50,6 +50,11 @@ await describe({ name: 'native release publication', children: [it({
     await symlink(join(original, 'node_modules'), join(packageRoot, 'node_modules'), 'dir');
     await symlink(join(original, '../../../node_modules'), join(fixture, 'node_modules'), 'dir');
     const active = join(packageRoot, 'dist/native');
+    // Generated imports name their release directory, so qualify the copied fixture at its new location.
+    await spawn(process.execPath, [
+      '--import', join(active, 'loader.mjs'),
+      join(active, 'contract/integration/native-batch/prepare.ts'),
+    ], { cwd: packageRoot, env: { ...process.env, PI_AUTO_MODE_NATIVE_BUILD: '1' } });
     const initial = await realpath(active);
     const expectedVersion = await version(packageRoot);
     const preparePath = join(packageRoot, 'native/contract/integration/native-batch/prepare.ts');
@@ -65,7 +70,7 @@ await describe({ name: 'native release publication', children: [it({
     expect(await version(packageRoot)).toBe(expectedVersion);
     const cliPath = join(packageRoot, 'native/cli.mjs');
     const cli = await readFile(cliPath, 'utf8');
-    await writeFile(cliPath, `throw new Error('fixture CLI loading failure');\n${cli}`);
+    await writeFile(cliPath, `${cli}\nthrow new Error('fixture CLI loading failure');\n`);
     expect(await rejectedBuild(packageRoot)).toContain('fixture CLI loading failure');
     expect(await realpath(active)).toBe(published);
     expect(await version(packageRoot)).toBe(expectedVersion);
