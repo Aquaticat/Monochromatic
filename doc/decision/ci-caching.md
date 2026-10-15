@@ -41,6 +41,12 @@ The repository was not caching nothing, but the caches that existed did little.
   `codeql-overlay-base-database-*` entries (about 5 MB). They are not configured here.
 - `forbidden-strings.yml` (the per-push scan): nothing; it downloads a prebuilt binary.
 - `fs-id.yml`, `scorecard.yml`, `claude.yml`: nothing; they build nothing worth caching.
+- `music-player-release.yml`, job `build-desktop-musl` (the Alpine release tarballs): nothing, decided 2026-10-15
+  while the repository held 9.98 GB of 10 GB. It ships its bytes, which this document allows to stay uncached.
+  A cache could save at most the dependency compile: 9 min 07 s (x86_64) and 5 min 16 s (aarch64) per release.
+  The release build leaves 684 MB of cargo home and 2.3 GB of target directory before any trim, and the compressed
+  size of a trimmed entry was not measured (the Alpine guard's debug-build entries are 949 MB and 928 MB).
+  Details: `doc/decision/music-player-releases.md`.
 
 ## Key shapes
 

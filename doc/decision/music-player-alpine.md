@@ -360,9 +360,7 @@ Measured on branch pushes of 2026-10-15 (the repository cap is 10 GB):
 
 Implemented on 2026-10-15 as the job `build-desktop-musl` of `.github/workflows/music-player-release.yml`
 (`doc/decision/music-player-releases.md` records the result and the measurements);
-this section is the specification it was built from.
-The workflow belonged to another change when this section was written, and the sentences below that follow
-describe that state.
+this section is the specification it was built from, kept as written.
 Its job `build-desktop` builds glibc tarballs `music-player-<version>-linux-x64.tar.gz` and
 `music-player-<version>-linux-arm64.tar.gz`
 (`doc/decision/music-player-releases.md`).
