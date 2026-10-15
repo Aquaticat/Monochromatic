@@ -424,6 +424,15 @@ the items after it are the record of 2026-10-05 and older.
     fitting" detector reads 68 to 73 of 102 for the minimap build against 33 to 52 for `main`; the detector looks for
     ink in the last columns, which the minimap fills, so those counts do not compare (the border signature detector
     the agent used reads 37 to 70). The installed `~/.local/bin/monochromatic-ide` is that build (sha256 `9c4d6047`).
+    In flight on 2026-10-15 (two agents, worktrees `.claude/worktrees/ide-split-top` and `ide-split-native`, branches
+    `refactor/ide-split-top` and `refactor/ide-split-native`): the eight `rust/max-lines` files and the eleven
+    `rust/require-rustdoc` gaps the combined lint found (`annotation.rs`, `shaped_text.rs`, `text_raster.rs`,
+    `native.rs`, `native/render.rs`, `native/rows.rs`, `native/tile.rs`, `native/tile_build.rs`; rustdocs in
+    `name_order.rs`, `tab_layout.rs`, `text_projection.rs`, `wrap.rs`, `wrap_sign.rs`, `shaped_text.rs`,
+    `native/tile_build.rs`). Next after they land: merge both, rerun every guard task on the combined tree. Not
+    approved and not started: the bulk reformat for 1905 `markdown/semantic-line-breaks` errors and 969
+    `rust/no-anonymous-functions` warnings (ask the user first). Cosmetic and open: hover text shows raw Markdown links
+    (`[Date](file:///...)`).
     Markdown and MDX highlighting (branch `feat/ide-markdown-highlight`, worktree `.claude/worktrees/ide-markdown`):
     a copy of `.agents/skills/choosing-technology/SKILL.md` showed only the YAML frontmatter colored. The language, the
     `markdown`, `markdown_inline` and `yaml` grammars and the injections all worked; `syntax::SCOPES` had no `markup`
