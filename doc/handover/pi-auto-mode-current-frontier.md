@@ -1813,6 +1813,29 @@ Original lifecycle extraction is qualified at these tested boundaries.
 Continue preparation publication,
 retained inspection,
 and the remaining source/dependency owners.
+`9ace41903a` and `33dda5e1d9` introduce typed preparation,
+shared retained preparation state,
+and final root-member publication.
+The original complete input checks,
+source seal,
+dependency finalization,
+selection creation,
+late publication,
+and failure retention remain in their original order.
+The saved constructor is `child-constructor-before-preparation-types.mjs`
+in `${HOME}/temp/agent/pi-tool-call-scope-20261014/`,
+with SHA-256 `b093cc1bd1602b9766fd5065d75e3cd50676fc7e0ea32f25773cdca180f9c556`.
+Private root records now omit unused `execution`,
+`parent`,
+and `program` fields until publication;
+their reads remain `undefined`,
+matching the existing typed member-owner representation.
+This is an intentional private own-key change,
+not a claim that every internal object is byte-for-byte identical.
+Focused lint,
+rebuild,
+consumer controls,
+and original-constructor comparison remain pending for preparation.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
