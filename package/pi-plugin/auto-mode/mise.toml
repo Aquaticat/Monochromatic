@@ -160,6 +160,10 @@ run = "node --max-old-space-size=512 native/build.unit.test.ts"
 description = "Bound repeated governing-file observation through the built native approval consumer"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/source-freshness-work.test.mjs"
 
+[tasks."test:native:run-message-freshness"]
+description = "Keep full parent scans independent of retained tool catalog size"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-run-message-freshness.test.mjs"
+
 [tasks."test:native:request-claim"]
 description = "Verify original whole-request selection, repeated claims, foreign handles and retired dependencies"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/judgment-instructions.test.mjs"

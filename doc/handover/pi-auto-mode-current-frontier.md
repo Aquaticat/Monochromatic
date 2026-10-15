@@ -17,7 +17,20 @@ The session records the user's Stop response and two aborted tool results.
 The prior installed controls covered authored codemode responses and did not establish this boundary.
 The handoff-ready conclusion is withdrawn pending reproduction and correction.
 
-- [ ] Recover the nested failure and reproduce the exact two-call shape in a disposable host.
+The configured replay now reproduces the exact aggregate with a settled catalog of 40 MCP tools.
+The nested cause is `DependencyDeadlineError: Original dependency assessment deadline expired`.
+Its stack reaches `bindRunMessageSources`, which revalidates the complete parent once per retained input.
+The original incident logged 53,108 resource snapshot attempts during input capture.
+The old configured harness disabled MCP and omitted home-discovered Depot skills.
+The corrected fixture retains those inputs; metadata is replayed locally and commands receive scripted Stop.
+Receipt: `${HOME}/temp/agent/pi-host-isolation-20261015/mimo-mcp-forty-settled.log`.
+The diagnostic fixture is `pi-hyper-rpc-stop-RhgubS` under the same scratch parent.
+The original session did not retain its nested exception, so its exact cause remains inferred from this reproduction.
+The separate 140-tool cached-catalog probe exhausted its 512 MiB child heap before review;
+the 20-tool immediate-start probe observed a catalog change during confirmation.
+Neither is substituted for the reproduced aggregate.
+
+- [x] Recover a nested failure reproducing the exact two-call shape in a disposable host.
 - [ ] Correct the demonstrated cause and verify the real configured consumer boundary.
 - [ ] Retain regression evidence and update the MiMo handoff readiness.
 
