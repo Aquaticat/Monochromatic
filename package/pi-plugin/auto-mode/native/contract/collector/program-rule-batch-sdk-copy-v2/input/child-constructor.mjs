@@ -11,14 +11,14 @@ import {readMainAgentRequest} from "../../request-producer-group-consumer/reques
 
 export class JudgmentConstructionError extends Error {constructor(message,options){super(message,options);this.name=this.constructor.name;}}
 /** Reject admitted JSON-like values whose meaning ordinary JSON would silently change. */
-function requireJSONInput(input){JSON.stringify(input,(_key,value)=>{if(value===undefined||(typeof value==='number'&&(!Number.isFinite(value)||Object.is(value,-0))))throw new JudgmentConstructionError('Native tool input contains a value not preserved by the declared JSON profile');return value;});}
+function requireJSONInput(input){JSON.stringify(input,function validateNativeJSONValue(_key,value) {if(value===undefined||(typeof value==='number'&&(!Number.isFinite(value)||Object.is(value,-0))))throw new JudgmentConstructionError('Native tool input contains a value not preserved by the declared JSON profile');return value;});}
 
 //region Fixed session-bound creator; all inputs come from the owned native JSON/prepared-member profile.
 /** Bind one native consumer to source/root/file observers, fixed catalog and owned transport dependencies. */
 export function createJudgmentConstructor({now,producerOwner,observer,collector,rootAdapter,rootDirectory,files,catalogText,catalogSHA256,send,isRetryableTransportFailure,trace,parsePolicy}) {
   return function construct({startedAt,signal,response,stream}) {
     let firstClockRead=true;
-    const budget=createJudgmentBudget({now:()=>{if(firstClockRead){firstClockRead=false;return startedAt;}return now();},signal,isRetryableTransportFailure});
+    const budget=createJudgmentBudget({now:function readJudgmentClock() {if(firstClockRead){firstClockRead=false;return startedAt;}return now();},signal,isRetryableTransportFailure});
     budget.checkpoint();
     const input={producerOwner,observer,stream,response};
     const sourceBinding=observer.beginJudgmentSources?observer.beginJudgmentSources(response):observer.bindJudgmentSources?.(response);
@@ -31,9 +31,9 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     if(typeof parentJSON!=='string'||Buffer.byteLength(parentJSON)>1048576)throw new JudgmentConstructionError('Native enclosing response exceeds the declared JSON profile');
     const content=JSON.parse(parentJSON);
     if(!Array.isArray(content))throw new JudgmentConstructionError('Native enclosing response has no content array');
-    const declared=content.filter(value=>value&&value.type==='toolCall');
-    if(declared.length===0||declared.length>64||declared.some(value=>typeof value.id!=='string'||!value.id||typeof value.name!=='string'||!value.name)||new Set(declared.map(value=>value.id)).size!==declared.length)throw new JudgmentConstructionError('Enclosing judgment requires complete unique native tool membership');
-    const declaredNames=Object.freeze(declared.map(value=>Object.freeze({id:value.id,name:value.name})));
+    const declared=content.filter(function isToolCall(value) { return (value&&value.type==='toolCall'); });
+    if(declared.length===0||declared.length>64||declared.some(function hasInvalidToolIdentity(value) { return (typeof value.id!=='string'||!value.id||typeof value.name!=='string'||!value.name); })||new Set(declared.map(function readDeclaredCallId(value) { return (value.id); })).size!==declared.length)throw new JudgmentConstructionError('Enclosing judgment requires complete unique native tool membership');
+    const declaredNames=Object.freeze(declared.map(function copyDeclaredToolIdentity(value) { return (Object.freeze({id:value.id,name:value.name})); }));
     const judgmentCollector=Object.freeze({
       capture(options){
         if(options.signal!==signal)throw new JudgmentConstructionError('Dependency sources require original judgment cancellation');
@@ -56,8 +56,8 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       try{const value=read();if(!bindingSegmentActive)assertPreparedProgramDependencies();return value;}
       catch(error){evidenceEligibilityFailure??=Object.freeze({cause:error});throw error;}
     }
-    function active(){if(evidenceEligibilityFailure)throw new JudgmentConstructionError('Original relation evidence lost dependency eligibility',{cause:evidenceEligibilityFailure.cause});if(closeFailed)throw new JudgmentConstructionError('Judgment finalization failed permanently',{cause:finalRecord.failure});if(preparationFailed)throw new JudgmentConstructionError('Judgment preparation failed permanently',{cause:preparationFailure});if(finished)throw new JudgmentConstructionError('Judgment evidence collection is finished');dependencyCheck(()=>{budget.checkpoint();if(!bindingSegmentActive&&readMainAgentRequest(input)!==receipt)throw new JudgmentConstructionError('Enclosing request observation changed');});}
-    function ready(){active();if(!prepared)throw new JudgmentConstructionError('Complete final prepared membership is unavailable');dependencyCheck(()=>{if(!bindingSegmentActive)facade.finalize(handle);budget.checkpoint();});}
+    function active(){if(evidenceEligibilityFailure)throw new JudgmentConstructionError('Original relation evidence lost dependency eligibility',{cause:evidenceEligibilityFailure.cause});if(closeFailed)throw new JudgmentConstructionError('Judgment finalization failed permanently',{cause:finalRecord.failure});if(preparationFailed)throw new JudgmentConstructionError('Judgment preparation failed permanently',{cause:preparationFailure});if(finished)throw new JudgmentConstructionError('Judgment evidence collection is finished');dependencyCheck(function checkOriginalRequest() {budget.checkpoint();if(!bindingSegmentActive&&readMainAgentRequest(input)!==receipt)throw new JudgmentConstructionError('Enclosing request observation changed');});}
+    function ready(){active();if(!prepared)throw new JudgmentConstructionError('Complete final prepared membership is unavailable');dependencyCheck(function finalizePreparedDependencies() {if(!bindingSegmentActive)facade.finalize(handle);budget.checkpoint();});}
     function bindingSegment(run){
       if(bindingSegmentActive)throw new JudgmentConstructionError('Original binding segments cannot nest');
       // All external identity/phase authentication precedes this internal boundary.
@@ -96,9 +96,9 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     function indexedUnitAdoptionPairs(){
       ready();
       if(!unitAdoptionPairs){
-        const selectPairs=()=>declaredNames.length===1?selectUnitAdoptionPairs({
+        const selectPairs=function selectAdoptionCandidates() { return (declaredNames.length===1?selectUnitAdoptionPairs({
           candidates:indexedInstructionCandidates(),readRule:readRuleCandidate,member:byMember.get(declaredNames[0].id)
-        }):Object.freeze([]);
+        }):Object.freeze([])); };
         unitAdoptionPairs=bindingSegmentActive?selectPairs():bindingSegment(selectPairs);
       }
       return unitAdoptionPairs;
@@ -152,8 +152,8 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       if(unitAdoptions&&!adoptions.length)throw new JudgmentConstructionError('No bounded original same-source adoption pairs are available');
       if(clauseRelations&&(candidates.length===0||candidates.length>256))throw new JudgmentConstructionError('Clause relation requires one through 256 original instruction candidates');
       if(headingContexts&&(headings.length===0||headings.length>64))throw new JudgmentConstructionError('Heading content requires one through 64 original source groups');
-      return bindingSegment(()=>{
-        const claims=candidates.map(rule=>claimProgramRuleCandidate({definitionId:'clause_operation_relation',rule}));
+      return bindingSegment(function buildRuleAssessmentClaims() {
+        const claims=candidates.map(function claimOperationRelation(rule) { return (claimProgramRuleCandidate({definitionId:'clause_operation_relation',rule})); });
         if(requestMaterial)claims.push(claimRequestMaterial());
         for(const candidate of headings)claims.push(claimHeadingContext({candidate}));
         for(const pair of adoptions)claims.push(claimUnitAdoption({pair}));
@@ -192,7 +192,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       ready();
       if(!ruleBindings){
         if(typeof parsePolicy!=='function'||!judgmentSources.hostGoverningPolicy)throw new JudgmentConstructionError('Original host-selected policy and qualified parser are required for instruction claims');
-        const indexSources=()=>createGoverningRuleSet({parse:parsePolicy,readSources:()=>{ready();return judgmentSources.governingSources;}});
+        const indexSources=function createRuleBindings() { return (createGoverningRuleSet({parse:parsePolicy,readSources:function readGoverningSources() {ready();return judgmentSources.governingSources;}})); };
         ruleBindings=bindingSegmentActive?indexSources():bindingSegment(indexSources);
       }
       return ruleBindings;
@@ -222,15 +222,15 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       if(!['operation_violates_rule','clause_operation_relation'].includes(definitionId))throw new JudgmentConstructionError('Unsupported whole-program rule relation definition');
       const candidates=definitionId==='clause_operation_relation'?indexedInstructionCandidates():indexedRuleCandidates();
       if(definitionId==='clause_operation_relation'&&(candidates.length===0||candidates.length>256))throw new JudgmentConstructionError('Clause relation requires one through 256 indexed clauses');
-      return bindingSegment(()=>issue(candidates.map(rule=>claimProgramRuleCandidate({definitionId,rule}))));
+      return bindingSegment(function issueCandidateClaims() { return (issue(candidates.map(function claimCandidateRule(rule) { return (claimProgramRuleCandidate({definitionId,rule})); }))); });
     }
     /** Issue fixed independent relation types together inside the existing synchronous binding segment. */
     function issueRuleAssessmentBatch(){
       const candidates=indexedRuleCandidates();
       if(candidates.length===0||candidates.length>256)throw new JudgmentConstructionError('Mixed rule assessment requires one through 256 indexed clauses; unclassified prose and larger batches remain unsupported');
-      return bindingSegment(()=>{
-        const meanings=candidates.map(rule=>claimRuleCandidate({definitionId:'states_approval_prerequisite',memberId:declaredNames[0].id,rule}));
-        const operations=candidates.map(rule=>claimProgramRuleCandidate({definitionId:'operation_violates_rule',rule}));
+      return bindingSegment(function buildApprovalMeaningClaims() {
+        const meanings=candidates.map(function claimApprovalMeaning(rule) { return (claimRuleCandidate({definitionId:'states_approval_prerequisite',memberId:declaredNames[0].id,rule})); });
+        const operations=candidates.map(function claimOperationViolation(rule) { return (claimProgramRuleCandidate({definitionId:'operation_violates_rule',rule})); });
         return issue([...meanings,...operations]);
       });
     }
@@ -238,7 +238,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     function captureBatchEvidence(batch){
       if(!issuedBatches.has(batch))throw new JudgmentConstructionError('Question batch is not owned by this judgment');
       knownSelection().assertCapturableBatch(batch);
-      return bindingSegment(()=>knownSelection().captureBatchEvidence(batch));
+      return bindingSegment(function readBatchEvidence() { return (knownSelection().captureBatchEvidence(batch)); });
     }
     function assertBatchEvidence(evidence){
       knownSelection().assertCapturedBatchIdentity(evidence);
@@ -283,9 +283,9 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       if(attemptedBatches.has(batch))throw new JudgmentConstructionError('Question batch cannot be assessed concurrently or sampled again');
       attemptedBatches.add(batch);assessing=true;
       try {
-        const request=bindingSegment(()=>selection.requestFor(batch));
-        const answer=await budget.dispatch(attempt=>send(Object.freeze({request,...attempt})));
-        return bindingSegment(()=>selection.settle({batch,...readAssessmentResponse(answer)}));
+        const request=bindingSegment(function readBatchRequest() { return (selection.requestFor(batch)); });
+        const answer=await budget.dispatch(function sendAssessmentAttempt(attempt) { return (send(Object.freeze({request,...attempt}))); });
+        return bindingSegment(function settleAssessmentAnswer() { return (selection.settle({batch,...readAssessmentResponse(answer)})); });
       } catch(error) {
         try {if(!selection.inspectBatch(batch).settled)selection.discard({batch,error});}
         catch(retentionError){throw new AggregateError([error,retentionError],'Assessment failure and terminal retention failure');}
@@ -298,18 +298,18 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       try {
         for(const batch of issuedBatches)if(!selection.inspectBatch(batch).settled)selection.discard({batch,error:new JudgmentConstructionError('Judgment closed before this question batch was dispatched')});
         ready();
-        const batches=bindingSegment(()=>Object.freeze([...issuedBatches].map(batch=>selection.resultFor(batch))));
+        const batches=bindingSegment(function readIssuedBatchResults() { return (Object.freeze([...issuedBatches].map(function readBatchResult(batch) { return (selection.resultFor(batch)); }))); });
         const dependencies=facade.finalize(handle);active();
         const accounting=budget.finish();finished=true;
         finalRecord=Object.freeze({evidenceOnly:true,status:'evidence-closed',policyVerdict:'not-established',instructionAuthority:'not-established',humanPermission:false,dependencies,accounting,parentJSON,batches});return finalRecord;
       } catch(error) {
         closeFailed=true;
-        finalRecord=Object.freeze({retainedOnly:true,status:'close-failed',failure:error,accounting:budget.diagnostics(),batches:Object.freeze([...issuedBatches].map(batch=>selection.inspectBatch(batch)))});
+        finalRecord=Object.freeze({retainedOnly:true,status:'close-failed',failure:error,accounting:budget.diagnostics(),batches:Object.freeze([...issuedBatches].map(function inspectIssuedBatch(batch) { return (selection.inspectBatch(batch)); }))});
         throw error;
       }
     }
     /** Native release checks keep freshness separate from decision-model time and never authorize an effect. */
-    function assertDependenciesCurrent(){if(evidenceEligibilityFailure)throw new JudgmentConstructionError('Original relation evidence lost dependency eligibility',{cause:evidenceEligibilityFailure.cause});if(closeFailed)throw new JudgmentConstructionError('Failed finalization cannot release dependencies');if(!prepared||preparationFailed)throw new JudgmentConstructionError('Judgment has no prepared dependency handle');return dependencyCheck(()=>{if(readMainAgentRequest(input)!==receipt)throw new JudgmentConstructionError('Enclosing request observation changed');if(!finished){active();return facade.finalize(handle);}return facade.checkRetained(handle);});}
+    function assertDependenciesCurrent(){if(evidenceEligibilityFailure)throw new JudgmentConstructionError('Original relation evidence lost dependency eligibility',{cause:evidenceEligibilityFailure.cause});if(closeFailed)throw new JudgmentConstructionError('Failed finalization cannot release dependencies');if(!prepared||preparationFailed)throw new JudgmentConstructionError('Judgment has no prepared dependency handle');return dependencyCheck(function checkOriginalDependencies() {if(readMainAgentRequest(input)!==receipt)throw new JudgmentConstructionError('Enclosing request observation changed');if(!finished){active();return facade.finalize(handle);}return facade.checkRetained(handle);});}
     /** Selector returns the already-owned member handle, not proof derived from the identifier. */
     function memberFor(memberId){assertDependenciesCurrent();const member=byMember.get(memberId);if(!member)throw new JudgmentConstructionError('Execution member was not in the prepared native group');return member;}
     function knownMember(member){const record=bindings.get(member);if(!record)throw new JudgmentConstructionError('Execution member handle is not owned by this judgment');return record;}
@@ -352,9 +352,9 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       try{
         const declaration=record.preparedProgram?.view.declaration;
         if(!declaration)throw new JudgmentConstructionError('Native program requires its original declaration captured before policy review');
-        if(!Array.isArray(toolNames)||declaration.sites.some(site=>!toolNames.includes(site.name)))throw new JudgmentConstructionError('Runtime callables differ from the original prepared program');
+        if(!Array.isArray(toolNames)||declaration.sites.some(function isUnknownToolSite(site) { return (!toolNames.includes(site.name)); }))throw new JudgmentConstructionError('Runtime callables differ from the original prepared program');
         currentProgram(program);
-        scope.groups=declaration.groups.map(definition=>{
+        scope.groups=declaration.groups.map(function createUnreachedGroup(definition) {
           const group={handle:Object.freeze({}),program,definition,state:'unreached',view:undefined,slots:[],members:undefined,consumer:undefined};groups.set(group.handle,group);return group;
         });
         scope.declaration=declaration;scope.view=Object.freeze({declaration,parent:parentToken,judgment,response,stream,permission:'not-established'});scope.status='open';return program;
@@ -371,11 +371,11 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       if(group.state!=='unreached')return group.view;
       const result=ordinal===0?undefined:scope.valueReceipt?.value;
       if(ordinal>0&&!scope.valueReceipt)throw new JudgmentConstructionError('Successor group requires the owned producer script value');
-      const members=Object.freeze(group.definition.members.map(site=>{
+      const members=Object.freeze(group.definition.members.map(function materializeGroupMember(site) {
         const args=materializePattern({pattern:site.pattern,result});requireJSONInput(args);
         return Object.freeze({...site,args,argsJSON:JSON.stringify(args)});
       }));
-      if(Buffer.byteLength(JSON.stringify(members.map(member=>member.args)))>1048576)throw new JudgmentConstructionError('Reached group argument data exceeds one MiB');
+      if(Buffer.byteLength(JSON.stringify(members.map(function readMemberArguments(member) { return (member.args); })))>1048576)throw new JudgmentConstructionError('Reached group argument data exceeds one MiB');
       currentProgram(program);group.view=Object.freeze({handle:group.handle,ordinal,declaration:scope.declaration,members});group.state='reached';return group.view;
     }
     function reachedGroupFor(group){return currentGroup(group).view;}
@@ -394,10 +394,10 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
           pending.push({handle:Object.freeze({}),group,ordinal:index,call:Object.freeze({id:call.id,name:call.name}),tool:Object.freeze({name:tool.name,outputSchema:tool.outputSchema?true:undefined}),member:undefined,native:undefined});
         }
         currentGroup(handle);for(const slot of pending)slots.set(slot.handle,slot);group.slots=pending;
-        group.consumer=createNativeReturnConsumer({runNative,getSlot:slot=>knownSlot({group,slot}),assertCurrent:()=>operation(()=>{currentGroup(handle);}),assertReturnedMember:member=>{
+        group.consumer=createNativeReturnConsumer({runNative,getSlot:function readOwnedSlot(slot) { return (knownSlot({group,slot})); },assertCurrent:function assertOriginalGroup() { return (operation(function checkCurrentGroup() {currentGroup(handle);})); },assertReturnedMember:function readReturnedMember(member) {
           const record=knownMember(member);if(record.group!==group||record.execution?.state!=='returned')throw new JudgmentConstructionError('Script binding producer is not the returned prepared member');
         }});
-        group.state='bound';return Object.freeze(pending.map(slot=>slot.handle));
+        group.state='bound';return Object.freeze(pending.map(function readSlotHandle(slot) { return (slot.handle); }));
       }catch(error){group.state='failed';group.failure=error;throw error;}
     }
     function prepareReachedMembers({group:handle,members,nativeSignals}){
@@ -419,7 +419,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
         }
         if(Buffer.byteLength(JSON.stringify(members))>1048576)throw new JudgmentConstructionError('Final reached group exceeds one MiB');
         currentGroup(handle);
-        const handles=Object.freeze(pending.map((record,index)=>{const member=Object.freeze({});bindings.set(member,record);group.slots[index].member=member;return member;}));
+        const handles=Object.freeze(pending.map(function publishReachedMember(record,index) {const member=Object.freeze({});bindings.set(member,record);group.slots[index].member=member;return member;}));
         group.members=handles;group.state='prepared';childGroups.push(group);return handles;
       }catch(error){group.state='failed';group.failure=error;throw error;}
     }
@@ -439,18 +439,18 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       catch(error){throw scriptValueGuard({error});}
       let value;
       try{value=group.consumer.valueFor({slot:slotHandle,outcome});}
-      catch(error){if(error instanceof NativeScriptValueGuardError)throw operation(()=>markProgramGuard({program:group.program,error}));throw error;}
-      try{return operation(()=>{
+      catch(error){if(error instanceof NativeScriptValueGuardError)throw operation(function markInvocationFailure() { return (markProgramGuard({program:group.program,error})); });throw error;}
+      try{return operation(function readGuardedScriptValue() {
         currentGroup(handle);const slot=knownSlot({group,slot:slotHandle}),scope=knownProgram(group.program).program;
         if(group.definition.ordinal===0){
           if(scope.valueReceipt&&(scope.valueReceipt.slot!==slotHandle||scope.valueReceipt.native!==slot.native.identity))throw new JudgmentConstructionError('Producer script-value receipt cannot be replaced');
           scope.valueReceipt??=Object.freeze({slot:slotHandle,member:slot.member,native:slot.native.identity,value});
         }
         return value;
-      });}catch(error){throw operation(()=>markProgramGuard({program:group.program,error}));}
+      });}catch(error){throw operation(function markConversionFailure() { return (markProgramGuard({program:group.program,error})); });}
     }
-    function inspectReachedGroup(handle){const group=knownGroup(handle);return Object.freeze({retainedOnly:true,ordinal:group.definition.ordinal,state:group.state,failure:group.failure,members:Object.freeze((group.members??[]).map(member=>{const record=bindings.get(member);return Object.freeze({id:record.prepared.id,state:record.execution?.state??'unentered'});})),nativeReturns:Object.freeze(group.slots.map(slot=>group.consumer.inspect(slot.handle)))});}
-    function inspectProgram(program){const scope=knownProgram(program).program;return Object.freeze({retainedOnly:true,status:scope.status,failure:scope.failure,declaration:scope.declaration,producerValueReady:scope.valueReceipt!==undefined,guardFailures:Object.freeze([...scope.guardFailures]),groups:Object.freeze(scope.groups.map(group=>inspectReachedGroup(group.handle)))});}
+    function inspectReachedGroup(handle){const group=knownGroup(handle);return Object.freeze({retainedOnly:true,ordinal:group.definition.ordinal,state:group.state,failure:group.failure,members:Object.freeze((group.members??[]).map(function inspectMemberExecution(member) {const record=bindings.get(member);return Object.freeze({id:record.prepared.id,state:record.execution?.state??'unentered'});})),nativeReturns:Object.freeze(group.slots.map(function inspectConsumedSlot(slot) { return (group.consumer.inspect(slot.handle)); }))});}
+    function inspectProgram(program){const scope=knownProgram(program).program;return Object.freeze({retainedOnly:true,status:scope.status,failure:scope.failure,declaration:scope.declaration,producerValueReady:scope.valueReceipt!==undefined,guardFailures:Object.freeze([...scope.guardFailures]),groups:Object.freeze(scope.groups.map(function inspectOwnedGroup(group) { return (inspectReachedGroup(group.handle)); }))});}
     function preparedMemberFor(member){const record=knownMember(member);assertDependenciesCurrent();parentCurrent(record);return Object.freeze({prepared:record.prepared,signal:record.effectiveSignal});}
     function originalFileFor(member){
       ready();const record=knownMember(member);parentCurrent(record);
@@ -470,8 +470,8 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     /** Terminal marking never invokes the source reader and is safe after cancellation or stale dependencies. */
     function finishExecution(token){const record=knownExecution(token);record.execution.state='returned';}
     function inspectExecution(token){const record=knownExecution(token);return Object.freeze({retainedOnly:true,state:record.execution.state});}
-    function memberExecutionStates(){return Object.freeze([...byMember.entries()].map(([id,handle])=>Object.freeze({id,state:bindings.get(handle).execution?.state??'unentered'})));}
-    function inspect(){return Object.freeze({prepared,preparationFailed,preparationFailure,finished,closeFailed,accounting:budget.diagnostics(),finalRecord,memberExecutions:memberExecutionStates(),preparedPrograms:Object.freeze([...byMember.values()].flatMap(member=>{const inspection=bindings.get(member).preparedProgram;return inspection?[inspection.view]:[];})),rootPrograms:Object.freeze([...byMember.values()].flatMap(member=>{const record=bindings.get(member);return record.program?[inspectProgram(record.program.handle)]:[];})),childGroups:Object.freeze(childGroups.map(group=>inspectReachedGroup(group.handle)))});}
+    function memberExecutionStates(){return Object.freeze([...byMember.entries()].map(function readExecutionState([id,handle]) { return (Object.freeze({id,state:bindings.get(handle).execution?.state??'unentered'})); }));}
+    function inspect(){return Object.freeze({prepared,preparationFailed,preparationFailure,finished,closeFailed,accounting:budget.diagnostics(),finalRecord,memberExecutions:memberExecutionStates(),preparedPrograms:Object.freeze([...byMember.values()].flatMap(function readPreparedProgramView(member) {const inspection=bindings.get(member).preparedProgram;return inspection?[inspection.view]:[];})),rootPrograms:Object.freeze([...byMember.values()].flatMap(function readRootProgramView(member) {const record=bindings.get(member);return record.program?[inspectProgram(record.program.handle)]:[];})),childGroups:Object.freeze(childGroups.map(function inspectChildGroup(group) { return (inspectReachedGroup(group.handle)); }))});}
     /** Retain the original synchronous operation guard for one-input public methods. */
     function guardWithInput(run) {
       return function invokeJudgmentOperation(input) {
