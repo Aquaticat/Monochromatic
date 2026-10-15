@@ -336,7 +336,7 @@ await describe({
             expect(parseConsistency({
               value: structuredClone(run.consistency,),
               path: 'cat.consistency',
-              generation: 16,
+              generation: 17,
               sliceIndexes: new Set([0, 1, 2, 3,],),
             },),).toEqual(run.consistency,);
           },
@@ -387,10 +387,16 @@ await describe({
                 return [sliceIndex, text,];
               },),
               outcomes: outcomesOfGroups({ consistency: run.consistency, },),
+              gaveWay: run.consistency.groups.map(function gaveWayOfGroup({ occurrences, },): readonly unknown[] {
+                return occurrences.map(function gaveWayTo(occurrence,): unknown {
+                  return occurrence.gaveWayTo ?? 'none';
+                },);
+              },),
               findings: run.consistency.findings,
             },).toEqual({
               slices: [SPLICED_SECTIONS[0], SPLICED_SECTIONS[1], SPLICED_SECTIONS[3],],
               outcomes: [['chosen', 'overlapped',], ['replaced', 'replaced', 'chosen', 'replaced',],],
+              gaveWay: [['none', { group: 1, label: 'OCCURRENCE 3', },], ['none', 'none', 'none', 'none',],],
               findings: [
                 'slice 2: the consistency replacement of group 1 OCCURRENCE 2 was left out because it changes the words that '
                 + 'group 2 OCCURRENCE 3 located',
@@ -399,7 +405,7 @@ await describe({
             expect(parseConsistency({
               value: structuredClone(run.consistency,),
               path: 'cat.consistency',
-              generation: 16,
+              generation: 17,
               sliceIndexes: new Set([0, 1, 2, 3,],),
             },),).toEqual(run.consistency,);
           },

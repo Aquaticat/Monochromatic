@@ -88,7 +88,7 @@ await describe({
         + 'change to the FIXTURE INPUTS of this case moves it too, and must not, because those inputs are '
         + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(34,);
+        expect(SLICE_CACHE_VERSION,).toBe(35,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.
@@ -148,8 +148,11 @@ await describe({
         // VERSION 34 ON 2026-09-28 the same way (ledger L5): the tally holds
         // an acceptance settled at neutral for a human, and the critic and
         // panel sheets define the severity scale.
+        //
+        // VERSION 35 IN n156 (typography read from the page parse): the version is key input, so the literal moved with it
+        // and was filled in by running this case after the bump, which is the only way to get a hash.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('8382b00027e712d5fc13150898640833a3606c5ecc86b2781be15765eeecccae',);
+          .toBe('f32c50c49665b3c9791d2e85b74019831a7cf4dc23c1a88e722d7fd1304dae14',);
       },
     },),
     it({

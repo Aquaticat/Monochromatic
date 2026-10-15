@@ -128,6 +128,10 @@ const HELD_READS: Readonly<Record<string, {
     calls: 1,
     why: 'reads only a ballot index isCanonicalIndexText took when the reply was checked',
   },
+  'consistency-quote-references.ts#decode: Number': {
+    calls: 1,
+    why: 'reads the digits of a character reference referenceEndOf took, ASCII digits or, behind 0x, hexadecimal digits',
+  },
   'corpus-run/asked-count.ts#readAskedCount: Number': {
     calls: 1,
     why: WHOLE_NUMBER,

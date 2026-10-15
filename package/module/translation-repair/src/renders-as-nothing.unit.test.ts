@@ -13,6 +13,8 @@
  @module
  */
 
+import { readFile, } from 'node:fs/promises';
+
 import {
   describe,
   expect,
@@ -82,6 +84,34 @@ await describe({
         },),).toEqual(SOMETHING.map(function expectedOf({ 0: label, },): string {
           return `${label}: false`;
         },),);
+      },
+    },),
+    it({
+      name: 'SAYS IN ITS HEADER THAT IT READS THE RUNTIME\'S OWN UNICODE TABLES, and names no Unicode version, since the property '
+        + 'tests are answered by whichever tables the runtime ships and no version can be applied from the source',
+      fn: async () => {
+        /**
+         The source of the file that defines the reading.
+         */
+        const source = await readFile(
+          new URL(
+            'renders-as-nothing.ts',
+            import.meta.url,
+          ),
+          'utf8',
+        );
+        expect({
+          readsRuntimeTables: source.includes('the runtime\'s own Unicode tables',),
+          namesVersion: source.split('Unicode ',)
+            .slice(1,)
+            .some(function startsWithDigit(rest,): boolean {
+              return Array.from('0123456789',)
+                .includes(rest.charAt(0,),);
+            },),
+        },).toEqual({
+          readsRuntimeTables: true,
+          namesVersion: false,
+        },);
       },
     },),
   ],

@@ -96,7 +96,7 @@ const BOUNDED_OR_SEQUENTIAL: Readonly<Record<string, string>> = {
     'folds over the fixed FOLDS table, not over the input',
   'seeded-error.ts#applySeededErrors/applyOne: state':
     'each needle is found in the text the seeds before it left, and their regions shift with it',
-  'splice-slices.ts#spliceSlices/spliceOne: text':
+  'splice-slices.ts#placeSlices/spliceOne: current':
     'each edit composes its separators against the tail the later edits wrote',
   'stage-quorum.ts#collectRounds: pending':
     'the next round\'s queue, rebuilt once per round, and the rounds are bounded by maxRetryRounds',

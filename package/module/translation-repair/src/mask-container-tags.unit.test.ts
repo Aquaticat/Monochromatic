@@ -527,6 +527,48 @@ await describe({
         }
       },
     },),
+
+    it({
+      name: 'MASKS A LINE WHOSE BRACKET IS FOLLOWED BY SPACES, TABS AND A CARRIAGE RETURN ALONE, the white space Markdown ends a line '
+        + 'with (n156, W5), and masks the tag only',
+      fn: async () => {
+        expect(maskLoneContainerTags({ text: '<details> \t\r\nA cat naps.\r\n', },),).toEqual({
+          masked: `${' '.repeat(9,)} \t\r\nA cat naps.\r\n`,
+          tags: [{
+            kind: 'open',
+            name: 'details',
+            text: '<details>',
+            startOffset: 0,
+            endOffset: 9,
+          },],
+        },);
+      },
+    },),
+
+    it({
+      name: 'READS NO TAG IN A LINE WHOSE BRACKET IS FOLLOWED BY ANY WHITE SPACE BUT SPACE AND TAB (n156, W5): a no-break space, a '
+        + 'wide space, a vertical tab, a form feed, a byte order mark or an ideographic space makes the line text the MDX parser '
+        + 'keeps, so no mask turns part of it into spaces and leaves the rest standing',
+      fn: async () => {
+        for (const after of [
+          '\u{00A0}',
+          '\u{2003}',
+          '\u{3000}',
+          '\u{000B}',
+          '\u{000C}',
+          '\u{FEFF}',
+        ]) {
+          /**
+           A line holding a tag and one character past its bracket, between a line of text and a line of one soft hyphen and a mark.
+           */
+          const text = `The kittens\n<Note>${after}\r\n\u{00AD}’ x`;
+          expect(maskLoneContainerTags({ text, },),).toEqual({
+            masked: text,
+            tags: [],
+          },);
+        }
+      },
+    },),
   ],
 },);
 

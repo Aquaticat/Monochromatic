@@ -21,8 +21,10 @@ import {
   type ConsistencyEnglish,
   type ConsistencyVoice,
   countConsistency,
+  type PageEnglish,
   winnerOf,
 } from '../dist/final/node/index.mjs';
+import { countedList, } from './element-reads.test-fixture.ts';
 
 /**
  English of the first place.
@@ -124,6 +126,27 @@ function threeAlike({ over = {}, }: { readonly over?: VoiceOverrides; } = {},): 
 }
 
 /**
+ Ballots that each quote the first place by one of the given quotes.
+
+ @param quotes - what each ballot quotes for the first place, one ballot for each
+
+ @returns The ballots, from distinct seats
+
+ @example
+ ```ts
+ const voices = ballotsQuoting({ quotes: ['the cats\'', 'the cats',], },);
+ ```
+ */
+function ballotsQuoting({ quotes, }: { readonly quotes: readonly string[]; },): readonly ConsistencyVoice[] {
+  return quotes.map(function ballotFor(quote, at,): ConsistencyVoice {
+    return voiceOf({
+      seat: `ballot-${String(at,)}`,
+      over: { quotes: [{ label: 'OCCURRENCE 1', quote, },], },
+    },);
+  },);
+}
+
+/**
  Counts three alike ballots over the two places, a repeated run.
 
  @param voices - ballots heard
@@ -145,7 +168,11 @@ function countOver(
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly quorum?: number;
-    readonly places?: readonly { readonly label: string; readonly english: ConsistencyEnglish; }[];
+    readonly places?: readonly {
+      readonly label: string;
+      readonly english: ConsistencyEnglish;
+      readonly page?: PageEnglish;
+    }[];
   },
 ): ReturnType<typeof countConsistency> {
   return countConsistency({
@@ -154,6 +181,154 @@ function countOver(
     framed: false,
     quorum,
   },);
+}
+
+/**
+ The rendering of the first place when every ballot quotes it as given.
+
+ @param english - the first place's English
+
+ @param quote - what every ballot quotes
+
+ @returns The rendering of the first place
+
+ @example
+ ```ts
+ const rendering = firstRenderingOf({ english: 'Fill the parents’ bowl.', quote: 'the parents', },);
+ ```
+ */
+function firstRenderingOf(
+  {
+    english,
+    quote,
+    page,
+  }: {
+    readonly english: string;
+    readonly quote: string;
+    readonly page?: PageEnglish;
+  },
+): unknown {
+  return countOver({
+    voices: ballotsQuoting({ quotes: [quote, quote, quote,], },),
+    places: [
+      {
+        label: 'OCCURRENCE 1',
+        english: { kind: 'present', text: english, },
+        ...((page === undefined) ? {} : { page, }),
+      },
+      PLACES[1] as (typeof PLACES)[number],
+    ],
+  },).renderings[0];
+}
+
+/**
+ One input of the review's finding about places located once before the apostrophe became no part of a span: an English
+ where the same words stand twice, once beside a single mark and once without, and what a judge quoting the first
+ stand copies.
+ */
+type RepeatedStand = {
+  /**
+   The English of the place.
+   */
+  readonly english: string;
+
+  /**
+   The quote with the mark beside the words, as a judge who copied it writes it.
+   */
+  readonly marked: string;
+
+  /**
+   The quote without the mark.
+   */
+  readonly bare: string;
+
+  /**
+   The rendering the counter gives when the ballots choose the stand with the mark.
+   */
+  readonly located: unknown;
+};
+
+/**
+ The five inputs of finding F6 of the review.
+ */
+const F6_INPUTS: readonly RepeatedStand[] = [
+  {
+    english: 'Fill the cats\' bowl. Then the cats nap.',
+    marked: 'the cats\'',
+    bare: 'the cats',
+    located: { kind: 'located', quote: 'the cats\'', core: 'the cats\'', start: 5, },
+  },
+  {
+    english: 'He was goin\' home, and goin there.',
+    marked: 'goin\'',
+    bare: 'goin',
+    located: { kind: 'located', quote: 'goin\'', core: 'goin\'', start: 7, },
+  },
+  {
+    english: '\'Tis the season. Tis the season.',
+    marked: '\'Tis',
+    bare: 'Tis',
+    located: { kind: 'located', quote: '\'Tis', core: '\'Tis', start: 0, },
+  },
+  {
+    english: 'The \'90s cats and the 90s cats.',
+    marked: '\'90s cats',
+    bare: '90s cats',
+    located: { kind: 'located', quote: '\'90s cats', core: '\'90s cats', start: 4, },
+  },
+  {
+    english: 'She said \'em all and em none.',
+    marked: '\'em',
+    bare: 'em',
+    located: { kind: 'located', quote: '\'em', core: '\'em', start: 9, },
+  },
+];
+
+/**
+ The rendering the counter gives the first place when some ballots copied the mark beside the words and the others did not.
+
+ @param input - the English and the two ways of quoting it
+
+ @param copying - how many ballots copied the mark
+
+ @param ballots - how many ballots there are, all usable
+
+ @param framed - whether the group is a frame with a slot
+
+ @returns The first place's rendering
+
+ @example
+ ```ts
+ const rendering = locatedBy({ input: F6_INPUTS[0], copying: 2, ballots: 3, framed: false, },);
+ ```
+ */
+function locatedBy(
+  {
+    input,
+    copying,
+    ballots,
+    framed,
+  }: {
+    readonly input: RepeatedStand;
+    readonly copying: number;
+    readonly ballots: number;
+    readonly framed: boolean;
+  },
+): unknown {
+  return countConsistency({
+    voices: Array.from({ length: ballots, },).map(function voiceFor(_none, at,): ConsistencyVoice {
+      return voiceOf({
+        seat: `seat-${String(at,)}`,
+        over: { quotes: [{ label: 'OCCURRENCE 1', quote: (at < copying) ? input.marked : input.bare, },], },
+      },);
+    },),
+    places: [
+      { label: 'OCCURRENCE 1', english: { kind: 'present', text: input.english, }, },
+      PLACES[1] as (typeof PLACES)[number],
+    ],
+    framed,
+    quorum: 2,
+  },).renderings[0];
 }
 
 await describe({
@@ -201,6 +376,364 @@ await describe({
               core: QUOTE_ONE,
               start: 0,
             },);
+          },
+        },),
+        it({
+          name: 'RECORDS THE SINGLE MARK THE ENGLISH HOLDS DIRECTLY BEFORE AND AFTER A LOCATED SPAN, as the English writes it, '
+            + 'the span itself covering it only where it is a proven apostrophe, and records none where none stands there or '
+            + 'only a double mark does',
+          fn: async () => {
+            const count = countOver({
+              voices: threeAlike({
+                over: {
+                  quotes: [
+                    { label: 'OCCURRENCE 1', quote: 'the cats\'', },
+                    { label: 'OCCURRENCE 2', quote: 'Tis the season', },
+                    { label: 'OCCURRENCE 3', quote: 'the cats', },
+                    { label: 'OCCURRENCE 4', quote: 'the cats', },
+                  ],
+                },
+              },),
+              places: [
+                { label: 'OCCURRENCE 1', english: { kind: 'present', text: 'Fill the cats’ bowl.', }, },
+                { label: 'OCCURRENCE 2', english: { kind: 'present', text: 'He said ‘Tis the season’ again.', }, },
+                { label: 'OCCURRENCE 3', english: { kind: 'present', text: 'Fill the cats bowl.', }, },
+                { label: 'OCCURRENCE 4', english: { kind: 'present', text: 'Fill "the cats" bowl.', }, },
+              ],
+            },);
+            expect(count.renderings,).toEqual([
+              { kind: 'located', quote: 'the cats’', core: 'the cats’', start: 5, },
+              { kind: 'located', quote: 'Tis the season', core: 'Tis the season', start: 9, markBefore: '‘', markAfter: '’', },
+              { kind: 'located', quote: 'the cats', core: 'the cats', start: 5, },
+              { kind: 'located', quote: 'the cats', core: 'the cats', start: 6, },
+            ],);
+          },
+        },),
+        it({
+          name: 'RECORDS THE SINGLE MARK PAST A RUN OF MARKUP OR CLOSING CHARACTERS AFTER A SPAN, AND PAST A RUN OF MARKUP OR '
+            + 'OPENING CHARACTERS BEFORE IT, apart from the mark directly beside, which it leaves as it was',
+          fn: async () => {
+            const count = countOver({
+              voices: threeAlike({
+                over: {
+                  quotes: [
+                    { label: 'OCCURRENCE 1', quote: 'the kittens', },
+                    { label: 'OCCURRENCE 2', quote: '5 cats', },
+                    { label: 'OCCURRENCE 3', quote: 'the cats', },
+                    { label: 'OCCURRENCE 4', quote: 'the pups', },
+                  ],
+                },
+              },),
+              places: [
+                { label: 'OCCURRENCE 1', english: { kind: 'present', text: 'Fill *the kittens*’ bowl.', }, },
+                { label: 'OCCURRENCE 2', english: { kind: 'present', text: 'He said \'*5 cats* now.', }, },
+                { label: 'OCCURRENCE 3', english: { kind: 'present', text: 'Fill the cats bowl.', }, },
+                { label: 'OCCURRENCE 4', english: { kind: 'present', text: 'Fill (“the pups”)’ bowl.', }, },
+              ],
+            },);
+            expect(count.renderings,).toEqual([
+              { kind: 'located', quote: 'the kittens', core: 'the kittens', start: 6, markPastAfter: '’', },
+              { kind: 'located', quote: '5 cats', core: '5 cats', start: 10, markPastBefore: '\'', },
+              { kind: 'located', quote: 'the cats', core: 'the cats', start: 5, },
+              { kind: 'located', quote: 'the pups', core: 'the pups', start: 7, markPastAfter: '’', },
+            ],);
+          },
+        },),
+        it({
+          name: 'RECORDS THE MARK PAST A LONE EMPHASIS CHARACTER TOO, on either side of a span: the refusal run stays wide (the ruling '
+            + 'on the J1 shapes), so a `*`, `_` or `~` the parse makes no delimiter is still a character of the run, and a gain '
+            + 'is refused beside the mark beyond it, whatever the mark reads as',
+          fn: async () => {
+            const count = countOver({
+              voices: threeAlike({
+                over: {
+                  quotes: [
+                    { label: 'OCCURRENCE 1', quote: '5 cats', },
+                    { label: 'OCCURRENCE 2', quote: 'the kittens', },
+                    { label: 'OCCURRENCE 3', quote: 'cats', },
+                    { label: 'OCCURRENCE 4', quote: 'tom', },
+                  ],
+                },
+              },),
+              places: [
+                { label: 'OCCURRENCE 1', english: { kind: 'present', text: 'He said \'*5 cats now.', }, },
+                { label: 'OCCURRENCE 2', english: { kind: 'present', text: 'Fill the kittens*’ bowl and *', }, },
+                { label: 'OCCURRENCE 3', english: { kind: 'present', text: 'He said 猫_cats_’ now.', }, },
+                { label: 'OCCURRENCE 4', english: { kind: 'present', text: 'He said \'*tom now. Then ‘go’.', }, },
+              ],
+            },);
+            expect(count.renderings,).toEqual([
+              { kind: 'located', quote: '5 cats', core: '5 cats', start: 10, markPastBefore: '\'', },
+              { kind: 'located', quote: 'the kittens', core: 'the kittens', start: 5, markPastAfter: '’', },
+              { kind: 'located', quote: 'cats', core: 'cats', start: 10, markPastAfter: '’', },
+              { kind: 'located', quote: 'tom', core: 'tom', start: 10, markPastBefore: '\'', },
+            ],);
+          },
+        },),
+        it({
+          name: 'RECORDS THE MARKS BESIDE A FRAME\'S SPAN TOO, beside its slot',
+          fn: async () => {
+            const count = countConsistency({
+              voices: threeAlike({
+                over: {
+                  quotes: [{ label: 'OCCURRENCE 1', quote: 'So this cat is a chubby little treasure', slot: 'chubby', },],
+                },
+              },),
+              places: [
+                {
+                  label: 'OCCURRENCE 1',
+                  english: { kind: 'present', text: 'He said ‘So this cat is a chubby little treasure’ again.', },
+                },
+                PLACES[1] as (typeof PLACES)[number],
+              ],
+              framed: true,
+              quorum: 2,
+            },);
+            expect(count.renderings[0],).toEqual({
+              kind: 'located',
+              quote: 'So this cat is a chubby little treasure',
+              core: 'So this cat is a chubby little treasure',
+              start: 9,
+              markBefore: '‘',
+              markAfter: '’',
+              slot: 'chubby',
+              slotStart: 17,
+            },);
+          },
+        },),
+        it({
+          name: 'LOCATES A REPEATED STAND BY THE MARK THE BALLOTS COPIED BESIDE IT when every ballot copied it, the five inputs '
+            + 'of the review, a plain group and a frame alike',
+          fn: async () => {
+            expect(F6_INPUTS.flatMap(function bothBranches(input,): readonly unknown[] {
+              return [false, true,].map(function branchOf(framed,): unknown {
+                return locatedBy({ input, copying: 3, ballots: 3, framed, },);
+              },);
+            },),).toEqual(F6_INPUTS.flatMap(function located(input,): readonly unknown[] {
+              return [false, true,].map(function branchOf(): unknown {
+                return input.located;
+              },);
+            },),);
+          },
+        },),
+        it({
+          name: 'LOCATES A REPEATED STAND WHEN TWO OF THREE BALLOTS COPIED THE MARK BESIDE IT, the one that copied none being '
+            + 'no evidence against it',
+          fn: async () => {
+            expect(F6_INPUTS.flatMap(function bothBranches(input,): readonly unknown[] {
+              return [false, true,].map(function branchOf(framed,): unknown {
+                return locatedBy({ input, copying: 2, ballots: 3, framed, },);
+              },);
+            },),).toEqual(F6_INPUTS.flatMap(function located(input,): readonly unknown[] {
+              return [false, true,].map(function branchOf(): unknown {
+                return input.located;
+              },);
+            },),);
+          },
+        },),
+        it({
+          name: 'LEAVES A REPEATED STAND AMBIGUOUS WHEN ONE OF THREE BALLOTS COPIED THE MARK BESIDE IT, or none did',
+          fn: async () => {
+            /**
+             The rendering a place that stands twice is left with.
+             */
+            const ambiguous = { kind: 'unlocated', reason: 'ambiguous', };
+            expect(F6_INPUTS.flatMap(function bothBranches(input,): readonly unknown[] {
+              return [false, true,].flatMap(function branchOf(framed,): readonly unknown[] {
+                return [
+                  locatedBy({ input, copying: 1, ballots: 3, framed, },),
+                  locatedBy({ input, copying: 0, ballots: 3, framed, },),
+                ];
+              },);
+            },),).toEqual(F6_INPUTS.flatMap(function unlocated(): readonly unknown[] {
+              return [ambiguous, ambiguous, ambiguous, ambiguous,];
+            },),);
+          },
+        },),
+        it({
+          name: 'COUNTS THE MARK AMONG THE USABLE BALLOTS AND NOT AMONG THE ONES THAT AGREED ON THE WORDS: three of five agreed '
+            + 'and all three copied it, so it holds; three of five agreed and two copied it, so it does not',
+          fn: async () => {
+            const english: ConsistencyEnglish = { kind: 'present', text: 'Fill the cats\' bowl. Then the cats nap.', };
+            /**
+             The rendering of the place when the ballots quote it as given, two other ballots quoting something else.
+
+             @param quotes - quotes of the three ballots that agree on the words
+
+             @returns The rendering
+             */
+            function renderingOf({ quotes, }: { readonly quotes: readonly string[]; },): unknown {
+              return countOver({
+                voices: ballotsQuoting({ quotes: [...quotes, 'the dogs', 'the dogs',], },),
+                places: [{ label: 'OCCURRENCE 1', english, }, PLACES[1] as (typeof PLACES)[number],],
+              },).renderings[0];
+            }
+            expect([
+              renderingOf({ quotes: ['the cats\'', 'the cats\'', 'the cats\'',], },),
+              renderingOf({ quotes: ['the cats\'', 'the cats\'', 'the cats',], },),
+            ],).toEqual([
+              { kind: 'located', quote: 'the cats\'', core: 'the cats\'', start: 5, },
+              { kind: 'unlocated', reason: 'ambiguous', },
+            ],);
+          },
+        },),
+        it({
+          name: 'COUNTS EACH SIDE APART, and never takes the mark into the span: two ballots that copied the mark before the '
+            + 'words and one that copied the mark after them choose by the mark before',
+          fn: async () => {
+            const english: ConsistencyEnglish = { kind: 'present', text: 'Fill ‘the cats bowl. Then the cats’ nap.', };
+            const count = countOver({
+              voices: ballotsQuoting({ quotes: ['‘the cats', '‘the cats', 'the cats’',], },),
+              places: [{ label: 'OCCURRENCE 1', english, }, PLACES[1] as (typeof PLACES)[number],],
+            },);
+            expect(count.renderings[0],).toEqual({ kind: 'located', quote: 'the cats', core: 'the cats', start: 6, markBefore: '‘', },);
+          },
+        },),
+        it({
+          name: 'TAKES A PROVEN APOSTROPHE INTO THE SPAN AND RECORDS NO MARK BESIDE IT, whether or not any judge copied it: '
+            + 'a plural possessive at the end of the words and a dropped letter at the start of them',
+          fn: async () => {
+            expect([
+              firstRenderingOf({ english: 'Fill the parents’ bowl.', quote: 'the parents', },),
+              firstRenderingOf({ english: 'Fill the parents’ bowl.', quote: 'the parents’', },),
+              firstRenderingOf({ english: 'Guard her ’round the cats.', quote: 'round the', },),
+              firstRenderingOf({ english: 'Guard her ’round the cats.', quote: '’round the', },),
+            ],).toEqual([
+              { kind: 'located', quote: 'the parents’', core: 'the parents’', start: 5, },
+              { kind: 'located', quote: 'the parents’', core: 'the parents’', start: 5, },
+              { kind: 'located', quote: '’round the', core: '’round the', start: 10, },
+              { kind: 'located', quote: '’round the', core: '’round the', start: 10, },
+            ],);
+          },
+        },),
+        it({
+          name: 'PROVES AN APOSTROPHE OVER THE PAGE A PLACE BELONGS TO: a closing mark whose opener stands in an earlier slice '
+            + 'is kept outside the span and recorded beside it, and the same place on a page with no opener takes it into '
+            + 'the span',
+          fn: async () => {
+            /**
+             The English of the place, the second slice of its page.
+             */
+            const english = 'Then feed the kittens’.';
+            expect([
+              firstRenderingOf({
+                english,
+                quote: 'the kittens',
+                page: { text: `‘Fill the bowls.\n\n${english}`, offset: 18, },
+              },),
+              firstRenderingOf({
+                english,
+                quote: 'the kittens',
+                page: { text: `Fill the bowls.\n\n${english}`, offset: 17, },
+              },),
+              firstRenderingOf({ english, quote: 'the kittens', },),
+            ],).toEqual([
+              { kind: 'located', quote: 'the kittens', core: 'the kittens', start: 10, markAfter: '’', },
+              { kind: 'located', quote: 'the kittens’', core: 'the kittens’', start: 10, },
+              { kind: 'located', quote: 'the kittens’', core: 'the kittens’', start: 10, },
+            ],);
+          },
+        },),
+        it({
+          name: 'KEEPS A MARK WITH A POSSIBLE PARTNER OUTSIDE THE SPAN AND RECORDS IT: the closing mark of a quotation of one '
+            + 'word, and a mark beside words that follow an opener in the same paragraph',
+          fn: async () => {
+            expect([
+              firstRenderingOf({ english: '‘Mio’ is here.', quote: 'Mio', },),
+              firstRenderingOf({ english: 'Guard her ’round the cats’ bowl.', quote: 'round the', },),
+              firstRenderingOf({ english: 'She said ‘look at the parents’ bowl’ twice.', quote: 'the parents', },),
+            ],).toEqual([
+              { kind: 'located', quote: 'Mio', core: 'Mio', start: 1, markBefore: '‘', markAfter: '’', },
+              { kind: 'located', quote: 'round the', core: 'round the', start: 11, markBefore: '’', },
+              { kind: 'located', quote: 'the parents', core: 'the parents', start: 18, markAfter: '’', },
+            ],);
+          },
+        },),
+        it({
+          name: 'LETS THE MARK EVIDENCE READ THE ENGLISH AS BEFORE WHERE A STAND HOLDS A PROVEN APOSTROPHE AND ANOTHER STAND OF '
+            + 'THE SAME WORDS HOLDS NONE: no evidence leaves them ambiguous, evidence of a mark after the words chooses the '
+            + 'stand with the apostrophe, and the span is widened only once the stand is chosen',
+          fn: async () => {
+            const english: ConsistencyEnglish = { kind: 'present', text: 'Fill the parents’ bowl. Then the parents nap.', };
+            const both: ConsistencyEnglish = { kind: 'present', text: 'Fill the parents’ bowl. Then the parents’ nap.', };
+            /**
+             The first place's rendering when every ballot quotes it as given, in an English.
+             */
+            function renderingOf({ text, quote, }: { readonly text: ConsistencyEnglish; readonly quote: string; },): unknown {
+              return countOver({
+                voices: ballotsQuoting({ quotes: [quote, quote, quote,], },),
+                places: [{ label: 'OCCURRENCE 1', english: text, }, PLACES[1] as (typeof PLACES)[number],],
+              },).renderings[0];
+            }
+            expect([
+              renderingOf({ text: english, quote: 'the parents', },),
+              renderingOf({ text: english, quote: 'the parents’', },),
+              renderingOf({ text: both, quote: 'the parents’', },),
+            ],).toEqual([
+              { kind: 'unlocated', reason: 'ambiguous', },
+              { kind: 'located', quote: 'the parents’', core: 'the parents’', start: 5, },
+              { kind: 'unlocated', reason: 'ambiguous', },
+            ],);
+          },
+        },),
+        it({
+          name: 'LEAVES A STAND AMBIGUOUS WHEN THE MARK THE BALLOTS COPIED STANDS BESIDE BOTH, and a stand that stands once '
+            + 'is located whatever the ballots copied',
+          fn: async () => {
+            const both = countOver({
+              voices: threeAlike({ over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'the cats\'', },], }, },),
+              places: [
+                { label: 'OCCURRENCE 1', english: { kind: 'present', text: 'Fill the cats\' bowl. Then the cats\' nap.', }, },
+                PLACES[1] as (typeof PLACES)[number],
+              ],
+            },);
+            const once = countOver({
+              voices: threeAlike({ over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'the cats\'', },], }, },),
+              places: [
+                { label: 'OCCURRENCE 1', english: { kind: 'present', text: 'Fill the cats bowl.', }, },
+                PLACES[1] as (typeof PLACES)[number],
+              ],
+            },);
+            expect([both.renderings[0], once.renderings[0],],).toEqual([
+              { kind: 'unlocated', reason: 'ambiguous', },
+              { kind: 'located', quote: 'the cats', core: 'the cats', start: 5, },
+            ],);
+          },
+        },),
+        it({
+          name: 'LEAVES A PLACE UNLOCATED WHEN ITS WORDS START OR END BESIDE AN APOSTROPHE THAT A DIGIT OR A LETTER JOINS TO '
+            + 'A DIGIT, so a replacement cannot strand the mark between them, and locates the same words where a space stands there',
+          fn: async () => {
+            /**
+             The first place's rendering when every ballot quotes the words in the English.
+
+             @param text - the English of the place
+
+             @param quote - what every ballot quotes
+
+             @returns The rendering
+             */
+            function renderingFor({ text, quote, }: { readonly text: string; readonly quote: string; },): unknown {
+              return countOver({
+                voices: threeAlike({ over: { quotes: [{ label: 'OCCURRENCE 1', quote, },], }, },),
+                places: [{ label: 'OCCURRENCE 1', english: { kind: 'present', text, }, }, PLACES[1] as (typeof PLACES)[number],],
+              },).renderings[0];
+            }
+            expect([
+              renderingFor({ text: 'He said 5\'2 tall.', quote: '2 tall', },),
+              renderingFor({ text: 'He said 5’2 tall.', quote: '2 tall', },),
+              renderingFor({ text: 'The cat\'5 naps.', quote: '5 naps', },),
+              renderingFor({ text: 'In mid\'90s she napped.', quote: '90s', },),
+              renderingFor({ text: 'He said 5 2 tall.', quote: '2 tall', },),
+              renderingFor({ text: 'The \'90s cats napped.', quote: '90s cats', },),
+            ],).toEqual([
+              { kind: 'unlocated', reason: 'not-found', },
+              { kind: 'unlocated', reason: 'not-found', },
+              { kind: 'unlocated', reason: 'not-found', },
+              { kind: 'unlocated', reason: 'not-found', },
+              { kind: 'located', quote: '2 tall', core: '2 tall', start: 10, },
+              { kind: 'located', quote: '\'90s cats', core: '\'90s cats', start: 4, },
+            ],);
           },
         },),
         it({
@@ -573,6 +1106,161 @@ await describe({
               ],
             },);
             expect(count.renderings[0],).toEqual({ kind: 'unlocated', reason: 'not-found', },);
+          },
+        },),
+        it({
+          name: 'READS THE BALLOTS AND THE PLACES OF A GROUP A BOUNDED NUMBER OF TIMES FOR EACH PLACE, however many places the '
+            + 'group holds: the quotes and the kept places of three ballots and the places themselves are read a few times for '
+            + 'each place and never once for each pair of places',
+          fn: async () => {
+            /**
+             The places of the group, each in a slice of its own.
+             */
+            const size = 600;
+            /**
+             The count of reads of every list the count takes, shared.
+             */
+            const reads = { count: 0, };
+            /**
+             The labels of the places.
+             */
+            const labels = Array.from(
+              { length: size, },
+              function labelOf(_, position,): string {
+                return `OCCURRENCE ${String(position + 1,)}`;
+              },
+            );
+            /**
+             Three ballots alike, each quoting every place and keeping every place.
+             */
+            const voices = ['a', 'b', 'c',].map(function voiceBy(seat,): ConsistencyVoice {
+              return voiceOf({
+                seat,
+                over: {
+                  quotes: countedList({
+                    items: labels.map(function quoteOf(label,): ConsistencyVoice['quotes'][number] {
+                      return { label, quote: 'the kitten bowl', };
+                    },),
+                    reads,
+                  },),
+                  keep: countedList({ items: labels, reads, },),
+                },
+              },);
+            },);
+            const count = countConsistency({
+              voices,
+              places: countedList({
+                items: labels.map(function placeOf(
+                  label,
+                  position,
+                ): {
+                  readonly label: string;
+                  readonly english: ConsistencyEnglish;
+                  readonly sliceIndex: number;
+                } {
+                  return {
+                    label,
+                    english: { kind: 'present', text: `Fill the kitten bowl ${String(position,)}.`, },
+                    sliceIndex: position,
+                  };
+                },),
+                reads,
+              },),
+              framed: false,
+              quorum: 2,
+            },);
+            expect([
+              count.renderings.filter(function isLocated({ kind, },): boolean {
+                return kind === 'located';
+              },).length,
+              count.kept.every(Boolean,),
+              reads.count < (100 * size),
+            ],).toEqual([size, true, true,],);
+          },
+        },),
+        it({
+          name: 'LEAVES UNLOCATED EXACTLY THE PLACES WHOSE WORDS OVERLAP ANOTHER PLACE OF THEIR SLICE, over every three ranges of '
+            + 'words of one English, in any order, whatever the ranges share',
+          fn: async () => {
+            /**
+             The words of the English, each standing once.
+             */
+            const words = ['one', 'two', 'three', 'four', 'five', 'six',];
+            /**
+             The English of every place.
+             */
+            const english: ConsistencyEnglish = { kind: 'present', text: words.join(' ',), };
+            /**
+             Every range of whole words, as its first and last word.
+             */
+            const ranges = words.flatMap(function rangesFrom(
+              _first,
+              first,
+            ): readonly (readonly [number, number])[] {
+              return words.slice(first,)
+                .map(function rangeTo(
+                  _last,
+                  length,
+                ): readonly [number, number] {
+                  return [first, first + length,];
+                },);
+            },);
+            /**
+             What each triple of ranges comes to: the places the count leaves unlocated against the places that share a word.
+             */
+            const outcomes = ranges.flatMap(function triplesFrom(first,): readonly (readonly [readonly boolean[], readonly boolean[]])[] {
+              return ranges.flatMap(function triplesWith(second,): readonly (readonly [readonly boolean[], readonly boolean[]])[] {
+                return ranges.map(function triple(third,): readonly [readonly boolean[], readonly boolean[]] {
+                  /**
+                   The three ranges, one for each place.
+                   */
+                  const chosen = [first, second, third,];
+                  const count = countConsistency({
+                    voices: threeAlike({
+                      over: {
+                        quotes: chosen.map(function quoteOf(
+                          [from, to,],
+                          position,
+                        ): ConsistencyVoice['quotes'][number] {
+                          return { label: `OCCURRENCE ${String(position + 1,)}`, quote: words.slice(from, to + 1,).join(' ',), };
+                        },),
+                        choice: 'OCCURRENCE 1',
+                      },
+                    },),
+                    places: chosen.map(function placeOf(_range, position,): {
+                      readonly label: string;
+                      readonly english: ConsistencyEnglish;
+                      readonly sliceIndex: number;
+                    } {
+                      return { label: `OCCURRENCE ${String(position + 1,)}`, english, sliceIndex: 0, };
+                    },),
+                    framed: false,
+                    quorum: 2,
+                  },);
+                  return [
+                    count.renderings.map(function isUnlocated({ kind, },): boolean {
+                      return kind === 'unlocated';
+                    },),
+                    chosen.map(function sharesAWord(
+                      [from, to,],
+                      position,
+                    ): boolean {
+                      return chosen.some(function overlapsIt(
+                        [otherFrom, otherTo,],
+                        other,
+                      ): boolean {
+                        return (other !== position) && (from <= otherTo) && (otherFrom <= to);
+                      },);
+                    },),
+                  ];
+                },);
+              },);
+            },);
+            expect(outcomes.every(function agrees([left, right,],): boolean {
+              return left.every(function sameAt(unlocated, position,): boolean {
+                return unlocated === right[position];
+              },);
+            },),).toBe(true,);
           },
         },),
         it({

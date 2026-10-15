@@ -125,9 +125,9 @@ await describe({
         + 'apostrophe',
       fn: async () => {
         expect(restoreFromRegion({
-          replacement: "'Tis the season, said the cat.",
+          replacement: "'Nap time, said the cat.",
           replaced: `The cat${APOSTROPHE}s season.`,
-        },),).toBe("'Tis the season, said the cat.",);
+        },),).toBe("'Nap time, said the cat.",);
       },
     },),
 
@@ -398,6 +398,239 @@ await describe({
           replaced: 'Well, no.',
           convention: 'She waited\u{2026} and waited\u{2026}',
         },),).toBe('Well\u{2026} no.... never',);
+      },
+    },),
+
+    it({
+      name: 'CURLS A LEADING ELISION TO THE CLOSING MARK, the apostrophe, never to an opening quotation mark, WHEN NO LATER STRAIGHT '
+        + 'MARK CLOSES IT: `\'tis`, `\'twas`, `\'til`, `\'em`, `\'cause`, `\'round`, a decade like `\'90s`, and the `\'n\'` of '
+        + '`rock \'n\' roll`, which never opens a quotation, even with a trailing apostrophe after it',
+      fn: async () => {
+        const convention = `Every other line here reads didn${APOSTROPHE}t.`;
+        /**
+         The replacement as the restoration writes it on a curly page.
+         */
+        function curled(replacement: string,): string {
+          return restoreTypography({ replacement, replaced: '', convention, },);
+        }
+        expect([
+          curled("It was 'tis fine.",),
+          curled("'Twas the night of the cat dinner.",),
+          curled("Wait 'til dinner.",),
+          curled("Give 'em all a bowl.",),
+          curled("Do it 'cause I said so.",),
+          curled("Walk 'round the bowl.",),
+          curled("Rock 'n' roll for the cats' bowl.",),
+          curled("Back in the '90s there was a cat.",),
+          curled("Rock 'n' roll.",),
+          curled("The '60s and the '80s.",),
+          curled("'Tis 'Em 'Round 'cause",),
+        ],).toEqual([
+          'It was ’tis fine.',
+          '’Twas the night of the cat dinner.',
+          'Wait ’til dinner.',
+          'Give ’em all a bowl.',
+          'Do it ’cause I said so.',
+          'Walk ’round the bowl.',
+          'Rock ’n’ roll for the cats’ bowl.',
+          'Back in the ’90s there was a cat.',
+          'Rock ’n’ roll.',
+          'The ’60s and the ’80s.',
+          '’Tis ’Em ’Round ’cause',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'CURLS A QUOTATION THAT BEGINS WITH A LISTED ELISION WORD AS A QUOTATION, the opening mark to the opening single mark and '
+        + 'the closing mark to the closing one, since a later straight mark that closes the leading mark makes it the opening of '
+        + 'a pair: `\'Tis the season,\' she said`, an ordinary quotation like `\'Round things are best\'`, a decade like '
+        + '`\'90s kids\'`, and a possessive apostrophe after it, which closes it as it closes any opening mark',
+      fn: async () => {
+        const convention = `Every other line here reads didn${APOSTROPHE}t.`;
+        /**
+         The replacement as the restoration writes it on a curly page.
+         */
+        function curled(replacement: string,): string {
+          return restoreTypography({ replacement, replaced: '', convention, },);
+        }
+        expect([
+          curled("'Tis the season,' she said",),
+          curled("She said 'Tis the season,' and left.",),
+          curled("'Em and me,' they said",),
+          curled("'Round and round,' went the song.",),
+          curled("'90s kids,' he said",),
+          curled("He said '90s kids' twice.",),
+          curled("'Til the end,' she said",),
+          curled("'Twas the night,' he read.",),
+          curled("'Cause I said so,' she said.",),
+          curled("'Em and me' they said",),
+          curled("She said 'Round things are best' and left.",),
+          curled("'Tis the season, 'Em and me, and 'Round we go.'",),
+          curled("It was 'tis the cats' bowl.",),
+          curled("In the '90s the cats' bowl was full.",),
+        ],).toEqual([
+          '‘Tis the season,’ she said',
+          'She said ‘Tis the season,’ and left.',
+          '‘Em and me,’ they said',
+          '‘Round and round,’ went the song.',
+          '‘90s kids,’ he said',
+          'He said ‘90s kids’ twice.',
+          '‘Til the end,’ she said',
+          '‘Twas the night,’ he read.',
+          '‘Cause I said so,’ she said.',
+          '‘Em and me’ they said',
+          'She said ‘Round things are best’ and left.',
+          '‘Tis the season, ’Em and me, and ’Round we go.’',
+          'It was ‘tis the cats’ bowl.',
+          'In the ‘90s the cats’ bowl was full.',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'NEVER LETS A LISTED ELISION TAKE THE PLACE OF THE OPENING MARK THAT IS WAITING FOR ITS CLOSING MARK, so an elision inside '
+        + 'or at the end of a quotation (`\'give \'em hell\'`, `\'sit \'round\'`, `\'wait \'til\'`, `\'the \'90s were fun\'`) curls to '
+        + 'the apostrophe, the quotation keeps its own opening mark, a quoted number (`\'90s\'`) pairs its own marks, and a '
+        + 'straight page is left alone',
+      fn: async () => {
+        const convention = `Every other line here reads didn${APOSTROPHE}t.`;
+        /**
+         The replacement as the restoration writes it on a curly page.
+         */
+        function curled(replacement: string,): string {
+          return restoreTypography({ replacement, replaced: '', convention, },);
+        }
+        /**
+         The replacement as the restoration writes it on a straight page.
+         */
+        function straight(replacement: string,): string {
+          return restoreTypography({ replacement, replaced: '', convention: "Every other line here reads didn't.", },);
+        }
+        expect([
+          curled("He said 'give 'em hell' to us.",),
+          curled("She said 'sit 'round' and 'wait 'til' dawn.",),
+          curled("He said 'give them 'em' and left.",),
+          curled("He said 'it was great 'cause cats' and left.",),
+          curled("He said 'the '90s' and left.",),
+          curled("'Give 'em hell,' she said.",),
+          curled("“She said 'give 'em hell' to us.”",),
+          curled("He said 'it was 'twas' and left.",),
+          curled("They said 'the '90s were fun' and left.",),
+          straight("He said 'give 'em hell' to us.",),
+          straight("She said 'sit 'round' and 'wait 'til' dawn.",),
+        ],).toEqual([
+          'He said ‘give ’em hell’ to us.',
+          'She said ‘sit ’round’ and ‘wait ’til’ dawn.',
+          'He said ‘give them ’em’ and left.',
+          'He said ‘it was great ’cause cats’ and left.',
+          // `'90s'` is a quoted number (n156, W7): its two marks pair, and the `'the` before it has no closing mark left.
+          "He said 'the ‘90s’ and left.",
+          '‘Give ’em hell,’ she said.',
+          '“She said ‘give ’em hell’ to us.”',
+          'He said ‘it was ’twas’ and left.',
+          'They said ‘the ’90s were fun’ and left.',
+          "He said 'give 'em hell' to us.",
+          "She said 'sit 'round' and 'wait 'til' dawn.",
+        ],);
+      },
+    },),
+
+    it({
+      name: 'READS THE `\'n\'` OF `rock \'n\' roll` AS ONE UNIT WHOSE MARKS NEVER OPEN OR CLOSE A QUOTATION, so a quotation around it '
+        + 'pairs its own marks and both marks of the unit curl to the apostrophe',
+      fn: async () => {
+        const convention = `Every other line here reads didn${APOSTROPHE}t.`;
+        /**
+         The replacement as the restoration writes it on a curly page.
+         */
+        function curled(replacement: string,): string {
+          return restoreTypography({ replacement, replaced: '', convention, },);
+        }
+        expect([
+          curled("'Rock 'n' roll,' she said.",),
+          curled("She said 'rock 'n' roll rules' and left.",),
+          curled("She said 'fish 'n' chips are good' to us.",),
+          curled("She said 'rock 'n' roll' and left.",),
+          curled("Rock 'n' roll and fish 'n' chips.",),
+          curled("'Rock 'N' roll,' she said.",),
+          curled("'Rock 'n' roll,' she said. Then 'hi",),
+          curled("She said 'rock 'n' roll rules' and left. Then 'hi",),
+        ],).toEqual([
+          '‘Rock ’n’ roll,’ she said.',
+          'She said ‘rock ’n’ roll rules’ and left.',
+          'She said ‘fish ’n’ chips are good’ to us.',
+          'She said ‘rock ’n’ roll’ and left.',
+          'Rock ’n’ roll and fish ’n’ chips.',
+          '‘Rock ’N’ roll,’ she said.',
+          '‘Rock ’n’ roll,’ she said. Then \'hi',
+          'She said ‘rock ’n’ roll rules’ and left. Then \'hi',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'CURLS A STRAIGHT SINGLE MARK LEFT UNPAIRED IN CLOSING SHAPE TO THE APOSTROPHE, after a letter, a digit or punctuation, the '
+        + 'one glyph of a closing mark and an apostrophe, where no unpaired opening mark could be its partner, and leaves a '
+        + 'straight page alone',
+      fn: async () => {
+        const convention = `Every other line here reads didn${APOSTROPHE}t.`;
+        /**
+         The replacement as the restoration writes it on a curly page.
+         */
+        function curled(replacement: string,): string {
+          return restoreTypography({ replacement, replaced: '', convention, },);
+        }
+        expect([
+          curled("She said 'tis the dogs' and the cats' bowls,' and left.",),
+          curled("The cats' bowls,' she said.",),
+          curled("Both cats' bowls?' she asked.",),
+          curled("In the 90s' bowls.",),
+          curled("She said 'hi' and the cats' bowls.",),
+          restoreTypography({
+            replacement: "She said 'tis the dogs' and the cats' bowls,' and left.",
+            replaced: '',
+            convention: "Every other line here reads didn't.",
+          },),
+        ],).toEqual([
+          'She said ‘tis the dogs’ and the cats’ bowls,’ and left.',
+          'The cats’ bowls,’ she said.',
+          'Both cats’ bowls?’ she asked.',
+          'In the 90s’ bowls.',
+          'She said ‘hi’ and the cats’ bowls.',
+          "She said 'tis the dogs' and the cats' bowls,' and left.",
+        ],);
+      },
+    },),
+
+    it({
+      name: 'STILL CURLS ANY OTHER LEADING MARK THAT PAIRS WITH A CLOSING ONE TO AN OPENING QUOTATION MARK, a word that only begins '
+        + 'like an elision (`\'tisane\'`, `\'emperor\'`, `\'rounders\'`, `\'1990s\'`) included, and leaves a straight page alone',
+      fn: async () => {
+        const convention = `Every other line here reads didn${APOSTROPHE}t.`;
+        /**
+         The replacement as the restoration writes it on a curly page.
+         */
+        function curled(replacement: string,): string {
+          return restoreTypography({ replacement, replaced: '', convention, },);
+        }
+        expect([
+          curled("She said 'Mio' now.",),
+          curled("She drank 'tisane' now.",),
+          curled("She said 'emperor' now.",),
+          curled("She said 'rounders' now.",),
+          curled("She said '1990s' now.",),
+          curled("She said 'Mio' and the cats' bowl was full.",),
+          restoreTypography({ replacement: "It was 'tis fine.", replaced: '', convention: "Every other line here reads didn't.", },),
+        ],).toEqual([
+          'She said ‘Mio’ now.',
+          'She drank ‘tisane’ now.',
+          'She said ‘emperor’ now.',
+          'She said ‘rounders’ now.',
+          'She said ‘1990s’ now.',
+          'She said ‘Mio’ and the cats’ bowl was full.',
+          "It was 'tis fine.",
+        ],);
       },
     },),
 

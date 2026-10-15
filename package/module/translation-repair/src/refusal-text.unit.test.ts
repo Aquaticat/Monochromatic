@@ -139,6 +139,28 @@ await describe({
               .toBe('refused by a thrown value that is not an Error',);
           },
         },),
+        it({
+          name: 'SAYS IN PLAIN WORDS THAT THE ENGINE RAN OUT OF CALL STACK, since the class name alone does not tell a '
+            + 'reader what ran out',
+          fn: async () => {
+            /**
+             What the engine raises where a runaway recursion exhausts its stack.
+             */
+            const exhaustion = new RangeError('Maximum call stack size exceeded',);
+
+            expect(refusalText({ error: exhaustion, },),).toBe('refused because the engine ran out of call stack space',);
+          },
+        },),
+        it({
+          name: 'KEEPS NAMING ANOTHER RangeError BY ITS CLASS, and a stack exhaustion message on another class too, so '
+            + 'only the engine\'s own exhaustion is described as one',
+          fn: async () => {
+            expect([
+              refusalText({ error: new RangeError('Invalid array length',), },),
+              refusalText({ error: new Error('Maximum call stack size exceeded',), },),
+            ],).toEqual(['refused by RangeError', 'refused by Error',],);
+          },
+        },),
       ],
     },),
 

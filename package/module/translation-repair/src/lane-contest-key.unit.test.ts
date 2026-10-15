@@ -95,7 +95,9 @@ await describe({
         // for every roster seat. Version 5 floors complete-form contributor
         // authority. Roster identity is explicit key material. Version 6
         // (2026-09-28, ledger M28) re-keys every ballot cast under version 5.
-        expect(key,).toBe('22b200076781a68d442ca0cbb44402d054cd064d156adb7309ddca729af45afb',);
+        // Version 7 (2026-10-15) re-keys every ballot cast before the
+        // eligibility validator read prose guillemets from the page parse.
+        expect(key,).toBe('1c5863aca8278d626c3772d675c41607e9fb1fe93a674dfbfd74394bc7b27096',);
       },
     },),
     it({

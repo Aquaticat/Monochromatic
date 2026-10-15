@@ -20,7 +20,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseConsistencyOccurrence, } from '../../dist/final/node/index.mjs';
+import {
+  keptReasonExpected,
+  parseConsistencyOccurrence,
+} from '../../dist/final/node/index.mjs';
 import { refusalTextOf, } from './consistency-refusal.test-fixture.ts';
 
 /**
@@ -101,6 +104,21 @@ const OUTCOMES = [
 ];
 
 /**
+ Every reason the pass leaves a place as it was for, in the order the refusal lists them: a gain left out on the final page
+ with the reason it was left out for, and a splice refused at the edge of the span.
+ */
+const KEPT_REASONS = [
+  'gain-pairs',
+  'gain-unproves',
+  'gain-floors',
+  'gain-overlaps',
+  'gain-refused',
+  'edge-second-mark',
+  'edge-reading-changes',
+  'edge-reference-mark',
+];
+
+/**
  Every outcome a place of generation fifteen can have, which has no carry to end in `kept-current`.
  */
 const OUTCOMES_OF_FIFTEEN = OUTCOMES.filter(function notKeptCurrent(outcome,): boolean {
@@ -143,7 +161,7 @@ function placeRead(
     generation = 15,
   }: {
     readonly value: unknown;
-    readonly generation?: 15 | 16;
+    readonly generation?: 15 | 16 | 17;
   },
 ): unknown {
   return parseConsistencyOccurrence({
@@ -173,7 +191,7 @@ function placeRefusal(
     generation = 15,
   }: {
     readonly value: unknown;
-    readonly generation?: 15 | 16;
+    readonly generation?: 15 | 16 | 17;
   },
 ): string {
   return refusalTextOf({
@@ -274,6 +292,214 @@ await describe({
               return 'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.reason: expected a reason '
                 + 'generation sixteen gives, which locates a place on its quote and not its slot.';
             },),);
+          },
+        },),
+        it({
+          name: 'READS A PLACE OF GENERATION SEVENTEEN FOR EACH OUTCOME, an overlapped place with the place it gave way to',
+          fn: async () => {
+            /**
+             The place an overlapped place gave way to.
+             */
+            const gaveWayTo = { group: 1, label: 'OCCURRENCE 2', };
+            /**
+             Each outcome's place, written as generation seventeen writes it.
+             */
+            const written = OUTCOMES.map(function writtenFor(outcome,): unknown {
+              return (outcome === 'overlapped')
+                ? { ...LOCATED_BY_SPAN, outcome, gaveWayTo, }
+                : { ...LOCATED_BY_SPAN, outcome, };
+            },);
+            expect(written.map(function read(value,): unknown {
+              return placeRead({ value, generation: 17, },);
+            },),).toEqual(written,);
+          },
+        },),
+        it({
+          name: 'READS A LOCATED PLACE OF GENERATION SEVENTEEN THAT RECORDS THE SINGLE MARKS BESIDE ITS WORDS, one, both or '
+            + 'neither, whichever of the four single marks they are, with and without a slot',
+          fn: async () => {
+            /**
+             A located place of generation seventeen with the fields of its rendering added.
+             */
+            function withRendering({ over, }: { readonly over: Record<string, unknown>; },): unknown {
+              return { ...LOCATED_BY_SPAN, rendering: { ...LOCATED_BY_SPAN.rendering, ...over, }, };
+            }
+            const written = [
+              withRendering({ over: { markBefore: '‘', markAfter: '’', }, },),
+              withRendering({ over: { markBefore: '\'', }, },),
+              withRendering({ over: { markAfter: '\u{02BC}', }, },),
+              withRendering({ over: {}, },),
+              {
+                ...FRAMED_BY_SPAN,
+                rendering: { ...FRAMED_BY_SPAN.rendering, markAfter: '\'', },
+              },
+            ];
+            expect(written.map(function read(value,): unknown {
+              return placeRead({ value, generation: 17, },);
+            },),).toEqual(written,);
+          },
+        },),
+        it({
+          name: 'REFUSES A MARK BESIDE THE WORDS THAT IS NOT ONE SINGLE MARK in generation seventeen: empty, two marks, a '
+            + 'double quotation mark, a letter, and a value that is not text',
+          fn: async () => {
+            /**
+             The refusal for a rendering of generation seventeen holding one value under one mark key.
+             */
+            function refusalFor({ key, value, }: { readonly key: string; readonly value: unknown; },): string {
+              return placeRefusal({
+                value: { ...LOCATED_BY_SPAN, rendering: { ...LOCATED_BY_SPAN.rendering, [key]: value, }, },
+                generation: 17,
+              },);
+            }
+            const reason = 'expected one single mark, an apostrophe or a single quotation mark.';
+            expect([
+              refusalFor({ key: 'markBefore', value: '', },),
+              refusalFor({ key: 'markBefore', value: '\'\'', },),
+              refusalFor({ key: 'markAfter', value: '"', },),
+              refusalFor({ key: 'markAfter', value: 'x', },),
+              refusalFor({ key: 'markAfter', value: 4, },),
+            ],).toEqual([
+              `ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.markBefore: ${reason}`,
+              `ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.markBefore: ${reason}`,
+              `ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.markAfter: ${reason}`,
+              `ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.markAfter: ${reason}`,
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.markAfter: expected a string.',
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES THE MARKS BESIDE THE WORDS IN GENERATIONS FIFTEEN AND SIXTEEN, which recorded none',
+          fn: async () => {
+            expect([
+              placeRefusal({
+                value: { ...LOCATED, rendering: { ...LOCATED.rendering, markBefore: '\'', }, },
+                generation: 15,
+              },),
+              placeRefusal({
+                value: { ...LOCATED_BY_SPAN, rendering: { ...LOCATED_BY_SPAN.rendering, markAfter: '\'', }, },
+                generation: 16,
+              },),
+            ],).toEqual([
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.markBefore: '
+              + 'expected no key here beyond kind, quote, slot.',
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.markAfter: '
+              + 'expected no key here beyond kind, quote, start, slot.',
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES AN OVERLAPPED PLACE OF GENERATION SEVENTEEN THAT NAMES NO PLACE IT GAVE WAY TO, a place of another outcome '
+            + 'that names one, and the place in generations that record none',
+          fn: async () => {
+            const gaveWayTo = { group: 1, label: 'OCCURRENCE 2', };
+            expect([
+              placeRefusal({ value: { ...LOCATED_BY_SPAN, outcome: 'overlapped', }, generation: 17, },),
+              placeRefusal({ value: { ...LOCATED_BY_SPAN, outcome: 'replaced', gaveWayTo, }, generation: 17, },),
+              placeRefusal({ value: { ...LOCATED_BY_SPAN, outcome: 'overlapped', gaveWayTo, }, generation: 16, },),
+              placeRefusal({ value: { ...LOCATED, outcome: 'overlapped', gaveWayTo, }, generation: 15, },),
+              placeRefusal({ value: { ...LOCATED_BY_SPAN, slot: 'lazy', }, generation: 17, },),
+            ],).toEqual([
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo: expected the place an overlapped place '
+              + 'gave way to, which generation seventeen records.',
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo: expected an overlapped place, the only '
+              + 'kind that gave way to another place.',
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo: expected no key here beyond label, '
+              + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo: expected no key here beyond label, '
+              + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].slot: expected no key here beyond label, '
+              + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome, gaveWayTo, '
+              + 'keptBecause.',
+            ],);
+          },
+        },),
+        it({
+          name: 'READS THE REASON A KEPT-CURRENT PLACE OF GENERATION SEVENTEEN WAS LEFT AS IT WAS, each reason of the closed set',
+          fn: async () => {
+            /**
+             Each place, recorded as generation seventeen records a place the pass left as it was.
+             */
+            const written = KEPT_REASONS.map(function writtenFor(keptBecause,): unknown {
+              return { ...LOCATED_BY_SPAN, outcome: 'kept-current', keptBecause, };
+            },);
+            expect(written.map(function read(value,): unknown {
+              return placeRead({ value, generation: 17, },);
+            },),).toEqual(written,);
+          },
+        },),
+        it({
+          name: 'WORDS WHAT IS EXPECTED OF THE REASON OF A PLACE, naming the place and the closed set and saying what the record '
+            + 'holds: none, or the text it holds as text',
+          fn: async () => {
+            expect([
+              keptReasonExpected({ label: 'OCCURRENCE 3', },),
+              keptReasonExpected({ label: 'OCCURRENCE 3', read: 'a "cat"', },),
+            ],).toEqual([
+              `a reason OCCURRENCE 3 was left as it was for, one of ${KEPT_REASONS.join(', ',)}; the record has none`,
+              `a reason OCCURRENCE 3 was left as it was for, one of ${KEPT_REASONS.join(', ',)}; the record has "a \\"cat\\""`,
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES A REASON OUTSIDE THE CLOSED SET, naming the place and the reason read, one that is not text, a reason on '
+            + 'a place that is not kept-current, and the reason in generations that record none',
+          fn: async () => {
+            /**
+             A kept-current place of generation seventeen holding a value as its reason.
+             */
+            function keptWith({ keptBecause, }: { readonly keptBecause: unknown; },): string {
+              return placeRefusal({
+                value: { ...LOCATED_BY_SPAN, outcome: 'kept-current', keptBecause, },
+                generation: 17,
+              },);
+            }
+            expect([
+              keptWith({ keptBecause: 'invented', },),
+              keptWith({ keptBecause: 'edge-reading-change', },),
+              keptWith({ keptBecause: 3, },),
+              placeRefusal({ value: { ...LOCATED_BY_SPAN, outcome: 'replaced', keptBecause: 'gain-pairs', }, generation: 17, },),
+              placeRefusal({ value: { ...LOCATED_BY_SPAN, outcome: 'kept-current', keptBecause: 'gain-pairs', }, generation: 16, },),
+            ],).toEqual([
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].keptBecause: expected a reason OCCURRENCE 1 was left '
+              + 'as it was for, one of gain-pairs, gain-unproves, gain-floors, gain-overlaps, gain-refused, edge-second-mark, '
+              + 'edge-reading-changes, edge-reference-mark; the record has "invented".',
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].keptBecause: expected a reason OCCURRENCE 1 was left '
+              + 'as it was for, one of gain-pairs, gain-unproves, gain-floors, gain-overlaps, gain-refused, edge-second-mark, '
+              + 'edge-reading-changes, edge-reference-mark; the record has "edge-reading-change".',
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].keptBecause: expected a string.',
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].keptBecause: expected a kept-current place, the only '
+              + 'kind the pass leaves as it was for a reason.',
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].keptBecause: expected no key here beyond label, '
+              + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES A PLACE IT GAVE WAY TO THAT IS NOT AN OBJECT, HOLDS A KEY BEYOND GROUP AND LABEL, OR HAS A GROUP THAT IS NOT A '
+            + 'COUNT OR A LABEL THAT IS NOT TEXT',
+          fn: async () => {
+            /**
+             The refusal of an overlapped place of generation seventeen naming a place that is wrong in one way.
+             */
+            function namingRefusal({ gaveWayTo, }: { readonly gaveWayTo: unknown; },): string {
+              return placeRefusal({ value: { ...LOCATED_BY_SPAN, outcome: 'overlapped', gaveWayTo, }, generation: 17, },);
+            }
+            expect([
+              namingRefusal({ gaveWayTo: 'OCCURRENCE 2', },),
+              namingRefusal({ gaveWayTo: { group: 1, label: 'OCCURRENCE 2', start: 3, }, },),
+              namingRefusal({ gaveWayTo: { group: -1, label: 'OCCURRENCE 2', }, },),
+              namingRefusal({ gaveWayTo: { group: 1.5, label: 'OCCURRENCE 2', }, },),
+              namingRefusal({ gaveWayTo: { group: 1, label: 2, }, },),
+              namingRefusal({ gaveWayTo: { label: 'OCCURRENCE 2', }, },),
+            ],).toEqual([
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo: expected an object.',
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo.start: expected no key here beyond group, label.',
+              `ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo.group: expected ${NOT_A_COUNT}.`,
+              `ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo.group: expected ${NOT_A_COUNT}.`,
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo.label: expected a string.',
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo.group: expected a number.',
+            ],);
           },
         },),
         it({

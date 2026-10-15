@@ -244,6 +244,154 @@ await describe({
           },
         },),
         it({
+          name: 'PLANS THE SPLICE WITH THE MARKS BESIDE THE WORDS COMPARED: a receiver whose words match the chosen words but '
+            + 'whose marks beside them differ is no consistent place, and its plan is unavailable to code',
+          fn: async () => {
+            const marked: ConsistencyRendering = {
+              kind: 'located',
+              quote: 'The cat naps',
+              core: 'The cat naps',
+              start: 0,
+              markAfter: '\'',
+            };
+            const chosen = chosenPlaceOf({ places: PLACES, renderings: [marked, DIFFERENT, FIRST,], position: 0, },);
+            const planned = [
+              plannedPlace({
+                chosen,
+                place: nonNullishOrThrow(PLACES[2],),
+                position: 2,
+                count: countOf({ over: { renderings: [marked, DIFFERENT, FIRST,], }, },),
+                framed: false,
+              },),
+              plannedPlace({
+                chosen,
+                place: nonNullishOrThrow(PLACES[1],),
+                position: 1,
+                count: countOf({ over: { renderings: [marked, DIFFERENT, FIRST,], }, },),
+                framed: false,
+              },),
+            ];
+            expect(planned.map(function planOf({ outcome, receiver, },): unknown {
+              return [outcome, receiver.map(function kindOf({ plan, },): string {
+                return plan.kind;
+              },),];
+            },),).toEqual([
+              ['kept-current', ['unavailable',],],
+              ['kept-current', ['unavailable',],],
+            ],);
+          },
+        },),
+        it({
+          name: 'NAMES WHY THE SPLICE WAS REFUSED AT THE EDGE OF THE SPAN, where the recorded words and marks alone would let '
+            + 'code move the chosen words in: a second mark past markup, a mark outside the words that would read differently',
+          fn: async () => {
+            /**
+             The chosen words, which bring an apostrophe to their end.
+             */
+            const dogs: ConsistencyRendering = { kind: 'located', quote: 'dogs’', core: 'dogs’', start: 9, };
+            /**
+             A place whose English is the one given.
+             */
+            function placeWith({ text, }: { readonly text: string; },): ConsistencyPlace {
+              const place = nonNullishOrThrow(PLACES[1],);
+              return { ...place, slice: { ...place.slice, current: { kind: 'present', text, }, }, };
+            }
+            const chosen = chosenPlaceOf({ places: PLACES, renderings: [dogs, DIFFERENT, FIRST,], position: 0, },);
+            /**
+             What the second place comes to when its rendering and English are the ones given.
+             */
+            function plannedWith(
+              { rendering, text, }: { readonly rendering: ConsistencyRendering; readonly text: string; },
+            ): ReturnType<typeof plannedPlace> {
+              return plannedPlace({
+                chosen,
+                place: placeWith({ text, },),
+                position: 1,
+                count: countOf({ over: { renderings: [dogs, rendering, FIRST,], }, },),
+                framed: false,
+              },);
+            }
+            expect([
+              plannedWith({
+                rendering: { kind: 'located', quote: 'kittens', core: 'kittens', start: 10, markPastAfter: '’', },
+                text: 'Fill the *kittens*’ bowl.',
+              },),
+              plannedWith({
+                rendering: { kind: 'located', quote: 'kittens', core: 'kittens', start: 10, },
+                text: 'Fill the *kittens* bowl.',
+              },),
+            ].map(function edgeOf({ outcome, receiver, edge, },): unknown {
+              return [outcome, receiver.map(function kindOf({ plan, },): string {
+                return plan.kind;
+              },), edge,];
+            },),).toEqual([
+              ['kept-current', ['unavailable',], 'edge-second-mark',],
+              ['kept-current', ['replace',], undefined,],
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES EVERY SPLICE ON A PAGE WHOSE ENGLISH HOLDS A QUOTATION-LIKE REFERENCE IN ANY SLICE, the receiving slice read '
+            + 'alone included and a slice read alone elsewhere on the page too, and names the reference',
+          fn: async () => {
+            /**
+             The chosen words, which bring no apostrophe.
+             */
+            const chosen = chosenPlaceOf({ places: PLACES, renderings: [FIRST, DIFFERENT, FIRST,], position: 0, },);
+            /**
+             The second place with the facts of its slice the case gives: the English it carries, the references of the English of
+             every slice of the page, and the page it stands in, none for a slice read alone.
+             */
+            function placeWith(
+              { references, page, }: { readonly references?: readonly string[]; readonly page?: string; },
+            ): ConsistencyPlace {
+              const place = nonNullishOrThrow(PLACES[1],);
+              return {
+                ...place,
+                slice: {
+                  ...place.slice,
+                  current: { kind: 'present', text: 'The cat naps.', },
+                  ...((references === undefined) ? {} : { wholePageReferences: references, }),
+                  ...((page === undefined) ? {} : { page: { text: page, offset: 0, }, }),
+                },
+              };
+            }
+            /**
+             What the second place comes to for the facts given.
+             */
+            function plannedFor(
+              { references, page, }: { readonly references?: readonly string[]; readonly page?: string; },
+            ): unknown {
+              const { outcome, receiver, edge, } = plannedPlace({
+                chosen,
+                place: placeWith({
+                  ...((references === undefined) ? {} : { references, }),
+                  ...((page === undefined) ? {} : { page, }),
+                },),
+                position: 1,
+                count: countOf(),
+                framed: false,
+              },);
+              return [outcome, receiver.map(function kindOf({ plan, },): string {
+                return plan.kind;
+              },), edge,];
+            }
+            expect([
+              plannedFor({ references: ['&#39;',], },),
+              plannedFor({ references: ['&#39;',], page: 'The cat naps.', },),
+              plannedFor({ references: [], },),
+              plannedFor({ references: [], page: 'The cat naps.', },),
+              plannedFor({},),
+            ],).toEqual([
+              ['kept-current', ['unavailable',], 'edge-reference-mark',],
+              ['kept-current', ['unavailable',], 'edge-reference-mark',],
+              ['kept-current', ['replace',], undefined,],
+              ['kept-current', ['replace',], undefined,],
+              ['kept-current', ['replace',], undefined,],
+            ],);
+          },
+        },),
+        it({
           name: 'NAMES THE OUTCOME OF A PLACE THAT NEEDS NO CARRY: chosen, already consistent, kept by a majority, unlocated, '
             + 'and untouched when no place won',
           fn: async () => {

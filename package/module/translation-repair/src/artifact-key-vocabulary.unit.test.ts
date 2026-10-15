@@ -28,6 +28,7 @@ import {
   type ArtifactKeyVocabulary,
   CHUNK_SPELLED_KEYS,
   keyVocabularyOf,
+  KNOWN_ARTIFACT_SCHEMA_VERSIONS,
   SLICE_SPELLED_KEYS,
   UnknownArtifactGenerationError,
 } from '../dist/final/node/index.mjs';
@@ -89,9 +90,10 @@ const GENERATION_EIGHT = 8;
 const GENERATION_NINE = 9;
 
 /**
- Generation no table covers, one past newest.
+ Generation no table covers, one past newest: read off the known list, so a
+ new generation does not turn this into one the table spells.
  */
-const GENERATION_UNKNOWN = 17;
+const GENERATION_UNKNOWN = Math.max(...KNOWN_ARTIFACT_SCHEMA_VERSIONS,) + 1;
 
 await describe({
   name: keyVocabularyOf.name,

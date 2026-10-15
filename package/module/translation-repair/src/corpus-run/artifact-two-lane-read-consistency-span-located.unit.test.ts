@@ -67,6 +67,38 @@ await describe({
           },
         },),
         it({
+          name: 'READS THE SINGLE MARKS A RENDERING RECORDS BESIDE ITS WORDS into the counter\'s form, with and without a '
+            + 'slot, and adds none for a rendering that records none',
+          fn: async () => {
+            expect([
+              asLocatedBySpan({
+                rendering: { kind: 'located', quote: 'The cat naps', start: 9, markBefore: '‘', markAfter: '’', },
+                path: 'cat.rendering',
+              },),
+              asLocatedBySpan({
+                rendering: { kind: 'located', quote: 'the cat naps', start: 9, markAfter: '\'', slot: 'cat', },
+                path: 'cat.rendering',
+              },),
+              asLocatedBySpan({
+                rendering: { kind: 'located', quote: 'The cat naps', start: 9, },
+                path: 'cat.rendering',
+              },),
+            ],).toEqual([
+              { kind: 'located', quote: 'The cat naps', core: 'The cat naps', start: 9, markBefore: '‘', markAfter: '’', },
+              {
+                kind: 'located',
+                quote: 'the cat naps',
+                core: 'the cat naps',
+                start: 9,
+                markAfter: '\'',
+                slot: 'cat',
+                slotStart: 4,
+              },
+              { kind: 'located', quote: 'The cat naps', core: 'The cat naps', start: 9, },
+            ],);
+          },
+        },),
+        it({
           name: 'REFUSES A LOCATED RENDERING THAT RECORDS NO OFFSET as a broken invariant, not as an offset of zero, since the '
             + 'sixteenth shape records one for every located rendering',
           fn: async () => {

@@ -19,6 +19,7 @@ import {
 
 import {
   type CarryBlock,
+  type CarryEdgeWords,
   composeSlice,
   type ConsistencySliceFacts,
   floorRefusalOf,
@@ -92,12 +93,14 @@ function writtenBy(
     lineStructured,
     lines,
     keeping = [],
+    crossing = [],
     facts = factsOf({ lineStructured, },),
   }: {
     readonly voices: readonly { readonly seat: string; readonly translation: string; }[];
     readonly lineStructured: boolean;
     readonly lines: string[];
     readonly keeping?: readonly string[];
+    readonly crossing?: readonly CarryEdgeWords[];
     readonly facts?: ConsistencySliceFacts;
   },
 ): ReturnType<typeof writtenParagraphsOf> {
@@ -106,6 +109,7 @@ function writtenBy(
     english: ENGLISH,
     block: BLOCK,
     keeping,
+    crossing,
     facts,
     declared: [],
     declaredNames: [],
@@ -304,6 +308,52 @@ await describe({
                 + 'must stay as they are',
               ],
             },);
+          },
+        },),
+        it({
+          name: 'WITHHOLDS A PARAGRAPH THAT NO LONGER HOLDS AT THE EDGE OF THE BLOCK THE WORDS OF A PLACE THAT RUNS OVER IT, '
+            + 'and keeps one that holds them there, at the start for a place that comes in and at the end for one that goes out',
+          fn: async () => {
+            const voices = [
+              { seat: 'hyper-cat', translation: 'The sunny window put the kitten to doze.', },
+              { seat: 'bedrock-cat', translation: 'The sunny window put the kitten to sleep.', },
+              { seat: 'vision-cat', translation: 'On the sill, the sunny window put the kitten to sleep.', },
+            ];
+            const atEnd = writtenBy({
+              voices,
+              lineStructured: false,
+              lines: [],
+              crossing: [{ edge: 'end', words: 'kitten to sleep.', },],
+            },);
+            const atStart = writtenBy({
+              voices,
+              lineStructured: false,
+              lines: [],
+              crossing: [{ edge: 'start', words: 'The sunny window', },],
+            },);
+            expect([atEnd, atStart,].map(function seenOf({ written, findings, },): unknown {
+              return {
+                seats: written.map(function seatOf({ seat, },): string {
+                  return seat;
+                },),
+                findings,
+              };
+            },),).toEqual([
+              {
+                seats: ['bedrock-cat', 'vision-cat',],
+                findings: [
+                  'consistency-candidate-refused (hyper-cat): the paragraph no longer holds, at the edge of the block, the '
+                  + 'words of a place that runs over it and must stay as they are',
+                ],
+              },
+              {
+                seats: ['hyper-cat', 'bedrock-cat',],
+                findings: [
+                  'consistency-candidate-refused (vision-cat): the paragraph no longer holds, at the edge of the block, the '
+                  + 'words of a place that runs over it and must stay as they are',
+                ],
+              },
+            ],);
           },
         },),
         it({

@@ -20,7 +20,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { judgePublishedEntry, } from '../../dist/final/node/index.mjs';
+import {
+  consistencyColumnOf,
+  judgePublishedEntry,
+} from '../../dist/final/node/index.mjs';
 
 import {
   artifactPathOf,
@@ -84,7 +87,7 @@ await describe({
           thisBuild: SETTLED_BY,
         },),).toEqual({
           agreement: 'agreed-weighed',
-          lines: ['CatEntry1: wordings=2 silent=0 chars=81=expected missing=0',],
+          lines: ['CatEntry1: wordings=2 silent=0 chars=81=expected missing=0 consistency-groups=0 read-at-generation=17',],
         },);
       },
     },),
@@ -100,7 +103,7 @@ await describe({
           thisBuild: OTHER_BUILD,
         },),).toEqual({
           agreement: 'agreed-weighed',
-          lines: ['CatEntry1: wordings=2 silent=0 chars=81=expected missing=0',],
+          lines: ['CatEntry1: wordings=2 silent=0 chars=81=expected missing=0 consistency-groups=0 read-at-generation=17',],
         },);
       },
     },),
@@ -123,7 +126,7 @@ await describe({
           thisBuild: SETTLED_BY,
         },),).toEqual({
           agreement: 'agreed-unweighed',
-          lines: ['CatEntry1: wordings=2 silent=0 chars=UNWEIGHED(artifact predates stored archive text) missing=0',],
+          lines: ['CatEntry1: wordings=2 silent=0 chars=UNWEIGHED(artifact predates stored archive text) missing=0 consistency-groups=0 read-at-generation=17',],
         },);
       },
     },),
@@ -148,7 +151,7 @@ await describe({
         },),).toEqual({
           agreement: 'disagreed',
           lines: [
-            'CatEntry1: wordings=2 silent=0 chars=74/expected 81 missing=1',
+            'CatEntry1: wordings=2 silent=0 chars=74/expected 81 missing=1 consistency-groups=0 read-at-generation=17',
             '  WRONG LENGTH: page is -7 characters off what the archive plus every slice change comes to. '
             + 'Text no slice decided on was lost or added',
             '  MISSING slice 1, 35 characters the page does not carry in order',
@@ -179,7 +182,7 @@ await describe({
         },),).toEqual({
           agreement: 'disagreed',
           lines: [
-            'CatEntry1: wordings=2 silent=0 chars=74/expected 81 missing=1',
+            'CatEntry1: wordings=2 silent=0 chars=74/expected 81 missing=1 consistency-groups=0 read-at-generation=17',
             '  WRONG LENGTH: page is -7 characters off what the archive plus every slice change comes to. '
             + 'Text no slice decided on was lost or added',
             '  MISSING slice 1, 35 characters the page does not carry in order',
@@ -208,7 +211,7 @@ await describe({
         },),).toEqual({
           agreement: 'disagreed',
           lines: [
-            'CatEntry1: wordings=2 silent=0 chars=81=expected missing=1',
+            'CatEntry1: wordings=2 silent=0 chars=81=expected missing=1 consistency-groups=0 read-at-generation=17',
             '  MISSING slice 1, 35 characters the page does not carry in order',
           ],
         },);
@@ -235,7 +238,7 @@ await describe({
         },),).toEqual({
           agreement: 'disagreed',
           lines: [
-            'CatEntry1: wordings=2 silent=0 chars=82/expected 81 missing=0',
+            'CatEntry1: wordings=2 silent=0 chars=82/expected 81 missing=0 consistency-groups=0 read-at-generation=17',
             '  WRONG LENGTH: page is 1 character off what the archive plus every slice change comes to. '
             + 'Text no slice decided on was lost or added',
           ],
@@ -263,7 +266,7 @@ await describe({
         },),).toEqual({
           agreement: 'disagreed',
           lines: [
-            'CatEntry1: wordings=2 silent=0 chars=80/expected 81 missing=1',
+            'CatEntry1: wordings=2 silent=0 chars=80/expected 81 missing=1 consistency-groups=0 read-at-generation=17',
             '  WRONG LENGTH: page is -1 character off what the archive plus every slice change comes to. '
             + 'Text no slice decided on was lost or added',
             '  MISSING slice 1, 35 characters the page does not carry in order',
@@ -375,7 +378,7 @@ await describe({
           thisBuild: SETTLED_BY,
         },),).toEqual({
           agreement: 'agreed-weighed',
-          lines: ['CatEntry1: wordings=3 silent=0 chars=113/expected 111+separators missing=0',],
+          lines: ['CatEntry1: wordings=3 silent=0 chars=113/expected 111+separators missing=0 consistency-groups=0 read-at-generation=17',],
         },);
       },
     },),
@@ -405,11 +408,31 @@ await describe({
         },),).toEqual({
           agreement: 'disagreed',
           lines: [
-            'CatEntry1: wordings=1 silent=0 chars=2=expected missing=1',
+            'CatEntry1: wordings=1 silent=0 chars=2=expected missing=1 consistency-groups=0 read-at-generation=17',
             '  MISSING slice 0, 1 character the page does not carry in order',
           ],
         },);
       },
+    },),
+    describe({
+      name: consistencyColumnOf.name,
+      children: [
+        it({
+          name: 'PRINTS HOW MANY GROUPS THE CONSISTENCY SECTION HOLDS AND THE GENERATION IT WAS READ AT, so a replay of an '
+            + 'old artifact shows that the section was read, empty or not',
+          fn: async () => {
+            expect([
+              consistencyColumnOf({ groups: 0, generation: 15, },),
+              consistencyColumnOf({ groups: 1, generation: 16, },),
+              consistencyColumnOf({ groups: 12, generation: 17, },),
+            ],).toEqual([
+              'consistency-groups=0 read-at-generation=15',
+              'consistency-groups=1 read-at-generation=16',
+              'consistency-groups=12 read-at-generation=17',
+            ],);
+          },
+        },),
+      ],
     },),
   ],
 },);

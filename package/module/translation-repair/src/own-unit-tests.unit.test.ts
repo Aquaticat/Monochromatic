@@ -829,7 +829,6 @@ const ALLOWLIST: readonly string[] = [
   'src/translate-validate-blocks.ts',
   'src/translated-slate-criteria.ts',
   'src/translation-repair-interrupted-error.ts',
-  'src/typography-prose-mask.ts',
   'src/unpartnered-gap-steps.ts',
   'src/unprepared-slice.ts',
   'src/upstream-model-hold.ts',

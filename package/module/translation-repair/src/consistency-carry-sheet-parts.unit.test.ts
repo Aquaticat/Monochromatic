@@ -189,6 +189,27 @@ await describe({
             ],);
           },
         },),
+        it({
+          name: 'LISTS A STRETCH OF A PLACE THAT RUNS OVER AN EDGE AFTER THE WORDS TO KEEP, saying in plain words that it '
+            + 'stays the first or the last words of the paragraph and why, with no section of its own',
+          fn: async () => {
+            expect([
+              keepingBlockOf({
+                keeping: ['The cat naps',],
+                crossing: [{ edge: 'start', words: 'to sleep', },],
+                fence: FENCE,
+              },),
+              keepingBlockOf({ keeping: [], crossing: [{ edge: 'end', words: 'put the kitten', },], fence: FENCE, },),
+            ],).toEqual([
+              '===== WORDS OF OTHER PLACES TO KEEP EXACTLY =====\nThe cat naps\nto sleep\n(these are the FIRST words of the '
+              + 'paragraph: the place they belong to runs on from the previous paragraph, so they stay the first words of '
+              + 'your paragraph, exactly as they are)\n',
+              '===== WORDS OF OTHER PLACES TO KEEP EXACTLY =====\nput the kitten\n(these are the LAST words of the '
+              + 'paragraph: the place they belong to runs on into the next paragraph, so they stay the last words of '
+              + 'your paragraph, exactly as they are)\n',
+            ],);
+          },
+        },),
       ],
     },),
   ],

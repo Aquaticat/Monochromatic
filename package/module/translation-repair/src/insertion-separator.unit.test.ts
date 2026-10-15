@@ -13,12 +13,31 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  composeInsertion,
+  composedInsertion,
   documentLineEnding,
   fragmentBody,
+  fragmentCut,
   makeInsertionChunk,
   spliceSlices,
 } from '../dist/final/node/index.mjs';
+
+/**
+ The text `composedInsertion` writes at a boundary, without where the words stand in it.
+
+ @param asked - what the boundary holds and the fragments anchored at it
+
+ @returns The text to write
+
+ @example
+ ```ts
+ const text = composeInsertion({ fragments: ['The cat naps.',], before: '', after: '', eol: '\n', },);
+ ```
+ */
+function composeInsertion(
+  asked: Parameters<typeof composedInsertion>[0],
+): string {
+  return composedInsertion(asked,).text;
+}
 
 await describe({
   name: '',
@@ -54,6 +73,91 @@ await describe({
           fn: async () => {
             expect(fragmentBody({ fragment: '\nThe cat naps.\n\nShe purrs.\n', },),)
               .toBe('The cat naps.\n\nShe purrs.',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: fragmentCut.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'GIVES THE BODY fragmentBody gives and the offset in the fragment where it starts, before the indentation the '
+            + 'body keeps, so a reader can find the fragment`s words in the page it lands in',
+          fn: async () => {
+            expect(fragmentCut({ fragment: '\n\n  The cat naps.\n\n', },),).toEqual({ body: '  The cat naps.', start: 2, },);
+            expect(fragmentCut({ fragment: 'The cat naps.', },),).toEqual({ body: 'The cat naps.', start: 0, },);
+            expect(fragmentCut({ fragment: '   \n\nThe cat naps.', },),).toEqual({ body: 'The cat naps.', start: 5, },);
+            expect(fragmentCut({ fragment: '\n\n\n', },),).toEqual({ body: '', start: 3, },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: composedInsertion.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'WRITES THE TEXT of the boundary and says where each fragment`s body stands in it, with the first '
+            + 'character of the fragment before the body when blank lines were cut from its start',
+          fn: async () => {
+            /**
+             Two fragments between a block and a block, the first with a blank line cut from its start.
+             */
+            const asked = {
+              fragments: ['\n\nThe cat naps.\n', 'She purrs.',],
+              before: 'Intro.\n\n',
+              after: 'Outro.',
+              eol: '\n',
+            };
+            const { text, placed, } = composedInsertion(asked,);
+            expect(text,).toBe('The cat naps.\n\nShe purrs.\n\n',);
+            expect(placed,).toEqual([
+              { fragment: 0, englishAt: -2, from: 0, to: 13, },
+              { fragment: 1, englishAt: 15, from: 15, to: 25, },
+            ],);
+          },
+        },),
+        it({
+          name: 'SHIFTS EVERY PLACE BY THE SEPARATOR written before the first fragment, in the document`s own line ending',
+          fn: async () => {
+            /**
+             A boundary after a block with no line ending, in a document that uses the Windows one.
+             */
+            const { text, placed, } = composedInsertion({
+              fragments: ['She purrs.',],
+              before: 'Intro.',
+              after: 'Outro.',
+              eol: '\r\n',
+            },);
+            expect(text,).toBe('\r\n\r\nShe purrs.\r\n\r\n',);
+            expect(placed,).toEqual([{ fragment: 0, englishAt: 4, from: 4, to: 14, },],);
+          },
+        },),
+        it({
+          name: 'GIVES NO PLACE TO A FRAGMENT THAT SHOWS A READER NOTHING and counts none of its width, and no place to any when '
+            + 'none shows anything, since nothing is then written',
+          fn: async () => {
+            expect(composedInsertion({
+              fragments: ['\u{200B}', 'She purrs.',],
+              before: 'Intro.\n\n',
+              after: 'Outro.',
+              eol: '\n',
+            },),).toEqual({
+              text: 'She purrs.\n\n',
+              placed: [{ fragment: 1, englishAt: 0, from: 0, to: 10, },],
+            },);
+            expect(composedInsertion({
+              fragments: ['', '\u{200B}',],
+              before: 'Intro.\n\n',
+              after: 'Outro.',
+              eol: '\n',
+            },),).toEqual({
+              text: '',
+              placed: [],
+            },);
           },
         },),
       ],

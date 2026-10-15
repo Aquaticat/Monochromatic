@@ -514,6 +514,33 @@ await describe({
           },
         },),
         it({
+          name: 'RECORDS WHERE THE PLANNER REFUSED THE SPLICE AT A SPAN\'S EDGE, place by place, and nothing for a group it '
+            + 'refused nowhere',
+          fn: async () => {
+            /**
+             Settles a pair whose chosen place carries an edge apostrophe over a receiving place with the English and quote given.
+             */
+            function decidePair(
+              { english, quote, }: { readonly english: string; readonly quote: string; },
+            ): ReturnType<typeof settleAsked> {
+              return settleAsked({
+                repeat: SENTENCE,
+                places: [placeIn({ position: 0, english: 'Fill the dogs’ bowl.', },), placeIn({ position: 1, english, },),],
+                unplaced: [],
+                asked: askedOf({
+                  voices: threeAlike({
+                    quotes: [{ label: 'OCCURRENCE 1', quote: 'dogs’', }, { label: 'OCCURRENCE 2', quote, },],
+                  },),
+                }),
+              },);
+            }
+            expect([
+              decidePair({ english: 'Fill the *kittens*’ bowl.', quote: 'kittens', },).leftBecause,
+              'leftBecause' in decidePair({ english: 'Fill the cats bowl.', quote: 'cats', },),
+            ],).toEqual([['unrefused', 'edge-second-mark',], false,],);
+          },
+        },),
+        it({
           name: 'RUNS OFF A TIE FOR FIRST: the finalist the run-off\'s strict majority names is chosen, and the run-off is '
             + 'recorded whole beside the first round with its findings',
           fn: async () => {
@@ -752,6 +779,24 @@ await describe({
               'ConsistencyInvariantError: unreachable: the pass carries to each receiving place once, and the records that '
               + 'name OCCURRENCE 2 number 0',
             );
+          },
+        },),
+        it({
+          name: 'HANDS ON WHAT THE PLANNER REFUSED AT A SPAN\'S EDGE, place by place, and holds none for a group the planner '
+            + 'refused nowhere',
+          fn: async () => {
+            const decided = decideSentence({
+              asked: askedOf({ voices: threeAlike({ quotes: SENTENCE_QUOTES, },), }),
+            },);
+            const carried = carriedOf({ edits: [], findings: [], });
+            /**
+             The decided group as if the planner had refused the splice of its second place at the edge of a span.
+             */
+            const refused = { ...decided, leftBecause: ['unrefused', 'edge-second-mark', 'unrefused',] as const, };
+            expect([
+              settleCarried({ decided: refused, carried: [carried,], },).leftBecause,
+              'leftBecause' in settleCarried({ decided, carried: [carried,], },),
+            ],).toEqual([['unrefused', 'edge-second-mark', 'unrefused',], false,],);
           },
         },),
         it({

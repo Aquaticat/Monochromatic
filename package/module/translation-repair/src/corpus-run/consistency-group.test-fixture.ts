@@ -293,6 +293,7 @@ export function withPlace(
       readonly slotEndOffset?: number;
       readonly rendering?: ArtifactConsistencyOccurrence['rendering'];
       readonly outcome?: ConsistencyOccurrenceOutcome;
+      readonly gaveWayTo?: NonNullable<ArtifactConsistencyOccurrence['gaveWayTo']>;
     };
   },
 ): ArtifactConsistencyGroup {

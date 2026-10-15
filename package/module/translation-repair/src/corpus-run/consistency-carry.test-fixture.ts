@@ -299,6 +299,7 @@ export function carryScene(
       spliceOnlyIn: [],
       receivers: [receiver,],
       keeping: [],
+      crossing: [],
     },
     asked,
     sheets,

@@ -79,6 +79,38 @@ function firstSlice(
     ?.replacementText ?? archive;
 }
 
+/**
+ A page that writes its marks curly, which the first slice's archive text stands beside.
+ */
+const CURLY_LANE = '“Purr,” said the cat. “Warm.” “Soft.” It’s the cat’s nap.';
+
+/**
+ Archive text that holds a mark outside prose, with the text the page pass writes for it (n156, W1): the mark stays as written,
+ the prose mark beside it curls. Each shape is one the n155 review ran at the page pass.
+ */
+const OUTSIDE_PROSE: readonly (readonly [string, string, string,])[] = [
+  [
+    'a link destination',
+    'See [Peter](https://en.wikipedia.org/wiki/Peter_O\'Toole) now, it\'s fine.',
+    'See [Peter](https://en.wikipedia.org/wiki/Peter_O\'Toole) now, it’s fine.',
+  ],
+  [
+    'a link title',
+    'See [the dogs](https://x.example/d "The dogs") now, it\'s fine.',
+    'See [the dogs](https://x.example/d "The dogs") now, it’s fine.',
+  ],
+  ['a bare address', 'Go to https://x.example/O\'Toole now, it\'s fine.', 'Go to https://x.example/O\'Toole now, it’s fine.'],
+  ['a tilde fence', 'Run:\n\n~~~js\nconsole.log("hi");\n~~~\n\nIt\'s done.', 'Run:\n\n~~~js\nconsole.log("hi");\n~~~\n\nIt’s done.'],
+  ['an expression', 'Value {"a"} here, it\'s fine.', 'Value {"a"} here, it’s fine.'],
+  [
+    'a tag with a greater-than inside an expression',
+    'See <Photo ok={a > b} alt="d" title="x" /> now, it\'s fine.',
+    'See <Photo ok={a > b} alt="d" title="x" /> now, it’s fine.',
+  ],
+  ['double-backtick code', 'Run ``it\'s`` now, it\'s fine.', 'Run ``it\'s`` now, it’s fine.'],
+  ['inline math', 'Let $f\'(x)$ be the slope, it\'s fine.', 'Let $f\'(x)$ be the slope, it’s fine.'],
+];
+
 await describe({
   name: 'unifyQuoteStyle (class one hundred forty-two)',
   children: [
@@ -110,6 +142,31 @@ await describe({
           archive: '<Ring text="meow" /> The cat typed `say "hi"` and said "hi".',
           replacement: '“Purr,” said the cat. “Warm.” “Soft.” It’s the cat’s nap.',
         },),).toBe('<Ring text="meow" /> The cat typed `say "hi"` and said “hi.”',);
+      },
+    },),
+    ...OUTSIDE_PROSE.map(function outsideProseCase([shape, archive, expected,],) {
+      return it({
+        name: `LEAVES A MARK IN ${shape} AS THE PAGE WROTE IT and curls the prose mark beside it, on a page written curly (n156, W1)`,
+        fn: async () => {
+          expect(firstSlice({
+            archive,
+            replacement: CURLY_LANE,
+          },),).toBe(expected,);
+        },
+      },);
+    },),
+    it({
+      name: 'COUNTS ONLY PROSE MARKS TOWARD THE PAGE\'S STYLE: straight marks in an address, a fence and an expression do not '
+        + 'outvote the curly prose (n156, W1)',
+      fn: async () => {
+        /**
+         Archive text whose straight marks all stand outside prose, except one apostrophe.
+         */
+        const archive = 'Go to https://x.example/a\'b and https://x.example/c\'d.\n\n~~~js\nlog("a", "b");\n~~~\n\nValue {"a"}, it\'s fine.';
+        expect(firstSlice({
+          archive,
+          replacement: '“Purr,” said the cat. It’s the cat’s nap.',
+        },),).toBe('Go to https://x.example/a\'b and https://x.example/c\'d.\n\n~~~js\nlog("a", "b");\n~~~\n\nValue {"a"}, it’s fine.',);
       },
     },),
   ],

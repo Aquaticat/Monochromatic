@@ -11,6 +11,7 @@
  @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   caught,
   DEFAULT_CONCURRENCY,
@@ -20,14 +21,17 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  blockStandingOf,
   type CarryContext,
   type CarryReceiver,
   type CarryUnit,
   ConsistencyInvariantError,
   shownOf,
   splicedParagraphOf,
+  unitsOf,
   writtenOffers,
 } from '../../dist/final/node/index.mjs';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import type { SeatBehaviour, } from './consistency-page.test-fixture.ts';
 import {
   sheetBlockOf,
@@ -328,8 +332,8 @@ await describe({
           },
         },),
         it({
-          name: 'OFFERS NOTHING WHEN THE WORDS CANNOT BE MOVED BY CODE, whether the receiving place already carries them or has '
-            + 'no slot, and when one of two places of the block cannot be moved',
+          name: 'OFFERS NOTHING WHEN THE WORDS CANNOT BE MOVED BY CODE INTO ANY RECEIVING PLACE OF THE BLOCK, whether the place '
+            + 'already carries them or has no slot, and when every place of two is one code cannot move',
           fn: async () => {
             const { unit, context, receiver, } = carryScene({ behave: writersAnswer, },);
             expect([
@@ -347,7 +351,7 @@ await describe({
                 unit: {
                   ...unit,
                   receivers: [
-                    receiver,
+                    withPlan({ receiver, plan: { kind: 'unavailable', }, },),
                     withPlan({ receiver: secondReceiverOf({ receiver, },), plan: { kind: 'unavailable', }, },),
                   ],
                 },
@@ -358,6 +362,32 @@ await describe({
               { spliced: [], findings: [], },
               { spliced: [], findings: [], },
               { spliced: [], findings: [], },
+            ],);
+          },
+        },),
+        it({
+          name: 'OFFERS THE PARAGRAPH SPLICED FOR THE PLACES CODE CAN MOVE THE WORDS INTO WHEN ANOTHER PLACE OF THE BLOCK '
+            + 'CANNOT BE MOVED, whichever of the two places comes first, the other place keeping its words',
+          fn: async () => {
+            const { unit, context, receiver, } = carryScene({ behave: writersAnswer, },);
+            /**
+             The second receiving place, whose words stand later in the paragraph.
+             */
+            const second = secondReceiverOf({ receiver, },);
+            expect([
+              splicedParagraphOf({
+                unit: { ...unit, receivers: [receiver, withPlan({ receiver: second, plan: { kind: 'unavailable', }, },),], },
+                english: RECEIVING_ENGLISH,
+                context,
+              },),
+              splicedParagraphOf({
+                unit: { ...unit, receivers: [withPlan({ receiver, plan: { kind: 'unavailable', }, },), second,], },
+                english: RECEIVING_ENGLISH,
+                context,
+              },),
+            ],).toEqual([
+              { spliced: [SPLICED_PARAGRAPH,], findings: [], },
+              { spliced: ['Later the kitten naps in the warm sun.',], findings: [], },
             ],);
           },
         },),
@@ -574,7 +604,7 @@ await describe({
               context: scene.context,
               repeat: CARRY_REPEAT,
               chosen: scene.chosen,
-              unit: { ...scene.unit, writable: false, spliceOnlyIn: [], },
+              unit: { ...scene.unit, writable: false, spliceOnlyIn: [], unwritableBecause: 'no-single-block', },
               english: RECEIVING_ENGLISH,
             },),).toEqual({
               written: [],
@@ -587,15 +617,77 @@ await describe({
           },
         },),
         it({
-          name: 'ASKS NO WRITER FOR WORDS IN A TABLE, A CODE BLOCK OR A SETEXT HEADING, reporting which kind of block holds '
-            + 'them and that no paragraph can be rewritten',
+          name: 'ASKS NO WRITER FOR A PARAGRAPH THAT OVERLAPS THE WORDS OF ANOTHER RECEIVING PLACE OUTSIDE IT, reporting that '
+            + 'overlap and not that the words lie in no single block',
+          fn: async () => {
+            const scene = carryScene({ behave: writersAnswer, },);
+            expect(await writtenOffers({
+              context: scene.context,
+              repeat: CARRY_REPEAT,
+              chosen: scene.chosen,
+              unit: {
+                ...scene.unit,
+                block: { start: 6, end: RECEIVING_ENGLISH.length, text: RECEIVING_ENGLISH.slice(6,), },
+                writable: false,
+                spliceOnlyIn: [],
+                unwritableBecause: 'overlaps-outside-receiver',
+              },
+              english: RECEIVING_ENGLISH,
+            },),).toEqual({
+              written: [],
+              findings: [
+                'consistency-writers-not-asked (OCCURRENCE 2): the paragraph that holds the words that render the repeated '
+                + 'wording overlaps the words of another receiving place of the group that lie outside it, so no paragraph '
+                + 'can be rewritten',
+              ],
+            },);
+            expect(scene.asked,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'PINS THE WORDING TO THE RECORDED REASON, NOT TO THE EXTENT OF THE BLOCK: a unit whose block is the '
+            + 'whole English and which is marked overlapped gets the overlap wording, and one that records no reason and '
+            + 'stands in no kind of block is refused',
+          fn: async () => {
+            const scene = carryScene({ behave: writersAnswer, },);
+            const overlapped = await writtenOffers({
+              context: scene.context,
+              repeat: CARRY_REPEAT,
+              chosen: scene.chosen,
+              unit: { ...scene.unit, writable: false, spliceOnlyIn: [], unwritableBecause: 'overlaps-outside-receiver', },
+              english: RECEIVING_ENGLISH,
+            },);
+            const unrecorded = await rejectionOf(async function offersWithoutReason(): Promise<unknown> {
+              return await writtenOffers({
+                context: scene.context,
+                repeat: CARRY_REPEAT,
+                chosen: scene.chosen,
+                unit: { ...scene.unit, writable: false, spliceOnlyIn: [], },
+                english: RECEIVING_ENGLISH,
+              },);
+            },);
+            expect(overlapped.findings,).toEqual([
+              'consistency-writers-not-asked (OCCURRENCE 2): the paragraph that holds the words that render the repeated '
+              + 'wording overlaps the words of another receiving place of the group that lie outside it, so no paragraph '
+              + 'can be rewritten',
+            ],);
+            expect(unrecorded,).toBeInstanceOf(ConsistencyInvariantError,);
+            expect(String(unrecorded,),).toBe(
+              'ConsistencyInvariantError: unreachable: OCCURRENCE 2 stands in a unit that is not writable and in no kind of '
+              + 'block, and such a unit records why it is not writable',
+            );
+          },
+        },),
+        it({
+          name: 'ASKS NO WRITER FOR WORDS IN A TABLE, A CODE BLOCK, A SETEXT HEADING OR A PREFORMATTED BLOCK, reporting which '
+            + 'kind of block holds them and that no paragraph can be rewritten',
           fn: async () => {
             const scene = carryScene({ behave: writersAnswer, },);
             /**
              The findings of asking for a unit that stands in one kind of block.
              */
             async function findingsFor(
-              { kind, }: { readonly kind: 'table' | 'code block' | 'setext heading'; },
+              { kind, }: { readonly kind: 'table' | 'code block' | 'setext heading' | 'preformatted block'; },
             ): Promise<readonly string[]> {
               return (await writtenOffers({
                 context: scene.context,
@@ -609,6 +701,7 @@ await describe({
               await findingsFor({ kind: 'table', },),
               await findingsFor({ kind: 'code block', },),
               await findingsFor({ kind: 'setext heading', },),
+              await findingsFor({ kind: 'preformatted block', },),
             ],).toEqual([
               [
                 'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording stand in a table, '
@@ -622,8 +715,105 @@ await describe({
                 'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording stand in a setext '
                 + 'heading, so no paragraph can be rewritten',
               ],
+              [
+                'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording stand in a '
+                + 'preformatted block, so no paragraph can be rewritten',
+              ],
             ],);
             expect(scene.asked,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'ASKS NO WRITER FOR WORDS THAT STAND IN A TABLE, A CODE BLOCK, A SETEXT HEADING (ALSO ONE WHOSE TEXT OPENS WITH A '
+            + 'HASH) OR HTML TABLE MARKUP OF A REAL ENGLISH, and asks the writers for the words of a paragraph in the same '
+            + 'chain',
+          fn: async () => {
+            /**
+             What asking for a receiving place in one English comes to: the standing the English gives its words, the unit
+             made from it, what the offers report and the writers asked.
+             */
+            async function offersFromEnglish(
+              { english, }: { readonly english: string; },
+            ): Promise<{
+              readonly writable: boolean;
+              readonly spliceOnlyIn: readonly string[];
+              readonly findings: readonly string[];
+              readonly written: number;
+              readonly asked: number;
+            }> {
+              const scene = carryScene({ behave: writersAnswer, },);
+              /**
+               Where the receiving place's words start in the English.
+               */
+              const start = english.indexOf('the kitten naps',);
+              /**
+               The receiving place, standing in this English.
+               */
+              const receiver: CarryReceiver = {
+                ...scene.receiver,
+                place: {
+                  ...scene.receiver.place,
+                  slice: { ...scene.receiver.place.slice, current: { kind: 'present', text: english, }, },
+                },
+                rendering: { kind: 'located', quote: 'the kitten naps', core: 'the kitten naps', start, },
+              };
+              /**
+               Where the words stand among the blocks of the English.
+               */
+              const { block, spliceOnlyIn, } = blockStandingOf({ english, start, end: start + 'the kitten naps'.length, },);
+              /**
+               The unit the receiving place makes.
+               */
+              const [unit,] = unitsOf({ held: [{ receiver, block, spliceOnlyIn, },], kept: [], },);
+              const { written, findings, } = await writtenOffers({
+                context: scene.context,
+                repeat: CARRY_REPEAT,
+                chosen: scene.chosen,
+                unit: nonNullishOrThrow(unit,),
+                english,
+              },);
+              return {
+                writable: nonNullishOrThrow(unit,).writable,
+                spliceOnlyIn: nonNullishOrThrow(unit,).spliceOnlyIn,
+                findings,
+                written: written.length,
+                asked: scene.asked.length,
+              };
+            }
+            /**
+             The finding for words that stand in one kind of block.
+             */
+            function findingFor({ kind, }: { readonly kind: string; }): string {
+              return 'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording stand in a '
+                + `${kind}, so no paragraph can be rewritten`;
+            }
+            expect([
+              await offersFromEnglish({ english: '| a | b |\n| - | - |\n| the kitten naps | x |\n', },),
+              await offersFromEnglish({ english: '```\nthe kitten naps\n```\n\nAfter.', },),
+              await offersFromEnglish({ english: 'Later the kitten naps\n=====================\n\nAfter.', },),
+              await offersFromEnglish({ english: '#later the kitten naps\n======================\n\nAfter.', },),
+              await offersFromEnglish({ english: '<table><tr><td>the kitten naps</td></tr></table>\n\nAfter.', },),
+              await offersFromEnglish({ english: RECEIVING_ENGLISH, },),
+            ],).toEqual([
+              { writable: false, spliceOnlyIn: ['table',], findings: [findingFor({ kind: 'table', },),], written: 0, asked: 0, },
+              { writable: false, spliceOnlyIn: ['code block',], findings: [findingFor({ kind: 'code block', },),], written: 0, asked: 0, },
+              {
+                writable: false,
+                spliceOnlyIn: ['setext heading',],
+                findings: [findingFor({ kind: 'setext heading', },),],
+                written: 0,
+                asked: 0,
+              },
+              {
+                writable: false,
+                spliceOnlyIn: ['setext heading',],
+                findings: [findingFor({ kind: 'setext heading', },),],
+                written: 0,
+                asked: 0,
+              },
+              { writable: false, spliceOnlyIn: ['table',], findings: [findingFor({ kind: 'table', },),], written: 0, asked: 0, },
+              { writable: true, spliceOnlyIn: [], findings: [], written: 3, asked: 3, },
+            ],);
           },
         },),
       ],

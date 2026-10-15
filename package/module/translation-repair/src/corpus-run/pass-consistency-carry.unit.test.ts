@@ -19,14 +19,23 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
+  applyConsistency,
+  assertSlicesCoherent,
   carryAll,
   type CarryReceiver,
   carryToUnit,
   type CarryUnit,
+  keptWordsOf,
+  settleAsked,
+  settleCarried,
   type UnitCarried,
 } from '../../dist/final/node/index.mjs';
+import { levelCapturingLogger, } from '../capturing-logger.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
+import { firstPlaceBallot, } from './consistency-group.test-fixture.ts';
 import {
   choosing,
   type SeatBehaviour,
@@ -72,6 +81,36 @@ function writtenAndChosen({ choice, }: { readonly choice: string; },) {
         ?.label ?? '',
     },);
   };
+}
+
+/**
+ A writer that rewrites the second paragraph of the crossing page, and judges that choose a writer's paragraph where one
+ is on offer and the first candidate other than the current paragraph otherwise.
+
+ @param sheet - the sheet the seat was shown
+
+ @returns What the seat does
+
+ @example
+ ```ts
+ const scene = carryScene({ behave: writerOfSecondParagraph, },);
+ ```
+ */
+function writerOfSecondParagraph({ sheet, }: { readonly sheet: string; },): SeatBehaviour {
+  if (sheetKindOf({ sheet, },) === 'writer')
+    return { kind: 'answers', text: JSON.stringify({ translation: 'naps in the sun. The cat purrs.', },), };
+  /**
+   The candidates the sheet offers.
+   */
+  const candidates = candidateTextsOf({ sheet, },);
+  return choosing({
+    choice: (candidates.find(function isWriters({ text, },): boolean {
+      return text.includes('The cat purrs',);
+    },) ?? candidates.find(function isAlternative({ current, },): boolean {
+      return !current;
+    },))
+      ?.label ?? '',
+  },);
 }
 
 /**
@@ -306,6 +345,104 @@ await describe({
       name: carryAll.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
+        it({
+          name: 'MAKES NO TWO EDITS OF ONE GROUP THAT OVERLAP WHEN ONE RECEIVING PLACE\'S WORDS CROSS A PARAGRAPH BOUNDARY AND '
+            + 'ANOTHER STANDS IN THE SECOND PARAGRAPH: the second paragraph is not given to a writer, the crossing place is '
+            + 'carried by its splice and the other, whose words hold another number of block breaks than the chosen words, '
+            + 'keeps its words, the edits apply without the invariant throw, and the section is read back at '
+            + 'generation 17',
+          fn: async () => {
+            const english = 'Later the kitten\n\nnaps in the sun. The kitten purrs.';
+            const quotes = [
+              { label: 'OCCURRENCE 1', quote: 'The cat\n\nnaps', },
+              { label: 'OCCURRENCE 2', quote: 'the kitten\n\nnaps', },
+              { label: 'OCCURRENCE 3', quote: 'The kitten purrs', },
+            ];
+            const scene = carryScene({ behave: writerOfSecondParagraph, },);
+            /**
+             The chosen place, whose words cross a paragraph boundary as the first receiving place's do, since words that
+             hold another number of block breaks have no splice (`consistency-block-breaks.ts`).
+             */
+            const crossingChosen = {
+              ...scene.chosen.place,
+              slice: { ...scene.chosen.place.slice, current: { kind: 'present', text: 'The cat\n\nnaps. It is warm.', }, },
+            } as const;
+            /**
+             A receiving place of the scene whose slice carries the crossing page's English.
+             */
+            const receivingPlace = {
+              ...scene.receiver.place,
+              slice: { ...scene.receiver.place.slice, current: { kind: 'present', text: english, }, },
+            } as const;
+            const decided = settleAsked({
+              repeat: CARRY_REPEAT,
+              places: [crossingChosen, receivingPlace, receivingPlace,],
+              unplaced: [],
+              asked: {
+                quorum: 2,
+                resumed: false,
+                findings: [],
+                voices: ['hyper-cat', 'bedrock-cat', 'synthetic-cat',].map(function ballotOf(seat,) {
+                  return firstPlaceBallot({ seat, quotes, },);
+                },),
+              },
+            },);
+            const carried = await carryAll({
+              context: scene.context,
+              repeat: CARRY_REPEAT,
+              chosen: nonNullishOrThrow(decided.chosen[0],),
+              receivers: decided.receivers,
+              kept: keptWordsOf({ decided, },),
+            },);
+            const edits = carried.flatMap(function editsOf({ edits: made, },) {
+              return made;
+            },)
+              .toSorted(function inPageOrder(left, right,): number {
+                return left.start - right.start;
+              },);
+            expect({
+              kinds: edits.map(function kindOf({ kind, },): string {
+                return kind;
+              },),
+              apart: edits.every(function endsBeforeNext(edit, at,): boolean {
+                return (edits[at + 1]?.start ?? Infinity) >= edit.end;
+              },),
+              writersAsked: scene.sheets.some(function isWriterSheet(sheet,): boolean {
+                return sheetKindOf({ sheet, },) === 'writer';
+              },),
+              findings: carried.flatMap(function findingsOf({ findings, },) {
+                return findings;
+              },),
+            },).toEqual({
+              kinds: ['splice',],
+              apart: true,
+              writersAsked: false,
+              findings: [
+                'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording lie in no single '
+                + 'block of the English, so no paragraph can be rewritten',
+                'consistency-writers-not-asked (OCCURRENCE 3): the paragraph that holds the words that render the repeated '
+                + 'wording overlaps the words of another receiving place of the group that lie outside it, so no paragraph '
+                + 'can be rewritten',
+              ],
+            },);
+            const applied = applyConsistency({
+              settled: [settleCarried({ decided, carried, },),],
+              slices: [decided.places[0], decided.places[1],].map(function sliceOf(place,) {
+                return nonNullishOrThrow(place,).slice;
+              },),
+              declared: [],
+              declaredNames: [],
+              l: levelCapturingLogger({ lines: [], },),
+            },);
+            expect(applied.groups.map(function outcomesRecorded({ occurrences, },): readonly string[] {
+              return occurrences.map(function outcomeRecorded({ outcome, },): string {
+                return outcome;
+              },);
+            },),).toEqual([['chosen', 'replaced', 'kept-current',],],);
+            // The reader throws for a section it refuses, so returning is the acceptance.
+            assertSlicesCoherent({ groups: applied.groups, slices: applied.slices, path: 'cat.consistency', generation: 17, },);
+          },
+        },),
         it({
           name: 'CARRIES THE WORDS THAT LIE IN NO SINGLE BLOCK BY THE SPLICE ALONE: the whole English of the slice is the '
             + 'block, no writer is asked, and the bench chooses between the English as it stands and the splice',

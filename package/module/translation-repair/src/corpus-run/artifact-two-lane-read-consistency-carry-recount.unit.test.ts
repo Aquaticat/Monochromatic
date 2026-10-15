@@ -294,6 +294,20 @@ await describe({
             ],).toEqual([keptCurrent, keptCurrent, keptCurrent, keptCurrent, replaces, replaces, replaces,],);
           },
         },),
+        it({
+          name: 'ALLOWS ONLY KEPT-CURRENT FOR A PLACE CODE CANNOT MOVE WHEN THE SPLICE WAS CHOSEN, and the outcomes a writer\'s '
+            + 'paragraph can end in, since that rewrites the place too',
+          fn: async () => {
+            const keptCurrent = ['kept-current',];
+            const replaces = ['replaced', 'kept-floor', 'overlapped',];
+            expect([
+              outcomesAfter({ carry: { ...CARRY, decision: { kind: 'chosen', label: 'CANDIDATE 2', }, }, spliceMovesIt: false, },),
+              outcomesAfter({ carry: CARRY, spliceMovesIt: false, },),
+              outcomesAfter({ carry: { ...CARRY, decision: { kind: 'chosen', label: 'CANDIDATE 1', }, }, spliceMovesIt: false, },),
+              outcomesAfter({ carry: { ...CARRY, decision: { kind: 'chosen', label: 'CANDIDATE 2', }, }, spliceMovesIt: true, },),
+            ],).toEqual([keptCurrent, replaces, keptCurrent, replaces,],);
+          },
+        },),
       ],
     },),
   ],

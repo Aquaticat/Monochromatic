@@ -112,6 +112,91 @@ function userText({ subject, }: { readonly subject: CarryChoiceSubject; },): str
     ?? '';
 }
 
+/**
+ The label the rules give the block of the words a candidate replaces, read from the sentence that explains it.
+
+ @param rules - the system message of an exchange
+
+ @returns The label; empty where the rules have no such sentence
+
+ @example
+ ```ts
+ const label = labelOfWordsToReplace({ rules, },); // 'THE WORDS TO REPLACE'
+ ```
+ */
+function labelOfWordsToReplace({ rules, }: { readonly rules: string; },): string {
+  /**
+   The words that lead into the label.
+   */
+  const lead = 'now render the repeated wording in each receiving place are shown as ';
+  /**
+   The rules after the lead, none when the rules lack the sentence.
+   */
+  const [, afterLead = '',] = rules.split(
+    lead,
+    2,
+  );
+  /**
+   The label, which the sentence follows with its numbering.
+   */
+  const [label = '',] = afterLead.split(
+    ' (numbered',
+    1,
+  );
+  return label;
+}
+
+/**
+ The fenced blocks of a user message whose title is a label or the label and a number, with the words each holds.
+
+ @param content - the user message of an exchange
+
+ @param label - the label the rules name
+
+ @returns The title and the first line of each such block, in the order the sheet shows them; none for an empty label
+
+ @example
+ ```ts
+ const blocks = blocksLabelled({ content, label: 'THE WORDS TO REPLACE', },);
+ ```
+ */
+function blocksLabelled(
+  {
+    content,
+    label,
+  }: {
+    readonly content: string;
+    readonly label: string;
+  },
+): readonly { readonly title: string; readonly words: string; }[] {
+  if (label === '')
+    return [];
+  /**
+   Every line of the message.
+   */
+  const lines = content.split('\n',);
+  return lines.flatMap(function blockOf(
+    line,
+    position,
+  ): readonly { readonly title: string; readonly words: string; }[] {
+    /**
+     The parts of a line that opens a block: the fence, the title, then the fence again.
+     */
+    const parts = line.split(' ',);
+    /**
+     The title between the two fences.
+     */
+    const title = parts.slice(
+      1,
+      -1,
+    )
+      .join(' ',);
+    return (line.startsWith('=',) && ((title === label) || title.startsWith(`${label} `,)))
+      ? [{ title, words: lines[position + 1] ?? '', },]
+      : [];
+  },);
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -241,14 +326,34 @@ await describe({
           },
         },),
         it({
-          name: 'EXPLAINS THE WORDS TO REPLACE IN THE RULES, since they are what a candidate replaces',
+          name: 'EXPLAINS THE WORDS TO REPLACE IN THE RULES AS THE BLOCKS THE SHEET SHOWS: the label the rules name opens one '
+            + 'block for each receiving place with that place\'s words, numbered when there are several, and no block '
+            + 'opens for no receiving place',
           fn: async () => {
             const [system,] = buildCarryChoiceMessages({ subject: SUBJECT, },);
-            expect(system?.content.includes(
-              'The words of the current paragraph that now render the repeated wording in each receiving place are shown as '
-              + 'THE WORDS TO REPLACE (numbered, one for each receiving place, when there are several); they are what a '
-              + 'candidate replaces.',
-            ),).toBe(true,);
+            const label = labelOfWordsToReplace({ rules: system?.content ?? '', },);
+            expect({
+              named: label,
+              single: blocksLabelled({ content: userText({ subject: SUBJECT, },), label, },),
+              several: blocksLabelled({
+                content: userText({
+                  subject: {
+                    ...SUBJECT,
+                    receiving: [RECEIVING_PLACE, { ...RECEIVING_PLACE, span: 'wanted to be cute for more people', },],
+                  },
+                },),
+                label,
+              },),
+              none: blocksLabelled({ content: userText({ subject: { ...SUBJECT, receiving: [], }, },), label, },),
+            },).toEqual({
+              named: 'THE WORDS TO REPLACE',
+              single: [{ title: 'THE WORDS TO REPLACE', words: 'wanted to accompany more people with her cuteness', },],
+              several: [
+                { title: 'THE WORDS TO REPLACE 1', words: 'wanted to accompany more people with her cuteness', },
+                { title: 'THE WORDS TO REPLACE 2', words: 'wanted to be cute for more people', },
+              ],
+              none: [],
+            },);
           },
         },),
         it({

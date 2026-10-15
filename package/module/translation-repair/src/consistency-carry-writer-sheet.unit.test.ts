@@ -302,6 +302,31 @@ await describe({
           },
         },),
         it({
+          name: 'LISTS A STRETCH OF A PLACE THAT RUNS OVER AN EDGE OF THE PARAGRAPH among the words to keep and tells the '
+            + 'writer it stays the first or the last words, and says nothing of it when no place runs over',
+          fn: async () => {
+            const crossing = { ...SUBJECT, crossing: [{ edge: 'start', words: 'to sleep', },] as const, };
+            const alone = { ...SUBJECT, keeping: [], crossing: [{ edge: 'end', words: 'put the kitten', },] as const, };
+            expect({
+              block: userText({ subject: crossing, },).includes('WORDS OF OTHER PLACES TO KEEP EXACTLY',),
+              first: userText({ subject: crossing, },).includes('\nto sleep\n(these are the FIRST words of the paragraph',),
+              last: userText({ subject: alone, },).includes('\nput the kitten\n(these are the LAST words of the paragraph',),
+              rule: sheetText({ subject: crossing, },).includes('marked as the FIRST or the LAST words of the paragraph',),
+              keepingRule: sheetText({ subject: alone, },).includes('They stay exactly as they are, character for character',),
+              noneRule: sheetText({ subject: SUBJECT, },).includes('FIRST or the LAST words',),
+              noneBlock: userText({ subject: SUBJECT, },).includes('(these are the',),
+            },).toEqual({
+              block: true,
+              first: true,
+              last: true,
+              rule: true,
+              keepingRule: true,
+              noneRule: false,
+              noneBlock: false,
+            },);
+          },
+        },),
+        it({
           name: 'ADDS THE LINE-STRUCTURE RULE only where the receiving place\'s slice is line-structured',
           fn: async () => {
             const plain = sheetText({ subject: SUBJECT, },);

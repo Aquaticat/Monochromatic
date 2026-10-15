@@ -24,10 +24,14 @@ import {
   type ConsistencyVoice,
   consistencyLabels,
   isKeptByMajority,
+  keepsByLabelOf,
   majorityChoiceOf,
+  markEvidenceOf,
+  quotesByLabelOf,
   tiedForFirstOf,
   usableVoicesOf,
 } from '../dist/final/node/index.mjs';
+import { countedList, } from './element-reads.test-fixture.ts';
 
 /**
  Fields of a ballot a case replaces.
@@ -70,6 +74,41 @@ function voiceOf(
     keep: [],
     ...over,
   };
+}
+
+/**
+ The mark evidence of ballots that each quote the first place by one of the given quotes.
+
+ @param quotes - what each ballot quotes for the first place, one ballot for each
+
+ @param words - the folded words the quotes agreed on
+
+ @returns On which sides the evidence holds
+
+ @example
+ ```ts
+ const { after, } = evidenceFrom({ quotes: ['the cats\'', 'the cats\'', 'the cats',], words: 'the cats', },); // true
+ ```
+ */
+function evidenceFrom(
+  {
+    quotes,
+    words,
+  }: {
+    readonly quotes: readonly string[];
+    readonly words: string;
+  },
+): ReturnType<typeof markEvidenceOf> {
+  return markEvidenceOf({
+    voices: quotes.map(function ballotFor(quote, at,): ConsistencyVoice {
+      return voiceOf({
+        seat: `seat-${String(at,)}`,
+        over: { quotes: [{ label: 'OCCURRENCE 1', quote, },], },
+      },);
+    },),
+    label: 'OCCURRENCE 1',
+    words,
+  },);
 }
 
 await describe({
@@ -142,6 +181,69 @@ await describe({
               agreedWordsOf({ voices: alike, label: 'OCCURRENCE 2', },),
               agreedWordsOf({ voices: [], label: 'OCCURRENCE 1', },),
             ],).toEqual([['The cat wasn\'t asleep',], [], [], [],],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: markEvidenceOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'HOLDS FOR A SIDE WHEN MORE THAN HALF OF THE USABLE BALLOTS QUOTED THE AGREED WORDS WITH A SINGLE MARK '
+            + 'DIRECTLY BESIDE THEM ON IT, a ballot that copied no mark counting against it',
+          fn: async () => {
+            const words = 'the cats';
+            expect([
+              evidenceFrom({ quotes: ['the cats\'', 'the cats\'', 'the cats\'',], words, },),
+              evidenceFrom({ quotes: ['the cats\'', 'the cats\'', 'the cats',], words, },),
+              evidenceFrom({ quotes: ['the cats\'', 'the cats', 'the cats',], words, },),
+              evidenceFrom({ quotes: ['the cats', 'the cats', 'the cats',], words, },),
+              evidenceFrom({ quotes: ['the cats\'', 'the cats\'', 'the cats', 'the cats',], words, },),
+              evidenceFrom({ quotes: [], words, },),
+            ],).toEqual([
+              { before: false, after: true, },
+              { before: false, after: true, },
+              { before: false, after: false, },
+              { before: false, after: false, },
+              { before: false, after: false, },
+              { before: false, after: false, },
+            ],);
+            expect([
+              evidenceFrom({ quotes: ['\'Tis', '\'Tis', 'Tis',], words: 'Tis', },),
+              evidenceFrom({ quotes: ['‘the cats’', '‘the cats', 'the cats’',], words, },),
+              evidenceFrom({ quotes: ['‘the cats', '‘the cats', 'the cats’',], words, },),
+            ],).toEqual([
+              { before: true, after: false, },
+              { before: true, after: true, },
+              { before: true, after: false, },
+            ],);
+          },
+        },),
+        it({
+          name: 'COUNTS ONLY THE BALLOTS WHOSE QUOTE FOLDS TO THE AGREED WORDS, against all the usable ballots: a ballot that '
+            + 'gave other words or no quote adds no evidence and is not nothing',
+          fn: async () => {
+            const words = 'the cats';
+            expect([
+              evidenceFrom({ quotes: ['the cats\'', 'the cats\'', 'the cats', 'the dogs\'', 'the dogs\'',], words, },),
+              evidenceFrom({ quotes: ['the cats\'', 'the cats\'', 'the dogs',], words, },),
+              evidenceFrom({ quotes: ['the cats\'', 'the cats\'', 'the cats\'', 'the cats', 'the dogs',], words, },),
+              markEvidenceOf({
+                voices: [
+                  voiceOf({ seat: 'a', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'the cats\'', },], }, },),
+                  voiceOf({ seat: 'b', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'the cats\'', },], }, },),
+                  voiceOf({ seat: 'c', over: { quotes: [{ label: 'OCCURRENCE 2', quote: 'the cats\'', },], }, },),
+                ],
+                label: 'OCCURRENCE 1',
+                words,
+              },),
+            ],).toEqual([
+              { before: false, after: false, },
+              { before: false, after: true, },
+              { before: false, after: true, },
+              { before: false, after: true, },
+            ],);
           },
         },),
       ],
@@ -311,6 +413,98 @@ await describe({
       ],
     },),
     describe({
+      name: quotesByLabelOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'GROUPS THE QUOTES OF THE BALLOTS BY THE PLACE THEY NAME, each group in the order of the ballots, and has none '
+            + 'for a place nobody quoted',
+          fn: async () => {
+            const voices = [
+              voiceOf({
+                seat: 'a',
+                over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'the cat naps', }, { label: 'OCCURRENCE 2', quote: 'a cat', },], },
+              },),
+              voiceOf({ seat: 'b', over: { quotes: [{ label: 'OCCURRENCE 2', quote: 'the cat', slot: 'cat', },], }, },),
+              voiceOf({ seat: 'c', over: { quotes: [], }, },),
+            ];
+            const grouped = quotesByLabelOf({ voices, },);
+            expect([
+              grouped.get('OCCURRENCE 1',),
+              grouped.get('OCCURRENCE 2',),
+              grouped.get('OCCURRENCE 3',),
+            ],).toEqual([
+              [{ label: 'OCCURRENCE 1', quote: 'the cat naps', },],
+              [{ label: 'OCCURRENCE 2', quote: 'a cat', }, { label: 'OCCURRENCE 2', quote: 'the cat', slot: 'cat', },],
+              undefined,
+            ],);
+          },
+        },),
+        it({
+          name: 'GIVES THE SAME ANSWER FOR EVERY PLACE WITH THE GROUPED QUOTES AS WITHOUT THEM, for the agreed quote, the agreed '
+            + 'words, the agreed slot, the slot beside words and the evidence of a mark',
+          fn: async () => {
+            const voices = [
+              voiceOf({
+                seat: 'a',
+                over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'the cats\'', slot: 'cats', }, { label: 'OCCURRENCE 2', quote: 'a cat', },], },
+              },),
+              voiceOf({
+                seat: 'b',
+                over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'the cats\'', slot: 'cats', }, { label: 'OCCURRENCE 2', quote: 'a dog', },], },
+              },),
+              voiceOf({ seat: 'c', over: { quotes: [{ label: 'OCCURRENCE 2', quote: 'a cat', },], }, },),
+            ];
+            const quotesByLabel = quotesByLabelOf({ voices, },);
+            const labels = ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',];
+            expect(labels.map(function indexed(label,): unknown {
+              return [
+                agreedQuoteOf({ voices, label, quotesByLabel, },),
+                agreedWordsOf({ voices, label, quotesByLabel, },),
+                agreedSlotOf({ voices, label, quotesByLabel, },),
+                agreedSlotWordsOf({ voices, label, words: 'the cats', quotesByLabel, },),
+                markEvidenceOf({ voices, label, words: 'the cats', quotesByLabel, },),
+              ];
+            },),).toEqual(labels.map(function plain(label,): unknown {
+              return [
+                agreedQuoteOf({ voices, label, },),
+                agreedWordsOf({ voices, label, },),
+                agreedSlotOf({ voices, label, },),
+                agreedSlotWordsOf({ voices, label, words: 'the cats', },),
+                markEvidenceOf({ voices, label, words: 'the cats', },),
+              ];
+            },),);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: keepsByLabelOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'COUNTS THE BALLOTS THAT KEEP EACH PLACE, a place listed twice by one ballot counting once, and gives the same '
+            + 'keeping as the ballots read one by one',
+          fn: async () => {
+            const voices = [
+              voiceOf({ seat: 'a', over: { keep: ['OCCURRENCE 2', 'OCCURRENCE 2',], }, },),
+              voiceOf({ seat: 'b', over: { keep: ['OCCURRENCE 2', 'OCCURRENCE 1',], }, },),
+              voiceOf({ seat: 'c', over: { keep: [], }, },),
+            ];
+            const keepsByLabel = keepsByLabelOf({ voices, },);
+            expect([
+              keepsByLabel.get('OCCURRENCE 1',),
+              keepsByLabel.get('OCCURRENCE 2',),
+              keepsByLabel.get('OCCURRENCE 3',),
+              isKeptByMajority({ voices, label: 'OCCURRENCE 1', keepsByLabel, },),
+              isKeptByMajority({ voices, label: 'OCCURRENCE 2', keepsByLabel, },),
+              isKeptByMajority({ voices, label: 'OCCURRENCE 2', },),
+            ],).toEqual([1, 2, undefined, false, true, true,],);
+          },
+        },),
+      ],
+    },),
+    describe({
       name: usableVoicesOf.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
@@ -327,6 +521,61 @@ await describe({
             expect(usableVoicesOf({ voices, labels, },).map(function seatOf(voice,): string {
               return voice.seat;
             },),).toEqual(['a', 'd',],);
+          },
+        },),
+        it({
+          name: 'LEAVES OUT A BALLOT THAT QUOTES OR KEEPS A PLACE TWICE, and counts one that names each place shown once',
+          fn: async () => {
+            const labels = consistencyLabels({ count: 2, },);
+            const voices = [
+              voiceOf({ seat: 'a', },),
+              voiceOf({
+                seat: 'b',
+                over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'the cat naps', }, { label: 'OCCURRENCE 1', quote: 'a cat', },], },
+              },),
+              voiceOf({ seat: 'c', over: { keep: ['OCCURRENCE 2', 'OCCURRENCE 2',], }, },),
+              voiceOf({ seat: 'd', over: { keep: ['OCCURRENCE 1', 'OCCURRENCE 2',], }, },),
+            ];
+            expect(usableVoicesOf({ voices, labels, },).map(function seatOf(voice,): string {
+              return voice.seat;
+            },),).toEqual(['a', 'd',],);
+          },
+        },),
+        it({
+          name: 'READS THE LABELS SHOWN A BOUNDED NUMBER OF TIMES FOR EACH LABEL a ballot names, however many places the sheet '
+            + 'showed: three ballots that quote and keep every place of a long sheet read it a few times for each place and never '
+            + 'once for each pair of places',
+          fn: async () => {
+            /**
+             The places the sheet shows.
+             */
+            const size = 600;
+            /**
+             The count of reads of the labels shown.
+             */
+            const reads = { count: 0, };
+            /**
+             The labels of the places, as plain text.
+             */
+            const names = consistencyLabels({ count: size, },);
+            /**
+             Three ballots alike, each quoting every place and keeping every place.
+             */
+            const voices = ['a', 'b', 'c',].map(function voiceBy(seat,): ConsistencyVoice {
+              return voiceOf({
+                seat,
+                over: {
+                  quotes: names.map(function quoteOf(label,): ConsistencyVoice['quotes'][number] {
+                    return { label, quote: 'the cat naps', };
+                  },),
+                  keep: names,
+                },
+              },);
+            },);
+            expect([
+              usableVoicesOf({ voices, labels: countedList({ items: names, reads, },), },).length,
+              reads.count < (30 * size),
+            ],).toEqual([3, true,],);
           },
         },),
       ],

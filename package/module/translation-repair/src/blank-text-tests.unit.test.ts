@@ -1412,6 +1412,10 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
+  'consistency-shown-edge.ts#isWordCharacter': {
+    tests: 1,
+    why: SCANNER,
+  },
   'corpus-run/ordinal-style.ts#renderOrdinal': {
     tests: 1,
     why: SENTINEL,
@@ -1767,7 +1771,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SCANNER,
   },
-  'insertion-separator.ts#composeInsertion': {
+  'insertion-separator.ts#composedInsertion': {
     tests: 4,
     why: 'the join of the fragments that say something, empty exactly when none did, and the archive text '
       + 'either side of the boundary; each fragment is asked of `rendersAsNothing` before the join',
@@ -1850,6 +1854,10 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SCANNER,
   },
+  'mask-container-tags.ts#multiLineTagEnd': {
+    tests: 1,
+    why: SCANNER,
+  },
   'mdx-tag-start.ts#opensMdxTag': {
     tests: 1,
     why: SCANNER,
@@ -1858,7 +1866,15 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
+  'nested-single-quotes.ts#isDigitAt': {
+    tests: 1,
+    why: SCANNER,
+  },
   'nested-single-quotes.ts#opensAfter': {
+    tests: 1,
+    why: SCANNER,
+  },
+  'nested-single-quotes.ts#opensBeforeMarkup': {
     tests: 1,
     why: SCANNER,
   },

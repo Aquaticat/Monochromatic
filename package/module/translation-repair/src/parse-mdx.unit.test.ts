@@ -38,7 +38,13 @@ import {
   parseMdxBody,
   requireMarkdownRefusal,
   requireMdxRefusal,
+  withMarkdownExhaustionRefused,
+  withMdxExhaustionRefused,
 } from '../dist/final/node/index.mjs';
+import {
+  engineExhaustion,
+  withExhaustionFromParse,
+} from './parse-exhaustion.test-fixture.ts';
 import { caughtAtStackEdge, } from './stack-edge.test-fixture.ts';
 
 //region MDX refusal disclosure tests
@@ -523,6 +529,34 @@ await describe({
             },),).toBe('hairball',);
           },
         },),
+        it({
+          name: 'RETHROWS THE ENGINE\'S STACK EXHAUSTION UNCHANGED, since a catch cannot tell the parse that raised it from other '
+            + 'code of its block: the exhaustion of a parse is read as the refusal by the call that made the parse',
+          fn: async () => {
+            /**
+             What the engine raises where a runaway recursion exhausts its stack.
+             */
+            const exhaustion = engineExhaustion();
+
+            expect(caught(function narrowExhaustion(): void {
+              requireMdxRefusal({ error: exhaustion, },);
+            },),).toBe(exhaustion,);
+          },
+        },),
+        it({
+          name: 'RETHROWS A RangeError WITH ANOTHER MESSAGE, since only the engine\'s stack exhaustion is a fact about a '
+            + 'text',
+          fn: async () => {
+            /**
+             A range failure from anywhere else in the package.
+             */
+            const stray = new RangeError('the cat is not a position in the slices',);
+
+            expect(caught(function narrowStray(): void {
+              requireMdxRefusal({ error: stray, },);
+            },),).toBe(stray,);
+          },
+        },),
       ],
     },),
 
@@ -545,21 +579,28 @@ await describe({
           },
         },),
         it({
-          name: 'RETHROWS a RangeError that is not the plain grammar\'s refusal, the engine\'s own stack exhaustion '
-            + 'among them, since only the refusal parseMarkdownBody raises is a fact about a text',
+          name: 'RETHROWS a RangeError that is not the plain grammar\'s refusal and not the engine\'s stack exhaustion, '
+            + 'since only those are a fact about a text',
           fn: async () => {
             /**
              A range failure from anywhere else in the package.
              */
             const stray = new RangeError('the cat is not a position in the slices',);
-            /**
-             What the engine raises where some other code runs out of stack.
-             */
-            const exhaustion = new RangeError('Maximum call stack size exceeded',);
 
             expect(caught(function narrowStray(): void {
               requireMarkdownRefusal({ error: stray, },);
             },),).toBe(stray,);
+          },
+        },),
+        it({
+          name: 'RETHROWS THE ENGINE\'S STACK EXHAUSTION UNCHANGED, since a catch cannot tell the parse that raised it from other '
+            + 'code of its block: the exhaustion of a parse is read as the refusal by the call that made the parse',
+          fn: async () => {
+            /**
+             What the engine raises where code runs out of stack.
+             */
+            const exhaustion = engineExhaustion();
+
             expect(caught(function narrowExhaustion(): void {
               requireMarkdownRefusal({ error: exhaustion, },);
             },),).toBe(exhaustion,);
@@ -583,6 +624,220 @@ await describe({
             expect(caught(function narrowString(): void {
               requireMarkdownRefusal({ error: 'hairball', },);
             },),).toBe('hairball',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: withMdxExhaustionRefused.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RETURNS WHAT THE PARSE RETURNS, handing it the input it was given',
+          fn: async () => {
+            expect(withMdxExhaustionRefused({
+              parse: function parseOfBody({ body, }: { readonly body: string; },): string {
+                return `parsed ${body}`;
+              },
+              input: { body: 'cat', },
+            },),).toBe('parsed cat',);
+          },
+        },),
+        it({
+          name: 'READS THE ENGINE\'S STACK EXHAUSTION OF THE PARSE AS THE STRICT GRAMMAR\'S REFUSAL, built where the parse call '
+            + 'ended, carrying the exhaustion as its cause and quoting nothing',
+          fn: async () => {
+            /**
+             What the engine raises where the parse runs out of stack.
+             */
+            const exhaustion = engineExhaustion();
+            /**
+             What the call that made the parse raised.
+             */
+            const refusal = caught(function parseExhausted(): void {
+              withMdxExhaustionRefused({
+                parse: function exhausts(_input: string,): never {
+                  throw exhaustion;
+                },
+                input: 'cat',
+              },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(MdxParseError,);
+            expect(Error.isError(refusal,) ? refusal.cause : undefined,).toBe(exhaustion,);
+            expect(namesWithoutQuoting(refusal,),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'READS THE EXHAUSTION THAT LEAVES parseMdxBody RAW AS THE REFUSAL, where the refusal could not be built in time',
+          fn: async () => {
+            /**
+             What the call raised while the parser failed with no room to build the refusal.
+             */
+            const refusal = withExhaustionFromParse({
+              run: function parseRaw(): unknown {
+                return caught(function parseExhausted(): void {
+                  withMdxExhaustionRefused({
+                    parse: parseMdxBody,
+                    input: { body: 'A cat naps.', },
+                  },);
+                },);
+              },
+            },);
+
+            expect(refusal,).toBeInstanceOf(MdxParseError,);
+          },
+        },),
+        it({
+          name: 'RETHROWS ANY OTHER FAILURE OF THE PARSE UNCHANGED, a RangeError of another message included, and the refusal the '
+            + 'grammar raised',
+          fn: async () => {
+            /**
+             A range failure from anywhere else in the package.
+             */
+            const stray = new RangeError('the cat is not a position in the slices',);
+            /**
+             A failure that is no range failure.
+             */
+            const other = new TypeError('the cat knocked the parser off the table',);
+            /**
+             The strict grammar's own refusal.
+             */
+            const refusal = mdxRefusal();
+            expect([
+              caught(function parseStray(): void {
+                withMdxExhaustionRefused({
+                  parse: function raisesStray(_input: string,): never {
+                    throw stray;
+                  },
+                  input: 'cat',
+                },);
+              },),
+              caught(function parseOther(): void {
+                withMdxExhaustionRefused({
+                  parse: function raisesOther(_input: string,): never {
+                    throw other;
+                  },
+                  input: 'cat',
+                },);
+              },),
+              caught(function parseRefused(): void {
+                withMdxExhaustionRefused({
+                  parse: function raisesRefusal(_input: string,): never {
+                    throw refusal;
+                  },
+                  input: 'cat',
+                },);
+              },),
+            ],).toEqual([stray, other, refusal,],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: withMarkdownExhaustionRefused.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RETURNS WHAT THE PARSE RETURNS, handing it the input it was given',
+          fn: async () => {
+            expect(withMarkdownExhaustionRefused({
+              parse: function parseOfBody({ body, }: { readonly body: string; },): string {
+                return `parsed ${body}`;
+              },
+              input: { body: 'cat', },
+            },),).toBe('parsed cat',);
+          },
+        },),
+        it({
+          name: 'READS THE ENGINE\'S STACK EXHAUSTION OF THE PARSE AS THE PLAIN GRAMMAR\'S REFUSAL, built where the parse call '
+            + 'ended, carrying the exhaustion as its cause and quoting nothing',
+          fn: async () => {
+            /**
+             What the engine raises where the parse runs out of stack.
+             */
+            const exhaustion = engineExhaustion();
+            /**
+             What the call that made the parse raised.
+             */
+            const refusal = caught(function parseExhausted(): void {
+              withMarkdownExhaustionRefused({
+                parse: function exhausts(_input: string,): never {
+                  throw exhaustion;
+                },
+                input: 'cat',
+              },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(MarkdownParseError,);
+            expect(Error.isError(refusal,) ? refusal.cause : undefined,).toBe(exhaustion,);
+            expect(namesWithoutQuoting(refusal,),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'READS THE EXHAUSTION THAT LEAVES parseMarkdownBody RAW AS THE REFUSAL, where the refusal could not be built in time',
+          fn: async () => {
+            /**
+             What the call raised while the parser failed with no room to build the refusal.
+             */
+            const refusal = withExhaustionFromParse({
+              run: function parseRaw(): unknown {
+                return caught(function parseExhausted(): void {
+                  withMarkdownExhaustionRefused({
+                    parse: parseMarkdownBody,
+                    input: { body: 'A cat naps.', },
+                  },);
+                },);
+              },
+            },);
+
+            expect(refusal,).toBeInstanceOf(MarkdownParseError,);
+          },
+        },),
+        it({
+          name: 'RETHROWS ANY OTHER FAILURE OF THE PARSE UNCHANGED, a RangeError of another message included, and the refusals '
+            + 'of either grammar',
+          fn: async () => {
+            /**
+             A range failure from anywhere else in the package.
+             */
+            const stray = new RangeError('the cat is not a position in the slices',);
+            /**
+             A failure that is no range failure.
+             */
+            const other = new TypeError('the cat knocked the parser off the table',);
+            /**
+             The strict grammar's own refusal.
+             */
+            const strict = mdxRefusal();
+            expect([
+              caught(function parseStray(): void {
+                withMarkdownExhaustionRefused({
+                  parse: function raisesStray(_input: string,): never {
+                    throw stray;
+                  },
+                  input: 'cat',
+                },);
+              },),
+              caught(function parseOther(): void {
+                withMarkdownExhaustionRefused({
+                  parse: function raisesOther(_input: string,): never {
+                    throw other;
+                  },
+                  input: 'cat',
+                },);
+              },),
+              caught(function parseStrict(): void {
+                withMarkdownExhaustionRefused({
+                  parse: function raisesStrict(_input: string,): never {
+                    throw strict;
+                  },
+                  input: 'cat',
+                },);
+              },),
+            ],).toEqual([stray, other, strict,],);
           },
         },),
       ],

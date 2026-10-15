@@ -154,8 +154,11 @@ await describe({
           fn: async () => {
             expect(straightenProseQuotes({ text: 'the cat’s “nap”, then `say “purr”`', },),)
               .toBe('the cat\'s "nap", then `say “purr”`',);
+            expect(straightenProseQuotes({ text: '<Cat name="“Mittens”">she didn’t</Cat>', },),)
+              .toBe('<Cat name="“Mittens”">she didn\'t</Cat>',);
+            // A tag with a curly attribute quote is no tag the grammar reads, so the text has no prose at all.
             expect(straightenProseQuotes({ text: '<Cat name=“Mittens”>she didn’t</Cat>', },),)
-              .toBe('<Cat name=“Mittens”>she didn\'t</Cat>',);
+              .toBe('<Cat name=“Mittens”>she didn’t</Cat>',);
           },
         },),
         it({

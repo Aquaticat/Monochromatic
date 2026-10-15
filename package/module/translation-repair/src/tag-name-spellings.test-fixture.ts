@@ -1,6 +1,7 @@
 import {
   parseMdxBody,
   requireMdxRefusal,
+  withMdxExhaustionRefused,
 } from '../dist/final/node/index.mjs';
 
 //region Tag name spellings
@@ -128,7 +129,10 @@ export function tagNameSpellings(): readonly string[] {
  */
 export function grammarAcceptsDocument({ document, }: { readonly document: string; },): boolean {
   try {
-    parseMdxBody({ body: document, },);
+    withMdxExhaustionRefused({
+      parse: parseMdxBody,
+      input: { body: document, },
+    },);
     return true;
   }
   catch (error) {

@@ -21,6 +21,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  placeSlices,
   repairReplacements,
   SliceIndexingError,
   type SliceReplacement,
@@ -753,6 +754,169 @@ await describe({
                 },),
               ],
             },),).toBe(TARGET_TEXT,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: placeSlices.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'GIVES THE SAME TEXT AS spliceSlices and the range each content span was written over, in the order of the page, '
+            + 'wherever earlier writes grew or shrank the text',
+          fn: async () => {
+            /**
+             Replacements that grow the first span and shrink the last, written in no order.
+             */
+            const replacements = [
+              write({ sliceIndex: 2, replacementText: 'Purr.', },),
+              write({ sliceIndex: 0, replacementText: 'The cat naps all through the long afternoon.', },),
+            ];
+            const { text, placed, } = placeSlices({ targetText: TARGET_TEXT, slices: SLICES, replacements, },);
+            expect(text,).toBe(spliceSlices({ targetText: TARGET_TEXT, slices: SLICES, replacements, },),);
+            expect(placed.map(function rangeText({ start, end, },): string {
+              return text.slice(
+                start,
+                end,
+              );
+            },),).toEqual(['The cat naps all through the long afternoon.', 'Purr.',],);
+            expect(placed.map(function indexOfPlaced({ sliceIndex, },): number {
+              return sliceIndex;
+            },),).toEqual([0, 2,],);
+            expect(placed.every(function startsAtEnglish({ start, englishAt, },): boolean {
+              return start === englishAt;
+            },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'PLACES THE FIRST CHARACTER OF THE ENGLISH where it would stand, before the range when the lane carried more line '
+            + 'endings at its start than the span kept, and after the start when it carried fewer, since a span keeps its own edges',
+          fn: async () => {
+            /**
+             A translation whose second and third spans each start with a blank line.
+             */
+            const targetText = 'One.\n\nTwo.\n\nThree.';
+            /**
+             The slices over it: the first a plain sentence, the others each holding the blank line before it.
+             */
+            const slices = [
+              [0, 4,],
+              [4, 10,],
+              [10, 18,],
+            ].map(function pairOf(
+              [startOffset = 0, endOffset = 0,],
+              sliceIndex,
+            ) {
+              /**
+               The side both halves of the pair share, since only the target is read.
+               */
+              const side = {
+                sliceIndex,
+                nodes: [],
+                startOffset,
+                endOffset,
+                text: targetText.slice(
+                  startOffset,
+                  endOffset,
+                ),
+              } as const;
+              return { source: side, target: side, };
+            },);
+            /**
+             The English written into the second and third spans: three blank lines to the span's two, and none to its two.
+             */
+            const englishes = ['\n\n\nTwo cats.', 'Three cats.',];
+            const { text, placed, } = placeSlices({
+              targetText,
+              slices,
+              replacements: englishes.map(function replacementOf(
+                replacementText,
+                at,
+              ): SliceReplacement {
+                return write({ sliceIndex: at + 1, replacementText, },);
+              },),
+            },);
+            expect(text,).toBe('One.\n\nTwo cats.\n\nThree cats.',);
+            expect(placed.map(function wordsAtEnglish({ sliceIndex, englishAt, },): string {
+              /**
+               The English written for this slice.
+               */
+              const english = englishes[sliceIndex - 1] ?? '';
+              /**
+               The English without the line endings it starts with.
+               */
+              const words = english.trimStart();
+              return text.slice(
+                englishAt + (english.length - words.length),
+                englishAt + english.length,
+              );
+            },),).toEqual(['Two cats.', 'Three cats.',],);
+            expect(placed.map(function englishAtOf({ englishAt, },): number {
+              return englishAt;
+            },),).toEqual([3, 17,],);
+          },
+        },),
+        it({
+          name: 'PLACES THE BODY OF EACH ANCHORED FRAGMENT, without the blank lines assembly put around it or cut from it, and the first '
+            + 'character of the fragment before the body when blank lines were cut',
+          fn: async () => {
+            /**
+             Two anchors at the end of the second paragraph.
+             */
+            const slices = [
+              ...SLICES.slice(
+                0,
+                2,
+              ),
+              anchorAt({ sliceIndex: 2, offset: FINAL_START, },),
+              anchorAt({ sliceIndex: 3, offset: FINAL_START, },),
+            ];
+            const { text, placed, } = placeSlices({
+              targetText: TARGET_TEXT,
+              slices,
+              replacements: [
+                write({ sliceIndex: 3, replacementText: 'Then she stretches. ', },),
+                write({ sliceIndex: 2, replacementText: '\n\nShe dozes in the sun. ', },),
+              ],
+            },);
+            /**
+             Where the first fragment's body starts.
+             */
+            const firstAt = text.indexOf('She dozes',);
+            /**
+             Where the second fragment's body starts.
+             */
+            const secondAt = text.indexOf('Then she',);
+            expect(placed,).toEqual([
+              { sliceIndex: 2, start: firstAt, end: firstAt + 'She dozes in the sun.'.length, englishAt: firstAt - 2, },
+              { sliceIndex: 3, start: secondAt, end: secondAt + 'Then she stretches.'.length, englishAt: secondAt, },
+            ],);
+          },
+        },),
+        it({
+          name: 'GIVES NO PLACE TO A FRAGMENT THAT SHOWS A READER NOTHING, which writes nothing, and keeps the places of the others',
+          fn: async () => {
+            /**
+             An anchor at the end whose original is a zero-width space, written nothing.
+             */
+            const silentAnchor = anchorAt({ sliceIndex: 3, offset: TARGET_TEXT.length, },);
+            const { text, placed, } = placeSlices({
+              targetText: TARGET_TEXT,
+              slices: [
+                ...SLICES,
+                { ...silentAnchor, source: { ...silentAnchor.source, text: '\u{200B}', }, },
+              ],
+              replacements: [
+                write({ sliceIndex: 3, replacementText: '', },),
+                write({ sliceIndex: 0, replacementText: 'The cat naps.', },),
+              ],
+            },);
+            expect(text.startsWith('The cat naps.',),).toBe(true,);
+            expect(placed.map(function indexOfPlaced({ sliceIndex, },): number {
+              return sliceIndex;
+            },),).toEqual([0,],);
           },
         },),
       ],

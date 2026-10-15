@@ -49,6 +49,127 @@ await describe({
           },
         },),
         it({
+          name: 'CUTS OR KEEPS A CHARACTER REFERENCE AT THE END OF A QUOTE AS THE CHARACTER IT SHOWS WOULD BE, as one unit: a reference '
+            + 'that shows a letter or a mark the quote does not cut stays whole, one that shows closing punctuation or space goes whole',
+          fn: async () => {
+            expect({
+              quote: quoteCore({ quote: 'dogs&#39;', },),
+              curly: quoteCore({ quote: 'dogs&rsquo;', },),
+              ampersand: quoteCore({ quote: 'cats &amp;', },),
+              space: quoteCore({ quote: 'cats&nbsp;', },),
+              hexadecimal: quoteCore({ quote: 'dogs&#x2019;', },),
+              stop: quoteCore({ quote: 'dogs&#39;.', },),
+              twice: quoteCore({ quote: 'dogs&#39;;', },),
+              literal: quoteCore({ quote: 'cats;', },),
+              noName: quoteCore({ quote: 'cats &;', },),
+              notClosed: quoteCore({ quote: 'cats &amp bowl;', },),
+              inner: quoteCore({ quote: 'cat&#39;s bowl.', },),
+              shownStop: quoteCore({ quote: 'cats&period;', },),
+              shownStopNumeric: quoteCore({ quote: 'cats&#46;', },),
+              shownComma: quoteCore({ quote: 'cats&comma;.', },),
+              shownSpaceNumeric: quoteCore({ quote: 'cats&#160;', },),
+              shownLetter: quoteCore({ quote: 'cats&eacute;', },),
+            },).toEqual({
+              quote: 'dogs&#39;',
+              curly: 'dogs&rsquo;',
+              ampersand: 'cats &amp;',
+              space: 'cats',
+              hexadecimal: 'dogs&#x2019;',
+              stop: 'dogs&#39;',
+              twice: 'dogs&#39;',
+              literal: 'cats',
+              noName: 'cats &',
+              notClosed: 'cats &amp bowl',
+              inner: 'cat&#39;s bowl',
+              shownStop: 'cats',
+              shownStopNumeric: 'cats',
+              shownComma: 'cats',
+              shownSpaceNumeric: 'cats',
+              shownLetter: 'cats&eacute;',
+            },);
+          },
+        },),
+        it({
+          name: 'READS ONLY WHAT THE PARSER DECODES AS A REFERENCE AT THE END OF A QUOTE: a word that merely looks like a reference '
+            + '(`Q&A;`, `R&D;`, `a&b;`, `a&zzzz;`, a numeric reference past the parser\'s digits) ends in a semicolon that is closing '
+            + 'punctuation, as after any other word',
+          fn: async () => {
+            expect({
+              questionAnswer: quoteCore({ quote: 'See Q&A;', },),
+              research: quoteCore({ quote: 'See R&D;', },),
+              telephone: quoteCore({ quote: 'AT&T;', },),
+              short: quoteCore({ quote: 'Call a&b;', },),
+              unknownName: quoteCore({ quote: 'Call a&zzzz;', },),
+              elevenDigits: quoteCore({ quote: 'Call a&#00000000039;', },),
+              sevenDigits: quoteCore({ quote: 'Call a&#0000039;', },),
+              control: quoteCore({ quote: 'AT&amp;', },),
+            },).toEqual({
+              questionAnswer: 'See Q&A',
+              research: 'See R&D',
+              telephone: 'AT&T',
+              short: 'Call a&b',
+              unknownName: 'Call a&zzzz',
+              elevenDigits: 'Call a&#00000000039',
+              sevenDigits: 'Call a&#0000039;',
+              control: 'AT&amp;',
+            },);
+          },
+        },),
+        it({
+          name: 'CUTS A BACKSLASH ESCAPE AT THE END OF A QUOTE AS THE CHARACTER IT SHOWS WOULD BE, as one unit: an escaped stop, '
+            + 'bracket or quotation mark goes with its backslash like a plain one, and an escaped letter-like or markup character stays',
+          fn: async () => {
+            expect({
+              stop: quoteCore({ quote: 'cats\\.', },),
+              semicolon: quoteCore({ quote: 'cats\\;', },),
+              exclamation: quoteCore({ quote: 'cats\\!', },),
+              escapedBackslash: quoteCore({ quote: 'cats\\\\.', },),
+              threeBackslashes: quoteCore({ quote: 'cats\\\\\\.', },),
+              lone: quoteCore({ quote: 'cats\\', },),
+              letter: quoteCore({ quote: 'cats\\a.', },),
+              ampersand: quoteCore({ quote: 'cats\\&amp;', },),
+              escapedStopThenStop: quoteCore({ quote: 'cats\\..', },),
+              reference: quoteCore({ quote: 'cats&amp;\\.', },),
+              star: quoteCore({ quote: 'cats\\*', },),
+              hash: quoteCore({ quote: 'cats\\#', },),
+              backslashesOnly: quoteCore({ quote: 'cats\\\\', },),
+            },).toEqual({
+              stop: 'cats',
+              semicolon: 'cats',
+              exclamation: 'cats',
+              escapedBackslash: 'cats\\\\',
+              threeBackslashes: 'cats\\\\',
+              lone: 'cats\\',
+              letter: 'cats\\a',
+              ampersand: 'cats\\&amp',
+              escapedStopThenStop: 'cats',
+              reference: 'cats&amp;',
+              star: 'cats\\*',
+              hash: 'cats\\#',
+              backslashesOnly: 'cats\\\\',
+            },);
+          },
+        },),
+        it({
+          name: 'CUTS A UNIT THAT SHOWS NOTHING OFF THE START OF A QUOTE WHOLE: a reference to a zero-width space goes with all its '
+            + 'characters, a backslash before a letter is a word character and stays',
+          fn: async () => {
+            expect({
+              named: quoteCore({ quote: '&ZeroWidthSpace;cats', },),
+              numeric: quoteCore({ quote: '&#8203;&#x200B;cats', },),
+              space: quoteCore({ quote: '&nbsp;cats', },),
+              escapedLetter: quoteCore({ quote: '\\cats', },),
+              escapedStar: quoteCore({ quote: '\\*cats', },),
+            },).toEqual({
+              named: 'cats',
+              numeric: 'cats',
+              space: 'cats',
+              escapedLetter: '\\cats',
+              escapedStar: '\\*cats',
+            },);
+          },
+        },),
+        it({
           name: 'KEEPS A VARIATION SELECTOR WITH THE CHARACTER IT FOLLOWS, taking only the punctuation after it off a '
             + 'quote\'s end',
           fn: async () => {

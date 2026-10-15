@@ -503,6 +503,32 @@ const ALLOWED_BLIND_SETS: ReadonlyMap<string, string> = new Map<string, string>(
     'the key is the tree node that opens a run, and each run of unpositioned text has its own first member',
   ],
   [
+    'consistency-page-english.ts#pageOfSlices: offsets.set(slice.sliceIndex,...)',
+    'one write per slice of the list the pass builds from the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
+  ],
+  [
+    'consistency-page-english.ts#laidOutPage: byIndex.set(entry.sliceIndex,...)',
+    'one write per place the assembly reports, and it reports each replacement once, since a slice holds at most one '
+    + 'replacement and `assertSliceIndexing` holds the indexes of the list distinct',
+  ],
+  [
+    'consistency-page-english.ts#laidOutPage: offsets.set(sliceIndex,...)',
+    'one write per slice of the list the pass builds from the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
+  ],
+  [
+    'consistency-page-english.ts#laidOutPage: shipped.set(sliceIndex,...)',
+    'one write per replacement of the list the assembly was just given, and the assembly refuses two replacements naming one '
+    + 'slice before this write runs',
+  ],
+  [
+    'consistency-page-english.ts#pageOfSlices: shipped.set(slice.sliceIndex,...)',
+    'one write per slice of the list the pass builds from the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
+  ],
+  [
+    'corpus-run/pass-consistency-slices.ts#consistencySlicesOf: raw.set(sliceIndex,...)',
+    'one write per slice of the list the pass reads from the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
+  ],
+  [
     'contributor-name-authority.ts#referenceLinkLabels: labels.set(markup,...)',
     'the label is cut from inside the markup the key is, so two links written alike carry one value',
   ],
@@ -565,6 +591,22 @@ const ALLOWED_BLIND_SETS: ReadonlyMap<string, string> = new Map<string, string>(
   [
     'corpus-run/list-spread-restore.ts#restoreListSpread: rewritten.set(sliceIndex,...)',
     'one write per slice of a loop over the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
+  ],
+  [
+    'corpus-run/pass-consistency-apply-gains.ts#gainedBy: sides.set(edit.id,...)',
+    'the id names a group and a place, a place belongs to exactly one replacement, and a slice lists each replacement '
+    + 'once, so each id is written once',
+  ],
+  [
+    'corpus-run/pass-consistency-apply.ts#recordGaveWay: gaveWayTo.set(key,...)',
+    'the key names a group and a place, a place belongs to exactly one replacement, a replacement lies in one slice and '
+    + 'the loop visits each slice once, and a replacement is either left out for changing another group\'s words or '
+    + 'overlapped by an earlier one and never both, so each key is written once',
+  ],
+  [
+    'corpus-run/pass-consistency-apply.ts#recordKept: keptBecause.set(key,...)',
+    'the key names a group and a place, a place belongs to exactly one replacement, a replacement lies in one slice and '
+    + 'the loop visits each slice once, and a replacement is left out once and given one reason, so each key is written once',
   ],
   [
     'corpus-run/pass-consistency-apply.ts#recordOutcome: outcomes.set(key,...)',

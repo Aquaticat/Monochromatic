@@ -260,7 +260,7 @@ await describe({
           },
         },),
         it({
-          name: 'REFUSES A SPLICE THAT WON FOR A BLOCK WITH A PLACE WHOSE WORDS CANNOT BE MOVED BY CODE, since no splice is '
+          name: 'REFUSES A SPLICE THAT WON FOR A BLOCK NONE OF WHOSE PLACES HAS WORDS CODE CAN MOVE, since no splice is '
             + 'offered then',
           fn: async () => {
             const scene = carryScene({ behave: allChoose({ text: SPLICED_PARAGRAPH, }), },);
@@ -279,9 +279,58 @@ await describe({
             },);
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
-              'ConsistencyInvariantError: unreachable: the splice won for OCCURRENCE 2, whose words cannot be moved by code, '
-              + 'and a splice is offered only when every receiving place of the block can be spliced',
+              'ConsistencyInvariantError: unreachable: the splice won for OCCURRENCE 2, none of whose receiving places has '
+              + 'words that code can move, and a splice is offered only when some receiving place of the block can be spliced',
             );
+          },
+        },),
+        it({
+          name: 'REPLACES THE WORDS OF THE PLACES CODE CAN MOVE WHEN THE SPLICE WINS FOR A BLOCK CARRIED IN PART, leaves the '
+            + 'other place no replacement, records one choice under both labels and reports which place kept its words',
+          fn: async () => {
+            const scene = carryScene({ behave: allChoose({ text: 'Later the cat naps in the sun.', }), },);
+            const unit: CarryUnit = {
+              ...scene.unit,
+              receivers: [
+                { ...scene.receiver, plan: { kind: 'unavailable', }, },
+                secondReceiverOf({ receiver: scene.receiver, },),
+              ],
+            };
+            const offers = carryOffersOf({
+              current: RECEIVING_ENGLISH,
+              splice: ['Later the cat naps in the sun.',],
+              written: [],
+              lineStructured: false,
+            },);
+            const { carries, edits, findings, } = await choose({
+              context: scene.context,
+              repeat: CARRY_REPEAT,
+              chosen: scene.chosen,
+              unit,
+              offers,
+              findings: [],
+            },);
+            expect({
+              edits,
+              labels: carries.map(function labelOf({ label, },): string {
+                return label;
+              },),
+              decisions: carries.map(function decisionOf({ decision, },) {
+                return decision;
+              },),
+              findings,
+            },).toEqual({
+              edits: [{ kind: 'splice', placePositions: [2,], sliceIndex: 1, start: 25, end: 32, text: 'the warm sun', },],
+              labels: ['OCCURRENCE 2', 'OCCURRENCE 3',],
+              decisions: [
+                { kind: 'chosen', label: 'CANDIDATE 2', },
+                { kind: 'chosen', label: 'CANDIDATE 2', },
+              ],
+              findings: [
+                'consistency-partly-carried (OCCURRENCE 2 and OCCURRENCE 3): the splice won, so code moved the chosen words '
+                + 'into OCCURRENCE 3 and left OCCURRENCE 2 as it was, since code cannot move them there',
+              ],
+            },);
           },
         },),
         it({

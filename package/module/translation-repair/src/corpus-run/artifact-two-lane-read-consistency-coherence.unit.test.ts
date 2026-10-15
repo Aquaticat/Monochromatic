@@ -246,6 +246,7 @@ function slicesRefusal(
         groups,
         slices,
         path: 'cat.slices',
+        generation: 17,
       },);
     },
   },);
@@ -265,6 +266,39 @@ await describe({
             expect([napsGroup(), frameGroup(),].map(function recount(group,): unknown {
               return coherent({ group, },);
             },),).toEqual([undefined, undefined,],);
+          },
+        },),
+        it({
+          name: 'RECOUNTS BALLOTS THAT COPIED A MARK BESIDE THEIR WORDS BY THE QUOTE THEY GAVE, as a section of generation '
+            + 'fifteen was written: the quote recorded is the quote agreed, mark and all, and no mark evidence enters the recount',
+          fn: async () => {
+            const group = napsGroup();
+            const copying = ballotsOf({
+              group,
+              change: function opens(ballot,): ArtifactConsistencyBallot {
+                return {
+                  ...ballot,
+                  quotes: ballot.quotes
+                    .map(function withMark(entry,): ArtifactConsistencyBallot['quotes'][number] {
+                      return { ...entry, quote: `‘${entry.quote}`, };
+                    },),
+                };
+              },
+            },);
+            const heard = withBallots({ group, ballots: copying, usable: 3, },);
+            const recorded: ArtifactConsistencyGroup = {
+              ...heard,
+              occurrences: heard.occurrences.map(function recordsTheMark(place,): ArtifactConsistencyGroup['occurrences'][number] {
+                return (place.rendering.kind === 'located')
+                  ? { ...place, rendering: { ...place.rendering, quote: `‘${place.rendering.quote}`, }, }
+                  : place;
+              },),
+            };
+            expect([coherent({ group: recorded, },), coherenceRefusal({ group: heard, },),],).toEqual([
+              undefined,
+              `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[0].rendering: `
+              + 'expected the quote and slot a strict majority of the usable ballots gave.',
+            ],);
           },
         },),
         it({
@@ -610,11 +644,13 @@ await describe({
               groups: [napsGroup(), frameGroup(),],
               slices: rows,
               path: 'cat.slices',
+              generation: 17,
             },),).toBeUndefined();
             expect(assertSlicesCoherent({
               groups: [],
               slices: [],
               path: 'cat.slices',
+              generation: 17,
             },),).toBeUndefined();
           },
         },),
@@ -624,10 +660,15 @@ await describe({
             expect(assertSlicesCoherent({
               groups: [
                 withPlace({ group: napsGroup(), position: 1, over: { outcome: 'kept-floor', }, },),
-                withPlace({ group: frameGroup(), position: 1, over: { outcome: 'overlapped', }, },),
+                withPlace({
+                  group: frameGroup(),
+                  position: 1,
+                  over: { outcome: 'overlapped', gaveWayTo: { group: 0, label: 'OCCURRENCE 2', }, },
+                },),
               ],
               slices: [],
               path: 'cat.slices',
+              generation: 17,
             },),).toBeUndefined();
           },
         },),

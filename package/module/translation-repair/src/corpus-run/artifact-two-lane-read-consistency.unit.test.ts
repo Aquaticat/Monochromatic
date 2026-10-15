@@ -154,7 +154,7 @@ function readWritten({ value, }: { readonly value: unknown; },): ReturnType<type
   return parseConsistency({
     value,
     path: 'cat.consistency',
-    generation: 16,
+    generation: 17,
     sliceIndexes: SLICES,
   },);
 }
@@ -921,6 +921,63 @@ await describe({
               ['twice', ['chosen', 'unlocated', 'chosen', 'replaced', 'replaced', 'replaced',],],
               ['failed', ['untouched', 'untouched', 'untouched', 'untouched', 'untouched', 'untouched',],],
             ],);
+            expect(Object.entries(sections,).map(function gaveWayIn([name, section,],): readonly [string, readonly unknown[]] {
+              return [
+                name,
+                section.groups.flatMap(function gaveWayOf({ occurrences, },): readonly unknown[] {
+                  return occurrences.flatMap(function named({ gaveWayTo, },): readonly unknown[] {
+                    return (gaveWayTo === undefined) ? [] : [gaveWayTo,];
+                  },);
+                },),
+              ];
+            },),).toEqual([
+              ['withheldSplice', [],],
+              ['overlapped', [{ group: 0, label: 'OCCURRENCE 2', },],],
+              ['following', [],],
+              ['alike', [],],
+              ['noEnglish', [],],
+              ['twice', [],],
+              ['failed', [],],
+            ],);
+          },
+        },),
+        it({
+          name: 'READS A SECTION OF GENERATION SIXTEEN, WHICH NAMES NO PLACE AN OVERLAPPED PLACE GAVE WAY TO, as it was written, '
+            + 'and refuses it as generation seventeen, and refuses the name generation seventeen writes as generation sixteen',
+          fn: async () => {
+            const section = await sectionOfRun({ behave: sentenceQuoteSpansTheRefrain, },);
+            /**
+             The section as a file of generation sixteen held it: the overlapped place of the refrain with no name.
+             */
+            const older = editedBy({
+              root: section,
+              edits: [removeAt({ path: placePath({ group: 1, place: 2, field: ['gaveWayTo',], }), },),],
+            },);
+            expect(parseConsistency({
+              value: structuredClone(older,),
+              path: 'cat.consistency',
+              generation: 16,
+              sliceIndexes: SLICES,
+            },),).toEqual(older,);
+            expect(refusalOf({ value: older, },),).toBe(
+              'artifact parse failed at cat.consistency.groups[1].occurrences[2].gaveWayTo: expected the place an overlapped '
+              + 'place gave way to, which generation seventeen records.',
+            );
+            /**
+             What reading the section generation seventeen writes as generation sixteen refuses with.
+             */
+            const refusedAsSixteen = caught(function readsSixteen(): unknown {
+              return parseConsistency({
+                value: structuredClone(section,),
+                path: 'cat.consistency',
+                generation: 16,
+                sliceIndexes: SLICES,
+              },);
+            },);
+            expect(String(refusedAsSixteen,),).toBe(
+              'ArtifactParseError: artifact parse failed at cat.consistency.groups[1].occurrences[2].gaveWayTo: expected no key '
+              + 'here beyond label, sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
+            );
           },
         },),
         it({

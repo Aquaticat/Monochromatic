@@ -41,8 +41,10 @@ import {
   preparedCatPage,
   projectedCatPage,
   scriptedJudgeClient,
+  type SeatBehaviour,
 } from './consistency-page.test-fixture.ts';
 import { DIGEST, } from './consistency-run.test-fixture.ts';
+import { sheetKindOf, } from './consistency-sheet-reading.test-fixture.ts';
 
 /**
  Logger the bench writes to.
@@ -96,6 +98,36 @@ function catGroups(): readonly PreparedGroup[] {
     .map(function preparedOf(group,): PreparedGroup {
       return { group, places: placesOf({ group, slices, },), };
     },);
+}
+
+/**
+ Consecutive equal labels counted as one run each, in order.
+
+ @param labels - the labels in the order they came
+
+ @returns Each run as its label and how many times it came in a row
+
+ @example
+ ```ts
+ const runs = runsOf({ labels: ['decide', 'decide', 'carry',], },); // [['decide', 2], ['carry', 1]]
+ ```
+ */
+function runsOf({ labels, }: { readonly labels: readonly string[]; },): readonly (readonly [string, number])[] {
+  /**
+   The runs counted so far.
+   */
+  const runs: [string, number][] = [];
+  for (const label of labels) {
+    /**
+     The run the label may continue.
+     */
+    const last = runs.at(-1,);
+    if (last?.[0] === label)
+      last[1] += 1;
+    else
+      runs.push([label, 1,],);
+  }
+  return runs;
 }
 
 await describe({
@@ -175,6 +207,50 @@ await describe({
               stageSettings: SCRIPTED_STAGE_SETTINGS,
             },),).toEqual([],);
             expect(asked,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'DECIDES EVERY GROUP BEFORE ANY GROUP IS CARRIED: with one group in flight at a time, every ballot of both '
+            + 'groups is asked before the first writer or choice sheet, and no ballot follows a carry',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-bench-', },);
+            /**
+             The kind of every sheet the client was shown, in the order the calls were made.
+             */
+            const kinds: string[] = [];
+            await askAll({
+              client: scriptedJudgeClient({
+                behave: function recordKind({ sheet, },): SeatBehaviour {
+                  kinds.push(sheetKindOf({ sheet, },),);
+                  return firstPlaceWins({ sheet, },);
+                },
+                asked: [],
+                sheets: [],
+              },),
+              text: PAGE_SOURCE,
+              toAsk: catGroups(),
+              declared: [],
+              declaredNames: [],
+              entryCacheDir: dir.path,
+              pipelineDigest: DIGEST,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              overlap: 1,
+              l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
+            },);
+            expect({
+              phases: runsOf({
+                labels: kinds.map(function phaseOf(kind,): string {
+                  return ((kind === 'ballot') || (kind === 'run-off')) ? 'decide' : 'carry';
+                },),
+              },),
+              ballots: kinds.filter(function isBallot(kind,): boolean {
+                return kind === 'ballot';
+              },).length,
+            },).toEqual({
+              phases: [['decide', 10,], ['carry', 40,],],
+              ballots: 10,
+            },);
           },
         },),
         it({

@@ -65,6 +65,7 @@ import {
   refrainChoosing,
   scriptedJudgeClient,
   type SeatBehaviour,
+  type SeatScript,
 } from './consistency-page.test-fixture.ts';
 import {
   REFRAIN_QUOTES,
@@ -450,6 +451,591 @@ function twoInBlockWritersAndBench(
 }
 
 //endregion Two places in one block
+
+//region A place across a paragraph boundary beside a place of the second paragraph
+// The words of the first place run over the boundary between two paragraphs, so no block holds them and only a splice
+// could carry them, and the chosen words hold no break, so the splice is unavailable (`consistency-block-breaks.ts`);
+// the second place stands in the second paragraph, which a writer may then rewrite.
+
+/**
+ The three English renderings of the repeated sentence: the first runs over a paragraph boundary, the second ends the
+ second paragraph.
+ */
+const CROSSING_WORDS = [
+  'The sunny window put the kitten\n\nto sleep',
+  'The sun on the sill sent the kitten off to sleep',
+  'The window sun made the kitten fall asleep',
+] as const;
+
+/**
+ The page: the sentence runs over a paragraph boundary and ends the next paragraph of the first section, and stands once
+ in the second.
+
+ @param afterFirst - what directly follows the words that run over the boundary, nothing by default; the opening curly
+ single mark there is never a proven apostrophe, so it is a mark beside the words that makes the splice of that place
+ unavailable, the chosen place holding none
+
+ @returns Preparation of the page
+
+ @example
+ ```ts
+ const prepared = crossingPage({ afterFirst: '‘', },);
+ ```
+ */
+function crossingPage(
+  { afterFirst = '', }: { readonly afterFirst?: string; } = {},
+): ReturnType<typeof prepareDocumentPair> {
+  return prepareDocumentPair({
+    sourceText: '## 一\n\n窗台上的阳光让小猫睡着了。厨房里很暖和。窗台上的阳光让小猫睡着了。\n\n## 二\n\n窗台上的阳光让小猫睡着了。\n',
+    targetText: `## One\n\n${CROSSING_WORDS[0]}${afterFirst}. The kitchen was warm. ${CROSSING_WORDS[1]}.\n\n## Two\n\n${CROSSING_WORDS[2]}.\n`,
+  },);
+}
+
+/**
+ The ballots of the page: every judge quotes all three places and chooses the third.
+
+ @param seat - the seat asked
+
+ @returns Behaviour of the seat
+
+ @example
+ ```ts
+ const behave: SeatScript = crossingBallots;
+ ```
+ */
+function crossingBallots({ seat, }: { readonly seat: RosterModelId; },): SeatBehaviour {
+  if (RUN_LATE_JUDGES.indexOf(seat,) > 3)
+    return { kind: 'throws', };
+  return {
+    kind: 'answers',
+    text: ballotText({
+      quotes: CROSSING_WORDS.map(function quoteOf(quote, at,): Record<string, string> {
+        return { label: `OCCURRENCE ${String(at + 1,)}`, quote, };
+      },),
+      choice: 'OCCURRENCE 3',
+      keep: [],
+    },),
+  };
+}
+
+/**
+ The writers and the bench of the page: a writer that is asked puts the chosen words in the second paragraph and changes
+ the warm sentence of it; the judges choose a writer's paragraph where one is on offer and the code splice otherwise.
+
+ @param seat - the seat asked
+
+ @param sheet - the sheet it was shown
+
+ @returns Behaviour of the seat
+
+ @example
+ ```ts
+ const behave: SeatScript = crossingWritersAndBench;
+ ```
+ */
+function crossingWritersAndBench(
+  {
+    seat,
+    sheet,
+  }: {
+    readonly seat: RosterModelId;
+    readonly before: number;
+    readonly sheet: string;
+  },
+): SeatBehaviour {
+  /**
+   The question the sheet asks.
+   */
+  const kind = sheetKindOf({ sheet, },);
+  if (kind === 'writer') {
+    if (RUN_TRANSLATORS.indexOf(seat,) > 1)
+      return { kind: 'throws', };
+    /**
+     The words to replace when the sheet numbers them, which it does for several receiving places.
+     */
+    const numbered = sheetBlockOf({ sheet, label: 'THE WORDS TO REPLACE 1', },);
+    return {
+      kind: 'answers',
+      text: JSON.stringify({
+        translation: currentParagraphOf({ sheet, },)
+          .replace(
+            (numbered === '') ? sheetBlockOf({ sheet, label: 'THE WORDS TO REPLACE', },) : numbered,
+            sheetBlockOf({ sheet, label: 'CHOSEN RENDERING', },),
+          )
+          .replace('was warm', 'felt warm',),
+      },),
+    };
+  }
+  if (kind === 'choice') {
+    if (RUN_LATE_JUDGES.indexOf(seat,) > 3)
+      return { kind: 'throws', };
+    /**
+     The candidates the sheet offers.
+     */
+    const candidates = candidateTextsOf({ sheet, },);
+    return choosing({
+      choice: (candidates.find(function carriesTheChangeBefore({ text, },): boolean {
+        return text.includes('felt warm',);
+      },) ?? candidates.find(function isAlternative({ current, },): boolean {
+        return !current;
+      },))
+        ?.label
+        ?? '',
+    },);
+  }
+  return otherSheetBehaviour({ sheet, },);
+}
+
+//endregion A place across a paragraph boundary beside a place of the second paragraph
+
+//region Two places with the same words and different marks beside them
+// The words `the cats` stand in two places, once with the opening curly single mark directly after them (never a proven
+// apostrophe, so it stays a mark beside the words) and once with none, and the third place is worded otherwise: the places
+// that receive the chosen words hold equal words and different marks.
+
+/**
+ The English of the page's first section: the chosen place, and the place whose words a single mark follows.
+ */
+const MARKED_FIRST_SECTION = 'The sunny window put the kitten to sleep. The kitchen was warm. Fill the cats‘ bowl.';
+
+/**
+ The English of the page's second section: the place whose words nothing follows.
+ */
+const MARKED_SECOND_SECTION = 'Then the cats nap.';
+
+/**
+ What every judge quotes for the three places of the page, in order.
+ */
+const MARKED_QUOTES = ['The sunny window put the kitten to sleep', 'the cats', 'the cats',] as const;
+
+/**
+ The page: the sentence stands twice in the first section and once in the second.
+
+ @param first - English of the first section
+
+ @param second - English of the second section
+
+ @returns Preparation of the page
+
+ @example
+ ```ts
+ const prepared = markedPage({ first: MARKED_FIRST_SECTION, second: MARKED_SECOND_SECTION, },);
+ ```
+ */
+function markedPage(
+  {
+    first,
+    second,
+  }: {
+    readonly first: string;
+    readonly second: string;
+  },
+): ReturnType<typeof prepareDocumentPair> {
+  return prepareDocumentPair({
+    sourceText: '## 一\n\n窗台上的阳光让小猫睡着了。厨房里很暖和。窗台上的阳光让小猫睡着了。\n\n## 二\n\n窗台上的阳光让小猫睡着了。\n',
+    targetText: `## One\n\n${first}\n\n## Two\n\n${second}\n`,
+  },);
+}
+
+/**
+ The ballots of the page: every judge quotes the three places and chooses one.
+
+ @param choice - label every judge chooses
+
+ @param quotes - what every judge quotes for the three places, in order
+
+ @returns What each seat does when asked
+
+ @example
+ ```ts
+ const behave = markedBallots({ choice: 'OCCURRENCE 3', quotes: MARKED_QUOTES, },);
+ ```
+ */
+function markedBallots(
+  {
+    choice,
+    quotes,
+  }: {
+    readonly choice: string;
+    readonly quotes: readonly string[];
+  },
+): SeatScript {
+  return function ballotOf({ seat, },): SeatBehaviour {
+    if (RUN_LATE_JUDGES.indexOf(seat,) > 3)
+      return { kind: 'throws', };
+    return {
+      kind: 'answers',
+      text: ballotText({
+        quotes: quotes.map(function quoteOf(quote, at,): Record<string, string> {
+          return { label: `OCCURRENCE ${String(at + 1,)}`, quote, };
+        },),
+        choice,
+        keep: [],
+      },),
+    };
+  };
+}
+
+/**
+ Runs the pass over the page with every judge choosing one place.
+
+ @param choice - label every judge chooses
+
+ @param first - English of the first section, the page's own by default
+
+ @param second - English of the second section, the page's own by default
+
+ @param quotes - what every judge quotes for the three places, in order, the page's own by default
+
+ @returns The run
+
+ @example
+ ```ts
+ const { consistency, } = await markedRun({ choice: 'OCCURRENCE 3', },);
+ ```
+ */
+async function markedRun(
+  {
+    choice,
+    first = MARKED_FIRST_SECTION,
+    second = MARKED_SECOND_SECTION,
+    quotes = MARKED_QUOTES,
+  }: {
+    readonly choice: string;
+    readonly first?: string;
+    readonly second?: string;
+    readonly quotes?: readonly string[];
+  },
+): Promise<CatRun> {
+  await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+  return await runCatPass({
+    behave: markedBallots({ choice, quotes, },),
+    entryCacheDir: dir.path,
+    prepared: markedPage({ first, second, },),
+  },);
+}
+
+/**
+ The single marks the section records beside each place's words.
+
+ @param consistency - the section
+
+ @returns The mark before and the mark after of every place of the first group, `none` where there is none
+
+ @example
+ ```ts
+ const marks = marksRecordedBy({ consistency, },); // [['none', 'none',], ['none', '‘',],]
+ ```
+ */
+function marksRecordedBy({ consistency, }: { readonly consistency: ArtifactConsistency; },): readonly (readonly string[])[] {
+  return nonNullishOrThrow(consistency.groups[0],)
+    .occurrences
+    .map(function marksOf({ rendering, },): readonly string[] {
+      return (rendering.kind === 'located') ? [rendering.markBefore ?? 'none', rendering.markAfter ?? 'none',] : [rendering.kind,];
+    },);
+}
+
+//endregion Two places with the same words and different marks beside them
+
+//region Partly carried units
+// A block whose receiving places are not all ones code can move the chosen words into: the opening curly single mark
+// directly after the words of one place (never a proven apostrophe), which the chosen place does not hold, makes the
+// splice unavailable there, and the places beside it in the same block are still carried by the splice.
+
+/**
+ The repeated sentence of the source, with the sentence about the kitchen that follows it.
+ */
+const PARTLY_SENTENCE = '窗台上的阳光让小猫睡着了。厨房里很暖和。';
+
+/**
+ The source of a page: the repeated sentence stands as often in the first section as the judges quote places in it, and
+ once in the second section.
+
+ @param places - how many places the first section holds
+
+ @returns The Chinese source
+
+ @example
+ ```ts
+ const sourceText = partlySourceOf({ places: 3, },);
+ ```
+ */
+function partlySourceOf({ places, }: { readonly places: number; },): string {
+  return `## 一\n\n${PARTLY_SENTENCE.repeat(places,)}\n\n## 二\n\n窗台上的阳光让小猫睡着了。\n`;
+}
+
+/**
+ The words of the chosen place, which closes the second section.
+ */
+const PARTLY_CHOSEN = 'the kittens purr';
+
+/**
+ Runs the pass over a page of the first section's English with every judge choosing the last place.
+
+ @param english - English of the first section
+
+ @param quotes - what every judge quotes for the places of the first section, in order
+
+ @param others - what the writers and the bench of candidates do, the page's own by default
+
+ @returns The run, with the lines it logged
+
+ @example
+ ```ts
+ const { run, lines, } = await partlyCarriedRun({ english: 'Fill the cats‘ bowl. Then the dogs nap.', quotes: ['the cats', 'the dogs',], },);
+ ```
+ */
+async function partlyCarriedRun(
+  {
+    english,
+    quotes,
+    others = otherSheetBehaviour,
+  }: {
+    readonly english: string;
+    readonly quotes: readonly string[];
+    readonly others?: SeatScript;
+  },
+): Promise<{ readonly run: CatRun; readonly lines: readonly string[]; }> {
+  await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+  /**
+   The lines the pass logged.
+   */
+  const lines: string[] = [];
+  /**
+   The run.
+   */
+  const run = await runCatPass({
+    behave: markedBallots({ choice: `OCCURRENCE ${String(quotes.length + 1,)}`, quotes: [...quotes, PARTLY_CHOSEN,], },),
+    others,
+    entryCacheDir: dir.path,
+    prepared: prepareDocumentPair({
+      sourceText: partlySourceOf({ places: quotes.length, },),
+      targetText: `## One\n\n${english}\n\n## Two\n\n${PARTLY_CHOSEN}.\n`,
+    },),
+    lines,
+  },);
+  return { run, lines, };
+}
+
+/**
+ What the pass recorded of a partly carried page, for the cases to compare.
+
+ @param run - the run
+
+ @returns The outcomes of the first group, the first section's text, the kinds of candidates each place's carry holds and
+ the findings that name a partly carried unit
+
+ @example
+ ```ts
+ const seen = partlySeenIn({ run, },);
+ ```
+ */
+function partlySeenIn({ run, }: { readonly run: CatRun; },): {
+  readonly outcomes: readonly string[];
+  readonly firstSection: string;
+  readonly kinds: unknown;
+  readonly partly: readonly string[];
+} {
+  return {
+    outcomes: outcomesOf({ consistency: run.consistency, group: 0, },),
+    firstSection: run.consistency.slices
+      .find(function isFirst({ sliceIndex, },): boolean {
+        return sliceIndex === 0;
+      },)
+      ?.text
+      ?? '',
+    kinds: nonNullishOrThrow(run.consistency.groups[0],).carries?.map(function kindsOf({ candidates, },): unknown {
+      return candidateKindsOf({ candidates, },);
+    },),
+    partly: run.consistency.findings.filter(function isPartly(finding,): boolean {
+      return finding.includes('consistency-partly-carried',);
+    },),
+  };
+}
+
+/**
+ Whether a logged line says the entry stopped or that an invariant of the pass fired.
+
+ @param line - a line the pass logged
+
+ @returns Whether it names the stop or the invariant
+
+ @example
+ ```ts
+ const stopped = stopsTheEntry('error [runPassConsistency] stopping the entry',);
+ ```
+ */
+function stopsTheEntry(line: string,): boolean {
+  return line.includes('stopping the entry',) || line.includes('ConsistencyInvariantError',);
+}
+
+/**
+ Fails unless the section reads back as the one the pass wrote.
+
+ @param consistency - the section
+
+ @example
+ ```ts
+ expectReadsBack({ consistency, },);
+ ```
+ */
+function expectReadsBack({ consistency, }: { readonly consistency: ArtifactConsistency; },): void {
+  expect(parseConsistency({
+    value: structuredClone(consistency,),
+    path: 'cat.consistency',
+    generation: 17,
+    sliceIndexes: new Set([0, 1,],),
+  },),).toEqual(consistency,);
+}
+
+/**
+ The writers and the bench of the page of a crossing place beside a block with two receiving places: a writer puts the
+ chosen words in both places of the block and changes the warm sentence, and the judges choose the paragraph with the change.
+
+ @param seat - the seat asked
+
+ @param sheet - the sheet it was shown
+
+ @returns Behaviour of the seat
+
+ @example
+ ```ts
+ const behave: SeatScript = partlyWriters;
+ ```
+ */
+function partlyWriters(
+  {
+    seat,
+    sheet,
+  }: {
+    readonly seat: RosterModelId;
+    readonly before: number;
+    readonly sheet: string;
+  },
+): SeatBehaviour {
+  /**
+   The question the sheet asks.
+   */
+  const kind = sheetKindOf({ sheet, },);
+  if (kind === 'writer') {
+    if (RUN_TRANSLATORS.indexOf(seat,) > 1)
+      return { kind: 'throws', };
+    return {
+      kind: 'answers',
+      text: JSON.stringify({
+        translation: currentParagraphOf({ sheet, },)
+          .replace(sheetBlockOf({ sheet, label: 'THE WORDS TO REPLACE 1', },), sheetBlockOf({ sheet, label: 'CHOSEN RENDERING', },),)
+          .replace(sheetBlockOf({ sheet, label: 'THE WORDS TO REPLACE 2', },), sheetBlockOf({ sheet, label: 'CHOSEN RENDERING', },),)
+          .replace('was warm', 'felt warm',),
+      },),
+    };
+  }
+  if (kind === 'choice') {
+    if (RUN_LATE_JUDGES.indexOf(seat,) > 3)
+      return { kind: 'throws', };
+    return choosing({
+      choice: candidateTextsOf({ sheet, },)
+        .find(function carriesTheChange({ text, },): boolean {
+          return text.includes('felt warm',);
+        },)
+        ?.label
+        ?? '',
+    },);
+  }
+  return otherSheetBehaviour({ sheet, },);
+}
+
+/**
+ The writers of a page whose first place runs over an edge of the block beside it: a writer puts the chosen words in both
+ places of the block and, where it is told to, also changes words of the block that another place holds, and the choice
+ among candidates takes the first that is not the paragraph as the page has it now (the splice).
+
+ @param change - the words a writer changes and what it writes in their place, none for a writer that changes no more
+ than the receiving places
+
+ @returns What each seat does when asked
+
+ @example
+ ```ts
+ const behave: SeatScript = crossingWriters({ change: ['to sleep', 'to doze',], },);
+ ```
+ */
+function crossingWriters(
+  { change, }: { readonly change?: readonly [string, string]; },
+): SeatScript {
+  return function behaviourOf(
+    {
+      seat,
+      sheet,
+    },
+  ): SeatBehaviour {
+    if (sheetKindOf({ sheet, },) !== 'writer')
+      return otherSheetBehaviour({ sheet, },);
+    if (RUN_TRANSLATORS.indexOf(seat,) > 1)
+      return { kind: 'throws', };
+    /**
+     The paragraph with the chosen words in both receiving places.
+     */
+    const carried = currentParagraphOf({ sheet, },)
+      .replace(sheetBlockOf({ sheet, label: 'THE WORDS TO REPLACE 1', },), sheetBlockOf({ sheet, label: 'CHOSEN RENDERING', },),)
+      .replace(sheetBlockOf({ sheet, label: 'THE WORDS TO REPLACE 2', },), sheetBlockOf({ sheet, label: 'CHOSEN RENDERING', },),);
+    return {
+      kind: 'answers',
+      text: JSON.stringify({ translation: (change === undefined) ? carried : carried.replace(change[0], change[1],), },),
+    };
+  };
+}
+
+/**
+ What the pass recorded of a page whose first place runs over an edge of a block and cannot be spliced, for the writers
+ the page asks.
+
+ @param english - English of the first section
+
+ @param quotes - what every judge quotes for the places of the first section, in order
+
+ @param change - the words a writer changes besides the receiving places' own, none for a writer that changes no more
+
+ @returns The outcomes of the first group, the kinds of candidates each place's carry holds, and how many writers'
+ paragraphs were withheld for the words of another place
+
+ @example
+ ```ts
+ const seen = await crossingSeen({ english, quotes, change: ['to sleep', 'to doze',], });
+ ```
+ */
+async function crossingSeen(
+  {
+    english,
+    quotes,
+    change,
+  }: {
+    readonly english: string;
+    readonly quotes: readonly string[];
+    readonly change?: readonly [string, string];
+  },
+): Promise<{
+  readonly outcomes: readonly string[];
+  readonly kinds: unknown;
+  readonly withheld: number;
+}> {
+  const { run, } = await partlyCarriedRun({
+    english,
+    quotes,
+    others: crossingWriters(((change === undefined) ? {} : { change, }),),
+  },);
+  expectReadsBack({ consistency: run.consistency, },);
+  const { outcomes, kinds, } = partlySeenIn({ run, },);
+  return {
+    outcomes,
+    kinds,
+    withheld: run.consistency.findings.filter(function isWithheld(finding,): boolean {
+      return finding.includes('consistency-candidate-refused',) && finding.includes('must stay as they are',);
+    },).length,
+  };
+}
+
+//endregion Partly carried units
 
 //region Live group one
 // The live refrain whose four places tied two and two: the source in this region is the live Chinese, the English the live
@@ -883,11 +1469,23 @@ await describe({
           fn: async () => {
             await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
             const whole = preparedCatPage();
+            // A preparation numbers its slices by position (`assertSliceIndexing`), so the slices that stay are renumbered:
+            // the words of the dropped one stay in the page as text no slice holds.
             const prepared = {
               ...whole,
               slices: whole.slices.filter(function notThird(slice,): boolean {
                 return slice.source.sliceIndex !== 2;
-              },),
+              },)
+                .map(function byPosition(
+                  slice,
+                  position,
+                ) {
+                  return {
+                    ...slice,
+                    source: { ...slice.source, sliceIndex: position, },
+                    target: { ...slice.target, sliceIndex: position, },
+                  };
+                },),
             };
             const run = await runCatPass({
               behave: function threePlaces({ sheet, },): SeatBehaviour {
@@ -920,7 +1518,7 @@ await describe({
             expect(refrain.unplaced.length,).toBe(1,);
             expect(changedTexts({ consistency: run.consistency, },),).toEqual([
               [1, SLICE_ONE_AFTER,],
-              [3, SLICE_THREE_AFTER,],
+              [2, SLICE_THREE_AFTER,],
             ],);
           },
         },),
@@ -2393,6 +2991,520 @@ await describe({
               generation: 16,
               sliceIndexes: new Set([0, 1,],),
             },),).toEqual(run.consistency,);
+          },
+        },),
+        it({
+          name: 'KEEPS A PLACE ACROSS A PARAGRAPH BOUNDARY WHEN THE CHOSEN WORDS HOLD NO BREAK, and asks the writers for the '
+            + 'paragraph beside it: words that hold another number of block breaks have no splice, so no edit addresses the '
+            + 'crossing words and the section the pass writes is one its own reader accepts',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: crossingBallots,
+              others: crossingWritersAndBench,
+              entryCacheDir: dir.path,
+              prepared: crossingPage(),
+            },);
+            expect({
+              outcomes: outcomesOf({ consistency: run.consistency, group: 0, },),
+              changed: changedTexts({ consistency: run.consistency, },),
+              writersAsked: run.sheets.some(function isWriterSheet(sheet,): boolean {
+                return sheetKindOf({ sheet, },) === 'writer';
+              },),
+              notAsked: run.consistency.findings.filter(function isNotAsked(finding,): boolean {
+                return finding.includes('consistency-writers-not-asked',);
+              },),
+            },).toEqual({
+              outcomes: ['kept-current', 'replaced', 'chosen',],
+              changed: [
+                [
+                  0,
+                  `## One\n\n${CROSSING_WORDS[0]}.\nThe kitchen felt warm.\n${CROSSING_WORDS[2]}.`,
+                ],
+              ],
+              writersAsked: true,
+              notAsked: [
+                'group 1: consistency-writers-not-asked (OCCURRENCE 1): the words that render the repeated wording lie in no '
+                + 'single block of the English, so no paragraph can be rewritten',
+              ],
+            },);
+            // The reader refuses a section whose overlapped place names its own group, so reading it back is the proof.
+            expect(parseConsistency({
+              value: structuredClone(run.consistency,),
+              path: 'cat.consistency',
+              generation: 17,
+              sliceIndexes: new Set([0, 1,],),
+            },),).toEqual(run.consistency,);
+          },
+        },),
+        it({
+          name: 'ASKS THE WRITERS FOR THE SECOND PARAGRAPH WHEN THE PLACE THAT CROSSES INTO IT CANNOT BE SPLICED, the reviewer\'s '
+            + 'case: a mark after the crossing words that the chosen place does not hold leaves that place no edit, so '
+            + 'nothing addresses its words and the paragraph is rewritten for the place beside it, and the section is one its '
+            + 'own reader accepts',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: crossingBallots,
+              others: crossingWritersAndBench,
+              entryCacheDir: dir.path,
+              prepared: crossingPage({ afterFirst: '‘', },),
+            },);
+            expect({
+              outcomes: outcomesOf({ consistency: run.consistency, group: 0, },),
+              changed: changedTexts({ consistency: run.consistency, },),
+              kinds: nonNullishOrThrow(run.consistency.groups[0],).carries?.map(function kindsOf({ candidates, },): unknown {
+                return candidateKindsOf({ candidates, },);
+              },),
+              notAsked: run.consistency.findings.filter(function isNotAsked(finding,): boolean {
+                return finding.includes('consistency-writers-not-asked',);
+              },),
+            },).toEqual({
+              outcomes: ['kept-current', 'replaced', 'chosen',],
+              changed: [
+                [
+                  0,
+                  `## One\n\n${CROSSING_WORDS[0]}‘.\nThe kitchen felt warm.\n${CROSSING_WORDS[2]}.`,
+                ],
+              ],
+              kinds: [['current',], ['current', 'splice', 'writer',],],
+              notAsked: [
+                'group 1: consistency-writers-not-asked (OCCURRENCE 1): the words that render the repeated wording lie in no '
+                + 'single block of the English, so no paragraph can be rewritten',
+              ],
+            },);
+            expect(parseConsistency({
+              value: structuredClone(run.consistency,),
+              path: 'cat.consistency',
+              generation: 17,
+              sliceIndexes: new Set([0, 1,],),
+            },),).toEqual(run.consistency,);
+          },
+        },),
+        it({
+          name: 'RECORDS THE MARK BESIDE THE WORDS OF TWO PLACES WHOSE WORDS ARE EQUAL AND WHOSE MARKS DIFFER, so that the section '
+            + 'the pass writes is one its own reader accepts',
+          fn: async () => {
+            /**
+             The pass over the page with every judge choosing the place whose words nothing follows.
+             */
+            const { consistency, } = await markedRun({ choice: 'OCCURRENCE 3', },);
+            // The reader refuses a section whose recorded places contradict its own planner, so reading it back is the proof.
+            expect(parseConsistency({
+              value: structuredClone(consistency,),
+              path: 'cat.consistency',
+              generation: 17,
+              sliceIndexes: new Set([0, 1,],),
+            },),).toEqual(consistency,);
+            // The first place of the first section holds other words and is replaced; the second holds the mark the
+            // chosen place does not, and keeps its words in the same block.
+            expect({
+              outcomes: outcomesOf({ consistency, group: 0, },),
+              marks: marksRecordedBy({ consistency, },),
+            },).toEqual({
+              outcomes: ['replaced', 'kept-current', 'chosen',],
+              marks: [['none', 'none',], ['none', '‘',], ['none', 'none',],],
+            },);
+          },
+        },),
+        it({
+          name: 'RECORDS THE MARKS OF THE PLACES THAT RECEIVE WORDS OF ANOTHER WORDING, one holding the mark the other does '
+            + 'not, and the section is one its own reader accepts',
+          fn: async () => {
+            /**
+             The pass over the page with every judge choosing the place of other words.
+             */
+            const { consistency, } = await markedRun({ choice: 'OCCURRENCE 1', },);
+            expect({
+              outcomes: outcomesOf({ consistency, group: 0, },),
+              marks: marksRecordedBy({ consistency, },),
+            },).toEqual({
+              outcomes: ['chosen', 'kept-current', 'replaced',],
+              marks: [['none', 'none',], ['none', '‘',], ['none', 'none',],],
+            },);
+            expect(parseConsistency({
+              value: structuredClone(consistency,),
+              path: 'cat.consistency',
+              generation: 17,
+              sliceIndexes: new Set([0, 1,],),
+            },),).toEqual(consistency,);
+          },
+        },),
+        it({
+          name: 'CARRIES A PROVEN APOSTROPHE WITH THE WORDS INTO A PLACE THAT HOLDS NONE WHEN THE PAGE KEEPS IT ONE, a group '
+            + 'whose places hold `parents’`, `folks’` and no mark: the recorded words hold the apostrophe and no mark beside '
+            + 'them, the place that held none gains it, and the section the pass writes is one its generation seventeen '
+            + 'reader accepts',
+          fn: async () => {
+            const { consistency, } = await markedRun({
+              choice: 'OCCURRENCE 1',
+              first: 'Fill the parents’ bowl. The kitchen was warm. Fill the folks’ bowl.',
+              second: 'Then the family naps.',
+              quotes: ['the parents', 'the folks', 'the family',],
+            },);
+            expect({
+              outcomes: outcomesOf({ consistency, group: 0, },),
+              changed: changedTexts({ consistency, },),
+              quotes: nonNullishOrThrow(consistency.groups[0],).occurrences
+                .map(function quoteOf({ rendering, },): string {
+                  return (rendering.kind === 'located') ? rendering.quote : rendering.kind;
+                },),
+              marks: marksRecordedBy({ consistency, },),
+            },).toEqual({
+              outcomes: ['chosen', 'replaced', 'replaced',],
+              changed: [
+                [0, '## One\n\nFill the parents’ bowl. The kitchen was warm. Fill the parents’ bowl.',],
+                [1, '## Two\n\nThen the parents’ naps.',],
+              ],
+              quotes: ['the parents’', 'the folks’', 'the family',],
+              marks: [['none', 'none',], ['none', 'none',], ['none', 'none',],],
+            },);
+            expect(parseConsistency({
+              value: structuredClone(consistency,),
+              path: 'cat.consistency',
+              generation: 17,
+              sliceIndexes: new Set([0, 1,],),
+            },),).toEqual(consistency,);
+          },
+        },),
+        it({
+          name: 'TAKES A PROVEN APOSTROPHE OUT WITH THE WORDS IT BELONGS TO, a group whose chosen place holds none: the places '
+            + 'that held `parents’` and `folks’` read the chosen words and the section the pass writes is one its reader accepts',
+          fn: async () => {
+            const { consistency, } = await markedRun({
+              choice: 'OCCURRENCE 3',
+              first: 'Fill the parents’ bowl. The kitchen was warm. Fill the folks’ bowl.',
+              second: 'Then the family naps.',
+              quotes: ['the parents', 'the folks', 'the family',],
+            },);
+            expect({
+              outcomes: outcomesOf({ consistency, group: 0, },),
+              changed: changedTexts({ consistency, },),
+            },).toEqual({
+              outcomes: ['replaced', 'replaced', 'chosen',],
+              changed: [[0, '## One\n\nFill the family bowl. The kitchen was warm. Fill the family bowl.',],],
+            },);
+            expect(parseConsistency({
+              value: structuredClone(consistency,),
+              path: 'cat.consistency',
+              generation: 17,
+              sliceIndexes: new Set([0, 1,],),
+            },),).toEqual(consistency,);
+          },
+        },),
+        it({
+          name: 'LOCATES A PLACE WHOSE WORDS STAND TWICE IN ITS SLICE BY THE MARK THE JUDGES COPIED BESIDE THEM, the plural '
+            + 'possessive of the review: the place is located once and its words hold the proven apostrophe, where the bare '
+            + 'words were ambiguous',
+          fn: async () => {
+            const { consistency, } = await markedRun({
+              choice: 'OCCURRENCE 1',
+              first: 'The sunny window put the kitten to sleep. The kitchen was warm. Fill the cats\' bowl. Then the cats nap.',
+              second: 'Then the kitten naps.',
+              quotes: ['The sunny window put the kitten to sleep', 'the cats\'', 'the kitten naps',],
+            },);
+            expect({
+              outcomes: outcomesOf({ consistency, group: 0, },),
+              placed: nonNullishOrThrow(consistency.groups[0],).occurrences
+                .map(function renderingOf({ rendering, },): unknown {
+                  return rendering;
+                },)
+                .slice(1, 2,),
+            },).toEqual({
+              outcomes: ['chosen', 'replaced', 'replaced',],
+              placed: [{ kind: 'located', quote: 'the cats\'', start: 77, },],
+            },);
+            expect(parseConsistency({
+              value: structuredClone(consistency,),
+              path: 'cat.consistency',
+              generation: 17,
+              sliceIndexes: new Set([0, 1,],),
+            },),).toEqual(consistency,);
+          },
+        },),
+        it({
+          name: 'LOCATES NO PLACE WHOSE WORDS END IN EMPHASIS BEFORE A POSSESSIVE `\'s`, the reviewer\'s case: the apostrophe '
+            + 'after markup joins the letter after it, so the quoted words stand inside a word and the page never reads '
+            + '`cats\'s`; the place keeps its words, the place beside it that a splice moves cleanly is carried, and the '
+            + 'section is one its own reader accepts',
+          fn: async () => {
+            const { consistency, } = await markedRun({
+              choice: 'OCCURRENCE 1',
+              first: 'Fill the cats\' bowl. The kitchen was warm. Then the dogs\' nap.',
+              second: 'Fill the **cat**\'s bowl.',
+              quotes: ['the cats', 'the dogs', 'the **cat**',],
+            },);
+            expect({
+              outcomes: outcomesOf({ consistency, group: 0, },),
+              changed: changedTexts({ consistency, },),
+            },).toEqual({
+              outcomes: ['chosen', 'replaced', 'unlocated',],
+              changed: [[0, '## One\n\nFill the cats\' bowl. The kitchen was warm. Then the cats\' nap.',],],
+            },);
+            expect(parseConsistency({
+              value: structuredClone(consistency,),
+              path: 'cat.consistency',
+              generation: 17,
+              sliceIndexes: new Set([0, 1,],),
+            },),).toEqual(consistency,);
+          },
+        },),
+        it({
+          name: 'CARRIES A PLURAL POSSESSIVE ON A PAGE WHOSE EARLIER `**cat**\'s` IS PART OF A WORD: the mark after emphasis joins '
+            + 'the letter after it and is no possible opener, so the `\'` after `dogs` in a later section is proven, and the '
+            + 'place is carried whichever of the two stands first; the section is one its own reader accepts',
+          fn: async () => {
+            const { consistency, } = await markedRun({
+              choice: 'OCCURRENCE 1',
+              first: 'Fill the cats\' bowl. The kitchen was warm. Fill the **cat**\'s bowl.',
+              second: 'Then the dogs\' nap.',
+              quotes: ['the cats', 'the **cat**', 'the dogs',],
+            },);
+            expect({
+              outcomes: outcomesOf({ consistency, group: 0, },),
+              changed: changedTexts({ consistency, },),
+            },).toEqual({
+              outcomes: ['chosen', 'unlocated', 'replaced',],
+              changed: [[1, '## Two\n\nThen the cats\' nap.',],],
+            },);
+            expect(parseConsistency({
+              value: structuredClone(consistency,),
+              path: 'cat.consistency',
+              generation: 17,
+              sliceIndexes: new Set([0, 1,],),
+            },),).toEqual(consistency,);
+          },
+        },),
+        it({
+          name: 'CARRIES STRAIGHT QUOTATION MARKS ONTO A CURLY PLACE AS CURLY ONES AND CURLY ONTO STRAIGHT, each loose mark '
+            + 'in the form the receiving place wrote it, and the section the pass writes is one its own reader accepts',
+          fn: async () => {
+            const { consistency, } = await markedRun({
+              choice: 'OCCURRENCE 1',
+              first: 'Then "She was kind," she said. The kitchen was warm. Later “He was merry,” he said.',
+              second: 'Next "He was merry," he said.',
+              quotes: ['"She was kind," she said', '“He was merry,” he said', '"He was merry," he said',],
+            },);
+            expect({
+              outcomes: outcomesOf({ consistency, group: 0, },),
+              changed: changedTexts({ consistency, },),
+            },).toEqual({
+              outcomes: ['chosen', 'replaced', 'replaced',],
+              changed: [
+                [0, '## One\n\nThen "She was kind," she said. The kitchen was warm. Later “She was kind,” she said.',],
+                [1, '## Two\n\nNext "She was kind," she said.',],
+              ],
+            },);
+            expect(parseConsistency({
+              value: structuredClone(consistency,),
+              path: 'cat.consistency',
+              generation: 17,
+              sliceIndexes: new Set([0, 1,],),
+            },),).toEqual(consistency,);
+          },
+        },),
+        it({
+          name: 'CARRIES THE PLACE OF A TABLE THAT CODE CAN MOVE THE WORDS INTO AND KEEPS THE ONE IT CANNOT, the reviewer\'s '
+            + 'table: the second cell is replaced, the first is kept-current, the paragraph beside it is carried, and the '
+            + 'section is one its own reader accepts',
+          fn: async () => {
+            const { run, lines, } = await partlyCarriedRun({
+              english: '| h | h |\n|---|---|\n| Fill the cats‘ bowl | Then the dogs nap |\n\nLater the birds sing.',
+              quotes: ['the cats', 'the dogs', 'the birds',],
+            },);
+            expect(partlySeenIn({ run, },),).toEqual({
+              outcomes: ['kept-current', 'replaced', 'replaced', 'chosen',],
+              firstSection: '## One\n\n| h | h |\n|---|---|\n| Fill the cats‘ bowl | Then the kittens purr nap |\n\n'
+                + 'Later the kittens purr sing.',
+              kinds: [['current', 'splice',], ['current', 'splice',], ['current', 'splice',],],
+              partly: [
+                'group 1: consistency-partly-carried (OCCURRENCE 1 and OCCURRENCE 2): the splice won, so code moved the '
+                + 'chosen words into OCCURRENCE 2 and left OCCURRENCE 1 as it was, since code cannot move them there',
+              ],
+            },);
+            expect(lines.some(stopsTheEntry,),).toBe(false,);
+            expectReadsBack({ consistency: run.consistency, },);
+          },
+        },),
+        it({
+          name: 'CARRIES THE PLACES OF A BLOCK THAT CODE CAN MOVE THE WORDS INTO WHETHER THE PLACE IT CANNOT MOVE THEM INTO '
+            + 'COMES FIRST, IN THE MIDDLE OR LAST, each carried place replaced, that place kept-current, and every section '
+            + 'one its own reader accepts',
+          fn: async () => {
+            /**
+             The pages: the place that holds the apostrophe stands first, second and last.
+             */
+            const shapes = [
+              {
+                english: 'Fill the cats‘ bowl. Then the dogs nap. Next the birds sing.',
+                quotes: ['the cats', 'the dogs', 'the birds',],
+                outcomes: ['kept-current', 'replaced', 'replaced', 'chosen',],
+                text: 'Fill the cats‘ bowl. Then the kittens purr nap. Next the kittens purr sing.',
+              },
+              {
+                english: 'Then the dogs nap. Fill the cats‘ bowl. Next the birds sing.',
+                quotes: ['the dogs', 'the cats', 'the birds',],
+                outcomes: ['replaced', 'kept-current', 'replaced', 'chosen',],
+                text: 'Then the kittens purr nap. Fill the cats‘ bowl. Next the kittens purr sing.',
+              },
+              {
+                english: 'Then the dogs nap. Next the birds sing. Fill the cats‘ bowl.',
+                quotes: ['the dogs', 'the birds', 'the cats',],
+                outcomes: ['replaced', 'replaced', 'kept-current', 'chosen',],
+                text: 'Then the kittens purr nap. Next the kittens purr sing. Fill the cats‘ bowl.',
+              },
+            ] as const;
+            const seen = await Promise.all(shapes.map(async function runShape({ english, quotes, },) {
+              const { run, } = await partlyCarriedRun({ english, quotes, },);
+              expectReadsBack({ consistency: run.consistency, },);
+              return partlySeenIn({ run, },);
+            },),);
+            expect(seen.map(function outcomesOfShape({ outcomes, },): readonly string[] {
+              return outcomes;
+            },),).toEqual(shapes.map(function expectedOutcomes({ outcomes, },): readonly string[] {
+              return outcomes;
+            },),);
+            expect(seen.map(function textOfShape({ firstSection, },): string {
+              return firstSection;
+            },),).toEqual(shapes.map(function expectedText({ text, },): string {
+              return `## One\n\n${text}`;
+            },),);
+            expect(seen.map(function kindsOfShape({ kinds, },): unknown {
+              return kinds;
+            },),).toEqual(shapes.map(function expectedKinds(): unknown {
+              return [['current', 'splice',], ['current', 'splice',], ['current', 'splice',],];
+            },),);
+          },
+        },),
+        it({
+          name: 'CARRIES EVERY PLACE OF A BLOCK BY THE SPLICE AND REPORTS NO PARTLY CARRIED UNIT WHEN CODE CAN MOVE THE WORDS '
+            + 'INTO ALL OF THEM, the control: nothing about it changes',
+          fn: async () => {
+            const { run, } = await partlyCarriedRun({
+              english: 'Fill the cats bowl. Then the dogs nap. Next the birds sing.',
+              quotes: ['the cats', 'the dogs', 'the birds',],
+            },);
+            expect(partlySeenIn({ run, },),).toEqual({
+              outcomes: ['replaced', 'replaced', 'replaced', 'chosen',],
+              firstSection: '## One\n\nFill the kittens purr bowl. Then the kittens purr nap. Next the kittens purr sing.',
+              kinds: [['current', 'splice',], ['current', 'splice',], ['current', 'splice',],],
+              partly: [],
+            },);
+            expectReadsBack({ consistency: run.consistency, },);
+          },
+        },),
+        it({
+          name: 'OFFERS NO SPLICE FOR A BLOCK WHOSE EVERY RECEIVING PLACE IS ONE CODE CANNOT MOVE THE WORDS INTO, though the '
+            + 'block beside it is carried: the places keep their words and the bench is not asked',
+          fn: async () => {
+            const { run, } = await partlyCarriedRun({
+              english: 'Fill the cats‘ bowl. Then the dogs‘ nap.\n\nNext the birds sing.',
+              quotes: ['the cats', 'the dogs', 'the birds',],
+            },);
+            expect(partlySeenIn({ run, },),).toEqual({
+              outcomes: ['kept-current', 'kept-current', 'replaced', 'chosen',],
+              firstSection: '## One\n\nFill the cats‘ bowl. Then the dogs‘ nap.\n\nNext the kittens purr sing.',
+              kinds: [['current',], ['current',], ['current', 'splice',],],
+              partly: [],
+            },);
+            expectReadsBack({ consistency: run.consistency, },);
+          },
+        },),
+        it({
+          name: 'KEEPS A SPLICE FROM MEETING A WRITER\'S PARAGRAPH OF THE SAME GROUP, the reviewer\'s question: a place that '
+            + 'runs over a paragraph boundary and cannot be spliced no longer keeps the paragraph it runs into from the '
+            + 'writers, and neither the splice nor the writer\'s paragraph of the partly carried block beside it meets the '
+            + 'other, so the invariant of the pass does not fire',
+          fn: async () => {
+            /**
+             The first section: a place that runs over a paragraph boundary and is followed by an apostrophe, and a paragraph
+             that holds a place with an apostrophe after it and a place without.
+             */
+            const english = 'The sunny window put the kitten\n\nto sleep‘. The kitchen was warm. Fill the cats‘ bowl. '
+              + 'Then the dogs nap.';
+            const quotes = ['The sunny window put the kitten\n\nto sleep', 'the cats', 'the dogs',];
+            const spliced = await partlyCarriedRun({ english, quotes, },);
+            const written = await partlyCarriedRun({ english, quotes, others: partlyWriters, },);
+            expect([spliced, written,].map(function seenOf({ run, },): unknown {
+              return {
+                seen: partlySeenIn({ run, },),
+                writerSheets: run.sheets.some(function isWriterSheet(sheet,): boolean {
+                  return sheetKindOf({ sheet, },) === 'writer';
+                },),
+              };
+            },),).toEqual([
+              {
+                seen: {
+                  outcomes: ['kept-current', 'kept-current', 'replaced', 'chosen',],
+                  firstSection: '## One\n\nThe sunny window put the kitten\n\nto sleep‘. The kitchen was warm. Fill the cats‘ '
+                    + 'bowl. Then the kittens purr nap.',
+                  kinds: [['current',], ['current', 'splice',], ['current', 'splice',],],
+                  partly: [
+                    'group 1: consistency-partly-carried (OCCURRENCE 2 and OCCURRENCE 3): the splice won, so code moved the '
+                    + 'chosen words into OCCURRENCE 3 and left OCCURRENCE 2 as it was, since code cannot move them there',
+                  ],
+                },
+                writerSheets: true,
+              },
+              {
+                seen: {
+                  outcomes: ['kept-current', 'replaced', 'replaced', 'chosen',],
+                  firstSection: '## One\n\nThe sunny window put the kitten\n\nto sleep‘.\nThe kitchen felt warm.\nFill the '
+                    + 'kittens purr‘ bowl.\nThen the kittens purr nap.',
+                  kinds: [['current',], ['current', 'splice', 'writer',], ['current', 'splice', 'writer',],],
+                  partly: [],
+                },
+                writerSheets: true,
+              },
+            ],);
+            [spliced, written,].forEach(function readsBack({ run, lines, },): void {
+              expectReadsBack({ consistency: run.consistency, },);
+              expect(lines.some(stopsTheEntry,),).toBe(false,);
+            },);
+          },
+        },),
+        it({
+          name: 'WITHHOLDS A WRITER\'S PARAGRAPH THAT CHANGES THE WORDS OF A PLACE THAT RUNS INTO THE BLOCK AND CANNOT BE '
+            + 'SPLICED, at the start of the block where the place crosses in and at its end where it crosses out, and '
+            + 'keeps one that leaves them where they stand: the block with the withheld paragraphs keeps the outcomes the '
+            + 'splice gives it',
+          fn: async () => {
+            /**
+             The page where the first place crosses into the block of the other two, and the one where it crosses out.
+             */
+            const crossingIn = {
+              english: 'The sunny window put the kitten\n\nto sleep‘. The kitchen was warm. Fill the cats‘ bowl. Then the dogs nap.',
+              quotes: ['The sunny window put the kitten\n\nto sleep', 'the cats', 'the dogs',],
+            };
+            const crossingOut = {
+              english: 'Fill the cats‘ bowl. Then the dogs nap. The sunny window put the kitten\n\nto sleep‘.',
+              quotes: ['the cats', 'the dogs', 'The sunny window put the kitten\n\nto sleep',],
+            };
+            const seen = await Promise.all([
+              crossingSeen({ ...crossingIn, change: ['to sleep', 'to doze',], },),
+              crossingSeen({ ...crossingIn, },),
+              crossingSeen({ ...crossingOut, change: ['put the kitten', 'sent the kitten',], },),
+              crossingSeen({ ...crossingOut, },),
+            ],);
+            expect(seen.map(function withheldOf({ withheld, },): number {
+              return withheld;
+            },),).toEqual([2, 0, 2, 0,],);
+            expect(seen.map(function kindsOf({ kinds, },): unknown {
+              return kinds;
+            },),).toEqual([
+              [['current',], ['current', 'splice',], ['current', 'splice',],],
+              [['current',], ['current', 'splice', 'writer',], ['current', 'splice', 'writer',],],
+              [['current', 'splice',], ['current', 'splice',], ['current',],],
+              [['current', 'splice', 'writer',], ['current', 'splice', 'writer',], ['current',],],
+            ],);
+            // The outcomes of the pages whose writers' paragraphs were withheld are the splice's, as the page with no
+            // writers gives them.
+            expect([0, 2,].map(function outcomesOfSeen(at,): readonly string[] {
+              return nonNullishOrThrow(seen[at],).outcomes;
+            },),).toEqual([
+              ['kept-current', 'kept-current', 'replaced', 'chosen',],
+              ['kept-current', 'replaced', 'kept-current', 'chosen',],
+            ],);
           },
         },),
         it({
