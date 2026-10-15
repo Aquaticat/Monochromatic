@@ -59,6 +59,37 @@ and observation after transport closes.
 Invalid returned arrays retain every enumerable completion,
 including extra named properties while skipping holes and inherited positions.
 These unassociated outcomes stay inspectable without acquiring a declared member association.
+`test:native:group-collector` verifies original capability and frozen-view checks,
+exact argument serialization,
+out-of-order member arrival,
+replay and reentry rejection,
+listener identity,
+and combined cancellation.
+It checks cancellation during final currentness and listener installation,
+plus retained native outcomes after transport cancellation.
+Independent arrival consumers distinguish failure retention from pending rejection:
+the latter remains required even when the retention callback does not reject delivery itself.
+`test:native:program-runtime` verifies frozen source tools,
+lazy group ownership,
+canonical view identity,
+parent and native cancellation checks,
+and script-value conversion boundaries.
+Ordinary conversion failures retain their original identity;
+native value guards pass through the original judgment's retention callback.
+Runtime retirement closes entry before visiting reached groups in live insertion order.
+Draining awaits its captured group work,
+then inspects the current reached map and preserves the earliest retained program guard.
+Independent lifetime consumers cover callback failures,
+partial retirement,
+and frozen snapshots that retain child inspection identity.
+`test:native:runner-binding` verifies original recorder reuse,
+parent-derived call numbering,
+complete slot admission,
+and distinct unresolved result tickets.
+Original native callback identity is captured once.
+Native option getters run before member signal lookup;
+enumerable symbols and primitive object-spread behavior remain intact.
+Missing tool-name lookups reach the original judgment admission callback unchanged.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 

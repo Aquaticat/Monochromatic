@@ -16,8 +16,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 730 files and 486 rules,
-with zero errors and 10841 warnings.
+The latest complete lint report covers 758 files and 486 rules,
+with zero errors and 10568 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -29,15 +29,18 @@ Its warning distribution and the subsequent recounts are recorded in this handov
 
 Original failure ownership,
 collector lifetime,
-and collector currentness are qualified through built consumers,
+collector currentness,
+dispatch,
+construction,
+and native arrival are qualified through built consumers,
 original-code replay,
 domain comparisons,
 and deliberate omission controls.
-Continue the remaining collector construction and arrival implementation,
-then reached-program runtime and runner contracts.
-The last report retains 81 warnings in `program-collector.mjs`,
-133 in `program-runtime.mjs`,
-and 266 in `program-runner.mjs`.
+Reached-program runtime is also qualified.
+Continue reached-program runner contracts.
+The collector implementation and new consumers have zero diagnostics in the full report.
+The latest report has zero runtime or extracted runner-binding diagnostics,
+and retains 207 warnings in `program-runner.mjs`.
 Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
 No current user-input blocker exists.
 
@@ -90,14 +93,135 @@ replay and reentry,
 combined cancellation,
 late native outcomes,
 and cancellation during final currentness or listener installation.
-Build,
-type checking,
-consumer execution,
-original replay,
-and omission controls remain pending for this extraction.
+The native build,
+package type checking,
+and composed collector,
+dispatch,
+and completion consumers pass.
+The composed collector consumers also pass with the exact saved original collector.
+Six domain comparisons retain identical public results and native execution counts,
+with a permission-versus-prohibition positive control.
+The first omission run detected its earlier changes but did not detect removal of arrival's pending-rejection callback:
+the composed failure owner had already rejected the same transport ticket.
+Independent arrival consumers now separate retention from rejection and exercise phase,
+closure,
+primary-failure,
+and native-listener guards independently.
+The expanded built consumer suites and package type check pass.
+The same suites pass against the exact saved original collector and original arrival function body.
+All 51 process-local omissions or substitutions are detected through assertion failures,
+including the separately observed pending-rejection callback.
+The collector bridge,
+collector implementation,
+and arrival implementation retain their starting artifact hashes.
+The complete maintained lint report has zero errors and 10760 warnings across 740 files and 486 rules;
+all 12 changed collector files have zero diagnostics.
+The package-wide warning gate remains failing.
+Receipts are `typed-group-collector-comparison.json` and `typed-group-collector-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The final verification sequence is retained in
+`${HOME}/temp/agent/pi-group-collector-independent-final-20261015.log`;
+the full report is
+`${HOME}/temp/agent/pi-maintained-typed-group-collector-final-lint-20261015.log`.
 The preceding collector body is saved as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/program-collector-before-arrival-types.mjs`,
 with SHA-256 `eada90c16fdb852469c4079f7fea850afbf54c52e55eec199d4f997a3fb9d419`.
+
+Reached-program runtime is now implemented in `program-runtime.ts`,
+with separate original lifetime operations in `program-runtime-lifetime.ts`.
+The original `.mjs` path delegates to these typed owners.
+Independent runtime consumers and lifetime fixtures pass the native build,
+package type check,
+and original-code replay.
+Focused runtime and fixture lint passes with zero diagnostics after documenting fixture ownership.
+Six domain comparisons pass with identical public outcomes and native execution counts,
+including the permission-versus-prohibition positive control.
+The first omission pass exposed an undetected missing collector-parent currentness callback.
+Added consumers now change parent currentness after reaching and pass original native cancellation through the source tool.
+The expanded consumers pass against both implementations.
+All 44 deliberate runtime omissions or substitutions produce assertion failures,
+and the runtime bridge and implementation artifacts retain their starting hashes.
+The complete report has zero errors and 10621 warnings across 752 files and 486 rules;
+all 13 runtime implementation and consumer files have zero diagnostics.
+The package-wide warning gate remains failing.
+The original body is retained as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-runtime-before-types.mjs`,
+with SHA-256 `2d2b88d31a0d6dd0febf4a42624b2b561b133ef2836758ac990950fa513b459f`.
+Diagnostic probes measure a literal base error category for subclasses instead of their derived constructor name.
+Missing program,
+reached-group,
+or current-group views and missing source slots now produce explicit `Error` null-check diagnostics;
+the original implementation produced implicit `TypeError` diagnostics.
+A sparse guard-history array now throws the explicit null-check error rather than `undefined`.
+These malformed-publication differences do not establish exact failure-category equivalence.
+Ordinary value-conversion failures retain their original identity,
+and only original native result guards trigger the conversion-specific program-guard callback.
+Receipts are `typed-program-runtime-comparison.json`,
+`typed-program-runtime-omissions.json`,
+and `typed-program-runtime-diagnostics.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+Build,
+type checking,
+original replay,
+and complete omission output are retained in
+`${HOME}/temp/agent/pi-program-runtime-expanded-20261015.log`.
+That sequence stopped afterward on a diagnostic fixture that accidentally replaced the original callback receiver;
+the corrected diagnostic probe passes in
+`${HOME}/temp/agent/pi-program-runtime-diagnostic-contrasts-20261015.log`.
+The final type check,
+consumers,
+and full lint report are in
+`${HOME}/temp/agent/pi-maintained-typed-program-runtime-final-cleaner-lint-20261015.log`.
+
+Runner group binding is now extracted to `program-runner-binding.ts` and its contract file.
+The original runner class delegates its private binding method to that helper.
+The original `bindProgramCalls` tool-array declaration now admits absent name-lookup results,
+matching its existing runtime rejection boundary without introducing an earlier runner check.
+Native option spread remains generic and preserves primitive,
+symbol,
+and getter behavior;
+member cancellation lookup follows the option getters.
+Independent consumer tests pass after the native build and package type check,
+as do the existing program-owner consumers affected by the wider tool-lookup input type.
+The same binding consumers pass against the exact saved original method.
+Six domain comparisons retain identical public outcomes and native execution counts,
+with a permission-versus-prohibition positive control.
+All 23 deliberate binding omissions or substitutions produce assertion failures,
+and both runner and binding artifacts retain their starting hashes.
+The complete lint report has zero errors and 10568 warnings across 758 files and 486 rules;
+all seven extracted binding and consumer files have zero diagnostics.
+The original runner class and its remaining execution methods are not yet qualified as clean.
+The complete original runner is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-runner-before-binding-types.mjs`,
+with SHA-256 `fc2e5c4e145641e023a4d841a42f6e83628c7ecba1d8ce7f9fd87a2f7f3ce121`.
+Unknown native call identifiers and removed reached-member slots now produce an explicit `Error` null-check diagnostic
+instead of the original implicit `TypeError` from reading the missing member's signal.
+Both implementations first evaluate original option getters and stop before native execution;
+the diagnostic contrast is measured separately from valid-call equivalence.
+Receipts are `typed-runner-binding-comparison.json`,
+`typed-runner-binding-omissions.json`,
+and `typed-runner-binding-diagnostics.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The final build,
+type check,
+built consumers,
+original replay,
+omission controls,
+and diagnostic contrasts pass in
+`${HOME}/temp/agent/pi-runner-binding-final-verification-20261015.log`.
+The full report is
+`${HOME}/temp/agent/pi-maintained-typed-runner-binding-final-lint-20261015.log`.
+Continue the runner's native event callbacks and reached-group execution lifecycle.
+
+Runner event callbacks are now extracted to `program-runner-events.ts` and its contract file.
+The original record map remains allocated before queue selection.
+Recording precedes start and end event publication;
+the original member ticket resolves only after the end event finishes.
+Independent consumers,
+original-code replay,
+and malformed ticket diagnostics remain pending verification.
+The saved original runner and callback bodies are retained under
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 
 ## Tool-call scope correction
 

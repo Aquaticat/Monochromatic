@@ -17,24 +17,16 @@ mod ui {
     }
 }
 
-/// Source-open errors identify their input instead of exposing an unlabelled I/O failure.
-use anyhow::{Context, bail};
 /// Hint and diagnostic snapshots with their position index.
 use ide_app::annotation::Annotations;
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
 /// The stamp naming a displayed text.
 use ide_app::language::identity::DocumentStamp;
-/// The Language module's handle,
-///  its startup rule,
-///  and the reload record.
-use ide_app::language::{LanguageWorker, enter_project_directory, sync::DocumentReload};
+/// The reload record the state keeps until the Language module is told.
+use ide_app::language::sync::DocumentReload;
 /// Visual rows of every line, as far as measured.
 use ide_app::line_rows::LineRows;
-/// The log filter,
-///  the subscriber with the helix-lsp bridge,
-///  and the writer thread.
-use ide_app::logging::{self, background};
 /// The displayed file is reread on change notifications,
 ///  or on the old timer while unwatched.
 use ide_app::refresh_policy::SourceRefresh;
@@ -48,12 +40,10 @@ use ide_app::source_frame::FrameStamp;
 use ide_app::text_raster::TextRaster;
 /// One line's block of virtual rows.
 use ide_app::virtual_row::Block;
-/// Explicit startup paths retain one canonical project boundary.
-use ide_app::{cli::Options, workspace::Workspace};
 /// Source and display geometry use the same library interface tested headlessly.
 use ide_app::{document::Document, source_style::SourceStyles};
 /// Toolkit handles and models bridge owned Rust state to the window.
-use slint::{ComponentHandle, SharedString, Timer, VecModel};
+use slint::{Timer, VecModel};
 /// What:
 ///  Rc shares one UI-thread owner;
 ///  RefCell permits checked mutable borrowing.
@@ -64,7 +54,7 @@ use slint::{ComponentHandle, SharedString, Timer, VecModel};
 /// ```ts
 /// const shared = { current: state };
 /// ```
-use std::{cell::RefCell, path::PathBuf, rc::Rc, sync::Arc, time::Instant};
+use std::{path::PathBuf, rc::Rc, sync::Arc, time::Instant};
 /// Native window and model row generated from the UI declaration.
 use ui::AppWindow;
 
@@ -250,6 +240,14 @@ mod sidebar_tests;
 /// Source typography reaches the actual image and selection bindings.
 #[cfg(test)]
 mod source_font_tests;
+/// Starting one project window:
+///  logging,
+///  the language worker,
+///  every binding,
+///  and the event loop.
+mod start;
+/// The initial reading state of a window.
+mod state;
 /// Consumer window events exercise the actual markup and source-image bindings.
 #[cfg(test)]
 mod tests;
@@ -318,6 +316,8 @@ use ide_app::wrap_sign::Sign;
 use input::{bind_keys, bind_pointer};
 /// Shared rendering entry point.
 use render::{bind_appearance, render};
+/// The one entry point of the native window.
+pub use start::run;
 /// Tile bounds of the displayed and requested windows.
 use tile::TileBounds;
 /// The worker thread that builds scroll re-centers, held by the state.
@@ -573,259 +573,4 @@ struct State {
     /// Kept rows the worker broke again for the pass, counted in debug builds from its outputs.
     #[cfg(debug_assertions)]
     pass_rebroken: u64,
-}
-
-/// Construct the same reading state for the application and headless native event tests.
-impl State {
-    /// Retain source ownership and initialize viewport resources without changing the filesystem.
-    fn new(source: &str, file_path: Option<PathBuf>) -> Self {
-        let document = Document::new(source);
-        // A new text has no virtual rows yet: every line starts at its number times one code row.
-        let lines = document.text().len_lines();
-        let row_map = RowMap::plain(lines);
-        return Self {
-            document,
-            file_path,
-            file_generation: 1,
-            file_error: None,
-            navigation_error: None,
-            syntax_revision: None,
-            syntax_error: None,
-            styles: SourceStyles::from([]),
-            first: 0,
-            count: 32,
-            clip: None,
-            scale: 1.0,
-            width: 0.0,
-            wrap_rows: LineRows::plain(lines),
-            wrap_text: None,
-            wrap_version: 0,
-            pass_posted: None,
-            sign: None,
-            sign_scale: None,
-            shaper: TextShaper::new(),
-            raster: TextRaster::new(),
-            shaped: None,
-            presented_revision: None,
-            frame_stamp: None,
-            row_map,
-            blocks: Vec::new(),
-            row_key: None,
-            offset: 0.0,
-            scrolled_at: None,
-            row_tops: rows::top_model(),
-            row_numbers: rows::mark_model(),
-            row_marks: rows::mark_model(),
-            find: None,
-            language_reload: None,
-            annotations: Annotations::default(),
-            outside_project: false,
-            pending_jump: None,
-            refresh: SourceRefresh::default(),
-            shown: TileBounds {
-                first: 0,
-                count: 32,
-                width: 0.0,
-                clip: None,
-            },
-            scroll_wanted: None,
-            rewrap: false,
-            tile_job: None,
-            tile_worker: None,
-            tile_poll: Timer::default(),
-            minimap: minimap::MinimapState::new(),
-            #[cfg(debug_assertions)]
-            renders: 0,
-            #[cfg(debug_assertions)]
-            tiles_painted: 0,
-            #[cfg(debug_assertions)]
-            rows_shaped: 0,
-            #[cfg(debug_assertions)]
-            images_set: 0,
-            #[cfg(debug_assertions)]
-            rows_rebroken: 0,
-            #[cfg(debug_assertions)]
-            rewrapped: 0,
-            #[cfg(debug_assertions)]
-            rewrap_deferred: 0,
-            #[cfg(debug_assertions)]
-            rewrap_spent: (0, 0),
-            #[cfg(debug_assertions)]
-            worker_tiles: 0,
-            #[cfg(debug_assertions)]
-            worker_rows_shaped: 0,
-            #[cfg(debug_assertions)]
-            tiles_applied: 0,
-            #[cfg(debug_assertions)]
-            tiles_discarded: 0,
-            #[cfg(debug_assertions)]
-            pass_applied: 0,
-            #[cfg(debug_assertions)]
-            pass_most_lines: 0,
-            #[cfg(debug_assertions)]
-            pass_lines: 0,
-            #[cfg(debug_assertions)]
-            pass_shaped: 0,
-            #[cfg(debug_assertions)]
-            pass_rebroken: 0,
-        };
-    }
-}
-
-/// What:
-///  Success when this window may start language servers,
-///  otherwise the reason it starts none.
-///       `anyhow::Result<()>` is success without a value,
-///  or an error.
-/// Why:
-///  A debug build started with `IDE_INSPECT_ANNOTATIONS` shows that file's hints and diagnostics.
-///  A worker
-///      without servers still publishes "no problems" for the displayed text,
-///  which would replace the file's
-///      diagnostics,
-///  so such a window runs without the worker;
-///  asking for a language feature explains why.
-///      Release builds do not read the variable.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function serversWanted(): void { if (DEBUG && process.env.IDE_INSPECT_ANNOTATIONS) throw new Error('...'); }
-/// ```
-fn servers_wanted() -> anyhow::Result<()> {
-    // `var_os` reads the variable without requiring UTF-8; `is_some` asks whether it is set.
-    #[cfg(debug_assertions)]
-    if std::env::var_os("IDE_INSPECT_ANNOTATIONS").is_some() {
-        bail!(
-            "this window shows the annotations of IDE_INSPECT_ANNOTATIONS and starts no language server"
-        );
-    }
-    // `Ok(())` reports success without a payload.
-    return Ok(());
-}
-
-/// Run one project window after display-independent argument parsing has completed.
-pub fn run(options: Options) -> anyhow::Result<()> {
-    // What: The writer thread owns standard output, where the log has always gone. `_log_flush` is
-    //       bound first, so it is dropped last, after every other value of this function, and waits
-    //       briefly for the queued records.
-    // Why: The window must never wait for a slow reader of its log, and the shutdown records written
-    //      after the window closed must still reach the output (`src/logging/background.rs`).
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // using logFlush = startLogWriter(process.stdout); installLog(filterFromEnv(''), logFlush.writer);
-    // ```
-    let (log_writer, _log_flush) =
-        background::background(std::io::stdout()).context("Cannot start the log writer thread")?;
-    // Warnings and errors unless `RUST_LOG` asks for more; helix-lsp's healthy-server records are re-labelled.
-    logging::install(logging::filter(""), log_writer, None)?;
-    let workspace = Workspace::new(&options.project)?;
-    // Helix roots every server at the working directory it reads first, so the project root
-    // becomes the working directory before any thread starts or any Helix call is made.
-    // What: `and_then` starts the worker only when entering the directory succeeded.
-    // Why: Either failure leaves the window usable; language features then explain the reason.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let worker: LanguageWorker | Error;
-    // try { process.chdir(root); worker = new LanguageWorker(root); } catch (error) { worker = error; }
-    // ```
-    let language_worker = enter_project_directory(workspace.root())
-        .and_then(|()| return servers_wanted())
-        .and_then(|()| return LanguageWorker::new(workspace.root()));
-    let project_root = workspace.root().to_path_buf();
-    // Resolve initial-file paths relative to the explicit root, never the caller's ambient cwd.
-    let file_path = if let Some(file) = options.file {
-        Some(workspace.resolve(&file)?)
-    } else {
-        None
-    };
-    // What: if let extracts a present command-line argument without unwrap.
-    // Why: A project without an initial file starts empty rather than displaying fabricated source.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // if (path !== undefined) { source = readFile(path); }
-    // ```
-    let (source, label) = if let Some(path) = &file_path {
-        // What: ? returns an I/O failure to main, preserving its diagnostic.
-        // Why: A failed open must not silently substitute the fixture.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // source = await readFile(path, 'utf8');
-        // ```
-        let metadata = std::fs::metadata(path)
-            .with_context(|| return format!("Cannot inspect source file {}", path.display()))?;
-        if !metadata.is_file() {
-            bail!(
-                "Cannot open source {}: it is not a regular file",
-                path.display()
-            );
-        }
-        let text = std::fs::read_to_string(path)
-            .with_context(|| return format!("Cannot read UTF-8 source file {}", path.display()))?;
-        (text, path.display().to_string())
-    } else {
-        (String::new(), String::new())
-    };
-    // What: `RuntimeSource::Embedded(&...)` lends the table compiled into this executable to the
-    //       process-wide language runtime; `&` borrows it, and it lives as long as the program.
-    // Why: Highlighting reads only these files, never Helix's runtime directories, and it must be
-    //      chosen before the reload worker (bound below) prepares the first file. Both calls come
-    //      after logging starts so their records are kept.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // runtime.install({ kind: 'embedded', runtime: EMBEDDED_RUNTIME });
-    // ```
-    ide_app::runtime::install(ide_app::runtime::RuntimeSource::Embedded(
-        &crate::embedded_runtime::EMBEDDED_RUNTIME,
-    ));
-    // Renew this build's parser cache folder, then remove other builds' folders unused for 30 days.
-    ide_app::runtime::tidy_cache(&crate::embedded_runtime::EMBEDDED_RUNTIME);
-    // The app id must be stamped by the backend before the window below exists.
-    crate::launcher::install_backend()?;
-    let window = AppWindow::new()?;
-    window.set_source_available(file_path.is_some());
-    let state = Rc::new(RefCell::new(State::new(&source, file_path)));
-    window.set_file_label(SharedString::from(label));
-    bind_pointer(&window, &state);
-    bind_viewport(&window, &state);
-    minimap::bind(&window, &state);
-    frame_trace::bind(&window);
-    bind_keys(&window, &state);
-    // Retain the timer until window shutdown; its Drop also closes and joins the worker.
-    let _reload_timer = reload::bind(&window, &state)?;
-    bind_appearance(&window, &state);
-    // Retain the timer until window shutdown; its Drop also closes and joins the find worker.
-    let _find_timer = find::bind(&window, &state)?;
-    let (_navigation_timer, navigation_state) =
-        navigation::bind_shared(&window, &state, workspace)?;
-    let language_binding = language::bind(
-        &window,
-        &state,
-        &navigation_state,
-        &project_root,
-        language_worker,
-    );
-    render(&window, &state);
-    // Debug builds started with `IDE_INSPECT_ANNOTATIONS` show that file's hints and diagnostics; see `inspect`.
-    // The timer of delayed arrivals, when the file asks for any, lives until the window closes.
-    #[cfg(debug_assertions)]
-    let _inspection = inspect::inject(&window, &state)?;
-    if state.borrow().file_path.is_none() {
-        window.invoke_focus_tree();
-    }
-    window.run()?;
-    // The window is gone; stopping servers may take up to about a second without freezing it.
-    language_binding.close();
-    // What: Ok(()) reports success without a payload; Err would carry a failure.
-    // Why: Clean window closure is not a process error.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return;
-    // ```
-    return Ok(());
 }

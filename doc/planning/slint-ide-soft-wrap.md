@@ -174,7 +174,10 @@ Status as of 2026-10-12 (the branch `feat/ide-soft-wrap`):
 1. Layout model: **built.**
    The wrap width is part of the row cache (every kept row carries the width it is broken at),
    the tile's `Viewport` and `FrameStamp`, and the tile job;
-   Parley breaks with the IntelliJ rules and indent (`src/wrap.rs`, `src/shaped_text.rs`);
+   Parley breaks with the IntelliJ rules and indent
+   (`src/wrap.rs`,
+   `src/shaped_text.rs`,
+   and since 2026-10-15 `src/shaped_text/layout.rs`);
    `RowMap` holds the visual rows of every line (`src/line_rows.rs`, `src/row_map.rs`);
    the tile worker measures the whole text at the wrap width in chunks from the view outward
    (`src/native/tile_pass.rs`), and breaks its kept rows again on a resize instead of shaping them.

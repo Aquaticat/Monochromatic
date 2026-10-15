@@ -1,6 +1,8 @@
+import {createProgramRunnerEvents} from './program-runner-events.ts';
 import {createReachedProgramRun} from "./program-runtime.mjs";
 import {NativeExecutionGuardError} from "../../../lifecycle/execution-context-carrier/execute.mjs";
-import {acquireProgramQueue, requireProgramScope} from './program-runner-scope.mjs';
+import {acquireProgramQueue} from './program-runner-scope.mjs';
+import {bindReachedProgramGroup} from './program-runner-binding.ts';
 
 /** Reuse native scope, queue and recorder objects across reached groups of one program. */
 export function createReachedRunnerClass({
@@ -96,61 +98,7 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
       }
       });
     }
-    #bindGroup({tools,
-      origin,
-      carrier,
-      group,
-      assertParentCurrent
-    }){
-      assertParentCurrent();const parentId=origin.prepared
-        .id;
-      const scope=requireProgramScope({runner:this,carrier,parentId,NestedCallRecorder});
-      const calls=group.members
-        .map(function createNativeChildCall(member) { return {
-          type:'toolCall',
-          id:`${parentId}/${scope.nextId++}`,
-          name:member.declaration
-            .name,
-          arguments:member.declaration
-            .args
-        }; });
-        const ordinals=new Map(calls.map(function indexNativeCall(
-        call,
-        index
-      ){ return [
-        call.id,
-        index
-      ]; }));
-         const nativeRun=this.host
-            .runOwnedToolCall;
-      const slots=origin.judgment
-        .bindProgramCalls({
-          group:group.handle,
-          calls,
-          tools:calls.map(function readNativeDefinition(call) {
-            return tools.find(function matchesCall(tool) { return tool.name===call.name; });
-          }),
-          runNative(
-            call,
-            options
-          ){ return nativeRun(
-            call,
-            {
-              ...options,
-              signal:group.members[ordinals.get(call.id)]
-                .signal
-            }
-          ); }
-        });
-      return {
-        scope,
-        calls,
-        ordinals,
-        tools,
-        slots,
-        tickets:calls.map(function createResultTicket() { return Promise.withResolvers(); })
-      };
-    }
+    #bindGroup(input){return bindReachedProgramGroup({...input,runner:this,NestedCallRecorder});}
     async #executeGroup({
       origin,
       group,
@@ -214,56 +162,7 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
             nativeSignals:group.members
               .map(function readMemberSignal(member) { return member.signal; })
           });return {block:false};},
-          async onStart(call){records.set(
-            call.id,
-            scope.recorder
-              .start(call)
-          );await runner.host
-            .emit({
-              type:'tool_execution_start',
-              toolCallId:call.id,
-              toolName:call.name,
-              args:call.arguments,
-              parentToolCallId:parentId
-            });},
-          async onUpdate(
-            partialResult,
-            call
-          ){await runner.host
-            .emit({
-              type:'tool_execution_update',
-              toolCallId:call.id,
-              toolName:call.name,
-              args:call.arguments,
-              partialResult,
-              parentToolCallId:parentId
-            });},
-          async onFinish(outcome){
-            const call=outcome.toolCall;
-              const text=(outcome.result
-                .content
-                ??[]).filter(function isTextPart(part) { return part.type==='text'; })
-                .map(function readTextPart(part) { return part.text; })
-                .join('\n');scope.recorder
-                  .finish(
-                    records.get(call.id),
-                    outcome.isError,
-                    text
-                  );if(outcome.result
-                    .usage)scope.recorder
-                      .addUsage(outcome.result
-                        .usage);
-            await runner.host
-              .emit({
-                type:'tool_execution_end',
-                toolCallId:call.id,
-                toolName:call.name,
-                result:outcome.result,
-                isError:outcome.isError,
-                parentToolCallId:parentId
-              });tickets[ordinals.get(call.id)]
-                .resolve(outcome);
-          }
+          ...createProgramRunnerEvents({runner,bound,parentId,records})
         });
     }
     takeRecord(toolCallId){const scope=this.scopes

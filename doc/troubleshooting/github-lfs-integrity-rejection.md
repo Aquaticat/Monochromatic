@@ -174,3 +174,24 @@ As with the LFS incident,
 successful retry establishes recovery only.
 The internal cause and deterministic reproduction remain unavailable;
 no backend patch or new upstream report is justified by these observations.
+
+## Protected-branch rejection followed by concurrent publication on 2026-10-15
+
+The automatic push for local commit `2447ba4224` emitted the same visible
+`GH006: Protected branch update failed for refs/heads/main`
+and `protected branch hook declined` messages.
+The commit remained saved locally.
+The diagnostic again did not identify a rejected requirement.
+
+Before retrying,
+`git ls-remote origin refs/heads/main` returned
+`9e4b09e2d180020194cfbabc9d5d8d38c9c8e449`.
+The local log showed concurrent repository work had published that commit,
+and `git merge-base --is-ancestor 2447ba4224 9e4b09e2d180020194cfbabc9d5d8d38c9c8e449`
+exited zero.
+The rejected local commit was therefore already reachable from the actual remote branch.
+No additional push,
+protection change,
+or history rewrite was needed.
+This establishes delivery through concurrent publication,
+not the cause of the preceding rejection.

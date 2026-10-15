@@ -185,6 +185,9 @@ Shape each tab as a space and widen that one space with letter spacing until it 
         }
 ```
 
+The equivalent loop moved on 2026-10-15 into `TextShaper::build_line` in `src/shaped_text/layout.rs`;
+step 4 and the path comment of the snippet name `src/shaped_text.rs` as it was when this entry was written.
+
 Tradeoffs:
 
 - A line whose tabs follow other text is shaped twice.

@@ -191,6 +191,30 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-collector.unit.test.ts",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-arrival.unit.test.ts",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-arrival-abort.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-arrival-owner.unit.test.ts",
+]
+
+[tasks."test:native:program-runtime"]
+description = "Verify original reached-group reuse, owned tool results, guard categories, and runtime lifetime"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-runtime.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-runtime-value.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-runtime-lifetime.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-runtime-drain.unit.test.ts",
+]
+
+[tasks."test:native:runner-binding"]
+description = "Exercise original native call binding, scope reuse, and member option forwarding"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-runner-binding.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-runner-binding-options.unit.test.ts",
+]
+
+[tasks."test:native:runner-events"]
+description = "Verify original recorder publication, native event delivery, and member ticket settlement"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-runner-events.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-runner-events-failure.unit.test.ts",
 ]
 
 [tasks."test:native:group-lifetime"]

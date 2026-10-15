@@ -1781,7 +1781,8 @@ so a step never evicts its own lines.
 A change of syntax styles clears the cache (`TextShaper::forget_rows`).
 
 A re-center caused by the reader's own scrolling is built on a worker thread
-(`src/native/tile_build.rs`);
+(`src/native/tile_build.rs`,
+its thread loop in `src/native/tile_build/worker_thread.rs`);
 so is the tile for a new wrap width when the window thread's allowance does not cover it
 (see [A new width on the window thread](#a-new-width-on-the-window-thread)).
 The window thread queues an owned job with a document snapshot, the styles, the row map, and the paint inputs.
@@ -1859,7 +1860,7 @@ The vertical map needs the height of every line, but only the lines of the tile 
 The tile worker therefore also measures the whole text at the wrap width (`src/native/tile_pass.rs`),
 in chunks of 128 lines from the view outward, between the tile jobs it is given, never before one:
 a waiting tile job always goes first.
-It keeps the laid-out lines in its own row cache (`KEPT_LAYOUTS`, the 50,000 lines nearest the view;
+It keeps the laid-out lines in its own row cache (`KEPT_LAYOUTS` in `src/native/tile_build/worker_thread.rs`, the 50,000 lines nearest the view;
 measured on 2026-10-11 as about 158 MB, 3.2 KB a line).
 A line that is not yet measured counts as one row, or as its last known height after a resize.
 What the worker has measured waits in a coalescing slot;
@@ -1929,7 +1930,7 @@ at a text width of 782 px that is 866 code rows at scale 1 and 215 at scale 2
 (about 74,000 and 18,500 characters of ordinary text in one line).
 A window whose three view heights pass the limit is limited the same way:
 at a text width of 1918 px and scale 2 the cap is 2,135 px, less than three views of 1,080 px.
-`render::tile_cap` is the largest tile height in logical pixels, one code row short of the limit for rounding.
+`render::tile_cap` (`src/native/render/paint.rs`) is the largest tile height in logical pixels, one code row short of the limit for rounding.
 A tile of lines taller than that is clipped instead of refused (`Viewport::clip`, `viewport::band_clip`):
 
 - The clip is the three view heights around the view, cut to the cap,
@@ -2137,7 +2138,7 @@ A file of 50,000 lines of about 110 characters, most of them wrapped to two rows
   while opening, 19 tiles, median 0.14 ms, 95th percentile 0.38 ms, largest 0.38 ms;
   while scrolling, 123 re-centers, median 0.26 ms, 95th percentile 1.0 ms, largest 16 ms;
   after the resizes, 12 tiles, median 0.44 ms, 95th percentile 0.54 ms, largest 0.54 ms.
-- Taking in the output of the measurement pass (`tile::apply_pass`, timed in `tile::poll`):
+- Taking in the output of the measurement pass (`tile::pass::apply_pass`, timed in `tile::poll`):
   while opening, 1,649 outputs, median 0.07 ms, 95th percentile 0.39 ms, largest 4.2 ms;
   after the resizes, 172 outputs, median 0.11 ms, 95th percentile 0.28 ms, largest 1.2 ms.
   The pass was done during the opening of each session; the scroll window held no output.
@@ -2207,7 +2208,7 @@ so the rules for what may move are part of the placement.
   26 px for one row and 16 px for each further row.
 - While the reader scrolls,
   a change that would move the scroll offset waits until the offset has been still for 200 ms
-  (`rows::SCROLL_QUIET`),
+  (`rows::quiet::SCROLL_QUIET`),
   so a wheel animation is never cut short.
   The rule reads the time through `rows::quiet_now`, which a test can hold still and move by exactly the time it means
   (`rows_above_the_view_wait_until_scrolling_has_stopped` does, so no host load can run the 200 ms out between a
@@ -2220,7 +2221,7 @@ so the rules for what may move are part of the placement.
 - After an external change the rows of the replaced text are not painted,
   but their space is held over every line the change left in place (`rows::hold`).
   Hint space is given up when hints for those lines arrive.
-  Message space is kept for 1 s (`rows::ROW_HOLD`) whatever arrives,
+  Message space is kept for 1 s (`rows::held::ROW_HOLD`) whatever arrives,
   because diagnostics can come in several answers,
   and then all held space is given up.
   A server that gives the same hints and messages within that time moves no line.
@@ -2342,7 +2343,7 @@ where its message rows stand.
 The letter belongs to the diagnostics of the displayed text:
 after an external change it goes with the message rows and returns with the new diagnostics.
 `I` and `H` extend the user's `E` and `W` by the same rule; that extension is open to the user's veto.
-Native code hands the window one number per materialized line (`State::line_marks`, set in `rows::present`),
+Native code hands the window one number per materialized line (`State::line_marks`, set in `rows::window::present`),
 taken from the first message row of the line's block, which names the worst severity,
 and the line count that sizes the number column.
 
