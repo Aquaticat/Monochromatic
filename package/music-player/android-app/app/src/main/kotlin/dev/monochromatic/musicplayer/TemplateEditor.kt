@@ -632,7 +632,8 @@ private fun templateEditorHelpLines(help: TemplateHelp) {
 }
 
 // What:     `@Composable private fun templateEditorFieldRow(...)` draws one insertable field as a list row.
-// Why:      The whole row inserts the field, and it shows the field's value beside its name.
+// Why:      The whole row inserts the field, and it shows the field's value beside its name. The ring lies inside the
+//           row's edge (D120) and adds no padding, so the row's text keeps the column of the section headings (D130).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -649,10 +650,7 @@ private fun templateEditorFieldRow(entry: TemplateEditorFieldEntry, onInsert: ()
             )
             .defaultMinSize(minHeight = DESTINATION_TOUCH_TARGET)
             .focusRing(RectangleShape, placement = FocusRingPlacement.INSIDE)
-            .clickable(role = Role.Button, onClick = onInsert)
-            // The ring lies just inside the row's edge (D120), so the content keeps the room it had when the ring
-            // was reserved outside the row.
-            .padding(horizontal = FOCUS_RING_OUTSET),
+            .clickable(role = Role.Button, onClick = onInsert),
         supportingContent = {
             Text(
                 text = templateEditorFieldValueText(entry.value),
