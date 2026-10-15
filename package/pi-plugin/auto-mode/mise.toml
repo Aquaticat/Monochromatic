@@ -420,6 +420,8 @@ run = [
   "node src/source-contribution-link.unit.test.ts",
   "node src/source-contribution-publication.unit.test.ts",
   "node src/source-contribution-tool.unit.test.ts",
+  "node src/request-source-derivation.unit.test.ts",
+  "node src/request-material-obligations.unit.test.ts",
 ]
 
 [tasks."test:native:serializer-receipts"]
