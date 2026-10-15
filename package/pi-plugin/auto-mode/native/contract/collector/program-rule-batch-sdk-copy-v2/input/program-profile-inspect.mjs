@@ -1,4 +1,5 @@
-import {readPattern,requireProfile} from './result-pattern.mjs';
+import {readPattern,requireProfile,ResultProgramProfileError} from './result-pattern.mjs';
+import {inspectProfileCall} from './profile-call.ts';
 function member(
   {node,object,property}
 ){return (node?.type==='MemberExpression')&&(!node.computed)
@@ -24,54 +25,8 @@ function inspectCall({
   source,
   prefix
 }){
-  requireProfile(
-    {condition:(call?.type==='CallExpression')&&(!call.optional)
-      &&(call.arguments
-        .length
-        ===1),
-    message:'direct single-argument call required'}
-  );const {callee} = call;
-  requireProfile(
-    {condition:(callee.type==='MemberExpression')&&(!callee.computed)
-      &&(!callee.optional)
-      &&(callee.object
-        .type
-        ==='Identifier')
-      &&(callee.object
-        .name
-        ==='tools')
-      &&(callee.property
-        .type
-        ==='Identifier')
-      &&allowed.has(callee.property
-        .name),
-    message:'owned tool identifier required'}
-  );
-  const start=callee.start-prefix.length;
-    const end=callee.end-prefix.length;requireProfile(
-    {condition:Number.isSafeInteger(start)&&(start>=0)
-      &&(end>start)
-      &&(end<=source.length),
-    message:'callee source span'}
-  );
-  return Object.freeze({
-    group,
-    ordinal,
-    name:callee.property
-      .name,
-    pattern:readPattern({
-      node:call.arguments[0],
-      bindingName
-    }),
-    callee:Object.freeze({
-      start,
-      end,
-      text:source.slice(
-        start,
-        end
-      )
-    }),
-    alias:`__owned_flow_${group}_${ordinal}`
+  return inspectProfileCall({
+    call,group,ordinal,bindingName,allowed,source,prefix,readPattern,ResultProgramProfileError
   });
 }
 /** Inspect only the adopted single-call or producer-and-successor statement shapes. */
