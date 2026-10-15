@@ -439,7 +439,7 @@ object TrackFingerprint {
      * Defines query last modified ms behavior for this music-player component; the TypeScript-oriented notes
      * above explain its call shape and effects.
      */
-    private fun queryLastModifiedMs(context: Context, uri: Uri): Long =
+    internal fun queryLastModifiedMs(context: Context, uri: Uri): Long =
         // What:     `runCatching { ... }` runs the trailing lambda and CATCHES any
         //           exception it throws, returning a `Result<T>` (a wrapper that is
         //           either "success holding the value" or "failure holding the
