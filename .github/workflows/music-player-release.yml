@@ -423,20 +423,6 @@ jobs:
         fetch-depth: 1
         persist-credentials: false
 
-    - name: Install the Rust toolchain pinned in mise.lock
-      shell: bash
-      run: |
-        set -euo pipefail
-        toolchain=$(awk -F'"' '/^\[\[tools\.rust\]\]$/ { in_rust = 1; next } in_rust && /^version = / { print $2; exit }' mise.lock)
-        case "$toolchain" in
-          nightly-????-??-?? | [0-9]*.[0-9]*.[0-9]*) ;;
-          *) echo "::error::Unexpected Rust version in mise.lock: '$toolchain'"; exit 1 ;;
-        esac
-        rustup toolchain install "$toolchain" --profile minimal \
-          --target aarch64-linux-android --target x86_64-linux-android --no-self-update
-        echo "RUSTUP_TOOLCHAIN=$toolchain" >> "$GITHUB_ENV"
-        rustc "+$toolchain" -Vv
-
     - name: Set up mise (skip auto-install of all tools)
       uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
       with:
@@ -449,12 +435,15 @@ jobs:
         # A release is built cold: no restored cache can change its bytes.
         cache: false
 
-    # The versions come from mise.lock: Temurin 21 (AGP 9 and Gradle 9 need 17 to 21), the Android
-    # command-line tools, cargo-ndk, and node, which runs the repository's mise tasks.
+    # The versions come from mise.lock: the repository's pinned Rust (with the two Android targets that
+    # mise.toml lists), Temurin 21 (AGP 9 and Gradle 9 need 17 to 21), the Android command-line tools,
+    # cargo-ndk, and node, which runs the repository's mise tasks. mise installs Rust before cargo-ndk
+    # because the cargo backend needs it.
     - name: Install the Android toolchain
       run: |
-        mise install cargo-binstall node java android-sdk
-        mise install cargo:cargo-ndk
+        mise install rust cargo-binstall
+        mise install cargo:cargo-ndk node java android-sdk
+        mise exec rust -- rustc -Vv
 
     # The repository task installs exactly the SDK components the app builds against (platform 37.0,
     # build-tools 37.0.0, NDK 29.0.13846066, platform-tools) into the mise-managed SDK.
