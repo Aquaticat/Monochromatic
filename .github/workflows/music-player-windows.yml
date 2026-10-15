@@ -364,9 +364,10 @@ jobs:
             raise SystemExit("; ".join(problems))
         PYTHON
 
-    # The program is a GUI-subsystem executable, so a shell that does not capture its output does not wait for it. These
-    # steps capture or redirect the output, which is what a script does with --version. The version text must still
-    # reach a pipe (command substitution), a file (> and 2>) and the PowerShell pipeline.
+    # The program is a GUI-subsystem executable. A shell that does not capture its output does not wait for it, and
+    # PowerShell never reads the output of a GUI program that ends a pipeline (NativeCommandProcessor.cs of PowerShell:
+    # _isRunningInBackground is set for a Windows GUI application at the end of a pipeline), so `> file` in PowerShell
+    # gives an empty file for any GUI program. The checks below use the forms that work and print what the others do.
     - name: Run the binary (--version and a bad argument, bash)
       if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
       working-directory: package/music-player/desktop-app
@@ -388,7 +389,7 @@ jobs:
         test "$status" = 2
         grep --quiet -e 'no-such-option' "${RUNNER_TEMP}/bad-stderr.txt"
 
-    - name: Run the binary (--version, PowerShell)
+    - name: Run the binary (--version, PowerShell and cmd.exe)
       if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
       shell: pwsh
       working-directory: package/music-player/desktop-app
@@ -398,47 +399,222 @@ jobs:
         $exe = Join-Path (Get-Location) "target/$env:TARGET/debug/music-player.exe"
         $version = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"$' | Select-Object -First 1).Matches.Groups[1].Value
         $expected = "music-player $version"
-        # The output is captured, so PowerShell waits for the program and the text reaches the step output.
+        # A GUI program that does not end the pipeline is waited for and its output is read.
         $captured = (& $exe --version | Out-String).Trim()
         Write-Output "captured in the pipeline: $captured"
         if ($captured -cne $expected) { throw "captured '$captured', expected '$expected'" }
-        # A redirection to a file hands the file to the program. Measured on the first run of this step: for a GUI-subsystem
-        # program PowerShell does not wait for the program then, so the file is empty for a moment after the command
-        # returns. The same holds for cmd.exe. The step therefore waits for the text and prints how long it took.
-        function Wait-ForText($path, $watch) {
-          $text = ''
-          while ($watch.Elapsed.TotalSeconds -lt 20) {
-            if (Test-Path -Path $path) { $text = (Get-Content -Raw -Path $path) }
-            if ($text) { break }
-            Start-Sleep -Milliseconds 100
-          }
-          return "$text".Trim()
-        }
-        $file = Join-Path $env:RUNNER_TEMP 'out.txt'
-        Remove-Item -Path $file -ErrorAction SilentlyContinue
-        $watch = [System.Diagnostics.Stopwatch]::StartNew()
-        & $exe --version > $file
-        Write-Output "PowerShell > out.txt: the command returned after $($watch.ElapsedMilliseconds) ms"
-        $fromFile = Wait-ForText $file $watch
-        Write-Output "PowerShell > out.txt: held the text after $($watch.ElapsedMilliseconds) ms: $fromFile"
-        if ($fromFile -cne $expected) { throw "out.txt holds '$fromFile', expected '$expected'" }
+        $merged = (& $exe --version 2>&1 | Out-String).Trim()
+        Write-Output "merged streams: $merged"
+        if ($merged -cne $expected) { throw "merged '$merged', expected '$expected'" }
+        $fileOut = Join-Path $env:RUNNER_TEMP 'out-file.txt'
+        & $exe --version | Out-File -FilePath $fileOut -Encoding utf8
+        $fromOutFile = (Get-Content -Raw -Path $fileOut).Trim()
+        Write-Output "| Out-File holds: $fromOutFile"
+        if ($fromOutFile -cne $expected) { throw "Out-File holds '$fromOutFile', expected '$expected'" }
+        # Start-Process gives the program a file handle of its own and waits for it.
+        $fileStart = Join-Path $env:RUNNER_TEMP 'out-start.txt'
+        Start-Process -FilePath $exe -ArgumentList '--version' -Wait -NoNewWindow -RedirectStandardOutput $fileStart
+        $fromStart = (Get-Content -Raw -Path $fileStart).Trim()
+        Write-Output "Start-Process -RedirectStandardOutput holds: $fromStart"
+        if ($fromStart -cne $expected) { throw "Start-Process file holds '$fromStart', expected '$expected'" }
+        # cmd.exe opens the file and hands it to the program; cmd.exe does not wait for a GUI program, so the step waits
+        # for the text and prints how long that took.
         $fileCmd = Join-Path $env:RUNNER_TEMP 'out-cmd.txt'
         Remove-Item -Path $fileCmd -ErrorAction SilentlyContinue
         $watch = [System.Diagnostics.Stopwatch]::StartNew()
         cmd.exe /d /c "`"$exe`" --version > `"$fileCmd`""
         Write-Output "cmd.exe > out-cmd.txt: the command returned after $($watch.ElapsedMilliseconds) ms"
-        $fromCmd = Wait-ForText $fileCmd $watch
+        $fromCmd = ''
+        while ($watch.Elapsed.TotalSeconds -lt 20) {
+          if (Test-Path -Path $fileCmd) { $fromCmd = "$(Get-Content -Raw -Path $fileCmd)".Trim() }
+          if ($fromCmd) { break }
+          Start-Sleep -Milliseconds 100
+        }
         Write-Output "cmd.exe > out-cmd.txt: held the text after $($watch.ElapsedMilliseconds) ms: $fromCmd"
         if ($fromCmd -cne $expected) { throw "out-cmd.txt holds '$fromCmd', expected '$expected'" }
-        # The same through the 2>&1 merge that scripts use to log both streams.
-        $merged = (& $exe --version 2>&1 | Out-String).Trim()
-        Write-Output "merged streams: $merged"
-        if ($merged -cne $expected) { throw "merged '$merged', expected '$expected'" }
-        # Not captured: PowerShell does not wait for a GUI program, but the program writes to the handle it inherited, so
-        # the text still lands in this step's log. The sleep keeps this step open until the program has written.
-        Write-Output 'uncaptured run follows; the next line is printed by the program itself'
+        # What PowerShell's own `>` does with a GUI program, for the program and for a probe that has no console code at
+        # all. Printed, not asserted: it is PowerShell's behavior, and the probe shows it does not come from this program.
+        $probeDir = Join-Path $env:RUNNER_TEMP 'gui-probe'
+        New-Item -ItemType Directory -Path $probeDir -Force | Out-Null
+        Set-Content -Path (Join-Path $probeDir 'probe.rs') -Value "#![windows_subsystem = `"windows`"]`nfn main() { println!(`"gui-probe`"); }"
+        rustc --edition 2024 --out-dir $probeDir (Join-Path $probeDir 'probe.rs')
+        $probe = Join-Path $probeDir 'probe.exe'
+        foreach ($case in @(@('music-player', $exe, '--version'), @('gui-probe', $probe, ''))) {
+          $target = Join-Path $env:RUNNER_TEMP "ps-redirect-$($case[0]).txt"
+          Remove-Item -Path $target -ErrorAction SilentlyContinue
+          if ($case[2]) { & $case[1] $case[2] > $target } else { & $case[1] > $target }
+          Start-Sleep -Seconds 3
+          $length = if (Test-Path -Path $target) { (Get-Item -Path $target).Length } else { -1 }
+          Write-Output "PowerShell > file with $($case[0]): $length bytes after 3 seconds (-1 means no file)"
+        }
+        # Not captured: the program is started without redirection. Whether its text reaches this log depends on the
+        # console of this step; it is printed here as evidence and not asserted.
+        Write-Output 'uncaptured run follows'
         & $exe --version
         Start-Sleep -Seconds 5
+
+    # The one branch the runner cannot reach through a shell: no standard handle at all, or only some, and a parent console.
+    # This step makes that parent a Python process with a console of its own, starts the program with exactly the
+    # handles each case needs through CreateProcessW, and reads the console screen buffer back. Cases:
+    # - no handles: --version and a bad argument must print on the console (the AttachConsole branch);
+    # - stdout inherited as a file, stderr missing, no STARTF_USESTDHANDLES: stdout must stay in the file (the attach
+    #   replaces it with the console, the program puts it back) and the bad argument text must reach the console;
+    # - the same with STARTF_USESTDHANDLES.
+    - name: Run the binary with missing standard handles against a real console
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
+      working-directory: package/music-player/desktop-app
+      run: |
+        set -euo pipefail
+        exe="$(cygpath --windows "$PWD/target/${TARGET}/debug/music-player.exe")"
+        expected="music-player $(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head --lines=1 | tr --delete '\r')"
+        python - "$exe" "$expected" "$(cygpath --windows "$RUNNER_TEMP")" <<'PYTHON'
+        import ctypes
+        import os
+        import sys
+        from ctypes import wintypes
+
+        exe, expected, temp_dir = sys.argv[1], sys.argv[2], sys.argv[3]
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE = (wintypes.DWORD(-10).value, wintypes.DWORD(-11).value, wintypes.DWORD(-12).value)
+        STARTF_USESTDHANDLES = 0x100
+        GENERIC_READ, GENERIC_WRITE = 0x80000000, 0x40000000
+        FILE_SHARE_READ, FILE_SHARE_WRITE = 1, 2
+        CREATE_ALWAYS, OPEN_EXISTING = 2, 3
+        INFINITE = 0xFFFFFFFF
+
+
+        class SecurityAttributes(ctypes.Structure):
+            _fields_ = [("nLength", wintypes.DWORD), ("lpSecurityDescriptor", wintypes.LPVOID), ("bInheritHandle", wintypes.BOOL)]
+
+
+        class StartupInfo(ctypes.Structure):
+            _fields_ = [
+                ("cb", wintypes.DWORD), ("lpReserved", wintypes.LPWSTR), ("lpDesktop", wintypes.LPWSTR), ("lpTitle", wintypes.LPWSTR),
+                ("dwX", wintypes.DWORD), ("dwY", wintypes.DWORD), ("dwXSize", wintypes.DWORD), ("dwYSize", wintypes.DWORD),
+                ("dwXCountChars", wintypes.DWORD), ("dwYCountChars", wintypes.DWORD), ("dwFillAttribute", wintypes.DWORD),
+                ("dwFlags", wintypes.DWORD), ("wShowWindow", wintypes.WORD), ("cbReserved2", wintypes.WORD),
+                ("lpReserved2", ctypes.c_void_p), ("hStdInput", wintypes.HANDLE), ("hStdOutput", wintypes.HANDLE), ("hStdError", wintypes.HANDLE),
+            ]
+
+
+        class ProcessInformation(ctypes.Structure):
+            _fields_ = [("hProcess", wintypes.HANDLE), ("hThread", wintypes.HANDLE), ("dwProcessId", wintypes.DWORD), ("dwThreadId", wintypes.DWORD)]
+
+
+        class Coord(ctypes.Structure):
+            _fields_ = [("X", wintypes.SHORT), ("Y", wintypes.SHORT)]
+
+
+        class SmallRect(ctypes.Structure):
+            _fields_ = [("Left", wintypes.SHORT), ("Top", wintypes.SHORT), ("Right", wintypes.SHORT), ("Bottom", wintypes.SHORT)]
+
+
+        class ScreenBufferInfo(ctypes.Structure):
+            _fields_ = [("dwSize", Coord), ("dwCursorPosition", Coord), ("wAttributes", wintypes.WORD), ("srWindow", SmallRect), ("dwMaximumWindowSize", Coord)]
+
+
+        kernel32.GetStdHandle.restype = wintypes.HANDLE
+        kernel32.GetStdHandle.argtypes = [wintypes.DWORD]
+        kernel32.SetStdHandle.argtypes = [wintypes.DWORD, wintypes.HANDLE]
+        kernel32.CreateFileW.restype = wintypes.HANDLE
+        kernel32.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+        kernel32.CreateProcessW.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, ctypes.c_void_p, ctypes.c_void_p, wintypes.BOOL, wintypes.DWORD, ctypes.c_void_p, wintypes.LPCWSTR, ctypes.POINTER(StartupInfo), ctypes.POINTER(ProcessInformation)]
+        kernel32.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+        kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32.GetConsoleScreenBufferInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(ScreenBufferInfo)]
+        kernel32.ReadConsoleOutputCharacterW.argtypes = [wintypes.HANDLE, wintypes.LPWSTR, wintypes.DWORD, Coord, ctypes.POINTER(wintypes.DWORD)]
+
+
+        def fresh_console():
+            """Leaves the console of the CI step and creates an empty console of this process."""
+            kernel32.FreeConsole()
+            if not kernel32.AllocConsole():
+                raise SystemExit(f"AllocConsole failed with error {ctypes.get_last_error()}")
+
+
+        def console_text():
+            """Reads every written row of this process's console screen buffer."""
+            screen = kernel32.CreateFileW("CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, None, OPEN_EXISTING, 0, None)
+            info = ScreenBufferInfo()
+            if not kernel32.GetConsoleScreenBufferInfo(screen, ctypes.byref(info)):
+                raise SystemExit(f"GetConsoleScreenBufferInfo failed with error {ctypes.get_last_error()}")
+            width = info.dwSize.X
+            rows = []
+            for row in range(info.dwCursorPosition.Y + 1):
+                buffer = ctypes.create_unicode_buffer(width)
+                read = wintypes.DWORD(0)
+                kernel32.ReadConsoleOutputCharacterW(screen, buffer, width, Coord(0, row), ctypes.byref(read))
+                rows.append(buffer.value.rstrip())
+            kernel32.CloseHandle(screen)
+            return "\n".join(rows).strip()
+
+
+        def open_inheritable_file(path):
+            attributes = SecurityAttributes(ctypes.sizeof(SecurityAttributes), None, True)
+            handle = kernel32.CreateFileW(path, GENERIC_WRITE, FILE_SHARE_READ, ctypes.byref(attributes), CREATE_ALWAYS, 0, None)
+            if handle in (None, wintypes.HANDLE(-1).value):
+                raise SystemExit(f"CreateFileW failed for {path} with error {ctypes.get_last_error()}")
+            return handle
+
+
+        def start(argument, inherit, use_std_handles, stdout_file):
+            """Starts the program and returns its exit code. stdout_file is the inheritable file handle or None."""
+            startup = StartupInfo()
+            startup.cb = ctypes.sizeof(StartupInfo)
+            if use_std_handles:
+                startup.dwFlags = STARTF_USESTDHANDLES
+                startup.hStdOutput = stdout_file
+            info = ProcessInformation()
+            command = ctypes.create_unicode_buffer(f'"{exe}" {argument}')
+            if not kernel32.CreateProcessW(exe, command, None, None, inherit, 0, None, None, ctypes.byref(startup), ctypes.byref(info)):
+                raise SystemExit(f"CreateProcessW failed with error {ctypes.get_last_error()}")
+            kernel32.WaitForSingleObject(info.hProcess, INFINITE)
+            code = wintypes.DWORD(0)
+            kernel32.GetExitCodeProcess(info.hProcess, ctypes.byref(code))
+            kernel32.CloseHandle(info.hProcess)
+            kernel32.CloseHandle(info.hThread)
+            return code.value
+
+
+        failures = []
+
+
+        def check(name, condition, detail):
+            print(f"{'ok  ' if condition else 'FAIL'} {name}: {detail}", flush=True)
+            if not condition:
+                failures.append(name)
+
+
+        # Case 1: no standard handle at all (CreateProcessW without handle inheritance), a console of the parent.
+        for argument, wanted_code, wanted_text in (("--version", 0, expected), ("--no-such-option", 2, "no-such-option")):
+            fresh_console()
+            code = start(argument, False, False, None)
+            text = console_text()
+            check(f"no handles, {argument}", code == wanted_code and wanted_text in text, f"exit code {code}, console shows {text!r}")
+
+        # Cases 2 and 3: stdout is a file, stderr and stdin are missing, with and without STARTF_USESTDHANDLES.
+        for label, use_std_handles in (("inherited from the parent process", False), ("STARTF_USESTDHANDLES", True)):
+            for argument, wanted_code, in_file, in_console in (("--version", 0, expected, ""), ("--no-such-option", 2, "", "no-such-option")):
+                fresh_console()
+                path = os.path.join(temp_dir, "handle-case.txt")
+                stdout_file = open_inheritable_file(path)
+                kernel32.SetStdHandle(STD_INPUT_HANDLE, None)
+                kernel32.SetStdHandle(STD_OUTPUT_HANDLE, stdout_file)
+                kernel32.SetStdHandle(STD_ERROR_HANDLE, None)
+                code = start(argument, True, use_std_handles, stdout_file)
+                kernel32.CloseHandle(stdout_file)
+                with open(path, encoding="utf-8") as handle:
+                    file_text = handle.read().strip()
+                text = console_text()
+                good = code == wanted_code
+                good = good and (in_file in file_text if in_file else file_text == "")
+                good = good and (in_console in text if in_console else expected not in text)
+                check(f"stdout file, stderr missing, {label}, {argument}", good, f"exit code {code}, file holds {file_text!r}, console shows {text!r}")
+
+        if failures:
+            raise SystemExit("failed: " + "; ".join(failures))
+        PYTHON
 
     # The program must stay up when started on a folder, with no audio device on the runner. A start that
     # exits within the wait fails the job.
