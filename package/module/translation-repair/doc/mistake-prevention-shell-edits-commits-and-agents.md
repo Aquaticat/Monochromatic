@@ -61,6 +61,19 @@ and created an agent worktree through the Git wrapper without `--no-worktree-cop
 so it copied 888 MB of ignored logger files and held the settlement lock for over 45 minutes;
 the script that sets up agent worktrees then ran under `mise exec`,
 where `git` was plain Git and refused the flag (ledger M152).
+On 2026-10-15 (UTC) the lead added a worktree from the keyed branch worktree without the flag once more,
+and the wrapper exited 2 with `Permission denied` after the checkout;
+the entry that was blamed first,
+mode-locked test files,
+was dangling symbolic links,
+and the entry that stopped the copy was not traced (ledger M224).
+Output to the terminal over 50 lines and Reads outside the limit of 50
+came in six of the seven rounds from n162 to n168,
+and several Edits to one file in one batch in five of them,
+although every brief of those rounds stated each rule (ledger M227 to M233);
+double-quoted patterns with a backtick or `$0` were interpreted by the shell in three of them (ledger M227,
+M228,
+M230).
 In the work of B470 to B491 nine authors and reviewers and the lead broke the same rules once more:
 `head`,
 `;`,
@@ -128,6 +141,18 @@ M197).
 Git runs from the repository root or with `git -C`.
 An agent worktree is created with `--no-worktree-copy` from a shell whose `git` is the wrapper,
 then set up.
+Every worktree added from a worktree that holds ignored files passes the flag,
+a keyless worktree most of all,
+since the wrapper copies every ignored file of a linked source
+(the `CopySelection` TSDoc in `package/git-policy/cli/src/native/worktree_copy_selection.rs`),
+run keys and logger files included,
+and `git clean --dry-run -d -X` in the new worktree lists nothing ignored (ledger M152,
+M224).
+A pattern that holds a backtick or a dollar sign is written in single quotes,
+since the shell reads both inside double quotes,
+and an `rg --replace` that uses `$0` is written in single quotes too (ledger M227,
+M228,
+M230).
 A process is stopped by its own id,
 or by the task id of the call that started it,
 never by name or pattern.
@@ -447,7 +472,8 @@ and its `--fix` output is rendered against the committed version before it is st
 block for block (`render-blocks.mjs` in the audit's scratch folder),
 not by counting markers.
 Until issue 559 is fixed,
-`--fix` runs on a file holding an astral character only with those characters mapped to single-unit private-use characters for the run
+`--fix` runs on a file holding an astral character
+only with those characters mapped to single-unit private-use characters for the run
 (`astral-safe-fix.mjs`).
 A code span holding a backtick uses a longer backtick run as its delimiter,
 since a backslash does not escape it,
@@ -739,6 +765,19 @@ Four builds then gave identical oracle grids,
 run sites,
 replay rows and recounts of the elisions,
 and each review of them still found new defects in code next to the changed code (ledger M219).
+A brief asked for every other top index entry of the history archive to be checked and "reported",
+and the agent applied six fixes,
+read the verb,
+and reverted them to proposals,
+so the lead wrote the six clauses itself and no other author read them (ledger M225).
+A brief said that the archive had not changed since a commit,
+and the check that the brief gave the agent showed a commit that already held the fixes (ledger M229).
+A review named the cause of a residue from reading the code and said it had not instrumented it,
+and the brief that carried the pointer told the fix round to confirm it on an instrumented copy first,
+which showed that refusing the case in that branch changed nothing (ledger M227,
+B619).
+A review claimed reads of heads and tails before they were done,
+and about fifteen Edits rewrote it after its appended sections (ledger M230).
 
 The rule:
 an example in a brief that claims a failing result is run before the brief is sent,
@@ -787,6 +826,32 @@ even where the wrapped task would do the same harmless work.
 A brief repeats the shell rules with each banned form named,
 and a hand-back lists every rule its author broke;
 the lead reads that list before relying on the results.
+A brief's verb matches the ruling the lead will make:
+a check whose findings will be fixed says "fix",
+not "report",
+and clauses that the lead writes itself get the reading that an agent's change gets (ledger M225).
+A brief that states a premise about a tree,
+such as "unchanged since" a commit,
+is sent only after the lead has run the check that the brief gives the agent (ledger M229).
+A brief that carries a cause from a report says whether the report instrumented it,
+and keeps the instruction to confirm it on an instrumented copy before the fix,
+which found the pointer wrong in the round that followed (ledger M227,
+B619).
+A brief that asks for a lint control names where the control goes and who removes it (ledger M228).
+Rules that six of seven rounds broke while their briefs stated them are not stated again in the same words:
+a brief opens its rules with the forms that were broken
+(a Read with no limit,
+a Read with a limit over 50,
+a listing or a search printed to the terminal,
+two Edits to one file in one batch,
+and an Edit beside a read of the same file)
+and the number of rounds that broke each,
+and it asks for the author's own count of each form in the hand-back (ledger M227 to M233).
+A hand-back states a read or a check as done only when it was done,
+is written once and then appended to,
+and a round that stops at a precondition names each read that its brief required and it did not finish
+(ledger M229,
+M230).
 A change is built tests first,
 item by item,
 memos and reader changes included,
@@ -811,3 +876,6 @@ each fix as its own commit (ledger M219).
 What enforces it:
 habit,
 and the lead's check of each new brief against this list.
+The accounts of the rounds from n162 to n168 name no check that stopped a Read over 50 lines,
+an output over 50 lines or two Edits to one file in one batch,
+so the hand-back's list of broken rules is the only check on them (ledger M227 to M233).

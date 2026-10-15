@@ -564,7 +564,11 @@ Part of [the package README](../README.md).
   B621 and B622) and the group line's reason (B628),
   with the tests `5fe3173cc5` and the code `277145a862`.
   Open:
-  the definitions inside containers (B620) and the rows of B619.
+  the definitions inside containers (B620).
+  The rows of B619 are fixed by n166,
+  n168 and n169,
+  which are green and not landed,
+  with the rows left to them taken by n173.
   The words rule:
   the span the pass replaces is the words alone.
   The single marks that touch each edge of the span are read at the chosen place and at the receiving place.

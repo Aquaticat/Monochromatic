@@ -552,7 +552,8 @@ a log holding neither is no result.
 Status:
 happened on 2026-10-13,
 found by the fifth review and withdrawn the same day (B463).
-The lead's note recorded the cost of the span rule as one apostrophe left beside a replacement at a dropped-letter opening,
+The lead's note recorded the cost of the span rule
+as one apostrophe left beside a replacement at a dropped-letter opening,
 and sized it by the one dropped opening in the pinned English.
 Every shape that puts a single mark at the edge of the words reaches the same code,
 and the single-mark reader's own header counted 33 plural possessives.
@@ -654,4 +655,55 @@ Prevention:
 a page read that says a rule holds names the lines it read,
 and reads quoted speech against the source and the human archive apart from the narration.
 `mistake-prevention.md`,
+"Claims without their evidence".
+
+## M226: a read stated a stage's outcome from one log line and described a count it had not traced
+
+Status:
+happened on 2026-10-15 (UTC) in the lead's read of the consistency pass on TianqiChen66625 (commit `de8f6a079a`);
+corrected by n170 the same day,
+fixed in the docs by `e50786900d`,
+and answered by the lead's corrective comment on `de8f6a079a` (commit comment 205137104).
+The read made three claims from less than the record held:
+
+- It said that the run-off of the refrain reached no quorum.
+  Its only source was the "no quorum" line of the first window (log line 9551),
+  read without the retry lines and without the `runOff` of the artifact.
+  The first ask split its 3 usable ballots one to each of three places.
+  The first window of the run-off heard 2 of 4 seats (the "no quorum" line),
+  the retry asked the other two seats (log line 9552)
+  and heard 2 of 2 (log line 9562),
+  and the recovery round re-asked the two refused seats whose votes were surplus.
+  The `runOff` of the artifact holds Qwen,
+  Kimi and minimax for OCCURRENCE 3 and deepseek for OCCURRENCE 2,
+  so OCCURRENCE 3 won with 3 of 4.
+  The log prints no line for the final result of a run-off,
+  so the line that the read took for the outcome was a stage on the way to it.
+- It called the 1.3 million "delivered chars" of Qwen the volume of the reply.
+  The count is the `partialText.length` of the raw stream including its framing
+  (`src/abandon-kind.ts` and `src/stream-drain.ts`),
+  and the three streams cut at the straggler deadline held no content
+  and 49,293,
+  36,301 and 37,784 characters of reasoning,
+  so the count was about 27 times the reasoning.
+- It said that most voices were lost without counting them.
+  n170 counted the replies the shape rule refused,
+  the streams that were cut
+  and the truncations that came back empty,
+  each in its own list (`s241/notes-n170.md`,
+  Q1,
+  Q4 and Q5).
+
+n170 was given the log,
+the artifact and the sources,
+and corrected all three.
+Its own Write of the report was refused by the tool and it returned the report as text;
+the lead wrote the notes from that text.
+
+Prevention:
+a read states the outcome of a stage from the record the artifact keeps of that stage,
+never from one round's log line,
+and describes a count that a log line prints only after reading the code that computes it.
+A listing that is named by a cause gets the type of each entry first (M224).
+`mistake-prevention-guards-searches-and-claims.md`,
 "Claims without their evidence".

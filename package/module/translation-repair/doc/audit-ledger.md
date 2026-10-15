@@ -330,7 +330,7 @@ named for that subject and listed here.
   hidden stretches read unit by unit,
   markup that separates or annotates read as invisible,
   and inline code beside a text place,
-  with the rows of the twin check that stay open.
+  with the rows of the twin check that n166 and n168 fixed and that are not landed.
 - [Audit ledger: the consistency pass, elisions, quoted numbers and pairing](audit-ledger-consistency-pass-elisions-quoted-numbers-and-pairing.md):
   The pairing of single marks on a curly page:
   elisions inside a quotation,
@@ -477,6 +477,10 @@ named for that subject and listed here.
   and two mistakes of the lead's own:
   ten fix rounds without a commit,
   and a review loop that was not stopped.
+- [Audit ledger: process mistakes, agents and briefs in the review, docs, archive and empty link rounds](audit-ledger-process-agents-and-briefs-review-docs-archive-and-empty-link-rounds.md):
+  The rule breaches of the rounds from the review of n159 and n161 to the empty link round (n162 to n168),
+  and a mistake of the lead's brief for the archive fixes.
+  The lead's other two mistakes of those days are filed in the shell commands and the claims files.
 - [Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md):
   The lead's own slips as they were collected at the close of each batch of work.
 - [Audit ledger: process mistakes, checks run before a commit](audit-ledger-process-commit-gates.md):
@@ -728,6 +732,7 @@ Filed in:
 - [Audit ledger: process mistakes, agents and briefs](audit-ledger-process-agents-and-briefs.md)
 - [Audit ledger: process mistakes, agents and briefs in the consistency fix rounds](audit-ledger-process-agents-and-briefs-consistency-fix-rounds.md)
 - [Audit ledger: process mistakes, agents and briefs in the reference, edge and prose mask rounds](audit-ledger-process-agents-and-briefs-reference-edge-and-prose-mask-rounds.md)
+- [Audit ledger: process mistakes, agents and briefs in the review, docs, archive and empty link rounds](audit-ledger-process-agents-and-briefs-review-docs-archive-and-empty-link-rounds.md)
 - [Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md)
 - [Audit ledger: work merged from parallel briefs](audit-ledger-work-merged-from-parallel-briefs.md)
 - [Audit ledger: process mistakes, questions and handoffs to the owner](audit-ledger-process-questions-to-the-owner.md)

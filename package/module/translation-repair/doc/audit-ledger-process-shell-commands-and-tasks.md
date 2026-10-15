@@ -4,7 +4,8 @@ Slips against the repository's shell and task rules:
 chained commands,
 commands batched with the write they read,
 tasks run from the wrong place,
-and scratch output without bound.
+scratch output without bound,
+and a worktree added without the flag that stops the copy of ignored files (M224).
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -436,7 +437,8 @@ Status:
 happened 2026-10-01 (UTC) during B75;
 stopped by its process id,
 nothing written.
-A scratch sweep of documented runner invocations listed Markdown files by walking the package and `doc/` with a recursive `readdirSync`;
+A scratch sweep of documented runner invocations listed Markdown files
+by walking the package and `doc/` with a recursive `readdirSync`;
 it ran 16 minutes and held 6.7 GB resident before it was stopped,
 and no output it gave was used.
 The rewrite lists tracked Markdown through `git ls-files`
@@ -595,3 +597,74 @@ and a task that fails to start is read before the next step.
 `mistake-prevention.md`,
 "Tasks,
 builds and bulk output".
+
+## M224: a worktree was added without `--no-worktree-copy` and its failed copy was blamed on a wrong listing
+
+Status:
+happened on 2026-10-15 (UTC) when the lead added the worktree `w160` for the archive round n164;
+the worktree was usable and nothing was lost,
+and the cause of the failed copy is not traced.
+The lead ran `git worktree add --detach` with no `--no-worktree-copy`.
+From a linked source the Git wrapper copies every ignored file of the source worktree
+(`package/git-policy/cli/src/native/worktree_copy_selection.rs`,
+the `CopySelection` TSDoc),
+and the source was the branch worktree that holds the run keys.
+The checkout finished at `5f6c8593d7`,
+then the wrapper exited 2 with `Permission denied (os error 13)`.
+`git clean --dry-run -d -X` in `w160` listed nothing ignored,
+so no key and no other ignored file reached the new worktree.
+The same breach is recorded as M152 in
+[Audit ledger: process mistakes, agents and briefs](audit-ledger-process-agents-and-briefs.md),
+where the copy held the settlement lock for over 45 minutes,
+and it came again on 2026-10-15.
+
+- The lead's wrong claim:
+  the notes first called the unreadable entries of the branch worktree mode-locked test leftovers.
+  The listing was `find -not -readable` over the branch worktree,
+  which showed `Mittens-again.json` and `linked.mjs`
+  under `package/module/translation-repair/node_modules/.monochromatic/`
+  and two `node_modules` entries,
+  and the entry type was not checked.
+  The claim reached the brief of the docs round that wrote this entry (n172) before the check,
+  with an instruction to file an open entry for tests that lock modes.
+- The correction of the lead,
+  the same day,
+  after checking:
+  `find -not -readable -not -type l` over the branch worktree lists nothing,
+  so every unreadable entry is a symbolic link.
+  `Mittens-again.json` and `linked.mjs` are absolute symbolic links that two tests make in disposable folders
+  (the `symlink` calls in `src/corpus-run/artifact-file-name.unit.test.ts`
+  and `src/corpus-run/pipeline-digest.unit.test.ts`).
+  Copies of those folders kept under `node_modules/.monochromatic/comparison-evidence/`
+  and `node_modules/.monochromatic/preparation-root-order*/` (dated 2026-09-14) hold the links with their targets gone,
+  so the links dangle.
+  No test locks a mode there,
+  and no entry is filed for tests that lock modes.
+- What does lack a permission:
+  624 directories named `.frozen-*` in the package `node_modules/`,
+  mode `dr-x------`,
+  dated 2026-09-13 (`s228/unwritable-dirs.txt`).
+  No file in the branch or the main checkout outside `node_modules` and `doc` names them today
+  (`s228/frozen-writers-repo.txt` and `s228/frozen-writers-main.txt`,
+  both empty).
+  `git log --all -S'frozen-producer'` finds only docs commits,
+  the earliest `afe60d9db7` ("record native lifecycle proofs")
+  and `90133cb312` ("record final sealed input verification and cleanup"),
+  so the September input-proof work left them.
+- Not traced:
+  which entry stopped the copy.
+  That a copied read-only directory refused its children is a guess.
+  Removing these ignored leftovers is a cleanup of the keyed branch worktree:
+  a dry run first,
+  then the owner's word.
+
+Prevention:
+every worktree added from a worktree that holds ignored files passes `--no-worktree-copy`,
+and a keyless worktree most of all,
+and `git clean --dry-run -d -X` in the new worktree must list nothing ignored.
+A listing of unreadable entries gets the type of each entry
+before the entries are named by a cause.
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Shell commands",
+and `mistake-prevention-guards-searches-and-claims.md`,
+"Claims without their evidence".

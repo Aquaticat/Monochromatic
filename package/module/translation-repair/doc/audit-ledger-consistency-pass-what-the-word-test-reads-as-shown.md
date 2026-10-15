@@ -9,8 +9,12 @@ or failed to step over:
 a hidden stretch whose units were read one by one (B616),
 markup that separates or annotates and was read as invisible (B617),
 and inline code beside a text place (B618).
-It also holds the rows of the twin check that stay open (B619).
+It also holds the rows of the twin check that the first fixes left (B619).
 The first three are fixed by n161 and landed on 2026-10-15 with the tests `5fe3173cc5` and the code `277145a862`.
+B619 is fixed by n166,
+n168 and n169,
+which are green and not landed,
+with the rows left to them taken by n173.
 
 The principle itself,
 and the rounds that built it,
@@ -36,6 +40,9 @@ and in
 Written on 2026-10-15 (UTC) from the review of n159 (`s231/review.md`),
 the hand-backs of n159 (`s230/handback-n159.md`) and n161 (`s232/handback-n161.md`)
 and the lead's notes of that day.
+The update of B619 on the same day is written from the review of n162 (`s233/review.md`),
+the hand-backs of n166 (`s237/handback-n166.md`) and n168 (`s239/handback-n168.md`)
+and the lead's notes of the rulings.
 The labels Y1,
 Y2 and Y4 are the review's own and are no ledger ids.
 The labels of probe scenarios,
@@ -50,6 +57,12 @@ The names that only a review or a hand-back gives
 guard names,
 the names of probes and the names of logs)
 were not searched.
+The functions that the update of B619 names (`apostropheJoinsAt`,
+`closingJointsOf`,
+`cutsShownWord`,
+`locateWords` and `parseSliceBody`)
+were found declared in non-test source of the tree `w163` at `e50786900d`,
+which does not hold the work of n166 and n168.
 No line numbers are cited,
 since the tree is still changing.
 
@@ -321,14 +334,17 @@ Rows 7 and 8 of the `p1-edges` probe went from `once` to `none`,
 and the two page-level rows (code before the word and code after it) went from `replaced` to `unlocated`,
 with the page unchanged there.
 
-## B619: a hidden reference then an apostrophe before the word still decides differently from the plain text
+## B619: a hidden reference then an apostrophe before the word decided differently from the plain text
 
 Found on 2026-10-15 by the rerun of the twin check in n161,
 after the fixes of B616 to B618.
 
-Open.
-Reported by the author and not fixed;
-the lead recorded it as open on 2026-10-15.
+Fixed by n166 and n168 on 2026-10-15;
+both rounds are green and neither is landed.
+The review of n162 reproduced the rows and measured their reach,
+and the lead ruled on the work of n166 and n168 the same day.
+The entry first recorded the rows as open,
+reported by the author and not fixed.
 
 The twin check compares each input with the same input without its invisible delimiters,
 and reports where the two decide differently.
@@ -344,14 +360,99 @@ a hidden reference and then an apostrophe before the word.
 They stood inside the 982 before the round,
 and the author could not explain them by the changes of the round.
 
-Not known:
-whether the refusal is right,
+What the author could not say was whether the refusal was right,
 since an apostrophe before the word may be a mark the word test reads,
 or a wrong refusal where the twin is right.
-No one has traced which of the two it is.
+
+The cause,
+as the review of n162 traced it and n166 corrected it:
+the review reran the `p5-wordtwin` probe and counted the same rows
+(`link-ref-in-dest` and `link-ref-in-title` each 26 of `once` to `none`,
+of 3,782 comparable rows,
+and 118 of `none` to `many`).
+The word `kit` after `[](u)'` and `[](u&#116;)'`,
+with or without the reference,
+was refused by `locateWords`,
+while its twin with a space in place of the link was located once.
+The review found `cutsShownWord` false on those rows,
+so the refusal was earlier,
+and it named the branch of `closingJointsOf` in `src/consistency-closing-marks.ts`
+that continues the run past a destination as the place where the apostrophe became a joint.
+It said that it had read that branch and had not instrumented it.
+The brief of n166 carried that pointer.
+n166 instrumented a copy before it fixed anything:
+refusing an empty label in that branch changed nothing.
+The cause was the last return of `apostropheJoinsAt` in `src/consistency-word-joints.ts`,
+which took any closing bracket before an apostrophe as a joint
+without asking which bracket it closed.
 
 Reach on the corpus:
-the inputs are constructed.
-The corpus reach is being measured by the review of n161,
-and its answer is not filed yet.
-This entry stays open until it is.
+none.
+The review of n162 searched the 92 pages for `\[\]\(` and for `\[\]\([^)]*\)['’]` and found no match in either,
+and the control `\]\(` found links on many pages.
+The inputs are constructed.
+The corpus measures of n166 and n168 found no decision or character change on any page.
+
+The lead's rulings of 2026-10-15:
+- The fix of n166 cleared the 26 rows of each group that went from `once` to `none`,
+  and moved two rows of each group from `none` to `many` (118 to 120):
+  `kit[](u)'kit` and its twin with the reference.
+  The lead ruled that wrong,
+  since a reader sees `kit'kit`:
+  the joint is decided from the character before the empty link,
+  as with no link there (n168).
+- The documented limit of n166's helper,
+  that it did not read a round bracket inside a destination or a title,
+  nor a square bracket inside a label,
+  was ruled a mistake and not a limit:
+  n168 reads the link by the parser's rules (micromark,
+  through `parseSliceBody`),
+  and the backward scanner is gone.
+- The lead accepted three decisions of n168:
+  the plain-text twin is the oracle,
+  a label of marks only (`[ ](u)`,
+  `[-](u)`,
+  `[_](u)`) gives no joint,
+  except that one whose last shown character is a closing round or square bracket
+  or a closing curly double quotation mark gives the joint,
+  as the plain text does,
+  and an English that the page grammar refuses has no parse,
+  so no link is read in it and an apostrophe after `)` stays a joint.
+
+The state of the fixes:
+n166 left `once` to `none` at 0 in both groups,
+and its suite was green at 2,445 passes and 0 failures on its second whole run
+(the first was red on seven tests that pinned cache keys and seat order the sheet text of another finding moved).
+n168 left `kit[](u)'kit` and `kit[](u&#116;)'kit` answering `none` like `kit'kit`,
+`once` to `none` at 0 and `none` to `many` back at 118 in each group,
+and its suite was green at 2,446 passes and 0 failures,
+with lint,
+types and the source scans clean,
+the replays as expected
+and no change on any page of the corpus.
+Neither round is landed.
+Four divergences from the twin that n168 measured and left to other layers were ruled to be fixed in n169:
+the forward reading over empty links,
+the joints of closing marks across links,
+images with an empty alt text in the shown layer,
+and a line break inside a destination in the shown layer.
+The same round took the page definitions for a reference with an empty label,
+and the question whether the consistency cache can hold values derived from the fold.
+n169 handed back green on 2026-10-15
+(suite 2,450 pass and 0 fail,
+lint,
+types and the source scans clean,
+the replays as expected,
+no real change on any page of the corpus,
+every new guard shown to fail),
+and found that no cache version needs to move,
+since the sheet text is in the consistency key and the pipeline digest covers the build
+(`s240/handback-n169.md`).
+It left links with a label that is not empty,
+which still read apart from their twin,
+and four callers that fold without the page's definitions;
+the lead ruled both fixed,
+in round n173.
+This entry stays open until the work of n166,
+n168,
+n169 and n173 is landed.

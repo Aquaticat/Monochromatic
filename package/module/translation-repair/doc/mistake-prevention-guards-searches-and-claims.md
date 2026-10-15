@@ -13,7 +13,8 @@ which lists every file of this record.
 What happened:
 red guards went red for the wrong reason (a missing export,
 a lint warning) (M3,
-M4);
+M4,
+M231);
 guarded one branch of a new condition (M5);
 asked a function that never reads the entry guarded (M29);
 matched a word the message carries twice (M34);
@@ -369,7 +370,8 @@ then makes the comparison the scan made.
 
 A change that makes an outcome more frequent starts with a search that lists every consumer of that outcome,
 and each consumer is re-read:
-a test that was harmless while `unavailable` was rare withheld work from carriable places once the mark rule made it common
+a test that was harmless while `unavailable` was rare
+withheld work from carriable places once the mark rule made it common
 (ledger M170).
 
 A corpus count sizes a cost and never proves a shape absent.
@@ -533,7 +535,8 @@ a mark beside a CJK character was accepted as trailing against a decision that s
 and the entry that recorded it had no probe either (ledger M200,
 B520).
 A replay cited as evidence for a reader prints the thing the reader read:
-the replay of the stored run printed no count of consistency groups until its line ended `consistency-groups=2 read-at-generation=15`
+the replay of the stored run printed no count of consistency groups
+until its line ended `consistency-groups=2 read-at-generation=15`
 (ledger M172).
 A page read that says a rule holds names the lines it read:
 the read of TianqiChen66623 recorded that the tense held from the narration,
@@ -542,6 +545,18 @@ quoted in her own words,
 had been moved into the past on the same page (ledger M220).
 Quoted speech is read against the source and the human archive line by line,
 apart from the narration.
+A read states the outcome of a stage from the record the artifact keeps of that stage,
+never from one round's log line:
+the read of TianqiChen66625 said the run-off of the refrain reached no quorum
+from the "no quorum" line of its first window,
+and the `runOff` of the artifact held a win of 3 of 4 after a retry (ledger M226).
+A count that a log line prints is described only after the code that computes it is read:
+the 1.3 million "delivered chars" of a cut stream were the raw stream with its framing,
+about 27 times its reasoning (ledger M226).
+A word such as "most" is a count,
+and it is counted (ledger M226).
+A listing is given a cause only after the type of each entry in it is read:
+unreadable entries called mode-locked test files were dangling symbolic links (ledger M224).
 
 What enforces it:
 habit;
@@ -601,7 +616,8 @@ and one of them pinned an artifact nothing had reviewed passing unrefused (ledge
 A walk reader checked each step's blocks and never that every block had a step,
 so a walk leaving one unnamed grouped its section to nothing (ledger B172).
 
-Two named invariant throws of the rendering audit's corroboration had been flattened to `nonNullishOrThrow` (ledger B176).
+Two named invariant throws of the rendering audit's corroboration had been flattened
+to `nonNullishOrThrow` (ledger B176).
 A fallback on a list read at another list's index was turned into the same unnamed refusal,
 which refused only some of the inputs the fallback had covered (ledger B177).
 When a fallback becomes a refusal,
@@ -719,7 +735,8 @@ both habit.
 `sample-draw.unit.test.ts` holds
 "REFUSES a size that is not a whole number of slots",
 the one case here an honest input reaches.
-`coverage-invariant-throw.unit.test.ts` holds the shapes the census reads as an invariant throw and the ones it keeps cold,
+`coverage-invariant-throw.unit.test.ts` holds the shapes the census reads as an invariant throw
+and the ones it keeps cold,
 and `coverage-census-input.unit.test.ts` the refusal of a format 2 baseline.
 `pair-blocks-steps.unit.test.ts` holds the refusal of a pairing naming a block its side lacks.
 
