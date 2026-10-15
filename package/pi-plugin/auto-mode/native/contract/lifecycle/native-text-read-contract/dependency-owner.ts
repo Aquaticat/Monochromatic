@@ -1,10 +1,20 @@
-/** Original dependency facade retains root, source, file, deadline, and cancellation ownership. @module */
+/**
+ Original dependency facade retains root, source, file, deadline, and cancellation ownership. @module
+ */
 import {tagged} from '@monochromatic-dev/module-logger/ts';
 import {nonNullishOrThrow} from '@monochromatic-dev/module-or-throw/ts';
 import {createDependencyProfile} from './dependency-profile.ts';
 import {requireDependencyRecord} from './dependency-record.ts';
 import {createOriginalFileReader} from './dependency-original-file.ts';
-import type {DependencySources,DependencyFacadeInput,DependencyFacade,DependencyRecord,DependencyFileProfile,DependencyVerification,DependencyProjection} from './dependency-types.ts';
+import type {
+  DependencySources,
+  DependencyFacadeInput,
+  DependencyFacade,
+  DependencyRecord,
+  DependencyFileProfile,
+  DependencyVerification,
+  DependencyProjection
+} from './dependency-types.ts';
 import type {FileObservation} from '../external-dependency-controls/file-observation-types.ts';
 import {isAbsolute} from 'node:path';
 import {
@@ -17,8 +27,30 @@ import {
   observeDeclaredFile
 } from '../external-dependency-controls/file-observer.ts';
 
-/** Dependency logs identify lifecycle boundaries without serializing original values. */
+/**
+ Dependency logs identify lifecycle boundaries without serializing original values.
+ */
 const l=tagged({tag:'auto-mode-dependency-owner'});
+
+/**
+ Read the original native monotonic clock when no bootstrap override is supplied.
+
+ @returns native elapsed clock reading without a new deadline
+ */
+function readDependencyClock(): number {
+  return performance.now();
+}
+
+/**
+ Retained checks keep original cancellation without reviving the completed model clock.
+
+ @param signal - original observation cancellation
+
+ @throws DependencyCancellationError when original cancellation has fired
+ */
+function checkSignal(signal: AbortSignal): void {
+  if (signal.aborted) throw new DependencyCancellationError();
+}
 
 //region One issuing root/deadline retains all dependencies behind opaque handles.
 /**
@@ -54,27 +86,28 @@ export function createDependencyFacade<const Source extends DependencySources, c
   rootDirectory,
   files,
   trace,
-  now = function readDependencyClock() { return ( performance.now()); }
+  now = readDependencyClock
 }: DependencyFacadeInput<Source, Root>): DependencyFacade {
-  /** Original diagnostics omit root, source, and declared file values. */
-  const rl=tagged({tag:createDependencyFacade.name,l});
+  /**
+   Original diagnostics omit root, source, and declared file values.
+   */
+  const rl=tagged({
+    tag:createDependencyFacade.name,
+    l
+  });
   rl.debug("binding original dependency facade");
   if (((typeof now) !== 'function') || (!Number.isFinite(deadlineAt))) throw new DependencyDeadlineError();
   if (((typeof rootDirectory) !== 'string') || (!isAbsolute(rootDirectory))
     || (!Array.isArray(files))
     || ((typeof trace) !== 'function')) throw new DependencyConfigurationError();
-  /** Original opaque handles remain private to their issuing dependency facade. */
-  const handles = new WeakMap<object,DependencyRecord<Source,Root>>();
-  /** Original declaration validation remains after owner allocation. */
-  const profile=createDependencyProfile(files);
   /**
-   Retained checks keep original cancellation without reviving the completed model clock.
-
-   @param signal - original observation cancellation
-
-   @throws DependencyCancellationError when original cancellation has fired
+   Original opaque handles remain private to their issuing dependency facade.
    */
-  function checkSignal(signal:AbortSignal):void { if (signal.aborted) throw new DependencyCancellationError(); }
+  const handles = new WeakMap<object,DependencyRecord<Source,Root>>();
+  /**
+   Original declaration validation remains after owner allocation.
+   */
+  const profile=createDependencyProfile(files);
   /**
    Live checks observe cancellation before the fixed original deadline.
 
@@ -84,7 +117,9 @@ export function createDependencyFacade<const Source extends DependencySources, c
    */
   function checkpoint(signal:AbortSignal):void {
     checkSignal(signal);
-    /** Original clock remains unread during retained-only revalidation. */
+    /**
+     Original clock remains unread during retained-only revalidation.
+     */
     const current = now();
     if ((!Number.isFinite(current)) || (current >= deadlineAt)) throw new DependencyDeadlineError();
   }
@@ -106,13 +141,22 @@ export function createDependencyFacade<const Source extends DependencySources, c
     file,
     signal,
     verify = checkpoint
-  }:Readonly<{stage:string;file:DependencyFileProfile;signal:AbortSignal;verify?:DependencyVerification}>):FileObservation {
+  }:Readonly<{
+    stage:string;
+    file:DependencyFileProfile;
+    signal:AbortSignal;
+    verify?:DependencyVerification
+  }>):FileObservation {
     verify(signal);
     trace(`${stage  }.file:${  file.relativePath  }.enter`);
-    /** Completed file observation retains the original synchronous freshness boundary. */
+    /**
+     Completed file observation retains the original synchronous freshness boundary.
+     */
     const observation = observeDeclaredFile({
       root: rootDirectory,
-      relativePath:file.relativePath,requiredMode:file.requiredMode,maxBytes:file.maxBytes,
+      relativePath:file.relativePath,
+      requiredMode:file.requiredMode,
+      maxBytes:file.maxBytes,
       ...(file.read===undefined?{}:{read:file.read})
     });
     trace(`${stage  }.file:${
@@ -132,23 +176,33 @@ export function createDependencyFacade<const Source extends DependencySources, c
     trace('prepare.entry');
     checkpoint(signal);
     trace('prepare.root.enter');
-    /** Original root identity remains private behind the issued handle. */
+    /**
+     Original root identity remains private behind the issued handle.
+     */
     const root = rootAdapter.prepare();
     trace('prepare.root.return');
     checkpoint(signal);
     trace('prepare.collector.enter');
-    /** Original source capture retains the caller's exact collection. */
+    /**
+     Original source capture retains the caller's exact collection.
+     */
     const sources = collector.capture({ signal });
     trace('prepare.collector.return');
     checkpoint(signal);
-    /** Completed observations preserve original declaration order. */
-    const observed = profile.map(function observePreparedFile(file) { return ( observe({
+    /**
+     Completed observations preserve original declaration order.
+     */
+    const observed = profile.map(function observePreparedFile(file) { 
+      return ( observe({
       stage: 'prepare',
       file,
       signal
-    })); });
+    })); 
+    });
     checkpoint(signal);
-    /** Only this opaque occurrence identity can retrieve the retained record. */
+    /**
+     Only this opaque occurrence identity can retrieve the retained record.
+     */
     const handle = Object.freeze({});
     handles.set(
       handle,
@@ -175,10 +229,18 @@ export function createDependencyFacade<const Source extends DependencySources, c
   function revalidate({
     handle,
     verify
-  }:Readonly<{handle:unknown;verify:DependencyVerification}>):DependencyProjection {
+  }:Readonly<{
+    handle:unknown;
+    verify:DependencyVerification
+  }>):DependencyProjection {
     trace('finalize.handle-check');
-    /** Foreign handles fail before any original dependency callbacks run. */
-    const prepared = requireDependencyRecord({handles,handle});
+    /**
+     Foreign handles fail before any original dependency callbacks run.
+     */
+    const prepared = requireDependencyRecord({
+      handles,
+      handle
+    });
     trace('finalize.handle-owned');
     trace('finalize.entry');
     verify(prepared.signal);
@@ -191,7 +253,9 @@ export function createDependencyFacade<const Source extends DependencySources, c
     trace('finalize.collector.return');
     verify(prepared.signal);
     for (const [index, file] of profile.entries()) {
-      /** Reobservation completes before comparing retained descriptor identity and bytes. */
+      /**
+       Reobservation completes before comparing retained descriptor identity and bytes.
+       */
       const current = observe({
         stage: 'finalize',
         file,
@@ -203,7 +267,9 @@ export function createDependencyFacade<const Source extends DependencySources, c
         current
       });
     }
-    /** Mechanical status explicitly withholds instruction authority and human permission. */
+    /**
+     Mechanical status explicitly withholds instruction authority and human permission.
+     */
     const projection = Object.freeze({
       mechanicalDependenciesCurrent: true,
       decisionDeadlineChecked: verify === checkpoint,
@@ -226,10 +292,12 @@ export function createDependencyFacade<const Source extends DependencySources, c
 
    @returns current mechanical projection after the final live check
    */
-  function finalize(handle:unknown):DependencyProjection { return revalidate({
+  function finalize(handle:unknown):DependencyProjection { 
+    return revalidate({
     handle,
     verify:checkpoint
-  }); }
+  }); 
+  }
   /**
    Recheck retained dependencies and cancellation after model evidence closes.
 
@@ -237,12 +305,21 @@ export function createDependencyFacade<const Source extends DependencySources, c
 
    @returns retained mechanical projection without asserting current model lifetime
    */
-  function checkRetained(handle:unknown):DependencyProjection { return revalidate({
+  function checkRetained(handle:unknown):DependencyProjection { 
+    return revalidate({
     handle,
     verify:checkSignal
-  }); }
-  /** Original file reader shares this exact issuing owner and completed observations. */
-  const originalFile=createOriginalFileReader({handles,checkpoint,profile,rootDirectory});
+  }); 
+  }
+  /**
+   Original file reader shares this exact issuing owner and completed observations.
+   */
+  const originalFile=createOriginalFileReader({
+    handles,
+    checkpoint,
+    profile,
+    rootDirectory
+  });
   return Object.freeze({
     prepare,
     finalize,

@@ -670,6 +670,8 @@ description = "Verify original dependency ownership, live and retained checks, a
 run = [
   'node --max-old-space-size=512 src/native-facade.unit.test.ts',
   'node --max-old-space-size=512 src/native-facade-lifetime.unit.test.ts',
+  'node --max-old-space-size=512 src/native-facade-file.unit.test.ts',
+  'node --max-old-space-size=512 src/native-facade-profile.unit.test.ts',
 ]
 
 [tasks."test:native:instructions"]

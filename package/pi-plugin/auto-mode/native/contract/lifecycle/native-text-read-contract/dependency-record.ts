@@ -1,6 +1,7 @@
-/** Original dependency membership rejects foreign values before any retained record is read. @module */
+/**
+ Original dependency membership rejects foreign values before any retained record is read. @module
+ */
 import { DependencyHandleOwnershipError } from '../external-dependency-controls/errors.ts';
-import type { DependencyRecord, DependencySources } from './dependency-types.ts';
 
 //region Only object and function identities can have been published by the original owner.
 /**
@@ -16,13 +17,18 @@ import type { DependencyRecord, DependencySources } from './dependency-types.ts'
 
  @example requireDependencyRecord({ handles, handle });
  */
-export function requireDependencyRecord<const Source extends DependencySources, const Root extends object>({ handles, handle }: Readonly<{
-  handles: WeakMap<object, DependencyRecord<Source, Root>>;
+export function requireDependencyRecord<const Record extends object>({
+  handles,
+  handle
+}: Readonly<{
+  handles: Pick<WeakMap<object, Record>, 'get'>;
   handle: unknown;
-}>): DependencyRecord<Source, Root> {
+}>): Record {
   if ((((typeof handle) !== 'object') || (handle === null)) && ((typeof handle) !== 'function'))
     throw new DependencyHandleOwnershipError();
-  /** Native weak membership retains original record identity for issued handles. */
+  /**
+   Native weak membership retains original record identity for issued handles.
+   */
   const prepared = handles.get(handle);
   if (prepared === undefined) throw new DependencyHandleOwnershipError();
   return prepared;

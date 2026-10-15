@@ -16,13 +16,13 @@ type FacadeFixture = Readonly<{
 }>;
 
 /** Original empty-profile preparation events include every live checkpoint. */
-export const preparationEvents = [
+export const preparationEvents: readonly string[] = [
   'prepare.entry', 'clock', 'prepare.root.enter', 'root.prepare', 'prepare.root.return', 'clock',
   'prepare.collector.enter', 'capture', 'prepare.collector.return', 'clock', 'clock', 'prepare.success', 'clock',
 ];
 
 /** Original empty-profile finalization observes ownership before live dependency callbacks. */
-export const finalizationEvents = [
+export const finalizationEvents: readonly string[] = [
   'finalize.handle-check', 'finalize.handle-owned', 'finalize.entry', 'clock', 'finalize.root.enter',
   'root.finalize', 'finalize.root.return', 'clock', 'finalize.collector.enter', 'freshness',
   'finalize.collector.return', 'clock', 'coverage', 'finalize.success', 'clock',
