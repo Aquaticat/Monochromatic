@@ -40,6 +40,7 @@ export type JudgmentInstructionsInput = Readonly<{
   readJudgmentSources: () => Readonly<{
     hostGoverningPolicy: unknown;
     governingSources: ReturnType<GoverningSetInput['readSources']>;
+    decisionContext?: Readonly<{sources: ReturnType<GoverningSetInput['readSources']>}>;
   }>;
   declaredNames: readonly Readonly<{
     id: string;

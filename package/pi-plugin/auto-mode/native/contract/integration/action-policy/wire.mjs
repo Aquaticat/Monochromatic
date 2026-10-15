@@ -133,7 +133,7 @@ export function bindRuleAssessmentWire(request){
      })); }),
    parentProgram:envelope.parentJSON,
    preparedProgram:envelope.preparedJSON,
-   originalRequestBody:envelope.requestBody,
+   ...(membership.hasRequestMaterial?{originalRequestBody:envelope.requestBody}:{}),
    catalogSHA256:request.catalogSHA256,
    ...(membership.hasOperation?{assessmentGuidance:guidance}:{}),
    ...(clauseRelations.size > 0?{clauseRelationDefinition:clauseOperationRelation}:{}),

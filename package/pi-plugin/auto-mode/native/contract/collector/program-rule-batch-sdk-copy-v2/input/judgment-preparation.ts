@@ -138,8 +138,7 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
         requestBody: receipt.request
           .body,
         mandatoryPolicy,
-        governingSources: readJudgmentSources()
-          .governingSources,
+        governingSources: readJudgmentSources().decisionContext?.sources ?? readJudgmentSources().governingSources,
         instructionAuthority: 'not-established',
       });
       state.selection = createQuestionSelection({

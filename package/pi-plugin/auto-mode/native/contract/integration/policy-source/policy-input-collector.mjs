@@ -3,6 +3,7 @@ import {collectRetainedRunInputs} from './run-history.mjs';
 import {linkRunInputCarriers} from './run-carriers.mjs';
 import {collectNativeMessageInputs} from '../../collector/run-prompt-custody-v3/message-inputs.mjs';
 import {assertCollectedManagerGrowth,assertManagerOriginsAppended} from './manager-source-growth.mjs';
+import {captureDecisionContext} from './decision-context.mjs';
 
 //region Original snapshots and approval retention share one collector-owned map.
 export function retainPolicyInput({base,session,readSessionConstructedInputs,readSessionDomainEvents,readCurrent,assertCurrent,assertInputBudget,resourceInputs,hostPrompt}){
@@ -64,7 +65,7 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
      ...(nativeResourceToolInputs??[]).map(function readResourceToolSource(origin) { return (origin.source); })
    ]);
    const nativeDomain=domainEvents();
-   const snapshot=Object.freeze({
+   const captured={
      ...original,
      nativeDomainEventKinds:nativeDomain?.kinds,
      nativeDomainEventObservation:nativeDomain?.observation,
@@ -89,7 +90,9 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
      builtInPromptInputs,
      runInputCarriers,
      governingSources
-   });
+   };
+   const decisionContext=captureDecisionContext({snapshot:captured,session});
+   const snapshot=Object.freeze({...captured,decisionContext});
    if(constructedInputs(original.nativeRunComposition)!==nativeConstructedInputs)throw new PolicySlotBindingError('Original constructed inputs changed during source capture');
    if(resourceInputs()!==nativeResourceToolInputs)throw new PolicySlotBindingError('Resource tool inputs changed during source capture');
    assertInputBudget(session);

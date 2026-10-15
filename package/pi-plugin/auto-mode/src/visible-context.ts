@@ -16,9 +16,9 @@ import type {
   ThinkingContent,
   ToolCall,
 } from '@earendil-works/pi-ai';
-import {
+import type {
   sessionEntryToContextMessages,
-  type SessionEntry,
+  SessionEntry,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -287,9 +287,13 @@ const NO_PENDING_VERDICT: unique symbol = Symbol('guard verdict is not awaiting 
  
  @returns complete visible messages in chronological order.
  */
-function visibleMessages(
-  entries: ForeignBorrowed<readonly SessionEntry[]>,
-): readonly VisibleMessage[] {
+function visibleMessages({
+  entries,
+  project,
+}: {
+  readonly entries: ForeignBorrowed<readonly SessionEntry[]>;
+  readonly project: typeof sessionEntryToContextMessages;
+},): readonly VisibleMessage[] {
   /**
    Complete visible messages in chronological order.
    */
@@ -307,7 +311,7 @@ function visibleMessages(
     }
     // Pi's renderer projection: message, custom-message, summary, and compaction entries
     // become messages; state-only entries become none.
-    for (const message of sessionEntryToContextMessages(entry,)) {
+    for (const message of project(entry,)) {
       /**
        User-visible fields from current projected message.
        */
@@ -404,21 +408,23 @@ function visibleMessageWindow(
  
  @example
  ```ts
- buildVisibleContext(entries);
+ buildVisibleContext({ entries, project: sessionEntryToContextMessages });
  ```
  */
-function buildVisibleContext(
-  entries: ForeignBorrowed<readonly SessionEntry[]>,
-): string {
+export function buildVisibleContext({
+  entries,
+  project,
+}: {
+  readonly entries: ForeignBorrowed<readonly SessionEntry[]>;
+  readonly project: typeof sessionEntryToContextMessages;
+},): string {
   /**
    Complete selected visible message window.
    */
   const selectedMessages = visibleMessageWindow(
-    visibleMessages(entries,),
+    visibleMessages({ entries, project, },),
   );
   return selectedMessages.length === 0
     ? ''
     : serializeUntrustedDataForJudge(selectedMessages,);
 }
-
-export { buildVisibleContext, };

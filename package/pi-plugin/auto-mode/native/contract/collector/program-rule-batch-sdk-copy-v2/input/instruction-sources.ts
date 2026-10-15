@@ -55,8 +55,8 @@ export function createInstructionSources({
        */
       function readGoverningSources() : ReturnType<GoverningSetInput['readSources']> {
         ready();
-        return readJudgmentSources()
-          .governingSources;
+        const sources=readJudgmentSources();
+        return sources.decisionContext?.sources ?? sources.governingSources;
       }
 /**
    Initialize original governing sources once under the existing dependency segment.

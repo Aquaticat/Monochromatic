@@ -7,7 +7,7 @@
  @module
  */
 
-import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
+import { sessionEntryToContextMessages, type ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   isTrustEntry,
@@ -266,10 +266,10 @@ function getReusableApproval(
 function buildContext(
   ctx: ForeignHostCapability<ExtensionContext>,
 ): string {
-  return buildVisibleContext(
-    ctx.sessionManager
-      .buildContextEntries(),
-  );
+  return buildVisibleContext({
+    entries: ctx.sessionManager.buildContextEntries(),
+    project: sessionEntryToContextMessages,
+  },);
 }
 
 export {

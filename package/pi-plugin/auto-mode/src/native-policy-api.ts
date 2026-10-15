@@ -7,6 +7,7 @@
 //region Native consumers import only policy, observation, transport, and approval boundaries.
 
 export { askUser } from './ask-user.ts';
+export { buildVisibleContext } from './visible-context.ts';
 export {
   registerNativeBypass,
   readNativeBypassEnabled

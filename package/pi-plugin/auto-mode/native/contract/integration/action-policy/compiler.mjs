@@ -29,7 +29,7 @@ export function compileBoundClauseProgram({
 }){
  authorizationInputs?.assertCurrent();
  const base=inspectPolicyPremises(inputs);
-   const sourceUses=consumeSourceAssociations(inputs);
+   const sourceUses=consumeSourceAssociations({...inputs,instructionSources:inputs.provenanceSources??inputs.instructionSources});
    const rules=[];
    const authorizationRequirements=[];
    const clauses=[];

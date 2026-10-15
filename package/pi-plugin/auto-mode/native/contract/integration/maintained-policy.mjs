@@ -1,6 +1,7 @@
 /** The existing SDK stager resolves the maintained artifact before fixture HOME changes. */
 export {
   askUser,
+  buildVisibleContext,
   registerNativeBypass,
   readNativeBypassEnabled,
   createAssessmentSender,
