@@ -625,6 +625,22 @@ The user subsequently reported the Codex issue corrected;
 the worker ceiling now measures 2,048 tasks and local command execution resumed.
 No cloud build input or measurement was changed by that local recovery.
 
+At 23:30 UTC,
+the corrected `16/16`,
+`16/8`,
+`8/8`,
+`32/16`,
+`32/32`,
+and `64/16` jobs have completed successfully with every runtime assertion.
+The `16/16` cold builds took 247.635 and 245.628 seconds;
+source-change builds took 126.077 and 118.838 seconds.
+The corresponding `8/8` cold builds took 326.549 and 314.320 seconds;
+source changes took 142.939 and 141.260 seconds.
+Other matrix configurations and the default-builder concurrency probe remain active.
+The latter started with build `5s3508wm66` in the dedicated trial project.
+Final ranking must use the complete corrected evidence,
+with the original failed matrices retained separately.
+
 The parallel history check inspected complete October 15 API pages:
 13 Alpine and 33 Windows runs.
 Four exact-commit completed push pairs exist;
