@@ -117,7 +117,12 @@ export function compileBoundClauseProgram({
      >0)
    &&(scheduled||singleLegacy)
    &&inputs.effects
-   .every(function matchesUnownedProgramProfile(effect) { return ((effect.owner===undefined)&&matchesSemanticProgramProfile({configured:policy.programProfile,inspected:effect.programInspection?.declaration.profile})); })
+   .every(function matchesUnownedProgramProfile(effect) { return ((effect.owner===undefined)&&matchesSemanticProgramProfile({
+     configured:policy.programProfile,
+     inspected:effect.programInspection
+       ?.declaration
+       .profile
+   })); })
   ?Object.freeze({
     preparedOperations:inputs.effects,
     groupExecutionMode
@@ -219,11 +224,14 @@ export function compileBoundClauseProgram({
    }));
    continue;
   }
-  const authorization=record.answer.value.choice==='fresh-session-approval'
-    ?pendingSessionApproval?.authorization:record.answer
+  const authorization=record.answer
     .value
     .choice
-    ==="prerequisite"?authorizationInputs?.forClause(rule):undefined;
+    ==='fresh-session-approval'
+    ?pendingSessionApproval?.authorization:record.answer
+      .value
+      .choice
+      ==="prerequisite"?authorizationInputs?.forClause(rule):undefined;
   const lowered=lowerEstablishedClause({
     id,
     priority,

@@ -1,5 +1,70 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Owned native program builds depended on source formatting
+
+### Symptom and cause
+
+The October 14 formatting commit `2728f357f` changed maintained program source layout.
+The native build then emitted `Native SDK edit does not have one matching location`
+for the owned runner,
+prepared dispatcher,
+and judgment constructor.
+The deciding helper in
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/build-rebase.ts:63`
+matches literal source text:
+
+```ts
+// native/contract/integration/native-batch/build-rebase.ts
+const at = source.indexOf(from);
+```
+
+Those transformations patched repository-owned modules consumed only by this build.
+Formatting changed the search text without changing the intended implementation.
+This was an unnecessary owned-source transformation boundary,
+not installed Pi source drift.
+
+### Correction and verification
+
+Commit `26994ff789` maintains the integrated runner,
+dispatcher,
+and judgment directly in `native/contract/collector/program-rule-batch-sdk-copy-v2/input/`.
+`native/contract/integration/native-batch/prepare-program.ts:137` now emits an export bridge:
+
+```ts
+// native/contract/integration/native-batch/prepare-program.ts
+const programRunner = `export {createReachedRunnerClass} from ${JSON.stringify(programRunnerUrl.href)};\n`;
+```
+
+The installed-Pi executor and converter adaptations remain separate.
+Historical provenance hashes retain their original meaning.
+The intermediate parsed-source runner and dispatcher replacements were removed:
+they preserved an unnecessary transformation rather than removing its need.
+
+The native build and package type check pass.
+After correcting the separate JavaScript modifier recurrence documented in
+"Native source autofixes emit invalid JavaScript",
+the domain,
+manual review,
+approval context,
+single call,
+approved dependency,
+event receipt,
+host lifecycle,
+and actual CLI process tasks pass.
+The CLI fixture made zero provider requests and exited with clean shutdown.
+The syntax task checks 227 maintained modules after explicit TypeScript erasure.
+The retained log is `${HOME}/temp/agent/pi-native-direct-owned-regressions-syntax-fixed-20261014.log`.
+
+### Upstream filing decision
+
+- The failing transformation was repository-owned.
+- No upstream fix is required for the direct module boundary.
+- No unsupported Pi use case is inferred from this failure.
+- External contribution policy is irrelevant to this local correction.
+- No upstream maintainer position is inferred.
+- The owned correction has passing build and consumer evidence;
+  no upstream prototype or filing is proposed.
+
 ## Pi 1.2.0 confirmation fixtures must preserve occurrence identity and exact assessment input
 
 ### Symptoms and separate causes
@@ -7570,6 +7635,19 @@ it does not fix either formatter.
 Reapplying the complete fixer to the JavaScript class can reintroduce the `readonly` error.
 The failed formatter's remaining diagnostic count cannot establish full lint coverage
 because syntax errors prevented complete analysis.
+
+Commit `2728f357f` repeated that known modifier insertion during the later formatting pass.
+The built domain test stopped at `SyntaxError: Unexpected identifier '#state'`
+before any test body ran.
+Commit `bbb1aa2f64` removed the modifier again.
+The rebuilt domain and subsequent native regression tasks passed.
+Do not treat a successful build or package type check as validation of copied JavaScript syntax.
+
+The expanded syntax task also passed `.ts` files directly to `node --check`.
+Node `26.11.1` rejected valid `override readonly` syntax in `process-network-guard.ts`.
+Commit `13ec2b134a` calls Node's `stripTypeScriptTypes` for TypeScript inputs before syntax checking;
+JavaScript remains unchanged.
+The corrected task passes all 227 maintained modules.
 
 ### Upstream filing decision
 

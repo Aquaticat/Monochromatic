@@ -255,11 +255,20 @@ The package README now distinguishes installed native behavior from the retained
 Native documentation uses the adopted `0.60` cutoff and current confirmation semantics.
 Rendered output has been inspected.
 
-A fresh real-model run is waiting for the user's response to the original native dialog in
+The user supplied Allow to the pending original native dialog in
 `pi-hyper-rpc-human-bFNRvU` under `${HOME}/temp/agent/`.
-Its exact operation is `return await tools.read({path: "proof.txt"});`.
-The response question is pending;
-do not invent or reuse permission for it.
+Its exact operation was `return await tools.read({path: "proof.txt"});`.
+The controller forwarded that response to the unchanged pending request identifier.
+The original tool executed once and returned the expected disposable file contents;
+the host exited zero.
+`verification.json` records one genuine human response,
+two actual Hyper requests,
+one actual Luna request,
+and no authored primary responses,
+semantic answers,
+or authorization facts.
+This completes the live production-host human-confirmation boundary.
+It grants no permission for another operation or session.
 
 The full package lint now reports 14,550 warnings and 454 errors across 425 files.
 `${HOME}/temp/agent/pi-native-full-lint-manual-review-20261014.log` retains the complete diagnostics.
@@ -269,6 +278,110 @@ Continue the maintained native quality work;
 do not reinterpret this passing live operation as full package completion.
 
 ## Current Pi execution model
+
+### Owned runtime source correction
+
+The October 14 native formatting pass exposed exact-text dependencies in the maintained build.
+`replaceOnce` in `native/contract/integration/native-batch/build-rebase.ts`
+locates a literal substring and rejects absent or repeated matches.
+Formatting owned source therefore broke the runner,
+dispatcher,
+and judgment transformations.
+The user challenged this design.
+The agent acknowledged carrying the brittle prototype mechanism into the maintained package.
+
+The first repair replaced the runner and dispatcher transformations with parsed source selection.
+A subsequent consumer search established that the owned runner,
+dispatcher,
+and judgment inputs had only the native build as their consumer.
+The source-patching requirement was unnecessary for those modules.
+The integrated implementations are now maintained directly in
+`native/contract/collector/program-rule-batch-sdk-copy-v2/input/`.
+The build emits export bridges for them instead of rewriting their bodies.
+The judgment directly imports its generated result converter,
+whose separate installed-Pi adaptation remains unchanged.
+The obsolete judgment transformations and the intermediate runner/dispatcher syntax transformers are removed.
+Historical provenance hashes remain the original import record rather than being rewritten as current hashes.
+
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/owned-program-before/`
+retains the successfully built implementations used for this integration.
+`owned-program-promotion.json` records source and generated hashes.
+Only import locations and the dispatcher's original shared error declarations changed during promotion.
+The direct-integration build and type checks passed.
+The first runtime suite stopped before executing its test because the formatting commit had inserted
+`readonly #state` into `policy-source/system-slot.mjs`.
+Commit `bbb1aa2f64` removes that TypeScript modifier from JavaScript;
+the rebuilt domain,
+manual review,
+approval context,
+single call,
+approved dependency,
+event receipt,
+host lifecycle,
+and actual CLI process suites all pass.
+The syntax task separately exposed its own invalid assumption that `node --check` strips TypeScript.
+The task now explicitly strips types before checking TypeScript modules,
+while JavaScript modules reach Node unchanged.
+That syntax task passes 227 maintained modules.
+The native lint report after direct integration contains 533 errors;
+the maintained-package quality queue remains open.
+Commit `53c651c0c0` separates the shared governing-source error to remove the source-history import cycle.
+Its owned build and native domain suite pass.
+Commits `d9c7183140` and `d014715404` name native runner callbacks,
+extract original recorder ownership,
+and scope exclusive queue release with `using`.
+The parallel branch retains synchronous entry without acquiring a queue turn.
+The rebuilt native domain suite passes;
+the focused lint report contains no errors in either runner module or the error/history modules.
+Commit `99886bdca1` retains governing binding failure and source selection in one lifecycle record.
+Commits `2e025dc5cc` and `d6c4d39496` share the original judgment operation wrappers
+and name the remaining judgment callbacks.
+Their owned build and complete direct-runtime regression sequence pass.
+The focused lint check found no errors in the runner or source-binding modules;
+the constructor retained file-length,
+mutable-binding,
+cleanup,
+and function-declaration findings.
+Commit `72a7e2ca36` adds original recorder ownership and queue-release tests.
+Normal and exceptional queue release both pass.
+The process-local omitted-release control fails with `queue-release-missing`,
+and the built helper hash remains unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-queue-omission.json` retains that receipt.
+Commits `25c6a6819f` and `813b9c1b35` separate original program ownership and instruction-claim ownership
+from the judgment constructor.
+Their owned build and focused lint checks are running;
+their consumer regression verification remains queued before any completion claim.
+The user requested a status update during this cleanup.
+The response distinguished the completed live Hyper/Gemma,
+Luna,
+and genuine Allow check from the unfinished lint and module-splitting work.
+Continue the maintained-package quality queue without reopening the completed live approval.
+Commit `4e7545abda` consolidates one-time original instruction-handle publication;
+its changed source is not part of the currently running pre-cleanup split regression artifact.
+The pre-cleanup split artifact subsequently passed the full direct-runtime regression sequence.
+Commit `a4bfcb943e` scopes judgment activity cleanup with `using`
+and separates guarded result consumption.
+The focused check of the constructor and its new owner modules now has zero lint errors.
+Commit `a66c5d5c96` applies named callbacks,
+owned state records,
+and scoped cleanup to both prepared dispatchers,
+preserving their separate root and child execution behavior.
+The current owned build and full native lint report are running;
+the latest cleanup still requires consumer regression checks.
+The handover,
+troubleshooting entry,
+and native README were rendered and inspected with Pandoc.
+The earlier formatting-only commit is `2728f357f`.
+Its judgment-input formatting was temporarily restored to recover a passing build before this direct integration.
+
+The native JSON lint report before direct integration contains 499 errors.
+The earlier human-readable report did not print every diagnostic counted in its summary;
+use structured diagnostics when allocating cleanup work.
+Most current errors concern arrow functions,
+mutable bindings at function or module scope,
+cleanup using `finally`,
+and file length.
+Do not replace the removed owned-source patch layer with another formatting-sensitive mechanism.
 
 On 2026-10-14,
 the user corrected the requested Pi execution model to `hyper/gemma-4-26b-a4b-it`.
@@ -2888,10 +3001,20 @@ Use this finite delivery queue:
 - [ ] Integrate the implementation into the maintained package and necessary host path.
   The product must not depend on private scratch files.
   Run package checks against that integration.
-- [ ] Build,
+  The maintained implementation,
+  native build,
+  installation,
+  package type checks,
+  and scoped behavioral checks are complete.
+  Full package lint remains open with the October 14 measured diagnostics.
+- [x] Build,
   install,
   and exercise the actual plugin through its host,
   including native approval and cancellation.
+  The configured production CLI passes with the selected Hyper model,
+  live Luna decisions,
+  and the user's genuine Allow for the exact original disposable read.
+  Separate scripted Stop and dismissal controls abort without child execution.
 
 Further source work must fix a named failure of these delivery criteria;
 standalone inventory expansion is not the default next step.
