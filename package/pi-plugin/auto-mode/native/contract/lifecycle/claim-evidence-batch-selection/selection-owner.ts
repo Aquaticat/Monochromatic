@@ -6,8 +6,14 @@ import { createSelectionOwner } from './selection-ownership.ts';
 import { createClaimDeclaration } from './selection-declaration.ts';
 import { createQuestionIssuance } from './selection-issuance.ts';
 import { createQuestionSettlement } from './selection-settlement.ts';
-import { createQuestionEvidence, type QuestionEvidenceOperations } from './selection-evidence.ts';
-import { createQuestionInspection, type QuestionInspection } from './selection-inspection.ts';
+import {
+  createQuestionEvidence,
+  type QuestionEvidenceOperations
+} from './selection-evidence.ts';
+import {
+  createQuestionInspection,
+  type QuestionInspection
+} from './selection-inspection.ts';
 import type { QuestionSelectionInput } from './selection-owner-types.ts';
 import type {
   QuestionSettlementInput,

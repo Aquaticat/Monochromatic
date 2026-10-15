@@ -90,7 +90,13 @@ export function createClaimDeclaration({
       owner.claims
         .set(
           handle,
-          { definitionId, definition, bindingHandle, binding, issued: false }
+          {
+            definitionId,
+            definition,
+            bindingHandle,
+            binding,
+            issued: false
+          }
         );
       canonical.set(
         binding.identity,

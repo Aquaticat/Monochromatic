@@ -28,8 +28,12 @@ await describe({
         assert.equal(selection.declare({ definitionId: 'first', bindingHandle: binding }), first);
         assert.deepEqual(selection.inspectClaim(first), { retainedOnly: true, issued: false, answer: undefined });
         assert.deepEqual(selection.answerFor(first), { issued: false, answer: undefined, semanticQualification: 'not-established' });
-        assert.throws(function captureUnissued() { selection.captureEvidence(first); }, selectionError('Claim has no usable terminal relation evidence'));
-        assert.throws(function authenticateUncaptured() { selection.assertCapturedIdentity({ claim: first, evidence: {} }); }, selectionError('Relation evidence is not the canonical record for this original claim'));
+        assert.throws(function captureUnissued() { 
+          selection.captureEvidence(first); 
+        }, selectionError('Claim has no usable terminal relation evidence'));
+        assert.throws(function authenticateUncaptured() { 
+          selection.assertCapturedIdentity({ claim: first, evidence: {} }); 
+        }, selectionError('Relation evidence is not the canonical record for this original claim'));
         /** Reverse declaration order proves issue order is retained independently. */
         const batch = selection.issue([second, first]);
         /** Repeated request reads must return the original immutable request. */
@@ -39,13 +43,25 @@ await describe({
         assert.equal(request.envelope, envelope);
         assert.equal(Object.isFrozen(request), true);
         assert.equal(Object.isFrozen(request.questions), true);
-        assert.deepEqual(request.questions.map(function membership(question) { return [question.id, question.definitionId]; }), [['q0', 'second'], ['q1', 'first']]);
-        assert.ok(request.questions.every(function originalProjection(question) { return (question.binding === binding.projection) && Object.isFrozen(question); }));
+        assert.deepEqual(request.questions.map(function membership(question) { 
+          return [question.id, question.definitionId]; 
+        }), [['q0', 'second'], ['q1', 'first']]);
+        assert.ok(request.questions.every(function originalProjection(question) { 
+          return (question.binding === binding.projection) && Object.isFrozen(question); 
+        }));
         assert.deepEqual(selection.inspectBatch(batch), { retainedOnly: true, settled: false, record: undefined });
-        assert.throws(function readUnsettled() { selection.resultFor(batch); }, selectionError('Question batch has no terminal response'));
-        assert.throws(function captureIncomplete() { selection.captureBatchEvidence(batch); }, selectionError('Original batch has no complete usable relation evidence'));
-        assert.throws(function assertIncomplete() { selection.assertCapturableBatch(batch); }, selectionError('Original batch has no complete usable relation evidence'));
-        assert.throws(function issueAgain() { selection.issue([first]); }, selectionError('Claim was already issued; uncertainty cannot create another selection'));
+        assert.throws(function readUnsettled() { 
+          selection.resultFor(batch); 
+        }, selectionError('Question batch has no terminal response'));
+        assert.throws(function captureIncomplete() { 
+          selection.captureBatchEvidence(batch); 
+        }, selectionError('Original batch has no complete usable relation evidence'));
+        assert.throws(function assertIncomplete() { 
+          selection.assertCapturableBatch(batch); 
+        }, selectionError('Original batch has no complete usable relation evidence'));
+        assert.throws(function issueAgain() { 
+          selection.issue([first]); 
+        }, selectionError('Claim was already issued; uncertainty cannot create another selection'));
         /** Both admitted answer forms remain unqualified evidence. */
         const record = selection.settle({ batch, model: 'fixture-model', answerText: JSON.stringify([
           { id: 'q0', status: 'estimate', value: 0.25 },
@@ -56,7 +72,9 @@ await describe({
         assert.equal(selection.answerFor(second).answer, record.answers[0]);
         assert.equal(selection.answerFor(first).answer, record.answers[1]);
         assert.equal(selection.declare({ definitionId: 'first', bindingHandle: binding }), first);
-        assert.throws(function redispatchTerminal() { selection.requestFor(batch); }, selectionError('Question batch is terminal; it cannot be dispatched again'));
+        assert.throws(function redispatchTerminal() { 
+          selection.requestFor(batch); 
+        }, selectionError('Question batch is terminal; it cannot be dispatched again'));
         selection.assertCapturableBatch(batch);
         /** Individual capture and batch capture must share the same original record. */
         const evidence = selection.captureEvidence(first);
@@ -77,9 +95,15 @@ await describe({
         assert.equal(evidence.permission, false);
         selection.assertCapturedIdentity({ claim: first, evidence });
         selection.assertCapturedBatchIdentity(allEvidence);
-        assert.throws(function copiedClaimEvidence() { selection.assertCapturedIdentity({ claim: first, evidence: { ...evidence } }); }, selectionError('Relation evidence is not the canonical record for this original claim'));
-        assert.throws(function copiedBatchEvidence() { selection.assertCapturedBatchIdentity([...allEvidence]); }, selectionError('Relation evidence is not an original captured batch from this judgment'));
-        assert.throws(function foreignClaimEvidence() { selection.assertCapturedIdentity({ claim: second, evidence }); }, selectionError('Relation evidence is not the canonical record for this original claim'));
+        assert.throws(function copiedClaimEvidence() { 
+          selection.assertCapturedIdentity({ claim: first, evidence: { ...evidence } }); 
+        }, selectionError('Relation evidence is not the canonical record for this original claim'));
+        assert.throws(function copiedBatchEvidence() { 
+          selection.assertCapturedBatchIdentity([...allEvidence]); 
+        }, selectionError('Relation evidence is not an original captured batch from this judgment'));
+        assert.throws(function foreignClaimEvidence() { 
+          selection.assertCapturedIdentity({ claim: second, evidence }); 
+        }, selectionError('Relation evidence is not the canonical record for this original claim'));
       },
     }),
     ...['malformed', 'discarded'].map(function terminalFailure(kind) {
@@ -106,11 +130,21 @@ await describe({
           }
           assert.equal(selection.inspectClaim(claim).answer, record.answers[0]);
           assert.equal(selection.resultFor(batch), record);
-          assert.throws(function captureFailedClaim() { selection.captureEvidence(claim); }, selectionError('Claim has no usable terminal relation evidence'));
-          assert.throws(function captureFailedBatch() { selection.captureBatchEvidence(batch); }, selectionError('Original batch has no complete usable relation evidence'));
-          assert.throws(function assertFailedBatch() { selection.assertCapturableBatch(batch); }, selectionError('Original batch has no complete usable relation evidence'));
-          assert.throws(function discardAgain() { selection.discard({ batch, error: failure }); }, selectionError('Question batch already has a terminal response'));
-          assert.throws(function settleAgain() { selection.settle({ batch, answerText: '[]' }); }, selectionError('Question batch already has a terminal response'));
+          assert.throws(function captureFailedClaim() { 
+            selection.captureEvidence(claim); 
+          }, selectionError('Claim has no usable terminal relation evidence'));
+          assert.throws(function captureFailedBatch() { 
+            selection.captureBatchEvidence(batch); 
+          }, selectionError('Original batch has no complete usable relation evidence'));
+          assert.throws(function assertFailedBatch() { 
+            selection.assertCapturableBatch(batch); 
+          }, selectionError('Original batch has no complete usable relation evidence'));
+          assert.throws(function discardAgain() { 
+            selection.discard({ batch, error: failure }); 
+          }, selectionError('Question batch already has a terminal response'));
+          assert.throws(function settleAgain() { 
+            selection.settle({ batch, answerText: '[]' }); 
+          }, selectionError('Question batch already has a terminal response'));
         },
       });
     }),
@@ -120,11 +154,21 @@ await describe({
         fn: async function rejectsForeignMembership() {
           /** A separate owner proves value shape cannot manufacture membership. */
           const selection = createSelectionFixture();
-          assert.throws(function foreignClaim() { selection.answerFor(handle); }, selectionError('Claim handle is not owned by this judgment'));
-          assert.throws(function foreignInspection() { selection.inspectClaim(handle); }, selectionError('Claim handle is not owned by this judgment'));
-          assert.throws(function foreignBatch() { selection.requestFor(handle); }, selectionError('Question batch is not owned by this judgment'));
-          assert.throws(function foreignBatchInspection() { selection.inspectBatch(handle); }, selectionError('Question batch is not owned by this judgment'));
-          assert.throws(function foreignBatchCapture() { selection.assertCapturedBatchIdentity(handle); }, selectionError('Relation evidence is not an original captured batch from this judgment'));
+          assert.throws(function foreignClaim() { 
+            selection.answerFor(handle); 
+          }, selectionError('Claim handle is not owned by this judgment'));
+          assert.throws(function foreignInspection() { 
+            selection.inspectClaim(handle); 
+          }, selectionError('Claim handle is not owned by this judgment'));
+          assert.throws(function foreignBatch() { 
+            selection.requestFor(handle); 
+          }, selectionError('Question batch is not owned by this judgment'));
+          assert.throws(function foreignBatchInspection() { 
+            selection.inspectBatch(handle); 
+          }, selectionError('Question batch is not owned by this judgment'));
+          assert.throws(function foreignBatchCapture() { 
+            selection.assertCapturedBatchIdentity(handle); 
+          }, selectionError('Relation evidence is not an original captured batch from this judgment'));
         },
       });
     }),

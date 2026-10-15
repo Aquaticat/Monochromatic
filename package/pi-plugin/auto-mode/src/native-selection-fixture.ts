@@ -6,7 +6,11 @@ import { createHash } from 'node:crypto';
 /**
  Consumer observes terminal markers and original answer values.
  */
-type SelectionAnswer = Readonly<{ status: string; value?: unknown; reason?: string }>;
+type SelectionAnswer = Readonly<{
+  status: string;
+  value?: unknown;
+  reason?: string
+}>;
 
 /**
  Retained diagnostics expose lifecycle state without granting usable evidence.
@@ -40,7 +44,12 @@ type SelectionEvidence = Readonly<{
 type SelectionRequest = Readonly<{
   envelope: unknown;
   catalogSHA256: string;
-  questions: readonly Readonly<{ id: string; definitionId: string; definition: unknown; binding: unknown }>[];
+  questions: readonly Readonly<{
+    id: string;
+    definitionId: string;
+    definition: unknown;
+    binding: unknown
+  }>[];
   semanticQualification: string;
   instructionAuthority: string;
 }>;
@@ -49,20 +58,45 @@ type SelectionRequest = Readonly<{
  Consumer expectations are declared independently of source implementation types.
  */
 export type FixtureSelection = Readonly<{
-  declare: (input: Readonly<{ definitionId: unknown; bindingHandle: unknown }>) => object;
+  declare: (input: Readonly<{
+    definitionId: unknown;
+    bindingHandle: unknown
+  }>) => object;
   issue: (handles: unknown) => object;
   requestFor: (handle: unknown) => SelectionRequest;
-  settle: (input: Readonly<{ batch: unknown; answerText: unknown; model?: unknown }>) => SelectionRecord;
-  answerFor: (handle: unknown) => Readonly<{ issued: boolean; answer?: SelectionAnswer; semanticQualification: string }>;
+  settle: (input: Readonly<{
+    batch: unknown;
+    answerText: unknown;
+    model?: unknown
+  }>) => SelectionRecord;
+  answerFor: (handle: unknown) => Readonly<{
+    issued: boolean;
+    answer?: SelectionAnswer;
+    semanticQualification: string
+  }>;
   resultFor: (handle: unknown) => SelectionRecord;
-  inspectClaim: (handle: unknown) => Readonly<{ retainedOnly: true; issued: boolean; answer?: SelectionAnswer }>;
-  inspectBatch: (handle: unknown) => Readonly<{ retainedOnly: true; settled: boolean; record?: SelectionRecord }>;
-  discard: (input: Readonly<{ batch: unknown; error: unknown }>) => SelectionRecord;
+  inspectClaim: (handle: unknown) => Readonly<{
+    retainedOnly: true;
+    issued: boolean;
+    answer?: SelectionAnswer
+  }>;
+  inspectBatch: (handle: unknown) => Readonly<{
+    retainedOnly: true;
+    settled: boolean;
+    record?: SelectionRecord
+  }>;
+  discard: (input: Readonly<{
+    batch: unknown;
+    error: unknown
+  }>) => SelectionRecord;
   captureEvidence: (handle: unknown) => SelectionEvidence;
   captureBatchEvidence: (handle: unknown) => readonly SelectionEvidence[];
   assertCapturableBatch: (handle: unknown) => void;
   assertCapturedBatchIdentity: (evidence: unknown) => void;
-  assertCapturedIdentity: (input: Readonly<{ claim: unknown; evidence: unknown }>) => void;
+  assertCapturedIdentity: (input: Readonly<{
+    claim: unknown;
+    evidence: unknown
+  }>) => void;
 }>;
 
 /**
@@ -109,7 +143,9 @@ const selectionModule: SelectionModule = loaded;
 /**
  Fixture budgets stay current unless a case supplies an exact failure point.
  */
-function currentBudget(): void { return undefined; }
+function currentBudget(): void { 
+  return undefined; 
+}
 
 /**
  Fixture bindings are their own original occurrence handles.
@@ -118,7 +154,9 @@ function currentBudget(): void { return undefined; }
 
  @returns original record without normalization
  */
-function originalBinding(handle: unknown): unknown { return handle; }
+function originalBinding(handle: unknown): unknown { 
+  return handle; 
+}
 
 /**
  Create an original immutable occurrence with a separately owned identity.
@@ -129,8 +167,14 @@ function originalBinding(handle: unknown): unknown { return handle; }
 
  @example createSelectionBinding('original');
  */
-export function createSelectionBinding(projection: unknown = 'original'): Readonly<{ identity: object; projection: unknown }> {
-  return Object.freeze({ identity: Object.freeze({}), projection });
+export function createSelectionBinding(projection: unknown = 'original'): Readonly<{
+  identity: object;
+  projection: unknown
+}> {
+  return Object.freeze({
+    identity: Object.freeze({}),
+    projection
+  });
 }
 
 /**
@@ -159,12 +203,22 @@ export function createSelectionFixture({
    Distinct predicates prove canonicalization is per definition, not only per binding.
    */
   const catalogText = JSON.stringify({
-    first: { type: 'noul', instructions: 'First fixed predicate', criteria: { true: 'holds', false: 'does not hold' } },
-    second: { type: 'noul', instructions: 'Second fixed predicate', criteria: { true: 'holds', false: 'does not hold' } },
+    first: {
+      type: 'noul',
+      instructions: 'First fixed predicate',
+      criteria: { true: 'holds', false: 'does not hold' }
+    },
+    second: {
+      type: 'noul',
+      instructions: 'Second fixed predicate',
+      criteria: { true: 'holds', false: 'does not hold' }
+    },
   });
   return selectionModule.createQuestionSelection({
     catalogText,
-    catalogSHA256: createHash('sha256').update(catalogText).digest('hex'),
+    catalogSHA256: createHash('sha256')
+      .update(catalogText)
+      .digest('hex'),
     budget: { checkpoint },
     resolveBinding,
     envelope,
@@ -182,6 +236,7 @@ export function createSelectionFixture({
  */
 export function selectionError(message: string): (error: unknown) => boolean {
   return function matchesOriginalSelectionError(error: unknown): boolean {
-    return Error.isError(error) && (error.name === 'QuestionSelectionError') && (error.message === message);
+    return Error.isError(error) && (error.name === 'QuestionSelectionError')
+      && (error.message === message);
   };
 }

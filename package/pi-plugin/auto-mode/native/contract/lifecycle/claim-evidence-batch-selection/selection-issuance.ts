@@ -107,7 +107,9 @@ export function createQuestionIssuance({
       /**
        Resolve every original handle before testing its issuance and currentness.
        */
-      const selected = handles.map(function readOriginalClaim(handle) { return owner.knownClaim(handle); });
+      const selected = handles.map(function readOriginalClaim(handle) { 
+        return owner.knownClaim(handle); 
+      });
       for (const claim of selected) {
         if (claim.issued) throw new QuestionSelectionError('Claim was already issued; uncertainty cannot create another selection');
         owner.current(claim);
@@ -146,7 +148,11 @@ export function createQuestionIssuance({
       owner.batches
         .set(
           handle,
-          { selected, request, settled: false }
+          {
+            selected,
+            request,
+            settled: false
+          }
         );
       owner.state
         .batchCount += 1;
