@@ -1923,6 +1923,44 @@ zero errors and 11361 warnings in
 Original current-member and retained-snapshot extraction is qualified at these tested boundaries.
 Continue the remaining source and dependency owners.
 
+`efa1a4a8dc` and `37cd18ca8f` introduce the typed original dependency owner
+and separate synchronous binding-segment lifetime.
+The original request lookup remains a lazy callback to `readMainAgentRequest`;
+the first dependency failure remains permanent,
+and retained release remains separate from the completed decision clock.
+`5345686a3e` and `0fb1733f3b` preserve paired operation/postcheck failures as ordered aggregate members
+without adding an own `cause` property.
+This uses the existing verified factory workaround in
+[`oxlint-aggregate-error-cause.md`](../troubleshooting/oxlint-aggregate-error-cause.md).
+The saved files are `child-constructor-before-dependency-types.mjs`
+and `judgment-dependencies-before-types.mjs` in the same scratch directory,
+with SHA-256 values
+`d83cb829b3cecb380f153679cf3a4f6ddbc5ac538030c14cdf66c512f3f0baa5`
+and `6828c1d2eef2b7a811d2b025369dc76d4c491d2415fa21435a17a7eba4c0b0fc`.
+All three implementation files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-judgment-dependency-lint-final-20261015.log`.
+The owned rebuild,
+type check,
+domain,
+execution,
+lifecycle,
+preparation,
+and inspection suites pass in
+`${HOME}/temp/agent/pi-judgment-dependency-consumers-first-20261015.log`.
+`60c1711e4c`,
+`16c18151b8`,
+and `bc615cba7f` add independent built dependency consumers.
+Their live,
+retained,
+and binding suites pass before formatting,
+including actual budget expiry/cancellation and original primitive or undefined throws.
+Initial type checking also passes.
+Direct original comparison,
+full-constructor comparison,
+guard controls,
+final consumer formatting,
+and the maintained recount remain pending for dependency extraction.
+
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
 Its `cli-git` push-wait notice was initially misread as a timeout.
