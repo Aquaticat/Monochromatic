@@ -21,6 +21,17 @@ The [accepted decision](../decision/pi-auto-mode-decision-core.md) fixes impleme
 - [ ] Verify activation preserves a usable artifact after build failure and record remaining feature scope.
 - [ ] Remove superseded paths, run relevant lint and tests, and update consumer documentation.
 
+Release activation now stages an immutable native directory and its matching policy bundle,
+loads the generated CLI, then publishes the stable command link.
+`test:native:build-activation` passes generation and CLI-loading failures in a disposable installation,
+with successful directory migration and subsequent link replacement as positive controls.
+The configured-host fixture passes Allow, unrelated-prerequisite, and prohibition controls
+with all 17 configured packages and copied workspace instructions.
+Its current assessment contains 516 questions in three requests of 200, 200, and 116.
+This is authored-response consumer evidence; live assessment remains to be checked.
+The broader direct-import regression exposed a missing `buildVisibleContext` public export;
+the native and extension entries must share that implementation identity.
+
 The replacement is `native/contract/integration/action-policy/decision-core.mjs`.
 It replaces `evaluate.mjs`, `index.mjs`, and `reviewer.mjs` on 2026-10-15;
 historical references to those files describe the reviewed implementation.

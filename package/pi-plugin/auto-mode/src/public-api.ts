@@ -25,6 +25,7 @@ export {
   updateWidget,
 } from './ask-user.ts';
 export { findBudgetModel, } from './budget-model.ts';
+export { buildVisibleContext, } from './visible-context.ts';
 export {
   buildContext,
   buildProjectContext,
