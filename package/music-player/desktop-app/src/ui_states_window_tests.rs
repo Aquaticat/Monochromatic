@@ -96,6 +96,14 @@ fn a_removed_file_is_explained_in_a_message() {
 }
 
 #[test]
+fn a_missing_audio_output_is_explained_in_a_message() {
+    let (app, _host) = fresh_window_at(850.0, 900.0);
+    load_library(&app);
+    crate::ui_screen::apply_update(&app, &Update::AudioUnavailable { reason: "audio error: core connect: CreationFailed".to_string() });
+    assert_eq!(feedback_texts(&app), vec![crate::ui_notices::audio_unavailable_message().to_string()]);
+}
+
+#[test]
 fn a_reconcile_that_clears_the_selection_resets_the_elapsed_label() {
     let (app, _host) = fresh_window_at(850.0, 900.0);
     load_library(&app);

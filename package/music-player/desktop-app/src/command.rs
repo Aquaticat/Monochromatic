@@ -924,6 +924,21 @@ pub enum Update {
         Vec<PathBuf>,
     ),
     /// What:
+    ///      `AudioUnavailable { reason }` says the engine could not open any audio output, so playback runs silently.
+    /// Why:
+    ///       Without it a person on a machine with no sound server and no usable sound card sees tracks "play" with
+    ///  no explanation; the window words the cause and the way forward in a message (Alpine and other minimal Linux
+    ///  installs have no sound server by default).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "audioUnavailable"; reason: string }
+    /// ```
+    AudioUnavailable {
+        /// The output backend's own description of the failure, kept for the log; the window words its own message.
+        reason: String,
+    },
+    /// What:
     ///      `FileGone { path, was_playing }` says the rescan found the selected track's file missing from the folder.
     /// Why:
     ///       The row vanishes and playback stops; without a message the user cannot tell why (the polish review
