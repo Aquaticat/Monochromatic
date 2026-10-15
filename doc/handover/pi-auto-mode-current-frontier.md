@@ -470,6 +470,30 @@ The first loaded-input build passed;
 focused lint exposed detached method references after extraction.
 Those callbacks now use named function values;
 the updated build and focused checks remain pending.
+Named function expressions still produced `typescript(unbound-method)` findings.
+Commit `13dc500508` declares the loaded callbacks before constructing their returned facade.
+Its build passes;
+the loaded-pool lint subset now has zero errors and 51 warnings.
+The other new loaded modules still need the updated full subset check.
+The user requested status twice during this work;
+the replies distinguished verified live installation from unfinished quality work and the timing diagnosis.
+Unchanged ordinary Allow repetitions on the loaded-input build failed twice and passed once.
+Their complete process durations were 10089.97,
+8502.33,
+and 12054.84 milliseconds,
+including setup and shutdown.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-before.json` retains the results and CPU counters.
+Both separate CPU-profile runs passed,
+for ordinary Allow and manual-uncertainty prohibition.
+Their profiles identify repeated source-freshness validation as a sampled runtime cost;
+these separate modes are not a before/after timing comparison.
+An instrumented Allow fixture failed at `DependencyDeadlineError`
+after 23740 opens of its original governing file.
+The exact captured counts are in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/loaded-allow-fs.json`.
+The new `test:native:source-freshness-work` task exercises the built Allow consumer
+and requires fewer than 10000 governing-file opens for that fixed fixture.
+Its required-red run precedes the proposed complete-binding-set validation change.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
