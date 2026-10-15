@@ -492,3 +492,28 @@ fn private_paths_are_refused_for_kind_links_and_route() {
     assert!(assert_private_path(indirect.as_path(), Role::JournalDirectory).is_err());
     remove(root.as_path());
 }
+
+/// Only the temporaries of the one journal are removed: not the journal, not another journal's temporaries,
+///  not files that merely share its prefix or the temporary suffix.
+#[test]
+fn only_a_journals_own_temporaries_are_removed() {
+    let root: PathBuf = fixture("journal-own-temporaries");
+    let journal: PathBuf = root.join("one.json");
+    let own: PathBuf = root.join("one.json.abc.tmp");
+    let kept: Vec<PathBuf> = vec![
+        journal.clone(),
+        root.join("two.json.abc.tmp"),
+        root.join("one.json.abc.keep"),
+        root.join("loose.tmp"),
+    ];
+    std::fs::write(own.as_path(), b"cut off").expect("own temporary");
+    for path in &kept {
+        std::fs::write(path.as_path(), b"stays").expect("kept file");
+    }
+    remove_unfinished_writes(journal.as_path()).expect("removed");
+    assert!(!own.exists(), "the journal's own temporary is removed");
+    for path in &kept {
+        assert!(path.exists(), "{} stays", path.display());
+    }
+    remove(root.as_path());
+}

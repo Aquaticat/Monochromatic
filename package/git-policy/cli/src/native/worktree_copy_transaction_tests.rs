@@ -313,3 +313,32 @@ fn stage_missing_a_claim_cannot_be_recovered() {
     );
     remove(root.as_path());
 }
+
+/// Beginning the installation writes the installing phase to the journal and to the state,
+///  and a second call changes nothing.
+#[cfg(unix)]
+#[test]
+fn beginning_the_installation_persists_the_installing_phase() {
+    let root: PathBuf = fixture("transaction-begin-installing");
+    let (source, destination) = ignored_source(root.as_path());
+    let snapshot: StagedSnapshot = stage(source.as_path(), destination.as_path());
+    let common: PathBuf = common_of(source.as_path());
+    let pending: PendingJournal =
+        create_journal(common.as_path(), destination.as_path(), &snapshot).expect("journal");
+    assert_eq!(pending.journal.phase, Phase::Staged);
+    let opened = open_install_log(snapshot.stage_container.as_path()).expect("log");
+    let mut state: TransactionState = TransactionState {
+        pending,
+        log: opened.log,
+        intended: BTreeSet::new(),
+        created_paths: BTreeSet::new(),
+    };
+    begin_installing(&mut state).expect("begun");
+    assert_eq!(state.pending.journal.phase, Phase::Installing);
+    let written: Vec<PendingJournal> = read_pending_journals(common.as_path()).expect("pending");
+    assert_eq!(written.len(), 1);
+    assert_eq!(written[0].journal.phase, Phase::Installing);
+    begin_installing(&mut state).expect("already begun");
+    assert_eq!(state.pending.journal.phase, Phase::Installing);
+    remove(root.as_path());
+}

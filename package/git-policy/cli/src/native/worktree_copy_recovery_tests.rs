@@ -353,3 +353,44 @@ fn incumbent_written_journal_is_recovered_natively() {
     );
     remove(root.as_path());
 }
+
+/// A destination under something that is not a directory is unregistered,
+///  while a destination whose pointer cannot be read for any other reason is a fault to report.
+#[cfg(unix)]
+#[test]
+fn registration_tells_a_missing_destination_from_an_unreadable_one() {
+    let root: PathBuf = std::fs::canonicalize(fixture("recovery-registration-faults")).expect("canonical");
+    let (source, _topic) = linked_source(root.as_path());
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    let file: PathBuf = root.join("a-file");
+    std::fs::write(file.as_path(), b"not a directory").expect("file");
+    assert_eq!(
+        destination_registration(common.as_path(), file.join("below").as_path()).expect("under a file"),
+        Registration::Unregistered
+    );
+    let unreadable: PathBuf = root.join("unreadable");
+    std::fs::create_dir_all(unreadable.join(".git")).expect("a directory where the pointer file belongs");
+    let failure: WorktreeCopyError =
+        destination_registration(common.as_path(), unreadable.as_path()).expect_err("a directory is not a pointer");
+    assert!(failure.0.contains("could not read worktree registration"), "{}", failure.0);
+    remove(root.as_path());
+}
+
+/// A stage that cannot be examined for any reason other than being absent is a fault, not a missing stage.
+#[cfg(unix)]
+#[test]
+fn a_stage_that_cannot_be_examined_is_a_fault_and_not_a_missing_stage() {
+    let root: PathBuf = fixture("recovery-stage-blocked");
+    let (source, topic) = linked_source(root.as_path());
+    let mut pending: PendingJournal = staged_journal(source.as_path(), topic.as_path());
+    let blocker: PathBuf = root.join("blocker");
+    std::fs::write(blocker.as_path(), b"a file").expect("blocker");
+    pending.journal.stage_container = blocker.join("stage").to_string_lossy().into_owned();
+    let failure: WorktreeCopyError = validate_stage(&pending).expect_err("the stage cannot be examined");
+    assert!(
+        failure.0.contains("could not validate worktree-copy recovery state"),
+        "{}",
+        failure.0
+    );
+    remove(root.as_path());
+}
