@@ -175,7 +175,7 @@ if(!Array.isArray(tools)||!Object.isFrozen(tools))throw new Error("Original requ
           ==='sequential'; }));
       const assessment={handles:undefined};
       const runner=this;
-      using queueTurn=await acquireProgramQueue({runner,exclusive});
+      using queueTurn=exclusive ? await acquireProgramQueue(runner) : undefined;
         assertParentCurrent();origin.signal
           .throwIfAborted();
         await dispatchPreparedBatch({

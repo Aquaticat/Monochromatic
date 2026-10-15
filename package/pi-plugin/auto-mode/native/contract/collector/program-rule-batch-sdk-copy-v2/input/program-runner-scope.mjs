@@ -10,8 +10,7 @@ export function requireProgramScope({ runner, carrier, parentId, NestedCallRecor
 }
 
 /** Release an acquired native queue turn when its complete dispatch scope exits. */
-export async function acquireProgramQueue({ runner, exclusive }) {
-  if (!exclusive) return { [Symbol.dispose]() { return undefined; } };
+export async function acquireProgramQueue(runner) {
   const previous = runner.queueTail;
   const turn = Promise.withResolvers();
   runner.queueTail = turn.promise;
