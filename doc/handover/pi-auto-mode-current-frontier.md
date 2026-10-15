@@ -88,6 +88,51 @@ Production prerequisite ownership,
 live semantic behavior,
 and the previously measured native lint backlog remain separate unfinished work.
 
+### Fresh current-session confirmation implementation
+
+The configured Hyper CLI reproduced the missing prerequisite-owner path with an otherwise permitted read
+and an explicit requirement for a fresh Allow from the current session user.
+It executed no child tool and reported unresolved instruction or operation facts.
+`${HOME}/temp/agent/pi-hyper-tool-call-prerequisite-2Y4UOq/verification.json` retains that control.
+
+Commit `58a3265939` adds the `fresh-session-approval` clause meaning and its original native channel facts.
+The meaning describes a clause expressly requiring a new response from this session's user
+for the exact prepared group.
+Generic authorization,
+other approvers,
+existing or reusable grants,
+and additional conditions remain outside this particular meaning.
+The existing `0.60` admission cutoff applies to the expanded vocabulary.
+Historical response distributions retain their old vocabulary and cannot be replayed as current responses.
+
+The native evaluator now captures the actual pending confirmation channel before decision closure or tool entry.
+Its code-owned facts start unsatisfied;
+absent or headless presentation is unsupported.
+Original capability identities and judgment dependencies remain checked during review and execution.
+Only an admitted fresh-confirmation clause consumes these facts.
+Generic prerequisites retain their independent owner path.
+Permission and prohibition still resolve separately,
+and the existing native binder consumes the actual Allow,
+Deny,
+or Stop response.
+Quoted fresh-confirmation targets retain unresolved authorization facts through their existing incorporation path.
+
+Unit and native fixture additions are committed in `67fa816d5a`.
+The first lint pass found callable identity reads represented as unbound methods,
+missing documentation,
+and test assertion typing and formatting errors.
+The implementation now retains callable identities as non-invocable unknown values;
+tests preserve the actual dependency failure values.
+The second pass had only one test formatting warning,
+which was corrected before starting the current build,
+type check,
+and final changed-file lint.
+These checks and the new native approval scenarios remain pending at this checkpoint.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/rpc-host.ts`
+is prepared to exercise the real configured Hyper CLI's RPC approval dialog with authored semantic answers,
+without injected authorization facts or external provider requests.
+Run it only after the updated native artifact is built.
+
 ## Current Pi execution model
 
 On 2026-10-14,
