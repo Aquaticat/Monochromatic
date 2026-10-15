@@ -1,3 +1,4 @@
+import {createGroupCurrent} from './group-current.ts';
 import {createGroupFailures} from './program-collector-failures.mjs';
 import {createGroupCompletions} from './program-collector-completions.mjs';
 
@@ -46,6 +47,7 @@ export function createReachedGroupRun({
     
   const groupState={checking:false,closed:false,dispatches:0,phase:'collecting',phaseAtReturn:undefined,primary:undefined,unboundPending:0,work:Promise.resolve(),unboundOutcomes:Object.freeze([])};
   const {recordFailure,abortOccurrence,retainBoundaryFailure}=createGroupFailures({groupState,failures,controller,rejectPending});
+  const {checkAbort,current,onParentAbort}=createGroupCurrent({group,view,readGroup,signal,assertParentCurrent,groupState,records,recordFailure,abortOccurrence});
   const {detach,observeCompletion}=createGroupCompletions({groupState,records,signal,onParentAbort});
     
     
@@ -63,44 +65,6 @@ export function createReachedGroupRun({
     for(const record of records)if(record.state==='pending'){record.state=state;record.ticket
       .reject(error);}
   }
-  
-  
-  function checkAbort({
-    observed,
-    at
-  }){if(observed.aborted)throw abortOccurrence({
-    observed,
-    at
-  });}
-  function current(){
-    if(groupState.primary)throw groupState.primary;
-    if(groupState.closed)throw new DeclaredGroupCollectionError('Declared parent group has returned');
-    checkAbort({
-      observed:signal,
-      at:'original-cancellation'
-    });
-    // Only a newly thrown callback value creates an occurrence here, even if equal to an existing value.
-    try{assertParentCurrent();if(readGroup(group)!==view)throw new DeclaredGroupCollectionError('Reached group view changed during native collection');}catch(error){throw recordFailure({
-      error,
-      at:'parent-current-reader'
-    });}
-    checkAbort({
-      observed:signal,
-      at:'original-cancellation'
-    });
-    if(groupState.primary)throw groupState.primary;
-    if(groupState.closed)throw new DeclaredGroupCollectionError('Declared parent group has returned');
-  }
-  function onParentAbort(){
-    if(groupState.closed||(groupState.phase==='settled')
-      ||records.every(function hasCompletion(record) { return (record.completion!==undefined); }))return;
-    abortOccurrence({
-      observed:signal,
-      at:'original-cancellation'
-    });
-  }
-  
-  
   
   
   async function dispatch(){
