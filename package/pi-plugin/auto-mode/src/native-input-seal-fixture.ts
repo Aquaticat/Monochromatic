@@ -14,14 +14,14 @@ type SealModule = Readonly<{
 
 /** Require the callable built export before observing argument mutation.
  @param value - built namespace
- *
+ 
  @returns narrowed independent consumer contract
- *
+ 
  @throws Error when the built sealing export is absent
  */
 function assertSealModule(value: unknown): asserts value is SealModule {
   if ((value === null) || ((typeof value) !== 'object')
-    || !('sealPreparedInput' in value)
+    || (!('sealPreparedInput' in value))
     || ((typeof value.sealPreparedInput) !== 'function')) throw new Error('Built prepared input sealing export is unavailable');
 }
 
@@ -32,14 +32,14 @@ type DispatcherModule = Readonly<{ PreparedBatchContractError: new (message: str
 
 /** Require the original runtime constructor without importing implementation declarations.
  @param value - built dispatcher namespace
- *
+ 
  @returns narrowed original constructor
- *
+ 
  @throws Error when the dispatcher constructor is absent
  */
 function assertDispatcherModule(value: unknown): asserts value is DispatcherModule {
   if ((value === null) || ((typeof value) !== 'object')
-    || !('PreparedBatchContractError' in value)
+    || (!('PreparedBatchContractError' in value))
     || ((typeof value.PreparedBatchContractError) !== 'function')) throw new Error('Built prepared dispatcher error is unavailable');
 }
 
@@ -70,9 +70,9 @@ export const { PreparedBatchContractError } = dispatcher;
 
 /** Seal disposable fixture arguments through the built artifact.
  @param input - disposable prepared argument
- *
+ 
  @returns original input after sealing
- *
+ 
  @throws Error for original admission failures
 
  @example seal({ value: true });

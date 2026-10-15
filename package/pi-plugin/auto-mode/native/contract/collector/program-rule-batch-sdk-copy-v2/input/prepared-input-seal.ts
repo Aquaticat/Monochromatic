@@ -8,7 +8,9 @@ import { tagged } from '@monochromatic-dev/module-logger/ts';
  */
 const l = tagged({ tag: 'auto-mode-prepared-input-seal' });
 
-/** Original declared bound counts object identities rather than primitive leaves. */
+/**
+ Original declared bound counts object identities rather than primitive leaves.
+ */
 const MAX_CONTAINERS = 10_000;
 
 //region Original iterative validation freezes each visited container before visiting its children.
