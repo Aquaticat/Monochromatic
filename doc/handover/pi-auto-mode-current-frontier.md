@@ -1098,8 +1098,19 @@ domain,
 semantic-policy,
 manual-review,
 source-freshness,
-and package type sequence is running in
+and package type sequence passes in
 `${HOME}/temp/agent/pi-native-typed-refresh-consumer-20261015.log`.
+The expanded fixture and consumer tests also pass focused lint with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-refresh-fixture-format-20261015.log`.
+Process-local omissions of the final source check,
+final cancellation check,
+or complete answer admission each make the committed consumers fail.
+The original built refresh hash is unchanged;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-refresh-omissions.json`
+retains those results.
+The complete maintained lint recount covers 524 files and 486 rules:
+zero errors and 13465 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-refresh-lint-20261015.log`.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
