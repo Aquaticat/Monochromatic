@@ -16,7 +16,7 @@ async function observeCompletion({
     record,
     completion
   }){
-    using lifetime2={ [Symbol.dispose]() {record.removeAbort?.();record.removeAbort=undefined;completed();} };
+    using completionScope={ [Symbol.dispose]() {record.removeAbort?.();record.removeAbort=undefined;completed();} };
     try{
       const value=await completion;record.completion=Object.freeze({
         status:'fulfilled',

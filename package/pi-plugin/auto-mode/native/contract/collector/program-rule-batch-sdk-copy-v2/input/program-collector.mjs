@@ -169,7 +169,7 @@ export function createReachedGroupRun({
     const completion=Promise.withResolvers();groupState.work=completion.promise;
     // Publish work before any synchronous parent-reader or consumer callback can request its drain.
     async function run(){
-      using lifetime1={ [Symbol.dispose]() {completion.resolve();} };
+      using dispatchCompletion={ [Symbol.dispose]() {completion.resolve();} };
     try{await dispatch();}catch(error){retainBoundaryFailure({
         error,
         at:'dispatcher-completion'
@@ -182,7 +182,7 @@ export function createReachedGroupRun({
     args,
     nativeSignal
   }){
-    let ticket;
+    const invocation={ticket:undefined};
     try{
       if(groupState.checking)throw new DeclaredGroupCollectionError('Declared group collection cannot reenter through callbacks');
       groupState.checking=true;
@@ -199,7 +199,7 @@ export function createReachedGroupRun({
           observed:nativeSignal,
           at:'native-cancellation'
         });current();
-        ticket=Promise.withResolvers();record.ticket=ticket;record.arrival='matched';record.state='pending';
+        invocation.ticket=Promise.withResolvers();record.ticket=invocation.ticket;record.arrival='matched';record.state='pending';
         record.signal=AbortSignal.any([
           signal,
           nativeSignal,
@@ -233,7 +233,7 @@ export function createReachedGroupRun({
         error,
         at:'member-entry'
       });
-      if(!ticket)throw recorded.occurrence
+      if(!invocation.ticket)throw recorded.occurrence
         .error;
       rejectPending({
         error:recorded.occurrence
@@ -241,7 +241,7 @@ export function createReachedGroupRun({
         state:'rejected'
       });
     }
-    return await ticket.promise;
+    return await invocation.ticket.promise;
   }
   signal.addEventListener(
     'abort',

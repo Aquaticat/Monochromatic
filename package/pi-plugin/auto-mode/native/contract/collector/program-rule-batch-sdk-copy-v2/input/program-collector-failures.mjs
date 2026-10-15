@@ -30,14 +30,15 @@ function abortOccurrence({
     observed,
     at
   }){
-    let recorded=abortOccurrences.get(observed);
-    if(!recorded){recorded=recordFailure({
+    const existing=abortOccurrences.get(observed);
+    if(existing)return existing;
+    const recorded=recordFailure({
       error:observed.reason,
       at
     });abortOccurrences.set(
       observed,
       recorded
-    );}
+    );
     return recorded;
   }
 function retainBoundaryFailure({
