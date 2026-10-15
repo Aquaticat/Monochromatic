@@ -429,3 +429,29 @@ fn the_proven_holder_line_names_its_proof() {
     assert!(file.contains("waiting for PID 9, which holds"));
     assert!(file.contains("(proven by its Git lock PID file)"));
 }
+
+/// The change time is whole milliseconds since the epoch, with the nanosecond part rounded down.
+///  Permission changes move the change time, and the test retries until the millisecond part is not zero.
+#[test]
+#[cfg(unix)]
+fn the_change_time_rounds_nanoseconds_down_to_milliseconds() {
+    use std::os::unix::fs::{MetadataExt, PermissionsExt};
+    let root: PathBuf = fixture("lock-ctime-milliseconds");
+    let path: PathBuf = root.join("index.lock");
+    std::fs::write(&path, b"x").expect("the lock file is written");
+    let mut observed: bool = false;
+    for attempt in 0..50_u32 {
+        let mode: u32 = if attempt % 2 == 0 { 0o600 } else { 0o640 };
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(mode)).expect("the change time moves");
+        let metadata: std::fs::Metadata = std::fs::symlink_metadata(&path).expect("the lock is stat-ed");
+        let expected: i64 = metadata.ctime() * 1000 + metadata.ctime_nsec() / 1_000_000;
+        let read: LockMetadata = read_lock_metadata(&path).expect("the lock is read").expect("the lock is present");
+        assert_eq!(read.ctime_ms, expected);
+        if metadata.ctime_nsec() / 1_000_000 != 0 {
+            observed = true;
+            break;
+        }
+    }
+    assert!(observed, "a change time with a millisecond part was observed");
+    remove(root.as_path());
+}

@@ -110,3 +110,26 @@ fn language_selection_keeps_schema_failures_visible() {
         assert!(rust_rule_settings(&value).is_err(), "{source}");
     }
 }
+
+/// The sidecar test rule is selected by its own id, stays off when absent or off,
+///  and runs through the syntax dispatcher with the selected severity.
+#[test]
+fn the_sidecar_test_rule_is_selected_by_its_id_and_dispatched() {
+    assert_eq!(settings("{}").tests_in_sidecars, None);
+    assert_eq!(
+        settings(r#"{"rust/tests-in-sidecars":{"severity":"off"}}"#).tests_in_sidecars,
+        None
+    );
+    let selected: RustRuleSettings = settings(r#"{"rust/tests-in-sidecars":{"severity":"warn"}}"#);
+    assert_eq!(selected.tests_in_sidecars, Some(Severity::Warn));
+    // Only this rule is selected, so no other check can contribute a finding.
+    assert_eq!(selected.no_anonymous_functions, None);
+    let source: RustSource = RustSource::new(
+        String::from("input.rs"),
+        String::from("#[test]\nfn stray() {}\n"),
+    );
+    let findings: Vec<Diagnostic> = check_syntax_rules(&source, &selected);
+    assert_eq!(findings.len(), 1);
+    assert_eq!(findings[0].code, "rust/tests-in-sidecars");
+    assert_eq!(findings[0].severity, Severity::Warn);
+}

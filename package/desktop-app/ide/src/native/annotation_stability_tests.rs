@@ -26,6 +26,8 @@ use super::annotation_tests::{TEXT_LEFT, TEXT_TOP, hint, problem};
 ///  its opener,
 ///  and its bounded wait.
 use super::find_tests::{Reader, eventually, reader};
+/// The clock the scrolling rule reads, which a test holds and moves.
+use super::rows::hold_clock;
 /// Snapshot records exactly as the Language module builds them.
 use ide_app::language::{
     diagnostics::{Diagnostic, DiagnosticsSnapshot, Severity, SourceGroup},
@@ -33,6 +35,7 @@ use ide_app::language::{
 };
 /// The vertical mapping and the heights virtual rows are built from.
 use ide_app::{
+    minimap::width_for,
     row_map::RowMap,
     virtual_row::{BLOCK_GAP, ROW_HEIGHT},
 };
@@ -49,7 +52,10 @@ use ide_app::{
 /// ```
 use slint::{Rgba8Pixel, SharedPixelBuffer, platform::update_timers_and_animations};
 /// Disposable fixtures and shared snapshot pointers.
-use std::{fs, sync::Arc};
+use std::{fs, sync::Arc, time::Duration};
+
+/// More than the 200 ms of stillness after which rows may move the view; a test moves its held clock by this.
+const QUIET_PASSED: Duration = Duration::from_millis(250);
 
 /// Characters per line of the numbered fixture:
 ///  `line NNN: value` and its terminator.
@@ -157,7 +163,7 @@ fn map(reader: &Reader) -> RowMap {
 }
 
 /// What:
-///  The pixels of window row `y` from the start of the line numbers to the right edge;
+///  The pixels of window row `y` from the start of the line numbers to the minimap;
 ///       `&[Rgba8Pixel]` lends that part of the frame.
 /// Why:
 ///  A line is its number and its text;
@@ -169,8 +175,11 @@ fn map(reader: &Reader) -> RowMap {
 /// ```
 fn band(shown: &SharedPixelBuffer<Rgba8Pixel>, y: f32) -> &[Rgba8Pixel] {
     let width = shown.width() as usize;
-    let start = y as usize * width + (TEXT_LEFT - GUTTER) as usize;
-    let end = (y as usize + 1) * width;
+    let left = (TEXT_LEFT - GUTTER) as usize;
+    // The minimap stands at the right edge of the view and moves its box with the scroll, so it is not text.
+    let minimap = width_for((width - left) as f32) as usize;
+    let start = y as usize * width + left;
+    let end = (y as usize + 1) * width - minimap;
     return &shown.as_slice()[start..end];
 }
 
@@ -377,12 +386,10 @@ fn rows_arriving_above_the_view_move_no_visible_pixel() {
     let offset = 100.0 * 24.0 + 7.0;
     window.set_scroll_y(-offset);
     update_timers_and_animations();
+    // The scroll re-centers the tile on the worker; the frames are compared only once it is swapped in.
+    super::overscan_tile_tests::settle_tile(&reader.source);
     let before = frame(window);
-    let painted = || {
-        let source = reader.source.borrow();
-        return source.shaped.as_ref().expect("shaped").rows.as_ptr();
-    };
-    let original = painted();
+    // The overscan tile may repaint when a diagnostic inside it changes; only visible pixels are asserted here.
     let row = BLOCK_GAP + ROW_HEIGHT;
     // Above the materialized lines: hints on lines 10 and 50 and an error on line 97; far below the view: a
     // hint on line 180.
@@ -411,11 +418,6 @@ fn rows_arriving_above_the_view_move_no_visible_pixel() {
         None,
         "a visible pixel moved when rows arrived above the view"
     );
-    assert_eq!(
-        painted(),
-        original,
-        "an unchanged visible part was repainted"
-    );
     // A row above the view vanishes: again nothing visible moves.
     inject(
         &reader,
@@ -428,7 +430,6 @@ fn rows_arriving_above_the_view_move_no_visible_pixel() {
         None,
         "a visible pixel moved when a row vanished above the view"
     );
-    assert_eq!(painted(), original);
     // Line 99 is materialized as overscan but lies above the top edge: its rows repaint the tile, and still
     // no visible pixel moves.
     let both = vec![
@@ -479,7 +480,19 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     idle();
     window.set_scroll_y(-offset);
     update_timers_and_animations();
+    // The scroll re-centers the tile on the worker; the frames are compared only once it is swapped in.
+    super::overscan_tile_tests::settle_tile(&reader.source);
     let before = frame(window);
+    // What: From here on the scrolling rule reads a clock this test holds and moves by exactly the time it means.
+    // Why: Sleeping through the 200 ms quiet time and racing it in the other direction both depend on the host's
+    //      load; a render that came 200 ms after a scroll step on a loaded host once showed the rows early.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let now = Date.now(); holdClock(now);
+    // ```
+    let mut now = std::time::Instant::now();
+    hold_clock(Some(now));
     // What: A closure that scrolls one pixel away and back, as the reader's wheel would.
     // Why: Taking a frame takes time; the scroll the rows must wait for has to be the latest thing that
     //      happened when they arrive.
@@ -517,6 +530,8 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
         "a change that also moves the offset waits as a whole"
     );
     // Scrolling has stopped: the rows are shown and nothing above line 104's block moves.
+    now += QUIET_PASSED;
+    hold_clock(Some(now));
     eventually("rows that waited for scrolling were never shown", || {
         return reader.source.borrow().row_map.block_height(10) == row;
     });
@@ -535,7 +550,9 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     assert_eq!(shown.block_height(104), row);
     // A scroll step whose change handler has not run yet is scrolling too: rows that arrive in the render
     // right after it wait, and are shown once scrolling has stopped.
-    idle();
+    now += QUIET_PASSED;
+    hold_clock(Some(now));
+    update_timers_and_animations();
     let resting = -window.get_scroll_y();
     window.set_scroll_y(-(resting + 3.0));
     inject(
@@ -552,6 +569,8 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
         0.0,
         "rows above the view were shown during a scroll step whose change handler had not run yet"
     );
+    now += QUIET_PASSED;
+    hold_clock(Some(now));
     eventually(
         "rows that waited for a scroll step were never shown",
         || {
@@ -653,9 +672,10 @@ fn scrolling_across_annotated_lines_is_rigid() {
     )];
     inject(&reader, hints, problems);
     let height = frame(window).height() as f32;
-    // From a few pixels above line 5's block to a few pixels into line 7's code row.
+    // From a few pixels above line 5's block on for two view heights: the overscan tile re-centers only after
+    // about one view height of scrolling, so the range must pass one re-center as well as the annotated lines.
     let start = map(&reader).block_top(5) as usize - 6;
-    let end = map(&reader).code_top(7) as usize + 6;
+    let end = start + (window.get_viewport_height() * 2.0) as usize;
     window.set_scroll_y(-(start as f32));
     update_timers_and_animations();
     let mut previous = frame(window);

@@ -55,12 +55,18 @@ use crate::handler::clipboard::ClipboardProtocols;
 ///  never shared with the host.
 use crate::appearance_portal::AppearancePortal;
 
+/// The private session bus and the taskbar progress listener that reads it.
+use crate::{
+    input_pointer::HeldButtons, launcher_listen::LauncherLog, plasma_services::PlasmaServices,
+    private_bus::PrivateBus,
+};
+
 /// Stall bookkeeping that keeps the hosted client drawing while the parent is silent.
 use crate::frame_pacing::FramePacing;
 
 /// The logical screen size and output scale,
 ///  and the globals that tell clients the scale.
-use crate::{screen::ScreenState, screen_geometry::ScreenGeometry};
+use crate::{render_backend::RenderBackend, screen::ScreenState, screen_geometry::ScreenGeometry};
 
 /// What:
 ///      A grouped `use` of Smithay items.
@@ -75,8 +81,7 @@ use crate::{screen::ScreenState, screen_geometry::ScreenGeometry};
 /// import { Space, Window, Seat, ... } from "smithay";
 /// ```
 use smithay::{
-    backend::renderer::{damage::OutputDamageTracker, gles::{GlesRenderer, GlesTexture}},
-    backend::winit::WinitGraphicsBackend,
+    backend::renderer::{damage::OutputDamageTracker, gles::GlesTexture},
     desktop::{PopupManager, Space, Window},
     input::{Seat, SeatState},
     output::Output,
@@ -98,6 +103,35 @@ use smithay::{
         socket::ListeningSocketSource,
     },
 };
+
+/// Key repeat rate announced to clients unless `--repeat-rate` says otherwise,
+///  in repeats per second.
+///
+/// What:
+///      `pub const DEFAULT_REPEAT_RATE: i32 = 25;`.
+/// Why:
+///       The value earlier versions announced,
+///  and winit's own default.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const DEFAULT_REPEAT_RATE = 25;
+/// ```
+pub const DEFAULT_REPEAT_RATE: i32 = 25;
+
+/// Key repeat delay announced to clients unless `--repeat-delay` says otherwise,
+///  in milliseconds.
+///
+/// What:
+///      `pub const DEFAULT_REPEAT_DELAY_MS: i32 = 200;`.
+/// Why:
+///       The value earlier versions announced.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const DEFAULT_REPEAT_DELAY_MS = 200;
+/// ```
+pub const DEFAULT_REPEAT_DELAY_MS: i32 = 200;
 
 /// The whole compositor,
 ///  carried by the calloop event loop as its shared data.
@@ -276,14 +310,16 @@ pub struct Compositor {
     ///  the nested window plus its GLES/EGL renderer.
     ///
     /// What:
-    ///      `pub backend: WinitGraphicsBackend<GlesRenderer>`.
+    ///      `pub backend: RenderBackend`.
+    ///  The winit window with its renderer,
+    ///           or the surfaceless renderer in `--headless` mode.
     ///  Parameterised by
     ///           the renderer type it drives.
     /// Why:
     ///       Rendering,
     ///  dmabuf import,
     ///  and screenshot readback all go through it.
-    pub backend: WinitGraphicsBackend<GlesRenderer>,
+    pub backend: RenderBackend,
 
     /// Offscreen texture screenshots and recordings render into,
     ///  reused while its size fits.
@@ -373,6 +409,48 @@ pub struct Compositor {
     ///           the private bus and removes its socket directory.
     pub appearance_portal: Option<AppearancePortal>,
 
+    /// The fake notification and Plasma job services,
+    ///  when `--notifications` asked for them.
+    ///
+    /// What:
+    ///      `pub notifications: Option<PlasmaServices>`.
+    /// Why:
+    ///       The notification and job verbs read and drive these records.
+    ///  Declared before the private bus so the services' connection closes first.
+    pub notifications: Option<PlasmaServices>,
+
+    /// The private session bus,
+    ///  when an option that needs one started it.
+    ///
+    /// What:
+    ///      `pub private_bus: Option<Arc<PrivateBus>>`.
+    ///  `Some` holds the `dbus-daemon` the hosted client's session bus address points at.
+    /// Why:
+    ///       The bus must outlive every holder of its address,
+    ///  so the compositor keeps one owner here and the portal keeps another.
+    ///  Declared after the portal so the portal's connection closes first.
+    pub private_bus: Option<Arc<PrivateBus>>,
+
+    /// The taskbar progress listener on the private bus,
+    ///  when a bus exists.
+    ///
+    /// What:
+    ///      `pub launcher: Option<LauncherLog>`.
+    /// Why:
+    ///       The `launcher` verbs read its history;
+    ///  `None` means no private bus,
+    ///  so those verbs refuse with the reason.
+    pub launcher: Option<LauncherLog>,
+
+    /// Pointer buttons that `button down` is holding.
+    ///
+    /// What:
+    ///      `pub held_pointer_buttons: HeldButtons`.
+    /// Why:
+    ///       `button down` and `button up` must refuse a repeated request,
+    ///  which needs the record of what the seat is holding.
+    pub held_pointer_buttons: HeldButtons,
+
     /// When the parent compositor last presented,
     ///  and whether a timer paces the client instead.
     ///
@@ -441,6 +519,24 @@ pub struct Compositor {
     ///           has only `&mut Compositor`,
     ///  so the payload must be reachable from state.
     pub pending_dnd_uri_list: Option<Vec<u8>>,
+
+    /// Toplevel surfaces,
+    ///  most recently focused first;
+    ///  focus returns through this list when the focused toplevel goes away.
+    pub focus_order: Vec<smithay::reexports::wayland_server::protocol::wl_surface::WlSurface>,
+
+    /// The private accessibility bus services,
+    ///  when `--accessibility` was given.
+    pub a11y: Option<crate::a11y_service::A11yService>,
+
+    /// The cursor the hosted client last asked for.
+    pub cursor_image: smithay::input::pointer::CursorImageStatus,
+
+    /// Keeps the `wp_cursor_shape_manager_v1` global alive.
+    pub _cursor_shape: smithay::wayland::cursor_shape::CursorShapeManagerState,
+
+    /// The announced key repeat pair as `(rate per second, delay in milliseconds)`.
+    pub repeat_info: (i32, i32),
 }
 
 /// Owning bundle of the pieces the winit backend produces before the state exists.
@@ -462,8 +558,8 @@ pub struct Compositor {
 /// type BackendPieces = { backend; output; dmabufState; dmabufGlobal; dmabufFeedback; geometry };
 /// ```
 pub struct BackendPieces {
-    /// The winit backend (window + GLES renderer).
-    pub backend: WinitGraphicsBackend<GlesRenderer>,
+    /// The winit backend (window + GLES renderer) or the surfaceless renderer.
+    pub backend: RenderBackend,
     /// The nested output.
     pub output: Output,
     /// dmabuf protocol state.
@@ -569,6 +665,7 @@ impl Compositor {
         let clipboard = ClipboardProtocols::new(&dh);
         // Register the fractional-scale and viewporter globals with the starting geometry.
         let screen = ScreenState::new(&dh, pieces.geometry);
+        let cursor_shape = smithay::wayland::cursor_shape::CursorShapeManagerState::new::<Self>(&dh);
 
         // What:     `PopupManager::default()`. Builds an empty popup tracker.
         // Why:      Ready to track any popups the app opens.
@@ -580,7 +677,7 @@ impl Compositor {
         // Why:      The single seat all synthetic input is routed through.
         let mut seat: Seat<Self> = seat_state.new_wl_seat(&dh, "winit");
 
-        // What:     `seat.add_keyboard(Default::default(), 200, 25).unwrap();`.
+        // What:     `seat.add_keyboard(Default::default(), DEFAULT_REPEAT_DELAY_MS, DEFAULT_REPEAT_RATE).unwrap();`.
         //           `Default::default()` supplies a default `XkbConfig` (US layout);
         //           `200, 25` are the key repeat delay (ms) and rate (keys/s).
         //           `.unwrap()` panics if keymap compilation fails (it should not with
@@ -667,11 +764,20 @@ impl Compositor {
             child: None,
             shutdown_deadline: None,
             appearance_portal: None,
+            notifications: None,
+            private_bus: None,
+            launcher: None,
+            held_pointer_buttons: HeldButtons::default(),
             frame_pacing: FramePacing::new(start_time),
             child_exit_code: None,
             recorder: None,
             loop_handle,
             pending_dnd_uri_list: None,
+            focus_order: Vec::new(),
+            a11y: None,
+            cursor_image: smithay::input::pointer::CursorImageStatus::default_named(),
+            _cursor_shape: cursor_shape,
+            repeat_info: (DEFAULT_REPEAT_RATE, DEFAULT_REPEAT_DELAY_MS),
         }
     }
 

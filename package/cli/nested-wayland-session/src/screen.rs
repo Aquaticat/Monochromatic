@@ -49,6 +49,9 @@ use smithay::{
 /// What:
 ///      Grouped `use` of this crate's refresh constant,
 ///  the fullscreen reconfigure,
+///  the early
+///           frame-callback decision,
+///  the frame-callback sender,
 ///  the
 ///           wire response,
 ///  the geometry types,
@@ -56,7 +59,8 @@ use smithay::{
 /// Why:
 ///       `apply` rebuilds the mode,
 ///  reconfigures the toplevel,
-///  and answers control verbs.
+///  wakes the client while recording,
+///           and answers control verbs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -64,8 +68,10 @@ use smithay::{
 /// ```
 use crate::{
     backend::OUTPUT_REFRESH_MHZ,
+    frame_pacing::resize_needs_early_callbacks,
     handler::xdg_shell::reconfigure_fullscreen,
     protocol::Response,
+    render::send_frame_callbacks,
     screen_geometry::{OutputScale, ScreenGeometry},
     state::Compositor,
 };
@@ -188,19 +194,17 @@ pub fn apply(state: &mut Compositor, target: ScreenGeometry) -> Result<(), Strin
             framebuffer_height = framebuffer.h,
             expected_width,
             expected_height,
-            "parent compositor kept the nested window size",
+            "parent compositor kept the nested window size; captures keep the requested size",
         );
-        return Err(format!(
-            "the parent compositor kept the nested window at {}x{} physical pixels instead of \
-             {expected_width}x{expected_height} ({}x{} logical at scale {}); it may be maximized, \
-             tiled, or fullscreen there: make it a normal window and retry",
-            framebuffer.w,
-            framebuffer.h,
-            target.logical_width,
-            target.logical_height,
-            target.scale.factor(),
-        ));
     }
+
+    // What:     `let exact: Size<i32, Physical> = target.physical_size().into();`. The output
+    //           mode is the requested logical size times the scale, rounded as
+    //           wp_fractional_scale_v1 prescribes, whatever size the parent gave the window.
+    // Why:      Screenshots and recordings are rendered off screen at the mode size, so
+    //           599x400 is captured as 599x400 even when the parent only makes windows of even
+    //           sizes. Only the on-screen window, which is minimized, shows the difference.
+    let exact: Size<i32, Physical> = target.physical_size().into();
 
     // What:     `let previous = state.screen.geometry;` copies the current geometry (the type
     //           is `Copy`, so this is a value copy, not a move).
@@ -208,12 +212,42 @@ pub fn apply(state: &mut Compositor, target: ScreenGeometry) -> Result<(), Strin
     //           an unchanged logical size sends no configure, so a scale switch reaches the
     //           client without a resize.
     let previous = state.screen.geometry;
-    set_mode(state, framebuffer, target.scale != previous.scale, target.scale);
+    set_mode(state, exact, target.scale != previous.scale, target.scale);
     state.screen.geometry = target;
     if target.logical_width != previous.logical_width || target.logical_height != previous.logical_height {
         reconfigure_fullscreen(state);
     }
     tell_surfaces_scale(state);
+
+    // What:     `resize_needs_early_callbacks(recording, changed)` is true while a recording runs
+    //           and the size or scale differs from `previous`. Then `send_frame_callbacks`
+    //           answers every frame request a client has pending, and `flush_clients` writes
+    //           the queued configure, the scale and the callbacks to the sockets in that order.
+    // Why:      While recording, the recorder tick is the only sender of frame callbacks, and
+    //           winit holds a client's redraw until the callback of its previous frame arrives.
+    //           Without this, a size event between two ticks is drawn after the next capture
+    //           and first captured a tick later. The callbacks come after the configure and the
+    //           scale, so the client learns the new size before its redraw gate opens; sent
+    //           before them it could draw at the old size. A scale change needs the same: the
+    //           toolkit redraws at the new scale through the same gate, and the output mode
+    //           has already changed. Smithay drains a surface's callbacks when it sends them, so
+    //           the next tick finds none until the client asks again: one answer per request.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (recording && geometryChanged) { sendFrameCallbacks(state); flushClients(state); }
+    // ```
+    let recording = state.recorder.is_some();
+    if resize_needs_early_callbacks(recording, target != previous) {
+        send_frame_callbacks(state);
+        let _ = state.display_handle.flush_clients();
+        tracing::info!(
+            logical_width = target.logical_width,
+            logical_height = target.logical_height,
+            scale = target.scale.factor(),
+            "sent frame callbacks right after the new screen geometry while recording",
+        );
+    }
     state.backend.window().request_redraw();
     tracing::info!(
         logical_width = target.logical_width,
@@ -221,6 +255,8 @@ pub fn apply(state: &mut Compositor, target: ScreenGeometry) -> Result<(), Strin
         scale = target.scale.factor(),
         framebuffer_width = framebuffer.w,
         framebuffer_height = framebuffer.h,
+        mode_width = exact.w,
+        mode_height = exact.h,
         "applied nested screen geometry",
     );
     return Ok(());
@@ -354,14 +390,16 @@ pub fn resize(state: &mut Compositor, width: i32, height: i32) -> Response {
 ///           nested scale,
 ///  so captures do not depend on which host output shows the window.
 pub fn parent_resized(state: &mut Compositor, size: Size<i32, Physical>) {
-    // What:     `.map(|mode| mode.size)` reads the size out of the optional current mode.
-    // Why:      Our own `apply` already set the mode to this size; ignore that echo.
-    let current = state.output.current_mode().map(|mode| return mode.size);
-    if current == Some(size) {
-        return;
-    }
+    // What:     `after_parent_resize` returns the current geometry when the parent's window is
+    //           within the parent's scale of the requested physical size.
+    // Why:      Our own `apply` asked for this size (rounded up to the parent's pixel grid), so
+    //           that echo, and the first resize event of a fresh window, must not change the
+    //           exact size a test asked for.
     let parent_scale = state.backend.window().scale_factor();
     let target = state.screen.geometry.after_parent_resize((size.w, size.h), parent_scale);
+    if target == state.screen.geometry {
+        return;
+    }
     tracing::info!(width = size.w, height = size.h, parent_scale, "parent compositor resized the nested window");
     // What:     `if let Err(message) = ...` runs the block only for the failure variant.
     // Why:      A target derived from this framebuffer fits it, so failure means the parent

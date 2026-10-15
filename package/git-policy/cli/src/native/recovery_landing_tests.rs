@@ -365,7 +365,7 @@ fn landed_commits_are_completed() {
         &["hash-object", "-w", intended_path.as_str()],
     );
     let added: AddedPath = AddedPath {
-        path: String::from("added.txt"),
+        path: b"added.txt".to_vec(),
         git_mode: String::from("100644"),
         original_oid: original,
         intended_oid: intended,

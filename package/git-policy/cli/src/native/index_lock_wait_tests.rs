@@ -1,27 +1,40 @@
-//! Controls for the index-lock wait with a fake clock and scripted holders: the backoff schedule,
-//! the caps on a proven holder's polls, the unproven budget, and the read failures.
+//! Controls for the index-lock wait with a fake clock and scripted holders:
+//!  the backoff schedule,
+//! the caps on a proven holder's polls,
+//!  the unproven budget,
+//!  and the read failures.
 
 use super::*;
 use crate::index_lock_evidence::{LockMetadata, PidFile, PidOwner};
 use crate::index_lock_holders::{Holder, HolderEvidence};
 use std::path::PathBuf;
 
-/// A fake wait: scripted presence and evidence, a clock moved by sleeps and gathers, and the record
+/// A fake wait:
+///  scripted presence and evidence,
+///  a clock moved by sleeps and gathers,
+///  and the record
 /// of everything the wait did.
 struct FakeEffects {
-    /// Presence answers, consumed in order; the last one repeats.
+    /// Presence answers,
+    ///  consumed in order;
+    ///  the last one repeats.
     presence: Vec<bool>,
-    /// Evidence answers, consumed in order; the last one repeats.
+    /// Evidence answers,
+    ///  consumed in order;
+    ///  the last one repeats.
     evidence: Vec<Option<Evidence>>,
     /// Milliseconds one gather adds to the clock.
     gather_cost: f64,
-    /// Failure text the presence read returns, when set.
+    /// Failure text the presence read returns,
+    ///  when set.
     presence_failure: Option<String>,
-    /// Failure text the evidence read returns, when set.
+    /// Failure text the evidence read returns,
+    ///  when set.
     gather_failure: Option<String>,
     /// The clock.
     clock: f64,
-    /// Every sleep, in order.
+    /// Every sleep,
+    ///  in order.
     sleeps: Vec<u64>,
     /// Every line reported.
     reports: Vec<String>,
@@ -70,6 +83,8 @@ impl WaitEffects for FakeEffects {
     }
 
     fn sleep(&mut self, ms: u64) {
+        // A wait that lost its bound fails here instead of looping for good.
+        assert!(self.sleeps.len() < 100_000, "the wait never ended");
         self.clock += ms as f64;
         self.sleeps.push(ms);
     }
@@ -87,7 +102,8 @@ impl WaitEffects for FakeEffects {
     }
 }
 
-/// Evidence with a PID file naming PID 42 in the given owner state, and no holder scan.
+/// Evidence with a PID file naming PID 42 in the given owner state,
+///  and no holder scan.
 fn pid_evidence(owner: PidOwner) -> Evidence {
     return Evidence {
         lock_path: PathBuf::from("/repo/index.lock"),
@@ -122,7 +138,8 @@ fn descriptor_evidence() -> Evidence {
     };
 }
 
-/// Evidence nothing proves either way: no PID file and no holder.
+/// Evidence nothing proves either way:
+///  no PID file and no holder.
 fn free_evidence() -> Evidence {
     return Evidence {
         lock_path: PathBuf::from("/repo/index.lock"),
@@ -140,14 +157,27 @@ fn free_evidence() -> Evidence {
     };
 }
 
-/// A run of `count` presence answers that say the lock is held, then one that says released.
+/// Whether every value is at most `cap`.
+fn all_within(values: &[u64], cap: u64) -> bool {
+    for value in values {
+        if *value > cap {
+            return false;
+        }
+    }
+    return true;
+}
+
+/// A run of `count` presence answers that say the lock is held,
+///  then one that says released.
 fn held_then_released(count: usize) -> Vec<bool> {
     let mut answers: Vec<bool> = vec![true; count];
     answers.push(false);
     return answers;
 }
 
-/// Git's formula: `(750 + random%500) * multiplier / 1000`, rounded down.
+/// Git's formula:
+///  `(750 + random%500) * multiplier / 1000`,
+///  rounded down.
 #[test]
 fn jittered_waits_follow_gits_formula() {
     let state: BackoffState = BackoffState { step: 3, multiplier: 9 };
@@ -165,11 +195,15 @@ fn backoff_squares_then_stops_at_the_cap() {
     assert_eq!(second, BackoffState { step: 3, multiplier: 9 });
     let near_cap: BackoffState = BackoffState { step: 31, multiplier: 961 };
     assert_eq!(next_backoff(near_cap), BackoffState { step: 31, multiplier: BACKOFF_MAX_MULTIPLIER });
+    // A step that lands on the cap exactly is still a step; only one that would pass it is held back.
+    let lands_on_cap: BackoffState = BackoffState { step: 5, multiplier: 989 };
+    assert_eq!(next_backoff(lands_on_cap), BackoffState { step: 6, multiplier: BACKOFF_MAX_MULTIPLIER });
     let at_cap: BackoffState = BackoffState { step: 31, multiplier: BACKOFF_MAX_MULTIPLIER };
     assert_eq!(next_backoff(at_cap), at_cap);
 }
 
-/// A lock already gone returns at once, with no evidence read and no sleep.
+/// A lock already gone returns at once,
+///  with no evidence read and no sleep.
 #[test]
 fn a_released_lock_returns_at_once() {
     let mut effects: FakeEffects = FakeEffects::new(vec![false], vec![None]);
@@ -178,27 +212,31 @@ fn a_released_lock_returns_at_once() {
     assert_eq!(effects.gathers, 0);
 }
 
-/// A live PID-file owner is waited for beyond any budget, reported once, and polled no slower than 100 ms.
+/// A live PID-file owner is waited for beyond the unproven budget,
+///  reported once,
+///  and polled no slower than 100 ms.
 #[test]
-fn a_proven_pid_file_owner_is_waited_for_without_limit() {
+fn a_proven_pid_file_owner_is_waited_for_beyond_the_unproven_budget() {
     let mut effects: FakeEffects = FakeEffects::new(
         held_then_released(12),
         vec![Some(pid_evidence(PidOwner::StartedBeforeLock(500.0)))],
     );
     assert_eq!(wait_for_index_lock(&mut effects, 1, "did nothing"), Ok(()));
     assert_eq!(effects.sleeps.len(), 12);
-    assert!(effects.sleeps.iter().all(|ms| *ms <= PROVEN_BY_PID_FILE_POLL_CAP_MS));
+    assert!(all_within(effects.sleeps.as_slice(), PROVEN_BY_PID_FILE_POLL_CAP_MS));
     assert_eq!(effects.sleeps.last(), Some(&PROVEN_BY_PID_FILE_POLL_CAP_MS));
     assert_eq!(effects.reports.len(), 1);
     assert!(effects.reports[0].starts_with("cli-git: waiting for PID 42, which holds /repo/index.lock"));
 }
 
-/// A descriptor-proven holder is polled up to its own, longer, cap.
+/// A descriptor-proven holder is polled up to its own,
+///  longer,
+///  cap.
 #[test]
 fn a_descriptor_holder_has_its_own_longer_poll_cap() {
     let mut effects: FakeEffects = FakeEffects::new(held_then_released(12), vec![Some(descriptor_evidence())]);
     assert_eq!(wait_for_index_lock(&mut effects, 1, "did nothing"), Ok(()));
-    assert!(effects.sleeps.iter().all(|ms| *ms <= PROVEN_BY_DESCRIPTOR_POLL_CAP_MS));
+    assert!(all_within(effects.sleeps.as_slice(), PROVEN_BY_DESCRIPTOR_POLL_CAP_MS));
     assert_eq!(effects.sleeps.last(), Some(&144));
     assert!(effects.reports[0].contains("(proven by an open descriptor)"));
 }
@@ -229,7 +267,8 @@ fn a_dead_owner_fails_after_the_budget() {
     assert!(effects.reports.is_empty());
 }
 
-/// An owner nothing proves alive fails on the same budget, with the verdict that says so.
+/// An owner nothing proves alive fails on the same budget,
+///  with the verdict that says so.
 #[test]
 fn an_evidence_free_owner_fails_on_the_same_budget() {
     let mut effects: FakeEffects = FakeEffects::new(vec![true], vec![Some(free_evidence())]);
@@ -244,7 +283,8 @@ fn an_evidence_free_owner_fails_on_the_same_budget() {
     ));
 }
 
-/// Time spent gathering evidence counts toward the budget, so one slow scan can exhaust it without a sleep.
+/// Time spent gathering evidence counts toward the budget,
+///  so one slow scan can exhaust it without a sleep.
 #[test]
 fn gathering_evidence_counts_toward_the_budget() {
     let mut effects: FakeEffects = FakeEffects::new(vec![true], vec![Some(free_evidence())]);
@@ -264,7 +304,8 @@ fn a_lock_released_before_the_evidence_read_is_retried() {
     assert!(effects.sleeps.is_empty());
 }
 
-/// An unreadable lock or evidence stops the wait with its reason, never a guessed verdict.
+/// An unreadable lock or evidence stops the wait with its reason,
+///  never a guessed verdict.
 #[test]
 fn unreadable_state_stops_the_wait_with_its_reason() {
     let mut presence: FakeEffects = FakeEffects::new(vec![true], vec![None]);
@@ -281,7 +322,11 @@ fn unreadable_state_stops_the_wait_with_its_reason() {
     );
 }
 
-/// The failure names the lock, the owner state, the budget, what was not done, and the evidence.
+/// The failure names the lock,
+///  the owner state,
+///  the budget,
+///  what was not done,
+///  and the evidence.
 #[test]
 fn the_unproven_owner_message_names_each_fact() {
     let evidence: Evidence = pid_evidence(PidOwner::Missing);
@@ -293,4 +338,85 @@ fn the_unproven_owner_message_names_each_fact() {
     assert!(message.contains("Evidence: /repo/index.lock (device 1, inode 2"));
     let unproven: String = unproven_owner_message(&free_evidence(), &Verdict::EvidenceFree, 5, "x");
     assert!(unproven.contains("whose owner cli-git could not prove alive"));
+}
+
+/// A proven-alive owner that never lets go ends the wait at the live limit,
+///  naming the owner, the waited time and the limit,
+///  after one holder line and with polls no slower than the cap.
+#[test]
+fn a_proven_owner_past_the_live_limit_ends_the_wait() {
+    let mut effects: FakeEffects = FakeEffects::new(
+        vec![true],
+        vec![Some(pid_evidence(PidOwner::StartedBeforeLock(500.0)))],
+    );
+    let failure: WaitFailure = wait_for_index_lock_within(&mut effects, 1, 1_000, "landed nothing")
+        .expect_err("a live owner that never releases ends the wait");
+    match failure {
+        WaitFailure::LiveHolderTimedOut {
+            lock_path,
+            pid,
+            command,
+            waited_ms,
+            limit_ms,
+            consequence,
+        } => {
+            assert_eq!(lock_path, PathBuf::from("/repo/index.lock"));
+            assert_eq!((pid, command), (42, None));
+            assert!((1_000..1_100).contains(&waited_ms), "{waited_ms}");
+            assert_eq!(limit_ms, 1_000);
+            assert_eq!(consequence, "landed nothing");
+        }
+        other => panic!("expected the live owner timeout, got {other:?}"),
+    }
+    assert!(all_within(effects.sleeps.as_slice(), PROVEN_BY_PID_FILE_POLL_CAP_MS));
+    assert!(effects.sleeps.iter().sum::<u64>() >= 1_000);
+    assert_eq!(effects.reports.len(), 1);
+}
+
+/// A descriptor-proven owner ends the wait the same way and keeps its command name.
+#[test]
+fn a_descriptor_owner_past_the_live_limit_ends_the_wait_with_its_command() {
+    let mut effects: FakeEffects = FakeEffects::new(vec![true], vec![Some(descriptor_evidence())]);
+    let failure: WaitFailure = wait_for_index_lock_within(&mut effects, 1, 2_000, "did nothing")
+        .expect_err("a live owner that never releases ends the wait");
+    match failure {
+        WaitFailure::LiveHolderTimedOut { pid, command, waited_ms, .. } => {
+            assert_eq!(pid, 55);
+            assert_eq!(command.as_deref(), Some("git"));
+            assert!((2_000..2_500).contains(&waited_ms), "{waited_ms}");
+        }
+        other => panic!("expected the live owner timeout, got {other:?}"),
+    }
+    assert!(all_within(effects.sleeps.as_slice(), PROVEN_BY_DESCRIPTOR_POLL_CAP_MS));
+}
+
+/// An owner that releases before the live limit is not an error.
+#[test]
+fn an_owner_that_releases_before_the_live_limit_is_not_an_error() {
+    let mut effects: FakeEffects = FakeEffects::new(
+        held_then_released(3),
+        vec![Some(pid_evidence(PidOwner::StartedBeforeLock(500.0)))],
+    );
+    assert_eq!(wait_for_index_lock_within(&mut effects, 1, 1_000, "did nothing"), Ok(()));
+}
+
+/// The timeout text names the owner and command, the lock, the whole seconds waited, the setting and the consequence.
+#[test]
+fn the_live_owner_timeout_is_described() {
+    let with_command: String = live_holder_timeout_message(
+        std::path::Path::new("/repo/index.lock"),
+        55,
+        Some("git"),
+        61_900,
+        "landed nothing",
+    );
+    assert_eq!(
+        with_command,
+        "Gave up after waiting 61 seconds for PID 55 (git), which still holds /repo/index.lock; \
+         CLI_GIT_LOCK_WAIT_SECONDS sets how long cli-git waits. cli-git left the lock in place and landed nothing. \
+         Look at that process, or raise the limit."
+    );
+    let anonymous: String =
+        live_holder_timeout_message(std::path::Path::new("/x"), 7, None, 5_000, "did nothing");
+    assert!(anonymous.starts_with("Gave up after waiting 5 seconds for PID 7, which still holds /x;"), "{anonymous}");
 }

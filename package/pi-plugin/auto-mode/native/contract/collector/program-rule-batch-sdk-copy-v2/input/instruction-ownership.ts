@@ -1,0 +1,143 @@
+/**
+ Canonical instruction handles publish only after original dependency capture succeeds. @module
+ */
+import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
+import type {
+  InstructionRecord,
+  InstructionState
+} from './instruction-types.ts';
+import type { GoverningRuleSet } from '../../../lifecycle/governing-rule-candidates/set-types.ts';
+
+//region Original maps distinguish program, meaning, and member-bound claim identities.
+/**
+ Read the original first-member identifier at the same source-selection boundary.
+
+ @param declared - original first declaration, if present
+
+ @returns original declared identifier
+
+ @throws TypeError if the original declaration array has no first entry
+
+ @example firstInstructionMemberId(declaredNames[0]);
+ */
+export function firstInstructionMemberId(declared?: Readonly<{ id: string }>): string {
+  if (declared === undefined) throw new TypeError("Cannot read properties of undefined (reading 'id')");
+  return declared.id;
+}
+
+/**
+ Construct private owner state without reading lazy source or request capabilities.
+ 
+ @returns unpublished original instruction owner
+ 
+ @example createInstructionState();
+ */
+export function createInstructionState(): InstructionState {
+  return {
+    instructionBindings: new WeakMap(),
+    instructionPairs: new WeakMap(),
+    instructionMeaningPairs: new WeakMap(),
+    programInstructionPairs: new WeakMap(),
+  };
+}
+
+/**
+ Read a previously initialized source owner without introducing another readiness check.
+ 
+ @param state - original instruction ownership
+ 
+ @returns initialized original source owner
+ 
+ @throws Error if internal construction has not retained its source owner
+ 
+ @example retainedInstructionRules(state);
+ */
+export function retainedInstructionRules(state: InstructionState): GoverningRuleSet {
+  return nonNullishOrThrow(state.ruleBindings);
+}
+
+/**
+ Publish a binding once after original source and member checks succeed.
+ 
+ @param state - original private instruction records
+ 
+ @param map - canonical mapping for the selected claim scope
+ 
+ @param key - original source, pair, or member-clause identity
+ 
+ @param createRecord - original dependency capture before publication
+ 
+ @returns canonical opaque handle
+ 
+ @throws original dependency-capture failure without publishing the handle
+ 
+ @example retainInstructionHandle({ state, map, key, createRecord });
+ */
+export function retainInstructionHandle({
+  state,
+  map,
+  key,
+  createRecord
+}: Readonly<{
+  state: InstructionState;
+  map: WeakMap<object, object>;
+  key: object;
+  createRecord: () => InstructionRecord;
+}>): object {
+  /**
+   Previously published canonical identity is reused without capturing dependencies again.
+   */
+  const existing = map.get(key);
+  if (existing) return existing;
+  /**
+   Canonical opaque handle preserves original scope identity across repeated declarations.
+   */
+  const bindingHandle = Object.freeze({});
+  state.instructionBindings
+    .set(
+      bindingHandle,
+      createRecord()
+    );
+  map.set(
+    key,
+    bindingHandle
+  );
+  return bindingHandle;
+}
+
+/**
+ Each member owns a separate original rule-to-claim mapping.
+ 
+ @param state - original private member maps
+ 
+ @param member - original prepared-member handle
+ 
+ @returns canonical mapping for this member alone
+ 
+ @example memberInstructionPairs({ state, member });
+ */
+export function memberInstructionPairs({
+  state,
+  member
+}: Readonly<{
+  state: InstructionState;
+  member: object;
+}>): WeakMap<object, object> {
+  /**
+   Previously published canonical identity is reused without capturing dependencies again.
+   */
+  const existing = state.instructionPairs
+    .get(member);
+  if (existing) return existing;
+  /**
+   Canonical mapping distinguishes member-bound clauses from member-independent meaning.
+   */
+  const pairs = new WeakMap<object, object>();
+  state.instructionPairs
+    .set(
+      member,
+      pairs
+    );
+  return pairs;
+}
+//endregion

@@ -64,7 +64,7 @@ use std::path::{Path, PathBuf};
 // ```
 const _: () = assert!(
     cfg!(panic = "unwind"),
-    "git-policy-cli links the forbidden-strings scanner, whose fail-closed catch boundaries need panic = \"unwind\""
+    "monochromatic-git-policy-cli links the forbidden-strings scanner, whose fail-closed catch boundaries need panic = \"unwind\""
 );
 
 /// What:

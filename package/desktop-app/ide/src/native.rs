@@ -23,10 +23,14 @@ use anyhow::{Context, bail};
 use ide_app::annotation::Annotations;
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
+/// The stamp naming a displayed text.
+use ide_app::language::identity::DocumentStamp;
 /// The Language module's handle,
 ///  its startup rule,
 ///  and the reload record.
 use ide_app::language::{LanguageWorker, enter_project_directory, sync::DocumentReload};
+/// Visual rows of every line, as far as measured.
+use ide_app::line_rows::LineRows;
 /// The log filter,
 ///  the subscriber with the helix-lsp bridge,
 ///  and the writer thread.
@@ -37,7 +41,7 @@ use ide_app::refresh_policy::SourceRefresh;
 /// The one vertical mapping between pixels and source lines.
 use ide_app::row_map::RowMap;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
-use ide_app::shaped_text::{ShapedView, TextShaper};
+use ide_app::shaped_text::{Clip, ShapedView, TextShaper};
 /// Paint identity prevents caret movement from rebuilding source pixels.
 use ide_app::source_frame::FrameStamp;
 /// Raster output retains the exact glyph positions used by selection.
@@ -49,7 +53,7 @@ use ide_app::{cli::Options, workspace::Workspace};
 /// Source and display geometry use the same library interface tested headlessly.
 use ide_app::{document::Document, source_style::SourceStyles};
 /// Toolkit handles and models bridge owned Rust state to the window.
-use slint::{ComponentHandle, SharedString, VecModel};
+use slint::{ComponentHandle, SharedString, Timer, VecModel};
 /// What:
 ///  Rc shares one UI-thread owner;
 ///  RefCell permits checked mutable borrowing.
@@ -142,6 +146,11 @@ mod focus_tests;
 /// Native font instance changes must repaint rather than reuse stale glyphs.
 #[cfg(test)]
 mod font_tests;
+/// Debug records of the moments a window frame passes through.
+mod frame_trace;
+/// Tree rows that git ignores draw their name at 0.8 opacity and nothing else of the row changes.
+#[cfg(test)]
+mod ignored_row_tests;
 /// Source selection and keyboard callbacks.
 mod input;
 /// Inspection-only hint and diagnostic injection from a JSON file;
@@ -152,6 +161,13 @@ mod inspect;
 ///  references,
 ///  and hover through the Language module.
 mod language;
+/// The minimap beside the source text: the scroll control, and the picture of the whole text built off-thread.
+mod minimap;
+/// The minimap's worker thread.
+mod minimap_build;
+/// The minimap's geometry, picture, and pointer paths.
+#[cfg(test)]
+mod minimap_tests;
 /// Project tree and asynchronous successful-file navigation.
 mod navigation;
 /// Missing targets and canonical aliases exercise reveal liveness and model identity.
@@ -160,6 +176,9 @@ mod navigation_reveal_tests;
 /// Native project callbacks exercise actual reader/timer and source replacement boundaries.
 #[cfg(test)]
 mod navigation_tests;
+/// Scrolling inside the overscan tile does no source work, and leaving it re-centers the tile once.
+#[cfg(test)]
+mod overscan_tile_tests;
 /// Real pointer events select by character,
 ///  word,
 ///  and line,
@@ -190,6 +209,8 @@ mod refresh_latency_tests;
 mod reload;
 /// Native rendering and input are split by their invalidation boundary.
 mod render;
+/// The window thread's counted step when the wrap width changes.
+mod rewrap;
 /// The window's side of the vertical mapping between pixels and source lines.
 mod rows;
 /// The search box's 48px clear cell empties the query and the results and keeps focus.
@@ -237,6 +258,12 @@ mod tests;
 ///  and window chrome.
 #[cfg(test)]
 mod theme_tests;
+/// Scroll re-center bounds and the window-thread step that swaps a finished tile in.
+mod tile;
+/// Source tile construction and the worker thread that runs it.
+mod tile_build;
+/// The background measurement of every line at the wrap width.
+mod tile_pass;
 /// Windowed rows must not redirect an in-progress click after scrolling.
 #[cfg(test)]
 mod tree_pointer_tests;
@@ -252,6 +279,32 @@ mod watch_scope_tests;
 ///  faster than polling could.
 #[cfg(test)]
 mod watch_tests;
+/// Hints and message rows on wrapped lines:
+///  their place above the first visual row,
+///  their width,
+///  presses on them,
+///  and new window widths.
+#[cfg(test)]
+mod wrap_annotation_tests;
+/// A line wrapped to more rows than one raster holds is painted in a clip,
+///  and scrolling inside a built tile of a wrapped file does no source work.
+#[cfg(test)]
+mod wrap_clip_tests;
+/// Home, End, Up, Down, paging, word motion, drags, and multi-clicks on wrapped lines.
+#[cfg(test)]
+mod wrap_keys_tests;
+/// A new window width: the window thread breaks the lines near the view again and paints the tile for it before the
+///  next frame, within a counted allowance, and what does not fit goes to the tile worker.
+#[cfg(test)]
+mod wrap_resize_tests;
+/// Always-on soft wrap in the window:
+///  the wrap width,
+///  the gutter's indicator,
+///  the worker's measurement of every line,
+///  resizes,
+///  and clicks on continuation rows.
+#[cfg(test)]
+mod wrap_tests;
 /// A save in progress is not shown before it finishes;
 ///  an ignored measurement finds the pause that is.
 #[cfg(test)]
@@ -259,10 +312,18 @@ mod write_wait_tests;
 /// An ignored measurement of saves that begin when the safety sweep comes due.
 #[cfg(test)]
 mod write_wait_timer_tests;
+/// The wrap indicator's symbol.
+use ide_app::wrap_sign::Sign;
 /// Bind caret and selection callbacks.
 use input::{bind_keys, bind_pointer};
 /// Shared rendering entry point.
 use render::{bind_appearance, render};
+/// Tile bounds of the displayed and requested windows.
+use tile::TileBounds;
+/// The worker thread that builds scroll re-centers, held by the state.
+use tile_build::TileWorker;
+/// What a background measurement is valid for.
+use tile_pass::PassKey;
 /// Bind viewport changes without line-snapping native scrolling.
 use viewport::bind_viewport;
 
@@ -293,13 +354,33 @@ struct State {
     first: usize,
     /// Bounded number of materialized source lines.
     count: usize,
-    /// Logical width of the visible code area.
+    /// The part of those lines the next tile holds, when they are too tall for one raster.
+    clip: Option<Clip>,
+    /// Physical pixels per logical pixel as of the last render or viewport report, which the tile's size limit uses.
+    scale: f32,
+    /// What:
+    ///  The wrap width in logical pixels every line is broken at, or zero before the window reported one.
+    /// Why:
+    ///  The text area's width minus the caret room; a width of zero or less keeps the last width.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// width: number; // 0 until the view has a width
+    /// ```
     width: f32,
-    /// Horizontal tile origin;
-    ///  native Flickable supplies fractional movement.
-    horizontal: f32,
-    /// Widest measured line of the current document.
-    document_width: f32,
+    /// How many visual rows every line takes, as far as it is known:
+    ///  exact for lines measured at `width`, the last known count for the rest, one for a line never measured.
+    wrap_rows: LineRows,
+    /// The text `wrap_rows` describes.
+    wrap_text: Option<DocumentStamp>,
+    /// Counter of changes to `wrap_rows`, part of the row key.
+    wrap_version: u64,
+    /// What the pass last posted to the worker was for, and the syntax snapshot it used.
+    pass_posted: Option<(PassKey, usize)>,
+    /// The symbol the gutter shows on a continuation row, chosen once from the fonts.
+    sign: Option<Sign>,
+    /// The display scale the gutter's sign image was painted for.
+    sign_scale: Option<u32>,
     /// Reusable paragraph/font resources.
     shaper: TextShaper,
     /// Reusable outline raster resources.
@@ -364,30 +445,41 @@ struct State {
     ///  `Rc<VecModel<f32>>` is a shared,
     ///  growable toolkit list of floats.
     /// Why:
-    ///  The window draws one line number per entry at that vertical position;
-    ///  the list is updated in
-    ///      place while scrolling.
+    ///  The window draws one gutter entry per visual row of the frame at that vertical position;
+    ///  the list is updated in place while scrolling.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// lineTops: ArrayModel<number>;
+    /// rowTops: ArrayModel<number>;
     /// ```
-    line_tops: Rc<VecModel<f32>>,
+    row_tops: Rc<VecModel<f32>>,
     /// What:
-    ///  `Rc<VecModel<i32>>` is a shared toolkit list of 32-bit integers (sibling `f32` for the tops).
+    ///  `Rc<VecModel<i32>>` is a shared toolkit list of 32-bit integers.
     /// Why:
-    ///  Per materialized line,
-    ///  the gutter's severity letter:
+    ///  Per gutter entry,
+    ///  the one-based line number on the first visual row of a line and zero on a continuation row,
+    ///  where the wrap indicator stands instead.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// rowNumbers: ArrayModel<number>;
+    /// ```
+    row_numbers: Rc<VecModel<i32>>,
+    /// What:
+    ///  `Rc<VecModel<i32>>` is a shared toolkit list of 32-bit integers.
+    /// Why:
+    ///  Per gutter entry,
+    ///  the severity letter:
     ///  0 for none,
     ///  otherwise one more than the rank of
-    ///      the worst diagnostic starting on the line.
-    ///  Updated in place like the line tops.
+    ///      the worst diagnostic starting on the line;
+    ///  only the first visual row of a line carries one.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// lineMarks: ArrayModel<number>;
+    /// rowMarks: ArrayModel<number>;
     /// ```
-    line_marks: Rc<VecModel<i32>>,
+    row_marks: Rc<VecModel<i32>>,
     /// Accepted in-file matches;
     ///  painted only while they describe the displayed file and revision.
     find: Option<FindResults>,
@@ -406,6 +498,81 @@ struct State {
     ///  on change notifications,
     ///  or on a timer while unwatched.
     refresh: SourceRefresh,
+    /// Bounds of the tile on screen: the frame, its gutter, and its line numbers.
+    /// It stays on screen while a scroll re-center is built, so it can differ from the requested window.
+    shown: TileBounds,
+    /// Scroll re-center the reader's last viewport change asked for, until it is shown or superseded.
+    scroll_wanted: Option<TileBounds>,
+    /// A viewport report changed the wrap width and the next render is to take it on the window thread within an
+    /// allowance; the render clears it.
+    rewrap: bool,
+    /// Bounds of the tile last queued for the worker and not cancelled; its result is accepted only while set.
+    tile_job: Option<TileBounds>,
+    /// The tile worker thread, started on the first scroll re-center.
+    tile_worker: Option<TileWorker>,
+    /// Polls the tile worker's replies on the window thread while a re-center is queued.
+    tile_poll: Timer,
+    /// The minimap beside the source text: its size, worker, timers, and the drag in progress.
+    minimap: minimap::MinimapState,
+    /// What:
+    ///  Calls of `render`, counted in debug builds for the structural tests of the overscan tile.
+    /// Why:
+    ///  A scroll inside the tile must not even enter `render`, which would still update models.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// renders?: number;
+    /// ```
+    #[cfg(debug_assertions)]
+    renders: u64,
+    /// Source tiles rasterized, counted in debug builds: one per re-center.
+    #[cfg(debug_assertions)]
+    tiles_painted: u64,
+    /// Source rows shaped, counted in debug builds: a row taken from the cache is not counted.
+    #[cfg(debug_assertions)]
+    rows_shaped: u64,
+    /// Source images set on the window, counted in debug builds.
+    #[cfg(debug_assertions)]
+    images_set: u64,
+    /// Kept rows the window thread broke again at a new width, counted in debug builds.
+    #[cfg(debug_assertions)]
+    rows_rebroken: u64,
+    /// Changes of width the window thread took at once, counted in debug builds.
+    #[cfg(debug_assertions)]
+    rewrapped: u64,
+    /// Changes of width left to the tile worker because they did not fit the allowance, counted in debug builds.
+    #[cfg(debug_assertions)]
+    rewrap_deferred: u64,
+    /// Lines and work the last immediate change of width was charged, counted in debug builds.
+    #[cfg(debug_assertions)]
+    rewrap_spent: (usize, usize),
+    /// Scroll re-center tiles completed by the tile worker, counted in debug builds when their result arrives.
+    #[cfg(debug_assertions)]
+    worker_tiles: u64,
+    /// Source rows shaped by the tile worker, counted in debug builds from its results.
+    #[cfg(debug_assertions)]
+    worker_rows_shaped: u64,
+    /// Worker tiles swapped in, counted in debug builds.
+    #[cfg(debug_assertions)]
+    tiles_applied: u64,
+    /// Worker tiles discarded as stale, counted in debug builds.
+    #[cfg(debug_assertions)]
+    tiles_discarded: u64,
+    /// Outputs of the background pass applied on the window thread, counted in debug builds.
+    #[cfg(debug_assertions)]
+    pass_applied: u64,
+    /// Most lines of the pass's output applied in one window-thread callback, counted in debug builds.
+    #[cfg(debug_assertions)]
+    pass_most_lines: usize,
+    /// Lines of the pass's output applied on the window thread, counted in debug builds.
+    #[cfg(debug_assertions)]
+    pass_lines: u64,
+    /// Lines the worker shaped for the pass, counted in debug builds from its outputs.
+    #[cfg(debug_assertions)]
+    pass_shaped: u64,
+    /// Kept rows the worker broke again for the pass, counted in debug builds from its outputs.
+    #[cfg(debug_assertions)]
+    pass_rebroken: u64,
 }
 
 /// Construct the same reading state for the application and headless native event tests.
@@ -414,7 +581,8 @@ impl State {
     fn new(source: &str, file_path: Option<PathBuf>) -> Self {
         let document = Document::new(source);
         // A new text has no virtual rows yet: every line starts at its number times one code row.
-        let row_map = RowMap::plain(document.text().len_lines());
+        let lines = document.text().len_lines();
+        let row_map = RowMap::plain(lines);
         return Self {
             document,
             file_path,
@@ -426,9 +594,15 @@ impl State {
             styles: SourceStyles::from([]),
             first: 0,
             count: 32,
-            width: 1044.0,
-            horizontal: 0.0,
-            document_width: 0.0,
+            clip: None,
+            scale: 1.0,
+            width: 0.0,
+            wrap_rows: LineRows::plain(lines),
+            wrap_text: None,
+            wrap_version: 0,
+            pass_posted: None,
+            sign: None,
+            sign_scale: None,
             shaper: TextShaper::new(),
             raster: TextRaster::new(),
             shaped: None,
@@ -439,14 +613,61 @@ impl State {
             row_key: None,
             offset: 0.0,
             scrolled_at: None,
-            line_tops: rows::line_model(),
-            line_marks: rows::mark_model(),
+            row_tops: rows::top_model(),
+            row_numbers: rows::mark_model(),
+            row_marks: rows::mark_model(),
             find: None,
             language_reload: None,
             annotations: Annotations::default(),
             outside_project: false,
             pending_jump: None,
             refresh: SourceRefresh::default(),
+            shown: TileBounds {
+                first: 0,
+                count: 32,
+                width: 0.0,
+                clip: None,
+            },
+            scroll_wanted: None,
+            rewrap: false,
+            tile_job: None,
+            tile_worker: None,
+            tile_poll: Timer::default(),
+            minimap: minimap::MinimapState::new(),
+            #[cfg(debug_assertions)]
+            renders: 0,
+            #[cfg(debug_assertions)]
+            tiles_painted: 0,
+            #[cfg(debug_assertions)]
+            rows_shaped: 0,
+            #[cfg(debug_assertions)]
+            images_set: 0,
+            #[cfg(debug_assertions)]
+            rows_rebroken: 0,
+            #[cfg(debug_assertions)]
+            rewrapped: 0,
+            #[cfg(debug_assertions)]
+            rewrap_deferred: 0,
+            #[cfg(debug_assertions)]
+            rewrap_spent: (0, 0),
+            #[cfg(debug_assertions)]
+            worker_tiles: 0,
+            #[cfg(debug_assertions)]
+            worker_rows_shaped: 0,
+            #[cfg(debug_assertions)]
+            tiles_applied: 0,
+            #[cfg(debug_assertions)]
+            tiles_discarded: 0,
+            #[cfg(debug_assertions)]
+            pass_applied: 0,
+            #[cfg(debug_assertions)]
+            pass_most_lines: 0,
+            #[cfg(debug_assertions)]
+            pass_lines: 0,
+            #[cfg(debug_assertions)]
+            pass_shaped: 0,
+            #[cfg(debug_assertions)]
+            pass_rebroken: 0,
         };
     }
 }
@@ -571,6 +792,8 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     window.set_file_label(SharedString::from(label));
     bind_pointer(&window, &state);
     bind_viewport(&window, &state);
+    minimap::bind(&window, &state);
+    frame_trace::bind(&window);
     bind_keys(&window, &state);
     // Retain the timer until window shutdown; its Drop also closes and joins the worker.
     let _reload_timer = reload::bind(&window, &state)?;

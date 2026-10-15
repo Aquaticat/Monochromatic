@@ -86,6 +86,7 @@ fn native_tree_switches_files_and_preserves_current_file_reading_state() {
         anchor: 2,
         head: 6,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     render(&window, &state);
     window.set_scroll_y(-120.5);

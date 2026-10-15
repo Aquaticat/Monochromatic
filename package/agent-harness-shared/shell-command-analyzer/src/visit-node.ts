@@ -5,8 +5,8 @@
  */
 
 import type {
-  Node as UnbashNode,
-  Redirect as UnbashRedirect,
+  SyntaxNode as UnbashNode,
+  Redirection as UnbashRedirect,
 } from 'unbash';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { commandToInfo, } from './convert.ts';
@@ -63,16 +63,41 @@ function visitNode(
       workItems: [{
         kind: 'node',
         node: node.command,
-        redirects: [
-          ...node.redirects,
-          ...redirects,
-        ],
+        redirects,
         context,
       },],
       flags: {
         ...EMPTY_VISIT_RESULT.flags,
         hasBackground: node.background === true,
       },
+    };
+  }
+  if (node.type === 'Redirected') {
+    return {
+      ...EMPTY_VISIT_RESULT,
+      workItems: [{
+        kind: 'node',
+        node: node.command,
+        redirects: [
+          ...node.redirects,
+          ...redirects,
+        ],
+        context,
+      },],
+    };
+  }
+  if ((node.type === 'Time') || (node.type === 'Negation')) {
+    return {
+      ...EMPTY_VISIT_RESULT,
+      workItems: node.command === undefined ? redirectWorkItems({
+        redirects,
+        context,
+      },) : [{
+        kind: 'node',
+        node: node.command,
+        redirects,
+        context,
+      },],
     };
   }
   if (node.type === 'Command') {
@@ -171,7 +196,7 @@ function visitNode(
      Original shell spellings paired with loop values.
      */
     const loopSourceTexts: string[] = [];
-    for (const word of wordlist) {
+    for (const word of wordlist ?? []) {
       loopValues[loopValues.length] = word.value;
       loopSourceTexts[loopSourceTexts.length] = word.text;
     }
@@ -197,7 +222,7 @@ function visitNode(
           context,
         },),
         ...wordsWorkItems({
-          words: wordlist,
+          words: wordlist ?? [],
           context,
         },),
         ...statementWorkItems({
@@ -220,7 +245,7 @@ function visitNode(
           context,
         },),
         ...wordsWorkItems({
-          words: node.wordlist,
+          words: node.wordlist ?? [],
           context,
         },),
         ...statementWorkItems({

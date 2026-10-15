@@ -375,6 +375,16 @@ tuple data,
  So the shape to look for when this fires elsewhere is a `?? []` or `: []` fallback beside a non-tuple array type,
 not a declared tuple.
 
+This site no longer exists.
+ On 2026-10-12 the statusline package replaced both of its regex sites with linear scanners,
+ so `findGerundInText` moved to
+`package/claude-code-plugin/statusline/src/gerund.ts`
+ and takes its matches from a scanner that returns a plain array,
+ with no `?? []` fallback beside a `RegExpMatchArray`.
+`mise run //package/claude-code-plugin/statusline:lint` now reports no omitted callable summaries for that package,
+ which is the same warning quoted from the run that found this trigger.
+ The trigger shape is unchanged and is what to look for in other packages.
+
 A narrower catch would recover the 16.
  The panic surfaces when a type crosses the sync bridge,
 so catching it at the type query rather than at the callable would lose one fact instead of one summary,

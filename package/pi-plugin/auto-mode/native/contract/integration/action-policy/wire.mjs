@@ -1,0 +1,198 @@
+import {RuleAssessmentWireError,sha} from './wire-source.mjs';
+import {appendAdoptionQuestion} from './wire-adoption.mjs';
+import {appendRequestQuestion} from './wire-request.mjs';
+import {appendHeadingQuestion} from './wire-heading.mjs';
+import {appendClauseQuestion} from './wire-clause.mjs';
+import {sourceInputLocation} from '../../lifecycle/governing-rule-candidates/input-location.mjs';
+import programCatalog from '../../lifecycle/program-rule-wire/catalog.json' with {type:'json'};
+import {questions as meaningCatalog} from '../../research/instruction-prerequisite-relation/cases.mjs';
+import {parseBatchAnswer} from '../../research/instruction-prerequisite-relation/protocol.mjs';
+import {clauseOperationRelation} from './clause-relation.mjs';
+import {requestInstructionContent} from './request-relation.mjs';
+import {headingInstructionContent} from './heading-relation.mjs';
+import {unitAdoptionRelation} from './unit-adoption-relation.mjs';
+import {ruleAssessmentModel} from './assessment-model.ts';
+
+export {ruleAssessmentModel} from './assessment-model.ts';
+
+export {RuleAssessmentWireError} from './wire-source.mjs';
+const model=ruleAssessmentModel;
+const definitions=Object.freeze({
+ operation_violates_rule:programCatalog.operation_violates_rule,
+ states_approval_prerequisite:meaningCatalog.states_approval_prerequisite,
+ clause_operation_relation:clauseOperationRelation,
+ request_instruction_content:requestInstructionContent,
+ heading_instruction_content:headingInstructionContent,
+ unit_adoption:unitAdoptionRelation
+});
+/** Fixed bootstrap catalog, not model-authored definitions or source authority. */
+export const ruleAssessmentCatalogText=JSON.stringify(definitions);
+const question='Would carrying out the complete proposed operation violate the selected rule, given the supplied established facts?';
+const guidance=definitions.operation_violates_rule
+  .instructions
+  .slice(question.length+1);
+if(!definitions.operation_violates_rule
+  .instructions
+  .startsWith(`${question} `))throw new RuleAssessmentWireError('Operation guidance differs from its fixed definition');
+
+
+/**
+ Serialize one original mixed batch without issuing claims or deciding policy.
+ Fixed meaning and operation definitions share complete source/program context.
+ Wire ordinals correlate data; only the original judgment authenticates handles.
+ */
+export function bindRuleAssessmentWire(request){
+ const envelope=request?.envelope;
+ if((!envelope)||(Object.keys(envelope)
+   .toSorted()
+   .join(',')
+   !=='governingSources,instructionAuthority,mandatoryPolicy,parentJSON,preparedJSON,requestBody'))throw new RuleAssessmentWireError('Mixed assessment requires the original multi-source envelope');
+ for(const field of [
+   'parentJSON',
+   'preparedJSON',
+   'requestBody'
+ ])if((typeof envelope[field])!=='string')throw new RuleAssessmentWireError(`Original complete operation field is missing: ${field}`);
+ const sources=envelope.governingSources;
+ if((!Array.isArray(sources))||(sources.length === 0)
+   ||(sources.length>128)
+   ||(Reflect.ownKeys(sources)
+     .length
+     !==(sources.length
+     +1)))throw new RuleAssessmentWireError('Complete governing source list is unavailable');
+ for(let index=0;index<sources.length;index++){
+  const field=Object.getOwnPropertyDescriptor(
+    sources,
+    String(index)
+  );
+  if((!field)||(!Object.hasOwn(
+    field,
+    'value'
+  ))
+    ||((typeof field.value
+      ?.content)!=='string')
+    ||(field.value
+      .sha256
+      !==sha(field.value
+        .content)))throw new RuleAssessmentWireError('Governing source is missing or differs from its captured text');
+ }
+ if(sources[0]
+   .content
+   !==envelope.mandatoryPolicy
+   ?.content)throw new RuleAssessmentWireError('Primary source differs from mandatory policy');
+ const input=request.questions;
+ if((!Array.isArray(input))||(input.length === 0)
+   ||(input.length>512)
+   ||(Reflect.ownKeys(input)
+     .length
+     !==(input.length
+     +1)))throw new RuleAssessmentWireError('One mixed batch requires one through 512 original claims');
+ const questions={};
+   const pairs=[];
+   const seen=new Set();
+   const clauseRelations=new Set();
+ const membership={hasHeadingContent:false,hasOperation:false,hasRequestMaterial:false,unitAdoptionCount:0};
+ for(const [index,head] of input.entries()){
+  if((head?.id!==`q${
+    index}`)||(!Object.hasOwn(
+    definitions,
+    head.definitionId
+  )))throw new RuleAssessmentWireError('Question identity or definition is unsupported');
+  const definition=definitions[head.definitionId];
+    const operation=head.definitionId!=='states_approval_prerequisite';
+    const categorical=definition.type==='choice';
+  if(JSON.stringify(head.definition)!==JSON.stringify(definition))throw new RuleAssessmentWireError('Fixed question definition changed');
+  const {binding} = head;
+  if(head.definitionId==='unit_adoption'){
+   appendAdoptionQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs});
+   continue;
+  }
+  if(head.definitionId==='request_instruction_content'){
+   appendRequestQuestion({envelope,head,binding,definition,index,membership,questions,pairs});
+   continue;
+  }
+  if(head.definitionId==='heading_instruction_content'){
+   appendHeadingQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs});
+   continue;
+  }
+  appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question});
+ }
+ const state={
+   fullPolicy:sources[0]
+     .content,
+   policySourceSHA256:sources[0]
+     .sha256,
+   policyInputLocation:sourceInputLocation(sources[0])
+     .inputLocation,
+   additionalPolicies:sources.slice(1)
+     .map(function describeAdditionalPolicy(
+       source,
+       index
+     ) { return (({
+       sourceOrdinal:index+1,
+       content:source.content,
+       sourceSHA256:source.sha256,
+       ...sourceInputLocation(source)
+     })); }),
+   parentProgram:envelope.parentJSON,
+   preparedProgram:envelope.preparedJSON,
+   originalRequestBody:envelope.requestBody,
+   catalogSHA256:request.catalogSHA256,
+   ...(membership.hasOperation?{assessmentGuidance:guidance}:{}),
+   ...(clauseRelations.size > 0?{clauseRelationDefinition:clauseOperationRelation}:{}),
+   ...(membership.hasRequestMaterial?{requestInstructionDefinition:requestInstructionContent}:{}),
+   ...(membership.hasHeadingContent?{headingInstructionDefinition:headingInstructionContent}:{}),
+   ...(membership.unitAdoptionCount?{unitAdoptionDefinition:unitAdoptionRelation}:{}),
+   establishedEffectFacts:[],
+   effectFactCoverage:'not-established',
+   authority:'not-established',
+   semanticQualification:'not-established',
+   permission:false
+ };
+ const body=JSON.stringify({
+   model,
+   state,
+   questions
+ });
+ const bodyBytes=Buffer.byteLength(body);
+ if(bodyBytes>1_048_576){
+  const sourceTexts=sources.map(function readSelectedSourceContent(source) { return (source.content); });
+  const selectedTexts=Object.values(questions)
+    .map(function readSelectedRuleText(value) { return (value.instructions
+      .selectedRule
+      ?.text
+      ??''); });
+  const sizes={
+    bodyBytes,
+    sourceCount:sources.length,
+    questionCount:input.length,
+    sourceTextBytes:Buffer.byteLength(JSON.stringify(sourceTexts)),
+    uniqueSourceTextBytes:Buffer.byteLength(JSON.stringify([...new Set(sourceTexts)])),
+    selectedRuleTextBytes:Buffer.byteLength(JSON.stringify(selectedTexts)),
+    originalRequestBytes:Buffer.byteLength(state.originalRequestBody)
+  };
+  throw new RuleAssessmentWireError(`Complete mixed assessment exceeds the one MiB bound; retained-input byte counts: ${JSON.stringify(sizes)}`);
+ }
+ function answerText(raw){
+  const parsed=parseBatchAnswer({
+    raw,
+    plan:{
+      model,
+      questions
+    }
+  });
+  return JSON.stringify(pairs.map(function projectOriginalAnswer({
+    slot,
+    id,
+    type
+  }) { return (({
+    id,
+    status:'estimate',
+    value:type==='choice'?parsed.choices[slot]:parsed.scalars[slot]
+  })); }));
+ }
+ return Object.freeze({
+   body,
+   originalQuestionIDs:Object.freeze(pairs.map(function readOriginalQuestionId(pair) { return (pair.id); })),
+   answerText
+ });
+}

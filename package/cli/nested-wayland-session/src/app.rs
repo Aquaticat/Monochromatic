@@ -56,15 +56,28 @@ use anyhow::{Context, Result};
 /// import { initBackend } from "./backend"; import { spawnChild, ... } from "./child"; ...
 /// ```
 use crate::{
-    appearance_portal::AppearancePortal,
+    appearance_portal::{AppearancePortal, PortalStart},
     backend::init_backend,
+    backend_headless::init_headless_backend,
+    backend_select::{select_backend, BackendKind, ParentEnvironment},
     child::{register_exit_poll, spawn_child},
     cli::Config,
     control,
+    launcher_listen::LauncherLog,
+    plasma_services::PlasmaServices,
+    private_bus::PrivateBus,
     render::redraw,
     state::Compositor,
     systemd::Isolation,
 };
+
+/// Shares the one private bus between the portal,
+///  the listener,
+///  and the compositor state.
+use std::sync::Arc;
+
+/// Records which backend the session runs on.
+use tracing::info;
 
 /// Build everything,
 ///  spawn the hosted client,
@@ -108,11 +121,22 @@ pub fn run(config: Config) -> Result<i32> {
     // Why:      Backend init needs it to register the output and dmabuf globals.
     let display_handle = display.handle();
 
-    // What:     `let (pieces, winit) = init_backend(&display_handle, &config)?;`. Build the
-    //           winit backend, output, and dmabuf state; `?` propagates any failure.
-    //           `winit` is the event source registered below.
-    // Why:      Set up the GPU rendering path before constructing the state.
-    let (pieces, winit) = init_backend(&display_handle, &config)?;
+    // What:     `select_backend(config.headless, ..)` picks the backend: the nested winit window,
+    //           unless `--headless` was given. Nested builds the winit backend and returns its
+    //           event source; headless builds the surfaceless renderer and has no such source.
+    // Why:      Set up the GPU rendering path before constructing the state. A missing parent
+    //           display never selects headless; the nested start then fails naming the flag.
+    let choice = select_backend(config.headless, ParentEnvironment::from_process());
+    if choice.ignored_parent_display {
+        info!("headless: a parent display is set and stays unused; no window appears on it");
+    }
+    let (pieces, winit) = match choice.kind {
+        BackendKind::NestedWinit => {
+            let (pieces, winit) = init_backend(&display_handle, &config)?;
+            (pieces, Some(winit))
+        }
+        BackendKind::Headless => (init_headless_backend(&display_handle, &config)?, None),
+    };
 
     // What:     `let mut state = Compositor::new(&mut event_loop, display, pieces);`.
     //           Construct the full state, consuming the display and backend pieces.
@@ -141,11 +165,13 @@ pub fn run(config: Config) -> Result<i32> {
     //           metadata (`_`), and `&mut Compositor`. `.map_err(...)?` converts a
     //           registration error into `anyhow`.
     // Why:      Route resize / redraw / close events into the compositor.
-    loop_handle
-        .insert_source(winit, |event, _, event_state: &mut Compositor| {
-            handle_winit_event(event, event_state);
-        })
-        .map_err(|err| anyhow::anyhow!("registering the winit source failed: {err}"))?;
+    if let Some(winit_source) = winit {
+        loop_handle
+            .insert_source(winit_source, |event, _, event_state: &mut Compositor| {
+                handle_winit_event(event, event_state);
+            })
+            .map_err(|err| anyhow::anyhow!("registering the winit source failed: {err}"))?;
+    }
 
     // What:     `if let Some(socket_path) = &config.control_socket { control::start(
     //           &loop_handle, socket_path)?; }`. When a control socket was requested, bind
@@ -159,33 +185,97 @@ pub fn run(config: Config) -> Result<i32> {
     // Why:      Stop the loop when the hosted client exits.
     register_exit_poll(&loop_handle);
 
-    // Start private Settings portal only when deterministic nested appearance was requested.
-    let appearance_portal = config
-        .color_scheme
-        .map(AppearancePortal::start)
-        .transpose()
-        .context("starting isolated nested appearance")?;
+    // What:     `let private_bus = if ... { Some(Arc::new(PrivateBus::start()?)) } else { None };`.
+    //           Starts one private session bus when either option needs one.
+    // Why:      The appearance portal and the taskbar listener share this bus,
+    //           so the compositor starts only one `dbus-daemon`.
+    let private_bus = if config.color_scheme.is_some()
+        || config.accent_color.is_some()
+        || config.launcher_log
+        || config.accessibility
+        || config.notifications.serves_notifications()
+    {
+        Some(Arc::new(
+            PrivateBus::start().context("starting the private session bus")?,
+        ))
+    } else {
+        None
+    };
 
-    // What:     `.as_ref()` borrows the optional portal; `.map(...)` reads its address when
+    // Serve deterministic appearance on that bus only when `--color-scheme` or `--accent-color` was requested.
+    let appearance_portal = if config.color_scheme.is_some() || config.accent_color.is_some() {
+        let bus = private_bus
+            .as_ref()
+            .map(Arc::clone)
+            .context("the private session bus is missing for the appearance portal")?;
+        Some(
+            AppearancePortal::serve(PortalStart {
+                color_scheme: config.color_scheme,
+                accent_color: config.accent_color,
+                bus,
+            })
+            .context("starting isolated nested appearance")?,
+        )
+    } else {
+        None
+    };
+
+    // Serve the fake notification and job services only when `--notifications` asked for them.
+    let notifications = match private_bus.as_ref() {
+        Some(bus) => PlasmaServices::start(config.notifications, Arc::clone(bus), state.start_time)
+            .context("starting the private notification services")?,
+        None => None,
+    };
+
+    // The listener records taskbar progress for as long as the bus runs, so every bus has one.
+    let launcher = match private_bus.as_ref() {
+        Some(bus) => Some(
+            LauncherLog::start(bus, state.start_time)
+                .context("starting the taskbar progress listener")?,
+        ),
+        None => None,
+    };
+
+    // What:     `.as_ref()` borrows the optional bus; `.map(...)` reads its address when
     //           present; `.to_owned()` copies that borrowed text into an owned `String`.
-    // Why:      The portal moves into the state next, and the child spawn below borrows the
-    //           whole state mutably, so the address must not keep borrowing the portal.
+    // Why:      The bus moves into the state next, and the child spawn below borrows the
+    //           whole state mutably, so the address must not keep borrowing the bus.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const privateBusAddress = appearancePortal?.busAddress();
+    // const privateBusAddress = privateBus?.address();
     // ```
-    let private_bus_address = appearance_portal
+    let private_bus_address = private_bus
         .as_ref()
-        .map(|portal| return portal.bus_address().to_owned());
+        .map(|bus| return bus.address().to_owned());
 
-    // Keep the portal reachable from control commands and alive for the whole session.
+    // Keep the portal, bus, and listener reachable from control commands for the whole session.
+    state.a11y = match (config.accessibility, private_bus.as_ref()) {
+        (true, Some(bus)) => Some(
+            crate::a11y_service::A11yService::start(Arc::clone(bus))
+                .context("starting the private accessibility bus")?,
+        ),
+        _ => None,
+    };
+
     state.appearance_portal = appearance_portal;
+    state.notifications = notifications;
+    state.private_bus = private_bus;
+    state.launcher = launcher;
 
     // What:     `let isolation = Isolation { enabled: config.isolate, cpu_quota_percent:
     //           config.app_cpu_quota, cpu_weight: config.app_cpu_weight };`. Assemble the
     //           CPU-isolation settings from the parsed config.
     // Why:      Passed to `spawn_child`, which isolates the app under systemd or degrades.
+    // What:     Announce the configured key repeat pair to every client that will connect.
+    // Why:      Wayland clients generate key repeat themselves from `wl_keyboard.repeat_info`.
+    if (config.repeat_rate, config.repeat_delay) != state.repeat_info {
+        if let Some(keyboard) = state.seat.get_keyboard() {
+            keyboard.change_repeat_info(config.repeat_rate, config.repeat_delay);
+        }
+        state.repeat_info = (config.repeat_rate, config.repeat_delay);
+    }
+
     let isolation = Isolation {
         enabled: config.isolate,
         cpu_quota_percent: config.app_cpu_quota,

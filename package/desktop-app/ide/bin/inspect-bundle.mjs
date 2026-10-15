@@ -11,6 +11,7 @@ import { inflateSync } from 'node:zlib';
 import { homedir, tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import { setTimeout as wait } from 'node:timers/promises';
+import { compositor, demandCurrentCompositor } from './nested-compositor.mjs';
 
 const names = ['inventory', 'license-texts', 'lone-copy-highlights', 'later-start-reuses-cache', 'damaged-cache-rebuilt', 'shadowing-query-ignored', 'concurrent-first-starts', 'damaged-embedded-part-reported', 'old-cache-folders-removed', 'crate-licenses'];
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
@@ -145,7 +146,6 @@ const checks = {
 // Returns the combined compositor and application output once `settled` accepts it, a screenshot, the time from
 // start to the settled output, and what was wrong with the way the session ended, if anything: the caller judges
 // the output first, so a damaged file is reported by its damage and not by a slow exit.
-const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session');
 const plain = text => text.replace(/\u001b\[[0-9;]*m/g, '');
 // Distinct colors among every 61st pixel of the compositor's RGBA PNG: a window not yet drawn is one flat color.
 const sampledColors = png => {
@@ -192,7 +192,7 @@ const settledOnSyntax = text => prepared.test(text) || text.includes(unavailable
 // `cache` and `config` may be shared between sessions; each session gets its own project and data folders.
 const session = async ({ name, application, cache, config, settled = settledOnSyntax }) => {
   demand(process.env.WAYLAND_DISPLAY, 'a Wayland session is needed to host the nested compositor');
-  demand(existsSync(compositor), 'missing ' + compositor + '; build //package/cli/nested-wayland-session first');
+  demandCurrentCompositor();
   const directory = join(artifact, name);
   const project = join(directory, 'project');
   for (const part of ['data', 'project']) mkdirSync(join(directory, part), { recursive: true });

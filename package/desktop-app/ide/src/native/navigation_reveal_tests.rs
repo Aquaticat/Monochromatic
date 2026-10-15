@@ -114,6 +114,7 @@ fn contained_alias_open_preserves_current_selection_and_stops_reveal_updates() {
         anchor: 1,
         head: 4,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     render(&window, &source);
     let generation = source.borrow().file_generation;

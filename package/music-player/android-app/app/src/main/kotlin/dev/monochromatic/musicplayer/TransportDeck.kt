@@ -16,7 +16,12 @@ package dev.monochromatic.musicplayer
 // ```ts
 // import { PlaybackMode } from "core/PlaybackMode";
 // ```
+import dev.monochromatic.musicplayer.core.RoleSet
 import dev.monochromatic.musicplayer.core.PlaybackMode
+import dev.monochromatic.musicplayer.core.headingLineBudget
+import dev.monochromatic.musicplayer.core.shuffleFolderTextWidthPx
+import dev.monochromatic.musicplayer.core.shuffleLabelSlotWidthPx
+import dev.monochromatic.musicplayer.core.titleLineBudget
 
 // What:     Imports from `androidx.compose.foundation` bring in layout, selection, scrolling,
 //           system inset, and dark-theme helpers.
@@ -24,16 +29,15 @@ import dev.monochromatic.musicplayer.core.PlaybackMode
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { isSystemInDarkTheme, verticalScroll } from "compose/foundation";
+// import { verticalScroll } from "compose/foundation";
 // ```
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
@@ -44,12 +48,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemGestures
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 
@@ -69,7 +76,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -90,6 +99,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -99,8 +109,12 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -142,8 +156,60 @@ private val CONTROL_SPACING: Dp = 8.dp
 // ```ts
 // const MIN_TARGET = 48;
 // ```
-/** Minimum width and height of one mode segment touch target. */
+/** Minimum width and height of one tappable target, such as a mode segment or a heading part. */
 private val MIN_TARGET: Dp = 48.dp
+
+// What:     `private val ONE_LINE_CONTROL_GAP: Dp = 16.dp` is the gap between transport and mode when they share a row.
+// Why:      Sixteen dp separates the two groups clearly, and it is counted once in the one-line width check.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const ONE_LINE_CONTROL_GAP = 16;
+// ```
+/** Minimum horizontal gap between the transport buttons and the mode control when they share one row. */
+private val ONE_LINE_CONTROL_GAP: Dp = 16.dp
+
+// What:     `private const val FOLDER_MAX_WIDTH_FRACTION: Float = 0.4f` caps the folder part of the heading.
+// Why:      The folder name may take at most 40 percent of the heading width, so the track title keeps the rest.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const FOLDER_MAX_WIDTH_FRACTION = 0.4;
+// ```
+/** Largest share of the heading width the folder part may take before it is cut with an ellipsis. */
+private const val FOLDER_MAX_WIDTH_FRACTION: Float = 0.4f
+
+// What:     `private const val LARGE_TEXT_FOLDER_FRACTION: Float = 0.5f` is the folder part's share at large text.
+// Why:      At 150 percent text and more each part wraps, and the folder name gets half the width so it needs fewer
+//           lines before it is cut.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const LARGE_TEXT_FOLDER_FRACTION = 0.5;
+// ```
+/** Largest share of the heading width the folder part may take at large text sizes. */
+private const val LARGE_TEXT_FOLDER_FRACTION: Float = 0.5f
+
+// What:     `private val HEADING_PART_TEXT_PADDING: Dp = 4.dp` keeps a tappable part's text off its focus ring.
+// Why:      The focus ring is drawn on the edge of the 48dp cell, and text that touches the cell edge touches the ring.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const HEADING_PART_TEXT_PADDING = 4;
+// ```
+/** Horizontal padding between a tappable heading part's text and its cell edge. */
+private val HEADING_PART_TEXT_PADDING: Dp = 4.dp
+
+// What:     `private val HEADING_SEPARATOR_PADDING: Dp = 4.dp` is the space on each side of the heading's slash.
+// Why:      The spaces of the old ` / ` text are gone, so the slash gets its own small gap, which does not grow
+//           with the 48dp cells around the folder and title.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const HEADING_SEPARATOR_PADDING = 4;
+// ```
+/** Horizontal padding on each side of the slash between the folder and the title. */
+private val HEADING_SEPARATOR_PADDING: Dp = 4.dp
 
 // What:     `private val SEGMENT_OVERLAP: Dp = (-1).dp` shares one hairline between adjacent segments.
 // Why:      Connected segments overlap by one dp so the outlines read as one control.
@@ -225,16 +291,6 @@ private const val ICON_VIEWPORT: Float = 24f
 /** Number of seconds in one minute for the clock label. */
 private const val SECONDS_PER_MINUTE: Long = 60L
 
-// What:     `private val DECK_FIXED_DARK_CONTAINER: Color = Color(0xFF0A0A0D)` is the fixed dark deck.
-// Why:      The accepted dark deck stays one neutral regardless of wallpaper-generated colors.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const DECK_FIXED_DARK_CONTAINER = 0xff0a0a0d;
-// ```
-/** Fixed neutral ground of the deck in dark mode. */
-private val DECK_FIXED_DARK_CONTAINER: Color = Color(0xFF0A0A0D)
-
 // What:     `private const val SHUFFLE_PREFIX: String = "Shuffle "` is the fixed label prefix.
 // Why:      The folder name follows a stable prefix so the verb stays visible when the name truncates.
 //
@@ -311,7 +367,8 @@ private const val SKIP_NEXT_PATH: String = "M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"
 // In TS you'd write (pseudocode):
 // ```ts
 // type TransportDeckModel = { title: string; subtitle: string; positionSec: number;
-//   durationSec: number; playing: boolean; mode: PlaybackMode; shuffleFolderLabel: string };
+//   durationSec: number; playing: boolean; mode: PlaybackMode; shuffleFolderLabel: string;
+//   folderLabel: string };
 // ```
 /** Snapshot of playback state rendered by [transportDeck]. */
 data class TransportDeckModel(
@@ -378,6 +435,15 @@ data class TransportDeckModel(
     // ```
     /** Folder name shown after the shuffle prefix in the shuffle-folder segment. */
     val shuffleFolderLabel: String,
+    // What:     `val folderLabel: String` is the folder that holds the playing track.
+    // Why:      The heading shows it before the track title, and an empty text means nothing is playing.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // folderLabel: string;
+    // ```
+    /** Name of the directory that holds the playing track, or an empty text when no track is playing. */
+    val folderLabel: String = "",
 )
 
 // What:     `data class TransportDeckActions(...)` bundles the callbacks the deck reports through.
@@ -386,7 +452,8 @@ data class TransportDeckModel(
 // In TS you'd write (pseudocode):
 // ```ts
 // type TransportDeckActions = { onSeek(sec: number): void; onPrevious(): void;
-//   onTogglePlay(): void; onNext(): void; onSelectMode(mode: PlaybackMode): void };
+//   onTogglePlay(): void; onNext(): void; onSelectMode(mode: PlaybackMode): void;
+//   onRevealPlaying?(): void; onRevealFolder?(): void };
 // ```
 /** Callbacks the deck invokes when the user acts on it. */
 data class TransportDeckActions(
@@ -435,6 +502,27 @@ data class TransportDeckActions(
     // ```
     /** Requests selection of one playback mode. */
     val onSelectMode: (PlaybackMode) -> Unit,
+    // What:     `val onRevealPlaying: (() -> Unit)?` reports a tap on the playing title, or is null for no tap target.
+    // Why:      A tap on the playing track's name jumps the list to that track; the deck under Search has no list to
+    //           jump in, so it passes null and draws the heading as plain text.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // onRevealPlaying?: () => void;
+    // ```
+    /** Requests that the list shows the playing track, or null when the heading is not tappable. */
+    val onRevealPlaying: (() -> Unit)? = null,
+    // What:     `val onRevealFolder: (() -> Unit)?` reports a tap on the folder part of the heading, or is null
+    //           for no tap target.
+    // Why:      A tap on the folder name scrolls the list to the playing track's subfolder, and the deck under Search
+    //           passes null so the folder name is plain text.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // onRevealFolder?: () => void;
+    // ```
+    /** Requests that the list shows the folder of the playing track, or null when the folder part is not tappable. */
+    val onRevealFolder: (() -> Unit)? = null,
 )
 
 // What:     `internal enum class ModeControlLayout` names the three arrangements of the mode control.
@@ -505,6 +593,34 @@ internal fun modeControlLayoutFor(
         return ModeControlLayout.TWO_ROW
     }
     return ModeControlLayout.FOUR_ROW
+}
+
+// What:     `internal fun deckControlsFitOneLine(...)` decides whether transport and mode share one row.
+// Why:      The check is pure pixel arithmetic, so the exact boundary is testable without a Compose runtime.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function deckControlsFitOneLine(availableWidthPx: number, transportWidthPx: number,
+//   modeWidthPx: number, gapPx: number): boolean { ... }
+// ```
+/**
+ * Reports whether the transport buttons, one gap, and the one-row mode control fit in the available width.
+ *
+ * @param availableWidthPx usable width of the controls group in pixels
+ * @param transportWidthPx natural width of transport buttons in pixels
+ * @param modeWidthPx natural width of one-row mode control in pixels
+ * @param gapPx gap between the two groups in pixels, counted once
+ * @return true when transport, gap, and mode together fit within availableWidthPx
+ */
+internal fun deckControlsFitOneLine(
+    availableWidthPx: Int,
+    transportWidthPx: Int,
+    modeWidthPx: Int,
+    gapPx: Int,
+): Boolean {
+    /** Sum in Long so extreme widths cannot wrap around and report a false fit. */
+    val requiredWidthPx: Long = transportWidthPx.toLong() + gapPx.toLong() + modeWidthPx.toLong()
+    return availableWidthPx.toLong() >= requiredWidthPx
 }
 
 // What:     `private val MODE_SEGMENT_ORDER: List<PlaybackMode>` fixes the left-to-right segment order.
@@ -668,42 +784,135 @@ private val SKIP_PREVIOUS_ICON: ImageVector =
 /** Next-track glyph on the right transport button. */
 private val SKIP_NEXT_ICON: ImageVector = deckIcon(name = "Deck.SkipNext", pathData = SKIP_NEXT_PATH)
 
-// What:     `@Composable private fun deckContainerColor()` picks the deck ground for the appearance.
-// Why:      Dark mode keeps the fixed neutral deck, while light mode uses the Material surface role.
+// What:     `internal fun deckContainerColorOf(roles)` picks the deck ground from the derived roles.
+// Why:      The deck is a gray, and every gray carries the accent's hue unless the root is completely neutral
+//           (D118), so both appearances read the derived `deck` role instead of a fixed literal.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function deckContainerColor(): Color {
-//   return isSystemInDarkTheme() ? DECK_FIXED_DARK_CONTAINER : scheme.surfaceContainerLow;
-// }
+// const deckContainerColorOf = (roles: RoleSet): Color => toColor(roles.deck);
 // ```
-/** Resolves the deck background from the system appearance. */
-@Composable
-private fun deckContainerColor(): Color {
-    /** Records whether the system is in dark mode. */
-    val dark: Boolean = isSystemInDarkTheme()
-    if (dark) {
-        return DECK_FIXED_DARK_CONTAINER
-    }
-    return MaterialTheme.colorScheme.surfaceContainerLow
-}
+/** Returns the deck background of the derived [roles]: a gray with the accent's hue, in both appearances (D118). */
+internal fun deckContainerColorOf(roles: RoleSet): Color = roles.deck.toComposeColor()
 
-// What:     `@Composable private fun deckHeading(...)` draws the centered title and subtitle.
-// Why:      The heading names the playing track and the caller's preformatted status line.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function deckHeading(props: { title: string; subtitle: string }): UIElement;
-// ```
-/** Draws the centered playing title above the preformatted subtitle. */
+/** Resolves the deck background from the derived roles of the appearance in use. */
 @Composable
-private fun deckHeading(title: String, subtitle: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = title, style = MaterialTheme.typography.titleMedium)
+private fun deckContainerColor(): Color = deckContainerColorOf(LocalThemeRoles.current)
+
+/**
+ * Draws the centered folder and title line above the subtitle, with each tappable part as its own button.
+ *
+ * Each part reserves the same number of lines for every name (one at ordinary text sizes, two from 150 percent), so
+ * the deck keeps its height while tracks change. The folder part sits against the separator and the title part starts
+ * at it, so the 48 dp minimum cells put their spare width on the outer sides and the separator never floats in a gap.
+ */
+@Composable
+private fun deckHeading(
+    folder: String,
+    title: String,
+    subtitle: String,
+    onRevealFolder: (() -> Unit)?,
+    onRevealPlaying: (() -> Unit)?,
+) {
+    /** Lines each heading part reserves, from the text size. */
+    val lines: Int = headingLineBudget(LocalDensity.current.fontScale)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            /** Widest the folder part may be: the fixed share of the heading width, and half of it at large text. */
+            val folderMaxWidth: Dp = maxWidth * if (lines > 1) LARGE_TEXT_FOLDER_FRACTION else FOLDER_MAX_WIDTH_FRACTION
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                if (folder.isNotEmpty()) {
+                    deckHeadingPart(
+                        text = folder,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        onClick = onRevealFolder,
+                        clickLabel = "Show folder of playing track",
+                        modifier = Modifier.widthIn(max = folderMaxWidth),
+                        lines = lines,
+                        alignment = Alignment.CenterEnd,
+                        textAlign = TextAlign.End,
+                    )
+                    Text(
+                        text = "/",
+                        modifier = Modifier.padding(horizontal = HEADING_SEPARATOR_PADDING),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                    )
+                }
+                deckHeadingPart(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.Unspecified,
+                    // An idle deck has no title, so its part must not be an unlabeled button (M5).
+                    onClick = if (title.isEmpty()) null else onRevealPlaying,
+                    clickLabel = "Show playing track",
+                    modifier = Modifier.weight(1f, fill = false),
+                    lines = titleLineBudget(LocalDensity.current.fontScale),
+                    alignment = if (folder.isNotEmpty()) Alignment.CenterStart else Alignment.Center,
+                    textAlign = if (folder.isNotEmpty()) TextAlign.Start else TextAlign.Center,
+                )
+            }
+        }
         Text(
             text = subtitle,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodySmall,
+        )
+    }
+}
+
+// What:     `@Composable private fun deckHeadingPart(...)` draws one part of the heading in its own cell.
+// Why:      The folder and the title share the same button rules, so one helper draws both. A part with a tap action
+//           is a cell with a 48dp minimum width and height and the Button role; the text inside it is aligned toward
+//           the separator, so the cell's spare width is padding on the outer side (HZP). A part without one is plain
+//           text with no minimum size.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function deckHeadingPart(props: { text: string; style: TextStyle; color: Color; onClick?: () => void;
+//   clickLabel: string; lines: number; alignment: Alignment; textAlign: TextAlign }): UIElement;
+// ```
+/** Draws one heading part within a fixed number of lines, tappable with the given label when [onClick] is given. */
+@Composable
+private fun deckHeadingPart(
+    text: String,
+    style: TextStyle,
+    color: Color,
+    onClick: (() -> Unit)?,
+    clickLabel: String,
+    modifier: Modifier,
+    lines: Int,
+    alignment: Alignment,
+    textAlign: TextAlign,
+) {
+    /** Part modifier: a button with a 48dp minimum width and height when tappable, unchanged otherwise. */
+    val partModifier: Modifier = if (onClick == null) {
+        modifier
+    } else {
+        modifier
+            .defaultMinSize(minWidth = MIN_TARGET, minHeight = MIN_TARGET)
+            .focusRing(RectangleShape)
+            .clickable(onClickLabel = clickLabel, role = Role.Button, onClick = onClick)
+    }
+    Box(modifier = partModifier, contentAlignment = alignment) {
+        Text(
+            text = text,
+            modifier = if (onClick == null) Modifier else Modifier.padding(horizontal = HEADING_PART_TEXT_PADDING),
+            color = color,
+            style = style,
+            textAlign = textAlign,
+            maxLines = lines,
+            minLines = lines,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -731,14 +940,26 @@ private fun seekRow(positionSec: Double, durationSec: Double, onSeek: (Double) -
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = timeStyle,
         )
+        /** Slider state whose thumb is re-pinned to the playback fraction on every recomposition. */
+        val sliderState = rememberSliderState()
+        sliderState.value = progressFractionFor(positionSec, durationSec)
+        /** Source the slider and its thumb share, so the thumb can show the focus ring (D117). */
+        val sliderSource = remember { MutableInteractionSource() }
         Slider(
-            value = progressFractionFor(positionSec, durationSec),
+            state = sliderState,
             onValueChange = { fraction -> onSeek(fraction.toDouble() * durationSec) },
             modifier = Modifier
                 .weight(1f)
                 .semantics {
                     contentDescription = "Track position"
                 },
+            interactionSource = sliderSource,
+            thumb = {
+                SliderDefaults.Thumb(
+                    interactionSource = sliderSource,
+                    modifier = Modifier.focusRingOf(sliderSource, CircleShape),
+                )
+            },
         )
         Text(
             text = deckClockLabel(durationSec),
@@ -763,7 +984,7 @@ private fun secondaryTransportButton(
     contentDescription: String,
     onClick: () -> Unit,
 ) {
-    OutlinedIconButton(onClick = onClick) {
+    OutlinedIconButton(onClick = onClick, modifier = Modifier.size(MIN_TARGET).focusRing(CircleShape)) {
         Icon(imageVector = imageVector, contentDescription = contentDescription)
     }
 }
@@ -776,35 +997,46 @@ private fun secondaryTransportButton(
 // function transportControls(props: { playing: boolean; onPrevious(): void;
 //   onTogglePlay(): void; onNext(): void }): UIElement;
 // ```
-/** Draws the three transport buttons centered in one row. */
+/**
+ * Draws the three transport buttons centered in one row, always laid out left to right.
+ *
+ * @param playing true while playback runs, which selects the pause glyph
+ * @param onPrevious invoked by previous-track button
+ * @param onTogglePlay invoked by center play or pause button
+ * @param onNext invoked by next-track button
+ * @param modifier outer modifier of row, so callers choose its width
+ */
 @Composable
 private fun transportControls(
     playing: Boolean,
     onPrevious: () -> Unit,
     onTogglePlay: () -> Unit,
     onNext: () -> Unit,
+    modifier: Modifier,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(CONTROL_SPACING, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        secondaryTransportButton(
-            imageVector = SKIP_PREVIOUS_ICON,
-            contentDescription = "Previous track",
-            onClick = onPrevious,
-        )
-        FilledIconButton(onClick = onTogglePlay) {
-            Icon(
-                imageVector = if (playing) PAUSE_ICON else PLAY_ICON,
-                contentDescription = if (playing) "Pause" else "Play",
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Row(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.spacedBy(CONTROL_SPACING, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            secondaryTransportButton(
+                imageVector = SKIP_PREVIOUS_ICON,
+                contentDescription = "Previous track",
+                onClick = onPrevious,
+            )
+            FilledIconButton(onClick = onTogglePlay, modifier = Modifier.size(MIN_TARGET).focusRing(CircleShape)) {
+                Icon(
+                    imageVector = if (playing) PAUSE_ICON else PLAY_ICON,
+                    contentDescription = if (playing) "Pause" else "Play",
+                )
+            }
+            secondaryTransportButton(
+                imageVector = SKIP_NEXT_ICON,
+                contentDescription = "Next track",
+                onClick = onNext,
             )
         }
-        secondaryTransportButton(
-            imageVector = SKIP_NEXT_ICON,
-            contentDescription = "Next track",
-            onClick = onNext,
-        )
     }
 }
 
@@ -816,7 +1048,12 @@ private fun transportControls(
 // ```ts
 // function shuffleModeLabel(props: { folderName: string; onUnexpectedOverflow(): void }): UIElement;
 // ```
-/** Draws the shuffle-folder label, truncating the folder name in the middle when it is too wide. */
+/**
+ * Draws the shuffle-folder label, truncating the folder name in the middle when it is too wide.
+ *
+ * The label always takes the width of the prefix plus the reference name, whatever the folder is called, and centers
+ * its content in that slot, so the mode control and the deck keep one shape while the user browses folders.
+ */
 @Composable
 private fun shuffleModeLabel(folderName: String, onUnexpectedOverflow: () -> Unit) {
     /** Label text style shared by the prefix and the folder name. */
@@ -834,13 +1071,25 @@ private fun shuffleModeLabel(folderName: String, onUnexpectedOverflow: () -> Uni
         textMeasurer.measure(text = folderName, style = textStyle).size.width
     }
     /** Folder text width in pixels after applying the cap. */
-    val desiredFolderWidthPixels: Int = minOf(naturalFolderWidthPixels, maximumFolderWidthPixels)
+    val desiredFolderWidthPixels: Int = shuffleFolderTextWidthPx(
+        naturalPx = naturalFolderWidthPixels,
+        referencePx = maximumFolderWidthPixels,
+    )
     /** Folder text width converted to Dp for the layout modifier. */
     val desiredFolderWidth: Dp = with(density) {
         desiredFolderWidthPixels.toDp()
     }
+    /** Pixel width of the prefix, which the fixed slot adds to the reference name's width. */
+    val prefixWidthPixels: Int = remember(textMeasurer, textStyle) {
+        textMeasurer.measure(text = SHUFFLE_PREFIX, style = textStyle).size.width
+    }
+    /** Width of the whole label slot, the same for every folder name. */
+    val slotWidth: Dp = with(density) {
+        shuffleLabelSlotWidthPx(prefixPx = prefixWidthPixels, referencePx = maximumFolderWidthPixels).toDp()
+    }
     Row(
-        modifier = Modifier.clearAndSetSemantics {},
+        modifier = Modifier.width(slotWidth).clearAndSetSemantics {},
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -909,6 +1158,7 @@ private fun variableWidthModeSegment(
         shape = shape,
         modifier = modifier
             .defaultMinSize(minWidth = MIN_TARGET, minHeight = MIN_TARGET)
+            .focusRing(shape)
             .semantics {
                 contentDescription = modeAccessibleLabelFor(mode, shuffleFolderLabel)
                 role = Role.RadioButton
@@ -998,8 +1248,13 @@ private fun oneRowModeControl(
 // ```ts
 // function twoRowModeControl(props: ModeControlProps): UIElement;
 // ```
-/** Draws the four mode segments as a connected two-by-two block. */
-@OptIn(ExperimentalLayoutApi::class)
+/**
+ * Draws the four mode segments as a connected two-by-two block.
+ *
+ * Each row is a plain row of two equal-weight segments, so a label too wide for half the width is clipped and
+ * reported through [onOverflow], which moves the control to four rows. A wrapping flow would instead push the wide
+ * shuffle segment onto a row of its own and leave a ragged block that nothing reports.
+ */
 @Composable
 private fun twoRowModeControl(
     selectedMode: PlaybackMode,
@@ -1008,32 +1263,37 @@ private fun twoRowModeControl(
     onSelectMode: (PlaybackMode) -> Unit,
     onOverflow: () -> Unit,
 ) {
-    FlowRow(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .selectableGroup(),
-        maxItemsInEachRow = 2,
-        horizontalArrangement = Arrangement.spacedBy(SEGMENT_OVERLAP),
         verticalArrangement = Arrangement.spacedBy(SEGMENT_OVERLAP),
     ) {
-        MODE_SEGMENT_ORDER.forEachIndexed { index, mode ->
-            /** Outside corner shape for this grid position, with internal corners square. */
-            val shape: Shape = when (index) {
-                0 -> RoundedCornerShape(topStart = SEGMENT_OUTER_RADIUS)
-                1 -> RoundedCornerShape(topEnd = SEGMENT_OUTER_RADIUS)
-                2 -> RoundedCornerShape(bottomStart = SEGMENT_OUTER_RADIUS)
-                else -> RoundedCornerShape(bottomEnd = SEGMENT_OUTER_RADIUS)
+        for (rowStart in MODE_SEGMENT_ORDER.indices step 2) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(SEGMENT_OVERLAP),
+            ) {
+                for (index in rowStart..rowStart + 1) {
+                    /** Outside corner shape for this grid position, with internal corners square. */
+                    val shape: Shape = when (index) {
+                        0 -> RoundedCornerShape(topStart = SEGMENT_OUTER_RADIUS)
+                        1 -> RoundedCornerShape(topEnd = SEGMENT_OUTER_RADIUS)
+                        2 -> RoundedCornerShape(bottomStart = SEGMENT_OUTER_RADIUS)
+                        else -> RoundedCornerShape(bottomEnd = SEGMENT_OUTER_RADIUS)
+                    }
+                    variableWidthModeSegment(
+                        mode = MODE_SEGMENT_ORDER[index],
+                        selectedMode = selectedMode,
+                        shuffleFolderLabel = shuffleFolderLabel,
+                        shape = shape,
+                        modifier = Modifier.weight(1f),
+                        contentPadding = contentPadding,
+                        onSelectMode = onSelectMode,
+                        onOverflow = onOverflow,
+                    )
+                }
             }
-            variableWidthModeSegment(
-                mode = mode,
-                selectedMode = selectedMode,
-                shuffleFolderLabel = shuffleFolderLabel,
-                shape = shape,
-                modifier = Modifier.weight(1f),
-                contentPadding = contentPadding,
-                onSelectMode = onSelectMode,
-                onOverflow = onOverflow,
-            )
         }
     }
 }
@@ -1142,6 +1402,171 @@ private fun modeControl(
     }
 }
 
+// What:     `private enum class DeckControlsSlot` names the subcomposition slots of the transport and mode group.
+// Why:      Named slots let the group measure its probes and compose only the arrangement it chose.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type DeckControlsSlot = "transportProbe" | "modeProbe" | "oneLine" | "stacked";
+// ```
+/** Subcomposition slots used by the transport and mode group. */
+private enum class DeckControlsSlot {
+    // What:     `TRANSPORT_PROBE` is the hidden measurement of the transport buttons.
+    // Why:      Its natural width is needed before the arrangement is chosen, and it is never placed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const transportProbe = "transportProbe";
+    // ```
+    /** Hidden measurement of the transport buttons at their natural width. */
+    TRANSPORT_PROBE,
+
+    // What:     `MODE_PROBE` is the hidden measurement of the one-row mode control.
+    // Why:      Its natural width decides whether both groups fit side by side, and it is never placed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const modeProbe = "modeProbe";
+    // ```
+    /** Hidden measurement of the one-row mode control at its natural width. */
+    MODE_PROBE,
+
+    // What:     `ONE_LINE` is the single row that holds the transport buttons, the gap, and the mode control.
+    // Why:      It is drawn only when the measured groups fit side by side at the current width and font scale.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const oneLine = "oneLine";
+    // ```
+    /** Transport buttons and the mode control side by side in one centered row. */
+    ONE_LINE,
+
+    // What:     `STACKED` is the column that holds the transport buttons and then the mode control.
+    // Why:      It is the arrangement the deck has always drawn, and it is the fallback when the row does not fit.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const stacked = "stacked";
+    // ```
+    /** Transport buttons and the mode control in one column, each on its own line. */
+    STACKED,
+}
+
+// What:     `@Composable private fun deckControlsGroup(...)` draws transport and mode in one row or in a column.
+// Why:      Only a measurement made before composition knows whether both groups fit side by side at this width
+//           and font scale, so the group measures natural widths first and then composes the chosen arrangement.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function deckControlsGroup(props: DeckControlsProps): UIElement {
+//   const transportWidth = measureNatural(transportControls);
+//   const modeWidth = measureNatural(oneRowModeControl);
+//   return deckControlsFitOneLine(availableWidth(), transportWidth, modeWidth, GAP)
+//     ? oneLine(props) : stacked(props);
+// }
+// ```
+/** Draws transport and mode side by side when both fit the width, and in a column otherwise. */
+@Composable
+private fun deckControlsGroup(
+    playing: Boolean,
+    selectedMode: PlaybackMode,
+    shuffleFolderLabel: String,
+    actions: TransportDeckActions,
+) {
+    /** Density whose font scale resets the one-line overflow flag when the user changes text size. */
+    val density = LocalDensity.current
+    /** Standard padding that keeps each segment at its minimum horizontal content width. */
+    val contentPadding: PaddingValues = SegmentedButtonDefaults.ContentPadding
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        /** True when the one-line row clipped a label at this width and font scale, which forces the column. */
+        val oneLineOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
+        SubcomposeLayout(modifier = Modifier.fillMaxWidth()) { constraints ->
+            /** Natural width of the transport buttons in pixels, measured without a width cap. */
+            val transportWidthPx: Int = subcompose(DeckControlsSlot.TRANSPORT_PROBE) {
+                transportControls(
+                    playing = playing,
+                    onPrevious = actions.onPrevious,
+                    onTogglePlay = actions.onTogglePlay,
+                    onNext = actions.onNext,
+                    modifier = Modifier,
+                )
+            }.first().measure(Constraints()).width
+            /** Natural width of the one-row mode control in pixels, measured without a width cap. */
+            val modeWidthPx: Int = subcompose(DeckControlsSlot.MODE_PROBE) {
+                oneRowModeControl(
+                    selectedMode = selectedMode,
+                    shuffleFolderLabel = shuffleFolderLabel,
+                    contentPadding = contentPadding,
+                    onSelectMode = actions.onSelectMode,
+                    onOverflow = {},
+                )
+            }.first().measure(Constraints()).width
+            /** Gap between the two groups converted to pixels for the width check. */
+            val gapPx: Int = ONE_LINE_CONTROL_GAP.roundToPx()
+            /** True when both groups fit side by side and the one-line row has not clipped at this width. */
+            val oneLine: Boolean = !oneLineOverflow.value && deckControlsFitOneLine(
+                availableWidthPx = constraints.maxWidth,
+                transportWidthPx = transportWidthPx,
+                modeWidthPx = modeWidthPx,
+                gapPx = gapPx,
+            )
+            /** Arrangement drawn for this pass, measured to the available width. */
+            val placed = subcompose(
+                if (oneLine) DeckControlsSlot.ONE_LINE else DeckControlsSlot.STACKED,
+            ) {
+                if (oneLine) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            ONE_LINE_CONTROL_GAP,
+                            Alignment.CenterHorizontally,
+                        ),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        transportControls(
+                            playing = playing,
+                            onPrevious = actions.onPrevious,
+                            onTogglePlay = actions.onTogglePlay,
+                            onNext = actions.onNext,
+                            modifier = Modifier,
+                        )
+                        oneRowModeControl(
+                            selectedMode = selectedMode,
+                            shuffleFolderLabel = shuffleFolderLabel,
+                            contentPadding = contentPadding,
+                            onSelectMode = actions.onSelectMode,
+                            onOverflow = { oneLineOverflow.value = true },
+                        )
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(DECK_GROUP_SPACING),
+                    ) {
+                        transportControls(
+                            playing = playing,
+                            onPrevious = actions.onPrevious,
+                            onTogglePlay = actions.onTogglePlay,
+                            onNext = actions.onNext,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        modeControl(
+                            selectedMode = selectedMode,
+                            shuffleFolderLabel = shuffleFolderLabel,
+                            onSelectMode = actions.onSelectMode,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+            }.first().measure(Constraints(maxWidth = constraints.maxWidth))
+            layout(width = placed.width, height = placed.height) {
+                placed.place(0, 0)
+            }
+        }
+    }
+}
+
 // What:     `fun transportDeck(...)` draws the playback deck from a state snapshot and callbacks.
 // Why:      The caller owns playback, so the deck stays stateless and previewable.
 //
@@ -1166,7 +1591,7 @@ fun transportDeck(
     actions: TransportDeckActions,
     modifier: Modifier = Modifier,
 ) {
-    /** Deck background resolved for the current system appearance. */
+    /** Deck background resolved from the derived roles of the current appearance. */
     val containerColor: Color = deckContainerColor()
     Column(
         modifier = modifier
@@ -1174,29 +1599,32 @@ fun transportDeck(
             .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Horizontal))
             .windowInsetsPadding(WindowInsets.navigationBars)
             .verticalScroll(rememberScrollState())
-            .padding(vertical = DECK_VERTICAL_PADDING),
+            .padding(vertical = DECK_VERTICAL_PADDING)
+            // Content keeps clear of the crease on both sides, so it stays centered on the pane's axis (D18) while
+            // the background above still spans the whole pane.
+            .padding(horizontal = maxOf(paneStartInset(0.dp), paneEndInset(0.dp))),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(DECK_GROUP_SPACING),
     ) {
-        deckHeading(title = model.title, subtitle = model.subtitle)
+        deckHeading(
+            folder = model.folderLabel,
+            title = model.title,
+            subtitle = model.subtitle,
+            onRevealFolder = actions.onRevealFolder,
+            onRevealPlaying = actions.onRevealPlaying,
+        )
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             seekRow(
                 positionSec = model.positionSec,
                 durationSec = model.durationSec,
                 onSeek = actions.onSeek,
             )
-            transportControls(
-                playing = model.playing,
-                onPrevious = actions.onPrevious,
-                onTogglePlay = actions.onTogglePlay,
-                onNext = actions.onNext,
-            )
         }
-        modeControl(
+        deckControlsGroup(
+            playing = model.playing,
             selectedMode = model.mode,
             shuffleFolderLabel = model.shuffleFolderLabel,
-            onSelectMode = actions.onSelectMode,
-            modifier = Modifier.fillMaxWidth(),
+            actions = actions,
         )
     }
 }

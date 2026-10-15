@@ -22,6 +22,7 @@ use super::{
 use crate::candidate_object::CandidateMode;
 use crate::candidate_prediction::CandidateRequest;
 use crate::diagnostics::EngineFailureCode;
+use crate::event_path::EventPath;
 use crate::policy_content::Correction;
 use crate::policy_content::{ContentState, LifecycleContent};
 use crate::policy_engine::{PolicyFinding, PolicyOutcome};
@@ -113,7 +114,7 @@ fn finding_with(path: &str, fix_available: bool) -> PolicyFinding {
     return PolicyFinding {
         code: FINAL_NEWLINE_CODE,
         message: String::from(FINAL_NEWLINE_MESSAGE),
-        path: Some(String::from(path)),
+        path: Some(EventPath::from_git_bytes(path.as_bytes())),
         location: None,
         fix_available,
     };
@@ -161,7 +162,7 @@ fn the_check_reports_each_noncanonical_text_file() {
         LifecycleContent::Requested(CandidateRequest::Add(vec![OsString::from("--all")]));
     let mut content: ContentState = ContentState::new();
     assert_eq!(
-        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::PreForward),
+        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::PreForward, false),
         PolicyOutcome::Findings(vec![
             finding("a-extra.txt"),
             finding("b-missing.txt"),
@@ -170,7 +171,7 @@ fn the_check_reports_each_noncanonical_text_file() {
     );
     // A check proposes nothing; only a direct fix offers and proposes each correction.
     assert_eq!(
-        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::DirectCheck),
+        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::DirectCheck, false),
         PolicyOutcome::Findings(vec![
             finding("a-extra.txt"),
             finding("b-missing.txt"),
@@ -179,7 +180,7 @@ fn the_check_reports_each_noncanonical_text_file() {
     );
     assert_eq!(content.take_proposals(), Vec::<Correction>::new());
     assert_eq!(
-        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::DirectFix),
+        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::DirectFix, false),
         PolicyOutcome::Findings(vec![
             finding_with("a-extra.txt", true),
             finding_with("b-missing.txt", true),
@@ -216,7 +217,8 @@ fn the_check_reports_each_noncanonical_text_file() {
             &mut ContentState::new(),
             &LifecycleContent::None,
             &mut idle,
-            Trigger::DirectFix
+            Trigger::DirectFix,
+            false
         ),
         PolicyOutcome::Findings(Vec::new())
     );
@@ -227,11 +229,13 @@ fn the_check_reports_each_noncanonical_text_file() {
             &mut ContentState::new(),
             &lifecycle,
             &mut scripted_facts(),
-            Trigger::DirectCheck
+            Trigger::DirectCheck,
+            false
         ),
         PolicyOutcome::Failed {
             code: EngineFailureCode::ContentUnavailable,
             message: String::from("the scripted facts prepare no candidates"),
+            path: None,
         }
     );
     // A candidate whose bytes vanished fails the policy instead of being skipped.
@@ -261,6 +265,7 @@ fn the_check_reports_each_noncanonical_text_file() {
         &only,
         &mut unreadable_facts,
         Trigger::PreForward,
+        false,
     ) {
         PolicyOutcome::Failed { code, .. } => {
             assert_eq!(code, EngineFailureCode::ContentUnavailable);

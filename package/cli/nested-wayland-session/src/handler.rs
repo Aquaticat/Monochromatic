@@ -172,8 +172,13 @@ impl SeatHandler for Compositor {
     fn cursor_image(
         &mut self,
         _seat: &Seat<Self>,
-        _image: smithay::input::pointer::CursorImageStatus,
+        image: smithay::input::pointer::CursorImageStatus,
     ) {
+        // What:     Remember the cursor the hovered client asked for.
+        // Why:      The `cursor` control command reports it, so a test can check that a button
+        //           shows a pointer cursor and a text field an I-beam.
+        tracing::debug!(?image, "the hosted client set the pointer cursor");
+        self.cursor_image = image;
     }
 
     /// What:
@@ -219,6 +224,23 @@ impl SeatHandler for Compositor {
 // // registerSeatDispatch(Compositor);
 // ```
 delegate_seat!(Compositor);
+
+/// Accept tablet tools on the seat,
+///  which `wp_cursor_shape_manager_v1` requires of its handler.
+///
+/// What:
+///      `impl TabletSeatHandler for Compositor {}`.
+/// Why:
+///       smithay's cursor-shape support is generic over seats with a tablet handler;
+///  no tablet exists here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // no tablet support needed; the interface is satisfied by its defaults.
+/// ```
+impl smithay::wayland::tablet_manager::TabletSeatHandler for Compositor {}
+
+smithay::delegate_cursor_shape!(Compositor);
 
 /// Implement the selection (clipboard) handler.
 ///

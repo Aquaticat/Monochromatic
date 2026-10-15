@@ -34,22 +34,16 @@ use smithay::{
 };
 
 /// What:
-///      `use crate::{keymap, protocol::{KeyAction, PointerButton}, state::Compositor};`.
+///      `use crate::{protocol::PointerButton, state::Compositor};`.
 /// Why:
-///       Injection reads the keymap tables and the protocol's button/action enums,
-///           and operates on the compositor state.
+///       Injection reads the protocol's button enum and operates on the compositor state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import * as keymap from "./keymap";
-/// import { KeyAction, PointerButton } from "./protocol";
+/// import { PointerButton } from "./protocol";
 /// import { Compositor } from "./state";
 /// ```
-use crate::{
-    keymap,
-    protocol::{KeyAction, PointerButton},
-    state::Compositor,
-};
+use crate::{protocol::PointerButton, state::Compositor};
 
 /// Milliseconds since program start,
 ///  used as the event timestamp.
@@ -172,100 +166,22 @@ pub fn click(state: &mut Compositor, x: f64, y: f64, button: PointerButton) {
     // What:     `pointer.frame(state);`. End the release group.
     // Why:      Flush the release.
     pointer.frame(state);
-}
 
-/// Perform a press,
-///  release,
-///  or tap of a named key given its evdev code.
-///
-/// What:
-///      `pub fn key(state: &mut Compositor, evdev: u32, action: KeyAction)`.
-/// Why:
-///       The `key` control command maps a key name to an evdev code,
-///  then calls this.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function key(state, evdev, action) { ... }
-/// ```
-pub fn key(state: &mut Compositor, evdev: u32, action: KeyAction) {
-    // What:     `match action { ... }`. Press and release map to one key event each; tap
-    //           is a press followed by a release.
-    // Why:      Cover holding, releasing, and tapping.
-    match action {
-        KeyAction::Press => send_key(state, evdev, KeyState::Pressed),
-        KeyAction::Release => send_key(state, evdev, KeyState::Released),
-        KeyAction::Tap => {
-            // What:     Two sequential calls: press then release.
-            // Why:      A tap is a momentary key press.
-            send_key(state, evdev, KeyState::Pressed);
-            send_key(state, evdev, KeyState::Released);
-        }
-    }
-}
-
-/// Type a run of text as a sequence of key taps,
-///  holding Shift where needed.
-///
-/// What:
-///      `pub fn type_text(state: &mut Compositor, text: &str)`.
-///  Iterates the
-///           characters and taps each;
-///  characters not on a US keyboard are skipped.
-/// Why:
-///       The `type` control command feeds a string into the focused input.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function typeText(state, text) { ... }
-/// ```
-///
-/// @example
-/// ```ts
-/// typeText(state, "Hello!");
-/// ```
-pub fn type_text(state: &mut Compositor, text: &str) {
-    // What:     `for character in text.chars() { ... }`. Iterate Unicode scalar values.
-    // Why:      Type one character at a time.
-    for character in text.chars() {
-        // What:     `let Some((evdev, shift)) = keymap::char_to_key(character) else {
-        //           continue; };`. Look up the key; skip characters not on the layout.
-        // Why:      Tolerate unsupported characters instead of failing the whole string.
-        let Some((evdev, shift)) = keymap::char_to_key(character) else {
-            continue;
-        };
-
-        // What:     `if shift { send_key(state, keymap::LEFT_SHIFT, KeyState::Pressed); }`.
-        //           Hold Shift for shifted characters.
-        // Why:      Uppercase and symbol characters need Shift down.
-        if shift {
-            send_key(state, keymap::LEFT_SHIFT, KeyState::Pressed);
-        }
-
-        // What:     `send_key(state, evdev, KeyState::Pressed);` then `...Released`. Tap the
-        //           character key.
-        // Why:      Produce the character.
-        send_key(state, evdev, KeyState::Pressed);
-        send_key(state, evdev, KeyState::Released);
-
-        // What:     `if shift { send_key(state, keymap::LEFT_SHIFT, KeyState::Released); }`.
-        //           Release Shift after the shifted character.
-        // Why:      Do not leave Shift stuck down.
-        if shift {
-            send_key(state, keymap::LEFT_SHIFT, KeyState::Released);
-        }
-    }
+    // What:     `state.held_pointer_buttons.release(code);`. Forget the button in the record
+    //           `button down` keeps, because the release above also ends a held press.
+    // Why:      The record must match what the seat delivered, or a later `button up` would
+    //           answer `ok` for a button the seat no longer holds.
+    state.held_pointer_buttons.release(code);
 }
 
 /// Send one keyboard key event (press or release) through the seat's keyboard.
 ///
 /// What:
-///      `fn send_key(state: &mut Compositor, evdev: u32, key_state: KeyState)`.
-///           Private helper.
+///      `pub fn send_key(state: &mut Compositor, evdev: u32, key_state: KeyState)`.
 /// Why:
 ///       Both `key` and `type_text` funnel through one place that does the 8-offset
 ///           and the seat call.
-fn send_key(state: &mut Compositor, evdev: u32, key_state: KeyState) {
+pub fn send_key(state: &mut Compositor, evdev: u32, key_state: KeyState) {
     // What:     `let keyboard = state.seat.get_keyboard().unwrap();`. The keyboard handle
     //           (a reference-counted clone, not a borrow of the seat).
     // Why:      Need it to inject the key.

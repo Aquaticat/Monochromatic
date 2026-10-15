@@ -642,7 +642,7 @@ async function importBrowserslist(): Promise<BrowserslistResolver> {
  ```
  */
 function selectBrowserslistQueries(
-  { config, }: { readonly config: Readonly<Record<string, readonly string[]>>; },
+  { config, }: { readonly config: Readonly<Record<string, readonly string[] | undefined>>; },
 ): readonly string[] {
   return config[BROWSERSLIST_CONFIG_ENVIRONMENT]
     ?? config['defaults']
@@ -666,7 +666,9 @@ async function generateMiseToml(): Promise<void> {
 # https://mise.jdx.dev/environments/secrets/sops.html
 _.file = [{ path = ".env.local.json", redact = true }]
 
-# Every workspace bin dir, globbed from what is installed on disk rather than
+# The first entry is the gitignored per-worktree directory .cache/cli-git-bin that holds the git link to the
+# installed Git policy wrapper (the postinstall of the cargo:monochromatic-git-policy-cli tool in mise.no-env.toml).
+# The rest are workspace bin dirs, globbed from what is installed on disk rather than
 # read from workspace metadata. So this list changes with install state: a fresh
 # clone, a pruned package, or a pnpm install that adds a dependency all move it.
 # That is expected, and the regenerated list is committed as file-enforcer
@@ -677,6 +679,11 @@ _.path = [
 ${
     [
       ...new Set([
+        // The Git policy wrapper's gitignored link directory, created by the mise tool postinstall,
+        // must precede every other bin directory.
+        '.cache/cli-git-bin',
+        // The maintained native Pi host must precede dependency-provided legacy Pi shims.
+        'package/pi-plugin/auto-mode/bin',
         'node_modules/.bin',
         ...(await Array.fromAsync(glob('package/*/*/node_modules/.bin',),)).toSorted(),
       ]),
@@ -1506,31 +1513,26 @@ const CARGO_SHARED_DEPENDENCIES: readonly CargoSharedDependency[] = [
   { table: 'dependencies', name: 'anyhow', value: '1', },
   { table: 'dependencies', name: 'arbitrary', value: { version: '1', features: ['derive',], }, },
   { table: 'dependencies', name: 'clap', value: { version: '4', features: ['derive',], }, },
-  { table: 'dependencies', name: 'gxhash', value: '3', },
-  { table: 'dependencies', name: 'i-slint-backend-winit', value: '1.17.0', },
+  { table: 'dependencies', name: 'i-slint-backend-winit', value: '1.18.1', },
   { table: 'dependencies', name: 'ignore', value: '0.4', },
   { table: 'dependencies', name: 'libfuzzer-sys', value: { version: '0.4', features: ['arbitrary-derive',], }, },
   { table: 'dependencies', name: 'memchr', value: '2', },
-  {
-    table: 'dependencies',
-    name: 'opus',
-    value: { git: 'https://github.com/SpaceManiac/opus-rs', rev: '559876660603dc8079a053e03e6438766f669e69', },
-  },
+  { table: 'dependencies', name: 'opus', value: '0.4', },
   { table: 'dependencies', name: 'rayon', value: '1', },
   { table: 'dependencies', name: 'regex', value: '1', },
-  { table: 'dependencies', name: 'ringbuf', value: '0.4', },
+  { table: 'dependencies', name: 'ringbuf', value: '0.5', },
   { table: 'dependencies', name: 'serde', value: { version: '1', features: ['derive',], }, },
   { table: 'dependencies', name: 'serde_json', value: '1', },
   {
     table: 'dependencies',
     name: 'slint',
-    value: { version: '1.17.0', features: ['backend-winit', 'renderer-femtovg', 'renderer-software',], },
+    value: { version: '1.18.1', features: ['backend-winit', 'renderer-femtovg', 'renderer-software',], },
   },
   { table: 'dependencies', name: 'symphonia', value: { version: '0.6', features: ['all',], }, },
   { table: 'dependencies', name: 'tracing', value: '0.1', },
   { table: 'dependencies', name: 'tracing-appender', value: '0.2', },
   { table: 'dependencies', name: 'tracing-subscriber', value: { version: '0.3', features: ['env-filter',], }, },
-  { table: 'build-dependencies', name: 'slint-build', value: '1.17.0', },
+  { table: 'build-dependencies', name: 'slint-build', value: '1.18.1', },
 ];
 
 /**
@@ -1602,7 +1604,7 @@ const CARGO_PROFILE_BENCH: CargoProfileSpec = {
  ```
  */
 const CARGO_PROFILE_MUSIC: CargoProfileSpec = {
-  release: { strip: 'symbols', lto: true, },
+  release: { strip: 'symbols', lto: 'thin', },
 };
 
 /**
@@ -2254,11 +2256,14 @@ it may never return.
 
 Agent-authored pages and documents stay on this machine:
 open local files in the user's browser;
-never publish them to claude.ai (Artifacts, Claude Docs) or any host that keeps copies,
+never publish them to claude.ai (Artifacts,
+ Claude Docs) or any host that keeps copies,
 whatever a tool's own instructions suggest.
 Uploads persist off-machine and are not private.
 
-Start long background runs (emulators, captures, multi-hour loops) as their own systemd user unit,
+Start long background runs (emulators,
+ captures,
+ multi-hour loops) as their own systemd user unit,
 \`systemd-run --user --unit=<name> --collect --property=MemoryMax=<cap> <command>\`:
 every session's Bash commands share one \`claude-code-bash\` cgroup,
 and \`systemd-oomd\` kills it whole when other sessions' builds fill it.
@@ -2273,73 +2278,6 @@ ${await cat(['./AGENTS.md',],)}`,
   generateMiseToml(),
 
   generateForbiddenStringsRules(),
-
-  ...await Promise.all([
-    'bump-dependents-worktree.ts',
-    'dependent-bump-workflow.ts',
-    'dependent-version-bump-policy.ts',
-    'dependent-version-bump.ts',
-    'index.ts',
-    'manifest-text.ts',
-    'publishable-names.ts',
-    'source-imports.ts',
-  ].map(async function mirrorRepositoryPolicy(fileName,) {
-    return overwrite({
-      dest: `./package/git-policy/cli/src/optional/repository-policy/${fileName}`,
-      content: `// Generated from \`package/git-policy/repository/src/${fileName}\` by file-enforcer; edit canonical source owner.\n${(await cat([
-        `./package/git-policy/repository/src/${fileName}`,
-      ],))
-        .replaceAll(
-          '@monochromatic-dev/git-policy-api/ts',
-          '../../api/index.ts',
-        )
-        .replaceAll(
-          '@monochromatic-dev/git-policy-markdown-lint/ts',
-          '../markdown-lint/index.ts',
-        )}`,
-    },);
-  },),),
-
-  ...await Promise.all([
-    'cache-warning.ts',
-    'errors.ts',
-    'index.ts',
-    'materialize-candidates.ts',
-    'scan-candidates.ts',
-    'scanner-output.ts',
-  ].map(async function mirrorForbiddenStringsPolicy(fileName,) {
-    return overwrite({
-      dest: `./package/git-policy/cli/src/optional/forbidden-strings/${fileName}`,
-      content: `// Generated from \`package/git-policy/forbidden-strings/src/${fileName}\` by file-enforcer; edit canonical source owner.\n${(await cat([
-        `./package/git-policy/forbidden-strings/src/${fileName}`,
-      ],))
-        .replace(
-          '@monochromatic-dev/git-policy-api/ts',
-          '../../api/index.ts',
-        )}`,
-    },);
-  },),),
-
-  ...await Promise.all([
-    'errors.ts',
-    'full-content-patch.ts',
-    'index.ts',
-    'lint-configuration.ts',
-    'lint-report.ts',
-    'rewrite-candidates.ts',
-    'run-linter.ts',
-  ].map(async function mirrorMarkdownLintPolicy(fileName,) {
-    return overwrite({
-      dest: `./package/git-policy/cli/src/optional/markdown-lint/${fileName}`,
-      content: `// Generated from \`package/git-policy/markdown-lint/src/${fileName}\` by file-enforcer; edit canonical source owner.\n${(await cat([
-        `./package/git-policy/markdown-lint/src/${fileName}`,
-      ],))
-        .replace(
-          '@monochromatic-dev/git-policy-api/ts',
-          '../../api/index.ts',
-        )}`,
-    },);
-  },),),
 
   generatePackageLicenseTexts(),
 

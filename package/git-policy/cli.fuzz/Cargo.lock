@@ -338,7 +338,7 @@ dependencies = [
 
 [[package]]
 name = "forbidden-strings"
-version = "0.4.1"
+version = "0.5.0"
 dependencies = [
  "aho-corasick",
  "anyhow",
@@ -377,22 +377,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "git-policy-cli"
-version = "0.0.1"
-dependencies = [
- "forbidden-strings",
- "getrandom",
- "libc",
- "monochromatic-jsonc-edit",
- "serde_json",
-]
-
-[[package]]
 name = "git-policy-cli-fuzz"
 version = "0.0.0"
 dependencies = [
- "git-policy-cli",
  "libfuzzer-sys",
+ "monochromatic-git-policy-cli",
  "monochromatic-jsonc-edit",
 ]
 
@@ -883,6 +872,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "714098028fe011992e1c3962653c96b2d578c4b4bce9036e15ff220319b1e0e3"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "monochromatic-git-policy-cli"
+version = "0.1.0"
+dependencies = [
+ "forbidden-strings",
+ "getrandom",
+ "ignore",
+ "libc",
+ "monochromatic-jsonc-edit",
+ "serde_json",
+ "tempfile",
 ]
 
 [[package]]

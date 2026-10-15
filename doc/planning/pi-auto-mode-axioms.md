@@ -82,6 +82,18 @@ The remaining correctness and final shared-design gates are unchanged.
 
 ### Drex private-input authorization
 
+On 2026-10-14,
+after explicitly approving the prepared complete-input Drex check,
+the user stated:
+"You may send anything to Drex and Jev and use my credits freely."
+This renews standing authorization for task-relevant assessment inputs and credit use on both named routes.
+Do not ask again for these provider inputs or ordinary assessment credit use.
+This does not change the five-second production assessment deadline,
+authorize the represented tool actions,
+or adopt a different production provider.
+The user also reported enabling yolo;
+that report does not itself establish a verified runtime configuration.
+
 On 2026-10-01,
 the user separately authorized sending Drex whatever this work needs,
 explicitly including previous private real Pi transcripts.

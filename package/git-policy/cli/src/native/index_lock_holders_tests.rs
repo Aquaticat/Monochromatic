@@ -182,7 +182,7 @@ fn an_unlistable_proc_root_is_partial() {
 /// Start a child process that holds `lock` open on descriptor 3 until it is killed.
 fn start_holder(lock: &Path) -> Child {
     return Command::new("sh")
-        .args(["-c", "exec 3<\"$0\"; sleep 30", lock.to_str().expect("UTF-8 lock path")])
+        .args(["-c", "exec 3<\"$0\"; exec sleep 30", lock.to_str().expect("UTF-8 lock path")])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
@@ -200,6 +200,18 @@ fn holds_pid(holders: &[Holder], pid: i64) -> bool {
     return false;
 }
 
+/// Whether a descriptor path names the lock file itself.
+///  The dynamic loader opens shared libraries on descriptor 3 before the shell redirects it,
+///  so the descriptor existing is not proof that the child holds the lock.
+#[cfg(target_os = "linux")]
+fn descriptor_is_lock(proc_fd: &Path, device: u64, inode: u64) -> bool {
+    use std::os::unix::fs::MetadataExt;
+    return match std::fs::metadata(proc_fd) {
+        Ok(found) => found.dev() == device && found.ino() == inode,
+        Err(_) => false,
+    };
+}
+
 /// A real child holding the lock open is found by the host scan with its command name,
 ///  and the
 /// test's own open descriptor never counts as a holder.
@@ -215,9 +227,10 @@ fn a_real_child_holding_the_lock_is_found_on_linux() {
     let child_pid: i64 = i64::from(child.id());
     let proc_fd: PathBuf = PathBuf::from(format!("/proc/{child_pid}/fd/3"));
     let started: std::time::Instant = std::time::Instant::now();
-    while !proc_fd.exists() && started.elapsed().as_secs() < 10 {
+    while !descriptor_is_lock(proc_fd.as_path(), device, inode) && started.elapsed().as_secs() < 10 {
         std::thread::sleep(std::time::Duration::from_millis(10));
     }
+    assert!(descriptor_is_lock(proc_fd.as_path(), device, inode), "the child opened the lock on descriptor 3 within 10 s");
     let evidence: HolderEvidence = scan_platform_holders(lock.as_path(), device, inode);
     let _ = child.kill();
     let _ = child.wait();
@@ -240,4 +253,22 @@ fn an_unheld_lock_has_no_holders() {
     let evidence: HolderEvidence = scan_platform_holders(lock.as_path(), device, inode);
     assert!(evidence.holders.is_empty());
     remove(root.as_path());
+}
+
+/// Only ASCII digit names are process identifiers,
+///  so the proc scan skips `self`, empty names and names with other bytes.
+#[test]
+#[cfg(unix)]
+fn only_digit_names_are_process_identifiers() {
+    assert!(is_pid_name("1"));
+    assert!(is_pid_name("4242"));
+    assert!(!is_pid_name(""));
+    assert!(!is_pid_name("self"));
+    assert!(!is_pid_name("12a"));
+    assert!(!is_pid_name("1 "));
+    assert!(is_digit(b'0'));
+    assert!(is_digit(b'9'));
+    assert!(!is_digit(b'/'));
+    assert!(!is_digit(b':'));
+    assert!(!is_digit(b'a'));
 }

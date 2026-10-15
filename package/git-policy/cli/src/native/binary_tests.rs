@@ -48,6 +48,45 @@ mod frontier;
 #[path = "binary_builtin_tests.rs"]
 mod builtin;
 
+/// `markdown/autofix` with the linter built from this repository,
+///  a missing one and a failing one.
+#[path = "binary_markdown_tests.rs"]
+mod markdown;
+
+/// `pathBytes` and `changedPathBytes` for a file whose name is not UTF-8.
+#[path = "binary_event_path_tests.rs"]
+mod event_path;
+
 /// The `git cli-git` management namespace.
 #[path = "binary_management_tests.rs"]
 mod management;
+
+#[path = "binary_coordination_tests.rs"]
+mod coordination;
+#[path = "binary_hook_tests.rs"]
+mod hook;
+/// The dependent-version policy on direct check and fix.
+#[path = "binary_dependent_version_tests.rs"]
+mod dependent_version;
+#[path = "binary_landing_support.rs"]
+mod landing_support;
+#[path = "binary_landing_tests.rs"]
+mod landing;
+#[path = "binary_landing_crash_tests.rs"]
+mod landing_crash;
+
+/// Real commits through the transaction: landing, policies, replay and conflict.
+#[path = "binary_commit_tests.rs"]
+mod commit;
+
+/// `pathBytes` for a file whose name is not UTF-8 through the commit path.
+#[path = "binary_event_path_commit_tests.rs"]
+mod event_path_commit;
+
+/// The linked-worktree ignored-state copy: the rules file reaches new worktrees, and an interrupted copy recovers.
+#[path = "binary_worktree_copy_tests.rs"]
+mod worktree_copy;
+
+/// The environment of the Git children the auto-push and the manual-push probe start.
+#[path = "binary_push_environment_tests.rs"]
+mod push_environment;

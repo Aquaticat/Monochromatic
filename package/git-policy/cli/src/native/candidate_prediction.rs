@@ -27,6 +27,8 @@
 
 /// Import the layer's failure type and its closed list of causes.
 use super::candidate_error::{CandidateError, CandidateFailure};
+/// The landed commit object name a landed-delta request reads.
+use super::candidate_object::ObjectId;
 /// Import the private index copy every prediction stages into.
 use super::candidate_private_index::PrivateIndex;
 /// Import the candidate record a version is built from.
@@ -38,7 +40,7 @@ use super::candidate_stage::{
 /// Import the per-invocation owner of versions and bytes.
 use super::candidate_store::CandidateStore;
 /// Import the immutable version type.
-use super::candidate_version::CandidateVersion;
+use super::candidate_version::{CandidateSource, CandidateVersion};
 /// Import the captured-query runner and its byte helpers.
 use super::git_metadata::{MetadataOutput, path_from_git_bytes, run_metadata_git, strip_git_line};
 /// What:
@@ -109,6 +111,52 @@ pub enum CandidateRequest {
         ///  `--all` is `:/`.
         Vec<OsString>,
     ),
+    /// The entries the index already holds for the pathspecs, read without staging the worktree first.
+    ///  The commit path uses it, so corrections already written to the private index are the candidates.
+    Staged(
+        /// The pathspecs of the scope.
+        Vec<OsString>,
+    ),
+    /// The entries the private index holds for the pathspecs, with a recorded base commit (the empty tree when the
+    ///  branch was unborn) as the baseline that marks additions, read without staging the worktree. The commit
+    ///  transaction uses it: its baseline is the base it recorded at invocation, never the `HEAD` another landing may
+    ///  have moved since. No pathspec means no candidate.
+    StagedAtBase {
+        /// The recorded base commit, or nothing for an unborn branch.
+        base: Option<ObjectId>,
+        /// The pathspecs of the scope, each literal and rooted at the top level.
+        pathspecs: Vec<OsString>,
+    },
+    /// The changes a manual push publishes: each newly published commit's own delta and the whole tree
+    ///  of each tip with no known published base.
+    Pushed(
+        /// The commits and trees the scan reads.
+        PushedScope,
+    ),
+    /// The paths one landed commit changed, each against every parent,
+    ///  as the post-commit gate reads them: the committed bytes and no worktree or index state.
+    Landed(
+        /// The landed commit whose tree changes are listed.
+        ObjectId,
+    ),
+}
+
+/// What:
+///  The commits and trees a manual push scans.
+/// Why:
+///   A pushed commit contributes its own delta, and a tip with no known base contributes its tree; both are
+///  listed without staging anything.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type PushedScope = { commits: ObjectId[]; trees: ObjectId[] };
+/// ```
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct PushedScope {
+    /// Newly published commits, each contributing its own delta.
+    pub commits: Vec<ObjectId>,
+    /// Pushed tips whose whole tree is new.
+    pub trees: Vec<ObjectId>,
 }
 
 /// What:
@@ -402,6 +450,22 @@ fn projected_scope(
         overlay,
         "read the selected worktree files",
     )?;
+    return staged_scope(store, pathspecs);
+}
+
+/// What:
+///  The candidates of the entries the index already holds for these pathspecs, against `HEAD`.
+/// Why:
+///   The direct and the staged requests both end here; only the direct one stages the worktree first.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// scopeCandidates(await stageRecords(pathspecs), await headRecords(pathspecs));
+/// ```
+fn staged_scope(
+    store: &mut CandidateStore,
+    pathspecs: &[OsString],
+) -> Result<Vec<CandidateRecord>, CandidateError> {
     let entries: Vec<StageRecord> = store.stage_records(pathspecs)?;
     if entries.is_empty() {
         // Nothing selected: no baseline is needed and no object reader starts.
@@ -448,6 +512,9 @@ pub fn prepare_candidates(
     let purpose: &str = match request {
         CandidateRequest::Add(_) => "predict what git add stages",
         CandidateRequest::Direct(_) => "read the selected worktree files",
+        CandidateRequest::Staged(_) | CandidateRequest::StagedAtBase { .. } => "read the staged index entries",
+        CandidateRequest::Landed(_) => "read the landed commit changes",
+        CandidateRequest::Pushed(_) => "read the pushed commit changes",
     };
     let real_index: PathBuf = real_index_path(real_git, global_prefix, overlay, purpose)?;
     let private: PrivateIndex = PrivateIndex::create(real_index.as_path())?;
@@ -457,6 +524,38 @@ pub fn prepare_candidates(
         OsString::from(INDEX_FILE_VARIABLE),
         private.path().as_os_str().to_os_string(),
     ));
+    // A pushed scope lists committed records directly; nothing is staged or predicted for it.
+    if let CandidateRequest::Pushed(scope) = request {
+        let mut pushed_store: CandidateStore =
+            CandidateStore::new(real_git, global_prefix, private_overlay.as_slice());
+        let mut records: Vec<CandidateRecord> = Vec::new();
+        for commit in &scope.commits {
+            records.extend(pushed_store.committed_records(commit)?);
+        }
+        for tree in &scope.trees {
+            records.extend(pushed_store.tree_records(tree)?);
+        }
+        let version: Rc<CandidateVersion> = pushed_store.derived_version(records);
+        return Ok(PreparedCandidates {
+            store: pushed_store,
+            version,
+            real_index,
+            _private: private,
+        });
+    }
+    // A landed commit lists its committed records directly; nothing is staged or predicted for it.
+    if let CandidateRequest::Landed(commit) = request {
+        let mut landed_store: CandidateStore =
+            CandidateStore::new(real_git, global_prefix, private_overlay.as_slice());
+        let version: Rc<CandidateVersion> =
+            landed_store.version(&CandidateSource::Committed(commit.clone()))?;
+        return Ok(PreparedCandidates {
+            store: landed_store,
+            version,
+            real_index,
+            _private: private,
+        });
+    }
     // `match` picks the source; each arm builds its store and its candidate records.
     // `mut store` because building the version below reads the store's generation.
     let (mut store, records): (CandidateStore, Vec<CandidateRecord>) = match request {
@@ -477,16 +576,40 @@ pub fn prepare_candidates(
             )?;
             (add_store, staged)
         }
+        CandidateRequest::Landed(_) | CandidateRequest::Pushed(_) => {
+            unreachable!("landed and pushed requests return before the staged match");
+        }
         CandidateRequest::Direct(pathspecs) => {
+            // The same magic-enabled prefix as the add arm: the staging and the listings must read
+            // `:/` and the selected pathspecs alike, so literal mode cannot split them.
+            let mut scope_prefix: Vec<OsString> = global_prefix.to_vec();
+            scope_prefix.push(OsString::from("--no-literal-pathspecs"));
             let mut scope_store: CandidateStore =
-                CandidateStore::new(real_git, global_prefix, private_overlay.as_slice());
+                CandidateStore::new(real_git, scope_prefix.as_slice(), private_overlay.as_slice());
             let selected: Vec<CandidateRecord> = projected_scope(
                 &mut scope_store,
                 real_git,
-                global_prefix,
+                scope_prefix.as_slice(),
                 private_overlay.as_slice(),
                 pathspecs.as_slice(),
             )?;
+            (scope_store, selected)
+        }
+        CandidateRequest::Staged(pathspecs) => {
+            let mut scope_store: CandidateStore =
+                CandidateStore::new(real_git, global_prefix, private_overlay.as_slice());
+            let selected: Vec<CandidateRecord> = staged_scope(&mut scope_store, pathspecs.as_slice())?;
+            (scope_store, selected)
+        }
+        CandidateRequest::StagedAtBase { base, pathspecs } => {
+            let mut scope_store: CandidateStore =
+                CandidateStore::new(real_git, global_prefix, private_overlay.as_slice()).with_baseline(base.clone());
+            // An empty scope would list the whole index, so it is answered without asking Git.
+            let selected: Vec<CandidateRecord> = if pathspecs.is_empty() {
+                Vec::new()
+            } else {
+                staged_scope(&mut scope_store, pathspecs.as_slice())?
+            };
             (scope_store, selected)
         }
     };

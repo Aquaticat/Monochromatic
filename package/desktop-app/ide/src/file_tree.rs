@@ -1,7 +1,9 @@
 //! Lazy,
 //!  filesystem-free tree presentation over read-only directory snapshots.
 
-/// Directory metadata retains native filenames and filesystem enumeration order.
+/// What the rule files said about one directory's entries travels with its listing.
+use crate::git_ignore::IgnoreAnswer;
+/// Directory metadata retains native filenames and the order of the listing it was given.
 use crate::workspace::DirectoryEntry;
 /// Invalid tree operations report affected paths instead of silently changing unrelated rows.
 use anyhow::{Result, bail};
@@ -51,6 +53,20 @@ pub struct TreeRow {
     pub depth: usize,
     /// Expanded directories may still be waiting for their first background snapshot.
     pub expanded: bool,
+    /// What:
+    ///  git would ignore this entry,
+    ///  so its name is drawn dimmed;
+    ///  the answer comes with the listing that contains the entry.
+    /// Why:
+    ///  A row that sits inside an ignored directory is ignored too;
+    ///  a tracked file that matches a pattern is also reported ignored,
+    ///  because the index is not read.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// ignored: boolean;
+    /// ```
+    pub ignored: bool,
 }
 
 /// What:
@@ -75,13 +91,21 @@ pub struct FileTree {
     /// Canonical root supplied by Workspace;
     ///  this model is not an OS write-confinement boundary.
     root: PathBuf,
-    /// Native directory names map to snapshots retaining filesystem order.
+    /// Native directory names map to snapshots retaining listing order.
     directories: BTreeMap<PathBuf, Vec<DirectoryEntry>>,
     /// Collapsing an ancestor retains descendant expansion until that subtree is removed.
     expanded: BTreeSet<PathBuf>,
     /// Latest request for each directory;
     ///  replacements supersede older in-flight copies.
     pending: BTreeMap<PathBuf, DirectoryRequest>,
+    /// What the rule files said when each directory was last listed;
+    ///  a directory replaced by a newer snapshot takes its answer with it.
+    ignores: BTreeMap<PathBuf, IgnoreAnswer>,
+    /// Set when a listing arrived whose directory's own `.gitignore`,
+    ///  or whose work tree's shared rules,
+    ///  differ from the previous listing's;
+    ///  the owner then rereads every shown directory and clears the flag with `take_ignore_sources_changed`.
+    ignore_sources_changed: bool,
 }
 
 /// Tree state transitions never read files or block the UI on directory enumeration.
@@ -117,6 +141,8 @@ impl FileTree {
             directories: BTreeMap::new(),
             expanded,
             pending: BTreeMap::new(),
+            ignores: BTreeMap::new(),
+            ignore_sources_changed: false,
         };
     }
 
@@ -139,6 +165,14 @@ impl FileTree {
         let entries = self.directories.get(parent)?;
         // The closure lends each entry; find returns a borrowed match without copying its name.
         return entries.iter().find(|entry| return entry.path == path);
+    }
+
+    /// Whether a listing since the last call showed changed ignore rules,
+    ///  clearing the flag:
+    ///  the caller then lists every shown directory again,
+    ///  because a changed `.gitignore` can change the rows of any directory below it.
+    pub fn take_ignore_sources_changed(&mut self) -> bool {
+        return std::mem::take(&mut self.ignore_sources_changed);
     }
 
     /// Toggle a known directory;

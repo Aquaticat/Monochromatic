@@ -78,6 +78,10 @@ pub mod launch;
 ///  refusing rather than running unconfined.
 pub mod confine;
 
+/// Servers that mise provides for a project that has a mise configuration,
+///  looked up and run in the servers' sandbox.
+pub mod mise;
+
 /// The language registry,
 ///  built in code from Helix's built-in definitions and the application's overrides.
 pub mod config;
@@ -92,6 +96,12 @@ mod root;
 /// Answers a server still owes for the displayed text,
 ///  and the bounded rule for asking again.
 mod owed;
+
+/// The reason a displayed file has no hover,
+///  hints,
+///  or definitions,
+///  published as one `Information` entry of its diagnostics.
+pub mod notice;
 
 /// What the worker thread remembers.
 mod session;

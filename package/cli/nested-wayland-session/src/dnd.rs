@@ -28,7 +28,7 @@
 //!  so the release is scheduled on a short dwell timer instead.
 
 /// What:
-///      `use std::{path::Path, time::Duration};`.
+///      `use std::{path::{Path, PathBuf}, time::Duration};`.
 ///  A borrowed filesystem path and a
 ///           span of time.
 /// Why:
@@ -39,7 +39,10 @@
 /// ```ts
 /// // Path ~ string; Duration ~ a millisecond count.
 /// ```
-use std::{path::Path, time::Duration};
+use std::{
+    path::{Path, PathBuf},
+    time::Duration,
+};
 
 /// What:
 ///      `use anyhow::{anyhow, Context, Result};`.
@@ -147,26 +150,29 @@ const NUDGE_PX: f64 = 1.0;
 /// ```ts
 /// dropFile(state, "/tmp/hello.txt"); // drops at the window centre
 /// ```
-pub fn drop_file(state: &mut Compositor, path: &Path, x: Option<f64>, y: Option<f64>) -> Result<()> {
-    // What:     `let absolute = path.canonicalize().with_context(...)?;`. Resolve to an
-    //           absolute, symlink-free path, erroring (with context) if the file is absent.
-    // Why:      A `file://` URI must be absolute, and the file must exist to be dropped.
-    let absolute = path
-        .canonicalize()
-        .with_context(|| format!("resolving drop-file path {}", path.display()))?;
+pub fn drop_file(state: &mut Compositor, paths: &[PathBuf], x: Option<f64>, y: Option<f64>) -> Result<()> {
+    // What:     Resolve every path to an absolute, symlink-free path, failing the whole drop
+    //           (naming the path) when one does not exist.
+    // Why:      A `file:` URI must be absolute, and every file must exist to be dropped.
+    let mut absolute_paths = Vec::with_capacity(paths.len());
+    for path in paths {
+        absolute_paths.push(
+            path.canonicalize()
+                .with_context(|| format!("resolving drop-file path {}", path.display()))?,
+        );
+    }
+    let borrowed: Vec<&Path> = absolute_paths.iter().map(PathBuf::as_path).collect();
 
-    // What:     `let uri = format!("file://{}\r\n", absolute.display());`. Build a one-entry
-    //           uri-list (CRLF-terminated per RFC 2483). `.display()` renders the path for
-    //           formatting.
-    // Why:      This is the exact payload the app parses back into a filesystem path.
-    let uri = format!("file://{}\r\n", absolute.display());
+    // What:     `uri_list(&borrowed)`. One percent-encoded `file:` URI per line, CRLF-terminated
+    //           per RFC 2483.
+    // Why:      This is the exact payload the app parses back into filesystem paths; a space or a
+    //           `%` in a name survives because the bytes are percent-encoded.
+    let uri = crate::uri_list::uri_list(&borrowed);
 
-    // What:     `state.pending_dnd_uri_list = Some(uri.into_bytes());`. Stash the payload as
-    //           owned bytes. `Some(...)` is `Option`'s present variant. `into_bytes` consumes
-    //           the `String` into a `Vec<u8>`.
+    // What:     Stash the payload as owned bytes.
     // Why:      `ServerDndGrabHandler::send` (only `&mut Compositor` in scope) reads it when
     //           the app requests the data.
-    state.pending_dnd_uri_list = Some(uri.into_bytes());
+    state.pending_dnd_uri_list = Some(uri);
 
     // What:     `let (px, py) = match (x, y) { (Some(x), Some(y)) => (x, y), _ =>
     //           window_centre(state)? };`. Use the given point, or fall back to the window
@@ -427,6 +433,11 @@ fn release_drag(state: &mut Compositor, button: u32) {
         },
     );
     pointer.frame(state);
+
+    // What:     `state.held_pointer_buttons.release(button);`. Keep the `button down` record in
+    //           step with the release the drag just delivered.
+    // Why:      A later `button up` must not answer `ok` for a button the seat has let go.
+    state.held_pointer_buttons.release(button);
 
     // What:     `info!(...)`. Log the release.
     // Why:      Mark that the drop was delivered (the app's own log confirms receipt).

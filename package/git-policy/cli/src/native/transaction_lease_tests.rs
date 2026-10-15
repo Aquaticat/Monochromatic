@@ -214,3 +214,15 @@ fn non_unicode_leases_are_ignored() {
         Path::new("/x")
     ));
 }
+
+/// The token of a landing lease is its own field, and a missing, empty or malformed lease has none.
+#[test]
+fn the_landing_lease_token_is_its_own_field() {
+    let lease: String = format_landing_lease("/r/landing.lock", "token-1");
+    let named = |value: &str| { return vec![(OsString::from(LANDING_LEASE_VARIABLE), OsString::from(value))]; };
+    assert_eq!(landing_lease_token(named(lease.as_str()).as_slice()), Some(String::from("token-1")));
+    assert_eq!(landing_lease_token(&[]), None);
+    assert_eq!(landing_lease_token(named("").as_slice()), None);
+    assert_eq!(landing_lease_token(named("not json").as_slice()), None);
+    assert_eq!(landing_lease_token(named("{\"lockDirectory\":\"/r\"}").as_slice()), None);
+}

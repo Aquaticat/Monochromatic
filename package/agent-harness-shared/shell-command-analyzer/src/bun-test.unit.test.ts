@@ -6,7 +6,7 @@ import {
 import {
   BUN_TEST_BAN_REASON,
   invokesBunTest,
-} from '@monochromatic-dev/agent-harness-shared-shell-command-analyzer/ts';
+} from '@monochromatic-dev/agent-harness-shared-shell-command-analyzer';
 
 await describe({
   name: 'bun test guard helpers',

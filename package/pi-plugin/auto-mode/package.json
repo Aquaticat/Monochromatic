@@ -14,7 +14,11 @@
       "types": "./dist/final/node/index.d.mts",
       "default": "./dist/final/node/index.mjs"
     },
-    "./ts": "./src/index.ts"
+    "./ts": "./src/index.ts",
+    "./native-policy": {
+      "types": "./dist/final/node/native-policy.d.mts",
+      "default": "./dist/final/node/native-policy.mjs"
+    }
   },
   "pi": {
     "extensions": ["./dist/final/node/index.mjs"]
@@ -31,11 +35,14 @@
     "@monochromatic-dev/git-executable": "workspace:*",
     "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/module-or-throw": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@monochromatic-dev/agent-harness-shared-shell-command-analyzer": "workspace:*",
     "@monochromatic-dev/pi-shared-model-review": "workspace:*",
     "@monochromatic-dev/pi-shared-model-selection": "workspace:*",
-    "nano-spawn": "catalog:"
+    "nano-spawn": "catalog:",
+    "satteri": "catalog:auto-mode-native",
+    "yuku-parser": "catalog:auto-mode-native"
   },
   "devDependencies": {
     "@earendil-works/pi-ai": "catalog:",

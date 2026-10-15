@@ -29,6 +29,8 @@ use super::candidate_reader::{ObjectReader, start_object_reader};
 use super::candidate_record::{CandidateRecord, parse_raw_records};
 /// Import the stage-record parser of `git ls-files --stage`.
 use super::candidate_stage::{StageRecord, parse_stage_records};
+/// Import the tree-record parser of `git ls-tree -r`.
+use super::candidate_tree::{TreeRecord, parse_tree_records};
 /// Import the version types and builder.
 use super::candidate_version::{Candidate, CandidateSource, CandidateVersion, build_version};
 /// Import the captured-query runner and its line helper.
@@ -93,6 +95,9 @@ pub struct CandidateStore {
     /// Versions already listed in this generation,
     ///  by source.
     versions: Vec<(CandidateSource, Rc<CandidateVersion>)>,
+    /// The commit every "against `HEAD`" listing compares with instead of the live `HEAD`:
+    ///  `Some(Some(commit))` for a recorded base, `Some(None)` for a recorded unborn branch, `None` for live `HEAD`.
+    baseline: Option<Option<ObjectId>>,
 }
 
 /// What:
@@ -153,7 +158,41 @@ impl CandidateStore {
             reader: None,
             generation: 0,
             versions: Vec::new(),
+            baseline: None,
         };
+    }
+
+    /// What:
+    ///  Compare every "against `HEAD`" listing with a recorded base instead of the live `HEAD`.
+    /// Why:
+    ///   A commit transaction reads its candidates against the base it recorded at invocation,
+    ///  because another landing may have moved `HEAD` since.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// listChangedIndexPaths({ baseRevision }) // never live HEAD
+    /// ```
+    #[must_use]
+    pub fn with_baseline(mut self, baseline: Option<ObjectId>) -> CandidateStore {
+        self.baseline = Some(baseline);
+        return self;
+    }
+
+    /// What:
+    ///  The commit the "against `HEAD`" listings compare with:
+    ///  the recorded baseline when one was set, otherwise the commit `HEAD` names now.
+    /// Why:
+    ///   One place decides the baseline, so the listings and the `HEAD` tree always agree.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// const baseline = recorded ?? await headCommit();
+    /// ```
+    fn baseline_commit(&mut self) -> Result<Option<ObjectId>, CandidateError> {
+        if let Some(recorded) = &self.baseline {
+            return Ok(recorded.clone());
+        }
+        return self.reader()?.head_commit();
     }
 
     /// What:
@@ -372,7 +411,7 @@ impl CandidateStore {
         }
         let output: Vec<u8> = match source {
             CandidateSource::StagedAgainstHead => {
-                let head: Option<ObjectId> = self.reader()?.head_commit()?;
+                let head: Option<ObjectId> = self.baseline_commit()?;
                 // `.as_ref()` turns `&Option<ObjectId>` into `Option<&ObjectId>`; `&[]` is no pathspec.
                 self.list_staged(head.as_ref(), &[])?
             }
@@ -437,20 +476,42 @@ impl CandidateStore {
         &mut self,
         pathspecs: &[OsString],
     ) -> Result<Vec<CandidateRecord>, CandidateError> {
-        let head: Option<ObjectId> = self.reader()?.head_commit()?;
+        let head: Option<ObjectId> = self.baseline_commit()?;
         let output: Vec<u8> = self.list_staged(head.as_ref(), pathspecs)?;
         return parse_raw_records(output.as_slice());
     }
 
-    /// What:
-    ///  A version of the current generation built from records the caller derived.
-    ///       `Vec<CandidateRecord>` is taken by value:
-    ///  the records move into the version.
-    /// Why:
-    ///   A predicted staging operation has no single listing command;
-    ///  its candidates
-    ///       come from comparing index states.
-    ///  The version is not remembered by source,
+    /// What: Every file of the `HEAD` commit with its mode and object; nothing when the
+    ///       branch has no commit yet.
+    /// Why:  A policy that compares the candidate state with `HEAD` reads `HEAD`'s copy of
+    ///       a file without naming the path in an object request, and learns its mode.
+    ///       `--full-tree` lists from the top level whatever directory Git runs in.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// async headTreeRecords(): Promise<TreeRecord[]>
+    /// ```
+    pub fn head_tree_records(&mut self) -> Result<Vec<TreeRecord>, CandidateError> {
+        let Some(head) = self.baseline_commit()? else {
+            return Ok(Vec::new());
+        };
+        let output: Vec<u8> = self.run_listing(
+            "ls-tree",
+            &[
+                OsString::from("ls-tree"),
+                OsString::from("-r"),
+                OsString::from("-z"),
+                OsString::from("--full-tree"),
+                OsString::from(head.as_str()),
+            ],
+        )?;
+        return parse_tree_records(output.as_slice());
+    }
+
+    /// What: A version of the current generation built from records the caller derived.
+    ///       `Vec<CandidateRecord>` is taken by value: the records move into the version.
+    /// Why:  A predicted staging operation has no single listing command; its candidates
+    ///       come from comparing index states. The version is not remembered by source,
     ///       because no source names it.
     ///
     /// In TS you'd write (pseudocode):
@@ -459,6 +520,52 @@ impl CandidateStore {
     /// ```
     pub fn derived_version(&mut self, records: Vec<CandidateRecord>) -> Rc<CandidateVersion> {
         return Rc::new(build_version(self.generation, records));
+    }
+
+    /// What:
+    ///  The records of one commit's own delta, each against every parent (or the empty tree for a root commit).
+    /// Why:
+    ///   A pushed commit's changes are the content a manual-push scan reads; the listing is the one the
+    ///  landed-delta source already uses.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// committedRecords(commit: ObjectId): CandidateRecord[]
+    /// ```
+    pub fn committed_records(
+        &mut self,
+        commit: &ObjectId,
+    ) -> Result<Vec<CandidateRecord>, CandidateError> {
+        let output: Vec<u8> = self.list_committed(commit)?;
+        return parse_raw_records(output.as_slice());
+    }
+
+    /// What:
+    ///  Every blob entry of one tree, as records that add each path.
+    /// Why:
+    ///   A push with no known published base scans the pushed tip's whole tree.
+    ///   Submodule entries are not listed: their content is a commit name, which no content policy reads.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// treeRecords(tree: ObjectId): CandidateRecord[] // ls-tree -r, every blob as added
+    /// ```
+    pub fn tree_records(
+        &mut self,
+        tree: &ObjectId,
+    ) -> Result<Vec<CandidateRecord>, CandidateError> {
+        let listing: Vec<u8> = self.run_listing(
+            "ls-tree",
+            &[
+                OsString::from("ls-tree"),
+                OsString::from("--full-tree"),
+                OsString::from("-r"),
+                OsString::from("-z"),
+                OsString::from(tree.as_str()),
+            ],
+        )?;
+        let raw: Vec<u8> = added_raw_from_ls_tree(listing.as_slice())?;
+        return parse_raw_records(raw.as_slice());
     }
 
     /// What:
@@ -547,3 +654,54 @@ mod baseline_tests;
 #[cfg(test)]
 #[path = "candidate_store_failure_tests.rs"]
 mod failure_tests;
+
+/// What:
+///  Turn NUL-separated `ls-tree -r -z` records into raw diff records that add each blob.
+/// Why:
+///   The record parser is the one the diff listings use, so tree entries follow the same path and mode rules.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function addedRawFromLsTree(output: Uint8Array): Uint8Array;
+/// ```
+fn added_raw_from_ls_tree(output: &[u8]) -> Result<Vec<u8>, CandidateError> {
+    let mut raw: Vec<u8> = Vec::new();
+    for record in output
+        .split(|byte| {
+            return *byte == 0;
+        })
+        .filter(|record| {
+            return !record.is_empty();
+        })
+    {
+        let Some(tab) = record.iter().position(|byte| { return *byte == b'\t'; }) else {
+            return Err(CandidateError::new(
+                super::candidate_error::CandidateFailure::ListingMalformed,
+                "cli-git could not list the pushed tree: an entry lacks its path separator.",
+            ));
+        };
+        // The mode, type and object name are ASCII; the path stays the exact bytes Git printed.
+        let metadata = String::from_utf8_lossy(&record[..tab]);
+        let path: &[u8] = &record[tab + 1..];
+        let fields: Vec<&str> = metadata.split(' ').collect();
+        if fields.len() != 3 {
+            return Err(CandidateError::new(
+                super::candidate_error::CandidateFailure::ListingMalformed,
+                "cli-git could not list the pushed tree: an entry lacks its mode, type or object name.",
+            ));
+        }
+        if fields[1] != "blob" {
+            continue;
+        }
+        let zeros = "0".repeat(fields[2].len());
+        raw.extend_from_slice(format!(":000000 {} {zeros} {} A", fields[0], fields[2]).as_bytes());
+        raw.push(0);
+        raw.extend_from_slice(path);
+        raw.push(0);
+    }
+    return Ok(raw);
+}
+/// The `HEAD` tree listing.
+#[cfg(test)]
+#[path = "candidate_store_tree_tests.rs"]
+mod tree_tests;

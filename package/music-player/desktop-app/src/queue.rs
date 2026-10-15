@@ -8,22 +8,23 @@
 //!  so it is fully
 //! unit-tested.
 //!
-//! Playback has a SCOPE that it loops over,
-//!  chosen by the shuffle mode:
+//! Playback has a SCOPE that it walks,
+//!  chosen by the playback mode:
 //!
 //! - `PlaybackMode::InOrder` and `PlaybackMode::ShufflePage` confine playback to the
-//!   current track's PAGE (its top-level folder under the loaded root,
-//!    or its
-//!   A-Z/`#` letter bucket for a root-level track;
+//!   current track's PAGE (its top-level folder under the opened folder,
+//!    or the page of the
+//!   loose files for a track directly in it;
 //!    the same grouping the UI tabs
 //!   use,
 //!    computed by the `pagination` module).
-//!    `Off` plays the page in load
-//!   order;
-//!    `WithinPage` shuffles the page.
-//!    Either way,
-//!    reaching the end of the
-//!   page loops back to its start.
+//!    `InOrder` plays the page in load
+//!   order and STOPS at its end (D2:
+//!    "In order = play to the end of the folder and stop");
+//!    `ShufflePage` shuffles the page and,
+//!    when every track has played,
+//!    starts a new cycle.
+//!    A manual Next at the end of the page wraps to its start.
 //! - `PlaybackMode::ShuffleAll` scopes playback to the whole queue,
 //!    shuffled,
 //!    and loops
@@ -50,8 +51,8 @@
 //!  a manual Next/Prev still moves within the scope.
 //!
 //! Design decision (deliberate):
-//!  because `Off`/`WithinPage` are page-confined
-//! and always loop the page,
+//!  because `InOrder` is page-confined
+//! and stops at the end of the page,
 //!  there is no way to play the whole queue in load
 //! order and loop the whole queue (non-shuffle + repeat-all).
 //!  When not
@@ -137,6 +138,8 @@ pub struct Queue {
     /// private tracks: string[];
     /// ```
     tracks: Vec<PathBuf>,
+    /// The opened folder that display names and pages are relative to, or `None` to strip the shared directory.
+    display_root: Option<PathBuf>,
     /// What:
     ///      `order: Vec<usize>`.
     ///  A growable array of indices into `tracks`.
@@ -318,6 +321,7 @@ impl Queue {
         // ```
         return Queue {
             tracks: Vec::new(),
+            display_root: None,
             order: Vec::new(),
             pos: None,
             mode: PlaybackMode::InOrder,
@@ -520,7 +524,23 @@ impl Queue {
         // ```ts
         // return relativeDisplayPaths(this.tracks);
         // ```
-        return crate::relpath::relative_display_paths(&self.tracks)
+        return crate::relpath::relative_display_paths_in(&self.tracks, self.display_root.as_deref())
+    }
+
+    /// What:
+    ///      `pub fn set_display_root(&mut self, root: Option<PathBuf>)` names the opened folder that display names and
+    ///  pages are relative to.
+    /// Why:
+    ///       A library with one top-level folder must keep that folder in its names, and loose files must form one
+    ///  page; both need the opened folder, not the longest directory the tracks share (LS1). Set it before the tracks.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// setDisplayRoot(root: string | null): void { this.displayRoot = root; }
+    /// ```
+    pub fn set_display_root(&mut self, root: Option<PathBuf>) {
+        tracing::debug!(root = ?root, "the queue's display root is set");
+        self.display_root = root;
     }
 
     /// What:
@@ -595,14 +615,23 @@ impl Queue {
     /// }
     /// ```
     pub fn set_tracks(&mut self, tracks: Vec<PathBuf>) {
-        let previous_names = self.display_paths();
-        let previous_pages = crate::pagination::paginate(&previous_names);
+        // What:     with no page selected there is nothing to carry over, so the new list is stored and the order rebuilt.
+        // Why:      the carry-over below rebuilds the display names and the pages of the whole list, about a second at one
+        //           million tracks, and its result is an empty scope when no page was selected.
+        if self.page_scope.is_empty() {
+            self.tracks = tracks;
+            self.page_scope = Vec::new();
+            self.rebuild_scope_order(Some(0));
+            return;
+        }
+        let previous_pages = crate::page_index::PageIndex::build(&self.display_paths());
         let previous_page = self
             .page_scope
             .first()
-            .and_then(|index| return crate::pagination::page_of_index(&previous_pages, *index));
-        let previous_page_identity =
-            previous_page.map(|page| return crate::pagination::page_identity(&previous_pages[page]));
+            .and_then(|index| return previous_pages.page_of_index(*index));
+        let previous_page_identity = previous_page
+            .and_then(|page| return previous_pages.page(page))
+            .map(|page| return page.identity.clone());
         // What:     `self.tracks = tracks;` moves the new vector in, dropping (freeing) the
         //           old one.
         // Why:      Adopt the new track list.
@@ -612,22 +641,18 @@ impl Queue {
         // this.tracks = tracks;
         // ```
         self.tracks = tracks;
-        let rebuilt_names = self.display_paths();
-        let rebuilt_pages = crate::pagination::paginate(&rebuilt_names);
+        let rebuilt_pages = crate::page_index::PageIndex::build(&self.display_paths());
         let rebuilt_page = previous_page_identity
-            .and_then(|identity| {
-                return rebuilt_pages
-                    .iter()
-                    .find(|page| return crate::pagination::page_identity(page) == identity);
-            })
+            .and_then(|identity| return rebuilt_pages.position_of_identity(&identity))
             .or_else(|| {
                 return previous_page.and_then(|page| {
-                    let fallback = page.min(rebuilt_pages.len().saturating_sub(1));
-                    return rebuilt_pages.get(fallback);
+                    let fallback = page.min(rebuilt_pages.page_count().saturating_sub(1));
+                    return (fallback < rebuilt_pages.page_count()).then_some(fallback);
                 });
             });
         self.page_scope = rebuilt_page
-            .map(|page| return page.entries.iter().map(|entry| return entry.index).collect())
+            .and_then(|position| return rebuilt_pages.page(position))
+            .map(|page| return page.indices().iter().map(|index| return *index as usize).collect())
             .unwrap_or_default();
         // What:     `self.rebuild_scope_order(Some(0));` builds the scope order around the
         //           first track. `Some(0)` wraps index 0; the helper handles the empty queue
@@ -639,6 +664,30 @@ impl Queue {
         // this.rebuildScopeOrder(0);
         // ```
         self.rebuild_scope_order(Some(0));
+    }
+
+    /// What:
+    ///      `pub(crate) fn replace_tracks_with(&mut self, edit: impl FnOnce(Vec<PathBuf>) -> Vec<PathBuf>)`.
+    ///  Replaces the track list by an edited copy of itself, moving the paths instead of cloning them when no page is selected.
+    ///  The scope order is stale until the caller re-anchors the cursor (`restore_index_preserving_page` or `clear_selection`),
+    ///  which it must do at once.
+    /// Why:
+    ///       D113: a refresh that adds or removes a few tracks of a million must not clone a million paths or rebuild the
+    ///  scope twice (the caller re-anchors the selection right after, which rebuilds it). With a page selected the page has to
+    ///  be carried over by name, which `set_tracks` does, so that case hands it a copy.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// replaceTracksWith(edit: (old: string[]) => string[]): void { this.setTracks(edit(this.tracks)); }
+    /// ```
+    pub(crate) fn replace_tracks_with(&mut self, edit: impl FnOnce(Vec<PathBuf>) -> Vec<PathBuf>) {
+        if self.page_scope.is_empty() {
+            let edited: Vec<PathBuf> = edit(std::mem::take(&mut self.tracks));
+            self.tracks = edited;
+            return;
+        }
+        let edited: Vec<PathBuf> = edit(self.tracks.clone());
+        self.set_tracks(edited);
     }
 
     /// What:
@@ -723,55 +772,12 @@ impl Queue {
         if !self.page_scope.is_empty() {
             return self.page_scope.clone();
         }
-        // What:     `let names = self.display_paths();`. The relative display strings, one
-        //           per track, in load order.
-        // Why:      Pagination groups these into pages.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const names = this.displayPaths();
-        // ```
-        let names = self.display_paths();
-        // What:     `let pages = crate::pagination::paginate(&names);`. Group the names into
-        //           pages (the same pure function the UI tab bar uses, so the playback scope
-        //           and the visible page can never drift). `&names` lends the vector.
-        // Why:      We need the set of indices sharing the anchor's page.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const pages = paginate(names);
-        // ```
-        let pages = crate::pagination::paginate(&names);
-        // What:     `match crate::pagination::page_of_index(&pages, anchor) { ... }`. Find
-        //           which page holds the anchor; returns `Option<usize>`.
-        // Why:      That page IS the scope.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const p = pageOfIndex(pages, anchor);
-        // ```
-        match crate::pagination::page_of_index(&pages, anchor) {
-            // What:     `Some(p) => pages[p].entries.iter().map(|e| e.index).collect()`. Found
-            //           the page at position `p`; `.entries.iter()` borrows each `PageEntry`;
-            //           `.map(|e| e.index)` pulls the load-order index out; `.collect()`
-            //           gathers them into a `Vec<usize>`. Entries are already in ascending
-            //           load order (pagination preserves order). Tail of the arm.
-            // Why:      The page's track indices form the confined scope.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return pages[p].entries.map((e) => e.index);
-            // ```
-            Some(p) => return pages[p].entries.iter().map(|e| return e.index).collect(),
-            // What:     `None => (0..self.tracks.len()).collect()`. The anchor was not found
-            //           on any page (only happens for an empty/invalid anchor); fall back to
-            //           the whole queue.
-            // Why:      Defensive: never produce an empty scope for a real track.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return [...Array(this.tracks.length).keys()];
-            // ```
+        // What:     the positions on the anchor's page come from `relpath::page_scope_for_anchor`, which compares page
+        //           keys track by track instead of grouping every display name into pages.
+        // Why:      the playback scope and the visible page still agree (same grouping rules, tested against
+        //           `paginate`), without the allocation per name that cost over a second at one million tracks.
+        match crate::relpath::page_scope_for_anchor_in(&self.tracks, anchor, self.display_root.as_deref()) {
+            Some(indices) => return indices,
             None => return (0..self.tracks.len()).collect(),
         }
     }
@@ -1146,10 +1152,8 @@ impl Queue {
             return None;
         }
         if !self.page_scope.contains(&track) {
-            let names = self.display_paths();
-            let pages = crate::pagination::paginate(&names);
-            self.page_scope = match crate::pagination::page_of_index(&pages, track) {
-                Some(page) => pages[page].entries.iter().map(|entry| return entry.index).collect(),
+            self.page_scope = match crate::relpath::page_scope_for_anchor_in(&self.tracks, track, self.display_root.as_deref()) {
+                Some(indices) => indices,
                 None => (0..self.tracks.len()).collect(),
             };
         }
@@ -1243,7 +1247,8 @@ impl Queue {
     ///   if (natural && this.repeatTrack) return this.order[pos];
     ///   const next = pos + 1;
     ///   if (next < this.order.length) { this.pos = next; return this.order[next]; }
-    ///   this.pos = 0; return this.order[0]; // loop the scope (page or all)
+    ///   if (natural && this.mode === "in_order") return null; // D2: In order stops at the end of the folder
+    ///   this.pos = 0; return this.order[0]; // a manual Next loops the scope (page or all)
     /// }
     /// ```
     pub fn advance(&mut self, natural: bool) -> Option<usize> {
@@ -1367,10 +1372,24 @@ impl Queue {
             // ```
             return Some(self.order[next]);
         }
+        // What:     `if natural && self.mode == PlaybackMode::InOrder { return None; }`. A track that ended by itself
+        //           at the last slot of the scope has nothing after it; the cursor stays on that track.
+        // Why:      D2: "In order = play to the end of the folder and stop". The polish review finding PB4: the scope
+        //           looped forever. The caller stops playback and calls `rewind_scope`. A manual Next (`natural` false)
+        //           still wraps to the start, because Next must always have a target and `load_current` steps past
+        //           unreadable files with it.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (natural && this.mode === "in_order") return null;
+        // ```
+        if natural && self.mode == PlaybackMode::InOrder {
+            tracing::info!(slot = pos, "In order reached the end of the scope; nothing follows");
+            return None;
+        }
         // What:     `self.pos = Some(0);`. Past the end of the scope: wrap to its start.
         //           `Some(0)` wraps index 0.
-        // Why:      Off loops the page. There is no "stop at end" mode (only repeat-track
-        //           changes natural-end).
+        // Why:      A manual Next loops the page.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1385,6 +1404,93 @@ impl Queue {
         // return this.order[0];
         // ```
         return Some(self.order[self.sequential_start])
+    }
+
+    /// What:
+    ///      `pub fn peek_next_natural(&mut self) -> Option<usize>`.
+    ///  The load-order index that `advance(true)` will return next, without moving the cursor.
+    ///  In the shuffle modes, when the history has no forward entry, the random pick is appended to the
+    ///  history now (the cursor stays), so the later `advance(true)` steps onto exactly this pick.
+    /// Why:
+    ///       The player opens the next track a moment before the current one ends so the two play without a gap,
+    ///  but the queue must keep pointing at the track that is still audible until then.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// peekNextNatural(): number | null {
+    ///   if (this.pos === null) return null;
+    ///   if (this.repeatTrack) return this.order[this.pos];
+    ///   if (this.shuffle) { if (this.pos + 1 >= this.order.length) this.order.push(this.pickNextShuffle(this.order[this.pos])); return this.order[this.pos + 1]; }
+    ///   if (this.sequentialStart > 0 && this.pos < this.sequentialStart) return this.order[this.sequentialStart];
+    ///   return this.order[this.pos + 1 < this.order.length ? this.pos + 1 : this.sequentialStart];
+    /// }
+    /// ```
+    pub fn peek_next_natural(&mut self) -> Option<usize> {
+        let pos = self.pos?;
+        if self.mode == PlaybackMode::Repeat {
+            return Some(self.order[pos]);
+        }
+        if self.mode == PlaybackMode::ShufflePage || self.mode == PlaybackMode::ShuffleAll {
+            if pos + 1 >= self.order.len() {
+                let current = self.order[pos];
+                let pick = self.pick_next_shuffle(current);
+                self.order.push(pick);
+            }
+            return Some(self.order[pos + 1]);
+        }
+        if self.sequential_start > 0 && pos < self.sequential_start {
+            return Some(self.order[self.sequential_start]);
+        }
+        if pos + 1 < self.order.len() {
+            return Some(self.order[pos + 1]);
+        }
+        // In order stops at the end of the scope, so no track is staged behind the last one; `advance(true)` agrees.
+        if self.mode == PlaybackMode::InOrder {
+            return None;
+        }
+        return Some(self.order[self.sequential_start])
+    }
+
+    /// What:
+    ///      `pub fn first_in_scope(&self) -> Option<usize>` is the first track of the displayed page, or the first
+    ///  track of the queue when no page has been shown to the engine yet; `None` for an empty queue.
+    /// Why:
+    ///       Play with nothing selected starts here (the polish review finding EM2): the button used to flip to Pause
+    ///  and nothing played.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// firstInScope(): number | null { return this.pageScope[0] ?? (this.tracks.length ? 0 : null); }
+    /// ```
+    pub fn first_in_scope(&self) -> Option<usize> {
+        if let Some(first) = self.page_scope.first() {
+            return Some(*first);
+        }
+        if self.tracks.is_empty() {
+            return None;
+        }
+        return Some(0);
+    }
+
+    /// What:
+    ///      `pub fn rewind_scope(&mut self) -> Option<usize>` puts the cursor on the first track of the scope and returns
+    ///  it, or `None` when nothing is queued.
+    /// Why:
+    ///       After In order has played its scope to the end and stopped, Play must start the folder again from its first
+    ///  track, as a disc player does; leaving the cursor on the last track would end again at once.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// rewindScope(): number | null { if (!this.order.length) return null; this.pos = this.sequentialStart; return this.order[this.pos]; }
+    /// ```
+    pub fn rewind_scope(&mut self) -> Option<usize> {
+        if self.order.is_empty() {
+            return None;
+        }
+        let slot: usize = self.sequential_start.min(self.order.len() - 1);
+        self.pos = Some(slot);
+        tracing::info!(slot, track = self.order[slot], "the cursor is back on the first track of the scope");
+        return Some(self.order[slot]);
     }
 
     /// What:
@@ -1495,7 +1601,7 @@ impl Queue {
         // ```
         let last = self.order.len() - 1;
         // What:     `self.pos = Some(last);`. Set the cursor to the last slot.
-        // Why:      Wrap behaviour (the scope always loops).
+        // Why:      Wrap behaviour (Previous at the start of the scope goes to its last track).
         //
         // In TS you'd write (pseudocode):
         // ```ts

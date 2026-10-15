@@ -18,8 +18,28 @@ use std::process::{Child, ChildStdin, Command, Output, Stdio};
 /// The real Git 2.56.0 executable installed in the verification image.
 pub(crate) const REAL_GIT: &str = "/usr/bin/git";
 
+/// How long the whole unit-test run may last before the watchdog ends it.
+/// The run takes under a minute, so a run past this limit has a test stuck behind something that never happens.
+const RUN_LIMIT: std::time::Duration = std::time::Duration::from_secs(120);
+
+/// Ends the test process with a message once the run has lasted `RUN_LIMIT`.
+/// Without it a mutant that leaves a lock held or ignores a deadline hangs the run until an outside timeout,
+/// which the mutation tool records as a timeout instead of a failed test.
+/// The first fixture of the run arms it; later calls do nothing.
+pub(crate) fn arm_watchdog() {
+    static ARMED: std::sync::Once = std::sync::Once::new();
+    ARMED.call_once(|| {
+        std::thread::spawn(|| {
+            std::thread::sleep(RUN_LIMIT);
+            eprintln!("the unit-test run exceeded {RUN_LIMIT:?}: a test is stuck");
+            std::process::abort();
+        });
+    });
+}
+
 /// Create one empty fixture directory owned by this test process and test name.
 pub(crate) fn fixture(name: &str) -> PathBuf {
+    arm_watchdog();
     let root: PathBuf =
         std::env::temp_dir().join(format!("native-unit-{}-{name}", std::process::id()));
     if root.exists() {

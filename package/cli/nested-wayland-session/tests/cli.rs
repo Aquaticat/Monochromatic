@@ -41,6 +41,7 @@ fn help_exits_successfully_without_startup() {
         assert!(text.contains("Usage:"));
         assert!(text.contains("--socket"));
         assert!(text.contains("--color-scheme"));
+        assert!(text.contains("--headless"));
         assert!(text.contains("COMMAND"));
         assert!(output.stderr.is_empty());
     }
@@ -77,4 +78,45 @@ fn usage_errors_are_reported_before_startup() {
         assert!(!text.contains("WAYLAND_DISPLAY"));
         assert!(!text.contains("XDG_RUNTIME_DIR"));
     }
+}
+
+/// With no display and no `--headless`,
+///  the nested window fails to start,
+///  exits with a runtime failure,
+///  and the message names the flag as an option.
+#[test]
+fn start_without_a_display_and_without_the_flag_names_the_headless_option() {
+    let output = execute(&["--size", "400x300", "--", "true"]);
+    assert_eq!(output.status.code(), Some(1), "{:?}", output);
+    let text = String::from_utf8(output.stderr).expect("UTF-8 error");
+    assert!(text.contains("--headless"), "{text}");
+    assert!(text.contains("winit backend init failed"), "{text}");
+}
+
+/// `--gpu` without `--headless` exits 1 before any startup and names `--headless`.
+#[test]
+fn gpu_without_headless_fails_naming_headless() {
+    let output = execute(&["--gpu", "software", "--", "true"]);
+    assert_eq!(output.status.code(), Some(1), "{:?}", output);
+    let text = String::from_utf8(output.stderr).expect("UTF-8 error");
+    assert!(text.contains("--gpu is only valid together with --headless"), "{text}");
+}
+
+/// A bad `--gpu` value is a usage error that names the choices.
+#[test]
+fn bad_gpu_value_is_a_usage_error_naming_the_choices() {
+    let output = execute(&["--headless", "--gpu", "amd", "--", "true"]);
+    assert_eq!(output.status.code(), Some(2), "{:?}", output);
+    let text = String::from_utf8(output.stderr).expect("UTF-8 error");
+    assert!(text.contains("auto, software"), "{text}");
+    assert!(text.contains("--list-gpus"), "{text}");
+}
+
+/// `--list-gpus` prints the device lines and exits 0 with no command and no display.
+#[test]
+fn list_gpus_prints_the_devices_and_the_auto_choice() {
+    let output = execute(&["--list-gpus"]);
+    assert!(output.status.success(), "{:?}", output);
+    let text = String::from_utf8(output.stdout).expect("UTF-8 listing");
+    assert!(text.contains("auto uses:"), "{text}");
 }

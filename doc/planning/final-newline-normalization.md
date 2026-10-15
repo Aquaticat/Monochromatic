@@ -310,7 +310,8 @@ Git clean filters remain rejected because local driver configuration and worktre
 platform's exact-byte model.
 Formatter-only enforcement remains incomplete because it cannot protect every in-scope text file.
 
-Issue `#356` added independent final-newline CI in `.github/workflows/final-newline.yml`.
+Issue `#356` added independent final-newline CI in `.github/workflows/final-newline.yml`
+(Removed on 2026-10-14 at the owner's request, together with `package/git-policy/cli/bin/final-newline-workflow.mjs`: the check rebuilt the wrapper on every pull request.).
 Hosted run `29171565809` passed while invoking cli-git's direct checker through typed Node orchestration over a
 disposable clone without loading unrelated hk or Pkl tooling.
 Issues `#356` and `#357` completed the independent CI gate and hk/Pkl retirement.

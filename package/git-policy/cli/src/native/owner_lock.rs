@@ -35,11 +35,15 @@ use super::process_identity::{ProcessIdentityError, current_birth_identity};
 use super::random_id::{RandomSourceError, random_uuid};
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
-/// `Duration` is a span of time.
-use std::time::Duration;
+/// `Duration` is a span of time; `Instant` is a point on a clock that never goes backwards.
+use std::time::{Duration, Instant};
 
 /// Delay between acquisition attempts while a live owner holds the lock.
 pub const DEFAULT_POLL_DELAY: Duration = Duration::from_millis(20);
+
+/// How long a wait lasts before `WaitNotice::slow` runs:
+///  long enough that ordinary contention stays silent.
+pub const SLOW_WAIT: Duration = Duration::from_secs(5);
 
 /// What:
 ///  Why an owner-lock operation failed.
@@ -73,6 +77,16 @@ pub enum OwnerLockError {
     },
     /// The lock named another owner when this holder released it.
     OwnershipChanged(PathBuf),
+    /// A live owner still held the lock when the caller's wait limit ran out.
+    WaitTimedOut {
+        /// The lock that stayed held.
+        path: PathBuf,
+        /// How long the caller waited.
+        waited: Duration,
+        /// The live holder's process ID,
+        ///  when its record could be read.
+        holder_pid: Option<i64>,
+    },
 }
 
 /// What:
@@ -115,6 +129,23 @@ impl std::fmt::Display for OwnerLockError {
                 return write!(
                     formatter,
                     "the owner lock {} changed owner while it was held",
+                    path.display()
+                );
+            }
+            Self::WaitTimedOut {
+                path,
+                waited,
+                holder_pid,
+            } => {
+                let holder: String = match holder_pid {
+                    Some(pid) => format!("process {pid}"),
+                    None => String::from("a process whose record could not be read"),
+                };
+                return write!(
+                    formatter,
+                    "gave up after waiting {} seconds for the owner lock {}, which {holder} still holds; \
+                     the lock was left in place",
+                    waited.as_secs(),
                     path.display()
                 );
             }
@@ -217,6 +248,24 @@ pub struct OwnerLock {
 /// Accessors and release of a held lock.
 impl OwnerLock {
     /// What:
+    ///  A view of a lock an ancestor process holds, which releases nothing.
+    /// Why:
+    ///   An invocation nested under a landing-lock holder proves it with an inherited lease and proceeds under the
+    ///  ancestor's lock instead of waiting for it (`inheritedLandingLock` in the incumbent).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { lockDirectory, token: process.env[LANDING_LEASE_ENV], [Symbol.asyncDispose]: async () => {} }
+    /// ```
+    pub fn inherited(directory: &Path, token: &str) -> OwnerLock {
+        return OwnerLock {
+            directory: directory.to_path_buf(),
+            token: String::from(token),
+            released: true,
+        };
+    }
+
+    /// What:
     ///  The published lock directory.
     /// Why:
     ///   Leases and diagnostics name the lock.
@@ -255,6 +304,10 @@ impl OwnerLock {
     /// await lock[Symbol.asyncDispose]();
     /// ```
     pub fn release(mut self) -> Result<(), OwnerLockError> {
+        // A view of an ancestor's lock was never taken by this holder, so it has nothing to release.
+        if self.released {
+            return Ok(());
+        }
         self.released = true;
         return release_held_lock(self.directory.as_path(), self.token.as_str());
     }
@@ -392,11 +445,42 @@ fn names_token(owner: &PublishedOwner, token: &str) -> bool {
 /// async function retireDeadLock({ lockDirectory, deadToken }): Promise<typeof LOCK_BUSY>;
 /// ```
 fn retire_dead_lock(lock_directory: &Path, dead_token: &str) -> Result<(), OwnerLockError> {
+    return retire_dead_lock_with(lock_directory, dead_token, rename_directory);
+}
+
+/// What:
+///  Rename a directory on the real filesystem.
+/// Why:
+///   `std::fs::rename` is generic over its path types, so the retirement's injectable step needs this plain function.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await rename(from, to);
+/// ```
+fn rename_directory(from: &Path, to: &Path) -> std::io::Result<()> {
+    return std::fs::rename(from, to);
+}
+
+/// What:
+///  Retire a dead owner's lock with the rename step supplied by the caller.
+/// Why:
+///   The lock can vanish between the owner check and the rename, a window only a racing process opens;
+///  a rename that fails the way a vanished lock fails lets a test reach that arm without a race.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function retireDeadLockWith({ lockDirectory, deadToken, rename }): Promise<void>;
+/// ```
+fn retire_dead_lock_with(
+    lock_directory: &Path,
+    dead_token: &str,
+    rename: fn(&Path, &Path) -> std::io::Result<()>,
+) -> Result<(), OwnerLockError> {
     if !names_token(&read_owner(lock_directory)?, dead_token) {
         return Ok(());
     }
     let stale: PathBuf = sibling_name(lock_directory, "stale")?;
-    match std::fs::rename(lock_directory, stale.as_path()) {
+    match rename(lock_directory, stale.as_path()) {
         Ok(()) => {}
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
         Err(error) => {
@@ -594,6 +678,13 @@ pub trait WaitNotice {
     /// Called once,
     ///  when the first attempt finds the lock held.
     fn waiting(&mut self);
+
+    /// Called once,
+    ///  when the wait has lasted `SLOW_WAIT`,
+    ///  with how long it has lasted.
+    ///  Brief contention never reaches it;
+    ///  a notice that only needs the first moment ignores it.
+    fn slow(&mut self, _waited: Duration) {}
 }
 
 /// What:
@@ -617,28 +708,30 @@ impl WaitNotice for SilentWait {
 
 /// What:
 ///  Acquire a lock,
-///  waiting without bound while a live owner holds it.
-///       `notice` is told once,
-///  when the first attempt finds the lock busy;
-///       `&mut dyn WaitNotice` lends any value implementing that interface.
+///  waiting at most `limit` while a live owner holds it,
+///  and telling `notice.slow` once the wait has lasted `slow_after`.
 /// Why:
-///   The wait is unbounded by contract while the owner lives;
-///  a dead owner's lock is
-///       retired on the next attempt.
-///  One process record is used for every attempt.
+///   No acquisition can wait forever,
+///  so a holder that is alive but stuck fails its waiters instead of stalling them.
+///  The elapsed time is measured on a clock that never goes backwards,
+///  and tests choose a short `slow_after` instead of waiting out `SLOW_WAIT`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function acquireOwnerLock({ lockDirectory, pollDelayMs = 20, onWait }): Promise<OwnerLock>;
+/// async function acquireWithin({ lockDirectory, pollDelayMs, onWait, limitMs }): Promise<OwnerLock>;
 /// ```
-pub fn acquire_owner_lock(
+pub fn acquire_within(
     lock_directory: &Path,
     poll_delay: Duration,
     notice: &mut dyn WaitNotice,
+    limit: Duration,
+    slow_after: Duration,
 ) -> Result<OwnerLock, OwnerLockError> {
     let record: OwnerLockRecord = current_owner_record(None)?;
+    let started: Instant = Instant::now();
     // `mut` lets the loop remember that the wait was announced.
     let mut notified: bool = false;
+    let mut slow_noticed: bool = false;
     loop {
         if let Some(lock) = attempt_acquire(lock_directory, &record)? {
             return Ok(lock);
@@ -647,8 +740,74 @@ pub fn acquire_owner_lock(
             notified = true;
             notice.waiting();
         }
+        if !slow_noticed && started.elapsed() >= slow_after {
+            slow_noticed = true;
+            notice.slow(started.elapsed());
+        }
+        if started.elapsed() >= limit {
+            let holder_pid: Option<i64> = match read_owner(lock_directory) {
+                Ok(PublishedOwner::Owner(published)) => Some(published.owner_pid),
+                Ok(PublishedOwner::Busy) | Err(_) => None,
+            };
+            return Err(OwnerLockError::WaitTimedOut {
+                path: lock_directory.to_path_buf(),
+                waited: started.elapsed(),
+                holder_pid,
+            });
+        }
         std::thread::sleep(poll_delay);
     }
+}
+
+/// What:
+///  Acquire a lock in a test,
+///  waiting at most `TEST_ACQUIRE_LIMIT` while a live owner holds it.
+///       `notice` is told once,
+///  when the first attempt finds the lock busy;
+///       `&mut dyn WaitNotice` lends any value implementing that interface.
+/// Why:
+///   Tests take locks to set up or to prove a release;
+///  a lock a mutant never releases must fail the test within the limit,
+///  not hang it until the mutation run's timeout.
+///  A dead owner's lock is retired on the next attempt.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function acquireOwnerLock({ lockDirectory, pollDelayMs = 20, onWait }): Promise<OwnerLock>;
+/// ```
+#[cfg(test)]
+pub fn acquire_owner_lock(
+    lock_directory: &Path,
+    poll_delay: Duration,
+    notice: &mut dyn WaitNotice,
+) -> Result<OwnerLock, OwnerLockError> {
+    return acquire_within(lock_directory, poll_delay, notice, TEST_ACQUIRE_LIMIT, SLOW_WAIT);
+}
+
+/// How long a test waits for a lock before failing.
+#[cfg(test)]
+const TEST_ACQUIRE_LIMIT: Duration = Duration::from_secs(20);
+
+/// What:
+///  Acquire a lock,
+///  giving up with `OwnerLockError::WaitTimedOut` once `limit` has passed while a live owner holds it.
+/// Why:
+///   A holder that is alive but stuck would otherwise stall every waiter forever.
+///  The held lock is never taken over,
+///  because a live owner may still be inside its critical section;
+///  the caller decides what a refusal means.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function acquireOwnerLockFor({ lockDirectory, pollDelayMs, onWait, limitMs }): Promise<OwnerLock>; // rejects after limitMs
+/// ```
+pub fn acquire_owner_lock_for(
+    lock_directory: &Path,
+    poll_delay: Duration,
+    notice: &mut dyn WaitNotice,
+    limit: Duration,
+) -> Result<OwnerLock, OwnerLockError> {
+    return acquire_within(lock_directory, poll_delay, notice, limit, SLOW_WAIT);
 }
 
 /// Lock contention,

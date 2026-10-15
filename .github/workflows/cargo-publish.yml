@@ -12,6 +12,7 @@ on:
         - forbidden-regex
         - monochromatic-jsonc-edit
         - monochromatic-lint
+        - monochromatic-git-policy-cli
         default: forbidden-strings
       dry-run:
         description: 'Dry run (package + verify, no crates.io upload, no GH release, no attestation)'
@@ -25,6 +26,7 @@ on:
     - 'package/rust-module/forbidden-regex/Cargo.toml'
     - 'package/rust-module/jsonc-edit/Cargo.toml'
     - 'package/linter/monochromatic-lint/Cargo.toml'
+    - 'package/git-policy/cli/Cargo.toml'
 
 permissions:
   contents: read
@@ -121,19 +123,26 @@ jobs:
         # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
         minimum_release_age: 1d
         install: false
-        cache: true
+        # mise-action saves its cache only when install is true: doc/decision/ci-caching.md
+        cache: false
 
     - name: Install only the tools this workflow needs
       run: mise install rust
 
-    - name: Cache cargo registry + build
+    # Key shape, restore-keys rule, and size budget: doc/decision/ci-caching.md
+    - name: Identify the Rust toolchain for the cache key
+      id: toolchain
+      run: echo "id=${ImageOS}-$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
+
+    - name: Cache cargo build artifacts
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
         path: |
-          ~/.cargo/registry
-          ~/.cargo/git
           package/cli/forbidden-strings/target
-        key: cargo-publish-${{ runner.os }}-${{ hashFiles('package/cli/forbidden-strings/Cargo.lock') }}
+          !package/cli/forbidden-strings/target/package
+        key: cargo-v2-publish-fs-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/cli/forbidden-strings/Cargo.lock') }}
+        restore-keys: |
+          cargo-v2-publish-fs-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
 
     # `cargo package` verifies by compiling the packaged crate and leaves
     # the .crate at target/package/. We attest THESE bytes, then upload
@@ -146,6 +155,12 @@ jobs:
     - name: Build .crate package (verifies by compile)
       working-directory: package/cli/forbidden-strings
       run: mise exec rust -- cargo package
+
+    - name: Log cargo directory sizes
+      if: always()
+      run: |
+        du --summarize --human-readable package/cli/forbidden-strings/target "$HOME/.cargo/registry" "$HOME/.cargo/git" || true
+        du --max-depth=2 --human-readable package/cli/forbidden-strings/target | sort --human-numeric-sort --reverse | head --lines=15 || true
 
     - name: Attest .crate provenance
       if: ${{ !inputs.dry-run }}
@@ -407,23 +422,36 @@ jobs:
         # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
         minimum_release_age: 1d
         install: false
-        cache: true
+        # mise-action saves its cache only when install is true: doc/decision/ci-caching.md
+        cache: false
 
     - name: Install only the tools this workflow needs
       run: mise install rust
 
-    - name: Cache cargo registry + build
+    # Key shape, restore-keys rule, and size budget: doc/decision/ci-caching.md
+    - name: Identify the Rust toolchain for the cache key
+      id: toolchain
+      run: echo "id=${ImageOS}-$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
+
+    - name: Cache cargo build artifacts
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
         path: |
-          ~/.cargo/registry
-          ~/.cargo/git
           package/cli/nested-wayland-session/target
-        key: cargo-publish-nws-${{ runner.os }}-${{ hashFiles('package/cli/nested-wayland-session/Cargo.lock') }}
+          !package/cli/nested-wayland-session/target/package
+        key: cargo-v2-publish-nws-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/cli/nested-wayland-session/Cargo.lock') }}
+        restore-keys: |
+          cargo-v2-publish-nws-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
 
     - name: Build .crate package (verifies by compile)
       working-directory: package/cli/nested-wayland-session
       run: mise exec rust -- cargo package
+
+    - name: Log cargo directory sizes
+      if: always()
+      run: |
+        du --summarize --human-readable package/cli/nested-wayland-session/target "$HOME/.cargo/registry" "$HOME/.cargo/git" || true
+        du --max-depth=2 --human-readable package/cli/nested-wayland-session/target | sort --human-numeric-sort --reverse | head --lines=15 || true
 
     - name: Attest .crate provenance
       if: ${{ !inputs.dry-run }}
@@ -654,20 +682,13 @@ jobs:
         # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
         minimum_release_age: 1d
         install: false
-        cache: true
+        # mise-action saves its cache only when install is true: doc/decision/ci-caching.md
+        cache: false
 
     - name: Install only the tools this workflow needs
       run: mise install rust
 
-    - name: Cache cargo registry + build
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          package/rust-module/forbidden-regex/target
-        key: cargo-publish-fr-${{ runner.os }}-${{ hashFiles('package/rust-module/forbidden-regex/Cargo.lock') }}
-
+    # Not cached: the cold build takes 6 s; a cache would add restore and save steps for almost no gain (doc/decision/ci-caching.md).
     - name: Build .crate package (verifies by compile)
       working-directory: package/rust-module/forbidden-regex
       run: mise exec rust -- cargo package
@@ -783,20 +804,13 @@ jobs:
         # doc/troubleshooting/mise-action-version-ahead-of-release.md
         minimum_release_age: 1d
         install: false
-        cache: true
+        # mise-action saves its cache only when install is true: doc/decision/ci-caching.md
+        cache: false
 
     - name: Install only the tools this workflow needs
       run: mise install rust
 
-    - name: Cache cargo registry + build
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          package/rust-module/jsonc-edit/target
-        key: cargo-publish-je-${{ runner.os }}-${{ hashFiles('package/rust-module/jsonc-edit/Cargo.lock') }}
-
+    # Not cached: the cold build takes under 1 s; a cache would add restore and save steps for almost no gain (doc/decision/ci-caching.md).
     - name: Build .crate package (verifies by compile)
       working-directory: package/rust-module/jsonc-edit
       run: mise exec rust -- cargo package
@@ -930,25 +944,38 @@ jobs:
         # doc/troubleshooting/mise-action-version-ahead-of-release.md
         minimum_release_age: 1d
         install: false
-        cache: true
+        # mise-action saves its cache only when install is true: doc/decision/ci-caching.md
+        cache: false
 
     - name: Install only the tools this workflow needs
       run: mise install rust
 
-    - name: Cache cargo registry + build
+    # Key shape, restore-keys rule, and size budget: doc/decision/ci-caching.md
+    - name: Identify the Rust toolchain for the cache key
+      id: toolchain
+      run: echo "id=${ImageOS}-$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
+
+    - name: Cache cargo build artifacts
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
         path: |
-          ~/.cargo/registry
-          ~/.cargo/git
           package/linter/monochromatic-lint/target
-        key: cargo-publish-ml-${{ runner.os }}-${{ hashFiles('package/linter/monochromatic-lint/Cargo.lock') }}
+          !package/linter/monochromatic-lint/target/package
+        key: cargo-v2-publish-ml-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/linter/monochromatic-lint/Cargo.lock') }}
+        restore-keys: |
+          cargo-v2-publish-ml-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
 
     # Verifying compiles the packaged crate against its crates.io dependencies,
     # including the published monochromatic-jsonc-edit rather than the path copy.
     - name: Build .crate package (verifies by compile)
       working-directory: package/linter/monochromatic-lint
       run: mise exec rust -- cargo package
+
+    - name: Log cargo directory sizes
+      if: always()
+      run: |
+        du --summarize --human-readable package/linter/monochromatic-lint/target "$HOME/.cargo/registry" "$HOME/.cargo/git" || true
+        du --max-depth=2 --human-readable package/linter/monochromatic-lint/target | sort --human-numeric-sort --reverse | head --lines=15 || true
 
     - name: Attest .crate provenance
       if: ${{ !inputs.dry-run }}
@@ -1116,4 +1143,301 @@ jobs:
           --repo "$REPO" \
           --title "monochromatic-lint v${VERSION}" \
           --notes "monochromatic-lint v${VERSION}. crates.io: https://crates.io/crates/monochromatic-lint/${VERSION}" \
+          --target "$SHA"
+
+  # monochromatic-git-policy-cli: the native Git policy wrapper (doc/planning/cli-git-native-cutover.md,
+  # `Publishing the native crate`). It follows the monochromatic-lint jobs above, with these differences:
+  # - Linux GNU targets only (x86_64 and aarch64). The Windows and macOS branches of the code never compiled in a
+  #   release gate, and the repository's immutable releases mean one failing target produces no release.
+  # - The executable is `cli-git-native`, not the crate name, so the archive holds
+  #   monochromatic-git-policy-cli-<version>-<target>/cli-git-native, the layout the crate's
+  #   [package.metadata.binstall] table points at.
+  # - The crate links forbidden-strings by path in the repository and by version on crates.io once packaged, so the
+  #   publish job waits until the required forbidden-strings release is in the crates.io index, which lets one push
+  #   carry both version bumps.
+  # - A smoke step runs each built executable, so a target that links but cannot start produces no release.
+  # - The release also needs gpc-publish-crate, unlike ml-create-release, so a run that cannot authenticate or publish
+  #   creates no immutable release for a crate that is not on crates.io.
+  # First publication (0.1.0) is by hand to bootstrap Trusted Publishing
+  # (doc/runbook/publish-crate-first-time.md); a later run authenticates, skips the existing upload, and builds the
+  # release. The matrix compiles with each runner's preinstalled rustup toolchain, as the matrices above do.
+
+  gpc-detect:
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.detect.outputs.should_publish }}
+      version: ${{ steps.detect.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 2
+
+    - name: Detect version bump
+      id: detect
+      env:
+        BEFORE_SHA: ${{ github.event.before }}
+        EVENT_NAME: ${{ github.event_name }}
+        INPUT_CRATE: ${{ github.event.inputs.crate }}
+      run: |
+        set -euo pipefail
+        cargo_toml='package/git-policy/cli/Cargo.toml'
+        after=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
+        before=''
+        if [ -n "${BEFORE_SHA:-}" ] \
+          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ]; then
+          # A push can carry several generations, such as a merge whose second parent
+          # holds commits that were not on origin yet, so the pre-push head can lie
+          # outside the depth-2 checkout. Fetch it instead of reading its absence as
+          # a version bump; a failed fetch fails this job, so nothing publishes.
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$BEFORE_SHA"
+          fi
+          if git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
+            before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+          fi
+        fi
+        printf 'before=%s\nafter=%s\n' "$before" "$after"
+        if [ -z "$after" ]; then
+          echo 'No version found in Cargo.toml; refusing to publish.' >&2
+          exit 1
+        fi
+        publish=false
+        if [ "$EVENT_NAME" = 'workflow_dispatch' ] && [ "$INPUT_CRATE" = 'monochromatic-git-policy-cli' ]; then
+          publish=true
+        elif [ "$EVENT_NAME" = 'push' ] && [ "$before" != "$after" ]; then
+          publish=true
+        fi
+        if [ "$publish" = 'true' ]; then
+          {
+            echo "should_publish=true"
+            echo "version=$after"
+          } >> "$GITHUB_OUTPUT"
+        else
+          echo "should_publish=false" >> "$GITHUB_OUTPUT"
+        fi
+
+  gpc-publish-crate:
+    needs: gpc-detect
+    if: ${{ needs.gpc-detect.outputs.should_publish == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Set up mise (skip auto-install of all tools)
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Same pinning rationale as the other jobs in this workflow:
+        # doc/troubleshooting/mise-action-version-ahead-of-release.md
+        minimum_release_age: 1d
+        install: false
+        # mise-action saves its cache only when install is true: doc/decision/ci-caching.md
+        cache: false
+
+    - name: Install only the tools this workflow needs
+      run: mise install rust
+
+    # Packaging replaces the path dependency with its version requirement, so the crates.io index must already
+    # list the forbidden-strings release this crate requires. A push that bumps both crates starts the
+    # forbidden-strings publish job in the same run; this step waits for it for up to thirty minutes.
+    - name: Wait for the required forbidden-strings release
+      working-directory: package/git-policy/cli
+      run: |
+        set -euo pipefail
+        required=$(sed -n 's/^forbidden-strings = .*version = "\([^"]*\)".*/\1/p' Cargo.toml)
+        if [ -z "$required" ]; then
+          echo 'No forbidden-strings version requirement found in Cargo.toml.' >&2
+          exit 1
+        fi
+        for attempt in $(seq 1 60); do
+          if curl -sSf -H 'User-Agent: monochromatic-ci' https://index.crates.io/fo/rb/forbidden-strings \
+            | grep -q "\"vers\":\"${required}\""; then
+            echo "forbidden-strings ${required} is in the crates.io index."
+            exit 0
+          fi
+          echo "forbidden-strings ${required} is not in the crates.io index yet (attempt ${attempt} of 60)."
+          sleep 30
+        done
+        echo "forbidden-strings ${required} did not appear in the crates.io index." >&2
+        exit 1
+
+    # Key shape, restore-keys rule, and size budget: doc/decision/ci-caching.md
+    - name: Identify the Rust toolchain for the cache key
+      id: toolchain
+      run: echo "id=${ImageOS}-$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
+
+    - name: Cache cargo build artifacts
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          package/git-policy/cli/target
+          !package/git-policy/cli/target/package
+        key: cargo-v2-publish-gpc-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/git-policy/cli/Cargo.lock') }}
+        restore-keys: |
+          cargo-v2-publish-gpc-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
+
+    # Verifying compiles the packaged crate against its crates.io dependencies,
+    # including the published forbidden-strings and monochromatic-jsonc-edit rather than the path copies.
+    - name: Build .crate package (verifies by compile)
+      working-directory: package/git-policy/cli
+      run: mise exec rust -- cargo package --locked
+
+    - name: Log cargo directory sizes
+      if: always()
+      run: |
+        du --summarize --human-readable package/git-policy/cli/target "$HOME/.cargo/registry" "$HOME/.cargo/git" || true
+        du --max-depth=2 --human-readable package/git-policy/cli/target | sort --human-numeric-sort --reverse | head --lines=15 || true
+
+    - name: Attest .crate provenance
+      if: ${{ !inputs.dry-run }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: 'package/git-policy/cli/target/package/monochromatic-git-policy-cli-${{ needs.gpc-detect.outputs.version }}.crate'
+
+    - name: Authenticate with crates.io (Trusted Publishing)
+      if: ${{ !inputs.dry-run }}
+      id: auth
+      uses: rust-lang/crates-io-auth-action@bbd81622f20ce9e2dd9622e3218b975523e45bbe
+
+    - name: Publish (dry run)
+      if: ${{ inputs.dry-run }}
+      working-directory: package/git-policy/cli
+      run: mise exec rust -- cargo publish --dry-run --locked --no-verify
+
+    - name: Publish (skips if this version is already on crates.io)
+      if: ${{ !inputs.dry-run }}
+      working-directory: package/git-policy/cli
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        VERSION: ${{ needs.gpc-detect.outputs.version }}
+      run: |
+        set -euo pipefail
+        if curl -sSf -H 'User-Agent: monochromatic-ci' \
+          "https://crates.io/api/v1/crates/monochromatic-git-policy-cli/${VERSION}" >/dev/null 2>&1; then
+          echo "::notice::monochromatic-git-policy-cli ${VERSION} already on crates.io; skipping publish."
+        else
+          mise exec rust -- cargo publish --locked --no-verify
+        fi
+
+  gpc-build-binary:
+    needs: gpc-detect
+    # Not gated on !inputs.dry-run: a dry run builds every target too.
+    if: ${{ needs.gpc-detect.outputs.should_publish == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - target: x86_64-unknown-linux-gnu
+          runner: ubuntu-latest
+        - target: aarch64-unknown-linux-gnu
+          runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Add rust target
+      shell: bash
+      run: rustup target add ${{ matrix.target }}
+
+    - name: Show the toolchain that builds the release
+      shell: bash
+      run: rustc --version --verbose
+
+    # --locked builds the dependency versions the published crate's Cargo.lock
+    # records; the release profile in Cargo.toml keeps panic = "unwind", which the linked scanner requires.
+    - name: Build binary
+      shell: bash
+      working-directory: package/git-policy/cli
+      run: cargo build --release --locked --target ${{ matrix.target }} --bin cli-git-native
+
+    # The wrapper answers `cli-git --help` without a repository, so a target that links but cannot start fails here.
+    - name: Smoke-run the binary
+      shell: bash
+      env:
+        TARGET: ${{ matrix.target }}
+      run: |
+        set -euo pipefail
+        help=$("package/git-policy/cli/target/${TARGET}/release/cli-git-native" cli-git --help)
+        printf '%s\n' "$help" | grep -q '^Usage: git cli-git'
+
+    - name: Package binary archive
+      id: pkg
+      shell: bash
+      env:
+        VERSION: ${{ needs.gpc-detect.outputs.version }}
+        TARGET: ${{ matrix.target }}
+      run: |
+        set -euo pipefail
+        crate='monochromatic-git-policy-cli'
+        bin='cli-git-native'
+        stage_dir="${crate}-${VERSION}-${TARGET}"
+        mkdir -p "dist/${stage_dir}"
+        cp "package/git-policy/cli/target/${TARGET}/release/${bin}" "dist/${stage_dir}/"
+        cp package/git-policy/cli/README.md "dist/${stage_dir}/"
+        archive="${stage_dir}.tar.gz"
+        (cd dist && tar czf "${archive}" "${stage_dir}")
+        archive_path="dist/${archive}"
+        echo "archive_path=${archive_path}" >> "$GITHUB_OUTPUT"
+        echo "archive_name=${archive}" >> "$GITHUB_OUTPUT"
+        ls -la dist/
+
+    - name: Attest binary provenance
+      if: ${{ !inputs.dry-run }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: ${{ steps.pkg.outputs.archive_path }}
+
+    # Uploaded in a dry run too, so the archive layout can be inspected and the
+    # binary run before anything is released.
+    - name: Upload archive as workflow artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: gpc-bin-${{ matrix.target }}
+        path: ${{ steps.pkg.outputs.archive_path }}
+        if-no-files-found: error
+        retention-days: 7
+
+  gpc-create-release:
+    needs: [gpc-detect, gpc-publish-crate, gpc-build-binary]
+    if: ${{ needs.gpc-detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+    - name: Download all binary archives
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        pattern: gpc-bin-*
+        path: assets
+        merge-multiple: true
+
+    - name: Create GitHub release with all archives
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ needs.gpc-detect.outputs.version }}
+        SHA: ${{ github.sha }}
+        REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+        tag="monochromatic-git-policy-cli-v${VERSION}"
+        ls -la assets/
+        gh release create "$tag" assets/* \
+          --repo "$REPO" \
+          --title "monochromatic-git-policy-cli v${VERSION}" \
+          --notes "monochromatic-git-policy-cli v${VERSION}. crates.io: https://crates.io/crates/monochromatic-git-policy-cli/${VERSION}" \
           --target "$SHA"

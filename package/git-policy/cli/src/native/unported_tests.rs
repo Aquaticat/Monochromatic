@@ -32,34 +32,9 @@ fn notice(subject: &str, command: &str) -> String {
 fn every_reason_names_what_is_missing() {
     for (what, command, subject) in [
         (
-            Unported::CommitTransaction,
-            "commit",
-            "the commit transaction that every git commit except a dry run goes through",
-        ),
-        (
-            Unported::WorktreeCopy,
-            "worktree",
-            "copying ignored files into a worktree created or moved from a linked worktree or a bare repository (--no-worktree-copy skips the copy)",
-        ),
-        (
-            Unported::AliasResolution,
-            "st",
-            "resolving a Git alias, which decides whether a command run from a linked worktree or a bare repository creates or moves a worktree,",
-        ),
-        (
             Unported::TransactionRecovery(PathBuf::from("/r/.git/cli-git-transactions")),
             "add",
             "recovering or waiting for the commit transactions recorded in /r/.git/cli-git-transactions",
-        ),
-        (
-            Unported::WorktreeCopyRecovery(PathBuf::from("/r/.git/cli-git-worktree-copy/v1")),
-            "reset",
-            "recovering the interrupted worktree copy recorded in /r/.git/cli-git-worktree-copy/v1",
-        ),
-        (
-            Unported::InheritedLease("CLI_GIT_LANDING_LEASE"),
-            "add",
-            "checking the lease a running cli-git passed in the environment variable CLI_GIT_LANDING_LEASE",
         ),
         (
             Unported::Lifecycle(Trigger::ManualPush),

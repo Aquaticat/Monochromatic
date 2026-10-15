@@ -38,8 +38,6 @@ pub struct FrameStamp {
     ///  physical scale,
     ///  and tile width.
     viewport: Viewport,
-    /// Horizontal tile origin affects subpixel glyph positions.
-    horizontal: f32,
     /// Foreground and selection colors include current system appearance.
     colors: CodeColors,
     /// Shared immutable classifications prevent copying the whole span list on each caret step.
@@ -79,7 +77,6 @@ impl PartialEq for FrameStamp {
         return self.revision == other.revision
             && self.selection == other.selection
             && self.viewport == other.viewport
-            && self.horizontal == other.horizontal
             && self.colors == other.colors
             && (Arc::ptr_eq(&self.styles, &other.styles) || self.styles == other.styles)
             && (Arc::ptr_eq(&self.matches, &other.matches) || self.matches == other.matches)
@@ -89,14 +86,38 @@ impl PartialEq for FrameStamp {
     }
 }
 
+/// Whether two shared values are the same allocation or equal, which skips the comparison for the same one.
+fn shared_or_equal<T: PartialEq + ?Sized>(left: &Arc<T>, right: &Arc<T>) -> bool {
+    return Arc::ptr_eq(left, right) || left == right;
+}
+
 /// Capture immutable paint inputs without treating a collapsed caret as image content.
 impl FrameStamp {
+    /// What:
+    ///  Whether every paint input but the visible annotations is the same in both stamps.
+    /// Why:
+    ///  Hints and messages follow the wrap width at once, but a displayed tile keeps the ones it was painted with
+    ///  until the tile for the new width arrives, so only the annotations are expected to differ meanwhile.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// sameExceptAnnotations(other: FrameStamp): boolean;
+    /// ```
+    pub fn same_except_annotations(&self, other: &Self) -> bool {
+        return other.revision == self.revision
+            && other.selection == self.selection
+            && other.viewport == self.viewport
+            && other.colors == self.colors
+            && shared_or_equal(&self.styles, &other.styles)
+            && shared_or_equal(&self.matches, &other.matches)
+            && other.annotation_colors == self.annotation_colors;
+    }
+
     /// Capture image inputs without including a collapsed caret's position.
     /// Reset the cached stamp when replacing the document with a different file.
     pub fn new(
         document: &Document,
         viewport: Viewport,
-        horizontal: f32,
         colors: CodeColors,
         styles: SourceStyles,
     ) -> Self {
@@ -113,7 +134,6 @@ impl FrameStamp {
             revision: document.revision(),
             selection,
             viewport,
-            horizontal,
             colors,
             styles,
             matches: Arc::from([]),

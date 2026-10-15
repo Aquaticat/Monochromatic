@@ -230,6 +230,23 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--tests'])
 """
 
+[tasks."test:wrap"]
+description = "Run the soft-wrap break rule unit tests and the wrapping integration tests in the bounded container"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--lib', 'wrap::'])
+runCargo(['test', '--no-default-features', '--test', 'wrap', '--test', 'wrap_rows', '--test', 'row_map', '--test', 'wrap_keys', '--test', 'vertical_motion'])
+"""
+
+[tasks."test:minimap"]
+description = "Run the minimap geometry and picture tests in the bounded container"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--test', 'minimap'])
+"""
+
 [tasks."test:native"]
 depends = ["runtime", "notices"]
 description = "Exercise native window events and fonts in process-isolated headless tests"
@@ -284,6 +301,18 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['test', '--test', 'cli_args', '--test', 'cli_process'])
+"""
+
+[tasks."test:ignored"]
+description = "Run the gitignore matching unit tests, the tree and reader tests that carry its answers, and the rule file notification test"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--lib', 'git_ignore::'])
+// The timing measurement behind the entry bound, ignored by default, prints its numbers.
+runCargo(['test', '--no-default-features', '--lib', 'git_ignore::tests::measure', '--', '--ignored', '--nocapture'])
+runCargo(['test', '--no-default-features', '--test', 'file_tree', '--test', 'file_tree_validation', '--test', 'file_tree_requests', '--test', 'file_tree_ignored', '--test', 'directory_worker', '--test', 'directory_worker_ignored'])
+runCargo(['test', '--no-default-features', '--test', 'change_watch', 'an_ignore_rule_file'])
 """
 
 [tasks."test:tree"]
@@ -395,7 +424,7 @@ description = "Check the vertical row mapping, virtual-row rules, inlay-hint and
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['test', '--no-default-features', '--test', 'row_map', '--test', 'virtual_row', '--test', 'annotation', '--test', 'annotation_frame', '--test', 'annotation_layout', '--test', 'annotation_paint', '--test', 'annotation_placement', '--test', 'source_frame', '--', '--nocapture'])
+runCargo(['test', '--no-default-features', '--test', 'row_map', '--test', 'virtual_row', '--test', 'annotation', '--test', 'annotation_frame', '--test', 'annotation_layout', '--test', 'annotation_paint', '--test', 'annotation_placement', '--test', 'wrap_annotations', '--test', 'source_frame', '--', '--nocapture'])
 """
 
 [tasks."test:annotations-native"]
@@ -472,6 +501,15 @@ arg "[cargo]" help="Private copy of the Cargo home below the private agent scrat
 arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
 run = "node bin/inspect-annotation-guards.mjs"
+
+[tasks."inspect:ignored-guards"]
+description = "Remove ignored-entry guards only in a disposable copy and observe named regression failures"
+usage = '''
+arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
+arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
+arg "[only]" help="Comma-separated guard names to run; default is every guard"
+'''
+run = "node bin/inspect-ignored-guards.mjs"
 
 [tasks."inspect:watch-guards"]
 description = "Remove change-watch and reread-schedule guards only in a disposable copy and observe named regression failures"
@@ -568,8 +606,16 @@ description = "Check the native UI declaration"
 # so the first command checks it too.
 run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint", "slint-viewer --check ui/search.slint", "slint-viewer --check ui/find.slint", "slint-viewer --check ui/query-input.slint", "slint-viewer --check ui/divider.slint", "slint-viewer --check ui/hover.slint", "slint-viewer --check ui/references.slint"]
 
+[tasks."lint:rustfmt"]
+description = "Check that application-owned Rust sources are formatted as cargo fmt writes them"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['fmt', '--check'])
+"""
+
 [tasks.lint]
-run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //:lint:monochromatic-lint -- package/desktop-app/ide", "mise run //package/desktop-app/ide:lint:slint"]
+run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //package/desktop-app/ide:lint:rustfmt", "mise run //:lint:monochromatic-lint -- package/desktop-app/ide", "mise run //package/desktop-app/ide:lint:slint"]
 
 [tasks."format:rust"]
 description = "Format application-owned Rust sources"
@@ -577,6 +623,16 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['fmt'])
+"""
+
+[tasks."test:syntax"]
+description = "Check syntax recognition, highlighting, injections, Markdown roles, and their faces: the syntax integration tests"
+usage = 'arg "[filter]" help="Optional test-name filter passed to the test harness"'
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+const filter = process.env.usage_filter ? [process.env.usage_filter] : []
+runCargo(['test', '--no-default-features', '--test', 'syntax', '--test', 'syntax_injection', '--test', 'syntax_inventory', '--test', 'syntax_markdown', '--test', 'syntax_markdown_faces', '--test', 'syntax_provisioning', '--test', 'syntax_shadowing', ...filter, ...(filter.length ? ['--', '--nocapture'] : [])])
 """
 
 [tasks."test:language"]
@@ -614,6 +670,15 @@ run = """
 {{vars.cargo}}
 runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect', '--bin', 'ide-scripted-lsp'])
 execFileSync('node', ['bin/inspect-language-confinement.mjs'], { stdio: 'inherit' })
+"""
+
+[tasks."inspect:language-mise"]
+description = "Run real servers found through the mise tools of disposable projects: a Node and a binary server started confined, an untrusted configuration that falls back to PATH with its notice, a folder without mise that keeps the PATH message, a hung mise that is stopped, and project trees compared before and after"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect'])
+execFileSync('node', ['bin/inspect-language-mise.mjs'], { stdio: 'inherit' })
 """
 
 [tasks."inspect:language-guards"]
@@ -841,7 +906,8 @@ writeFileSync(sourceFile, lines.join(String.fromCharCode(10)))
 }
 console.error('IDE_NATIVE_SOCKET=' + socket)
 console.error('IDE_NATIVE_FIXTURE=' + sourceFile)
-const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
+const { compositor, demandCurrentCompositor } = await import(resolve('bin/nested-compositor.mjs'))
+demandCurrentCompositor()
 // IDE_NATIVE_SIZE starts the nested screen at another size; a locked host session ignores the control socket's resize.
 const size = process.env.IDE_NATIVE_SIZE ?? '1100x660'
 if (!/^[1-9][0-9]*x[1-9][0-9]*$/.test(size)) { throw new Error('IDE_NATIVE_SIZE must be WIDTHxHEIGHT') }

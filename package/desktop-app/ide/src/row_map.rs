@@ -1,6 +1,9 @@
 //! The one mapping between vertical pixels and source lines.
 //!
-//! Every source line owns one code row of [`CODE_ROW`] logical pixels.
+//! Every source line owns one code row of [`CODE_ROW`] logical pixels
+//!  for each visual row it is wrapped to (a line that is not wrapped,
+//!  or not yet measured,
+//!  has one).
 //!  A line with inlay hints or diagnostic
 //! messages also owns a block of virtual rows directly above its code row;
 //!  the block's height includes the gap
@@ -12,8 +15,14 @@
 //!  line numbers,
 //!  scrolling,
 //!  and the scroll extent.
-//! Without blocks,
+//! Without blocks and without wrapped lines,
 //!  line `n` starts at exactly `n * CODE_ROW`.
+
+/// Visual row counts of every line,
+///  shared cheaply between the window,
+///  the tile worker,
+///  and every frame.
+use crate::line_rows::LineRows;
 
 /// What:
 ///  Height of one code row in logical pixels;
@@ -62,7 +71,9 @@ pub struct Place {
 
 /// What:
 ///  The vertical layout of a whole text:
-///  its line count and the lines that own a block,
+///  its line count,
+///  the visual rows of each line,
+///  and the lines that own a block,
 ///  each with the
 ///       block's height.
 ///  `Vec<T>` is a growable list (siblings:
@@ -78,13 +89,16 @@ pub struct Place {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type RowMap = { lines: number; blocks: [line: number, height: number][]; before: number[] };
+/// type RowMap = { lines: number; rows: LineRows; blocks: [line: number, height: number][]; before: number[] };
 /// ```
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct RowMap {
     /// Number of source lines;
     ///  an empty text still has one.
     lines: usize,
+    /// Visual rows of each line;
+    ///  every line has one until it is measured.
+    rows: LineRows,
     /// Lines owning a block,
     ///  in ascending order,
     ///  with the block height in logical pixels.
@@ -133,9 +147,61 @@ impl RowMap {
         }
         return Self {
             lines: lines.max(1),
+            rows: LineRows::plain(lines),
             blocks,
             before,
         };
+    }
+
+    /// What:
+    ///  This map with the visual row counts of `rows`.
+    ///  A table for another number of lines is ignored.
+    /// Why:
+    ///  The annotation blocks and the wrapped heights come from different owners;
+    ///  the map joins them.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// withRows(rows: LineRows): RowMap;
+    /// ```
+    pub fn with_rows(mut self, rows: &LineRows) -> Self {
+        if rows.lines() == self.lines {
+            self.rows = rows.clone();
+        }
+        return self;
+    }
+
+    /// What:
+    ///  This map with the visual rows of the given `(line, rows)` pairs set.
+    /// Why:
+    ///  A frame that shaped its own lines knows their exact heights,
+    ///  and places its rows by a map that agrees with them.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// withMeasured(measured: [line: number, rows: number][]): RowMap;
+    /// ```
+    pub fn with_measured(&self, measured: &[(usize, usize)]) -> Self {
+        let mut next = self.clone();
+        next.rows.apply(measured.iter().copied());
+        return next;
+    }
+
+    /// The visual row counts this map places lines by.
+    pub fn line_rows(&self) -> &LineRows {
+        return &self.rows;
+    }
+
+    /// Visual rows of `line`;
+    ///  a line the text does not have counts as one.
+    pub fn rows_of(&self, line: usize) -> usize {
+        return self.rows.rows(line);
+    }
+
+    /// Height of `line`'s code rows together:
+    ///  one code row for each visual row.
+    pub fn code_height(&self, line: usize) -> f32 {
+        return self.rows_of(line) as f32 * CODE_ROW;
     }
 
     /// Number of source lines the map describes.
@@ -201,7 +267,8 @@ impl RowMap {
     /// the answer is then the height of the whole text.
     pub fn block_top(&self, line: usize) -> f32 {
         let bounded = line.min(self.lines);
-        return bounded as f32 * CODE_ROW + self.raised_before(bounded);
+        let rows = bounded + self.rows.extra_before(bounded);
+        return rows as f32 * CODE_ROW + self.raised_before(bounded);
     }
 
     /// Top of `line`'s code row.
@@ -209,16 +276,33 @@ impl RowMap {
         return self.block_top(line) + self.block_height(line);
     }
 
-    /// Bottom of `line`'s code row,
+    /// Bottom of `line`'s last visual row,
     ///  where the next line's block or code row starts.
     pub fn code_bottom(&self, line: usize) -> f32 {
-        return self.code_top(line) + CODE_ROW;
+        return self.code_top(line) + self.code_height(line);
     }
 
     /// Height of the whole text:
-    ///  every code row and every block.
+    ///  every visual row and every block.
     pub fn height(&self) -> f32 {
-        return self.lines as f32 * CODE_ROW + self.raised();
+        return self.block_top(self.lines);
+    }
+
+    /// What:
+    ///  Which visual row of `line` the vertical position `y` is on,
+    ///  counted from the line's first row.
+    ///  A position above the line's rows is on the first,
+    ///  below them on the last.
+    /// Why:
+    ///  A click on a wrapped line must pick the row under the pointer.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// visualRowAt(line: number, y: number): number;
+    /// ```
+    pub fn visual_row_at(&self, line: usize, y: f32) -> usize {
+        let within = (y - self.code_top(line)).max(0.0);
+        return ((within / CODE_ROW) as usize).min(self.rows_of(line) - 1);
     }
 
     /// What:
@@ -243,34 +327,27 @@ impl RowMap {
             };
         }
         let bounded = y.max(0.0);
-        // The first block whose top lies below the point; the one before it, if any, starts at or above it.
-        let after = self.blocks.partition_point(|(owner, _)| {
-            return self.block_top(*owner) <= bounded;
-        });
-        if after == 0 {
-            // What: `as usize` truncates the non-negative quotient to a line index.
-            // Why: No block starts at or above the point, so rows are plain down to it.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return { line: Math.min(Math.floor(y / CODE_ROW), last), inBlock: false };
-            // ```
-            return Place {
-                line: ((bounded / CODE_ROW) as usize).min(last),
-                in_block: false,
-            };
+        // What: A binary search over the line numbers counts the lines whose top is at or above the point.
+        // Why: Line tops only grow, so the last of those lines owns the point.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const line = lowerBound(0, lines, (n) => blockTop(n) > y) - 1;
+        // ```
+        let (mut low, mut high) = (0_usize, self.lines);
+        while low < high {
+            let middle = low + (high - low) / 2;
+            if self.block_top(middle) <= bounded {
+                low = middle + 1;
+            } else {
+                high = middle;
+            }
         }
-        let (owner, height) = self.blocks[after - 1];
-        let code = self.block_top(owner) + height;
-        if bounded < code {
-            return Place {
-                line: owner,
-                in_block: true,
-            };
-        }
+        let line = low.saturating_sub(1).min(last);
+        let code = self.code_top(line);
         return Place {
-            line: (owner + ((bounded - code) / CODE_ROW) as usize).min(last),
-            in_block: false,
+            line,
+            in_block: bounded < code,
         };
     }
 
@@ -281,54 +358,74 @@ impl RowMap {
     }
 
     /// What:
-    ///  Height of everything `line` owns:
-    ///  its block and its code row.
-    ///  A line the text does not have
-    ///       counts as one plain row.
+    ///  Height of the visual row `row` of `line` with what stands above it:
+    ///  one code row, and the line's block when the row is its first.
+    ///  A line the text does not have counts as one plain row.
     /// Why:
-    ///  A page step is measured in whole lines,
+    ///  A page step is measured in whole visual rows,
     ///  also where a page reaches past either end of the text.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// extent(line: number): number;
+    /// extent(line: number, row: number): number;
     /// ```
-    fn extent(&self, line: usize) -> f32 {
+    fn extent(&self, line: usize, row: usize) -> f32 {
         if line >= self.lines {
             return CODE_ROW;
         }
-        return self.block_height(line) + CODE_ROW;
+        if row == 0 {
+            return self.block_height(line) + CODE_ROW;
+        }
+        return CODE_ROW;
     }
 
     /// What:
     ///  One page step from a view whose top edge is at `offset` and which is `height` tall:
     ///  the number of
-    ///       lines that fit,
+    ///       visual rows that fit,
     ///  at least one,
     ///  and their summed height.
-    ///  `forward` counts from the top line down,
-    ///       otherwise the lines above it.
+    ///  `forward` counts from the row at the top edge down,
+    ///       otherwise the rows above it.
     ///  The answer is a pair (tuple).
     /// Why:
-    ///  PageUp and PageDown move the caret by whole lines and the view by exactly the pixels those lines
+    ///  PageUp and PageDown move the caret by whole visual rows and the view by exactly the pixels those rows
     ///      take,
     ///  which is no longer a multiple of one row height once blocks take space.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// page(offset: number, height: number, forward: boolean): [lines: number, pixels: number];
+    /// page(offset: number, height: number, forward: boolean): [rows: number, pixels: number];
     /// ```
     pub fn page(&self, offset: f32, height: f32, forward: bool) -> (usize, f32) {
-        let start = self.line_at(offset);
+        let mut line = self.line_at(offset);
+        let mut row = self.visual_row_at(line, offset);
         let mut count: usize = 0;
         let mut pixels: f32 = 0.0;
+        // Above the first row there is nothing to measure; such steps count as plain rows.
+        let mut above = true;
         loop {
-            // Above the first line there is nothing to measure; such steps count as plain rows.
             let mut step = CODE_ROW;
             if forward {
-                step = self.extent(start + count);
-            } else if count < start {
-                step = self.extent(start - count - 1);
+                step = self.extent(line, row);
+                row += 1;
+                if row >= self.rows_of(line) {
+                    line += 1;
+                    row = 0;
+                }
+            } else if above {
+                // The previous row of the text is the one before the first row counted, or the last of the line above.
+                if row > 0 {
+                    row -= 1;
+                } else if line > 0 {
+                    line -= 1;
+                    row = self.rows_of(line) - 1;
+                } else {
+                    above = false;
+                }
+                if above {
+                    step = self.extent(line, row);
+                }
             }
             if count > 0 && pixels + step > height {
                 break;

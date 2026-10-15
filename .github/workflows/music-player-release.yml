@@ -1,0 +1,1227 @@
+name: music-player-release
+
+# Releases the music player (package/music-player): the desktop app for Windows, macOS, Linux (glibc, and
+# Alpine with musl) and the Android app, all in one GitHub pre-release. Decision and rationale:
+# doc/decision/music-player-releases.md. How to cut a release: doc/runbook/release-the-music-player.md.
+#
+# - Trigger: a push to main that changes the product version in
+#   package/music-player/desktop-app/Cargo.toml (the single version source; the Android app reads it
+#   too) or the Android native crate manifest, or a manual dispatch. The detect job compares the
+#   version before and after the push, exactly like cargo-publish.yml.
+# - Dry run: the dispatch input dry-run defaults to true. A dry run builds, packages and signs
+#   everything, uploads workflow artifacts for one day, and prints the release command and notes
+#   instead of running them. It skips attestation and creates no tag and no release.
+# - A real release happens only on main, from a push that bumped the version or a dispatch with
+#   dry-run false, and only if the tag music-player-v<version> does not exist yet. An existing tag
+#   skips the release without failing. Releases are immutable: assets cannot be replaced later.
+# - Every release is flagged as a pre-release: the project is under active development.
+# - Android is signed with the project release key from repository secrets. The secrets are read
+#   only in the Android job, and only on main; every other ref signs with a throwaway key.
+# - Windows and macOS binaries are not signed with a developer identity.
+# - Caches: each build job except the Alpine ones and the Windows GNU one restores the cargo registry and the
+#   target directory (and the Android job the Gradle caches) under a key made of the runner, target, toolchain
+#   and lock file hash, with a restore key that drops the lock file hash so a dependency change rebuilds only
+#   what changed. Only runs on main and manual dispatches save caches. The bytes of a release are still the
+#   bytes this run built and attested: cargo and Gradle rebuild whatever their own fingerprints say changed.
+#   Entry sizes and hit rates are recorded in doc/decision/music-player-releases.md.
+#   The Alpine (musl) jobs and the Windows GNU job cache no cargo or target directory: every run builds them
+#   cold, and the decision document says why. The Windows GNU job caches only the MSYS2 package downloads.
+# - Windows: the MSVC executables are linked by Visual Studio's link.exe, the GNU one by MinGW-w64 GNU ld
+#   (doc/decision/music-player-windows-linkers.md). The build prints the linker rustc ran and fails on lld.
+# - mise: both jdx/mise-action steps pin the mise version; the runbook says how to update the pin.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Dry run (build, package and sign, but no attestation, no tag, no GitHub release)'
+        type: boolean
+        default: true
+  push:
+    branches:
+    - 'main'
+    paths:
+    - 'package/music-player/desktop-app/Cargo.toml'
+    - 'package/music-player/android-app/rust/Cargo.toml'
+
+permissions: {}
+
+env:
+  # The root mise config lists heavy dev tools with auto_install on; every mise run or mise exec
+  # would try to build them on the runner. Off, each job uses only the tools it installs itself.
+  # Same pattern as npm-release.yml and toml-edit-fuzz.yml.
+  MISE_AUTO_INSTALL: 'false'
+  # Android release certificate (public) that a real release must be signed with. A real release
+  # fails if the APK carries any other certificate, so a debug-signed or throwaway-signed APK can
+  # never be published. Changes only when the key is rotated: doc/runbook/release-the-music-player.md.
+  EXPECTED_ANDROID_CERT_SHA256: '9de6e9a475f182c36f2513179fd4b14763b0e00fe068c9b8f3e6f08103616926'
+
+# Serialize runs so a second version bump landing while a release is still building does not race
+# the first. cancel-in-progress=false keeps the running release alive; the second run queues.
+concurrency:
+  group: music-player-release
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    if: ${{ !github.event.repository.fork }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      should_build: ${{ steps.detect.outputs.should_build }}
+      dry_run: ${{ steps.detect.outputs.dry_run }}
+      use_release_key: ${{ steps.detect.outputs.use_release_key }}
+      save_cache: ${{ steps.detect.outputs.save_cache }}
+      version: ${{ steps.detect.outputs.version }}
+      version_code: ${{ steps.detect.outputs.version_code }}
+      tag: ${{ steps.detect.outputs.tag }}
+      tag_exists: ${{ steps.detect.outputs.tag_exists }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        # need before+after revs to detect a version bump on push events.
+        # fetch-depth: 2 holds `before` for a one-generation push; the detect
+        # step fetches it when a push carries more, and treats a first push
+        # (no `before`) as a bump.
+        fetch-depth: 2
+        persist-credentials: false
+
+    - name: Detect version bump
+      id: detect
+      env:
+        BEFORE_SHA: ${{ github.event.before }}
+        EVENT_NAME: ${{ github.event_name }}
+        REF: ${{ github.ref }}
+        INPUT_DRY_RUN: ${{ github.event.inputs.dry-run }}
+        REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+      run: |
+        set -euo pipefail
+        desktop_toml='package/music-player/desktop-app/Cargo.toml'
+        android_toml='package/music-player/android-app/rust/Cargo.toml'
+        # The first `version = "..."` line of the [package] table.
+        package_version() {
+          awk -F'"' '/^\[/ { in_package = ($0 == "[package]") } in_package && /^version = / { print $2; exit }'
+        }
+        version_code() {
+          IFS=. read -r major minor patch <<< "$1"
+          echo $((major * 10000 + minor * 100 + patch))
+        }
+        after=$(package_version < "$desktop_toml")
+        android=$(package_version < "$android_toml")
+        before=''
+        if [ -n "${BEFORE_SHA:-}" ] \
+          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ]; then
+          # A push can carry several generations, such as a merge whose second parent
+          # holds commits that were not on origin yet, so the pre-push head can lie
+          # outside the depth-2 checkout. Fetch it instead of reading its absence as
+          # a version bump; a failed fetch fails this job, so nothing is released.
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 "$REPO_URL" "$BEFORE_SHA"
+          fi
+          if git cat-file -e "${BEFORE_SHA}:${desktop_toml}" 2>/dev/null; then
+            before=$(git show "${BEFORE_SHA}:${desktop_toml}" | package_version)
+          fi
+        fi
+        printf 'before=%s\nafter=%s\nandroid=%s\n' "$before" "$after" "$android"
+
+        # One version for the product: it must be plain MAJOR.MINOR.PATCH so the Android
+        # versionCode (major*10000 + minor*100 + patch) is unique and never decreases.
+        if ! [[ "$after" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]{0,1})\.(0|[1-9][0-9]{0,1})$ ]]; then
+          echo "::error::Version '$after' in $desktop_toml must be MAJOR.MINOR.PATCH with minor and patch at most 99."
+          exit 1
+        fi
+        if [ "$android" != "$after" ]; then
+          echo "::error::Version mismatch: $desktop_toml has '$after' but $android_toml has '$android'. Bump both."
+          exit 1
+        fi
+        code=$(version_code "$after")
+        if [ -n "$before" ] && [ "$before" != "$after" ]; then
+          if [[ "$before" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && [ "$(version_code "$before")" -ge "$code" ]; then
+            echo "::error::Version went from '$before' to '$after'; it must increase, or the Android versionCode would not."
+            exit 1
+          fi
+        fi
+
+        tag="music-player-v${after}"
+        tag_exists=false
+        if [ -n "$(git ls-remote --tags "$REPO_URL" "refs/tags/${tag}")" ]; then
+          tag_exists=true
+        fi
+
+        # A real release runs only on main. Everything else is a dry run, whatever the input says.
+        dry_run=true
+        if [ "$REF" = 'refs/heads/main' ]; then
+          if [ "$EVENT_NAME" = 'push' ]; then
+            dry_run=false
+          elif [ "$EVENT_NAME" = 'workflow_dispatch' ] && [ "$INPUT_DRY_RUN" = 'false' ]; then
+            dry_run=false
+          fi
+        elif [ "$EVENT_NAME" = 'workflow_dispatch' ] && [ "$INPUT_DRY_RUN" = 'false' ]; then
+          echo "::error::A real release runs only from main; this run is on $REF. Dispatch with dry-run true."
+          exit 1
+        fi
+
+        # The release key is read only for runs on main.
+        use_release_key=false
+        if [ "$REF" = 'refs/heads/main' ]; then
+          use_release_key=true
+        fi
+
+        # Only runs on main and manual dispatches save caches. This workflow has no pull request trigger.
+        save_cache=false
+        if [ "$EVENT_NAME" = 'workflow_dispatch' ] || [ "$REF" = 'refs/heads/main' ]; then
+          save_cache=true
+        fi
+
+        # A push builds only when the version changed; a dispatch always builds, and a real
+        # dispatch builds only if the tag is free. An existing tag skips, it never fails.
+        should_build=false
+        if [ "$EVENT_NAME" = 'workflow_dispatch' ]; then
+          should_build=true
+        elif [ "$EVENT_NAME" = 'push' ] && [ "$before" != "$after" ]; then
+          should_build=true
+        fi
+        if [ "$should_build" = 'true' ] && [ "$dry_run" = 'false' ] && [ "$tag_exists" = 'true' ]; then
+          echo "::notice::Tag $tag already exists; skipping the release. Releases are immutable, so it is never overwritten."
+          should_build=false
+        fi
+        {
+          echo "should_build=$should_build"
+          echo "dry_run=$dry_run"
+          echo "use_release_key=$use_release_key"
+          echo "save_cache=$save_cache"
+          echo "version=$after"
+          echo "version_code=$code"
+          echo "tag=$tag"
+          echo "tag_exists=$tag_exists"
+        } >> "$GITHUB_OUTPUT"
+        printf 'should_build=%s dry_run=%s tag=%s tag_exists=%s version_code=%s\n' \
+          "$should_build" "$dry_run" "$tag" "$tag_exists" "$code"
+
+  build-desktop:
+    needs: detect
+    if: ${{ needs.detect.outputs.should_build == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - { os: linux, arch: x64, target: x86_64-unknown-linux-gnu, runner: ubuntu-24.04 }
+        - { os: linux, arch: arm64, target: aarch64-unknown-linux-gnu, runner: ubuntu-24.04-arm }
+        - { os: macos, arch: arm64, target: aarch64-apple-darwin, runner: macos-15 }
+        - { os: windows, arch: x64, target: x86_64-pc-windows-msvc, runner: windows-2025 }
+        # Windows without Microsoft's toolchain: the GNU host toolchain with an MSYS2 MinGW-w64 gcc and GNU ld.
+        # doc/decision/music-player-windows-linkers.md
+        - { os: windows, arch: x64-gnu, target: x86_64-pc-windows-gnu, runner: windows-2025 }
+        # Native Windows arm64 runner, free for public repositories (GA 2025-08-07):
+        # doc/decision/forbidden-strings-windows-arm64-release-target.md
+        - { os: windows, arch: arm64, target: aarch64-pc-windows-msvc, runner: windows-11-arm }
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      # Attest build provenance for the files this job uploads.
+      id-token: write
+      attestations: write
+    env:
+      TARGET: ${{ matrix.target }}
+      OS: ${{ matrix.os }}
+      ARCH: ${{ matrix.arch }}
+      VERSION: ${{ needs.detect.outputs.version }}
+      # The Slint UI uses experimental builtins (FlexboxLayout); also set by the repository's .cargo/config.toml.
+      SLINT_ENABLE_EXPERIMENTAL_FEATURES: '1'
+      # The oldest macOS the app declares in macos/Info.plist (LSMinimumSystemVersion).
+      MACOSX_DEPLOYMENT_TARGET: '11.0'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+        persist-credentials: false
+
+    # The repository pins its Rust toolchain in mise.lock (a dated nightly, shared by every
+    # package). Read it from there so the release never drifts from what developers build with.
+    # rustup comes with every runner image, which keeps one mechanism on every desktop platform.
+    # The Windows GNU job installs the GNU HOST toolchain (<version>-x86_64-pc-windows-gnu): with the default MSVC
+    # host, build scripts and proc macros would still be linked by Visual Studio's link.exe, and the job would not
+    # build without Microsoft's toolchain. The host check at the end of this step enforces the match.
+    - name: Install the Rust toolchain pinned in mise.lock
+      shell: bash
+      run: |
+        set -euo pipefail
+        toolchain=$(awk -F'"' '/^\[\[tools\.rust\]\]$/ { in_rust = 1; next } in_rust && /^version = / { print $2; exit }' mise.lock)
+        case "$toolchain" in
+          nightly-????-??-?? | [0-9]*.[0-9]*.[0-9]*) ;;
+          *) echo "::error::Unexpected Rust version in mise.lock: '$toolchain'"; exit 1 ;;
+        esac
+        if [ "$TARGET" = 'x86_64-pc-windows-gnu' ]; then
+          toolchain="${toolchain}-x86_64-pc-windows-gnu"
+        fi
+        rustup toolchain install "$toolchain" --profile minimal --target "$TARGET" --no-self-update
+        echo "RUSTUP_TOOLCHAIN=$toolchain" >> "$GITHUB_ENV"
+        rustc "+$toolchain" -Vv
+        host=$(rustc "+$toolchain" -vV | awk '/^host: / { print $2 }')
+        if [ "$host" != "$TARGET" ]; then
+          echo "::error::Runner host is $host but this job builds $TARGET natively."
+          exit 1
+        fi
+
+    # Package download cache of the preinstalled MSYS2 (C:\msys64): the .pkg.tar.zst files pacman downloads. The key
+    # is the one music-player-windows.yml uses, so both workflows share one entry per month; it rotates monthly
+    # because MSYS2 publishes new package versions all the time and a cache entry is never updated.
+    - name: Name the month for the MSYS2 cache key
+      id: month
+      if: ${{ matrix.target == 'x86_64-pc-windows-gnu' }}
+      shell: bash
+      run: echo "value=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
+
+    - name: Restore the MSYS2 package cache
+      id: msys2-cache
+      if: ${{ matrix.target == 'x86_64-pc-windows-gnu' }}
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: C:\msys64\var\cache\pacman\pkg
+        key: msys2-pkg-v1-${{ runner.os }}-${{ runner.arch }}-UCRT64-${{ steps.month.outputs.value }}
+        restore-keys: |
+          msys2-pkg-v1-${{ runner.os }}-${{ runner.arch }}-UCRT64-
+
+    # The runner image carries MSYS2 in C:\msys64 (not on PATH). It is used directly, without the msys2/setup-msys2
+    # action, which this repository's allowed-actions list does not permit. The package database in the image is
+    # stale, so it is refreshed first (`--refresh`); only mingw-w64 packages, which are self-contained under /ucrt64,
+    # are installed, so a partial MSYS2 upgrade is not a concern. gcc brings binutils (GNU ld, as, dlltool, windres)
+    # and the MinGW-w64 runtime. cmake and ninja come from the runner image: opusic-sys builds libopus with cmake.
+    # UCRT64 is the MSYS2 environment its documentation recommends (MINGW64 is deprecated since 2026-03-15).
+    - name: Install MinGW-w64 with the preinstalled MSYS2
+      if: ${{ matrix.target == 'x86_64-pc-windows-gnu' }}
+      shell: bash
+      env:
+        MSYSTEM: UCRT64
+        MSYS2_PATH_TYPE: strict
+      run: |
+        set -euo pipefail
+        /c/msys64/usr/bin/bash.exe -lc 'pacman --sync --refresh --noconfirm --needed "${MINGW_PACKAGE_PREFIX}-gcc"'
+        # Drop cached files of package versions that are no longer installed, so the saved entry stays small.
+        /c/msys64/usr/bin/bash.exe -lc 'pacman --sync --clean --noconfirm'
+        du -sh /c/msys64/var/cache/pacman/pkg
+
+    - name: Put the MinGW-w64 tools first on PATH and print them
+      if: ${{ matrix.target == 'x86_64-pc-windows-gnu' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        # Strawberry Perl and older MinGW copies on the runner also ship a gcc; the MSYS2 one must win.
+        echo 'C:\msys64\ucrt64\bin' >> "$GITHUB_PATH"
+        export PATH="/c/msys64/ucrt64/bin:$PATH"
+        for tool in gcc ld dlltool windres ar cmake ninja; do
+          printf '%s: ' "$tool"; command -v "$tool"
+        done
+        gcc --version | head -n 1
+        ld --version | head -n 1
+        machine=$(gcc -dumpmachine)
+        echo "$machine"
+        if [ "$machine" != 'x86_64-w64-mingw32' ]; then
+          echo "::error::gcc targets '$machine', expected x86_64-w64-mingw32."
+          exit 1
+        fi
+
+    # Registry downloads and compiled dependencies. The key names the runner, target, toolchain and lock file;
+    # the restore key drops the lock file hash, so a changed lock file starts from the previous dependencies
+    # and cargo rebuilds only the crates whose version changed (cargo-publish.yml's exact-key cache rebuilds all).
+    # The Windows GNU job skips this restore, the report, the trim and the save: doc/decision/music-player-releases.md.
+    - name: Restore the cargo and target caches
+      id: cache
+      if: ${{ matrix.target != 'x86_64-pc-windows-gnu' }}
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+          package/music-player/desktop-app/target
+        key: music-player-desktop-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock') }}
+        restore-keys: |
+          music-player-desktop-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ env.RUSTUP_TOOLCHAIN }}-
+
+    - name: Report the cache restore
+      if: ${{ matrix.target != 'x86_64-pc-windows-gnu' }}
+      shell: bash
+      env:
+        PRIMARY_KEY: ${{ steps.cache.outputs.cache-primary-key }}
+        MATCHED_KEY: ${{ steps.cache.outputs.cache-matched-key }}
+        EXACT_HIT: ${{ steps.cache.outputs.cache-hit }}
+      run: |
+        echo "::notice title=cache::cargo cache exact_hit=${EXACT_HIT:-false} matched='${MATCHED_KEY}' primary='${PRIMARY_KEY}'"
+        du -sh package/music-player/desktop-app/target 2>/dev/null || echo 'no target directory restored'
+
+    # Ubuntu equivalents of the Fedora -devel packages in the desktop-app Containerfile:
+    # pipewire (the audio backend, bindgen needs libclang), fontconfig and freetype (Slint fonts).
+    # Windowing (Wayland, X11, xkbcommon) and GL are loaded at run time and need no headers.
+    - name: Install system libraries (Linux)
+      if: ${{ matrix.os == 'linux' }}
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          pkg-config clang libclang-dev cmake \
+          libpipewire-0.3-dev libspa-0.2-dev \
+          libfontconfig1-dev libfreetype-dev
+
+    # On Windows the build is `cargo rustc` with rustc's --print link-args, which prints the linker command and goes on
+    # linking; the next step reads the file. It is the same release build as `cargo build` (the extra argument reaches
+    # only the final binary crate), and it saves a second compile of that crate just to see the linker.
+    # Windows linkers: .cargo/config.toml sets no linker for the MSVC targets, so rustc runs Visual Studio's link.exe;
+    # the GNU target is linked by gcc with GNU ld (-fuse-ld=bfd): doc/decision/music-player-windows-linkers.md.
+    - name: Build the desktop binary
+      shell: bash
+      working-directory: package/music-player/desktop-app
+      run: |
+        set -euo pipefail
+        if [ "$OS" = 'windows' ]; then
+          cargo rustc --release --locked --target "$TARGET" --bin music-player -- --print link-args \
+            > "${RUNNER_TEMP}/link-args.txt"
+        else
+          cargo build --release --locked --target "$TARGET"
+        fi
+
+    # The linker is part of what a Windows release promises: link.exe for the MSVC executables (the lld-link.exe that
+    # .cargo/config.toml once pinned left the dynamic C runtime in the x64 exe), GNU ld through gcc for the GNU one.
+    # The first quoted word of the printed command that is not part of an environment assignment is the program.
+    - name: Check the linker rustc ran (Windows)
+      if: ${{ matrix.os == 'windows' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        python - "$TARGET" "${RUNNER_TEMP}/link-args.txt" <<'PY'
+        import re
+        import sys
+
+        target, path = sys.argv[1], sys.argv[2]
+        with open(path, encoding="utf-8", errors="replace") as handle:
+            text = handle.read()
+        first_line = next((line for line in text.splitlines() if line.strip()), "")
+        found = re.search(r'(?:^|\s)"((?:[^"\\]|\\.)*)"', first_line)
+        if found is None:
+            print("::error::No linker program found in the output of --print link-args.")
+            print(first_line[:400])
+            sys.exit(1)
+        program = found.group(1)
+        name = re.split(r"[\\/]+", program)[-1].lower()
+        print("linker program:", program)
+        if "lld" in name:
+            print("::error::rustc linked with lld: " + program)
+            sys.exit(1)
+        if target.endswith("-pc-windows-msvc"):
+            if name != "link.exe":
+                print("::error::The MSVC target was not linked by link.exe: " + program)
+                sys.exit(1)
+        elif target == "x86_64-pc-windows-gnu":
+            if re.fullmatch(r"(?:[a-z0-9_]+-w64-mingw32-)?gcc(?:\.exe)?", name) is None:
+                print("::error::The GNU target was not linked through gcc: " + program)
+                sys.exit(1)
+            if "-fuse-ld=bfd" not in text:
+                print("::error::The GNU target link line lacks -fuse-ld=bfd (GNU ld).")
+                sys.exit(1)
+        else:
+            print("::error::No linker rule for target " + target)
+            sys.exit(1)
+        print("linker check passed for", target)
+        PY
+
+    - name: Smoke test the binary (--version)
+      shell: bash
+      run: |
+        set -euo pipefail
+        bin="package/music-player/desktop-app/target/${TARGET}/release/music-player"
+        if [ "$OS" = 'windows' ]; then bin="${bin}.exe"; fi
+        ls -la "$bin"
+        out=$("$bin" --version)
+        echo "$out"
+        if [ "$out" != "music-player ${VERSION}" ]; then
+          echo "::error::Expected 'music-player ${VERSION}' from --version, got '$out'."
+          exit 1
+        fi
+
+    - name: Package (Linux tarball)
+      if: ${{ matrix.os == 'linux' }}
+      id: pkg-linux
+      shell: bash
+      run: |
+        set -euo pipefail
+        app='package/music-player/desktop-app'
+        stage_name="music-player-${VERSION}-linux-${ARCH}"
+        stage="dist/${stage_name}"
+        mkdir -p "${stage}/bin" "${stage}/share/applications" "${stage}/share/icons/hicolor/scalable/apps"
+        cp "${app}/target/${TARGET}/release/music-player" "${stage}/bin/"
+        # The repository's launcher names the generic theme icon; the archive ships its own icon instead.
+        sed 's/^Icon=.*/Icon=music-player/' "${app}/share/applications/monochromatic.music-player.desktop" \
+          > "${stage}/share/applications/monochromatic.music-player.desktop"
+        cp "${app}/asset/icon.svg" "${stage}/share/icons/hicolor/scalable/apps/music-player.svg"
+        cp LICENSE "${stage}/LICENSE"
+        cat > "${stage}/INSTALL.txt" <<'INSTALL'
+        Music Player for Linux (pre-release, built by CI)
+
+        Run it in place:
+          ./bin/music-player /path/to/music-folder
+
+        Install for your user (menu entry and icon):
+          mkdir -p ~/.local/bin ~/.local/share/applications ~/.local/share/icons/hicolor/scalable/apps
+          cp bin/music-player ~/.local/bin/
+          cp share/applications/monochromatic.music-player.desktop ~/.local/share/applications/
+          cp share/icons/hicolor/scalable/apps/music-player.svg ~/.local/share/icons/hicolor/scalable/apps/
+
+        Needs a Wayland or X11 session, PipeWire, and fontconfig.
+        The binary is linked against glibc of Ubuntu 24.04 or newer.
+        INSTALL
+        asset="${stage_name}.tar.gz"
+        # Fixed order, owner and timestamps so the same inputs give the same tar stream.
+        epoch=$(git log -1 --format=%ct)
+        tar --sort=name --owner=0 --group=0 --numeric-owner --mtime="@${epoch}" \
+          --create --file - --directory dist "${stage_name}" | gzip --no-name --best > "dist/${asset}"
+        echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
+        tar --list --verbose --file "dist/${asset}"
+
+    - name: Package (Windows executable)
+      if: ${{ matrix.os == 'windows' }}
+      id: pkg-windows
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p dist
+        asset="music-player-${VERSION}-windows-${ARCH}.exe"
+        cp "package/music-player/desktop-app/target/${TARGET}/release/music-player.exe" "dist/${asset}"
+        # List the DLLs the executable imports, from its real import tables. The MSVC executables link the C
+        # runtime statically (+crt-static in .cargo/config.toml), so no Visual C++ runtime DLL may be among their
+        # imports. The GNU executable is built with MinGW-w64 and GNU ld: it imports the Windows C runtime
+        # (api-ms-win-crt-*, UCRT64) and system DLLs, and no MinGW runtime DLL (libgcc_s, libwinpthread,
+        # libstdc++), which would have to ship next to it. The runner's PATH holds the MSYS2 DLLs, so
+        # the --version smoke test above cannot catch that; this check does.
+        python -m pip install --disable-pip-version-check --quiet pefile==2024.8.26
+        python - "dist/${asset}" "$TARGET" <<'PY'
+        import sys
+        import pefile
+
+        pe = pefile.PE(sys.argv[1], fast_load=True)
+        pe.parse_data_directories(directories=[
+            pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IMPORT"],
+            pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT"],
+        ])
+        header = pe.OPTIONAL_HEADER
+        print("machine", hex(pe.FILE_HEADER.Machine), "subsystem", header.Subsystem)
+        print(f"linker version in the PE header: {header.MajorLinkerVersion}.{header.MinorLinkerVersion}")
+        names = sorted({entry.dll.decode().lower() for table in ("DIRECTORY_ENTRY_IMPORT", "DIRECTORY_ENTRY_DELAY_IMPORT") for entry in getattr(pe, table, [])})
+        print("imports:", " ".join(names))
+        if sys.argv[2] == "x86_64-pc-windows-gnu":
+            runtime = [name for name in names if name.startswith(("libgcc_s", "libwinpthread", "libstdc++"))]
+            if runtime:
+                print("::error::The executable imports a MinGW runtime DLL, so it needs files next to it: " + " ".join(runtime))
+                sys.exit(1)
+        else:
+            runtime = [name for name in names if name.startswith(("vcruntime", "msvcp", "concrt", "vccorlib", "msvcr"))]
+            if runtime:
+                print("::error::The executable imports a Visual C++ runtime DLL, so it is not self-contained: " + " ".join(runtime))
+                sys.exit(1)
+        PY
+        echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
+        ls -la dist
+
+    - name: Install node (runs the repository's bundle:macos task)
+      if: ${{ matrix.os == 'macos' }}
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Pinned: with no version, minimum_release_age makes the action list mise releases through the GitHub API
+        # with the workflow token on every run, and one 403 from that call fails the job without a retry (run
+        # 38688512043, attempt 1, here and in the Android job). An explicit version skips that call, and the action
+        # then ignores minimum_release_age, so it is not set. The release must be published, not a draft; the
+        # version file mise.jdx.dev/VERSION runs ahead of it: doc/troubleshooting/mise-action-version-ahead-of-release.md
+        # Owner and update steps: doc/runbook/release-the-music-player.md, section "The mise version pin".
+        version: 2026.10.9
+        install: false
+        # Only node is installed here, which takes seconds; the cargo and target caches carry the real cost.
+        cache: false
+
+    - name: Package (macOS disk image)
+      if: ${{ matrix.os == 'macos' }}
+      id: pkg-macos
+      shell: bash
+      run: |
+        set -euo pipefail
+        app='package/music-player/desktop-app'
+        mise install node
+        # The repository's own task builds Music Player.app from macos/Info.plist, the icon and the binary.
+        mkdir -p "${app}/dist"
+        cp "${app}/target/${TARGET}/release/music-player" "${app}/dist/music-player"
+        MP_MACOS_BINARY=dist/music-player mise run //package/music-player/desktop-app:bundle:macos
+        # Ad-hoc signature (no developer identity, no notarization): it seals the bundle contents so Apple
+        # silicon accepts the code, but Gatekeeper still asks for confirmation on the first launch.
+        codesign --force --deep --sign - "${app}/dist/Music Player.app"
+        codesign --verify --deep --strict --verbose=2 "${app}/dist/Music Player.app"
+        plutil -p "${app}/dist/Music Player.app/Contents/Info.plist"
+        stage=$(mktemp -d)
+        cp -R "${app}/dist/Music Player.app" "${stage}/"
+        ln -s /Applications "${stage}/Applications"
+        mkdir -p dist
+        asset="music-player-${VERSION}-macos-${ARCH}.dmg"
+        # hdiutil failed once with "Resource busy" on macos-15 (actions/runner-images#7522 reports it as an
+        # intermittent macOS condition and names retry as the workaround); retry a few times and then fail.
+        # The cause here is unknown and the retry has not yet fired in CI:
+        # doc/troubleshooting/macos-hdiutil-create-resource-busy.md
+        retry() {
+          local attempt=1
+          until "$@"; do
+            if [ "$attempt" -ge 5 ]; then
+              echo "::error::'$*' failed $attempt times."
+              return 1
+            fi
+            echo "::warning::'$*' failed (attempt $attempt); retrying."
+            attempt=$((attempt + 1))
+            sleep 10
+          done
+        }
+        retry hdiutil create -volname 'Music Player' -srcfolder "$stage" -fs HFS+ -format UDZO -ov "dist/${asset}"
+        hdiutil verify "dist/${asset}"
+        # Open the finished image the way a user does and start the app inside it.
+        mount_point=$(mktemp -d)
+        hdiutil attach "dist/${asset}" -mountpoint "$mount_point" -nobrowse -readonly
+        "${mount_point}/Music Player.app/Contents/MacOS/music-player" --version
+        retry hdiutil detach "$mount_point"
+        echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
+        ls -la dist
+
+    # The target directory keeps the compiled dependencies only. This package's own artifacts, its path
+    # dependency's, the final binary and the incremental directory are rebuilt every run anyway, so saving
+    # them would only grow the entry. Everything is already copied into dist/ above.
+    - name: Trim the target directory before caching
+      if: ${{ matrix.target != 'x86_64-pc-windows-gnu' && needs.detect.outputs.save_cache == 'true' && steps.cache.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        for profile_dir in package/music-player/desktop-app/target/release package/music-player/desktop-app/target/${TARGET}/release; do
+          if [ -d "$profile_dir" ]; then
+            rm -rf "${profile_dir}/incremental"
+            rm -f "${profile_dir}"/music-player "${profile_dir}"/music-player.* "${profile_dir}"/*.d
+            for sub in deps .fingerprint build; do
+              if [ -d "${profile_dir}/${sub}" ]; then
+                find "${profile_dir}/${sub}" -maxdepth 1 \( -name 'music_player*' -o -name 'music-player*' -o -name 'libmusic_player*' \
+                  -o -name 'truepeak_core*' -o -name 'truepeak-core*' -o -name 'libtruepeak_core*' \) -exec rm -rf {} +
+              fi
+            done
+          fi
+        done
+        du -sh package/music-player/desktop-app/target ~/.cargo/registry/index ~/.cargo/registry/cache ~/.cargo/git/db 2>/dev/null || true
+
+    - name: Save the cargo and target caches
+      if: ${{ matrix.target != 'x86_64-pc-windows-gnu' && needs.detect.outputs.save_cache == 'true' && steps.cache.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+          package/music-player/desktop-app/target
+        key: ${{ steps.cache.outputs.cache-primary-key }}
+
+    # The pacman downloads are tools of the build, not shipped bytes; the entry is small (about 70 MB) and shared with
+    # music-player-windows.yml, which saves under the same key.
+    - name: Save the MSYS2 package cache
+      if: ${{ matrix.target == 'x86_64-pc-windows-gnu' && needs.detect.outputs.save_cache == 'true' && steps.msys2-cache.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: C:\msys64\var\cache\pacman\pkg
+        key: ${{ steps.msys2-cache.outputs.cache-primary-key }}
+
+    - name: Attest provenance
+      if: ${{ needs.detect.outputs.dry_run == 'false' }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: ${{ steps.pkg-linux.outputs.asset || steps.pkg-windows.outputs.asset || steps.pkg-macos.outputs.asset }}
+
+    - name: Upload asset as workflow artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: asset-${{ matrix.os }}-${{ matrix.arch }}
+        path: ${{ steps.pkg-linux.outputs.asset || steps.pkg-windows.outputs.asset || steps.pkg-macos.outputs.asset }}
+        if-no-files-found: error
+        retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
+
+  # The Alpine Linux (musl libc) tarballs. Alpine's own Rust builds natively inside the repository's Alpine
+  # image (Containerfile.alpine, the one music-player-alpine.yml tests), so there is no --target: Alpine's host triple
+  # is the musl one. Decision: doc/decision/music-player-alpine.md. Not cached, by decision: doc/decision/music-player-releases.md.
+  build-desktop-musl:
+    needs: detect
+    if: ${{ needs.detect.outputs.should_build == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - { arch: x64, alpine_host: x86_64-alpine-linux-musl, runner: ubuntu-24.04 }
+        - { arch: arm64, alpine_host: aarch64-alpine-linux-musl, runner: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      # Attest build provenance for the files this job uploads.
+      id-token: write
+      attestations: write
+    env:
+      ARCH: ${{ matrix.arch }}
+      ALPINE_HOST: ${{ matrix.alpine_host }}
+      VERSION: ${{ needs.detect.outputs.version }}
+      # Both runners have 4 vCPUs and 16 GB; the bounds leave the runner room for the podman and runner processes.
+      BUILD_MEMORY: 12g
+      BUILD_CPUS: '4'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+        persist-credentials: false
+
+    # The runners ship podman 4.9, and Containerfile.alpine is written for it (no heredoc).
+    # The build stage is the toolchain; the runtime stage holds exactly the apk list the tarball's INSTALL.txt names.
+    - name: Build the Alpine images
+      run: |
+        set -euo pipefail
+        podman --version
+        context="$(mktemp -d)"
+        for target in build runtime; do
+          podman build \
+            --target "$target" \
+            --tag "music-player-alpine-$target" \
+            --file package/music-player/desktop-app/Containerfile.alpine \
+            "$context"
+        done
+
+    - name: Check the toolchain builds for musl natively
+      run: |
+        set -euo pipefail
+        info=$(podman run --rm music-player-alpine-build rustc --version --verbose)
+        echo "$info"
+        host=$(awk '/^host: / { print $2 }' <<< "$info")
+        if [ "$host" != "$ALPINE_HOST" ]; then
+          echo "::error::The Alpine toolchain host is '$host', expected '$ALPINE_HOST'."
+          exit 1
+        fi
+
+    - name: Build the release binary in the Alpine image
+      run: |
+        set -euo pipefail
+        mkdir --parents "$RUNNER_TEMP/cargo" "$RUNNER_TEMP/target"
+        # The source is mounted read-only. The registry and the target directory are fresh for every run, so the
+        # bytes that ship are built from the locked sources by this run alone.
+        podman run --rm \
+          --memory="$BUILD_MEMORY" --cpus="$BUILD_CPUS" --security-opt label=disable \
+          --volume "$GITHUB_WORKSPACE/package/music-player:/src:ro" \
+          --volume "$RUNNER_TEMP/cargo:/cargo" \
+          --volume "$RUNNER_TEMP/target:/target" \
+          --env CARGO_HOME=/cargo --env CARGO_TARGET_DIR=/target \
+          --env SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 \
+          --workdir /src/desktop-app \
+          music-player-alpine-build \
+          cargo build --release --locked --features alsa-fallback
+        ls -l "$RUNNER_TEMP/target/release/music-player"
+        # Recorded so a later decision about caching has the size of what a cache would hold.
+        du --summarize --human-readable "$RUNNER_TEMP/cargo" "$RUNNER_TEMP/target"
+
+    # The runtime image holds only the packages INSTALL.txt lists, so this fails if that list is short.
+    - name: Smoke test the binary in the runtime image (--version)
+      run: |
+        set -euo pipefail
+        out=$(podman run --rm --security-opt label=disable \
+          --volume "$RUNNER_TEMP/target/release/music-player:/usr/local/bin/music-player:ro" \
+          music-player-alpine-runtime music-player --version)
+        echo "$out"
+        if [ "$out" != "music-player ${VERSION}" ]; then
+          echo "::error::Expected 'music-player ${VERSION}' from --version, got '$out'."
+          exit 1
+        fi
+
+    - name: Package (Alpine tarball)
+      id: pkg
+      run: |
+        set -euo pipefail
+        app='package/music-player/desktop-app'
+        stage_name="music-player-${VERSION}-linux-musl-${ARCH}"
+        stage="dist/${stage_name}"
+        mkdir -p "${stage}/bin" "${stage}/share/applications" "${stage}/share/icons/hicolor/scalable/apps"
+        cp "${RUNNER_TEMP}/target/release/music-player" "${stage}/bin/"
+        # The repository's launcher names the generic theme icon; the archive ships its own icon instead.
+        sed 's/^Icon=.*/Icon=music-player/' "${app}/share/applications/monochromatic.music-player.desktop" \
+          > "${stage}/share/applications/monochromatic.music-player.desktop"
+        cp "${app}/asset/icon.svg" "${stage}/share/icons/hicolor/scalable/apps/music-player.svg"
+        cp LICENSE "${stage}/LICENSE"
+        cat > "${stage}/INSTALL.txt" <<'INSTALL'
+        Music Player for Alpine Linux (pre-release, built by CI)
+
+        Install the runtime packages, as root:
+          apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
+            mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+
+        Run it in place (a plain Alpine install creates no runtime directory, which Wayland needs):
+          export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}"
+          mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+          ./bin/music-player /path/to/music-folder
+
+        Install for your user (menu entry and icon):
+          mkdir -p ~/.local/bin ~/.local/share/applications ~/.local/share/icons/hicolor/scalable/apps
+          cp bin/music-player ~/.local/bin/
+          cp share/applications/monochromatic.music-player.desktop ~/.local/share/applications/
+          cp share/icons/hicolor/scalable/apps/music-player.svg ~/.local/share/icons/hicolor/scalable/apps/
+
+        Needs Alpine 3.24 or newer (musl libc) on x86_64 or aarch64, and a Wayland compositor.
+        The X11 path is untested.
+        Sound uses PipeWire when a daemon runs (apk add pipewire wireplumber) and the default ALSA device otherwise.
+        The folder chooser needs a desktop portal or zenity; without either, pass the folder on the command line.
+        INSTALL
+        asset="${stage_name}.tar.gz"
+        # Fixed order, owner and timestamps so the same inputs give the same tar stream.
+        epoch=$(git log -1 --format=%ct)
+        tar --sort=name --owner=0 --group=0 --numeric-owner --mtime="@${epoch}" \
+          --create --file - --directory dist "${stage_name}" | gzip --no-name --best > "dist/${asset}"
+        echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
+        tar --list --verbose --file "dist/${asset}"
+
+    - name: Attest provenance
+      if: ${{ needs.detect.outputs.dry_run == 'false' }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: ${{ steps.pkg.outputs.asset }}
+
+    - name: Upload asset as workflow artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: asset-linux-musl-${{ matrix.arch }}
+        path: ${{ steps.pkg.outputs.asset }}
+        if-no-files-found: error
+        retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
+
+  build-android:
+    needs: detect
+    if: ${{ needs.detect.outputs.should_build == 'true' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      # Attest build provenance for the files this job uploads.
+      id-token: write
+      attestations: write
+    env:
+      VERSION: ${{ needs.detect.outputs.version }}
+      VERSION_CODE: ${{ needs.detect.outputs.version_code }}
+      USE_RELEASE_KEY: ${{ needs.detect.outputs.use_release_key }}
+      DRY_RUN: ${{ needs.detect.outputs.dry_run }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+        persist-credentials: false
+
+    # Cache key parts that are read from the repository, never copied into this file: the pinned Rust version
+    # from mise.lock, and the Android SDK component versions from the lines of the prepare:android task in
+    # mise.toml, so the native cache key changes exactly when the NDK does.
+    - name: Read the cache key parts
+      id: parts
+      run: |
+        set -euo pipefail
+        toolchain=$(awk -F'"' '/^\[\[tools\.rust\]\]$/ { in_rust = 1; next } in_rust && /^version = / { print $2; exit }' mise.lock)
+        components=$(grep -E '^const want(Platform|BuildTools|Ndk) = ' mise.toml | sha256sum | cut -c1-16)
+        if [ -z "$toolchain" ] || [ -z "$components" ]; then
+          echo '::error::Could not read the Rust version or the Android components.'
+          exit 1
+        fi
+        echo "toolchain=$toolchain" >> "$GITHUB_OUTPUT"
+        echo "components=$components" >> "$GITHUB_OUTPUT"
+
+    - name: Restore the Gradle caches
+      id: cache-gradle
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper/dists
+        key: music-player-gradle-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package/music-player/android-app/**/*.gradle.kts', 'package/music-player/android-app/gradle.properties', 'package/music-player/android-app/gradle/wrapper/gradle-wrapper.properties') }}
+        restore-keys: |
+          music-player-gradle-v1-${{ runner.os }}-${{ runner.arch }}-
+
+    - name: Restore the cargo and native target caches
+      id: cache-native
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+          package/music-player/android-app/rust/target
+        key: music-player-android-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.parts.outputs.toolchain }}-${{ steps.parts.outputs.components }}-${{ hashFiles('package/music-player/android-app/rust/Cargo.lock') }}
+        restore-keys: |
+          music-player-android-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.parts.outputs.toolchain }}-${{ steps.parts.outputs.components }}-
+
+    - name: Report the cache restores
+      env:
+        GRADLE_HIT: ${{ steps.cache-gradle.outputs.cache-hit }}
+        GRADLE_MATCH: ${{ steps.cache-gradle.outputs.cache-matched-key }}
+        NATIVE_HIT: ${{ steps.cache-native.outputs.cache-hit }}
+        NATIVE_MATCH: ${{ steps.cache-native.outputs.cache-matched-key }}
+      run: |
+        echo "::notice title=cache::gradle exact_hit=${GRADLE_HIT:-false} matched='${GRADLE_MATCH}'"
+        echo "::notice title=cache::cargo and native target exact_hit=${NATIVE_HIT:-false} matched='${NATIVE_MATCH}'"
+
+    - name: Set up mise (skip auto-install of all tools)
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Pinned for the reason given at the step "Install node (runs the repository's bundle:macos task)" (a 403
+        # from the releases API lookup that minimum_release_age needs); the runbook section "The mise version pin"
+        # says who updates it and how.
+        version: 2026.10.9
+        install: false
+        # The tools that cost time are cached by the steps above (Gradle, cargo); the rest install in
+        # seconds, and mise's own whole-directory cache would store the toolchains untrimmed.
+        cache: false
+
+    # The versions come from mise.lock: the repository's pinned Rust (with the two Android targets that
+    # mise.toml lists), Temurin 21 (AGP 9 and Gradle 9 need 17 to 21), the Android command-line tools,
+    # cargo-ndk, and node, which runs the repository's mise tasks. mise installs Rust before cargo-ndk
+    # because the cargo backend needs it.
+    - name: Install the Android toolchain
+      run: |
+        mise install rust cargo-binstall
+        mise install cargo:cargo-ndk node java android-sdk
+        mise exec rust -- rustc -Vv
+
+    # The repository task installs exactly the SDK components the app builds against (platform 37.0,
+    # build-tools 37.0.0, NDK 29.0.13846066, platform-tools) into the mise-managed SDK.
+    # Not cached: the components download in about 25 seconds, and restoring a cache of them (1.0 GB compressed)
+    # took 17 seconds (dry runs 2026-10-15), so it saved 8 seconds for a fifth of the repository's cache budget.
+    - name: Install the Android SDK components
+      run: mise run prepare:android
+
+    - name: Restore the project release key
+      if: ${{ needs.detect.outputs.use_release_key == 'true' }}
+      env:
+        # The only step that reads the signing secrets, and it runs only for main. GitHub masks their
+        # values in every log line, including after they are passed on through the environment.
+        KEYSTORE_BASE64: ${{ secrets.MUSIC_PLAYER_KEYSTORE_BASE64 }}
+        KEYSTORE_PASSWORD: ${{ secrets.MUSIC_PLAYER_KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.MUSIC_PLAYER_KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.MUSIC_PLAYER_KEY_PASSWORD }}
+      run: |
+        set -euo pipefail
+        umask 077
+        printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/music-player-release.p12"
+        {
+          echo "MUSIC_PLAYER_KEYSTORE_FILE=$RUNNER_TEMP/music-player-release.p12"
+          echo "MUSIC_PLAYER_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+          echo "MUSIC_PLAYER_KEY_ALIAS=$KEY_ALIAS"
+          echo "MUSIC_PLAYER_KEY_PASSWORD=$KEY_PASSWORD"
+        } >> "$GITHUB_ENV"
+
+    # Every other ref gets a key generated for this run only. Its APK carries no project identity.
+    - name: Create a throwaway key
+      if: ${{ needs.detect.outputs.use_release_key != 'true' }}
+      run: |
+        set -euo pipefail
+        umask 077
+        password=$(openssl rand -base64 24 | tr -d '/+=\n')
+        echo "::add-mask::$password"
+        mise exec java -- keytool -genkeypair -alias throwaway -keyalg RSA -keysize 2048 -validity 2 \
+          -dname 'CN=Music Player throwaway, O=Monochromatic dry run' \
+          -keystore "$RUNNER_TEMP/throwaway.p12" -storetype PKCS12 \
+          -storepass "$password" -keypass "$password"
+        {
+          echo "MUSIC_PLAYER_KEYSTORE_FILE=$RUNNER_TEMP/throwaway.p12"
+          echo "MUSIC_PLAYER_KEYSTORE_PASSWORD=$password"
+          echo "MUSIC_PLAYER_KEY_ALIAS=throwaway"
+          echo "MUSIC_PLAYER_KEY_PASSWORD=$password"
+        } >> "$GITHUB_ENV"
+
+    - name: Build the signed release APK
+      env:
+        # The key steps before this one exported the four MUSIC_PLAYER_* signing values; with this set,
+        # Gradle fails instead of falling back to the debug key.
+        MUSIC_PLAYER_REQUIRE_RELEASE_SIGNING: 'true'
+      run: mise run //package/music-player/android-app:build:release
+
+    - name: Verify and package the APK
+      id: pkg
+      env:
+        EXPECTED_PACKAGE: dev.monochromatic.musicplayer
+      run: |
+        set -euo pipefail
+        sdk=$(mise where android-sdk)
+        tools="${sdk}/build-tools/37.0.0"
+        built='package/music-player/android-app/app/build/outputs/apk/release/app-release.apk'
+        mkdir -p dist
+        asset="music-player-${VERSION}-android.apk"
+        cp "$built" "dist/${asset}"
+
+        # Version rule: the APK must carry the version the detect job computed.
+        badging=$("${tools}/aapt2" dump badging "dist/${asset}")
+        sed -n '1,3p' <<< "$badging"
+        expected="package: name='${EXPECTED_PACKAGE}' versionCode='${VERSION_CODE}' versionName='${VERSION}'"
+        if ! sed -n '1p' <<< "$badging" | grep --fixed-strings --quiet "$expected"; then
+          echo "::error::APK identity differs from: $expected"
+          exit 1
+        fi
+        if grep --quiet '^application-debuggable' <<< "$badging"; then
+          echo "::error::The release APK is debuggable."
+          exit 1
+        fi
+
+        # Both native libraries must be inside.
+        listing=$(unzip -Z1 "dist/${asset}")
+        for abi in arm64-v8a x86_64; do
+          if ! grep --fixed-strings --line-regexp --quiet "lib/${abi}/libmusicplayer_native.so" <<< "$listing"; then
+            echo "::error::lib/${abi}/libmusicplayer_native.so is missing from the APK."
+            exit 1
+          fi
+        done
+
+        # Signature and certificate.
+        certs=$(mise exec java -- "${tools}/apksigner" verify --verbose --print-certs "dist/${asset}")
+        echo "$certs"
+        fingerprint=$(awk -F': ' '/certificate SHA-256 digest/ { print $NF; exit }' <<< "$certs")
+        if [ "$USE_RELEASE_KEY" = 'true' ]; then
+          if [ "$fingerprint" != "$EXPECTED_ANDROID_CERT_SHA256" ]; then
+            echo "::error::APK certificate ${fingerprint} is not the project release certificate."
+            exit 1
+          fi
+        elif [ "$fingerprint" = "$EXPECTED_ANDROID_CERT_SHA256" ]; then
+          echo "::error::A throwaway build carries the release certificate."
+          exit 1
+        fi
+        echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
+
+    # Only dependency artifacts are kept: this package's own Rust artifacts, the copied-out libraries and the
+    # incremental directories are rebuilt every run anyway.
+    - name: Trim the native target directory before caching
+      if: ${{ needs.detect.outputs.save_cache == 'true' && steps.cache-native.outputs.cache-hit != 'true' }}
+      run: |
+        set -euo pipefail
+        root=package/music-player/android-app/rust/target
+        for profile_dir in "$root/release" "$root/aarch64-linux-android/release" "$root/x86_64-linux-android/release"; do
+          if [ -d "$profile_dir" ]; then
+            rm -rf "${profile_dir}/incremental"
+            rm -f "${profile_dir}"/*.so "${profile_dir}"/*.d
+            for sub in deps .fingerprint build; do
+              if [ -d "${profile_dir}/${sub}" ]; then
+                find "${profile_dir}/${sub}" -maxdepth 1 \( -name 'musicplayer_native*' -o -name 'musicplayer-native*' -o -name 'libmusicplayer_native*' \
+                  -o -name 'truepeak_core*' -o -name 'truepeak-core*' -o -name 'libtruepeak_core*' \) -exec rm -rf {} +
+              fi
+            done
+          fi
+        done
+        du -sh "$root" ~/.cargo/registry/index ~/.cargo/registry/cache ~/.cargo/git/db ~/.gradle/caches ~/.gradle/wrapper/dists ~/.local/share/mise/installs/android-sdk 2>/dev/null || true
+
+    - name: Save the cargo and native target caches
+      if: ${{ needs.detect.outputs.save_cache == 'true' && steps.cache-native.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+          package/music-player/android-app/rust/target
+        key: ${{ steps.cache-native.outputs.cache-primary-key }}
+
+    - name: Save the Gradle caches
+      if: ${{ needs.detect.outputs.save_cache == 'true' && steps.cache-gradle.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper/dists
+        key: ${{ steps.cache-gradle.outputs.cache-primary-key }}
+
+    - name: Delete the key material
+      if: ${{ always() }}
+      run: rm -f "$RUNNER_TEMP/music-player-release.p12" "$RUNNER_TEMP/throwaway.p12"
+
+    - name: Attest provenance
+      if: ${{ needs.detect.outputs.dry_run == 'false' }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: ${{ steps.pkg.outputs.asset }}
+
+    - name: Upload asset as workflow artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: asset-android
+        path: ${{ steps.pkg.outputs.asset }}
+        if-no-files-found: error
+        retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
+
+  # SHA256SUMS covers every asset and is attested like them. It is computed only after every
+  # build succeeded, so a partial release cannot get a checksum file.
+  checksums:
+    needs: [detect, build-desktop, build-desktop-musl, build-android]
+    if: ${{ needs.detect.outputs.should_build == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Attest build provenance for the files this job uploads.
+      id-token: write
+      attestations: write
+    env:
+      VERSION: ${{ needs.detect.outputs.version }}
+    steps:
+    - name: Download all assets
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        pattern: asset-*
+        path: assets
+        merge-multiple: true
+
+    - name: Check the asset set and write SHA256SUMS
+      run: |
+        set -euo pipefail
+        expected=$(printf '%s\n' \
+          "music-player-${VERSION}-android.apk" \
+          "music-player-${VERSION}-linux-arm64.tar.gz" \
+          "music-player-${VERSION}-linux-musl-arm64.tar.gz" \
+          "music-player-${VERSION}-linux-musl-x64.tar.gz" \
+          "music-player-${VERSION}-linux-x64.tar.gz" \
+          "music-player-${VERSION}-macos-arm64.dmg" \
+          "music-player-${VERSION}-windows-arm64.exe" \
+          "music-player-${VERSION}-windows-x64-gnu.exe" \
+          "music-player-${VERSION}-windows-x64.exe")
+        actual=$(ls -1 assets | LC_ALL=C sort)
+        if [ "$actual" != "$expected" ]; then
+          echo "::error::Unexpected asset set."
+          diff <(echo "$expected") <(echo "$actual") || true
+          exit 1
+        fi
+        mkdir -p checksums
+        (cd assets && sha256sum -- *) > checksums/SHA256SUMS
+        cat checksums/SHA256SUMS
+
+    - name: Attest SHA256SUMS provenance
+      if: ${{ needs.detect.outputs.dry_run == 'false' }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: checksums/SHA256SUMS
+
+    - name: Upload SHA256SUMS as workflow artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: checksums
+        path: checksums/SHA256SUMS
+        if-no-files-found: error
+        retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
+
+  # Immutable releases (repo setting) means `gh release create` must include every asset at
+  # creation time; you cannot add files later. So we wait for every build, collect all assets,
+  # then create the release in one shot. In a dry run the same script prints the command instead.
+  release:
+    needs: [detect, checksums]
+    if: ${{ needs.detect.outputs.should_build == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      # Create the tag and the release: the only job that writes to the repository.
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DRY_RUN: ${{ needs.detect.outputs.dry_run }}
+      VERSION: ${{ needs.detect.outputs.version }}
+      TAG: ${{ needs.detect.outputs.tag }}
+      SHA: ${{ github.sha }}
+      REF: ${{ github.ref }}
+      REPO: ${{ github.repository }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+    - name: Download all assets
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        pattern: '*'
+        path: assets
+        merge-multiple: true
+
+    - name: Write the release notes
+      run: |
+        set -euo pipefail
+        cert="$EXPECTED_ANDROID_CERT_SHA256"
+        cat > notes.md <<'NOTES'
+        Music Player @VERSION@, a **pre-release**. The project is under active development.
+
+        Built by CI from commit @SHA@ ([workflow run](@RUN_URL@)). Source: [@TAG@](https://github.com/@REPO@/tree/@TAG@).
+
+        ## Downloads
+
+        - Windows: `music-player-@VERSION@-windows-x64.exe` and `music-player-@VERSION@-windows-arm64.exe`, one standalone program each.
+        - Windows without Microsoft's toolchain: `music-player-@VERSION@-windows-x64-gnu.exe` (x64 only), built with MinGW-w64 and GNU ld, one standalone program that needs no Visual C++ runtime. It is built from the same source as `windows-x64.exe`; pick either one.
+        - macOS: `music-player-@VERSION@-macos-arm64.dmg`, for Apple silicon Macs only. There is no Intel Mac build; build from source instead.
+        - Linux: `music-player-@VERSION@-linux-x64.tar.gz` and `music-player-@VERSION@-linux-arm64.tar.gz`, with the program, a launcher file and an icon.
+        - Alpine Linux: `music-player-@VERSION@-linux-musl-x64.tar.gz` (x86_64) and `music-player-@VERSION@-linux-musl-arm64.tar.gz` (aarch64), for Alpine 3.24 or newer (musl libc), with the same contents as the Linux archives. The Linux archives above do not run on Alpine.
+        - Android: `music-player-@VERSION@-android.apk` (Android 8.0 or newer).
+        - `SHA256SUMS`: the SHA-256 of every file above.
+
+        ## What has been tested
+
+        The maintainers have run the Linux x86_64 build on Wayland with PipeWire and the Android app on emulators.
+        Every other platform is **built by CI, not yet tested on this platform**: CI starts each desktop program with `--version` and nothing more.
+        No build has run on a real Android device, on macOS or on Windows.
+        The Alpine builds are the one exception: a separate CI workflow runs the unit tests and a headless window and sound check in Alpine containers on both architectures, but on debug builds and not on real Alpine hardware, and this release starts each Alpine program with `--version` inside an Alpine image.
+        Expect problems and report them as issues.
+
+        ## Unsigned builds and first launch
+
+        - **Windows**: the programs are not signed with a developer identity. SmartScreen may show "Windows protected your PC": choose "More info", then "Run anyway". The executable is built as a console program, so Windows opens a console window next to the app.
+        - **macOS**: the app is not notarized, and carries only an ad-hoc signature with no developer identity. Open the disk image, drag Music Player to Applications, and try to open it once. Then open System Settings, go to Privacy & Security, scroll down and click "Open Anyway", and click "Open" when the warning appears again. macOS remembers the choice. These are the steps in [Apple's guide](https://support.apple.com/en-us/102445).
+        - **Android**: the APK is signed with the project release key. Allow installing from your browser or file manager when Android asks. Updates install over this app only when they carry the same key. Certificate SHA-256: `@CERT@`.
+        - **Linux**: extract the archive and run `bin/music-player`. `INSTALL.txt` inside shows how to add a menu entry. It needs PipeWire and glibc 2.39 or newer (it is built on Ubuntu 24.04).
+        - **Alpine Linux**: install the runtime packages with this one command, then extract the archive and run `bin/music-player` (`INSTALL.txt` inside shows the rest, including the runtime directory a plain Alpine install lacks). Without PipeWire the player plays through the default ALSA device.
+
+        ```
+        apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+        ```
+
+        ## Verify a download
+
+        Every file is attested with GitHub build provenance. With the [GitHub CLI](https://cli.github.com/):
+
+        ```
+        gh attestation verify <file> --repo @REPO@
+        sha256sum --check --ignore-missing SHA256SUMS
+        ```
+        NOTES
+        sed --in-place \
+          --expression="s|@VERSION@|${VERSION}|g" \
+          --expression="s|@SHA@|${SHA}|g" \
+          --expression="s|@RUN_URL@|${RUN_URL}|g" \
+          --expression="s|@TAG@|${TAG}|g" \
+          --expression="s|@REPO@|${REPO}|g" \
+          --expression="s|@CERT@|${cert}|g" \
+          notes.md
+        cat notes.md
+
+    - name: Create the GitHub pre-release with all assets (a dry run only prints the command)
+      run: |
+        set -euo pipefail
+        # The one place a release is created. A dry run prints the command instead of running it.
+        run_gh() {
+          if [ "$DRY_RUN" = 'true' ]; then
+            printf 'DRY RUN, would run: gh'
+            printf ' %q' "$@"
+            printf '\n'
+          else
+            gh "$@"
+          fi
+        }
+        ls -la assets/
+        if [ "$DRY_RUN" = 'false' ]; then
+          if [ "$REF" != 'refs/heads/main' ]; then
+            echo "::error::A real release runs only from main, not $REF."
+            exit 1
+          fi
+          # Re-check right before creating: a tag created since the detect job must not be touched.
+          if gh api "repos/${REPO}/git/ref/tags/${TAG}" >/dev/null 2>&1; then
+            echo "::notice::Tag ${TAG} exists now; leaving it alone."
+            exit 0
+          fi
+        fi
+        echo "tag: ${TAG}"
+        echo "assets:"
+        ls -1 assets
+        run_gh release create "$TAG" assets/* \
+          --repo "$REPO" \
+          --title "Music Player ${VERSION} (pre-release)" \
+          --notes-file notes.md \
+          --target "$SHA" \
+          --prerelease

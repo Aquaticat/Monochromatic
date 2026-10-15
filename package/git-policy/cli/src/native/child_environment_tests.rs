@@ -12,7 +12,8 @@
 
 /// Import the functions under test and native string types.
 use super::{
-    COUNT_VARIABLE, FORWARD_TARGET_VARIABLE, child_environment_overlay, lockfile_pid_overlay,
+    COUNT_VARIABLE, FORWARD_TARGET_VARIABLE, child_environment_overlay, environment_with_overlay,
+    lockfile_pid_overlay,
 };
 use std::ffi::OsString;
 use std::path::Path;
@@ -241,4 +242,43 @@ fn native_git_reads_the_overlay_and_explicit_configuration_wins() {
         );
         assert_eq!(String::from_utf8_lossy(&output.stdout), expected);
     }
+}
+
+/// Every caller variable survives, in order, ahead of the overlay's entries.
+#[test]
+fn an_overlaid_environment_keeps_the_callers_variables_and_appends_the_overlay() {
+    let caller = environment(&[("HOME", "/home/user"), ("PATH", "/usr/bin"), ("SSH_AUTH_SOCK", "/run/agent")]);
+    let overlay = environment(&[("CLI_GIT_NATIVE_FORWARD_TARGET", "/usr/bin/git")]);
+    assert_eq!(
+        environment_with_overlay(caller.as_slice(), overlay.as_slice()),
+        environment(&[
+            ("HOME", "/home/user"),
+            ("PATH", "/usr/bin"),
+            ("SSH_AUTH_SOCK", "/run/agent"),
+            ("CLI_GIT_NATIVE_FORWARD_TARGET", "/usr/bin/git"),
+        ])
+    );
+}
+
+/// A name the overlay sets keeps only the overlay's value, wherever the caller had it.
+#[test]
+fn an_overlaid_environment_replaces_a_name_the_overlay_sets() {
+    let caller = environment(&[("GIT_CONFIG_COUNT", "1"), ("HOME", "/home/user"), ("GIT_CONFIG_COUNT", "7")]);
+    let overlay = environment(&[("GIT_CONFIG_COUNT", "2"), ("GIT_CONFIG_KEY_1", "core.lockfilePid")]);
+    assert_eq!(
+        environment_with_overlay(caller.as_slice(), overlay.as_slice()),
+        environment(&[
+            ("HOME", "/home/user"),
+            ("GIT_CONFIG_COUNT", "2"),
+            ("GIT_CONFIG_KEY_1", "core.lockfilePid"),
+        ])
+    );
+}
+
+/// Without an overlay the caller's environment is returned unchanged; without a caller environment, the overlay alone.
+#[test]
+fn an_overlaid_environment_with_an_empty_side_is_the_other_side() {
+    let caller = environment(&[("HOME", "/home/user")]);
+    assert_eq!(environment_with_overlay(caller.as_slice(), &[]), caller);
+    assert_eq!(environment_with_overlay(&[], caller.as_slice()), caller);
 }

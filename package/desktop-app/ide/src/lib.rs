@@ -24,10 +24,21 @@ pub mod text_projection;
 /// Pixel tab stops at multiples of two space advances,
 ///  independent of the preceding script.
 pub mod tab_stop;
+/// Soft-wrap break rules from IntelliJ, as Parley line-break overrides,
+///  and the continuation indent of a wrapped line.
+pub mod wrap;
+/// The wrap indicator of the gutter:
+///  IntelliJ's symbol chain checked against the fonts, its color, and the arrow drawn when no symbol fits.
+pub mod wrap_sign;
 
 /// Two-pass shaping that widens each tab's stand-in space to its stop.
 mod tab_layout;
 
+/// How many visual rows each source line takes, in chunks that copies share.
+pub mod line_rows;
+/// The minimap that scrolls the source view:
+///  its geometry and the picture of the whole text it shows.
+pub mod minimap;
 /// The one mapping between vertical pixels and source lines,
 ///  with blocks of virtual rows above annotated lines.
 pub mod row_map;
@@ -36,6 +47,8 @@ pub mod row_map;
 ///  hit-test,
 ///  and range geometry.
 pub mod shaped_row;
+/// Shaped source rows kept by line, so a re-centered tile shapes only lines it has not shaped.
+pub mod shaped_row_cache;
 
 /// Shared shaping for mixed-script source rows,
 ///  caret,
@@ -47,6 +60,9 @@ pub mod shaped_text;
 ///  line,
 ///  and document caret movement over source characters.
 pub mod caret_motion;
+
+/// Home and End on the visual rows of a soft-wrapped line.
+pub mod line_boundary;
 
 /// Up,
 ///  Down,
@@ -127,11 +143,18 @@ mod selection_paint;
 ///  not the color scheme.
 pub mod selection_ink;
 
+/// Sibling names in the file tree sort mixed, case folded, with numbers compared by value.
+pub mod name_order;
+
 /// One local project boundary exposes directory snapshots without mutation operations.
 pub mod workspace;
 
 /// Lazy tree rows and expansion state consume background directory snapshots without I/O.
 pub mod file_tree;
+
+/// Which listed entries git ignores,
+///  decided from the rule files with ripgrep's `ignore` crate and without a git process.
+pub mod git_ignore;
 
 /// Bounded background directory reads apply only current tree-request replies.
 pub mod directory_worker;

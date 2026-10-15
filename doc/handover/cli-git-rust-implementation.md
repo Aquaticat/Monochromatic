@@ -894,9 +894,14 @@ State found on 2026-10-10:
   the two `event_path.rs:173` base64 survivors are equivalent.
   Dependent-version wiring passes (680 unit, 43 binary, 1 consumer; release-bump differential identical in four scenarios)
   with one survivor, `policy_dependent_version.rs:255:66`, in a filter no probe could reach with a deleted candidate.
-  Decision taken without a question (the document ranked keep > partition > drop, and keeping costs nothing today):
-  keep the filter and record the survivor as unreachable; revisit when a reachable deletion appears.
+  The user corrected the gate on 2026-10-10: it requires every mutant to be caught or justified as impossible to catch,
+  not exactly zero missed.
+  A justification must rest on code (the call chain that makes the mutant equivalent), not on failed probes,
+  so the delegate was told to trace every producer of the filtered list and either write that proof or kill the mutant with a test.
   The commit path finished slice 3's leaf modules (829 library tests, planted controls, fuzz) and keeps going.
+- The user's instruction of 2026-10-10: focus on finishing cli-git; pre-existing Markdown lint findings can wait.
+  The fenced-code false-positive fix for the linter (123 findings, repro `~/temp/agent/momoa-probe/fence.md`)
+  was started and stopped before any commit, and is deferred with step 8.
 - Landing order decided on 2026-10-10: Markdown autofix first, then dependent-version wiring (both edit
   `src/native/policy_checks.rs`; each needs a gate rerun on the merge with main, because the cutover changed
   `package/git-policy`), then the commit path.
@@ -984,8 +989,9 @@ Evidence in `doc/handover/cli-git-native-content-policies.md`.
   `final-newline`,
   `security/forbidden-strings` (with the `rulesFile` option, then `FORBIDDEN_STRINGS_RULES`, then the default file)
   and `mono/forbidden-root-context`.
-  It still refuses, with exit 2 and one line, whenever `markdown/autofix` or `mono/dependent-version-bump` is enabled
-  and there are candidates.
+  It still refuses, with exit 2 and one line, whenever `markdown/autofix` is enabled and there are candidates.
+  `mono/dependent-version-bump` no longer refuses: it is wired on `feat/cli-git-native-dependent-version`
+  (see `doc/handover/cli-git-native-dependent-version.md`, section "Wiring into the native executable").
 - `git add` costs a fixed 6 Git processes and a direct command 5, for 1, 20 or 200 files.
 - Failures carry `content-unavailable` or `policy-incomplete` by cause,
   and engine-failure events never carry a candidate pathname.
@@ -1009,6 +1015,10 @@ Evidence in `doc/handover/cli-git-native-content-policies.md`.
   The delegate read the decision brief, which still listed it as open,
   rather than the adoption in this document;
   the brief now has an `Outcome` section saying where the answers are.
+  Note, 2026-10-14:
+  the `pathBytes` gate trailed the cutover and ran as its own lane on branch `feat/cli-git-native-pathbytes`;
+  the commit path, the replay conflict event and the journals now carry the exact bytes,
+  and `doc/handover/cli-git-native-pathbytes.md` has the evidence.
 - The fuzz seeds of `final-newline` were given a final newline by the installed wrapper when committed;
   the target's generated input still reaches both cases.
 
@@ -1509,7 +1519,7 @@ that is verification, not a decision for the user.
 - [ ] Mutation gates exit 0 with the two excluded replacement kinds, 0 missed and 0 timeouts.
   Done for the wrapper's engine (`348d94cbe`), the candidate layer and the content policies,
   and for every linter scope.
-  Left: the dependent-version branch, and the scanner on Windows.
+  Left: the scanner on Windows.
 - [x] cargo-mutants upstream check: the option from upstream issue 545 is prototyped and verified
   (`doc/troubleshooting/cargo-mutants-timeout-exit-status.md`, section `Prototype`).
 - [x] The user chose to post the cargo-mutants prototype as a comment on upstream issue 545; it is posted.
@@ -1517,18 +1527,270 @@ that is verification, not a decision for the user.
   the rest adopted under the standing instruction (`User decisions 2026-10-05`).
 - [x] Cutover decisions: all adopted under the standing instruction and open to veto
   (`User decisions 2026-10-05`, section `Adopted without a question`).
-- [ ] Before cutover: this host's Git must be 2.56.0 or newer (it is 2.55.0); the user's system, not ours to change.
+- [x] Git version: the user decided on 2026-10-10 that Git 2.55.0 (this host) is acceptable,
+  so the native minimum is lowered from 2.56.0 to 2.55.0 and Git-dependent behavior is probed against 2.55.0 too.
+- [ ] Commit path, run as parallel lanes from 2026-10-10 (user: no hybrid, the old TypeScript implementation goes,
+  wait for the native commit path and parallelize better).
+  Lanes branch from `feat/cli-git-native-transactions` at `0faec78d77`,
+  each with its own evidence file `doc/handover/cli-git-native-<lane>.md` and worktree `.claude/worktrees/cli-git-lane-<lane>`:
+  `hooks` (slice 4), `capture` (slice 5), `replay-core` (slice 8 without the landing lock),
+  `auto-push` (slice 9 auto-push, post-commit lifecycle, manual-push listings), `signals` (slice 10 and maintenance),
+  `worktree-copy` (slice 11).
+  The transactions branch finishes slice 3, then the lanes are merged into it,
+  and the remaining serial slices (6 preparation policies, 7 landing, 9 integration) follow.
+  Heavy gates run through `~/temp/agent/gate-slot.ts` (four host-wide slots).
+  At most five delegates run at once.
+  Delegates default to Haiku; the orchestrator may send any task to Sonnet without per-task proof (user, 2026-10-11),
+  and records each Haiku failure in `doc/limitation/haiku.md`.
+  Current state:
+  the native executable commits for real; `feat/cli-git-native-integration` merged every lane and wired
+  `git commit` to the native transaction
+  (record, results and rerun commands: `doc/handover/cli-git-native-integration.md`;
+  each lane's own doc `doc/handover/cli-git-native-<lane>.md` holds its gates and its `Trailing gates`).
+  The incumbent's end-to-end suite passes against the native executable on Git 2.55.0
+  (36 of 38 scenarios pass; the 2 `replay-unavailable-*` scenarios skip because the floor is Git 2.55.0),
+  the commit differential against the incumbent finds 10 of 10 cases equal,
+  and the configuration differential finds 72 rows with none failing.
+  The container gate, Clippy, the fuzz smoke and the mutation campaigns of the integration files are green on the gated
+  head `0ff1379f7d`.
+  Facts read from the incumbent that the port follows: the landing lock is taken inside the landing attempt, not held
+  through preparation; a maintenance failure never stops the `post-commit` hook (`post_landing.rs` owns that order).
+  The `rulesFile` is relative to the worktree and `.cache/` is generated by `mise run file-enforcer`,
+  so a fresh worktree fails closed until it exists; the options are in `doc/handover/cli-git-native-config.md`.
+  State on 2026-10-14 (resumed after the hardware change; 0.1.2 is pinned and installed):
+  the native commit path, the worktree-copy lifecycle, the rules-cache copy and the push-environment fix are on `main`.
+  `monochromatic-git-policy-cli` 0.1.2 is published (crates.io and GitHub release) and Trusted Publishing is configured.
+  0.1.0 made every Markdown commit exit 2 (post-commit linter lookup); 0.1.1 fixed that but its push paths cleared the
+  environment, so a user credential helper such as `gh auth git-credential` could not run and both the automatic and
+  the manual push failed; 0.1.2 passes the invocation environment (lane `push-env`, evidence in
+  `doc/handover/cli-git-native-push-env.md`).
+  The repository installs the crate as a `cargo:` mise tool whose postinstall links `.cache/cli-git-bin/git`,
+  placed first in `_.path`; the hk cleanup task, the performance harness and the CI jobs that needed the wrapper are
+  retired or migrated (record: `doc/planning/cli-git-native-cutover.md`).
+  The switch is live: `mise.lock` holds 0.1.2 and the tool entry is unpinned (user, 2026-10-14: "You don't need to
+  pin anything we control"; `monochromatic-lint` is unpinned the same way, and mise's 24 hour minimum release age
+  delays a new release until the lock is refreshed), the link in the main checkout is installed, and the installed
+  wrapper was
+  verified at the user boundary (a signed commit auto-pushed with real credentials, a manual push and a Markdown
+  commit); every process of the user is on the native `PATH` (the count of sessions on the old `PATH` is zero).
+  The user's decisions are no hybrid, the old TypeScript goes, and the rollback window ended with that verification.
+  The pinned incumbent revision, the last commit that contains the TypeScript wrapper and the four authoring packages,
+  is `f4fc1fa213ece65672e4314983a75266837892f9`; the retirement commits were merged into `main` on 2026-10-14
+  (merge `9e633292e7`; record, per-commit evidence and leftovers: `doc/handover/cli-git-native-retire.md`),
+  and the order is in `doc/planning/cli-git-native-cutover.md`, section `Order of the retirement commits`.
+  The TypeScript under `package/git-policy/cli/src` outside `native`, `cli-git.config.ts`, the four authoring packages
+  and the differentials are gone; the package keeps the native crate, the e2e runner, the interop bins and the fuzz
+  sidecar.
+  Not yet done for the push fix: scoped mutation of `wrapped_command.rs` and of `auto_push_single_flight.rs`
+  (documentation changes only), and the two new planted controls have never run (a mutation run with the planted phase).
+  Rehearsals in a throwaway repository with a local bare remote did not cover credentialed remotes, which is how the
+  push defect escaped; keep a real-remote check in every release verification.
+  The ignored leftovers in the main checkout (the four package directories, the cli `dist` and `.cache`, the old
+  `node_modules/.bin/git` shim and an empty `package/git-policy/cli/node_modules/.bin`) were removed on 2026-10-14 by
+  explicit path, never with `git clean -X`, which would remove the live `.cache/cli-git-bin` link and the rules file;
+  afterwards `mise run sync:files` leaves the repository unchanged.
+  Audit of 2026-10-14 (user: the old wrapper must be nowhere to be found and unusable): the main checkout has no old
+  entry point (the package is a private verification harness without `bin`, `main` or `dist`, and its `node_modules`
+  link and the `.changeset` ignore entry name that harness), `type -a git` resolves to the native link first, and no
+  old process runs.
+  The old shims and built output were removed by explicit ignored path from every other worktree (13 shims, 6 `dist`
+  directories; the lane worktrees `cli-git-lane-interop` and `-pathbytes` had none), the tracked old copies at older
+  branch heads stay history, and the zero-byte `node_modules/.bin/git` in `Monochromatic-but-every-file-0-bytes`
+  (not a repository) cannot run.
+  Interop decision (user): the interop matrix ran once against an incumbent rebuilt in a throwaway container from the
+  pinned revision, the results are recorded, and everything that can build or run the old wrapper was then deleted
+  (`doc/handover/cli-git-native-interop.md`), leaving static captured fixtures.
+  Still open from the retirement: the `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324,
+  373) wait for a fresh `slopo analyze` report, and the SPEC sections the plan did not name were not re-verified line
+  by line.
+  Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
+  User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
+  retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
+  Linux only; keep `index.lock` after a post-advance failure so recovery can finish; copy the rules cache when the
+  wrapper creates a worktree.
+  Standing authorization (user, 2026-10-13): bump and publish any updates of the native wrapper crate and its
+  `forbidden-strings` dependency during this session, after the gate, a dry-run publish and a real-credential
+  commit have passed.
+  CPU cap (user, 2026-10-14; the hold of 2026-10-13 was released on 2026-10-14): the host is a 16 core, 32 thread
+  Ryzen 9 7950X with 62 GiB RAM, and Claude tool commands and gates share one cap.
+  The cap started at 75 percent (30 of 32 threads), was lowered to 28 on 2026-10-14 after temperature and
+  CPU-pressure alerts, and was back at 30 later that day; the shared `claude-code-bash` memory limit was raised
+  from 8 GB to 32 GB (verified: `memory.max` 32000000000 and `CLAUDE_CODE_TOOL_MEMORY_LIMIT` in
+  `~/.claude/settings.json`); the user service `claude-cpu-watch.service` enforces the value in
+  `~/.config/claude-cpu-cap/threads` (the file holds the current value and persists across reboots;
+  to lower it, write the new integer to that file, never write `cpu.max` by hand).
+  The service also prints ALERT and CLEAR lines for CPU, memory and IO pressure, scheduler lag and temperature;
+  details and the follow command are in `doc/runbook/claude-cpu-cap.md`.
+  Agents need no per-job throttles and no limit on heavy jobs beyond the shared cap (user, 2026-10-14: all Claude Code
+  bash is limited together); heavy gates still run through `~/temp/agent/gate-slot.ts` (six slots) because their
+  time limits assume bounded host load, and memory (62 GiB, not bounded by the cap) is the resource to watch.
+  Commands started with `systemd-run` leave the shared cap, so do not use it for work that should count.
+  `nproc` reports 16 inside shells with a restricted affinity; use `nproc --all` or `lscpu` for the real count.
+  Linter 0.1.2 (released 2026-10-14 at the request of the translation-repair session, confirmed by the user):
+  `markdown/semantic-line-breaks` now replaces the one separating space with the break and leaves a paragraph that
+  starts with `<` and ends with `>` unbroken, as the two fixes on the `translation-repair-rebased` branch did
+  (`9a46438774`, `66345a0925`); the old shape with a stray space is left as it is.
+  Gate: 392 library and 13 binary tests, Clippy, and the Markdown-scope mutation run (752 mutants, 708 caught,
+  44 unviable, none missed); release run 38486199846 published the crate and eight archives.
+  Not measured here: byte parity with the branch's TypeScript rule over its full unit-test inputs (the
+  translation-repair session measures that before switching its wrap to `--stdin --fix`).
+  Linter 0.1.3 (released 2026-10-14): the `rust/tests-in-sidecars` rule, enabled at `error` in the root config with
+  exemptions for the fuzz crates and `doc/troubleshooting`; the four inline test modules were moved to sidecars.
+  Record: `doc/planning/rust-test-sidecar-enforcement.md`.
+  Parity of the Rust semantic-line-break rule with the TypeScript one, measured by the translation-repair session:
+  591 of 598 inputs byte-identical, the 7 differences are breaks after non-BMP characters where the Rust rule is right.
+  The interop lane landed on `main` as `78d23d18a4` (container gate rerun: 1666 unit and 118 binary tests, Clippy clean).
+  mise holds new releases back for 24 hours; the repository exempts its own crates by exact name
+  (`minimum_release_age_excludes` in `mise.no-env.toml`, commit `4059fc9925`).
+  The pathBytes lane (evidence in `doc/handover/cli-git-native-pathbytes.md`) merged on 2026-10-15 after the hardening
+  branch: main was merged into `feat/cli-git-native-pathbytes`, the only conflict was this handover, and the container
+  gate on the merge (tag `pathbytesM`) passed with 1801 unit, 137 binary and 1 consumer test and Clippy clean. The
+  gated paths on `main` are byte-identical to that tested merge.
+  Hardening (user, 2026-10-14: "You own the cli git series of crates ... If cli git is robust, it shouldn't ever get
+  stuck."), branch `fix/cli-git-hardening`.
+  Trigger: another session's `git push` stalled for minutes holding the wrapper's single-flight push lock, and every
+  commit on that branch waited behind it without any output.
+  Rule now in force: nothing waits for another process without a bound, a notice and a named holder.
+  - The auto-push's `git push` runs under `CLI_GIT_PUSH_DEADLINE_SECONDS` (600 by default): asked to end, killed after
+    a 5 second grace, recorded as a failed attempt with exit code 124, commit kept (`src/native/bounded_push.rs`).
+    Git's low-speed abort is added to its environment unless the invocation sets it (it also overrides the
+    `http.lowSpeed*` configuration).
+    The read-only queries before the push stop at the same deadline or 120 seconds (`bounded_query.rs`).
+  - Waiting for the push lock gives up after the deadline plus 65 seconds, or `CLI_GIT_PUSH_LOCK_WAIT_SECONDS`, and
+    prints one line naming the pushing process.
+  - Every wait on a live holder (capture, landing, hook and registry locks, the landing reservation, the worktree-copy
+    settlement, a proven-alive `index.lock` holder) is bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (1800 by default),
+    prints a line after 5 seconds, fails closed and never takes the holder's lock (`live_lock.rs`,
+    `owner_lock::acquire_owner_lock_for`, `replay_reservation.rs`, `worktree_copy_lock.rs`, `index_lock_wait.rs`).
+  - Not bounded on purpose: passthrough Git commands, the user's own hooks and the wrapped real Git (the user's
+    children; Ctrl-C reaches them).
+    Not waits: the chunked file comparison in `recovery_files.rs`, the capped reads, and `await_release` in
+    `transaction_phase.rs`, which runs only when the test marker variable is armed.
+    Bounded by their own counters: `retry_while_active` and the budgeted `wait_for_lock`.
+    The landing loop `run_loop` has no attempt cap: each lost race means another landing advanced the target and the
+    reservation gives the next slot to the oldest requester, so it terminates; only a bug that reports a lost race for
+    every landing makes it replay forever (seen under the pathBytes mutants `landing_attempt.rs:419` and `:592`).
+  Documented in `package/git-policy/cli/README.md` ("Waiting and time limits") and `SPEC.md` ("Auto-push").
+  Verification so far: host Clippy clean; container gate 1713 unit, 119 binary and 1 consumer test passed;
+  the concurrent e2e passed 36 scenario runs on Git 2.55.0 with 2 skipped (the gate task now builds Git 2.55.0 only,
+  because the wrapper refuses older Git and the 2.39.5 and 2.40.0 rows failed by design).
+  Tests that hold a lock now end a stuck coordinator after a ceiling and fail instead of hanging the run, and a
+  watchdog ends a unit-test run after two minutes, so a mutant that hangs counts as a failed test and not a timeout.
+  Issue 990 (abandoned worktree-copy stage containers): a stage claim file is written before staging
+  (`worktree_copy_stage_claim.rs`) and the recovery pass, which holds the settlement lock, removes every container a
+  claim names that no journal names. The one arm no test reaches is a journal-creation failure after a successful
+  staging; its cleanup is the same claim reaping.
+  Final newline CI (user, 2026-10-14: "Delete the final newline CI check. We don't need to re-compile so often."):
+  `.github/workflows/final-newline.yml` and `bin/final-newline-workflow.mjs` are deleted in `e441028636`, with removal
+  notes in the three docs that described them. Pull request 992 (`chore/ci-caching`, a caching measurement) still
+  carries the workflow, so it conflicts on that file once this branch lands; leave that pull request alone.
+  Mutation campaign d (four lanes, started 2026-10-14 20:04 EDT, finished 23:51 EDT, about 3h45m, four in parallel at
+  one mutant per minute each) ran the source from before the controls: 8 missed in lane A, 24 in B1, 14 in B2, 38 in C.
+  Controls, each written to fail on its mutant, are in `a39daccaf4`, `82b5395334`, `05c70c9e79` (push stop),
+  `a19830af2e` (settlement lock), `ea206984ea` (landing pass hand-off), `44377010c3` (stage claim) and
+  `2eeb8ba3f3` (journal, transaction, recovery). Seams added so a race or the machine's filesystem is not needed:
+  `retire_dead_lock_with`, `rename_directory`, `limit_reached`, `copy_file_exclusive_with`, `nested_under`,
+  `grace_remains`, `is_flood`, `handled_by_the_landing_pass`. Refusals other than "absent" are provoked without
+  root by putting a file where a directory belongs (ENOTDIR), and with a read-only parent where that is the only way
+  (the test skips itself when run as root).
+  Verification rerun R1 to R4 (head `2eeb8ba3f3`, 254 mutants, 00:08 to 01:17 EDT): 242 caught or unviable, 12 missed.
+  Lane R4 (`worktree_copy_journal.rs`) had none. The misses were:
+  - Real gaps, fixed: the refused-retirement test skipped itself whenever the call succeeded, which a mutant also
+    does (it now skips only for a superuser, by `geteuid`); `remove_lock_of` had no direct test, so it gained the
+    seams `remove_lock_of_with` and `rename_lock`; the sync-absence arm of `reap_abandoned_stages` became
+    `absent_is_fine`. A second rerun of those 25 mutants (head `dda72f677c`, 05:26 to 05:49 UTC) left one miss, the
+    foreign-owner guard of `remove_lock_of_with`, which the re-check after the rename hides from outcome tests; it
+    is caught by asserting the rename is never asked for (`a_lock_of_another_owner_is_never_moved`). The guard after
+    the rename is caught by `a_replacement_that_raced_the_rename_is_put_back`. Both guards were shown to fail on a
+    hand-applied mutant on the host.
+  - Justified from the code, no test: `recovery_files.rs` 214 (`<` to `<=`: reading into an empty slice returns 0
+    and breaks, same result); `index_writer_coordination.rs` 373 (`release_quietly` body removed: the by-value lock
+    is dropped at the end of the function and `OwnerLock::drop` performs the same release); `worktree_copy_stage.rs`
+    `create_private_tree` (90), `try_clone` (122, both values) and `symlink_at` (246), which are
+    `#[cfg(not(unix))]` or `#[cfg(not(target_os = "linux"))]` code the Linux gate never compiles.
+  - Filesystem-dependent: `worktree_copy_stage.rs` `try_clone` to `false` (104) is equivalent on the gate
+    container's filesystem, which refuses clones (the copy falls back to the same bytes). The test
+    `the_clone_request_succeeds_where_the_filesystem_clones` asks the kernel directly and fails on that mutant when
+    `TMPDIR` is on a cloning filesystem; shown on btrfs (`TMPDIR=~/temp/agent/clone-probe`) with the mutant applied
+    by hand.
+  Container gate on the final tested head `2272d27212` (tag `hardeningZ`, log `hardening-container-8.log`): 1773 unit,
+  120 binary and 1 consumer test passed, Clippy finished. The two `FAILED` lines inside `live_lock` output are
+  helper processes that fail on purpose.
+  Landed 2026-10-15 01:58 EDT: merge `10646ded96` on `main` (the only conflict was `final-newline.yml`, which main had
+  changed for caching; the deletion won). Of the gated paths only `.github/workflows/cargo-publish.yml` differs from the
+  tested head, by main's caching change. Issue 990 closed by the merge.
+  Released 0.1.3 (`7cf21e15d6`): dry-run publish passed, run 38689892958 passed every `gpc-*` job, crates.io lists
+  0.1.3, the GitHub release `monochromatic-git-policy-cli-v0.1.3` carries both Linux archives, and
+  `mise upgrade cargo:monochromatic-git-policy-cli` installed it (`.cache/cli-git-bin/git` points at it).
+  Lessons: `&&` binds tighter than `||`, so reason about those mutants with explicit parentheses; run parallel
+  container runs under distinct `GIT_POLICY_NATIVE_IMAGE_TAG` values; a mutation run needs
+  `localhost/git-policy-native-test:<tag>` from a gate on the same head (alias it with `podman tag` for parallel
+  lanes); a test that skips itself on "the call succeeded" cannot tell a superuser from a mutant, so skip on the
+  cause; a guard that an outcome re-check duplicates needs a test of the call it saves; Clippy here rejects
+  `serde_json::json!` in tests (it expands to `unwrap`); an auto-push can fail with "missing necessary objects"
+  while another session repacks the shared object store, and a retry succeeds; the shared `.git` has a
+  commit-graph entry for an unreadable commit (`a2e8a99c`), left alone because other sessions use it.
+  Verified at the user boundary with the installed 0.1.3: a commit and its auto-push from this worktree went through
+  with real credentials, and a disposable fixture (driver `~/temp/agent/verify-reap-fixture.ts`, fixture removed)
+  showed an abandoned stage named by a claim file removed with the notice, while the same `git worktree add` copied
+  its ignored files. A fixture path must be canonical (`/home/user` is a symlink here), or the wrapper refuses the
+  stage as unsafe.
+  Released 0.1.4 (`59d3bb2e62`, the pathBytes event field): dry-run publish passed, run 38691411232 passed every
+  `gpc-*` job, crates.io lists 0.1.4, the GitHub release `monochromatic-git-policy-cli-v0.1.4` exists, and
+  `mise upgrade cargo:monochromatic-git-policy-cli` installed it (`.cache/cli-git-bin/git` points at it).
+  Cleaned up: the `git-policy-native-test` and `git-policy-native-mutation` image tags of this work (`hardening*`,
+  `pathbytes*`) and the exited containers of the campaigns; the merged branches and worktrees
+  `fix/cli-git-hardening` and `feat/cli-git-native-pathbytes`. Kept: `feat/cli-git-native-replay-core` and its
+  worktree (unmerged mutation work), and the incumbent-holding images `cli-git-concurrent-e2e` and the interop
+  images, which were not in the image list when checked on 2026-10-15 (another cleanup already removed them), plus the
+  dangling images other sessions may still use.
+  Next: the trailing gates below, starting with the replay-core branch's mutation work.
+  Not verified: Windows (the target is not installed here; `tempfile` and `libc` are unix-only dependencies that
+  `bounded_child.rs` already relied on).
+  A podman cleanup by the user (`podman image prune --all`) removed `rust:1.97-bookworm`; pull it back, and pin it with
+  a sleeping container while a prune may still be running.
+  Open: the `replay-core` branch holds unmerged mutation work, `monochromatic-lint` shim lookup fails outside the
+  repository (the linter must be on `PATH` as a real binary), and the trailing gates below, except the interop matrix, are untouched.
+- [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
+  the Windows checks and the release-artifact performance gates;
+  the long fuzz campaigns (fuzz targets, planted-defect controls and a short smoke run stay in the gate);
+  mutation campaigns on non-core modules (hooks plumbing, auto-push, automatic maintenance, signals);
+  and the `pathBytes` field for non-UTF-8 paths in events (done on branch `feat/cli-git-native-pathbytes`, merged:
+  `doc/handover/cli-git-native-pathbytes.md`).
+  Done: the old-and-new wrapper interop matrix and the old-format fixtures (user decision 2026-10-10, run once on
+  2026-10-13): crash recovery, lock waits, hook dispatch and the old-format fixtures pass in both directions;
+  the mixed-concurrency scenario with a killed worker still fails sometimes, because the incumbent's startup
+  recovery releases a native lander's `index.lock` without the landing lock (recorded as an open finding, the
+  incumbent is not fixed), and five native recovery races found on the way are fixed.
+  By the user's decision the incumbent tooling and the drivers that need it were then deleted; the plain-file
+  fixtures and their native-only reader stay (`doc/handover/cli-git-native-interop.md`).
+  Locks, journal, capture, shadow repository, preparation, policies, landing, replay, recovery and the worktree copy
+  keep full mutation gating.
+  Features do not trail: signals, automatic maintenance and the linked-worktree copy are part of the cutover.
+  Widened on 2026-10-11 (user: "I authorize moving more mutation to trail the cutover"):
+  the lane mutation campaigns (capture, replay-core, worktree-copy, auto-push and the slice 3 rerun)
+  trail the cutover too, after each lane's container gate and planted controls.
+  Mutation for the serial slices 6, 7 and 9 and the closing gates stays in the cutover until the user widens it again.
+  Each lane records what it skipped under a `Trailing gates` heading in its evidence file.
+  Trailing is not stopping (user, 2026-10-10): the cutover does not end the work.
+  Right after it, without a pause, the queue continues with these gates in the order listed
+  (fuzz campaigns, non-core mutation, the Windows checks and the release-artifact performance gates; the interop
+  matrix, the old-format fixtures and the `pathBytes` field are done),
+  each recorded and closed like any other gate,
+  and then the retirement of the old TypeScript implementation is verified complete.
 - [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands
   for commands that need no commit transaction:
   on `main`, final engine tree `348d94cbe` (`Native policy engine`).
 - [x] Merge the candidate content layer into `main` (`c6cab0800`).
 - [x] Content policies over candidates for `git add` and the direct commands:
   `final-newline`, `security/forbidden-strings` and `mono/forbidden-root-context` (`83463b49a`).
-- [ ] `markdown/autofix` through the native linter executable,
-  and the `pathBytes` event field adopted for non-UTF-8 paths.
-- [ ] `mono/dependent-version-bump`: the planner and its differential proof are on their branch;
-  wiring into `ShippedChecks` follows.
-- [ ] This repository's translated configuration must list all four optional policies and set `rulesFile`.
+- [x] `markdown/autofix` through the native linter executable (merge `b89b38252`).
+- [ ] The `pathBytes` event field for non-UTF-8 paths:
+  done for `git add`, `check` and `fix` events through merge `b89b38252`;
+  the commit path, replay conflicts and journals are done on branch `feat/cli-git-native-pathbytes`
+  and wait for the merge (`doc/handover/cli-git-native-pathbytes.md`).
+- [x] `mono/dependent-version-bump`: landed on `main` (`doc/handover/cli-git-native-dependent-version.md`).
+- [x] This repository's translated configuration lists all four optional policies and sets `rulesFile` (`cli-git.config.jsonc`, `doc/handover/cli-git-native-config.md`).
 - [ ] Manual-push listings for the content policies, with the push lifecycle.
 - [ ] Rust cli-git transactions, hooks, locks, replay, recovery, worktree copy, and auto-push.
 - [ ] Container integration, mutation testing, fuzzing, platform checks, and release-artifact performance gates.
@@ -1539,8 +1801,9 @@ that is verification, not a decision for the user.
 - [x] Behavior ledger for the wrapper (`doc/planning/cli-git-rust-behavior-ledger.md`).
 
 Each item needs its own passing evidence before completion.
-Current production tools remain active until cutover.
-The first crates.io publication still needs explicit user approval.
+The native wrapper is the production tool since 2026-10-14.
+Version bumps of the native wrapper crate and of `forbidden-strings` are authorized for the session of 2026-10-13/14
+(see the standing authorization above); any other first crates.io publication needs explicit user approval.
 The user chose continuous execution:
 finish the queue or identify a genuine blocker rather than ending on a progress report.
 
@@ -1673,459 +1936,3 @@ The manifest now pins unicode-ident 1.0.24 and unicode-properties 0.1.4,
 the same Unicode 17 pair as the incumbent;
 compilation and the Rust container suite pass.
 An explicit dependency-fetch task prepares all target archives before offline vendoring.
-
-## Current step
-
-The user added explicit Rust annotations,
-then a ban on anonymous Rust functions.
-The ban supersedes inline closures in the user's initial example;
-use a named callback instead.
-`rust/no-anonymous-functions` is implemented and registered in the configuration schema.
-Focused tests cover closure modifiers,
-nested closures,
-named callbacks,
-non-function pipe syntax,
-UTF-8 byte positions,
-and severity/option validation.
-`mise run //package/linter/monochromatic-lint:test:rust-style` passed independently of the Markdown gate:
-5 tests passed,
-77 unrelated tests filtered out.
-Evidence:
-process `proc_3877`,
-image `268493227fcaf3af6ae661616665f7da15fac28b1caeb987d12d438ad6787f67`.
-The focused mutation gate passed with 2 caught mutants,
-1 unviable mutant,
-and no misses.
-The unviable replacement constructs `Diagnostic::default()`,
-which rustc rejects with E0277 because `Diagnostic` intentionally has no default.
-Evidence:
-`package/linter/monochromatic-lint/target/verification/mutation-DGghv8`.
-The removed-rule mutant returned an empty findings list and was caught by the positive controls.
-
-The new raw/generated Rust-style ASAN target completed 1,274 executions with exit 0.
-The same rebuilt campaign completed 247,794 merge executions and 17,633 configuration executions.
-Evidence:
-`package/linter/monochromatic-lint.fuzz/target/verification/campaign-xNoaiG`.
-The Rust generator independently exercises bounded closure counts and non-closure controls;
-arbitrary valid UTF-8 also goes through the real parser.
-The separate Clippy gate initially failed because concurrent commit `53c1e01a9`
-added fleet-wide `shadow_reuse`,
-`shadow_same`,
-and `shadow_unrelated` denials.
-Renamed the affected owned bindings without weakening those rules;
-also replaced the Markdown link rule's late initialization with a named replacement helper.
-The test image now copies the repository's `clippy.toml` instead of silently omitting its parameters.
-`mise run //package/linter/monochromatic-lint:lint:rust-style` passed on recheck (`proc_a018`).
-Cargo still emits `cargo::unused_dependencies` for the reserved `ignore` dependency
-because the file walker is not implemented yet.
-Executable dispatch remains pending.
-The user answered A to the annotation scope question:
-full semantic enforcement is authorized for `rust/require-explicit-types`,
-including explicit generic arguments on resolved calls.
-This supersedes the prior no-semantic-analysis decision for the new rule.
-Preserve `_` for unnameable function-item types;
-report resolution limitations honestly for standalone snippets.
-Do not reopen this settled scope question or substitute method-name heuristics.
-Detailed next steps and source findings:
-`doc/planning/rust-explicit-types.md`.
-A read-only rust-analyzer checkout matches the syntax crate's recorded upstream revision.
-The first semantic dependency fetch found no published HIR 0.0.335;
-a re-probed sparse index confirms the gap.
-The disposable probe now successfully fetches synchronized 0.0.336,
-without changing production dependencies.
-Build-script entry points and their compiler-probe helpers were inspected.
-The Linux-filtered graph has 175 packages.
-The first consumer run compiled but lacked rust-analyzer's required database attachment scope.
-The corrected run (`proc_46ae`) passed receiver disambiguation with counts `[1, 0, 1]`
-using named callbacks through `attach_db` and `with_attached_db`,
-without adding anonymous functions or mutable request globals.
-The inference-site probe (`proc_a10b`) and typed per-database selection control (`proc_39fb`) passed.
-Salsa inputs let named callbacks read the selected file without captured closures or a second request-global store.
-The standard-library user example resolved correctly (`proc_e5d4`),
-then passed the real composed rule in an external Rust consumer (`proc_7d2f`).
-The unfinished crate now depends on synchronized rust-analyzer 0.0.336 and Salsa 0.27.2.
-
-The actual rule comprises declaration-presence checks,
-resolved generic methods/type or value paths,
-enum/alias argument ownership,
-and inferred-type validation.
-`Diagnostic.processing_failure` is internal and omitted from JSONL;
-the future executable must honor it for unavailable semantic coverage.
-`RustSource::from_syntax` reuses the registered tree rather than reparsing it.
-
-The package's new semantic conformance catalog uses disposable Cargo projects and source overlays,
-including positive/negative cache controls.
-Its first package run (`proc_ae2d`) passed 93 tests but stopped the semantic catalog
-on the intentionally disabled `AbsPath::exists()` method.
-The helper now uses `std::fs::metadata` as required by the inspected API;
-the full test suite then passed all 94 tests in `proc_8e60`,
-including the semantic conformance/source-overlay catalog.
-Clippy found one `clippy::question_mark` occurrence;
-it has been rewritten with typed `?` propagation without changing rule severity.
-Additional const-inference,
-alias,
-trait,
-and lifetime cases are now running in `proc_cd25`
-(`unified-linter-semantic-edge-conformance`).
-That gate found a real classification defect:
-`build::<_>()` was parsed as a type-shaped generic argument,
-but its resolved declaration requires a constant.
-The checker now maps the argument position to the resolved type/const parameter list
-before asking for type information.
-Verification is pending on this correction.
-
-The production `RustSemanticSession` is now implemented:
-it owns a preloaded workspace,
-verifies selected-file membership,
-applies exact in-memory source overlays,
-uses named protected query callbacks,
-and preserves typed failures.
-The conformance fixture now calls this production session instead of test-only query glue.
-Session panic and missing/relative-file controls are included.
-The complete session snapshot passed 97 tests and Clippy (`proc_baf0`).
-The production Cargo loader is also implemented:
-explicit Cargo manifests,
-read-only installed-toolchain/source discovery,
-locked/offline dependency handling,
-and separate source-only/generated-source preparation.
-A real fixture proves generated definitions become visible after Cargo preparation
-and failed build scripts are not accepted as complete metadata.
-That snapshot passed 99 tests and Clippy (`proc_6bfb`).
-Typed Rust configuration selection,
-shared syntax/semantic dispatch,
-and a lazy invocation-level Rust workspace cache were added afterward.
-The syntax-only route does not inspect or open a Cargo workspace,
-and semantic source overlays retain the user's display filename.
-Native literal-path discovery now handles hidden directories,
-Git/dependency exclusions,
-combined extra ignore patterns,
-and explicit I/O failures.
-These dispatch/discovery additions await their gate;
-glob expansion and the executable are still unfinished.
-The accepted CLI grammar is now declared through the incumbent Clap family,
-including native path values,
-stdin-filename requirements,
-positive concurrency,
-repeatable ignore flags,
-and rejection of an unsupported --rule option.
-CLI grammar,
-dispatch,
-and literal discovery passed their gate (`proc_c3dd`).
-Glob expansion and JSONL/stdin-fix output routing were then added.
-`proc_2dfd` passed all 121 tests,
-but Clippy rejected one unnecessary cloned single-element test slice
-(`clippy::cloned_ref_to_slice_refs`);
-that assertion now uses `std::slice::from_ref`.
-The output/glob recheck passed all 121 tests and Clippy (`proc_6b17`).
-The preceding gate passed 108 tests but one new settings fixture attempted to parse top-level null,
-which the JSONC package rejects before schema validation.
-The fixture now tests a valid JSONC array root and nested null instead.
-
-Markdown commands-show-output,
-textually scoped duplicate headings,
-and trailing punctuation have now been ported.
-`proc_1bf8` passed all 130 tests,
-including escaped/entity punctuation and LF/CRLF/bare-CR prompt fixes.
-Clippy rejected the optional-edit construction with `clippy::manual_map`;
-a named early-return helper now preserves the no-closure policy without suppressing that lint.
-Additional controls cover output-bearing CRLF/bare-CR fences,
-container exceptions,
-exact messages,
-markup-boundary heading text,
-and native fence offsets.
-The recheck (`proc_a6c6`) passed 131 tests and failed the new bare-CR output-bearing fence control.
-`all_prompts` split decoded content only on LF;
-Sätteri retained CR in this code value,
-so a command followed by output became one prompt-looking line.
-The checker now splits on either CR or LF,
-while the byte editor still preserves each original line ending.
-A new full gate is pending.
-
-Advisor review supplied those additional controls.
-Its suggested punctuation expansion and registry finding were rejected after checking
-`package/cli/markdown-lint/src/rule/md026-no-trailing-punctuation.ts`
-and `package/linter/monochromatic-lint/src/configuration_rules.rs`:
-the accepted punctuation is only `.` and `:`,
-and all specified Markdown identifiers were already registered.
-Executable dispatch is still pending,
-so registration alone does not establish a working command.
-Textual ancestry and column-one fence restrictions directly match the incumbent rule source.
-The proposed non-JSON silent-mode error output was not adopted:
-findings remain JSONL when displayed,
-and exit status remains independent of display filtering.
-The punctuation suffix scanner consumes each successful scanned suffix before continuing;
-the first unsupported suffix returns immediately,
-so repeated reverse searches do not rescan the successful prefixes.
-
-Full mutation is running as `proc_3d86` against its recorded immutable source snapshot.
-It has reported a survivor in `markdown_code.rs`:
-changing the indentation adjustment from addition to subtraction.
-The existing native fixture's code-node range already excludes indentation.
-Installed Sätteri `firstpass.rs` (`parse_fenced_code_block`) records the scanner's marker offset,
-and `arena_build.rs` copies that span.
-A native parser offset/fix matrix now covers column-one,
-indented,
-quoted,
-list-contained,
-and Unicode-prefixed fences before removing redundant adjustment logic.
-The native fence matrix passed in `proc_a6c6`,
-so redundant indentation adjustment was removed and the helper renamed `fence_marker_end`.
-The mutation campaign also survived strict/adjacent heading-depth comparison mutations;
-regular one-step increases and equal-depth siblings now have explicit controls.
-The final mutation report and further survivor dispositions remain pending.
-A separate `mutation:markdown` task verifies the current Markdown-only scope after a full test baseline;
-it does not replace the existing full-snapshot campaign.
-Reference-definition checking has also been ported,
-with normalized parser identities and source-preserving newline/container deletion tests.
-The complete current snapshot passed 138 tests in `proc_02be`,
-including the bare-CR regression,
-fence-offset matrix,
-reference-definition removals,
-and output-filter controls.
-Clippy stopped the mutation task on `clippy::needless_late_init` in the definition reason selection.
-The rule now returns early for the first used definition,
-then initializes its reason with a short conditional.
-The scoped mutation task has not reached mutation yet.
-The refreshed gate passed all 138 tests and Clippy in `proc_a8a3`.
-Its Markdown-scoped mutation campaign is now running against that exact pre-table snapshot:
-315 mutants,
-passing unmutated baseline,
-evidence `package/linter/monochromatic-lint/target/verification/mutation-n3zXgl`.
-The surfaced prompt-scan mutants showed missing controls for `$ ` inside a command.
-A new regression checks embedded prompt-looking text in every newline mode;
-the scanner now uses a newline-retaining standard iterator instead of redundant byte loops.
-The scoped campaign completed:
-315 mutants,
-247 caught,
-39 missed,
-20 unviable,
-and 9 timeouts.
-`mutation-n3zXgl/mutants.out/missed.txt` is the complete survivor inventory.
-Survivors are concentrated in the old manual prompt scanning/opener arithmetic,
-a zero-offset punctuation guard,
-an equivalent parity subtraction,
-malformed-arena guards,
-and node-span length.
-The prompt loops/opener arithmetic have since been simplified,
-punctuation now toggles escape parity rather than subtracting equivalent values,
-and native corruption/zero-offset/exact-length controls were added.
-These dispositions still require mutation reruns;
-the 9 timeout cases are retained separately,
-not reported as ordinary caught results.
-Mutation log matches are context-only;
-terminal outcomes still wake the agent.
-
-Pipe-table reporting/conversion and the HTML/MDX text encoder have been added afterward.
-They preserve alignment and literal Markdown cell syntax,
-report nested/indented tables without destructive whole-node fixes,
-and encode HTML-sensitive characters plus MDX expression braces at interpolation.
-The JavaScript trim set was measured over BMP scalar values;
-it includes BOM and excludes NEXT LINE,
-unlike Rust's default trim.
-The latest table/prompt container gate is `proc_ccaf`.
-Tables are not covered by either currently running mutation snapshot or `proc_415a`.
-`proc_ccaf` passed 145 tests and failed the header-only table fixture:
-`A | B` followed by `- | -` did not produce a table node.
-The fixture now uses an unambiguous `--- | ---` delimiter row;
-its verification is pending rather than assumed.
-Native semantic-line-break helpers and the AST-driven rule have now been ported as well:
-byte-preserving abbreviation checks,
-closing-delimiter tails,
-paragraph/container prefixes,
-block-start guards,
-and point-anchored add-only edits.
-The complete table/prose gate passed all 156 tests and Clippy (`proc_32b5`).
-The unambiguous header-only table fixture passed.
-A read-only Node probe now captures 44 break-offset cases and 32 block-start cases
-from the unchanged incumbent helpers,
-with their source hashes in `fixtures/semantic-break-parity.json`.
-New native tests compare those measured outputs rather than only handwritten expectations.
-A separately measured incumbent Unicode defect is intentionally not copied:
-`İİİİ etc. Next sentence.` and `İİİİ e.g. Next sentence.` each reported byte 13,
-because lowercasing expands the prefix and shifts abbreviation ranges away from original offsets.
-The native scanner tests abbreviations at original byte positions and keeps both cases unbroken.
-The differential/arena guard gate passed all 164 tests and Clippy (`proc_1baf`).
-It also verifies zero-offset punctuation,
-all inline delimiter families,
-nested quote/list prefixes,
-JSONL zero-length point spans,
-and deliberately corrupted native arenas.
-The later arithmetic simplifications still require their next snapshot's verification.
-New helper/rule files have uncommitted formatter output after their scoped feature commits.
-The Markdown ASAN generator controls passed all 5 sidecar tests in `proc_415a`.
-Its complete campaign then passed:
-152,781 merge executions,
-11,426 configuration executions,
-1,129 anonymous-function executions,
-458 semantic explicit-type executions,
-and 57,218 Markdown/MDX executions.
-Evidence:
-`package/linter/monochromatic-lint.fuzz/target/verification/campaign-BUNASg`.
-This snapshot excludes table/prose additions and later scanner refactors;
-it is not a final full-implementation campaign.
-The next campaign (`proc_5733`) includes tables and prose.
-Its generator controls passed,
-but the newly added sidecar Clippy stage found `clippy::shadow_unrelated`
-in the existing configuration reconstruction helper.
-The second `source` binding is now named `reconstructed`.
-The retry passed (`proc_4875`):
-all generator controls and sidecar Clippy,
-then 147,101 merge executions,
-13,394 configuration executions,
-1,185 anonymous-function executions,
-539 semantic explicit-type executions,
-and 64,366 Markdown/MDX executions including tables and prose.
-Evidence:
-`package/linter/monochromatic-lint.fuzz/target/verification/campaign-KqhBLf`.
-That snapshot includes the later prompt/escape simplifications,
-but not the new exact node-span-length assertion.
-
-Scanner embedding has begun with the structured `ScanFinding` model in
-`package/cli/forbidden-strings/src/scan_finding.rs`.
-The type is now registered and used by the shared content and pathname cores.
-Standalone adapters render those canonical records into the existing protocol.
-`Scanner::load`,
-`Scanner::scan`,
-`CandidateScan`,
-and structured `CacheWarning` accessors are implemented,
-with direct candidate-buffer and redaction controls.
-The adapter now accepts native `Path` values for candidates and rule loading.
-Component matching uses native bytes;
-only unmatched display text is encoded,
-including explicit escapes for invalid UTF-8.
-New Unix byte-path controls and a public integration consumer cover the boundary,
-but their container gate is still pending.
-The first scanner container attempt (`proc_8f12`) stopped before compilation:
-`cargo vendor --offline` lacked the locked `id-arena 2.3.0` archive.
-A separate `dependencies:fetch` task completed (`proc_83cb`).
-The scanner retry passed (`proc_9535`):
-142 library tests,
-40 binary integration tests,
-and 8 pathname integration tests,
-with no filtered tests in those suites.
-The binary unit-test target had no tests in that snapshot.
-The fixture is unprivileged and uses Git 2.56.0.
-This snapshot precedes the final native rule-loader/public consumer additions
-and the standalone panic-output boundary.
-The production executable has not been rebuilt or replaced.
-Next scanner work must share typed findings with the standalone formatter,
-not parse terminal text back into candidate identities.
-The standalone executable now installs a payload-omitting hook once before startup/workers,
-then invokes logger initialization and the CLI inside a separate named unwind boundary.
-Unexpected startup/runtime panics produce a fixed redacted setup error;
-already-caught matcher panics retain their per-candidate EngineError records.
-The library does not change a host's process hook.
-New subprocess controls compare the default payload-bearing hook with the protected mode.
-Their first gate is pending.
-Public load-panic conversion and embedding-host hook/profile obligations remain open;
-a hook is not an unwind catcher,
-and prior hooks must not be blindly chained because they can print payloads.
-Thread names are also not assumed safe output.
-Source inspection found scan results/scratch local to each call in
-`runtime_matcher.rs::line_matches`
-and `forbidden-regex/src/regex/batch.rs::line_matches`;
-matching methods borrow immutable compiled rules.
-The separate shared CPU-count cache is in `forbidden-regex/src/parallel.rs`.
-A complete panic-reuse/lifecycle proof remains pending.
-
-The current Rust test image was probed and contains Git 2.47.3;
-the host `/usr/bin/git` is 2.55.0.
-Neither is the selected 2.56.0 wrapper-test contract.
-Git 2.56.0 source was cloned read-only at
-`~/temp/agent/git-native-2.56.0-20261004`,
-commit `a018953688f1b10bddf91bff8747068f5f4746a4`.
-Its build entry points/generators were inspected,
-and `EXECUTION.md` records the mount-free,
-network-disabled,
-2 GiB/2 CPU/128 PID boundary.
-The owning `test:git-image` task passed (`proc_b2d5`).
-Result image:
-`6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a`.
-Its `/usr/bin/git --version` probe returned exactly Git 2.56.0.
-Evidence:
-`package/git-policy/cli/target/verification/git-image-xKWiQ6`.
-The fixture excludes Tk UI and localization only;
-Perl/Python helpers,
-curl,
-fsmonitor,
-and Git's default Rust support remain enabled.
-A version probe must show exactly Git 2.56.0 before scanner/wrapper verification uses the image.
-
-A Markdown/MDX ASAN target has been added to the fuzz sidecar.
-Every draw exercises an independently counted rule fixture,
-original-byte spans,
-and reparsing after accepted grouped fixes,
-then arbitrary UTF-8 in both modes.
-The generator unit controls cover every fixture and LF/CRLF/bare-CR choice.
-`proc_415a` is running the full sidecar smoke task under the existing bounds;
-its source snapshot predates the final definition-selection refactor.
-The owning Cargo task regenerated the fuzz lockfile;
-inspection showed only the already selected Clap dependency family was added.
-Semantic fuzz controls now exercise all generated branches through production sessions.
-The first fixture path was not a crate root;
-renaming the fixed metadata path to `/main.rs` made all generator controls pass.
-The optimized ASAN build then lost a rustc child to SIGKILL under the 2 GiB cap (`proc_d430`);
-this is not a fuzz-input failure or a verified OOM diagnosis.
-The retry uses one compiler job and 16 codegen units,
-retains container build state,
-and keeps ASAN/coverage instrumentation enabled
-(`proc_f48f`).
-That retry completed all targets successfully:
-155,424 merge executions,
-13,716 configuration executions,
-1,200 anonymous-function executions,
-and 485 semantic explicit-type executions.
-Evidence:
-`package/linter/monochromatic-lint.fuzz/target/verification/campaign-DWubzj`.
-All runtime fuzz containers remained mount-free with ASAN enabled.
-These figures cover the recorded source snapshot,
-not subsequent CLI/discovery changes.
-The build emitted unused-doc-comment warnings on two macro invocations;
-those comments are now ordinary comments rather than rustdoc.
-
-The user corrected a progress-only stopping point with "Don't stop."
-Continue the next unblocked item while background gates run;
-a future process notification is not a reason to issue a progress-only final reply.
-Proposed `AGENTS.md` tightening for `PXQ`:
-"While tracked work remains, start the next unblocked item during background verification.
-Do not end with a progress-only reply; finish the queue or identify a genuine blocker."
-The proposal has not been applied to `AGENTS.md`.
-The published API prerequisite failures are recorded in
-`doc/troubleshooting/rust-analyzer-semantic-scope.md`.
-The test image now includes Rust 1.97's matching rust-src component:
-`84f24e75017a7d8afa1c69e51c52f37e7d8d644cd2597a01f4732ad0b386dc20`.
-This image was built without host mounts using the inspected rustup component command.
-
-Next:
-inspect and fix any conformance/Clippy failures,
-add the remaining semantic edge controls,
-run full-rule mutation and bounded fuzzing,
-and integrate workspace loading/CLI dispatch.
-Do not call the explicit-types rule complete from its passing user example alone.
-
-The first full Markdown container run compiled and ran 77 tests:
-76 passed and the assumed invalid-ESM error fixture failed.
-Source inspection established that Sätteri uses ESM parsing for completeness,
-then constructs an ESM node even when that check returns Error.
-The adapter's contract is rejection of reported parser errors,
-not independent JavaScript validation.
-The revised test first proves a mismatched JSX closing tag enters the native error vector,
-then asserts adapter rejection and original byte offsets with and without BOM.
-A separate control records ESM acceptance and the retained source newline.
-After correcting the source-slice expectation,
-the full existing slice passed 83 tests and Clippy (`proc_adf2`).
-That result precedes the new semantic conformance additions.
-The corrected error-boundary assumptions and source evidence are recorded in
-`doc/troubleshooting/satteri-mdx-error-fixtures.md`.
-
-Native Markdown/MDX arena adapter,
-owned byte/UTF-16 positions,
-and the initial heading/link/fence rule ports passed their recorded gates.
-Later Markdown additions have their separate results recorded in this handover.
-Dependencies retain the already approved Sätteri versions.
-The markdownlint MIT notice is now included.
-Continue with the remaining Markdown rules,
-processors,
-CLI and integration,
-then scanner embedding and the Rust Git wrapper.
-Do not replace current production tools early.

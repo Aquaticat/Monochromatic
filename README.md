@@ -64,7 +64,7 @@ A sibling Gradle-based Kotlin linter lives in
 **Policy-aware git tooling**:
 [`git-policy-cli`](package/git-policy/cli/) wraps git with policy guards
 (rejecting bulk staging and pathspec-less commits,
-guarding worktree removal) behind a side-effect-free policy authoring API.
+guarding worktree removal) as a native Rust executable configured by data in `cli-git.config.jsonc`.
 [`cli/forbidden-strings`](package/cli/forbidden-strings/) is a gitignore-aware Rust scanner
 for banned tokens and leaked credentials,
 with a coverage-guided [`cargo-fuzz` harness](package/cli/forbidden-strings.fuzz/).
@@ -259,8 +259,7 @@ package/
                               deps-cube, page-weight, vm-builder, watch-restart)
   figma/                    Figma and Penpot tooling (kiwi parser, to-penpot converter)
   fuzz/                     Coverage-guided fuzzing harnesses (forbidden-strings)
-  git-policy/               Policy-aware git wrapper, policy authoring API,
-                              forbidden-strings policy
+  git-policy/               Policy-aware git wrapper (native Rust executable) and its fuzz sidecar
   intellij-plugin/          IntelliJ plugins (islands-black theme)
   kwin/                     KWin scripting (key-helper script and service)
   learning/                 Learning exercises (rust)

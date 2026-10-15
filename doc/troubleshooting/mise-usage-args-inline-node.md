@@ -42,6 +42,46 @@ Check task labels and child commands before attributing verification to trailing
 No upstream defect or filing is indicated:
 this behavior matches the command's documented argument grammar.
 
+## Undeclared path arguments can become inline JavaScript
+
+On 2026-10-12,
+`proc_3f44` attempted to restrict the inherited auto-mode formatter by appending source paths.
+The task did not declare or consume those path arguments.
+Its printed Node input ended with this shape:
+
+```text
+# Relevant suffix of the inline task input.
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix']) package/pi-plugin/auto-mode/src/policy-data.ts
+```
+
+Node `26.11.1` reported `ERR_INVALID_TYPESCRIPT_SYNTAX`
+with `Expected ';', '}' or <eof>`.
+The error occurred while parsing the inline task,
+before the formatter ran.
+This is an unsupported invocation of that task,
+not an Oxlint finding in the named source file.
+
+The no-argument invocation reached the configuration build in `proc_0d52`,
+but terminated with `SIGTERM` without an Oxlint report or source changes.
+The shared restricted slice then showed `oom_kill 1`;
+the available kernel-journal query returned no matching entries,
+so that counter does not identify the killed process.
+This is separate from the invalid argument syntax.
+At that checkpoint the 2-GiB limit remained unchanged.
+A later relative journal query identified the actual `tsc` victim;
+the user then authorized the verified 4-GiB correction described in
+[Pi worker memory budget](pi-worker-memory-budget.md).
+
+The auto-mode package's formatter and linter now declare variadic usage arguments
+and decode `usage_args` through the existing `vars.parse_usage_args` helper.
+They retain `vars.dispatch_workspace_node`,
+`ensureOxlintConfig`,
+and the original Oxlint wrapper.
+No arguments still selects the package;
+explicit paths select only those files without changing its rule configuration.
+This task change still requires a successful real invocation.
+Do not attribute package-wide coverage to a selected-file check.
+
 ## Symptom
 
 A mise task declares variadic usage arguments,

@@ -3,10 +3,14 @@ import {
   mkdir,
   mkdtemp,
   rm,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
+import {
+  delimiter,
+  join,
+} from 'node:path';
 
 import {
   describe,
@@ -14,7 +18,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { resolveRealGit, } from '../dist/final/node/index.mjs';
+import {
+  RealGitNotFoundError,
+  resolveRealGit,
+  type ResolveRealGitOptions,
+} from '../dist/final/node/index.mjs';
 
 //region Native executable fixtures
 
@@ -88,6 +96,67 @@ async function createTempDirectory(): Promise<TempDirectory> {
   };
 }
 
+/**
+ Creates the installed wrapper layout: native executable `cli-git-native` and a `git` link to it.
+ 
+ @param root - Disposable directory that receives the layout.
+ 
+ @returns Directory holding the `git` link.
+ 
+ @example
+ ```ts
+ const wrapperBin = await createWrapperLink(tempDirectory.path);
+ ```
+ */
+async function createWrapperLink(root: string,): Promise<string> {
+  /**
+   Directory standing in for the mise install `bin` directory.
+   */
+  const installBin = join(root, 'install-bin',);
+  /**
+   Directory standing in for `.cache/cli-git-bin`.
+   */
+  const linkBin = join(root, 'link-bin',);
+  await mkdir(installBin,);
+  await mkdir(linkBin,);
+  /**
+   Native-format wrapper executable.
+   */
+  const wrapper = join(installBin, 'cli-git-native',);
+  await writeFile(
+    wrapper,
+    Buffer.from('7f454c46', 'hex',),
+    { mode: EXECUTABLE_MODE, },
+  );
+  await symlink(
+    wrapper,
+    join(linkBin, 'git',),
+  );
+  return linkBin;
+}
+
+/**
+ Captures the failure of one resolution attempt.
+ 
+ @param options - Resolver options for the attempt.
+ 
+ @returns Thrown value, or undefined when resolution succeeded.
+ 
+ @example
+ ```ts
+ const caught = await captureResolutionError({ pathEnv: '/nowhere', commonGitPaths: [], });
+ ```
+ */
+async function captureResolutionError(options: ResolveRealGitOptions,): Promise<unknown> {
+  try {
+    await resolveRealGit(options,);
+  }
+  catch (error: unknown) {
+    return error;
+  }
+  return undefined;
+}
+
 //endregion Native executable fixtures
 
 await describe({
@@ -126,4 +195,63 @@ await describe({
       },
     },);
   },),
+},);
+
+await describe({
+  name: `${resolveRealGit.name} with the native wrapper link`,
+  children: [
+    it({
+      name: 'skips a git link that resolves to cli-git-native and selects the next native Git',
+      fn: async function skipsWrapperLink(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /**
+         PATH directory holding the wrapper link.
+         */
+        const linkBin = await createWrapperLink(tempDirectory.path,);
+        /**
+         PATH directory holding a native Git that is not the wrapper.
+         */
+        const realBin = join(tempDirectory.path, 'real-bin',);
+        await mkdir(realBin,);
+        /**
+         Native-format real Git candidate.
+         */
+        const realGit = join(realBin, 'git',);
+        await writeFile(
+          realGit,
+          Buffer.from('7f454c46', 'hex',),
+          { mode: EXECUTABLE_MODE, },
+        );
+
+        /**
+         PATH with the wrapper link ahead of the real Git.
+         */
+        const pathEnv = [linkBin, realBin,].join(delimiter,);
+
+        expect(await resolveRealGit({
+          pathEnv,
+          commonGitPaths: [],
+        },),).toBe(realGit,);
+      },
+    },),
+    it({
+      name: 'reports no real Git when the wrapper link is the only candidate',
+      fn: async function rejectsOnlyWrapperLink(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /**
+         PATH directory holding only the wrapper link.
+         */
+        const linkBin = await createWrapperLink(tempDirectory.path,);
+        /**
+         Failure recorded for a PATH that exposes only the wrapper.
+         */
+        const caught = await captureResolutionError({
+          pathEnv: linkBin,
+          commonGitPaths: [],
+        },);
+
+        expect(caught,).toBeInstanceOf(RealGitNotFoundError,);
+      },
+    },),
+  ],
 },);

@@ -41,6 +41,28 @@ use crate::appearance_portal::ColorSchemePreference;
 #[path = "protocol_wheel.rs"]
 mod wheel;
 
+/// Shared `name=value` option parsing.
+#[path = "protocol_options.rs"]
+mod protocol_options;
+
+/// The `key` command.
+#[path = "protocol_key.rs"]
+mod key;
+
+/// The `click`,
+///  `drag`,
+///  and `scroll` commands.
+#[path = "protocol_click.rs"]
+mod click;
+
+/// The `drop-file` command line.
+#[path = "protocol_drop.rs"]
+mod dropfile;
+
+/// The repeat-info and close commands.
+#[path = "protocol_session.rs"]
+mod session;
+
 /// Runtime appearance parsing shares the startup option's value names.
 #[path = "protocol_color_scheme.rs"]
 mod color_scheme;
@@ -48,6 +70,44 @@ mod color_scheme;
 /// Runtime output-scale parsing shares the startup option's value grammar.
 #[path = "protocol_scale.rs"]
 mod scale;
+
+/// Pointer hover and held-button parsing sits beside the click grammar it extends.
+#[path = "protocol_pointer.rs"]
+mod pointer;
+
+/// Taskbar progress verbs parse their optional record count here.
+#[path = "protocol_launcher.rs"]
+mod launcher;
+
+/// The `record` verb has the longest argument list and is parsed beside the others,
+///  not among them.
+#[path = "protocol_record.rs"]
+mod record;
+
+/// Notification verbs parse their ids,
+///  reasons,
+///  and action keys here.
+#[path = "protocol_notification.rs"]
+mod notification;
+
+/// Plasma job verbs parse their job ids here.
+#[path = "protocol_job.rs"]
+mod job;
+
+/// The runtime accent color verb shares the startup option's grammar.
+#[path = "protocol_accent.rs"]
+mod accent;
+
+/// Job verbs are matched by the executor,
+///  so their type is part of the protocol's interface.
+pub use job::JobCommand;
+
+/// Notification verbs are matched by the executor,
+///  so their type is part of the protocol's interface.
+pub use notification::NotificationCommand;
+
+/// The accent color a runtime `accent-color` request carries.
+use crate::accent_color::AccentColor;
 
 /// What:
 ///      Import the output-scale value a `scale` request carries.
@@ -129,13 +189,26 @@ impl PointerButton {
             PointerButton::Middle => return 0x112,
         }
     }
+
+    /// The lowercase name the control protocol uses for this button.
+    ///
+    /// What:
+    ///      `pub fn name(self) -> &'static str`.
+    /// Why:
+    ///       Error answers name the button the way the request spelled it.
+    pub fn name(self) -> &'static str {
+        match self {
+            PointerButton::Left => return "left",
+            PointerButton::Right => return "right",
+            PointerButton::Middle => return "middle",
+        }
+    }
 }
 
 /// What action a key request performs.
 ///
 /// What:
-///      `pub enum KeyAction { Press, Release, Tap }`.
-///  Three data-less variants.
+///      `pub enum KeyAction { Press, Release, Tap, Hold { millis } }`.
 /// Why:
 ///       A test may hold a key down,
 ///  release it,
@@ -143,7 +216,7 @@ impl PointerButton {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type KeyAction = "press" | "release" | "tap";
+/// type KeyAction = "press" | "release" | "tap" | { hold: number };
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KeyAction {
@@ -153,6 +226,34 @@ pub enum KeyAction {
     Release,
     /// Press then immediately release.
     Tap,
+    /// Press,
+    ///  keep the key down for a duration so the client's own key repeat runs,
+    ///  then release.
+    Hold {
+        /// How long the key stays down.
+        millis: u64,
+    },
+}
+
+/// What a `button` request does to a pointer button.
+///
+/// What:
+///      `pub enum ButtonAction { Down, Up }`.
+///  Two data-less variants.
+/// Why:
+///       A test holds a button across a pause and movement,
+///  so the press and the release arrive as separate requests.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type ButtonAction = "down" | "up";
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ButtonAction {
+    /// Press the button and keep it held.
+    Down,
+    /// Release a held button.
+    Up,
 }
 
 /// A parsed control command.
@@ -179,6 +280,12 @@ pub enum KeyAction {
 ///   | { kind: "dropFile"; path: string; x?: number; y?: number }
 ///   | { kind: "colorScheme"; preference: "dark" | "light" }
 ///   | { kind: "scale"; scale: OutputScale }
+///   | { kind: "move"; x: number; y: number }
+///   | { kind: "button"; action: "down" | "up"; button: PointerButton }
+///   | { kind: "title" } | { kind: "appId" }
+///   | { kind: "launcher" } | { kind: "launcherLog"; count: number } | { kind: "launcherClear" }
+///   | { kind: "accentColor"; color: AccentColor }
+///   | { kind: "notification"; command: NotificationCommand } | { kind: "job"; command: JobCommand }
 ///   | { kind: "quit" };
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -198,6 +305,50 @@ pub enum Command {
         y: f64,
         /// Which button to click.
         button: PointerButton,
+        /// Presses in a row,
+        ///  2 for a double click.
+        count: u32,
+        /// Milliseconds between the presses.
+        interval_ms: u64,
+        /// Chord of keys held for the whole click,
+        ///  empty for none.
+        modifiers: String,
+    },
+    /// Press at one point,
+    ///  move to another in steps,
+    ///  and release.
+    Drag {
+        /// Logical start point.
+        from: (f64, f64),
+        /// Logical end point.
+        to: (f64, f64),
+        /// Which button to hold.
+        button: PointerButton,
+        /// Equal motion steps between the points.
+        steps: u32,
+        /// Milliseconds between the steps.
+        step_ms: u64,
+        /// Chord of keys held for the whole drag,
+        ///  empty for none.
+        modifiers: String,
+    },
+    /// Touchpad-style pixel scrolling at a logical point.
+    Scroll {
+        /// Logical x coordinate.
+        x: f64,
+        /// Logical y coordinate.
+        y: f64,
+        /// Total horizontal travel in logical pixels.
+        dx: f64,
+        /// Total vertical travel in logical pixels.
+        dy: f64,
+        /// Events the travel is split into.
+        steps: u32,
+        /// Milliseconds between the events.
+        step_ms: u64,
+        /// Chord of keys held while scrolling,
+        ///  empty for none.
+        modifiers: String,
     },
     /// Deliver actual Wayland wheel notches at a logical point.
     Wheel {
@@ -205,10 +356,15 @@ pub enum Command {
         x: f64,
         /// Logical y coordinate.
         y: f64,
-        /// Positive notches move right.
-        horizontal: i32,
-        /// Positive notches move down.
-        vertical: i32,
+        /// Positive notches move right;
+        ///  fractions are high-resolution steps of 1/120 notch.
+        horizontal: f64,
+        /// Positive notches move down;
+        ///  fractions are high-resolution steps of 1/120 notch.
+        vertical: f64,
+        /// Chord of keys held while scrolling,
+        ///  empty for none.
+        modifiers: String,
     },
     /// Press/release/tap a named key.
     Key {
@@ -236,8 +392,8 @@ pub enum Command {
     },
     /// Originate a compositor-side file drag toward the hosted app (inbound DnD test).
     DropFile {
-        /// File to advertise to the app as a `text/uri-list` drop.
-        path: PathBuf,
+        /// Files to advertise to the app as one `text/uri-list` drop.
+        paths: Vec<PathBuf>,
         /// Optional drop x in logical coordinates (defaults to the window centre).
         x: Option<f64>,
         /// Optional drop y in logical coordinates (defaults to the window centre).
@@ -254,6 +410,61 @@ pub enum Command {
     },
     /// Stop the running recording.
     RecordStop,
+    /// Answer or change the key repeat rate and delay announced to clients.
+    RepeatInfo(
+        /// New `(rate per second, delay in milliseconds)`,
+        ///  or `None` to only read the current pair.
+        Option<(i32, i32)>,
+    ),
+    /// Name the window that has keyboard focus.
+    Focus,
+    /// List every window with its title,
+    ///  app ID,
+    ///  and whether it has keyboard focus.
+    Windows,
+    /// Ask a window to close,
+    ///  as its close button does.
+    CloseWindow(
+        /// Index in the `windows` listing,
+        ///  or `None` for the window with keyboard focus.
+        Option<usize>,
+    ),
+    /// Name the cursor the hosted client asked for.
+    Cursor,
+    /// Report the device the compositor renders on.
+    Gpu,
+    /// Read the hosted application's accessibility tree.
+    Accessibility,
+    /// Answer the Wayland socket name hosted clients connect to.
+    Display,
+    /// Move the pointer to a logical point without pressing a button.
+    Move {
+        /// Logical x coordinate.
+        x: f64,
+        /// Logical y coordinate.
+        y: f64,
+    },
+    /// Press or release a button at the current pointer position.
+    Button {
+        /// Whether the button goes down or comes up.
+        action: ButtonAction,
+        /// Which button.
+        button: PointerButton,
+    },
+    /// Report the title the hosted client set on its toplevel.
+    Title,
+    /// Report the app ID the hosted client set on its toplevel.
+    AppId,
+    /// Report the newest taskbar progress update.
+    Launcher,
+    /// Report the newest taskbar progress updates,
+    ///  oldest first.
+    LauncherLog {
+        /// How many of the newest updates to list.
+        count: usize,
+    },
+    /// Empty the taskbar progress history.
+    LauncherClear,
     /// Change the private appearance portal's color scheme while the client runs.
     ColorScheme(
         /// Appearance value the private portal serves from now on.
@@ -263,6 +474,21 @@ pub enum Command {
     Scale(
         /// Scale every hosted surface is told to render at from now on.
         OutputScale,
+    ),
+    /// Change the private appearance portal's accent color while the client runs.
+    AccentColor(
+        /// Accent color the private portal serves from now on.
+        AccentColor,
+    ),
+    /// Read or drive the fake notification service.
+    Notification(
+        /// The notification verb and its arguments.
+        NotificationCommand,
+    ),
+    /// Read or drive the fake Plasma job view server.
+    Job(
+        /// The job verb and its arguments.
+        JobCommand,
     ),
     /// Stop the compositor.
     Quit,
@@ -393,6 +619,25 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
         return Ok(Command::Screenshot(PathBuf::from(path)));
     }
 
+    // What:     `drop-file` reads the rest of the line itself, because quoted paths hold spaces.
+    // Why:      A path with a space must not be split by the whitespace tokenizer below.
+    if let Some(rest) = line.strip_prefix("drop-file ") {
+        return dropfile::parse(rest);
+    }
+    if line == "drop-file" {
+        return Err("drop-file requires at least one path".to_string());
+    }
+
+    // What:     `notification-action` takes the rest of the line as the action key, so it is
+    //           handled before tokenising, like `type`.
+    // Why:      Action keys are chosen by the app and may contain spaces.
+    if let Some(rest) = line.strip_prefix("notification-action ") {
+        return notification::parse_action(rest);
+    }
+    if line == "notification-action" {
+        return Err("notification-action requires an id and an action key".to_string());
+    }
+
     // What:     `let mut tokens = line.split_whitespace();`. Lazy iterator over
     //           whitespace-separated tokens (collapses runs of spaces). `mut` because we
     //           consume it with `.next()`.
@@ -412,149 +657,63 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
     match verb {
         "ping" => return Ok(Command::Ping),
         "quit" => return Ok(Command::Quit),
-        "click" => return parse_click(&mut tokens),
+        "click" => return click::parse_click(&mut tokens),
+        "drag" => return click::parse_drag(&mut tokens),
+        "scroll" => return click::parse_scroll(&mut tokens),
         "wheel" => return wheel::parse(&mut tokens),
-        "key" => return parse_key(&mut tokens),
+        "key" => return key::parse(&mut tokens),
         "resize" => return parse_resize(&mut tokens),
-        "drop-file" => return parse_drop_file(&mut tokens),
-        "record" => return parse_record(&mut tokens),
+        "repeat-info" => return session::parse_repeat_info(&mut tokens),
+        "focus" => return no_arguments(&mut tokens, "focus", Command::Focus),
+        "windows" => return no_arguments(&mut tokens, "windows", Command::Windows),
+        "display" => return no_arguments(&mut tokens, "display", Command::Display),
+        "cursor" => return no_arguments(&mut tokens, "cursor", Command::Cursor),
+        "gpu" => return no_arguments(&mut tokens, "gpu", Command::Gpu),
+        "a11y" => return no_arguments(&mut tokens, "a11y", Command::Accessibility),
+        "close" => return session::parse_close(&mut tokens),
+        "record" => return record::parse(&mut tokens),
         "color-scheme" => return color_scheme::parse(&mut tokens),
         "scale" => return scale::parse(&mut tokens),
+        "move" => return pointer::parse_move(&mut tokens),
+        "button" => return pointer::parse_button_command(&mut tokens),
+        "title" => return no_arguments(&mut tokens, "title", Command::Title),
+        "app-id" => return no_arguments(&mut tokens, "app-id", Command::AppId),
+        "launcher" => return no_arguments(&mut tokens, "launcher", Command::Launcher),
+        "launcher-clear" => return no_arguments(&mut tokens, "launcher-clear", Command::LauncherClear),
+        "launcher-log" => return launcher::parse_log(&mut tokens),
+        "accent-color" => return accent::parse(&mut tokens),
+        "notifications" | "notification-log" | "notification-clear" | "notification-close" => {
+            return notification::parse(verb, &mut tokens);
+        }
+        "jobs" | "job-log" | "job-clear" | "job-suspend" | "job-resume" | "job-cancel" | "job-refresh" => {
+            return job::parse(verb, &mut tokens);
+        }
         other => return Err(format!("unknown command: {other}")),
     }
 }
 
-/// Parse the arguments of a `record` command (`<dir> [fps] [format]` or `stop`).
+/// Accept a verb that takes no arguments and reject any trailing token.
 ///
 /// What:
-///      `fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
-///           String>`.
-///  The first token is either `stop` (stop recording) or the output
-///           directory,
-///  optionally followed by an fps and a format name.
+///      `fn no_arguments(tokens: &mut std::str::SplitWhitespace, verb: &str, command: Command)
+///           -> Result<Command, String>`.
+///  Returns `command` when no token follows the verb.
 /// Why:
-///       Isolate the recorder command grammar.
-fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> {
-    // What:     `let first = tokens.next().ok_or_else(|| "record requires a directory or
-    //           'stop'".to_string())?;`. Require the first token.
-    // Why:      A bare `record` is ambiguous.
-    let first = tokens
-        .next()
-        .ok_or_else(|| return "record requires a directory or 'stop'".to_string())?;
-
-    // What:     `if first == "stop" { if tokens.next().is_some() { return Err(...); } return
-    //           Ok(Command::RecordStop); }`. Handle the stop form (which takes no more args).
-    // Why:      `record stop` ends the recording.
-    if first == "stop" {
-        if tokens.next().is_some() {
-            return Err("record stop takes no arguments".to_string());
-        }
-        return Ok(Command::RecordStop);
-    }
-
-    // What:     `let dir = PathBuf::from(first);`. The output directory (no spaces).
-    // Why:      Where the frame sequence is written.
-    let dir = PathBuf::from(first);
-
-    // What:     `let fps = match tokens.next() { Some(text) => text.parse::<f64>()
-    //           .map_err(|_| "record fps is not a number".to_string())?, None => 60.0 };`.
-    //           Optional fps, defaulting to 60.
-    // Why:      The requested capture rate.
-    let fps = match tokens.next() {
-        Some(text) => text
-            .parse::<f64>()
-            .map_err(|_| return "record fps is not a number".to_string())?,
-        None => 60.0,
-    };
-
-    // What:     `let format = tokens.next().unwrap_or("png").to_string();`. Optional format
-    //           name, defaulting to `png`; validated later by the encoder.
-    // Why:      Choose the output codec.
-    let format = tokens.next().unwrap_or("png").to_string();
-
-    // What:     `if tokens.next().is_some() { return Err(...); }`. Reject extra tokens.
-    // Why:      `record` takes at most dir, fps, format.
+///       A request such as `title extra` must fail whole instead of being read as `title`.
+fn no_arguments(
+    tokens: &mut std::str::SplitWhitespace,
+    verb: &str,
+    command: Command,
+) -> Result<Command, String> {
+    // What:     `if tokens.next().is_some() { return Err(...); }`. Any leftover token is an error.
+    // Why:      The verb's meaning does not cover arguments it was not given.
     if tokens.next().is_some() {
-        return Err("record takes at most a directory, fps, and format".to_string());
+        return Err(format!("{verb} takes no arguments"));
     }
-
-    // What:     `Ok(Command::Record { dir, fps, format })`. Build the command (tail
-    //           expression).
-    // Why:      Return the parsed record request.
-    return Ok(Command::Record { dir, fps, format })
+    return Ok(command)
 }
 
-/// Parse the arguments of a `click` command.
-///
-/// What:
-///      `fn parse_click(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
-///           String>`.
-///  Consumes the remaining tokens (an x,
-///  a y,
-///  and an optional button).
-/// Why:
-///       Keep the numeric/button parsing out of the top-level `match`.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function parseClick(tokens): Command { ... }
-/// ```
-fn parse_click(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> {
-    // What:     `let x = parse_f64(tokens.next(), "click x")?;`. Parse the next token as a
-    //           float, with a field name for the error message.
-    // Why:      The x coordinate.
-    let x = parse_f64(tokens.next(), "click x")?;
 
-    // What:     `let y = parse_f64(tokens.next(), "click y")?;`. Parse the y coordinate.
-    // Why:      The y coordinate.
-    let y = parse_f64(tokens.next(), "click y")?;
-
-    // What:     `let button = match tokens.next() { Some(name) => parse_button(name)?,
-    //           None => PointerButton::Left };`. An optional third token names the button;
-    //           default to left.
-    // Why:      Most tests click the primary button; make it optional.
-    let button = match tokens.next() {
-        Some(name) => parse_button(name)?,
-        None => PointerButton::Left,
-    };
-
-    // What:     `Ok(Command::Click { x, y, button })`. Build the command (tail expression).
-    // Why:      Return the parsed click.
-    return Ok(Command::Click { x, y, button })
-}
-
-/// Parse the arguments of a `key` command.
-///
-/// What:
-///      `fn parse_key(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
-///           String>`.
-///  Consumes a key name and an optional action word.
-/// Why:
-///       Isolate key parsing.
-fn parse_key(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> {
-    // What:     `let name = tokens.next().ok_or_else(|| "key requires a name".to_string())?
-    //           .to_string();`. Take the key name (owned copy).
-    // Why:      Identify which key.
-    let name = tokens
-        .next()
-        .ok_or_else(|| return "key requires a name".to_string())?
-        .to_string();
-
-    // What:     `let action = match tokens.next() { Some("press") => Press, Some("release")
-    //           => Release, Some("tap") | None => Tap, Some(other) => return Err(...) };`.
-    //           Parse the optional action; default `tap`.
-    // Why:      Let a test hold or release keys as well as tap.
-    let action = match tokens.next() {
-        Some("press") => KeyAction::Press,
-        Some("release") => KeyAction::Release,
-        Some("tap") | None => KeyAction::Tap,
-        Some(other) => return Err(format!("unknown key action: {other}")),
-    };
-
-    // What:     `Ok(Command::Key { name, action })`. Build the command.
-    // Why:      Return the parsed key command.
-    return Ok(Command::Key { name, action })
-}
 
 /// Parse the arguments of a `resize` command.
 ///
@@ -585,84 +744,7 @@ fn parse_resize(tokens: &mut std::str::SplitWhitespace) -> Result<Command, Strin
     return Ok(Command::Resize { width, height })
 }
 
-/// Parse the arguments of a `drop-file` command (`<path> [x y]`).
-///
-/// What:
-///      `fn parse_drop_file(tokens: &mut std::str::SplitWhitespace) ->
-///           Result<Command, String>`.
-///  The first token is the file path;
-///  two optional
-///           trailing tokens are the drop x and y.
-///  The path is a single whitespace-free
-///           token (unlike `screenshot`,
-///  because x/y follow it),
-///  which is enough for a
-///           test fixture dropping paths like `/tmp/hello.txt`.
-/// Why:
-///       Isolate the drop-file grammar;
-///  both coordinates or neither.
-fn parse_drop_file(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> {
-    // What:     `let path = PathBuf::from(tokens.next().ok_or_else(...)?);`. Require the
-    //           first token and wrap it as an owned path.
-    // Why:      There is nothing to drag without a source file.
-    let path = PathBuf::from(
-        tokens
-            .next()
-            .ok_or_else(|| return "drop-file requires a path".to_string())?,
-    );
 
-    // What:     `let x = parse_opt_f64(tokens.next(), "drop-file x")?;`. Parse the optional
-    //           x coordinate: `None` when absent, else a parsed `f64` (error on garbage).
-    // Why:      The drop point x, defaulted later to the window centre when absent.
-    let x = parse_opt_f64(tokens.next(), "drop-file x")?;
-
-    // What:     `let y = parse_opt_f64(tokens.next(), "drop-file y")?;`. Same for y.
-    // Why:      The drop point y.
-    let y = parse_opt_f64(tokens.next(), "drop-file y")?;
-
-    // What:     `if x.is_some() != y.is_some() { return Err(...); }`. `!=` on two bools is
-    //           XOR: true only when exactly one coordinate was given.
-    // Why:      A lone x (or y) is ambiguous; require both or neither.
-    if x.is_some() != y.is_some() {
-        return Err("drop-file needs both x and y or neither".to_string());
-    }
-
-    // What:     `if tokens.next().is_some() { return Err(...); }`. Reject extra tokens.
-    // Why:      `drop-file` takes at most path, x, y.
-    if tokens.next().is_some() {
-        return Err("drop-file takes at most a path, x, and y".to_string());
-    }
-
-    // What:     `Ok(Command::DropFile { path, x, y })`. Build the command (tail expression).
-    // Why:      Return the parsed drop-file request.
-    return Ok(Command::DropFile { path, x, y })
-}
-
-/// Parse an optional-and-may-be-absent token as `f64`,
-///  with a field name for errors.
-///
-/// What:
-///      `fn parse_opt_f64(token: Option<&str>, field: &str) -> Result<Option<f64>,
-///           String>`.
-///  Unlike `parse_f64`,
-///  a missing token is `Ok(None)` (not an error);
-///           only a present-but-non-numeric token errors.
-/// Why:
-///       `drop-file` coordinates are optional,
-///  so absence is valid.
-fn parse_opt_f64(token: Option<&str>, field: &str) -> Result<Option<f64>, String> {
-    // What:     `match token { None => Ok(None), Some(text) => Ok(Some(text.parse::<f64>()
-    //           .map_err(...)?)) }`. Map absence to `None`; parse a present token, mapping a
-    //           parse failure to a message, then rewrap as `Some`. Tail expression.
-    // Why:      Distinguish "not given" (fine) from "given but not a number" (error).
-    match token {
-        None => return Ok(None),
-        Some(text) => return Ok(Some(
-            text.parse::<f64>()
-                .map_err(|_| format!("{field} is not a number"))?,
-        )),
-    }
-}
 
 /// Parse an optional token as `f64`,
 ///  with a field name for errors.

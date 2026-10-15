@@ -1,7 +1,15 @@
-//! What: Where a forwarded command's landing lock and real index live: one `git rev-parse` that
-//!       reports the git directory, the index Git would use, and the transaction registry.
-//! Why: An index writer coordinates with landings through the registry's landing lock and the real
-//!      index's lock. A command outside a repository, or one writing another index, coordinates with
+//! What:
+//!  Where a forwarded command's landing lock and real index live:
+//!  one `git rev-parse` that
+//!       reports the git directory,
+//!  the index Git would use,
+//!  and the transaction registry.
+//! Why:
+//!  An index writer coordinates with landings through the registry's landing lock and the real
+//!      index's lock.
+//!  A command outside a repository,
+//!  or one writing another index,
+//!  coordinates with
 //!      nothing (`src/index-lock/landing-location.ts`).
 //!
 //! In TS you'd write (pseudocode):
@@ -16,8 +24,11 @@ use std::ffi::OsString;
 /// `Path` and `PathBuf` are borrowed and owned filesystem paths.
 use std::path::{Path, PathBuf};
 
-/// What: The landing lock and index paths of one repository selection.
-/// Why:  `LandingLocation`; the real index is the worktree's `<git-dir>/index`.
+/// What:
+///  The landing lock and index paths of one repository selection.
+/// Why:
+///   `LandingLocation`;
+///  the real index is the worktree's `<git-dir>/index`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,16 +38,22 @@ use std::path::{Path, PathBuf};
 pub struct LandingLocation {
     /// Per-worktree Git directory.
     pub git_dir: PathBuf,
-    /// Index Git would write, honouring `GIT_INDEX_FILE`.
+    /// Index Git would write,
+    ///  honouring `GIT_INDEX_FILE`.
     pub index_path: PathBuf,
-    /// The worktree's real index, `<git-dir>/index`.
+    /// The worktree's real index,
+    ///  `<git-dir>/index`.
     pub real_index_path: PathBuf,
     /// Transaction registry directory that holds the landing lock.
     pub registry_root: PathBuf,
 }
 
-/// What: The arguments of the layout query, after the selection's global options.
-/// Why:  One process reports every path the coordination needs, in a fixed order.
+/// What:
+///  The arguments of the layout query,
+///  after the selection's global options.
+/// Why:
+///   One process reports every path the coordination needs,
+///  in a fixed order.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -49,8 +66,11 @@ fn layout_arguments() -> Vec<OsString> {
         .collect();
 }
 
-/// What: Split the layout output into its three fixed lines, refusing any other shape.
-/// Why:  A missing line would point the lock at the wrong directory.
+/// What:
+///  Split the layout output into its three fixed lines,
+///  refusing any other shape.
+/// Why:
+///   A missing line would point the lock at the wrong directory.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -71,8 +91,12 @@ pub fn parse_layout(stdout: &[u8]) -> Result<LandingLocation, String> {
     });
 }
 
-/// What: Resolve the landing location for the global options of one command.
-/// Why:  `resolveLandingLocation`: outside a repository the answer is nothing, not an error.
+/// What:
+///  Resolve the landing location for the global options of one command.
+/// Why:
+///   `resolveLandingLocation`:
+///  outside a repository the answer is nothing,
+///  not an error.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -93,8 +117,12 @@ pub fn resolve_landing_location(
     }
 }
 
-/// What: The landing location a finished query answers with: none when Git refused, otherwise the parsed layout.
-/// Why:  A refusal from Git means the command is not inside a repository.
+/// What:
+///  The landing location a finished query answers with:
+///  none when Git refused,
+///  otherwise the parsed layout.
+/// Why:
+///   A refusal from Git means the command is not inside a repository.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

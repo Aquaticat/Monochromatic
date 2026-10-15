@@ -61,12 +61,15 @@ pub fn switch(portal: Option<&AppearancePortal>, preference: ColorSchemePreferen
     // ```ts
     // if (portal === undefined) return { ok: false, error: "color-scheme needs ..." };
     // ```
-    let Some(active) = portal else {
-        return Response::Err(
-            "color-scheme needs the private appearance portal, which this session did not start; \
-             restart it with --color-scheme dark or --color-scheme light"
-                .to_string(),
-        );
+    let active = match portal {
+        Some(candidate) if candidate.serves_color_scheme() => candidate,
+        _ => {
+            return Response::Err(
+                "color-scheme needs the private appearance portal, which this session did not start; \
+                 restart it with --color-scheme dark or --color-scheme light"
+                    .to_string(),
+            );
+        }
     };
 
     // What:     `match` covers the three results of the switch: two success outcomes and one

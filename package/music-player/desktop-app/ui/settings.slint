@@ -1,0 +1,603 @@
+// Settings page that lists the two template rows under a Templates heading and the Auto-play on select switch row under a
+// Playback heading (D87, D99, D109, D110, D129). The whole page is
+// drawn on the one canvas color: no page tint, no card fill, no header band and no divider, so the header, the heading
+// and the rows are separated by spacing alone. Only state carries a fill: the hover and pressed layers, the 40 px icon
+// circle, and in the wide form the selected row's pill (all derived from the accent under D108).
+// Narrow window (single form): a tap on a row reports `open-template`, and the host opens that template's editor page.
+// Wide window (two panes): the page is the list pane only, a row reports `select-template`, and the host shows the
+// editor of the selected row in the other pane, so selecting never navigates. Back is the header arrow in both forms.
+// The switch row toggles in place in both forms: it opens no editor and never changes the selected template row (D129).
+import { Theme } from "theme.slint";
+import { StateLayer } from "state_layer.slint";
+import { Focus, FocusStop, FocusRing, Keys } from "focus.slint";
+import { Scrollbar, LastInput } from "scrollbar.slint";
+
+// One row of the Templates section: the template's name, the line it currently yields and its leading icon.
+export struct SettingsTemplateRow {
+    // Heading of the template, such as Track rows or Playing track.
+    label: string,
+    // Line the applied template yields for the first preview track, such as 3:20 -1.0 dBTP.
+    line: string,
+    // Name of the leading icon: queue_music or play_circle (Material Symbols).
+    icon: string,
+}
+
+// A row-shaped overlay: the selection fill and the hover or pressed layer share one set of corner radii, so a tint
+// never pokes out of the group rounding or the selection pill. Slint's StateLayer takes a single radius, and a row
+// has a different radius at each end of its group.
+component RowShape inherits Rectangle {
+    // Fill under the layer: the selected pill, or transparent.
+    in property <color> fill: transparent;
+    // Content color of the surface the layer sits on.
+    in property <color> tint: Theme.on-surface;
+    // True while the pointer is over the row.
+    in property <bool> hovered: false;
+    // True while the pointer button is held on the row.
+    in property <bool> pressed: false;
+    // Corner radii at the top and the bottom edge of the row.
+    in property <length> radius-top: 0px;
+    in property <length> radius-bottom: 0px;
+
+    background: root.fill;
+    border-top-left-radius: root.radius-top;
+    border-top-right-radius: root.radius-top;
+    border-bottom-left-radius: root.radius-bottom;
+    border-bottom-right-radius: root.radius-bottom;
+
+    // The hover (8 percent) and pressed (12 percent) layer, alpha only so it keeps the surface's lightness and hue. Keyboard
+    // focus adds nothing here: it is the ring of `FocusRing` and nothing else (D117).
+    Rectangle {
+        background: root.pressed ? root.tint.with-alpha(0.12) : root.hovered ? root.tint.with-alpha(0.08) : transparent;
+        border-top-left-radius: root.radius-top;
+        border-top-right-radius: root.radius-top;
+        border-bottom-left-radius: root.radius-bottom;
+        border-bottom-right-radius: root.radius-bottom;
+        animate background { duration: 100ms; }
+    }
+}
+
+// The Material 3 switch of the Auto-play on select row: a 52 by 32 track, filled with the accent when on and bordered
+// with the outline when off, and a 24 px thumb that sits on the right when on and on the left when off, with a check
+// mark in it when on and a cross when off. The state is therefore shown by the thumb's position, the track's fill and
+// the mark, never by color alone (CXD). It draws only: the row owns the toggle.
+component AutoPlaySwitch inherits Rectangle {
+    // True while the setting is on.
+    in property <bool> on: false;
+    // Check and close marks of the thumb (Material Symbols Outlined, 24 px grid, same commit as the row icon).
+    in property <string> check-path: "";
+    in property <string> close-path: "";
+    width: 52px;
+    height: 32px;
+
+    track := Rectangle {
+        border-radius: 16px;
+        background: root.on ? Theme.primary : Theme.canvas;
+        border-width: root.on ? 0px : 2px;
+        border-color: Theme.outline;
+        animate background { duration: 100ms; }
+        thumb := Rectangle {
+            x: root.on ? root.width - self.width - 4px : 4px;
+            y: (root.height - self.height) / 2;
+            width: 24px;
+            height: 24px;
+            border-radius: 12px;
+            background: root.on ? Theme.on-primary : Theme.outline;
+            animate x { duration: 100ms; }
+            animate background { duration: 100ms; }
+            Path {
+                x: (parent.width - 16px) / 2;
+                y: (parent.height - 16px) / 2;
+                width: 16px;
+                height: 16px;
+                viewbox-width: 24;
+                viewbox-height: 24;
+                commands: root.on ? root.check-path : root.close-path;
+                fill: root.on ? Theme.primary : Theme.canvas;
+            }
+        }
+    }
+}
+
+// Draws the Settings header, the Templates heading and one row per template.
+export component SettingsPage inherits Rectangle {
+    // One color for the page, the header and the rows (D109): the canvas, pure white in light and pure black in dark.
+    background: Theme.canvas;
+    clip: true;
+
+    // Template rows in list order. Each row shows its heading, the line it yields and its icon.
+    in property <[SettingsTemplateRow]> rows: [];
+    // True in the two-pane form: the selected row is drawn as a pill with a bold title (two channels, not color alone).
+    in property <bool> wide: false;
+    // Index of the selected row in the two-pane form; ignored in the single form.
+    in property <int> selected-index: 0;
+    // Fires with the index of a row when that row is tapped in the single form, so the host opens that editor page.
+    callback open-template(int);
+    // Fires with the index of a row when that row is chosen in the two-pane form, so the host shows its editor in place.
+    callback select-template(int);
+    // Fires when the Back target in the header is tapped or pressed from the keyboard.
+    callback back();
+    // True while Auto-play on select is on: the switch row draws its on state (D129).
+    in property <bool> auto-play-enabled: false;
+    // The line under the switch row's title, which states what the current choice does.
+    in property <string> auto-play-text: "";
+    // Fires when the switch row is clicked, or Space or Enter is pressed on it; the host flips and saves the setting.
+    callback toggle-auto-play();
+    // True when the list should take keyboard focus: when the page opens and each time `focus-tick` changes (Escape out
+    // of the template field returns here).
+    in property <bool> wants-focus: false;
+    // Changes when the Rust side asks for focus.
+    in property <int> focus-tick: 0;
+    changed focus-tick => {
+        if (root.wants-focus) {
+            root.focus-index = root.wide ? root.selected-index : root.focus-index;
+            list-focus.focus();
+        }
+    }
+
+    // Back arrow path on a 24 by 24 grid, copied from TemplateEditorIcons.kt.
+    property <string> back-path: "M20 11 H7.83 l5.59 -5.59 L12 4 l-8 8 8 8 l1.41 -1.41 L7.83 13 H20 v-2 Z";
+    // Material Symbols Outlined, weight 400, grade 0, 24 px, unfilled (Apache License 2.0, google/material-design-icons,
+    // https://github.com/google/material-design-icons, commit 49d4db35df873165d6bd6ba09b063c7dafbac2f4). The data is the
+    // `d` attribute of symbols/web/queue_music/materialsymbolsoutlined/queue_music_24px.svg and of
+    // symbols/web/play_circle/materialsymbolsoutlined/play_circle_24px.svg, whose viewBox is "0 -960 960 960". It is the same
+    // outline moved onto a 24 by 24 grid (x / 40 and (y + 960) / 40) in explicit absolute commands (M, L, Q, Z), matching
+    // the viewbox of the Path elements below. The files close each bar with a line back to its start before Z; that
+    // redundant line is dropped, because Slint's femtovg renderer draws a rectangle that has it as a wrong shape (the
+    // three bars of queue_music became one solid blob).
+    property <string> queue-music-path: "M 16 20 Q 14.75 20 13.875 19.125 Q 13 18.25 13 17 Q 13 15.75 13.875 14.875 Q 14.75 14 16 14 Q 16.275 14 16.525 14.0375 Q 16.775 14.075 17 14.2 L 17 6 L 22 6 L 22 8 L 19 8 L 19 17 Q 19 18.25 18.125 19.125 Q 17.25 20 16 20 Z M 3 16 L 3 14 L 11 14 L 11 16 Z M 3 12 L 3 10 L 15 10 L 15 12 Z M 3 8 L 3 6 L 15 6 L 15 8 Z";
+    // The switch row's icon, `autoplay`, and the check and close marks in the switch thumb, from the same commit and
+    // converted the same way (check and close are symbols/web/check and symbols/web/close).
+    property <string> autoplay-path: "M 9.5 16.5 L 9.5 7.5 L 16.5 12 Z M 12 23 Q 9.3 23 6.9375 21.7625 Q 4.575 20.525 3 18.3 L 3 21 L 1 21 L 1 15 L 7 15 L 7 17 L 4.55 17 Q 5.825 18.875 7.7875 19.9375 Q 9.75 21 12 21 Q 14.875 21 17.2125 19.35 Q 19.55 17.7 20.5 14.975 L 22.45 15.425 Q 21.325 18.825 18.45 20.9125 Q 15.575 23 12 23 Z M 1.05 11 Q 1.225 9.325 1.85 7.7875 Q 2.475 6.25 3.575 4.95 L 5 6.375 Q 4.2 7.4 3.7 8.5625 Q 3.2 9.725 3.075 11 Z M 6.4 4.975 L 4.975 3.55 Q 6.3 2.45 7.825 1.8125 Q 9.35 1.175 11 1.05 L 11 3.05 Q 9.725 3.175 8.575 3.675 Q 7.425 4.175 6.4 4.975 Z M 17.625 4.975 Q 16.6 4.175 15.4375 3.675 Q 14.275 3.175 13 3.05 L 13 1.05 Q 14.675 1.2 16.2125 1.825 Q 17.75 2.45 19.05 3.55 Z M 20.95 11 Q 20.825 9.725 20.325 8.5625 Q 19.825 7.4 19.025 6.375 L 20.45 4.95 Q 21.55 6.25 22.175 7.7875 Q 22.8 9.325 22.95 11 Z";
+    property <string> check-path: "M 9.55 18 L 3.85 12.3 L 5.275 10.875 L 9.55 15.15 L 18.725 5.975 L 20.15 7.4 Z";
+    property <string> close-path: "M 6.4 19 L 5 17.6 L 10.6 12 L 5 6.4 L 6.4 5 L 12 10.6 L 17.6 5 L 19 6.4 L 13.4 12 L 19 17.6 L 17.6 19 L 12 13.4 Z";
+    property <string> play-circle-path: "M 9.5 16.5 L 16.5 12 L 9.5 7.5 Z M 12 22 Q 9.925 22 8.1 21.2125 Q 6.275 20.425 4.925 19.075 Q 3.575 17.725 2.7875 15.9 Q 2 14.075 2 12 Q 2 9.925 2.7875 8.1 Q 3.575 6.275 4.925 4.925 Q 6.275 3.575 8.1 2.7875 Q 9.925 2 12 2 Q 14.075 2 15.9 2.7875 Q 17.725 3.575 19.075 4.925 Q 20.425 6.275 21.2125 8.1 Q 22 9.925 22 12 Q 22 14.075 21.2125 15.9 Q 20.425 17.725 19.075 19.075 Q 17.725 20.425 15.9 21.2125 Q 14.075 22 12 22 Z M 12 20 Q 15.35 20 17.675 17.675 Q 20 15.35 20 12 Q 20 8.65 17.675 6.325 Q 15.35 4 12 4 Q 8.65 4 6.325 6.325 Q 4 8.65 4 12 Q 4 15.35 6.325 17.675 Q 8.65 20 12 20 Z M 12 12 Z";
+
+    // Measured layout (the stock Android Settings, D109), where one logical pixel is one dp. The header is 64 px, the
+    // Back circle 56 px, rows 72 px with 2 px between the rows of a group, and the side margin 16 px. The icon circle
+    // is 40 px at x = 32 px from the window edge and the title starts at x = 84 px, which are 16 px and 68 px inside
+    // a row that starts at the 16 px margin.
+    property <length> header-height: 64px;
+    property <length> row-height: 72px;
+    property <length> row-gap: 2px;
+    property <length> side-margin: 16px;
+    property <length> icon-circle: 40px;
+    property <length> icon-x: 16px;
+    property <length> title-x: 68px;
+    // Corner radius at the outer ends of a group, and at the joints between its rows.
+    property <length> group-radius: 14px;
+    property <length> joint-radius: 2px;
+    // Corner radius of the selected row's pill: 21 px, inside the stock 21 to 22 dp.
+    property <length> pill-radius: 21px;
+    // Bold weight of a selected title. The title's box is sized by a hidden copy at this weight, so selecting never
+    // changes the box (the same device as the Folders panel).
+    property <int> bold-weight: 700;
+
+    // Row that the keyboard acts on: the template rows, then the switch row at index `rows.length`. In the two-pane form it
+    // follows the selection while it is on a template row.
+    property <int> focus-index: 0;
+    // Number of rows the keyboard can reach: the template rows and the switch row.
+    property <int> stop-count: root.rows.length + 1;
+    // Space between the text and the switch beside it (Material 3), on top of the 12 px every gap of the row has.
+    property <length> switch-gap: 16px;
+    // Row width under which the switch moves under the text: beside it the switch takes 68 px of the text's width.
+    property <length> switch-stack-below: 300px;
+    changed selected-index => {
+        root.focus-index = root.selected-index;
+    }
+
+    // Takes keyboard focus when the page opens, so Up, Down and Enter act on the list at once.
+    init => {
+        list-focus.focus();
+    }
+
+    // Activates a row: the switch row toggles the setting in place; a template row opens its editor page in the single
+    // form and is selected in the two-pane form.
+    function activate(index: int) {
+        if (index >= root.rows.length) {
+            root.toggle-auto-play();
+        } else if (root.wide) {
+            root.select-template(index);
+        } else {
+            root.open-template(index);
+        }
+    }
+
+    // Header with the Back target and the page title, drawn on the canvas with no band and no divider.
+    Rectangle {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.header-height;
+
+        // Circular hover and pressed layer over the 56 px Back target, 16 px from the edge.
+        StateLayer {
+            x: 16px;
+            y: 4px;
+            width: 56px;
+            height: 56px;
+            radius: 28px;
+            tint: Theme.on-surface;
+            hovered: back-touch.has-hover;
+            pressed: back-touch.pressed;
+        }
+        Path {
+            x: 32px;
+            y: 20px;
+            width: 24px;
+            height: 24px;
+            viewbox-width: 24;
+            viewbox-height: 24;
+            commands: root.back-path;
+            fill: Theme.on-surface;
+        }
+        back-touch := TouchArea {
+            x: 16px;
+            y: 4px;
+            width: 56px;
+            height: 56px;
+            mouse-cursor: pointer;
+            accessible-role: button;
+            accessible-label: "Back";
+            accessible-action-default => { root.back(); }
+            clicked => {
+                Focus.ring-visible = false;
+                root.back();
+            }
+            Tooltip {
+                text: @markdown("Back (\{Keys.texts.back})");
+            }
+        }
+        back-stop := FocusStop {
+            label: "settings-back";
+            x: 16px;
+            y: 4px;
+            width: 56px;
+            height: 56px;
+            activated => { root.back(); }
+        }
+        FocusRing {
+            x: 16px;
+            y: 4px;
+            width: 56px;
+            height: 56px;
+            round: true;
+            active: back-stop.ring;
+        }
+        Text {
+            x: 98px;
+            y: 0px;
+            width: parent.width - 98px - 16px;
+            height: root.header-height;
+            text: "Settings";
+            font-size: Theme.title-large;
+            color: Theme.on-surface;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+    }
+
+    // Body below the header. The rows scroll when the text grows past the window.
+    body-flick := Flickable {
+        x: 0px;
+        y: root.header-height;
+        width: root.width;
+        height: root.height - root.header-height;
+        content-width: root.width;
+        content-height: body.preferred-height;
+
+        // The list takes the keys: Up and Down move through the rows, Home and End jump, Enter and Space activate. Keys
+        // with Control, Alt or Meta held pass on, so the window's shortcuts keep working. It is a focus stop of the
+        // Settings list zone (8), which the window's key scope leaves to the list.
+        list-focus := FocusStop {
+            label: "settings-list";
+            zone: 8;
+            activates: false;
+            x: 0px;
+            y: 0px;
+            width: root.width;
+            height: body.preferred-height;
+            extra-key(event) => {
+                if (event.modifiers.control || event.modifiers.alt || event.modifiers.meta) {
+                    return false;
+                }
+                if (event.text == Key.DownArrow || event.text == Key.UpArrow || event.text == Key.Home || event.text == Key.End) {
+                    if (event.text == Key.Home) {
+                        root.focus-index = 0;
+                    } else if (event.text == Key.End) {
+                        root.focus-index = root.stop-count - 1;
+                    } else if (event.text == Key.DownArrow) {
+                        root.focus-index = min(root.stop-count - 1, root.focus-index + 1);
+                    } else {
+                        root.focus-index = max(0, root.focus-index - 1);
+                    }
+                    // Moving the ring onto the switch row selects nothing: the selected template and its editor stay (D110, D129).
+                    if (root.wide && root.focus-index < root.rows.length) {
+                        root.select-template(root.focus-index);
+                    }
+                    return true;
+                }
+                if (event.text == Key.Return || event.text == " ") {
+                    root.activate(root.focus-index);
+                    return true;
+                }
+                return false;
+            }
+
+            body := VerticalLayout {
+                x: 0px;
+                y: 0px;
+                width: root.width;
+                spacing: 0px;
+                padding-bottom: 18px;
+
+                // Section heading: 16 px above, the 14 px primary label, then 8 px before the group.
+                Rectangle {
+                    height: 44px;
+                    Text {
+                        x: 24px;
+                        y: 16px;
+                        width: parent.width - 48px;
+                        height: 20px;
+                        text: "Templates";
+                        font-size: Theme.label-large;
+                        font-weight: 500;
+                        color: Theme.primary;
+                    }
+                }
+
+                // One group of template rows, 16 px in from each window edge, 2 px apart.
+                group := VerticalLayout {
+                    padding-left: root.side-margin;
+                    padding-right: root.side-margin;
+                    spacing: root.row-gap;
+
+                    // One template row: icon circle, the template's name on top and the line it yields below.
+                    for row[index] in root.rows : row-box := Rectangle {
+                        property <bool> selected: root.wide && index == root.selected-index;
+                        property <bool> keyboard-focused: list-focus.ring && index == root.focus-index;
+                        // Group rounding for the state layers, or the pill when the row is selected.
+                        property <length> radius-top: self.selected ? root.pill-radius : (index == 0 ? root.group-radius : root.joint-radius);
+                        property <length> radius-bottom: self.selected ? root.pill-radius : (index == root.rows.length - 1 ? root.group-radius : root.joint-radius);
+                        height: root.row-height;
+
+                        // Selection pill and the hover and pressed layer over it, in the content color of what is beneath.
+                        // The row under the keyboard focus gets the ring below and no fill; in the wide form focus and
+                        // selection are the same row. The ring follows the row's own corner radii, grown by the widths inside each ring: the
+                        // rounded ends of the group, the small radius at its joints, or the selected pill.
+                        row-pill := RowShape {
+                            fill: parent.selected ? Theme.secondary-container : transparent;
+                            tint: parent.selected ? Theme.on-secondary-container : Theme.on-surface;
+                            hovered: row-touch.has-hover;
+                            pressed: row-touch.pressed;
+                            radius-top: parent.radius-top;
+                            radius-bottom: parent.radius-bottom;
+                        }
+                        FocusRing {
+                            active: parent.keyboard-focused;
+                            radius-tl: parent.radius-top;
+                            radius-tr: parent.radius-top;
+                            radius-bl: parent.radius-bottom;
+                            radius-br: parent.radius-bottom;
+                        }
+                        // Icon circle in the secondary role with the glyph in the on-secondary role (D109, D110).
+                        row-icon := Rectangle {
+                            x: root.icon-x;
+                            y: (root.row-height - root.icon-circle) / 2;
+                            width: root.icon-circle;
+                            height: root.icon-circle;
+                            border-radius: root.icon-circle / 2;
+                            background: Theme.secondary;
+                            Path {
+                                x: (parent.width - 24px) / 2;
+                                y: (parent.height - 24px) / 2;
+                                width: 24px;
+                                height: 24px;
+                                viewbox-width: 24;
+                                viewbox-height: 24;
+                                commands: row.icon == "queue_music" ? root.queue-music-path : root.play-circle-path;
+                                fill: Theme.on-secondary;
+                            }
+                        }
+                        // Width probe: the name at the bold weight, never shown. The title's box takes this width (capped
+                        // by the row), so selecting a row, which draws it bold, never changes where its text sits.
+                        title-measure := Text {
+                            visible: false;
+                            text: row.label;
+                            font-size: Theme.body-large;
+                            font-weight: root.bold-weight;
+                        }
+                        row-title := Text {
+                            x: root.title-x;
+                            y: 14px;
+                            width: min(parent.width - root.title-x - 16px, title-measure.preferred-width);
+                            height: 24px;
+                            text: row.label;
+                            font-size: Theme.body-large;
+                            font-weight: parent.selected ? root.bold-weight : 400;
+                            color: parent.selected ? Theme.on-secondary-container : Theme.on-surface;
+                            overflow: elide;
+                        }
+                        Text {
+                            x: root.title-x;
+                            y: 38px;
+                            width: parent.width - root.title-x - 16px;
+                            height: 20px;
+                            text: row.line;
+                            font-size: Theme.body-medium;
+                            color: parent.selected ? Theme.on-secondary-container : Theme.on-surface-variant;
+                            overflow: elide;
+                        }
+                        row-touch := TouchArea {
+                            x: 0px;
+                            y: 0px;
+                            width: parent.width;
+                            height: root.row-height;
+                            mouse-cursor: pointer;
+                            accessible-role: button;
+                            accessible-label: row.label + ", " + row.line;
+                            accessible-checkable: root.wide;
+                            accessible-checked: parent.selected;
+                            accessible-action-default => { root.activate(index); }
+                            clicked => {
+                                Focus.ring-visible = false;
+                                root.focus-index = index;
+                                // A click takes keyboard focus from the editor's text field, so Escape closes Settings.
+                                list-focus.focus();
+                                root.activate(index);
+                            }
+                        }
+                    }
+                }
+
+                // Section heading of the switch group: 16 px above, the 14 px primary label, then 8 px before the row. The
+                // 16 px above is the gap between two groups (D109).
+                Rectangle {
+                    height: 44px;
+                    Text {
+                        x: 24px;
+                        y: 16px;
+                        width: parent.width - 48px;
+                        height: 20px;
+                        text: "Playback";
+                        font-size: Theme.label-large;
+                        font-weight: 500;
+                        color: Theme.primary;
+                    }
+                }
+
+                // The Playback group: one switch row, 16 px in from each window edge, with the group rounding at all four
+                // corners (D109). The row is the toggle target. It is never a selection: it has no pill and no checked
+                // state of a selected row, so the selected template and the editor beside it stay as they are (D110, D129).
+                VerticalLayout {
+                    padding-left: root.side-margin;
+                    padding-right: root.side-margin;
+
+                    // Auto-play on select: icon circle, title, one supporting line and the switch. The row is 72 px, or
+                    // taller when a narrow list pane wraps the text, like a larger text size on the stock Settings.
+                    switch-row := Rectangle {
+                        property <bool> keyboard-focused: list-focus.ring && root.focus-index == root.rows.length;
+                        // True when the row is too narrow for the switch beside the text (the list pane of a window
+                        // just past the two-pane width): the switch then sits under the supporting line.
+                        property <bool> stacked: self.width < root.switch-stack-below;
+                        height: max(root.row-height, switch-content.preferred-height);
+
+                        // Hover and pressed layer over the row, in the group rounding.
+                        switch-pill := RowShape {
+                            tint: Theme.on-surface;
+                            hovered: switch-touch.has-hover;
+                            pressed: switch-touch.pressed;
+                            radius-top: root.group-radius;
+                            radius-bottom: root.group-radius;
+                        }
+                        // The ring follows the row's own corner radii like every other row (D117).
+                        FocusRing {
+                            active: parent.keyboard-focused;
+                            radius-tl: root.group-radius;
+                            radius-tr: root.group-radius;
+                            radius-bl: root.group-radius;
+                            radius-br: root.group-radius;
+                        }
+                        switch-content := HorizontalLayout {
+                            padding-left: root.icon-x;
+                            padding-right: 16px;
+                            padding-top: 12px;
+                            padding-bottom: 12px;
+                            spacing: 12px;
+
+                            // Icon circle in the secondary role with the glyph in the on-secondary role (D109), centered
+                            // on the row's height.
+                            VerticalLayout {
+                                alignment: center;
+                                switch-icon := Rectangle {
+                                    width: root.icon-circle;
+                                    height: root.icon-circle;
+                                    border-radius: root.icon-circle / 2;
+                                    background: Theme.secondary;
+                                    Path {
+                                        x: (parent.width - 24px) / 2;
+                                        y: (parent.height - 24px) / 2;
+                                        width: 24px;
+                                        height: 24px;
+                                        viewbox-width: 24;
+                                        viewbox-height: 24;
+                                        commands: root.autoplay-path;
+                                        fill: Theme.on-secondary;
+                                    }
+                                }
+                            }
+                            // Title and the line that states what the current choice does; both wrap in a narrow pane.
+                            VerticalLayout {
+                                alignment: center;
+                                horizontal-stretch: 1;
+                                padding-right: switch-row.stacked ? 0px : root.switch-gap - 12px;
+                                switch-title := Text {
+                                    text: "Auto-play on select";
+                                    font-size: Theme.body-large;
+                                    color: Theme.on-surface;
+                                    wrap: word-wrap;
+                                }
+                                switch-line := Text {
+                                    text: root.auto-play-text;
+                                    font-size: Theme.body-medium;
+                                    color: Theme.on-surface-variant;
+                                    wrap: word-wrap;
+                                }
+                                if switch-row.stacked : HorizontalLayout {
+                                    alignment: start;
+                                    padding-top: 8px;
+                                    AutoPlaySwitch {
+                                        on: root.auto-play-enabled;
+                                        check-path: root.check-path;
+                                        close-path: root.close-path;
+                                    }
+                                }
+                            }
+                            // The switch sits after the text, or under it when the row is too narrow to leave the text room.
+                            if !switch-row.stacked : VerticalLayout {
+                                alignment: center;
+                                AutoPlaySwitch {
+                                    on: root.auto-play-enabled;
+                                    check-path: root.check-path;
+                                    close-path: root.close-path;
+                                }
+                            }
+                        }
+                        switch-touch := TouchArea {
+                            x: 0px;
+                            y: 0px;
+                            width: parent.width;
+                            height: parent.height;
+                            mouse-cursor: pointer;
+                            accessible-role: switch;
+                            accessible-label: "Auto-play on select";
+                            accessible-description: root.auto-play-text;
+                            accessible-checkable: true;
+                            accessible-checked: root.auto-play-enabled;
+                            accessible-action-default => { root.toggle-auto-play(); }
+                            clicked => {
+                                Focus.ring-visible = false;
+                                root.focus-index = root.rows.length;
+                                // A click takes keyboard focus from the editor's text field, so Escape closes Settings.
+                                list-focus.focus();
+                                root.toggle-auto-play();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Scrollbar (D22): always visible and draggable for the pointer, a fading non-interactive bar for touch. It is after the
+    // rows, so it is above them, and a touch area ignores the wheel, so the wheel still scrolls the list below it.
+    Scrollbar {
+        x: root.width - self.width;
+        y: body-flick.y;
+        height: body-flick.height;
+        content-y: body-flick.content-y;
+        content-height: body-flick.content-height;
+        scroll-to(y) => {
+            body-flick.content-y = y;
+        }
+    }
+}

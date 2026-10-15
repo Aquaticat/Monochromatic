@@ -1804,6 +1804,12 @@ unrelated-key preservation,
 and root-task fixtures.
 The fresh-context procedure is `doc/runbook/remove-retired-hk-git-config.md`.
 Automated verification never touches real per-user Git state.
+(Retired 2026-10-13:
+the task `cleanup:hk-git-config`,
+the fixture task `test:hk-config-cleanup`
+and `doc/runbook/remove-retired-hk-git-config.md` are deleted;
+the manual removal is in
+`doc/troubleshooting/cli-git-hk-retirement-stale-hook-config.md`.)
 
 Current documentation now treats hk/Pkl behavior as historical evidence,
 points local enforcement to cli-git,

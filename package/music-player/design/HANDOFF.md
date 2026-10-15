@@ -12,6 +12,42 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
+## Handoff: the design is in production (2026-10-10)
+
+Purpose:
+tell the next session that design rounds are closed and the accepted design is being implemented,
+and where the live state is kept.
+This section is newer than every section below it.
+
+The human closed the design rounds (D102 keyboard map accepted, D103 Search closed, D104 cover picker, D105 trash)
+and then said to go to production on Android first and desktop second, with finished products on both by the end of the session.
+The live record is `doc/planning/music-player-production-implementation.md`:
+its Log lists what landed, what was verified how, and the known gaps.
+Work happens in the worktree branch `feat/music-player-production` and each verified package is fast-forwarded into `main`.
+
+What is verified and what is not, as of 2026-10-11 (everything is on `main`):
+
+Android, on the owned Fold emulator with the real `MainActivity`, the native library and a generated 13-track library
+(a scripted run, 31 of 32 steps passing, the one remaining step explained below):
+the library loads, rows show real length and true peak (`0:20 −21.1 dBTP`), tapping a row plays it and the deck follows,
+Ctrl+F opens Search and typing finds results, the long-press menu opens under its row, Move to trash through Android's own
+system dialog removes the row and Undo restores it (both panels), Settings opens, and the declined first-run state shows on the
+inner screen.
+On the folded cover the declined launch shows Android's own permission prompt first, which is the designed auto-request.
+Unit tests (about 600) and detekt pass.
+Not exercised: the trash flow for a folder opened through the picker (the copy-back route), Show in file manager, the clipboard,
+TalkBack, a physical device, and the release build.
+The debug APK built by Gradle alone has no native library: run the package's `build:native` task first.
+
+Desktop, running the real binary (577 tests, clippy clean on the host):
+the real window was driven through the Slint MCP server headless and nested in the `cage` compositor, with the same test library,
+in the cover and two-pane layouts, light and dark:
+rows with length and peak, the deck, the folder picker, Search with emphasis, Settings, the template editor, the track menu,
+the scan indicator with real sweep progress, and the empty-folder state.
+Not exercised: Re-analyse end to end in the window, the new first-run copy states in the window, key repeat (Slint 1.17 has no
+repeat flag), a session on the user's live desktop, and the macOS and Windows branches, which were never compiled.
+The container clippy and test tasks fail on the existing `truepeak-core` path dependency, which the container does not mount.
+
 ## Handoff: Settings withdrawn, template editor round open (2026-10-05)
 
 Purpose:
@@ -540,7 +576,8 @@ carry D11's accepted Settings pane into the current Fold player and its
 light/dark schemes.
 The source audit is done.
 Production Settings is a page-control chooser,
-not D11's three rows.
+not D11's three rows
+(note 2026-10-13: the chooser and every page-control style are deleted, D120, and Settings follows D109).
 The proposed placement to build follows D51:
 Settings on the right of the inner panel with the browser and deck kept,
 and one full-width destination on the cover.
@@ -7133,7 +7170,8 @@ adjusted in OKLCH.
 D59 records the directive.
 The corrected debug-only prototype commit `b471ec537` derives span fill
 from `MaterialTheme.colorScheme.primary` (the A3 OS accent) through the
-existing `mixOklchWithNeutral` utility;
+existing `mixOklchWithNeutral` utility
+(note 2026-10-13: that utility is deleted, and the match fill is now a `core/ThemeRoles.kt` role, D108);
 it changes neither result membership nor item activation.
 The installed disposable APK and local build share SHA-256
 `7195af99031158bfb8efce2abab3c98ebaf17928739c290010bc6dea1317244f`.

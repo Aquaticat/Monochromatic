@@ -308,7 +308,7 @@ fn gutter_letters_show_the_worst_severity_in_front_of_the_line_number() {
         update_timers_and_animations();
         let shown = frame(window);
         // `iter().collect()` copies the window's list into a plain list.
-        let marks: Vec<i32> = window.get_line_marks().iter().collect();
+        let marks: Vec<i32> = window.get_row_marks().iter().collect();
         assert_eq!(
             &marks[..4],
             [1, 2, 3, 0],
@@ -364,7 +364,7 @@ fn gutter_letters_show_the_worst_severity_in_front_of_the_line_number() {
         };
         set_annotations(window, &reader.source, None, Some(Arc::new(only_hint)));
         update_timers_and_animations();
-        let hint_marks: Vec<i32> = window.get_line_marks().iter().collect();
+        let hint_marks: Vec<i32> = window.get_row_marks().iter().collect();
         assert_eq!(&hint_marks[..4], [0, 0, 0, 4], "{scheme:?}: a hint's mark");
         let hinted = frame(window);
         let last_top = reader.source.borrow().row_map.code_top(3);
@@ -424,6 +424,8 @@ fn the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers() {
     let top = reader.source.borrow().row_map.code_top(99);
     window.set_scroll_y(-(top - 100.0));
     update_timers_and_animations();
+    // A scroll re-center is built on the tile worker, so the frame is read only once it is swapped in.
+    super::overscan_tile_tests::settle_tile(&reader.source);
     let row_y = TEXT_TOP + top + window.get_scroll_y();
     let scrolled = frame(window);
     let (matching, _) = letter_cell(&scrolled, 99, row_y - TEXT_TOP, error, background);

@@ -1,5 +1,19 @@
+[vars]
+# The full semantic lint uses both Node and Go workers. These are the worker
+# settings verified under the session's 4-GiB aggregate cgroup limit; no rules are disabled.
+auto_mode_lint_resources = """
+process.env.OXLINT_THREADS = '1'
+process.env.GOMAXPROCS = '2'
+process.env.GOMEMLIMIT = '768MiB'
+process.env.NODE_OPTIONS = `${process.env.NODE_OPTIONS ?? ''} --max-old-space-size=512`.trim()
+"""
+
 [tasks.build]
-extends = "build"
+description = "Build maintained exports before the native host consumes them"
+run = [
+  "mise run //package/pi-plugin/auto-mode:build:js",
+  "mise run //package/pi-plugin/auto-mode:build:native",
+]
 
 [tasks."build:js"]
 extends = "build:js"
@@ -22,11 +36,639 @@ extends = "lint"
 [tasks."lint:types"]
 extends = "lint:types"
 
+[tasks."lint:native:syntax"]
+description = "Check every maintained native module with the consuming Node parser"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { readdir, readFile } = await import('node:fs/promises')
+const { stripTypeScriptTypes } = await import('node:module')
+const { join } = await import('node:path')
+const { default: spawn } = await import('nano-spawn')
+const paths = await readdir('native', { recursive: true })
+const modules = paths.filter(function isModule(path) {
+  return path.endsWith('.mjs') || path.endsWith('.ts')
+})
+for (const path of modules) {
+  const filename = join('native', path)
+  const source = await readFile(filename, 'utf8')
+  const javascript = path.endsWith('.ts') ? stripTypeScriptTypes(source, { sourceUrl: filename }) : source
+  try {
+    await spawn(process.execPath, ['--check', '--input-type=module'], {
+      stdin: { string: javascript }, stdout: 'inherit', stderr: 'inherit',
+    })
+  } catch (error) {
+    throw new Error(`Native module failed syntax verification: ${filename}`, { cause: error })
+  }
+}
+console.log(JSON.stringify({ complete: true, parsedNativeModules: modules.length }))
+"""
+
+# Preserve the inherited package configuration while accepting an explicit
+# file subset for resource-bounded verification. No arguments still covers all files.
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
+usage = 'arg "[args]" var=#true help="Package-relative source paths; omitted means the entire package"'
+run = """
+{{vars.dispatch_workspace_node}}
+{{vars.parse_usage_args}}
+{{vars.auto_mode_lint_resources}}
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', parseUsageArgs(process.env.usage_args ?? ''))
+"""
 
 [tasks."format:oxlint"]
 extends = "format:oxlint"
+usage = 'arg "[args]" var=#true help="Package-relative source paths; omitted means the entire package"'
+run = """
+{{vars.dispatch_workspace_node}}
+{{vars.parse_usage_args}}
+{{vars.auto_mode_lint_resources}}
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...parseUsageArgs(process.env.usage_args ?? '')])
+"""
 
 [tasks."test:unit"]
 extends = "test:unit"
+
+[tasks."test:confirmation"]
+description = "Verify built approval decisions and unified stop behavior"
+run = [
+  "node src/ask-user.unit.test.ts",
+  "node src/evaluate.unit.test.ts",
+]
+
+[tasks."test:assessment-transport"]
+description = "Verify the built direct HTTP sender without provider requests"
+run = [
+  "node src/assessment-transport.unit.test.ts",
+  "node src/assessment-http.unit.test.ts",
+  "node src/assessment-http-failure.unit.test.ts",
+]
+
+[tasks."test:decision-wire"]
+description = "Verify lossless Luna request conversion, exact response attribution, and original lifetime"
+run = "node src/decision-wire.unit.test.ts"
+
+[tasks."test:native:assessment-transport"]
+description = "Exercise the maintained HTTP sender through original native policy review with authored responses"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution --sdk-stream --http-transport",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution --sdk-stream --http-transport",
+]
+
+[tasks."test:semantic-operating-policy"]
+description = "Verify adopted native categorical admission through the built package"
+run = "node src/semantic-operating-policy.unit.test.ts"
+
+[tasks."test:native:semantic-operating-policy"]
+description = "Exercise the adopted policy through original SDK requests and maintained HTTP transport"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution --sdk-stream --http-transport --operating-policy",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution --sdk-stream --http-transport --operating-policy",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --low-confidence-clause",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --unknown-clause",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --unsupported-clause",
+]
+
+[tasks."test:native:unconfigured-policy"]
+description = "Verify absent semantic consumers withhold native execution without assessment or fallback"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --sdk-stream --unconfigured-policies"
+
+[tasks."dependencies:install"]
+description = "Install declared native parsers and regenerate the workspace lock without lifecycle scripts"
+run = "pnpm install --ignore-scripts"
+
+[tasks."build:native"]
+description = "Build the qualified native Pi source and owned runtime without private integration imports"
+run = "node native/build.ts"
+
+[tasks."build:native:owned"]
+description = "Rebuild owned native transformations against the already emitted qualified Pi source"
+run = "node native/build.ts --owned"
+
+[tasks."test:native:source-freshness-work"]
+description = "Bound repeated governing-file observation through the built native approval consumer"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/source-freshness-work.test.mjs"
+
+[tasks."test:native:request-claim"]
+description = "Verify original whole-request selection, repeated claims, foreign handles and retired dependencies"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/judgment-instructions.test.mjs"
+
+[tasks."test:native:domain"]
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution",
+]
+
+[tasks."test:native:program-queue"]
+description = "Verify original recorder ownership and native queue release on normal and failed dispatch"
+run = "node --max-old-space-size=512 ./dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/program-runner-scope.test.mjs"
+
+[tasks."test:native:judgment-budget"]
+description = "Verify built judgment attempt accounting, sequential retries, lifetime and cleanup"
+run = [
+  "node src/native-judgment-budget.unit.test.ts",
+  "node src/native-judgment-budget-lifetime.unit.test.ts",
+]
+
+[tasks."test:native:cli-manager"]
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/cli-manager.test.mjs"
+
+[tasks."test:native:authorization-inputs"]
+description = "Verify original authorization bindings, accessor refusal and permanent retirement"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/action-policy/authorization-inputs.test.mjs"
+
+[tasks."test:native:event-receipts"]
+description = "Exercise original native event dispatch, complete grouped sources, and observation freshness"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/event-receipts.test.mjs"
+
+[tasks."test:native:run-history"]
+description = "Verify original run instruction occurrences remain collected after later prompt replacement"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/run-history-domain.test.mjs"
+
+[tasks."test:native:progress-events"]
+description = "Exercise unchanged native progress callbacks through the original prepared program"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --observed-progress"
+
+[tasks."test:native:single-call"]
+description = "Verify adopted single-call syntax, original native results, and denied operations"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/single-call-profile.test.mjs",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --single-call=direct",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --single-call=binding",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution --sdk-stream --http-transport --operating-policy --single-call=direct",
+]
+
+[tasks."test:native:next-decision-receipts"]
+description = "Retain new progress input and result instructions for the next original decision"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --observed-progress --next-decision"
+
+[tasks."test:native:approved-dependencies"]
+description = "Preserve policy, cancellation, and prepared-argument guards after original approval"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --observed-progress --approved-change=policy",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --observed-progress --approved-change=cancel",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --observed-progress --approved-change=arguments",
+]
+
+[tasks."test:native:configured-extensions"]
+description = "Exercise installed extension paths from a read-only manifest in disposable native state"
+usage = 'arg "<manifest>" help="JSON array of enabled native extension resource records"'
+shell = "node --input-type=module-typescript -e"
+run = """
+const { default: spawn } = await import('nano-spawn')
+const manifest = process.env.usage_manifest
+if (typeof manifest !== 'string') throw new Error('An installed extension manifest is required')
+await spawn(process.execPath, [
+  '--max-old-space-size=512', '--import', './dist/native/loader.mjs',
+  './dist/native/contract/integration/native-batch/domain-frontier.test.mjs',
+  'permission', '--require-resolution', '--sdk-stream', '--http-transport', '--operating-policy',
+  `--extension-manifest=${manifest}`
+], { stdio: 'inherit' })
+"""
+
+[tasks."test:native:manager-constructors"]
+description = "Verify original native history, options, and session construction across manager entry points"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/manager-constructors.test.mjs"
+
+[tasks."test:native:build-imports"]
+description = "Verify built native import transformations preserve source and encoding boundaries"
+run = "node src/native-build-imports.unit.test.ts"
+
+[tasks."test:native:direct-imports"]
+description = "Verify generated manager and SDK initialization without a maintained-policy preload"
+run = "node src/native-direct-import.unit.test.ts"
+
+[tasks."test:native:parser"]
+description = "Verify native Markdown qualification against installed and disposable parser packages"
+run = "node src/native-parser.unit.test.ts"
+
+[tasks."test:native:state-assignments"]
+description = "Verify native message assignment guards against original executable syntax"
+run = "node src/native-state-assignments.unit.test.ts"
+
+[tasks."test:native:literal-rules"]
+description = "Verify native literal-rule instrumentation preserves original JavaScript boundaries"
+run = "node src/native-literal-rules.unit.test.ts"
+
+[tasks."test:native:members"]
+description = "Verify native private-member rewrites preserve original executable syntax boundaries"
+run = "node src/native-members.unit.test.ts"
+
+[tasks."test:native:program-value"]
+description = "Verify original result conversion extraction and source qualification guards"
+run = "node src/native-program-value.unit.test.ts"
+
+[tasks."test:native:program-owner"]
+description = "Verify built original program declaration, reached-group, native result, and failure ownership"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-owner.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-group.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-result.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-boundary.unit.test.ts",
+]
+
+[tasks."test:native:execution"]
+description = "Verify original execution custody, native entry ordering, and retained terminal state"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-execution.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-execution-lifetime.unit.test.ts",
+]
+
+[tasks."test:native:judgment-dependencies"]
+description = "Verify original live and retained dependency eligibility and synchronous binding postchecks"
+run = [
+  'node --max-old-space-size=512 src/native-dependency.unit.test.ts',
+  'node --max-old-space-size=512 src/native-dependency-retained.unit.test.ts',
+  'node --max-old-space-size=512 src/native-dependency-binding.unit.test.ts',
+]
+
+[tasks."test:native:judgment-sources"]
+description = "Verify original source handoff, publication, and freshness observation boundaries"
+run = [
+  'node --max-old-space-size=512 src/native-source.unit.test.ts',
+  'node --max-old-space-size=512 src/native-source-collection.unit.test.ts',
+]
+
+[tasks."test:native:judgment-inspection"]
+description = "Verify current member access and retained immutable judgment inspection"
+run = [
+  'node --max-old-space-size=512 src/native-inspection.unit.test.ts',
+  'node --max-old-space-size=512 src/native-inspection-snapshot.unit.test.ts',
+]
+
+[tasks."test:native:judgment-preparation"]
+description = "Verify original source sealing, preparation failure, and complete native member publication"
+run = [
+  'node --max-old-space-size=512 src/native-preparation.unit.test.ts',
+  'node --max-old-space-size=512 src/native-preparation-failure.unit.test.ts',
+  'node --max-old-space-size=512 src/native-preparation-boundary.unit.test.ts',
+]
+
+[tasks."test:native:judgment-lifecycle"]
+description = "Verify original lifecycle evidence, transport exclusion, failure retention, and terminal closure"
+run = [
+  'node --max-old-space-size=512 src/native-lifecycle.unit.test.ts',
+  'node --max-old-space-size=512 src/native-lifecycle-assessment.unit.test.ts',
+  'node --max-old-space-size=512 src/native-lifecycle-finalization.unit.test.ts',
+]
+
+[tasks."test:native:membership"]
+description = "Verify original response and prepared-group identities, serialization order, and JSON bounds"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-membership.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-membership-boundary.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-membership.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-membership-boundary.unit.test.ts",
+]
+
+[tasks."test:native:resource-input"]
+description = "Verify built native resource copies preserve values, ownership, descriptors, and byte limits"
+run = [
+  "node src/native-resource-input.unit.test.ts",
+  "node src/native-resource-input-rejection.unit.test.ts",
+]
+
+[tasks."test:native:resource-reload"]
+description = "Verify original native resource reload routing against the built artifact"
+run = "node src/native-resource-reload.unit.test.ts"
+
+[tasks."test:native:script-guard"]
+description = "Verify built native result guard identity, caught values, diagnostics, and aggregate ownership"
+run = "node src/native-script-guard.unit.test.ts"
+
+[tasks."test:native:return"]
+description = "Verify generated native return ownership, retention, conversion, and live-use guards"
+run = [
+  "node src/native-return.unit.test.ts",
+  "node src/native-return-rejection.unit.test.ts",
+]
+
+[tasks."test:native:staged-import"]
+description = "Verify native TypeScript staging, parsed import selection, and original file identity"
+run = "node src/native-staged-import.unit.test.ts"
+
+[tasks."test:native:approval"]
+description = "Verify original approval routing and independent prerequisite evidence with fixture presentation"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs allow",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs deny",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs stop",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs missing",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs unsupported",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs unresolved",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs satisfied",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs bare",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs prohibited",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs retired",
+]
+
+[tasks."test:native:sdk-stream"]
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream"
+
+[tasks."test:native:context-receipts"]
+description = "Verify original native context callback inputs and complete results reach governing-source accounting"
+run = [
+  "node src/native-context-observer.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --observed-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution --sdk-stream --observed-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution --sdk-stream --observed-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --observed-context --throwing-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --unobserved-event",
+]
+
+[tasks."test:native:approval-context"]
+description = "Exercise Pi's native extension context before and after reload with fixture UI responses"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs allow --native-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs deny --native-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs stop --native-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs cancelled --native-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs allow --native-context --reload-context",
+]
+
+[tasks."native:cli"]
+description = "Run the candidate owned native host with the adopted semantic operating policy"
+run = "node dist/native/cli.mjs"
+
+[tasks."install:native"]
+description = "Activate the maintained Pi command and remove only its legacy extension declaration"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { access, chmod, mkdir, mkdtemp, readFile, readlink, symlink, writeFile } = await import('node:fs/promises')
+const { constants } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join, resolve } = await import('node:path')
+const { isDeepStrictEqual } = await import('node:util')
+const { default: spawn } = await import('nano-spawn')
+class NativeInstallationError extends Error { name = 'NativeInstallationError' }
+const packageRoot = process.cwd()
+const home = homedir()
+const agentDir = process.env.PI_CODING_AGENT_DIR ?? join(home, '.pi/agent')
+const settingsPath = join(agentDir, 'settings.json')
+const original = await readFile(settingsPath, 'utf8')
+const settings = JSON.parse(original)
+if (!Array.isArray(settings.packages)) throw new NativeInstallationError('Pi settings must contain the original package list')
+const launcher = join(packageRoot, 'native/command.ts')
+await access(launcher, constants.X_OK)
+await access(join(packageRoot, 'dist/native/cli.mjs'))
+const bin = join(home, '.local/bin')
+const command = join(bin, 'pi')
+let existing
+try { existing = await readlink(command) }
+catch (error) { if (error.code !== 'ENOENT') throw error }
+if (existing !== undefined && resolve(bin, existing) !== launcher) {
+  throw new NativeInstallationError('The user-local pi command belongs to another installation; preserve it before replacing command routing')
+}
+function isLegacy(value) {
+  const source = typeof value === 'string' ? value : value?.source
+  return typeof source === 'string' && (source === packageRoot || (source.startsWith('.') && resolve(agentDir, source) === packageRoot))
+}
+const legacy = settings.packages.filter(isLegacy)
+const scratch = join(home, 'temp/agent')
+await mkdir(scratch, { recursive: true, mode: 0o700 })
+await chmod(scratch, 0o700)
+const backup = await mkdtemp(join(scratch, 'pi-native-install-'))
+await writeFile(join(backup, 'settings.json'), original, { mode: 0o600, flag: 'wx' })
+await mkdir(bin, { recursive: true })
+if (existing === undefined) await symlink(launcher, command)
+for (const declaration of legacy) {
+  const source = typeof declaration === 'string' ? declaration : declaration.source
+  await spawn(process.execPath, [join(packageRoot, 'dist/native/cli.mjs'), 'remove', source, '--no-approve'], {
+    stdio: 'inherit', env: { ...process.env, PI_CODING_AGENT_DIR: agentDir }
+  })
+}
+const actual = JSON.parse(await readFile(settingsPath, 'utf8'))
+const expected = { ...settings, packages: settings.packages.filter(value => !isLegacy(value)) }
+if (!isDeepStrictEqual(actual, expected)) throw new NativeInstallationError('Pi removal changed settings outside the legacy auto-mode declaration; inspect the preserved backup before continuing')
+if (await readlink(command) !== launcher) throw new NativeInstallationError('The installed Pi command no longer names its maintained launcher')
+console.log(JSON.stringify({ complete: true, command, legacyDeclarationsRemoved: legacy.length, unrelatedSettingsPreserved: true, backup }))
+"""
+
+[tasks."test:native:installation"]
+description = "Exercise native command installation and foreign-command rejection in disposable homes"
+shell = "node --input-type=module-typescript -e"
+run = """
+const assert = (await import('node:assert/strict')).default
+const { mkdir, mkdtemp, readFile, readlink, writeFile } = await import('node:fs/promises')
+const { homedir } = await import('node:os')
+const { dirname, join } = await import('node:path')
+const { default: spawn } = await import('nano-spawn')
+const scratch = join(homedir(), 'temp/agent')
+await mkdir(scratch, { recursive: true, mode: 0o700 })
+const fixture = await mkdtemp(join(scratch, 'pi-native-install-control-'))
+const packageRoot = process.cwd()
+const agentDir = join(fixture, '.pi/agent')
+await mkdir(agentDir, { recursive: true })
+const before = { packages: [packageRoot, 'npm:unrelated-fixture-extension'], defaultProvider: 'preserved-provider', defaultModel: 'preserved-model', fixture: { nested: true } }
+const expected = { ...before, packages: ['npm:unrelated-fixture-extension'] }
+const settingsPath = join(agentDir, 'settings.json')
+await writeFile(settingsPath, JSON.stringify(before))
+const env = { ...process.env, HOME: fixture, PI_CODING_AGENT_DIR: agentDir, PI_OFFLINE: '1', PATH: [dirname(process.execPath), process.env.PATH].join(':') }
+await spawn('mise', ['--no-env', '--no-hooks', 'run', '--skip-tools', '//package/pi-plugin/auto-mode:install:native'], { env, stdio: 'inherit' })
+assert.deepEqual(JSON.parse(await readFile(settingsPath, 'utf8')), expected)
+assert.equal(await readlink(join(fixture, '.local/bin/pi')), join(packageRoot, 'native/command.ts'))
+const version = await spawn(join(fixture, '.local/bin/pi'), ['--version'], { env })
+assert.equal(version.stdout.trim(), '1.2.0')
+await spawn('mise', ['--no-env', '--no-hooks', 'run', '--skip-tools', '//package/pi-plugin/auto-mode:install:native'], { env, stdio: 'inherit' })
+assert.deepEqual(JSON.parse(await readFile(settingsPath, 'utf8')), expected)
+const rejectedHome = await mkdtemp(join(scratch, 'pi-native-install-rejected-'))
+const rejectedAgent = join(rejectedHome, '.pi/agent')
+await mkdir(rejectedAgent, { recursive: true })
+await mkdir(join(rejectedHome, '.local/bin'), { recursive: true })
+await writeFile(join(rejectedAgent, 'settings.json'), JSON.stringify(before))
+await writeFile(join(rejectedHome, '.local/bin/pi'), 'preserved foreign command')
+let rejected = false
+try { await spawn('mise', ['--no-env', '--no-hooks', 'run', '--skip-tools', '//package/pi-plugin/auto-mode:install:native'], { env: { ...env, HOME: rejectedHome, PI_CODING_AGENT_DIR: rejectedAgent } }) }
+catch (error) { assert.ok(error instanceof Error); rejected = true }
+assert.equal(rejected, true)
+assert.equal(await readFile(join(rejectedHome, '.local/bin/pi'), 'utf8'), 'preserved foreign command')
+assert.deepEqual(JSON.parse(await readFile(join(rejectedAgent, 'settings.json'), 'utf8')), before)
+console.log(JSON.stringify({ complete: true, installedCommandVerified: true, settingsPreserved: true, repeatVerified: true, foreignCommandPreserved: true, fixture }))
+"""
+
+[tasks."test:native:host-lifecycle"]
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-host/lifecycle.test.mjs"
+
+[tasks."test:native:cli-process"]
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-host/process.test.mjs"
+
+[tasks."test:native:process-network"]
+description = "Verify that native dispatcher setup preserves the isolated CLI fixture fetch blocker"
+run = "node src/native-process-network.unit.test.ts"
+
+[tasks."test:native:session-result"]
+description = "Verify built native SDK result identity, descriptor reads, optional presence, and accessor rejection"
+run = "node src/native-session-result.unit.test.ts"
+
+[tasks."test:native:root-reader"]
+description = "Verify original native session-manager identity before root occurrence access"
+run = "node src/native-root-reader.unit.test.ts"
+
+[tasks."test:native:manager-registry"]
+description = "Verify built native registry ownership, canonical reuse, and independent manager reservations"
+run = "node src/native-manager-registry.unit.test.ts"
+
+[tasks."test:native:factory-scopes"]
+description = "Verify original factory captures, exact publication, failed cleanup retry, and reentrancy recovery"
+run = "node src/native-factory-scopes.unit.test.ts"
+
+[tasks."test:native:tool-publication"]
+description = "Verify original tool input membership through native manager copies"
+run = "node --import ./dist/native/loader.mjs src/native-tool-publication.unit.test.ts"
+
+[tasks."test:source-contribution:tool"]
+description = "Verify built tool association membership without source authority or whole-request coverage"
+run = "node src/source-contribution-tool.unit.test.ts"
+
+[tasks."test:source-contribution"]
+description = "Verify every built source contribution route and original membership requirement"
+run = [
+  "node src/source-contribution.unit.test.ts",
+  "node src/source-contribution-link.unit.test.ts",
+  "node src/source-contribution-publication.unit.test.ts",
+  "node src/source-contribution-tool.unit.test.ts",
+  "node src/request-source-derivation.unit.test.ts",
+  "node src/request-material-obligations.unit.test.ts",
+]
+
+[tasks."test:native:serializer-receipts"]
+run = [
+  "node --import ./dist/native/loader.mjs src/native-tool-publication.unit.test.ts",
+  "node --import ./dist/native/loader.mjs src/native-serializer-emission.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-tool",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-tools",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --changed-tool",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-system",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-payload",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-transcript",
+]
+
+[tasks."docs:render:native"]
+run = [
+  "mkdir --parents .cache/native-docs",
+  "pandoc --from=commonmark --to=html --output=.cache/native-docs/integration.html README.md native/README.md ../../../doc/handover/pi-auto-mode-current-frontier.md ../../../doc/troubleshooting/pi-sdk-staging.md ../../../doc/decision/pi-auto-mode-semantic-admission.md ../../../doc/planning/pi-auto-mode-governing-domain-closure.md",
+]
+
+[tasks."test:native:tool-call-scope"]
+description = "Verify provider metadata cannot change tool-call permission, prohibition, or unspecified policy"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --provider-metadata=thinking",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution --sdk-stream --http-transport --operating-policy --provider-metadata=thinking",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution --sdk-stream --http-transport --operating-policy --provider-metadata=thinking",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --provider-metadata=extension",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution --sdk-stream --http-transport --operating-policy --provider-metadata=extension",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution --sdk-stream --http-transport --operating-policy --provider-metadata=extension",
+]
+
+[tasks."test:native:fresh-session-approval"]
+description = "Verify fresh session confirmation through original native approval without authored authorization facts"
+run = [
+  "node --import ./dist/native/loader.mjs src/native-pending-approval.unit.test.ts",
+  "node src/clause-lowering.unit.test.ts",
+  "node src/unit-adoption.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs allow --native-context --fresh-session-approval",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs deny --native-context --fresh-session-approval",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs stop --native-context --fresh-session-approval",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs cancelled --native-context --fresh-session-approval",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs bare --native-context --fresh-session-approval",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs prohibited --native-context --fresh-session-approval",
+]
+
+[tasks."test:native:manual-review"]
+description = "Verify original confirmation on uncertainty while retaining prohibitions and headless withholding"
+run = [
+  "node --import ./dist/native/loader.mjs ./dist/native/contract/integration/action-policy/review-outcome.test.mjs",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs allow --native-context --fresh-session-approval --uncertain-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs deny --native-context --fresh-session-approval --uncertain-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs stop --native-context --fresh-session-approval --uncertain-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs cancelled --native-context --fresh-session-approval --uncertain-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs prohibited --native-context --fresh-session-approval --uncertain-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs allow --native-context --fresh-session-approval --uncertain-context --headless",
+]
+[tasks."test:native:relevance-store"]
+description = "Verify original asynchronous cache publication in disposable directories"
+run = 'node --max-old-space-size=512 src/native-relevance-store.unit.test.ts'
+
+[tasks."test:native:answer-values"]
+description = "Verify built scalar, distribution, and serving-model answer admission"
+run = [
+  'node --max-old-space-size=512 src/native-assessment-response.unit.test.ts',
+  'node --max-old-space-size=512 src/native-relation-estimate.unit.test.ts',
+]
+
+[tasks."test:native:question-definitions"]
+description = "Verify pinned catalog admission and independent claim identity indexes"
+run = 'node --max-old-space-size=512 src/native-question-definitions.unit.test.ts'
+
+[tasks."test:native:relevance-cache"]
+description = "Verify policy freshness and cancellation through built asynchronous cache refresh"
+run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-relevance-cache.unit.test.ts'
+
+[tasks."test:native:file-observer"]
+description = "Verify descriptor-bound file observations and original cleanup failures"
+run = 'node --max-old-space-size=512 src/native-file-observer.unit.test.ts'
+[tasks."test:native:question-settlement"]
+description = "Verify original answer admission, terminal diagnostics, and stale settlement"
+run = "node src/native-settlement.unit.test.ts"
+
+[tasks."test:native:question-selection"]
+description = "Verify original canonical membership, bounded issuance, evidence identity, and lifetime"
+run = [
+  "node --max-old-space-size=512 src/native-selection.unit.test.ts",
+  "node --max-old-space-size=512 src/native-selection-boundary.unit.test.ts",
+  "node --max-old-space-size=512 src/native-selection-lifetime.unit.test.ts",
+]
+
+[tasks."test:native:governing-bindings"]
+description = "Verify original source candidates, permanent invalidation, duplicate-code ambiguity, and source bounds"
+run = [
+  "node --max-old-space-size=512 src/native-governing-bindings.unit.test.ts",
+  "node --max-old-space-size=512 src/native-governing-boundary.unit.test.ts",
+  "node --max-old-space-size=512 src/native-governing-set.unit.test.ts",
+]
+
+[tasks."test:native:input-location"]
+description = "Verify original native position slots, descriptor admission, and opaque companion values"
+run = [
+  "node --max-old-space-size=512 src/native-input-location.unit.test.ts",
+  "node --max-old-space-size=512 src/native-input-location-boundary.unit.test.ts",
+]
+
+[tasks."test:native:judgment-input"]
+description = "Verify original native JSON value preservation and construction error identity"
+run = 'node --max-old-space-size=512 src/native-judgment-input.unit.test.ts'
+
+[tasks."test:native:request"]
+description = "Verify original producer authentication precedes request receipt observation"
+run = 'node --max-old-space-size=512 src/native-request.unit.test.ts'
+
+[tasks."test:native:membership-read"]
+description = "Compare original object-keyed membership queries with native weak-map results"
+run = 'node --max-old-space-size=512 src/native-membership-read.unit.test.ts'
+
+[tasks."test:native:judgment-api"]
+description = "Verify original public method guards, call identity, forwarding, and lazy inspection"
+run = [
+  'node --max-old-space-size=512 src/native-api.unit.test.ts',
+  'node --max-old-space-size=512 src/native-api-inspection.unit.test.ts',
+]
+
+[tasks."test:native:constructor"]
+description = "Verify original constructor ordering, captured bootstrap inputs, and preparation-inclusive lifetime"
+run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-constructor.unit.test.ts'
+
+[tasks."test:native:publication"]
+description = "Verify every public method is connected to its independently recorded original owner"
+run = 'node --max-old-space-size=512 src/native-publication.unit.test.ts'
+
+[tasks."test:native:instructions"]
+description = "Verify original instruction identities, source selection, admission, and lifetime through built consumers"
+run = [
+  'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction.unit.test.ts',
+  'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction-lifetime.unit.test.ts',
+  'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction-batch.unit.test.ts',
+]

@@ -16,6 +16,8 @@ use clap::{Arg, ArgAction, Command};
 use clap::builder::{RangedU64ValueParser, ValueParser};
 /// The output-scale grammar shared with the runtime `scale` verb.
 use crate::screen_geometry::OutputScale;
+/// The `--gpu` grammar.
+use crate::gpu_choice::GpuChoice;
 
 /// Construct the CLI independently of process arguments or a display server.
 pub(super) fn command() -> Command {
@@ -76,10 +78,36 @@ pub(super) fn command() -> Command {
     );
     command = command.arg(scheme);
 
+    let mut accent = Arg::new("accent-color");
+    accent = accent.long("accent-color").value_name("RRGGBB");
+    accent = accent.help(
+        "Give the child a private appearance portal that serves this accent color as six hexadecimal digits; \
+         the accent-color control command changes it while the child runs"
+    );
+    command = command.arg(accent);
+
+    let mut notifications = Arg::new("notifications");
+    notifications = notifications.long("notifications").value_name("MODE");
+    notifications = notifications.value_parser(["none", "freedesktop", "kde"]);
+    notifications = notifications.default_value("none");
+    notifications = notifications.help(
+        "Serve recording notification services on the private bus: none (default), freedesktop, or kde \
+         (freedesktop plus Plasma's job view server); the notification and job control commands read them"
+    );
+    command = command.arg(notifications);
+
     let mut isolate = Arg::new("isolate");
     isolate = isolate.long("isolate").action(ArgAction::SetTrue);
     isolate = isolate.help("Run the hosted app in a resource-controlled systemd scope");
     command = command.arg(isolate);
+
+    let mut launcher_log = Arg::new("launcher-log");
+    launcher_log = launcher_log.long("launcher-log").action(ArgAction::SetTrue);
+    launcher_log = launcher_log.help(
+        "Give the child a private session bus and record its taskbar progress; \
+         the launcher control commands read the record"
+    );
+    command = command.arg(launcher_log);
 
     let mut quota = Arg::new("app-cpu-quota");
     quota = quota.long("app-cpu-quota").value_name("PERCENT");
@@ -100,8 +128,64 @@ pub(super) fn command() -> Command {
     weight = weight.help("Relative systemd CPU weight for the isolated app");
     command = command.arg(weight);
 
+    let mut accessibility = Arg::new("accessibility");
+    accessibility = accessibility.long("accessibility").action(ArgAction::SetTrue);
+    accessibility = accessibility.help(
+        "Give the child a private AT-SPI accessibility bus that reports accessibility as enabled, \
+         and read the tree it publishes with the a11y control command"
+    );
+    command = command.arg(accessibility);
+
+    let mut repeat_rate = Arg::new("repeat-rate");
+    repeat_rate = repeat_rate.long("repeat-rate").value_name("PER_SECOND");
+    repeat_rate = repeat_rate.default_value("25");
+    repeat_rate = repeat_rate.value_parser(clap::value_parser!(i32).range(0..=1000));
+    repeat_rate = repeat_rate.help(
+        "Key repeat rate announced to the child in repeats per second (0 turns repeat off); \
+         the child generates the repeats itself, as on every Wayland compositor"
+    );
+    command = command.arg(repeat_rate);
+
+    let mut repeat_delay = Arg::new("repeat-delay");
+    repeat_delay = repeat_delay.long("repeat-delay").value_name("MILLISECONDS");
+    repeat_delay = repeat_delay.default_value("200");
+    repeat_delay = repeat_delay.value_parser(clap::value_parser!(i32).range(0..=10000));
+    repeat_delay = repeat_delay.help(
+        "Wait before a held key starts repeating, announced to the child; \
+         the repeat-info control command changes the pair while the child runs"
+    );
+    command = command.arg(repeat_delay);
+
+    let mut headless = Arg::new("headless");
+    headless = headless.long("headless").action(ArgAction::SetTrue);
+    headless = headless.help(
+        "Render with surfaceless EGL on the GPU render node instead of a nested window: \
+         no parent display is used or needed and no window appears; the default is the nested window"
+    );
+    command = command.arg(headless);
+
+    let mut gpu = Arg::new("gpu");
+    gpu = gpu.long("gpu").value_name("GPU");
+    gpu = gpu.help(
+        "With --headless, the device that renders: auto (the default: Mesa's default render node, then the other \
+         render nodes, then software), software (Mesa's CPU rasterizer), or a render node such as \
+         /dev/dri/renderD128; an explicit choice never falls back. Invalid without --headless: the nested window \
+         renders on its parent compositor's GPU, which this tool cannot choose"
+    );
+    gpu = gpu.value_parser(ValueParser::new(GpuChoice::parse));
+    command = command.arg(gpu);
+
+    let mut list_gpus = Arg::new("list-gpus");
+    list_gpus = list_gpus.long("list-gpus").action(ArgAction::SetTrue);
+    list_gpus = list_gpus.conflicts_with_all(["gpu", "command"]);
+    list_gpus = list_gpus.help(
+        "Print the render nodes (with PCI id, kernel driver and Mesa renderer) and the software renderer this host \
+         offers to --gpu, name the one auto uses, and exit"
+    );
+    command = command.arg(list_gpus);
+
     let mut child = Arg::new("command");
-    child = child.value_name("COMMAND").required(true);
+    child = child.value_name("COMMAND").required_unless_present("list-gpus");
     // What: 1.. accepts at least one positional value; trailing_var_arg hands
     // subsequent tokens to the child, including tokens that look like our flags.
     // Why: app --help must reach app, while parent --help still belongs to clap.

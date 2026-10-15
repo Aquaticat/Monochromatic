@@ -23,7 +23,6 @@ use crate::management_arguments::{MANAGEMENT_HELP, MANAGEMENT_USAGE, RetiredComm
 use crate::policy_registry::PolicyId;
 use crate::real_git::{Platform, ResolutionInputs};
 use crate::test_support::{executable, fixture, remove, repository};
-use crate::unported::{Unported, unported_notice};
 use crate::wrapper_controls::{Controls, no_controls};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -123,6 +122,7 @@ fn projection_failed(action: Action, trigger: &str, message: &str) {
         }
         Action::Forward { .. } => panic!("a direct command is never forwarded"),
         Action::ForwardCoordinated { .. } => panic!("a coordinated forward is not expected in this control"),
+        Action::ForwardSettled { .. } => panic!("a settled forward is not expected in this control"),
     }
 }
 
@@ -533,14 +533,13 @@ fn direct_commands_refuse_beside_registered_transactions() {
             "cli-git fix",
         ),
     ] {
-        assert_eq!(
-            plan(arguments.as_slice(), repo.as_path(), &inputs),
-            exit(
-                2,
-                "",
-                unported_notice(&Unported::TransactionRecovery(registry.clone()), command).as_str()
-            ),
-            "{arguments:?}"
+        // A live transaction no longer stops a direct command: the fix holds the landing lock instead.
+        let Action::Exit { stderr, .. } = plan(arguments.as_slice(), repo.as_path(), &inputs) else {
+            panic!("{command} is answered by the wrapper, never forwarded");
+        };
+        assert!(
+            !stderr.contains("recovering or waiting for the commit transactions"),
+            "{command}: {stderr}"
         );
     }
     // A dead owner's transaction is recovered first, and the command runs.
@@ -574,6 +573,7 @@ fn direct_commands_refuse_beside_registered_transactions() {
         }
         Action::Forward { .. } => panic!("a direct command never forwards"),
         Action::ForwardCoordinated { .. } => panic!("a coordinated forward is not expected in this control"),
+        Action::ForwardSettled { .. } => panic!("a settled forward is not expected in this control"),
     }
     remove(root.as_path());
 }
@@ -616,6 +616,7 @@ fn direct_commands_report_git_failures() {
         }
         Action::Forward { .. } => panic!("a direct command is never forwarded"),
         Action::ForwardCoordinated { .. } => panic!("a coordinated forward is not expected in this control"),
+        Action::ForwardSettled { .. } => panic!("a settled forward is not expected in this control"),
     }
     remove(root.as_path());
 }

@@ -33,7 +33,6 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/dev-script-file-enforcer": "workspace:*",
     "@monochromatic-dev/dev-script-task-util": "workspace:*",
-    "@monochromatic-dev/git-policy-cli": "workspace:*",
     "@monochromatic-dev/module-image-diff": "workspace:*",
     "@monochromatic-dev/pi-plugin-spawn": "workspace:*",
     "@oxlint/plugins": "catalog:",

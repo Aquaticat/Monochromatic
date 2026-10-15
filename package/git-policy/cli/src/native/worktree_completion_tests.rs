@@ -8,7 +8,7 @@ fn record(repo: &Path, path: &str, original: &[u8], intended: &[u8], git_mode: &
     let original_oid: String = hash(repo, original);
     let intended_oid: String = hash(repo, intended);
     return AddedPath {
-        path: String::from(path),
+        path: path.as_bytes().to_vec(),
         git_mode: String::from(git_mode),
         original_oid,
         intended_oid,
@@ -241,10 +241,10 @@ fn completion_rewrites_only_originals() {
         None,
     )
     .expect("install");
-    assert_eq!(result.rewritten, vec![String::from("fix.txt")]);
+    assert_eq!(result.rewritten, vec![b"fix.txt".to_vec()]);
     assert_eq!(
         result.conflicted,
-        vec![String::from("edited.txt"), String::from("gone.txt")]
+        vec![b"edited.txt".to_vec(), b"gone.txt".to_vec()]
     );
     assert_eq!(
         std::fs::read(repo.join("fix.txt")).expect("fixed"),
@@ -266,5 +266,59 @@ fn completion_rewrites_only_originals() {
         install_added_worktree_files(&context, repo.as_path(), repo.as_path(), &[missing], None)
             .is_err()
     );
+    remove(root.as_path());
+}
+
+/// The identity of a file reads its times as whole nanoseconds since the epoch.
+#[cfg(unix)]
+#[test]
+fn identity_reads_times_as_nanoseconds_since_the_epoch() {
+    use std::os::unix::fs::MetadataExt;
+    use std::time::{Duration, UNIX_EPOCH};
+    let root: PathBuf = fixture("worktree-completion-identity");
+    let file: PathBuf = root.join("timed.txt");
+    std::fs::write(&file, b"timed").expect("file");
+    let handle: std::fs::File = std::fs::OpenOptions::new().write(true).open(&file).expect("open");
+    handle
+        .set_modified(UNIX_EPOCH + Duration::new(1_700_000_000, 123_456_789))
+        .expect("modified");
+    drop(handle);
+    let metadata: std::fs::Metadata = std::fs::metadata(&file).expect("metadata");
+    let identity: WorktreeFileIdentity = identity_of(&metadata);
+    assert_eq!(identity.modified, 1_700_000_000_123_456_789);
+    let changed: i128 = i128::from(metadata.ctime()) * 1_000_000_000 + i128::from(metadata.ctime_nsec());
+    assert_eq!(identity.changed, changed);
+    assert_eq!(identity.size, 5);
+    remove(root.as_path());
+}
+
+/// A socket where a file is expected is a conflict, not a failure, and a symbolic link cannot be opened.
+#[cfg(unix)]
+#[test]
+fn a_socket_is_a_conflict_and_a_symbolic_link_is_not_opened() {
+    let root: PathBuf = fixture("worktree-completion-socket");
+    let socket: PathBuf = root.join("listening");
+    let _listener = std::os::unix::net::UnixListener::bind(&socket).expect("socket");
+    assert_eq!(
+        inspect_worktree_file(socket.as_path(), "100644", b"a", b"b").expect("inspect"),
+        WorktreeFileState::Conflict
+    );
+    let target: PathBuf = root.join("target.txt");
+    std::fs::write(&target, b"target").expect("target");
+    let link: PathBuf = root.join("link.txt");
+    std::os::unix::fs::symlink(&target, &link).expect("link");
+    assert!(open_nonblocking(link.as_path()).is_err());
+    assert!(open_nonblocking(target.as_path()).is_ok());
+    remove(root.as_path());
+}
+
+/// An error that is not one of the conflict codes fails the inspection instead of reading as a conflict.
+#[cfg(unix)]
+#[test]
+fn an_error_that_is_not_a_conflict_fails_the_inspection() {
+    let root: PathBuf = fixture("worktree-completion-long-name");
+    let long: PathBuf = root.join("x".repeat(300));
+    let error = inspect_worktree_file(long.as_path(), "100644", b"a", b"b").expect_err("name too long");
+    assert!(!is_conflict_error(&error), "{error:?}");
     remove(root.as_path());
 }

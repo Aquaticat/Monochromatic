@@ -10,6 +10,9 @@ import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
+import { dependentVersionPlants } from './planted-dependent-version.mjs';
+import { markdownPlants } from './planted-markdown.mjs';
+
 /** Preserve the failed verification boundary rather than masking it with a cleanup error. */
 class PlantedControlError extends Error {}
 
@@ -106,11 +109,6 @@ const plants = [
     }],
   },
   {
-    name: 'a real commit is forwarded',
-    file: 'package/git-policy/cli/src/native/refusal_frontier.rs',
-    edits: [{ from: 'return Some(Unported::CommitTransaction);', to: 'return None;' }],
-  },
-  {
     name: 'a publishing push skips the manual-push gate',
     file: 'package/git-policy/cli/src/native/wrapped_command.rs',
     edits: [{
@@ -186,6 +184,8 @@ const plants = [
       to: 'if content_end < bytes.len() {',
     }],
   },
+  ...dependentVersionPlants,
+  ...markdownPlants,
 ];
 
 /** Run the generator controls in the disposable sidecar; report status and the failing control names. */

@@ -187,3 +187,152 @@ fn a_free_reservation_is_not_granted_to_a_younger_requester() {
     assert!(!registry.join(RESERVATION_LOCK_NAME).exists());
     remove(root.as_path());
 }
+/// Run `work` on its own thread and fail the test when it has not finished after a ceiling,
+///  so a wait that lost its limit fails instead of hanging the run.
+fn finishes_in_time<Output: Send + 'static>(work: impl FnOnce() -> Output + Send + 'static) -> Output {
+    let (sender, receiver) = std::sync::mpsc::channel::<Output>();
+    std::thread::spawn(move || {
+        let _sent = sender.send(work());
+    });
+    return receiver
+        .recv_timeout(Duration::from_secs(10))
+        .expect("the wait did not end at its limit");
+}
+
+/// A live reservation that is never released ends another transaction's wait at the limit,
+///  naming the holder and leaving the reservation in place.
+#[test]
+fn a_reservation_held_past_the_limit_ends_the_wait() {
+    let (root, registry) = registry_of("replay-reservation-await-timeout");
+    let first_directory: PathBuf = transaction(registry.as_path(), FIRST, "2026-10-10T00:00:00.000Z", true);
+    let second_directory: PathBuf = transaction(registry.as_path(), SECOND, "2026-10-10T00:00:01.000Z", true);
+    let mut holder: LandingReservation =
+        LandingReservation::open(registry.as_path(), first_directory.as_path(), FIRST, false);
+    assert!(holder.reserve(1).expect("granted"));
+    let waiter: LandingReservation =
+        LandingReservation::open(registry.as_path(), second_directory.as_path(), SECOND, false);
+    let started: Instant = Instant::now();
+    let failure: ReservationError = finishes_in_time(move || {
+        return waiter.await_slot_for(Duration::from_millis(200)).expect_err("held past the limit");
+    });
+    assert!(started.elapsed() >= Duration::from_millis(200), "{:?}", started.elapsed());
+    match failure {
+        ReservationError::WaitTimedOut { waited, holder_pid } => {
+            assert!(waited >= Duration::from_millis(200), "{waited:?}");
+            assert_eq!(holder_pid, Some(i64::from(std::process::id())));
+        }
+        other => panic!("expected a refused wait, got {other}"),
+    }
+    assert!(holder.held_by_another().is_ok());
+    holder.release().expect("released");
+    remove(root.as_path());
+}
+
+/// A wait is over at its limit exactly, not before it.
+#[test]
+fn a_wait_is_over_at_its_limit_exactly() {
+    let limit: Duration = Duration::from_millis(200);
+    assert!(!limit_reached(Duration::from_millis(199), limit));
+    assert!(limit_reached(limit, limit));
+    assert!(limit_reached(Duration::from_millis(201), limit));
+}
+
+/// The default wait holds while another transaction's reservation stands,
+///  and ends once it is released.
+#[test]
+fn the_default_wait_lasts_as_long_as_the_reservation() {
+    let (root, registry) = registry_of("replay-reservation-await-default");
+    let first_directory: PathBuf = transaction(registry.as_path(), FIRST, "2026-10-10T00:00:00.000Z", true);
+    let second_directory: PathBuf = transaction(registry.as_path(), SECOND, "2026-10-10T00:00:01.000Z", true);
+    let mut holder: LandingReservation =
+        LandingReservation::open(registry.as_path(), first_directory.as_path(), FIRST, false);
+    assert!(holder.reserve(1).expect("granted"));
+    let waiter: LandingReservation =
+        LandingReservation::open(registry.as_path(), second_directory.as_path(), SECOND, false);
+    let (sender, receiver) = std::sync::mpsc::channel::<Result<(), ReservationError>>();
+    std::thread::spawn(move || {
+        let _sent = sender.send(waiter.await_slot());
+    });
+    assert!(
+        receiver.recv_timeout(Duration::from_millis(400)).is_err(),
+        "the wait ended while the reservation stood"
+    );
+    holder.release().expect("released");
+    receiver
+        .recv_timeout(Duration::from_secs(10))
+        .expect("the wait did not end after the release")
+        .expect("the wait succeeds");
+    remove(root.as_path());
+}
+
+/// Releasing a reservation that never wrote a request is not an error,
+///  and a request that cannot be removed for any other reason is.
+#[cfg(unix)]
+#[test]
+fn a_release_without_a_request_succeeds_and_other_failures_are_reported() {
+    let (root, registry) = registry_of("replay-reservation-release-kinds");
+    let directory: PathBuf = transaction(registry.as_path(), FIRST, "2026-10-10T00:00:00.000Z", true);
+    LandingReservation::open(registry.as_path(), directory.as_path(), FIRST, false)
+        .release()
+        .expect("no request to remove");
+    let file: PathBuf = root.join("not-a-directory");
+    std::fs::write(&file, b"x").expect("file");
+    let failure: ReservationError = LandingReservation::open(registry.as_path(), file.as_path(), FIRST, false)
+        .release()
+        .expect_err("the request path cannot be inspected");
+    assert!(matches!(failure, ReservationError::Write(_)), "{failure}");
+    remove(root.as_path());
+}
+
+/// An older live request that is never granted ends a younger transaction's wait for the grant at the limit,
+///  and the younger transaction's request is withdrawn by its release.
+#[test]
+fn an_older_request_held_past_the_limit_ends_the_wait_for_the_grant() {
+    let (root, registry) = registry_of("replay-reservation-reserve-timeout");
+    let older: PathBuf = transaction(registry.as_path(), FIRST, "2026-10-10T00:00:00.000Z", true);
+    std::fs::write(older.join(RESERVATION_REQUEST_FILENAME), reservation_request_bytes(1)).expect("older request");
+    let younger: PathBuf = transaction(registry.as_path(), SECOND, "2026-10-10T00:00:01.000Z", true);
+    let registry_for_thread: PathBuf = registry.clone();
+    let younger_for_thread: PathBuf = younger.clone();
+    let (failure, reservation) = finishes_in_time(move || {
+        let mut reservation: LandingReservation = LandingReservation::open(
+            registry_for_thread.as_path(),
+            younger_for_thread.as_path(),
+            SECOND,
+            false,
+        );
+        let failure: ReservationError = reservation
+            .reserve_for(2, Duration::from_millis(200))
+            .expect_err("never first in line");
+        return (failure, reservation);
+    });
+    match failure {
+        ReservationError::WaitTimedOut { waited, holder_pid } => {
+            assert!(waited >= Duration::from_millis(200), "{waited:?}");
+            assert_eq!(holder_pid, None);
+        }
+        other => panic!("expected a refused wait, got {other}"),
+    }
+    assert!(younger.join(RESERVATION_REQUEST_FILENAME).exists());
+    reservation.release().expect("released");
+    assert!(!younger.join(RESERVATION_REQUEST_FILENAME).exists());
+    assert!(older.join(RESERVATION_REQUEST_FILENAME).exists(), "the older request is untouched");
+    remove(root.as_path());
+}
+
+/// The refusal names the holder or the older request, the wait and the variable.
+#[test]
+fn a_refused_wait_is_described_and_other_failures_keep_their_debug_text() {
+    assert_eq!(
+        ReservationError::WaitTimedOut { waited: Duration::from_millis(61_900), holder_pid: Some(77) }.to_string(),
+        "gave up after waiting 61 seconds for the next landing slot because process 77 holds the reservation; \
+         CLI_GIT_LOCK_WAIT_SECONDS sets how long to wait, and nothing was taken from that process"
+    );
+    assert!(
+        ReservationError::WaitTimedOut { waited: Duration::from_secs(2), holder_pid: None }
+            .to_string()
+            .contains("because an older live landing request holds the next slot")
+    );
+    let other: ReservationError = ReservationError::Identity(String::from("probe failed"));
+    assert_eq!(other.to_string(), format!("{other:?}"));
+}

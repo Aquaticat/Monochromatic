@@ -24,6 +24,8 @@ import dev.monochromatic.musicplayer.core.PlaybackMode
 // import { expect, test } from "test";
 // ```
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 // What:     `import androidx.compose.ui.unit.dp` brings in the Dp extension on numbers.
@@ -278,5 +280,113 @@ class TransportDeckModelTest {
         assertEquals(0f, progressFractionFor(positionSec = 10.0, durationSec = 0.0), 0f)
         assertEquals(0f, progressFractionFor(positionSec = 10.0, durationSec = -1.0), 0f)
         assertEquals(0f, progressFractionFor(positionSec = 10.0, durationSec = Double.NaN), 0f)
+    }
+
+    // What:     `oneLineFitsExactlyWithGapCountedOnce` checks the boundary where the row just fits.
+    // Why:      100 plus 16 plus 200 is 316, so the gap must be added once to reach the exact fit.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("one line fits exactly at the summed width", () => { ... });
+    // ```
+    /** Confirms a width equal to transport, one gap, and mode fits side by side. */
+    @Test
+    fun oneLineFitsExactlyWithGapCountedOnce() {
+        assertTrue(
+            deckControlsFitOneLine(availableWidthPx = 316, transportWidthPx = 100, modeWidthPx = 200, gapPx = 16),
+        )
+    }
+
+    // What:     `oneLineRejectsOnePixelShort` checks the width one pixel under the exact fit.
+    // Why:      A single pixel short must stack the controls, or the row would clip a 48dp target.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("one line rejects one pixel short", () => { ... });
+    // ```
+    /** Confirms a width one pixel below the summed width does not fit side by side. */
+    @Test
+    fun oneLineRejectsOnePixelShort() {
+        assertFalse(
+            deckControlsFitOneLine(availableWidthPx = 315, transportWidthPx = 100, modeWidthPx = 200, gapPx = 16),
+        )
+    }
+
+    // What:     `oneLineFitsWideWidth` checks a width far above the summed width.
+    // Why:      A wide deck, such as an unfolded screen, must keep the controls on one row.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("one line fits a wide width", () => { ... });
+    // ```
+    /** Confirms a width well above the summed width fits side by side. */
+    @Test
+    fun oneLineFitsWideWidth() {
+        assertTrue(
+            deckControlsFitOneLine(availableWidthPx = 1080, transportWidthPx = 100, modeWidthPx = 200, gapPx = 16),
+        )
+    }
+
+    // What:     `oneLineGapChangesTheBoundary` checks that a wider gap moves the boundary by its own size.
+    // Why:      With a 17 pixel gap the same widths need one more pixel, which proves the gap is in the sum.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("a wider gap needs one more pixel", () => { ... });
+    // ```
+    /** Confirms a gap one pixel wider rejects the width that fit with a gap of 16 pixels. */
+    @Test
+    fun oneLineGapChangesTheBoundary() {
+        assertFalse(
+            deckControlsFitOneLine(availableWidthPx = 316, transportWidthPx = 100, modeWidthPx = 200, gapPx = 17),
+        )
+    }
+
+    // What:     `oneLineZeroWidthsNeedOnlyTheGap` checks controls with no measured width.
+    // Why:      With zero-width groups the gap alone decides the fit, so the boundary is exactly the gap.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("zero controls need only the gap", () => { ... });
+    // ```
+    /** Confirms zero-width groups fit exactly when the available width equals the gap. */
+    @Test
+    fun oneLineZeroWidthsNeedOnlyTheGap() {
+        assertTrue(deckControlsFitOneLine(availableWidthPx = 16, transportWidthPx = 0, modeWidthPx = 0, gapPx = 16))
+        assertFalse(deckControlsFitOneLine(availableWidthPx = 15, transportWidthPx = 0, modeWidthPx = 0, gapPx = 16))
+    }
+
+    // What:     `oneLineZeroAvailableOnlyFitsEmptyControls` checks a zero available width.
+    // Why:      Nothing with a positive width fits in zero pixels, while all-zero inputs trivially fit.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("zero available width", () => { ... });
+    // ```
+    /** Confirms zero available width fits only when every width and the gap are zero. */
+    @Test
+    fun oneLineZeroAvailableOnlyFitsEmptyControls() {
+        assertTrue(deckControlsFitOneLine(availableWidthPx = 0, transportWidthPx = 0, modeWidthPx = 0, gapPx = 0))
+        assertFalse(deckControlsFitOneLine(availableWidthPx = 0, transportWidthPx = 1, modeWidthPx = 0, gapPx = 0))
+    }
+
+    // What:     `oneLineHugeWidthsDoNotWrap` checks inputs whose sum exceeds the Int range.
+    // Why:      Summing in Int would wrap negative and report a false fit, so the sum is held in Long.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("huge widths do not wrap", () => { ... });
+    // ```
+    /** Confirms widths whose sum overflows Int do not report a fit at the largest Int available width. */
+    @Test
+    fun oneLineHugeWidthsDoNotWrap() {
+        assertFalse(
+            deckControlsFitOneLine(
+                availableWidthPx = Int.MAX_VALUE,
+                transportWidthPx = Int.MAX_VALUE,
+                modeWidthPx = Int.MAX_VALUE,
+                gapPx = Int.MAX_VALUE,
+            ),
+        )
     }
 }

@@ -13,6 +13,7 @@ import { createConnection } from 'node:net';
 import { homedir } from 'node:os';
 import { join, relative, resolve, sep } from 'node:path';
 import { setTimeout as wait } from 'node:timers/promises';
+import { compositor, demandCurrentCompositor } from './nested-compositor.mjs';
 
 const privateRoot = join(homedir(), 'temp', 'agent');
 if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Scratch root must exclude group and other permissions: ' + privateRoot);
@@ -43,8 +44,7 @@ for (const tool of ['unshare', 'nsenter', 'strace']) {
 }
 
 const origin = process.cwd();
-const compositor = resolve(origin, '../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session');
-if (!existsSync(compositor)) throw new Error('Build the nested compositor first: ' + compositor);
+demandCurrentCompositor();
 const artifact = mkdtempSync(join(privateRoot, 'ide-watch-limit-'));
 const source = join(artifact, 'package');
 cpSync(origin, source, { recursive: true, filter: path => !['target', '.git', 'node_modules'].includes(relative(origin, path).split(sep)[0]) });
@@ -150,7 +150,9 @@ try {
   const startLines = own().length;
   // A file created in the last folder, which sorts last and so waits on the limit.
   await wait(3000);
-  const unwatched = join(project, 'folder-' + String(folders - 1).padStart(3, '0'));
+  // The IDE logs canonical paths and the scratch root can be a symlink (the agent scratch lives on another drive),
+  // so the log is searched by the canonical folder path.
+  const unwatched = join(realpathSync(project), 'folder-' + String(folders - 1).padStart(3, '0'));
   const createdAt = Date.now();
   writeFileSync(join(unwatched, 'created-under-limit.txt'), 'seen through the sweep\n');
   await wait(seconds * 1000 - 3000);

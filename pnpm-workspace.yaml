@@ -173,7 +173,8 @@ catalog:
   'typescript': '>=7.0.2'
   # conf-fork.fuzz vendored upstream-conf oracle dependency; dev-only.
   'uint8array-extras': '>=1.5.0'
-  'unbash': '>=4.0.10'
+  # The shell analyzer consumes the SyntaxNode/Redirection AST introduced in unbash 5.
+  'unbash': '>=5.0.0'
   'unified': '>=11.0.5'
   'valibot': '>=1.4.2'
   'wawoff2': '>=2.0.1'
@@ -184,6 +185,11 @@ catalog:
   'yuku-ast': '>=0.9.0'
   'yuku-parser': '>=0.9.0'
   'zeptomatch': '>=2.1.0'
+catalogs:
+  auto-mode-native:
+    # Native policy offsets and source transforms are qualified against these exact parser releases.
+    'satteri': '0.10.5'
+    'yuku-parser': '0.19.0'
 catalogMode: strict
 
 dedupeDirectDeps: true

@@ -3,9 +3,13 @@
 /// Owned filesystem paths survive argument parsing.
 use std::path::PathBuf;
 /// Existing private-portal appearance values.
-use crate::appearance_portal::ColorSchemePreference;
+use crate::{
+    accent_color::AccentColor, appearance_portal::ColorSchemePreference, notification_mode::NotificationMode,
+};
 /// Validated output scale shared with the runtime `scale` verb.
 use crate::screen_geometry::OutputScale;
+/// The device choice for headless rendering.
+use crate::gpu_choice::GpuChoice;
 
 /// Validated program configuration parsed from the command line.
 ///
@@ -104,6 +108,25 @@ pub struct Config {
     ///       `Some` starts private Settings portal without changing host desktop theme.
     pub color_scheme: Option<ColorSchemePreference>,
 
+    /// Optional isolated portal accent color for hosted client.
+    ///
+    /// What:
+    ///      `pub accent_color: Option<AccentColor>`.
+    /// Why:
+    ///       `Some` starts the private Settings portal and serves `org.freedesktop.appearance` `accent-color`.
+    pub accent_color: Option<AccentColor>,
+
+    /// Which fake notification services the private bus serves (`--notifications`).
+    ///
+    /// What:
+    ///      `pub notifications: NotificationMode`.
+    /// Why:
+    ///       Anything but `None` starts the private bus and records the calls a hosted app makes
+    ///  to `org.freedesktop.Notifications` and,
+    ///  in `kde` mode,
+    ///  to Plasma's job view server.
+    pub notifications: NotificationMode,
+
     /// Whether to launch the hosted app inside a resource-controlled systemd scope.
     ///
     /// What:
@@ -114,6 +137,17 @@ pub struct Config {
     ///           starve it;
     ///  degrades to a direct launch when systemd is unavailable.
     pub isolate: bool,
+
+    /// Whether to start the private session bus so taskbar progress can be observed.
+    ///
+    /// What:
+    ///      `pub launcher_log: bool`.
+    ///  Set by `--launcher-log`.
+    /// Why:
+    ///       The hosted app then gets a private `DBUS_SESSION_BUS_ADDRESS` where its
+    ///  `LauncherEntry.Update` signals reach the compositor,
+    ///  and the host session bus never sees them.
+    pub launcher_log: bool,
 
     /// Optional hard CPU cap for the app,
     ///  in percent of one core (`--app-cpu-quota`).
@@ -133,4 +167,46 @@ pub struct Config {
     /// Why:
     ///       Override the default low weight that deprioritises the app under contention.
     pub app_cpu_weight: Option<u32>,
+
+    /// Whether to serve the private accessibility bus.
+    pub accessibility: bool,
+
+    /// Key repeat rate announced to the hosted client,
+    ///  in repeats per second.
+    pub repeat_rate: i32,
+
+    /// Wait before a held key starts repeating,
+    ///  in milliseconds.
+    pub repeat_delay: i32,
+
+    /// Whether to render without any parent display (`--headless`).
+    ///
+    /// What:
+    ///      `pub headless: bool`.
+    ///  False unless the flag is given.
+    /// Why:
+    ///       The nested window stays the default so a person can restore it and inspect the running app;
+    ///  headless is opt-in only and is never chosen because a display is missing.
+    pub headless: bool,
+
+    /// The device a headless session renders on (`--gpu`).
+    ///
+    /// What:
+    ///      `pub gpu: GpuChoice`.
+    ///  `Auto` unless `--gpu` is given,
+    ///  and `--gpu` is accepted only with `--headless`.
+    /// Why:
+    ///       The nested window renders on the parent compositor's GPU,
+    ///  so only a headless session has a choice to make.
+    pub gpu: GpuChoice,
+
+    /// Whether to print the devices `--gpu` accepts and exit (`--list-gpus`).
+    ///
+    /// What:
+    ///      `pub list_gpus: bool`.
+    ///  When true,
+    ///  `child_command` is empty.
+    /// Why:
+    ///       A person needs to see what to pass to `--gpu` without starting a session.
+    pub list_gpus: bool,
 }

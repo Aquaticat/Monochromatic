@@ -21,9 +21,9 @@ use crate::candidate_prediction::CandidateRequest;
 use crate::command_test_support::os_arguments;
 use crate::config_schema::PolicyConfig;
 use crate::diagnostics::EngineFailureCode;
-use crate::policy_checks::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
+use crate::policy_checks::{ShippedChecks, shipped_checks};
 use crate::policy_content::LifecycleContent;
-use crate::policy_engine::{StageEnd, StageRequest, Unavailable, pass_exit_code};
+use crate::policy_engine::{StageEnd, StageRequest, pass_exit_code};
 use crate::policy_events::{FindingEvent, PolicyEvent};
 use crate::policy_registry::{PolicyId, Severity};
 use crate::policy_test_support::{ScriptedFacts, main_worktree, scripted_facts, with_severity};
@@ -328,10 +328,10 @@ fn content_policies_read_fail_or_refuse_in_registry_order() {
         vec![String::from("location"), String::from("candidates")]
     );
     assert_eq!(exit_code(&built_in), 2);
-    // With the built-in content policy escaped, a listed unported policy refuses without reading.
+    // With the built-in content policy escaped, a listed dependent-version policy completes `git add`.
     let config: PolicyConfig = with_severity(
         &PolicyConfig::defaults(),
-        PolicyId::MarkdownAutofix,
+        PolicyId::DependentVersionBump,
         Severity::Error,
     );
     let mut controls: Controls = no_controls();
@@ -348,13 +348,9 @@ fn content_policies_read_fail_or_refuse_in_registry_order() {
         scripted_facts(),
         add_candidates(),
     );
-    assert_eq!(
-        listed.end,
-        StageEnd::Unavailable(Unavailable::Policy {
-            policy: PolicyId::MarkdownAutofix,
-            needs: MARKDOWN_AUTOFIX_NEEDS,
-        })
-    );
+    // The wired policy plans nothing for `git add`, so the listed command completes and asks no fact.
+    assert_eq!(listed.end, StageEnd::Completed);
+    assert_eq!(exit_code(&listed), 0);
     assert_eq!(listed_asked, vec![String::from("location")]);
     // With no content policy left, the same command may proceed and nothing is prepared.
     let (unlisted, unlisted_asked) = pass(
@@ -392,29 +388,4 @@ fn a_direct_check_applies_no_transform() {
     assert_eq!(unchanged.events, Vec::<PolicyEvent>::new());
     assert_eq!(unchanged.arguments, os_arguments(&["commit", "-a"]));
     assert_eq!(unchanged_asked, vec![String::from("location")]);
-}
-
-/// A trigger whose lifecycle is not ported is unavailable,
-///  never an empty clean pass.
-#[test]
-fn an_unported_lifecycle_is_unavailable() {
-    for trigger in [Trigger::PostCommit, Trigger::ManualPush] {
-        let (result, asked) = pass(
-            &request(trigger, no_controls()),
-            &["push"],
-            scripted_facts(),
-            LifecycleContent::None,
-        );
-        assert_eq!(
-            result,
-            PassResult {
-                arguments: os_arguments(&["push"]),
-                events: Vec::<PolicyEvent>::new(),
-                end: StageEnd::Unavailable(Unavailable::Lifecycle(trigger)),
-            },
-            "{trigger:?}"
-        );
-        assert_eq!(exit_code(&result), 2, "{trigger:?}");
-        assert_eq!(asked, Vec::<String>::new(), "{trigger:?}");
-    }
 }

@@ -1,6 +1,8 @@
 //! Read-only project boundary and lazy directory snapshots;
 //!  no mutation operations are exposed.
 
+/// Sibling names sort in the order the tree shows them.
+use crate::name_order::name_key;
 /// Every failure identifies the operation and affected input.
 use anyhow::{Context, Result, bail};
 /// Paths retain native filenames rather than round-tripping lossy UI strings.
@@ -10,7 +12,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// One filesystem entry in the same enumeration order used by editord.
+/// One filesystem entry;
+///  listings arrive in the display order of `name_order`.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DirectoryEntry {
     /// Native filename retained separately from its UI representation.
@@ -69,7 +72,8 @@ impl Workspace {
         return Ok(resolved);
     }
 
-    /// Read only the requested directory;
+    /// Read only the requested directory,
+    ///  sorted as `name_order` defines;
     ///  hidden entries remain visible as in editord.
     pub fn list(&self, path: &Path) -> Result<Vec<DirectoryEntry>> {
         let directory = self.resolve(path)?;
@@ -90,6 +94,7 @@ impl Workspace {
                 is_directory: kind.is_dir(),
             });
         }
+        snapshot.sort_by_cached_key(|entry| return name_key(&entry.name));
         tracing::debug!(path = %directory.display(), entries = snapshot.len(), "read directory snapshot");
         return Ok(snapshot);
     }

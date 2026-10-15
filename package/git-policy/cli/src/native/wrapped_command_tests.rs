@@ -23,7 +23,9 @@ use super::{WrappedOutcome, run_wrapped_command};
 use crate::command_test_support::os_arguments;
 use crate::config_file::CONFIG_FILE_NAME;
 use crate::diagnostics::EngineFailureCode;
-use crate::policy_checks::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
+/// The event form of a pathname.
+use crate::event_path::EventPath;
+use crate::policy_checks::{ShippedChecks, shipped_checks};
 use crate::policy_content::LifecycleContent;
 use crate::policy_events::{FindingEvent, PolicyEvent, render_policy_events};
 use crate::policy_registry::{PolicyId, Severity};
@@ -34,7 +36,6 @@ use crate::policy_trigger::Trigger;
 use crate::repository_location::RepositoryLocation;
 use crate::rule_add_explicit::decide_add_explicit;
 use crate::test_support::{fixture, remove, repository};
-use crate::unported::{Unported, unported_notice};
 use crate::worktree_identity::WorktreeIdentity;
 use crate::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
 use std::ffi::OsString;
@@ -96,14 +97,6 @@ fn forwards(values: &[&str]) -> WrappedOutcome {
     };
 }
 
-/// The ending "exit 2 with the notice for this unported work".
-fn refuses(what: &Unported, command: &str) -> WrappedOutcome {
-    return WrappedOutcome::Exit {
-        code: 2,
-        stderr: unported_notice(what, command),
-    };
-}
-
 /// Facts whose location is the given one.
 fn located(location: RepositoryLocation) -> ScriptedFacts {
     let mut facts: ScriptedFacts = scripted_facts();
@@ -140,16 +133,6 @@ fn not_at_root(root: &str, severity: Severity) -> PolicyEvent {
         location: None,
         fix_available: false,
     });
-}
-
-/// The manual-push refusal.
-fn manual_push_refused() -> WrappedOutcome {
-    return refuses(&Unported::Lifecycle(Trigger::ManualPush), "push");
-}
-
-/// The refusal of an unported content policy asked about what `git add` would stage.
-fn content_refused(policy: PolicyId, needs: &'static str) -> WrappedOutcome {
-    return refuses(&Unported::PolicyNeeds { policy, needs }, "add");
 }
 
 /// The failure of `final-newline` reading candidates the scripted facts cannot prepare.
@@ -309,7 +292,6 @@ fn read_only_commands_skip_configuration_and_refusals() {
 }
 
 /// Preparation order:
-///  lease,
 ///  location,
 ///  leftover state,
 ///  configuration,
@@ -318,16 +300,7 @@ fn read_only_commands_skip_configuration_and_refusals() {
 fn a_guarded_command_is_prepared_in_order() {
     let root: PathBuf = configured("wrapped-order", "this is not JSONC");
     let registry: PathBuf = registered(root.as_path(), true);
-    let lease: [(&str, &str); 1] = [("CLI_GIT_LANDING_LEASE", "")];
-    // 1. A lease stops the command before Git is asked anything.
-    assert_eq!(
-        run(&["commit", "-m", "x"], unanswerable(), &lease),
-        (
-            refuses(&Unported::InheritedLease("CLI_GIT_LANDING_LEASE"), "commit"),
-            Vec::<String>::new()
-        )
-    );
-    // 2. Without the location nothing else can be decided.
+    // 1. Without the location nothing else can be decided.
     assert_eq!(
         run(&["commit", "-m", "x"], unanswerable(), &[]),
         (
@@ -338,14 +311,16 @@ fn a_guarded_command_is_prepared_in_order() {
             location_only()
         )
     );
-    // 3. A live transaction is reported before the invalid configuration.
-    assert_eq!(
-        run(&["commit", "-m", "x"], at_root(root.as_path()), &[]),
-        (
-            refuses(&Unported::TransactionRecovery(registry.clone()), "commit"),
-            location_only()
-        )
-    );
+    // 2. A live transaction no longer refuses a guarded command, so the configuration is read next.
+    let (outcome, touched): (WrappedOutcome, Vec<String>) =
+        run(&["commit", "-m", "x"], at_root(root.as_path()), &[]);
+    assert_eq!(touched, location_only());
+    match outcome {
+        WrappedOutcome::Exit { code: 2, stderr } => {
+            assert!(stderr.contains("\"code\":\"config-invalid\""), "{stderr}");
+        }
+        other => panic!("expected the configuration to stop the command, got {other:?}"),
+    }
     // A dead one is recovered and no longer stops the command.
     std::fs::remove_dir_all(&registry).expect("remove registry");
     registered(root.as_path(), false);
@@ -354,7 +329,7 @@ fn a_guarded_command_is_prepared_in_order() {
         WrappedOutcome::Exit { ref stderr, .. } if stderr.contains("commit transactions recorded")
     ));
     assert!(!registry.join(TRANSACTION_ID).exists());
-    // 4. The invalid configuration is reported before the commit refusal.
+    // 3. The invalid configuration is reported before the commit refusal.
     let (invalid, invalid_asked) = run(&["commit", "-m", "x"], at_root(root.as_path()), &[]);
     assert_eq!(invalid_asked, location_only());
     match invalid {
@@ -369,21 +344,6 @@ fn a_guarded_command_is_prepared_in_order() {
             assert_eq!(stderr.matches('\n').count(), 1, "{stderr}");
         }
         WrappedOutcome::Forward { .. } => panic!("an invalid configuration never forwards"),
-    }
-    // 5. With a valid configuration the commit itself is refused, before any policy runs.
-    std::fs::write(root.join(CONFIG_FILE_NAME), "{}").expect("configuration");
-    let root_text: &str = root.to_str().expect("fixture path is UTF-8");
-    for location in [
-        main_worktree(root_text, ""),
-        main_worktree(root_text, "sub/"),
-    ] {
-        assert_eq!(
-            run(&["commit", "-a", "-m", "x"], located(location), &[]),
-            (
-                refuses(&Unported::CommitTransaction, "commit"),
-                location_only()
-            )
-        );
     }
     remove(root.as_path());
 }
@@ -514,19 +474,48 @@ fn configuration_selects_the_policies_of_a_guarded_command() {
     );
     std::fs::write(
         root.join(CONFIG_FILE_NAME),
+        r#"{ "policies": { "final-newline": "off", "mono/dependent-version-bump": "error" } }"#,
+    )
+    .expect("configuration");
+    assert_eq!(
+        run(&["add", "file"], at_root(root.as_path()), &[]),
+        (forwards(&["add", "file"]), location_only())
+    );
+    // That policy has no manual-push trigger, so a push is not gated by it.
+    assert_eq!(
+        run(&["push", "origin"], at_root(root.as_path()), &[]),
+        (forwards(&["push", "--atomic", "origin"]), location_only())
+    );
+    // A listed Markdown policy reads what the add stages, and gates a push.
+    std::fs::write(
+        root.join(CONFIG_FILE_NAME),
         r#"{ "policies": { "final-newline": "off", "markdown/autofix": "error" } }"#,
     )
     .expect("configuration");
     assert_eq!(
         run(&["add", "file"], at_root(root.as_path()), &[]),
         (
-            content_refused(PolicyId::MarkdownAutofix, MARKDOWN_AUTOFIX_NEEDS),
-            location_only()
+            WrappedOutcome::Exit {
+                code: 2,
+                stderr: render_policy_events(
+                    0,
+                    &[PolicyEvent::EngineFailure {
+                        code: EngineFailureCode::ContentUnavailable,
+                        message: String::from("the scripted facts prepare no candidates"),
+                        trigger: Some(Trigger::PreForward),
+                        policy: Some(PolicyId::MarkdownAutofix),
+                        path: None,
+                    }]
+                ),
+            },
+            location_and_candidates()
         )
     );
-    assert_eq!(
-        run(&["push", "origin"], at_root(root.as_path()), &[]),
-        (manual_push_refused(), location_only())
+    // The probe finds no updates in a fixture without a repository, so the push fails closed with exit 2.
+    let (refused, _location) = run(&["push", "origin"], at_root(root.as_path()), &[]);
+    assert!(
+        matches!(refused, WrappedOutcome::Exit { code: 2, .. }),
+        "{refused:?}"
     );
     // A policy set to `warn` lets the command through and reports on standard error first.
     std::fs::write(
@@ -565,18 +554,17 @@ fn configuration_selects_the_policies_of_a_guarded_command() {
 ///  a dry run and an ungated push are forwarded.
 #[test]
 fn a_real_push_must_clear_the_manual_push_gate() {
+    // Scripted facts have no repository, so a real push's scope fails closed with exit 2 and is never forwarded.
+    // Real pushes are exercised against real repositories in the manual-push integration tests.
     for values in [
         vec!["push"],
         vec!["push", "origin", "main"],
-        vec!["push", "--dry-run", "--no-dry-run"],
         vec!["push", "--", "--dry-run"],
-        // A region Git refuses is not known to be a dry run.
-        vec!["push", "--dry-run", "--no-such-option"],
     ] {
-        assert_eq!(
-            run(values.as_slice(), scripted_facts(), &[]),
-            (manual_push_refused(), location_only()),
-            "{values:?}"
+        let (outcome, _location) = run(values.as_slice(), scripted_facts(), &[]);
+        assert!(
+            matches!(outcome, WrappedOutcome::Exit { code: 2, .. }),
+            "{values:?}: {outcome:?}"
         );
     }
     assert_eq!(
@@ -660,47 +648,11 @@ fn worktree_policies_read_the_location() {
     }
 }
 
-/// From a linked worktree,
-///  creating a worktree and running a possible alias are refused.
+/// Worktree creation, aliases and the opt-out are all forwarded from every kind of location:
+///  the linked-worktree copy settles them when Git runs, not here.
 #[test]
-fn worktree_creation_and_aliases_are_refused_where_copies_are_synchronized() {
+fn worktree_creation_and_aliases_are_forwarded_from_every_location() {
     let linked: RepositoryLocation = linked_worktree("/r", "/w");
-    assert_eq!(
-        run(
-            &["worktree", "add", "../topic"],
-            located(linked.clone()),
-            &[]
-        ),
-        (
-            refuses(&Unported::WorktreeCopy, "worktree"),
-            location_only()
-        )
-    );
-    assert_eq!(
-        run(&["st"], located(linked.clone()), &[]),
-        (refuses(&Unported::AliasResolution, "st"), location_only())
-    );
-    assert_eq!(
-        run(
-            &["worktree", "add", "--no-worktree-copy", "../topic"],
-            located(linked.clone()),
-            &[]
-        ),
-        (forwards(&["worktree", "add", "../topic"]), location_only())
-    );
-    assert_eq!(
-        run(&["worktree", "list"], located(linked), &[]),
-        (forwards(&["worktree", "list"]), location_only())
-    );
-    // In the main worktree neither needs the copy.
-    for values in [vec!["worktree", "add", "../topic"], vec!["st"]] {
-        assert_eq!(
-            run(values.as_slice(), scripted_facts(), &[]),
-            (forwards(values.as_slice()), location_only()),
-            "{values:?}"
-        );
-    }
-    // A bare repository synchronizes copies too.
     let bare: RepositoryLocation = RepositoryLocation {
         identity: WorktreeIdentity::BareRepository {
             common_dir: PathBuf::from("/b.git"),
@@ -708,13 +660,35 @@ fn worktree_creation_and_aliases_are_refused_where_copies_are_synchronized() {
         },
         prefix: Vec::<u8>::new(),
     };
-    assert_eq!(
-        run(&["worktree", "add", "../topic"], located(bare), &[]),
-        (
-            refuses(&Unported::WorktreeCopy, "worktree"),
-            location_only()
-        )
-    );
+    for location in [linked, bare] {
+        for values in [
+            vec!["worktree", "add", "../topic"],
+            vec!["st"],
+            vec!["worktree", "list"],
+        ] {
+            assert_eq!(
+                run(values.as_slice(), located(location.clone()), &[]),
+                (forwards(values.as_slice()), location_only()),
+                "{values:?}"
+            );
+        }
+        assert_eq!(
+            run(
+                &["worktree", "add", "--no-worktree-copy", "../topic"],
+                located(location.clone()),
+                &[]
+            ),
+            (forwards(&["worktree", "add", "../topic"]), location_only())
+        );
+    }
+    // In the main worktree the same commands are forwarded.
+    for values in [vec!["worktree", "add", "../topic"], vec!["st"]] {
+        assert_eq!(
+            run(values.as_slice(), scripted_facts(), &[]),
+            (forwards(values.as_slice()), location_only()),
+            "{values:?}"
+        );
+    }
 }
 
 /// Findings of `git add` come from what it would stage:
@@ -744,7 +718,7 @@ fn add_findings_come_from_what_the_add_would_stage() {
         severity: Severity::Warn,
         code: "noncanonical-final-newline",
         message: String::from("Non-empty text file must end with exactly one LF byte."),
-        path: Some(String::from("a.txt")),
+        path: Some(EventPath::from_git_bytes("a.txt".as_bytes())),
         location: None,
         fix_available: false,
     });
@@ -764,7 +738,7 @@ fn add_findings_come_from_what_the_add_would_stage() {
         severity: Severity::Error,
         code: "root-context-forbidden",
         message: String::from("Root CONTEXT.md is forbidden; read source code directly."),
-        path: Some(String::from("CONTEXT.md")),
+        path: Some(EventPath::from_git_bytes("CONTEXT.md".as_bytes())),
         location: None,
         fix_available: false,
     });

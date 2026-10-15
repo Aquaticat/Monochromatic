@@ -7,6 +7,7 @@ import { FindBar } from "find.slint";
 import { LanguagePopup } from "hover.slint";
 import { ReferenceList, ReferenceEntry } from "references.slint";
 import { AnnotationInk } from "annotation.slint";
+import { Minimap } from "minimap.slint";
 import "../asset/font/InterVariable.ttf";
 import "../asset/font/InterVariable-Italic.ttf";
 import "../asset/font/JetBrainsMono-Variable.ttf";
@@ -60,7 +61,9 @@ export component AppWindow inherits Window {
         root.width - root.divider-width - root.source-minimum-width);
     out property <bool> sidebar-divider-has-focus: sidebar-divider.has-focus;
     private property <length> sidebar-minimum-width: 160px;
-    private property <length> source-minimum-width: 240px;
+    // 240 px of gutter and text, as before the minimap, plus the 48 px the minimap takes at this width
+    // (`ide_app::minimap::width_for`), so the minimap never narrows the text below its old minimum.
+    private property <length> source-minimum-width: 288px;
     // The divider's layout cell is only its 1px line. Its pointer zone is the grip placed over the layout,
     // which also covers the tree's last columns and the source column's first ones (`SidebarDividerGrip.reach`).
     private property <length> divider-width: 1px;
@@ -156,11 +159,9 @@ export component AppWindow inherits Window {
     // Visible in-file find matches except the active one, which is the selection itself.
     in property <[SourceSelection]> source-matches;
     in property <bool> selection-is-match;
-    in property <float> image-x;
     in property <float> image-y;
     in property <float> image-width;
     in property <float> image-height;
-    in property <float> document-width;
     in property <float> caret-x;
     in property <float> caret-y;
     out property <brush> source-foreground: Palette.foreground;
@@ -190,19 +191,49 @@ export component AppWindow inherits Window {
     in property <string> selected-text;
     in property <string> file-label: "Source-view verification";
     in property <string> error-message;
-    // Height of the whole text with its virtual rows, the code-row top of each materialized line, and the first
-    // materialized line: all from native code's vertical mapping.
+    // Height of the whole text with its virtual rows, and one gutter entry for each visual row of the materialized
+    // lines: its top, its line number (0 on a row that continues a wrapped line, where the wrap indicator stands
+    // instead), and its diagnostic mark. All of it comes from native code's vertical mapping.
     in property <float> content-extent: 24;
-    in property <[float]> line-tops;
-    // Per materialized line, one more than the rank of the worst diagnostic starting on it, or 0 for none.
-    in property <[int]> line-marks;
-    in property <int> first-line;
+    in property <[float]> row-tops;
+    in property <[int]> row-numbers;
+    // Per gutter entry, one more than the rank of the worst diagnostic starting on the line, or 0 for none.
+    in property <[int]> row-marks;
+    // IntelliJ's mark for a row that starts after a soft wrap, painted by native code in the source text's own
+    // fonts in c0c0c0, and the width of its cell. The same ink in the light and the dark scheme.
+    in property <image> wrap-sign;
+    in property <float> wrap-sign-width: 12;
     in property <int> selection-anchor;
     in property <int> selection-head;
     in-out property <length> scroll-y: 0px;
-    in-out property <length> scroll-x: 0px;
     out property <float> viewport-height: scroll.height / 1px;
-    out property <float> viewport-width: (scroll.width - root.gutter-width) / 1px;
+    // The text area is what the view leaves beside the gutter and the minimap; every report of the view's size and the
+    // wrap width native code derives from it use this one width.
+    private property <length> text-area-width: scroll.width - root.gutter-width - root.minimap-width;
+    out property <float> viewport-width: root.text-area-width / 1px;
+    // The minimap beside the text: CodeGlance Pro's 110 px, narrower in a narrow view (`ide_app::minimap::width_for`).
+    out property <length> minimap-width: clamp(round(scroll.width / 6px) * 1px, 15px, 110px);
+    // Native code builds the picture of the whole file; the box and the track follow the scroll live, from the text's
+    // height, the view's height, and the scroll offset alone (`ide_app::minimap::Geometry` holds the same formulas).
+    in property <image> minimap-image;
+    // Whether the pointer is over the minimap, and whether its left button is down on it.
+    out property <bool> minimap-hovered: minimap.hovered;
+    out property <bool> minimap-over-box: minimap.over-box;
+    out property <bool> minimap-pressed: minimap.pressed;
+    private property <length> minimap-content: max(root.content-extent * 1px, 1px);
+    private property <float> minimap-scale: min(4.0 / 24.0, scroll.height / root.minimap-content);
+    out property <length> minimap-track: min(root.minimap-content * root.minimap-scale, scroll.height);
+    out property <length> minimap-box-height: min(root.minimap-track, max(20px, scroll.height * root.minimap-scale));
+    private property <length> minimap-range: max(0px, root.minimap-content - scroll.height);
+    out property <length> minimap-box-top: root.minimap-range > 0px
+        ? max(0px, root.minimap-track - root.minimap-box-height) * clamp(-scroll.content-y / root.minimap-range, 0, 1) : 0px;
+    // A press on the minimap (distance from its top and left edge, Shift, on the box), a drag, a release, a page step
+    // from an assistive tool, and the minimap's size.
+    callback minimap-press(float, float, bool, bool);
+    callback minimap-drag(float);
+    callback minimap-release;
+    callback minimap-step(int);
+    callback minimap-resized(float, float);
     // Height of one code row; where rows are is decided by native code alone.
     private property <length> code-row: 24px;
     // The gutter, from its left edge: 6 px, a cell one letter wide, a 4 px gap, the line-number column, and 12 px
@@ -225,7 +256,7 @@ export component AppWindow inherits Window {
     callback pointer-press(float, float, bool);
     callback pointer-hit(float, float, bool);
     callback key-input(string, bool, bool, bool);
-    callback viewport-changed(float, float, float, float);
+    callback viewport-changed(float, float, float);
     callback theme-changed;
     callback scale-changed;
     changed dark-scheme => { root.theme-changed(); }
@@ -388,10 +419,11 @@ export component AppWindow inherits Window {
                 scroll := Flickable {
                     width: parent.width;
                     height: parent.height;
-                    content-width: max(self.width, root.document-width * 1px + root.gutter-width);
+                    // Lines wrap to the view, so the content is never wider than the view and the Flickable cannot
+                    // move horizontally: its bounds clamp content-x to zero, and a Shift+wheel turn scrolls nothing.
+                    content-width: self.width;
                     content-height: max(self.height, root.content-extent * 1px);
                     content-y <=> root.scroll-y;
-                    content-x <=> root.scroll-x;
                     // A mouse drag selects text. Panning by mouse drag would take a quick drag away from selection;
                     // wheel and touch scrolling are unaffected.
                     mouse-drag-pan-enabled: false;
@@ -400,10 +432,9 @@ export component AppWindow inherits Window {
                     accessible-value: self.content-y / 1px;
 
                     // Retain native Flickable physics, including easing for notched wheels.
-                    changed content-y => { root.viewport-changed(-self.content-x / 1px, -self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
-                    changed content-x => { root.viewport-changed(-self.content-x / 1px, -self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
-                    changed height => { root.viewport-changed(-self.content-x / 1px, -self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
-                    changed width => { root.viewport-changed(-self.content-x / 1px, -self.content-y / 1px, (self.width - root.gutter-width) / 1px, self.height / 1px); }
+                    changed content-y => { root.viewport-changed(-self.content-y / 1px, root.text-area-width / 1px, self.height / 1px); }
+                    changed height => { root.viewport-changed(-self.content-y / 1px, root.text-area-width / 1px, self.height / 1px); }
+                    changed width => { root.viewport-changed(-self.content-y / 1px, root.text-area-width / 1px, self.height / 1px); }
 
                     for selection in root.source-selections: Rectangle {
                         x: root.gutter-width + selection.x * 1px;
@@ -435,7 +466,7 @@ export component AppWindow inherits Window {
                     }
 
                     Image {
-                        x: root.gutter-width + root.image-x * 1px;
+                        x: root.gutter-width;
                         y: root.image-y * 1px;
                         width: root.image-width * 1px;
                         height: root.image-height * 1px;
@@ -457,10 +488,12 @@ export component AppWindow inherits Window {
                         font-size: root.font-size;
                     }
 
-                    // One number per materialized line, on that line's code row, never on its virtual rows, right-aligned
-                    // 12 px before the text. Where diagnostics start on the line, the worst severity's letter stands 4 px
-                    // before the number in that severity's ink. A mark of 0 is no diagnostic; a missing entry reads as 0.
-                    for top[index] in root.line-tops: Rectangle {
+                    // One entry per visual row of the materialized lines. The first row of a line carries its number,
+                    // right-aligned 12 px before the text, and, where diagnostics start on the line, the worst
+                    // severity's letter 4 px before the number in that severity's ink. A row that continues a wrapped
+                    // line carries the wrap indicator in the number's place and no letter. A mark of 0 is no
+                    // diagnostic; a missing entry reads as 0.
+                    for top[index] in root.row-tops: Rectangle {
                         x: 0px;
                         y: top * 1px;
                         width: root.gutter-width - root.number-gap;
@@ -469,22 +502,31 @@ export component AppWindow inherits Window {
                             x: parent.width - self.width;
                             width: self.preferred-width;
                             height: parent.height;
-                            text: root.first-line + index + 1;
+                            text: root.row-numbers[index] > 0 ? "\{root.row-numbers[index]}" : "";
                             vertical-alignment: center;
                             color: Palette.foreground;
                             opacity: 0.6;
                             font-family: "JetBrains Mono";
                             font-size: root.font-size;
                         }
+                        Image {
+                            visible: root.row-numbers[index] == 0;
+                            x: parent.width - self.width;
+                            width: root.wrap-sign-width * 1px;
+                            height: parent.height;
+                            source: root.wrap-sign;
+                            // The mark is decoration; the text of the row is what assistive tools read.
+                            accessible-role: none;
+                        }
                         Text {
-                            visible: root.line-marks[index] > 0;
+                            visible: root.row-marks[index] > 0;
                             x: number.x - root.mark-gap - self.width;
                             width: root.mark-advance;
                             height: parent.height;
-                            text: AnnotationInk.letter(root.line-marks[index] - 1);
+                            text: AnnotationInk.letter(root.row-marks[index] - 1);
                             horizontal-alignment: center;
                             vertical-alignment: center;
-                            color: AnnotationInk.severity(root.line-marks[index] - 1);
+                            color: AnnotationInk.severity(root.row-marks[index] - 1);
                             font-family: "JetBrains Mono";
                             font-size: root.font-size;
                             font-weight: 700;
@@ -532,6 +574,31 @@ export component AppWindow inherits Window {
                             root.pointer-hit(self.mouse-y / 1px,
                                 max(0, (self.mouse-x - root.gutter-width) / 1px), true);
                         }
+                    }
+
+                    // The minimap stands over the right edge of the text area and stays still on screen while the
+                    // content scrolls under it: it is a child of the Flickable on purpose, so a wheel turn over it
+                    // reaches the Flickable (the touch area has no scroll handler) and scrolls exactly as over the text.
+                    minimap := Minimap {
+                        x: scroll.width - self.width;
+                        y: -scroll.content-y;
+                        width: root.minimap-width;
+                        height: scroll.height;
+                        picture: root.minimap-image;
+                        track: root.minimap-track;
+                        box-height: root.minimap-box-height;
+                        box-top: root.minimap-box-top;
+                        offset: -scroll.content-y / 1px;
+                        range: root.minimap-range / 1px;
+                        press(y, x, shift, inside) => {
+                            // Keyboard scrolling keeps working after a press, so the source view keeps the focus.
+                            code-focus.focus();
+                            root.minimap-press(y / 1px, x / 1px, shift, inside);
+                        }
+                        drag(y) => { root.minimap-drag(y / 1px); }
+                        release => { root.minimap-release(); }
+                        step(direction) => { root.minimap-step(direction); }
+                        resized(width, height) => { root.minimap-resized(width / 1px, height / 1px); }
                     }
                 }
             }

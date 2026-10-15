@@ -90,7 +90,7 @@ use tokio::sync::oneshot;
 /// ```ts
 /// import * as service from "./peakcache_service";
 /// ```
-use super::service::{self, Read, Upsert};
+use super::service::{self, Read, Upsert, Write};
 
 /// What:
 ///      `#[derive(Clone)] pub(crate) struct CacheHandle { .. }`.
@@ -132,7 +132,7 @@ pub(crate) struct CacheHandle {
     /// ```ts
     /// writeTx: Sender<Upsert>;
     /// ```
-    write_tx: UnboundedSender<Upsert>,
+    write_tx: UnboundedSender<Write>,
 }
 
 /// What:
@@ -313,7 +313,7 @@ impl CacheHandle {
         // ```ts
         // writeTx.send({ fingerprint, decision });
         // ```
-        let _ = self.write_tx.send(Upsert { fingerprint, decision });
+        let _ = self.write_tx.send(Write::Put(Upsert { fingerprint, decision }));
     }
 
     /// What:

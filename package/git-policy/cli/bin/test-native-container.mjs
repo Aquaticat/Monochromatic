@@ -18,6 +18,12 @@ import {
 } from 'node:path';
 
 import {
+  linterCopyLines,
+  linterSnapshotEntries,
+  linterStageLines,
+  vendorLinterDependencies,
+} from './native-linter-snapshot.mjs';
+import {
   scannerSnapshotEntries,
   vendorLockedDependencies,
 } from './native-scanner-snapshot.mjs';
@@ -82,11 +88,20 @@ async function copySourceSnapshot({ context }) {
       };
     }),
     ...scannerSnapshotEntries({ context }),
+    ...linterSnapshotEntries({ context }),
     {
       from: resolve('../../../clippy.toml'),
       to: join(
         context,
         'clippy.toml',
+      ),
+    },
+    // The configuration control in `src/native/config_repository_tests.rs` reads the repository's own file.
+    {
+      from: resolve('../../../cli-git.config.jsonc'),
+      to: join(
+        context,
+        'cli-git.config.jsonc',
       ),
     },
   ];
@@ -126,21 +141,29 @@ async function main() {
   const base = '6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a';
   await copySourceSnapshot({ context: context.path });
   await vendorLockedDependencies({ context: context.path });
+  await vendorLinterDependencies({ context: context.path });
   await writeFile(
     join(
       context.path,
       'Containerfile',
     ),
     [
+      // The Markdown policy's linter is built from this snapshot in its own stage; only its executable is kept.
+      ...linterStageLines({ base }),
       `FROM ${base}`,
+      ...linterCopyLines(),
       'COPY package /work/package',
       // Some crate archives carry files only their owner may read, so the tester must own the vendored copy.
       'COPY --chown=1000:1000 vendor /work/vendor',
       'COPY --chown=1000:1000 cargo-config /work/.cargo',
       'COPY clippy.toml /work/clippy.toml',
+      'COPY cli-git.config.jsonc /work/cli-git.config.jsonc',
       'RUN ["mkdir", "--parents", "/home/tester/.cargo"]',
       'RUN ["chown", "--recursive", "1000:1000", "/work/package", "/home/tester"]',
       'ENV HOME=/home/tester CARGO_HOME=/home/tester/.cargo CARGO_NET_OFFLINE=true CARGO_BUILD_JOBS=2 CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0',
+      // A test that waits on a lock nothing releases (a mutant that never releases one) fails after 20 seconds
+      // instead of waiting out the 30 minute product limit, which cargo-mutants would record as a timeout.
+      'ENV CLI_GIT_LOCK_WAIT_SECONDS=20 CLI_GIT_PUSH_LOCK_WAIT_SECONDS=20',
       'USER 1000:1000',
       'WORKDIR /work/package/git-policy/cli',
       // Compile once while the image is built. The test run, each planted control and each mutant then rebuild

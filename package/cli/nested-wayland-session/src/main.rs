@@ -63,6 +63,13 @@ fn main() -> Result<ExitCode> {
         .map_err(handle_cli_error)
         .context("parsing command-line arguments")?;
 
+    // What: --list-gpus prints the devices and exits before logging or any Wayland setup.
+    // Why: The listing is terminal output for a person, so it must not be mixed with log lines.
+    if config.list_gpus {
+        println!("{}", nested_wayland_session::gpu_device::list_gpus());
+        return Ok(ExitCode::SUCCESS);
+    }
+
     // What: unwrap_or_else supplies a default when the optional log filter is absent.
     // Why: Keep normal invocation's existing logging behavior.
     //

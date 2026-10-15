@@ -220,8 +220,64 @@ pub mod policy_trigger;
 /// Policy events and their JSON Lines rendering.
 pub mod policy_events;
 
+/// A pathname as events report it:
+///  text,
+///  plus base64 `pathBytes` when it is not UTF-8.
+pub mod event_path;
+
+/// Exact repository path bytes as the operating system takes them, and as text for messages.
+pub mod path_bytes;
+
 /// Ordered policy execution for one lifecycle point.
 pub mod policy_engine;
+
+/// Slice 6: the exact grammar of one policy-proposed Git patch (`commit-transaction-patch.ts`).
+pub mod policy_patch_validate;
+
+/// Slice 6: one policy patch applied to the private index with `git apply --cached --3way`.
+pub mod policy_patch;
+
+/// Slice 6: writes one corrected file into the private commit index as a blob and an index entry.
+pub mod private_index_stage;
+
+/// Slice 6: the commit path's bounded policy convergence over the private index.
+pub mod commit_convergence;
+
+/// The commit transaction in the incumbent's order, up to the settled policies.
+pub mod commit_transaction;
+
+/// The conclusion of a settled commit transaction: preparation, landing and post-landing completion.
+pub mod commit_conclusion;
+
+/// The landing loop with replay, revalidation and the starvation reservation.
+pub mod commit_landing_loop;
+
+/// The landing lock a landing attempt takes, with the recovery every acquisition runs first.
+pub mod commit_landing_lock;
+
+/// Revalidation of a replayed tree outside both landing locks.
+pub mod commit_revalidation;
+
+/// The normalization-only transaction for a correction that removed every change.
+pub mod commit_no_change;
+
+/// The `git commit` command: the transaction, the settled events, the post-commit gate and the backup.
+pub mod commit_command;
+
+/// The disposable, recoverable workspace of one commit transaction.
+pub mod commit_workspace;
+
+/// Rule facts from the real repository with candidates read from the private index.
+pub mod commit_facts;
+
+/// The worktree completion records of selected corrections and of hook changes.
+pub mod commit_worktree_records;
+
+/// The replay-relevant commit options.
+pub mod commit_replay_options;
+
+/// Slice 9 skeleton: the order around a landed commit and a guarded Git child; not reachable until landing is merged.
+pub mod commit_lifecycle;
 
 /// The bounded loop that repeats a pass after corrections changed candidate content.
 pub mod policy_convergence;
@@ -243,6 +299,71 @@ pub mod rule_branch_worktree;
 /// Pure decision of the add-explicit policy.
 pub mod rule_add_explicit;
 
+/// The repository content the dependent-version planner reads, and its two failure kinds.
+pub mod dependent_version_content;
+
+/// Which paths the dependent-version planner reads: manifests, configuration, source.
+pub mod dependent_version_paths;
+
+/// Strict JSON reading of a manifest's name, version and dependency names.
+pub mod dependent_version_manifest;
+
+/// Patch bumps of plain release versions and `JSON.stringify` quoting.
+pub mod dependent_version_release;
+
+/// The byte-preserving rewrite of a manifest's top-level version.
+pub mod dependent_version_text;
+
+/// Publishable package names from the generated registry configuration.
+pub mod dependent_version_publishable;
+
+/// Whether source text imports a package.
+pub mod dependent_version_imports;
+
+/// The dependency walk and the plan of dependent bumps.
+pub mod dependent_version_graph;
+
+/// Every workspace manifest at both states, and which versions were raised.
+pub mod dependent_version_states;
+
+/// Which development dependencies each dependent bundles.
+pub mod dependent_version_bundled;
+
+/// The dependent-version plan with exact manifest bytes before and after.
+pub mod dependent_version_plan;
+
+/// The decision and findings of `mono/dependent-version-bump`.
+pub mod dependent_version_policy;
+
+/// The dependent-version planner's view of a prepared candidate state.
+pub mod dependent_version_lifecycle;
+
+/// Whether a direct fix may change a tracked file it did not select.
+pub mod policy_added_path;
+
+/// The `mono/dependent-version-bump` check over a lifecycle's candidate state.
+pub mod policy_dependent_version;
+
+/// An in-memory workspace that records reads; never in the release build.
+#[cfg(test)]
+mod dependent_version_test_support;
+
+/// Differential fixture reading and canonical results; never in the release build.
+#[cfg(test)]
+mod dependent_version_fixture_json;
+
+/// Canonical renderings of the native planner's results; never in the release build.
+#[cfg(test)]
+mod dependent_version_fixture_output;
+
+/// One differential case evaluated by the native planner; never in the release build.
+#[cfg(test)]
+mod dependent_version_fixture_cases;
+
+/// The native planner against the incumbent's recorded results; never in the release build.
+#[cfg(test)]
+mod dependent_version_differential_tests;
+
 /// The shipped policies as checks over rule cores and repository facts.
 pub mod policy_checks;
 
@@ -263,6 +384,36 @@ pub mod policy_root_context;
 /// The optional forbidden-strings policy over the linked scanner,
 ///  with redacted findings.
 pub mod policy_forbidden_strings;
+
+/// One child program run with a time bound and output caps,
+///  through files instead of pipes.
+pub mod bounded_child;
+
+/// Where the `markdown/autofix` policy finds `monochromatic-lint`:
+///  absolute PATH entries only.
+pub mod markdown_linter_lookup;
+
+/// What one linter run printed:
+///  the fixed source and the findings left,
+///  or why it is unusable.
+pub mod markdown_linter_output;
+
+/// The one-rule linter configuration and the private temporary file it is written to.
+pub mod markdown_linter_config;
+
+/// The gitignore-syntax `exclude` patterns of `markdown/autofix`,
+///  matched as the linter matches them.
+pub mod markdown_exclude;
+
+/// The `markdown/autofix` policy over candidates,
+///  behind its linter interface.
+pub mod policy_markdown;
+
+/// The executable's linter for that policy:
+///  `monochromatic-lint` on PATH,
+///  bounded,
+///  once per candidate.
+pub mod markdown_linter;
 
 /// The executable's panic hook:
 ///  where an internal error happened,
@@ -294,15 +445,6 @@ pub mod git_builtins;
 /// The work of the installed cli-git that is not ported,
 ///  and the refusal notice.
 pub mod unported;
-
-/// Durable commit-transaction and worktree-copy state left in a repository.
-pub mod pending_state;
-
-/// Which commands need unported work:
-///  commits,
-///  worktree copies,
-///  aliases and leases.
-pub mod refusal_frontier;
 
 /// The lifecycle of one wrapped Git command,
 ///  from refusals to forwarding.
@@ -341,6 +483,9 @@ pub mod candidate_store;
 
 /// Pure parsing of `git ls-files --stage` records and the delta between two index states.
 pub mod candidate_stage;
+
+/// The files of a commit's tree with their modes and objects.
+pub mod candidate_tree;
 
 /// A private,
 ///  timestamp-preserving copy of the real index,
@@ -426,6 +571,15 @@ pub mod transaction_git;
 /// The preparation and landing leases nested wrapper invocations inherit.
 pub mod transaction_lease;
 
+/// The dispatch plan of one commit transaction, its JSON spelling and the config reads it makes.
+pub mod hook_dispatch_plan;
+
+/// The hooks directory of one transaction: its plan and one entry per preparation event.
+pub mod hook_dispatch_entries;
+
+/// The hook dispatcher entered by a transaction's hook entry name, under the hook lock.
+pub mod hook_dispatch;
+
 /// No-follow file operations recovery and landing share.
 pub mod recovery_files;
 
@@ -443,6 +597,24 @@ pub mod recovery_completion;
 
 /// The `.keep` files protecting a landing's migrated pack.
 pub mod pack_keep;
+
+/// Test-only transaction phase markers, compiled into the release executable and armed only by an environment variable.
+pub mod transaction_phase;
+
+/// Landing target comparison, nonce reflog message and compare-and-swap.
+pub mod landing_support;
+
+/// Migration of a prepared commit's shadow objects into a kept pack of the real store.
+pub mod landing_objects;
+
+/// Post-index a landing installs, computed against the real index at landing.
+pub mod landing_index;
+
+/// One landing attempt inside the landing critical section, and its outcome.
+pub mod landing_attempt;
+
+/// The `concurrent-commit` finding for a landing that landed nothing.
+pub mod landing_findings;
 
 /// Git commands run against a transaction's shadow repository.
 pub mod shadow_git;
@@ -501,6 +673,37 @@ pub mod replay_revalidation;
 
 /// Replay: one replay of a prepared commit onto a moved target, the integrator's replay result (`replay_commit`).
 pub mod replay_commit;
+/// The invocation capture:
+///  repository layout, symbolic `HEAD`, conclusion kind, ref backend and base.
+pub mod capture_invocation;
+
+/// The capture under capture order:
+///  the capture lock, the store identity, the sequence and `captured.json`.
+pub mod capture_order;
+
+/// The shadow repository `config` file and the copied repository format.
+pub mod shadow_config;
+
+/// The shadow repository links to the real shared entries.
+pub mod shadow_links;
+
+/// The shadow ref store: snapshot, private target, symbolic refs and `HEAD`.
+pub mod shadow_refs;
+
+/// The shadow conclusion copies at preparation.
+pub mod conclusion_copy;
+
+/// Argument transforms of native preparation: normalisation, global split, `-a` removal and private arguments.
+pub mod commit_args;
+
+/// The private commit index: copies, selection modes, pathspec files and listings.
+pub mod commit_index;
+
+/// Native `git commit` in the shadow, the prepared commit read back and `prepared.json`.
+pub mod commit_preparation;
+
+/// Creation of the shadow repository of one transaction.
+pub mod shadow_create;
 
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
@@ -513,6 +716,15 @@ pub mod recovery_inspect;
 
 /// Recovery of one dead-owner transaction.
 pub mod recovery_landing;
+
+/// Disposal of a landed transaction: shadow removal, directory removal, then landed-capture pruning.
+pub mod landed_disposal;
+
+/// The post-commit run after a landing: author environment, hook lock, and the hook runner with inherited streams.
+pub mod post_commit_hook;
+
+/// Post-landing completion of one landed commit: worktree copies, disposal, maintenance, then `post-commit`.
+pub mod post_landing;
 
 /// Recovery across every transaction directory of one worktree.
 pub mod recovery_scan;
@@ -552,14 +764,129 @@ pub mod index_writer_commands;
 /// Waiting for a foreign index.lock under the classification rules and Git's backoff schedule.
 pub mod index_lock_wait;
 
-/// The host side effects of the index-lock wait: /proc reads, sleeps, randomness and standard error.
+/// The host side effects of the index-lock wait:
+///  /proc reads,
+///  sleeps,
+///  randomness and standard error.
 pub mod index_lock_wait_host;
 
-/// The landing location a forwarded index writer coordinates with: the real index and the registry.
+/// The landing location a forwarded index writer coordinates with:
+///  the real index and the registry.
 pub mod landing_location;
 
-/// Coordination of a forwarded index writer: the landing lock, the wait for a foreign lock and the lease.
+/// Coordination of a forwarded index writer:
+///  the landing lock,
+///  the wait for a foreign lock and the lease.
 pub mod index_writer_coordination;
 
-/// Running a coordinated forwarded index writer: the landing lock held while real Git runs as a child.
+/// Running a coordinated forwarded index writer:
+///  the landing lock held while real Git runs as a child.
 pub mod index_writer_forward;
+
+/// The real index.lock a landing creates,
+///  identifies and releases only while it is the same file.
+pub mod real_index_lock;
+/// Automatic maintenance decision: config record parsing and the enable and detach rules.
+pub mod maintenance_decision;
+
+/// Running automatic maintenance after a landing: the config read, then `git maintenance run --auto`.
+pub mod maintenance_run;
+
+/// Catching SIGINT, SIGTERM, SIGHUP and SIGQUIT while a Git child runs, and relaying only process-sent signals.
+pub mod signal_relay;
+
+/// Exact removal of retired hk hook registrations from one explicit Git configuration scope.
+pub mod maintenance_hk_config;
+
+/// The per-branch push coordination file name: a reversible, flat, case-safe key.
+pub mod auto_push_branch_key;
+
+/// The per-branch `last-pushed` record: validation, tolerant reads and atomic publication.
+pub mod auto_push_record;
+
+/// Waiting for a lock a live process holds: a slow-wait notice naming the holder and a configurable backstop.
+pub mod live_lock;
+
+/// Read-only Git queries of the auto-push, each with a deadline and separate output streams.
+pub mod bounded_query;
+
+/// The auto-push's real `git push` with a deadline, its low-speed abort and the lock wait limit derived from it.
+pub mod bounded_push;
+
+/// Single-flight push coordination per branch: owner lock, record joins and the push itself.
+pub mod auto_push_single_flight;
+
+/// Post-commit auto-push of a landed commit: the push argv, the surfaced output and the failure reporting.
+pub mod auto_push;
+
+/// The post-commit gate over a landed commit: its events, its blocking and the backup it allows.
+pub mod post_commit;
+
+/// Authoritative manual-push updates discovered by a private dry-run push and confirmed with ls-remote.
+pub mod manual_push_probe;
+
+/// Published-set and range computation for manual-push scans: which pushed commits a remote does not have.
+pub mod manual_push_range;
+
+/// The manual-push candidate scope of one push: the commits and trees the destination lacks.
+pub mod manual_push_lifecycle;
+/// The one failure type of the linked-worktree ignored-state copy and its diagnostics.
+pub mod worktree_copy_error;
+
+/// Which linked worktrees a worktree-creating Git command registered, before and after it ran.
+pub mod worktree_copy_registry;
+
+/// The ignored source paths a linked-worktree copy selects, and the path validation every selection passes.
+pub mod worktree_copy_selection;
+
+/// The deterministic parent-first manifest of a copy, and the mode application to a staged copy.
+pub mod worktree_copy_manifest;
+
+/// Exact comparison of manifest entries against the filesystem, and the source stability check after staging.
+pub mod worktree_copy_compare;
+
+/// The private, validated stage of one source's ignored state beside a destination worktree.
+pub mod worktree_copy_stage;
+
+/// The exclusive creation of one destination entry from the stage, and the identity captured after it.
+#[cfg(unix)]
+pub mod worktree_copy_install_entry;
+
+/// Installation of a validated stage into a new worktree, with preflight, batches and rollback on failure.
+#[cfg(unix)]
+pub mod worktree_copy_install;
+
+/// Removal of the paths a failed installation created, only where their identity and content still prove them cli-git's own.
+#[cfg(unix)]
+pub mod worktree_copy_rollback;
+
+/// The durable journal of one copy: exact encoding, strict validation, private storage and removal.
+#[cfg(unix)]
+pub mod worktree_copy_journal;
+
+/// The durable claim on a stage container's name, and the removal of stages an interrupted copy left behind.
+#[cfg(unix)]
+pub mod worktree_copy_stage_claim;
+
+/// The append-only install log of one stage: per-batch intents and creations, with resumption.
+#[cfg(unix)]
+pub mod worktree_copy_install_log;
+
+/// One journaled installation to an end, resumption from the log, and synchronization of a created worktree.
+#[cfg(unix)]
+pub mod worktree_copy_transaction;
+
+/// The settlement lock that serializes copy installation and recovery, its owner record, and inherited leases.
+#[cfg(unix)]
+pub mod worktree_copy_lock;
+
+/// Recovery of interrupted copies: registration checks, discards with notices, resumption, and the pending check.
+#[cfg(unix)]
+pub mod worktree_copy_recovery;
+
+/// The linked-worktree ignored-state copy around one forwarded Git invocation: the integrator's entry point.
+#[cfg(unix)]
+pub mod worktree_copy;
+
+/// Which forwarded invocations the copy applies to, and the child run that carries its settlement lease.
+pub mod worktree_copy_forward;

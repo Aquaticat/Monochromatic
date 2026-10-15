@@ -9,6 +9,11 @@ use crate::glyph_cache::{GlyphCache, GlyphKey};
 use crate::selection_paint;
 /// Source layout and geometry are independent of the native widget tree.
 use crate::shaped_text::ShapedView;
+/// Markdown roles share the tuned syntax hues.
+use crate::source_style::{
+    BOLD_ROLE, HEADING_ROLE, ITALIC_ROLE, LINK_ROLE, LINK_URL_ROLE, LIST_ROLE, QUOTE_ROLE,
+    RAW_INLINE_ROLE, STRIKETHROUGH_ROLE,
+};
 /// Propagate malformed font or oversized viewport diagnostics to the native shell.
 use anyhow::{Context, Result, bail};
 /// Positioned glyph runs come from the same layouts used for caret and hit testing.
@@ -20,6 +25,19 @@ use swash::{
     CacheKey, FontRef,
     scale::{ScaleContext, image::Content},
 };
+
+/// What:
+///  Most bytes a source tile's raster may hold:
+///  64 MiB of premultiplied RGBA.
+/// Why:
+///  The tile is one image the toolkit uploads whole;
+///  the window clips a tile that would pass this, so the check here only guards a caller that did not.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const MAX_RASTER_BYTES = 64 * 1024 * 1024;
+/// ```
+pub const MAX_RASTER_BYTES: u64 = 64 * 1024 * 1024;
 
 /// Native palette values needed by code painting.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -60,42 +78,44 @@ impl Default for TextRaster {
     }
 }
 
-/// Translate semantic paint roles into the selected system-theme palette.
-fn ink(role: u32, colors: CodeColors) -> [u8; 4] {
+/// Translate semantic paint roles into the selected system-theme palette;
+///  the minimap's picture takes its glyph colors from the same function.
+pub fn ink(role: u32, colors: CodeColors) -> [u8; 4] {
     if role == 64 {
         return colors.selected;
     }
-    if role == 1 || role == 8 || role == 10 {
+    // The Markdown roles reuse the six tuned hues; their weight or italic face is the second channel.
+    if role == 1 || role == 8 || role == 10 || role == ITALIC_ROLE {
         if colors.dark {
             return [199, 146, 234, 255];
         }
         return [118, 54, 164, 255];
     }
-    if role == 2 {
+    if role == 2 || role == RAW_INLINE_ROLE {
         if colors.dark {
             return [168, 204, 140, 255];
         }
         return [50, 101, 32, 255];
     }
-    if role == 3 {
+    if role == 3 || role == STRIKETHROUGH_ROLE || role == QUOTE_ROLE {
         if colors.dark {
             return [160, 168, 176, 255];
         }
         return [85, 92, 101, 255];
     }
-    if role == 4 || role == 13 {
+    if role == 4 || role == 13 || role == LINK_URL_ROLE || role == LIST_ROLE {
         if colors.dark {
             return [240, 188, 122, 255];
         }
         return [139, 77, 4, 255];
     }
-    if role == 5 || role == 12 {
+    if role == 5 || role == 12 || role == HEADING_ROLE || role == LINK_ROLE {
         if colors.dark {
             return [130, 190, 235, 255];
         }
         return [20, 86, 127, 255];
     }
-    if role == 6 || role == 11 {
+    if role == 6 || role == 11 || role == BOLD_ROLE {
         if colors.dark {
             return [225, 212, 157, 255];
         }
@@ -138,7 +158,7 @@ impl TextRaster {
         horizontal: f32,
     ) -> Result<SourcePixels> {
         let length = u64::from(view.width) * u64::from(view.height) * 4;
-        if length > 64 * 1024 * 1024 {
+        if length > MAX_RASTER_BYTES {
             bail!(
                 "Source viewport {}x{} exceeds the 64 MiB raster limit; reduce the window size or scale",
                 view.width,
@@ -150,10 +170,18 @@ impl TextRaster {
         for row in &view.rows {
             // Rows are placed by the frame's vertical mapping, relative to the top of the tile.
             let row_y = (row.top - view.origin) * factor;
-            let mut selected_intervals = Vec::new();
+            // What: Each selection rectangle belongs to the visual row of this line whose extent holds its top.
+            // Why: A selection across a wrapped line has one rectangle per visual row, and only that row's glyphs
+            //      take the selected ink from it.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const selected = rows.map(() => []); for (const r of selections) selected[row.visualRowOf(r.y)]?.push(...);
+            // ```
+            let mut selected_intervals: Vec<Vec<(f32, f32)>> = vec![Vec::new(); row.visual_rows()];
             for rectangle in &view.selections {
-                if rectangle.y == row.top {
-                    selected_intervals.push((
+                if let Some(index) = row.visual_row_holding(rectangle.y, factor) {
+                    selected_intervals[index].push((
                         (rectangle.x - horizontal) * factor,
                         (rectangle.x + rectangle.width - horizontal) * factor,
                     ));
@@ -226,6 +254,42 @@ impl TextRaster {
     }
 
     /// What:
+    ///  Paint one layout alone, at the physical `origin`, in one `ink`, into a new tile of `size` physical pixels.
+    /// Why:
+    ///  Small images, such as the gutter's wrap indicator, are set by the same glyph path as source text.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// paintLayout(layout: Layout, origin: [number, number], ink: Rgba, size: [number, number]): Pixels;
+    /// ```
+    pub fn paint_layout(
+        &mut self,
+        layout: &Layout<u32>,
+        origin: (f32, f32),
+        ink: [u8; 4],
+        size: (u32, u32),
+    ) -> Result<SourcePixels> {
+        let (width, height) = size;
+        let mut bytes = vec![0; (u64::from(width) * u64::from(height) * 4) as usize];
+        let mut tile = Tile {
+            bytes: &mut bytes,
+            width,
+            height,
+        };
+        let colors = CodeColors {
+            foreground: ink,
+            selected: ink,
+            dark: false,
+        };
+        self.draw(layout, origin, colors, Some(ink), &[], &mut tile)?;
+        return Ok(SourcePixels {
+            width,
+            height,
+            bytes,
+        });
+    }
+
+    /// What:
     ///  Composite every glyph of `layout` into `tile`,
     ///  moved by the physical `origin` (x,
     ///  then y).
@@ -247,11 +311,22 @@ impl TextRaster {
         origin: (f32, f32),
         colors: CodeColors,
         fixed: Option<[u8; 4]>,
-        selected: &[(f32, f32)],
+        selected: &[Vec<(f32, f32)>],
         tile: &mut Tile,
     ) -> Result<()> {
         let (origin_x, origin_y) = origin;
-        for line in layout.lines() {
+        for (index, line) in layout.lines().enumerate() {
+            // A visual row wholly above or below the tile paints nothing, so a very long wrapped line costs
+            // only the rows that reach the tile.
+            let metrics = line.metrics();
+            if origin_y + metrics.block_max_coord < -32.0
+                || origin_y + metrics.block_min_coord > tile.height as f32 + 32.0
+            {
+                continue;
+            }
+            let row_selected = selected.get(index).map_or(&[][..], |intervals| {
+                return intervals.as_slice();
+            });
             for item in line.items() {
                 // Inline boxes are not generated by this source-layout path.
                 let PositionedLayoutItem::GlyphRun(glyph_run) = item else {
@@ -322,7 +397,7 @@ impl TextRaster {
                             // const color = isMask ? coloredAlphaMask : embeddedRgba;
                             // ```
                             let color = if image.content == Content::Mask {
-                                let covered = selection_paint::coverage(px, selected);
+                                let covered = selection_paint::coverage(px, row_selected);
                                 selection_paint::ink(
                                     foreground,
                                     colors.selected,

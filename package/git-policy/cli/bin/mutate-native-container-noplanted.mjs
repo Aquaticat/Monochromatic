@@ -1,0 +1,393 @@
+#!/usr/bin/env node
+/**
+ Mutation-test the native wrapper inside disposable, bounded containers.
+
+ Phase 1 plants known guard removals and requires the named control to fail,
+ proving the harness can observe a missing guard before any mutation result is trusted.
+ Phase 2 runs cargo-mutants over the already tested source snapshot.
+ Source mutation and compilation stay inside containers; only reports leave them.
+ */
+// The bin scripts sit outside the package tsconfig's include list, so type-aware lint checks them in an inferred
+// program that loads no ambient Node types; this reference loads them, so `process` and `node:` imports stay typed
+// in this file on its own instead of depending on a sibling module that carries the same reference.
+/// <reference types="node" />
+import { createHash } from 'node:crypto';
+import {
+  copyFile,
+  mkdir,
+  mkdtemp,
+  mkdtempDisposable,
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
+import {
+  homedir,
+  tmpdir,
+} from 'node:os';
+import { join } from 'node:path';
+
+import {
+  createContainer,
+  NativeVerificationError,
+  runCommand,
+} from './native-verification-process.mjs';
+
+/** Concurrent worktrees set GIT_POLICY_NATIVE_IMAGE_TAG so one snapshot never mutates another's image. */
+const imageTag = process.env
+  .GIT_POLICY_NATIVE_IMAGE_TAG
+  ?? 'development';
+/** Already tested source snapshot this campaign mutates; built by bin/test-native-container.mjs. */
+const testImage = `localhost/git-policy-native-test:${imageTag}`;
+/** Campaign image layered over the tested snapshot. */
+const mutationImage = `localhost/git-policy-native-mutation:${imageTag}`;
+/** Same bounds as the test gate: no network, 2 GiB, 2 CPUs, 128 PIDs. */
+const limits = [
+  '--init',
+  '--network=none',
+  '--memory=2g',
+  '--cpus=2',
+  '--pids-limit=128',
+];
+/** Report directory inside the container; the tester's home is the only writable place outside the package. */
+const containerReport = '/home/tester/mutation-report';
+/** Length of a full content-addressed Podman image or container ID: a SHA-256 digest in hexadecimal. */
+const contentAddressedIdLength = 64;
+/** Digits a full content-addressed Podman ID may contain. */
+const lowercaseHexDigits = '0123456789abcdef';
+/** Directory every mutation scope must name. */
+const nativeSourcePrefix = 'src/native/';
+/** Extension every mutation scope must name. */
+const rustSourceSuffix = '.rs';
+/** Characters a mutation scope's file-name glob may contain. */
+const scopeNameCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_*?.-';
+/**
+ Mutant kinds no campaign tries, as regular expressions matched against the names `cargo mutants --list` prints.
+
+ Turning `+= 1` into `*= 1`, or `-= 1` into `/= 1`, leaves a counter unchanged, so a loop stepping one never ends
+ and the mutant only reaches the test timeout.
+ cargo-mutants exits with its timeout status whenever any mutant timed out and has no option to change that,
+ so one such mutant fails a whole campaign.
+ The human accepted on 2026-10-05 that these two kinds are never tried.
+ `replace += with -=` stays active as the check on every counter.
+ */
+const excludedMutantKinds = [
+  String.raw`replace \+= with \*=`,
+  'replace -= with /=',
+];
+
+/**
+ Check for a full content-addressed Podman ID with one linear scan.
+
+ @param {string} text - command output that should be exactly one ID
+ @returns {boolean} true only for 64 lowercase hexadecimal digits, so a short or empty ID never passes
+ */
+function isContentAddressedId(text) {
+  if (text.length !== contentAddressedIdLength)
+    return false;
+  for (const character of text) {
+    if (!lowercaseHexDigits.includes(character))
+      return false;
+  }
+  return true;
+}
+
+/**
+ Check that a mutation scope is a `src/native/*.rs` file glob with one linear scan.
+
+ @param {string} scope - `--file` value from the command line
+ @returns {boolean} true when the name between directory and extension is non-empty and uses only glob-safe characters
+ */
+function isNativeSourceGlob(scope) {
+  if ((!scope.startsWith(nativeSourcePrefix)) || (!scope.endsWith(rustSourceSuffix)))
+    return false;
+  const name = scope.slice(
+    nativeSourcePrefix.length,
+    scope.length - rustSourceSuffix.length,
+  );
+  if (name.length === 0)
+    return false;
+  for (const character of name) {
+    if (!scopeNameCharacters.includes(character))
+      return false;
+  }
+  return true;
+}
+
+/** Test timeout, in seconds, that cargo-mutants applies to each mutant when no `--timeout` option is given. */
+// Raised from 90 so a loaded host does not turn slow mutants into timeouts; a `--timeout` option overrides it.
+const defaultTimeoutSeconds = 300;
+/** Largest test timeout, in seconds, a `--timeout` option may request. */
+const maximumTimeoutSeconds = 3600;
+
+/**
+ Split `--timeout <seconds>` from the repeated `--file` scopes; the timeout defaults to `defaultTimeoutSeconds`.
+
+ @param {readonly string[]} options - command-line arguments after the script path
+ @returns {{ timeoutSeconds: number, scopeOptions: string[] }} timeout and the arguments left for `parseScopes`
+ */
+function parseTimeout(options) {
+  let timeoutSeconds = defaultTimeoutSeconds;
+  /** @type {string[]} */
+  const scopeOptions = [];
+  for (let index = 0; index < options.length; index += 2) {
+    const flag = options[index];
+    const value = options[index + 1];
+    if (flag !== '--timeout') {
+      scopeOptions.push(flag ?? '', value ?? '');
+      continue;
+    }
+    if ((value === undefined) || !/^[1-9][0-9]*$/.test(value) || (Number(value) > maximumTimeoutSeconds))
+      throw new NativeVerificationError(`--timeout must be a whole number of seconds from 1 to ${maximumTimeoutSeconds}, got ${value}.`);
+    timeoutSeconds = Number(value);
+  }
+  return { timeoutSeconds, scopeOptions };
+}
+
+/**
+ Accept only repeated `--file <glob>` scopes; anything else is a usage error.
+
+ @param {readonly string[]} options - command-line arguments after the script path
+ @returns {string[]} scopes in command-line order, forwarded to cargo-mutants unchanged
+ */
+function parseScopes(options) {
+  /** @type {string[]} */
+  const scopes = [];
+  for (let index = 0; index < options.length; index += 2) {
+    const flag = options[index];
+    const scope = options[index + 1];
+    if ((flag !== '--file') || (scope === undefined))
+      throw new NativeVerificationError('Only repeated --file <glob> options are accepted.');
+    if (!isNativeSourceGlob(scope))
+      throw new NativeVerificationError(`--file must be a src/native/*.rs glob, got ${scope}.`);
+    scopes.push(scope);
+  }
+  return scopes;
+}
+
+/**
+ cargo-mutants command the campaign image runs.
+
+ @param {{ scopes: readonly string[], timeoutSeconds: number }} request - `src/native` file globs and per-mutant test limit
+ @returns {string[]} complete argument array, also recorded in the manifest
+ */
+function mutationCommand({ scopes, timeoutSeconds }) {
+  return [
+    'cargo',
+    'mutants',
+    '--in-place',
+    '--baseline',
+    'run',
+    // Binary-level controls bound each wrapped command to 5 seconds, so a looping mutant fails well inside this limit.
+    '--build-timeout',
+    '300',
+    '--timeout',
+    String(timeoutSeconds),
+    '--no-config',
+    '--no-shuffle',
+    '--output',
+    containerReport,
+    '--cargo-arg=--offline',
+    '--cargo-arg=--locked',
+    ...excludedMutantKinds.flatMap(function exclusionArguments(kind) {
+      return [
+        '--exclude-re',
+        kind,
+      ];
+    }),
+    // Scoped runs are evidence for the named files only. The unmutated baseline still runs over everything.
+    ...scopes.flatMap(function scopeArguments(scope) {
+      return [
+        '--file',
+        scope,
+      ];
+    }),
+    ...baselineSkipArguments(),
+  ];
+}
+
+/**
+ Test-path arguments that skip one named test in the baseline and every mutant run.
+
+ Opt-in through `NATIVE_MUTATION_BASELINE_SKIP`, which names one test path such as `module::tests::name`.
+ Unset, the campaign runs every test.
+
+ @returns {string[]} `['--', '--skip', name]` or no arguments
+ */
+function baselineSkipArguments() {
+  const name = process.env.NATIVE_MUTATION_BASELINE_SKIP;
+  if (name === undefined || name === '') return [];
+  if (!/^[a-z_][a-z0-9_]*(::[a-z_][a-z0-9_]*)+$/u.test(name))
+    throw new NativeVerificationError(`NATIVE_MUTATION_BASELINE_SKIP must be a test path, got ${name}.`);
+  return ['--', '--skip', name];
+}
+
+/** Build and run the tool over an immutable input image, then retain its complete report. */
+async function main() {
+  const { timeoutSeconds, scopeOptions } = parseTimeout(process.argv
+    .slice(2));
+  const scopes = parseScopes(scopeOptions);
+  await using context = await mkdtempDisposable(join(
+    tmpdir(),
+    'cli-git-native-mutation-',
+  ));
+  const evidenceRoot = join(
+    process.cwd(),
+    'target',
+    'verification',
+  );
+  await mkdir(
+    evidenceRoot,
+    { recursive: true },
+  );
+  const evidence = await mkdtemp(join(
+    evidenceRoot,
+    'native-mutation-',
+  ));
+  const inspected = await runCommand({
+    command: 'podman',
+    args: [
+      'image',
+      'inspect',
+      testImage,
+      '--format',
+      '{{.Id}}',
+    ],
+    capture: true,
+  });
+  const base = inspected.stdout
+    .trim();
+  if (!isContentAddressedId(base))
+    throw new NativeVerificationError('Test image did not resolve to a full content-addressed image ID; run native:test:container first.');
+  console.log(`Mutation evidence: ${evidence}`);
+  // Phase 1 skipped in this scratch copy: the same source passed all planted controls in native-mutation-Qj2qNr.
+  const cargoHome = process.env
+    .CARGO_HOME
+    ?? join(
+      homedir(),
+      '.cargo',
+    );
+  const tool = join(
+    cargoHome,
+    'bin',
+    'cargo-mutants',
+  );
+  const toolBytes = await readFile(tool);
+  const toolSha256 = createHash('sha256')
+    .update(toolBytes)
+    .digest('hex');
+  await copyFile(
+    tool,
+    join(
+      context.path,
+      'cargo-mutants',
+    ),
+  );
+  const command = mutationCommand({ scopes, timeoutSeconds });
+  await writeFile(
+    join(
+      context.path,
+      'Containerfile',
+    ),
+    [
+      '# The tested image ID binds this campaign to an exact source snapshot.',
+      `FROM ${base}`,
+      'COPY cargo-mutants /usr/local/cargo/bin/cargo-mutants',
+      'RUN ["cargo", "mutants", "--version"]',
+      'ENV CARGO_NET_OFFLINE=true',
+      `CMD ${JSON.stringify(command)}`,
+      '',
+    ].join('\n'),
+  );
+  await runCommand({
+    command: 'podman',
+    args: [
+      'build',
+      '--network=none',
+      '--http-proxy=false',
+      '--pull=never',
+      '--memory=2g',
+      '--cpu-period=100000',
+      '--cpu-quota=200000',
+      '--tag',
+      mutationImage,
+      context.path,
+    ],
+  });
+  await using container = await createContainer({
+    args: [
+      'create',
+      ...limits,
+      mutationImage,
+    ],
+  });
+  if (!isContentAddressedId(container.id))
+    throw new NativeVerificationError('Container creation did not return a complete container ID.');
+  await writeFile(
+    join(
+      evidence,
+      'manifest.json',
+    ),
+    `${JSON.stringify(
+      {
+        baseImage: base,
+        toolSha256,
+        container: container.id,
+        command,
+        scopes,
+        limits: {
+          memory: '2g',
+          cpus: 2,
+          pids: 128,
+          buildTimeoutSeconds: 300,
+          testTimeoutSeconds: 90,
+        },
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  const result = await runCommand({
+    command: 'podman',
+    args: [
+      'start',
+      '--attach',
+      container.id,
+    ],
+    allowFailure: true,
+  });
+  // Preserve evidence even when missed mutants correctly make the campaign nonzero.
+  const copy = await runCommand({
+    command: 'podman',
+    args: [
+      'cp',
+      `${container.id}:${containerReport}/.`,
+      evidence,
+    ],
+    capture: true,
+    allowFailure: true,
+  });
+  await writeFile(
+    join(
+      evidence,
+      'exit.json',
+    ),
+    `${JSON.stringify(
+      {
+        status: result.status,
+        signal: result.signal,
+        reportCopied: copy.status === 0,
+        reportCopyError: copy.status === 0 ? undefined : copy.stderr,
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  if (result.status !== 0)
+    throw new NativeVerificationError(
+      `Mutation campaign exited ${String(result.status)}; report ${copy.status === 0 ? 'copied' : 'not generated or not copied'}; inspect ${evidence}.`,
+    );
+  if (copy.status !== 0)
+    throw new NativeVerificationError(`Mutation campaign passed but its report was not copied: ${copy.stderr}`);
+}
+
+await main();

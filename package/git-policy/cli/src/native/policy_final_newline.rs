@@ -23,6 +23,8 @@ use super::candidate_object::CandidateMode;
 use super::candidate_record::CandidateChange;
 /// Import the candidate and version types.
 use super::candidate_version::{Candidate, CandidateVersion};
+/// Import the event form of a pathname.
+use super::event_path::EventPath;
 /// Import the lifecycle's candidates and the correction a fix applies.
 use super::policy_content::{ContentState, Correction, LifecycleContent};
 /// Import the finding and outcome types of a check.
@@ -189,9 +191,10 @@ fn is_checked(candidate: &Candidate) -> bool {
 
 /// What:
 ///  The finding for one candidate.
-///  `String::from_utf8_lossy` renders the pathname
+///  `EventPath::from_git_bytes` renders the pathname
 ///       as text,
-///  replacing bytes that are not UTF-8.
+///  replacing bytes that are not UTF-8,
+///  and keeps such bytes exactly.
 /// Why:
 ///   The finding names the file the person must change,
 ///  and says whether this
@@ -205,7 +208,7 @@ fn finding(candidate: &Candidate, fix_available: bool) -> PolicyFinding {
     return PolicyFinding {
         code: FINAL_NEWLINE_CODE,
         message: String::from(FINAL_NEWLINE_MESSAGE),
-        path: Some(String::from_utf8_lossy(candidate.path.as_slice()).into_owned()),
+        path: Some(EventPath::from_git_bytes(candidate.path.as_slice())),
         location: None,
         fix_available,
     };
@@ -236,6 +239,7 @@ pub fn check_final_newline<F: RepositoryFacts>(
     lifecycle: &LifecycleContent,
     facts: &mut F,
     trigger: Trigger,
+    can_apply_patches: bool,
 ) -> PolicyOutcome {
     let version: Rc<CandidateVersion> = match content.version(lifecycle, facts) {
         Ok(Some(found)) => found,
@@ -255,7 +259,7 @@ pub fn check_final_newline<F: RepositoryFacts>(
         let Some(normalized) = normalized_final_newline(&bytes) else {
             continue;
         };
-        let corrects: bool = trigger == Trigger::DirectFix;
+        let corrects: bool = trigger == Trigger::DirectFix || can_apply_patches;
         if corrects {
             content.propose(Correction {
                 path: candidate.path.clone(),

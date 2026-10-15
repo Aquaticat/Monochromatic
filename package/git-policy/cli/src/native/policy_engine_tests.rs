@@ -24,6 +24,8 @@ use super::{
 };
 use crate::config_schema::PolicyConfig;
 use crate::diagnostics::EngineFailureCode;
+/// The event form of a pathname.
+use crate::event_path::EventPath;
 use crate::policy_events::{FindingEvent, FindingLocation, PolicyEvent};
 use crate::policy_registry::{POLICY_REGISTRY, PolicyId, Severity, policy_descriptor};
 use crate::policy_trigger::Trigger;
@@ -425,7 +427,7 @@ fn finding_details_reach_the_event() {
     let detailed: PolicyFinding = PolicyFinding {
         code: "missing",
         message: String::from("no final newline"),
-        path: Some(String::from("a.txt")),
+        path: Some(EventPath::from_git_bytes("a.txt".as_bytes())),
         location: Some(FindingLocation {
             byte_start: 4,
             byte_end: 5,
@@ -451,7 +453,7 @@ fn finding_details_reach_the_event() {
                 severity: Severity::Warn,
                 code: "missing",
                 message: String::from("no final newline"),
-                path: Some(String::from("a.txt")),
+                path: Some(EventPath::from_git_bytes("a.txt".as_bytes())),
                 location: Some(FindingLocation {
                     byte_start: 4,
                     byte_end: 5,
@@ -491,6 +493,7 @@ fn failed_check_ends_the_pass_with_an_engine_failure() {
                     PolicyOutcome::Failed {
                         code,
                         message: String::from("git could not be asked"),
+                        path: None,
                     },
                 ),
             ],
@@ -557,29 +560,6 @@ fn unavailable_policy_ends_the_pass_without_a_clean_result() {
         }]
     );
     assert_eq!(pass_exit_code(result.events.as_slice(), result.end), 2);
-}
-
-/// A trigger whose lifecycle is not ported is unavailable before any policy is asked,
-///  even when none is enabled.
-#[test]
-fn unported_triggers_are_unavailable_not_clean() {
-    let mut all_off: PolicyConfig = all_listed();
-    for setting in &mut all_off.settings {
-        setting.severity = Severity::Off;
-    }
-    for trigger in [Trigger::PostCommit, Trigger::ManualPush] {
-        for config in [&all_listed(), &all_off] {
-            let (result, called) = run(trigger, config, &no_controls(), &[], vec![]);
-            assert_eq!(
-                result.end,
-                StageEnd::Unavailable(Unavailable::Lifecycle(trigger)),
-                "{trigger:?}"
-            );
-            assert_eq!(result.events, Vec::<PolicyEvent>::new(), "{trigger:?}");
-            assert_eq!(called, Vec::<PolicyId>::new(), "{trigger:?}");
-            assert_eq!(pass_exit_code(result.events.as_slice(), result.end), 2);
-        }
-    }
 }
 
 /// A manual-push request over the given settings,

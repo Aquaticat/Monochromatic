@@ -175,8 +175,8 @@ pub struct LockIdentity {
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct AddedPath {
-    /// Repository-relative path.
-    pub path: String,
+    /// Repository-relative path, the exact bytes Git reported.
+    pub path: Vec<u8>,
     /// `100644` or `100755`.
     pub git_mode: String,
     /// Blob at `HEAD`,
@@ -227,8 +227,8 @@ pub struct PreparingRecord {
     pub empty_tree_oid: String,
     /// Shadow repository path derived from the transaction ID.
     pub shadow_path: String,
-    /// Pathspecs selected at invocation.
-    pub selected_pathspecs: Vec<String>,
+    /// Pathspecs selected at invocation, as the exact bytes of the command line.
+    pub selected_pathspecs: Vec<Vec<u8>>,
     /// ISO-8601 invocation start time.
     pub invoked_at: String,
 }
@@ -255,8 +255,9 @@ pub struct PreparedRecord {
     /// Intended tree the prepared commit was verified against.
     pub intended_tree_oid: String,
     /// Paths the commit carries,
-    ///  including policy-added paths.
-    pub committed_paths: Vec<String>,
+    ///  including policy-added paths,
+    ///  as the exact bytes Git reported.
+    pub committed_paths: Vec<Vec<u8>>,
     /// Policy-added paths with original and intended blobs.
     pub added_paths: Vec<AddedPath>,
     /// Selected paths whose worktree copies receive settled bytes.

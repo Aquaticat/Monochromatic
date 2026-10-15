@@ -566,7 +566,8 @@ From `package/music-player/android-app/settings.gradle.kts`, `build.gradle.kts`,
    prebuilt `.so` files dropped into `app/src/main/jniLibs/<abi>/` by `build:native`.
 - Host tests:
    `testDebugUnitTest`, JUnit 4, 15 `*Test.kt` files plus `FakeAudioEngine.kt`;
-   `OklchColorTest.kt` imports `androidx.compose.ui.graphics.Color` from an AAR.
+   `OklchColorTest.kt` imports `androidx.compose.ui.graphics.Color` from an AAR
+   (note 2026-10-13: that file is deleted; other host tests such as `DeckColorTest.kt` still import Compose types).
 - Device tests:
    `connectedDebugAndroidTest` and a non-destructive `test:instrumented:device`
    using `adb install -r` plus `am instrument` to keep the SAF grant and warm peak cache;
@@ -658,7 +659,8 @@ From `package/music-player/android-app/settings.gradle.kts`, `build.gradle.kts`,
 - Host unit tests:
    pure-logic tests fit `kt_jvm_test` (default runner `BazelTestRunner`,
    `rules_kotlin/kotlin/internal/jvm/jvm.bzl:415`) `[V]`;
-   `OklchColorTest` needs Compose classes from an AAR,
+   `OklchColorTest` (deleted 2026-10-13; `DeckColorTest` and `PlayerThemeTest` need the same)
+   needs Compose classes from an AAR,
    so it goes to `android_local_test` with Robolectric or a JVM test with `android.jar` on the classpath `[I]`.
   rules_android issues #169 ("android_local_test tests are very fragile") and #560 are open `[V]`.
 - Instrumentation tests:

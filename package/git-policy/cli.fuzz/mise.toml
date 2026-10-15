@@ -33,3 +33,7 @@ run = "node bin/container.mjs"
 [tasks."lock:subject"]
 description = "Seed the fuzz lockfile from the subject's lockfile, then let Cargo add only this sidecar's own packages, so both lock the same registry versions"
 run = ["cp ../cli/Cargo.lock Cargo.lock", "cargo update --workspace --offline"]
+
+[tasks."lock:members"]
+description = "Record a changed dependency or dependency version of the subject in this lockfile without moving any other locked version"
+run = "cargo update --offline --workspace"

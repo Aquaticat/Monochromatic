@@ -7,12 +7,10 @@
 //! `languages.toml` could replace a server's command.
 
 /// The launch seam decides what is spawned for each server.
-use super::launch::{
-    LaunchPolicy, LaunchRequest, ServerLaunch, launch_directly, resolve_executable,
-};
-/// Helix's spelling of the project root,
-///  which servers are given.
-use super::root::RootView;
+use super::launch::{LaunchRequest, ServerLaunch};
+/// What mise provided for the project,
+///  and when it was asked.
+use super::mise::{self, MiseState};
 /// Errors name the operation that failed.
 use anyhow::{Context, Result};
 /// What:
@@ -53,109 +51,18 @@ mod rust_analyzer;
 /// The TypeScript family is served by the project's own TypeScript 7 server.
 mod typescript;
 
-/// What:
-///  How the embedding application sets the Language module up.
-///  `Option<...>` fields are
-///       "a value,
-///  or nothing".
-/// Why:
-///  The launch policy and the private state directory are decided by the application;
-///      extra definitions exist so tests can declare scripted servers.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type LanguageSetup = { launch: LaunchPolicy; stateRoot?: string; extraLanguages?: string };
-/// ```
-#[derive(Clone, Debug)]
-pub struct LanguageSetup {
-    /// Decides what is spawned for every server;
-    ///  the default spawns the server itself.
-    pub launch: LaunchPolicy,
-    /// Private application state directory,
-    ///  not containing the project;
-    ///  needed by confining policies.
-    pub state_root: Option<PathBuf>,
-    /// Extra language and server definitions in Helix's `languages.toml` syntax,
-    ///  merged over the
-    /// built-in ones.
-    ///  This is for definitions the application itself supplies;
-    ///  it must never be
-    /// filled from a project or user file.
-    pub extra_languages: Option<String>,
-}
+/// The application's setup of the module.
+mod setup;
+pub use setup::LanguageSetup;
 
-/// What:
-///  `impl Default for X` defines the value `X::default()` returns.
-/// Why:
-///  The production setup is "built-in definitions,
-///  direct launch,
-///  no state directory".
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const defaultSetup: LanguageSetup = { launch: launchDirectly };
-/// ```
-impl Default for LanguageSetup {
-    /// Build the production setup:
-    ///  every server confined by bubblewrap,
-    ///  with private state
-    /// below the user's cache directory.
-    fn default() -> Self {
-        return Self {
-            launch: super::confine::launch_confined,
-            state_root: super::confine::default_state_root(),
-            extra_languages: None,
-        };
-    }
-}
+/// Whether a server's program exists,
+///  and why not.
+mod locate;
+pub(super) use locate::Unavailable;
+use locate::locate;
 
-/// Setups other than the production one.
-impl LanguageSetup {
-    /// What:
-    ///  A setup whose servers run without any confinement.
-    /// Why:
-    ///  Only for tests with the scripted server and for guard controls on disposable
-    ///      projects;
-    ///  a real server launched this way can write into the project.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// static unconfined(): LanguageSetup { return { launch: launchDirectly }; }
-    /// ```
-    pub fn unconfined() -> Self {
-        return Self {
-            launch: launch_directly,
-            state_root: None,
-            extra_languages: None,
-        };
-    }
-}
-
-/// What:
-///  Why a configured server cannot be started.
-///  An `enum` with data is a tagged union.
-/// Why:
-///  A missing program and a refused launch lead to different states and remedies.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Unavailable = { kind: 'missing'; reason: string } | { kind: 'refused'; reason: string };
-/// ```
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub(super) enum Unavailable {
-    /// The server's own program was not found,
-    ///  or the project's copy is unusable.
-    Missing(
-        /// Which program was looked for and what the remedy is.
-        String,
-    ),
-    /// The launch policy refused;
-    ///  nothing is spawned instead.
-    Refused(
-        /// What the launch policy reported.
-        String,
-    ),
-}
+/// How the registry uses mise.
+mod toolchain;
 
 /// How many request timeouts a server may take to answer `initialize`.
 ///
@@ -187,6 +94,11 @@ struct Definition {
     ///  and the worker bounds
     /// every request it sends by this value itself.
     timeout: u64,
+    /// Where the server's program was found,
+    ///  before the launch policy;
+    ///  absent when it was not found.
+    ///  A change here is what makes the registry rebuild.
+    resolved: Option<PathBuf>,
     /// The launch the policy produced;
     ///  absent for an unavailable server.
     launch: Option<ServerLaunch>,
@@ -210,6 +122,9 @@ pub(super) struct Languages {
     unavailable: HashMap<String, Unavailable>,
     /// Per-server facts kept outside Helix's registry.
     definitions: HashMap<String, Definition>,
+    /// What mise provided for the project,
+    ///  and the clock reading of the question.
+    mise: (MiseState, Instant),
 }
 
 /// Everything `build` produces before it is wrapped for sharing.
@@ -223,31 +138,6 @@ struct Built {
     unavailable: HashMap<String, Unavailable>,
     /// See `Languages::definitions`.
     definitions: HashMap<String, Definition>,
-}
-
-/// What:
-///  Decide whether a server's program exists,
-///  returning its absolute path or the reason
-///       it is unavailable.
-/// Why:
-///  The check must see the real server,
-///  never a wrapper placed in front of it.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function locate(server: string, command: string, root: string): string // throws when missing
-/// ```
-fn locate(server: &str, command: &str, root: &Path) -> Result<PathBuf, Unavailable> {
-    if server == typescript::SERVER {
-        // `map_err` wraps the text reason in the `Missing` variant.
-        return typescript::locate(root).map_err(Unavailable::Missing);
-    }
-    // `ok_or_else` turns "nothing" into the error built by the closure.
-    return resolve_executable(command, root).ok_or_else(|| {
-        return Unavailable::Missing(format!(
-            "the program '{command}' for {server} was not found on PATH"
-        ));
-    });
 }
 
 /// What:
@@ -266,7 +156,12 @@ fn locate(server: &str, command: &str, root: &Path) -> Result<PathBuf, Unavailab
 /// ```ts
 /// function build(root: string, setup: LanguageSetup): Built
 /// ```
-fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
+fn build(
+    root: &Path,
+    setup: &LanguageSetup,
+    document: Option<&Path>,
+    mise: &MiseState,
+) -> Result<Built> {
     // `Instant::now` reads the monotonic clock; the phases below are logged with their durations.
     let started = Instant::now();
     // The built-in `languages.toml` of the pinned Helix revision, compiled into helix-loader.
@@ -298,37 +193,34 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
     let mut configuration: Configuration = merged
         .try_into()
         .context("Cannot decode the language definitions")?;
-    typescript::apply(&mut configuration, root);
+    // The TypeScript launcher is found once for this document and used by the definition and the check.
+    let typescript_launcher = typescript::locate(root, document);
+    typescript::apply(
+        &mut configuration,
+        root,
+        typescript_launcher.as_deref().ok(),
+    );
     rust_analyzer::watch_through_client(&mut configuration);
-    // What: Helix's spelling of the root, when it differs from the canonical one; `ok()` drops
-    //       the refusal, which the start reports on its own.
-    // Why: Helix gives servers this spelling, so a confined server must find the project there.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const spellings = [discoverRoot(root)?.helix].filter(spelling => spelling && spelling !== root);
-    // ```
-    let spellings: Vec<PathBuf> = RootView::discover(root)
-        .ok()
-        .map(|view| return view.helix().to_path_buf())
-        .filter(|spelling| return spelling.as_path() != root)
-        .into_iter()
-        .collect();
+    // Helix gives servers its own spelling of the root, when it differs from the canonical one.
+    let spellings = toolchain::spellings(root);
     let decoded = started.elapsed();
     let mut unavailable: HashMap<String, Unavailable> = HashMap::new();
     let mut definitions: HashMap<String, Definition> = HashMap::new();
     // `iter_mut` walks the table handing out modifiable borrows of each definition.
     for (name, definition) in configuration.language_server.iter_mut() {
         let command = definition.command.clone();
-        let outcome = locate(name, &command, root).and_then(|executable| {
+        let located = locate(name, &command, root, document, mise);
+        let resolved = located.as_ref().ok().cloned();
+        let outcome = located.and_then(|executable| {
             let request = LaunchRequest {
                 server: name.clone(),
                 executable,
                 args: definition.args.clone(),
-                environment: definition.environment.clone(),
+                environment: toolchain::server_environment(&definition.environment, mise),
                 settings: definition.config.clone(),
                 project_root: root.to_path_buf(),
                 project_spellings: spellings.clone(),
+                read_only_binds: toolchain::read_only_binds(mise),
                 state_root: setup.state_root.clone(),
             };
             // Calling the function pointer held in `setup.launch`; a refusal becomes `Refused`.
@@ -353,6 +245,7 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
             Definition {
                 command,
                 timeout: definition.timeout,
+                resolved,
                 launch,
             },
         );
@@ -415,7 +308,8 @@ fn build(root: &Path, setup: &LanguageSetup) -> Result<Built> {
 impl Languages {
     /// Build the registry for one project root.
     pub(super) fn new(root: &Path, setup: LanguageSetup) -> Result<Self> {
-        let built = build(root, &setup)?;
+        let mise = toolchain::resolve(root, &setup);
+        let built = build(root, &setup, None, &mise)?;
         return Ok(Self {
             // `ArcSwap::from_pointee` wraps the registry for atomic replacement; `Arc::new` shares it.
             loader: Arc::new(ArcSwap::from_pointee(built.loader)),
@@ -424,6 +318,7 @@ impl Languages {
             configured: built.configured,
             unavailable: built.unavailable,
             definitions: built.definitions,
+            mise: (mise, Instant::now()),
         });
     }
 
@@ -484,28 +379,71 @@ impl Languages {
         return self.setup.state_root.as_deref();
     }
 
+    /// The paragraphs of the notice about mise,
+    ///  empty unless mise could not serve the project.
+    pub(super) fn mise_advisory(&self) -> Vec<String> {
+        return self.mise.0.advisory(&self.root);
+    }
+
     /// What:
-    ///  Rebuild the registry when a language's server programs appeared or disappeared
-    ///       since it was built;
+    ///  Ask mise again when `mise::due` says so;
+    ///  returns true when its answer differs from the kept one.
+    /// Why:
+    ///  Asking takes tens to hundreds of milliseconds on the language thread,
+    ///  so it is not done at every display.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// askMiseAgain(language: string): boolean
+    /// ```
+    fn ask_mise_again(&mut self, language: &str) -> bool {
+        let missing = self.configured(language).iter().any(|name| {
+            return matches!(self.unavailable.get(name), Some(Unavailable::Missing(_)));
+        });
+        if !mise::due(&self.mise.0, self.mise.1.elapsed(), missing) {
+            return false;
+        }
+        let state = toolchain::resolve(&self.root, &self.setup);
+        let differs = state != self.mise.0;
+        tracing::info!(language, differs, "asked mise again");
+        self.mise = (state, Instant::now());
+        return differs;
+    }
+
+    /// What:
+    ///  Rebuild the registry when a language's server programs appeared,
+    ///  disappeared,
+    ///  or moved since it was built;
     ///  returns true when it was rebuilt.
+    ///  `Option<&Path>` is the document about to be displayed.
     /// Why:
     ///  Programs are resolved when the registry is built,
     ///  so a server installed later (or
     ///      project dependencies installed after start) would otherwise stay "missing" until restart.
+    ///  The TypeScript server is looked up from the document's folder,
+    ///  so a document in another package can need another launcher.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// refresh(language: string): boolean
+    /// refresh(language: string, document?: string): boolean
     /// ```
-    pub(super) fn refresh(&mut self, language: &str) -> Result<bool> {
-        let mut changed = false;
+    pub(super) fn refresh(&mut self, language: &str, document: Option<&Path>) -> Result<bool> {
+        // What mise provides is asked again only when the answer may have changed: a failure that
+        // may have been fixed, or a missing server that may have been installed.
+        let mut changed = self.ask_mise_again(language);
         for name in self.configured(language) {
             let Some(definition) = self.definitions.get(name) else {
                 continue;
             };
-            let found = locate(name, &definition.command, &self.root).is_ok();
-            let was_missing = matches!(self.unavailable.get(name), Some(Unavailable::Missing(_)));
-            if found == was_missing {
+            let found = locate(
+                name,
+                &definition.command,
+                &self.root,
+                document,
+                &self.mise.0,
+            )
+            .ok();
+            if found != definition.resolved {
                 changed = true;
             }
         }
@@ -516,7 +454,7 @@ impl Languages {
             language,
             "rebuilding the language registry after a server program changed"
         );
-        let built = build(&self.root, &self.setup)?;
+        let built = build(&self.root, &self.setup, document, &self.mise.0)?;
         // `store` atomically replaces the registry Helix reads at its next server start.
         self.loader.store(Arc::new(built.loader));
         self.configured = built.configured;

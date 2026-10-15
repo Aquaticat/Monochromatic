@@ -17,20 +17,11 @@
 //!  or `/dev` stays visible.
 
 /// How the project is mounted inside.
-use super::project::project_binds;
+use super::project::{project_binds, read_only_binds};
+/// The settings overrides a confined server gets live beside the recipe.
+pub use super::settings::confined_settings;
 /// The seam's input and output types.
 use crate::language::launch::{LaunchRequest, ServerLaunch};
-/// What:
-///  `Value` is any JSON value;
-///  `json!` builds one from literal syntax.
-/// Why:
-///  Settings overrides are written into the server's JSON settings table.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Value = unknown;
-/// ```
-use serde_json::{Value, json};
 /// What:
 ///  `BTreeMap` is a key-value table kept sorted by key (sibling:
 ///  `HashMap`,
@@ -52,7 +43,22 @@ use std::{
 
 /// Servers that watch the client's process id and exit inside a process-id namespace,
 /// because helix-lsp always sends its own `processId` in `initialize` (measured in the confinement plan).
-pub const NO_PID_NAMESPACE: &[&str] = &["typescript-native", "typescript-language-server"];
+/// The Node servers built on `vscode-languageserver` 9.0.1 check `process.kill(processId, 0)` every 3 s
+/// (`lib/node/main.js`) and exit with status 1 when the client's id is not visible; measured: all nine ended
+/// about 3 s after start with a pid namespace and stayed alive without one.
+pub const NO_PID_NAMESPACE: &[&str] = &[
+    "typescript-native",
+    "typescript-language-server",
+    "yaml-language-server",
+    "actions-language-server",
+    "ansible-language-server",
+    "vscode-json-language-server",
+    "vscode-css-language-server",
+    "vscode-html-language-server",
+    "bash-language-server",
+    "docker-langserver",
+    "docker-compose-langserver",
+];
 
 /// Servers that run cargo,
 ///  whose target and build directories must move into private state.
@@ -123,66 +129,6 @@ pub fn isolation(pid_namespace: bool) -> Vec<String> {
         arguments.push(flag.to_string());
     }
     return arguments;
-}
-
-/// What:
-///  Set one nested member of a JSON object,
-///  creating objects on the way.
-///  `&mut Value`
-///       lends the value for modification;
-///  `&[&str]` is a borrowed list of member names.
-/// Why:
-///  Overrides are merged into a settings table the user of the seam already filled.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function setPath(target: Record<string, unknown>, path: string[], leaf: unknown): void
-/// ```
-fn set_path(target: &mut Value, path: &[&str], leaf: Value) {
-    // `split_first` returns the first name and the rest, or nothing for an empty path.
-    let Some((first, rest)) = path.split_first() else {
-        *target = leaf;
-        return;
-    };
-    if !target.is_object() {
-        *target = json!({});
-    }
-    // `as_object_mut` borrows the object's member table; `entry(...).or_insert` finds or creates a member.
-    if let Some(members) = target.as_object_mut() {
-        let child = members.entry((*first).to_string()).or_insert(Value::Null);
-        set_path(child, rest, leaf);
-    }
-}
-
-/// What:
-///  The settings a server gets inside the sandbox.
-///  `Option<Value>` is "settings,
-///  or none".
-/// Why:
-///  Without network,
-///  automatic type acquisition can only fail;
-///  switching it off keeps the
-///      TypeScript servers from starting `npm` at all (measured in the confinement plan).
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function confinedSettings(server: string, settings?: unknown): unknown
-/// ```
-pub fn confined_settings(server: &str, settings: Option<&Value>) -> Option<Value> {
-    // `cloned()` copies the borrowed settings into an owned value, when there are any.
-    let mut result = settings.cloned();
-    if server == "typescript-native" {
-        // `get_or_insert_with` fills an absent value with an empty object first.
-        let table = result.get_or_insert_with(|| return json!({}));
-        let off = ["tsserver", "automaticTypeAcquisition", "enabled"];
-        set_path(table, &["typescript", off[0], off[1], off[2]], json!(false));
-        set_path(table, &["js/ts", off[0], off[1], off[2]], json!(false));
-    }
-    if server == "typescript-language-server" {
-        let table = result.get_or_insert_with(|| return json!({}));
-        set_path(table, &["disableAutomaticTypingAcquisition"], json!(true));
-    }
-    return result;
 }
 
 /// What:
@@ -259,7 +205,7 @@ pub fn recipe(
     // A later mount covers an earlier one, so the order is deliberate:
     // - the writable binds come after the read-only root bind;
     // - the project binds come after the `/tmp` and `/run` replacements, so a project below them
-    //   stays visible;
+    //   stays visible, and so do the read-only directories of the request (mise's tool directories);
     // - the state bind comes last, after the read-only project bind, so a state directory inside the
     //   project (the home folder opened as the project holds `~/.cache`) stays writable while the
     //   rest of the project stays read-only.
@@ -270,6 +216,7 @@ pub fn recipe(
         &request.project_root,
         &request.project_spellings,
     )?);
+    args.extend(read_only_binds(&request.read_only_binds)?);
     args.push("--bind".to_string());
     args.push(state_text.to_string());
     args.push(state_text.to_string());

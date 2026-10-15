@@ -13,7 +13,7 @@ use ide_app::{
 /// Source-image fixture with explicit physical geometry and system colors.
 fn stamp(document: &Document) -> FrameStamp {
     // Borrow source and empty syntax without transferring their ownership.
-    return FrameStamp::new(document, viewport(), 0.0, colors(), SourceStyles::from([]));
+    return FrameStamp::new(document, viewport(), colors(), SourceStyles::from([]));
 }
 
 /// Standard logical viewport,
@@ -24,6 +24,8 @@ fn viewport() -> Viewport {
         count: 27,
         width: 1044.0,
         scale: 1.25,
+        wrap: None,
+        clip: None,
     };
 }
 
@@ -54,6 +56,7 @@ fn caret_only_movement_reuses_image() {
         anchor: 5,
         head: 5,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     // Assert the exact rendering gate remains closed for caret-only movement.
     assert!(before == stamp(&document));
@@ -68,6 +71,7 @@ fn selection_invalidates_but_direction_does_not() {
         anchor: 1,
         head: 5,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let selected = stamp(&document);
     assert!(empty != selected);
@@ -75,12 +79,14 @@ fn selection_invalidates_but_direction_does_not() {
         anchor: 5,
         head: 1,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     assert!(selected == stamp(&document));
     document.select(ReadingPosition {
         anchor: 5,
         head: 5,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     assert!(selected != stamp(&document));
 }
@@ -94,55 +100,50 @@ fn materialization_scale_theme_and_syntax_invalidate() {
     let original = stamp(&document);
     let mut area = viewport();
     area.first = 1;
-    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
+    assert!(original != FrameStamp::new(&document, area, colors(), SourceStyles::from([])));
     area = viewport();
     area.count += 1;
-    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
+    assert!(original != FrameStamp::new(&document, area, colors(), SourceStyles::from([])));
     area = viewport();
     area.width += 1.0;
-    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
+    assert!(original != FrameStamp::new(&document, area, colors(), SourceStyles::from([])));
     area = viewport();
     area.scale = 1.5;
-    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
+    assert!(original != FrameStamp::new(&document, area, colors(), SourceStyles::from([])));
+    // The wrap width decides where every line breaks, so a frame at another width is another frame.
+    area = viewport();
+    area.wrap = Some(500.0);
+    assert!(original != FrameStamp::new(&document, area, colors(), SourceStyles::from([])));
+    area.wrap = Some(501.0);
     assert!(
-        original
+        FrameStamp::new(&document, area, colors(), SourceStyles::from([]))
             != FrameStamp::new(
                 &document,
-                viewport(),
-                0.25,
+                Viewport {
+                    wrap: Some(500.0),
+                    clip: None,
+                    ..area
+                },
                 colors(),
                 SourceStyles::from([])
             )
     );
     let mut palette = colors();
     palette.dark = false;
-    assert!(
-        original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([]))
-    );
+    assert!(original != FrameStamp::new(&document, viewport(), palette, SourceStyles::from([])));
     palette = colors();
     palette.foreground = [0, 0, 0, 255];
-    assert!(
-        original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([]))
-    );
+    assert!(original != FrameStamp::new(&document, viewport(), palette, SourceStyles::from([])));
     palette = colors();
     palette.selected = [0, 0, 0, 255];
-    assert!(
-        original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([]))
-    );
+    assert!(original != FrameStamp::new(&document, viewport(), palette, SourceStyles::from([])));
     let styles = [StyleSpan {
         start: 0,
         end: 1,
         style: 1,
     }];
     assert!(
-        original
-            != FrameStamp::new(
-                &document,
-                viewport(),
-                0.0,
-                colors(),
-                SourceStyles::from(styles)
-            )
+        original != FrameStamp::new(&document, viewport(), colors(), SourceStyles::from(styles))
     );
 }
 

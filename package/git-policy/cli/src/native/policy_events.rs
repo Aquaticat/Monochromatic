@@ -35,6 +35,9 @@
 use super::diagnostics::{
     EngineFailureCode, SCHEMA_VERSION, engine_failure_code_name, json_string,
 };
+/// A pathname as events report it,
+///  and the encoding of its exact bytes.
+use super::event_path::{EventPath, base64_standard};
 use super::policy_registry::{PolicyId, Severity, policy_descriptor, severity_name};
 use super::policy_trigger::{Trigger, trigger_name};
 
@@ -81,7 +84,7 @@ pub struct FindingLocation {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type FindingEvent = { trigger; policyId; severity: 'warn' | 'error'; code; message; path?; location?; fix: 'none' | 'available' };
+/// type FindingEvent = { trigger; policyId; severity: 'warn' | 'error'; code; message; path?; pathBytes?; location?; fix: 'none' | 'available' };
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FindingEvent {
@@ -99,7 +102,7 @@ pub struct FindingEvent {
     pub message: String,
     /// The repository path the finding is about,
     ///  when it has one.
-    pub path: Option<String>,
+    pub path: Option<EventPath>,
     /// The byte range the finding is about,
     ///  when it has one.
     pub location: Option<FindingLocation>,
@@ -112,8 +115,8 @@ pub struct FindingEvent {
 ///  An `enum` is a closed set of named
 ///       alternatives;
 ///  each variant carries its own fields.
-///  `Vec<String>` is an owned list
-///       of owned text.
+///  `Vec<EventPath>` is an owned
+///       list of pathnames in their event form.
 /// Why:
 ///   One list of events is rendered in order,
 ///  whatever mixture of kinds it holds.
@@ -159,7 +162,7 @@ pub enum PolicyEvent {
         policy: Option<PolicyId>,
         /// The repository path responsible,
         ///  when the failure is about one path.
-        path: Option<String>,
+        path: Option<EventPath>,
     },
     /// Corrections were applied.
     FixSummary {
@@ -170,7 +173,56 @@ pub enum PolicyEvent {
         /// The changed paths,
         ///  each once,
         ///  in Git's byte order.
-        changed_paths: Vec<String>,
+        changed_paths: Vec<EventPath>,
+    },
+    /// The landed commit whose automatic backup the post-commit gate stopped.
+    ///  The commit stays local; the event names it so the user can push it deliberately.
+    CommitLanded {
+        /// The exact landed commit object ID.
+        oid: String,
+    },
+    /// A landing found the target moved (`landing-race-lost`).
+    LandingRaceLost {
+        /// This transaction's lost races so far, from 1.
+        attempt: u64,
+        /// The target value that won.
+        winning_oid: String,
+    },
+    /// A commit that lost enough races holds the next landing slot (`landing-reserved`).
+    LandingReserved {
+        /// Lost races when the reservation was granted.
+        lost_races: u64,
+    },
+    /// A prepared commit was replayed onto the moved target (`commit-replayed`).
+    CommitReplayed {
+        /// The prepared commit.
+        prepared_oid: String,
+        /// The preparation base, absent when the branch was unborn.
+        from_base: Option<String>,
+        /// The target value the replay used as parent.
+        onto: String,
+        /// The replayed commit, after revalidation.
+        oid: String,
+    },
+    /// A signed replay could not carry some custom headers (`replay-headers-dropped`).
+    ReplayHeadersDropped {
+        /// The prepared commit carrying the headers.
+        prepared_oid: String,
+        /// The re-signed commit lacking them.
+        oid: String,
+        /// The dropped header names in prepared-commit order, each once.
+        headers: Vec<String>,
+    },
+    /// The core finding `concurrent-commit/replay-conflict`, with the data a person needs to resolve it.
+    ReplayConflict {
+        /// The target ref the commit aimed at.
+        target_ref: String,
+        /// The conflicting paths in Git path byte order, as the exact bytes Git reported.
+        paths: Vec<EventPath>,
+        /// The earliest target commit touching a conflicting path.
+        winning_oid: String,
+        /// The prepared commit kept for cherry-picking.
+        prepared_oid: String,
     },
 }
 
@@ -190,10 +242,15 @@ pub fn event_blocks(event: &PolicyEvent) -> bool {
     // `match` picks one arm per variant; `{ .. }` ignores the fields a variant carries.
     match event {
         PolicyEvent::Finding(finding) => return finding.severity == Severity::Error,
-        PolicyEvent::CoreFinding { .. } => return true,
+        PolicyEvent::CoreFinding { .. } | PolicyEvent::ReplayConflict { .. } => return true,
         PolicyEvent::WarnUnsafe { .. }
         | PolicyEvent::EngineFailure { .. }
-        | PolicyEvent::FixSummary { .. } => return false,
+        | PolicyEvent::FixSummary { .. }
+        | PolicyEvent::CommitLanded { .. }
+        | PolicyEvent::LandingRaceLost { .. }
+        | PolicyEvent::LandingReserved { .. }
+        | PolicyEvent::CommitReplayed { .. }
+        | PolicyEvent::ReplayHeadersDropped { .. } => return false,
     }
 }
 
@@ -235,6 +292,31 @@ fn push_text_field(line: &mut String, name: &str, value: &str) {
 }
 
 /// What:
+///  Append `,"path":"..."` and,
+///  for a name that is not UTF-8,
+///  `,"pathBytes":"..."`.
+///       `&EventPath` borrows the pathname's event form.
+/// Why:
+///   `path` keeps its meaning for every existing reader;
+///  `pathBytes` is the optional
+///       field schema version 1 allows (`SPEC.md`,
+///  "Unknown fields may be added only in a
+///       backward-compatible schema revision"),
+///  present only when `path` is not exact.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// line.path = path.text; if (path.exact) line.pathBytes = base64(path.exact);
+/// ```
+fn push_path_field(line: &mut String, path: &EventPath) {
+    push_text_field(line, "path", path.text());
+    // `if let Some(exact) = ...` runs only for a name that kept its bytes.
+    if let Some(exact) = path.exact() {
+        push_text_field(line, "pathBytes", base64_standard(exact).as_str());
+    }
+}
+
+/// What:
 ///  Render a finding's fields after the shared opening.
 /// Why:
 ///   The order is the incumbent's:
@@ -244,7 +326,7 @@ fn push_text_field(line: &mut String, name: &str, value: &str) {
 ///  code,
 ///  message,
 ///  then the
-///       optional path and location,
+///       optional path (with its exact bytes) and location,
 ///  then the fix state.
 ///
 /// In TS you'd write (pseudocode):
@@ -264,7 +346,7 @@ fn push_finding(line: &mut String, finding: &FindingEvent) {
     push_text_field(line, "message", finding.message.as_str());
     // `if let Some(path) = &finding.path` borrows the path only when one is present.
     if let Some(path) = &finding.path {
-        push_text_field(line, "path", path.as_str());
+        push_path_field(line, path);
     }
     if let Some(location) = finding.location {
         line.push_str(
@@ -284,15 +366,20 @@ fn push_finding(line: &mut String, finding: &FindingEvent) {
 }
 
 /// What:
-///  Render changed paths as a JSON array of strings.
+///  Render one JSON string per changed path:
+///  its text,
+///  or the base64 of its bytes.
+///       `fn(&EventPath) -> String` is a plain function pointer choosing what each entry holds.
 /// Why:
-///   A fix summary lists every path it changed.
+///   A fix summary lists every path it changed,
+///  and its byte list lines up with that
+///       list entry for entry.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// JSON.stringify(changedPaths)
+/// JSON.stringify(changedPaths.map(entry))
 /// ```
-fn path_array(paths: &[String]) -> String {
+fn path_array(paths: &[EventPath], entry: fn(&EventPath) -> String) -> String {
     // `String::from` copies the borrowed text into an owned, growable line.
     let mut array: String = String::from("[");
     // `.iter().enumerate()` yields `(index, path)` pairs in order.
@@ -300,10 +387,87 @@ fn path_array(paths: &[String]) -> String {
         if index > 0 {
             array.push(',');
         }
-        array.push_str(json_string(path.as_str()).as_str());
+        array.push_str(json_string(entry(path).as_str()).as_str());
     }
     array.push(']');
     return array;
+}
+
+/// What:
+///  A JSON array of strings.
+/// Why:
+///   The replay events carry lists of names in the incumbent's `JSON.stringify` form.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// JSON.stringify(names);
+/// ```
+fn string_array(names: &[String]) -> String {
+    let mut array: String = String::from("[");
+    for (index, name) in names.iter().enumerate() {
+        if index > 0 {
+            array.push(',');
+        }
+        array.push_str(json_string(name.as_str()).as_str());
+    }
+    array.push(']');
+    return array;
+}
+
+/// What:
+///  The readable text of one changed path,
+///  as a `changedPaths` entry.
+/// Why:
+///   A named function for `path_array`,
+///  because the repository bans anonymous functions.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const pathText = (path: EventPath) => path.text;
+/// ```
+fn path_text(path: &EventPath) -> String {
+    return String::from(path.text());
+}
+
+/// What:
+///  The base64 of one changed path's bytes,
+///  as a `changedPathBytes` entry.
+/// Why:
+///   Names that are UTF-8 are listed too,
+///  so index `n` of both lists is the same file.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const pathBytes = (path: EventPath) => base64(path.bytes);
+/// ```
+fn path_bytes(path: &EventPath) -> String {
+    return base64_standard(path.bytes());
+}
+
+/// What:
+///  Append a list of paths as `,"<text_key>":[...]` and,
+///  when any of them is not UTF-8,
+///       `,"<bytes_key>":[...]` with one base64 entry per path.
+/// Why:
+///   An array cannot hold an absent entry without JSON `null`,
+///  which events never
+///       carry,
+///  so the byte list names every path once it is needed at all,
+///  and is
+///       absent while every name is exact.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// line[textKey] = paths.map(p => p.text); if (paths.some(p => p.exact)) line[bytesKey] = paths.map(p => base64(p.bytes));
+/// ```
+fn push_path_list(line: &mut String, text_key: &str, bytes_key: &str, paths: &[EventPath]) {
+    line.push_str(format!(",\"{text_key}\":{}", path_array(paths, path_text)).as_str());
+    for path in paths {
+        if path.exact().is_some() {
+            line.push_str(format!(",\"{bytes_key}\":{}", path_array(paths, path_bytes)).as_str());
+            return;
+        }
+    }
 }
 
 /// What:
@@ -323,6 +487,12 @@ fn event_type(event: &PolicyEvent) -> &'static str {
         PolicyEvent::CoreFinding { .. } => return "core-finding",
         PolicyEvent::EngineFailure { .. } => return "engine-failure",
         PolicyEvent::FixSummary { .. } => return "fix-summary",
+        PolicyEvent::CommitLanded { .. } => return "commit-landed",
+        PolicyEvent::LandingRaceLost { .. } => return "landing-race-lost",
+        PolicyEvent::LandingReserved { .. } => return "landing-reserved",
+        PolicyEvent::CommitReplayed { .. } => return "commit-replayed",
+        PolicyEvent::ReplayHeadersDropped { .. } => return "replay-headers-dropped",
+        PolicyEvent::ReplayConflict { .. } => return "core-finding",
     }
 }
 
@@ -384,7 +554,7 @@ pub fn render_policy_event(sequence: u64, event: &PolicyEvent) -> String {
                 push_text_field(&mut line, "policyId", policy_descriptor(*found).name);
             }
             if let Some(found) = path {
-                push_text_field(&mut line, "path", found.as_str());
+                push_path_field(&mut line, found);
             }
         }
         PolicyEvent::FixSummary {
@@ -393,13 +563,79 @@ pub fn render_policy_event(sequence: u64, event: &PolicyEvent) -> String {
             changed_paths,
         } => {
             push_text_field(&mut line, "trigger", trigger_name(*trigger));
-            line.push_str(
+            line.push_str(format!(",\"passes\":{passes}").as_str());
+            push_path_list(&mut line, "changedPaths", "changedPathBytes", changed_paths.as_slice());
+        }
+        PolicyEvent::CommitLanded { oid } => {
+            push_text_field(&mut line, "oid", oid);
+            push_text_field(&mut line, "outcome", "post-commit-blocked");
+            push_text_field(
+                &mut line,
+                "message",
+                format!("Commit {oid} remains local; post-commit gate blocked automatic backup.")
+                    .as_str(),
+            );
+        }
+        PolicyEvent::LandingRaceLost { attempt, winning_oid } => {
+            line.push_str(format!(",\"attempt\":{attempt}").as_str());
+            push_text_field(&mut line, "winningOid", winning_oid);
+        }
+        PolicyEvent::LandingReserved { lost_races } => {
+            line.push_str(format!(",\"lostRaces\":{lost_races}").as_str());
+        }
+        PolicyEvent::CommitReplayed {
+            prepared_oid,
+            from_base,
+            onto,
+            oid,
+        } => {
+            push_text_field(&mut line, "preparedOid", prepared_oid);
+            if let Some(base) = from_base {
+                push_text_field(&mut line, "fromBase", base);
+            }
+            push_text_field(&mut line, "onto", onto);
+            push_text_field(&mut line, "oid", oid);
+        }
+        PolicyEvent::ReplayHeadersDropped {
+            prepared_oid,
+            oid,
+            headers,
+        } => {
+            push_text_field(&mut line, "preparedOid", prepared_oid);
+            push_text_field(&mut line, "oid", oid);
+            line.push_str(format!(",\"headers\":{}", string_array(headers.as_slice())).as_str());
+            let plural: &str = if headers.len() == 1 { "" } else { "s" };
+            push_text_field(
+                &mut line,
+                "message",
                 format!(
-                    ",\"passes\":{passes},\"changedPaths\":{}",
-                    path_array(changed_paths.as_slice())
+                    "Replaying signed commit {prepared_oid} as {oid} dropped its {} header{plural}, because Git can re-sign only the headers git commit-tree writes.",
+                    headers.join(", ")
                 )
                 .as_str(),
             );
+        }
+        PolicyEvent::ReplayConflict {
+            target_ref,
+            paths,
+            winning_oid,
+            prepared_oid,
+        } => {
+            push_text_field(&mut line, "trigger", trigger_name(Trigger::PreForward));
+            push_text_field(&mut line, "coreId", "concurrent-commit");
+            push_text_field(&mut line, "code", "concurrent-commit/replay-conflict");
+            push_text_field(
+                &mut line,
+                "message",
+                format!(
+                    "{target_ref} moved while this commit was prepared, and replaying it conflicts with {winning_oid} in {}; nothing landed. The prepared commit {prepared_oid} stays in the object store until gc expires it: resolve with git cherry-pick {prepared_oid}.",
+                    paths.iter().map(EventPath::text).collect::<Vec<&str>>().join(", ")
+                )
+                .as_str(),
+            );
+            push_path_list(&mut line, "paths", "pathsBytes", paths.as_slice());
+            push_text_field(&mut line, "winningOid", winning_oid);
+            push_text_field(&mut line, "preparedOid", prepared_oid);
         }
     }
     line.push_str("}\n");

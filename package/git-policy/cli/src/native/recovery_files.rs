@@ -344,6 +344,24 @@ pub fn owned_lock_mismatch(
     journal: &LockIdentity,
     lock_path: &Path,
 ) -> Result<Option<String>, RecoveryError> {
+    return owned_lock_mismatch_with(journal, lock_path, filesystem_identity);
+}
+
+/// What:
+///  The question of `owned_lock_mismatch` with the filesystem-identity mechanism passed in.
+/// Why:
+///   A lock another process removes between the file inspection and the identity lookup is a race
+///       that a control can only reproduce by replacing the mechanism.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function ownedLockMismatch({ journal, lockPath, resolveFsId }): Promise<string | undefined>;
+/// ```
+fn owned_lock_mismatch_with(
+    journal: &LockIdentity,
+    lock_path: &Path,
+    identity_of_filesystem: fn(&Path) -> Option<String>,
+) -> Result<Option<String>, RecoveryError> {
     let (device, inode, regular) = match file_identity_of(lock_path) {
         Ok(found) => found,
         Err(error) => return Err(io_failure("inspecting the index lock", lock_path, &error)),
@@ -354,7 +372,7 @@ pub fn owned_lock_mismatch(
             lock_path.display()
         )));
     }
-    let Some(filesystem) = filesystem_identity(lock_path) else {
+    let Some(filesystem) = identity_of_filesystem(lock_path) else {
         return Err(RecoveryError(format!(
             "unable to resolve the filesystem identity for {}",
             lock_path.display()
@@ -438,10 +456,45 @@ pub fn release_owned_lock(
     journal: &LockIdentity,
     lock_path: &Path,
 ) -> Result<LockRelease, RecoveryError> {
+    return release_owned_lock_with(journal, lock_path, filesystem_identity);
+}
+
+/// What:
+///  The release of `release_owned_lock` with the filesystem-identity mechanism passed in.
+/// Why:
+///   Controls reproduce a concurrent recoverer removing the lock mid-release by replacing the mechanism.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function releaseOwnedLock({ journal, lockPath, resolveFsId }): Promise<OwnedLockRelease>;
+/// ```
+fn release_owned_lock_with(
+    journal: &LockIdentity,
+    lock_path: &Path,
+    identity_of_filesystem: fn(&Path) -> Option<String>,
+) -> Result<LockRelease, RecoveryError> {
     if !recovery_path_exists(lock_path)? {
         return Ok(LockRelease::Absent);
     }
-    if let Some(mismatch) = owned_lock_mismatch(journal, lock_path)? {
+    let proof: Result<Option<String>, RecoveryError> =
+        owned_lock_mismatch_with(journal, lock_path, identity_of_filesystem);
+    let proven: Option<String> = match proof {
+        Ok(found) => found,
+        Err(error) => {
+            // Another recoverer of the same dead transaction may have released the lock after the existence
+            // probe; a lock that is gone now was released by that peer, whereas one that still exists but
+            // cannot be identified stays an error.
+            if recovery_path_exists(lock_path)? {
+                return Err(error);
+            }
+            debug(
+                "releaseOwnedLock",
+                format!("lock released by another recoverer: {}", lock_path.display()).as_str(),
+            );
+            return Ok(LockRelease::Absent);
+        }
+    };
+    if let Some(mismatch) = proven {
         debug(
             "releaseOwnedLock",
             format!("leaving lock another owner holds: {mismatch}").as_str(),
@@ -449,6 +502,13 @@ pub fn release_owned_lock(
         return Ok(LockRelease::Foreign);
     }
     if let Err(error) = std::fs::remove_file(lock_path) {
+        if error.kind() == std::io::ErrorKind::NotFound {
+            debug(
+                "releaseOwnedLock",
+                format!("lock released by another recoverer: {}", lock_path.display()).as_str(),
+            );
+            return Ok(LockRelease::Absent);
+        }
         return Err(io_failure(
             "removing the owned index lock",
             lock_path,

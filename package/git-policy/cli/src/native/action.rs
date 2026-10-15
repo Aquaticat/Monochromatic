@@ -23,6 +23,7 @@
 use std::ffi::OsString;
 /// `PathBuf` is an owned filesystem path of raw OS bytes.
 use super::index_writer_forward::CoordinatedForward;
+use super::worktree_copy_forward::CopyFacts;
 use std::path::PathBuf;
 
 /// What:
@@ -72,11 +73,30 @@ pub enum Action {
         ///  written to standard error before Git starts.
         stderr: String,
     },
-    /// Forward an index writer under its landing lock: coordinate, run Git as a child, release.
+    /// Forward an index writer under its landing lock:
+    ///  coordinate,
+    ///  run Git as a child,
+    ///  release.
     ForwardCoordinated {
         /// What the coordinated run needs.
-        forward: CoordinatedForward,
+        forward: Box<CoordinatedForward>,
         /// Warning events written to standard error before the coordination starts.
+        stderr: String,
+    },
+    /// Forward a command that the linked-worktree copy settles:
+    ///  run Git as a child that carries the settlement lease,
+    ///  recover an interrupted copy first,
+    ///  copy the ignored state into the worktrees the command created.
+    ForwardSettled {
+        /// The selected real Git executable.
+        real_git: PathBuf,
+        /// The arguments Git receives.
+        arguments: Vec<OsString>,
+        /// Variables added to the inherited environment.
+        overlay: Vec<(OsString, OsString)>,
+        /// What the copy needs to know about the invocation.
+        copy: Box<CopyFacts>,
+        /// Warning events written to standard error before Git starts.
         stderr: String,
     },
     /// Stop without running the caller's command.
