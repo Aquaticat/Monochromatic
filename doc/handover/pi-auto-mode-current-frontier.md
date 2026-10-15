@@ -825,7 +825,9 @@ and manual-review consumers pass in
 `${HOME}/temp/agent/pi-native-policy-compilation-consumer-20261015.log`.
 The following extraction places original scheduler and inspected-program coverage in `operation-coverage.mjs`.
 Focused lint now reports zero errors and 234 warnings across the compiler and its output and coverage helpers.
-The rebuilt compiler consumers are running again on that final extraction in
+The rebuilt domain,
+semantic-operating-policy,
+and manual-review consumers also pass on that final extraction in
 `${HOME}/temp/agent/pi-native-operation-coverage-consumer-20261015.log`.
 The remaining full lint gate is still open.
 The handover,
