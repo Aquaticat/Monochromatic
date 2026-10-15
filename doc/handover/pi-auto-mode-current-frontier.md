@@ -126,6 +126,25 @@ The preceding collector body is saved as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/program-collector-before-arrival-types.mjs`,
 with SHA-256 `eada90c16fdb852469c4079f7fea850afbf54c52e55eec199d4f997a3fb9d419`.
 
+Reached-program runtime is now implemented in `program-runtime.ts`,
+with separate original lifetime operations in `program-runtime-lifetime.ts`.
+The original `.mjs` path delegates to these typed owners.
+Independent runtime consumers and lifetime fixtures are committed,
+but their build,
+type check,
+lint,
+original replay,
+and omission controls remain pending.
+The original body is retained as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-runtime-before-types.mjs`,
+with SHA-256 `2d2b88d31a0d6dd0febf4a42624b2b561b133ef2836758ac990950fa513b459f`.
+Qualification must separately measure diagnostic differences:
+the runtime error uses a literal category rather than a derived constructor name,
+and explicit non-null checks replace implicit property-access failures for missing published views or source slots.
+Do not claim exact failure-category equivalence for those malformed-publication cases.
+Ordinary value-conversion failures must retain their original identity,
+and only original native result guards trigger the conversion-specific program-guard callback.
+
 ## Tool-call scope correction
 
 The user clarified that automatic mode is meant to check model-initiated tool calls.
