@@ -33,7 +33,7 @@ await describe({ name: 'original profile call admission', children: [
       rejects({ input: { call, readPattern: undefined }, message: 'direct single-argument call required' });
     } });
   }),
-  ...['tool({})', 'tools["tool"]({})', 'other.tool({})', 'tools.unknown({})', 'tools.tool.call({})'].map(function invalidMember(source) {
+  ...['tool({})', 'tools["tool"]({})', 'tools[tool]({})', 'other.tool({})', 'tools.unknown({})', 'tools.tool.call({})'].map(function invalidMember(source) {
     return it({ name: `rejects original callee ${source}`, fn: async function rejectMember() {
       rejects({ input: { call: parseCall(source), source, readPattern: undefined }, message: 'owned tool identifier required' });
     } });

@@ -14,9 +14,14 @@ The original pattern decoder and diagnostic constructor remain borrowed from `re
 Native build,
 package type checking,
 and both built consumers pass.
-Original replay,
-domain comparison,
-and omission controls are pending;
+Original replay and six domain comparisons also pass.
+Public syntax consumers accept the original direct and binding forms,
+reject 26 unsupported forms,
+and retain both parallel combinators.
+The computed-member omission exposed overlapping rejection guards in the first consumer fixture:
+`tools["tool"]` was still rejected by the property-kind check.
+The added `tools[tool]` fixture isolates computed-member rejection.
+Omission controls remain pending;
 the last qualified package recount remains the executable-wrapper report recorded here.
 
 The tool-call scope correction,
