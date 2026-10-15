@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import {session,runtime,env,flushPolicyDiagnostics,readNativeBypassEnabled} from './approval-fixture.mjs';
-import {fixtureState} from './approval-fixture-options.mjs';
+import {fixtureState,outsideProfile} from './approval-fixture-options.mjs';
 
 const statuses=[];
 const notifications=[];
+const expectedExecutions=outsideProfile?2:3;
 await session.bindExtensions({uiContext:{
   ...session.extensionRunner.createContext().ui,
   setStatus(key,value){statuses.push({key,value});},
@@ -23,7 +24,7 @@ try {
  assert.deepEqual(statuses.at(-1),{key:'auto-mode:bypass',value:'auto-mode: bypass'});
  assert.match(notifications.at(-1).message,/bypass enabled/);
  await session.prompt('Exercise the explicit bypass with native producer and parallel children.');
- assert.equal(fixtureState.executions,3);
+ assert.equal(fixtureState.executions,expectedExecutions);
  assert.equal(fixtureState.assessments,0);
  assert.equal(fixtureState.selections,0);
  assert.equal(runtime.inspect().lastReview,undefined,'Bypass must not fabricate a policy approval');
@@ -39,11 +40,11 @@ try {
  assert.deepEqual(statuses.at(-1),{key:'auto-mode:bypass',value:undefined});
  fixtureState.requests=0;
  await session.prompt('Exercise the same prohibited operation with bypass disabled.');
- assert.equal(fixtureState.executions,3,'Disabling bypass must restore the prohibition');
- assert.ok(fixtureState.assessments>0);
+ assert.equal(fixtureState.executions,expectedExecutions,'Disabling bypass must restore guarded admission');
+ assert.equal(fixtureState.assessments,outsideProfile?0:1);
  const fixedWhileDisabled=await session.extensionRunner.emitToolCall({type:'tool_call',toolName:'bash',toolCallId:'disabled-guard-probe',input:{command:'ydotool key 1:1 1:0'}});
  assert.equal(fixedWhileDisabled?.block,true);
- console.log(JSON.stringify({complete:true,shortcut:true,bypassExecutions:3,bypassAssessments:0,disabledRestoresProhibition:true,audit:true,status:true,reload:true,fixedGuard:true}));
+ console.log(JSON.stringify({complete:true,shortcut:true,bypassExecutions:expectedExecutions,bypassAssessments:0,disabledRestoresGuard:true,outsideProfile,audit:true,status:true,reload:true,fixedGuard:true}));
 }finally{
  session.dispose();
  await session.agent.waitForIdle();

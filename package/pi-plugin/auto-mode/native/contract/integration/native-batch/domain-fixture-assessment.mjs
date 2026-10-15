@@ -5,11 +5,8 @@ import {createAssessmentSender} from '../maintained-policy.mjs';
 export function createDomainFixtureAssessment({settings,observations}){
  const {nextDecision,nextInput,nextResult,unresolvedClause,relation,operatingPolicy,lowConfidenceClause,httpTransport}=settings;
 function authoredWireAnswer({body}){
-  observations.assessments++;const wire=JSON.parse(body);assert.equal(
-    wire.state
-      .originalRequestBody,
-    observations.originalBody
-  );
+  observations.assessments++;const wire=JSON.parse(body);
+  assert.equal(Object.hasOwn(wire.state,'originalRequestBody'),false);
   const answers=Object.fromEntries(Object.entries(wire.questions)
     .map(function answerAuthoredDomainQuestion([slot,question]) {
    assert.notEqual(

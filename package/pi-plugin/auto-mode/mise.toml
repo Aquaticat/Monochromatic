@@ -839,7 +839,10 @@ run = [
 ]
 [tasks."test:native:bypass"]
 description = "Verify the native Shift+Tab bypass control and restored policy checks"
-run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/bypass.test.mjs prohibited --native-context --reload-context --bypass-fixture"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/bypass.test.mjs prohibited --native-context --reload-context --bypass-fixture",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/bypass.test.mjs prohibited --native-context --reload-context --bypass-fixture --outside-profile",
+]
 
 [tasks."test:native:prompt-capacity"]
 description = "Verify original prompt and tool bundles retain their complete native input capacity"

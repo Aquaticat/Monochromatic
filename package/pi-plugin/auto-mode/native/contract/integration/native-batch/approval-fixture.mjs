@@ -199,11 +199,10 @@ export const runtime=bindNativePolicyRuntime({
     async notificationInvoker(){fixtureState.notifications++;}
   };},
   async sendWire({body}){
-  fixtureState.assessments++;const wire=JSON.parse(body);assert.equal(
-    wire.state
-      .originalRequestBody,
-    fixtureState.originalBody
-  );
+  fixtureState.assessments++;const wire=JSON.parse(body);
+  fixtureState.wires.push(wire);
+  assert.equal(Object.hasOwn(wire.state,'originalRequestBody'),false);
+  assert.equal(wire.state.fullPolicy,policyText);
   const answers=Object.fromEntries(Object.entries(wire.questions)
     .map(function answerAuthoredApprovalQuestion([slot,question]) {
    const id=question.instructions
