@@ -271,6 +271,12 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-boundary.unit.test.ts",
 ]
 
+[tasks."test:native:execution"]
+description = "Verify original execution custody, native entry ordering, and retained terminal state"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-execution.unit.test.ts",
+]
+
 [tasks."test:native:resource-input"]
 description = "Verify built native resource copies preserve values, ownership, descriptors, and byte limits"
 run = [
