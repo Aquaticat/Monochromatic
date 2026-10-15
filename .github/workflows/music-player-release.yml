@@ -18,8 +18,8 @@ name: music-player-release
 # - Android is signed with the project release key from repository secrets. The secrets are read
 #   only in the Android job, and only on main; every other ref signs with a throwaway key.
 # - Windows and macOS binaries are not signed with a developer identity.
-# - Caches: each build job restores the cargo registry and the target directory (and the Android job the
-#   Gradle caches) under a key made of the runner, target, toolchain and lock file hash,
+# - Caches: each build job except the Alpine ones restores the cargo registry and the target directory (and
+#   the Android job the Gradle caches) under a key made of the runner, target, toolchain and lock file hash,
 #   with a restore key that drops the lock file hash so a dependency change rebuilds only what changed.
 #   Only runs on main and manual dispatches save caches. The bytes of a release are still the bytes this
 #   run built and attested: cargo and Gradle rebuild whatever their own fingerprints say changed.
