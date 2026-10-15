@@ -253,6 +253,14 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-completion-failure.unit.test.ts",
 ]
 
+[tasks."test:native:prepared-member"]
+description = "Verify original member preparation, complete-group assessment, and retained failure ownership"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-member.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-member-failure.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-member-decision.unit.test.ts",
+]
+
 [tasks."test:native:profile-call"]
 description = "Verify original source call admission, spans, pattern ownership, and failure order"
 run = [
