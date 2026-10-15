@@ -101,8 +101,10 @@ also evicts an entry unread for 7 days. The steady state below keeps the newest 
 
 That sums to about 9 GB with no headroom, so the rules for large entries below are binding.
 
-Superseded entries are to be removed by `.github/workflows/cache-prune.yml`, a workflow proposed with this change and
-not yet committed on the branch. It keeps the newest entry of each family on each ref and deletes the rest. Without it,
+Superseded entries are removed daily by `.github/workflows/cache-prune.yml`, which the human approved on 2026-10-15
+with the music player families (`music-player-desktop-v1`, `music-player-android-native-v1`, `music-player-gradle-v1`
+and `mp-win-v1`) added to its `FAMILIES` list; the patterns were tested against the live key list. It keeps the newest
+entry of each family on each ref and deletes the rest. Without it,
 superseded entries leave only through the 7-day idle rule or through cap eviction, which can pick a music player entry
 instead.
 
@@ -218,7 +220,8 @@ Restoring costs as much as the whole install, so the cache is reverted on the br
 - The deletion path of `cache-prune.yml`: the listing and the selection were run against the real repository as a dry
   run
   and picked the expected entries, and the deletion call was not executed.
-- `cache-prune.yml` has not run on GitHub, because a new workflow file cannot be dispatched before it exists on `main`.
+- `cache-prune.yml` has not run on GitHub as of its merge, because a new workflow file cannot be dispatched before it
+  exists on `main`; its first dry-run dispatch is recorded in the handover.
 
 ## Other findings outside caching
 
