@@ -41,6 +41,23 @@ and 266 in `program-runner.mjs`.
 Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
 No current user-input blocker exists.
 
+The dispatch extraction is implemented in `group-dispatch.ts` and `group-dispatch-types.ts`.
+Its production scope passes focused lint with zero diagnostics.
+The original collector delegates dispatch while retaining its existing arrival code.
+Independent consumer tests cover original callback order,
+work publication before callbacks,
+complete member association,
+opaque failure propagation,
+closed transport,
+and retained unassociated array outcomes.
+Build,
+consumer execution,
+original-code replay,
+and deliberate omission controls remain pending for this extraction.
+The unchanged original collector is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-collector-before-dispatch-types.mjs`,
+with SHA-256 `740fd23a569b058f0d46e7c7b12ff9ffcfed85bd6f519f5d5de5408d7fa13912`.
+
 ## Tool-call scope correction
 
 The user clarified that automatic mode is meant to check model-initiated tool calls.

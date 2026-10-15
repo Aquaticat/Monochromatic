@@ -125,7 +125,9 @@ const dispatchModule: DispatchFixtureModule = loaded;
 //region Independent callbacks retain original publication, receiver, and opaque value observations.
 /** Throw an opaque independently supplied callback failure without normalization.
  @param value - original callback failure whose identity the dispatcher must retain
+ 
  @throws Error when the fixture invokes this deliberately failing callback boundary
+ 
  @example throwDispatchFixtureValue(originalFailure);
  */
 export function throwDispatchFixtureValue(value: unknown): never {

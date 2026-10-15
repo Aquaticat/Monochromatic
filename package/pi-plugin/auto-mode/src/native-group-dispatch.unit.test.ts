@@ -1,5 +1,6 @@
 /** Original dispatch publication and complete member association reach independent consumers. @module */
 import assert from 'node:assert/strict';
+import { wait } from '@monochromatic-dev/module-async-time/ts';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
 import { createDispatchFixture, throwDispatchFixtureValue } from './native-group-dispatch-fixture.ts';
 
@@ -49,6 +50,7 @@ await describe({ name: '', children: [
     };
     fixture.owner.startDispatch();
     await entered.promise;
+    await wait(1);
     assert.equal(fixture.observations.length, 2);
     const marker = Object.freeze({ pending: true });
     assert.equal(await Promise.race([fixture.state.work, Promise.resolve(marker)]), marker);
