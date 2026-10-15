@@ -85,11 +85,17 @@ export function createGroupCurrent<const View>({
   }
   /** Re-read original failure and closure after callbacks can publish new transport state.
    @throws RecordedGroupFailureError when the original primary failure is retained
+   
    @throws DeclaredGroupCollectionError when original transport has returned
    */
   function requireOpenTransport(): void {
-    /** Separate calls re-read mutable state without retaining pre-callback type narrowing. */
-    const tl = tagged({ tag: requireOpenTransport.name, l: rl });
+    /**
+     Separate calls re-read mutable state without retaining pre-callback type narrowing.
+     */
+    const tl = tagged({
+      tag: requireOpenTransport.name,
+      l: rl
+    });
     tl.debug('checking original failure and transport closure');
     if (groupState.primary) throw groupState.primary;
     if (groupState.closed) throw new DeclaredGroupCollectionError('Declared parent group has returned');

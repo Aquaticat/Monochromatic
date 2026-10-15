@@ -111,7 +111,7 @@ await describe({ name: '', children: [
     });
     /** Mismatch diagnostic must retain its original category and message. */
     const recorded = f.recorded[0]?.error;
-    assert.ok(recorded instanceof Error);
+    assert.ok(Error.isError(recorded,));
     assert.equal(recorded.name, 'DeclaredGroupCollectionError');
     assert.equal(recorded.message, 'Reached group view changed during native collection');
     assert.deepEqual(f.events, ['parent', 'read', 'record']);

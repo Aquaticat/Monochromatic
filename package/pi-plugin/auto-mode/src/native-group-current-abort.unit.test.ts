@@ -5,7 +5,7 @@ import { createCurrentFixture } from './native-group-current-fixture.ts';
 
 //region Cancellation checks preserve original listener guards and signal provenance.
 await describe({ name: '', children: [
-  it({ name: 'checks the supplied member signal and preserves cancellation-recorder failures', fn: async function member() {
+  it({ name: 'checks the supplied member signal and preserves cancellation-recorder failures', fn: async function memberCancellation() {
     /** The checked signal need not be the enclosing parent signal. */
     const f = createCurrentFixture();
     /** Independently controlled native signal proves the actual input is observed. */
