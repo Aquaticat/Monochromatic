@@ -31,7 +31,9 @@ await describe({ name: '', children: [
     /** Original signal remains the same capability after cancellation. */
     const owner = f.construct();
     f.events.length = 0;
-    assert.throws(function foreignSignal() { owner.collector.capture({ signal: new AbortController().signal }); }, { name: 'JudgmentConstructionError', message: 'Dependency sources require original judgment cancellation' });
+    assert.throws(function foreignSignal() { 
+      owner.collector.capture({ signal: new AbortController().signal }); 
+    }, { name: 'JudgmentConstructionError', message: 'Dependency sources require original judgment cancellation' });
     assert.deepEqual(f.events, []);
     assert.equal(owner.collector.capture({ signal: f.controller.signal }), f.initial);
     f.controller.abort(new Error('original cancellation'));
@@ -47,7 +49,9 @@ await describe({ name: '', children: [
     owner.publishJudgmentSources(f.published);
     f.events.length = 0;
     for (const snapshot of [f.initial, Object.freeze({})]) {
-      assert.throws(function staleSnapshot() { owner.collector.assertObservedFresh(snapshot); }, { name: 'JudgmentConstructionError', message: 'Dependencies require the original assessed source collection' });
+      assert.throws(function staleSnapshot() { 
+        owner.collector.assertObservedFresh(snapshot); 
+      }, { name: 'JudgmentConstructionError', message: 'Dependencies require the original assessed source collection' });
     }
     assert.deepEqual(f.events, []);
     owner.collector.assertObservedFresh(f.published);
@@ -61,7 +65,9 @@ await describe({ name: '', children: [
       /** Current collection must be read at each original statement boundary. */
       const owner = f.construct();
       f.events.length = 0;
-      f.state.onStep = function publish() { owner.publishJudgmentSources(f.published); };
+      f.state.onStep = function publish() { 
+        owner.publishJudgmentSources(f.published); 
+      };
       if (operation === 'binding') {
         assert.equal(owner.readCurrentSourceBinding().sources, f.published);
         assert.deepEqual(f.events, ['dependencies']);
@@ -89,7 +95,9 @@ await describe({ name: '', children: [
         if (operation === 'binding') owner.readCurrentSourceBinding();
         else if (operation === 'capture') owner.collector.capture({ signal: f.controller.signal });
         else owner.collector.assertObservedFresh(f.initial);
-      }, function same(error: unknown) { return error === failure; });
+      }, function same(error: unknown) { 
+        return error === failure; 
+      });
       assert.deepEqual(f.events, [operation === 'binding' ? 'dependencies' : 'freshness']);
       f.events.length = 0;
       owner.publishJudgmentSources(f.published);

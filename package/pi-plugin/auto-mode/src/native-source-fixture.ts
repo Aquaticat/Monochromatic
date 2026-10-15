@@ -62,11 +62,20 @@ export function createSourceFixture(): SourceFixture {
     if (state.failures.has(point)) throw state.failures.get(point);
   }
   /** Fallback observation must remain after original request lookup. */
-  const receipt = Object.freeze({ get sources() { step('receiptSources'); return fallback; } });
+  const receipt = Object.freeze({ get sources() { 
+    step('receiptSources'); 
+    return fallback; 
+  } });
   state.bindingRequest = receipt;
   state.bindingResult = {
-    get sources() { step('bindingSources'); return state.bindingSources; },
-    get request() { step('bindingRequest'); return state.bindingRequest; },
+    get sources() { 
+      step('bindingSources'); 
+      return state.bindingSources; 
+    },
+    get request() { 
+      step('bindingRequest'); 
+      return state.bindingRequest; 
+    },
   };
   /** Native and legacy methods both validate their original receiver and response. */
   const observer: Record<string, unknown> = {
@@ -90,12 +99,17 @@ export function createSourceFixture(): SourceFixture {
   function construct(): FixtureSourceOwner {
     return sourceModule.createJudgmentSources({
       observer, response, signal: controller.signal,
-      readOriginalRequest() { step('request'); return receipt; },
+      readOriginalRequest() { 
+        step('request'); 
+        return receipt; 
+      },
       collector: { assertObservedFresh(snapshot: unknown) {
         observed.push(snapshot);
         step('freshness');
       } },
-      assertDependenciesCurrent() { step('dependencies'); },
+      assertDependenciesCurrent() { 
+        step('dependencies'); 
+      },
     });
   }
   return { events, observed, initial, fallback, published, receipt, response, controller, observer, state, construct };

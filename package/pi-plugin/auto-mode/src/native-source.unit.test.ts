@@ -64,7 +64,9 @@ await describe({ name: '', children: [
       f.state.failures.set(point, failure);
       if (point === 'bind') delete f.observer.beginJudgmentSources;
       if (point === 'receiptSources') f.state.bindingSources = undefined;
-      assert.throws(f.construct, function same(error: unknown) { return error === failure; });
+      assert.throws(f.construct, function same(error: unknown) { 
+        return error === failure; 
+      });
       /** Expected prefix is independent of the implementation's callback sequence. */
       const expected = point === 'bind' ? ['bind'] : ['begin', 'request', 'bindingSources', ...(point === 'receiptSources' ? ['receiptSources'] : ['bindingRequest'])];
       assert.deepEqual(f.events, expected.slice(0, expected.indexOf(point) + 1));
