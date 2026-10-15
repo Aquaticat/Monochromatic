@@ -105,10 +105,7 @@ export async function capturePolicyInputs({
   );
   try{
    judgment.assertDependenciesCurrent();
-   for(const source of sources){
-    source.assertCurrent(source.view);
-    if(source.authority)source.assertAuthorityCurrent(source.authority);
-   }
+   sourceBinding?.assertAllCurrent();
    // Closed judgments retain dependency checks, but cannot reopen candidate selection.
    if(!judgment.inspect()
      .finalRecord){
