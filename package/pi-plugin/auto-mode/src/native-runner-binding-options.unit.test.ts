@@ -8,7 +8,9 @@ await describe({ name: '', children: [
   it({ name: 'captures native callback once and forwards original member signals in callback call order', fn: async () => {
     const fixture = createRunnerBindingFixture();
     const bound = fixture.bind();
-    fixture.input.runner.host.runOwnedToolCall = function replacedNative() { assert.fail('Native callback was not captured'); };
+    fixture.input.runner.host.runOwnedToolCall = function replacedNative() { 
+      assert.fail('Native callback was not captured'); 
+    };
     const admission = fixture.admission();
     for (const call of bound.calls.toReversed()) {
       const options = { original: call.id, signal: new AbortController().signal };
@@ -40,12 +42,24 @@ await describe({ name: '', children: [
     const observed: string[] = [];
     const key = Symbol('original native option');
     const options: unknown = Object.create({ inherited: true }, {
-      visible: { enumerable: true, get() { observed.push('visible'); return 'retained'; } },
-      signal: { enumerable: true, get() { observed.push('signal'); return 'replaced'; } },
+      visible: { enumerable: true, get() { 
+        observed.push('visible'); 
+        return 'retained'; 
+      } },
+      signal: { enumerable: true, get() { 
+        observed.push('signal'); 
+        return 'replaced'; 
+      } },
       hidden: { enumerable: false, value: 'not copied' },
-      [key]: { enumerable: true, get() { observed.push('symbol'); return original; } },
+      [key]: { enumerable: true, get() { 
+        observed.push('symbol'); 
+        return original; 
+      } },
     });
-    const call = { ...original, get id(): string { observed.push('id'); return original.id; } };
+    const call = { ...original, get id(): string { 
+      observed.push('id'); 
+      return original.id; 
+    } };
     fixture.admission().runNative(call, options);
     assert.deepEqual(observed, ['visible', 'signal', 'symbol', 'id']);
     assert.deepEqual(fixture.native[0]?.options, { visible: 'retained', signal: fixture.input.group.members[0]?.signal, [key]: original });
@@ -58,11 +72,23 @@ await describe({ name: '', children: [
       assert.ok(original);
       const failure = Object.freeze({ original: point });
       const observed: string[] = [];
-      const options = { get value(): unknown { observed.push('options'); if (point === 'option-getter') throw failure; return undefined; } };
-      const call = { ...original, get id(): string { observed.push('id'); if (point === 'call-getter') throw failure; return original.id; } };
+      const options = { get value(): unknown { 
+        observed.push('options'); 
+        if (point === 'option-getter') throw failure; 
+        return undefined; 
+      } };
+      const call = { ...original, get id(): string { 
+        observed.push('id'); 
+        if (point === 'call-getter') throw failure; 
+        return original.id; 
+      } };
       fixture.control.failAt = 'native';
       fixture.control.failure = failure;
-      assert.throws(function failNative() { fixture.admission().runNative(call, options); }, function originalError(error: unknown) { return error === failure; });
+      assert.throws(function failNative() { 
+        fixture.admission().runNative(call, options); 
+      }, function originalError(error: unknown) { 
+        return error === failure; 
+      });
       assert.deepEqual(observed, point === 'option-getter' ? ['options'] : ['options', 'id']);
       assert.equal(fixture.native.length, point === 'native' ? 1 : 0);
     } });

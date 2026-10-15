@@ -21,7 +21,9 @@ await describe({ name: '', children: [
     assert.equal(admission.calls, bound.calls);
     assert.equal(bound.tools, fixture.input.tools);
     assert.equal(bound.slots, fixture.slots);
-    assert.deepEqual(bound.calls.map(function nativeMetadata(call) { return [call.type, call.id, call.name]; }), [['toolCall', 'parent/1', 'second'], ['toolCall', 'parent/2', 'first']]);
+    assert.deepEqual(bound.calls.map(function nativeMetadata(call) { 
+      return [call.type, call.id, call.name]; 
+    }), [['toolCall', 'parent/1', 'second'], ['toolCall', 'parent/2', 'first']]);
     assert.deepEqual([...bound.ordinals], [['parent/1', 0], ['parent/2', 1]]);
     assert.equal(admission.tools[0], fixture.input.tools[1]);
     assert.equal(admission.tools[1], fixture.input.tools[0]);
@@ -46,7 +48,9 @@ await describe({ name: '', children: [
     assert.equal(second.scope, first.scope);
     assert.equal(second.scope.nextId, 5);
     assert.equal(second.scope.holdsQueue, true);
-    assert.deepEqual(second.calls.map(function id(call) { return call.id; }), ['parent/3', 'parent/4']);
+    assert.deepEqual(second.calls.map(function id(call) { 
+      return call.id; 
+    }), ['parent/3', 'parent/4']);
     assert.deepEqual(fixture.events, ['parent', 'recorder', 'bind', 'parent', 'bind']);
   } }),
   it({ name: 'passes an absent original tool definition to judgment admission unchanged', fn: async () => {
@@ -63,7 +67,11 @@ await describe({ name: '', children: [
       const failure = Object.freeze({ original: point });
       fixture.control.failAt = point;
       fixture.control.failure = failure;
-      assert.throws(function failBinding() { fixture.bind(); }, function original(error: unknown) { return error === failure; });
+      assert.throws(function failBinding() { 
+        fixture.bind(); 
+      }, function original(error: unknown) { 
+        return error === failure; 
+      });
       assert.deepEqual(fixture.events, point === 'parent' ? ['parent'] : point === 'recorder' ? ['parent', 'recorder'] : ['parent', 'recorder', 'bind']);
       assert.equal(fixture.input.runner.scopes.size, point === 'bind' ? 2 : 0);
       if (point === 'bind') assert.equal(fixture.input.runner.scopes.get('parent')?.nextId, 3);

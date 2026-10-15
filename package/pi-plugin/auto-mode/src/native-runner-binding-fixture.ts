@@ -86,12 +86,16 @@ export function createRunnerBindingFixture(): RunnerBindingFixture {
   /** Exact original construction inputs remain available for malformed-boundary probes. */
   const input: RunnerBindingInput = {
     runner, tools, origin: { prepared: { id: 'parent' }, judgment }, carrier: { token: Object.freeze({ original: 'parent owner' }) }, group, NestedCallRecorder,
-    assertParentCurrent(): void { step('parent'); },
+    assertParentCurrent(): void { 
+      step('parent'); 
+    },
   };
   /** Bind through the built helper while retaining fixture input identity.
    @returns original binding result
    */
-  function bind(): RunnerBindingResult { return runnerBindingModule.bindReachedProgramGroup(input); }
+  function bind(): RunnerBindingResult { 
+    return runnerBindingModule.bindReachedProgramGroup(input); 
+  }
   /** Read the original admission callback after successful binding.
    @returns independently captured original native call admission
    */

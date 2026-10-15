@@ -179,7 +179,9 @@ export function bindReachedProgramGroup<const Recorder extends object>({
     ordinals,
     tools,
     slots,
-    tickets: calls.map(function createResultTicket() { return Promise.withResolvers<unknown>(); })
+    tickets: calls.map(function createResultTicket() { 
+      return Promise.withResolvers<unknown>(); 
+    })
   };
 }
 //endregion
