@@ -7,7 +7,8 @@ await describe({ name: 'prepared argument descriptors', children: [
   //region Original descriptor rules reject observations before freezing their container.
   it({ name: 'rejects accessors without invoking their getter and rejects hidden properties and symbols', fn: async function descriptors() {
     let reads = 0;
-    const accessor = { get value() { reads += 1; return 'unobserved'; } };
+    const accessor = { get value() { reads += 1;
+    return 'unobserved'; } };
     const hidden = Object.defineProperty({}, 'value', { value: 'hidden' });
     const symbol = { [Symbol('key')]: 'value' };
     for (const [input, message] of [
@@ -47,13 +48,19 @@ await describe({ name: 'prepared argument descriptors', children: [
   //region Proxy observations and opaque exceptions retain their original owner and order.
   it({ name: 'observes descriptors before freezing and visits children after parent freeze', fn: async function proxyOrder() {
     const events: string[] = [];
-    const child = new Proxy({}, { getPrototypeOf(target) { events.push('child'); return Reflect.getPrototypeOf(target); } });
+    const child = new Proxy({}, { getPrototypeOf(target) { events.push('child');
+    return Reflect.getPrototypeOf(target); } });
     const input = new Proxy({ child }, {
-      getPrototypeOf(target) { events.push('prototype'); return Reflect.getPrototypeOf(target); },
-      ownKeys(target) { events.push('keys'); return Reflect.ownKeys(target); },
-      getOwnPropertyDescriptor(target, key) { events.push(`descriptor:${String(key)}`); return Reflect.getOwnPropertyDescriptor(target, key); },
-      preventExtensions(target) { events.push('freeze'); return Reflect.preventExtensions(target); },
-      defineProperty(target, key, descriptor) { events.push(`define:${String(key)}`); return Reflect.defineProperty(target, key, descriptor); },
+      getPrototypeOf(target) { events.push('prototype');
+      return Reflect.getPrototypeOf(target); },
+      ownKeys(target) { events.push('keys');
+      return Reflect.ownKeys(target); },
+      getOwnPropertyDescriptor(target, key) { events.push(`descriptor:${String(key)}`);
+      return Reflect.getOwnPropertyDescriptor(target, key); },
+      preventExtensions(target) { events.push('freeze');
+      return Reflect.preventExtensions(target); },
+      defineProperty(target, key, descriptor) { events.push(`define:${String(key)}`);
+      return Reflect.defineProperty(target, key, descriptor); },
     });
     assert.equal(seal(input), input);
     assert.deepEqual(events, ['prototype', 'keys', 'descriptor:child', 'freeze', 'keys', 'descriptor:child', 'define:child', 'child']);
