@@ -23,6 +23,7 @@ name: music-player-release
 #   with a restore key that drops the lock file hash so a dependency change rebuilds only what changed.
 #   Only runs on main and manual dispatches save caches. The bytes of a release are still the bytes this
 #   run built and attested: cargo and Gradle rebuild whatever their own fingerprints say changed.
+#   Entry sizes and hit rates are recorded in doc/decision/music-player-releases.md.
 
 on:
   workflow_dispatch:
