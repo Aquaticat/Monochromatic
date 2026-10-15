@@ -39,13 +39,16 @@ await describe({ name: 'original profile call values', children: [
     const call = { type: 'CallExpression', optional: false, arguments: [argument], callee: {
       type: 'MemberExpression', computed: false, optional: false,
       object: { type: 'Identifier', name: 'tools' },
-      property: { type: 'Identifier', get name() { events.push('name'); return 'tool'; } },
-      get start() { events.push('start'); return 0; },
-      get end() { events.push('end'); return 10; },
+      property: { type: 'Identifier', get name() { events.push('name');
+      return 'tool'; } },
+      get start() { events.push('start');
+      return 0; },
+      get end() { events.push('end');
+      return 10; },
     } };
     const result = inspect({ call, bindingName: 'bound', readPattern(input: unknown) {
       assert.deepEqual(input, { node: argument, bindingName: 'bound' });
-      assert.ok(input !== null && typeof input === 'object' && 'node' in input);
+      assert.ok((input !== null) && (typeof input) === 'object' && ('node' in input));
       assert.equal(input.node, argument);
       events.push('pattern');
       return pattern;

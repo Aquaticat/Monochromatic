@@ -14,6 +14,9 @@ export type ProfileCallInput = Readonly<{
   allowed: ReadonlySet<string>;
   source: string;
   prefix: string;
-  readPattern: (input: Readonly<{ node: Node | undefined; bindingName?: string }>) => object;
+  readPattern: (input: Readonly<{
+    node: Node | undefined;
+    bindingName?: string
+  }>) => object;
   ResultProgramProfileError: new (message: string) => Error;
 }>;

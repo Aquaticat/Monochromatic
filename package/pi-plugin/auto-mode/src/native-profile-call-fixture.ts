@@ -11,7 +11,11 @@ export type CallSite = Readonly<{
   ordinal: number;
   name: string;
   pattern: object;
-  callee: Readonly<{ start: number; end: number; text: string }>;
+  callee: Readonly<{
+    start: number;
+    end: number;
+    text: string
+  }>;
   alias: string;
 }>;
 /**
@@ -30,7 +34,10 @@ type CallModule = Readonly<{
 type ParserModule = Readonly<{
   parse: (source: string) => Readonly<{
     diagnostics: readonly unknown[];
-    program: Readonly<{ body: readonly Readonly<{ type: string; expression: unknown }>[] }>;
+    program: Readonly<{ body: readonly Readonly<{
+      type: string;
+      expression: unknown
+    }>[] }>;
   }>;
 }>;
 /**
@@ -39,7 +46,10 @@ type ParserModule = Readonly<{
 type PatternModule = Readonly<{
   ResultProgramProfileError: new (message: string) => Error;
   readPattern: (input: CallInput) => object;
-  materializePattern: (input: Readonly<{ pattern: object; result?: string }>) => unknown;
+  materializePattern: (input: Readonly<{
+    pattern: object;
+    result?: string
+  }>) => unknown;
 }>;
 
 /**
@@ -50,8 +60,8 @@ type PatternModule = Readonly<{
  @throws Error for an absent call inspection export
  */
 function assertCallModule(value: unknown): asserts value is CallModule {
-  assert.ok(value !== null && typeof value === 'object' && 'inspectProfileCall' in value
-    && typeof value.inspectProfileCall === 'function');
+  assert.ok((value !== null) && (typeof value) === 'object' && ('inspectProfileCall' in value)
+    && (typeof value.inspectProfileCall) === 'function');
 }
 /**
  Check the original parser export.
@@ -61,7 +71,7 @@ function assertCallModule(value: unknown): asserts value is CallModule {
  @throws Error for an absent original parser
  */
 function assertParserModule(value: unknown): asserts value is ParserModule {
-  assert.ok(value !== null && typeof value === 'object' && 'parse' in value && typeof value.parse === 'function');
+  assert.ok((value !== null) && (typeof value) === 'object' && ('parse' in value) && (typeof value.parse) === 'function');
 }
 /**
  Check the original pattern owner and diagnostic exports.
@@ -71,15 +81,18 @@ function assertParserModule(value: unknown): asserts value is ParserModule {
  @throws Error for an absent original pattern contract
  */
 function assertPatternModule(value: unknown): asserts value is PatternModule {
-  assert.ok(value !== null && typeof value === 'object'
-    && 'readPattern' in value && typeof value.readPattern === 'function'
-    && 'materializePattern' in value && typeof value.materializePattern === 'function'
-    && 'ResultProgramProfileError' in value && typeof value.ResultProgramProfileError === 'function');
+  assert.ok((value !== null) && (typeof value) === 'object'
+    && ('readPattern' in value) && (typeof value.readPattern) === 'function'
+    && ('materializePattern' in value) && (typeof value.materializePattern) === 'function'
+    && ('ResultProgramProfileError' in value) && (typeof value.ResultProgramProfileError) === 'function');
 }
 /**
  Built call inspection is loaded independently from the maintained source.
  */
-const loaded: unknown = await import(new URL('../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/profile-call.ts', import.meta.url).href);
+const loaded: unknown = await import(new URL(
+  '../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/profile-call.ts',
+  import.meta.url
+).href);
 assertCallModule(loaded);
 /**
  Explicit contract retains narrowing across consumer function declarations.
@@ -88,7 +101,10 @@ const calls: CallModule = loaded;
 /**
  Built parser preserves the actual production syntax representation.
  */
-const parsed: unknown = await import(new URL('../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/parser.mjs', import.meta.url).href);
+const parsed: unknown = await import(new URL(
+  '../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/parser.mjs',
+  import.meta.url
+).href);
 assertParserModule(parsed);
 /**
  Original parser remains available to independent expression fixtures.
@@ -97,7 +113,10 @@ const parser: ParserModule = parsed;
 /**
  Built pattern decoder retains the production weak-set membership.
  */
-const decoded: unknown = await import(new URL('../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/result-pattern.mjs', import.meta.url).href);
+const decoded: unknown = await import(new URL(
+  '../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/result-pattern.mjs',
+  import.meta.url
+).href);
 assertPatternModule(decoded);
 /**
  Original pattern functions remain independent of the extracted helper.
@@ -116,8 +135,12 @@ export const patterns: PatternModule = decoded;
  */
 export function parseCall(source: string): unknown {
   const result = parser.parse(source);
-  assert.deepEqual(result.diagnostics, []);
-  const [statement] = result.program.body;
+  assert.deepEqual(
+    result.diagnostics,
+    []
+  );
+  const [statement] = result.program
+    .body;
   assert.ok(statement?.type === 'ExpressionStatement');
   return statement.expression;
 }
@@ -152,7 +175,9 @@ export function inspect(input: CallInput = {}): CallSite {
  */
 export function syntheticCall(input: CallInput = {}): object {
   return {
-    type: 'CallExpression', optional: false, arguments: [{}],
+    type: 'CallExpression',
+    optional: false,
+    arguments: [{}],
     callee: {
       type: 'MemberExpression', computed: false, optional: false,
       object: { type: 'Identifier', name: 'tools' },

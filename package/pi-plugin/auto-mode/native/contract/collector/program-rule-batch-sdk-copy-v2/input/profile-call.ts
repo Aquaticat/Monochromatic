@@ -39,33 +39,54 @@ const l = tagged({ tag: 'auto-mode-profile-call' });
  @example inspectProfileCall({ call, group, ordinal, allowed, source, prefix, readPattern, ResultProgramProfileError });
  */
 export function inspectProfileCall({
-  call, group, ordinal, bindingName, allowed, source, prefix, readPattern, ResultProgramProfileError,
+  call,
+  group,
+  ordinal,
+  bindingName,
+  allowed,
+  source,
+  prefix,
+  readPattern,
+  ResultProgramProfileError,
 }: ProfileCallInput): DeclaredProgramSite {
   /**
    Tracing observes only the inspection boundary.
    */
-  const cl = tagged({ tag: inspectProfileCall.name, l });
+  const cl = tagged({
+    tag: inspectProfileCall.name,
+    l
+  });
   cl.debug('inspecting original tool call');
-  if (call?.type !== 'CallExpression' || call.optional || call.arguments.length !== 1) {
+  if ((call?.type !== 'CallExpression') || call.optional || (call.arguments.length !== 1)) {
     throw new ResultProgramProfileError('direct single-argument call required');
   }
   const { callee } = call;
-  if (callee.type !== 'MemberExpression' || callee.computed || callee.optional
-    || callee.object.type !== 'Identifier' || callee.object.name !== 'tools'
-    || callee.property.type !== 'Identifier' || !allowed.has(callee.property.name)) {
+  if ((callee.type !== 'MemberExpression') || callee.computed || callee.optional
+    || (callee.object.type !== 'Identifier') || (callee.object.name !== 'tools')
+    || (callee.property.type !== 'Identifier') || (!allowed.has(callee.property.name))) {
     throw new ResultProgramProfileError('owned tool identifier required');
   }
   const start = callee.start - prefix.length;
   const end = callee.end - prefix.length;
-  if (!(Number.isSafeInteger(start) && start >= 0 && end > start && end <= source.length)) {
+  if (!(Number.isSafeInteger(start) && start >= 0
+    && end > start
+    && end <= source.length)) {
     throw new ResultProgramProfileError('callee source span');
   }
   return Object.freeze({
     group,
     ordinal,
-    name: callee.property.name,
-    pattern: readPattern({ node: call.arguments[0], bindingName }),
-    callee: Object.freeze({ start, end, text: source.slice(start, end) }),
+    name: callee.property
+      .name,
+    pattern: readPattern({
+      node: call.arguments[0],
+      bindingName
+    }),
+    callee: Object.freeze({
+      start,
+      end,
+      text: source.slice(start, end)
+    }),
     alias: `__owned_flow_${group}_${ordinal}`,
   });
 }
