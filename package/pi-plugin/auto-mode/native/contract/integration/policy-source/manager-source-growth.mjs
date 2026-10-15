@@ -74,7 +74,10 @@ export function assertManagerOriginsAppended({
     publication,
     sessionInputOccurrence
   }=origin;
-  if((source.kind!=='native-session-message-input')||(!['native-manager-input','native-event-handler'].includes(source.inputOrigin))
+  if((source.kind!=='native-session-message-input')||(![
+    'native-manager-input',
+    'native-event-handler'
+  ].includes(source.inputOrigin))
     ||(source.registration!==undefined)
     ||(source.permission!==false)
     ||(origin.runOccurrence!==undefined)

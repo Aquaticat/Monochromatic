@@ -46,7 +46,8 @@ class LibraryRebuildError(message: String) : IllegalStateException(message)
 sealed interface SearchActivation {
     // What:     `data class SelectTrack(val indexInLibrary: Int)` selects a track that is not the current one.
     // Why:      A result for a different track follows the row rule (D124, D127): the track becomes the current track
-    //           and loads paused, and the next activation of its result toggles play.
+    //           and loads paused, or also starts with Auto-play on select on (D129); the next activation of its result
+    //           toggles play.
     //
     // In TS you'd write (pseudocode):
     // ```ts

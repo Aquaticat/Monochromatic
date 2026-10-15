@@ -40,15 +40,15 @@ class PlayerControllerRowFailureTest {
         controller.playIndex(1)
         assertNotNull(controller.loadFailure)
         assertEquals(1, controller.uiState.currentIndex)
-        controller.activateRow(1)
+        controller.activateRow(1, autoPlayOnSelect = false)
         assertEquals(2, engine.loads.size)
         assertEquals(uriAt(1) to true, engine.loads.last())
         assertEquals(2, controller.loadFailure?.serial)
         engine.unreadable.clear()
-        controller.activateRow(1)
+        controller.activateRow(1, autoPlayOnSelect = false)
         assertEquals(3, engine.loads.size)
         assertTrue(controller.uiState.playing)
-        controller.activateRow(1)
+        controller.activateRow(1, autoPlayOnSelect = false)
         assertFalse(controller.uiState.playing)
         assertEquals(3, engine.loads.size)
     }
@@ -58,13 +58,29 @@ class PlayerControllerRowFailureTest {
     fun selectingARowThatCannotBeOpenedLeavesItSelectedAndPaused() {
         openThree()
         engine.unreadable += uriAt(2)
-        controller.activateRow(2)
+        controller.activateRow(2, autoPlayOnSelect = false)
         assertEquals(2, controller.uiState.currentIndex)
         assertFalse(controller.uiState.playing)
         assertNotNull(controller.loadFailure)
         engine.unreadable.clear()
-        controller.activateRow(2)
+        controller.activateRow(2, autoPlayOnSelect = false)
         assertTrue(controller.uiState.playing)
+        assertEquals(uriAt(2) to true, engine.loads.last())
+    }
+
+    /** With Auto-play on select on, a row whose file cannot be opened stays selected, reports once and does not start. */
+    @Test
+    fun anUnreadableRowStaysSelectedWhenAutoPlayIsOn() {
+        openThree()
+        engine.unreadable += uriAt(2)
+        controller.activateRow(2, autoPlayOnSelect = true)
+        assertEquals(2, controller.uiState.currentIndex)
+        assertFalse(controller.uiState.playing)
+        assertFalse(engine.playing)
+        assertEquals(1, controller.loadFailure?.serial)
+        engine.unreadable.clear()
+        controller.activateRow(2, autoPlayOnSelect = true)
+        assertTrue("the next activation of the current row retries the load", controller.uiState.playing)
         assertEquals(uriAt(2) to true, engine.loads.last())
     }
 }

@@ -45,6 +45,7 @@ import dev.monochromatic.musicplayer.core.MEASURE_DURATION_FILE_NAME
 import dev.monochromatic.musicplayer.core.MeasurePeakReading
 import dev.monochromatic.musicplayer.core.TrackMeasure
 import dev.monochromatic.musicplayer.core.measureDecodeDurations
+import dev.monochromatic.musicplayer.core.measureDeleteLegacyDurationFiles
 import dev.monochromatic.musicplayer.core.measureEncodeDurations
 import dev.monochromatic.musicplayer.core.measurePeakFromReply
 
@@ -294,6 +295,11 @@ object TrackMeasures {
         val current: MutableMap<Long, Long>? = durations
         if (current != null) {
             return current
+        }
+        /** Retired duration cache files (gxhash-era keys) deleted now, so they do not accumulate. */
+        val deletedLegacy: Int = measureDeleteLegacyDurationFiles(context.applicationContext.filesDir)
+        if (deletedLegacy > 0) {
+            Log.i(MEASURE_TAG, "deleted $deletedLegacy retired duration cache file(s)")
         }
         /** Cache file under the app's private files directory. */
         val file = File(context.applicationContext.filesDir, MEASURE_DURATION_FILE_NAME)

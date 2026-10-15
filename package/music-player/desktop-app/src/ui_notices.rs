@@ -26,6 +26,13 @@ pub(crate) fn file_gone_message(path: &Path, was_playing: bool) -> String {
     return format!("{name} was removed from the folder.");
 }
 
+/// What: `audio_unavailable_message` words the report that no audio output could be opened.
+/// Why: the player keeps working without sound, so the person needs the cause and what to start; the wording
+/// names both Linux sound systems the player can use and avoids developer words.
+pub(crate) fn audio_unavailable_message() -> &'static str {
+    return "No sound output is available, so nothing will be heard. Start a sound server such as PipeWire, or set up an ALSA sound card, then restart the player.";
+}
+
 #[cfg(test)]
 #[path = "ui_notices_tests.rs"]
 mod tests;

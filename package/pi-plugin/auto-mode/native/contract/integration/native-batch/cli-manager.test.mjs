@@ -4,7 +4,7 @@ import {createRootSessionFactory} from './session-root.ts';
 import {attachNativeContextCopies} from './generated/session-manager.mjs';
 
 const env=await createEnvironment();
-let registrations=0;
+const observations={registrations:0};
 const factory=createRootSessionFactory({
   ...env,
   onSessionRegistered({
@@ -12,7 +12,7 @@ const factory=createRootSessionFactory({
     manager,
     lifecycle
   }){
- registrations++;
+ observations.registrations++;
  lifecycle.assertActive(lifecycle.capture({
    session,
    manager
@@ -27,10 +27,12 @@ await assert.rejects(
     options:env.options,
     manager:foreignManager
   })); },
-  /not returned by this declared constructor owner/
+  function matchesForeignManager(error) {
+    return Error.isError(error) && error.message.includes('not returned by this declared constructor owner');
+  }
 );
 assert.equal(
-  registrations,
+  observations.registrations,
   0
 );
 const manager=factory.managers
@@ -46,7 +48,7 @@ assert.equal(
   manager
 );
 assert.equal(
-  registrations,
+  observations.registrations,
   1
 );
 const oldLease=factory.lifecycle
@@ -64,7 +66,7 @@ assert.equal(
 );
 factory.lifecycle
   .completeRetirement(transition);
-assert.throws(function inspectRetiredLease() { return (factory.lifecycle
+assert.throws(function inspectRetiredLease() { ; (factory.lifecycle
   .assertActive(oldLease)); });
 manager.newSession();
 const second=await factory.createFromManager({
@@ -81,7 +83,7 @@ assert.notEqual(
   first.session
 );
 assert.equal(
-  registrations,
+  observations.registrations,
   2
 );
 const secondLease=factory.lifecycle
@@ -98,7 +100,7 @@ const disposalFailure=new Error('Fixture disposal has not completed');
 second.session
   ._disconnectFromAgent=function failIncompleteDisposal() {throw disposalFailure;};
 assert.throws(
-  function disposeIncompleteSession() { return (second.session
+  function disposeIncompleteSession() { ; (second.session
     .dispose()); },
   function matchesDisposalFailure(error) { return (error===disposalFailure); }
 );
@@ -110,9 +112,13 @@ assert.equal(
 assert.throws(
   function attachConflictingObserver() { return (attachNativeContextCopies(
     manager,
-    function unusedConflictingObserver() {}
+    function unusedConflictingObserver() {
+      throw new Error('Conflicting observer must not be invoked');
+    }
   )); },
-  /already has a context-copy owner/
+  function matchesRetainedOwner(error) {
+    return Error.isError(error) && error.message.includes('already has a context-copy owner');
+  }
 );
 second.session
   ._disconnectFromAgent=disconnect;
@@ -131,19 +137,23 @@ const third=await factory.createFromManager({
   manager
 });
 assert.equal(
-  registrations,
+  observations.registrations,
   3
 );
 second.session
   ._disconnectFromAgent=function rejectRepeatedCleanup() {throw new Error('Completed disposal must not enter old cleanup again');};
-assert.doesNotThrow(function repeatCompletedDisposal() { return (second.session
+assert.doesNotThrow(function repeatCompletedDisposal() { ; (second.session
   .dispose()); });
 assert.throws(
   function attachObserverAfterOldDisposal() { return (attachNativeContextCopies(
     manager,
-    function unusedReplacementObserver() {}
+    function unusedReplacementObserver() {
+      throw new Error('Replacement observer must not be invoked');
+    }
   )); },
-  /already has a context-copy owner/
+  function matchesCurrentOwner(error) {
+    return Error.isError(error) && error.message.includes('already has a context-copy owner');
+  }
 );
 factory.lifecycle
   .assertActive(factory.lifecycle

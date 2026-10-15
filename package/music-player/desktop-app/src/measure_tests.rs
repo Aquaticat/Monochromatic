@@ -392,3 +392,24 @@ fn a_file_that_cannot_be_decoded_is_tried_again_by_the_next_sweep_of_the_same_lo
     let _ = std::fs::remove_file(&broken);
     let _ = std::fs::remove_file(&path);
 }
+
+/// What: `lower_current_thread_to_idle` leaves the calling thread, and only that thread, in `SCHED_IDLE`.
+/// Why: musl's `sched_setscheduler` wrapper always fails with ENOSYS, so a call through the C library would leave
+/// the sweep at normal priority on Alpine while still passing on glibc; reading the policy back from the kernel
+/// proves the direct system call took effect on whichever libc the test runs on.
+#[cfg(target_os = "linux")]
+#[test]
+fn lower_current_thread_to_idle_puts_only_the_calling_thread_in_the_idle_class() {
+    let policy_of_calling_thread = || {
+        return unsafe { libc::syscall(libc::SYS_sched_getscheduler, 0) };
+    };
+    let before = policy_of_calling_thread();
+    let lowered = std::thread::spawn(|| {
+        lower_current_thread_to_idle();
+        return unsafe { libc::syscall(libc::SYS_sched_getscheduler, 0) };
+    })
+    .join()
+    .expect("the lowering thread finished");
+    assert_eq!(lowered, libc::c_long::from(libc::SCHED_IDLE), "the lowered thread is in SCHED_IDLE");
+    assert_eq!(policy_of_calling_thread(), before, "the thread that spawned it keeps its own policy");
+}

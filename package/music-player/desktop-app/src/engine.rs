@@ -681,6 +681,7 @@ fn run(
         // ```
         Err(e) => {
             tracing::warn!(error = %e, "audio init failed; degrading to silent mode");
+            on_update(Update::AudioUnavailable { reason: e.to_string() });
             None
         }
     };

@@ -17,7 +17,11 @@ backend differs by target.
 - Output:
    the platform's native stack.
    Linux uses a winit window and PipeWire audio (no
-  ALSA/PulseAudio backends).
+  PulseAudio backend).
+   Builds made with the `alsa-fallback` cargo feature
+  (the Alpine build,
+   see [Alpine Linux](#alpine-linux))
+  also open the default ALSA device when no PipeWire daemon answers.
    The window runs on Wayland when `WAYLAND_DISPLAY` (or `WAYLAND_SOCKET`) is set and otherwise on X11 when `DISPLAY` is
   set, because the Slint `backend-winit` feature turns on both of winit's Linux window systems;
    with neither variable set, startup fails with winit's error.
@@ -126,6 +130,127 @@ backend differs by target.
    future decoded samples swap to it;
    already-buffered fallback-gain samples are not flushed.
 
+## Alpine Linux
+
+The player builds and runs on Alpine Linux (musl libc),
+on x86_64 and aarch64.
+The decision and every measurement behind it are in [`doc/decision/music-player-alpine.md`](../../../doc/decision/music-player-alpine.md).
+The binary is dynamically linked against Alpine's musl and runs only on musl systems.
+A fully static binary is not possible:
+the PipeWire,
+fontconfig and freetype static libraries do not exist on Alpine,
+and a static musl program cannot `dlopen` the Wayland,
+xkbcommon and EGL libraries a window needs.
+
+### Install the runtime packages
+
+```sh
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
+  mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+```
+
+- `fontconfig` and a font:
+  with no font installed the player panics at startup,
+  so install one (`font-dejavu`
+  is the small one;
+  any font package works).
+- `pipewire-libs`,
+  `libgcc`,
+  `wayland-libs-client`,
+  `wayland-libs-egl`,
+  `libxkbcommon`:
+  libraries the binary links or opens at run time.
+- `mesa-egl`,
+  `mesa-gles`,
+  `mesa-dri-gallium`:
+  the OpenGL ES stack the window draws with
+  (the software rasterizer on a machine with no GPU).
+- `alsa-lib`:
+  the ALSA fallback when no PipeWire daemon runs.
+
+You also need a Wayland compositor,
+and for sound either PipeWire with a session manager or an ALSA device:
+
+```sh
+apk add pipewire wireplumber
+```
+
+Optional:
+`dbus` (a session bus,
+for notifications and the appearance setting),
+`zenity` (the folder chooser when
+no desktop portal runs),
+and `xdg-desktop-portal`.
+
+### Run
+
+Alpine does not create `XDG_RUNTIME_DIR` unless `elogind` runs.
+Wayland and PipeWire need it,
+so create it by hand when it is unset:
+
+```sh
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}"
+mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+music-player path/to/music-folder
+```
+
+### What to expect
+
+- Sound:
+  the player uses PipeWire when a daemon answers,
+  otherwise the default ALSA device (set it in
+  `/etc/asound.conf` or `~/.asoundrc`).
+  With neither,
+  the player starts,
+  shows "No sound output is available,
+  so nothing will be heard.
+  Start a sound server
+  such as PipeWire,
+  or set up an ALSA sound card,
+  then restart the player.",
+  and stays silent.
+- Folder chooser:
+  "Open folder" needs a desktop portal or `zenity`.
+  Without either,
+  the window says "This computer has no folder chooser for the player to open.
+  Install zenity,
+  or start
+  the player with a folder:
+  music-player /path/to/music".
+- Notifications and the appearance setting need a D-Bus session bus.
+  Without one the player logs a warning and runs.
+- Settings,
+  the session and the true-peak cache are written under `$XDG_CONFIG_HOME/musicplayer`
+  (`~/.config/musicplayer` by default).
+
+### Build from source on Alpine
+
+```sh
+apk add rust cargo build-base cmake samurai pkgconf linux-headers clang21-libclang \
+  pipewire-dev alsa-lib-dev fontconfig-dev freetype-dev
+cd package/music-player/desktop-app
+SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 cargo build --release --locked --features alsa-fallback
+```
+
+Unit tests also need `cargo-nextest dbus font-dejavu`:
+
+```sh
+SLINT_EMIT_DEBUG_INFO=1 SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 cargo nextest run --locked --features alsa-fallback
+```
+
+### Checking the Alpine build
+
+`mise run //package/music-player/desktop-app:test:alpine` builds `Containerfile.alpine` with podman,
+runs the unit
+tests,
+builds the app and the repository's nested compositor,
+and runs the app inside that compositor in three
+scenarios (no sound,
+ALSA,
+PipeWire),
+with explicit memory and CPU bounds.
+`.github/workflows/music-player-alpine.yml` runs the same commands on x86_64 and aarch64.
+
 ## Codecs
 
 One demux path (symphonia) feeds two decode paths:
@@ -176,7 +301,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   (the Source Root,
    the selected track path,
    the position,
-   the playback mode and the two template texts;
+   the playback mode, the two template texts and the Auto-play on select flag, `auto_play_on_select`, which is off
+   when the field is missing;
    it keeps no queue,
    so nothing is pruned or remapped: the launch rescan rebuilds the queue).
 - `src/error.rs`:
@@ -236,7 +362,7 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/peakcache.rs`,
    `src/peakcache_service.rs` and `src/peakcache_handle.rs`:
    the persistent peak cache.
-   `peakcache.rs` computes the opaque fingerprint and decides where `decisions.db` lives;
+   `peakcache.rs` computes the opaque fingerprint (through the shared XXH3-64 `track_fingerprint` of `truepeak-core`) and decides where `decisions.db` lives;
    the Turso-backed actor in `peakcache_service.rs` owns the database,
    and the synchronous `CacheHandle` in `peakcache_handle.rs` is what the controller and the sweep call.
 - `src/measure.rs`:
@@ -416,11 +542,13 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    The highlighted row is the currently selected track, playing or paused,
    and the transport deck names it (folder and title).
    A single click on a row other than the highlighted one selects it and loads it paused (D124),
-   stopping whatever was playing;
-   a click on the already-highlighted row toggles play and pause.
-   A Search result for a track follows the same rule (D127): a result that is not the current track selects it, and
-   the result of the current track toggles.
-   Only the Play item of the track menu starts a row at once.
+   stopping whatever was playing, or also starts it when the Auto-play on select setting is on (D129);
+   a click on the already-highlighted row toggles play and pause in both modes.
+   A Search result for a track follows the same rule (D127): a result that is not the current track selects it (and
+   starts it with the setting on), and the result of the current track toggles.
+   The Play item of the track menu starts a row at once with the setting on or off.
+   `src/row_activation.rs` holds the one pure rule, `row_activation_for`, used by `ui_wire::play_row` (click, Enter and
+   Search result) and by `play_row_now` (the menu Play, which always plays).
    A row whose file cannot be opened stays selected and paused, is reported once, and the next click on it tries to
    load it again (D128); Next, Previous and the end of a track still walk past unreadable files.
    No double-click handling exists or is needed.
@@ -570,8 +698,8 @@ No `.slint` file may call `mix`, `brighter`, `darker` or `transparentize` (a tes
 
 ## Settings page
 
-Settings (`ui/settings.slint`, D87, D99, D109, D110) lists the two templates, Track rows and Playing track, under a
-Templates heading.
+Settings (`ui/settings.slint`, D87, D99, D109, D110, D129) lists the two templates, Track rows and Playing track, under
+a Templates heading, and the Auto-play on select switch row under a Playback heading.
 The whole page is drawn on the one canvas colour (pure white in light, pure black in dark): no page tint, card fill,
 header band, border or divider line, so the header, the heading and the rows are separated by spacing alone.
 Only state carries a fill: the hover and pressed layers, the 40 px icon circle (the secondary container role) and the
@@ -599,6 +727,17 @@ Back (the header arrow) and Escape close Settings in both forms.
 Escape closes Settings only while Settings is the visible page and no template line is being edited.
 Closing Settings, or selecting the other row, applies and saves the valid drafts.
 Widening the window on an editor page continues that editor in the right pane.
+
+The Playback group is one switch row in the same 72 px form: the `autoplay` icon circle, the title Auto-play on select,
+one supporting line that states what selecting does, and a Material 3 switch (52 by 32 px, a 24 px thumb).
+Click, Space and Enter toggle it in place and save `auto_play_on_select` at once; it opens no editor, is never a
+selected row, and in the wide form the detail pane keeps the selected template's editor.
+The state is shown by the thumb position, the track fill (the accent when on, the canvas with an outline border when
+off) and the check or cross mark in the thumb.
+The keyboard position reaches the row as the last stop of the list (Down and End), with the focus ring of the group
+corners.
+Under 300 px of row width, which is the list pane of a window between 600 and about 910 px, the switch sits under the
+supporting line and the text wraps; `AutoPlaySwitch` in `ui/settings.slint` draws the switch for both places.
 
 The row icons are Material Symbols Outlined (weight 400, grade 0, 24 px, unfilled) `queue_music` and `play_circle`
 from [google/material-design-icons][material-icons], commit `49d4db35df873165d6bd6ba09b063c7dafbac2f4`

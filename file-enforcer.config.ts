@@ -1513,7 +1513,6 @@ const CARGO_SHARED_DEPENDENCIES: readonly CargoSharedDependency[] = [
   { table: 'dependencies', name: 'anyhow', value: '1', },
   { table: 'dependencies', name: 'arbitrary', value: { version: '1', features: ['derive',], }, },
   { table: 'dependencies', name: 'clap', value: { version: '4', features: ['derive',], }, },
-  { table: 'dependencies', name: 'gxhash', value: '3', },
   { table: 'dependencies', name: 'i-slint-backend-winit', value: '1.18.1', },
   { table: 'dependencies', name: 'ignore', value: '0.4', },
   { table: 'dependencies', name: 'libfuzzer-sys', value: { version: '0.4', features: ['arbitrary-derive',], }, },

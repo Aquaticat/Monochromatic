@@ -9,7 +9,7 @@ export function registerOriginalJudgmentStart({
   producerOwner,
   stream
 }){
- function beforePreparation(
+ return agent.subscribe(function beforePreparation(
    event,
    signal
  ){
@@ -31,6 +31,5 @@ export function registerOriginalJudgmentStart({
     stream,
     signal
   });
- }
- return agent.subscribe(beforePreparation);
+ });
 }

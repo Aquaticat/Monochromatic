@@ -1,5 +1,157 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Sequential native judgment retries in Oxlint 1.88.0
+
+### Symptom
+
+Oxlint reports `eslint(no-await-in-loop): Unexpected await inside a loop`
+for the original judgment transport attempt in
+`package/pi-plugin/auto-mode/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs`.
+The implementation moved to `candidate.ts` on 2026-10-15;
+the sequential transport loop now lives in sibling `dispatch.ts`.
+The complete diagnostic includes backticks around `await`.
+The package denies warnings,
+so this finding fails lint even when the runtime consumer passes.
+
+### Rule and application boundaries
+
+The upstream implementation in
+`crates/oxc_linter/src/rules/eslint/no_await_in_loop.rs:94`
+reports syntactic loop ancestry:
+
+```rust
+// oxc/crates/oxc_linter/src/rules/eslint/no_await_in_loop.rs
+if is_in_loop {
+    ctx.diagnostic(no_await_in_loop_diagnostic(span));
+}
+```
+
+The [current rule source](https://github.com/oxc-project/oxc/blob/main/crates/oxc_linter/src/rules/eslint/no_await_in_loop.rs)
+defines a unit rule with no option parser or sequential-retry allow-list.
+The existing local source checkout at commit `288d8cc77984b0a3851c58c423ffe9e6edc79f2e`
+also contains that unconditional diagnostic.
+This is expected rule behavior,
+not an upstream defect.
+
+The linted operation belongs to the original judgment's dispatch loop.
+Its catch branch records the failed attempt,
+rechecks cancellation and deadline,
+classifies the actual transport failure,
+and consumes the judgment's single retry before continuing.
+Starting attempts together would bypass those conditions and spend attempts that may never be allowed.
+The attempt count remains capped at three across dispatches;
+the original preparation-inclusive deadline remains five seconds.
+
+### Verification and exception
+
+The budget module originally reported 55 warnings.
+Adding boundary and retained-state types removed its unsafe-value warnings;
+subsequent statement and error-definition cleanup left the sequential-await diagnostic
+and one return-shape warning.
+The return branch now explicitly returns its never-returning failure helper.
+A next-line `eslint/no-await-in-loop` exception covers only the original transport await.
+The exception retains sequential behavior and does not change any configured rule or admission limit.
+The JavaScript budget and its new consumer built and passed their runtime checks.
+The overlap-guard omission control failed its expected rejection assertion without changing the built artifact.
+The complete JavaScript subset still had 139 warnings,
+including unchecked imports in the new consumer.
+After migration to the existing TypeScript setup,
+package type checking and lint of all eight budget implementation and consumer files pass.
+The focused lint report contains no warnings or errors.
+The rebuilt typed consumers pass;
+removing the overlap guard in memory makes the typed consumer fail its expected rejection assertion.
+The built candidate and dispatcher hashes remain unchanged.
+`${HOME}/temp/agent/pi-native-budget-operator-lint-20261015.log`
+and `pi-native-budget-checked-consumer-20261015.log` in the same directory retain those results.
+
+Reproduce with the package's `lint:oxlint` task and the explicit budget path.
+`${HOME}/temp/agent/pi-native-budget-shape-lint-20261014.log`
+retains the pre-exception diagnostics.
+Named error fields and explicit input types pass their corresponding rules;
+the unannotated boundary and unsuppressed retry await form the failing controls.
+
+### Rejected alternatives and upstream filing
+
+Parallel attempts are incompatible with failure-dependent retry eligibility.
+The rule provides no targeted configuration alternative;
+disabling it for a file or package would weaken unrelated checks.
+No recursive retry implementation or additional promise chain is introduced.
+
+No upstream report or draft is warranted.
+The rule operates as specified;
+upstream could add an option,
+but the application requires no tool change.
+Supported syntax is already handled.
+Contribution acceptance and likelihood of an upstream change are immaterial to this local exception,
+and no upstream patch is proposed or prototyped.
+The checked `.out-of-scope/` entries contain no applicable Oxlint exemption.
+There is no upstream filing requiring a duplicate search.
+
+## Owned native program builds depended on source formatting
+
+### Symptom and cause
+
+The October 14 formatting commit `2728f357f` changed maintained program source layout.
+The native build then emitted `Native SDK edit does not have one matching location`
+for the owned runner,
+prepared dispatcher,
+and judgment constructor.
+The deciding helper in
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/build-rebase.ts:63`
+matches literal source text:
+
+```ts
+// native/contract/integration/native-batch/build-rebase.ts
+const at = source.indexOf(from);
+```
+
+Those transformations patched repository-owned modules consumed only by this build.
+Formatting changed the search text without changing the intended implementation.
+This was an unnecessary owned-source transformation boundary,
+not installed Pi source drift.
+
+### Correction and verification
+
+Commit `26994ff789` maintains the integrated runner,
+dispatcher,
+and judgment directly in `native/contract/collector/program-rule-batch-sdk-copy-v2/input/`.
+`native/contract/integration/native-batch/prepare-program.ts:137` now emits an export bridge:
+
+```ts
+// native/contract/integration/native-batch/prepare-program.ts
+const programRunner = `export {createReachedRunnerClass} from ${JSON.stringify(programRunnerUrl.href)};\n`;
+```
+
+The installed-Pi executor and converter adaptations remain separate.
+Historical provenance hashes retain their original meaning.
+The intermediate parsed-source runner and dispatcher replacements were removed:
+they preserved an unnecessary transformation rather than removing its need.
+
+The native build and package type check pass.
+After correcting the separate JavaScript modifier recurrence documented in
+"Native source autofixes emit invalid JavaScript",
+the domain,
+manual review,
+approval context,
+single call,
+approved dependency,
+event receipt,
+host lifecycle,
+and actual CLI process tasks pass.
+The CLI fixture made zero provider requests and exited with clean shutdown.
+The syntax task checks 227 maintained modules after explicit TypeScript erasure.
+The retained log is `${HOME}/temp/agent/pi-native-direct-owned-regressions-syntax-fixed-20261014.log`.
+
+### Upstream filing decision
+
+- The failing transformation was repository-owned.
+- No upstream fix is required for the direct module boundary.
+- No unsupported Pi use case is inferred from this failure.
+- External contribution policy is irrelevant to this local correction.
+- No upstream maintainer position is inferred.
+- The owned correction has passing build and consumer evidence;
+  no upstream prototype or filing is proposed.
+
 ## Pi 1.2.0 confirmation fixtures must preserve occurrence identity and exact assessment input
 
 ### Symptoms and separate causes
@@ -294,6 +446,24 @@ with zero provider requests.
 The successful entry order verifies the intended consumer;
 it does not fix direct generated-manager or generated-SDK imports.
 Removing this import-order coupling remains native-quality work.
+
+The 2026-10-15 domain-fixture split reproduced this same diagnostic at the same owned host constructor.
+The first static dependency became the assertion module that imports the generated manager,
+before the runtime's maintained policy dependency.
+The failed built run is
+`${HOME}/temp/agent/pi-native-domain-fixture-split-consumer-20261015.log`.
+The fixture now explicitly imports `../maintained-policy.mjs` before its generated-manager consumers.
+The rebuilt domain,
+unconfigured-policy,
+operating-policy,
+single-call,
+approved-dependency,
+next-decision,
+serializer,
+and context contrast sets pass in
+`${HOME}/temp/agent/pi-native-domain-fixture-entry-consumer-20261015.log`.
+This verifies the documented supported entry order after extraction;
+it still does not remove the underlying generated import cycle.
 
 The manager publication tests cover original append and context copies,
 separate equal-content owners,
@@ -7137,6 +7307,210 @@ Every completed mode reports zero provider calls and zero genuine human approval
 The isolated repeat did not change the five-second deadline or prove a permanent timing remedy.
 This is distinct from the earlier SIGABRT and Go thread-creation failures in this incident record.
 
+During the later owned-runtime cleanup,
+the domain run and manual uncertainty Allow separately exhausted the same original judgment deadline.
+The unchanged manual uncertainty case passed in isolation.
+After an unrelated bounded CPU stress process exited,
+the domain and manual uncertainty suites passed,
+but ordinary native-context Allow still exhausted its deadline.
+The stress overlap therefore does not establish the cause or a sufficient remedy.
+
+Three unchanged isolated ordinary Allow runs then passed.
+Total process durations were 7259.69,
+7205.50,
+and 7954.08 milliseconds;
+these include setup and shutdown rather than measuring only judgment time.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/native-allow-repeat.json`
+retains individual outcomes and enclosing CPU counters.
+The subsequent complete remaining consumer sequence passed,
+including approval context,
+single calls,
+approved dependencies,
+event receipts,
+host lifecycle,
+CLI shutdown,
+queue release,
+resource reload and copies,
+and context receipts.
+`${HOME}/temp/agent/pi-native-resource-runtime-remaining-20261014.log` retains that sequence.
+This is verified recovery without a causal diagnosis or permanent timing fix.
+
+The later profile-cleanup build passed its domain and manual-uncertainty suites,
+then ordinary native-context Allow again reached
+`JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
+The native selector assertion was `ERR_ASSERTION: 0 !== 1`.
+`${HOME}/temp/agent/pi-native-profile-cleanup-regressions-20261014.log` retains the failure.
+The original five-second deadline remains unchanged;
+the isolated passes did not establish a permanent timing fix.
+
+After the run-owner split,
+domain cases and manual uncertainty Allow,
+Deny,
+Stop,
+and cancellation passed.
+The prohibited case then exhausted the judgment deadline before producing its policy outcome.
+Its final assertion reported `undefined` rather than the expected outcome.
+`${HOME}/temp/agent/pi-native-run-owner-regressions-20261014.log` retains that separate occurrence.
+
+The unchanged loaded-input build then failed ordinary Allow twice and passed once.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-before.json`
+retains complete process durations and enclosing CPU counters.
+CPU profiles of separate Allow and prohibition cases both passed;
+they show repeated source-freshness validation and filesystem observation costs.
+An instrumented Allow case failed with
+`DependencyDeadlineError: Original dependency assessment deadline expired`
+after 23740 opens of the disposable `workspace/AGENTS.md`.
+It also recorded 47478 `lstatSync` calls each for the workspace and its policy file.
+The fixture-specific count log is
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/loaded-allow-fs.json`.
+The instrumentation preserves native filesystem results;
+its timing overhead means it is not an uninstrumented latency estimate.
+
+The committed `test:native:source-freshness-work` regression uses the actual built Allow consumer.
+Before the change,
+the native scenario completed and its work-bound assertion failed at 45637 policy opens.
+After complete-binding-set validation,
+the native scenario again completed,
+and the same assertion failed at 15653 opens.
+Both exceed its 10000-open limit.
+The change checks every local binding identity between fresh common-parent checks;
+individual public source assertions retain their own parent freshness check.
+This reduces measured repeated filesystem work without yet completing the performance remedy.
+`${HOME}/temp/agent/pi-native-source-work-red-20261014.log`
+and `${HOME}/temp/agent/pi-native-source-work-green-20261014.log` retain the failing assertions.
+The `green` filename is a stage label,
+not a passing result.
+
+The subsequent unchanged repetitions of the first remedy all passed;
+`binding-set-after.json` records complete process durations of 8224.54,
+6064.67,
+and 6179.07 milliseconds.
+The remaining duplicate validation is being tested through `readCurrentSourceBinding()`:
+the original judgment validates dependencies before returning its original request and source identities.
+This lets the governing-source owner avoid separately repeating the same observer and collector reads.
+The unchanged 10000-open regression and the approved-dependency rejection controls remain required.
+Commit `2ea0d1c836` builds and completes the Allow scenario,
+but still fails the work bound at 14185 opens.
+`${HOME}/temp/agent/pi-native-current-source-work-20261014.log` records that incomplete remedy.
+Subsequent built Allow work counts were 13233 after batching nested rule reads,
+12169 after collecting policy selections under one synchronous boundary,
+and 11224 after removing the duplicate request read before `active()`.
+All still failed the unchanged work bound after completing their native scenarios.
+The logs are `pi-native-rule-read-work-20261014.log`,
+`pi-native-policy-selection-work-20261014.log`,
+and `pi-native-active-check-work-20261014.log` under `${HOME}/temp/agent/`.
+The constructor retains the original request read through `active()` while the judgment is open,
+and its explicit request read plus retained-dependency validation after evidence closes.
+Reading each prepared input and program inspection together measured 10812 opens;
+using validated judgment identities during approval measured 10634.
+Selecting the matching source before validation did not change that count in this fixture.
+Skipping the initial dependency check when complete source validation already performs it measured 10236 opens.
+These runs completed Allow but still failed the unchanged 10000-open assertion.
+The broader regression sequence is retained in
+`${HOME}/temp/agent/pi-native-source-boundary-regressions-20261014.log`.
+
+The separate whole-request claim extraction error in `b3f980b0f8` now has direct built-consumer coverage.
+`test:native:request-claim` passes original request identity,
+selector reuse,
+foreign-handle rejection,
+and dependency retirement.
+A process-local omission reproduced `ReferenceError: requestMaterialBinding is not defined`
+without changing the built module;
+the receipt is `${HOME}/temp/agent/pi-tool-call-scope-20261014/request-claim-omission.json`.
+
+The broader regression sequence passed on `ac35a7c2ac`,
+including approved policy changes,
+cancellation,
+prepared argument mutation,
+native event receipts,
+host lifecycle,
+and the isolated CLI process.
+Batch selection consolidation measured 10208 opens;
+the original-approval validation consolidation measured 10086.
+Commit `f79ac0ea45` then passed the unchanged work bound with 9046 opens:
+the native tool wrapper reads its original execution origin through the required entry validation,
+instead of performing entry validation and then repeating dependency validation to read the origin.
+`${HOME}/temp/agent/pi-native-entry-origin-work-20261014.log` retains the passing output.
+This is work-count evidence for the fixed fixture,
+not a universal latency guarantee.
+The expanded final runtime regression sequence passed in two parts.
+The first part reached the CLI successfully,
+then the scratch runner's next command failed with Mise's
+``Monorepo task paths (like `//path:task` or `:task`) require a monorepo root configuration.``
+The task lacked a repository working directory.
+Pinning its `dir` to the repository allowed all remaining queue,
+resource reload,
+resource input,
+context receipt,
+and whole-request claim checks to pass.
+No production configuration change was required.
+The evidence is `pi-native-source-boundaries-final-20261014.log`
+and `pi-native-source-boundaries-remaining-20261014.log` under `${HOME}/temp/agent/`.
+
+A separate full lint attempt during this cleanup failed before producing diagnostics with
+`Error running tsgolint: "exit status: exit status: 2"`
+and `runtime: failed to create new OS thread (have 2 already; errno=11)`.
+Its log is `${HOME}/temp/agent/pi-maintained-resource-lint-20261014.log`.
+A later parent-slice sample showed 50 tasks,
+`pids.max=256`,
+and cumulative `pids.events: max 340`.
+Without a pre-failure counter sample,
+these values do not attribute that particular failure.
+The current lint retry uses the previously probed `GOMAXPROCS=2` worker setting
+with no concurrent native consumer verification.
+That retry completed the full 438-file sweep with 203 errors and 12801 warnings.
+It verifies recovery of diagnostic collection,
+not a passing lint gate or a permanent thread-allocation remedy.
+The completed report is `${HOME}/temp/agent/pi-maintained-resource-lint-retry-20261014.log`.
+After the source-boundary changes and resumed state cleanup,
+the same bounded full lint invocation completed across 455 files with 175 errors and 13188 warnings.
+The report is `${HOME}/temp/agent/pi-maintained-source-boundaries-lint-20261014.log`.
+This remains a failing quality gate;
+the higher warning count exposes additional untyped module boundaries rather than qualifying those extractions.
+
+On 2026-10-15,
+overlapping event-fixture verification,
+lint,
+type checking,
+and an explicit-path commit produced separate failures.
+The Git commit reported `cannot fork()` for its transaction-local `pre-commit` hook,
+followed by `Resource temporarily unavailable`.
+Oxlint's TypeScript worker reported
+`runtime: failed to create new OS thread (have 33 already; errno=11)` and `fatal error: newosproc`.
+The native build's `nano-spawn` wrapper reported its preparation child terminated with `SIGABRT`;
+the child supplied no captured stdout or stderr.
+That missing child diagnostic does not establish the same cause as the thread-allocation failure.
+The logs are `pi-native-event-receipt-split-lint-20261015.log` and
+`pi-native-event-receipt-split-consumer-20261015.log` under `${HOME}/temp/agent/`.
+The type check passed in `pi-native-conversion-fixture-types-20261015.log`.
+The failing lint run produced no structured diagnostic report and cannot supply a source lint result.
+
+After the jobs ended,
+the parent slice reported 12 tasks,
+`pids.max=256`,
+and cumulative `pids.events: max 362`.
+There is no immediate pre-failure counter sample tying that counter to a particular allocation.
+The original event-fixture edits remained staged and the explicit-path commit retry succeeded.
+Recovery follows the existing sequential verification workaround with `GOMAXPROCS=2`.
+This serializes the jobs and bounds Go execution parallelism;
+it does not raise the cgroup limits or claim a bound on all operating-system threads.
+The original failed logs remain intact;
+the rebuilt event and converter retry is recorded separately in
+`${HOME}/temp/agent/pi-native-event-receipt-split-retry-consumer-20261015.log`.
+The standalone retry passes the rebuilt event suite and generated converter tests.
+The package's existing lint resource settings now also retain `GOMAXPROCS=2`,
+so subsequent lint invocations do not depend on a manually supplied shell prefix.
+No new upstream defect is established,
+so the existing upstream filing decision remains unchanged.
+
+The follow-up callback shape check first reported
+`no-restricted-syntax(no-variable-function-expression)` for direct variable-assigned callbacks.
+The existing rule source permits callback function expressions where external APIs dictate positional arguments.
+The request callback now comes from a named factory;
+the filesystem counter is assigned directly to its native hook.
+The focused callback/counter/approval report has zero errors and 300 warnings,
+so the warning gate remains red.
+
 ### Symptoms and separate incident boundaries
 
 On 2026-10-14,
@@ -7570,6 +7944,19 @@ it does not fix either formatter.
 Reapplying the complete fixer to the JavaScript class can reintroduce the `readonly` error.
 The failed formatter's remaining diagnostic count cannot establish full lint coverage
 because syntax errors prevented complete analysis.
+
+Commit `2728f357f` repeated that known modifier insertion during the later formatting pass.
+The built domain test stopped at `SyntaxError: Unexpected identifier '#state'`
+before any test body ran.
+Commit `bbb1aa2f64` removed the modifier again.
+The rebuilt domain and subsequent native regression tasks passed.
+Do not treat a successful build or package type check as validation of copied JavaScript syntax.
+
+The expanded syntax task also passed `.ts` files directly to `node --check`.
+Node `26.11.1` rejected valid `override readonly` syntax in `process-network-guard.ts`.
+Commit `13ec2b134a` calls Node's `stripTypeScriptTypes` for TypeScript inputs before syntax checking;
+JavaScript remains unchanged.
+The corrected task passes all 227 maintained modules.
 
 ### Upstream filing decision
 

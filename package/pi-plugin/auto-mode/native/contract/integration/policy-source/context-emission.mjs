@@ -16,8 +16,8 @@ export function createGoverningContextEmitter({
   readSource
 }){
  if(((callback!==undefined)&&((typeof callback)!=='function'))||((typeof readSource)!=='function'))throw new GoverningContextEmissionError('Context publication requires the configured callback and original source reader');
- let pending;
- function reset(){pending=undefined;}
+ const emissionState={pending:undefined};
+ function reset(){emissionState.pending=undefined;}
  function emit(input){
   const source=readSource();
   const result=callback===undefined?input:Reflect.apply(
@@ -51,7 +51,7 @@ export function createGoverningContextEmitter({
    return emitted;
   });
   const output=links.length > 0?Object.freeze({agentsFiles:Object.freeze(replaced)}):result;
-  pending=Object.freeze({
+  emissionState.pending=Object.freeze({
     source,
     files:output.agentsFiles,
     links:Object.freeze(links),
@@ -66,7 +66,7 @@ export function createGoverningContextEmitter({
    frame,
    source
  }){
-  if((emission!==pending)||(!emission))throw new GoverningContextEmissionError('Context emission is not this original loader operation');
+  if((emission!==emissionState.pending)||(!emission))throw new GoverningContextEmissionError('Context emission is not this original loader operation');
   if((readSource()!==source)||(emission.source!==source))throw new GoverningContextEmissionError('Selected policy changed before context publication');
   assertBoundResourceInputs({
     binding:nativeBinding,
@@ -85,7 +85,7 @@ export function createGoverningContextEmitter({
   }
  }
  function publish(input){
-  const emission=pending;
+  const emission=emissionState.pending;
   assertPublished({
     ...input,
     emission

@@ -279,6 +279,662 @@ do not reinterpret this passing live operation as full package completion.
 
 ## Current Pi execution model
 
+### Owned runtime source correction
+
+The October 14 native formatting pass exposed exact-text dependencies in the maintained build.
+`replaceOnce` in `native/contract/integration/native-batch/build-rebase.ts`
+locates a literal substring and rejects absent or repeated matches.
+Formatting owned source therefore broke the runner,
+dispatcher,
+and judgment transformations.
+The user challenged this design.
+The agent acknowledged carrying the brittle prototype mechanism into the maintained package.
+
+The first repair replaced the runner and dispatcher transformations with parsed source selection.
+A subsequent consumer search established that the owned runner,
+dispatcher,
+and judgment inputs had only the native build as their consumer.
+The source-patching requirement was unnecessary for those modules.
+The integrated implementations are now maintained directly in
+`native/contract/collector/program-rule-batch-sdk-copy-v2/input/`.
+The build emits export bridges for them instead of rewriting their bodies.
+The judgment directly imports its generated result converter,
+whose separate installed-Pi adaptation remains unchanged.
+The obsolete judgment transformations and the intermediate runner/dispatcher syntax transformers are removed.
+Historical provenance hashes remain the original import record rather than being rewritten as current hashes.
+
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/owned-program-before/`
+retains the successfully built implementations used for this integration.
+`owned-program-promotion.json` records source and generated hashes.
+Only import locations and the dispatcher's original shared error declarations changed during promotion.
+The direct-integration build and type checks passed.
+The first runtime suite stopped before executing its test because the formatting commit had inserted
+`readonly #state` into `policy-source/system-slot.mjs`.
+Commit `bbb1aa2f64` removes that TypeScript modifier from JavaScript;
+the rebuilt domain,
+manual review,
+approval context,
+single call,
+approved dependency,
+event receipt,
+host lifecycle,
+and actual CLI process suites all pass.
+The syntax task separately exposed its own invalid assumption that `node --check` strips TypeScript.
+The task now explicitly strips types before checking TypeScript modules,
+while JavaScript modules reach Node unchanged.
+That syntax task passes 227 maintained modules.
+The native lint report after direct integration contains 533 errors;
+the maintained-package quality queue remains open.
+Commit `53c651c0c0` separates the shared governing-source error to remove the source-history import cycle.
+Its owned build and native domain suite pass.
+Commits `d9c7183140` and `d014715404` name native runner callbacks,
+extract original recorder ownership,
+and scope exclusive queue release with `using`.
+The parallel branch retains synchronous entry without acquiring a queue turn.
+The rebuilt native domain suite passes;
+the focused lint report contains no errors in either runner module or the error/history modules.
+Commit `99886bdca1` retains governing binding failure and source selection in one lifecycle record.
+Commits `2e025dc5cc` and `d6c4d39496` share the original judgment operation wrappers
+and name the remaining judgment callbacks.
+Their owned build and complete direct-runtime regression sequence pass.
+The focused lint check found no errors in the runner or source-binding modules;
+the constructor retained file-length,
+mutable-binding,
+cleanup,
+and function-declaration findings.
+Commit `72a7e2ca36` adds original recorder ownership and queue-release tests.
+Normal and exceptional queue release both pass.
+The process-local omitted-release control fails with `queue-release-missing`,
+and the built helper hash remains unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-queue-omission.json` retains that receipt.
+Commits `25c6a6819f` and `813b9c1b35` separate original program ownership and instruction-claim ownership
+from the judgment constructor.
+Their owned build and focused lint checks are running;
+their consumer regression verification remains queued before any completion claim.
+The user requested a status update during this cleanup.
+The response distinguished the completed live Hyper/Gemma,
+Luna,
+and genuine Allow check from the unfinished lint and module-splitting work.
+Continue the maintained-package quality queue without reopening the completed live approval.
+Commit `4e7545abda` consolidates one-time original instruction-handle publication;
+its changed source is not part of the currently running pre-cleanup split regression artifact.
+The pre-cleanup split artifact subsequently passed the full direct-runtime regression sequence.
+Commit `a4bfcb943e` scopes judgment activity cleanup with `using`
+and separates guarded result consumption.
+The focused check of the constructor and its new owner modules now has zero lint errors.
+Commit `a66c5d5c96` applies named callbacks,
+owned state records,
+and scoped cleanup to both prepared dispatchers,
+preserving their separate root and child execution behavior.
+The dispatcher cleanup build passed;
+the full native structured lint report contains 312 errors.
+Its domain checks passed,
+but manual uncertainty Allow exhausted the original preparation deadline.
+The same built artifact passed that exact Allow case in isolation,
+with one selector call,
+three executions,
+and no provider calls.
+The cause remains unestablished;
+the interrupted sequence does not qualify the remaining consumer suites.
+Commits `17cd623ee4`,
+`4dddea7b46`,
+and `d3d0de3168` separate reached-group failure and completion ownership,
+retain delivery state explicitly,
+and represent idle group work with a settled promise.
+Their owned build and queue tests pass.
+The domain sequence stopped at `JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
+An unrelated bounded CPU stress task was active during this run;
+its overlap does not establish the cause.
+The complete regression sequence remains pending after that task finishes.
+Commits `443d6bc709` and `d4e52c5394` separate original resource capture,
+reload,
+binding,
+and governing-policy ownership and scope their cleanup.
+Their owned build passes.
+The focused structured lint report contains no errors across these resource modules and the group-runtime modules.
+It still exits with failure because warnings remain;
+`package/config/oxlint/src/config-base.ts:31` sets `denyWarnings: true`.
+Zero error-severity diagnostics therefore do not mean the lint task passes.
+Commit `fe77f1d9d6` retains base-composition and governing-source lifetime state explicitly.
+The adjacent policy reviewer now scopes review activity and retains compilation results in its review record.
+The source-lifetime and native host-hook changes subsequently built successfully.
+The syntax task passed all 241 maintained native modules,
+and package type checking passed.
+The full lint attempt failed before producing diagnostics:
+`tsgolint` emitted `failed to create new OS thread (have 2 already; errno=11)`.
+The post-stress domain and manual-uncertainty suites passed;
+ordinary native-context Allow then exhausted the original judgment deadline.
+That exact case passed three unchanged isolated repeats,
+with total process durations from 7205.50 to 7954.08 milliseconds.
+These durations include setup and shutdown;
+they are not judgment-only timings or evidence of a permanent timing remedy.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/native-allow-repeat.json` retains each result and CPU counters.
+The subsequent approval-context,
+single-call,
+approved-dependency,
+event-receipt,
+host-lifecycle,
+CLI-process,
+queue,
+resource-reload,
+resource-copy,
+and context-receipt suites all passed on that unchanged artifact.
+The complete log is `${HOME}/temp/agent/pi-native-resource-runtime-remaining-20261014.log`.
+Later source changes name remaining profile callbacks,
+separate program inspection,
+replace profile regex scans,
+and retain the original reload and assessment await boundaries.
+Those later edits remain pending build and consumer verification.
+Their owned build subsequently passed;
+the expanded resource/runtime regression sequence is running again on that artifact.
+The full lint retry with `GOMAXPROCS=2` completed across 438 files,
+reporting 203 errors and 12801 warnings.
+All error-severity findings are in native source.
+The later request-hook callback correction and explicit input-key comparators still need their focused lint check.
+Direct source-consumer comparisons passed 456 identifier cases and 152 whitespace cases
+against the replaced regex behavior.
+The current full report is `${HOME}/temp/agent/pi-maintained-resource-lint-retry-20261014.log`;
+the current running regression log is `${HOME}/temp/agent/pi-native-profile-cleanup-regressions-20261014.log`.
+The user requested another status update during cleanup;
+the answer distinguished the completed live installation from unfinished lint and intermittent deadline verification.
+The profile-cleanup regression run subsequently stopped at ordinary native-context Allow:
+`JudgmentDeadlineError: Judgment preparation and assessment deadline expired`
+led to the original selector assertion `0 !== 1`.
+Its preceding domain and manual-uncertainty suites passed.
+This recurrence remains unresolved;
+the earlier isolated passes do not establish a timing remedy.
+Commit `fe24956975` separates the run-prompt owner into emission,
+rendering,
+retained-input,
+context,
+publication,
+and lifecycle modules while retaining its original scope and failure maps.
+Its owned build passes.
+Focused structured lint reports zero errors and 1082 warnings across the eight changed modules;
+the warning gate still fails.
+Consumer verification is running in `${HOME}/temp/agent/pi-native-run-owner-regressions-20261014.log`.
+That run subsequently passed all domain cases and manual uncertainty Allow,
+Deny,
+Stop,
+and cancellation.
+Its prohibited case stopped at `JudgmentDeadlineError`,
+with the outcome assertion reporting `undefined` instead of a policy outcome.
+Commit `c3cb4b1f97` separates loaded-input field selection,
+history,
+manager frames,
+events,
+tools,
+Agent inputs,
+and user inputs while retaining the original pool budget.
+The first loaded-input build passed;
+focused lint exposed detached method references after extraction.
+Those callbacks now use named function values;
+the updated build and focused checks remain pending.
+Named function expressions still produced `typescript(unbound-method)` findings.
+Commit `13dc500508` declares the loaded callbacks before constructing their returned facade.
+Its build passes;
+the loaded-pool lint subset now has zero errors and 51 warnings.
+The other new loaded modules still need the updated full subset check.
+The user requested status twice during this work;
+the replies distinguished verified live installation from unfinished quality work and the timing diagnosis.
+Unchanged ordinary Allow repetitions on the loaded-input build failed twice and passed once.
+Their complete process durations were 10089.97,
+8502.33,
+and 12054.84 milliseconds,
+including setup and shutdown.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-before.json` retains the results and CPU counters.
+Both separate CPU-profile runs passed,
+for ordinary Allow and manual-uncertainty prohibition.
+Their profiles identify repeated source-freshness validation as a sampled runtime cost;
+these separate modes are not a before/after timing comparison.
+An instrumented Allow fixture failed at `DependencyDeadlineError`
+after 23740 opens of its original governing file.
+The exact captured counts are in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/loaded-allow-fs.json`.
+The new `test:native:source-freshness-work` task exercises the built Allow consumer
+and requires fewer than 10000 governing-file opens for that fixed fixture.
+Its required-red run precedes the proposed complete-binding-set validation change.
+Required-red commit `971f1bd` completed the native Allow fixture,
+then failed its work-bound assertion with 45637 governing-file opens.
+Commit `5b29e43e8d` validates local source-binding identities between fresh common-parent checks.
+Individual public source assertions still perform their original parent freshness check.
+The updated owned build passes.
+The same native Allow fixture then completed with 15653 opens,
+but the new work-bound regression still fails its 10000-open limit.
+This is a measured reduction in repeated reads,
+not completion of the performance fix or a full regression pass.
+The logs are `${HOME}/temp/agent/pi-native-source-work-red-20261014.log`
+and `${HOME}/temp/agent/pi-native-source-work-green-20261014.log`;
+the latter filename names the intended stage,
+not its actual failed assertion result.
+Unchanged repetitions of this changed artifact all passed.
+Their complete process durations were 8224.54,
+6064.67,
+and 6179.07 milliseconds;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-after.json` retains the results.
+These include setup and shutdown and are not judgment-only latency measurements.
+The next change introduces `readCurrentSourceBinding()` on the original judgment.
+It returns original request and source identities only after `assertDependenciesCurrent()` succeeds.
+The governing-source owner uses that operation instead of independently repeating observer and collector checks.
+Commit `2ea0d1c836` builds successfully.
+The unchanged work-bound regression still fails at 14185 opens after the Allow scenario completes.
+`${HOME}/temp/agent/pi-native-current-source-work-20261014.log` retains that result.
+A profile of this artifact is collecting evidence for the next caller to address;
+the 10000-open bound remains unchanged.
+The next built Allow probes still failed that bound:
+`48e2532d46` put nested rule reads inside the original synchronous binding segment and measured 13233 opens;
+`45c180d7d7` collected related policy selections in that segment and measured 12169 opens;
+removing the repeated request observation before `active()` measured 11224 opens.
+Each fixture completed its Allow scenario before failing the work assertion.
+The current probe reads a prepared member's input and program inspection together after one dependency check.
+The complete rejection and lifecycle suites remain pending.
+Commit `b3f980b0f8` also fixes an extraction error:
+the whole-request claim branch must register `retained.requestMaterialBinding`,
+not the removed standalone variable.
+The built `test:native:request-claim` consumer passes original request identity,
+repeated selector reuse,
+foreign-handle rejection,
+and dependency retirement.
+A process-local omission restored the removed variable reference and failed with
+`ReferenceError: requestMaterialBinding is not defined`;
+the built module hash was unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/request-claim-omission.json` records that control.
+The prepared-member probe measured 10812 policy opens;
+using the original judgment's validated identities during approval measured 10634.
+Selecting the matching source before validating its binding did not change this fixture's 10634-open count.
+That fixture therefore supplies no performance evidence for source lookup paths that encounter earlier unrelated sources.
+Removing the redundant dependency check before complete source validation measured 10236 opens.
+The native Allow scenario passes,
+but the unchanged 10000-open regression remains red.
+The broader domain,
+manual review,
+approval,
+single-call,
+changed-dependency,
+event,
+host,
+and CLI regression sequence is running against this frozen built artifact.
+The user requested status during this work;
+the response reported the verified live flow,
+the remaining work-bound failure,
+the last full lint counts,
+and the absence of a reliable completion estimate.
+The first broader regression sequence passed on `ac35a7c2ac`:
+domain,
+manual review,
+approval context,
+single-call,
+changed-dependency,
+event-receipt,
+host-lifecycle,
+and CLI-process checks.
+Batch candidate selection consolidation then measured 10208 opens;
+removing duplicate decision-wrapper validation before original approval measured 10086.
+Commit `f79ac0ea45` reads execution origins through the already-required native entry check.
+Its built work-bound regression passes at 9046 opens without changing the 10000-open limit.
+The baseline required-red count remains 45637.
+`${HOME}/temp/agent/pi-native-entry-origin-work-20261014.log` records the passing consumer.
+The final expanded regression sequence is running in
+`${HOME}/temp/agent/pi-native-source-boundaries-final-20261014.log`.
+It adds program queue,
+resource reload,
+resource input,
+context receipts,
+and the whole-request claim consumer to the prior sequence.
+On the `f79ac0ea45` build,
+the repeated original runtime sequence passed again.
+The scratch runner then stopped before the queue task because its working directory was outside the monorepo;
+this was a task-launch error rather than an application assertion.
+With the scratch task's `dir` pinned to the repository,
+all remaining queue,
+resource reload,
+resource input,
+context receipt,
+and whole-request claim checks passed.
+The complete split records are
+`${HOME}/temp/agent/pi-native-source-boundaries-final-20261014.log`
+and `${HOME}/temp/agent/pi-native-source-boundaries-remaining-20261014.log`.
+Lint cleanup resumed with `45269cca6f` and `0313276bd7`:
+tool diagnostic and declaration budgets,
+guideline publication,
+forced-message retirement,
+and governing selection now retain mutable values in their original owned records.
+Their updated build and source-work/resource consumers pass;
+the work count remains 9046.
+The full lint recount is running with `GOMAXPROCS=2` and the package's existing worker and heap limits,
+without concurrent native runtime tests.
+Its log is `${HOME}/temp/agent/pi-maintained-source-boundaries-lint-20261014.log`.
+The recount completed across 455 files with 175 errors and 13188 warnings.
+Errors decreased from the previous 203;
+warnings increased as module extraction exposed additional untyped boundaries.
+The rule configuration still rejects warnings.
+Current structured diagnostics and error allocation are retained in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/current-maintained-diagnostics.json`
+and `current-native-errors.json` in that directory.
+The new work counter now uses Node's actual `openSync(path, flags, mode)` callback signature.
+The request preparation hook now retains its function value directly instead of detaching an object method.
+The initial function-value edits replaced the prior findings with
+`no-restricted-syntax(no-variable-function-expression)` findings.
+Commit `0fab7d8f10` constructs the request callback through a named factory
+and assigns the filesystem callback directly to its native hook.
+Commit `b9a6a57750` retains the approval lifecycle fields in one owned record.
+The focused callback,
+counter,
+and approval check has zero errors and 300 warnings;
+it remains a failing warning gate.
+The updated owned build and source-work/manual-review/approval/dependency consumers pass in
+`${HOME}/temp/agent/pi-native-callback-approval-consumer-20261014.log`.
+Native syntax passes all 259 maintained modules;
+the package type check also passes.
+Commit `81ecaf586b` separates dependency eligibility and synchronous binding checks into
+`judgment-dependencies.mjs`,
+with preparation and finalization state still supplied by the original constructor.
+Its rebuilt manual-review,
+approval-context,
+and changed-dependency consumers pass.
+The same source-work fixture passes at 9046 policy-file opens.
+`${HOME}/temp/agent/pi-native-dependency-owner-consumer-20261014.log` retains those results.
+Commit `33c1c35cd8` groups runtime publication state and judgment accounting in their respective owners
+and scopes budget cleanup with synchronous disposal.
+Focused lint reports zero errors and 736 warnings across the constructor,
+dependency owner,
+runtime owner,
+and judgment budget.
+The warning gate remains failing.
+The rebuilt source-work,
+domain,
+host-lifecycle,
+and actual CLI-process checks pass in
+`${HOME}/temp/agent/pi-native-lifecycle-records-consumer-20261014.log`.
+The host-lifecycle fixture includes runtime replacement,
+cancelled replacement,
+persisted resume,
+and incomplete-disposal retry.
+Commit `53defdddad` next scopes native wrapper reentrancy and execution cleanup
+and gives owned wrapper constructors named input fields.
+Native execute callbacks retain their positional SDK signature through a fixed factory.
+Commit `79622d6e43` derives parent cancellation options without mutable temporary state.
+The rebuilt wrapper consumers pass domain outcomes,
+single-call execution,
+post-approval source/cancellation/argument changes,
+and normal and exceptional program queue release in
+`${HOME}/temp/agent/pi-native-wrapper-lifetimes-consumer-20261014.log`.
+The first wrapper lint found one remaining mutable options binding;
+the subsequent cancellation helper addresses that finding.
+The full maintained-package recount reports 131 errors and 13218 warnings across 456 files and 486 rules.
+`${HOME}/temp/agent/pi-maintained-lifecycle-cleanup-lint-20261014.log` contains the structured diagnostics.
+The constructor,
+dependency owner,
+runtime owner,
+budget,
+and wrapper files now have no error-severity findings in that full scan.
+The warning gate remains open;
+these results do not establish package completion.
+Commit `9c28c21d7d` replaces synchronous fixture directory and file setup with awaited filesystem operations.
+It also records network requests by their URL and keeps provider-call accounting in one fixture-owned record.
+Focused lint reports zero errors and 64 warnings for `environment.mjs`.
+The rebuilt domain,
+context-receipt,
+resource-input,
+and approval-context checks pass in
+`${HOME}/temp/agent/pi-native-async-environment-consumer-20261014.log`.
+Commit `a96c4d1da1` scopes the CLI fixture's reader and process cleanup
+and the historical-run fixture's session cleanup with disposal.
+The historical-run fixture now retains its counters and original source in one record.
+The package also exposes that existing fixture as `test:native:run-history`;
+its rebuilt consumer and CLI cleanup checks pass.
+Native syntax also passes all 260 modules at that artifact.
+`${HOME}/temp/agent/pi-native-fixture-cleanup-consumer-20261014.log` retains those results.
+The package type check passes after the lifecycle and wrapper interface changes.
+Commit `2c67f036e7` adds explicit budget input,
+retained-state,
+and response types.
+The budget's type-safety findings disappear in focused lint;
+its total warning count changes from 55 to 41 because the first annotations introduced comment-format findings.
+Commits `1e14b97233` and `35c0febc93` then separate stable error identities,
+name the unchanged budget limits,
+and correct the remaining statement and comment shapes.
+The next focused report has two warnings:
+sequential retry awaiting and an explicit return required in the classifier-error branch.
+Commit `a8b5cf2811` addresses that return and documents the narrow sequential-retry exception in
+the troubleshooting entry's "Sequential native judgment retries" section.
+Commit `c9807abb0c` adds a built consumer for retry accounting,
+overlap refusal,
+deadline and cancellation retirement,
+late response rejection,
+classifier failures,
+and stable error names and causes.
+Its built check passes.
+The process-local omitted overlap guard fails the expected rejection assertion;
+the original built artifact hash is unchanged in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/budget-overlap-omission.json`.
+The final JavaScript subset reports zero errors and 139 warnings,
+mostly in the new consumer.
+The consumer's imported calls remain unchecked despite annotations inside the budget module.
+The inherited TypeScript configuration sets `allowJs: false` and excludes these JavaScript consumers.
+Commit `4f27290d9b` moves the implementation into TypeScript;
+the package type check passes,
+but the still-JavaScript consumer retains its unchecked-call warnings.
+The migration also exposes TypeScript documentation requirements,
+which are addressed in the following ownership and dispatch split.
+Commits `a1f2204eed` and `0fc4da484c` document original ownership
+and separate sequential dispatch from clock lifetime.
+Commit `a4d9d43970` moves the consumer to typed tests using the existing module-test harness
+and built native imports.
+The rebuilt typed consumer tasks pass.
+Their first typed lint exposes copied-artifact import classification and callback-return errors;
+the unsafe-value warnings are absent.
+The tests now follow the existing native fixture pattern:
+load the copied module through its artifact URL,
+check the required exports,
+and invoke an independently typed consumer interface.
+They do not add copied output to the TypeScript source project.
+The final formatting pass reports zero errors and 27 remaining warnings;
+the following edits separate callback statements and complete the fixture assertion documentation.
+Commit `feb3b62cec` separates the remaining compound export assertion operators.
+Package type checking passes;
+focused lint passes all eight budget implementation and consumer files with zero warnings or errors.
+`${HOME}/temp/agent/pi-native-budget-operator-lint-20261015.log` retains the complete report.
+The rebuilt typed consumers pass in
+`${HOME}/temp/agent/pi-native-budget-checked-consumer-20261015.log`.
+Removing the dispatch overlap guard in memory makes the typed consumer fail its expected rejection assertion.
+The unchanged artifact hashes and result are recorded in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/budget-overlap-typescript-omission.json`.
+Original source-work,
+manual-review,
+approval-context,
+and changed-dependency consumers pass on the rebuilt typed budget in
+`${HOME}/temp/agent/pi-native-budget-approval-consumer-20261015.log`.
+The source-work check records 9045 policy-file opens within its unchanged 10000 limit;
+this count alone does not establish a performance change.
+Commit `a21d26fd12` separates host fixture construction and observations from lifecycle assertions
+and scopes runtime cleanup and failed-disconnection restoration.
+Its rebuilt host-lifecycle consumer passes replacement,
+cancellation,
+fork,
+persisted resume,
+and incomplete-disposal retry in
+`${HOME}/temp/agent/pi-native-host-fixture-consumer-20261015.log`.
+The subsequent full lint recount covers 464 files and 486 rules,
+with 107 errors and 13167 warnings.
+`${HOME}/temp/agent/pi-maintained-typed-budget-lint-20261015.log` retains the complete report.
+This remains a failing package gate.
+Commits `0f55a81f89`,
+`fbbeedd83c`,
+and `7924d5b74a` scope original producer construction and invocation claims,
+retain CLI manager observations in a fixture record,
+and name collector and manual-review helper inputs.
+Focused lint reports zero errors and 356 warnings across that six-file subset.
+The rebuilt request-claim,
+domain,
+CLI-manager,
+host-lifecycle,
+and manual-review consumers pass in
+`${HOME}/temp/agent/pi-native-producer-manager-consumer-20261015.log`.
+Commit `897d64e1b3` retains authorization observations in their fixture record;
+commit `7095845a18` separates approval setup and scenario state from its original assertions.
+The package now exposes `test:native:authorization-inputs` for the maintained authorization fixture.
+The final approval and authorization subset has zero errors and 163 warnings.
+Its rebuilt authorization,
+manual-review,
+approval-context,
+and source-work consumers pass in
+`${HOME}/temp/agent/pi-native-approval-fixtures-consumer-20261015.log`.
+The work counter remains 9045 policy-file opens in that run.
+The source-association split then separates envelope shape,
+message origins,
+original prompt contributions,
+and one-time serialization closure into sibling modules.
+The original callback and closure share one private observation record.
+Focused lint has zero errors and 439 warnings across those modules.
+Rebuilt serializer-receipt,
+event-receipt,
+approval-context,
+and source-work checks pass in
+`${HOME}/temp/agent/pi-native-source-association-consumer-20261015.log`.
+The source-work count remains 9045.
+The request observer now separates its original stream and receipt publication from lifetime validation.
+The caller retains the same private response and receipt maps,
+and original observation generation remains shared through its owner.
+Focused lint has zero errors and 315 warnings across the observer modules.
+Its rebuilt source-work,
+domain,
+changed-dependency,
+and host-lifecycle consumers pass in
+`${HOME}/temp/agent/pi-native-observer-split-consumer-20261015.log`.
+Native syntax passes all 274 modules at that artifact.
+Root lifecycle construction,
+transition publication,
+and diagnostic isolation are separated by commit `4d2b8c4748`.
+Their focused lint has zero errors and 607 warnings.
+The rebuilt manager-constructor,
+CLI-manager,
+host-lifecycle,
+and changed-dependency consumers pass in
+`${HOME}/temp/agent/pi-native-root-lifecycle-consumer-20261015.log`.
+The policy compiler now delegates output packaging and remaining-premise filtering to `compilation-result.mjs`.
+The compiler retains the original evidence and input validation before that final filtering call.
+The full maintained lint recount reports 44 errors and 13464 warnings across 479 files and 486 rules in
+`${HOME}/temp/agent/pi-maintained-observation-splits-lint-20261015.log`.
+Errors decreased from 107;
+warnings increased as extracted untyped module boundaries became visible.
+The compiler retained one file-size error after its first extraction.
+Its rebuilt domain,
+semantic-operating-policy,
+and manual-review consumers pass in
+`${HOME}/temp/agent/pi-native-policy-compilation-consumer-20261015.log`.
+The following extraction places original scheduler and inspected-program coverage in `operation-coverage.mjs`.
+Focused lint now reports zero errors and 234 warnings across the compiler and its output and coverage helpers.
+The rebuilt domain,
+semantic-operating-policy,
+and manual-review consumers also pass on that final extraction in
+`${HOME}/temp/agent/pi-native-operation-coverage-consumer-20261015.log`.
+The remaining full lint gate is still open.
+Commit `41a33c04cc` separates adoption,
+request,
+heading,
+and clause wire projections while retaining original binding checks and batch membership.
+Its focused lint has zero errors and 376 warnings.
+Commit `487e5ad3b0` separates resource,
+run,
+and generated prompt source bindings from authority assembly.
+Its focused lint has zero errors and 384 warnings.
+The rebuilt domain,
+semantic-operating-policy,
+manual-review,
+source-work,
+resource-input,
+context-receipt,
+and retained-history consumers pass in
+`${HOME}/temp/agent/pi-native-wire-authority-consumer-20261015.log`.
+Commit `42a7606059` separates loader publication state from collector snapshot ownership.
+The original private policy-input construction key remains in `system-slot.mjs`;
+the loader retains its publication record and each collector retains its own snapshot map.
+Focused lint has zero errors and 550 warnings.
+The same rebuilt policy and source consumers pass in
+`${HOME}/temp/agent/pi-native-system-slot-split-consumer-20261015.log`.
+The fixed ASCII rule-code check agrees with the original pattern in 196623 comparisons,
+including every UTF-16 code unit in each tag position and line-ending controls.
+Commit `b6dfaf8981` separates message descriptor signatures from publication ownership.
+The original alias map remains private to the publication entry module;
+signature and ownership helpers receive the same original data and map.
+Focused lint has zero errors and 606 warnings across the helpers and their publication callers.
+Rebuilt serializer-receipt,
+event-receipt,
+approval-context,
+and source-work consumers pass in
+`${HOME}/temp/agent/pi-native-handler-publication-split-consumer-20261015.log`.
+Commit `10a606eb32` separates definition validation and answer settlement from question identity ownership.
+Original claim,
+batch,
+and evidence maps remain private to the selection owner.
+Focused lint has zero errors and 463 warnings.
+Rebuilt domain,
+semantic-operating-policy,
+and manual-review consumers pass in
+`${HOME}/temp/agent/pi-native-question-selection-split-consumer-20261015.log`.
+Commit `b48b22a7d6` adds named inputs around the native result converter.
+Generated staging preserves the original SDK functions byte-for-byte and appends the adapter;
+the adversarial source-literal test imports and executes that generated module.
+Package type checking and rebuilt program-value,
+native-return,
+program-queue,
+and domain consumers pass in
+`${HOME}/temp/agent/pi-native-conversion-adapter-types-20261015.log` and
+`${HOME}/temp/agent/pi-native-conversion-adapter-consumer-20261015.log`.
+The first focused converter report has zero errors and 25 warnings;
+the fixture expectation now retains original text directly instead of parsing it back to an unchecked value.
+Commit `18bc909876` separates event-receipt assertions under the original shared native fixture.
+The first concurrent lint,
+build,
+and commit attempt encountered resource-allocation failures before assertions;
+the separate diagnostics and recovery are recorded in `doc/troubleshooting/pi-sdk-staging.md`.
+The sequential rebuild passes the original event suite and revised generated converter test in
+`${HOME}/temp/agent/pi-native-event-receipt-split-retry-consumer-20261015.log`.
+The package type check also passes after the fixture expectation change.
+The event lint retry reports zero errors and 250 warnings across its source set and the converter test.
+Commit `b42541c5bf` separates domain fixture construction,
+transport controls,
+authored assessment answers,
+and source assertions.
+Its first focused lint reports zero errors and 602 warnings.
+The initial rebuilt run failed before assertions with the already-documented generated-manager import cycle.
+Commit `92a305735c` enters through the maintained policy module before generated manager assertions.
+The rebuilt domain,
+unconfigured-policy,
+semantic-operating-policy,
+single-call,
+changed-dependency,
+next-decision-receipt,
+serializer-receipt,
+and context-receipt consumers then pass in
+`${HOME}/temp/agent/pi-native-domain-fixture-entry-consumer-20261015.log`.
+The failed original log remains in `pi-native-domain-fixture-split-consumer-20261015.log`.
+The full maintained recount covers 513 files and 486 rules:
+16 errors and 13771 warnings remain in
+`${HOME}/temp/agent/pi-maintained-domain-splits-lint-20261015.log`.
+Remaining errors are in the relevance store,
+its cache owner,
+the composed-distribution protocol,
+and the descriptor-bound file observer.
+The relevance store now awaits directory validation and file publication during cache operations;
+its constructor still returns the cache owner synchronously.
+This cache change is pending focused concurrency and built-consumer verification.
+The handover,
+troubleshooting entry,
+and native README were rendered and inspected with Pandoc.
+The earlier formatting-only commit is `2728f357f`.
+Its judgment-input formatting was temporarily restored to recover a passing build before this direct integration.
+
+The native JSON lint report before direct integration contains 499 errors.
+The earlier human-readable report did not print every diagnostic counted in its summary;
+use structured diagnostics when allocating cleanup work.
+Most current errors concern arrow functions,
+mutable bindings at function or module scope,
+cleanup using `finally`,
+and file length.
+Do not replace the removed owned-source patch layer with another formatting-sensitive mechanism.
+
 On 2026-10-14,
 the user corrected the requested Pi execution model to `hyper/gemma-4-26b-a4b-it`.
 Use that provider and model for subsequent Pi work and configured-host verification.

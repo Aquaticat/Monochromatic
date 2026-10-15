@@ -111,8 +111,7 @@ export function bindNativePolicyRuntime({
    send:configuredSemanticUse?sendAttributedAssessment:send,
    isRetryableTransportFailure:function declineUnqualifiedClaim() { return (false); }
  });
- let lastJudgment;
- let lastReview;
+ const runtimeState={lastJudgment:undefined,lastReview:undefined};
  const stream=producerOwner.bindJudgmentConsumer({
   handle:function observeOriginalMainRequest({
     model,
@@ -123,19 +122,9 @@ export function bindNativePolicyRuntime({
     context,
     options
   )); },
-  construct(input){lastJudgment=construct(input);return lastJudgment;}
+  construct(input){runtimeState.lastJudgment=construct(input);return runtimeState.lastJudgment;}
  });
  const previousStream=agent.streamFunction;
- function observedStream(
-   model,
-   context,
-   options
- ) { return producerOwner.fromAgentLoop({
-   stream,
-   model,
-   context,
-   options
- }); }
  const handler=createNativeBatchHandler({
    producerOwner,
    stream,
@@ -151,19 +140,31 @@ export function bindNativePolicyRuntime({
  });
  async function executeToolBatch(input){
   trace('policy-runtime.batch');
-  const batchLog=tagged({tag:executeToolBatch.name,l:tagged({tag:'auto-mode-native-runtime'})});
+  const batchLog=tagged({
+    tag:executeToolBatch.name,
+    l:tagged({tag:'auto-mode-native-runtime'})
+  });
   try{
    const result=await handler(input);
-   lastReview=result.review;trace('policy-runtime.reviewed');return result;
+   runtimeState.lastReview=result.review;trace('policy-runtime.reviewed');return result;
   }catch(error){
-   batchLog.error(inspectValue(error,{depth:8,customInspect:false,getters:false}));
+   batchLog.error(inspectValue(
+     error,
+     {
+       depth:8,
+       customInspect:false,
+       getters:false
+     }
+   ));
    throw error;
   }
  }
  const installation=installNativePolicyHooks({
    agent,
    previousStream,
-   observedStream,
+   observedStream:function observedStream(model,context,options){return producerOwner.fromAgentLoop({
+     stream,model,context,options
+   });},
    executeToolBatch,
    invalidateObserver:function invalidateRequestObservation() { observer.invalidate(); },
    registerJudgmentStart:function registerOriginalJudgment() { return (registerOriginalJudgmentStart({
@@ -183,8 +184,8 @@ export function bindNativePolicyRuntime({
    onDetached:function traceRuntimeDetachment() { return (trace('policy-runtime.detached')); }
  });
  function inspect(){return Object.freeze({
-   lastJudgment,
-   lastReview,
+   lastJudgment:runtimeState.lastJudgment,
+   lastReview:runtimeState.lastReview,
    detached:installation.isDetached()
  });}
  return Object.freeze({

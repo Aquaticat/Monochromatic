@@ -3,6 +3,7 @@
 # settings verified under the session's 4-GiB aggregate cgroup limit; no rules are disabled.
 auto_mode_lint_resources = """
 process.env.OXLINT_THREADS = '1'
+process.env.GOMAXPROCS = '2'
 process.env.GOMEMLIMIT = '768MiB'
 process.env.NODE_OPTIONS = `${process.env.NODE_OPTIONS ?? ''} --max-old-space-size=512`.trim()
 """
@@ -39,7 +40,8 @@ extends = "lint:types"
 description = "Check every maintained native module with the consuming Node parser"
 shell = "node --input-type=module-typescript -e"
 run = """
-const { readdir } = await import('node:fs/promises')
+const { readdir, readFile } = await import('node:fs/promises')
+const { stripTypeScriptTypes } = await import('node:module')
 const { join } = await import('node:path')
 const { default: spawn } = await import('nano-spawn')
 const paths = await readdir('native', { recursive: true })
@@ -47,7 +49,16 @@ const modules = paths.filter(function isModule(path) {
   return path.endsWith('.mjs') || path.endsWith('.ts')
 })
 for (const path of modules) {
-  await spawn(process.execPath, ['--check', join('native', path)], { stdio: 'inherit' })
+  const filename = join('native', path)
+  const source = await readFile(filename, 'utf8')
+  const javascript = path.endsWith('.ts') ? stripTypeScriptTypes(source, { sourceUrl: filename }) : source
+  try {
+    await spawn(process.execPath, ['--check', '--input-type=module'], {
+      stdin: { string: javascript }, stdout: 'inherit', stderr: 'inherit',
+    })
+  } catch (error) {
+    throw new Error(`Native module failed syntax verification: ${filename}`, { cause: error })
+  }
 }
 console.log(JSON.stringify({ complete: true, parsedNativeModules: modules.length }))
 """
@@ -137,6 +148,14 @@ run = "node native/build.ts"
 description = "Rebuild owned native transformations against the already emitted qualified Pi source"
 run = "node native/build.ts --owned"
 
+[tasks."test:native:source-freshness-work"]
+description = "Bound repeated governing-file observation through the built native approval consumer"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/source-freshness-work.test.mjs"
+
+[tasks."test:native:request-claim"]
+description = "Verify original whole-request selection, repeated claims, foreign handles and retired dependencies"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/judgment-instructions.test.mjs"
+
 [tasks."test:native:domain"]
 run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution",
@@ -144,12 +163,31 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution",
 ]
 
+[tasks."test:native:program-queue"]
+description = "Verify original recorder ownership and native queue release on normal and failed dispatch"
+run = "node --max-old-space-size=512 ./dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/program-runner-scope.test.mjs"
+
+[tasks."test:native:judgment-budget"]
+description = "Verify built judgment attempt accounting, sequential retries, lifetime and cleanup"
+run = [
+  "node src/native-judgment-budget.unit.test.ts",
+  "node src/native-judgment-budget-lifetime.unit.test.ts",
+]
+
 [tasks."test:native:cli-manager"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/cli-manager.test.mjs"
+
+[tasks."test:native:authorization-inputs"]
+description = "Verify original authorization bindings, accessor refusal and permanent retirement"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/action-policy/authorization-inputs.test.mjs"
 
 [tasks."test:native:event-receipts"]
 description = "Exercise original native event dispatch, complete grouped sources, and observation freshness"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/event-receipts.test.mjs"
+
+[tasks."test:native:run-history"]
+description = "Verify original run instruction occurrences remain collected after later prompt replacement"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/run-history-domain.test.mjs"
 
 [tasks."test:native:progress-events"]
 description = "Exercise unchanged native progress callbacks through the original prepared program"
@@ -484,3 +522,6 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs prohibited --native-context --fresh-session-approval --uncertain-context",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs allow --native-context --fresh-session-approval --uncertain-context --headless",
 ]
+[tasks."test:native:relevance-store"]
+description = "Verify original asynchronous cache publication in disposable directories"
+run = 'node --max-old-space-size=512 src/native-relevance-store.unit.test.ts'

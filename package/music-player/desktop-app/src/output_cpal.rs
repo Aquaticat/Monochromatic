@@ -397,7 +397,7 @@ impl Output {
         // ```
         let device = host
             .default_output_device()
-            .ok_or_else(|| PlayerError::Audio("no default output device".to_string()))?;
+            .ok_or_else(|| return PlayerError::Audio("no default output device".to_string()))?;
 
         // What:     `let playing = Arc::new(AtomicBool::new(false));`. Build the shared
         //           play/pause flag, initially `false` (paused). `Arc::new` heap-allocates
@@ -422,7 +422,7 @@ impl Output {
         // ```ts
         // return new Output(device, null, playing, worker);
         // ```
-        Ok(Output {
+        return Ok(Output {
             device,
             stream: None,
             playing,
@@ -704,7 +704,7 @@ impl Output {
             // ```ts
             // // throws new PlayerError(`build stream: ${e}`) on failure
             // ```
-            .map_err(|e| PlayerError::Audio(format!("build stream: {e:?}")))?;
+            .map_err(|e| return PlayerError::Audio(format!("build stream: {e:?}")))?;
 
         // What:     `stream.play().map_err(|e| ...)?;`. `play()` starts the stream (cpal
         //           streams are created paused). It returns `Result<(), PlayError>`;
@@ -718,7 +718,7 @@ impl Output {
         // ```
         stream
             .play()
-            .map_err(|e| PlayerError::Audio(format!("stream play: {e:?}")))?;
+            .map_err(|e| return PlayerError::Audio(format!("stream play: {e:?}")))?;
 
         // What:     `self.stream = Some(stream);`. Store the new stream in the field,
         //           wrapping it in `Some` (the "has a value" case of `Option`). Moving it
@@ -731,16 +731,15 @@ impl Output {
         // ```
         self.stream = Some(stream);
 
-        // What:     `Ok(producer)`. Wrap the WRITE half of the ring buffer in the success
-        //           variant. No trailing `;`, so this is the tail expression the function
-        //           returns.
+        // What:     `return Ok(producer)`. Wrap the WRITE half of the ring buffer in the success
+        //           variant and return it from the function.
         // Why:      The engine pushes decoded samples into it.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // return producer;
         // ```
-        Ok(producer)
+        return Ok(producer)
     }
 
     /// What:

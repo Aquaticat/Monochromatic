@@ -91,9 +91,9 @@ export function nativeScriptValueSource({
       node.end
     );
     if (!body.startsWith(`function ${name}(`)) throw new NativeBatchBuildError(`Original native result conversion declaration changed: ${name}`);
-    return (name === 'toScriptValue' ? 'export ' : '') + body;
+     return body;
   });
-  return `${functions.join('\n\n')}\n`;
+  return `${functions.join('\n\n')}\n\nexport function convertNativeOutcome({tool,outcome}) { return toScriptValue(tool,outcome); }\n`;
 }
 
 //endregion Native result conversion keeps its original function implementations and source order

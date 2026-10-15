@@ -1,250 +1,180 @@
 import assert from 'node:assert/strict';
 import {inspect} from 'node:util';
-import {createEnvironment} from './environment.mjs';
-import {createRootSessionFactory} from './session-root.ts';
-import {bindNativePolicyRuntime} from './runtime.mjs';
-import {createOwnedCodemodeDefinition} from "./generated/program-definition.mjs";
-import {nativeOpenAIStream} from './source-association.mjs';
-import {fixtureResponse} from './fixture-response.mjs';
-import {ruleAssessmentModel} from '../action-policy/wire.mjs';
-import {maintainedPolicyEntry} from '../maintained-policy.mjs';
-import {registerHostResource} from '../native-host/resource-reload.ts';
+import {mode, freshSessionApproval, uncertainContext, headless, useNativeContext, reloadContext, fixtureState} from './approval-fixture-options.mjs';
+import {session, runtime, env, VERDICT_ENTRY_TYPE, flushPolicyDiagnostics} from './approval-fixture.mjs';
 
-const {
-  askUser,
-  VERDICT_ENTRY_TYPE,
-  flushPolicyDiagnostics
-}=await import(maintainedPolicyEntry);
-await flushPolicyDiagnostics();
-const mode=process.argv[2]??'allow';
-const freshSessionApproval=process.argv.includes('--fresh-session-approval');
-const uncertainContext=process.argv.includes('--uncertain-context');
-const headless=process.argv.includes('--headless');
-const useNativeContext=process.argv
-  .includes('--native-context');
-const reloadContext=process.argv
-  .includes('--reload-context');
-assert.ok([
-  'allow',
-  'deny',
-  'stop',
-  'cancelled',
-  'missing',
-  'unsupported',
-  'unresolved',
-  'satisfied',
-  'bare',
-  'prohibited',
-  'retired'
-].includes(mode));
-const permission=mode==='bare'?'Use sentence case in the final response.':mode==='prohibited'?'The complete proposed operation is prohibited.':'The complete proposed operation is permitted.';
-const policyText=`RUL:\n ${permission}\n\nCNF:\n Require a fresh Allow response from the current Pi session user for this exact prepared group.\n${uncertainContext?'\nUNK:\n Follow the additional policy that has not been supplied.\n':''}`;
-let nativePi;
-const env=await createEnvironment({
-  policyText,
-  hostPrompt:'Fixture background.',
-  extensionFactories:[function captureNativePiApi(pi) {nativePi=pi;}]
-});
-// This direct-SDK fixture registers the original policy reload boundary used by native host services.
-// It does not acquire the CLI host's private resource membership or session-construction ownership.
-if(reloadContext)registerHostResource({
-  loader:env.policyInput.loader,
-  policyInput:env.policyInput
-});
-let abortTask,approvalCaptures=0,assessments=0,authorizationCaptures=0,executions=0,notifications=0,originalBody,requests=0,selections=0;
-let activeAuthorization=true;
-const leaf={
-  ...env.createReadToolDefinition(env.options.cwd),
-  name:'fixture_value',
-  description:'Returns inert fixture text.',
-  async execute(){executions++;return {content:[{type:'text',text:'fixture child value'}],details:{}};}
-};
-const {
-  session,
-  root,
-  lifecycle
-}=await createRootSessionFactory(env)
-  .create({options:{...env.options,tools:['codemode','fixture_value'],customTools:[createOwnedCodemodeDefinition(),leaf]}});
-session.agent
-  .getApiKey=function readFixtureApiKey() { return (process.env
-  .FIXTURE_API_KEY); };
-assert.ok(nativePi&&(typeof nativePi.appendEntry)==='function');
-const programProfile='awaited-string-result-then-literal-parallel';
-const code='const value = await tools.fixture_value({path:"seed"});\nreturn await Promise.allSettled([tools.fixture_value({path:value}),tools.fixture_value({path:"second"})]);';
-function policy(definitionId) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:function acceptAuthoredFixtureRelation() { return (true); }}; }
-const ctx={
-  hasUI:!headless,
-  ui:{async select(title,options){
- selections++;
- assert.deepEqual(options,['Allow','Stop']);
- assert(title.includes('Complete prepared group:'));
- assert(title.includes(JSON.stringify(code)));
- if(mode==='retired')activeAuthorization=false;
- if(mode==='cancelled'){
-  abortTask=session.abort();
-  return undefined;
- }
- return mode==='deny'?'Deny':mode==='stop'?'Stop':'Allow';
-}},
-  abort(){abortTask=session.abort();}
-};
-if(useNativeContext&&!headless)await session.bindExtensions({uiContext:{
-  ...session.extensionRunner.createContext().ui,
-  select:ctx.ui.select
-}});
-const runtime=bindNativePolicyRuntime({
-  root,
-  lifecycle,
-  policyInput:env.policyInput,
-  endpoint:'https://fixture.invalid/v1/chat/completions',
-  rootDirectory:env.options.cwd,
-  parsePolicy:env.parser.parse,
-  files:[],
-  wrapToolDefinition:env.wrapToolDefinition,
-  readSessionDisposalState:env.readSessionDisposalState,
-  trace(){},
-  semanticAdmissionPolicy:policy('clause_operation_relation'),
-  headingContextAdmissionPolicy:policy('heading_instruction_content'),
-  effectOwnerFor:function omitFixtureAuthorizationOwner() { return (undefined); },
-  authorizationOwnerFor({judgment,rule,source,request}){
-  if(freshSessionApproval)return undefined;
-  if(mode==='missing'||judgment.readRuleCandidate(rule).code!=='CNF')return undefined;
-  assert.equal(source.source.content,policyText);
-  assert.equal(source.request,request);
-  const authorization=Object.freeze({satisfaction:mode==='satisfied'?'satisfied':mode==='unresolved'?'unresolved':'unsatisfied',channel:mode==='unsupported'?'unsupported':'incumbent-approval'});
-  const evidence=Object.freeze({judgment,rule,source,request,authorization});
-  return Object.freeze({capture(){
-   authorizationCaptures++;
-   assert(judgment.inspect().memberExecutions.every(function isUnenteredPreparedMember(member) { return (member.state==='unentered'); }));
-   return evidence;
-  },assertCurrent(value){
-   assert.equal(value,evidence);
-   assert.equal(activeAuthorization,true,'Original authorization evidence retired');
-   judgment.assertDependenciesCurrent();
-  }});
- },
-  approvalHost(){approvalCaptures++;return {pi:nativePi,ctx:useNativeContext?session.extensionRunner.createContext():ctx,askUser,verdictEntryType:VERDICT_ENTRY_TYPE,trace(){},async notificationInvoker(){notifications++;}};},
-  async sendWire({body}){
-  assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,originalBody);
-  const answers=Object.fromEntries(Object.entries(wire.questions).map(function answerAuthoredApprovalQuestion([slot,question]) {
-   const id=question.instructions.selectedRule?.id;
-   assert.notEqual(question.instructions.selectedMaterial,'originalRequestBody');
-   const choice=id==='UNK'?'unknown':id==='CNF'?(freshSessionApproval?'fresh-session-approval':'prerequisite'):id==='RUL'?(mode==='bare'?'none':mode==='prohibited'?'prohibition':'permission'):'none';
-   assert(Object.hasOwn(question.criteria,choice));
-   return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(function scoreAuthoredApprovalChoice(label) { return ([label,label===choice?1:0]); }))}];
-  }));
-  return JSON.stringify({model:wire.model,answers,usage:{input_tokens:100,output_tokens:10}});
- },
-  originalStream:nativeOpenAIStream,
-  async terminalFetch(_input,init){requests++;if(requests===1)originalBody=init.body;return fixtureResponse({proposal:requests===1,code});}
-});
-let handlerFailure;
+//region Original approval assertions and fixture-owned cleanup.
 const handler=session.agent
   .executeToolBatch;
 session.agent
-  .executeToolBatch=async function retainHandlerFailure(input) {try{return await handler(input);}catch(error){handlerFailure=error;throw error;}};
-try{
+  .executeToolBatch=async function retainHandlerFailure(input) {try{return await handler(input);}catch(error){fixtureState.handlerFailure=error;throw error;}};
+{
+ await using fixtureScope={
+  async [Symbol.asyncDispose]() {
+   session.agent.executeToolBatch=handler;
+   session.dispose();
+   await session.agent.waitForIdle();
+   runtime.detach();
+   await env.drain();
+   await flushPolicyDiagnostics();
+  }
+ };
  assert.equal(
-   approvalCaptures,
+   fixtureState.approvalCaptures,
    0,
    'Binding a runtime must retain its host source without retaining a stale native context'
  );
  if(reloadContext){
-  assert.ok(useNativeContext,'Reload fixture requires the native extension context');
+  assert.ok(
+    useNativeContext,
+    'Reload fixture requires the native extension context'
+  );
   const originalContext=session.extensionRunner
     .createContext();
-  const originalPi=nativePi;
+  const originalPi=fixtureState.nativePi;
   await session.reload();
   assert.notEqual(
-    nativePi,
+    fixtureState.nativePi,
     originalPi,
     'Native reload must recapture the actual extension API'
   );
   assert.throws(
     function accessRetiredNativeUi() { return (originalContext.ui); },
-    /This extension ctx is stale after session replacement or reload/u
+    function matchesRetiredContext(error) {
+      return Error.isError(error) && error.message.includes('This extension ctx is stale after session replacement or reload');
+    }
   );
  }
  await session.prompt('Exercise native prerequisite and original approval routing.');
- if(abortTask)await abortTask;
+ if(fixtureState.abortTask)await fixtureState.abortTask;
  const {
    lastReview:review,
    lastJudgment:judgment
  }=runtime.inspect();
- const eligible=!headless&&!['prohibited',...(uncertainContext?[]:['satisfied'])].includes(mode);
+ const eligible=(!headless)&&(![
+   'prohibited',
+   ...(uncertainContext?[]:['satisfied'])
+ ].includes(mode));
  assert.equal(
-   selections,
+   fixtureState.selections,
    eligible?1:0,
-   'Required or uncertain approval reaches the original selector unless a prohibition or unavailable UI blocks it: '+inspect({authorizationCaptures,handlerFailure,requests,assessments,lastMessage:session.messages.at(-1),outcome:review?.outcome,issues:review?.premiseIssues},{depth:5})
+   `Required or uncertain approval reaches the original selector unless a prohibition or unavailable UI blocks it: ${inspect(
+     {
+       authorizationCaptures: fixtureState.authorizationCaptures,
+       handlerFailure: fixtureState.handlerFailure,
+       requests: fixtureState.requests,
+       assessments: fixtureState.assessments,
+       lastMessage:session.messages
+         .at(-1),
+       outcome:review?.outcome,
+       issues:review?.premiseIssues
+     },
+     {depth:5}
+   )}`
  );
  assert.equal(
-   notifications,
-   selections
+   fixtureState.notifications,
+   fixtureState.selections
  );
  assert.equal(
-   authorizationCaptures,
-   freshSessionApproval||mode==='missing'?0:1
+   fixtureState.authorizationCaptures,
+   freshSessionApproval||(mode==='missing')?0:1
  );
  assert.equal(
-   approvalCaptures,
+   fixtureState.approvalCaptures,
    1,
    'Each review captures its current native capabilities once'
  );
- if(['retired','deny','stop','cancelled'].includes(mode)){
+ if([
+   'retired',
+   'deny',
+   'stop',
+   'cancelled'
+ ].includes(mode)){
   assert.equal(
-    executions,
+    fixtureState.executions,
     0
   );
-  assert.ok(handlerFailure,inspect(
-    {mode,review},
+  assert.ok(
+    fixtureState.handlerFailure,
+    inspect(
+    {
+      mode,
+      review
+    },
     {depth:4}
-  ));
+  )
+  );
  }else{
-  assert.ok(review,inspect(
-    {requests,assessments,message:session.messages.at(-1),handlerFailure,judgment:judgment?.inspect()},
+  assert.ok(
+    review,
+    inspect(
+    {
+      requests: fixtureState.requests,
+      assessments: fixtureState.assessments,
+      message:session.messages
+        .at(-1),
+      handlerFailure: fixtureState.handlerFailure,
+      judgment:judgment?.inspect()
+    },
     {depth:5}
-  ));
+  )
+  );
   assert.equal(
-    review.premiseIssues.some(function isRequestDomainIssue(issue) { return (issue.kind==='request-source-domain'); }),
+    review.premiseIssues
+      .some(function isRequestDomainIssue(issue) { return (issue.kind==='request-source-domain'); }),
     false
   );
   assert.equal(
-    review.compiledPolicy.authorizationRequirements.length,
+    review.compiledPolicy
+      .authorizationRequirements
+      .length,
     1
   );
- const unresolved=headless&&!['prohibited','satisfied'].includes(mode);
+ const unresolved=headless&&(![
+   'prohibited',
+   'satisfied'
+ ].includes(mode));
   assert.equal(
-    review.outcome.state,
+    review.outcome
+      .state,
     unresolved?'unresolved':'resolved'
   );
   if(!unresolved)assert.equal(
-    review.outcome.verdict,
+    review.outcome
+      .verdict,
     mode==='prohibited'?'deny':'approve'
   );
   assert.equal(
-    executions,
-    (!unresolved&&mode!=='prohibited')?3:0
+    fixtureState.executions,
+    ((!unresolved)&&(mode!=='prohibited'))?3:0
   );
  }
  const entries=session.sessionManager
    .getEntries()
-   .filter(function isOriginalVerdictEntry(entry) { return (entry.type==='custom'&&entry.customType===VERDICT_ENTRY_TYPE); });
+   .filter(function isOriginalVerdictEntry(entry) { return ((entry.type==='custom')&&(entry.customType===VERDICT_ENTRY_TYPE)); });
  assert.equal(
    entries.length,
-   selections
+   fixtureState.selections
  );
  if(entries.length > 0)assert.equal(
-   entries[0].data.verdict,
-   ['deny','stop','cancelled'].includes(mode)?'user-deny':'user-approve'
+   entries[0]
+     .data
+     .verdict,
+   [
+     'deny',
+     'stop',
+     'cancelled'
+   ].includes(mode)?'user-deny':'user-approve'
  );
  console.log(JSON.stringify({
    complete:true,
    mode,
-   selections,
-   notifications,
-   authorizationCaptures,
-   executions,
-   assessments,
+   selections: fixtureState.selections,
+   notifications: fixtureState.notifications,
+   authorizationCaptures: fixtureState.authorizationCaptures,
+   executions: fixtureState.executions,
+   assessments: fixtureState.assessments,
    originalNativeVerdictEntries:entries.length,
    canonicalPolicyHandler:true,
    actualAskUser:true,
@@ -258,9 +188,6 @@ try{
    genuineHumanApprovals:0,
    providerRequests:0
  }));
-}finally{
- session.agent
-   .executeToolBatch=handler;
- session.dispose();await session.agent
-   .waitForIdle();runtime.detach();await env.drain();await flushPolicyDiagnostics();
 }
+
+//endregion

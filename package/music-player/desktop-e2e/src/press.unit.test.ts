@@ -80,6 +80,7 @@ function state(fields: Readonly<Record<string, unknown>> = {},): UiState {
     deck_disabled: false,
     first_run_title: '',
     badges: [],
+    auto_play_on_select: false,
     ...fields,
   } as UiState;
 }

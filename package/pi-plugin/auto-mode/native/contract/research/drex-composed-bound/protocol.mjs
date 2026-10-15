@@ -68,17 +68,17 @@ export function parseBatchAnswer({
       .sort(),
     [...labels].sort()
   );
-  let sum = 0;
+  const distribution={sum:0};
   for (const label of labels) {
     const probability = probabilities[label];
     assert.ok(((typeof probability) === 'number') && Number.isFinite(probability)
       && (probability >= 0)
       && (probability <= 1));
-    sum += probability;
+    distribution.sum += probability;
   }
   // Tolerance checks distribution encoding, not classification confidence or a production threshold.
   assert.ok(
-    Math.abs(sum - 1) <= 0.001,
+    Math.abs(distribution.sum - 1) <= 0.001,
     'Choice probability mass is not normalized within the diagnostic encoding tolerance'
   );
   const {

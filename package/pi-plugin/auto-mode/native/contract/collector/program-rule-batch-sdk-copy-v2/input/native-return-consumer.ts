@@ -5,7 +5,7 @@
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { caughtValueText } from '@monochromatic-dev/module-caught-value/ts';
-import { toScriptValue } from './native-script-value.mjs';
+import { convertNativeOutcome } from './native-script-value.mjs';
 import { NativeReturnContractError } from './native-return-errors.ts';
 import { currentReturnConversion } from './native-return-access.ts';
 import type {
@@ -109,10 +109,10 @@ function retainNativeReturn({
     /**
      Original native conversion runs synchronously before another microtask can alter the result.
      */
-    const value: unknown = toScriptValue(
-      invocation.tool,
+    const value: unknown = convertNativeOutcome({
+      tool: invocation.tool,
       outcome
-    );
+    });
     invocation.conversion = (typeof value) === 'string'
       ? Object.freeze({
         status: 'string',

@@ -1,6 +1,8 @@
 // The on-disk form of the duration cache: one line per track, keyed by the track's fingerprint.
 // The fingerprint already hashes the URI, size, and modified time, so a changed file misses the
-// cache by itself. This file holds only the text codec; the file I/O lives in the platform layer.
+// cache by itself. A change of the fingerprint hash (gxhash to XXH3-64) renames the file, because
+// the old keys can never match again; the old file is deleted on first load. This file holds only the
+// text codec and that cleanup; the cache file I/O lives in the platform layer.
 
 // What:     `package dev.monochromatic.musicplayer.core` places the codec beside the measure model.
 // Why:      The codec is platform-free, so its round trip and its malformed-line handling are JVM tests.
@@ -11,15 +13,48 @@
 // ```
 package dev.monochromatic.musicplayer.core
 
-// What:     `const val MEASURE_DURATION_FILE_NAME: String` names the cache file under the app's files directory.
-// Why:      One place decides the file name, so the reader and the writer cannot drift apart.
+// What:     `import java.io.File` names the directory entries the legacy cleanup deletes.
+// Why:      The cleanup is a small file operation that a JVM test can check against a temporary directory.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const MEASURE_DURATION_FILE_NAME = "track-durations.tsv";
+// import { rmSync } from "node:fs";
+// ```
+import java.io.File
+
+// What:     `const val MEASURE_DURATION_FILE_NAME: String` names the cache file under the app's files directory.
+// Why:      One place decides the file name, so the reader and the writer cannot drift apart. The `-v2` suffix
+//           marks the XXH3-64 fingerprint: the file written under the retired gxhash fingerprint
+//           (`track-durations.tsv`) holds keys that can never match, so the new name starts empty.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const MEASURE_DURATION_FILE_NAME = "track-durations-v2.tsv";
 // ```
 /** Name of the duration cache file under the app's private files directory. */
-const val MEASURE_DURATION_FILE_NAME: String = "track-durations.tsv"
+const val MEASURE_DURATION_FILE_NAME: String = "track-durations-v2.tsv"
+
+// What:     `val MEASURE_LEGACY_DURATION_FILE_NAMES: List<String>` names the retired cache file and its temporary
+//           sibling.
+// Why:      They hold gxhash-era keys, so they are deleted on first load instead of accumulating forever.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const MEASURE_LEGACY_DURATION_FILE_NAMES = ["track-durations.tsv", "track-durations.tsv.tmp"];
+// ```
+/** Names of the duration cache files written under the retired fingerprint hash. */
+val MEASURE_LEGACY_DURATION_FILE_NAMES: List<String> = listOf("track-durations.tsv", "track-durations.tsv.tmp")
+
+// What:     `fun measureDeleteLegacyDurationFiles(directory: File): Int` deletes the retired cache files.
+// Why:      Their keys can never match the current fingerprint, so keeping them only wastes storage.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function deleteLegacyDurationFiles(directory: string): number { ... }
+// ```
+/** Deletes each retired duration cache file found in [directory] and returns how many were deleted. */
+fun measureDeleteLegacyDurationFiles(directory: File): Int =
+    MEASURE_LEGACY_DURATION_FILE_NAMES.count { name -> File(directory, name).delete() }
 
 // What:     `private const val MEASURE_DURATION_SEPARATOR: Char = '\t'` splits a fingerprint from its duration.
 // Why:      A tab never appears in a decimal number, so the two fields split without quoting.

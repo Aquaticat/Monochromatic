@@ -17,3 +17,12 @@ fn a_removed_idle_file_does_not_claim_a_stop() {
 fn a_path_without_a_file_name_is_shown_whole() {
     assert_eq!(file_gone_message(Path::new("/"), false), "/ was removed from the folder.");
 }
+
+#[test]
+fn the_missing_audio_message_names_the_cause_and_both_ways_to_fix_it() {
+    let message = audio_unavailable_message();
+    assert!(message.contains("No sound output"), "the cause is stated: {message}");
+    assert!(message.contains("PipeWire"), "the sound server option is named: {message}");
+    assert!(message.contains("ALSA"), "the sound card option is named: {message}");
+    assert!(message.contains("restart"), "the person is told when it takes effect: {message}");
+}

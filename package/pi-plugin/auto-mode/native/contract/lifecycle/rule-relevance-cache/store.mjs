@@ -1,21 +1,23 @@
 import {createHash} from 'node:crypto';
 import {
-  lstatSync,
-  mkdirSync,
-  writeFileSync
-} from 'node:fs';
+  lstat,
+  mkdir,
+  writeFile
+} from 'node:fs/promises';
 import {join} from 'node:path';
 import {observeDeclaredFile} from '../external-dependency-controls/file-observer.mjs';
 import {ObservedFileMissingError} from '../external-dependency-controls/errors.ts';
 import {RuleRelevanceCacheError} from './definition.mjs';
 
-export function digest(value) { return createHash('sha256').update(value).digest('hex'); }
+export function digest(value) { return createHash('sha256')
+  .update(value)
+  .digest('hex'); }
 /** Only application-owned private directories may contain persisted relevance data. */
-function privateDirectory({
+async function privateDirectory({
   path,
   trace
 }){
- try{mkdirSync(
+ try{await mkdir(
    path,
    {mode:0o700}
  );}
@@ -24,8 +26,23 @@ function privateDirectory({
    path,
    error
  });}
- const stat=lstatSync(path);
- if((!stat.isDirectory())||stat.isSymbolicLink()||((stat.mode&0o777)!==0o700))throw new RuleRelevanceCacheError(`Relevance cache directory is not a private ordinary directory: ${path}`);
+ const stat=await lstat(path);
+ if((!stat.isDirectory())||stat.isSymbolicLink()
+   ||((stat.mode&0o777)!==0o700))throw new RuleRelevanceCacheError(`Relevance cache directory is not a private ordinary directory: ${path}`);
+}
+/** Fixed lowercase SHA-256 spelling bounds every cache filename before path construction. */
+function isContentDigest(value){
+ if(typeof value!=='string'||value.length!==64)return false;
+ for(const character of value)if(!'abcdef0123456789'.includes(character))return false;
+ return true;
+}
+/** Retain JSON parse failures under the original cache error category. */
+function readCacheEntry({observed,key}){
+ try{return JSON.parse(observed.bytes.toString('utf8'));}
+ catch(error){throw new RuleRelevanceCacheError(
+  `Relevance cache entry is incomplete or malformed: ${key}`,
+  {cause:error}
+ );}
 }
 /** Content-addressed data cache, not an approval store or source-authentication mechanism. */
 export function createRelevanceStore({
@@ -34,15 +51,15 @@ export function createRelevanceStore({
   profileKey,
   trace
 }){
- if((typeof directory)!=='string'||(!directory)||(typeof trace)!=='function')throw new RuleRelevanceCacheError('Private cache directory and diagnostic sink are required');
+ if(((typeof directory)!=='string')||(!directory)
+   ||((typeof trace)!=='function'))throw new RuleRelevanceCacheError('Private cache directory and diagnostic sink are required');
  for(const key of [
    'repository',
    'primaryBranch'
- ])if((typeof namespace?.[key])!=='string'||(!namespace[key])||(namespace[key].length>4096))throw new RuleRelevanceCacheError('Repository identity and primary branch are required cache namespace data');
- privateDirectory({
-   path:directory,
-   trace
- });
+ ])if(((typeof namespace?.[key])!=='string')||(!namespace[key])
+   ||(namespace[key]
+     .length
+     >4_096))throw new RuleRelevanceCacheError('Repository identity and primary branch are required cache namespace data');
  const namespaceKey=digest(JSON.stringify({
    repository:namespace.repository,
    primaryBranch:namespace.primaryBranch
@@ -50,21 +67,30 @@ export function createRelevanceStore({
  const root=join(
    directory,
    namespaceKey
- );privateDirectory({
-   path:root,
-   trace
- });
+ );
+ const initialization={pending:undefined};
+ const publications=new Map();
+ async function initialize(){
+  await privateDirectory({path:directory,trace});
+  await privateDirectory({path:root,trace});
+ }
+ async function ready(){
+  initialization.pending??=initialize();
+  await initialization.pending;
+ }
+
  function fileFor(key){
-  if((typeof key)!=='string'||(!/^[a-f0-9]{64}$/.test(key)))throw new RuleRelevanceCacheError('Cache entry key is not a content digest');
+  if(!isContentDigest(key))throw new RuleRelevanceCacheError('Cache entry key is not a content digest');
   return `${key}.json`;
  }
- function read(key){
-  let observed;
-  try{observed=observeDeclaredFile({
+ function readEntry(key){
+  const filename=fileFor(key);
+  const capture={observed:undefined};
+  try{capture.observed=observeDeclaredFile({
     root,
-    relativePath:fileFor(key),
+    relativePath:filename,
     requiredMode:0o600,
-    maxBytes:4096
+    maxBytes:4_096
   });}
   catch(error){
    if(error instanceof ObservedFileMissingError){trace({
@@ -74,36 +100,42 @@ export function createRelevanceStore({
    });return undefined;}
    throw error;
   }
-  let entry;
-  try{entry=JSON.parse(observed.bytes
-    .toString('utf8'));}
-  catch(error){throw new RuleRelevanceCacheError(
-    'Relevance cache entry is incomplete or malformed: '+key,
-    {cause:error}
-  );}
-  if((Object.keys(entry).toSorted().join(',')!=='key,probability,profileKey,qualification,schema')||(entry.schema!==1)||(entry.key!==key)||(entry.profileKey!==profileKey)||(entry.qualification!=='not-established')||(!Number.isFinite(entry.probability))||(entry.probability<0)||(entry.probability>1))
+  const entry=readCacheEntry({observed:capture.observed,key});
+  if((Object.keys(entry)
+    .toSorted()
+    .join(',')
+    !=='key,probability,profileKey,qualification,schema')||(entry.schema!==1)
+    ||(entry.key!==key)
+    ||(entry.profileKey!==profileKey)
+    ||(entry.qualification!=='not-established')
+    ||(!Number.isFinite(entry.probability))
+    ||(entry.probability<0)
+    ||(entry.probability>1))
    throw new RuleRelevanceCacheError(`Relevance cache entry has a different profile or invalid estimate: ${key}`);
   trace({
     event:'cache-hit',
     key
   });return Object.freeze(entry);
  }
- function put({
-   key,
-   probability
- }){
-  if((!Number.isFinite(probability))||(probability<0)||(probability>1))throw new RuleRelevanceCacheError('Relevance estimate must be finite and between zero and one');
-  const entry=Object.freeze({
-    schema:1,
-    key,
-    profileKey,
-    probability,
-    qualification:'not-established'
-  });
-  try{writeFileSync(
-    join(root,fileFor(key)),
-    JSON.stringify(entry)+'\n',
-    {flag:'wx',mode:0o600}
+ async function read(key){
+  fileFor(key);
+  await ready();
+  const pending=publications.get(key);
+  if(pending!==undefined)await pending;
+  return readEntry(key);
+ }
+ async function publish({entry,filename}){
+  const {key}=entry;
+  try{await writeFile(
+    join(
+      root,
+      filename
+    ),
+    `${JSON.stringify(entry)}\n`,
+    {
+      flag:'wx',
+      mode:0o600
+    }
   );}
   catch(error){
    if(error?.code!=='EEXIST')throw error;
@@ -112,12 +144,27 @@ export function createRelevanceStore({
      event:'cache-publication-already-exists',
      key,
      error
-   });return read(key);
+   });return readEntry(key);
   }
   trace({
     event:'cache-published',
     key
   });return entry;
+ }
+ async function put({key,probability}){
+  if((!Number.isFinite(probability))||(probability<0)
+    ||(probability>1))throw new RuleRelevanceCacheError('Relevance estimate must be finite and between zero and one');
+  const filename=fileFor(key);
+  await ready();
+  const pending=publications.get(key);
+  if(pending!==undefined)return await pending;
+  const entry=Object.freeze({schema:1,key,profileKey,probability,qualification:'not-established'});
+  const publication=publish({entry,filename});
+  publications.set(key,publication);
+  using publicationScope={
+   [Symbol.dispose](){publications.delete(key);}
+  };
+  return await publication;
  }
  return Object.freeze({
    read,

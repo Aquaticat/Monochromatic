@@ -18,8 +18,10 @@ export function registerOwnedExecutionTools({
  const {agent} = session;
  const previous=agent.prepareRequest;
  const wrappers=createExecutionWrappers({wrapToolDefinition});
- let active=true;
- async function prepareRequest(
+ const installationState={active:true};
+ /** Capture the positional native callback without detaching a method or changing its receiver. */
+ function createRequestHook(){
+ return async function prepareRequest(
    request,
    signal
  ){
@@ -37,7 +39,7 @@ export function registerOwnedExecutionTools({
   // Schema data participates in native argument conversion and validation.
   // Retain descriptors, including TypeBox symbols, without freezing borrowed schemas or encoding JSON.
   // The request-wide property bound limits retained metadata; callables remain identity dependencies.
-  let schemaProperties=0;
+  const schemaCapture={properties:0};
   function captureSchema({
     schema,
     label
@@ -52,8 +54,8 @@ export function registerOwnedExecutionTools({
     seen.add(node);
     const prototype=Object.getPrototypeOf(node);
       const keys=Reflect.ownKeys(node);
-    schemaProperties+=keys.length+1;
-    if(schemaProperties>10_000)throw new ExecutionContextOwnershipError('Original request tool schemas exceed the 10000-property profile');
+    schemaCapture.properties+=keys.length+1;
+    if(schemaCapture.properties>10_000)throw new ExecutionContextOwnershipError('Original request tool schemas exceed the 10000-property profile');
     if((prototype!==null)&&(prototype!==Object.prototype)
       &&(prototype!==Array.prototype))throw new ExecutionContextOwnershipError(`${label} requires ordinary schema records or arrays`);
     const entries=keys.map(function copySchemaProperty(key) {
@@ -146,11 +148,11 @@ export function registerOwnedExecutionTools({
      schema:outputSchema,
      label:`Native tool ${JSON.stringify(name)} output schema`
    });
-   let retirement;
+   const toolState={retirement:undefined};
    function current(){
-    if(retirement)throw retirement.cause;
+    if(toolState.retirement)throw toolState.retirement.cause;
     try{
-     if((!active)||(agent.prepareRequest!==prepareRequest)
+     if((!installationState.active)||(agent.prepareRequest!==prepareRequest)
        ||(session.extensionRunner!==runner)
        ||(session.getToolDefinition(name)!==definition)
        ||(definition.execute!==execute)
@@ -161,7 +163,7 @@ export function registerOwnedExecutionTools({
        ||(agent.toolExecution!==executionMode))throw new ExecutionContextOwnershipError(`Native tool ${JSON.stringify(name)
        } or its context owner changed after request preparation`);
      assertParameters();assertOutputSchema();
-    }catch(error){retirement={cause:error};throw error;}
+    }catch(error){toolState.retirement={cause:error};throw error;}
    }
    function readOrigin(carrier){
     if(carrier.stream!==stream)throw new ExecutionContextOwnershipError('Execution context belongs to another stream consumer');
@@ -169,8 +171,7 @@ export function registerOwnedExecutionTools({
       response:carrier.response,
       stream
     });
-    judgment.assertExecutionEntry(carrier.token);
-    const origin=judgment.executionFor(carrier.token);
+    const origin=judgment.executionEntryFor(carrier.token);
     current();return origin;
    }
    function capturePreparedProgram({
@@ -200,12 +201,12 @@ export function registerOwnedExecutionTools({
     });
    }
    current();
-   const original=wrappers.wrapRegisteredTool(
-     {definition},
+   const original=wrappers.wrapRegisteredTool({
+     registeredTool:{definition},
      runner,
      readOrigin,
      createProgramRun
-   );
+   });
    const wrapped=Object.freeze({
      ...original,
      ...(isOwnedProgramDefinition(definition)?{capturePreparedProgram}:{})
@@ -244,10 +245,12 @@ export function registerOwnedExecutionTools({
       tools
     }
   };
+ };
  }
+ const prepareRequest=createRequestHook();
  agent.prepareRequest=prepareRequest;
  return function unregister(){
-  active=false;
+  installationState.active=false;
   if(agent.prepareRequest===prepareRequest)agent.prepareRequest=previous;
  };
 }

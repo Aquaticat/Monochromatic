@@ -48,7 +48,8 @@ export function bindRuleRelevanceCache({
    trace
  });
  const jobs=new WeakMap();
- const views=new WeakMap();let currentView;
+ const views=new WeakMap();
+ const cacheState={currentView:undefined};
  function originalCurrent(source){selection.assertCurrent(source);}
  function materialize(source){
   originalCurrent(source);
@@ -107,8 +108,10 @@ export function bindRuleRelevanceCache({
   }=materialize(source);
     const entries=new Map();
     const missing=[];
-  for(const rule of rules){
-   const entry=store.read(rule.key);
+  const cached=await Promise.all(rules.map(async function readCachedRule(rule){
+   return {rule,entry:await store.read(rule.key)};
+  }));
+  for(const {rule,entry} of cached){
    if(entry)entries.set(
      rule.id,
      entry
@@ -150,13 +153,10 @@ export function bindRuleRelevanceCache({
    for(const rule of missing)if(!byId.has(rule.id))throw new RuleRelevanceCacheError(`Classifier omitted a changed rule: ${rule.id}`);
    // Validate the whole batch before publishing any entry.
    originalCurrent(source);signal?.throwIfAborted();
-   for(const rule of missing)entries.set(
-     rule.id,
-     store.put({
-       key:rule.key,
-       probability:byId.get(rule.id)
-     })
-   );
+   const published=await Promise.all(missing.map(async function publishChangedRule(rule){
+    return {id:rule.id,entry:await store.put({key:rule.key,probability:byId.get(rule.id)})};
+   }));
+   for(const {id,entry} of published)entries.set(id,entry);
   }
   originalCurrent(source);signal?.throwIfAborted();
   const view=Object.freeze({
@@ -187,7 +187,7 @@ export function bindRuleRelevanceCache({
   views.set(
     view,
     source
-  );currentView=view;return view;
+  );cacheState.currentView=view;return view;
  }
  function refresh({signal}={}){
   signal?.throwIfAborted();
@@ -224,12 +224,12 @@ export function bindRuleRelevanceCache({
  }
  function assertCurrent(view){
   const source=views.get(view);
-  if((!source)||(currentView!==view))throw new RuleRelevanceCacheError('Relevance view is not the current original policy-cache view');
+  if((!source)||(cacheState.currentView!==view))throw new RuleRelevanceCacheError('Relevance view is not the current original policy-cache view');
   originalCurrent(source);
  }
  function readCurrent(){
-  if(!currentView)throw new RuleRelevanceCacheError('Policy relevance has not completed; keep rules included');
-  assertCurrent(currentView);return currentView;
+  if(!cacheState.currentView)throw new RuleRelevanceCacheError('Policy relevance has not completed; keep rules included');
+  assertCurrent(cacheState.currentView);return cacheState.currentView;
  }
  return Object.freeze({
    refresh,

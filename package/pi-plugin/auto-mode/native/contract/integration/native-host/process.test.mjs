@@ -72,7 +72,13 @@ async function readNativeState() {
       type: 'get_state',
       id: 'native-host-state'
     })  }\n`);
-  try {
+  using readerScope = {
+    [Symbol.dispose]() {
+      child.stdin.end();
+      lines.close();
+    }
+  };
+  {
     for await (const line of lines) {
       const response = JSON.parse(line);
       if ((response.type !== 'response') || (response.id !== 'native-host-state')) continue;
@@ -111,14 +117,16 @@ async function readNativeState() {
       return response.data;
     }
     throw new Error(`Native CLI exited without its requested RPC state: ${  diagnostics.join('')}`);
-  } finally {
-    child.stdin
-      .end();
-    lines.close();
   }
 }
 
-try {
+await using processScope = {
+  async [Symbol.asyncDispose]() {
+    if ((child.exitCode === null) && (child.signalCode === null)) child.kill('SIGKILL');
+    await env.drain();
+  }
+};
+{
   const [state, [code, signal]] = await Promise.all([
     readNativeState(),
     once(
@@ -152,7 +160,4 @@ try {
     cleanShutdown: true,
     genuineHumanApprovals: 0
   }));
-} finally {
-  if ((child.exitCode === null) && (child.signalCode === null)) child.kill('SIGKILL');
-  await env.drain();
 }

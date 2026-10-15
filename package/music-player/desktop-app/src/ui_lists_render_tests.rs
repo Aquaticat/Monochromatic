@@ -95,6 +95,7 @@ fn render_window_with(width: usize, height: usize, names: &[String], playing: Op
         *state = ScreenState::default();
     });
     crate::ui_settings::replace_saver(|_track_rows, _playing| return Ok(()));
+    crate::ui_settings::replace_auto_play_saver(|_enabled| return Ok(()));
     let app = AppWindow::new().expect("the window builds on the software renderer");
     app.window().set_size(slint::PhysicalSize::new(u32::try_from(width).unwrap_or(1), u32::try_from(height).unwrap_or(1)));
     app.global::<crate::Theme>().set_scheme_override(1);

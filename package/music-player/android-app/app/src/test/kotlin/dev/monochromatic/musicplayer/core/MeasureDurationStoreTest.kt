@@ -16,7 +16,12 @@ package dev.monochromatic.musicplayer.core
 // ```ts
 // import { expect, test } from "test";
 // ```
+import java.io.File
+import java.nio.file.Files
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 // What:     `class MeasureDurationStoreTest` groups the codec tests.
@@ -76,5 +81,45 @@ class MeasureDurationStoreTest {
             "5\tabc",
         ).joinToString(separator = "\n")
         assertEquals(mapOf(1L to 5000L), measureDecodeDurations(text))
+    }
+
+    // What:     `@Test fun legacyFilesAreDeletedAndTheCurrentFileIsKept()` runs the cleanup on a temporary directory.
+    // Why:      The gxhash-era cache files must be removed on first load, while the current file must survive.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("legacy", () => { /* create files, clean, assert */ });
+    // ```
+    /** The retired file and its temporary sibling are deleted; the current file and an unrelated file stay. */
+    @Test
+    fun legacyFilesAreDeletedAndTheCurrentFileIsKept() {
+        /** Throwaway directory standing in for the app's files directory. */
+        val directory: File = Files.createTempDirectory("duration-cleanup").toFile()
+        try {
+            MEASURE_LEGACY_DURATION_FILE_NAMES.forEach { name -> File(directory, name).writeText("1\t5000\n") }
+            File(directory, MEASURE_DURATION_FILE_NAME).writeText("2\t6000\n")
+            File(directory, "unrelated.txt").writeText("keep")
+            assertEquals(2, measureDeleteLegacyDurationFiles(directory))
+            MEASURE_LEGACY_DURATION_FILE_NAMES.forEach { name -> assertFalse(name, File(directory, name).exists()) }
+            assertTrue(File(directory, MEASURE_DURATION_FILE_NAME).exists())
+            assertTrue(File(directory, "unrelated.txt").exists())
+            assertEquals(0, measureDeleteLegacyDurationFiles(directory))
+        } finally {
+            directory.deleteRecursively()
+        }
+    }
+
+    // What:     `@Test fun theCurrentFileNameIsNotALegacyName()` compares the names.
+    // Why:      If the current name were a legacy name, the cleanup would delete the live cache on every load.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("names", () => expect(LEGACY).not.toContain(CURRENT));
+    // ```
+    /** The live cache file name never appears among the retired names. */
+    @Test
+    fun theCurrentFileNameIsNotALegacyName() {
+        assertFalse(MEASURE_LEGACY_DURATION_FILE_NAMES.contains(MEASURE_DURATION_FILE_NAME))
+        assertNotEquals("track-durations.tsv", MEASURE_DURATION_FILE_NAME)
     }
 }
