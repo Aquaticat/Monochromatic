@@ -1,7 +1,7 @@
 /**
  Native dependency facade capabilities retain original mechanical evidence boundaries. @module
  */
-import type { FileObservationInput } from '../external-dependency-controls/file-observation-types.ts';
+import type { FileObservationInput, FileObservation } from '../external-dependency-controls/file-observation-types.ts';
 
 /**
  Source projection preserves original unqualified coverage without implying authority.
@@ -67,3 +67,22 @@ export type DependencyFacade = Readonly<{
     absolutePath: unknown
   }>) => DependencyOriginalFile;
 }>;
+
+/** Declared observations retain an explicit default bound and original optional reader. */
+export type DependencyFileProfile = Readonly<{
+  relativePath: string;
+  requiredMode: number;
+  maxBytes: number;
+  read: FileObservationInput['read'];
+}>;
+
+/** Original native handles retain exact root, source, cancellation, and completed file identities. */
+export type DependencyRecord<Source extends DependencySources, Root extends object> = Readonly<{
+  signal: AbortSignal;
+  root: Root;
+  sources: Source;
+  observed: readonly FileObservation[];
+}>;
+
+/** Live checks use the original deadline; retained checks observe original cancellation only. */
+export type DependencyVerification = (signal: AbortSignal) => void;
