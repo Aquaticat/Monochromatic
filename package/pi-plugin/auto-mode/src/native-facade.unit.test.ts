@@ -32,7 +32,9 @@ await describe({ name: '', children: [
     f.events.length = 0;
     /** Retained checks preserve dependency work while omitting every model-clock read. */
     const retained = owner.checkRetained(handle);
-    assert.deepEqual(f.events, finalizationEvents.filter(function withoutClock(point) { return point !== 'clock'; }));
+    assert.deepEqual(f.events, finalizationEvents.filter(function withoutClock(point) { 
+      return point !== 'clock'; 
+    }));
     assert.deepEqual(retained, { ...live, decisionDeadlineChecked: false });
     assert.equal(retained.unqualifiedCoverage, f.coverage);
     assert.equal(Object.isFrozen(retained), true);
@@ -45,7 +47,9 @@ await describe({ name: '', children: [
     assert.notEqual(another, handle);
     /** A different issuing facade cannot claim the original handle. */
     const foreign = f.construct();
-    assert.throws(function foreignHandle() { foreign.finalize(handle); }, { name: 'DependencyHandleOwnershipError' });
+    assert.throws(function foreignHandle() { 
+      foreign.finalize(handle); 
+    }, { name: 'DependencyHandleOwnershipError' });
   } }),
   ...[...new Set(preparationEvents)].map(function failedPreparation(point) {
     return it({ name: `retains preparation failure at ${point} before later observations`, fn: async function preparationFailure() {
@@ -54,7 +58,11 @@ await describe({ name: '', children: [
       /** Recovery uses the same issuing facade and original capabilities. */
       const owner = f.construct();
       f.state.fail = point;
-      assert.throws(function fail() { owner.prepare({ signal: f.controller.signal }); }, function same(error: unknown) { return error === f.failure; });
+      assert.throws(function fail() { 
+        owner.prepare({ signal: f.controller.signal }); 
+      }, function same(error: unknown) { 
+        return error === f.failure; 
+      });
       assert.deepEqual(f.events, preparationEvents.slice(0, preparationEvents.indexOf(point) + 1));
       delete f.state.fail;
       f.events.length = 0;
@@ -64,7 +72,9 @@ await describe({ name: '', children: [
   }),
   ...['finalize', 'checkRetained'].map(function revalidationMode(mode) {
     /** Retained-only mode has the same dependency boundaries without clock events. */
-    const expected = mode === 'finalize' ? finalizationEvents : finalizationEvents.filter(function withoutClock(point) { return point !== 'clock'; });
+    const expected = mode === 'finalize' ? finalizationEvents : finalizationEvents.filter(function withoutClock(point) { 
+      return point !== 'clock'; 
+    });
     return describe({ name: mode, children: [...new Set(expected)].map(function failedRevalidation(point) {
       return it({ name: `retains ${point} failure and permits original recovery`, fn: async function retainedFailure() {
         /** Original preparation succeeds before a revalidation callback is made to fail. */
@@ -78,7 +88,9 @@ await describe({ name: '', children: [
         assert.throws(function fail() {
           if (mode === 'finalize') owner.finalize(handle);
           else owner.checkRetained(handle);
-        }, function same(error: unknown) { return error === f.failure; });
+        }, function same(error: unknown) { 
+          return error === f.failure; 
+        });
         assert.deepEqual(f.events, expected.slice(0, expected.indexOf(point) + 1));
         delete f.state.fail;
         f.events.length = 0;
@@ -88,20 +100,26 @@ await describe({ name: '', children: [
       } });
     }) });
   }),
-  ...[{}, function foreignFunction() {}, undefined, null, false, 0, 0n, 'foreign', Symbol('foreign dependency'), Symbol.for('registered foreign dependency')].map(function foreignCase(handle, ordinal) {
+  ...[{}, function foreignFunction() {}, undefined, null, false, 0, 0n, 'foreign', Symbol('unregistered dependency handle never issued'), Symbol.for('registered dependency handle never issued')].map(function foreignCase(handle, ordinal) {
     return it({ name: `rejects foreign dependency handle ${String(ordinal)} before live work`, fn: async function foreign() {
       /** Already-cancelled state must not supersede foreign ownership failure. */
       const f = createFacadeFixture();
       /** Ownership is checked before cancellation or any external callback. */
       const owner = f.construct();
       f.controller.abort(f.failure);
-      assert.throws(function finalizeForeign() { owner.finalize(handle); }, { name: 'DependencyHandleOwnershipError' });
+      assert.throws(function finalizeForeign() { 
+        owner.finalize(handle); 
+      }, { name: 'DependencyHandleOwnershipError' });
       assert.deepEqual(f.events, ['finalize.handle-check']);
       f.events.length = 0;
-      assert.throws(function retainedForeign() { owner.checkRetained(handle); }, { name: 'DependencyHandleOwnershipError' });
+      assert.throws(function retainedForeign() { 
+        owner.checkRetained(handle); 
+      }, { name: 'DependencyHandleOwnershipError' });
       assert.deepEqual(f.events, ['finalize.handle-check']);
       f.events.length = 0;
-      assert.throws(function originalForeign() { owner.originalFile({ handle, absolutePath: '/foreign' }); }, { name: 'DependencyHandleOwnershipError' });
+      assert.throws(function originalForeign() { 
+        owner.originalFile({ handle, absolutePath: '/foreign' }); 
+      }, { name: 'DependencyHandleOwnershipError' });
       assert.deepEqual(f.events, []);
     } });
   }),

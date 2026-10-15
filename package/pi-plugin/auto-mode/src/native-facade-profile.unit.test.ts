@@ -23,7 +23,9 @@ await describe({ name: '', children: [
       /** One original bootstrap value is replaced without changing other capabilities. */
       const f = createFacadeFixture();
       for (const [key, value] of Object.entries(change)) f.options[key] = value;
-      assert.throws(function invalid() { f.construct(); }, {
+      assert.throws(function invalid() { 
+        f.construct(); 
+      }, {
         name: ('now' in change) || ('deadlineAt' in change) ? 'DependencyDeadlineError' : 'DependencyConfigurationError',
       });
       assert.deepEqual(f.events, []);
@@ -34,7 +36,9 @@ await describe({ name: '', children: [
       /** The invalid field is isolated from otherwise valid declared file values. */
       const f = createFacadeFixture();
       f.options.files = [{ relativePath: 'policy', requiredMode: 0o600, ...change }];
-      assert.throws(function invalid() { f.construct(); }, { name: 'DependencyConfigurationError' });
+      assert.throws(function invalid() { 
+        f.construct(); 
+      }, { name: 'DependencyConfigurationError' });
       assert.deepEqual(f.events, []);
     } });
   }),

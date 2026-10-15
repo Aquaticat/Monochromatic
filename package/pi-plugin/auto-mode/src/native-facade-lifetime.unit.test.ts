@@ -13,15 +13,23 @@ await describe({ name: '', children: [
     /** Completed original observations stay available for retained checking. */
     const handle = owner.prepare({ signal: f.controller.signal });
     f.state.now = 200;
-    assert.throws(function expired() { owner.finalize(handle); }, { name: 'DependencyDeadlineError' });
-    assert.throws(function expiredFile() { owner.originalFile({ handle, absolutePath: '/undeclared' }); }, { name: 'DependencyDeadlineError' });
+    assert.throws(function expired() { 
+      owner.finalize(handle); 
+    }, { name: 'DependencyDeadlineError' });
+    assert.throws(function expiredFile() { 
+      owner.originalFile({ handle, absolutePath: '/undeclared' }); 
+    }, { name: 'DependencyDeadlineError' });
     f.state.fail = 'clock';
     f.events.length = 0;
     assert.equal(owner.checkRetained(handle).decisionDeadlineChecked, false);
-    assert.deepEqual(f.events, finalizationEvents.filter(function withoutClock(point) { return point !== 'clock'; }));
+    assert.deepEqual(f.events, finalizationEvents.filter(function withoutClock(point) { 
+      return point !== 'clock'; 
+    }));
     f.controller.abort(f.failure);
     f.events.length = 0;
-    assert.throws(function cancelled() { owner.checkRetained(handle); }, { name: 'DependencyCancellationError' });
+    assert.throws(function cancelled() { 
+      owner.checkRetained(handle); 
+    }, { name: 'DependencyCancellationError' });
     assert.deepEqual(f.events, ['finalize.handle-check', 'finalize.handle-owned', 'finalize.entry']);
   } }),
   ...['prepare.root.return', 'prepare.collector.return', 'prepare.success'].map(function preparationBoundary(point) {
@@ -36,7 +44,9 @@ await describe({ name: '', children: [
         };
         /** Final preparation observation must complete before the caller receives a handle. */
         const owner = f.construct();
-        assert.throws(function changed() { owner.prepare({ signal: f.controller.signal }); }, {
+        assert.throws(function changed() { 
+          owner.prepare({ signal: f.controller.signal }); 
+        }, {
           name: mode === 'cancelled' ? 'DependencyCancellationError' : 'DependencyDeadlineError',
         });
         assert.equal(f.events.at(-1), mode === 'cancelled' ? point : 'clock');

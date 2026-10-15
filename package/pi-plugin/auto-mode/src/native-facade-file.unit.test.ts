@@ -30,8 +30,12 @@ await describe({ name: '', children: [
     assert.equal(owner.checkRetained(handle).decisionDeadlineChecked, false);
     await writeFile(f.path, Buffer.from('changed original file'));
     assert.deepEqual(owner.originalFile({ handle, absolutePath: f.path }), view);
-    assert.throws(function changedLive() { owner.finalize(handle); }, { name: 'ObservedFileStaleError' });
-    assert.throws(function changedRetained() { owner.checkRetained(handle); }, { name: 'ObservedFileStaleError' });
+    assert.throws(function changedLive() { 
+      owner.finalize(handle); 
+    }, { name: 'ObservedFileStaleError' });
+    assert.throws(function changedRetained() { 
+      owner.checkRetained(handle); 
+    }, { name: 'ObservedFileStaleError' });
     await writeFile(f.path, f.bytes);
     assert.equal(owner.finalize(handle).mechanicalDependenciesCurrent, true);
     assert.equal(owner.checkRetained(handle).mechanicalDependenciesCurrent, true);
@@ -73,13 +77,25 @@ await describe({ name: '', children: [
       const owner = f.construct();
       if (point.startsWith('prepare')) {
         f.state.fail = point;
-        assert.throws(function failedPreparation() { owner.prepare({ signal: f.controller.signal }); }, function same(error: unknown) { return error === f.failure; });
+        assert.throws(function failedPreparation() { 
+          owner.prepare({ signal: f.controller.signal }); 
+        }, function same(error: unknown) { 
+          return error === f.failure; 
+        });
       } else {
         /** Finalization faults retain completed original preparation observations. */
         const handle = owner.prepare({ signal: f.controller.signal });
         f.state.fail = point;
-        assert.throws(function failedFinalization() { owner.finalize(handle); }, function same(error: unknown) { return error === f.failure; });
-        assert.throws(function failedRetention() { owner.checkRetained(handle); }, function same(error: unknown) { return error === f.failure; });
+        assert.throws(function failedFinalization() { 
+          owner.finalize(handle); 
+        }, function same(error: unknown) { 
+          return error === f.failure; 
+        });
+        assert.throws(function failedRetention() { 
+          owner.checkRetained(handle); 
+        }, function same(error: unknown) { 
+          return error === f.failure; 
+        });
       }
       assert.equal(f.events.at(-1), point);
     } });
