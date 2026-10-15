@@ -23,7 +23,7 @@ pub use crate::shaped_row::{ReadingRect, ShapedRow, VisualCaret};
 /// Shaped rows kept by line for one text revision and scale.
 use crate::shaped_row_cache::RowCache;
 /// Syntax classifications stay independent of pixels.
-use crate::source_style::StyleSpan;
+use crate::source_style::{StyleSpan, role_face};
 /// Immutable font requests validate continuous weights before shaping.
 use crate::source_typography::SourceTypography;
 /// Tabs end on pixel tab stops,
@@ -357,6 +357,25 @@ impl TextShaper {
         }
         for (start, end, role) in request.roles {
             builder.push(StyleProperty::Brush(*role), *start..*end);
+            // What: a role's second channel is a weight offset and the real italic face for its range.
+            // Why: The raster paints glyph runs only, so weight and italic are the style channels that exist.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const face = roleFace(role); if (face) { range.weight = clamp(base + face.offset); range.italic ||= face.italic; }
+            // ```
+            if let Some(face) = role_face(*role) {
+                if face.weight_offset != 0.0 {
+                    let weight = (self.typography.weight + face.weight_offset).clamp(100.0, 800.0);
+                    builder.push(
+                        StyleProperty::FontWeight(FontWeight::new(weight)),
+                        *start..*end,
+                    );
+                }
+                if face.italic {
+                    builder.push(StyleProperty::FontStyle(FontStyle::Italic), *start..*end);
+                }
+            }
         }
         // The stand-in space of a tab is one byte; spacing on it changes that one advance only.
         for (byte, extra) in request.spacings {

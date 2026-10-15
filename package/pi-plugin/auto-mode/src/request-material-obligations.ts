@@ -4,6 +4,8 @@
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { PolicyInputBindingError } from './policy-input-binding-error.ts';
+import type { RequestGoverningUse } from './request-source-derivation-types.ts';
 import type {
   RequestMaterialInterpretation,
   RequestMaterialPremiseIssue,
@@ -19,13 +21,18 @@ const l = tagged({ tag: 'auto-mode-request-material-obligations', },);
  This consumes an interpretation produced from authenticated evidence, not a caller admission flag.
  A fresh result array leaves the caller's issue list unchanged.
  Only a rewritten domain issue or a newly created obligation is frozen.
- No request-wide directive, authority, permission or completeness is inferred.
+ Native field derivation may establish represented instruction use.
+ Independent source-domain, meaning, authority and permission obligations remain unchanged.
 
  @param issues - original compiler premise diagnostics
 
  @param interpretation - original content-use result without authority or permission
 
+ @param governingUse - freshly consumed original request field and source memberships
+
  @returns existing obligations plus independent unresolved content or governing-use obligations
+
+ @throws PolicyInputBindingError when governing-use evidence belongs to another original request
 
  @example
  ```ts
@@ -37,9 +44,11 @@ export function retainRequestMaterialObligations(
   {
     issues,
     interpretation,
+    governingUse,
   }: {
     readonly issues: readonly RequestMaterialPremiseIssue[];
     readonly interpretation: RequestMaterialInterpretation;
+    readonly governingUse?: RequestGoverningUse;
   },
 ): RequestMaterialPremiseIssue[] {
   /**
@@ -50,6 +59,8 @@ export function retainRequestMaterialObligations(
     l,
   },);
   rl.debug('retaining original request material obligations',);
+  if ((governingUse !== undefined) && (governingUse.request !== interpretation.request))
+    throw new PolicyInputBindingError('Governing-use evidence belongs to another original interpreted request');
   /**
    Unrelated issues retain their exact references and details.
    */
@@ -62,14 +73,16 @@ export function retainRequestMaterialObligations(
       },)
       : issue;
   },);
-  if ((interpretation.admission === 'admitted') && (interpretation.relation === 'potential-instruction')) {
+  if ((interpretation.admission === 'admitted') && (interpretation.relation === 'potential-instruction')
+    && (governingUse?.state !== 'represented-by-original-inputs')) {
     rl.debug('retaining independent potential-instruction use obligation',);
     result.push(Object.freeze({
       premise: 'qualified-rule-interpretation',
       kind: 'request-material-instruction-use',
       request: interpretation.request,
       evidence: interpretation.evidence,
-      reason: 'Original request material may contain operative instructions, including repeated indexed text, but no source-bound consumer establishes their represented or independent governing use. This content estimate supplies neither another directive nor uniform request authority.',
+      reason: governingUse?.reason
+        ?? 'Original request material may contain operative instructions, including repeated indexed text, but no source-bound consumer establishes their represented or independent governing use. This content estimate supplies neither another directive nor uniform request authority.',
     },),);
   }
   if ((interpretation.admission !== 'admitted') || (interpretation.relation === 'unknown')) {

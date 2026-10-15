@@ -4,6 +4,7 @@
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { assessmentHttpFailure, } from './assessment-http-failure.ts';
 
 //region Transport owns HTTP resources while the judgment owns attempts and admission
 
@@ -30,7 +31,7 @@ export type AssessmentTransportInput = {
 /**
  Fixed private-data route retained from the verified native transport.
  */
-const endpoint = 'https://api.llmgateway.io/v1/systemone';
+const endpoint = 'https://api.llmgateway.io/v1/decisions';
 /**
  Inherited judgment and transport bounds remain fixed at bootstrap.
  */
@@ -61,14 +62,14 @@ const l = tagged({ tag: 'auto-mode-assessment-transport', },);
 
  @example
  ```ts
- const send = createAssessmentSender({
+ const send = createAssessmentHttpSender({
    fetchImpl: fetch,
    now: performance.now.bind(performance),
    readCredential: () => process.env.AUTO_MODE_LLMGATEWAY_API_KEY,
  });
  ```
  */
-export function createAssessmentSender({
+export function createAssessmentHttpSender({
   fetchImpl,
   now,
   readCredential,
@@ -81,7 +82,7 @@ export function createAssessmentSender({
    Factory scope carries through each dispatch diagnostic.
    */
   const rl = tagged({
-    tag: createAssessmentSender.name,
+    tag: createAssessmentHttpSender.name,
     l,
   },);
   rl.debug('binding direct assessment transport',);
@@ -236,7 +237,10 @@ export function createAssessmentSender({
       if (raw.includes(key,))
         throw new AssessmentTransportError('Assessment response echoed its Gateway credential and was withheld',);
       if (response.status !== limits.successfulStatus)
-        throw new AssessmentTransportError(`Assessment request returned HTTP ${response.status}`,);
+        throw new AssessmentTransportError(assessmentHttpFailure({
+          raw,
+          status: response.status,
+        },),);
       signal.throwIfAborted();
       sl.debug('original assessment HTTP response completed',);
       return raw;

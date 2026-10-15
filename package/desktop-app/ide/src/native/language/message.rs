@@ -221,6 +221,43 @@ fn rank(outcome: &RequestOutcome) -> u8 {
 }
 
 /// What:
+///  Whether the answer to a hover is about the language support itself,
+///  not about this position:
+///  a failed request,
+///  a server that cannot follow the file,
+///  a feature the server does not offer,
+///  or no running server for a file that has servers configured.
+///  `&[(Option<ServerIdentity>, RequestOutcome)]` lends the answers received.
+/// Why:
+///  An empty answer, a request set aside, and a server still starting are properties of one position or of the
+///  moment and are not worth interrupting a resting pointer for;
+///  the others hold for every position of the file until something is installed or fixed.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function statesSupportProblem(outcomes: [ServerIdentity | undefined, RequestOutcome][], status: LanguageStatus): boolean
+/// ```
+pub(super) fn states_support_problem(
+    outcomes: &[(Option<ServerIdentity>, RequestOutcome)],
+    status: &LanguageStatus,
+) -> bool {
+    if status.document != DocumentState::Attached {
+        return false;
+    }
+    // The most telling answer decides, as it does for the explanation itself.
+    let Some((_, outcome)) = outcomes.iter().min_by_key(|(_, found)| return rank(found)) else {
+        return true;
+    };
+    return matches!(
+        outcome,
+        RequestOutcome::Failed(_)
+            | RequestOutcome::Unsynchronized
+            | RequestOutcome::Unsupported
+            | RequestOutcome::NoServer
+    );
+}
+
+/// What:
 ///  The sentence for a finished request that produced nothing to show.
 ///       `&[...]` borrows the list of every server's answer.
 /// Why:

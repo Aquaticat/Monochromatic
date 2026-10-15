@@ -5,7 +5,7 @@
 use smithay::input::pointer::CursorImageStatus;
 
 /// Sibling modules of this crate.
-use crate::{protocol::Response, state::Compositor};
+use crate::{gpu_choice::GpuReport, protocol::Response, state::Compositor};
 /// Structured logging.
 use tracing::info;
 
@@ -37,6 +37,36 @@ pub fn repeat_info(state: &mut Compositor, change: Option<(i32, i32)>) -> Respon
     state.repeat_info = (rate, delay);
     info!(rate, delay, "announced a new key repeat rate and delay");
     return Response::OkWith("changed".to_string())
+}
+
+/// Answer `gpu`.
+///
+/// What:
+///      `pub fn gpu(state: &mut Compositor) -> Response`.
+///  `device=D choice=C fallback=yes|no renderer=R`,
+///  with the renderer string last because it contains spaces.
+///  The nested window answers `device=parent choice=parent`.
+/// Why:
+///       A caller that asked for `--gpu auto` sees which device it got and whether the session fell back.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const gpu = (state: Compositor) => ok(state.gpuReport.answer());
+/// ```
+pub fn gpu(state: &mut Compositor) -> Response {
+    if let Some(report) = state.backend.gpu_report() {
+        return Response::OkWith(report.answer())
+    }
+    let renderer = crate::gpu_device::renderer_name(state.backend.renderer());
+    return Response::OkWith(
+        GpuReport {
+            choice: "parent".to_string(),
+            device: "parent".to_string(),
+            renderer,
+            fell_back: false,
+        }
+        .answer(),
+    )
 }
 
 /// Name a cursor image for the `cursor` answer.

@@ -1186,16 +1186,18 @@ impl Controller {
                 // if (this.queue.playIndex(index) != null) { ... }
                 // ```
                 if self.queue.play_index(index).is_some() {
-                    // What:     `self.load_current();`. Load the chosen track so its
+                    // What:     `self.load_selected();`. Load the chosen track, and only that track, so its
                     //           name/duration show and its row highlights. The bool result
                     //           is unused: we pause either way.
-                    // Why:      Make the track ready and current, without playing it.
+                    // Why:      Make the track ready and current, without playing it. D128: an unreadable
+                    //           file keeps its row selected (reported, nothing loaded); `load_current`
+                    //           would have moved the selection to the next playable file.
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
-                    // this.loadCurrent();
+                    // this.loadSelected();
                     // ```
-                    self.load_current();
+                    self.load_selected();
                     // What:     `self.set_playing(false);`. Force PAUSED. If audio was
                     //           playing (this or another track), it stops here.
                     // Why:      "Single click merely selects (if currently playing, set to

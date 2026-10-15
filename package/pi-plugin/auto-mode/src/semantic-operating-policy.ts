@@ -4,6 +4,7 @@
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { NATIVE_ASSESSMENT_MODEL, } from './decision-model.ts';
 import { CLAUSE_RELATIONS, } from './clause-lowering.ts';
 import type {
   SemanticAdmissionDefinition,
@@ -47,10 +48,6 @@ export type NativeSemanticOperatingPolicies = {
    */
   readonly semanticAdmissionPolicy: SemanticAdmissionPolicy;
   /**
-   Request content interpretation never supplies request-wide authority.
-   */
-  readonly requestMaterialAdmissionPolicy: SemanticAdmissionPolicy;
-  /**
    Independent heading instructions retain their own interpretation obligation.
    */
   readonly headingContextAdmissionPolicy: SemanticAdmissionPolicy;
@@ -75,9 +72,9 @@ function operatingPolicy(definitionId: SemanticAdmissionDefinition,): SemanticAd
    */
   const labels = labelsByDefinition[definitionId];
   return Object.freeze({
-    model: 'typesafe/jev-1.13.0',
+    model: NATIVE_ASSESSMENT_MODEL,
     definitionId,
-    programProfile: 'awaited-string-result-then-literal-parallel',
+    programProfile: 'native-inspected-programs-v2',
     /**
      Apply the adopted rule without replacing original estimate identity.
 
@@ -100,7 +97,7 @@ function operatingPolicy(definitionId: SemanticAdmissionDefinition,): SemanticAd
 
 /**
  Construct the adopted native policies without reading credentials or requesting assessments.
- Scores at least 0.99 admit only supported uniquely leading meanings.
+ Scores at least 0.60 admit only supported uniquely leading meanings.
  This is an operating cutoff, not empirical model qualification.
  Native consumers preserve original identity, currentness, authority, coverage, and authorization checks.
 
@@ -123,7 +120,6 @@ export function createNativeSemanticOperatingPolicies(): NativeSemanticOperating
   rl.debug('constructing the adopted native semantic operating policies',);
   return Object.freeze({
     semanticAdmissionPolicy: operatingPolicy('clause_operation_relation',),
-    requestMaterialAdmissionPolicy: operatingPolicy('request_instruction_content',),
     headingContextAdmissionPolicy: operatingPolicy('heading_instruction_content',),
     unitAdoptionAdmissionPolicy: operatingPolicy('unit_adoption',),
   },);

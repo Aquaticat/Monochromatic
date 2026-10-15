@@ -413,6 +413,7 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
         Command::Windows => return crate::window_list::windows_response(state),
         Command::CloseWindow(index) => return crate::window_list::close_response(state, index),
         Command::Cursor => return crate::control_session::cursor(state),
+        Command::Gpu => return crate::control_session::gpu(state),
         Command::Accessibility => return crate::a11y_tree::response(state),
         Command::Display => {
             return Response::OkWith(state.socket_name.to_string_lossy().into_owned())

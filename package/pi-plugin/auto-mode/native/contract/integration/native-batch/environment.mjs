@@ -3,11 +3,10 @@ import {
   sdk as currentSdk
 } from '../current-sdk/paths.ts';
 import {
-  mkdtempSync,
-  mkdirSync,
-  realpathSync,
-  writeFileSync
-} from 'node:fs';
+  mkdtemp,
+  mkdir,
+  writeFile
+} from 'node:fs/promises';
 import {homedir} from 'node:os';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -21,6 +20,8 @@ export async function createEnvironment({
   appendSystemPromptOverride,
   promptTemplateText,
   extensionModuleText,
+  additionalExtensionPaths=[],
+  expectedBlockedNetworkUrls=[],
   extensionFactories=[],
   customPromptAuthority,
   discoveredSystemText,
@@ -39,14 +40,14 @@ export async function createEnvironment({
    homedir(),
    'temp/agent'
  );
- mkdirSync(
+ await mkdir(
    fixtureParent,
    {
      recursive:true,
      mode:0o700
    }
  );
- const root=mkdtempSync(join(
+ const root=await mkdtemp(join(
    fixtureParent,
    'pi-native-fixture-'
  ));
@@ -64,23 +65,27 @@ export async function createEnvironment({
    cwd,
    home,
    agentDir
- ])mkdirSync(
+ ])await mkdir(
    path,
    {mode:0o700}
  );
  for(const name of Object.keys(process.env))if(![
    'PATH',
    'LANG'
- ].includes(name))delete process.env[name];
+ ].includes(name))Reflect.deleteProperty(process.env,name);
  process.env
    .HOME=home;process.env
      .PI_CODING_AGENT_DIR=agentDir;process.env
        .PI_NATIVE_BATCH_FIXTURE='1';
  process.env
    .FIXTURE_API_KEY='synthetic-local-fixture-only';
- let networkAttempts=0;
-   let providerCalls=0;
- globalThis.fetch=async function rejectFixtureNetwork() {networkAttempts++;throw new Error('Network is disabled in the native-batch fixture');};
+ const blockedNetworkUrls=[];
+ const providerActivity={calls:0};
+ globalThis.fetch=async function rejectFixtureNetwork(input) {
+   const url=input instanceof Request?input.url:String(input);
+   blockedNetworkUrls.push(url);
+   throw new Error('Network is disabled in the native-batch fixture');
+ };
  const {createAgentSession}=await import("./generated/sdk.mjs");
  const {
    DefaultResourceLoader,
@@ -145,7 +150,7 @@ export async function createEnvironment({
    {
      baseUrl:'https://fixture.invalid/v1',
      api:'openai-completions',
-     ...(useNativeProvider?{}:{streamSimple(){providerCalls++;throw new Error('Only the owned local stream is allowed');}}),
+     ...(useNativeProvider?{}:{streamSimple(){providerActivity.calls++;throw new Error('Only the owned local stream is allowed');}}),
      models:[{
        id:'fixture',
        name:'Fixture',
@@ -171,7 +176,7 @@ export async function createEnvironment({
    'batch-fixture',
    'fixture'
  );assert.ok(model);
- writeFileSync(
+ await writeFile(
    join(
      cwd,
      'AGENTS.md'
@@ -183,7 +188,7 @@ export async function createEnvironment({
    agentDir,
    'fixture-prompt.md'
  );
- if(promptTemplateText!==undefined)writeFileSync(
+ if(promptTemplateText!==undefined)await writeFile(
    promptTemplatePath,
    promptTemplateText,
    {mode:0o600}
@@ -192,12 +197,12 @@ export async function createEnvironment({
    agentDir,
    'fixture-extension.mjs'
  );
- if(extensionModuleText!==undefined)writeFileSync(
+ if(extensionModuleText!==undefined)await writeFile(
    extensionModulePath,
    extensionModuleText,
    {mode:0o600}
  );
- if(discoveredSystemText!==undefined)writeFileSync(
+ if(discoveredSystemText!==undefined)await writeFile(
    join(
      agentDir,
      'SYSTEM.md'
@@ -237,7 +242,10 @@ export async function createEnvironment({
      agentsFilesOverride,
      appendSystemPromptOverride,
      additionalPromptTemplatePaths:promptTemplateText===undefined?[]:[promptTemplatePath],
-     additionalExtensionPaths:extensionModuleText===undefined?[]:[extensionModulePath],
+     additionalExtensionPaths:[
+       ...additionalExtensionPaths,
+       ...(extensionModuleText===undefined?[]:[extensionModulePath])
+     ],
      extensionFactories,
      noExtensions:true,
      noSkills:true,
@@ -276,11 +284,11 @@ export async function createEnvironment({
      resourceLoader:policyInput.loader,
      resourceInputBinding:policyInput.nativeBinding
    },
-   async drain(){await owner.drain(policyInput.loader);assert.equal(
-     networkAttempts,
-     0
+   async drain(){await owner.drain(policyInput.loader);assert.deepEqual(
+     blockedNetworkUrls,
+     expectedBlockedNetworkUrls
    );assert.equal(
-     providerCalls,
+     providerActivity.calls,
      0
    );}
  };

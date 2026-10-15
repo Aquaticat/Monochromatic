@@ -1,107 +1,10 @@
-import {createHash} from 'node:crypto';
+import {QuestionSelectionError} from './selection-error.mjs';
+import {object} from './selection-values.mjs';
+import {readQuestionDefinitions} from './selection-definitions.mjs';
+import {createQuestionSettlement} from './selection-settlement.mjs';
 
-export class QuestionSelectionError extends Error {constructor(
-  message,
-  options
-){super(
-  message,
-  options
-);this.name=this.constructor
-  .name;}}
-function object(value){return (value!==null)&&((typeof value)==='object');}
-function text(value){return ((typeof value)==='string')&&(value.length>0)
-  &&value.isWellFormed();}
-
-/** Retain optional validated serving-model attribution without adding another serialized answer envelope. */
-export function readAssessmentResponse(input){
-  if((typeof input)==='string')return Object.freeze({answerText:input});
-  if((!input)||((typeof input)!=='object')
-    ||(Object.getPrototypeOf(input)!==Object.prototype)
-    ||(Reflect.ownKeys(input)
-      .length
-      !==2)
-    ||(!Object.hasOwn(
-      input,
-      'answerText'
-    ))
-    ||(!Object.hasOwn(
-      input,
-      'model'
-    )))throw new QuestionSelectionError('Assessment response requires answer text and its serving-model attribution');
-  const answer=Object.getOwnPropertyDescriptor(
-    input,
-    'answerText'
-  ); const model=Object.getOwnPropertyDescriptor(
-    input,
-    'model'
-  );
-  if((!answer?.enumerable)||(!Object.hasOwn(
-    answer,
-    'value'
-  ))
-    ||((typeof answer.value)!=='string')
-    ||(!model?.enumerable)
-    ||(!Object.hasOwn(
-      model,
-      'value'
-    ))
-    ||(!text(model.value))
-    ||(Buffer.byteLength(model.value)>256))throw new QuestionSelectionError('Attributed assessment response requires bounded model text and data properties');
-  return Object.freeze({
-    answerText:answer.value,
-    model:model.value
-  });
-}
-
-/** Validate already-parsed JSON against fixed criteria; this establishes no claim identity or semantic qualification. */
-export function readRelationEstimate({
-  definition,
-  value
-}){
-  if(definition.type==='noul'){
-    if(Number.isFinite(value)&&(value>=0)
-      &&(value<=1))return value;
-    throw new QuestionSelectionError('Scalar answer must be a bounded numeric estimate');
-  }
-  if(definition.type!=='choice')throw new QuestionSelectionError('Estimate definition type is unsupported');
-  if((!object(value))||Array.isArray(value)
-    ||(Object.keys(value)
-      .toSorted()
-      .join(',')
-      !=='choice,probabilities')
-    ||(!text(value.choice))
-    ||(!Object.hasOwn(
-      definition.criteria,
-      value.choice
-    )))throw new QuestionSelectionError('Choice answer must select an option from its original definition');
-  const {probabilities} = value;
-    const labels=Object.keys(definition.criteria);
-  if((!object(probabilities))
-    ||Array.isArray(probabilities)
-    ||(Object.keys(probabilities)
-      .length
-      !==labels.length)
-    ||Object.keys(probabilities)
-    .some(function lacksDeclaredCriterion(label) { return (!Object.hasOwn(
-    definition.criteria,
-    label
-  )); }))throw new QuestionSelectionError('Choice probabilities differ from the original option set');
-  let largest=0;
-    let total=0;
-  for(const label of labels){
-    const probability=probabilities[label];
-    if((!Number.isFinite(probability))||(probability<0)
-      ||(probability>1))throw new QuestionSelectionError('Choice probabilities must be bounded numbers');
-    total+=probability;largest=Math.max(
-      largest,
-      probability
-    );
-  }
-  // Allow floating-point reporting drift, not a semantic confidence cutoff; never normalize the received values.
-  if((Math.abs(total-1)>0.000001)||(probabilities[value.choice]!==largest))throw new QuestionSelectionError('Choice answer is not a complete distribution with a highest-probability selected option');
-  Object.freeze(probabilities);
-  return Object.freeze(value);
-}
+export {QuestionSelectionError} from './selection-error.mjs';
+export {readAssessmentResponse,readRelationEstimate} from './selection-values.mjs';
 
 //region Fixed definition data and judgment-local claim issuance, never semantic qualification or permission.
 /** Enclosing owner supplies one existing budget and a trusted synchronous, side-effect-free binding resolver. */
@@ -113,69 +16,16 @@ export function createQuestionSelection({
   envelope=Object.freeze({})
 }) {
   budget.checkpoint();
-  if((!text(catalogText))||(Buffer.byteLength(catalogText)>1_048_576)
-    ||((typeof resolveBinding)!=='function'))throw new QuestionSelectionError('Question catalog or owned binding resolver is unavailable');
-  const digest=createHash('sha256')
-    .update(catalogText)
-    .digest('hex');
-  if(digest!==catalogSHA256)throw new QuestionSelectionError('Question catalog bytes differ from the pinned definitions');
-  if((!object(envelope))||(!Object.isFrozen(envelope)))throw new QuestionSelectionError('Question envelope must be an immutable owned projection');
-  let parsed;
-  try{parsed=JSON.parse(catalogText);}catch(error){throw new QuestionSelectionError(
-    'Question catalog is not valid JSON',
-    {cause:error}
-  );}
-  if((!object(parsed))||Array.isArray(parsed))throw new QuestionSelectionError('Question catalog must be a definition object');
-  const entries=Object.entries(parsed);
-  if((entries.length===0)||(entries.length>512))throw new QuestionSelectionError('Question definition count exceeds the declared profile');
-  const definitions=new Map();
-    const byDefinition=new Map();
-    const claims=new WeakMap();
-    const batches=new WeakMap();
-    const batchByEvidence=new WeakMap();
-  for(const [id,value] of entries){
-    if((!text(id))||(!object(value))
-      ||Array.isArray(value)
-      ||(![
-        'noul',
-        'choice'
-      ].includes(value.type))
-      ||(!text(value.instructions))
-      ||(!object(value.criteria))
-      ||Array.isArray(value.criteria))throw new QuestionSelectionError('Question definition is missing its fixed predicate or criteria');
-    if(Object.keys(value)
-      .toSorted()
-      .join(',')
-      !=='criteria,instructions,type')throw new QuestionSelectionError('Question definition has undeclared fields');
-    const criteria=Object.entries(value.criteria);
-    if(criteria.some(function hasInvalidCriterionText([label,rubric]) { return ((!text(label))||(!text(rubric))); }))throw new QuestionSelectionError('Question options require named text rubrics');
-    if((value.type==='noul')&&(Object.keys(value.criteria)
-      .toSorted()
-      .join(',')
-      !=='false,true'))throw new QuestionSelectionError('Scalar definition requires exactly true and false criteria');
-    if((value.type==='choice')&&((criteria.length<2)||(criteria.length>255)))throw new QuestionSelectionError('Choice definition requires two through 255 options');
-    const fixedCriteria=Object.freeze(value.type==='noul'?{
-      true:value.criteria
-        .true,
-      false:value.criteria
-        .false
-    }:value.criteria);
-    definitions.set(
-      id,
-      Object.freeze({
-        type:value.type,
-        instructions:value.instructions,
-        criteria:fixedCriteria
-      })
-    );byDefinition.set(
-      id,
-      new WeakMap()
-    );
-  }
-  let batchCount=0;
-    let declaredCount=0;
-    let locked=false;
-  function retainedOperation(operation){if(locked)throw new QuestionSelectionError('Question binding operations cannot reenter');locked=true;try{return operation();}finally{locked=false;}}
+  const {digest,definitions,byDefinition}=readQuestionDefinitions({catalogText,catalogSHA256,resolveBinding,envelope});
+  const claims=new WeakMap();
+  const batches=new WeakMap();
+  const batchByEvidence=new WeakMap();
+  const selectionState={batchCount:0,declaredCount:0,locked:false};
+  function retainedOperation(operation){if(selectionState.locked)throw new QuestionSelectionError('Question binding operations cannot reenter');selectionState.locked=true;
+   using selectionScope={
+    [Symbol.dispose](){selectionState.locked=false;}
+   };
+   return operation();}
   function atomic(operation){return retainedOperation(function runWithinQuestionBudget() {budget.checkpoint();return operation();});}
   function resolve(handle){
     const binding=resolveBinding(handle);
@@ -201,7 +51,7 @@ export function createQuestionSelection({
       const canonical=byDefinition.get(definitionId);
       const existing=canonical.get(binding.identity);
     if(existing){const claim=knownClaim(existing);if(claim.binding!==binding)throw new QuestionSelectionError('Binding identity was reused for a different record');budget.checkpoint();return existing;}
-    if(declaredCount>=1_536)throw new QuestionSelectionError('Judgment exceeds the declared total claim bound');
+    if(selectionState.declaredCount>=1_536)throw new QuestionSelectionError('Judgment exceeds the declared total claim bound');
     budget.checkpoint();const handle=Object.freeze({});claims.set(
       handle,
       {
@@ -215,7 +65,7 @@ export function createQuestionSelection({
     );canonical.set(
       binding.identity,
       handle
-    );declaredCount+=1;return handle;
+    );selectionState.declaredCount+=1;return handle;
   });}
   function issue(input){return atomic(function constructOriginalQuestionBatch() {
     if((!Array.isArray(input))||(Object.getPrototypeOf(input)!==Array.prototype)
@@ -235,7 +85,7 @@ export function createQuestionSelection({
     ))
       ||(!property.enumerable))throw new QuestionSelectionError('Question batch has an accessor, hidden member or missing member');handles.push(property.value);}
     if(new Set(handles).size!==handles.length)throw new QuestionSelectionError('Question batch repeats a claim');
-    if(batchCount>=3)throw new QuestionSelectionError('Judgment exceeds the declared question batch bound');
+    if(selectionState.batchCount>=3)throw new QuestionSelectionError('Judgment exceeds the declared question batch bound');
     const selected=handles.map(knownClaim);
     for(const claim of selected){if(claim.issued)throw new QuestionSelectionError('Claim was already issued; uncertainty cannot create another selection');current(claim);}
     budget.checkpoint();
@@ -265,86 +115,10 @@ export function createQuestionSelection({
         settled:false,
         record:undefined
       }
-    );batchCount+=1;return handle;
+    );selectionState.batchCount+=1;return handle;
   });}
   function requestFor(handle){return atomic(function retainOriginalBatchRequest() {const batch=knownBatch(handle);if(batch.settled)throw new QuestionSelectionError('Question batch is terminal; it cannot be dispatched again');for(const claim of batch.selected)current(claim);budget.checkpoint();return batch.request;});}
-  function settle({
-    batch:handle,
-    answerText,
-    model
-  }){return retainedOperation(function settleOriginalQuestionBatch() {
-    const batch=knownBatch(handle);if(batch.settled)throw new QuestionSelectionError('Question batch already has a terminal response');
-    const retainedRaw=((typeof answerText)==='string')&&(Buffer.byteLength(answerText)<=65_536)?answerText:undefined;
-    try {
-    budget.checkpoint();for(const claim of batch.selected)current(claim);
-    let failure;
-    let values;
-    try{
-      if((model!==undefined)&&((!text(model))||(Buffer.byteLength(model)>256)))throw new QuestionSelectionError('Assessment model attribution is malformed');
-      if((retainedRaw===undefined)||(!answerText.isWellFormed()))throw new QuestionSelectionError('Answer text exceeds the declared JSON response profile');
-      const answers=JSON.parse(answerText);if((!Array.isArray(answers))||(answers.length
-        !==batch.selected
-        .length))throw new QuestionSelectionError('Answer membership differs from the issued question batch');
-      values=answers.map(function validateOriginalAnswer(
-        answer,
-        index
-      ) {
-        if((!object(answer))||Array.isArray(answer)
-          ||(answer.id!==(`q${
-            index}`)))throw new QuestionSelectionError('Answer identity differs from the issued question');
-        if((answer.status==='estimate')&&(Object.keys(answer)
-          .toSorted()
-          .join(',')
-          ==='id,status,value'))return Object.freeze({
-          status:'estimate',
-          value:readRelationEstimate({
-            definition:batch.selected[index]
-              .definition,
-            value:answer.value
-          })
-        });
-        if((answer.status==='unresolved')&&(Object.keys(answer)
-          .toSorted()
-          .join(',')
-          ==='id,reason,status')
-          &&text(answer.reason))return Object.freeze({
-          status:'unresolved',
-          reason:answer.reason
-        });
-        throw new QuestionSelectionError('Answer is neither a bounded estimate nor an explicit unresolved result');
-      });
-    }catch(error){failure=error;values=batch.selected
-      .map(function createMalformedAnswer() { return (Object.freeze({status:'malformed'})); });}
-    budget.checkpoint();
-    for(const [index,claim] of batch.selected
-      .entries()){claim.answer=values[index];if((failure===undefined)&&(model!==undefined))claim.model=model;}
-    batch.settled=true;batch.record=Object.freeze({
-      answers:Object.freeze(values),
-      raw:retainedRaw,
-      malformed:failure!==undefined,
-      discarded:false,
-      failure,
-      ...((failure===undefined)&&(model!==undefined)?{model}:{}),
-      semanticQualification:'not-established',
-      instructionAuthority:'not-established'
-    });return batch.record;
-    } catch(error) {
-      const values=batch.selected
-        .map(function createDiscardedAnswer() { return (Object.freeze({status:'discarded'})); });
-      for(const [index,claim] of batch.selected
-        .entries())claim.answer=values[index];
-      batch.settled=true;batch.record=Object.freeze({
-        answers:Object.freeze(values),
-        raw:retainedRaw,
-        malformed:false,
-        discarded:true,
-        failure:error,
-        semanticQualification:'not-established',
-        instructionAuthority:'not-established'
-      });
-      throw error;
-    }
-  });}
+  const settle=createQuestionSettlement({knownBatch,retainedOperation,budget,current});
   function answerFor(handle){return atomic(function inspectCurrentClaim() {const claim=knownClaim(handle);current(claim);budget.checkpoint();return Object.freeze({
     issued:claim.issued,
     answer:claim.answer,

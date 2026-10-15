@@ -21,7 +21,7 @@ import {
   createNativeCliHost,
   type NativeCliHost,
   NativeCliHostError
-} from './host.mjs';
+} from './host.ts';
 import {
   askUser,
   createAssessmentSender,

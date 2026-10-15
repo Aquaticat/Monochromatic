@@ -104,6 +104,60 @@ soft-hyphen,
 and combining-mark-only.
 Those 13 cases are accepted as documented deliberate differences from editord's browser find.
 
+### Servers from mise
+
+Branch `feat/ide-mise-servers` (not merged into `main`).
+The user decided: "If mise is detected in dir the IDE starts the servers themselves through mise exec.
+We need to be adaptable and not hardcode anything."
+What is implemented, and why it differs from the literal wording:
+
+- When the project folder has a mise configuration at or above it,
+  servers are looked up in the tool directories mise prints for that folder and started from there;
+  otherwise the plain `PATH` lookup stays.
+  Nothing of any repository is named in the code.
+  The README section "Servers from mise" in `package/desktop-app/ide/README.md` has the behavior.
+- `mise exec` is not the launched command.
+  `mise env --json` in this repository prints 42 variables, 26 with a name containing `KEY` or `TOKEN`
+  (names only read);
+  `mise exec -- SERVER` would give every server the decrypted project `[env]` and bypass the cleared environment.
+  Mise only says where the tools are (`config ls --json` from the project and from `/`, then `bin-paths`).
+- Mise runs inside the servers' bubblewrap sandbox (`confine_with`), not outside it as first suggested.
+  Reason: every mise command, including `config ls`, evaluates a trusted configuration's `[env]` templates
+  (a template that touched a marker file ran for `config ls`, `bin-paths`, `which`, `env` and `exec`),
+  which is project code that would otherwise run on the bare host with network and write access.
+  Measured, no distinguishable cost:
+  `bin-paths` 235 ms plain (standard deviation 43) against 319 ms sandboxed (41) in a two-tool project;
+  413 ms (80) against 387 ms (152) in this repository;
+  production resolution 179 to 639 ms over four runs on a host at load about 60, 415 ms in a headless window run.
+- Safety variables for every mise run:
+  `MISE_AUTO_INSTALL`, `MISE_EXEC_AUTO_INSTALL`, `MISE_NOT_FOUND_AUTO_INSTALL`, `MISE_TASK_RUN_AUTO_INSTALL`,
+  `MISE_LOCKFILE` and `MISE_YES` false, `MISE_OFFLINE` true;
+  an environment variable beats a project `[settings]` (measured), and a positive control in a disposable data
+  directory shows auto install on makes `mise exec -- true` exit 1 while trying to fetch.
+  The IDE never runs `mise trust`, `install` or `exec`.
+- Trust: a tools-only configuration needs none; one with `[env]`, hooks or `[settings]` is refused until the user
+  runs `mise trust`.
+  A refusal, any other failure, or a run over 10 seconds gives a language support notice that names the
+  configuration, quotes mise's message, says the user runs `mise trust` (or `mise doctor`),
+  and falls back to `PATH` lookup with shims skipped.
+  The notice puts that explanation first, because the display keeps about a dozen lines.
+- Servers get mise's directories first on their `PATH`, so a Node launcher finds the project's `node`;
+  directories below `/tmp`, `/run` and `/dev` are bound back read-only.
+- Evidence: `lint:clippy`, `test:language`, `test:native`,
+  `inspect:language-mise` (43 checks on disposable projects with the launcher's `PATH`),
+  guard-removal controls seen failing for each rule (the shim refusal, the three safety variables, the read-only
+  binds, the notice, the global listing, the served-failure state, the run time limit),
+  and a headless nested compositor run with screenshots (hover answered by `marksman` and by
+  `bash-language-server` from mise's directories; a folder without mise keeps "was not found on PATH";
+  an untrusted folder shows mise's words).
+  Failure causes and probes: `doc/troubleshooting/mise-servers-for-the-confined-ide.md`.
+- Verified: the IDE writes no `mise.lock` and no trust record (trees compared before and after, trust directory
+  listed after the window runs).
+- Open: variables a tool adds to its environment (`GOROOT`, `JAVA_HOME`) are not passed;
+  mise's global tools come with the project's directories (56 directories in the e2e project);
+  an `[env]` template runs without network (not measured for a template that needs one);
+  unconfined mise runs outside the IDE persisted trust records (see the troubleshooting doc).
+
 ### Handoff state
 
 #### Current state on 2026-10-06
@@ -332,13 +386,63 @@ the items after it are the record of 2026-10-05 and older.
     buffer had the output's width failed to fit. Controls: stopping the application 40 and 80 ms moved the logged size
     event by that time, and sending the callbacks at the command cut the stale captures from 94 to 56 to 61 percent.
     No application change was made; the debug lines at the `monochromatic_ide::native::frame` target were added.
-    Open: the live path (no recording) and the load band 20 to 100 were not measured.
+    Closed by the user on 2026-10-14 ("Smoothness both under normal conditions and under heavy load: We can
+    consider it solved. Smooth for me."): the live path (no recording) and the load band 20 to 100 were not
+    measured, and no further smoothness measurement is planned. Reopen only on a new report from the user.
     Other pending small items: remove the worktrees `ide-wrap` and `ide-land2` after landing; delete the large
     scratch caches `~/temp/agent/ide-wrap-s4/guard-cache`, `ide-wrap-s6/guard-cache`, `ide-wrap-s5/bundles` when done.
     Open: the installed single file at `~/.local/bin/monochromatic-ide` predates stages 1, 2, soft wrap and this
     change; reinstalling it changes the real home and needs the user's approval.
     Both flaky tests of the guard runs were fixed in this work: the scroll quiet-time test reads a clock a test can
     hold, and find reveal measures its own line first (it failed 3 of 16 runs at baseline).
+    Markdown and MDX highlighting (branch `feat/ide-markdown-highlight`, worktree `.claude/worktrees/ide-markdown`):
+    a copy of `.agents/skills/choosing-technology/SKILL.md` showed only the YAML frontmatter colored. The language, the
+    `markdown`, `markdown_inline` and `yaml` grammars and the injections all worked; `syntax::SCOPES` had no `markup`
+    entry, so every `markup.*` capture was dropped (357 spans, 2 colored before; 872 spans, 517 colored after; the
+    real bundle logged the same 872). Nine scopes were appended with a second channel (bold, semibold, light, the real
+    italic face; underline and strikethrough are not drawn by the glyph painter), fenced blocks get no block color, and
+    the tab measuring pass now shapes with the roles. MDX stays Markdown (Helix has no JSX-aware language); the README
+    section "Markdown and MDX highlighting" lists what paints. New: the `test:syntax` task, `tests/syntax_markdown.rs`,
+    `tests/syntax_markdown_faces.rs`, and seven `inspect:source-guards` cases (`markup-*`, `fence-language-injection`)
+    that were seen failing. Gate on IDE tree `38f5eec3ba`: lint:rustfmt, lint:clippy, lint:slint, lint:release, test,
+    test:cli, test:native (178 passed), bundle, inspect:bundle (10 of 10), inspect:bundle-guards, and the source (91),
+    sidebar (18), theme (7), find (39) and annotation (65) guards, all status 0. Not guarded: the tab measuring pass
+    (JetBrains Mono advances do not change with weight or italic, so no mutation can fail a test), and the contrast
+    ratios of at least 6.6 were measured against assumed backgrounds. The installed binary is not changed.
+  - Ignored entries dimmed in the tree (branch `feat/ide-ignored-dim`, request of 2026-10-14: "Apply 0.8 opacity to text
+    for gitignored files/dirs"; the user chose the `ignore` crate 0.4.33, the only new package). Before, the tree
+    listed ignored entries at full ink (`Workspace::list` is a plain `read_dir`). The reader thread now decides the
+    ignored names beside each listing from `.gitignore` files (top of the work tree down), `info/exclude` and the
+    global excludes file, with git's precedence and the parent-directory rule (`src/git_ignore.rs`); the answer rides
+    the listing's single-use request, so a stale reply drops it. The name draws at 0.8 opacity (arrow and badge keep
+    full ink, as IntelliJ colors the name only), the row label gains `, ignored by git` (the compositor's `a11y`
+    serves names, not descriptions), and the watcher reports a folder whose `.gitignore` or `info/exclude` is written
+    in place. Measured contrast of the name's strongest pixel: dark 17.04 to 11.16, light 17.01 to 9.19, selected row
+    4.53 to 3.45 (3.92 tinted), which is under WCAG 2's 4.5 and over the 3:1 floor of the selected-ink rule; kept as
+    asked. Not done: git's index is not read, so a tracked file matching a pattern is dimmed (pinned by a test and
+    named in the README); `.git/info/exclude` and the global file are found by the safety sweep, not a watch;
+    the call that turns the changed-rules flag into a reread of every shown folder has no guard of its own, because
+    the safety sweep would also repair the rows within a second. `inspect:ignored-guards` removes 28 guards in a copy
+    and all failed as named.
+  - Language servers through mise (request of 2026-10-14: servers "to the repo's mise tools"). Fifteen servers are
+    declared in `mise.no-env.toml` (generated into `mise.toml`) and locked: taplo, tombi, marksman, rumdl,
+    markdown-oxide, zizmor, yaml-language-server, `@actions/languageserver`, `@ansible/ansible-language-server`,
+    `vscode-langservers-extracted` (json, css, html), superhtml, bash-language-server, the two Docker Node servers and
+    docker-language-server. Each answered `initialize` in the IDE's bubblewrap shape; hover works for all but zizmor
+    (diagnostics only); inlay hints are advertised by tombi, markdown-oxide, the Actions server and
+    docker-language-server, and none produced a hint on the fixture. Nine Node servers exited about 3 s after start
+    because `vscode-languageserver` 9.0.1 (`lib/node/main.js`) checks `process.kill(clientPid, 0)` every 3 s and the
+    client's pid is invisible in a pid namespace; they were added to `NO_PID_NAMESPACE` in
+    `src/language/confine/recipe.rs` (the network stays unshared; test
+    `node_servers_that_watch_the_client_run_without_a_pid_namespace_but_without_network` was seen failing without the
+    list). The desktop launcher's PATH is a stale systemd user session snapshot without the repo's tool directories,
+    and mise shims fail with "No version is set for shim" outside a mise tree. The user decided: "If mise is detected
+    in dir the IDE starts the servers themselves through mise exec. We need to be adaptable and not hardcode
+    anything." Queue: the branch `feat/ide-mise-servers` (agent in flight) implements the lookup through mise for a
+    project folder with a mise configuration, never auto installing or trusting, with PATH lookup as the fallback.
+    Open causes: taplo answered hover only after 10 s and tombi answered null at once on the TOML fixture (cause not
+    determined); `find_box_context_menu_runs_each_entry` failed once under load (left "needlex", right "x") and
+    passed alone and in a full rerun (cause not determined).
   - The IDE checks used compositor builds inside each worktree's `target` directory, which were 0.1.1 (no minimized
     launch) in the root checkout and four worktrees, so checks opened visible windows on the user's desktop. Those
     five binaries were replaced with the mise-installed 0.4.0, and the four `bin/inspect-*.mjs` scripts and the `native`

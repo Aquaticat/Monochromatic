@@ -219,10 +219,11 @@ fn session_verbs_parse() {
     assert_eq!(parse_command("windows"), Ok(Command::Windows));
     assert_eq!(parse_command("display"), Ok(Command::Display));
     assert_eq!(parse_command("cursor"), Ok(Command::Cursor));
+    assert_eq!(parse_command("gpu"), Ok(Command::Gpu));
     assert_eq!(parse_command("a11y"), Ok(Command::Accessibility));
     assert_eq!(parse_command("close"), Ok(Command::CloseWindow(None)));
     assert_eq!(parse_command("close 1"), Ok(Command::CloseWindow(Some(1))));
-    for command in ["repeat-info 30", "repeat-info -1 200", "repeat-info 30 20000", "repeat-info 2000 200", "repeat-info a b", "focus now", "cursor now", "a11y tree", "close x", "close 1 2"] {
+    for command in ["repeat-info 30", "repeat-info -1 200", "repeat-info 30 20000", "repeat-info 2000 200", "repeat-info a b", "focus now", "cursor now", "gpu now", "a11y tree", "close x", "close 1 2"] {
         assert!(parse_command(command).is_err(), "{command}");
     }
 }

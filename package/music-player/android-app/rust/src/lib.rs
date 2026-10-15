@@ -103,8 +103,8 @@ mod error;
 /// What:
 ///      `mod fingerprint;` declares the `fingerprint` child module
 ///           (`fingerprint.rs`),
-///  which holds the gxhash cache-key fingerprint and its
-///           `nativeFingerprint` JNI entry.
+///  which holds the `nativeFingerprint` JNI entry
+///           over the shared XXH3-64 cache-key fingerprint.
 ///  The entry is `#[unsafe(no_mangle)]`,
 ///  so the JVM
 ///           finds its symbol in the `.so` even though the module is private here.

@@ -121,6 +121,19 @@ jobs:
       - name: Install dependencies
         run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
+      # The push to main that runs this job seeds the cache. Key shape and size budget: doc/decision/ci-caching.md
+      - name: Identify the Rust toolchain for the cache key
+        id: toolchain
+        run: echo "id=${ImageOS}-$(rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache cargo build artifacts
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+        with:
+          path: package/git-policy/cli/target
+          key: cargo-v2-cli-git-release-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/git-policy/cli/Cargo.lock') }}
+          restore-keys: |
+            cargo-v2-cli-git-release-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
+
       # changeset:version runs the dependent-version ripple through the native cli-git executable, built from this checkout
       # with the runner's rustup toolchain. --locked builds the versions Cargo.lock records; the release profile keeps
       # panic = "unwind", which the linked scanner requires.

@@ -37,34 +37,36 @@ class LibraryRebuildError(message: String) : IllegalStateException(message)
 // In TS you'd write (pseudocode):
 // ```ts
 // type SearchActivation =
-//   | { kind: "playTrack"; indexInLibrary: number }
+//   | { kind: "selectTrack"; indexInLibrary: number }
 //   | { kind: "togglePlayback" }
 //   | { kind: "openFolder"; page: number }
 //   | { kind: "stayInSearch" };
 // ```
 /** What activating one Search result does to the player. */
 sealed interface SearchActivation {
-    // What:     `data class PlayTrack(val indexInLibrary: Int)` starts a track that is not the playing one.
-    // Why:      A different track starts from its load-order index, as a player row does (D73).
+    // What:     `data class SelectTrack(val indexInLibrary: Int)` selects a track that is not the current one.
+    // Why:      A result for a different track follows the row rule (D124, D127): the track becomes the current track
+    //           and loads paused, or also starts with Auto-play on select on (D129); the next activation of its result
+    //           toggles play.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // { kind: "playTrack"; indexInLibrary: number }
+    // { kind: "selectTrack"; indexInLibrary: number }
     // ```
-    /** Starts the track at one load-order index. */
-    data class PlayTrack(
-        /** Load-order index of the track to start. */
+    /** Selects the track at one load-order index without starting it. */
+    data class SelectTrack(
+        /** Load-order index of the track to select. */
         val indexInLibrary: Int,
     ) : SearchActivation
 
-    // What:     `data object TogglePlayback` pauses or resumes the track that is already playing.
-    // Why:      Playing the current track again would restart it, so the current result keeps the row toggle (D73).
+    // What:     `data object TogglePlayback` pauses or resumes the track that is already current.
+    // Why:      Selecting the current track again would restart it, so the current result keeps the row toggle (D127).
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // { kind: "togglePlayback" }
     // ```
-    /** Pauses the playing track, or resumes it, for a result that is the playing track. */
+    /** Pauses the playing track, or starts or resumes it, for a result that is the current track. */
     data object TogglePlayback : SearchActivation
 
     // What:     `data class OpenFolder(val page: Int)` selects one page of the library without starting a track.
@@ -149,14 +151,15 @@ object PlayerHostModel {
     }
 
     // What:     `fun searchActivationFor(...)` decides what one Search result does.
-    // Why:      A track result plays its index unless it is the playing track, and a folder result selects its page
-    //           without autoplay; any result that names nothing the player can reach stays on Search.
+    // Why:      A track result selects its index unless it is the current track, which toggles play, and a folder
+    //           result selects its page without autoplay; any result that names nothing the player can reach stays on
+    //           Search.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // function searchActivationFor(result, pageLabels, currentIndex): SearchActivation { /* ... */ }
     // ```
-    /** Decides what activating one Search result does, from the result, the page names, and the playing index. */
+    /** Decides what activating one Search result does, from the result, the page names, and the current index. */
     fun searchActivationFor(
         result: SearchResult,
         pageLabels: List<String>,
@@ -168,7 +171,7 @@ object PlayerHostModel {
             }
             /** Load-order index of the track the result names, or null when the result names no index. */
             val index: Int = result.indexInLibrary ?: return SearchActivation.StayInSearch
-            return SearchActivation.PlayTrack(index)
+            return SearchActivation.SelectTrack(index)
         }
         /** Top-level folder the result names, or null when the result names no folder. */
         val folder: String = result.folderName ?: return SearchActivation.StayInSearch

@@ -248,12 +248,37 @@ systemd-run --user --unit=agent-fold-headful --collect --property=MemoryMax=12G 
 ```
 
 (The owned AVD also needs its own `HOME`, `ANDROID_USER_HOME` and `ANDROID_AVD_HOME`, and a private adb server port, as
-in the agent's notes.)
+in the agent's notes.
+Every `adb` call for that emulator, including `emu kill`, must run with the same `HOME` and port:
+in one session the shell's real `HOME` showed the device as `unauthorized` and failed the console token check,
+see `android-emulator-console-token-container-home.md`.)
 Result: `sys.boot_completed=1` after 98 s, no ANR dialog and no crash, with the journal naming the AMD Radeon RX 7600
 as the GL and Vulkan device, at a load average above 60 on 16 cores.
 So the failures were launch flags and container limits, not host load.
 Use this form for agent sessions: no `-no-window`, no `xvfb-run`, no container, Vulkan left at its default.
 The window opens on the human's session; close it with `adb emu kill` after `sync`.
+
+## Separate incident: SIGABRT in a gRPC callback of the headful launch (2026-10-14)
+
+This happened with the working headful launch form above, so it is not the SwiftShader boot crash and not the llvmpipe
+crash below.
+It is recorded as a separate incident: the cause is not shown.
+
+- Emulator 37.2.12, the owned Pixel 9 Pro Fold AVD copy, ports 5772 and 5773, `-gpu host`, as its own systemd user unit
+  with `MemoryMax=12G`.
+  The guest booted (about 35 s), a 35-track library was pushed, an APK was installed and the demo-mode broadcasts were
+  sent; the emulator process then aborted about a minute later.
+- `coredumpctl info` names the emitter and signal: `qemu-system-x86_64`, signal 6 (ABRT), raised by
+  `__libcpp_verbose_abort` from a frame of the emulator binary inside `grpc::internal::CallbackWithSuccessTag::Proceed`,
+  run by a gRPC event-engine worker thread of `libandroid-webrtc.so`.
+- The journal line just before it, at the second the core was dumped, was
+  `Netsim Wifi ipv6:... is gone due to CANCELLED` followed by `Got goaway [2] ... Cancelling all calls`.
+  Another agent's emulator unit (`-ports 5592,5593`) was running when this one started and was gone when the
+  relaunch was prepared, so a shared netsim daemon is one candidate; nothing here shows it.
+- Workaround that held: a fresh reflink copy of the AVD and the same launch form booted again and ran the rest of the
+  scripted captures with no abort; the session ended with `sync`, a wait of 8 s, `sync` and `adb emu kill`.
+- Not done: no reproduction on purpose, no `-no-netsim` or other flag was tried, because the launch rule allows one
+  form only.
 
 ## Separate incident: mid-session SIGSEGV under llvmpipe in a container (2026-10-05)
 
@@ -421,6 +446,18 @@ on the same 10 000-track library, during the cold start of the second trial of a
 (`__strlen_evex` under `TextureResize::TextureResize` under `EmulationGl::createColorBuffer`), the core 1.2 GB, and the
 trial that was running was lost (its child hit the 20 minute timeout).
 The two later launches from fresh copies ran 70 and 28 minutes without a crash.
+A fifth came on 2026-10-14 at 08:30:17 (local time), 10 minutes after the launch and 2 minutes into the first run on that
+copy (the `pm clear`, install and cold start of a second variant); the stack was again `__strlen_evex` under
+`TextureResize::TextureResize` under `EmulationGl::createColorBuffer`, the core 1.3 GB, and the journal showed
+`glGenTextures ... error null ctx` lines from the backend two minutes earlier.
+The relaunch from a fresh copy then ran about 1 hour 40 minutes (a 10 003-file push, 17 interleaved play windows, four
+simpleperf runs and the controller checks) without a crash and shut down gracefully, and a third launch from another
+fresh copy (three invented tones, transport checks) also ended without a crash.
+
+Two facts about the owned AVD copy found in the same session: the sdcard of the owned AVD already holds
+`/sdcard/Music/RealAppTest` (private names), so delete it before pushing a library and before the volume scan, not
+after; and on this emulator `content query ... --projection` takes columns separated by a colon (`_data:duration`), a
+comma is rejected with `Invalid column`.
 
 Recovery that worked: discard that AVD copy, make a fresh reflink copy of the owned AVD, relaunch headful, reinstall and
 re-push the invented library.

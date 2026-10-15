@@ -6,7 +6,7 @@
 import { once, } from 'node:events';
 import { createServer, } from 'node:http';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { AssessmentTransportError, createAssessmentSender, } from '@monochromatic-dev/pi-plugin-auto-mode';
+import { AssessmentTransportError, createAssessmentHttpSender, } from '@monochromatic-dev/pi-plugin-auto-mode';
 import { assessmentFailure, assessmentFixtureKey, } from './assessment-transport-fixture.ts';
 
 //region Disposable servers exercise actual fetch and never route to an external provider
@@ -62,11 +62,11 @@ await describe({
           if ((address === null) || ((typeof address) === 'string'))
             throw new Error('Loopback server has no TCP address',);
           const localUrl = `http://127.0.0.1:${address.port}/assessment`;
-          const send = createAssessmentSender({
+          const send = createAssessmentHttpSender({
             now: function monotonicClock() { return performance.now(); },
             readCredential: function fixtureCredential() { return assessmentFixtureKey; },
             fetchImpl: async function localFetch(url, options) {
-              expect(url,).toBe('https://api.llmgateway.io/v1/systemone',);
+              expect(url,).toBe('https://api.llmgateway.io/v1/decisions',);
               const response = await fetch(localUrl, options,);
               if (mode === 'cancelled') controller.abort('fixture cancellation after response headers',);
               return response;

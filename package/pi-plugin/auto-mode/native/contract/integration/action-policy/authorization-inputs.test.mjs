@@ -14,9 +14,7 @@ function fixture(){
    sourceOccurrence:{},
    request
  };
- let captures=0;
-   let current=true;
-   let ownerCurrent=true;
+ const state={captures:0,current:true,ownerCurrent:true};
  const authorization={
    satisfaction:'unsatisfied',
    channel:'incumbent-approval'
@@ -37,17 +35,17 @@ function fixture(){
      rule
    );return {sourceOccurrence:source.sourceOccurrence};},
    assertCurrent(){assert.ok(
-     current,
+     state.current,
      'Original inputs changed'
    );}
  };
  const owner={
-   async capture(){captures++;return evidence;},
+   capture: function captureOriginalEvidence(){state.captures++;return Promise.resolve(evidence);},
    assertCurrent(value){assert.equal(
      value,
      evidence
    );assert.ok(
-     ownerCurrent,
+     state.ownerCurrent,
      'Original owner retired'
    );}
  };
@@ -65,10 +63,10 @@ function fixture(){
      inputs,
      ownerFor:function returnAuthorizationOwner() { return (owner); }
    },
-   captureCount:function readCaptureCount() { return (captures); },
-   retireInputs(){current=false;},
-   retireOwner(){ownerCurrent=false;},
-   restoreOwner(){ownerCurrent=true;}
+   captureCount:function readCaptureCount() { return (state.captures); },
+   retireInputs(){state.current=false;},
+   retireOwner(){state.ownerCurrent=false;},
+   restoreOwner(){state.ownerCurrent=true;}
  };
 }
 const valid=fixture();
@@ -117,7 +115,9 @@ for(const field of [
  const input=fixture();input.evidence[field]={};
  await assert.rejects(
    function captureAuthoredInputs() { return (captureAuthorizationInputs(input.args)); },
-   /differs from the original/
+   function matchesOriginalBindingFailure(error) {
+     return Error.isError(error) && error.message.includes('differs from the original');
+   }
  );
 }
 for(const authorization of [
@@ -155,19 +155,21 @@ for(const mutation of [
    AuthorizationEvidenceError
  );
 }
-let getters=0;
+const accessorObservations={getters:0};
 const accessor=fixture();
 Object.defineProperty(
   accessor.evidence,
   'authorization',
   {
     enumerable:true,
-    get(){getters++;return accessor.authorization;}
+    get(){accessorObservations.getters++;return accessor.authorization;}
   }
 );
 await assert.rejects(
   function captureAccessorEvidence() { return (captureAuthorizationInputs(accessor.args)); },
-  /data properties/
+  function matchesEvidenceAccessor(error) {
+    return Error.isError(error) && error.message.includes('data properties');
+  }
 );
 const methodAccessor=fixture();
 Object.defineProperty(
@@ -175,15 +177,17 @@ Object.defineProperty(
   'capture',
   {
     enumerable:true,
-    get(){getters++;return async function returnAccessorEvidence() { return (methodAccessor.evidence); };}
+    get(){accessorObservations.getters++;return function returnAccessorEvidence() { return Promise.resolve(methodAccessor.evidence); };}
   }
 );
 await assert.rejects(
   function captureMethodAccessorEvidence() { return (captureAuthorizationInputs(methodAccessor.args)); },
-  /data properties/
+  function matchesCapabilityAccessor(error) {
+    return Error.isError(error) && error.message.includes('data properties');
+  }
 );
 assert.equal(
-  getters,
+  accessorObservations.getters,
   0
 );
 for(const input of [
@@ -207,7 +211,9 @@ asynchronous.owner
   .capture=async function retireDuringCapture() {asynchronous.retireInputs();return asynchronous.evidence;};
 await assert.rejects(
   function captureAsynchronousRetirement() { return (captureAuthorizationInputs(asynchronous.args)); },
-  /Original inputs changed/
+  function matchesRetiredInputs(error) {
+    return Error.isError(error) && error.message.includes('Original inputs changed');
+  }
 );
 const copied=fixture();copied.owner
   .capture=async function returnCopiedEvidence() { return (({...copied.evidence})); };
@@ -219,8 +225,8 @@ for(const change of [
 ]){
  const input=fixture();
    const binding=await captureAuthorizationInputs(input.args);
-   const method=input.owner
-     .capture;
+   const method=Object.getOwnPropertyDescriptor(input.owner,'capture');
+ assert.ok(method && Object.hasOwn(method,'value'));
  if(change==='owner')input.retireOwner();
  if(change==='facts')input.authorization
    .satisfaction='satisfied';
@@ -229,10 +235,12 @@ for(const change of [
  assert.throws(binding.assertCurrent);
  input.restoreOwner();input.authorization
    .satisfaction='unsatisfied';input.owner
-     .capture=method;
+     .capture=method.value;
  assert.throws(
    binding.assertCurrent,
-   /lost eligibility/
+   function matchesLostEligibility(error) {
+     return Error.isError(error) && error.message.includes('lost eligibility');
+   }
  );
 }
 console.log(JSON.stringify({

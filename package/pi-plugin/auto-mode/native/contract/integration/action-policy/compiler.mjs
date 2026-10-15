@@ -1,49 +1,12 @@
+import {compilation,resolveCompilationIssues} from './compilation-result.mjs';
 import {MISSING_AUTHORIZATION_EVIDENCE} from './authorization-inputs.mjs';
 import {lowerEstablishedClause} from './clause-lowering.mjs';
 import {inspectPolicyPremises} from './premises.mjs';
-import {SemanticAdmissionPolicyError} from './semantic-policy.mjs';
-import {
-  consumeRequestMaterial,
-  retainRequestMaterialObligations
-} from './request-material.mjs';
+import {SemanticAdmissionPolicyError} from './semantic-policy.ts';
 import {consumeHeadingContexts} from './heading-context.mjs';
 import {consumeSourceAssociations} from './source-association.mjs';
 import {consumeUnitAdoptions} from './unit-adoption.mjs';
-
-/** Package derived resolver inputs and diagnostics without changing any original estimate or source record. */
-function compilation({
-  issues,
-  rules,
-  authorizationRequirements,
-  clauses,
-  scope,
-  requestMaterialInterpretation,
-  headingContextInterpretations=Object.freeze([]),
-  sourceUses,
-  unitAdoptionInterpretations=Object.freeze([])
-}){
- issues=[
-   ...issues,
-   ...sourceUses.issues
- ];
- const missingPremises=Object.freeze([...new Set(issues.map(function readIssuePremise(issue) { return (issue.premise); }))]);
- const program=Object.freeze({
-   premises:missingPremises.length > 0?'incomplete':'complete',
-   rules:Object.freeze(rules),
-   authorizationRequirements:Object.freeze(authorizationRequirements)
- });
- return Object.freeze({
-   program,
-   missingPremises,
-   premiseIssues:Object.freeze(issues),
-   clauses:Object.freeze(clauses),
-   semanticAdmission:scope,
-   requestMaterialInterpretation,
-   headingContextInterpretations,
-   requestSourceAssociationUses:sourceUses.uses,
-   unitAdoptionInterpretations
- });
-}
+import {inspectOperationCoverage} from './operation-coverage.mjs';
 
 /**
  Compile the original whole-program clause batch under fixed bootstrap code policy.
@@ -55,11 +18,10 @@ export function compileBoundClauseProgram({
   judgment,
   inputs,
   authorizationInputs,
+  pendingSessionApproval,
   policy,
   scope,
   evidence,
-  requestPolicy,
-  requestScope,
   headingPolicy,
   headingScope,
   unitPolicy,
@@ -74,11 +36,10 @@ export function compileBoundClauseProgram({
  const candidates=inputs.instructionCandidates??inputs.ruleCandidates;
  const interpreted=new Set();
  const clauseEnabled=scope.state==='matching';
-   const requestEnabled=requestScope?.state==='matching';
    const headingEnabled=headingScope?.state==='matching';
    const unitEnabled=unitScope?.state==='matching';
  const headingCandidates=inputs.headingContextCandidates??[];
- if((!clauseEnabled)&&(!requestEnabled)
+ if((!clauseEnabled)
    &&(!headingEnabled)
    &&(!unitEnabled))return compilation({
    issues:[...base.issues],
@@ -90,7 +51,7 @@ export function compileBoundClauseProgram({
  });
  judgment.assertBatchEvidence(evidence);
  const clauseCount=clauseEnabled?candidates.length:0;
- const headingStart=clauseCount+(requestEnabled?1:0);
+ const headingStart=clauseCount;
  const headingCount=headingEnabled?headingCandidates.length:0;
  const adoptionStart=headingStart+headingCount;
  const adoptionPairs=unitEnabled?inputs.unitAdoptionPairs:[];
@@ -101,37 +62,7 @@ export function compileBoundClauseProgram({
    0,
    clauseCount
  );
- // Multiple root programs need the original dispatcher schedule, not order inferred from their array positions.
- // Legacy single-member inputs have no outer inter-member scheduling obligation.
- const groupExecutionMode=inputs.effects[0]
-   ?.prepared
-   .groupExecutionMode;
- const scheduled=[
-   'parallel',
-   'sequential'
- ].includes(groupExecutionMode)
-   &&inputs.effects
-   .every(function matchesGroupExecutionMode(effect) { return (effect.prepared
-     .groupExecutionMode
-     ===groupExecutionMode); });
- const singleLegacy=(inputs.effects
-   .length
-   ===1)&&(groupExecutionMode===undefined);
- // Independent implementation-fact contracts keep their gaps until their concrete uses are modeled.
- const operation=clauseEnabled
-   &&(inputs.effects
-     .length
-     >0)
-   &&(scheduled||singleLegacy)
-   &&inputs.effects
-   .every(function matchesUnownedProgramProfile(effect) { return ((effect.owner===undefined)&&(effect.programInspection
-     ?.declaration
-     .profile
-     ===policy.programProfile)); })
-  ?Object.freeze({
-    preparedOperations:inputs.effects,
-    groupExecutionMode
-  }):undefined;
+ const operation=inspectOperationCoverage({inputs,clauseEnabled,policy});
  const issues=clauseEnabled?base.issues
    .filter(function retainIndependentPremise(issue) { return ((issue.premise!=='qualified-rule-interpretation')&&(!(operation&&(issue.premise==='complete-operation-coverage')))); }):[...base.issues];
  function unresolvedOperationUse({
@@ -232,7 +163,11 @@ export function compileBoundClauseProgram({
   const authorization=record.answer
     .value
     .choice
-    ==="prerequisite"?authorizationInputs?.forClause(rule):undefined;
+    ==='fresh-session-approval'
+    ?pendingSessionApproval?.authorization:record.answer
+      .value
+      .choice
+      ==="prerequisite"?authorizationInputs?.forClause(rule):undefined;
   const lowered=lowerEstablishedClause({
     id,
     priority,
@@ -263,6 +198,7 @@ export function compileBoundClauseProgram({
     'permission',
     'prohibition',
     'prerequisite',
+    'fresh-session-approval',
     'none'
   ].includes(record.answer
     .value
@@ -317,12 +253,6 @@ export function compileBoundClauseProgram({
    }));
   }
  }
- const requestMaterialInterpretation=requestEnabled?consumeRequestMaterial({
-   judgment,
-   inputs,
-   record:evidence[clauseCount],
-   policy:requestPolicy
- }):undefined;
  const headingContextInterpretations=headingEnabled?consumeHeadingContexts({
    records:evidence.slice(
      headingStart,
@@ -337,48 +267,21 @@ export function compileBoundClauseProgram({
  ]); }));
  // Policy callbacks cannot publish a program after changing the original inputs or exhausting their budget.
  inputs.assertCurrent();authorizationInputs?.assertCurrent();judgment.assertBatchEvidence(evidence);
- // Only consumed none relationships are tier-independent. This does not close the governing-source inventory.
- const requiredIssues=issues.filter(function retainUnresolvedAdoptionIssue(issue) {
-  if(adopted.adopters
-    .has(issue.rule)
-    &&[
-      'clause-interpretation-not-admitted',
-      'clause-relation-interpretation',
-      'clause-operation-interpretation'
-    ].includes(issue.kind))return false;
-  if(adopted.targets
-    .has(issue.rule)
-    &&(issue.kind==='clause-source-use-scope')
-    &&(issue.scopeReason==='unresolved-quoted-unit-use'))return false;
-  const heading=issue.kind==='source-heading-context'?headingUses.get(issue.candidate):undefined;
-  if((heading?.admission==='admitted')&&(heading.relation==='none'))return false;
-  if(issue.kind==='source-local-instruction-use')return !issue.candidates
-    .every(function hasCandidateInterpretation(candidate) { return (interpreted.has(candidate)); });
-  return (issue.premise!=='instruction-authority-and-scope')||(!issue.source)
-    ||(sourceNeedsAuthority.get(issue.source
-      .sourceOccurrence)!==false);
+ const headingIssues=resolveCompilationIssues({
+   issues,
+   adopted,
+   headingUses,
+   interpreted,
+   sourceNeedsAuthority
  });
- const headingIssues=requiredIssues.map(function attachHeadingInterpretation(issue) {
-  const interpretation=issue.kind==='source-heading-context'?headingUses.get(issue.candidate):undefined;
-  return interpretation?Object.freeze({
-    ...issue,
-    headingContextInterpretation:interpretation,
-    reason:'The original heading group was assessed, but its independent normative content remains potential, unknown or unadmitted; no directive meaning or delegation is inferred.'
-  }):issue;
- });
- const finalIssues=requestMaterialInterpretation?retainRequestMaterialObligations({
-   issues:headingIssues,
-   interpretation:requestMaterialInterpretation
- }):headingIssues;
  return compilation({
-   issues:finalIssues,
+   issues:headingIssues,
    rules,
    authorizationRequirements,
    clauses:clauses.map(function applyAdoptedClauseUpdate(clause) { return (adopted.updates
      .get(clause.rule)
      ??clause); }),
    scope,
-   requestMaterialInterpretation,
    headingContextInterpretations,
    sourceUses,
    unitAdoptionInterpretations:adopted.interpretations

@@ -1,5 +1,5 @@
 import {createHash} from 'node:crypto';
-import {indexPolicyDocument} from '../../policy-index.mjs';
+import {indexPolicyDocument} from '../../policy-index.ts';
 
 export class GoverningRuleBindingError extends Error {
   constructor(
@@ -59,15 +59,15 @@ export function createGoverningRuleBindings({
     const byCode=new Map();
     const allHandles=[];
     const unclassified=[];
-    const contextualHeadings=[];let failure;
-    let stale=false;
+    const contextualHeadings=[];const sourceState={failure:undefined,stale:false};
+    
   function current(){
-    if(stale)throw new GoverningRuleBindingError(
+    if(sourceState.stale)throw new GoverningRuleBindingError(
       'Original governing-rule source was already invalidated',
-      {cause:failure}
+      {cause:sourceState.failure}
     );
     try{if(readSource()!==source)throw new GoverningRuleBindingError('Original governing-source occurrence changed');}
-    catch(error){stale=true;failure=error;throw new GoverningRuleBindingError(
+    catch(error){sourceState.stale=true;sourceState.failure=error;throw new GoverningRuleBindingError(
       'Governing-rule binding is no longer current',
       {cause:error}
     );}
@@ -124,6 +124,7 @@ export function createGoverningRuleBindings({
     }));
   }
   // Context exposure is retained separately from an independently consumed normative interpretation.
+  {
   let ancestry=[];
   for(const heading of index.headings??[]){
     ancestry=ancestry.filter(function hasShallowerHeadingDepth(parent) { return (parent.depth<heading.depth); });
@@ -157,6 +158,7 @@ export function createGoverningRuleBindings({
       ...ancestry,
       heading
     ];
+  }
   }
   const retainedContextualHeadings=Object.freeze(contextualHeadings);
   const headingContextCandidate=contextualHeadings.length > 0?Object.freeze({}):undefined;
@@ -204,8 +206,8 @@ export function createGoverningRuleBindings({
   function inspect(){
     return Object.freeze({
       retainedOnly:true,
-      stale,
-      failure,
+      stale:sourceState.stale,
+      failure:sourceState.failure,
       sourceSHA256:source.sha256,
       codes:Object.freeze([...byCode.keys()]),
       unclassified:retainedUnclassified,

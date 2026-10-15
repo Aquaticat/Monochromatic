@@ -32,7 +32,10 @@ export function sourceInputLocation(source){
     'value'
   ))throw new SourceInputLocationError('Source input location requires data fields');
  }
- const shape=keys.toSorted()
+ const shape=keys.toSorted(function compareLocationKeys(left,right){
+   if(typeof left!=='string'||typeof right!=='string')throw new SourceInputLocationError('Source input location requires string field names');
+   return left<right?-1:left>right?1:0;
+ })
    .join(',');
  if(location.field==='toolGuidelines'){
   if((shape!=='field,ordinal,toolName')||((typeof location.toolName)!=='string')
@@ -99,6 +102,7 @@ export function sourceInputLocation(source){
    'toolLoadoutQuery',
    'handlerResult',
    'contextHandler',
+   'eventHandler',
    'resourceCallback'
  ].includes(location.field)){
   if((shape!=='field,metadataJSON')||((typeof location.metadataJSON)!=='string'))throw new SourceInputLocationError('Constructed message input location requires serialized native metadata');

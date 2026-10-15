@@ -46,7 +46,7 @@ use crate::analysis_notification_wire::{
 /// Why: a service that accepts a call and never answers must not hold the notifier thread (and a shutdown that joins
 /// it) for the bus default of twenty-five seconds.
 #[cfg(target_os = "linux")]
-const METHOD_TIMEOUT: Duration = Duration::from_secs(3);
+pub(crate) const METHOD_TIMEOUT: Duration = Duration::from_secs(3);
 
 /// What: `Identity` names the app to the desktop.
 /// Why: the header of a Plasma job and the sender of a notification show the app's name and icon; the desktop entry
@@ -92,8 +92,9 @@ impl NotifierConfig {
 
 /// What: `connect_session` opens a blocking connection to the session bus with a bounded reply wait.
 /// Why: the default wait is long; a bounded one keeps a stalled service from stalling the notifier thread.
+/// The unplayable-file notifier (D122) opens its own connection the same way.
 #[cfg(target_os = "linux")]
-fn connect_session() -> zbus::Result<Connection> {
+pub(crate) fn connect_session() -> zbus::Result<Connection> {
     return zbus::blocking::connection::Builder::session()?.method_timeout(METHOD_TIMEOUT).build();
 }
 

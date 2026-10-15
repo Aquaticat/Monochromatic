@@ -1,5 +1,7 @@
 import {collectNativeMessageInputs} from '../../collector/run-prompt-custody-v3/message-inputs.mjs';
 import {collectRetainedRunInputs} from './run-history.mjs';
+import {isNativeEventObservation} from '../native-batch/event-observer.ts';
+import {NATIVE_OBSERVED_EVENT_KINDS} from '../native-batch/event-profile.ts';
 
 //region Account original owner publications independently of instruction meaning or authority.
 /**
@@ -27,11 +29,19 @@ export function inspectNativeSourceDomain({
    ||(!run.renderOccurrence))missing('The original native resource, base, run and prompt-construction publications are not all linked.');
  if(!Array.isArray(snapshot?.nativeDomainEventKinds))missing('The native session has no original extension-event inspection.');
  else for(const kind of snapshot.nativeDomainEventKinds){
+  const observation=snapshot.nativeDomainEventObservation;
+  const observedEvent=isNativeEventObservation(observation)
+    &&(observation.pending===0)
+    &&(!observation.failed)
+    &&(JSON.stringify(observation.registeredKinds)===JSON.stringify(snapshot.nativeDomainEventKinds))
+    &&NATIVE_OBSERVED_EVENT_KINDS.includes(kind);
   const receipt=run?.contextHandlerReceipt;
-  const observedContext=(kind==='context'||kind==='context_with_system')
-    &&receipt?.runOccurrence===run?.occurrence
-    &&receipt?.observation.kinds.includes(kind);
-  if(!observedContext)missing(`Native extension event ${JSON.stringify(kind)} has no complete original input and result receipt accounting in this host integration.`);
+  const observedContext=((kind==='context')||(kind==='context_with_system'))
+    &&(receipt?.runOccurrence===run?.occurrence)
+    &&receipt?.observation
+    .kinds
+    .includes(kind);
+  if((!observedContext)&&(!observedEvent))missing(`Native extension event ${JSON.stringify(kind)} has no complete original input and result receipt accounting in this host integration.`);
  }
  const arrays=[
    'retainedRunInputs',

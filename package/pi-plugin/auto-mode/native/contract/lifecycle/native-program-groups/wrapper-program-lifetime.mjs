@@ -12,19 +12,25 @@ export function createExecutionWrappers({wrapToolDefinition}) {
   const native=createRegisteredWrappers({wrapToolDefinition});
     const contexts=new WeakMap();
     const issued=new WeakMap();
-  let changing=false;
-  function operation(run){if(changing)throw new ExecutionContextOwnershipError('Native context operations cannot reenter through callbacks');changing=true;try{return run();}finally{changing=false;}}
-  function wrapRegisteredTool(
+  const activity={changing:false};
+  /** Keep callback reentrancy closed until the synchronous context operation returns. */
+  function operation(run){
+    if(activity.changing)throw new ExecutionContextOwnershipError('Native context operations cannot reenter through callbacks');
+    activity.changing=true;
+    using scope={ [Symbol.dispose]() { activity.changing=false; } };
+    return run();
+  }
+  function wrapRegisteredTool({
     registeredTool,
     runner,
     readOrigin,
     createProgramRun
-  ){
+  }){
     if((typeof readOrigin)!=='function')throw new ExecutionContextOwnershipError('Registered native context requires its fixed session execution reader');
-    const original=native.wrapRegisteredTool(
+    const original=native.wrapRegisteredTool({
       registeredTool,
       runner
-    );
+    });
       const {name} = registeredTool.definition;
       const receiver=Object.freeze({});
     function current(record){
@@ -125,7 +131,9 @@ export function createExecutionWrappers({wrapToolDefinition}) {
         );return context;
       }catch(error){record.state='failed';throw error;}
     });}
-    async function execute(
+    /** Preserve the native positional execute callback behind its original wrapper owner. */
+    function createExecutionCallback() {
+      return async function execute(
       toolCallId,
       params,
       signal,
@@ -178,24 +186,25 @@ export function createExecutionWrappers({wrapToolDefinition}) {
       });
       if(failed)throw failure;
       return value;
+    };
     }
     return {
       ...original,
       createExecutionContext,
-      execute
+      execute:createExecutionCallback()
     };
   }
-  function wrapRegisteredTools(
+  function wrapRegisteredTools({
     registeredTools,
     runner,
     readOrigin,
     createProgramRun
-  ){return registeredTools.map(function wrapOriginalProgramTool(tool) { return (wrapRegisteredTool(
-    tool,
+  }){return registeredTools.map(function wrapOriginalProgramTool(tool) { return (wrapRegisteredTool({
+    registeredTool:tool,
     runner,
     readOrigin,
     createProgramRun
-  )); });}
+  })); });}
   return Object.freeze({
     wrapRegisteredTool,
     wrapRegisteredTools

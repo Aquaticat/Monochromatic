@@ -259,7 +259,7 @@ and XML editing crates for the monorepo manager
 Found while choosing meow's cache key hash and measuring it on a second machine:
 
 - [`gxhash` needs the `aes` target feature](gxhash-aes-target-feature.md)
-  and has no software fallback
+  and has no software fallback (historical: no repository code uses `gxhash` any more)
 - [Rust hash crates hide backends behind features and cfg](rust-hash-crate-build-and-test-quirks.md),
   and some test suites pass while testing nothing
 - [`rustup` proxies auto-install into the default home](rustup-proxy-auto-install-default-home.md)

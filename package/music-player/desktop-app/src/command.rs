@@ -913,7 +913,7 @@ pub enum Update {
     ///      `Unplayable(Vec<PathBuf>)` lists files that were skipped because they could not be opened for playback.
     /// Why:
     ///       A track that cannot be decoded used to be skipped silently (the polish review finding PB1, D83). The window
-    ///  names the file in a message and marks its row.
+    ///  marks its row, and on Linux the desktop gets a notification that names the file (D122).
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -923,6 +923,21 @@ pub enum Update {
         /// The files that failed to open, in the order they were tried.
         Vec<PathBuf>,
     ),
+    /// What:
+    ///      `AudioUnavailable { reason }` says the engine could not open any audio output, so playback runs silently.
+    /// Why:
+    ///       Without it a person on a machine with no sound server and no usable sound card sees tracks "play" with
+    ///  no explanation; the window words the cause and the way forward in a message (Alpine and other minimal Linux
+    ///  installs have no sound server by default).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "audioUnavailable"; reason: string }
+    /// ```
+    AudioUnavailable {
+        /// The output backend's own description of the failure, kept for the log; the window words its own message.
+        reason: String,
+    },
     /// What:
     ///      `FileGone { path, was_playing }` says the rescan found the selected track's file missing from the folder.
     /// Why:

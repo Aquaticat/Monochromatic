@@ -58,6 +58,8 @@ use anyhow::{Context, Result};
 use crate::{
     appearance_portal::{AppearancePortal, PortalStart},
     backend::init_backend,
+    backend_headless::init_headless_backend,
+    backend_select::{select_backend, BackendKind, ParentEnvironment},
     child::{register_exit_poll, spawn_child},
     cli::Config,
     control,
@@ -73,6 +75,9 @@ use crate::{
 ///  the listener,
 ///  and the compositor state.
 use std::sync::Arc;
+
+/// Records which backend the session runs on.
+use tracing::info;
 
 /// Build everything,
 ///  spawn the hosted client,
@@ -116,11 +121,22 @@ pub fn run(config: Config) -> Result<i32> {
     // Why:      Backend init needs it to register the output and dmabuf globals.
     let display_handle = display.handle();
 
-    // What:     `let (pieces, winit) = init_backend(&display_handle, &config)?;`. Build the
-    //           winit backend, output, and dmabuf state; `?` propagates any failure.
-    //           `winit` is the event source registered below.
-    // Why:      Set up the GPU rendering path before constructing the state.
-    let (pieces, winit) = init_backend(&display_handle, &config)?;
+    // What:     `select_backend(config.headless, ..)` picks the backend: the nested winit window,
+    //           unless `--headless` was given. Nested builds the winit backend and returns its
+    //           event source; headless builds the surfaceless renderer and has no such source.
+    // Why:      Set up the GPU rendering path before constructing the state. A missing parent
+    //           display never selects headless; the nested start then fails naming the flag.
+    let choice = select_backend(config.headless, ParentEnvironment::from_process());
+    if choice.ignored_parent_display {
+        info!("headless: a parent display is set and stays unused; no window appears on it");
+    }
+    let (pieces, winit) = match choice.kind {
+        BackendKind::NestedWinit => {
+            let (pieces, winit) = init_backend(&display_handle, &config)?;
+            (pieces, Some(winit))
+        }
+        BackendKind::Headless => (init_headless_backend(&display_handle, &config)?, None),
+    };
 
     // What:     `let mut state = Compositor::new(&mut event_loop, display, pieces);`.
     //           Construct the full state, consuming the display and backend pieces.
@@ -149,11 +165,13 @@ pub fn run(config: Config) -> Result<i32> {
     //           metadata (`_`), and `&mut Compositor`. `.map_err(...)?` converts a
     //           registration error into `anyhow`.
     // Why:      Route resize / redraw / close events into the compositor.
-    loop_handle
-        .insert_source(winit, |event, _, event_state: &mut Compositor| {
-            handle_winit_event(event, event_state);
-        })
-        .map_err(|err| anyhow::anyhow!("registering the winit source failed: {err}"))?;
+    if let Some(winit_source) = winit {
+        loop_handle
+            .insert_source(winit_source, |event, _, event_state: &mut Compositor| {
+                handle_winit_event(event, event_state);
+            })
+            .map_err(|err| anyhow::anyhow!("registering the winit source failed: {err}"))?;
+    }
 
     // What:     `if let Some(socket_path) = &config.control_socket { control::start(
     //           &loop_handle, socket_path)?; }`. When a control socket was requested, bind

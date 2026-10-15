@@ -17,12 +17,8 @@ import {
   readStagedInput,
   replaceStagedImport
 } from './staged-import.ts';
-import { judgmentSource } from './judgment-source.ts';
 import {
-  preparedDispatcherSource,
-  programJudgmentSource,
   programExecutorSource,
-  programRunnerSource,
   programDefinitionSource,
   nativeScriptValueSource,
 } from './program-source.ts';
@@ -99,15 +95,12 @@ export async function prepareProgram({
   /**
    Every finite source read completes before generated modules are written.
    */
-  const [executorSource, originalRunner, originalReturnConsumer, originalDispatcher, originalJudgment] = await Promise.all([
+  const [executorSource, originalReturnConsumer] = await Promise.all([
     readFile(
       executorPath,
       'utf8'
     ),
-    readStagedInput(programRunnerUrl),
     readStagedInput(returnConsumerUrl),
-    readStagedInput(dispatcherUrl),
-    readStagedInput(judgmentUrl),
   ]);
   /**
    The executor retains installed dependency identity after declared group routing is connected.
@@ -141,7 +134,7 @@ export async function prepareProgram({
   /**
    Original request tool snapshots supply every reached native group.
    */
-  const programRunner = programRunnerSource(originalRunner);
+  const programRunner = `export {createReachedRunnerClass} from ${JSON.stringify(programRunnerUrl.href)};\n`;
   /**
    The original native runner and recorder remain shared with the declared group dispatcher.
    */
@@ -162,7 +155,7 @@ export async function prepareProgram({
    */
   const returnConsumer = await replaceStagedImport({
     source: originalReturnConsumer,
-    binding: 'toScriptValue',
+    binding: 'convertNativeOutcome',
     expected: new URL(
       '../../collector/program-rule-batch-sdk-copy-v2/input/native-script-value.mjs',
       import.meta.url
@@ -176,33 +169,11 @@ export async function prepareProgram({
   /**
    Prepared dispatcher exports retain their original error classes and group mode.
    */
-  const dispatcher = preparedDispatcherSource({
-    source: originalDispatcher,
-    originalUrl: dispatcherUrl.href
-  });
+  const dispatcher = `export {dispatchPreparedBatch,PreparedBatchContractError,PreparedBatchExecutionError} from ${JSON.stringify(dispatcherUrl.href)};\n`;
   /**
-   The original judgment selects the generated result consumer through its qualified import site.
+   The maintained judgment already contains its native source and program bindings.
    */
-  const nativeReturnJudgment = await replaceStagedImport({
-    source: originalJudgment,
-    binding: 'createNativeReturnConsumer',
-    expected: returnConsumerUrl,
-    replacement: pathToFileURL(join(
-      output,
-      'native-return-consumer.mjs'
-    ))
-      .href,
-  });
-  /**
-   Governing source bindings precede the original prepared program declaration boundary.
-   */
-  const judgment = programJudgmentSource(judgmentSource({
-    source: nativeReturnJudgment,
-    indexUrl: new URL(
-      '../../lifecycle/governing-rule-candidates/set.mjs',
-      import.meta.url
-    ).href,
-  }));
+  const judgment = `export {createJudgmentConstructor,JudgmentConstructionError} from ${JSON.stringify(judgmentUrl.href)};\n`;
   rl.debug('writing qualified original native program modules');
   await Promise.all([
     writeFile(

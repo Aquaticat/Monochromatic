@@ -219,7 +219,8 @@ class PeakSweepService : Service() {
         if (record.newFailures.isNotEmpty()) {
             Log.w(TAG, "PeakSweepService could not decode ${record.newFailures.size} files")
             AnalysisFailures.report(
-                record.newFailures.map { uri -> trackFileNameOf(byUri[uri]?.displayPath ?: uri) },
+                context = applicationContext,
+                fileNames = record.newFailures.map { uri -> trackFileNameOf(byUri[uri]?.displayPath ?: uri) },
             )
         }
         return true

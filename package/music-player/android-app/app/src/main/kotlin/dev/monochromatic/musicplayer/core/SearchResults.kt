@@ -50,7 +50,8 @@ enum class SearchResultKind {
     FOLDER,
 
     // What:     `TRACK` is a track whose own file name, without its extension, matched the query.
-    // Why:      A track result plays the track and carries its folder as context (D77).
+    // Why:      A track result selects the track, and also starts it with Auto-play on select on (D127, D129; the
+    //           current track's result toggles play and pause) and carries its folder as context (D77).
     //
     // In TS you'd write (pseudocode):
     // ```ts

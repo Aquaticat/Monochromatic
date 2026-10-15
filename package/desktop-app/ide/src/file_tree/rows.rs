@@ -49,10 +49,17 @@ impl FileTree {
             // ```ts
             // rows.push({ entry: { ...entry }, depth, expanded });
             // ```
+            // The answer for a directory's entries is stored under that directory's path.
+            let ignored = entry
+                .path
+                .parent()
+                .and_then(|parent| return self.ignores.get(parent))
+                .is_some_and(|answer| return answer.names.contains(&entry.name));
             rows.push(TreeRow {
                 entry: entry.clone(),
                 depth,
                 expanded,
+                ignored,
             });
             if expanded {
                 // Borrow a loaded snapshot; a still-missing one has no visible children yet.

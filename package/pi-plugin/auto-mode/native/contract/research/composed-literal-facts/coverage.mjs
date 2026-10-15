@@ -5,6 +5,23 @@ export class SourceCoverageError extends Error {
     this.name = 'SourceCoverageError';
   }
 }
+/** Check ordered spans and return the first offset after their complete coverage. */
+function coveredEnd({source,intervals}){
+  let cursor=0;
+  for(const {start,end} of intervals){
+    if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)
+      ||start<0||end<=start||end>source.length)throw new SourceCoverageError();
+    if(start<cursor){
+      // Comments inside an outer statement are covered by its complete source span.
+      if(end>cursor)throw new SourceCoverageError();
+      continue;
+    }
+    if(source.slice(cursor,start).trim()!=='')throw new SourceCoverageError();
+    cursor=end;
+  }
+  return cursor;
+}
+/** Validate complete parser coverage while scanning disjoint source gaps once. */
 export function assertSourceCoverage({
   source,
   statements,
@@ -17,27 +34,7 @@ export function assertSourceCoverage({
     left,
     right
   ) { return ( (left.start - right.start) || (right.end - left.end)); });
-  let cursor = 0;
-  for (const interval of intervals) {
-    const {
-      start,
-      end
-    } = interval;
-    if ((!Number.isSafeInteger(start)) || (!Number.isSafeInteger(end))
-      || (start < 0)
-      || (end <= start)
-      || (end > source.length)) throw new SourceCoverageError();
-    if (start < cursor) {
-      // Comments inside an outer statement are already covered by its complete source span.
-      if (end > cursor) throw new SourceCoverageError();
-      continue;
-    }
-    if (!/^\s*$/u.test(source.slice(
-      cursor,
-      start
-    ))) throw new SourceCoverageError();
-    cursor = end;
-  }
-  if (!/^\s*$/u.test(source.slice(cursor))) throw new SourceCoverageError();
+  const cursor=coveredEnd({source,intervals});
+  if(source.slice(cursor).trim()!=='')throw new SourceCoverageError();
 }
 //endregion

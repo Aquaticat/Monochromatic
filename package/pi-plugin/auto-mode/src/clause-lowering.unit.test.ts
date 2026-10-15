@@ -65,7 +65,7 @@ await describe({
         expect(Object.isFrozen(CLAUSE_RELATIONS,),).toBe(true,);
       },
     },),
-    ...['permission', 'prohibition', 'prerequisite',].map(function missingPriority(relation,) {
+    ...['permission', 'prohibition', 'prerequisite', 'fresh-session-approval',].map(function missingPriority(relation,) {
       return it({
         name: `retains missing authority for ${relation}`,
         fn: async function checkPriority() {
@@ -89,6 +89,22 @@ await describe({
         },
       },);
     },),
+    it({
+      name: 'fresh session approval remains a prerequisite requiring independent channel evidence',
+      fn: async function freshApprovalFacts() {
+        /** An admitted requirement cannot authenticate the host's confirmation channel. */
+        const condition = { id: 'confirmation', priority: 0, relation: 'fresh-session-approval' };
+        /** Permission is independent of the confirmation requirement. */
+        const permit = { id: 'permit', priority: 0, relation: 'permission' };
+        expect(outcome([permit, condition]).state).toBe('unresolved');
+        expect(lowerEstablishedClause(condition).rules).toEqual([]);
+        /** Authored channel facts isolate the deterministic resolver's approval routing. */
+        const available = { ...condition, authorization: { satisfaction: 'unsatisfied', channel: 'incumbent-approval' } };
+        expect(outcome([permit, available])).toMatchObject({ verdict: 'ask' });
+        expect(outcome([available]).state).toBe('unresolved');
+        expect(outcome([{ id: 'prohibit', priority: 0, relation: 'prohibition' }, available])).toMatchObject({ verdict: 'deny' });
+      },
+    }),
     it({
       name: 'prerequisites grant no permission and cannot override prohibitions',
       fn: async function checkPrerequisites() {

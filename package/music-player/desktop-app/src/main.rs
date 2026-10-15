@@ -119,6 +119,10 @@ mod ui_keys_focus_tests;
 #[cfg(test)]
 mod ui_keys_window_tests;
 
+/// Window tests of Auto-play on select (D129): the Settings switch row and what a click, Enter and a Search result do.
+#[cfg(test)]
+mod ui_auto_play_window_tests;
+
 /// Window tests of the empty, reading and failure states.
 #[cfg(test)]
 mod ui_states_window_tests;
@@ -150,6 +154,10 @@ mod ui_focus_ring_tests;
 /// Rendered tests of the focus ring on the other pages (D117) and of the menu card's color (D119).
 #[cfg(test)]
 mod ui_focus_ring_pages_tests;
+
+/// Rendered tests of the Search page restyle (D126): the canvas header, the divider, the rounded rows and the status block.
+#[cfg(test)]
+mod ui_search_restyle_tests;
 
 /// Rendered tests of the track menu: the ring on a row (D117) and the card's color and outline (D119).
 #[cfg(test)]
@@ -473,6 +481,9 @@ use music_player::launcher::{self, Launcher};
 /// Why:
 ///       D107 replaces the in-app banner with a Plasma job or a freedesktop notification.
 use music_player::analysis_notification::{AnalysisNotifier, Identity, NotifierConfig};
+/// What: `use music_player::unplayable_notification::{UnplayableConfig, UnplayableNotifier};`.
+/// Why: the notification that replaced the "cannot be played" message in the window (D122).
+use music_player::unplayable_notification::{UnplayableConfig, UnplayableNotifier};
 
 /// What: `use music_player::sweep_gate::SweepGate;`. The pause gate of the background analysis sweep.
 /// Why: the indicator's Pause and Resume buttons stop and restart the sweep workers through it (D107).
@@ -853,16 +864,29 @@ fn color_scheme_from_env() -> i32 {
 /// only flips the gate, so it returns at once. The name and icon are those of the shipped desktop file, so a run
 /// without the installed file still gets a named header.
 fn start_analysis_notifier() -> AnalysisNotifier {
-    let identity = Identity {
+    return AnalysisNotifier::spawn(NotifierConfig::session(
+        app_identity(),
+        true,
+        Box::new(|paused| SweepGate::shared().set_paused(paused)),
+    ))
+}
+
+/// What: `app_identity` names the app to the desktop for every system notification it posts.
+/// Why: the analysis indicator (D107) and the "cannot be played" notification (D122) show the same name, icon and
+/// desktop entry, so they are built from one value.
+fn app_identity() -> Identity {
+    return Identity {
         desktop_entry: music_player::identity::APP_ID.to_string(),
         app_name: "Music Player".to_string(),
         app_icon: "multimedia-player".to_string(),
     };
-    return AnalysisNotifier::spawn(NotifierConfig::session(
-        identity,
-        true,
-        Box::new(|paused| SweepGate::shared().set_paused(paused)),
-    ))
+}
+
+/// What: `start_unplayable_notifier` starts the system notification for files that cannot be played (D122).
+/// Why: the engine thread hands it the paths; it posts them on its own thread, so neither the engine nor the window
+/// waits on the bus. The window itself shows only the row mark.
+fn start_unplayable_notifier() -> UnplayableNotifier {
+    return UnplayableNotifier::spawn(UnplayableConfig::session(app_identity()));
 }
 
 /// What:
@@ -1136,6 +1160,8 @@ fn main() -> Result<()> {
     // ```
     let analysis_notifier = start_analysis_notifier();
     let update_notifier = analysis_notifier.clone();
+    let unplayable_notifier = start_unplayable_notifier();
+    let unplayable_engine_notifier = unplayable_notifier.clone();
     // The Search service answers on its own thread and takes scan batches from the engine thread (D111, D112).
     let search_service = ui_search::start_service(&app);
     let scan_service = search_service.clone();
@@ -1145,6 +1171,12 @@ fn main() -> Result<()> {
         //           analysis indicator at all.
         if let Update::Analysis { done, total } = &update {
             update_notifier.report(*done, *total);
+        }
+        // What:     hand the files that cannot be played to the system notification, before the window sees the update.
+        // Why:      D122: the window marks the rows and draws no message; the notifier thread posts the notification,
+        //           so this only queues a message on the engine thread.
+        if let Update::Unplayable(paths) = &update {
+            unplayable_engine_notifier.report(paths);
         }
         // What:     hand tracks the folder walk has found to the Search index, on the engine thread.
         // Why:      D111: Search works while the library is still being scanned; the window needs no part in it.
@@ -1383,6 +1415,7 @@ fn main() -> Result<()> {
     //           resume that can no longer come.
     let run_result = app.run();
     analysis_notifier.shutdown();
+    unplayable_notifier.shutdown();
     SweepGate::shared().close();
     run_result?;
     return Ok(())

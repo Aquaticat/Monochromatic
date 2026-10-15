@@ -52,6 +52,7 @@ const APP_STATE = {
   ring_visible: true,
   focus_request: 0,
   deck_disabled: false,
+  auto_play_on_select: false,
   first_run_title: '',
   badges: ['search=Ctrl+F',],
 };
@@ -103,6 +104,7 @@ await describe({
         expect(state.ring_folder,).toBe('Aaa Tones',);
         expect(state.badges,).toEqual(['search=Ctrl+F',],);
         expect(state.position,).toBe(12.5,);
+        expect(state.auto_play_on_select,).toBe(false,);
       },
     },),
     it({
@@ -119,6 +121,7 @@ await describe({
         expect(() => decodeUiState({ ...APP_STATE, seq: '7', },),).toThrow('field "seq" is not a number',);
         expect(() => decodeUiState({ ...APP_STATE, route: 3, },),).toThrow('field "route" is not text',);
         expect(() => decodeUiState({ ...APP_STATE, playing: 'yes', },),).toThrow('field "playing" is not a flag',);
+        expect(() => decodeUiState({ ...APP_STATE, auto_play_on_select: 1, },),).toThrow('field "auto_play_on_select" is not a flag',);
         expect(() => decodeUiState({ ...APP_STATE, ring_folder: 5, },),).toThrow('field "ring_folder" is not text',);
         expect(() => decodeUiState({ ...APP_STATE, search_ring: 'x', },),).toThrow('field "search_ring" is not a number',);
         expect(() => decodeUiState({ ...APP_STATE, badges: 'x', },),).toThrow('field "badges" is not a list',);

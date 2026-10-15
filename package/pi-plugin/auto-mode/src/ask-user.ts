@@ -21,7 +21,6 @@ import type {
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { formatModelBlockReason, } from './model-feedback.ts';
-import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
 import {
   type GuardDecision,
   VERDICT_ENTRY_TYPE,
@@ -172,13 +171,11 @@ async function notifyAsk(
 }
 
 /**
- Prompt the user to approve or deny an action.
+ Prompt the user to approve an action or stop the current run.
  
  If no interactive UI is available, denies by default (fail-closed) and
  tells headless children to report the blocked action to their parent.
- Verdict-ask callers opt into reflecting the explanation via
- {@link formatModelBlockReason} when the user denies; fallback prompts keep
- the generic {@link DEFAULT_DENY_GUIDANCE} block guidance.
+ Every non-Allow response records a refusal and aborts the current run.
  
  @returns block {@link GuardDecision} with guidance, or an allow decision
  
@@ -206,7 +203,6 @@ async function askUser(
     action,
     approvalFingerprint,
     explanation,
-    reflectExplanationOnDeny = false,
     notificationInvoker,
   }: {
     readonly pi: ForeignHostCapability<ExtensionAPI>;
@@ -214,7 +210,6 @@ async function askUser(
     readonly action: string;
     readonly approvalFingerprint?: string;
     readonly explanation: string;
-    readonly reflectExplanationOnDeny?: boolean;
     readonly notificationInvoker?: AskNotificationInvoker;
   },
 ): Promise<GuardDecision> {
@@ -265,14 +260,13 @@ async function askUser(
     action,
   ];
   /**
-   Selected button label, used to dispatch between approve / deny / hard-stop branches below.
+   Selected button label; dismissal and every non-Allow response stop execution.
    */
   const choice = await ctx.ui
     .select(
     lines.join('\n',),
     [
       'Allow',
-      'Deny',
       'Stop',
     ],
   );
@@ -293,27 +287,7 @@ async function askUser(
     return { block: false, };
   }
 
-  if (choice === 'Stop') {
-    innerL.debug(`user-stop: ${action}`,);
-    pi.appendEntry(
-      VERDICT_ENTRY_TYPE,
-      {
-        action,
-        ...(approvalFingerprint !== undefined
-          ? { approvalFingerprint, }
-          : {}),
-        verdict: 'user-deny',
-        reason: 'user stopped',
-      } satisfies VerdictData,
-    );
-    ctx.abort();
-    return {
-      block: true,
-      reason: 'The user stopped execution. Wait for their next instructions.',
-    };
-  }
-
-  innerL.debug(`user-deny: ${action}`,);
+  innerL.debug(`user-stop: ${action}`,);
   pi.appendEntry(
     VERDICT_ENTRY_TYPE,
     {
@@ -322,16 +296,13 @@ async function askUser(
         ? { approvalFingerprint, }
         : {}),
       verdict: 'user-deny',
-      reason: explanation,
+      reason: 'user stopped',
     } satisfies VerdictData,
   );
+  ctx.abort();
   return {
     block: true,
-    reason: reflectExplanationOnDeny
-      ? formatModelBlockReason({
-          guardrailReason: explanation,
-        },)
-      : DEFAULT_DENY_GUIDANCE,
+    reason: 'The user stopped execution. Wait for their next instructions.',
   };
 }
 

@@ -34,6 +34,8 @@ pub mod project;
 /// The bubblewrap command line,
 ///  without system access.
 pub mod recipe;
+/// The settings overrides a confined server gets.
+mod settings;
 
 /// The only bubblewrap the policy uses:
 ///  the host's packaged copy,

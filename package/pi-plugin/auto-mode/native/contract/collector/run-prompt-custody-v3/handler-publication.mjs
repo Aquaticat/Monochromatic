@@ -1,406 +1,34 @@
-import {
-  isDeepStrictEqual,
-  types
-} from 'node:util';
+import {field,dense,textPart} from './message-publication-shape.mjs';
+import {createMessagePublication} from './message-publication-owner.mjs';
 import {SourceCollectionError} from '../collector.mjs';
+import {publishSystemToolInput} from './system-tool-publication.ts';
+import {copyMessageData} from '../run-prompt-custody/messages.mjs';
+import {tagged} from '@monochromatic-dev/module-logger/ts';
 
 // This index holds aliases of existing source capabilities, never another source/content inventory.
 const aliases=new WeakMap();
 
-function ordinary(value){
- return (value!==null)&&((typeof value)==='object')
-   &&(!types.isProxy(value))
-   &&(Object.getPrototypeOf(value)===Object.prototype)
-   &&(!('toJSON' in value));
-}
-function field(
-  value,
-  key
-){
- if(!ordinary(value))return undefined;
- const property=Object.getOwnPropertyDescriptor(
-   value,
-   key
- );
- return property?.enumerable&&Object.hasOwn(
-   property,
-   'value'
- )?property:undefined;
-}
-function dense(value){
- return Array.isArray(value)
-   &&(!types.isProxy(value))
-   &&(Object.getPrototypeOf(value)===Array.prototype)
-   &&(!('toJSON' in value))
-   &&(Reflect.ownKeys(value)
-     .length
-     ===(value.length
-     +1))
-   &&Array.from(
-     {length:value.length},
-     function readArrayDescriptor(
-       _,
-       index
-     ) { return (Object.getOwnPropertyDescriptor(
-       value,
-       String(index)
-     )); }
-   )
-   .every(function isEnumerableDataProperty(property) { return (property?.enumerable&&Object.hasOwn(
-     property,
-     'value'
-   )); });
-}
-function textPart(value){
- return ordinary(value)&&(Reflect.ownKeys(value)
-   .length
-   ===2)
-   &&(field(
-     value,
-     'type'
-   )
-     ?.value
-     ==='text')
-   &&((typeof field(
-     value,
-     'text'
-   )
-     ?.value)==='string');
-}
-function flags(property){
- return Object.freeze({
-   enumerable:property.enumerable,
-   writable:property.writable,
-   configurable:property.configurable
- });
-}
-
-/** Publish one existing emitter input; only the original run owner holds the construction method. */
-function createMessagePublication({
-  source,
-  input,
-  initialKind
-}){
- const raw=input.content??[];
- const partCount=(typeof raw)==='string'?1:raw.length;
- let captured=false;
- let failure;
- function textAt(index){return (typeof raw)==='string'?raw:raw[index]
-   .text;}
- function retire(message){failure??=new SourceCollectionError(message);return false;}
- function validContent({
-   value,
-   kind
- }){
-  if((kind==='custom')||(kind==='entry')){
-   if((typeof raw)==='string')return value===raw;
-   return dense(value)&&(value.length===partCount)
-     &&value.every(function matchesOriginalTextPart(
-       part,
-       index
-     ) { return (textPart(part)&&(part.text===textAt(index))); });
-  }
-  if((!dense(value))||(!value.every(textPart)))return false;
-  if(kind==='llm')return (value.length===partCount)&&value.every(function matchesPublishedText(
-    part,
-    index
-  ) { return (part.text===textAt(index)); });
-  if(kind==='payload'){
-   let ordinal=0;
-   for(let index=0;index<partCount;index++){
-    const text=textAt(index);if(text.length===0)continue;
-    if((!text.isWellFormed())||(value[ordinal]
-      ?.text
-      !==text))return false;
-    ordinal++;
-   }
-   return (ordinal>0)&&(ordinal===value.length);
-  }
-  return false;
- }
- function signature({
-   value,
-   kind,
-   ordinal
- }){
-  if(kind==='part'){
-   if((!textPart(value))||(value.text!==textAt(ordinal)))return undefined;
-   return Object.freeze({
-     type:flags(field(
-       value,
-       'type'
-     )),
-     text:flags(field(
-       value,
-       'text'
-     ))
-   });
-  }
-  const label=field(
-    value,
-    kind==='entry'?'type':'role'
-  ); const content=field(
-    value,
-    'content'
-  );
-  const expected=kind==='entry'?'custom_message':kind==='custom'?'custom':'user';
-  if((!label)||(label.value!==expected)
-    ||(!content)
-    ||(!validContent({
-      value:content.value,
-      kind
-    })))return undefined;
-  const parts=Array.isArray(content.value)?Object.freeze(content.value
-    .map(function captureTextPartDescriptors(
-      part,
-      index
-    ) { return (Object.freeze({
-      part,
-      index:flags(Object.getOwnPropertyDescriptor(
-        content.value,
-        String(index)
-      )),
-      type:flags(field(
-        part,
-        'type'
-      )),
-      text:flags(field(
-        part,
-        'text'
-      ))
-    })); })):undefined;
-  return Object.freeze({
-    label:flags(label),
-    content:flags(content),
-    contentValue:content.value,
-    parts,
-    length:parts?flags(Object.getOwnPropertyDescriptor(
-      content.value,
-      'length'
-    )):undefined
-  });
- }
- function sameSignature({
-   actual,
-   expected
- }){
-  if((actual.contentValue!==expected.contentValue)||(!isDeepStrictEqual(
-    actual.label,
-    expected.label
-  ))
-    ||(!isDeepStrictEqual(
-      actual.content,
-      expected.content
-    ))
-    ||(!isDeepStrictEqual(
-      actual.type,
-      expected.type
-    ))
-    ||(!isDeepStrictEqual(
-      actual.text,
-      expected.text
-    ))
-    ||(!isDeepStrictEqual(
-      actual.length,
-      expected.length
-    )))return false;
-  if((!actual.parts)||(!expected.parts))return actual.parts===expected.parts;
-  return (actual.parts
-    .length
-    ===expected.parts
-    .length)
-    &&actual.parts
-    .every(function matchesCapturedPart(
-    part,
-    index
-  ) {
-   const original=expected.parts[index];
-   return (part.part===original.part)&&isDeepStrictEqual(
-     part.index,
-     original.index
-   )
-     &&isDeepStrictEqual(
-     part.type,
-     original.type
-   )
-     &&isDeepStrictEqual(
-     part.text,
-     original.text
-   );
-  });
- }
- function current(value){
-  const known=aliases.get(value);
-  if(failure||(known?.owner!==owner))return false;
-  const actual=signature({
-    value,
-    kind:known.kind,
-    ordinal:known.ordinal
-  });
-  if((!actual)||(!sameSignature({
-    actual,
-    expected:known.signature
-  })))return retire('Original message contribution changed before native consumption');
-  return true;
- }
- function register({
-   value,
-   kind,
-   ordinal
- }){
-  if(failure)return false;
-  const existing=aliases.get(value);
-  if(existing){
-   if((existing.owner!==owner)||(existing.kind!==kind)
-     ||(existing.ordinal!==ordinal))return retire('Native handler projection already belongs to a different original input or position');
-   return current(value);
-  }
-  const actual=signature({
-    value,
-    kind,
-    ordinal
-  });
-  if(!actual)return retire('Native handler projection differs from its original input');
-  aliases.set(
-    value,
-    {
-      owner,
-      kind,
-      ordinal,
-      signature:actual
-    }
-  );return true;
- }
- function registerLlm(value){
-  if(!register({
-    value,
-    kind:'llm'
-  }))return;
-  for(const [ordinal,part] of value.content
-    .entries())register({
-    value:part,
-    kind:'part',
-    ordinal
-  });
- }
- const view=Object.freeze({
-   occurrence:Object.freeze({}),
-   sourceOccurrence:source.occurrence,
-   ...(source.runOccurrence?{runOccurrence:source.runOccurrence}:{}),
-   ...(source.sessionInputOccurrence?{sessionInputOccurrence:source.sessionInputOccurrence}:{}),
-   matchesPayload(value){return (aliases.get(value)
-     ?.kind
-     ==='payload')&&current(value);}
- });
- function beginCapture(){
-  if(captured||failure)throw new SourceCollectionError('Handler publication cannot reuse its original construction');
-  captured=true;
- }
- /** Input-only aliases retain historical source membership, never current content or payload eligibility. */
- function retainInput(value){
-  if(!ordinary(value))return false;
-  const existing=aliases.get(value);
-  if(existing&&((existing.owner!==owner)||(existing.kind!=='input-only')))return retire('Native input copy already belongs to another original publication');
-  aliases.set(
-    value,
-    {
-      owner,
-      kind:'input-only'
-    }
-  );return true;
- }
- const owner=Object.freeze({
-   view,
-   current,
-   captureInput(value){beginCapture();if(!retainInput(value))throw failure??new SourceCollectionError('Native input occurrence requires its original ordinary message');},
-   capture(value){
-   beginCapture();
-   if(initialKind==='llm')registerLlm(value);
-   else if(!register({
-     value,
-     kind:'custom'
-   }))throw failure;
-   if(failure)throw failure;
-  },
-   copy({
-     before,
-     after
-   }){
-   const known=aliases.get(before);
-   if((known?.owner===owner)&&(known.kind==='input-only')){retainInput(after);return;}
-   if(!current(before))return;
-   const {
-     kind,
-     ordinal
-   }=aliases.get(before);
-   if(kind==='llm')registerLlm(after);
-   else register({
-     value:after,
-     kind,
-     ordinal
-   });
-  },
-   entry({
-     before,
-     after
-   }){
-   const known=aliases.get(before);
-   if((known?.owner===owner)&&(known.kind==='input-only')){retainInput(after);return;}
-   if(current(before)&&(known.kind==='custom'))register({
-     value:after,
-     kind:'entry'
-   });
-  },
-   project({
-     before,
-     after
-   }){
-   const known=aliases.get(before);
-   if((known?.owner===owner)&&(known.kind==='input-only')){retainInput(after);return;}
-   if(current(before)&&(known.kind==='entry'))register({
-     value:after,
-     kind:'custom'
-   });
-  },
-   convert({
-     before,
-     after
-   }){
-   const known=aliases.get(before);
-   if((known?.owner===owner)&&(known.kind==='input-only')){retainInput(after);return;}
-   if(current(before)&&(known.kind==='custom'))registerLlm(after);
-  },
-   payload({
-     content,
-     after
-   }){
-   if(failure||(!dense(content))
-     ||(content.length!==partCount))return;
-   for(const [ordinal,part] of content.entries()){
-    const known=aliases.get(part);
-    if((known?.owner!==owner)||(known.kind!=='part')
-      ||(known.ordinal!==ordinal)
-      ||(!current(part)))return;
-   }
-   register({
-     value:after,
-     kind:'payload'
-   });
-  }
- });
- return owner;
-}
-
 /** Original loaded values retain input identity only; no text-part or payload capability is issued. */
-export function createInputOnlyPublication(source){
+export function createInputOnlyPublication({source,systemInput}){
  const publication=createMessagePublication({
+   aliases,
    source,
    input:{},
    initialKind:'input-only'
  });
  return Object.freeze({
    view:publication.view,
-   capture:publication.captureInput
+   capture(value){
+    publication.captureInput(value);
+    if(systemInput)publishSystemToolInput({
+      aliases,
+      publication:publication.view,
+      message:systemInput.message,
+      expected:systemInput.expected,
+      copyInput:copyMessageData,
+      InputError:SourceCollectionError
+    });
+   }
  });
 }
 
@@ -409,6 +37,7 @@ export function createHandlerPublication({
   source,
   input
 }){return createMessagePublication({
+   aliases,
   source,
   input,
   initialKind:'custom'
@@ -417,26 +46,21 @@ export function createHandlerPublication({
 /** Publish only the exact text-only expanded-prompt shape; other native image/hint paths stay unassociated. */
 export function createExpandedPromptPublication(source){
  const publication=createMessagePublication({
+   aliases,
    source,
    input:{content:source.content},
    initialKind:'llm'
  });
- let observed=false;
+ const captureState={observed:false};
  return Object.freeze({
    view:publication.view,
    capture(message){
-  if(observed)throw new SourceCollectionError('Expanded prompt publication cannot reuse its original construction');
-  observed=true;
-  if(field(
-    message,
-    'role'
-  )
+  if(captureState.observed)throw new SourceCollectionError('Expanded prompt publication cannot reuse its original construction');
+  captureState.observed=true;
+  if(field({value:message,key:'role'})
     ?.value
     !=='user')return;
-  const content=field(
-    message,
-    'content'
-  )
+  const content=field({value:message,key:'content'})
     ?.value;
   if((!dense(content))||(content.length!==1)
     ||(!textPart(content[0]))
@@ -484,25 +108,16 @@ export function recordMessageInputProjection({
 /** The native projection's existing sourceEntry/message relation is the bridge, never an entry ID match. */
 export function recordHandlerProjection(projection){
  const edited=new Set(projection.entries
-   .filter(function isContextEditEntry(row) { return (field(
-     row.sourceEntry,
-     'type'
-   )
+   .filter(function isContextEditEntry(row) { return (field({value:row.sourceEntry,key:'type'})
      ?.value
      ==='context_edit'); })
-   .map(function readContextEditTarget(row) { return (field(
-     row.sourceEntry,
-     'targetId'
-   )
+   .map(function readContextEditTarget(row) { return (field({value:row.sourceEntry,key:'targetId'})
      ?.value); }));
  for(const {
    sourceEntry,
    messages
  } of projection.entries){
-  if(edited.has(field(
-    sourceEntry,
-    'id'
-  )
+  if(edited.has(field({value:sourceEntry,key:'id'})
     ?.value)||(messages.length!==1))continue;
   recordMessageInputProjection({
     before:sourceEntry,
@@ -542,10 +157,7 @@ export function recordHandlerPayload({
   before,
   after
 }){
- const content=field(
-   before,
-   'content'
- )
+ const content=field({value:before,key:'content'})
    ?.value;
  if((!dense(content))||(content.length === 0))return;
  aliases.get(content[0])
@@ -563,7 +175,8 @@ export function readOriginalMessagePublication(value){
    'custom',
    'entry',
    'llm',
-   'input-only'
+   'input-only',
+   'system-input'
  ].includes(known.kind)?known.owner
    .view:undefined;
 }
@@ -572,6 +185,48 @@ export function readOriginalMessagePublication(value){
 export function readHandlerPayloadPublication(value){
  const known=aliases.get(value);
  return (known?.kind==='payload')
+   &&known.owner
+   .current(value)?known.owner
+     .view:undefined;
+}
+
+/** Original tool declarations retain existing source membership only while their native input remains current. */
+export function readOriginalToolPublication(value){
+ const known=aliases.get(value);
+ return (known?.kind==='tool-declaration')
+   &&known.owner
+   .current(value)?known.owner
+     .view:undefined;
+}
+
+/** Original serializer values are captured before callbacks; unsupported native data retains its failure. */
+export function snapshotOriginalToolEmission({
+  tool,
+  converted
+}){
+ const l=tagged({tag:'auto-mode-handler-publication'});
+ const fl=tagged({
+   tag:snapshotOriginalToolEmission.name,
+   l
+ });
+ fl.debug('capturing original converted tool data before payload callbacks');
+ try{return Object.freeze({
+   tool,
+   value:copyMessageData(converted)
+ });}
+ catch(error){
+  fl.debug(String(error));
+  return Object.freeze({
+    tool,
+    error
+  });
+ }
+}
+
+/** Original system fields retain captured input membership only while the native message remains current. */
+export function readOriginalSystemPublication(value){
+ const known=aliases.get(value);
+ return (known?.kind==='system-input')
    &&known.owner
    .current(value)?known.owner
      .view:undefined;

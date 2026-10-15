@@ -3,7 +3,7 @@ import {join} from 'node:path';
 import {
   observeDeclaredFile,
   assertRetainedFile
-} from '../../lifecycle/external-dependency-controls/file-observer.mjs';
+} from '../../lifecycle/external-dependency-controls/file-observer.ts';
 import {SourceCollectionError} from '../collector.mjs';
 
 export class GoverningPolicySelectionError extends SourceCollectionError {}
@@ -24,8 +24,7 @@ export function createBootstrapPolicySelection({
     maxBytes:65_536
   });
     const records=new WeakMap();
-  let current;
-  let ordinal=0;
+  const selection={current:undefined,ordinal:0};
   function observe(){
     const observed=observeDeclaredFile(location);
     const content=observed.bytes
@@ -45,8 +44,8 @@ export function createBootstrapPolicySelection({
       observed,
       content
     }=observe();
-    if(current){
-      const saved=records.get(current);
+    if(selection.current){
+      const saved=records.get(selection.current);
       // This is a new capture boundary, not a freshness check on the previous generation.
       if((saved.observed
         .relativePath
@@ -62,11 +61,11 @@ export function createBootstrapPolicySelection({
           ===observed.mode)
         &&saved.observed
         .bytes
-        .equals(observed.bytes))return current;
+        .equals(observed.bytes))return selection.current;
     }
     const view=Object.freeze({
       occurrence:Object.freeze({}),
-      ordinal:ordinal++,
+      ordinal:selection.ordinal++,
       identity:join(
         root,
         relativePath
@@ -90,11 +89,11 @@ export function createBootstrapPolicySelection({
     records.set(
       view,
       {observed}
-    );current=view;return view;
+    );selection.current=view;return view;
   }
   function assertCurrent(view){
     const saved=records.get(view);
-    if((!saved)||(view!==current))throw new GoverningPolicySelectionError('Governing policy source is not this bootstrap selection current occurrence');
+    if((!saved)||(view!==selection.current))throw new GoverningPolicySelectionError('Governing policy source is not this bootstrap selection current occurrence');
     const {observed}=observe();assertRetainedFile({
       initial:saved.observed,
       current:observed

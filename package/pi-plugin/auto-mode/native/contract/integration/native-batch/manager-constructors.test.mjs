@@ -6,7 +6,7 @@ import {
 } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createEnvironment } from './environment.mjs';
-import { createRootSessionFactory } from './session-root.mjs';
+import { createRootSessionFactory } from './session-root.ts';
 
 //region Exercise native persisted and external-entry constructors through their actual consumer.
 

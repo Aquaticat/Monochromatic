@@ -33,19 +33,20 @@ export async function capturePolicyInputs({
  const runInstructionCarriers=sourceBinding?.runInstructionCarriers??Object.freeze([]);
  const instructionAuthorities=Object.freeze(sources.filter(function hasSourceAuthority(source) { return (source.authority); })
    .map(function readSourceAuthority(source) { return (source.authority); }));
- const candidates=judgment.indexedRuleCandidates();
- const instructionCandidates=judgment.indexedInstructionCandidates?.()??candidates;
- const headingContextCandidates=judgment.indexedHeadingContextCandidates?.()??Object.freeze([]);
- const unitAdoptionPairs=judgment.indexedUnitAdoptionPairs?.()??Object.freeze([]);
- const ruleSourceCoverage=judgment.inspectRuleSources?.();
+ const {
+  ruleCandidates:candidates,
+  instructionCandidates,
+  headingContextCandidates,
+  unitAdoptionPairs,
+  ruleSourceCoverage
+ }=judgment.readPolicySelection();
  function readRule(handle){return judgment.readRuleCandidate(handle);}
  function sourceViewFor(handle){
   const rule=readRule(handle);
   for(const source of sources){
+   if(rule.sourceOccurrence!==source.view.sourceOccurrence)continue;
    source.assertCurrent(source.view);
-   if(rule.sourceOccurrence
-     ===source.view
-     .sourceOccurrence)return source.view;
+   return source.view;
   }
   return Object.freeze({
     kind:'unresolved-instruction-source',
@@ -56,10 +57,9 @@ export async function capturePolicyInputs({
   const rule=readRule(handle);
   for(const source of sources){
    if(!source.authority)continue;
+   if(rule.sourceOccurrence!==source.authority.sourceOccurrence)continue;
    source.assertAuthorityCurrent(source.authority);
-   if(rule.sourceOccurrence
-     ===source.authority
-     .sourceOccurrence)return source.authority;
+   return source.authority;
   }
   return Object.freeze({
     kind:'unresolved-instruction-authority',
@@ -72,9 +72,8 @@ export async function capturePolicyInputs({
  const members=[];
  for(const {id} of states){
   const member=judgment.memberFor(id);
-  const {prepared} = judgment.preparedMemberFor(member);
-  const programInspection=judgment.preparedProgramFor?.(member);
-  const owner=effectOwnerFor({
+  const {prepared,programInspection} = judgment.preparedMemberFor(member);
+  const owner=effectOwnerFor?.({
     judgment,
     member,
     prepared
@@ -97,25 +96,23 @@ export async function capturePolicyInputs({
   judgment.assertDependenciesCurrent();
   judgment.checkpoint();
  }
- const effects=Object.freeze(members);let failure;
+ const effects=Object.freeze(members);const inputState={failure:undefined};
  function assertCurrent(){
-  if(failure)throw new PolicyInputBindingError(
+  if(inputState.failure)throw new PolicyInputBindingError(
     'Original policy inputs lost eligibility',
-    {cause:failure.cause}
+    {cause:inputState.failure.cause}
   );
   try{
-   judgment.assertDependenciesCurrent();
-   for(const source of sources){
-    source.assertCurrent(source.view);
-    if(source.authority)source.assertAuthorityCurrent(source.authority);
-   }
+   if(sourceBinding)sourceBinding.assertAllCurrent();
+   else judgment.assertDependenciesCurrent();
    // Closed judgments retain dependency checks, but cannot reopen candidate selection.
    if(!judgment.inspect()
      .finalRecord){
-    if(judgment.indexedRuleCandidates()!==candidates)throw new PolicyInputBindingError('Original instruction candidates changed');
-    if((judgment.indexedInstructionCandidates?.()??candidates)!==instructionCandidates)throw new PolicyInputBindingError('Original retained instruction candidates changed');
-    if((judgment.indexedHeadingContextCandidates?.()??headingContextCandidates)!==headingContextCandidates)throw new PolicyInputBindingError('Original heading-context candidates changed');
-    if((judgment.indexedUnitAdoptionPairs?.()??unitAdoptionPairs)!==unitAdoptionPairs)throw new PolicyInputBindingError('Original unit-adoption pairs changed');
+    const current=judgment.readPolicySelection();
+    if(current.ruleCandidates!==candidates)throw new PolicyInputBindingError('Original instruction candidates changed');
+    if(current.instructionCandidates!==instructionCandidates)throw new PolicyInputBindingError('Original retained instruction candidates changed');
+    if(current.headingContextCandidates!==headingContextCandidates)throw new PolicyInputBindingError('Original heading-context candidates changed');
+    if(current.unitAdoptionPairs!==unitAdoptionPairs)throw new PolicyInputBindingError('Original unit-adoption pairs changed');
    }
    for(const {
      member,
@@ -124,13 +121,12 @@ export async function capturePolicyInputs({
      evidence,
      programInspection
    } of effects){
-    if(judgment.preparedMemberFor(member)
-      .prepared
-      !==prepared)throw new PolicyInputBindingError('Original prepared effect input changed');
-    if(judgment.preparedProgramFor?.(member)!==programInspection)throw new PolicyInputBindingError('Original prepared program inspection changed');
+    const current=judgment.preparedMemberFor(member);
+    if(current.prepared!==prepared)throw new PolicyInputBindingError('Original prepared effect input changed');
+    if(current.programInspection!==programInspection)throw new PolicyInputBindingError('Original prepared program inspection changed');
     if(owner)owner.assertCurrent(evidence);
    }
-  }catch(error){failure={cause:error};throw error;}
+  }catch(error){inputState.failure={cause:error};throw error;}
  }
  function inspectSourceDomain(){
   assertCurrent();

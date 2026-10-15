@@ -17,7 +17,11 @@ backend differs by target.
 - Output:
    the platform's native stack.
    Linux uses a winit window and PipeWire audio (no
-  ALSA/PulseAudio backends).
+  PulseAudio backend).
+   Builds made with the `alsa-fallback` cargo feature
+  (the Alpine build,
+   see [Alpine Linux](#alpine-linux))
+  also open the default ALSA device when no PipeWire daemon answers.
    The window runs on Wayland when `WAYLAND_DISPLAY` (or `WAYLAND_SOCKET`) is set and otherwise on X11 when `DISPLAY` is
   set, because the Slint `backend-winit` feature turns on both of winit's Linux window systems;
    with neither variable set, startup fails with winit's error.
@@ -126,6 +130,127 @@ backend differs by target.
    future decoded samples swap to it;
    already-buffered fallback-gain samples are not flushed.
 
+## Alpine Linux
+
+The player builds and runs on Alpine Linux (musl libc),
+on x86_64 and aarch64.
+The decision and every measurement behind it are in [`doc/decision/music-player-alpine.md`](../../../doc/decision/music-player-alpine.md).
+The binary is dynamically linked against Alpine's musl and runs only on musl systems.
+A fully static binary is not possible:
+the PipeWire,
+fontconfig and freetype static libraries do not exist on Alpine,
+and a static musl program cannot `dlopen` the Wayland,
+xkbcommon and EGL libraries a window needs.
+
+### Install the runtime packages
+
+```sh
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
+  mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+```
+
+- `fontconfig` and a font:
+  with no font installed the player panics at startup,
+  so install one (`font-dejavu`
+  is the small one;
+  any font package works).
+- `pipewire-libs`,
+  `libgcc`,
+  `wayland-libs-client`,
+  `wayland-libs-egl`,
+  `libxkbcommon`:
+  libraries the binary links or opens at run time.
+- `mesa-egl`,
+  `mesa-gles`,
+  `mesa-dri-gallium`:
+  the OpenGL ES stack the window draws with
+  (the software rasterizer on a machine with no GPU).
+- `alsa-lib`:
+  the ALSA fallback when no PipeWire daemon runs.
+
+You also need a Wayland compositor,
+and for sound either PipeWire with a session manager or an ALSA device:
+
+```sh
+apk add pipewire wireplumber
+```
+
+Optional:
+`dbus` (a session bus,
+for notifications and the appearance setting),
+`zenity` (the folder chooser when
+no desktop portal runs),
+and `xdg-desktop-portal`.
+
+### Run
+
+Alpine does not create `XDG_RUNTIME_DIR` unless `elogind` runs.
+Wayland and PipeWire need it,
+so create it by hand when it is unset:
+
+```sh
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}"
+mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+music-player path/to/music-folder
+```
+
+### What to expect
+
+- Sound:
+  the player uses PipeWire when a daemon answers,
+  otherwise the default ALSA device (set it in
+  `/etc/asound.conf` or `~/.asoundrc`).
+  With neither,
+  the player starts,
+  shows "No sound output is available,
+  so nothing will be heard.
+  Start a sound server
+  such as PipeWire,
+  or set up an ALSA sound card,
+  then restart the player.",
+  and stays silent.
+- Folder chooser:
+  "Open folder" needs a desktop portal or `zenity`.
+  Without either,
+  the window says "This computer has no folder chooser for the player to open.
+  Install zenity,
+  or start
+  the player with a folder:
+  music-player /path/to/music".
+- Notifications and the appearance setting need a D-Bus session bus.
+  Without one the player logs a warning and runs.
+- Settings,
+  the session and the true-peak cache are written under `$XDG_CONFIG_HOME/musicplayer`
+  (`~/.config/musicplayer` by default).
+
+### Build from source on Alpine
+
+```sh
+apk add rust cargo build-base cmake samurai pkgconf linux-headers clang21-libclang \
+  pipewire-dev alsa-lib-dev fontconfig-dev freetype-dev
+cd package/music-player/desktop-app
+SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 cargo build --release --locked --features alsa-fallback
+```
+
+Unit tests also need `cargo-nextest dbus font-dejavu`:
+
+```sh
+SLINT_EMIT_DEBUG_INFO=1 SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 cargo nextest run --locked --features alsa-fallback
+```
+
+### Checking the Alpine build
+
+`mise run //package/music-player/desktop-app:test:alpine` builds `Containerfile.alpine` with podman,
+runs the unit
+tests,
+builds the app and the repository's nested compositor,
+and runs the app inside that compositor in three
+scenarios (no sound,
+ALSA,
+PipeWire),
+with explicit memory and CPU bounds.
+`.github/workflows/music-player-alpine.yml` runs the same commands on x86_64 and aarch64.
+
 ## Codecs
 
 One demux path (symphonia) feeds two decode paths:
@@ -176,7 +301,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   (the Source Root,
    the selected track path,
    the position,
-   the playback mode and the two template texts;
+   the playback mode, the two template texts and the Auto-play on select flag, `auto_play_on_select`, which is off
+   when the field is missing;
    it keeps no queue,
    so nothing is pruned or remapped: the launch rescan rebuilds the queue).
 - `src/error.rs`:
@@ -236,7 +362,7 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/peakcache.rs`,
    `src/peakcache_service.rs` and `src/peakcache_handle.rs`:
    the persistent peak cache.
-   `peakcache.rs` computes the opaque fingerprint and decides where `decisions.db` lives;
+   `peakcache.rs` computes the opaque fingerprint (through the shared XXH3-64 `track_fingerprint` of `truepeak-core`) and decides where `decisions.db` lives;
    the Turso-backed actor in `peakcache_service.rs` owns the database,
    and the synchronous `CacheHandle` in `peakcache_handle.rs` is what the controller and the sweep call.
 - `src/measure.rs`:
@@ -266,6 +392,13 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    the wire file holds the D-Bus messages (Linux only),
    and the handle runs them on its own thread so the window and the sweep workers never wait on the bus.
    Protocol facts and pitfalls: `doc/troubleshooting/plasma-job-view-progress-protocol.md`.
+- `src/unplayable_notification_logic.rs`, `src/unplayable_notification_wire.rs`, `src/unplayable_notification.rs`:
+   the "cannot be played" report as one freedesktop notification (D122), which replaced the in-window message.
+   The logic file holds the wording and a ledger that tells each file once per run,
+   the wire file holds the one `Notify` call (normal urgency, the server's default expiry, no action buttons,
+   a `desktop-entry` hint), and the handle runs it on its own thread and connection, separate from the analysis
+   indicator's, so a failure of one never disables the other.
+   Its tests run against a private `dbus-daemon` (`src/unplayable_notification_bus_support.rs`), never the session bus.
 - `src/peak_swap.rs`:
    current-track peak swap orchestration.
    Cache hits return the measured gain immediately;
@@ -387,10 +520,13 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    because the
   breakpointless wrapping `FlexboxLayout` root created a Slint `Flickable` layout-info loop on Slint 1.17;
    see `../../../doc/troubleshooting/slint-flickable-flexbox-layout-loop.md`.
-   Each scroll region is driven by a prominent custom
+   Each scroll region except the folder picker is driven by a prominent custom
   scrollbar in a right-hand gutter,
    since the default
   std-widgets scrollbar is a near-invisible hairline.
+   The folder picker has no scrollbar on either input (D125):
+   the selected folder, the highlighted letter of the rail and the order of the list already say where the user is,
+   and the wheel, a touch drag and the keys still scroll it.
    Scrolling is animated by the
   Flickable itself:
    touchpad and touchscreen gestures fling with momentum,
@@ -403,12 +539,18 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    a track row has a cleaned title and a supporting line,
    and a subfolder header labels the tracks under it (D86),
    so deeper nesting stays visible.
-   The highlighted row is the currently selected and playing track,
+   The highlighted row is the currently selected track, playing or paused,
    and the transport deck names it (folder and title).
-   A single click on a row other than the highlighted one loads it and plays it at once,
-   replacing whatever was playing;
-   a click on the already-highlighted row toggles
-  play/pause.
+   A single click on a row other than the highlighted one selects it and loads it paused (D124),
+   stopping whatever was playing, or also starts it when the Auto-play on select setting is on (D129);
+   a click on the already-highlighted row toggles play and pause in both modes.
+   A Search result for a track follows the same rule (D127): a result that is not the current track selects it (and
+   starts it with the setting on), and the result of the current track toggles.
+   The Play item of the track menu starts a row at once with the setting on or off.
+   `src/row_activation.rs` holds the one pure rule, `row_activation_for`, used by `ui_wire::play_row` (click, Enter and
+   Search result) and by `play_row_now` (the menu Play, which always plays).
+   A row whose file cannot be opened stays selected and paused, is reported once, and the next click on it tries to
+   load it again (D128); Next, Previous and the end of a track still walk past unreadable files.
    No double-click handling exists or is needed.
    The window title shows the playing track's title (the one the deck shows, without folder, extension or the prefix
   its folder's files share, D86) while audio plays,
@@ -491,8 +633,8 @@ No `.slint` file may call `mix`, `brighter`, `darker` or `transparentize` (a tes
 
 ## Settings page
 
-Settings (`ui/settings.slint`, D87, D99, D109, D110) lists the two templates, Track rows and Playing track, under a
-Templates heading.
+Settings (`ui/settings.slint`, D87, D99, D109, D110, D129) lists the two templates, Track rows and Playing track, under
+a Templates heading, and the Auto-play on select switch row under a Playback heading.
 The whole page is drawn on the one canvas colour (pure white in light, pure black in dark): no page tint, card fill,
 header band, border or divider line, so the header, the heading and the rows are separated by spacing alone.
 Only state carries a fill: the hover and pressed layers, the 40 px icon circle (the secondary container role) and the
@@ -521,6 +663,17 @@ Escape closes Settings only while Settings is the visible page and no template l
 Closing Settings, or selecting the other row, applies and saves the valid drafts.
 Widening the window on an editor page continues that editor in the right pane.
 
+The Playback group is one switch row in the same 72 px form: the `autoplay` icon circle, the title Auto-play on select,
+one supporting line that states what selecting does, and a Material 3 switch (52 by 32 px, a 24 px thumb).
+Click, Space and Enter toggle it in place and save `auto_play_on_select` at once; it opens no editor, is never a
+selected row, and in the wide form the detail pane keeps the selected template's editor.
+The state is shown by the thumb position, the track fill (the accent when on, the canvas with an outline border when
+off) and the check or cross mark in the thumb.
+The keyboard position reaches the row as the last stop of the list (Down and End), with the focus ring of the group
+corners.
+Under 300 px of row width, which is the list pane of a window between 600 and about 910 px, the switch sits under the
+supporting line and the text wraps; `AutoPlaySwitch` in `ui/settings.slint` draws the switch for both places.
+
 The row icons are Material Symbols Outlined (weight 400, grade 0, 24 px, unfilled) `queue_music` and `play_circle`
 from [google/material-design-icons][material-icons], commit `49d4db35df873165d6bd6ba09b063c7dafbac2f4`
 (`symbols/web/queue_music/materialsymbolsoutlined/queue_music_24px.svg` and
@@ -543,6 +696,25 @@ A library of 1,000 artists and 1,000,000 tracks is normal operation, so Search, 
 built to cost the size of what is shown or typed, not the size of the library.
 This section describes the pieces; the decisions behind them are D47 to D74 (Search behavior), D103, D111 (Search while
 the scan runs) and D112 (the in-memory index).
+
+### The Search page
+
+`ui/search.slint` draws the page (D126 restyled it to match the Android Search page; the specification is in
+`design/decisions.md`).
+The header is the canvas color, 72 px high, with a 1 px `outline-variant` divider under it.
+A result row is flat on the canvas and 72 px high.
+Its rounded shape (radius 21.3 px) starts 8 px before the content and ends 8 px after the end inset, and bounds the
+hover and pressed layer, the keyboard ring pair and the pointer target.
+The glyph sits in a 40 px `secondary-container` circle in the 48 px slot, so the circle, the Back arrow and the title
+keep their D58 columns.
+The match highlight keeps square corners (D59).
+The five empty and no-result states (empty query, no match, still scanning, unavailable, empty inventory) share one
+block that starts 72 px below the divider: a 72 px `secondary-container` circle with a 32 px magnifier, the title in
+`title-medium` at weight 500, and the support line.
+The cover centers the block and the inner panel aligns it to the content start; a window shorter than the block scrolls
+it with the wheel.
+`src/ui_search_restyle_tests.rs` pins these numbers on the real window in both schemes.
+The result list's scrollbar track starts where the rounded shape ends.
 
 ### The Search index
 
@@ -652,8 +824,8 @@ Browsing:
 
 In a focused list:
 
-- Up, Down, Home, End, PageUp and PageDown move the ring; Enter plays the row (on the playing row it pauses) or shows
-  the folder.
+- Up, Down, Home, End, PageUp and PageDown move the ring; Enter selects the row, and on the selected row it plays or
+  pauses it (D124), or shows the folder.
 - In the folder list a letter jumps to the first folder starting with it, and Left and Right move like Up and Down.
 - On a track row: Menu or Alt+Enter opens the row menu (Shift+F10 is not used, it is Run in JetBrains), Delete moves the
   file to the trash, Ctrl+Shift+C copies the file name, Ctrl+Shift+E shows the file in the file manager. File details
@@ -689,9 +861,10 @@ parameters in `FocusRingStyle`), placed where the element is and given its radiu
 never moves content, and sits above any sibling that could paint over it. Focus adds no fill, tint, state layer, bold or
 size change: hover and pressed keep their own state layers (`ui/state_layer.slint` has no focus state).
 
-One exception: a row as wide as its pane (a track row, a Search result, a template field row) has no room outside it,
+One exception: a row as wide as its pane (a track row, a template field row) has no room outside it,
 because its pane ends at the window's edge, so its two rings are drawn on the row's own edge, inside it (`inside` on
-the component). The track menu's rows are as wide as the card, so their ring reaches 3 px past the card's edge; the card
+the component). A Search result's ring is the same pair drawn inside the row's rounded shape, following its 21.3 px
+corners (D126). The track menu's rows are as wide as the card, so their ring reaches 3 px past the card's edge; the card
 is not clipped. A card pulled back against the window's edge has its ring cut by the window itself there.
 
 The track menu card is the canvas color itself, pure white in the light scheme and pure black in the dark scheme with no
@@ -804,8 +977,9 @@ The refresh sweep shows no progress and decodes no file twice, because the sweep
 the fingerprints they have taken.
 A file that failed to decode has no stored result, so it is tried again at the next library change, whichever file
 changed (every refresh sweep also takes the small set of files recorded as failed), and in every full refresh.
-The person is told once per file (and once more if the file changes and still fails), and the row keeps its mark until
-a peak is measured for it.
+The engine reports each file once until a peak is measured for it (a folder opened again reports it again, which marks
+its row again), and the row keeps its mark until a peak is measured for it.
+The desktop notification is stricter: one per file for a run of the app (D122).
 
 The selected track follows its file (`controller_reload.rs`): when the file that is playing is replaced, the new file is
 opened first and swapped in at the same position (clamped to the new length), the player keeps playing, the peak and the
@@ -813,9 +987,18 @@ gain are worked out again, the seek bar takes the new length, and no message is 
 changes nothing until the next event. A paused selected track keeps its position when the new file has it and starts again
 from zero when it does not.
 
-A file that cannot be decoded is skipped, named in a message ("`name` can't be played."; several files collapse to a
-count),
-and its row shows "Can't be played".
+A file that cannot be decoded is skipped by Next, Previous and the end of a track, and its row shows "Can't be played".
+A click, `Enter`, a Search result or the menu Play on such a row does not skip it: the row stays the selected row,
+paused with nothing loaded, and the next click on it tries to load it again (D128);
+if the file decodes by then it loads and plays, and the mark goes when a peak is measured for it.
+The window draws no message for it.
+On Linux the same report is one desktop notification titled "Cannot play a file", whose text is "`name` can't be
+played." (several files collapse to a count that names the first) (D122).
+It is posted once per file for a run of the app, even if the engine reports the file again, and it names no folder.
+If no notification service answers, one warning goes to the log and nothing else is shown;
+the row mark is the only sign.
+macOS and Windows have no notification code yet (the analysis indicator has none either), so there the row mark is the
+only sign of an unplayable file, and no message is shown.
 When the selected file leaves the folder, the row disappears, playback stops, the elapsed time resets, a message names
 the file,
 and the view moves to the neighboring folder if the folder on screen is gone.

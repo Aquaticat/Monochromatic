@@ -78,6 +78,30 @@ export component SearchPage inherits Rectangle {
     property <length> end-inset: 16px;
     // Nominal glyph size, drawn inside its 48 px target.
     property <length> icon-size: 24px;
+    // Distance from the edge of a result row's rounded shape to the start of its content, on each side (D126). The shape
+    // starts this far before `content-start-x` and ends this far after the end inset, so the glyph and the title keep their
+    // D58 columns.
+    property <length> row-shape-margin: 8px;
+    // Corner radius of a result row's rounded shape, all four corners (D109, D126).
+    property <length> row-radius: 21.3px;
+    // Diameter of the filled circle that holds a result's glyph, centered in the 48 px slot (D109, D126).
+    property <length> row-circle: 40px;
+    // Diameter of the circle that holds the glyph of a status state (D126).
+    property <length> status-circle: 72px;
+    // Drawn size of the magnifier glyph in the status circle.
+    property <length> status-glyph: 32px;
+    // Distance from the bottom of the divider to the status circle on both layouts (D126).
+    property <length> status-top: 72px;
+    // Height of the status headline line, the Material 3 title medium line.
+    property <length> status-title-height: 24px;
+    // Height of the status support line, the Material 3 body medium line.
+    property <length> status-detail-height: 20px;
+    // Gap between the status circle and the headline.
+    property <length> status-title-gap: 24px;
+    // Gap between the headline and the support line: 8 px on the cover and 12 px on the inner panel.
+    property <length> status-detail-gap: root.compact ? 8px : 12px;
+    // Height of the status block from the circle's top to the support line's bottom (the line and its gap only when shown).
+    property <length> status-block-height: root.status-circle + root.status-title-gap + root.status-title-height + (root.status-detail != "" ? root.status-detail-gap + root.status-detail-height : 0px);
     // Fill behind an emphasized match (D59), the theme's OKLCH-derived match role (the primary moved toward the neutral
     // end, kept legible under both text roles).
     property <color> match-fill: Theme.match-fill;
@@ -112,7 +136,8 @@ export component SearchPage inherits Rectangle {
         y: 0px;
         width: root.width;
         height: root.header-height;
-        background: Theme.surface-high;
+        // The header is the canvas tone, so the status strip above it, the header and the results are one tone (D126).
+        background: Theme.canvas;
 
         // Circular hover and pressed layer, 40 px centered in the 48 px Back target.
         StateLayer {
@@ -267,13 +292,13 @@ export component SearchPage inherits Rectangle {
         }
     }
 
-    // Divider under the header, one logical pixel in the outline role.
-    Rectangle {
+    // Divider under the header, one logical pixel in the outline-variant role (D126).
+    divider := Rectangle {
         x: 0px;
         y: root.header-height;
         width: root.width;
         height: 1px;
-        background: Theme.outline;
+        background: Theme.outline-variant;
     }
 
     // Focus the field whenever the page is shown (D63, D75).
@@ -310,78 +335,63 @@ export component SearchPage inherits Rectangle {
         results.content-y = -min(root.anchor-offset, max(0px, results.content-height - results.visible-height));
     }
 
-    // Status block for an empty result set. The cover centers it with a glyph; the inner panel aligns it left
-    // with 72 px above the headline.
-    if root.rows.length == 0 && root.status-title != "" : Rectangle {
+    // Status block for an empty result set (D126). All five states share one block that starts 72 px under the divider on
+    // both layouts: a 72 px circle in the secondary-container role holding the 32 px magnifier, the headline 24 px below it,
+    // and the support line under that. The cover centers the block with 16 px at each side; the inner panel aligns the
+    // circle's left edge to `content-start-x`. Desktop has no on-screen keyboard, so the block scrolls only when the window
+    // is shorter than the block.
+    if root.rows.length == 0 && root.status-title != "" : status-scroll := Flickable {
         x: 0px;
         y: root.body-top;
         width: root.width;
         height: root.height - root.body-top;
+        content-width: self.width;
+        content-height: max(self.height, root.status-top + root.status-block-height);
 
-        // Cover status, centered horizontally and vertically in the body region.
-        if root.compact : VerticalLayout {
-            width: parent.width;
-            height: parent.height;
-            padding-left: root.end-inset;
-            padding-right: root.end-inset;
-            alignment: center;
+        status-block := VerticalLayout {
+            x: root.compact ? root.end-inset : root.content-start-x;
+            y: root.status-top;
+            width: root.width - self.x - root.end-inset;
+            height: root.status-block-height;
 
             HorizontalLayout {
-                alignment: center;
-                Path {
-                    height: root.icon-size;
-                    width: root.icon-size;
-                    viewbox-width: 24;
-                    viewbox-height: 24;
-                    commands: root.search-path;
-                    fill: Theme.on-surface-variant;
+                alignment: root.compact ? LayoutAlignment.center : LayoutAlignment.start;
+                status-circle-box := Rectangle {
+                    width: root.status-circle;
+                    height: root.status-circle;
+                    border-radius: root.status-circle / 2;
+                    background: Theme.secondary-container;
+                    status-glyph-path := Path {
+                        x: (parent.width - root.status-glyph) / 2;
+                        y: (parent.height - root.status-glyph) / 2;
+                        width: root.status-glyph;
+                        height: root.status-glyph;
+                        viewbox-width: 24;
+                        viewbox-height: 24;
+                        commands: root.search-path;
+                        fill: Theme.on-secondary-container;
+                    }
                 }
             }
-            Rectangle { height: 24px; }
-            Text {
+            Rectangle { height: root.status-title-gap; }
+            status-title-text := Text {
                 text: root.status-title;
-                height: 28px;
-                font-size: Theme.title-large;
-                font-weight: 600;
+                height: root.status-title-height;
+                font-size: Theme.title-medium;
+                font-weight: 500;
+                letter-spacing: 0.15px;
                 color: Theme.on-surface;
-                horizontal-alignment: center;
+                horizontal-alignment: root.compact ? TextHorizontalAlignment.center : TextHorizontalAlignment.left;
                 vertical-alignment: center;
                 overflow: elide;
             }
-            if root.status-detail != "" : Rectangle { height: 8px; }
-            if root.status-detail != "" : Text {
+            if root.status-detail != "" : Rectangle { height: root.status-detail-gap; }
+            if root.status-detail != "" : status-detail-text := Text {
                 text: root.status-detail;
-                height: 20px;
+                height: root.status-detail-height;
                 font-size: Theme.body-medium;
                 color: Theme.on-surface-variant;
-                horizontal-alignment: center;
-                vertical-alignment: center;
-                overflow: elide;
-            }
-        }
-
-        // Inner status, left aligned at the content inset with 72 px above the headline.
-        if !root.compact : VerticalLayout {
-            x: root.content-start-x;
-            width: root.width - root.content-start-x - root.end-inset;
-            height: parent.height;
-            padding-top: 72px;
-
-            Text {
-                text: root.status-title;
-                height: 28px;
-                font-size: Theme.title-large;
-                font-weight: 600;
-                color: Theme.on-surface;
-                vertical-alignment: center;
-                overflow: elide;
-            }
-            if root.status-detail != "" : Rectangle { height: 12px; }
-            if root.status-detail != "" : Text {
-                text: root.status-detail;
-                height: 20px;
-                font-size: Theme.body-medium;
-                color: Theme.on-surface-variant;
+                horizontal-alignment: root.compact ? TextHorizontalAlignment.center : TextHorizontalAlignment.left;
                 vertical-alignment: center;
                 overflow: elide;
             }
@@ -401,31 +411,62 @@ export component SearchPage inherits Rectangle {
             width: results.width;
             height: root.row-height;
 
-            // Hover and pressed layer over the whole row, below the glyph and the text.
-            StateLayer {
-                width: parent.width;
+            // The row is flat on the canvas. Its rounded shape starts one margin before the content and ends one margin after
+            // the end inset, and it bounds the hover and pressed layer, the keyboard ring and the pointer target (D126). The
+            // page's right edge is the window's edge on the folded layout and the pane's edge on the unfolded one, and the
+            // scrollbar's 4 px track starts where the shape ends.
+            result-shape := Rectangle {
+                x: root.content-start-x - root.row-shape-margin;
+                y: 0px;
+                width: parent.width - self.x - root.end-inset + root.row-shape-margin;
                 height: parent.height;
-                tint: Theme.on-surface;
-                hovered: row-touch.has-hover;
-                pressed: row-touch.pressed;
-            }
-            // A result is as wide as the page, which ends at the window's edge on the folded layout and at the pane's edge on the
-            // unfolded one, so its ring is drawn on the row's own edge, inside it (see the track rows). No fill goes with it.
-            FocusRing {
-                inside: true;
-                active: row.index == root.ring && Focus.ring-visible;
+                border-radius: root.row-radius;
+
+                // Hover and pressed layer, rounded like the shape so it never leaves it.
+                StateLayer {
+                    width: parent.width;
+                    height: parent.height;
+                    radius: root.row-radius;
+                    tint: Theme.on-surface;
+                    hovered: row-touch.has-hover;
+                    pressed: row-touch.pressed;
+                }
+                // The D117 pair of rings, drawn just inside the shape's own edge and following its corners (D120). No fill goes
+                // with it.
+                FocusRing {
+                    inside: true;
+                    radius: root.row-radius;
+                    active: row.index == root.ring && Focus.ring-visible;
+                }
+                // Tapping the shape opens the result.
+                row-touch := TouchArea {
+                    width: parent.width;
+                    height: parent.height;
+                    mouse-cursor: pointer;
+                    clicked => { root.open(row.index); }
+                }
             }
 
-            // Glyph in the 48 px slot, centered on the same axis as the Back arrow.
-            Path {
-                x: root.content-start-x + (Theme.touch-target - root.icon-size) / 2;
-                y: (parent.height - root.icon-size) / 2;
-                width: root.icon-size;
-                height: root.icon-size;
-                viewbox-width: 24;
-                viewbox-height: 24;
-                commands: row.kind == 0 ? root.folder-path : root.track-path;
-                fill: Theme.on-surface-variant;
+            // Filled circle in the 48 px slot, centered on the same axis as the Back arrow (D58, D126).
+            row-circle := Rectangle {
+                x: root.content-start-x + (Theme.touch-target - root.row-circle) / 2;
+                y: (parent.height - root.row-circle) / 2;
+                width: root.row-circle;
+                height: root.row-circle;
+                border-radius: root.row-circle / 2;
+                background: Theme.secondary-container;
+
+                // Glyph, 24 px centered in the circle.
+                row-glyph := Path {
+                    x: (parent.width - root.icon-size) / 2;
+                    y: (parent.height - root.icon-size) / 2;
+                    width: root.icon-size;
+                    height: root.icon-size;
+                    viewbox-width: 24;
+                    viewbox-height: 24;
+                    commands: row.kind == 0 ? root.folder-path : root.track-path;
+                    fill: Theme.on-secondary-container;
+                }
             }
 
             // Title and optional parent line, starting at the same inset as the query text (D58).
@@ -491,13 +532,6 @@ export component SearchPage inherits Rectangle {
                         }
                     }
                 }
-            }
-            // Tapping the whole row opens the result.
-            row-touch := TouchArea {
-                width: parent.width;
-                height: parent.height;
-                mouse-cursor: pointer;
-                clicked => { root.open(row.index); }
             }
         }
     }

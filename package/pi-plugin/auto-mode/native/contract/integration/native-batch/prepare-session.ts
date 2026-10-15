@@ -25,6 +25,7 @@ import {
   promptEmitterSource
 } from './prompt-source.ts';
 import {promptBuilderSource} from './builder-source.ts';
+import {eventRunnerSource} from './event-runner-source.ts';
 import {
   handlerMessageSource,
   handlerProviderSource
@@ -124,6 +125,13 @@ const contextObserverUrl=new URL(
   import.meta.url
 ).href;
 /**
+ Original event observations share the captured native manager input pool.
+ */
+const eventObserverUrl=new URL(
+  'event-observer.ts',
+  import.meta.url
+).href;
+/**
  Qualified native manager edits are rebased onto the original module dependency graph.
  */
 const manager=imports({
@@ -136,7 +144,8 @@ const manager=imports({
     [publicationUrl]:publicationUrl,
     [loadedInputsUrl]:loadedInputsUrl,
     [queryObserverUrl]:queryObserverUrl,
-    [contextObserverUrl]:contextObserverUrl
+    [contextObserverUrl]:contextObserverUrl,
+    [eventObserverUrl]:eventObserverUrl
   }
 });
 /**
@@ -203,6 +212,7 @@ const session=`import {assertNativeAgentStateAssignment} from "./agent.mjs";\nim
   +`import {createRunPromptOwner} from ${helperUrl('../../collector/run-prompt-custody-v3/owner.mjs')};\n`
   +`import {copyPromptOptions} from ${helperUrl('../../collector/base-prompt-custody-v2/copy.mjs')};\n`
   +`import {emitOwnedBeforeAgentStart,emitOwnedContext,emitOwnedInput} from "./run-emitter.mjs";\n`
+  +`import {readNativeRunnerDomainEvents} from "./event-runner.mjs";\n`
   +`import {buildOwnedSystemPromptSections} from "./prompt-builder.mjs";\n${sessionCore}`;
 /**
  The original extension runner supplies native handler traversal and context construction.
@@ -210,6 +220,29 @@ const session=`import {assertNativeAgentStateAssignment} from "./agent.mjs";\nim
 const runnerPath=join(
   sdk,
   'dist/core/extensions/runner.js'
+);
+/**
+ Native dispatch and observer publication retain the same original runner class.
+ */
+const eventRunner=imports({
+  source:eventRunnerSource(await readFile(
+    runnerPath,
+    'utf8'
+  )),
+  path:runnerPath,
+  overrides:{'./session-manager.mjs':pathToFileURL(join(
+    output,
+    'session-manager.mjs'
+  ))
+    .href}
+});
+await writeFile(
+  join(
+    output,
+    'event-runner.mjs'
+  ),
+  eventRunner,
+  {mode:0o600}
 );
 /**
  Generated handlers retain original invocation, error, input, and context behavior.
