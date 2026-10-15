@@ -451,3 +451,42 @@ fn the_jitter_source_gives_varying_numbers_in_the_unit_interval() {
         "{samples:?}"
     );
 }
+
+/// A lock that another owner replaced between the read and the rename is put back, and nothing is removed.
+#[cfg(unix)]
+#[test]
+fn a_replacement_that_raced_the_rename_is_put_back() {
+    let root: PathBuf = fixture("lock-replaced-in-race");
+    let lock: PathBuf = root.join("settlement.lock");
+    publish(lock.as_path(), DEAD_OWNER);
+    let removed = remove_lock_of_with(lock.as_path(), "dead-token", |from, to| {
+        // The replacement lands after the owner was read and before the lock is moved away.
+        let record: PathBuf = from.join(OWNER_RECORD_NAME);
+        std::fs::remove_file(record.as_path())?;
+        crate::private_storage::write_private_file(
+            record.as_path(),
+            DEAD_OWNER.replace("dead-token", "usurper").as_bytes(),
+        )
+        .map_err(|error| return std::io::Error::other(error.to_string()))?;
+        return std::fs::rename(from, to);
+    });
+    assert!(!removed.expect("not ours to remove"));
+    let restored: String = std::fs::read_to_string(lock.join(OWNER_RECORD_NAME)).expect("restored record");
+    assert!(restored.contains("usurper"), "{restored}");
+    remove(root.as_path());
+}
+
+/// A lock that names another owner is not even moved: the rename is never asked for.
+#[cfg(unix)]
+#[test]
+fn a_lock_of_another_owner_is_never_moved() {
+    let root: PathBuf = fixture("lock-other-owner-unmoved");
+    let lock: PathBuf = root.join("settlement.lock");
+    publish(lock.as_path(), DEAD_OWNER);
+    let outcome = remove_lock_of_with(lock.as_path(), "someone-else", |_from, _to| {
+        return Err(std::io::Error::other("the rename must not be asked for"));
+    });
+    assert!(!outcome.expect("checked without moving"));
+    assert!(lock.join(OWNER_RECORD_NAME).exists());
+    remove(root.as_path());
+}
