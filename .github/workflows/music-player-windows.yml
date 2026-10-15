@@ -226,7 +226,7 @@ jobs:
           ~/.cargo/registry/cache
           ~/.cargo/git/db
           package/music-player/desktop-app/target
-        key: mp-win-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.name }}-${{ matrix.target }}-${{ steps.toolchain.outputs.version }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock', 'package/music-player/truepeak-core/Cargo.lock') }}-probe
+        key: mp-win-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.name }}-${{ matrix.target }}-${{ steps.toolchain.outputs.version }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock', 'package/music-player/truepeak-core/Cargo.lock') }}
         restore-keys: |
           mp-win-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.name }}-${{ matrix.target }}-${{ steps.toolchain.outputs.version }}-
 
