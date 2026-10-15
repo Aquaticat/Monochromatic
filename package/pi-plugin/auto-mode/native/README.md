@@ -31,6 +31,13 @@ original value and failure identity,
 listener detachment,
 and failures inside result delivery or cleanup.
 Closed or failed groups retain outcomes without being relabeled as successfully settled transport.
+`test:native:group-failures` checks occurrence identity and order,
+first-failure publication before rejection and cancellation,
+already-recorded token propagation,
+and signal caching after callback completion.
+Reentrant cancellation records its inner observation before the outer observation reaches the cache.
+A throwing rejection callback leaves the primary failure retained without publishing cancellation or that cache entry.
+The internal `RecordedGroupFailureError` token retains the original caught value in its occurrence.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 

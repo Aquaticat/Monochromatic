@@ -2418,10 +2418,35 @@ The fixture now declares pending rejection at the native factory boundary,
 preserving receiver observations without a positional declaration or variable function expression.
 The three consumer files have zero focused diagnostics in
 `${HOME}/temp/agent/pi-group-failure-tests-format-third-20261015.log`.
-Final rebuild and consumer verification,
-original-body replay,
-the explicit diagnostic-category contrast,
-and omission controls remain pending.
+`875e78efe6` records final callback formatting.
+The rebuilt native artifact,
+package type check,
+and both direct consumer suites pass in
+`${HOME}/temp/agent/pi-group-failures-final-20261015.log`.
+Both suites also pass against the saved original failure helper in
+`${HOME}/temp/agent/pi-group-failures-original-20261015.log`.
+The original helper has SHA-256
+`2a539ec0ddb66c0d393eddc1aebbf29771b4be345f70e206e04e531507c6556b`.
+All twenty process-local changes fail their consumer checks;
+all three built artifact hashes remain unchanged in `typed-group-failure-omissions.json`.
+Controls cover occurrence freezing and identity,
+history and primary publication,
+closed/settled guards,
+rejection and cancellation order,
+cached signals,
+and already-recorded boundary propagation.
+An added rejection for uncancelled signals also fails the original consumer contract.
+Six original/current domain scenarios preserve public outcomes and native execution counts,
+with a permission/prohibition positive control,
+in `typed-group-failure-comparison.json`.
+`typed-group-failure-category.json` directly measures the intentional change from
+`Error`/`RecordedFailure` to `RecordedGroupFailureError`/`RecordedGroupFailureError`
+for name/constructor,
+while verifying the unchanged message and underlying caught-value identity.
+The failure owner is qualified at these tested boundaries.
+The full maintained lint recount remains pending.
+Continue original collector composition,
+then reached-program runtime and runner composition.
 
 Auto-pushing `6973251c83` was separately rejected with `GH006` and no detailed requirement.
 The original local signature verified,
