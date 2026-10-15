@@ -2085,10 +2085,26 @@ fixture declaration checking reports `TS9010`,
 `TS9013`,
 and `TS9016` under isolated declarations.
 `3378daf2f3` supplies explicit independent fixture contracts.
-Final consumer verification,
-saved original comparison,
-guard controls,
-and the maintained lint recount remain pending.
+`e1cfc446d9`,
+`7a6fa5d69b`,
+and `701b7c260e` finish independently observable call fixtures and formatting.
+Final rebuild,
+direct consumers,
+and type checking pass in
+`${HOME}/temp/agent/pi-judgment-api-tests-final-20261015.log`.
+The same consumers pass against original saved guard and public-assembly statements in
+`${HOME}/temp/agent/pi-judgment-api-original-20261015.log`.
+Six original and extracted constructor scenarios match public domain outcomes and native execution counts,
+with a permission/prohibition positive control,
+in `typed-api-constructor-comparison.json`.
+All 64 process-local call-boundary changes cause failures;
+all four built artifact hashes remain unchanged in `typed-api-omissions.json`.
+The full maintained recount covers 669 files and 486 rules:
+zero errors and 11243 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-api-lint-20261015.log`.
+All eight public API implementation and consumer files have zero diagnostics;
+the remaining constructor composition has 91 warnings.
+Public API extraction is qualified at these tested boundaries.
 Constructor composition remains pending beyond public assembly.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
