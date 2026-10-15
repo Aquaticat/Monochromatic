@@ -16,8 +16,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 758 files and 486 rules,
-with zero errors and 10568 warnings.
+The latest complete lint report covers 764 files and 486 rules,
+with zero errors and 10511 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -39,8 +39,10 @@ and deliberate omission controls.
 Reached-program runtime is also qualified.
 Continue reached-program runner contracts.
 The collector implementation and new consumers have zero diagnostics in the full report.
-The latest report has zero runtime or extracted runner-binding diagnostics,
-and retains 207 warnings in `program-runner.mjs`.
+The latest report has zero runtime,
+extracted runner-binding,
+or extracted runner-event diagnostics,
+and retains 150 warnings in `program-runner.mjs`.
 Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
 No current user-input blocker exists.
 
@@ -235,7 +237,14 @@ The original runner is saved as `program-runner-before-events-types.mjs`;
 the original callbacks are saved as `program-runner-events-original-methods.txt`.
 These artifacts are retained under
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
-The complete maintained lint recount remains pending.
+The complete maintained lint recount has zero errors and 10511 warnings across 764 files and 486 rules.
+All six event implementation and consumer files have zero diagnostics.
+The strict package-wide warning gate remains failing.
+Final consumer tests and package type checking pass in
+`${HOME}/temp/agent/pi-runner-events-final-consumers-20261015.log`.
+The complete report is
+`${HOME}/temp/agent/pi-maintained-typed-runner-events-final-lint-20261015.log`.
+Continue reached-group execution and native queue ownership.
 
 ## Tool-call scope correction
 
