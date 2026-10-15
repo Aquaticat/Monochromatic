@@ -63,6 +63,9 @@ await describe({ name: '', children: [
     assert.deepEqual(admission.nativeSignals, fixture.input.group.members.map(function signal(member) { 
       return member.signal; 
     }));
+    assert.ok(Array.isArray(admission.nativeSignals));
+    assert.equal(admission.nativeSignals[0], fixture.input.group.members[0]?.signal);
+    assert.equal(admission.nativeSignals[1], fixture.input.group.members[1]?.signal);
     assert.equal(dispatch.memberForExecution('parent/2'), fixture.control.handles[1]);
     assert.equal(dispatch.memberForExecution('parent/1'), fixture.control.handles[0]);
     assert.throws(function unknownMember() { 

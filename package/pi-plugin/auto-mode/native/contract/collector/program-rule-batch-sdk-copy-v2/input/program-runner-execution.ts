@@ -107,7 +107,10 @@ export async function executeReachedProgramGroup({
       runner,
       judgment,
       group,
-      bound: { ordinals, slots },
+      bound: {
+        ordinals,
+        slots
+      },
       assertParentCurrent,
       parentId,
       assessment
