@@ -242,13 +242,12 @@ before saying it matches, QAB):
   macOS x64 is culled by the human's decision. Gate: nothing real is released without asking the human first (releases
   are immutable). The Alpine (task 95) and Windows (task 96) agents write the artifact names and job steps that must
   be forwarded to this agent when they report.
-- Task 93, auto-play on select (D129), branch `feat/auto-play-on-select`, worktree `music-player-aps`: built and
-  reported on both platforms (desktop 1444 passed, Android 1268 tests, real runs on both). Main, including D130, was
-  merged into it at `2285fca73c`; the agent was told to rerun the Android verification fresh on that head and retake
-  `android-inner-settings-dark.png` from the merged build (both branches changed it). Then I merge it: rerun
-  verification, view the four Settings PNGs, ff-merge, push. Open to the human's veto: the setting's name, the
-  "Playback" group, the supporting lines, and the Search action label ("Select track" or "Play track"). Known and
-  left alone: `desktop-e2e` `lint:oxlint` has errors in files this branch did not touch (`wide-select.ts` and others).
+- Task 93, auto-play on select (D129): MERGED to `main` at `9a356efd02` on 2026-10-15. Desktop: 1444 passed, 1
+  skipped, clippy and slint lint clean (agent's run on the pre-merge head; the merges since touched no desktop
+  file). Android: I reran detekt, unit tests (1287, none failed, the test task executed) and lint fresh on the merged
+  head. Real runs on both platforms were the agent's (desktop in the nested compositor, Android on an emulator); I
+  viewed the four Settings PNGs. Open to the human's veto: the setting's name, the "Playback" group, the supporting
+  lines, and the Search action label ("Select track" or "Play track"). Known and left alone: `desktop-e2e` `lint:oxlint` has errors in files this branch did not touch (`wide-select.ts` and others).
 - Task 94, Android row text alignment (D130): MERGED to `main` at `3e7d03e7c2` on 2026-10-15 (detekt, 1249 unit tests
   and lint passed fresh on the merged head; I viewed the three retaken PNGs). The human's ruling: beside the crease
   only text dodges it; fills, state layers and rings may reach the crease and the pane edge; text columns win. Two
