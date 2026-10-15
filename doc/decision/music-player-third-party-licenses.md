@@ -155,6 +155,10 @@ and why they are not the default:
   inside `androidx.concurrent:concurrent-futures-ktx`) would be lost.
   It found that one NOTICE file among 84 library archives;
   a scan of the archives in the Gradle cache found the same.
+  That scan covered all 121 libraries licensee lists:
+  83 have their own `.aar` or `.jar`,
+  and 38 are Kotlin Multiplatform modules whose Android files are the `-android` or `-jvm` variant,
+  each opened together with the `classes.jar` and `libs/*.jar` inside every `.aar`.
 - One script writes both notice files:
   `package/music-player/desktop-app/bin/third-party-notices.mjs`,
   run by the `notices` mise task of each app.
