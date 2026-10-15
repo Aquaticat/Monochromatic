@@ -1534,8 +1534,13 @@ All five independent consumer files have zero focused lint diagnostics in
 The saved original remains
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/judgment-instructions-before-types.mjs`,
 with SHA-256 `202e8affd3aedada221270f4c8d5b4ac9f91844dec57cb32fa53107910db4559`.
-Direct baseline comparison,
-guard-removal controls,
+All three committed instruction consumer suites also pass against the saved original implementation in
+`${HOME}/temp/agent/pi-instruction-baseline-20261015.log`.
+A process-local request-identity guard omission makes the built consumer fail its expected rejection assertion in
+`${HOME}/temp/agent/pi-instruction-positive-control-20261015.log`;
+the test reaches the changed instruction resolver.
+Direct baseline trace comparison,
+the remaining guard-removal controls,
 and the complete maintained lint recount remain required before qualifying this port
 and continuing to program ownership.
 The handover,
