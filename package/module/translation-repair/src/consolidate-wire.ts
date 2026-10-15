@@ -4,6 +4,7 @@ import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 
 import type { SliceSyntax, } from './chunk-document.ts';
 import { renderConsolidationBrief, } from './consolidate-brief.ts';
+import { QUOTED_WORDS_REMINDER, } from './english-usage-policy.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import type { LaneContestBallot, } from './lane-contest-wire.ts';
 import { selectFence, } from './prompt-fence.ts';
@@ -78,7 +79,7 @@ Rules:
 - You may take one clause from one candidate and the next from the other. Neither candidate has to be right about the whole passage, and that is the point of this call.
 - Write English, not a repair of English. The result must read as prose a person wrote, carrying the original's voice: its warmth, grief, humour or anger. A stiff literal rendering that loses the feeling is not a good rendering.
 - KEEP THE SHAPE OF THE PAGE. Every block of the ARCHIVE RENDERING appears in your rendering, of the same kind and in the same order, carrying the same block quotes, list markers, headings, footnote markers and links. Where the Chinese is shaped differently, the page's shape wins: a passage the archive sets as a block quote followed by an attribution line stays a block quote followed by an attribution line. ADD A BLOCK ONLY to carry something the ORIGINAL has and the archive left out.
-- ONE TENSE, IN THIS ORDER. The Chinese marks no tense, so the English decides: first the past tense the house rule sets for the life of a person who has died (a line of the life the ARCHIVE RENDERING tells in the present is moved to the past, and that move is a correction the house rule asks for, not a change of your own); then the tense the page holds for what is still true as it is read. Moving a passage the archive tells in the past into the present is a change you made. Hold one tense throughout, and never let one sentence start in one tense and finish in another.
+- ONE TENSE, IN THIS ORDER. The Chinese marks no tense, so the English decides: first the past tense the house rule sets for the life of a person who has died (a line of the life the ARCHIVE RENDERING tells in the present is moved to the past, and that move is a correction the house rule asks for, not a change of your own); then the tense the page holds for what is still true as it is read. Moving a passage the archive tells in the past into the present is a change you made. Hold one tense throughout, and never let one sentence start in one tense and finish in another. ${QUOTED_WORDS_REMINDER}
 
 THE JUDGE FINDINGS ARE CLAIMS, NOT FACTS. Other models wrote them about these two candidates, and they can be wrong. Check each one against the ORIGINAL before you act on it, and ignore any the ORIGINAL does not support. A finding you obey that the original does not support is a defect you introduced yourself.
 

@@ -357,6 +357,12 @@ export function applyPatchOperations(
         replacement: operation.newText,
         replaced: envelope.baseText,
         convention: targetText,
+        // The region is a fragment of the slice, so its prose is the slice's with the fragment in place.
+        landing: {
+          slice: targetText,
+          start: envelope.startOffset,
+          end: envelope.endOffset,
+        },
       },),
       // No quote nests deeper than its context allows (TianqiChen66621
       // slice 16, `quote-depth-clamp.ts`), clamped here so every gate this

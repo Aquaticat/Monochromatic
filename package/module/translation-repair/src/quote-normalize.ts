@@ -1,4 +1,8 @@
-import { proseMask, } from './typography-prose-mask.ts';
+import {
+  noteRefusedMask,
+  textNamed,
+} from './typography-mask-refusal.ts';
+import { proseMaskReading, } from './typography-prose-mask.ts';
 
 //region Quote normalization
 // Models copy quote evidence with ASCII punctuation while the corpus uses
@@ -222,9 +226,18 @@ export function straightenQuotes({ text, }: { readonly text: string; },): string
  */
 export function straightenProseQuotes({ text, }: { readonly text: string; },): string {
   /**
-   Which units are prose rather than code or markup.
+   Which units are prose rather than code or markup, and whether the grammar refused the text.
    */
-  const mask = proseMask({ text, },);
+  const {
+    mask,
+    refused,
+  } = proseMaskReading({ text, },);
+  if (refused) {
+    noteRefusedMask({
+      reader: 'straightenProseQuotes',
+      name: textNamed({ text, },),
+    },);
+  }
   /**
    Text with every quote straightened, the same length as the input.
    */

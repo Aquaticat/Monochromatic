@@ -30,11 +30,18 @@
  and the same find, rerun for this change, finds none since 2026-09-28T19:38Z
  against a control of 494.
 
+ Version two (n161, 2026-10-15): the house rule the sheet carries gained the tense of quoted words (words quoted as someone wrote
+ or said them keep the speaker's tense), so a rendering stored under one was chosen under the old rule and a title that quotes a
+ line of someone's own words may hold it in the past. The key hashes the titles, the identity and the roster and not the sheet, so a
+ record written under the old sheet would be served under the new one, and the find that would let the change ride inside one (no
+ slice-cache file written since the change, beside a control that finds files) was not made, since no runs directory is read in this
+ round. The pairing sheets carry no house rule, so the pairing version does not move.
+
  @example
  ```ts
  const material = JSON.stringify({ version: PAGE_TITLE_CACHE_VERSION, source, titles, identity, roster, },);
  ```
  */
-export const PAGE_TITLE_CACHE_VERSION = 1;
+export const PAGE_TITLE_CACHE_VERSION = 2;
 
 //endregion Page title cache version

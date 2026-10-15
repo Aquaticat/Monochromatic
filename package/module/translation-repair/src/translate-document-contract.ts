@@ -288,8 +288,19 @@ import type { SliceReplacement, } from './splice-slices.ts';
  at all. A slate collapsed or a candidate refused under 15 may be one the new reading keeps apart or accepts. The check that
  would let the change ride inside 15 could not be made with a control (see version 35 of the repair slice key), so the number
  moves.
+
+ Version 17 reads more of the page with the same mask (n159): the text of a shortcut or collapsed reference and the text of a
+ link whose label is an address are no prose, so `collapseKey` keeps the marks in them, and the guillemet floor refuses a
+ candidate the grammar refuses when it carries a guillemet, since no parse tells its prose from code. A slate collapsed or a
+ candidate accepted under 16 may be one the new reading keeps apart or refuses. The check that would let the change ride inside
+ 16 was not made, since no runs directory is read in this round, so the number moves.
+
+ Version 17 also covers the tense of quoted words (n161, TianqiChen666): the house rule and the writer's tense line now say that
+ words quoted as someone wrote or said them keep the speaker's tense, so a writer's answer stored under 16 may hold a quotation
+ moved into the past. The key hashes the version, the roster and the texts and not the sheet, so a record written under the old
+ sheet would be served under the new one; no record has been written at 17, so this rides inside the number n159 set.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 16;
+export const TRANSLATE_SLICE_CACHE_VERSION = 17;
 
 /**
  Models the translate lane seats.

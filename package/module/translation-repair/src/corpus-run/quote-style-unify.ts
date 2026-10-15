@@ -1,8 +1,13 @@
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import { restoreTypography, } from '../restore-typography.ts';
+import { pageDefinitionsOf, } from '../page-definitions.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
-import { proseMask, } from '../typography-prose-mask.ts';
+import { noteRefusedMask, } from '../typography-mask-refusal.ts';
+import {
+  type ProseMaskReading,
+  proseMaskReading,
+} from '../typography-prose-mask.ts';
 import {
   pageTextBySlice,
   pageTextOf,
@@ -23,6 +28,15 @@ import {
 // slice through the same restoration, so tags, code, unbalanced doubles and
 // the ellipsis stay as they are. The front matter and a span sealed as the
 // English original stand aside, as for every whole-page pass.
+//
+// THE PAGE IS READ ONCE. Each slice's prose mask is read one time with the page's definitions (`page-definitions.ts`), so a
+// reference whose definition stands in another slice is no prose at either end, and the tally and the rewrite use that one
+// reading. A slice the grammar refuses has no prose and is named in a warning (`typography-mask-refusal.ts`).
+
+/**
+ The name this pass gives in the warning of a slice the grammar refuses.
+ */
+const READER = 'unifyQuoteStyle';
 
 /**
  Straight double quote.
@@ -71,26 +85,27 @@ const EMPTY_TALLY: QuoteTally = {
 
  @param text - one slice's text as the page carries it
 
+ @param mask - which units of the text are prose, read once by the caller for the tally and the rewrite
+
  @returns Tally with the text's marks added
 
  @example
  ```ts
- tallyQuotes({ tally: EMPTY_TALLY, text: 'The cat said "meow".', },).straightDouble; // 2
+ const text = 'The cat said "meow".';
+ tallyQuotes({ tally: EMPTY_TALLY, text, mask: proseMaskReading({ text, },).mask, },).straightDouble; // 2
  ```
  */
 function tallyQuotes(
   {
     tally,
     text,
+    mask,
   }: {
     readonly tally: QuoteTally;
     readonly text: string;
+    readonly mask: readonly boolean[];
   },
 ): QuoteTally {
-  /**
-   Which units of the text are prose.
-   */
-  const mask = proseMask({ text, },);
   // The mask holds one flag per UTF-16 unit, so the text is read by unit: a
   // handle in astral letters would shift a code-point index off the mask.
   return mask.reduce(
@@ -132,37 +147,181 @@ function tallyQuotes(
 }
 
 /**
+ What the page pass read of the page's slices once: the prose mask of each carried text, and the page's definitions the masks were
+ read with.
+ */
+type PageReadings = {
+  /**
+   The reading of each carried text, by the text.
+   */
+  readonly masks: ReadonlyMap<string, ProseMaskReading>;
+
+  /**
+   The page's link and footnote definitions, which a reference in a slice resolves against whichever slice holds the definition.
+   */
+  readonly definitions: string;
+};
+
+/**
+ The reading of a text the page carries: the one made when the page was read, or a new one when the text was not among them.
+
+ @param page - what the page pass read of the slices
+
+ @param text - the text of a slice as the page carries it
+
+ @returns The text's prose mask and whether the grammar refused it
+
+ @example
+ ```ts
+ const { mask, } = readingOf({ page, text: 'The cat said "meow".', },);
+ ```
+ */
+function readingOf(
+  {
+    page,
+    text,
+  }: {
+    readonly page: PageReadings;
+    readonly text: string;
+  },
+): ProseMaskReading {
+  /**
+   What the page pass read of the slices.
+   */
+  const {
+    masks,
+    definitions,
+  } = page;
+  /**
+   The reading made when the page was read, none for a text the page did not carry then.
+   */
+  const known = masks.get(text,);
+  if (known !== undefined)
+    return known;
+  return proseMaskReading({
+    text,
+    definitions,
+  },);
+}
+
+/**
+ Reads the prose mask of every body slice the page carries once, with the page's definitions, and warns of each slice the grammar
+ refuses.
+
+ @param slices - prepared pairs
+
+ @param carried - text the page carries per slice
+
+ @returns The readings by carried text, and the definitions they were read with
+
+ @example
+ ```ts
+ const page = readPage({ slices, carried, },);
+ ```
+ */
+function readPage(
+  {
+    slices,
+    carried,
+  }: {
+    readonly slices: readonly ChunkPair[];
+    readonly carried: ReturnType<typeof pageTextBySlice>;
+  },
+): PageReadings {
+  /**
+   The body slices and the text the page carries at each.
+   */
+  const bodies = slices
+    .filter(function isBody(slice,): boolean {
+      return slice.syntax !== 'front-matter';
+    },)
+    .map(function bodyOf(slice,): {
+      readonly sliceIndex: number;
+      readonly text: string;
+    } {
+      return {
+        sliceIndex: slice.target
+          .sliceIndex,
+        text: pageTextOf({
+          pageText: carried,
+          sliceIndex: slice.target
+            .sliceIndex,
+        },),
+      };
+    },);
+  /**
+   The page's definitions, from the slices that carry text.
+   */
+  const definitions = pageDefinitionsOf({
+    pageText: bodies
+      .map(function textOf({ text, },): string {
+        return text;
+      },)
+      .join('\n\n',),
+  },);
+  /**
+   The readings, mutated only inside this function.
+   */
+  const masks = new Map<string, ProseMaskReading>();
+  for (const {
+    sliceIndex,
+    text,
+  } of bodies) {
+    if (masks.has(text,))
+      continue;
+    /**
+     The one reading of this slice's text.
+     */
+    const reading = proseMaskReading({
+      text,
+      definitions,
+    },);
+    masks.set(
+      text,
+      reading,
+    );
+    if (reading.refused) {
+      noteRefusedMask({
+        reader: READER,
+        name: `slice ${String(sliceIndex,)}`,
+      },);
+    }
+  }
+  return {
+    masks,
+    definitions,
+  };
+}
+
+/**
  The curly marks the page writes more often than their straight forms, as a
  convention the typography restoration reads; empty where neither mark is
  curly on most of the page.
 
  @param slices - prepared pairs
 
- @param replacements - what the page would write per slice
+ @param carried - text the page carries per slice
+
+ @param page - the prose mask of each carried text, read once, with the page's definitions
 
  @returns Convention text holding the curly marks the page mostly uses
 
  @example
  ```ts
- const convention = pageQuoteConvention({ slices, replacements, },);
+ const convention = pageQuoteConvention({ slices, carried, page, },);
  ```
  */
 function pageQuoteConvention(
   {
     slices,
-    replacements,
+    carried,
+    page,
   }: {
     readonly slices: readonly ChunkPair[];
-    readonly replacements: readonly SliceReplacement[];
+    readonly carried: ReturnType<typeof pageTextBySlice>;
+    readonly page: PageReadings;
   },
 ): string {
-  /**
-   Text the page carries per slice.
-   */
-  const carried = pageTextBySlice({
-    slices,
-    replacements,
-  },);
   /**
    Every prose quote mark on the page outside the front matter.
    */
@@ -175,13 +334,25 @@ function pageQuoteConvention(
         counted,
         slice,
       ): QuoteTally {
+        /**
+         The text the page carries at the slice.
+         */
+        const text = pageTextOf({
+          pageText: carried,
+          sliceIndex: slice.target
+            .sliceIndex,
+        },);
+        /**
+         The reading of the text, whose mask the tally reads.
+         */
+        const { mask, } = readingOf({
+          page,
+          text,
+        },);
         return tallyQuotes({
           tally: counted,
-          text: pageTextOf({
-            pageText: carried,
-            sliceIndex: slice.target
-              .sliceIndex,
-          },),
+          text,
+          mask,
         },);
       },
       EMPTY_TALLY,
@@ -272,11 +443,26 @@ export function unifyQuoteStyle(
   readonly findings: readonly string[];
 } {
   /**
+   Text the page carries per slice.
+   */
+  const carried = pageTextBySlice({
+    slices,
+    replacements,
+  },);
+  /**
+   What the page's slices read once: their prose masks and the page's definitions.
+   */
+  const page = readPage({
+    slices,
+    carried,
+  },);
+  /**
    Curly marks the page mostly writes.
    */
   const convention = pageQuoteConvention({
     slices,
-    replacements,
+    carried,
+    page,
   },);
   if (convention === '') {
     return {
@@ -297,6 +483,10 @@ export function unifyQuoteStyle(
         replacement: text,
         replaced: '',
         convention,
+        reading: readingOf({
+          page,
+          text,
+        },),
       },);
       if (curled === text) {
         return {

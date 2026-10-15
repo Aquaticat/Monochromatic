@@ -9,6 +9,7 @@ import {
 import { singleMarkAt, } from './consistency-loose-marks.ts';
 import {
   CLOSING_CURLY_DOUBLE,
+  destinationEndOf,
   type DestinationStop,
   EMPHASIS_CHARACTERS,
   HORIZONTAL_SPACE,
@@ -409,43 +410,6 @@ export function joinedMarksOf(
 }
 
 /**
- Where the destination of a link ends, when it does: the offset after the closing round bracket of a `(` at an offset, read
- only for a destination with no white space in it.
-
- @param text - the English
-
- @param open - offset of the `(`
-
- @returns The offset after the `)` as a list of one, none for a destination that holds white space or is never closed
-
- @example
- ```ts
- const [after,] = destinationEndOf({ text: '[a](b)’', open: 3, },); // 6
- ```
- */
-function destinationEndOf(
-  {
-    text,
-    open,
-  }: {
-    readonly text: string;
-    readonly open: number;
-  },
-): readonly number[] {
-  for (let at = open + 1; at < text.length; at += 1) {
-    /**
-     The unit at the offset.
-     */
-    const unit = text.charAt(at,);
-    if (unit === ')')
-      return [at + 1,];
-    if (MARK_PARTING_SPACE.has(unit,))
-      return [];
-  }
-  return [];
-}
-
-/**
  Whether the unit at an offset is a unit of the refusal run beside a span, as one unit can say: one of the run's characters, any
  `*`, `_` or `~`, horizontal white space, a unit that no reader reads as a word, the backslash of an escape or of a hard break, or
  a single line break inside a paragraph or a setext heading. What stands beside a unit decides the markers of a quotation at the
@@ -464,11 +428,13 @@ function destinationEndOf(
 
  @param unread - the offsets of the units no reader reads as words (`unreadUnitsOf`)
 
+ @param definitions - the page's definitions, which the parse of the English reads references against; empty for English read alone
+
  @returns Whether the unit is part of the run
 
  @example
  ```ts
- const inRun = isRunUnit({ text: 'the *kittens*’', index: 12, characters: TRAILING_REFUSAL_RUN, unread: new Set(), },); // true
+ const inRun = isRunUnit({ text: 'the *kittens*’', index: 12, characters: TRAILING_REFUSAL_RUN, unread: new Set(), definitions: '', },); // true
  ```
  */
 function isRunUnit(
@@ -477,11 +443,13 @@ function isRunUnit(
     index,
     characters,
     unread,
+    definitions,
   }: {
     readonly text: string;
     readonly index: number;
     readonly characters: ReadonlySet<string>;
     readonly unread: ReadonlySet<number>;
+    readonly definitions: string;
   },
 ): boolean {
   /**
@@ -499,6 +467,7 @@ function isRunUnit(
     || isSingleBreakAt({
       text,
       index,
+      definitions,
     },);
 }
 
@@ -525,6 +494,8 @@ function isRunUnit(
 
  @param side - `after` to read forward from the span's end, `before` to read backward from its start
 
+ @param definitions - the page's definitions, which the parse of the English reads references against; empty for English read alone
+
  @returns The mark as the English writes it, as a list of one; none when the run is empty (the mark beside the span is then
  the caller's `singleMarkAt`), when a character that is no part of a run stands first, or when no single mark ends the run
 
@@ -538,10 +509,12 @@ export function markPastRunOf(
     text,
     at,
     side,
+    definitions = '',
   }: {
     readonly text: string;
     readonly at: number;
     readonly side: 'after' | 'before';
+    readonly definitions?: string;
   },
 ): readonly string[] {
   /**
@@ -555,7 +528,10 @@ export function markPastRunOf(
   /**
    The offsets of the units no reader reads as words, which a run steps over.
    */
-  const unread = unreadUnitsOf({ english: text, },);
+  const unread = unreadUnitsOf({
+    english: text,
+    definitions,
+  },);
   /**
    Where the reading is: the offset of the unit asked about next, whether any unit of the run was stepped over, and, reading
    forward, how many quotation markers the line the reading is at the start of may still start with (none anywhere else).
@@ -620,6 +596,7 @@ export function markPastRunOf(
       index: reading.at,
       side,
       markers: reading.markers,
+      definitions,
     },);
     if (container !== undefined) {
       reading.at = container.at;
@@ -632,6 +609,7 @@ export function markPastRunOf(
       index: reading.at,
       characters,
       unread,
+      definitions,
     },))
       break;
     if (side === 'after') {
@@ -641,6 +619,7 @@ export function markPastRunOf(
       const [afterBreak,] = markersAfterBreakOf({
         text,
         index: reading.at,
+        definitions,
       },);
       reading.markers = afterBreak ?? (HORIZONTAL_SPACE.has(text.charAt(reading.at,),) ? reading.markers : 0);
     }

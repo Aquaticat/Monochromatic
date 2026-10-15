@@ -182,6 +182,7 @@ export function resolveReply(
         replacement: operation.newText,
         replaced: envelope.baseText,
         convention: repairedText,
+        definitions,
       },);
 
       /**

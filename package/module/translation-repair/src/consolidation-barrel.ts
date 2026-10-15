@@ -84,6 +84,7 @@ export {
   type PolishChoice,
   readConsolidationPolishBallot,
 } from './consolidation-polish-gate-wire.ts';
+export { POLISH_GATE_HOUSE_RULES, } from './polish-gate-house-rules.ts';
 export { NaturalnessCompletenessError, } from './naturalness-completeness-error.ts';
 export { NaturalnessRepairInterruptedError, } from './naturalness-repair-interrupted-error.ts';
 export {

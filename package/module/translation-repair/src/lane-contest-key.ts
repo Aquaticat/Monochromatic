@@ -172,8 +172,20 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  (no slice-cache record written after the change, shown beside a control that
  finds records) could not be made with a working control, so the number moves,
  as the slice, refine and translate versions moved for the same reader.
+
+ 8: the same validator refuses a candidate the grammar refuses when it carries a guillemet (n159, `translate-guillemets.ts`),
+ since no parse tells its prose from code, where it read the guillemet as no prose and let the candidate through; that changes
+ which lanes reach a contest. The check that would let the change ride inside 7 (no slice-cache record written after the
+ change, shown beside a control that finds records) was not made, since no runs directory is read in this round, so the
+ number moves, as the consolidate, slice, refine and translate versions move for the same readers.
+
+ 8 also covers the tense of quoted words (n161, TianqiChen666): the house rule and the judges' tense lines now say that words
+ quoted as someone wrote or said them keep the speaker's tense, so a ballot stored under 7 may hold a candidate that moved a
+ quotation into the past, or one that kept it, judged by the old rule. The key hashes the version, the shape of the run and the
+ texts and not the sheet, so a record written under the old sheet would be served under the new one; no record has been
+ written at 8, so this rides inside the number n159 set.
  */
-export const LANE_CONTEST_CACHE_VERSION = 7;
+export const LANE_CONTEST_CACHE_VERSION = 8;
 
 /**
  Everything about this run that changes what the judges are ASKED, folded into

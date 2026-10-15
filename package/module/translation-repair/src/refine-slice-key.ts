@@ -227,8 +227,19 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  a lone straight mark before markup opens a quotation and a quoted number pairs. The prompts, the roster and the key are the
  same, so a record written under 5 would be served with the old restored text. The check that would let the change ride inside 5
  could not be made with a control (see version 35 of the repair slice key), so the number moves.
+
+ Version 7 is a TYPOGRAPHY change of the same kind (n159, see version 36 of the repair slice key): the restoration reads the
+ context of a mark as the text a reader sees, pairs a quoted number by the reading that leaves fewer marks unpaired, and
+ resolves a reference against the page's definitions (`refine-stage-replies.ts` hands them on), so the rewrite a settlement
+ stores can differ from the one a record of 6 holds. The prompts, the roster and the key are the same. The check that would let
+ the change ride inside 6 was not made, since no runs directory is read in this round, so the number moves.
+
+ Version 7 also covers the tense of quoted words (n161, TianqiChen666): the house rule and the selection criterion about tense now
+ say that words quoted as someone wrote or said them keep the speaker's tense, so a rewrite or a selection stored under 6 may hold
+ a quotation moved into the past. The key does not hash the sheet, so a record written under the old sheet would be served under
+ the new one; no record has been written at 7, so this rides inside the number n159 set.
  */
-export const REFINE_CACHE_VERSION = 6;
+export const REFINE_CACHE_VERSION = 7;
 
 /**
  Everything about this run that changes what the voices are ASKED.

@@ -204,6 +204,49 @@ export function isLetterOrDigitOfAnyScript({ character, }: { readonly character:
   return LETTER_OR_DIGIT_OF_ANY_SCRIPT.test(character,);
 }
 
+/* oxlint-disable no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with no quantifier, so the test is bounded and cannot backtrack; the Unicode general categories and scripts have no string API */
+/**
+ A whole character that is a combining mark of any script, or a letter, mark or decimal digit of a script written without spaces
+ between words (Han, Hiragana, Katakana): the two groups apart, since the second is no part of a word a space ends.
+ */
+const MARK_OF_ANY_SCRIPT = /^\p{M}$/u;
+
+/**
+ A whole character of a script whose words are not set apart by spaces.
+ */
+const UNSPACED_SCRIPT_CHARACTER = /^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]$/u;
+/* oxlint-enable no-restricted-syntax/no-regex */
+
+/**
+ The characters that are letters by category but that the consistency pass reads as a single mark, never as a letter of a word:
+ the modifier letter apostrophe (`cats\u{02BC}` is a plural and a mark, as `cats’` is).
+ */
+const SINGLE_MARK_LETTERS: ReadonlySet<string> = new Set(['\u{02BC}',],);
+
+/**
+ Whether a whole character is a letter, a combining mark or a decimal digit of a script that sets its words apart by spaces, so a
+ run of them is one word to a reader: Latin, Cyrillic, Greek, Hebrew, Arabic, Hangul and the rest. Han, Hiragana and Katakana are
+ not, since a word of any other script beside them is a word of its own (`看kittens好`), as an apostrophe does not bind into Han
+ either (`quote-neighbours.ts`, class ninety-six).
+
+ @param character - one whole character, empty past an edge of a text
+
+ @returns Whether a word runs on through it
+
+ @example
+ ```ts
+ const letter = isSpacedScriptWordCharacter({ character: 'П', },); // true
+ const han = isSpacedScriptWordCharacter({ character: '猫', },); // false
+ ```
+ */
+export function isSpacedScriptWordCharacter({ character, }: { readonly character: string; },): boolean {
+  if (character === '')
+    return false;
+  if (SINGLE_MARK_LETTERS.has(character,) || UNSPACED_SCRIPT_CHARACTER.test(character,))
+    return false;
+  return isLetterOrDigitOfAnyScript({ character, },) || MARK_OF_ANY_SCRIPT.test(character,);
+}
+
 /**
  Whether one character is the neighbour of a mark that a word runs on through, as the consistency pass reads it:
  a character `continuesLatinWord` admits, or a whole character that is none of them as written but whose NFKC form

@@ -295,4 +295,41 @@ export function closingRunMarksOf(
   return marks;
 }
 
+/**
+ Where the destination of a link ends, when it does: the offset after the closing round bracket of a `(` at an offset, read
+ only for a destination with no white space in it.
+
+ @param text - the English
+
+ @param open - offset of the `(`
+
+ @returns The offset after the `)` as a list of one, none for a destination that holds white space or is never closed
+
+ @example
+ ```ts
+ const [after,] = destinationEndOf({ text: '[a](b)’', open: 3, },); // 6
+ ```
+ */
+export function destinationEndOf(
+  {
+    text,
+    open,
+  }: {
+    readonly text: string;
+    readonly open: number;
+  },
+): readonly number[] {
+  for (let at = open + 1; at < text.length; at += 1) {
+    /**
+     The unit at the offset.
+     */
+    const unit = text.charAt(at,);
+    if (unit === ')')
+      return [at + 1,];
+    if (MARK_PARTING_SPACE.has(unit,))
+      return [];
+  }
+  return [];
+}
+
 //endregion Consistency markup runs

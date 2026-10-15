@@ -1,5 +1,6 @@
 import type { Nodes, } from 'mdast';
 
+import { withDefinitions, } from './page-definitions.ts';
 import { requireMdxRefusal, } from './parse-mdx.ts';
 import { parseSliceBody, } from './parse-slice-body.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
@@ -88,6 +89,11 @@ type RememberedTextBlocks = {
    The English the blocks were read from.
    */
   readonly english: string;
+
+  /**
+   The definitions it was read with.
+   */
+  readonly definitions: string;
 
   /**
    What the parse said of them.
@@ -276,19 +282,30 @@ function textBlockRangesOf({ root, }: { readonly root: TreeNode; },): readonly T
 
  @param english - the English of a slice
 
+ @param definitions - the page's definitions (`pageDefinitionsOf`), parsed after the English so a reference in it resolves; empty
+ for an English read alone
+
  @returns Whether the grammar refused it, and the blocks otherwise
 
  @example
  ```ts
- const { refused, ranges, } = textBlocksOf({ english: 'Fill the bowl.\n\nThen nap.', });
+ const { refused, ranges, } = textBlocksOf({ english: 'Fill the bowl.\n\nThen nap.', definitions: '', });
  ```
  */
-function textBlocksOf({ english, }: { readonly english: string; },): TextBlocksRead {
+function textBlocksOf(
+  {
+    english,
+    definitions,
+  }: {
+    readonly english: string;
+    readonly definitions: string;
+  },
+): TextBlocksRead {
   /**
-   The blocks read before for an equal English, none when there are none.
+   The blocks read before for an equal English and equal definitions, none when there are none.
    */
   const known = rememberedTextBlocks.find(function isSame(entry,): boolean {
-    return entry.english === english;
+    return (entry.english === english) && (entry.definitions === definitions);
   },);
   if (known !== undefined)
     return known.read;
@@ -302,7 +319,10 @@ function textBlocksOf({ english, }: { readonly english: string; },): TextBlocksR
        blank line, so the paragraph goes on through it (n156, W9).
        */
       const { root, } = parseSliceBody({
-        text: english,
+        text: withDefinitions({
+          text: english,
+          definitions,
+        },),
         invisibleLines: 'text',
       },);
       return {
@@ -321,6 +341,7 @@ function textBlocksOf({ english, }: { readonly english: string; },): TextBlocksR
   })();
   rememberedTextBlocks.push({
     english,
+    definitions,
     read,
   },);
   if (rememberedTextBlocks.length > REMEMBERED_TEXT_BLOCKS)
@@ -390,6 +411,9 @@ function blockHolding(
 
  @param index - the offset asked about, which is a line break in the one question the pass asks
 
+ @param definitions - the page's definitions (`pageDefinitionsOf`), parsed after the English so a reference in it resolves; empty
+ for an English read alone
+
  @returns Whether the offset is at or after the start of a block and before its end
 
  @example
@@ -401,9 +425,11 @@ export function insideParagraphAt(
   {
     english,
     index,
+    definitions = '',
   }: {
     readonly english: string;
     readonly index: number;
+    readonly definitions?: string;
   },
 ): boolean {
   /**
@@ -412,7 +438,10 @@ export function insideParagraphAt(
   const {
     refused,
     ranges,
-  } = textBlocksOf({ english, },);
+  } = textBlocksOf({
+    english,
+    definitions,
+  },);
   if (refused)
     return true;
   /**
@@ -435,6 +464,9 @@ export function insideParagraphAt(
 
  @param index - the offset asked about, which is a line break in the one question the pass asks
 
+ @param definitions - the page's definitions (`pageDefinitionsOf`), parsed after the English so a reference in it resolves; empty
+ for an English read alone
+
  @returns The number of quotations, `Number.POSITIVE_INFINITY` for an English the grammar refuses
 
  @example
@@ -446,9 +478,11 @@ export function quoteDepthAt(
   {
     english,
     index,
+    definitions = '',
   }: {
     readonly english: string;
     readonly index: number;
+    readonly definitions?: string;
   },
 ): number {
   /**
@@ -457,7 +491,10 @@ export function quoteDepthAt(
   const {
     refused,
     ranges,
-  } = textBlocksOf({ english, },);
+  } = textBlocksOf({
+    english,
+    definitions,
+  },);
   if (refused)
     return Number.POSITIVE_INFINITY;
   /**

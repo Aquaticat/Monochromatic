@@ -48,6 +48,10 @@ export {
   unreadUnitsOf,
 } from './consistency-unread-units.ts';
 export {
+  BOUNDARY_TAG_NAMES,
+  unitKindsOf,
+} from './consistency-shown-kinds.ts';
+export {
   insideParagraphAt,
   quoteDepthAt,
 } from './consistency-paragraphs.ts';

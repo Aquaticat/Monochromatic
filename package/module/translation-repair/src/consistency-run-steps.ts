@@ -107,6 +107,8 @@ export function startsEscape(
 
  @param index - offset of the unit asked about
 
+ @param definitions - the page's definitions, which the parse of the English reads references against; empty for English read alone
+
  @returns Whether the unit is a line break and a paragraph or the text of a heading holds it; for an English the grammar refuses,
  whether the unit is a line break
 
@@ -120,15 +122,18 @@ export function isSingleBreakAt(
   {
     text,
     index,
+    definitions = '',
   }: {
     readonly text: string;
     readonly index: number;
+    readonly definitions?: string;
   },
 ): boolean {
   return BREAK_UNITS.has(text.charAt(index,),)
     && insideParagraphAt({
       english: text,
       index,
+      definitions,
     },);
 }
 
@@ -139,6 +144,8 @@ export function isSingleBreakAt(
  @param text - the English
 
  @param index - offset of the unit asked about
+
+ @param definitions - the page's definitions, which the parse of the English reads references against; empty for English read alone
 
  @returns The number as a list of one, none when the unit is no single line break; `Number.POSITIVE_INFINITY` for an English the
  grammar refuses
@@ -152,19 +159,23 @@ export function markersAfterBreakOf(
   {
     text,
     index,
+    definitions = '',
   }: {
     readonly text: string;
     readonly index: number;
+    readonly definitions?: string;
   },
 ): readonly number[] {
   return isSingleBreakAt({
     text,
     index,
+    definitions,
   },)
     ? [
       quoteDepthAt({
         english: text,
         index,
+        definitions,
       },),
     ]
     : [];
@@ -179,21 +190,25 @@ export function markersAfterBreakOf(
 
  @param index - offset of the unit asked about, which is the last marker of the run in reading order
 
+ @param definitions - the page's definitions, which the parse of the English reads references against; empty for English read alone
+
  @returns The offset of the last unit of the line break as a list of one, none when the unit is no `>`, the markers do not start a
  line, the line break is not a single one inside a block, or the block has fewer quotations than the run has markers
 
  @example
  ```ts
- const [at,] = lineBreakBeforeMarkersAt({ text: '> kittens\n> ’ bowl', index: 10, },); // 9
+ const [at,] = lineBreakBeforeMarkersAt({ text: '> kittens\n> ’ bowl', index: 10, definitions: '', },); // 9
  ```
  */
 function lineBreakBeforeMarkersAt(
   {
     text,
     index,
+    definitions,
   }: {
     readonly text: string;
     readonly index: number;
+    readonly definitions: string;
   },
 ): readonly number[] {
   if (text.charAt(index,) !== QUOTATION_MARKER)
@@ -216,11 +231,13 @@ function lineBreakBeforeMarkersAt(
   if (!isSingleBreakAt({
     text,
     index: reading.at,
+    definitions,
   },))
     return [];
   return (reading.markers <= quoteDepthAt({
     english: text,
     index: reading.at,
+    definitions,
   },))
     ? [reading.at,]
     : [];
@@ -390,6 +407,8 @@ export function ignorableWidthAt(
 
  @param markers - how many quotation markers the line the reading is on may still start with, which only a forward reading uses
 
+ @param definitions - the page's definitions, which the parse of the English reads references against; empty for English read alone
+
  @returns The offset the reading goes on at and the markers still allowed there, as a list of one, none when the unit is no
  marker of a container for that reading
 
@@ -404,11 +423,13 @@ export function containerStepAt(
     index,
     side,
     markers,
+    definitions = '',
   }: {
     readonly text: string;
     readonly index: number;
     readonly side: 'after' | 'before';
     readonly markers: number;
+    readonly definitions?: string;
   },
 ): readonly {
   readonly at: number;
@@ -430,6 +451,7 @@ export function containerStepAt(
   const [breakAt,] = lineBreakBeforeMarkersAt({
     text,
     index,
+    definitions,
   },);
   return (breakAt === undefined)
     ? []

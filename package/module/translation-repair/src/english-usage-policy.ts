@@ -77,4 +77,29 @@ export const CREDIT_BY_RULE: string =
 export const GAME_JARGON_RULE: string =
   'A word used as a game\'s or a hobby\'s jargon takes that game\'s English term, never its everyday sense (in UNO, 加 is stacking the draw cards on the next player, not adding).';
 
+/**
+ Quoted words keep their speaker's tense (TianqiChen666, 2026-10-15: her last message, written in her own present, shipped in the
+ past on two runs, because the tense rule listed what the person "said" among the life told in the past and had no exception for
+ words quoted as she wrote them). The full rule, as the house policy states it.
+
+ @example
+ ```ts
+ const bullet = `Tense is chosen once and held. ... ${QUOTED_WORDS_RULE}`;
+ ```
+ */
+export const QUOTED_WORDS_RULE: string =
+  'Words quoted as someone wrote or said them (a letter, a message, a quoted line, a blockquote of their words) keep the tense the speaker used, because they are the speaker\'s own voice and the past belongs to the narration around them. A quotation moved into the past is a defect to hold against a rendering, and keeping its present is never a tense inconsistency.';
+
+/**
+ The same rule in one sentence, for a sheet that tells a reader to move a line of the life to the past and must say that a
+ quotation is no such line.
+
+ @example
+ ```ts
+ const line = `Hold one tense throughout. ${QUOTED_WORDS_REMINDER}`;
+ ```
+ */
+export const QUOTED_WORDS_REMINDER: string =
+  'Words quoted as someone wrote or said them keep the speaker\'s own tense, so moving a quotation to the past is a defect and keeping its present is not a tense inconsistency.';
+
 //endregion English usage policy

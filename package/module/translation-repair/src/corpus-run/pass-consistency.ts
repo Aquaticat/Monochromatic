@@ -15,13 +15,12 @@ import type { StageSettings, } from '../stage-settings.ts';
 import type { ArtifactConsolidateSlice, } from './artifact-two-lane-consolidate.ts';
 import {
   type ArtifactConsistency,
-  type ArtifactConsistencyGroup,
-  type ConsistencyOccurrenceOutcome,
   NO_CONSISTENCY,
 } from './artifact-two-lane-consistency.ts';
 import type { ArtifactContestSlice, } from './artifact-two-lane-contest.ts';
 import type { ProjectedLanes, } from './artifact-two-lane-derive.ts';
 import { applyConsistency, } from './pass-consistency-apply.ts';
+import { groupLine, } from './pass-consistency-group-line.ts';
 import {
   askAll,
   type PreparedGroup,
@@ -74,81 +73,6 @@ type ClassifiedGroup = PreparedGroup & {
    */
   readonly disposition: ReturnType<typeof dispositionOf>;
 };
-
-/**
- How many places of a group ended in an outcome.
-
- @param group - the group with its final outcomes
-
- @param outcome - outcome counted
-
- @returns Number of places with that outcome
-
- @example
- ```ts
- const replaced = placesEndingIn({ group, outcome: 'replaced', },);
- ```
- */
-function placesEndingIn(
-  {
-    group,
-    outcome,
-  }: {
-    readonly group: ArtifactConsistencyGroup;
-    readonly outcome: ConsistencyOccurrenceOutcome;
-  },
-): number {
-  return group.occurrences
-    .filter(function ended(occurrence,): boolean {
-      return occurrence.outcome === outcome;
-    },)
-    .length;
-}
-
-/**
- One line saying how a group came out.
-
- @param group - the group with its final outcomes
-
- @returns Log line text
-
- @example
- ```ts
- const line = groupLine({ group, },);
- ```
- */
-function groupLine({ group, }: { readonly group: ArtifactConsistencyGroup; },): string {
-  return `${group.repeat
-    .kind} verdict=${group.verdict
-      .kind} placed=${String(group.occurrences
-        .length,)} `
-    + `unplaced=${String(group.unplaced
-      .length,)} `
-    + `replaced=${String(placesEndingIn({
-      group,
-      outcome: 'replaced',
-    },),)} `
-    + `consistent=${String(placesEndingIn({
-      group,
-      outcome: 'consistent',
-    },),)} `
-    + `kept-context=${String(placesEndingIn({
-      group,
-      outcome: 'kept-context',
-    },),)} `
-    + `kept-floor=${String(placesEndingIn({
-      group,
-      outcome: 'kept-floor',
-    },),)} `
-    + `overlapped=${String(placesEndingIn({
-      group,
-      outcome: 'overlapped',
-    },),)} `
-    + `unlocated=${String(placesEndingIn({
-      group,
-      outcome: 'unlocated',
-    },),)}`;
-}
 
 /**
  Settles every group: the bench is asked about those that need it, and the

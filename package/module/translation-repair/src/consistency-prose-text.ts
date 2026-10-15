@@ -1,5 +1,10 @@
 import type { Nodes, } from 'mdast';
 
+import {
+  markupRangesOf,
+  NO_MARKUP_RANGES,
+} from './consistency-markup-ranges.ts';
+import { withDefinitions, } from './page-definitions.ts';
 import { requireMdxRefusal, } from './parse-mdx.ts';
 import { parseSliceBody, } from './parse-slice-body.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
@@ -186,21 +191,37 @@ function proseRangesOf(
 
  @param english - the English of a slice
 
+ @param definitions - the page's definitions (`pageDefinitionsOf`), parsed after the English so a reference in it resolves; empty
+ for an English read alone
+
  @returns The root of the tree as a list of one, none when the grammar refuses the English
 
  @throws {@link Error} when reading fails for a reason other than the grammar's own refusal
 
  @example
  ```ts
- const [root,] = treeOf({ english: 'Fill the bowl.', },);
+ const [root,] = treeOf({ english: 'Fill the bowl.', definitions: '', },);
  ```
  */
-function treeOf({ english, }: { readonly english: string; },): readonly TreeNode[] {
+function treeOf(
+  {
+    english,
+    definitions,
+  }: {
+    readonly english: string;
+    readonly definitions: string;
+  },
+): readonly TreeNode[] {
   try {
     /**
-     The parse of the English.
+     The parse of the English, with the definitions after it.
      */
-    const { root, } = parseSliceBody({ text: english, },);
+    const { root, } = parseSliceBody({
+      text: withDefinitions({
+        text: english,
+        definitions,
+      },),
+    },);
     return [root,];
   }
   catch (error) {
@@ -391,9 +412,38 @@ export type ProseView = {
   readonly prose: string;
 
   /**
+   The stretches the prose keeps, in order and cut off where the English ends. Everything else is blanked, which an English the
+   grammar refuses has none of.
+   */
+  readonly stretches: readonly ProseRange[];
+
+  /**
+   Whether the grammar refused the English, so no parse says which stretch is prose and the prose is the English itself.
+   */
+  readonly refused: boolean;
+
+  /**
    The delimiters of emphasis, strong emphasis and strikethrough, which the prose blanks.
    */
   readonly emphasis: EmphasisDelimiters;
+
+  /**
+   The stretches of the images (`![pic](u)`, `![pic][r]`), none where the grammar refuses the English. An image shows a reader a
+   picture between the words around it.
+   */
+  readonly images: readonly ProseRange[];
+
+  /**
+   The stretches of the rows of tables, none where the grammar refuses the English. The pipes and the padding of a row are
+   written between the cells and show a reader the cell's edge.
+   */
+  readonly tableRows: readonly ProseRange[];
+
+  /**
+   The stretches of the content of inline code, between its backticks, none where the grammar refuses the English. A reader sees
+   the code word.
+   */
+  readonly codeContents: readonly ProseRange[];
 };
 
 /**
@@ -401,22 +451,40 @@ export type ProseView = {
 
  @param english - the English of a slice
 
- @returns The prose (the English itself where the grammar refuses it) and the delimiters (none where it refuses)
+ @param definitions - the page's definitions (`pageDefinitionsOf`), none for an English read alone: a reference in the English
+ whose definition stands in another slice is then plain text
+
+ @returns The prose (the English itself where the grammar refuses it), the stretches it keeps and the delimiters (none where the
+ grammar refuses)
 
  @example
  ```ts
  const { prose, emphasis, } = proseViewOf({ english: 'The *kittens*’ bowl.', },);
  ```
  */
-export function proseViewOf({ english, }: { readonly english: string; },): ProseView {
+export function proseViewOf(
+  {
+    english,
+    definitions = '',
+  }: {
+    readonly english: string;
+    readonly definitions?: string;
+  },
+): ProseView {
   /**
    The tree of the English, none when the grammar refuses it.
    */
-  const [root,] = treeOf({ english, },);
+  const [root,] = treeOf({
+    english,
+    definitions,
+  },);
   if (root === undefined) {
     return {
       prose: english,
+      stretches: [],
+      refused: true,
       emphasis: NO_DELIMITERS,
+      ...NO_MARKUP_RANGES,
     };
   }
   /**
@@ -431,6 +499,10 @@ export function proseViewOf({ english, }: { readonly english: string; },): Prose
    Offset up to which the pieces hold the English.
    */
   const cursor = { at: 0, };
+  /**
+   The stretches the prose keeps, mutated only inside this function.
+   */
+  const stretches: ProseRange[] = [];
   for (const range of proseRangesOf({
     english,
     nodes,
@@ -442,6 +514,19 @@ export function proseViewOf({ english, }: { readonly english: string; },): Prose
       range.start,
       cursor.at,
     );
+    /**
+     Where the stretch ends, cut off where the English ends: the parse also covers the definitions after it.
+     */
+    const stop = Math.min(
+      range.end,
+      english.length,
+    );
+    if (from < stop) {
+      stretches.push({
+        start: from,
+        end: stop,
+      },);
+    }
     pieces.push(
       blankedOf({
         text: english.slice(
@@ -462,7 +547,13 @@ export function proseViewOf({ english, }: { readonly english: string; },): Prose
   pieces.push(blankedOf({ text: english.slice(cursor.at,), },),);
   return {
     prose: pieces.join('',),
+    stretches,
+    refused: false,
     emphasis: delimitersOf({
+      english,
+      nodes,
+    },),
+    ...markupRangesOf({
       english,
       nodes,
     },),
@@ -485,6 +576,11 @@ type RememberedView = {
   readonly english: string;
 
   /**
+   The definitions it was read with.
+   */
+  readonly definitions: string;
+
+  /**
    What the parse made of it.
    */
   readonly view: ProseView;
@@ -501,6 +597,8 @@ const rememberedViews: RememberedView[] = [];
 
  @param english - the English of a slice
 
+ @param definitions - the page's definitions (`pageDefinitionsOf`), none for an English read alone
+
  @returns What `proseViewOf` gives for it
 
  @example
@@ -508,21 +606,33 @@ const rememberedViews: RememberedView[] = [];
  const { prose, } = rememberedViewOf({ english: 'a *b*’s c', },);
  ```
  */
-export function rememberedViewOf({ english, }: { readonly english: string; },): ProseView {
+export function rememberedViewOf(
+  {
+    english,
+    definitions = '',
+  }: {
+    readonly english: string;
+    readonly definitions?: string;
+  },
+): ProseView {
   /**
-   The view read before for an equal English, none when there is none.
+   The view read before for an equal English and equal definitions, none when there is none.
    */
   const known = rememberedViews.find(function isSame(entry,): boolean {
-    return entry.english === english;
+    return (entry.english === english) && (entry.definitions === definitions);
   },);
   if (known !== undefined)
     return known.view;
   /**
    What the parse makes of the English.
    */
-  const view = proseViewOf({ english, },);
+  const view = proseViewOf({
+    english,
+    definitions,
+  },);
   rememberedViews.push({
     english,
+    definitions,
     view,
   },);
   if (rememberedViews.length > REMEMBERED_VIEWS)

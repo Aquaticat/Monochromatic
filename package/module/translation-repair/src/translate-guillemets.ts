@@ -1,5 +1,9 @@
 import { withoutHtmlComments, } from './translate-address-drop.ts';
-import { proseMask, } from './typography-prose-mask.ts';
+import {
+  noteRefusedMask,
+  textNamed,
+} from './typography-mask-refusal.ts';
+import { proseMaskReading, } from './typography-prose-mask.ts';
 
 //region Guillemet floor
 // LEDGER B24 (2026-09-29). English prose on these pages sets a quotation in
@@ -13,7 +17,11 @@ import { proseMask, } from './typography-prose-mask.ts';
 // same scan finds curly doubles in 71 archives), so the floor stands aside
 // wherever the original or the page it would replace carries one. Only
 // prose is read: a guillemet in a code span or a tag is content, and
-// comments are cut; a candidate the grammar refuses has no prose to read (`typography-prose-mask.ts`). The editor sheet's «REGION n» marker is the sheet-leak
+// comments are cut; a candidate the grammar refuses has no parse to tell its prose from its code (`typography-prose-mask.ts`), so
+// every guillemet outside a comment in it is read as a possible quotation and named (n159, X10): the floors that run after this
+// one refuse an unparseable candidate only where the original parses (`translate-validate.ts`, the skeleton read after
+// `sourceCarryFindings`), and the verdict is unknown where the original or the page is blind, so this floor does not stand aside
+// for one. The editor sheet's «REGION n» marker is the sheet-leak
 // floor's to refuse, which runs first and names it as the sheet's own.
 
 /**
@@ -59,9 +67,18 @@ function carriesGuillemet({ text, }: { readonly text: string; },): boolean {
  */
 function proseGuillemets({ text, }: { readonly text: string; },): readonly string[] {
   /**
-   Which units are prose rather than code or markup.
+   Which units are prose rather than code or markup, and whether the grammar refused the text.
    */
-  const mask = proseMask({ text, },);
+  const {
+    mask,
+    refused,
+  } = proseMaskReading({ text, },);
+  if (refused) {
+    noteRefusedMask({
+      reader: 'guillemetFindings',
+      name: textNamed({ text, },),
+    },);
+  }
   /**
    Guillemets seen in prose so far, in order.
    */
@@ -78,7 +95,7 @@ function proseGuillemets({ text, }: { readonly text: string; },): readonly strin
     /**
      Whether it is a prose guillemet not yet named.
      */
-    const fresh = (mask[index] === true)
+    const fresh = (refused || (mask[index] === true))
       && GUILLEMETS.has(unit,)
       && (!seen.includes(unit,));
     if (fresh)

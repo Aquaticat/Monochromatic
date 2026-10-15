@@ -1,3 +1,4 @@
+import { QUOTED_WORDS_REMINDER, } from './english-usage-policy.ts';
 import { HOUSE_FORM_CORRECTIONS, } from './house-form-corrections.ts';
 import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
 
@@ -41,7 +42,7 @@ export const HOUSE_CORRECTION_IS_AN_IMPROVEMENT: string = 'A HOUSE CORRECTION IS
  const system = `${COMPARATIVE_POLISH_POLICY}\n\n${POLISH_GATE_HOUSE_RULES}`;
  ```
  */
-export const POLISH_GATE_HOUSE_RULES: string = `A TENSE THE HOUSE RULES SET IS NOT A CHANGE OF MEANING. The Chinese marks no tense, so a polished text that moves the narrative of a life that has ended into the past tense, or holds one tense where the base mixed two, has added nothing and dropped nothing; choose base over it only for a fault of another kind. The person these pages remember has died; a present-tense line about their life in the base is a tense the house rules correct, never a fact the polish contradicts and never a reason to keep the base.
+export const POLISH_GATE_HOUSE_RULES: string = `A TENSE THE HOUSE RULES SET IS NOT A CHANGE OF MEANING. The Chinese marks no tense, so a polished text that moves the narrative of a life that has ended into the past tense, or holds one tense where the base mixed two, has added nothing and dropped nothing; choose base over it only for a fault of another kind. The person these pages remember has died; a present-tense line about their life in the base is a tense the house rules correct, never a fact the polish contradicts and never a reason to keep the base. ${QUOTED_WORDS_REMINDER}
 
 ${JUDGE_POLICY_BLOCK}`;
 //endregion Polish gate house rules

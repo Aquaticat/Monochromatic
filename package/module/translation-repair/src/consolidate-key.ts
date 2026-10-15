@@ -309,8 +309,23 @@ import type { LaneText, } from './translate-candidates.ts';
  after the change, shown beside a control that finds records) could not be made
  with a working control, so the number moves, as the slice, refine and translate
  versions moved for the same reader.
+
+ 23: the same readers read more of the page (n159). The text of a shortcut or collapsed reference (`[dogs' bowl]`) and the
+ text of a link whose label is an address are no prose to the mask (`typography-link-text.ts`), so the slate's twin collapse
+ (`collapseKey`, `straightenProseQuotes`) keeps the marks in them and two renderings that differ by such a mark no longer
+ collapse; and the validator's prose guillemet floor (`translate-guillemets.ts`) refuses a candidate the grammar refuses when
+ it carries a guillemet, since no parse tells its prose from code. Both change which candidates a slate holds as one and
+ which it accepts. The check that would let the change ride inside 22 (no slice-cache record written after the change, shown
+ beside a control that finds records) was not made, since no runs directory is read in this round, so the number moves, as
+ the lane-contest, slice, refine and translate versions move for the same readers.
+
+ 23 also covers the tense of quoted words (n161, TianqiChen666): the house rule, the producer's tense line and the judges' tense
+ lines now say that words quoted as someone wrote or said them keep the speaker's tense, so a consolidation or a ballot stored
+ under 22 may hold a quotation moved into the past. The key hashes the version, the shape of the run and the texts and not the
+ sheet, so a record written under the old sheet would be served under the new one; no record has been written at 23, so this rides
+ inside the number n159 set.
  */
-export const CONSOLIDATE_CACHE_VERSION = 22;
+export const CONSOLIDATE_CACHE_VERSION = 23;
 
 /**
  What a line-structured slice appends to its key material.

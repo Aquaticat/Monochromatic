@@ -24,6 +24,7 @@ import { emphasisDelimitersOf, } from './consistency-prose-text.ts';
 import { cutsShownWord, } from './consistency-shown-edge.ts';
 import { cutsWord, } from './consistency-word-joints.ts';
 import { wholeSpanOf, } from './consistency-whole-end.ts';
+import { pageDefinitionsOf, } from './page-definitions.ts';
 import { wordStarts, } from './word-bounds.ts';
 
 //region Consistency fold
@@ -666,6 +667,7 @@ export function locateWords(
     start: bare.start,
     end: bare.end,
     needle,
+    definitions: (page === undefined) ? '' : pageDefinitionsOf({ pageText: page.text, },),
   },))
     return { kind: 'none', };
   return {

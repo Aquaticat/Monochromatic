@@ -12,7 +12,7 @@
  const rule = `Prefer a polish bringing the base to the house form (${HOUSE_FORM_CORRECTIONS}).`;
  ```
  */
-export const HOUSE_FORM_CORRECTIONS: string = 'the past tense for the life of a person who has died, '
+export const HOUSE_FORM_CORRECTIONS: string = 'the past tense for the life of a person who has died (never for quoted words), '
   + 'singular they for a TA, English for a word left in Han, chat shorthand spelled out, Canadian spelling, '
   + 'and a month-first date';
 

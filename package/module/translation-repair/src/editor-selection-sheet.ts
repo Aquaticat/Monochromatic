@@ -1,3 +1,4 @@
+import { QUOTED_WORDS_REMINDER, } from './english-usage-policy.ts';
 import { DECLARED_NAME_REFERENCE_EXEMPTION, } from './name-form-policy.ts';
 import { PAGE_APPARATUS_IS_KEPT, } from './page-apparatus-clause.ts';
 
@@ -33,7 +34,7 @@ export const ENVELOPE_SELECTION_CRITERIA: readonly string[] = [
   // Ledger S14: "Fits the surrounding text in register and tense" made the
   // surrounding English the tense authority, against the house tense rule.
   'Fits the surrounding text in register. Its tense follows the house tense rule (the past for the life of a person '
-    + 'who has died), not surrounding English that tells the life in the present.',
+    + `who has died), not surrounding English that tells the life in the present. ${QUOTED_WORDS_REMINDER}`,
 ];
 
 /**

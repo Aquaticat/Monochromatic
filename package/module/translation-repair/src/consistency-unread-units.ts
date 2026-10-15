@@ -274,6 +274,11 @@ type RememberedUnread = {
   readonly english: string;
 
   /**
+   The definitions it was read with.
+   */
+  readonly definitions: string;
+
+  /**
    The offsets of the units.
    */
   readonly units: ReadonlySet<number>;
@@ -292,6 +297,9 @@ const rememberedUnread: RememberedUnread[] = [];
 
  @param english - the English of a slice
 
+ @param definitions - the page's definitions (`pageDefinitionsOf`), none for an English read alone: the label of a footnote
+ reference or of a reference link is then plain text unless its definition stands in the same English
+
  @returns The offsets of those units
 
  @example
@@ -299,19 +307,30 @@ const rememberedUnread: RememberedUnread[] = [];
  const unread = unreadUnitsOf({ english: 'The <b>kittens</b>’ bowl.', },); // holds 4 to 6 and 14 to 17
  ```
  */
-export function unreadUnitsOf({ english, }: { readonly english: string; },): ReadonlySet<number> {
+export function unreadUnitsOf(
+  {
+    english,
+    definitions = '',
+  }: {
+    readonly english: string;
+    readonly definitions?: string;
+  },
+): ReadonlySet<number> {
   /**
-   The units read before for an equal English, none when there are none.
+   The units read before for an equal English and equal definitions, none when there are none.
    */
   const known = rememberedUnread.find(function isSame(entry,): boolean {
-    return entry.english === english;
+    return (entry.english === english) && (entry.definitions === definitions);
   },);
   if (known !== undefined)
     return known.units;
   /**
    The prose of the English, with every unit the parse does not read as a word blanked.
    */
-  const { prose, } = rememberedViewOf({ english, },);
+  const { prose, } = rememberedViewOf({
+    english,
+    definitions,
+  },);
   /**
    The units the parse blanked, the comments and the references.
    */
@@ -322,11 +341,92 @@ export function unreadUnitsOf({ english, }: { readonly english: string; },): Rea
   }
   rememberedUnread.push({
     english,
+    definitions,
     units,
   },);
   if (rememberedUnread.length > REMEMBERED_UNREAD)
     rememberedUnread.shift();
   return units;
+}
+
+/**
+ Whether a unit is a line break, which no quotation pair and no word crosses.
+ */
+const LINE_BREAKS: ReadonlySet<string> = new Set([
+  '\n',
+  '\r',
+],);
+
+/**
+ The units of an English that show a reader nothing between two pieces of text: every unit outside the stretches the parse calls
+ text (the delimiters of emphasis, strike and code, a link's brackets with its destination and title, a tag, an expression, the
+ markers of a list or a heading) and the units of a comment, line breaks apart. A reader skips them, so `kit*tens*`, `**kit**tens`,
+ `[kit](u)tens` and `<b>kit</b>tens` each read as the one word they show. A character reference is its shown character, so it is
+ not here (`unreadUnitsOf` keeps it for the refusal run, which steps over it). A unit of a hidden stretch is hidden whatever its
+ width, so a reference, an escape or an astral character inside a link's destination, a tag's attribute or a comment hides every
+ unit it is written with (`consistency-shown-edge.ts` reads the flag of the unit's first character). The backticks of inline code
+ are hidden and the content of inline code is shown as the code word it is, as the typography side reads it
+ (`typography-shown-view.ts`), so a word of code beside a word of text reads as the one word it shows. An English the grammar
+ refuses blanks nothing. What separates or annotates (a line break, a block tag, a table cell, an image, a ruby annotation) is
+ told apart by `unitKindsOf` (`consistency-shown-kinds.ts`), which starts from these flags.
+
+ @param english - the English of a slice
+
+ @param definitions - the page's definitions (`pageDefinitionsOf`), none for an English read alone
+
+ @returns One flag per UTF-16 unit of the English, true where the unit shows nothing
+
+ @example
+ ```ts
+ const hidden = transparentUnitsOf({ english: 'kit*tens*', },); // true at 3 and 8
+ ```
+ */
+export function transparentUnitsOf(
+  {
+    english,
+    definitions = '',
+  }: {
+    readonly english: string;
+    readonly definitions?: string;
+  },
+): readonly boolean[] {
+  /**
+   What the parse made of the English.
+   */
+  const view = rememberedViewOf({
+    english,
+    definitions,
+  },);
+  /**
+   One flag per unit, false until the unit is found to show nothing.
+   */
+  const hidden: boolean[] = Array.from(
+    { length: english.length, },
+    function shown(): boolean {
+      return false;
+    },
+  );
+  if (view.refused)
+    return hidden;
+  for (let at = 0; at < english.length; at += 1)
+    hidden[at] = !LINE_BREAKS.has(english.charAt(at,),);
+  for (const {
+    start,
+    end,
+  } of [
+    ...view.stretches,
+    ...view.codeContents,
+  ]) {
+    for (let at = start; at < end; at += 1)
+      hidden[at] = false;
+  }
+  for (const region of commentRegionsOf({ text: english, },)) {
+    if (!region.terminated)
+      continue;
+    for (let at = region.startOffset; at < region.endOffset; at += 1)
+      hidden[at] = !LINE_BREAKS.has(english.charAt(at,),);
+  }
+  return hidden;
 }
 
 //endregion Consistency unread units

@@ -63,6 +63,7 @@ export {
   isLatinLetter,
   isLatinLetterOrMark,
   isLatinWordCharacter,
+  isSpacedScriptWordCharacter,
   type LatinWord,
   latinWordSpans,
   lowerCaseLatinWords,

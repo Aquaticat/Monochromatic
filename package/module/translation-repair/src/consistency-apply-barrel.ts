@@ -12,6 +12,7 @@ export {
   edgeRefusalOf,
   type EdgeVerdict,
 } from './corpus-run/pass-consistency-edge-refusal.ts';
+export { groupLine, } from './corpus-run/pass-consistency-group-line.ts';
 export {
   type AppliedConsistency,
   applyConsistency,

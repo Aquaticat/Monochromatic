@@ -2,7 +2,8 @@ import {
   type EdgeUnit,
   textUnitsOf,
 } from './consistency-edge-units.ts';
-import { continuesLatinWordOrCompatibilityForm, } from './latin-letters.ts';
+import { unitKindsOf, } from './consistency-shown-kinds.ts';
+import { isSpacedScriptWordCharacter, } from './latin-letters.ts';
 import { isDefaultIgnorable, } from './renders-as-nothing.ts';
 
 //region Consistency shown edge
@@ -12,11 +13,20 @@ import { isDefaultIgnorable, } from './renders-as-nothing.ts';
 // apart from `k` there. A quote that began inside a reference is widened to the whole reference after the stand is found
 // (`consistency-whole-end.ts`), and that widened edge is the one a splice cuts at. This test therefore runs on the FINAL edges
 // and reads what a reader sees: each unit (`consistency-edge-units.ts`) is its shown character, a default-ignorable character
-// (a soft hyphen, a zero-width space, `renders-as-nothing.ts`) is no character at all and is stepped over, and an ampersand
-// between two word characters joins them as a hyphen or an apostrophe does (`AT&T`, `R&D`). An edge cuts a word when the
+// (a soft hyphen, a zero-width space, `renders-as-nothing.ts`) is no character at all and is stepped over, a unit the prose view
+// does not read as words (the delimiters of emphasis, strike and code, a link's brackets with its destination and title, a tag, a
+// comment, an expression; `transparentUnitsOf`, `consistency-unread-units.ts`) shows nothing between two pieces of one word and is
+// stepped over too (`kit*tens*`, `**kit**tens`, `[kit](u)tens`; n159), a word character is a letter, a combining mark or a
+// decimal digit of a script that sets its words apart by spaces (Han, Hiragana and Katakana excepted), and an ampersand or an
+// underscore between two word characters joins them as a hyphen or an apostrophe does (`AT&T`, `R&D`, `snake_case`). An edge cuts a word when the
 // character beside it outside the span continues a word (it is one, or it is a joiner with a word character beyond it) and the
-// span's edge is a word edge: the first or last character of the words the judge quoted is a Latin letter or digit, or the
-// shown characters inside the span continue a word the same way. A span that starts or ends at a mark is therefore no cut
+// span's edge is a word edge: the first or last character of the words the judge quoted is a
+// word character of a script that sets its words apart by spaces, or the shown characters inside the span continue a word the same
+// way. A unit is hidden whatever its width
+// (a reference, an escape or an astral character inside a link's destination, a tag's attribute or a comment is hidden whole), the
+// content of inline code is shown as the code word it is, and markup that separates or annotates (a line break with or without a
+// slash, a block tag, a table cell's pipes and padding, an image, the `<rt>` and `<rp>` of a ruby annotation) is a word boundary,
+// read as a space (`unitKindsOf`, `consistency-shown-kinds.ts`; n160). A span that starts or ends at a mark is therefore no cut
 // beside a word, as the locator already reads it. What the locator counts is unchanged (`standsOf`, `consistency-fold.ts`):
 // this test only refuses to name a span whose edge cuts a word, so a place it refuses is one the splice leaves alone.
 
@@ -26,6 +36,7 @@ import { isDefaultIgnorable, } from './renders-as-nothing.ts';
 const JOINERS: ReadonlySet<string> = new Set([
   '&',
   '-',
+  '_',
   '\'',
   '’',
 ],);
@@ -40,7 +51,8 @@ const SHOWN_READ = 2;
 
  @param character - one shown character, empty for the end of the text
 
- @returns Whether it continues a Latin word or a compatibility form of one
+ @returns Whether it is a letter, a combining mark or a decimal digit of a script that sets its words apart by spaces (Latin,
+ Cyrillic, Greek, Hebrew, Arabic, Hangul and the rest), so a word runs on through it
 
  @example
  ```ts
@@ -48,9 +60,7 @@ const SHOWN_READ = 2;
  ```
  */
 function isWordCharacter({ character, }: { readonly character: string; },): boolean {
-  if (character === '')
-    return false;
-  return continuesLatinWordOrCompatibilityForm({ character, },);
+  return isSpacedScriptWordCharacter({ character, },);
 }
 
 /**
@@ -153,6 +163,8 @@ function edgeCuts(
 
  @param needle - the words the judge quoted, whose first and last characters say whether an edge is a word edge
 
+ @param definitions - the page's definitions (`pageDefinitionsOf`), none for an English read alone
+
  @returns Whether the start or the end of the span stands inside a shown word
 
  @example
@@ -166,17 +178,47 @@ export function cutsShownWord(
     start,
     end,
     needle,
+    definitions = '',
   }: {
     readonly text: string;
     readonly start: number;
     readonly end: number;
     readonly needle: string;
+    readonly definitions?: string;
   },
 ): boolean {
   /**
-   The units of the English, in order.
+   What each unit of the English is to a reader: hidden (the delimiters of emphasis, strike and code, a link's brackets with its
+   destination and title, a tag that wraps text, a comment, an expression), a boundary (a break, a block tag, a table cell's
+   pipes and padding, an image, a ruby annotation) or shown.
    */
-  const units = textUnitsOf({ text, },);
+  const kinds = unitKindsOf({
+    english: text,
+    definitions,
+  },);
+  /**
+   The units of the English that show a reader something, in order. A unit is hidden or not by the kind of its first character,
+   whatever its width, so a reference, an escape or an astral character inside a hidden stretch is hidden whole. A boundary unit
+   is read as the space it stands for.
+   */
+  const units = textUnitsOf({ text, },)
+    .flatMap(function shownUnit(unit,): readonly EdgeUnit[] {
+      /**
+       What the unit's first character is to a reader.
+       */
+      const kind = kinds[unit.from];
+      if (kind === 'hidden')
+        return [];
+      return (kind === 'boundary')
+        ? [
+          {
+            from: unit.from,
+            to: unit.to,
+            shown: ' ',
+          },
+        ]
+        : [unit,];
+    },);
   /**
    The units that end at or before the start, nearest the start first.
    */

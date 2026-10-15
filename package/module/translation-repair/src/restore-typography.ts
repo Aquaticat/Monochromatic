@@ -13,7 +13,19 @@ import {
   sequenceBefore,
 } from './quote-neighbours.ts';
 import { restoreEllipsis, } from './restore-ellipsis.ts';
-import { proseMask, } from './typography-prose-mask.ts';
+import {
+  noteRefusedMask,
+  textNamed,
+} from './typography-mask-refusal.ts';
+import {
+  fragmentProseMask,
+  type ProseMaskReading,
+  proseMaskReading,
+} from './typography-prose-mask.ts';
+import {
+  shownViewOf,
+  writtenBack,
+} from './typography-shown-view.ts';
 
 //region Typography restoration
 // Puts back the quote characters an editor flattened.
@@ -37,6 +49,14 @@ import { proseMask, } from './typography-prose-mask.ts';
 // trailing apostrophe converts when nothing in the replacement could be its
 // opening quote. The neighbour reading lives in `quote-neighbours.ts`, shared
 // with the nested quotation reading of class one hundred forty-seven.
+//
+// THE CONTEXT OF A MARK IS THE TEXT A READER SEES (n159). The rules read the replacement without the units that show nothing
+// (emphasis, strike and code delimiters, link brackets with destination and title, tags, comments, expressions;
+// `typography-shown-view.ts`), so `<b>'hi'</b>` opens at the start of the text and the `'n'` of `rock *'n'* roll` is the elision
+// it is without the asterisks; a mark a rule curls is written back into the replacement as written. A replacement that is a
+// fragment of a slice takes its prose from the slice with the fragment in place (`landing`), and a reference in it resolves
+// against the page's definitions (`definitions`). A replacement the grammar refuses has no prose: nothing is curled, and a
+// finding names the text (`typography-mask-refusal.ts`).
 
 /**
  Right single quotation mark, used as an apostrophe in the corpus and as a
@@ -109,7 +129,7 @@ function possessiveClitic(
 
  @example
  ```ts
- countStraightDoubles({ text: 'a "b" c', mask: proseMask({ text: 'a "b" c', },), },);
+ countStraightDoubles({ text: 'a "b" c', mask: proseMaskReading({ text: 'a "b" c', },).mask, },);
  ```
  */
 function countStraightDoubles(
@@ -217,6 +237,88 @@ function countOpeningSingles(
 }
 
 /**
+ Where a fragment lands in the slice it is part of: the slice, and the region the fragment replaces.
+ */
+type Landing = {
+  /**
+   The slice the fragment lands in.
+   */
+  readonly slice: string;
+
+  /**
+   Offset where the replaced region starts in the slice.
+   */
+  readonly start: number;
+
+  /**
+   Exclusive offset where the replaced region ends in the slice.
+   */
+  readonly end: number;
+};
+
+/**
+ The prose reading of a replacement: the one a caller handed on, else the fragment's reading in the slice it lands in, else the
+ reading of the text alone. A refusal of the grammar is logged, since the rule is then silent for want of a parse.
+
+ @param written - the replacement as written
+
+ @param given - the reading a caller made already
+
+ @param landing - where the replacement lands, when it is a fragment of a slice
+
+ @param definitions - the page's definitions, which a reference in the replacement resolves against; none when the caller holds
+ no page
+
+ @returns The reading of the replacement
+
+ @throws {@link FragmentLandingError} when the landing lies outside its slice or ends before it starts, which is no refusal of the
+ page grammar and is not logged as one
+
+ @example
+ ```ts
+ const reading = readingForRestoration({ written: 'it\'s', definitions: '', },);
+ ```
+ */
+function readingForRestoration(
+  {
+    written,
+    given,
+    landing,
+    definitions,
+  }: {
+    readonly written: string;
+    readonly given?: ProseMaskReading;
+    readonly landing?: Landing;
+    readonly definitions: string;
+  },
+): ProseMaskReading {
+  if (given !== undefined)
+    return given;
+  /**
+   The reading made here.
+   */
+  const reading = (landing === undefined)
+    ? proseMaskReading({
+      text: written,
+      definitions,
+    },)
+    : fragmentProseMask({
+      slice: landing.slice,
+      start: landing.start,
+      end: landing.end,
+      replacement: written,
+      definitions,
+    },);
+  if (reading.refused) {
+    noteRefusedMask({
+      reader: 'restoreTypography',
+      name: textNamed({ text: (landing === undefined) ? written : landing.slice, },),
+    },);
+  }
+  return reading;
+}
+
+/**
  Restores the quote style the replaced text used.
 
  Only ever converts straight to curly, and only where the replaced text or the
@@ -259,6 +361,16 @@ function countOpeningSingles(
  @param convention - wider text whose quote style the replacement should
  match, ordinarily the whole document being repaired
 
+ @param reading - the replacement's prose mask, which a caller that read it already hands on; read from the replacement (or from
+ `landing`) where absent
+
+ @param landing - where the replacement lands when it is a fragment of a slice: the slice, and the offsets of the region it
+ replaces. The prose of the fragment is then the prose of the slice with the fragment in place, so a fragment that begins inside a
+ tag or ends inside an element is read as the slice shows it and not as a text of its own
+
+ @param definitions - the page's definitions (`pageDefinitionsOf`), which a reference in the replacement resolves against
+ whichever slice holds the definition; none for a caller that holds no page
+
  @returns Replacement with the document's quote style restored
 
  @example
@@ -272,13 +384,19 @@ function countOpeningSingles(
  */
 export function restoreTypography(
   {
-    replacement,
+    replacement: written,
     replaced,
     convention,
+    reading: given,
+    landing,
+    definitions = '',
   }: {
     readonly replacement: string;
     readonly replaced: string;
     readonly convention: string;
+    readonly reading?: ProseMaskReading;
+    readonly landing?: Landing;
+    readonly definitions?: string;
   },
 ): string {
   /**
@@ -306,9 +424,37 @@ export function restoreTypography(
     || convention.includes(CURLY_CLOSE_DOUBLE,);
 
   /**
-   Which units of the replacement are prose rather than code or markup.
+   What the parse says of the replacement: which units are prose rather than code or markup, and which a reader sees.
    */
-  const mask = proseMask({ text: replacement, },);
+  const reading = readingForRestoration({
+    written,
+    definitions,
+    ...((given === undefined) ? {} : { given, }),
+    ...((landing === undefined) ? {} : { landing, }),
+  },);
+
+  /**
+   The replacement as a reader sees it, with the units that show nothing left out (the delimiters of emphasis, strike and code,
+   link brackets with destination and title, tags, comments, expressions), so a mark beside one of them reads the text on the
+   other side of it. Every rule of the restoration reads this text; a mark it curls is written back into the replacement as written.
+   */
+  const shown = shownViewOf({
+    text: written,
+    visible: reading.visible,
+  },);
+
+  /**
+   The text the rules read.
+   */
+  const replacement = shown.text;
+
+  /**
+   Which units of that text are prose.
+   */
+  const mask = shown.offsets
+    .map(function proseAt(offset,): boolean {
+      return reading.mask[offset] === true;
+    },);
 
   /**
    Straight doubles in the prose of the replacement, which must pair up to be
@@ -493,11 +639,16 @@ export function restoreTypography(
     // reads the rebuilt text.
     return restoreEllipsis({
       replacement: placeClosingPunctuation({
-        text: rebuilt.join('',),
-        mask,
+        text: writtenBack({
+          text: written,
+          offsets: shown.offsets,
+          units: rebuilt,
+        },),
+        mask: reading.mask,
       },),
       replaced,
       convention,
+      reading,
     },);
   })();
 }

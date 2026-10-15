@@ -24,6 +24,7 @@ import type {
 } from './consistency-count-types.ts';
 import type { PageEnglish, } from './consistency-page-english.ts';
 import type { ConsistencyEnglish, } from './consistency-wire.ts';
+import { pageDefinitionsOf, } from './page-definitions.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Consistency count
@@ -219,6 +220,11 @@ function locatedRendering(
     };
   }
   /**
+   The link and footnote definitions of the page, which a reference in this place's English resolves against whichever slice holds
+   the definition; none for a place that carries no page.
+   */
+  const definitions = (page === undefined) ? '' : pageDefinitionsOf({ pageText: page.text, },);
+  /**
    The folded words a strict majority of the usable ballots quoted.
    */
   const [words,] = agreedWordsOf({
@@ -304,6 +310,7 @@ function locatedRendering(
     text: english.text,
     at: found.start,
     side: 'before',
+    definitions,
   },);
   /**
    The single mark past a run of markup or closing characters after the span.
@@ -312,6 +319,7 @@ function locatedRendering(
     text: english.text,
     at: spanEnd,
     side: 'after',
+    definitions,
   },);
   /**
    The span with the marks beside it, which the splice compares between places.

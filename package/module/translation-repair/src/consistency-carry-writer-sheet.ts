@@ -22,6 +22,7 @@ import {
   DECLARED_IDENTITY_RULES,
   declaredNamesBlock,
 } from './declared-identity-rule.ts';
+import { QUOTED_WORDS_REMINDER, } from './english-usage-policy.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
 import { PAGE_APPARATUS_IS_KEPT, } from './page-apparatus-clause.ts';
@@ -211,7 +212,7 @@ Rules:
 - Adapt only what ${own} own ORIGINAL requires. The CHOSEN RENDERING may carry a word that renders Chinese standing outside the repeated wording in the chosen place, such as an "also" that renders a word standing before the repeated wording there. Never carry such a word here: a word renders ORIGINAL in a place only where that place's ORIGINAL has the Chinese it renders, so the repeated wording is rendered as the chosen place renders it without that word, and a word of this paragraph that renders ORIGINAL outside the repeated wording stays as this paragraph has it.
 - In a frame with a slot, the slot content is each place's own: the SLOT IN THE ORIGINAL of a place is rendered with that place's own words, placed where the chosen place's frame places its slot (CHOSEN PLACE: ENGLISH SLOT, where it is shown), in grammatical English, and the frame words around it follow the CHOSEN RENDERING.
 - The surrounding ORIGINAL blocks are context for this place, not part of the paragraph: render nothing of them.${keepingRule}${crossingRule}
-- ONE TENSE, IN THIS ORDER: where TENSE CANDIDATES are shown, the entry records a death, and the life of a person who has died is told in the past tense by the house rule; a line of it told in the present is moved to the past. Then the tense the page holds for what is still true as it is read. Never let one sentence start in one tense and finish in another.
+- ONE TENSE, IN THIS ORDER: where TENSE CANDIDATES are shown, the entry records a death, and the life of a person who has died is told in the past tense by the house rule; a line of it told in the present is moved to the past. Then the tense the page holds for what is still true as it is read. Never let one sentence start in one tense and finish in another. ${QUOTED_WORDS_REMINDER}
 - Do not add content the ORIGINAL does not support and do not drop content it states.
 - Names, handles and place names already used by this paragraph and by DECLARED NAMES are authoritative; keep them exactly. ${NAME_FORM_SCOPE_RULE}
 - ${PAGE_APPARATUS_IS_KEPT}

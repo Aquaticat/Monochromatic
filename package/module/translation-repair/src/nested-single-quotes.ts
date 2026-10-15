@@ -1,6 +1,13 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-
 import { codePointAt, } from './code-points.ts';
+import {
+  bestPairsOf,
+  distinctDepths,
+  EMPTY_LINE,
+  type LineState,
+  type PairedMarks,
+  withMark,
+  withQuotedNumber,
+} from './nested-single-line-readings.ts';
 import {
   bindsWord,
   isElisionPair,
@@ -27,8 +34,10 @@ import {
 // (`'Tis the season,' she said`), and is an apostrophe otherwise, which `restore-typography.ts` curls to the
 // closing single mark: when no mark closes it, and inside a quotation, where it never joins the
 // marks that wait (`'give 'em hell'`). A two-digit elision directly followed by a closing mark (`'42'`, `'90s'`) is a quoted
-// number, not an elision: it opens a quotation that the mark right after it closes, inside a quotation as well
-// (`'he is '42' years old'`). A doubled opener, a mark right before such an elision (`''tis the season'`), opens
+// number, not an elision: it opens a quotation that the mark right after it closes. Inside a quotation both readings are
+// possible (the number a quotation of its own, or an elision whose closing mark closes the quotation around it), and the
+// reading that leaves fewer marks unpaired on the line wins, a tie keeping the elision: `'he is '42' years old'` pairs the number,
+// and `'the '90s'` reads `‘the ’90s’` (`nested-single-line-readings.ts`). A doubled opener, a mark right before such an elision (`''tis the season'`), opens
 // the quotation, and the mark after it is the apostrophe. The `'n'` of `rock 'n' roll`
 // (`isElisionPair`, `isElisionPairEnd`) is one unit whose two marks neither open nor close a quotation.
 
@@ -439,7 +448,8 @@ function singleShape(
 /**
  Every straight single quotation pair in a text's prose: a closing mark
  paired with the innermost opening mark on its line that still waits, so pairs nest, and a listed elision, which is an
- apostrophe inside a quotation, never waits behind another opening mark.
+ apostrophe inside a quotation, never waits behind another opening mark. A quoted two-digit number inside a quotation reads as a
+ quotation or as an elision, whichever leaves fewer marks unpaired, an elision on a tie.
 
  @param text - text being read
 
@@ -462,29 +472,25 @@ export function nestedSinglePairs(
   },
 ): NestedSinglePairs {
   /**
-   Paired opening offsets.
+   The pairs of every line read so far, mutated only inside this function.
    */
-  const openings = new Set<number>();
-  /**
-   Paired closing offsets.
-   */
-  const closings = new Set<number>();
+  const settled: PairedMarks[] = [];
   (function scan(): void {
     /**
-     Offsets of the opening marks waiting for their partners on this line, the innermost last.
+     The readings of the line so far, one for each depth of waiting marks that a quoted number leaves open, the reading that
+     keeps an elision first.
      */
-    const waiting: number[] = [];
+    const line = { states: [EMPTY_LINE,] as readonly LineState[], };
     for (let index = 0; index < text.length; index += 1) {
       /**
        Unit under the scan.
        */
       const character = text.charAt(index,);
-      if (character === LINE_END)
-        waiting.length = 0;
-      // The closing mark of a quoted number was paired when its opening mark was read.
+      if (character === LINE_END) {
+        settled.push(...bestPairsOf({ states: line.states, },),);
+        line.states = [EMPTY_LINE,];
+      }
       if ((mask[index] !== true) || (character !== STRAIGHT_SINGLE))
-        continue;
-      if (closings.has(index,))
         continue;
       /**
        How the quote reads.
@@ -493,43 +499,60 @@ export function nestedSinglePairs(
         text,
         at: index,
       },);
-      if (shape === 'opening') {
-        /**
-         The closing mark of a quoted two-digit number that opens here, none for any other mark.
-         */
-        const [numberCloser,] = closerOfQuotedNumber({
+      /**
+       The closing mark of a quoted two-digit number that opens here, none for any other mark.
+       */
+      const [numberCloser,] = (shape === 'opening')
+        ? closerOfQuotedNumber({
           text,
           at: index,
+        },)
+        : [];
+      if ((numberCloser !== undefined) && (mask[numberCloser] === true)) {
+        // A QUOTED NUMBER (`'42'`, `'90s'`) can be read two ways inside a quotation: as a quotation of its own, or as an elision
+        // whose closing mark closes the quotation around it. Both readings are kept to the end of the line, and the one that
+        // leaves fewer marks unpaired wins, a tie keeping the elision.
+        line.states = withQuotedNumber({
+          states: line.states,
+          open: index,
+          close: numberCloser,
+          closeShape: singleShape({
+            text,
+            at: numberCloser,
+          },),
         },);
-        // A QUOTED NUMBER (`'42'`, `'90s'`) is a quotation of its own, even inside another: the mark right after it closes it, so
-        // the opening mark is no elision and the mark after the number does not close the quotation around it.
-        if ((numberCloser !== undefined) && (mask[numberCloser] === true)) {
-          openings.add(index,);
-          closings.add(numberCloser,);
-          continue;
-        }
+        // The mark that closes the number is read with it.
+        index = numberCloser;
+        continue;
       }
-      // A listed elision (`'em`, `'round`) never joins the opening marks that are waiting for their closing ones: inside a
-      // quotation it is an apostrophe, and the quotation keeps its own opening mark.
-      if ((shape === 'opening') && ((waiting.length === 0) || (!isLeadingElision({
+      /**
+       Whether the mark starts a listed elision.
+       */
+      const elision = isLeadingElision({
         text,
         at: index,
-      },))))
-        waiting.push(index,);
-      // A closing mark pairs with the innermost opening mark that waits, so a quotation inside a quotation pairs both.
-      if ((shape === 'closing') && (waiting.length > 0)) {
-        /**
-         The innermost opening mark that waits.
-         */
-        const innermost = nonNullishOrThrow(waiting.pop(),);
-        openings.add(innermost,);
-        closings.add(index,);
-      }
+      },);
+      line.states = distinctDepths({
+        states: line.states
+          .map(function marked(state,): LineState {
+            return withMark({
+              state,
+              at: index,
+              shape,
+              elision,
+            },);
+          },),
+      },);
     }
+    settled.push(...bestPairsOf({ states: line.states, },),);
   })();
   return {
-    openings,
-    closings,
+    openings: new Set(settled.map(function openOf(pair,): number {
+      return pair.open;
+    },),),
+    closings: new Set(settled.map(function closeOf(pair,): number {
+      return pair.close;
+    },),),
   };
 }
 

@@ -490,8 +490,24 @@ import type { RepairModels, } from './repair-contract.ts';
  worktree's own runs directory, and a `find` for files newer than 34 over the one runs directory that could be listed found
  nothing, but its control since January found nothing either, so it proves no absence. The number moves because the one check
  that would let the change ride inside 34 could not be made with a control.
+
+ Version 36 is a TYPOGRAPHY change of the same kind (n159): the restoration reads the context of a mark as the text a reader
+ sees, so a mark beside emphasis, strike or code delimiters, link brackets, a tag or a comment stands beside the text on the
+ other side of it (`<b>'hi'</b>` opens at the start, the `'n'` of `rock *'n'* roll` is an elision), a quoted number pairs by the
+ reading that leaves fewer marks unpaired (`'the '90s'` reads `‘the ’90s’`), a fragment an edit rewrote takes its prose from the
+ slice it lands in (`apply-patch.ts`), and the text of a shortcut reference or of a link whose label is an address is no prose.
+ Every prompt and every roster is identical, so the key is too, and a record the old restoration wrote holds replacement text
+ the new one would ship differently. The check that would let the change ride inside 35 (no slice-cache record written after
+ the change, shown beside a control that finds records) was not made, since no runs directory is read in this round, so the
+ number moves.
+
+ Version 36 also covers the tense of quoted words (n161, TianqiChen666): the house rule every repair sheet carries and the tense
+ lines of the judges, the polish gate and the selection sheets now say that words quoted as someone wrote or said them keep the
+ speaker's tense, so a critic, editor or judge answer stored under 35 may hold a quotation moved into the past. The key hashes the
+ version, the run shape and the texts and not the sheet, so a record written under the old sheet would be served under the new
+ one; no record has been written at 36, so this rides inside the number n159 set.
  */
-export const SLICE_CACHE_VERSION = 35;
+export const SLICE_CACHE_VERSION = 36;
 /**
  Everything about a repair run that changes what the models are ASKED, folded
  into every cache key.

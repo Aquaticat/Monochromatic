@@ -82,7 +82,6 @@ export {
 } from './slice-selection.ts';
 export { restoreEllipsis, } from './restore-ellipsis.ts';
 export { restoreTypography, } from './restore-typography.ts';
-export { proseMask, } from './typography-prose-mask.ts';
 export { describeSelfPreference, } from './self-preference-line.ts';
 export {
   type SelectionRound,
@@ -297,5 +296,6 @@ export * from './consistency-barrel.ts';
 export * from './consistency-apply-barrel.ts';
 export * from './consistency-reading-barrel.ts';
 export * from './built-artifact-barrel.ts';
+export * from './typography-barrel.ts';
 
 //endregion Public barrel

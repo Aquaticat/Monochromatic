@@ -1,4 +1,11 @@
-import { proseMask, } from './typography-prose-mask.ts';
+import {
+  noteRefusedMask,
+  textNamed,
+} from './typography-mask-refusal.ts';
+import {
+  type ProseMaskReading,
+  proseMaskReading,
+} from './typography-prose-mask.ts';
 
 //region Ellipsis restoration
 // Puts back the ellipsis form the document uses, the way the quote rules put
@@ -56,6 +63,44 @@ function ellipsisFormOf(
 }
 
 /**
+ The prose reading of a replacement: the one a caller handed on, else the reading of the text, logged when the grammar refuses it.
+
+ @param replacement - text a stage wrote
+
+ @param given - the reading a caller made already
+
+ @returns The reading of the replacement
+
+ @example
+ ```ts
+ const { mask, } = readingOf({ replacement: 'Well... no.', },);
+ ```
+ */
+function readingOf(
+  {
+    replacement,
+    given,
+  }: {
+    readonly replacement: string;
+    readonly given?: ProseMaskReading;
+  },
+): ProseMaskReading {
+  if (given !== undefined)
+    return given;
+  /**
+   The reading of the text.
+   */
+  const reading = proseMaskReading({ text: replacement, },);
+  if (reading.refused) {
+    noteRefusedMask({
+      reader: 'restoreEllipsis',
+      name: textNamed({ text: replacement, },),
+    },);
+  }
+  return reading;
+}
+
+/**
  Restores the ellipsis form the replaced text and the wider document use.
 
  Converts only when the replaced region and the document together show one
@@ -70,6 +115,9 @@ function ellipsisFormOf(
 
  @param convention - wider text whose form the replacement should match
 
+ @param reading - the replacement's prose mask, which a caller that read it already hands on (the same units, whatever marks it
+ curled since); read from the replacement where absent, and a refusal of the grammar is then logged
+
  @returns Replacement in the document's ellipsis form
 
  @example
@@ -82,10 +130,12 @@ export function restoreEllipsis(
     replacement,
     replaced,
     convention,
+    reading: given,
   }: {
     readonly replacement: string;
     readonly replaced: string;
     readonly convention: string;
+    readonly reading?: ProseMaskReading;
   },
 ): string {
   /**
@@ -98,7 +148,10 @@ export function restoreEllipsis(
   /**
    Which units of the replacement are prose.
    */
-  const mask = proseMask({ text: replacement, },);
+  const { mask, } = readingOf({
+    replacement,
+    ...((given === undefined) ? {} : { given, }),
+  },);
 
   return (function scan(): string {
     /**
