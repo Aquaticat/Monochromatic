@@ -2191,7 +2191,8 @@ own filename/folder name once,
 track/folder kind,
 useful parent context and the real activation meaning.
 A folder offers Open folder without autoplay under D72.
-A different track offers Play track.
+A different track offers Play track (D127 changed this to Select track, because a different track is
+only selected).
 An already-current track offers Pause track while playing,
 or Play track while paused/unloaded,
 using D73's actual toggle semantics.
@@ -3471,12 +3472,24 @@ proposal compared the Search page with the stock Search screen of Android Settin
   `lanlan`, then `x` gave `lanxlan`, which places the caret at index 0. Both are consequences of earlier designs, not
   violations of D66, so they were reported and left open.
 - Update, 2026-10-14, same day: the human asked for the caret to be fixed. The query stays kept by the host across a
-  fold change and D66 still empties it for a new visit. The field is now fed a `TextFieldValue` (the text and its
-  selection) instead of a bare `String`: a header rebuilt for the other panel starts the field with the caret at the end
-  of the kept query, a value that still holds the query keeps the caret the person placed (also across an activity
-  recreation, through `rememberSaveable`), and `Ctrl+F` on an open Search page puts the caret at the end and selects
-  nothing. `searchFieldValue` in `SearchPage.kt` holds the rule, and `SearchFieldCaretWiringTest` pins it. The desktop
-  query field was not examined or changed.
+  fold change and D66 still empties it for a new visit. A header rebuilt for the other panel starts the field with the
+  caret at the end of the kept query, the caret the person placed survives (also across an activity recreation), and
+  `Ctrl+F` on an open Search page puts the caret at the end and selects nothing. The desktop query field was not
+  examined or changed.
+- Update, 2026-10-14, after review: a first version fed the field a `TextFieldValue` and moved the caret in an effect
+  after `Ctrl+F`. A character typed right after the chord still landed first: on the emulator the chord was handled at
+  0 ms, the typed character reached the field at 7 ms (at the old caret, giving `ylan`), the first recomposition at
+  13 ms, the effect that placed the caret at 22 ms and the recomposition showing it at 27 ms. A field fed a
+  `TextFieldValue` can only take a new value at composition, one frame at the earliest, so no composition-based
+  placement could win against a key 7 ms behind the chord. The field is now a `TextFieldState`, whose edits apply at
+  once: the key handler presses a `SearchFocusPort`, and the open page has registered what that does (caret at the
+  end, nothing selected, focus, keyboard) before the next key is read. Three consequences follow. The field is the
+  source of the query while the page is open, and the host's query only seeds it (edits are mirrored to the host). A
+  field saved by an earlier layout must not overwrite a newer kept query (the activity is recreated on every fold
+  change and Compose saves an unused restored entry again, so a stale `lan` came back over `lanx`), so
+  `restoreOnlyWhileHolding` restores a saved field only while its text equals the query the page started with.
+  `SearchFieldCaretWiringTest` pins all of it, including a press and a typed character in one event and with the
+  frame clock held.
 
 What stays: D58 columns (Back center and result glyph center share one x, query start and title start share one x),
 D59 highlight, D63 to D80 focus and keyboard behavior, D66 and D70 copy, D76 (not a focus trap), D50 and D51 layout

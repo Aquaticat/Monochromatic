@@ -374,11 +374,16 @@ While a scan runs an empty answer reads "Still looking through your library" and
 ### Search field caret
 
 The host keeps the query across a fold change (`rememberSaveable` next to the route), and D66 empties it for a new visit.
-The field in `searchHeader` is fed a `TextFieldValue`, not a bare `String`, so its caret is part of the value:
+The field in `searchHeader` is a `TextFieldState`, whose edits apply at once,
+and it is the source of the query while the page is open
+(the host's query only seeds it, and edits are mirrored to the host):
 a header rebuilt for the other panel starts with the caret at the end of the kept query,
-a value that still holds the query keeps the caret the person placed (also across an activity recreation),
-and `Ctrl+F` on an open Search page puts the caret at the end and selects nothing (`searchFieldValue`; D126).
-`SearchFieldValueTest` pins the rule and `wiring/SearchFieldCaretWiringTest` pins the rendered field.
+the caret the person placed survives an activity recreation,
+and `Ctrl+F` on an open Search page puts the caret at the end and selects nothing (D126).
+The key handler presses `SearchFocusPort` (`HostKeyboard.kt`) and the open page has registered the caret move,
+so a character typed right after the chord (7 ms later on the emulator) lands after the query, not before it.
+`restoreOnlyWhileHolding` keeps a field saved by an earlier layout from overwriting a newer kept query.
+`wiring/SearchFieldCaretWiringTest` pins the rendered field, including a press and a character in one event.
 
 ### Search page style
 
