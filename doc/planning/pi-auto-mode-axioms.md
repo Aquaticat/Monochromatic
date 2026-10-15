@@ -8,6 +8,13 @@ The accepted ceiling remains three sequential bundles with at most three paralle
 The average USD 0.001 per judgment constraint remains removed.
 Preparation, retries, conversion, and all bundles share one original deadline.
 
+The user also reaffirmed that each decision must not receive the full transcript,
+and directed inspection of the legacy auto-mode context selector.
+Its existing contract selects the larger of the latest five visible messages and the complete latest-user span,
+preserving the selected messages without truncation.
+Local capture and provenance retention must remain distinct from judge-input selection.
+The native assessment's complete source-receipt serialization diverged from this incumbent boundary.
+
 The user corrected the design:
 
 > These are NOT reasoning models.

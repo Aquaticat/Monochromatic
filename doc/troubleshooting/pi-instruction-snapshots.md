@@ -23,8 +23,8 @@ wire bytes,
 and complete retained answers at fixture-derived thresholds.
 
 The user authorized three sequential bundles of at most three parallel calls on 2026-10-15.
-Only the average USD 0.001 per judgment cost limit was removed;
-the five-second preparation-inclusive deadline remains.
+Initially only the average USD 0.001 per judgment cost limit was removed.
+The user subsequently raised the preparation-inclusive deadline to 15 seconds on the same date.
 The unverified size-triggered manual fallback in `8fe7e33410` was withdrawn by `95bd6db768`.
 
 The maintained sender now partitions original question names without changing shared context,
@@ -55,6 +55,27 @@ the corresponding selected-rule question repeats that collection.
 This establishes a remaining live-use failure,
 not proof that payload size alone caused the timeout.
 The configured offline successes must not be described as full live functionality.
+
+After the deadline increase,
+the unchanged third request returned HTTP 400 with `context_length_exceeded`,
+`type: invalid_request_error`, and `param: input`.
+Its exact response message was
+`Your input exceeds the context window of this model. Please adjust your input and try again.`
+The response supplied no token count or effective serving limit.
+The [Luna model page](https://developers.openai.com/api/docs/models/gpt-6-luna)
+documents a 1050000-token context window;
+request bytes are not a token measurement.
+
+The user identified the more fundamental regression:
+the legacy context selector sends a recent visible-message window,
+not every captured source receipt on every decision.
+`src/visible-context.ts` selects the larger of five latest visible messages and the latest-user span.
+`src/context.ts` obtains Pi's compaction-aware projection;
+`src/judge-messages.ts` supplies loaded project files separately.
+The native `wire.mjs` instead serializes the complete governing-source collection,
+and `wire-clause.mjs` repeats selected source text in question instructions.
+The restored assessment scope must be verified before declaring the native repair complete.
+Scratch-only byte-sharing experiments are not a replacement for that requirement.
 
 `mise run //package/pi-plugin/auto-mode:test:assessment-bundles`
 exercises the built sender with the actual built judgment owner.

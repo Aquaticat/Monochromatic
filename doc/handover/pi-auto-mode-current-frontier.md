@@ -9,11 +9,40 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+The user corrected the assessment scope:
+never send the full transcript at every decision point,
+and inspect the legacy auto-mode implementation before redesigning context selection.
+The incumbent contract is in `src/visible-context.ts` and `src/constants.ts`:
+retain the larger of the latest five visible messages and the complete span from the latest user message.
+With no user message, retain the latest five visible messages.
+Keep each selected message complete;
+omit persisted system messages, hidden custom messages, and provider-only metadata.
+Use Pi's compaction-aware `buildContextEntries()` projection.
+Project-context files, current action/input, and active trust directives are separate judge inputs.
+Commit `4c8fe3a909` records the window decision;
+`cad376be5b` records the compaction-aware projection.
+The rebuilt legacy `context.unit.test.ts` passes those window and omission controls on 2026-10-15.
+The native path instead indexes captured source receipts and emits every source's complete content
+through `native/contract/integration/action-policy/wire.mjs`,
+then repeats selected text through `wire-clause.mjs`.
+Local retention for provenance does not require sending every retained byte to every assessment.
+The context-sharing experiments remain scratch-only and are not the selected repair.
+Next work must restore the incumbent decision-context selection boundary while retaining local provenance.
+Do not describe byte sharing or a larger context window as resolution of this scope defect.
+
 The latest user decision raises the preparation-inclusive assessment deadline to 15 seconds.
 The three sequential bundles of at most three parallel calls remain unchanged.
 Native ownership, conversion, and HTTP lifetime guards now use the accepted duration.
 The five-second results in this evidence ledger describe the superseded deadline.
-Rebuild, updated deadline regressions, and live replay of the unchanged complete workspace request are next.
+Rebuild, type checking, transport, wire, bundle, deadline, preparation, lifecycle,
+and dependency regressions passed after the deadline change in `c607c5f564`.
+The unchanged live replay returned HTTP 400 for its third request after about 5.3 seconds:
+`context_length_exceeded`, with `param: input` and `type: invalid_request_error`.
+The original error text was:
+`Your input exceeds the context window of this model. Please adjust your input and try again.`
+The response did not report a token count or the effective limit used by the serving route.
+OpenAI's current Luna model page documents 1050000 tokens;
+serialized byte counts cannot establish whether that token limit was exceeded.
 
 The user rejected treating normal workspace size as grounds to abandon automatic assessment.
 The process-local assessment probe measured 615 instruction candidates,
