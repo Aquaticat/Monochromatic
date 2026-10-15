@@ -251,6 +251,8 @@ fn toggle_auto_play_on_select(window: &AppWindow) {
         tracing::warn!(?error, "failed to save the Auto-play on select setting");
     }
     project(window);
+    // The end-to-end run reads the setting from this line: the switch row handles Space itself, so no key line follows.
+    crate::ui_state_log::emit(window, "auto-play");
 }
 
 /// What: `layout_changed` reacts to the window crossing the two-pane width.
