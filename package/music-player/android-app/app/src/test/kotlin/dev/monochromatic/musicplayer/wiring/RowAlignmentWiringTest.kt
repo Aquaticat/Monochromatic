@@ -31,9 +31,9 @@ import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.unit.DpRect
-import androidx.compose.ui.unit.height
 import dev.monochromatic.musicplayer.LocalPlayingIndex
 import dev.monochromatic.musicplayer.core.PaneClearance
 import dev.monochromatic.musicplayer.core.TrackListEntry
@@ -200,9 +200,16 @@ class RowAlignmentWiringTest {
         )
     }
 
-    /** ARGB of the pixel at ([x], [y]) of the playing row's box. */
-    private fun playingRowPixel(x: Int, y: Int): Int =
-        rowBox(titleOf(1)).captureToImage().toPixelMap()[x, y].toArgb()
+    /** Vertical middle of the playing row in root pixels, which are dp at this density. */
+    private fun playingRowMiddle(): Int {
+        /** Bounds of the playing row's box in the root. */
+        val bounds: DpRect = rowBox(titleOf(1)).getUnclippedBoundsInRoot()
+        return ((bounds.top.value + bounds.bottom.value) / 2f).toInt()
+    }
+
+    /** ARGB of the root pixel at ([x], [y]), counted from the pane's own edge, so a box that starts late shows. */
+    private fun rootPixel(x: Int, y: Int): Int =
+        composeTestRule.onRoot().captureToImage().toPixelMap()[x, y].toArgb()
 
     // What:     `coverRowsKeepTheOrdinaryColumn` checks the display without a crease.
     // Why:      With no clearance the title bar, the heading and the rows all start at 16 dp, as committed; the case
@@ -293,14 +300,14 @@ class RowAlignmentWiringTest {
     // ```ts
     // test("fill at the edge", () => { expect(pixel(playingRow, 0, mid)).toBe(fillColor); });
     // ```
-    /** With the floor clearance the playing row's first pixels are the fill color, not the canvas. */
+    /** With the floor clearance the first pixels of the playing row, counted from the pane edge, are the fill color. */
     @Test(timeout = CASE_LIMIT_MS)
     fun theCurrentRowFillReachesThePaneEdgeBesideTheCrease() {
         show(rightPaneClearance(creaseWidthPx = 0f, density = INNER_DENSITY))
-        /** Vertical middle of the playing row's box. */
-        val middle: Int = rowBox(titleOf(1)).getUnclippedBoundsInRoot().height.value.toInt() / 2
-        assertEquals("first pixel", scheme.surfaceContainerLow.toArgb(), playingRowPixel(0, middle))
-        assertEquals("just before the clearance", scheme.surfaceContainerLow.toArgb(), playingRowPixel(20, middle))
+        /** Vertical middle of the playing row. */
+        val middle: Int = playingRowMiddle()
+        assertEquals("first pixel", scheme.surfaceContainerLow.toArgb(), rootPixel(0, middle))
+        assertEquals("just before the clearance", scheme.surfaceContainerLow.toArgb(), rootPixel(20, middle))
     }
 
     // What:     `theKeyboardRingLiesInsideTheBoxAndKeepsItsGapToTheText` checks the ring by pixels and bounds.
@@ -319,12 +326,12 @@ class RowAlignmentWiringTest {
     fun theKeyboardRingLiesInsideTheBoxAndKeepsItsGapToTheText() {
         show(rightPaneClearance(creaseWidthPx = 0f, density = INNER_DENSITY))
         focusListByKeyboard()
-        /** Vertical middle of the playing row's box. */
-        val middle: Int = rowBox(titleOf(1)).getUnclippedBoundsInRoot().height.value.toInt() / 2
-        assertEquals("outer ring at the edge", scheme.onPrimary.toArgb(), playingRowPixel(0, middle))
-        assertEquals("near ring just inside", scheme.primary.toArgb(), playingRowPixel(1, middle))
-        assertEquals("near ring, second pixel", scheme.primary.toArgb(), playingRowPixel(2, middle))
-        assertEquals("fill inside the rings", scheme.surfaceContainerLow.toArgb(), playingRowPixel(3, middle))
+        /** Vertical middle of the playing row. */
+        val middle: Int = playingRowMiddle()
+        assertEquals("outer ring at the edge", scheme.onPrimary.toArgb(), rootPixel(0, middle))
+        assertEquals("near ring just inside", scheme.primary.toArgb(), rootPixel(1, middle))
+        assertEquals("near ring, second pixel", scheme.primary.toArgb(), rootPixel(2, middle))
+        assertEquals("fill inside the rings", scheme.surfaceContainerLow.toArgb(), rootPixel(3, middle))
         /** Distance from the ring's inner edge (3 dp) to the start of the title. */
         val gap: Float = textBounds(titleOf(1)).left.value - RING_DEPTH_DP
         assertTrue("gap from ring to text is $gap dp", gap >= MIN_RING_TEXT_GAP_DP)
