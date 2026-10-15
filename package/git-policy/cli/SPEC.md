@@ -97,8 +97,7 @@ the native engine already holds the corrected bytes, so it writes them directly.
 A commit transaction stores them with `git hash-object -w --stdin` and points the private index entry at the blob with
 `git update-index --add --cacheinfo`;
 a direct fix writes the worktree file.
-The patch parser and applier modules (`policy_patch.rs`, `policy_patch_validate.rs`) remain in the crate but nothing in
-the executable calls them.
+The crate has no patch parser or applier for policy corrections.
 A correction that the private index cannot take is a failure of the pass and names its path.
 The engine does not compare a correction's bytes with the candidate's:
 a pass counts as changed only when its resulting state differs from the preceding state
