@@ -646,6 +646,10 @@ run = 'node --max-old-space-size=512 src/native-judgment-input.unit.test.ts'
 description = "Verify original producer authentication precedes request receipt observation"
 run = 'node --max-old-space-size=512 src/native-request.unit.test.ts'
 
+[tasks."test:native:membership-read"]
+description = "Compare original object-keyed membership queries with native weak-map results"
+run = 'node --max-old-space-size=512 src/native-membership-read.unit.test.ts'
+
 [tasks."test:native:judgment-api"]
 description = "Verify original public method guards, call identity, forwarding, and lazy inspection"
 run = [
