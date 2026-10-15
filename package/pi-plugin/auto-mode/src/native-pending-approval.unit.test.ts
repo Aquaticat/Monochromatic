@@ -98,8 +98,12 @@ await describe({ name: '', children: [
     for (const invoke of [pending.assertCurrent, function recaptureRetired() {
       nativePendingApproval.capturePendingSessionApproval(f);
     }]) {
-      try { invoke(); }
-      catch (error) { failures.push(error); }
+      try {
+        invoke();
+      }
+      catch (error) {
+        failures.push(error);
+      }
     }
     expect(failures).toHaveLength(2);
     expect(failures[0]).toBe(f.dependency.failure);

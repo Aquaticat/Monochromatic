@@ -28,7 +28,9 @@ export type PendingSessionApproval = {
  Original confirmation capabilities must remain bound to the same native review.
  */
 export class PendingSessionApprovalError extends Error {
-  /** Identify the native confirmation boundary without exposing session contents. */
+  /**
+   Identify the native confirmation boundary without exposing session contents.
+   */
   override name = 'PendingSessionApprovalError';
 }
 
@@ -101,15 +103,24 @@ export function capturePendingSessionApproval({
   /**
    Selection identity cannot be replaced during semantic assessment.
    */
-  const select: unknown = ui === undefined ? undefined : Reflect.get(ui, 'select');
+  const select: unknown = ui === undefined ? undefined : Reflect.get(
+    ui,
+    'select'
+  );
   /**
    Verdict recording is part of the original confirmation path.
    */
-  const appendEntry: unknown = host === undefined ? undefined : Reflect.get(host.pi, 'appendEntry');
+  const appendEntry: unknown = host === undefined ? undefined : Reflect.get(
+    host.pi,
+    'appendEntry'
+  );
   /**
    Stop must continue to abort the same native session.
    */
-  const abort: unknown = host === undefined ? undefined : Reflect.get(host.ctx, 'abort');
+  const abort: unknown = host === undefined ? undefined : Reflect.get(
+    host.ctx,
+    'abort'
+  );
   /**
    An unavailable presentation path cannot satisfy an approval requirement.
    */
