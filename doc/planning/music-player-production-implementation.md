@@ -336,6 +336,16 @@ before saying it matches, QAB):
   minutes before); the job is uncached because the repo cache was at 9.98 of 10 GB (a cache would save at most the
   9 minutes of the dependency phase on x86_64). Its attestation path ran only as skipped until a real release; the
   `0.1.2` release (bump commit `c75435f772`, run `38688512043`) is the first real run of it.
+  RELEASED `music-player-v0.1.2` on 2026-10-15 on attempt 2 of that run: attempt 1 failed in two jobs (`build-android`
+  and macOS) at the mise setup step with "GitHub releases API returned 403 Forbidden" and created no tag or release; I
+  reran the two failed jobs. Cause found in the action source (`jdx/mise-action` `c2a87611a1`, `src/index.ts` lines
+  413 to 423 and 985 to 1001): with `minimum_release_age` set and no `version`, every job lists mise releases through
+  the GitHub API with the workflow token, and any 4xx except 429 is non-retryable. Why the API answered 403 is not
+  established (no response headers were read). Planned fix: set the action's `version` input in both mise steps of
+  `music-player-release.yml`, with a comment (the call is skipped then). Verified for 0.1.2: nine assets, `sha256sum
+  --check` passed for eight files, attestation exit 0 for both musl tarballs and the APK (the first real run of that
+  path), APK certificate `9de6e9a4...6926`, musl x64 interpreter `/lib/ld-musl-x86_64.so.1`, and the musl x64 binary
+  printed `music-player 0.1.2` inside `alpine:3.24` with the apk list installed.
 - Task 96, Windows linkers, branch `feat/music-player-windows-linkers`, worktree `music-player-win`: Windows MSVC
   uses `link.exe` instead of `lld-link.exe`, plus a non-MSVC build for `x86_64-pc-windows-gnu`, a Windows CI workflow;
   Linux stays on rust-lld because mold links ELF only (upstream README, mold 3.0.0, and
