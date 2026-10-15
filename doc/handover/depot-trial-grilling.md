@@ -704,7 +704,18 @@ the broader evaluation still requires independently verifiable work:
   and spending controls;
   identify the precise missing authorization if access remains blocked.
 
-The next action is provisioning and running the desktop interaction path.
+The desktop player does not require a physical GPU:
+its Slint build includes the software renderer,
+and the successful Alpine graphical smoke run used the compositor's `--headless --gpu software` path.
+The absence of a cloud GPU does not block desktop interaction testing.
+Android emulator graphics requirements are a separate environment constraint,
+not an application requirement.
+
+The desktop prerequisite workflow initially failed because its task file was outside the configured discovery roots.
+The task was moved into the desktop package's existing `mise.toml`;
+the rerun is `38826610100`.
+The next action is provisioning and running the desktop interaction path,
+alongside cloud preparation of Android instrumented-test artifacts for an isolated local emulator.
 Production deployment remains outside the trial's authorization.
 
 ## Interview process correction
