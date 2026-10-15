@@ -17,8 +17,8 @@ This is not a live provider rejection or a model token measurement.
 The one-question-per-candidate, one-request implementation is the active design defect.
 The unverified manual-capacity fallback in `8fe7e33410` is withdrawn.
 The user now permits three sequential bundles with at most three parallel calls per bundle.
-The user withdrew the average budget expectation;
-clarification of the existing five-second hard deadline is pending.
+The user removed only the average USD 0.001 per judgment cost limit.
+The existing five-second preparation-inclusive hard deadline remains.
 Next: implement complete attributed request partitioning and shared bundle accounting,
 then verify configured workspace tool execution.
 Do not present size-triggered manual review as the completed repair.

@@ -948,8 +948,8 @@ Each bundle permits at most three parallel calls.
 The maximum is therefore nine calls arranged within three sequential bundles,
 not nine sequential calls.
 Preserve every selected question and its answer identity when dividing provider requests.
-The user also withdrew the average budget expectation;
-whether this removes the five-second hard deadline is awaiting clarification.
+The user clarified that only the average USD 0.001 per judgment cost limit is removed.
+The five-second preparation-inclusive deadline remains.
 The historical three-call and five-second decisions in this section describe the superseded design
 where they conflict with this update.
 
