@@ -335,8 +335,9 @@ before saying it matches, QAB):
   publish on main; `logger-fuzz.yml` fails its coverage gate (2026-09-24 and now). `cache-prune.yml` (daily, `actions:
   write`, deletes superseded cache entries, keeps the newest per family per ref): the human approved it with the
   music player families added, merged at `96728127aa`; its dispatch dry run (run `38676731033`) listed 24 entries in
-  11 families and would delete 0, so the DELETE call itself has still never executed (it runs on the first scheduled
-  run that finds a stale entry; check that run's log). Feature-branch entries of the Windows agent
+  11 families and would delete 0. The first scheduled run (`38712633874`, 2026-10-15 09:23 UTC, success, 15 entries)
+  executed the DELETE path for real: it deleted the older `music-player-desktop-v1-Windows-ARM64` entry (899,731,867
+  bytes) and kept the newest of each family. Feature-branch entries of the Windows agent
   (`mp-win-v1`, about 2.6 GB) count against the cap until that branch merges and its entries are deleted.
 - Task 95, Alpine: MERGED to `main` at `2077b5b81e` on 2026-10-15 (decision `doc/decision/music-player-alpine.md`,
   workflow `.github/workflows/music-player-alpine.yml` on x86_64 and arm64). The app builds and runs on Alpine 3.24.2
