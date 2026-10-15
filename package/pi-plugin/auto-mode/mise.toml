@@ -533,6 +533,10 @@ run = [
   'node --max-old-space-size=512 src/native-relation-estimate.unit.test.ts',
 ]
 
+[tasks."test:native:question-definitions"]
+description = "Verify pinned catalog admission and independent claim identity indexes"
+run = 'node --max-old-space-size=512 src/native-question-definitions.unit.test.ts'
+
 [tasks."test:native:relevance-cache"]
 description = "Verify policy freshness and cancellation through built asynchronous cache refresh"
 run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-relevance-cache.unit.test.ts'
