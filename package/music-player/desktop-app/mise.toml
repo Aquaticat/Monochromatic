@@ -516,7 +516,8 @@ console.log('regenerated asset/music-player.icns and asset/music-player.ico; com
 # Distribution / code signing.
 # The per-OS binaries are still BUILT on their own OS (the Mach-O on the Mac, the
 # .exe on Windows, both via `build`), because cross-compiling a Slint+cpal GUI
-# from Linux is out of scope. Only the bundling + signing + notarization is
+# from Linux is out of scope for what ships. (`build:windows-gnu` does cross-compile the
+# GNU Windows target in a container, as a proof of the toolchain; that .exe has no icon.) Only the bundling + signing + notarization is
 # cross-platform and centralized here on Linux: rcodesign (a repo-wide mise tool)
 # for macOS, osslsigncode (in Containerfile.sign) for Windows. Each task assumes
 # the freshly built binary has been synced into dist/. Real credentials are read

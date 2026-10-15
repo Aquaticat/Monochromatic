@@ -438,6 +438,71 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    The taskbar progress does not use that helper;
    see "Taskbar progress".
 
+## Windows
+
+Windows has two builds of the same program, selected by the Rust target.
+Both use WASAPI through cpal, the same winit window, and libopus 1.6.1 built from source with CMake.
+The linker is never lld: `.cargo/config.toml` sets no linker for the MSVC targets, and pins GNU ld for the GNU target.
+Why, and what was measured: `doc/decision/music-player-windows-linkers.md`.
+
+### MSVC build (`x86_64-pc-windows-msvc` and `aarch64-pc-windows-msvc`)
+
+This is the default build.
+Visual Studio's own `link.exe` links it; rustc finds the Visual Studio installation through vswhere.
+
+- Install Visual Studio 2022 or newer, or the Build Tools, with the "Desktop development with C++" workload
+  (the MSVC compiler, `link.exe` and a Windows SDK).
+  On Windows on Arm also install "MSVC ARM64 build tools" and build natively on that machine.
+- Install `rustup` with the MSVC host, the nightly pinned in the repository `mise.lock`, and `cmake` (4.x is fine).
+- No LLVM and no PATH change are needed;
+  earlier versions of this package required LLVM's `bin` on PATH for `lld-link.exe`.
+- Run `mise run //package/music-player/desktop-app:build` (release) or `:test` (needs `cargo-nextest`).
+  The output is `target\release\music-player.exe`.
+
+### GNU build (`x86_64-pc-windows-gnu`)
+
+This build needs no Microsoft toolchain.
+The `gcc` driver runs GNU ld from MinGW-w64,
+and the program imports only system DLLs; it needs no MinGW runtime DLL next to it.
+
+- Install MSYS2, open its UCRT64 shell, and run `pacman -S mingw-w64-ucrt-x86_64-gcc`.
+  That package brings GNU ld, `windres` and `dlltool`.
+  Put `C:\msys64\ucrt64\bin` first on the Windows PATH,
+  before Git for Windows and Strawberry Perl, which also ship a `gcc`.
+- Install `rustup` with the GNU host, so that build scripts are not linked by Visual Studio either:
+  `rustup toolchain install nightly-YYYY-MM-DD-x86_64-pc-windows-gnu` with the date from `mise.lock`, and make it the
+  default or set `RUSTUP_TOOLCHAIN` to it.
+- Install `cmake` and `ninja` (the Windows builds of both work with the MSYS2 gcc);
+  `opusic-sys` uses the Ninja generator whenever `ninja` runs.
+- Run `mise run //package/music-player/desktop-app:build:windows-gnu` or `:test:windows-gnu`.
+  The output is `target\x86_64-pc-windows-gnu\release\music-player.exe`.
+
+UCRT64 is the MSYS2 environment its documentation recommends,
+and the build links the Universal C Runtime that Windows 10 and later include.
+The MINGW64 environment (the msvcrt runtime that the Rust platform-support page names as the target default)
+also builds and passes the tests, but MSYS2 deprecated it on 2026-03-15.
+Both were run on GitHub Windows runners; see the decision record.
+
+### Building the GNU target on Linux
+
+`mise run //package/music-player/desktop-app:image:windows-gnu` builds a Fedora image with mingw-w64 and Wine,
+pinned by digest (`Containerfile.windows-gnu`).
+`:build:windows-gnu` then cross-compiles the program,
+and `:test:windows-gnu` cross-compiles the tests and runs them under Wine.
+Both run in a container capped at 6 GiB of memory and 4 CPUs.
+This proves the GNU toolchain and most of the code; it is not a Windows run.
+The cross build has no icon (the icon is embedded by a build script that runs only on a Windows host),
+and a few tests behave differently under Wine than on Windows
+(for example, Wine keeps a deleted file visible while it is open);
+the decision record lists them.
+
+### Continuous integration
+
+`.github/workflows/music-player-windows.yml` builds, tests and starts the program
+on `windows-2025` (x64) and `windows-11-arm` for the MSVC targets and on `windows-2025` for the GNU target.
+It prints the linker rustc ran, so a `lld` link would fail the job, and the PE import table of the program.
+Each job caches the cargo registry, the git database and the target directory.
+
 ## Taskbar progress
 
 The taskbar bar (KDE `LauncherEntry` on Linux,

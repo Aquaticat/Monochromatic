@@ -261,7 +261,10 @@ The desktop build uses Slint with winit on every desktop target.
 Linux targets Wayland and uses PipeWire,
 with no ALSA or PulseAudio backend.
 macOS targets Apple Silicon and uses CoreAudio.
-Windows targets `x86_64` and uses WASAPI through cpal.
+Windows targets `x86_64` and `aarch64` with Visual Studio's `link.exe`,
+plus a GNU `x86_64` build that needs no Microsoft toolchain,
+and uses WASAPI through cpal;
+`desktop-app/README.md` (section "Windows") has the toolchains and tasks.
 
 The desktop source implements LauncherEntry D-Bus taskbar progress on Linux and native taskbar progress on Windows.
 These shell integrations are best-effort and are not shown in the gallery.
@@ -539,8 +542,8 @@ The application itself runs on the host session.
  Linux requires Wayland and PipeWire.
  macOS builds target Apple
 Silicon,
- and Windows builds target `x86_64`;
- both build natively.
+ and Windows builds target `x86_64` and `aarch64` (MSVC) and `x86_64` (GNU);
+ all build natively on Windows, and the GNU one also cross-compiles in a container.
 The desktop application accepts one optional file or directory path;
  a file selects its parent directory.
 Pass `--start-playing` only when automatic playback on launch is required.
