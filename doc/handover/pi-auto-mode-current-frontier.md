@@ -622,8 +622,9 @@ The focused callback,
 counter,
 and approval check has zero errors and 300 warnings;
 it remains a failing warning gate.
-The updated owned build and source-work/manual-review/approval/dependency consumers are running in
+The updated owned build and source-work/manual-review/approval/dependency consumers pass in
 `${HOME}/temp/agent/pi-native-callback-approval-consumer-20261014.log`.
+Native syntax and package type checks are now running before the next structural cleanup.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
