@@ -136,6 +136,21 @@ internal class RefusingProvider : ColumnProvider() {
     override fun answer(projection: List<String>): Cursor? = throw SecurityException("the invented grant was revoked")
 }
 
+// What:     `internal class UnknownRowProvider` throws `IllegalArgumentException` that does not name the column.
+// Why:      An argument failure about one document must not stop the time reads of the provider's other documents,
+//           whose fingerprints would otherwise change.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// class UnknownRowProvider extends ColumnProvider { answer() { throw new Error("Unknown document invented-7"); } }
+// ```
+/** Throws `IllegalArgumentException` naming an unknown document, not the column, for every query. */
+internal class UnknownRowProvider : ColumnProvider() {
+    /** Always refuses the one document. */
+    override fun answer(projection: List<String>): Cursor? =
+        throw IllegalArgumentException("Unknown document invented-7")
+}
+
 /**
  * Pins the modified-time read of [TrackFingerprint]: a media store URI is never asked for the document column, a
  * document provider's value is returned unchanged, a provider that refuses the column is asked once per process, and a
@@ -204,5 +219,19 @@ class TrackFingerprintModifiedTimeTest {
         }
         assertEquals(listOf(0L, 0L), times)
         assertEquals("a refusal belongs to its row, so the next row is asked too", 2, provider.modifiedQueries())
+    }
+
+    /** An argument failure that does not name the column belongs to its row, so the next row is asked too. */
+    @Test
+    fun anArgumentFailureAboutOneRowDoesNotStopTheNextRowsRead() {
+        /** Provider under an invented authority that rejects every row as an unknown document. */
+        val provider: UnknownRowProvider =
+            Robolectric.setupContentProvider(UnknownRowProvider::class.java, "invented.unknown")
+        /** Times read for two invented rows of that provider. */
+        val times: List<Long> = rowsOf("invented.unknown", 2).map { uri ->
+            TrackFingerprint.queryLastModifiedMs(context, uri)
+        }
+        assertEquals(listOf(0L, 0L), times)
+        assertEquals("only a refusal naming the column is remembered", 2, provider.modifiedQueries())
     }
 }
