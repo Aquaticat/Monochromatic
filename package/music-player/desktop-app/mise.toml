@@ -705,3 +705,17 @@ run = "pnpm install --frozen-lockfile"
 description = "Run representative TypeScript and the shared audio core checks on Depot CI"
 dir = "{{config_root}}/../../.."
 run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job typescript --job audio-core"
+
+[tasks."trial:github:build"]
+description = "Measure an identical Alpine build and warm repetitions on a disposable GitHub runner"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { readFileSync } = await import('node:fs')
+for (const trialRun of ['cold-1', 'warm-1', 'warm-2']) {
+  const started = performance.now()
+  execFileSync('docker', ['buildx', 'bake', '--file', 'package/music-player/desktop-app/depot-trial/bake.hcl', '--progress', 'plain', 'artifact'], { stdio: 'inherit', env: { ...process.env, TRIAL_RUN: trialRun } })
+  console.log(JSON.stringify({ trialRun, elapsedSeconds: (performance.now() - started) / 1000, version: readFileSync('package/music-player/desktop-app/target/depot-trial/version.txt', 'utf8') }))
+}
+"""
