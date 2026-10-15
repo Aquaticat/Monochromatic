@@ -39,7 +39,7 @@ await describe({ name: '', children: [
     assert.ok(original);
     const observed: string[] = [];
     const key = Symbol('original native option');
-    const options = Object.create({ inherited: true }, {
+    const options: unknown = Object.create({ inherited: true }, {
       visible: { enumerable: true, get() { observed.push('visible'); return 'retained'; } },
       signal: { enumerable: true, get() { observed.push('signal'); return 'replaced'; } },
       hidden: { enumerable: false, value: 'not copied' },
