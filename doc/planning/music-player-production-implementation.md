@@ -235,13 +235,26 @@ in the worktree, rerun that platform's verification as a systemd unit, forced fr
 files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
 before saying it matches, QAB):
 
-- Task 92, release workflow, branch `feat/music-player-release-workflow`, worktree `music-player-rel`: GitHub release
-  of `.exe`, `.dmg`, Linux tarballs and `.apk` on the cargo-publish conventions (version bump on main or dispatch with
-  dry-run default true, tag `music-player-v<version>`, attestation, immutable pre-release, Android release keystore as
-  repository secrets with a backup under `~/.local/share/music-player-release-keys`, Windows and macOS unsigned).
-  macOS x64 is culled by the human's decision. Gate: nothing real is released without asking the human first (releases
-  are immutable). The Alpine (task 95) and Windows (task 96) agents write the artifact names and job steps that must
-  be forwarded to this agent when they report.
+- Task 92, release workflow: MERGED to `main` at `ab725bd924` on 2026-10-15 (actionlint 1.7.12 clean; Android
+  detekt, 1287 unit tests and lint fresh on the merged head; the merge touched neither version manifest, so it started
+  no release, confirmed with `gh run list`). Workflow `.github/workflows/music-player-release.yml`, decision
+  `doc/decision/music-player-releases.md`, runbook `doc/runbook/release-the-music-player.md`. Matrix: Linux x64 and
+  arm64 tarballs, macOS arm64 dmg (ad-hoc codesign, the agent's addition), Windows x64 (`link.exe`) and arm64 exe,
+  Android apk signed with the release key (secrets `MUSIC_PLAYER_KEYSTORE_BASE64`, `_KEYSTORE_PASSWORD`,
+  `_KEY_ALIAS`, `_KEY_PASSWORD`; a real run fails unless the APK cert SHA-256 is
+  `9de6e9a475f182c36f2513179fd4b14763b0e00fe068c9b8f3e6f08103616926`), checksums, immutable pre-release. The final
+  workflow text never ran in CI before merge (only its earlier commits ran, nine dry runs); the dry run on main
+  dispatched at merge (run `38675318400`) is that check: read its result before any real release.
+  Open for the human: (1) the first real release (`0.1.0` is on main with no tag; a push never releases it, only a
+  dispatch with dry-run false on main; ask first, releases are immutable); (2) copy
+  `~/.local/share/music-player-release-keys` (`music-player-release.p12`, plaintext `credentials.txt`) into KeePassXC
+  and delete the plaintext; (3) vetoable choices: macOS ad-hoc signing, no Android SDK cache (measured 17 s restore
+  against 25 s install), macOS x64 dropped, AppImage not built (a design reason, not a CI result); (4) product gaps
+  the agent found: the Windows exe is a console-subsystem binary (a console window opens), the apk is about 160 MB,
+  placeholder icon, no third-party license notices, Linux needs glibc 2.39+ and AES. Cache budget: 4.0 GB steady
+  state from this workflow alone against the 10 GB cap (task 97 owns the policy). The Alpine (task 95) and Windows
+  (task 96) agents write the artifact names and job steps; apply them to the release workflow as a follow-up when
+  they report (the agent has finished, so a new agent or me).
 - Task 93, auto-play on select (D129): MERGED to `main` at `9a356efd02` on 2026-10-15. Desktop: 1444 passed, 1
   skipped, clippy and slint lint clean (agent's run on the pre-merge head; the merges since touched no desktop
   file). Android: I reran detekt, unit tests (1287, none failed, the test task executed) and lint fresh on the merged
