@@ -152,7 +152,10 @@ export function createProgramValueAccess({
   }>): string {
     try { 
       return nonNullishOrThrow(group.consumer)
-        .valueFor({ slot: slotHandle, outcome }); 
+        .valueFor({
+          slot: slotHandle,
+          outcome
+        }); 
     }
     catch (error) {
       if (error instanceof NativeScriptValueGuardError) throw operation(function markInvocationFailure() { 

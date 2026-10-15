@@ -12,6 +12,29 @@ import type {
 import type { ProgramOwnership } from './program-ownership.ts';
 import type { ProgramSlot } from './program-state-types.ts';
 import type { JudgmentPrograms } from './program-api.ts';
+import type { NativeReturnTool } from './native-return-types.ts';
+
+/**
+ Capture original tool name before its structured-output choice, preserving native property-read order.
+
+ @param tool - original callable admitted against the declared callsite
+
+ @returns frozen native conversion metadata
+ */
+function captureProgramTool(tool: NativeReturnTool): NativeReturnTool {
+  /**
+   Original name is read before inspecting the structured-output declaration.
+   */
+  const name = tool.name;
+  /**
+   Native truthiness determines the original conversion branch without interpreting the schema.
+   */
+  const usesStructuredOutput = Boolean(tool.outputSchema);
+  return Object.freeze({
+    name,
+    outputSchema: usesStructuredOutput ? true : undefined
+  });
+}
 
 //region Slots publish as a complete original group before native invocation is possible.
 /**
@@ -137,7 +160,11 @@ export function createProgramCallBinding({
          Original callable metadata selects native result conversion without retaining a replacement tool.
          */
         const tool = tools[index];
-        if ((!call) || (call.type !== 'toolCall')
+        /**
+         Native truthiness rejects absent runtime call elements before reading their fields.
+         */
+        const hasCall = Boolean(call);
+        if ((!hasCall) || (call.type !== 'toolCall')
           || ((typeof call.id) !== 'string')
           || (!call.id)
           || ids.has(call.id)
@@ -153,10 +180,7 @@ export function createProgramCallBinding({
             id: call.id,
             name: call.name
           }),
-          tool: Object.freeze({
-            name: nonNullishOrThrow(tool).name,
-            outputSchema: Boolean(tool?.outputSchema) ? true : undefined
-          })
+          tool: captureProgramTool(nonNullishOrThrow(tool))
         });
       }
       currentGroup(handle);

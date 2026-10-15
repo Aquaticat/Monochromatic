@@ -106,7 +106,11 @@ export function createProgramMemberPreparation({
          Each child retains the cancellation signal supplied by its original native invocation.
          */
         const nativeSignal = nativeSignals[index];
-        if ((!member) || (!Object.isFrozen(member))
+        /**
+         Native truthiness rejects absent runtime members before inspecting their frozen identity.
+         */
+        const hasMember = Boolean(member);
+        if ((!hasMember) || (!Object.isFrozen(member))
           || (member.id
             !== slot.call
             .id)
