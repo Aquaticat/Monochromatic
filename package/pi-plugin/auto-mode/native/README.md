@@ -143,6 +143,16 @@ An explicit sequential mode skips tool policy reads.
 All execution capabilities remain uninvoked during scheduling.
 Original sparse-array scheduling is retained when no tool lookup observes an array hole.
 This admission behavior does not establish successful complete dispatch for sparse input.
+`test:native:prepared-completion` verifies final admission presence,
+retained lifecycle failure precedence,
+and original native rejection causes.
+Duplicate and nullish failures remain in their original order.
+Execution errors retain the original complete native outcome array and selected decision.
+Successful completion freezes its envelope and native value list,
+while retaining the original decision and first assessment snapshot identities.
+Without a snapshot,
+each completion receives a fresh frozen empty member list.
+Original getter ordering and opaque observation failures remain unchanged.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 

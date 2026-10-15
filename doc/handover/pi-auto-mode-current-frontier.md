@@ -16,8 +16,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 787 files and 486 rules,
-with zero errors and 10349 warnings.
+The latest complete lint report covers 792 files and 486 rules,
+with zero errors and 10335 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -113,13 +113,30 @@ It also preserves parent freezing before child validation and original proxy fai
 The next dispatcher extraction delegates final native outcomes and retained lifecycle failures to
 `prepared-completion.ts` and `prepared-completion-types.ts`.
 Original error constructors remain in the dispatcher.
-Independent completion consumers are committed;
-formatting,
-type checking,
-built execution,
-original replay,
-domain comparisons,
-and omission controls remain pending.
+The native build,
+package type check,
+both built consumer suites,
+and exact original-code replay pass.
+Six domain comparisons preserve public outcomes and native execution counts,
+including the permission-versus-prohibition positive control.
+All 18 process-local omissions or substitutions produce assertion failures;
+the built dispatcher and completion helper retain their original hashes.
+The complete lint recount has zero diagnostics in the completion helper,
+its types,
+and its three consumer files.
+The remaining dispatcher has 137 warnings.
+Consumers preserve original failure precedence,
+duplicate and nullish aggregate causes,
+native outcome identity,
+getter ordering,
+first-snapshot identity,
+and frozen completion envelopes.
+Receipts are `typed-prepared-completion-comparison.json` and `typed-prepared-completion-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-prepared-completion-final-lint-20261015.log`.
+The saved original dispatcher has SHA-256
+`3810c52f074c0e5e71af7fd90742c797162ade5536e62330ecd1697c96c2c59d`.
 The original dispatcher is saved as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-completion-types.mjs`.
 
