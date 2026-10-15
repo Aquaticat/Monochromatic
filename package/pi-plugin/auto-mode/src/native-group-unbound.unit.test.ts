@@ -1,6 +1,6 @@
 /** Invalid native member association retains all enumerable issued outcomes through drain. @module */
 import assert from 'node:assert/strict';
-import { wait } from '@monochromatic-dev/module-async-time/ts';
+import { setImmediate } from 'node:timers/promises';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
 import { createDispatchFixture } from './native-group-dispatch-fixture.ts';
 
@@ -36,7 +36,7 @@ await describe({ name: '', children: [
     fixture.control.returned = returned;
     fixture.owner.startDispatch();
     await Promise.resolve();
-    await wait(1);
+    await setImmediate();
     assert.equal(fixture.failures.length, 1);
     assert.equal(fixture.state.unboundPending, 2);
     assert.equal(fixture.observations.length, 0);
