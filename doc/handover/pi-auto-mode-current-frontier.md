@@ -1208,8 +1208,21 @@ Commit `63be621a7d` separates the native policy entry from extension initializat
 The existing bundler emits both entries together so shared policy identities remain common,
 and the native generator selects the package's `./native-policy` export.
 This removes the extension SDK import from the intended native policy dependency graph;
-the built import regressions and host lifecycle checks still need to qualify that change.
+the built import regressions and complete native host lifecycle checks now pass.
 Host construction and its original method capture remain unchanged.
+The checks also compare every native policy export with the extension's export by identity,
+and exercise manager constructors,
+CLI RPC state and clean shutdown,
+serializer controls,
+domain contrasts,
+and authored approval decisions without provider requests.
+`${HOME}/temp/agent/pi-native-policy-entry-consumers-20261015.log` retains the completed consumer results.
+Its final type check failed with `TS9037` because the config default export lacked an explicit type.
+Commit `6ddeaef3eb` adds that type and removes both policy-preload fixture workarounds.
+The rebuilt publication,
+domain,
+and type checks are running in
+`${HOME}/temp/agent/pi-native-policy-unordered-consumers-20261015.log`.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
