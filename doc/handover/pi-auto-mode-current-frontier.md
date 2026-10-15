@@ -2107,6 +2107,24 @@ the remaining constructor composition has 91 warnings.
 Public API extraction is qualified at these tested boundaries.
 Constructor composition remains pending beyond public assembly.
 
+`1030e8cde9` preserves the actual dependency-projection result in the public API type,
+types original request handoff,
+and declares the existing dependency facade's composition boundary.
+The facade implementation remains JavaScript;
+its declaration is not evidence that the facade body has been migrated or qualified again.
+The request reader still authenticates the producer before looking up the observer callback,
+retaining both method receivers and exact receipt identity.
+Its original saved source is `request-before-types.mjs`,
+with SHA-256 `abcf9f32007082c1e32d492c6bad8302f688ac0ab797059744bf8ba5ee4e02b7`.
+Independent built request consumers cover successful handoff,
+producer failure before observer access,
+observer failure,
+and recovery.
+Boundary rebuild,
+consumer checks,
+formatting,
+and original request replay remain pending.
+
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
 Its `cli-git` push-wait notice was initially misread as a timeout.
