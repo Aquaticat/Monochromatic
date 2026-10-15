@@ -60,6 +60,18 @@ mod alsa_backend;
 use std::thread::Thread;
 
 /// What:
+///      `use cpal::traits::{DeviceTrait, HostTrait};` imports two traits, which are named sets of methods.
+///  A trait's methods can be called on a value only when the trait is in scope (TS interfaces need no import for that).
+/// Why:
+///       `open_alsa` calls `default_output_device` (from `HostTrait`) and `default_output_config` (from `DeviceTrait`).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import type { DeviceTrait, HostTrait } from "cpal";
+/// ```
+use cpal::traits::{DeviceTrait, HostTrait};
+
+/// What:
 ///      `use ringbuf::HeapProd;` imports the WRITE end of the lock-free ring buffer that carries samples to the
 ///           realtime audio callback.
 /// Why:
@@ -120,6 +132,71 @@ pub const FILL_FRAMES_FLOOR: usize = pipewire_backend::FILL_FRAMES_FLOOR;
 // // No equivalent: TS cannot fail the build on a value comparison.
 // ```
 const _: () = assert!(pipewire_backend::FILL_FRAMES_FLOOR == alsa_backend::FILL_FRAMES_FLOOR);
+
+/// What:
+///      `fn open_alsa(worker: Thread) -> Result<alsa_backend::Output, PlayerError>` opens the cpal backend only after
+///           proving that the default ALSA device can be opened.
+///  `cpal::default_host().default_output_device()` always answers `Some` on ALSA, even on a machine with no sound
+///           card, because it only names the device called "default" and never opens it.
+///  `default_output_config()` opens the device to read its capabilities, so it fails when there is no card.
+/// Why:
+///       Without the probe the fallback would claim success on a machine with no sound at all,
+///  and the window would never learn that nothing can be heard;  with it, startup fails here and the engine sends the
+///  "no sound output" message instead.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function openAlsa(worker: ThreadRef): AlsaOutput {
+///   const device = defaultHost().defaultOutputDevice();
+///   if (!device) throw new PlayerError("no default output device");
+///   device.defaultOutputConfig(); // throws when the device cannot be opened
+///   return AlsaOutput.create(worker);
+/// }
+/// ```
+fn open_alsa(worker: Thread) -> Result<alsa_backend::Output, PlayerError> {
+    // What:     `let host = cpal::default_host();` asks cpal for the platform's audio host (ALSA on Linux).
+    // Why:      The device is reached through the host.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const host = defaultHost();
+    // ```
+    let host = cpal::default_host();
+    // What:     `host.default_output_device().ok_or_else(|| ...)?` turns the `Option` into a `Result` and returns early
+    //           with the error when it is `None`. `?` is Rust's early-return-on-error operator (like a TS `throw`
+    //           that needs no `try`). `|| return PlayerError::Audio(...)` is a closure (an inline function with no
+    //           arguments); the explicit `return` keeps the repository's `implicit_return` rule satisfied.
+    // Why:      The same failure message the cpal backend itself uses when no device exists.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const device = host.defaultOutputDevice() ?? (() => { throw new PlayerError("no default output device"); })();
+    // ```
+    let device = host
+        .default_output_device()
+        .ok_or_else(|| return PlayerError::Audio("no default output device".to_string()))?;
+    // What:     `device.default_output_config()` opens the device and reads its default format; `.map_err(|e| ...)`
+    //           rewrites a failure into `PlayerError::Audio` with `format!`, a template-literal-like macro; `{e:?}`
+    //           prints the error in its debug form; `?` returns early on failure. `let _config` binds the success
+    //           value only to discard it (the leading underscore says it is unused).
+    // Why:      This call is the proof that a sound card or an ALSA plugin answers.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { device.defaultOutputConfig(); } catch (e) { throw new PlayerError(`the default ALSA device cannot be opened: ${e}`); }
+    // ```
+    let _config = device
+        .default_output_config()
+        .map_err(|e| return PlayerError::Audio(format!("the default ALSA device cannot be opened: {e:?}")))?;
+    // What:     `return alsa_backend::Output::new(worker)` builds the real backend and returns its `Result` as is.
+    // Why:      The probe passed, so create the output the controller will use.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return AlsaOutput.create(worker);
+    // ```
+    return alsa_backend::Output::new(worker);
+}
 
 /// What:
 ///      `pub(crate) fn both_failed_message(pipewire_error, alsa_error) -> String` words the single error shown when
@@ -243,7 +320,7 @@ impl Output {
                 // ```ts
                 // try { return wrap(AlsaOutput.create(worker)); } catch (alsaError) { throw ... }
                 // ```
-                match alsa_backend::Output::new(worker) {
+                match open_alsa(worker) {
                     // What:     `Ok(output) => return Ok(Output::Alsa(output))` wraps the working ALSA backend.
                     // Why:      ALSA opened a default device, so it is the backend for this run.
                     //
