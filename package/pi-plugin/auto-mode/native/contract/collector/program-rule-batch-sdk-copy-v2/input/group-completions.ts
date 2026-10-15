@@ -103,7 +103,9 @@ export function createGroupCompletions<const Outcome>({
       l: rl
     });
     ol.debug('observing original issued completion');
-    /** Original completion cleanup runs after either delivery outcome or callback failure. */
+    /**
+     Original completion cleanup runs after either delivery outcome or callback failure.
+     */
     using completionScope = {
       [Symbol.dispose](): void {
         record.removeAbort?.();

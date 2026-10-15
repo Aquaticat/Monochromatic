@@ -21,8 +21,13 @@ await describe({ name: '', children: [
     f.state.failAt = 'first.reject';
     /** Original native rejection differs from the failing ticket callback. */
     const original = Object.freeze({ original: 'rejection' });
+    /** Independently issued native ticket can reject with any original value. */
+    const completion = Promise.withResolvers<unknown>();
+    /** Attach the observer before delivering the original native rejection. */
+    const observation = f.owner.observeCompletion({ record: f.record, completion: completion.promise });
+    completion.reject(original);
     try {
-      await f.owner.observeCompletion({ record: f.record, completion: Promise.reject(original) });
+      await observation;
       assert.fail('Original rejecting-ticket failure was discarded');
     } catch (error) { assert.equal(error, f.failure); }
     assert.deepEqual(f.record.completion, { status: 'rejected', reason: original });
@@ -55,7 +60,11 @@ await describe({ name: '', children: [
     f.state.failAt = 'first.remove';
     /** Later member cleanup cannot run through the earlier original failure. */
     const otherRemove = f.other.removeAbort;
-    assert.throws(function detach() { f.owner.detach(); }, function same(error: unknown) { return error === f.failure; });
+    assert.throws(function detach() {
+      f.owner.detach();
+    }, function same(error: unknown) {
+      return error === f.failure;
+    });
     assert.deepEqual(f.events, ['first.remove']);
     assert.equal(f.other.removeAbort, otherRemove);
     f.controller.abort();

@@ -11,16 +11,22 @@ await describe({ name: '', children: [
         /** Each state/result combination owns its original cancellation and records. */
         const f = createCompletionFixture();
         f.record.state = state;
-        assert.deepEqual(f.events, []);
+        assert.equal(f.events.length, 0);
         assert.equal(Object.isFrozen(f.owner), false);
         assert.deepEqual(Reflect.ownKeys(f.owner), ['detach', 'observeCompletion']);
         /** Original native value remains the same object through retention and delivery. */
         const value = Object.freeze({ original: status });
         /** Both fulfilled and rejected promises are observed by the original operation immediately. */
-        const completion = status === 'fulfilled' ? Promise.resolve(value) : Promise.reject(value);
-        await f.owner.observeCompletion({ record: f.record, completion });
+        const completion = Promise.withResolvers<unknown>();
+        /** Observe the native ticket before its independently selected outcome settles. */
+        const observation = f.owner.observeCompletion({ record: f.record, completion: completion.promise });
+        if (status === 'fulfilled') completion.resolve(value);
+        else completion.reject(value);
+        await observation;
         assert.deepEqual(f.record.completion, status === 'fulfilled' ? { status, value } : { status, reason: value });
         assert.equal(Object.isFrozen(f.record.completion), true);
+        assert.ok(f.record.completion !== undefined);
+        assert.equal(f.record.completion.status === 'fulfilled' ? f.record.completion.value : f.record.completion.reason, value);
         assert.equal(f.record.state, state === 'pending' ? status : state);
         assert.equal(f.record.removeAbort, undefined);
         assert.equal(f.state.phase, 'dispatching');
