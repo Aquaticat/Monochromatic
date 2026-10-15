@@ -123,6 +123,14 @@ fn the_update_notice_and_color_codes_are_dropped_and_the_rest_is_kept() {
 }
 
 #[test]
+fn the_refused_tracking_link_in_the_read_only_state_directory_is_dropped() {
+    let text = message(
+        "mise WARN  tracking config: failed to ln -sf /work/project/mise.toml /home/someone/.local/state/mise/tracked-configs/abc: Read-only file system\nmise WARN  missing: taplo@0.9.0\n",
+    );
+    assert_eq!(text, "mise WARN  missing: taplo@0.9.0");
+}
+
+#[test]
 fn control_characters_that_move_the_cursor_or_ring_a_bell_are_removed() {
     let text = message("mise ERROR bad\u{7}\u{8}\u{0}\rname\u{1b}]0;title\u{7}\n");
     assert!(

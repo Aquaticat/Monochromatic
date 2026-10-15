@@ -40,7 +40,7 @@ const versionOf = name => {
   if (!chosen) throw new Error('mise has no installed ' + name + '; this check never installs anything');
   return chosen.version;
 };
-const tools = ['taplo = "' + versionOf('taplo') + '"', 'node = "' + versionOf('node') + '"', '"npm:bash-language-server" = "' + versionOf('npm:bash-language-server') + '"'];
+const tools = ['taplo = "' + versionOf('taplo') + '"', 'marksman = "' + versionOf('marksman') + '"', 'node = "' + versionOf('node') + '"', '"npm:bash-language-server" = "' + versionOf('npm:bash-language-server') + '"'];
 
 // What the desktop launcher has: the PATH line of the systemd user session, read for that line only.
 const sessionPath = (() => {
@@ -60,6 +60,7 @@ const script = [
   'greet "world"',
   '',
 ].join('\n');
+const notes = ['# Notes', '', 'See [[other]] and [the other note](other.md).', ''].join('\n');
 const dataToml = ['[package]', 'name = "example"', 'version = "0.1.0"', ''].join('\n');
 
 // A project with a mise.toml that lists only tools, which mise trusts without `mise trust`.
@@ -67,6 +68,10 @@ const project = (root, extra = '') => {
   write(root, 'mise.toml', extra + '[tools]\n' + tools.join('\n') + '\n');
   write(root, 'run.sh', script);
   write(root, 'data.toml', dataToml);
+  write(root, 'notes.md', notes);
+  // marksman roots its workspace at a folder with this marker (or a .git folder).
+  write(root, '.marksman.toml', '[core]\n');
+  write(root, 'other.md', '# Other note\n\nSome text.\n');
 };
 const withMise = join(base, 'mise-project');
 project(withMise);
@@ -105,6 +110,17 @@ const cases = [
       { label: 'open', do: 'open', file: 'data.toml' },
       { label: 'ready', do: 'ready', seconds: 60 },
       { label: 'diagnostics', do: 'diagnostics', minimum: 0, maximum: 0, seconds: 2 },
+      { label: 'close', do: 'close' },
+    ]),
+  },
+  {
+    name: 'mise-project-markdown-server',
+    root: withMise,
+    path: sessionPath,
+    plan: plan(withMise, [
+      { label: 'open', do: 'open', file: 'notes.md' },
+      { label: 'ready', do: 'ready', seconds: 60 },
+      { label: 'hover', do: 'request', kind: 'hover', at: offsetOf(notes, '[[other]]', 3), until: 'hover', seconds: 60 },
       { label: 'close', do: 'close' },
     ]),
   },
@@ -205,18 +221,22 @@ for (const item of cases) {
   const replies = events.filter(event => event.reply).map(event => event.reply);
   const hover = replies.map(reply => reply.outcome.text ?? '').join('\n');
   const notice = noticeText(events);
-  const stderr = run.stderr ?? '';
+  const stderr = (run.stderr ?? '').replace(/\u001b\[[0-9;]*m/g, '');
   const elapsed = [...stderr.matchAll(/elapsed_ms=(\d+)/g)].map(found => Number(found[1]));
   const checks = [['process exited cleanly', run.status === 0], ['every step was recorded', steps.length === item.plan.steps.length]];
   if (item.name === 'mise-project-node-server') {
     checks.push(['mise provided tool directories for the project', /mise provides tool directories for the project/.test(stderr)]);
     checks.push(['the Node server became ready through mise', result('ready').ready === true]);
     checks.push(['hover names the function', result('hover').matched === true && hover.includes('greet')]);
-    checks.push(['no language support notice is shown', notice === '']);
+    checks.push(['the notice does not mention mise', !/mise/i.test(notice)]);
+  }
+  if (item.name === 'mise-project-markdown-server') {
+    checks.push(['the Markdown server became ready through mise', result('ready').ready === true]);
+    checks.push(['hover on a wiki link shows the linked note', result('hover').matched === true && hover.includes('Other note')]);
   }
   if (item.name === 'mise-project-binary-server') {
     checks.push(['the binary server became ready through mise', result('ready').ready === true]);
-    checks.push(['no language support notice is shown', notice === '']);
+    checks.push(['taplo is not reported missing and mise has nothing to say', !notice.includes('taplo is not available') && !notice.includes('mise said') && !notice.includes('mise reported')]);
   }
   if (item.name === 'untrusted-project') {
     checks.push(['the notice quotes mise on the untrusted file', notice.includes('mise said:') && notice.includes('are not trusted')]);

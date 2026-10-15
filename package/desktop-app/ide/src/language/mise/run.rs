@@ -122,7 +122,7 @@ pub fn run_bounded(mut command: Command, limit: Duration) -> Result<Completed, S
             }
             return Err(format!(
                 "did not finish within {} s and was stopped",
-                limit.as_secs()
+                limit.as_secs_f64().round()
             ));
         }
         thread::sleep(Duration::from_millis(5));

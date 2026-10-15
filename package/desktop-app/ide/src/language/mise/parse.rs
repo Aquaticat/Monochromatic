@@ -115,10 +115,14 @@ pub fn directories(output: &str) -> Vec<PathBuf> {
 
 /// What:
 ///  Whether a line is mise's own bookkeeping rather than a message about the project:
-///  the version footer of an error and the notice about a newer mise.
+///  the version footer of an error,
+///  the notice about a newer mise,
+///  and the refusal to record the configuration in mise's state directory.
 /// Why:
 ///  The version footer says nothing about the cause,
-///  and the update notice appears on every run.
+///  the update notice appears on every run,
+///  and the sandbox keeps the state directory read-only on purpose,
+///  so mise's attempt to link the configuration there fails on every run.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -128,7 +132,8 @@ fn is_noise(line: &str) -> bool {
     return line.contains("Run with --verbose or MISE_VERBOSE=1")
         || line.starts_with("mise ERROR Version: ")
         || (line.contains("mise version ") && line.contains(" available"))
-        || line.contains("To update, run mise self-update");
+        || line.contains("To update, run mise self-update")
+        || line.contains("tracking config: failed to");
 }
 
 /// What:
