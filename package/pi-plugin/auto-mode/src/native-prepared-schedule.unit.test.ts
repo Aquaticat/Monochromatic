@@ -55,6 +55,25 @@ await describe({ name: 'prepared schedule admission', children: [
       schedule({ calls: [call, call] }); 
     }, { message: 'Prepared batch requires one to64 unique named members' });
   } }),
+  it({ name: 'preserves sparse call admission when an absent tool collection leaves holes unobserved', fn: async function sparseCalls() {
+    const calls: unknown[] = [];
+    calls.length = 1;
+    assert.doesNotThrow(function originalHole() {
+      const result = schedule({ calls, tools: [] });
+      assert.equal(result.scheduled.length, 1);
+      assert.equal(Object.hasOwn(result.scheduled, '0'), false);
+      assert.equal(result.serial, false);
+    });
+    calls.length = 2;
+    assert.throws(function repeatedHoles() {
+      schedule({ calls, tools: [] });
+    }, { message: 'Prepared batch requires one to64 unique named members' });
+    assert.throws(function observedHole() {
+      const oneHole: unknown[] = [];
+      oneHole.length = 1;
+      schedule({ calls: oneHole });
+    }, TypeError);
+  } }),
   //endregion
   //region Cloning owns snapshots independently and precedes mode or capability validation.
   it({ name: 'clones each member separately and freezes only the group and its member objects', fn: async function snapshots() {

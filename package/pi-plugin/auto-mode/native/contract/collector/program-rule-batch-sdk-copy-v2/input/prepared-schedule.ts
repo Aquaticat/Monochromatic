@@ -32,7 +32,9 @@ const EXECUTION_METHODS = [
  @returns whether original admission treats the value as absent
  */
 function isAbsent(value: unknown): boolean {
-  /** Original truthiness is captured without additional property observations. */
+  /**
+   Original truthiness is captured without additional property observations.
+   */
   const present = Boolean(value);
   return !present;
 }
