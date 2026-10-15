@@ -1,32 +1,40 @@
-/** Original dependency eligibility and binding lifetime contracts. @module */
+/**
+ Original dependency eligibility and binding lifetime contracts. @module
+ */
 import type { JudgmentBudget } from '../../../lifecycle/judgment-budget-error-occurrences/controls-private/types.ts';
 import type { ProgramMemberRecord } from './program-state-types.ts';
 
-/** Shared preparation and closure values are read only at original operation boundaries. */
+/**
+ Shared preparation and closure values are read only at original operation boundaries.
+ */
 export type JudgmentDependencyState = Readonly<{
   prepared: boolean;
   preparationFailed: boolean;
   preparationFailure: unknown;
   finished: boolean;
   closeFailed: boolean;
-  finalRecord: Readonly<{ failure?: unknown }> | undefined;
-  handle: object | undefined;
+  finalRecord?: Readonly<{ failure?: unknown }>;
+  handle?: object;
 }>;
 
-/** First dependency failure remains retained after later callbacks fail differently. */
+/**
+ First dependency failure remains retained after later callbacks fail differently.
+ */
 export type JudgmentDependencyRetained = {
   eligibilityFailure?: Readonly<{ cause: unknown }>;
   bindingSegmentActive: boolean;
 };
 
-/** Original observation capabilities remain lazy and retain their own native owner. */
+/**
+ Original observation capabilities remain lazy and retain their own native owner.
+ */
 export type JudgmentDependencyInput = Readonly<{
   budget: Pick<JudgmentBudget, 'checkpoint'>;
   readOriginalRequest: () => object;
   receipt: object;
   facade: Readonly<{
-    finalize: (handle: object | undefined) => unknown;
-    checkRetained: (handle: object | undefined) => unknown;
+    finalize: (handle: JudgmentDependencyState['handle']) => unknown;
+    checkRetained: (handle: JudgmentDependencyState['handle']) => unknown;
   }>;
   byMember: ReadonlyMap<string, object>;
   bindings: Pick<WeakMap<object, ProgramMemberRecord>, 'get'>;
@@ -34,7 +42,9 @@ export type JudgmentDependencyInput = Readonly<{
   readPreparation: () => JudgmentDependencyState;
 }>;
 
-/** Synchronous dependency boundaries preserve values while retaining original failures. */
+/**
+ Synchronous dependency boundaries preserve values while retaining original failures.
+ */
 export type JudgmentDependencyChecks = Readonly<{
   active: () => void;
   ready: () => void;
