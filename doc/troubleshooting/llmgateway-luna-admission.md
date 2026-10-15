@@ -1,5 +1,94 @@
 # LLM Gateway Luna Decisions returns complete answers without complete native admission
 
+## Local read falsely acquires an unrelated prerequisite on 2026-10-15
+
+After restoring selected conversation context,
+the configured host received complete HTTP 200 assessments for a local `proof.txt` read,
+but emitted:
+
+> An independent authorization prerequisite remains unsatisfied or unresolved;
+> session confirmation cannot satisfy it
+
+Luna selected `prerequisite` with probability `0.60` for `PX2`,
+whose authorization condition concerns destructive or external actions.
+The observed local read does neither.
+The first live host attempt and both unchanged-body repetitions admitted that meaning.
+The adopted inclusive `0.60` threshold explains why the consumer retained the prerequisite;
+its independent confidence field was `0.53` and was not the admission field.
+This is a false positive for this operation,
+not evidence that the Gateway ignored input or that the confirmation guard should be removed.
+
+### Source trace and bounded repair
+
+The question supplied the selected clause while retaining the operation only in shared input.
+The replacement repeats the complete original operation beside each clause,
+without changing source content,
+question identity,
+rubrics,
+admission threshold,
+or authorization behavior.
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/wire.mjs:56`
+decodes the original native JSON snapshots:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/wire.mjs:56
+const proposedOperation = Object.freeze({
+  parent: JSON.parse(envelope.parentJSON),
+  prepared: JSON.parse(envelope.preparedJSON)
+});
+```
+
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/wire-clause.mjs:59`
+adds `proposedOperation` to each categorical clause question.
+The original shared input remains complete.
+The tradeoff is repeated operation bytes per clause;
+conversation archives remain excluded.
+The measurements establish changed model outputs,
+not the provider's internal cause or general semantic accuracy.
+
+### Verification
+
+The unchanged requests and repeat responses are retained under
+`${HOME}/temp/agent/pi-hyper-rpc-allow-e9HmAE/`
+and `${HOME}/temp/agent/pi-core-repeat-fgODvB/`.
+Two changed-format observations under `${HOME}/temp/agent/pi-core-operation-ygPhES/`
+retained permission and fresh-confirmation estimates while no independent prerequisite met admission.
+These diagnostic observations executed no proposed tool operation.
+
+After commit `67a2d7cfe3`,
+the installed CLI was exercised in disposable homes with all 17 configured packages,
+copied workspace instructions,
+authored primary-model responses,
+and live Luna assessments:
+
+- `pi-hyper-rpc-allow-xBd3tp`:
+  one scoped confirmation and one completed native file read.
+- `pi-hyper-rpc-prohibited-jdUv2C`:
+  an actual file-read prohibition, no confirmation, and no child execution.
+- `pi-hyper-rpc-generic-L5IYbS`:
+  required approval from an external records office, no confirmation, and no child execution.
+
+Each assessment used three HTTP calls under the original fifteen-second budget.
+The permission case retained 516 questions and request sizes of 370631,
+377120,
+and 289751 bytes.
+Its slowest response completed in 5760.916 milliseconds.
+These receipts prove the named live consumer cases,
+not human keyboard delivery or general classifier accuracy.
+The maintained `test:native:decision-context` also checks exact operation equality in every clause question,
+complete selected messages,
+absence of the old prefix,
+follow-up selection,
+and reload.
+No upstream defect or filing is established by these application measurements.
+
+## Historical admission investigation
+
+The remaining sections describe the 2026-10-14 input,
+threshold,
+and experiments.
+Their unresolved result does not replace the newer configured-host receipts.
+
 ## Symptom and version
 
 On 2026-10-14,

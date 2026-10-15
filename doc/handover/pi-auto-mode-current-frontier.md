@@ -17,8 +17,8 @@ The [accepted decision](../decision/pi-auto-mode-decision-core.md) fixes impleme
 - [x] Select current context before semantic candidates and exclude retained archives from model input.
 - [x] Replace decision composition and re-resolve scoped confirmation without erasing independent prerequisites.
 - [x] Separate explicit bypass from semantic profile admission while retaining native execution checks.
-- [ ] Verify prepared-operation identity, freshness, cancellation, deadlines, and configured-host behavior.
-- [ ] Verify activation preserves a usable artifact after build failure and record remaining feature scope.
+- [x] Verify prepared-operation identity, freshness, cancellation, deadlines, and configured-host behavior.
+- [x] Verify activation preserves a usable artifact after build failure and record remaining feature scope.
 - [ ] Remove superseded paths, run relevant lint and tests, and update consumer documentation.
 
 Release activation now stages an immutable native directory and its matching policy bundle,
@@ -28,9 +28,42 @@ with successful directory migration and subsequent link replacement as positive 
 The configured-host fixture passes Allow, unrelated-prerequisite, and prohibition controls
 with all 17 configured packages and copied workspace instructions.
 Its current assessment contains 516 questions in three requests of 200, 200, and 116.
-This is authored-response consumer evidence; live assessment remains to be checked.
-The broader direct-import regression exposed a missing `buildVisibleContext` public export;
-the native and extension entries must share that implementation identity.
+The authored-response controls are followed by live Luna receipts in
+`pi-core-live-configured-corrected.log` and `pi-core-live-restrictions.log`
+under `${HOME}/temp/agent/`.
+Live Allow executes one original native read;
+an actual prohibition and an external-office approval prerequisite each withhold execution without a dialog.
+All use the original installed CLI, disposable homes, all configured packages,
+copied workspace instructions, and authored primary responses.
+They do not claim human approval or physical keyboard delivery.
+The direct-import regression found missing public exports for shared context and native bypass;
+both package entries now retain those identities and the direct-import checks pass.
+
+The first selected-context live run falsely admitted `PX2` as an independent prerequisite for a local read.
+Both unchanged replays reproduced it.
+Repeating the complete operation beside each clause removed that admitted prerequisite
+in both diagnostic observations, without changing policy or the `0.60` cutoff.
+Commit `67a2d7cfe3` implements that representation and removes a redundant source read.
+The subsequent live host checks pass;
+the permission case sends 516 questions in three calls and its slowest response took 5760.916 milliseconds.
+The [Luna troubleshooting record](../troubleshooting/llmgateway-luna-admission.md)
+retains the original failure, controls, limitations, and exact receipts.
+
+The broader regression run passes type checking, import boundaries, budget and cancellation,
+dependency freshness, original source identity, input sealing, prepared membership,
+approval routing, uncertainty handling, semantic transport, bypass, wire conversion, and bundle accounting.
+Its sole failure was the redundant source read's changed callback sequence;
+the corrected preparation, failure, and boundary consumers pass in `pi-core-final-checks.log`.
+That final run also passes release activation, selected context, transport, and semantic-policy consumers.
+Removing CLI preflight only in a disposable fixture makes the activation regression fail with
+`The deliberately invalid native release was activated`.
+The production guard stays present.
+
+Remaining feature scope is explicit:
+guarded execution retains the accepted single-call and producer/successor program profiles;
+explicit bypass also runs ordinary native programs outside those semantic profiles.
+Legacy `/guard`, `propose_trust`, and approval reuse remain legacy-only features.
+No full-session memory benchmark or universal semantic accuracy claim follows from this replacement.
 
 The replacement is `native/contract/integration/action-policy/decision-core.mjs`.
 It replaces `evaluate.mjs`, `index.mjs`, and `reviewer.mjs` on 2026-10-15;
@@ -63,7 +96,7 @@ It records the context-selection defect,
 a built approval-router witness that generic Allow overrides an unrelated unsatisfied prerequisite,
 and a built-host bypass regression against an upstream Codemode positive control.
 The earlier `generic` control sent Deny and did not prove prerequisite preservation after Allow.
-Implementation is in progress; the review itself made no production edits.
+The accepted replacement is implemented; the review itself made no production edits.
 
 The user corrected the assessment scope:
 never send the full transcript at every decision point,
@@ -78,12 +111,12 @@ Project-context files, current action/input, and active trust directives are sep
 Commit `4c8fe3a909` records the window decision;
 `cad376be5b` records the compaction-aware projection.
 The rebuilt legacy `context.unit.test.ts` passes those window and omission controls on 2026-10-15.
-The native path instead indexes captured source receipts and emits every source's complete content
+The reviewed native path had indexed captured source receipts and emitted every source's complete content
 through `native/contract/integration/action-policy/wire.mjs`,
 then repeats selected text through `wire-clause.mjs`.
 Local retention for provenance does not require sending every retained byte to every assessment.
 The context-sharing experiments remain scratch-only and are not the selected repair.
-Next work must restore the incumbent decision-context selection boundary while retaining local provenance.
+The replacement restores the incumbent decision-context selection boundary while retaining local provenance.
 Do not describe byte sharing or a larger context window as resolution of this scope defect.
 The user chose to keep the migration lesson in auto-mode documentation only;
 do not add a general `AGENTS.md` migration rule.
