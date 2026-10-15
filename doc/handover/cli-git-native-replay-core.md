@@ -151,16 +151,18 @@ The 16 missed mutants are the ones the tests in `ebfd97cc83` target; no campaign
 The later campaigns stopped before a mutant total: one was killed by a drain signal, one exited 4 at the baseline,
 and one was stopped by the coordinator during planted controls.
 
-### In flight at drain
+### In flight
 
-- systemd user unit `replay-core-mutation-2` (memory cap 12G) runs, in order:
-  1. the container gate with `GIT_POLICY_NATIVE_IMAGE_TAG=replay`, log `~/temp/agent/replay-core-container-4.log`;
-  2. the scoped mutation campaign over the 14 implementation files, log `~/temp/agent/replay-core-mutation-2.log`.
-  The file list is in `~/temp/agent/replay-core-mutation-files.txt`.
-  Let it finish; do not kill it. Its `exit N` line ends each log.
-- Earlier, the first campaign (`replay-core-mutation-1.log`) failed at the planted-control phase, as described above.
-  The container gate before it (`replay-core-container-2.log`) passed all 959 library tests and failed only at Clippy,
-  on the four pre-existing findings.
+Resumed on 2026-10-15 (user: the named work is to be done, not listed). The branch was migrated to the data-only
+`cli-git.config.jsonc` and merged with `main`; the container gate on the merge (tag `replayG`) passed with 1812 unit,
+137 binary and 1 consumer test and Clippy clean.
+The mutation campaign runs as the systemd user unit `cli-git-replay-campaign` (driver
+`~/temp/agent/replay-campaign-20261015.ts`, status `~/temp/agent/replay-campaign.status` ending with `campaign done`,
+logs `~/temp/agent/replay-mutation-P1.log` to `-P4.log`), started 2026-10-15 09:56 EDT with `--timeout 300` (the task
+accepts it now). Lanes: P1 `replay_patch`, P2 `replay_reverse_apply`, P3 containment, object, capture order,
+reservation and shared paths, P4 the other seven files. Each lane uses its own image tag `replayP1` to `replayP4`,
+aliases of the gate image `replayG`. Read every MISSED or TIMEOUT line when it ends; kill each with a test shown to
+fail on the mutant, or justify it from the code.
 
 ### Remaining after drain
 
