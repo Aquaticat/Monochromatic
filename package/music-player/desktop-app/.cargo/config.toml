@@ -1,5 +1,5 @@
 # Per-target build overrides for this crate. Two concerns live here:
-#   1. The Windows MSVC linker (lld-link).
+#   1. The Windows linkers (MSVC link.exe by default, GNU ld for the GNU target).
 #   2. The `aes` CPU target-feature that the `gxhash` dependency REQUIRES.
 #
 # gxhash (src/peakcache.rs, the cache fingerprint hash) compiles its hardware
@@ -30,14 +30,28 @@ rustflags = ["-C", "target-feature=+aes"]
 [target.aarch64-apple-darwin]
 rustflags = ["-C", "target-feature=+aes"]
 
-# Windows MSVC. `lld-link.exe` is LLVM's MSVC-compatible linker (a drop-in for
-# Visual Studio's `link.exe`). It must be on PATH: LLVM ships it in its `bin`
-# directory (`C:\Program Files\LLVM\bin`), which is not on PATH by default, so that
-# directory has to be added (see README "Windows" and
-# HANDOVER.windows-toolchain-and-check.md). rustc still discovers the Visual Studio
-# CRT and Windows SDK import libraries and passes them as `/LIBPATH:` arguments,
-# which lld-link consumes unchanged. The `rustflags` line adds the same `+aes`
-# gxhash needs (sse2 is already in the x86_64 baseline).
+# Windows MSVC, x86_64 and arm64. No `linker` key on purpose: rustc then runs Visual
+# Studio's own `link.exe` (it finds the Visual Studio install through vswhere and passes
+# the CRT and Windows SDK import library paths as `/LIBPATH:` arguments), so no LLVM
+# install and no PATH edit are needed. The repository used `lld-link.exe` here until
+# 2026-10-14; the maintainer found it unreliable on Windows, and a release probe showed
+# it leaves the dynamic C runtime in an x86_64 `+crt-static` exe while `link.exe` links
+# it statically. Decision and consequences: doc/decision/music-player-windows-linkers.md.
+# The `rustflags` add the same `+aes` gxhash needs (sse2 is already in the x86_64
+# baseline). arm64 needs it spelled out too: rustc's aarch64-pc-windows-msvc target
+# enables `neon` but not `aes`, so without it gxhash stops with a `compile_error!`.
 [target.x86_64-pc-windows-msvc]
-linker = "lld-link.exe"
 rustflags = ["-C", "target-feature=+aes"]
+
+[target.aarch64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+aes"]
+
+# Windows GNU: the build for developers and users who do not want Microsoft's toolchain.
+# It is linked by mingw-w64 GNU ld through the `gcc` driver, never by lld, and needs no
+# Visual Studio. `-fuse-ld=bfd` pins GNU ld in case a distribution's gcc defaults to
+# another linker. The linker program itself is left to rustc (`gcc` on PATH), because the
+# right name differs by host: MSYS2 on Windows has `gcc`, a Linux cross build has
+# `x86_64-w64-mingw32-gcc`, which the `build:windows-gnu` mise task passes through
+# CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER. `+aes` is the same gxhash requirement.
+[target.x86_64-pc-windows-gnu]
+rustflags = ["-C", "target-feature=+aes", "-C", "link-arg=-fuse-ld=bfd"]
