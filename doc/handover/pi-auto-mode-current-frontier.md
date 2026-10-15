@@ -5,7 +5,41 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-14.
+Updated 2026-10-15.
+
+## Active work on 2026-10-15
+
+The tool-call scope correction,
+live Hyper/Gemma assessment,
+Luna question execution,
+and genuine human Allow verification are complete.
+Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
+
+The maintained package remains unfinished.
+The latest complete lint report covers 725 files and 486 rules,
+with zero errors and 10889 warnings.
+The strict warning gate still fails.
+Clean extracted pieces do not establish package completeness.
+The preceding 10902-warning report was audited by category:
+8421 unsafe-value diagnostics,
+1409 formatting diagnostics,
+674 strict-boolean diagnostics,
+and 398 other diagnostics.
+Its warning distribution and the subsequent recounts are recorded in this handover's evidence chronology.
+
+Original failure ownership,
+collector lifetime,
+and collector currentness are qualified through built consumers,
+original-code replay,
+domain comparisons,
+and deliberate omission controls.
+Continue the connected collector dispatch and arrival implementation,
+then reached-program runtime and runner contracts.
+The last report retains 129 warnings in `program-collector.mjs`,
+133 in `program-runtime.mjs`,
+and 266 in `program-runner.mjs`.
+Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
+No current user-input blocker exists.
 
 ## Tool-call scope correction
 
