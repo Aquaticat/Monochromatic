@@ -63,7 +63,7 @@ await describe({ name: '', children: [
       assert.ok(call);
       const outcome = { toolCall: call, isError: false, result: { content: null, usage } };
       await fixture.callbacks.onFinish(outcome);
-      assert.deepEqual(fixture.recordings, Boolean(usage) ? [['finish', undefined, false, ''], ['usage', usage]] : [['finish', undefined, false, '']]);
+      assert.deepEqual(fixture.recordings, usage ? [['finish', undefined, false, ''], ['usage', usage]] : [['finish', undefined, false, '']]);
       assert.deepEqual(fixture.resolutions, [[0, outcome]]);
     } });
   }),

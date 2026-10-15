@@ -33,10 +33,14 @@ await describe({ name: '', children: [
     const usage = Object.freeze({ original: 'second usage read' });
     let usageReads = 0;
     const result = {
-      get content() { reads.push('content'); return [{ type: 'text', text: 'done' }]; },
-      get usage() { reads.push('usage'); usageReads++; return usageReads === 1 ? true : usage; }
+      get content() { reads.push('content');
+      return [{ type: 'text', text: 'done' }]; },
+      get usage() { reads.push('usage');
+      usageReads++;
+      return usageReads === 1 ? true : usage; }
     };
-    const outcome = { toolCall: call, isError: false, get result() { reads.push('result'); return result; } };
+    const outcome = { toolCall: call, isError: false, get result() { reads.push('result');
+    return result; } };
     fixture.control.onStep = function recordStep(point) { reads.push(point); };
     await fixture.callbacks.onFinish(outcome);
     assert.deepEqual(reads, ['result', 'content', 'finish', 'result', 'usage', 'result', 'usage', 'usage', 'result', 'tool_execution_end', 'tool_execution_end:done', 'resolve:parent/1']);
