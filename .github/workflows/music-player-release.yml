@@ -35,11 +35,9 @@ on:
   push:
     branches:
     - 'main'
-    - 'feat/music-player-release-workflow' # TEMP: removed before merge
     paths:
     - 'package/music-player/desktop-app/Cargo.toml'
     - 'package/music-player/android-app/rust/Cargo.toml'
-    - '.github/workflows/music-player-release.yml' # TEMP: removed before merge
 
 permissions: {}
 
@@ -162,23 +160,20 @@ jobs:
 
         # The release key is read only for runs on main.
         use_release_key=false
-        if [ "$REF" = 'refs/heads/main' ] || [ "$REF" = 'refs/heads/feat/music-player-release-workflow' ]; then # TEMP: branch removed before merge
+        if [ "$REF" = 'refs/heads/main' ]; then
           use_release_key=true
         fi
 
         # Only runs on main and manual dispatches save caches. This workflow has no pull request trigger.
         save_cache=false
-        if [ "$EVENT_NAME" = 'workflow_dispatch' ] || [ "$REF" = 'refs/heads/main' ] || [ "$REF" = 'refs/heads/feat/music-player-release-workflow' ]; then # TEMP: branch removed before merge
+        if [ "$EVENT_NAME" = 'workflow_dispatch' ] || [ "$REF" = 'refs/heads/main' ]; then
           save_cache=true
         fi
 
-        save_cache=false # PROBE: fallback test, saves nothing
         # A push builds only when the version changed; a dispatch always builds, and a real
         # dispatch builds only if the tag is free. An existing tag skips, it never fails.
         should_build=false
         if [ "$EVENT_NAME" = 'workflow_dispatch' ]; then
-          should_build=true
-        elif [ "$EVENT_NAME" = 'push' ] && [ "$REF" != 'refs/heads/main' ]; then # TEMP: removed before merge
           should_build=true
         elif [ "$EVENT_NAME" = 'push' ] && [ "$before" != "$after" ]; then
           should_build=true
@@ -269,7 +264,7 @@ jobs:
           ~/.cargo/registry/cache
           ~/.cargo/git/db
           package/music-player/desktop-app/target
-        key: music-player-desktop-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock') }}-probe
+        key: music-player-desktop-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock') }}
         restore-keys: |
           music-player-desktop-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ env.RUSTUP_TOOLCHAIN }}-
 
@@ -542,7 +537,7 @@ jobs:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper/dists
-        key: music-player-gradle-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package/music-player/android-app/**/*.gradle.kts', 'package/music-player/android-app/gradle.properties', 'package/music-player/android-app/gradle/wrapper/gradle-wrapper.properties') }}-probe
+        key: music-player-gradle-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package/music-player/android-app/**/*.gradle.kts', 'package/music-player/android-app/gradle.properties', 'package/music-player/android-app/gradle/wrapper/gradle-wrapper.properties') }}
         restore-keys: |
           music-player-gradle-v1-${{ runner.os }}-${{ runner.arch }}-
 
@@ -555,7 +550,7 @@ jobs:
           ~/.cargo/registry/cache
           ~/.cargo/git/db
           package/music-player/android-app/rust/target
-        key: music-player-android-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.parts.outputs.toolchain }}-${{ steps.parts.outputs.components }}-${{ hashFiles('package/music-player/android-app/rust/Cargo.lock') }}-probe
+        key: music-player-android-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.parts.outputs.toolchain }}-${{ steps.parts.outputs.components }}-${{ hashFiles('package/music-player/android-app/rust/Cargo.lock') }}
         restore-keys: |
           music-player-android-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.parts.outputs.toolchain }}-${{ steps.parts.outputs.components }}-
 
