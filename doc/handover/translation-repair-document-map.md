@@ -43,6 +43,10 @@ as it had in `TianqiChen66623` (ledger M220).
 The round that keeps quoted speech in its speaker's tense landed in `277145a862`,
 and `TianqiChen66625` was launched on it the same day
 (the handover's checkpoint of 2026-10-15).
+It settled with every check clean and her last message in her own present tense;
+its consistency pass carried the refrain to three of four places and left the other repeat,
+having lost most of its run-off and carry-choice voices,
+which is under investigation.
 The owner's answers it serves are in the package's
 [design commitments](../../package/module/translation-repair/doc/design-commitments.md)
 under 2026-10-11.

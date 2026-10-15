@@ -337,16 +337,27 @@ At the launch of `TianqiChen66624`:
   log `/var/home/user/temp/agent/corpus-pass-TianqiChen66625.log`,
   unit `corpus-pass-corpus-pass-TianqiChen66625`.
   It is the first pass with the quoted-tense rule.
+- It settled on 2026-10-15 with every check clean,
+  and her last message keeps her present tense line for line.
+  The consistency pass carried the refrain to three of its four places
+  and left the repeated sentence of source lines 35 and 55 as it stood,
+  after most of its run-off and carry-choice voices were refused for their reply shape
+  or ran away.
+  The read is in
+  [the pass log for 2026-10-15](../planning/translation-repair-openrouter-2026-09-03-2026-10-15.md).
+  Hyper's balance fell from 140 to 27 over the pass.
 
 #### Next
 
-1.  Read `TianqiChen66625` when it settles,
-    with the after-run checks,
-    and read her quoted words against the source
-    (`~/one-among-us/data/people/TianqiChen666/page.md` lines 71 to 75)
-    and the human archive line by line:
-    they must keep her present tense.
-    Record the read in the pass log.
+1.  The investigation n170
+    (brief `prompts/prompt-n170-consistency-pass-voices-66625.md`,
+    scratch `s241`)
+    reads why the consistency pass of `TianqiChen66625` lost its voices:
+    the schema-guard refusals,
+    the run-off with no quorum,
+    the unlocated choice of group 2,
+    the runaway Qwen replies and the empty truncated MiniMax replies.
+    Rule on each cause it finds and fix them with the rounds of item 2.
 2.  The review n162 of the n159 and n161 commits
     (brief `prompts/prompt-n162-review-of-n159-and-n161.md`,
     findings Z1 to Z11 in `s233/review.md`,
@@ -358,17 +369,30 @@ At the launch of `TianqiChen66624`:
     (brief `prompts/prompt-n166-z-findings.md`,
     worktree `w161`,
     scratch `s237`)
-    is running;
-    then a review by an agent that wrote none of it,
+    handed back green,
+    and two follow-up rounds in the same worktree finish the empty-link reading it began:
+    n168
+    (scratch `s239`,
+    green)
+    and n169
+    (brief `prompts/prompt-n169-empty-link-twins.md`,
+    scratch `s240`,
+    running).
+    None of the three is committed.
+    Then a review of all three by an agent that wrote none of them,
     a gate,
-    and landing after `TianqiChen66625` settles.
+    the landing,
+    the cache-account audit
+    (it reads only committed versions),
+    and a relaunch.
 3.  The docs round n163 landed in `537d79eaaf`
     (ledger B616 to B628,
     M221 to M223).
     The next docs batch records the lead's own mistakes of this round,
     the rule breaches of n162 and n163,
     n162's finding on B619,
-    and n166's ledger.
+    and the ledger of n165 to n170;
+    the lead's notes for it are in `s228/next-docs-batch-notes.md`.
 4.  Open items that still stand from the checkpoint headed "2026-10-13 after the hardware change":
     `blockStandingOf` throws `RangeError` on 80,000 inline siblings;
     whether judges quote a year slot bare is unmeasured;

@@ -3,7 +3,8 @@
 What was launched,
 read and decided on 2026-10-15.
 Entries:
-TianqiChen66624.
+TianqiChen66624,
+TianqiChen66625.
 
 Part of [Translation repair: OpenRouter as the paid fallback provider](translation-repair-openrouter-2026-09-03.md),
 which lists every file of this record.
@@ -164,3 +165,111 @@ The pass found the two groups TianqiChen66623 named
   Uno is a card game,
   not the title of a work,
   and the title rule's reach to game names is an open item in the handover.
+
+## TianqiChen66625 read, 2026-10-15: SETTLED, her last message keeps her tense, the consistency pass lost its voices
+
+TianqiChen66625 launched on 2026-10-15 at 13:35 UTC at `277145a862`
+(the build with the quoted-words tense rule and the group line's reason),
+through the runbook's unit form into a fresh runs directory,
+and settled in 11,874,915 ms
+(`TALLY TianqiChen666 status=SETTLED slices=24`):
+134 repair issues,
+86 accepted,
+86 resolved,
+every slice changed.
+`verify-published` read the page back:
+1 of 1 page carries every wording its artifact promised,
+at the length it implies
+(`chars=8492=expected missing=0 consistency-groups=2 read-at-generation=17`).
+`DESTINATIONS` dropped none,
+no `DEFECTS` line printed,
+the log holds no `[error]` line,
+and it holds 611 `warn` lines,
+where TianqiChen66624 held 626.
+
+### Her last message keeps her tense
+
+Source lines 71 to 75 are the message she wrote before she died.
+Page lines 212 to 224 now give it in her present,
+line for line:
+"I feel like I might not make it to that day",
+"It all feels like little more than a fantasy before death",
+"There are still so many kids who need help",
+"I just can’t hold on anymore",
+"I really want to show more people this side of me".
+The narration around it holds the past
+(page line 210,
+"the final message she would leave us",
+and lines 226 to 227,
+"Just hours after speaking these words,
+she was gone forever").
+Her other quoted words keep the present too
+(page lines 203 to 206).
+This is the reading the quoted-words rule asked for;
+TianqiChen66623 and TianqiChen66624 had moved the same lines into the past.
+
+### The consistency pass carried the refrain to three of four places
+
+- The refrain 所以她是个……女孩吧 (source lines 17,
+  25,
+  33 and 37)
+  now reads "So she was a girl …,
+  I suppose."
+  at page lines 25 to 26,
+  63 to 64 and 96 to 97.
+  The fourth place,
+  page lines 115 to 116,
+  still reads "So she must have been a gentle,
+  sensitive girl."
+  (`group 1 of 2: refrain ... replaced=2 chosen=1 kept-current=1 because=carry:no-majority`).
+  The first ask tied one ballot each across three places of three usable,
+  and the run-off heard 2 of 4 seats and reached no quorum.
+- The repeated sentence of source lines 35 and 55,
+  which TianqiChen66624 carried,
+  was left as it stood
+  (`group 2 of 2: maximal ... untouched=2 because=no-winner:chosen-unlocated`).
+
+The asks of this pass lost most of their voices:
+glm-5.3,
+minimax-m3,
+Mercury 2.5 and Kimi-K3 each sent a reply that parsed as JSON and failed the caller's schema guard
+on the run-off or the carry choice
+(log lines 9533 to 9650),
+Qwen3.8-27B was abandoned three times after delivering 0.98 to 1.31 million characters
+(log lines 9497,
+9661 and 9680),
+and minimax-m3 twice stopped at its token limit with an empty reply
+(log lines 9480 and 9524).
+Why each happened,
+and why group 2 found its chosen text nowhere,
+is under investigation (round n170);
+the result goes to the package's audit ledger.
+
+### Time and spend
+
+11,874,915 ms against TianqiChen66624's 10,629,332 ms.
+540 rounds took 11.10 h of calls,
+3 ended without quorum,
+57.2% of round time was spent waiting after quorum,
+230 voices were never heard,
+and calls in flight averaged 5.64 (`run-timing-report`).
+By lane,
+repair took 231.9 min over 24 slices,
+translate 84.1 min over 24,
+and consolidation 229.1 min over 23 (`slice-cost-report`).
+
+`spend-report` priced 153.33 credits
+and 0.2886 USD on OpenRouter.
+The providers' own balances,
+first reading to last:
+Hyper 140 to 27,
+OpenRouter 22.74 to 22.48 USD,
+Bedrock unchanged at 5.02 USD,
+Synthetic's weekly allowance 95.5% to 87.3% (`meter-report`).
+At this rate Hyper's balance does not cover another pass of this page.
+`ledger-report` read 148 contests;
+23 ballots named nothing and 3 named a candidate their slate did not have.
+Both Bedrock Gemma seats threw on every ask
+(`SEAT gemma-4-26b-a4b-it asked=4 ... threw=4`,
+`SEAT google.gemma-4-e2b asked=6 ... threw=6`),
+as in the two passes before.
