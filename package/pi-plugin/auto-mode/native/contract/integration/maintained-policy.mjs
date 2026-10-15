@@ -4,6 +4,7 @@ export {
   registerNativeBypass,
   readNativeBypassEnabled,
   createAssessmentSender,
+  maximumQuestions,
   createNativeSemanticOperatingPolicies,
   VERDICT_ENTRY_TYPE,
   AuthorizationEvidenceError,

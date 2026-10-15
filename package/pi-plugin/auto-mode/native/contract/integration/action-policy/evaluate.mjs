@@ -1,4 +1,5 @@
 import {assessAndDecide} from './index.mjs';
+import {selectAssessmentCapacity} from './assessment-capacity.mjs';
 import {
   captureApprovalHostSource,
   finishWithApproval
@@ -23,6 +24,7 @@ export async function evaluatePolicy({
   relationDefinitionId,
   headingContextDefinitionId,
   unitAdoptionDefinitionId
+  ,assessmentUnavailableReason
 }){
  const decision=await assessAndDecide({
    judgment,
@@ -35,7 +37,8 @@ export async function evaluatePolicy({
  return await finishWithApproval({
    judgment,
    decision,
-   approvalContext
+   approvalContext,
+   assessmentUnavailableReason
  });
 }
 
@@ -64,7 +67,7 @@ async function evaluateOriginalPolicy({
    judgment,
    host:approvalHost
  });
- const scope=semanticAdmissionScope({
+ const originalScope=semanticAdmissionScope({
    policy,
    inputs
  });
@@ -73,7 +76,7 @@ async function evaluateOriginalPolicy({
    inputs,
    requireCandidates:false
  });
- const headingScope=(inspectedHeadingScope.state==='matching')&&(inputs.headingContextCandidates
+ const originalHeadingScope=(inspectedHeadingScope.state==='matching')&&(inputs.headingContextCandidates
    .length
    === 0)?Object.freeze({
    state:'no-heading-context',
@@ -83,7 +86,7 @@ async function evaluateOriginalPolicy({
    policy:unitPolicy,
    inputs
  });
- const unitScope=inspectedUnitScope.state!=='matching'?inspectedUnitScope:(scope.state!=='matching')||(inputs.effects
+ const originalUnitScope=inspectedUnitScope.state!=='matching'?inspectedUnitScope:(originalScope.state!=='matching')||(inputs.effects
    .length
    !==1)?Object.freeze({
    state:'out-of-profile',
@@ -94,6 +97,9 @@ async function evaluateOriginalPolicy({
    state:'no-unit-pairs',
    reason:'No unambiguous bounded original same-source pair is available.'
  }):inspectedUnitScope;
+ const {scope,headingScope,unitScope,reason:assessmentUnavailableReason}=selectAssessmentCapacity({
+   inputs,scope:originalScope,headingScope:originalHeadingScope,unitScope:originalUnitScope
+ });
  const compilation={current:undefined};
  // Host presentation is fixed at bootstrap; request owners come only from this original review.
  const approvalContext=approvalHost&&sourceContext?Object.freeze({
@@ -107,6 +113,7 @@ async function evaluateOriginalPolicy({
  const result=await evaluatePolicy({
    judgment,
    approvalContext,
+   assessmentUnavailableReason,
    needsRelations:(scope.state==='matching')
      ||(headingScope.state==='matching')
      ||(unitScope.state==='matching'),

@@ -75,7 +75,8 @@ export function captureApprovalHostSource(input){
 export async function finishWithApproval({
   judgment,
   decision,
-  approvalContext
+  approvalContext,
+  assessmentUnavailableReason
 }){
  function assertDecisionIdentity(){
   if(judgment.inspect()
@@ -108,7 +109,7 @@ export async function finishWithApproval({
    ...approvalContext,
    judgment,
    explanation:uncertain
-     ?`Automatic review could not establish whether this operation is allowed. ${decision.outcome
+     ?`Automatic review could not establish whether this operation is allowed. ${assessmentUnavailableReason??decision.outcome
        .reason} Review the complete prepared operation and choose Allow or Stop.`
      :decision.outcome
        .reason

@@ -12,6 +12,7 @@ export {
   readNativeBypassEnabled
 } from './native-bypass.ts';
 export { createAssessmentSender } from './assessment-sender.ts';
+export { maximumQuestions } from './decision-request.ts';
 export { createNativeSemanticOperatingPolicies } from './semantic-operating-policy.ts';
 export { VERDICT_ENTRY_TYPE } from './types.ts';
 export { AuthorizationEvidenceError } from './authorization-evidence-data.ts';
