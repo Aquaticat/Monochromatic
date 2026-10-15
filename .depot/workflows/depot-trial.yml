@@ -11,6 +11,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  audio-core-negative-control:
+    name: Deliberately fail one real audio-core assertion
+    runs-on: depot-ubuntu-24.04-4
+    timeout-minutes: 20
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        minimum_release_age: 1d
+        install: false
+        cache: false
+    - name: Install the selected Rust tools
+      run: mise install node rust cargo-binstall cargo:cargo-nextest
+    - name: Require the existing suite to report the deliberately wrong assertion
+      run: mise run //package/music-player/desktop-app:trial:depot:fail-audio-test
+
   typescript-snapshot:
     name: Prepare reusable Node and workspace dependencies
     runs-on: depot-ubuntu-24.04

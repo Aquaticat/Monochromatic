@@ -721,6 +721,32 @@ description = "Validate image reuse, Android case counts, and cloud device prere
 dir = "{{config_root}}/../../.."
 run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job typescript-snapshot --job typescript-snapshot-use --job android-host --job device-prerequisites"
 
+[tasks."trial:depot:negative-control"]
+description = "Dispatch the deliberately failing real audio-core test in a disposable sandbox"
+dir = "{{config_root}}/../../.."
+run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job audio-core-negative-control"
+
+[tasks."trial:depot:fail-audio-test"]
+description = "Temporarily break one existing audio assertion inside the disposable Depot sandbox"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { readFileSync, writeFileSync } = await import('node:fs')
+const { execFileSync } = await import('node:child_process')
+if (!process.env.DEPOT_JOB_URL) throw new Error('The deliberate failure fixture only runs inside Depot CI.')
+const path = 'package/music-player/truepeak-core/src/window_tests.rs'
+const original = readFileSync(path, 'utf8')
+const assertion = 'assert_eq!(window_frames(4.0, 48000), 192000);'
+if (!original.includes(assertion)) throw new Error('The selected audio assertion changed; inspect the fixture.')
+try {
+  writeFileSync(path, original.replace(assertion, 'assert_eq!(window_frames(4.0, 48000), 192001);'))
+  execFileSync('mise', ['run', '//package/music-player/truepeak-core:test'], { stdio: 'inherit' })
+  throw new Error('The deliberately wrong audio assertion unexpectedly passed.')
+} finally {
+  writeFileSync(path, original)
+}
+'''
+
 [tasks."trial:github:build"]
 description = "Measure an identical Alpine build and warm repetitions on a disposable GitHub runner"
 dir = "{{config_root}}/../../.."
