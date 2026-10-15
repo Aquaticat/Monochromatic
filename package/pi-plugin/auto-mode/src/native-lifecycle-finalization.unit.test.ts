@@ -39,12 +39,14 @@ await describe({ name: '', children: [
     assert.equal(closed.batches[1], assessed);
     assert.equal(f.selection.resultFor(first).discarded, true);
     /** Unassessed batches retain the exact original closure diagnostic. */
-    const failure = f.selection.resultFor(first).failure;
+    const {failure} = f.selection.resultFor(first);
     assert.ok(Error.isError(failure));
     assert.equal(failure.message, 'Judgment closed before this question batch was dispatched');
     assert.deepEqual(f.events, ['selection', 'selection', 'selection', 'ready', 'segment:readIssuedBatchResults:enter', 'selection', 'selection', 'segment:readIssuedBatchResults:exit', 'dependencyHandle', 'finalizeDependencies', 'active', 'finish']);
     f.events.length = 0;
-    assert.throws(function closeAgain() { f.owner.finalize(); },
+    assert.throws(function closeAgain() { 
+      f.owner.finalize(); 
+    },
       { name: 'JudgmentConstructionError', message: 'Judgment already has a finalization outcome' });
     assert.deepEqual(f.events, []);
   } }),
@@ -68,7 +70,9 @@ await describe({ name: '', children: [
       /** Failure identity must be retained without an implicit retry path. */
       const failure = new Error(point);
       f.state.failures.set(point, failure);
-      assert.throws(function failedClosure() { f.owner.finalize(); }, failure);
+      assert.throws(function failedClosure() { 
+        f.owner.finalize(); 
+      }, failure);
       assert.equal(f.owner.state.finished, false);
       assert.equal(f.owner.state.closeFailed, true);
       assert.equal(f.selection.resultFor(batch).discarded, true);
@@ -86,7 +90,9 @@ await describe({ name: '', children: [
       assert.ok(f.events.indexOf('ready') > f.events.indexOf('selection'));
       f.state.failures.clear();
       f.events.length = 0;
-      assert.throws(function retryClosure() { f.owner.finalize(); },
+      assert.throws(function retryClosure() { 
+        f.owner.finalize(); 
+      },
         { name: 'JudgmentConstructionError', message: 'Judgment already has a finalization outcome' });
       assert.equal(f.owner.state.finalRecord, retained);
       assert.deepEqual(f.events, []);
@@ -100,8 +106,12 @@ await describe({ name: '', children: [
       const batch = f.owner.issue([f.claim]);
       /** The exact selection failure remains the final failure value. */
       const failure = new Error(method);
-      f.state.selection = { ...f.selection, [method]: function fail() { throw failure; } };
-      assert.throws(function failedClosure() { f.owner.finalize(); }, failure);
+      f.state.selection = { ...f.selection, [method]: function fail() { 
+        throw failure; 
+      } };
+      assert.throws(function failedClosure() { 
+        f.owner.finalize(); 
+      }, failure);
       assert.equal(f.owner.state.closeFailed, true);
       assert.equal(f.owner.state.finalRecord?.failure, failure);
       assert.deepEqual(f.owner.state.finalRecord?.batches, [f.selection.inspectBatch(batch)]);
@@ -120,15 +130,21 @@ await describe({ name: '', children: [
       if (point === 'diagnostics') f.state.failures.set(point, secondary);
       else {
         f.state.onStep = function failRetainedInspection(boundary) {
-          if (boundary === 'ready') f.state.selection = { ...f.selection, inspectBatch: function fail() { throw secondary; } };
+          if (boundary === 'ready') f.state.selection = { ...f.selection, inspectBatch: function fail() { 
+            throw secondary; 
+          } };
         };
       }
-      assert.throws(function failedRetention() { f.owner.finalize(); }, secondary);
+      assert.throws(function failedRetention() { 
+        f.owner.finalize(); 
+      }, secondary);
       assert.equal(f.owner.state.closeFailed, true);
       assert.equal(f.owner.state.finished, false);
       assert.equal(f.owner.state.finalRecord, undefined);
       f.events.length = 0;
-      assert.throws(function retryAfterRetentionFailure() { f.owner.finalize(); },
+      assert.throws(function retryAfterRetentionFailure() { 
+        f.owner.finalize(); 
+      },
         { name: 'JudgmentConstructionError', message: 'Judgment already has a finalization outcome' });
       assert.deepEqual(f.events, []);
     } });

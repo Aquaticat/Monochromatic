@@ -41,12 +41,18 @@ await describe({ name: '', children: [
     const batch = f.owner.issue([f.claim]);
     /** Native promises allow deterministic overlap without timer races. */
     const response = Promise.withResolvers<unknown>();
-    f.state.transport = async function deferred() { return await response.promise; };
+    f.state.transport = async function deferred() { 
+      return await response.promise; 
+    };
     /** The original asynchronous operation remains active across caller reentry. */
     const pending = f.owner.assess(batch);
     assert.equal(f.owner.state.operating, true);
     assert.equal(f.owner.state.assessing, true);
-    assert.throws(function synchronousOverlap() { f.owner.operation(function nested() { return undefined; }); },
+    assert.throws(function synchronousOverlap() { 
+      f.owner.operation(function nested() { 
+      return undefined; 
+    }); 
+    },
       { name: 'JudgmentConstructionError', message: 'Judgment operations cannot reenter through callbacks' });
     /** An overlap refusal must not release the original operation's guard. */
     const overlap = await captureBudgetRejection(f.owner.assess(batch));
@@ -92,7 +98,9 @@ await describe({ name: '', children: [
       const batch = f.owner.issue([f.claim]);
       /** Original failure survives both transport and retention boundaries. */
       const failure = new Error(method);
-      f.state.selection = { ...f.selection, [method]: function fail() { throw failure; } };
+      f.state.selection = { ...f.selection, [method]: function fail() { 
+        throw failure; 
+      } };
       assert.equal(await captureBudgetRejection(f.owner.assess(batch)), failure);
       assert.equal(f.selection.resultFor(batch).failure, failure);
       assert.equal(f.owner.state.operating, false);
@@ -110,7 +118,9 @@ await describe({ name: '', children: [
       /** The retention failure remains the second peer without becoming a cause. */
       const retention = new Error('original retention failure');
       f.state.failures.set('send', original);
-      f.state.selection = { ...f.selection, [method]: function fail() { throw retention; } };
+      f.state.selection = { ...f.selection, [method]: function fail() { 
+        throw retention; 
+      } };
       /** Aggregate properties are asserted explicitly to detect semantic autofixes. */
       const failure = await captureBudgetRejection(f.owner.assess(batch));
       assert.ok(failure instanceof AggregateError);

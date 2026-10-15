@@ -15,16 +15,26 @@ await describe({ name: '', children: [
     const result = Object.freeze({ original: true });
     assert.equal(f.owner.operation(function originalResult() {
       assert.equal(f.owner.state.operating, true);
-      assert.throws(function reenter() { f.owner.operation(function nested() { return result; }); },
+      assert.throws(function reenter() { 
+        f.owner.operation(function nested() { 
+        return result; 
+      }); 
+      },
         { name: 'JudgmentConstructionError', message: 'Judgment operations cannot reenter through callbacks' });
       return result;
     }), result);
     assert.equal(f.owner.state.operating, false);
     /** An original thrown value must survive cleanup without replacement. */
     const failure = new Error('operation failed');
-    assert.throws(function failedOperation() { f.owner.operation(function fail() { throw failure; }); }, failure);
+    assert.throws(function failedOperation() { 
+      f.owner.operation(function fail() { 
+      throw failure; 
+    }); 
+    }, failure);
     assert.equal(f.owner.state.operating, false);
-    assert.equal(f.owner.operation(function recovered() { return result; }), result);
+    assert.equal(f.owner.operation(function recovered() { 
+      return result; 
+    }), result);
   } }),
   it({ name: 'checks readiness before issue and never adopts selection-only membership', fn: async function ownsIssuedMembership() {
     /** Readiness failure must not consume original claim issuance. */
@@ -32,13 +42,17 @@ await describe({ name: '', children: [
     /** Exact readiness failure is returned before selection is consulted. */
     const failure = new Error('not ready');
     f.state.failures.set('ready', failure);
-    assert.throws(function prematureIssue() { f.owner.issue([f.claim]); }, failure);
+    assert.throws(function prematureIssue() { 
+      f.owner.issue([f.claim]); 
+    }, failure);
     assert.deepEqual(f.events, ['ready']);
     f.state.failures.clear();
     /** Bypassing lifecycle issuance creates a real selection batch without judgment membership. */
     const foreign = f.selection.issue([f.claim]);
     f.events.length = 0;
-    assert.throws(function foreignEvidence() { f.owner.captureBatchEvidence(foreign); },
+    assert.throws(function foreignEvidence() { 
+      f.owner.captureBatchEvidence(foreign); 
+    },
       { name: 'JudgmentConstructionError', message: 'Question batch is not owned by this judgment' });
     /** The asynchronous boundary must reject the same foreign membership. */
     const rejected = await captureBudgetRejection(f.owner.assess(foreign));
@@ -55,7 +69,9 @@ await describe({ name: '', children: [
     const batch = f.owner.issue([f.claim]);
     assert.deepEqual(f.events, ['ready', 'selection']);
     f.events.length = 0;
-    assert.throws(function incompleteBatch() { f.owner.captureBatchEvidence(batch); },
+    assert.throws(function incompleteBatch() { 
+      f.owner.captureBatchEvidence(batch); 
+    },
       { name: 'QuestionSelectionError', message: 'Original batch has no complete usable relation evidence' });
     assert.deepEqual(f.events, ['selection']);
     await f.owner.assess(batch);
@@ -68,7 +84,9 @@ await describe({ name: '', children: [
     f.owner.assertBatchEvidence(evidence);
     assert.deepEqual(f.events, ['selection', 'dependencies']);
     f.events.length = 0;
-    assert.throws(function copiedEvidence() { f.owner.assertBatchEvidence([...evidence]); },
+    assert.throws(function copiedEvidence() { 
+      f.owner.assertBatchEvidence([...evidence]); 
+    },
       { name: 'QuestionSelectionError', message: 'Relation evidence is not an original captured batch from this judgment' });
     assert.deepEqual(f.events, ['selection']);
     f.events.length = 0;
@@ -80,17 +98,25 @@ await describe({ name: '', children: [
     f.owner.assertClaimEvidence({ claim: f.claim, evidence: claimEvidence });
     assert.deepEqual(f.events, ['selection', 'dependencies']);
     f.events.length = 0;
-    assert.throws(function copiedClaim() { f.owner.assertClaimEvidence({ claim: f.claim, evidence: { ...claimEvidence } }); },
+    assert.throws(function copiedClaim() { 
+      f.owner.assertClaimEvidence({ claim: f.claim, evidence: { ...claimEvidence } }); 
+    },
       { name: 'QuestionSelectionError', message: 'Relation evidence is not the canonical record for this original claim' });
     assert.deepEqual(f.events, ['selection']);
     /** Valid identity must not bypass a later dependency failure. */
     const stale = new Error('dependency retired');
     f.state.failures.set('dependencies', stale);
-    assert.throws(function staleBatch() { f.owner.assertBatchEvidence(evidence); }, stale);
-    assert.throws(function staleClaim() { f.owner.assertClaimEvidence({ claim: f.claim, evidence: claimEvidence }); }, stale);
+    assert.throws(function staleBatch() { 
+      f.owner.assertBatchEvidence(evidence); 
+    }, stale);
+    assert.throws(function staleClaim() { 
+      f.owner.assertClaimEvidence({ claim: f.claim, evidence: claimEvidence }); 
+    }, stale);
     f.state.failures.set('ready', stale);
     f.events.length = 0;
-    assert.throws(function staleCapture() { f.owner.captureClaimEvidence(f.claim); }, stale);
+    assert.throws(function staleCapture() { 
+      f.owner.captureClaimEvidence(f.claim); 
+    }, stale);
     assert.deepEqual(f.events, ['ready']);
   } }),
 ] });

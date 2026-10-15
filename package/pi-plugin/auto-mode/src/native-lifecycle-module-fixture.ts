@@ -5,12 +5,16 @@ import type { FixtureSelection } from './native-selection-fixture.ts';
 import type { NativeBudget } from './native-judgment-budget-module-fixture.ts';
 
 //region Consumer contracts preserve original identities without importing source implementation types.
-/** Transport receives the exact original selection request and budget attempt. */
+/**
+ Transport receives the exact original selection request and budget attempt.
+ */
 export type LifecycleAttempt = Parameters<Parameters<NativeBudget['dispatch']>[0]>[0] & Readonly<{
   request: ReturnType<FixtureSelection['requestFor']>;
 }>;
 
-/** Closure consumers observe retained diagnostics and explicit permission qualifiers. */
+/**
+ Closure consumers observe retained diagnostics and explicit permission qualifiers.
+ */
 export type LifecycleClosure = Readonly<{
   status: string;
   evidenceOnly?: boolean;
@@ -25,7 +29,9 @@ export type LifecycleClosure = Readonly<{
   batches: readonly unknown[];
 }>;
 
-/** Original lifecycle exposes operation exclusion and terminal evidence independently. */
+/**
+ Original lifecycle exposes operation exclusion and terminal evidence independently.
+ */
 export type FixtureLifecycle = Readonly<{
   state: {
     operating: boolean;
@@ -44,7 +50,9 @@ export type FixtureLifecycle = Readonly<{
   finalize: () => LifecycleClosure;
 }>;
 
-/** Independent construction contract supplies controlled original capabilities. */
+/**
+ Independent construction contract supplies controlled original capabilities.
+ */
 type LifecycleModule = Readonly<{
   createJudgmentLifecycle: (input: Readonly<{
     knownSelection: () => FixtureSelection;
@@ -62,21 +70,28 @@ type LifecycleModule = Readonly<{
 
 /**
  Require the original factory in the copied consumer artifact.
+ *
  @param value - built namespace before admission
+ *
  @returns assertion exposing the independent consumer contract
+ *
  @throws Error when the original factory is unavailable
  */
 function assertLifecycleModule(value: unknown): asserts value is LifecycleModule {
-  if (value === null || typeof value !== 'object' || !('createJudgmentLifecycle' in value)
-    || typeof value.createJudgmentLifecycle !== 'function') throw new Error('Built judgment lifecycle export is unavailable');
+  if ((value === null) || (typeof value) !== 'object' || (!('createJudgmentLifecycle' in value))
+    || (typeof value.createJudgmentLifecycle) !== 'function') throw new Error('Built judgment lifecycle export is unavailable');
 }
 
-/** Dynamic loading reaches the same artifact used by original judgment construction. */
+/**
+ Dynamic loading reaches the same artifact used by original judgment construction.
+ */
 const loaded: unknown = await import(new URL(
   '../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/judgment-lifecycle.ts',
   import.meta.url,
 ).href);
 assertLifecycleModule(loaded);
-/** Checked native factory remains fixed across independent fixture instances. */
+/**
+ Checked native factory remains fixed across independent fixture instances.
+ */
 export const lifecycleModule: LifecycleModule = loaded;
 //endregion
