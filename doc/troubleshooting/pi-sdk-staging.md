@@ -7357,6 +7357,11 @@ That retry completed the full 438-file sweep with 203 errors and 12801 warnings.
 It verifies recovery of diagnostic collection,
 not a passing lint gate or a permanent thread-allocation remedy.
 The completed report is `${HOME}/temp/agent/pi-maintained-resource-lint-retry-20261014.log`.
+After the source-boundary changes and resumed state cleanup,
+the same bounded full lint invocation completed across 455 files with 175 errors and 13188 warnings.
+The report is `${HOME}/temp/agent/pi-maintained-source-boundaries-lint-20261014.log`.
+This remains a failing quality gate;
+the higher warning count exposes additional untyped module boundaries rather than qualifying those extractions.
 
 ### Symptoms and separate incident boundaries
 

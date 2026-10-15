@@ -604,6 +604,18 @@ the work count remains 9046.
 The full lint recount is running with `GOMAXPROCS=2` and the package's existing worker and heap limits,
 without concurrent native runtime tests.
 Its log is `${HOME}/temp/agent/pi-maintained-source-boundaries-lint-20261014.log`.
+The recount completed across 455 files with 175 errors and 13188 warnings.
+Errors decreased from the previous 203;
+warnings increased as module extraction exposed additional untyped boundaries.
+The rule configuration still rejects warnings.
+Current structured diagnostics and error allocation are retained in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/current-maintained-diagnostics.json`
+and `current-native-errors.json` in that directory.
+The new work counter now uses Node's actual `openSync(path, flags, mode)` callback signature.
+The request preparation hook now retains its function value directly instead of detaching an object method.
+Focused lint,
+the updated owned build,
+and consumer verification of these follow-up edits remain pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
