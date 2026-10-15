@@ -68,7 +68,8 @@ export function createRelevanceStore({
    directory,
    namespaceKey
  );
- const initialization={pending:undefined};
+ /** @type {{pending?:Promise<void>}} */
+ const initialization={};
  const publications=new Map();
  async function initialize(){
   await privateDirectory({path:directory,trace});

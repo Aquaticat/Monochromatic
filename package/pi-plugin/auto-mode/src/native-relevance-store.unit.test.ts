@@ -25,7 +25,7 @@ type Store={
   /** Namespace remains available before I/O. */
   readonly namespaceKey:string;
   /** Missing files remain cache misses. */
-  readonly read:(key:string)=>Promise<Entry|undefined>;
+  readonly read:(key:string)=>Promise<unknown>;
   /** Original completed publication wins over later estimates. */
   readonly put:(input:{readonly key:string;readonly probability:number})=>Promise<Entry>;
 };
@@ -143,7 +143,7 @@ await describe({name:'',children:[
     const entries=await Promise.all(pending);
     assert.equal(entries.length,4);
     for(const entry of entries)assert.equal(entry.probability,0.125);
-    assert.equal((await read)?.probability,0.125);
+    assert.deepEqual(await read,entries[0]);
     assert.equal(current.events.filter(function published(event){return event==='cache-published';}).length,1);
   }}),
   it({name:'rejects symlink cache directories before publication',fn:async function rejectSymlink(){

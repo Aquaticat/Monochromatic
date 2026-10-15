@@ -919,7 +919,24 @@ the composed-distribution protocol,
 and the descriptor-bound file observer.
 The relevance store now awaits directory validation and file publication during cache operations;
 its constructor still returns the cache owner synchronously.
-This cache change is pending focused concurrency and built-consumer verification.
+Commit `2d804201df` introduces the asynchronous cache filesystem operations;
+`8b97abd75a` joins owner-local same-key publications before reading their completed entry.
+Commit `32d3e551d4` adds built store consumers using disposable directories.
+Those consumers pass private modes,
+original-value retention,
+concurrent publication,
+symlink rejection,
+malformed and mismatched persisted data,
+digest filename boundaries,
+and invalid probability rejection in
+`${HOME}/temp/agent/pi-native-relevance-store-consumer-20261015.log`.
+Package type verification passed.
+The focused lint pass found an inferred absent promise in initialization
+and a nullable test contract.
+Initialization now declares its pending operation;
+the consumer treats read values as unknown and compares them with the original complete entry.
+Verification of those corrections is pending.
+The cache refresh consumer still needs a direct check of its new awaited read and publication paths.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
