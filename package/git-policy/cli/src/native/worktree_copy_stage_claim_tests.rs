@@ -3,7 +3,7 @@
 use super::*;
 use crate::private_storage::create_private_directory;
 use crate::test_support::{fixture, git_context, remove, repository};
-use crate::worktree_copy_journal::{create_journal, ensure_journal_root};
+use crate::worktree_copy_journal::{JOURNAL_PARENT_NAME, create_journal, ensure_journal_root};
 use crate::worktree_copy_selection::CopySelection;
 use crate::worktree_copy_stage::stage_ignored_snapshot;
 use std::os::unix::fs::PermissionsExt;
@@ -258,5 +258,34 @@ fn a_repository_without_a_journal_root_reaps_nothing() {
     let (root, common, _destination) = scene("claim-no-root");
     assert!(reap_abandoned_stages(common.as_path()).expect("nothing").is_empty());
     assert!(!journal_root(common.as_path()).exists());
+    remove(root.as_path());
+}
+
+/// A journal root that cannot be listed because a file stands where a directory belongs is a failure,
+///  not an empty root: the claims and the unfinished writes under it were not looked at.
+#[test]
+fn an_unlistable_journal_root_is_a_failure_and_not_an_empty_one() {
+    let (root, common, _destination) = scene("claim-root-not-a-directory");
+    std::fs::write(common.join(JOURNAL_PARENT_NAME), b"a file where the directory belongs").expect("file");
+    let unlistable: PathBuf = journal_root(common.as_path());
+    claim_names(unlistable.as_path()).expect_err("the root cannot be listed");
+    remove_unfinished_claims(unlistable.as_path()).expect_err("the root cannot be listed");
+    remove(root.as_path());
+}
+
+/// A claim whose container cannot be examined (a file stands in the way) fails and keeps its claim,
+///  instead of being taken for a claim whose container was never created.
+#[test]
+fn a_container_that_cannot_be_examined_keeps_its_claim() {
+    let (root, common, _destination) = scene("claim-container-blocked");
+    let journals: PathBuf = ensure_journal_root(common.as_path()).expect("root");
+    let blocker: PathBuf = root.join("blocker");
+    std::fs::write(blocker.as_path(), b"a file").expect("blocker");
+    let claim: PathBuf = journals.join(format!("blocked{CLAIM_SUFFIX}"));
+    let container: PathBuf = blocker.join(format!("{STAGE_PREFIX}blocked"));
+    crate::private_storage::write_private_file(claim.as_path(), container.to_string_lossy().as_bytes())
+        .expect("claim");
+    reap_abandoned_stages(common.as_path()).expect_err("the container cannot be examined");
+    assert!(claim.exists(), "the claim stays for inspection");
     remove(root.as_path());
 }
