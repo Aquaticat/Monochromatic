@@ -9,6 +9,25 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+Prompt-submission repair supersedes the completed shortcut repair:
+the user restarted Pi and reported `Native run prompt derivation is incomplete or no longer current`
+when sending a prompt with bypass off.
+The installed CLI reproduction with repository instructions and the default tool loadout fails identically.
+The original CLI smoke test used a minimal policy and only `codemode,read`,
+so it did not establish normal-workspace prompt submission.
+The reproduction found an 83938-byte callback-option bundle rejected by a 65536-byte single-source cap.
+A process-local control then exposed a 113905-byte tool-loadout bundle rejected by the same-sized pool cap.
+Both payloads already pass their upstream one-MiB copy budgets.
+After those controls,
+the base-linked snapshot hits a separate one-MiB aggregate cap.
+These are bounded-capture integration failures;
+no provider request or instruction permission is needed to reproduce the initial failure.
+Current scratch harness:
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/prompt-derivation-repro.ts`.
+The controls are process-local hooks;
+production capture limits have not yet changed.
+Stop the lint queue until normal prompt submission is repaired and tested.
+
 The latest user instruction is to stop this agent's cleanup once Pi is functional,
 then draft a prompt for MiMo v2.6 Pro to continue lint fixes.
 The Shift+Tab regression is repaired through `775efbc86c`,
