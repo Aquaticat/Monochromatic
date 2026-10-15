@@ -28,8 +28,6 @@ on:
   push:
     branches:
       - main
-      # TEMPORARY post-merge proof trigger, removed in the next commit.
-      - feat/music-player-alpine
     paths:
       - 'package/music-player/desktop-app/**'
       - 'package/music-player/truepeak-core/**'
