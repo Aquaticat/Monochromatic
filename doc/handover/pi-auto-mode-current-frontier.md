@@ -2183,7 +2183,37 @@ the constructor length,
 and void-only contracts for callbacks that return dependency projections.
 The current correction preserves optional indexed reads and actual callback results,
 and separates initial budget/source/membership observations into a typed foundation.
-The split and its original-versus-current consumer comparison are pending verification.
+`c180dbeeb1` records the initial foundation split;
+`62204d236b` separates completed-owner publication from constructor wiring.
+Optional values now use their actual optional ownership projections;
+the rejected `Partial` shortcut is absent.
+`3fa070b59b` records final implementation formatting.
+The rebuilt constructor type check passes in
+`${HOME}/temp/agent/pi-constructor-types-third-20261015.log`.
+The seven final focused implementation files have zero diagnostics in
+`${HOME}/temp/agent/pi-constructor-format-third-20261015.log`.
+Six original and typed constructor scenarios match public domain outcomes and native execution counts,
+with a permission/prohibition positive control,
+in `typed-owner-constructor-comparison.json`.
+The baseline SHA-256 is `d07545d2124a477a6dc2b2d59f9c43bf2e1fd4e9368081e5c0a75474d241b984`.
+`349d73e4a5` adds independent constructor consumers for original callback order,
+captured bootstrap capabilities,
+start time,
+cancellation,
+late expiry,
+failure identity,
+and recovery.
+`91772da929` independently checks every public method's original owner at publication.
+`42a9e6816a` and `bafbb59f58` finish consumer declarations and formatting.
+The direct constructor and publication consumers pass,
+and the same consumers pass against saved original constructor and publication statements in
+`${HOME}/temp/agent/pi-constructor-original-20261015.log`
+and `${HOME}/temp/agent/pi-publication-original-20261015.log`.
+All four new consumer files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-constructor-tests-format-final-20261015.log`.
+Process-local omission controls,
+the affected-owner consumer sweep,
+and the full maintained recount remain pending.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.

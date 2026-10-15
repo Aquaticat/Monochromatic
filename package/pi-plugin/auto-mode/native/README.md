@@ -90,6 +90,15 @@ Guarded calls retain original callback identity and argument count;
 direct calls retain function identity and caller receivers.
 Retained selection inspection resolves the current selection only when called.
 The public surface remains frozen and preserves original property order.
+`test:native:constructor` checks captured bootstrap inputs,
+original observation order,
+independent occurrence accounting,
+cancellation,
+and expiry reached during source handoff.
+`test:native:publication` checks every public method against independently grouped original owners.
+The typed constructor composes initial budget and source observations,
+lazy preparation and execution owners,
+and final frozen publication while keeping the stable native entry bridge.
 `test:native:request` checks producer authentication before observer lookup,
 original stream and response identities,
 callback receivers,
