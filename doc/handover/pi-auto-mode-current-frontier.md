@@ -9,6 +9,14 @@ Updated 2026-10-14.
 
 ## Adopted Luna migration
 
+The user subsequently lowered the selected-option probability cutoff from `0.80` to `0.60` on 2026-10-14.
+The maintained cutoff and unit/native boundary fixtures are updated;
+build,
+type checking,
+consumer verification,
+and retained-response recount are pending.
+The `0.80` results in this section remain historical measurements.
+
 The user selected `gpt-6-luna-decisions`,
 excluded Perplexity,
 and accepted scores of `0.80` or higher to reduce manual request judgment.

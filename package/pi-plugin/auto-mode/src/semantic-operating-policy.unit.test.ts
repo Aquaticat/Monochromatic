@@ -70,7 +70,7 @@ await describe({
           expect(Object.isFrozen(policy,),).toBe(true,);
         }, },),
         ...supported.flatMap(function acceptedBoundaries(choice,) {
-          return [0.8, 0.83, 0.99, 1,].map(function atBoundary(score,) {
+          return [0.6, 0.8, 0.83, 0.99, 1,].map(function atBoundary(score,) {
             return it({ name: `admits ${choice} at ${score}`, fn: async function admittedSupportedMeaning() {
               /**
                Admission must neither rewrite nor freeze a borrowed estimate.
@@ -84,9 +84,9 @@ await describe({
           },);
         },),
         ...supported.map(function belowBoundary(choice,) {
-          return it({ name: `abstains from ${choice} below 0.80`, fn: async function lowerScore() {
+          return it({ name: `abstains from ${choice} below 0.60`, fn: async function lowerScore() {
             expect(
-              policy.accepts(estimate({ labels, choice, score: 0.799999, },),),
+              policy.accepts(estimate({ labels, choice, score: 0.599999, },),),
             ).toBe(false,);
           }, },);
         },),

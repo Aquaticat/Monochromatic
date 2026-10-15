@@ -5,9 +5,12 @@
 On 2026-10-14,
 the user selected Luna,
 excluded Perplexity from further trials,
-and explicitly accepted `0.8+` because the operating goal is to improve on manually judging every request.
+and initially accepted `0.8+` because the operating goal is to improve on manually judging every request.
+After examining which score the consumer uses,
+the user explicitly lowered the operating cutoff to `0.6` on the same date.
 The current target is `openai/gpt-6-luna-decisions` through the existing Gateway Decisions route.
-A supported selected meaning is admitted at `0.80` or higher with a unique lead.
+A supported selected meaning is admitted when its selected-option probability is `0.60` or higher with a unique lead.
+The separate response `confidence` field is not the thresholded quantity.
 Unknown,
 unsupported,
 tied,
@@ -27,7 +30,7 @@ The prior `0.99` choice was the agent's conservative heuristic under delegated a
 It was scoped to Jev and was not empirically calibrated.
 Treating it as a settled Luna requirement was incorrect.
 Luna's initial primary permission estimate was `0.83`,
-but only four of its 84 answers meet the newly adopted numeric boundary.
+but only four of its 84 answers met the initial `0.80` boundary.
 All distributions in that retained response satisfy the existing normalization tolerance;
 the largest measured sum deviation is `2.220446049250313e-16`.
 Changing the cutoff alone therefore does not complete native execution admission.

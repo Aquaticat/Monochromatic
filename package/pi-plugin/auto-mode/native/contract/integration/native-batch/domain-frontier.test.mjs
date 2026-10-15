@@ -203,7 +203,7 @@ function authoredWireAnswer({body}){
    const laterInstruction=nextDecision&&[nextInput,nextResult].some(function receivedLater(text){return question.instructions.selectedRule?.text.includes(text);});
    if(laterInstruction){assert.equal(observations.assessments,2,'Later receipts must not revise the first assessment');observations.nextInputQuestions++;}
    const choice=laterInstruction?'prohibition':question.instructions.selectedMaterial==='originalRequestBody'?requestRelation:selectedClause?(unresolvedClause??relation):'none';
-   const score=operatingPolicy?(selectedClause&&lowConfidenceClause?0.799999:choice==='unknown'||choice==='unsupported'?1:0.8):1;
+   const score=operatingPolicy?(selectedClause&&lowConfidenceClause?0.599999:choice==='unknown'||choice==='unsupported'?1:0.6):1;
    assert(Object.hasOwn(question.criteria,choice));
    return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(function scoreAuthoredDomainChoice(label) { return ([label,label===choice?score:label==='unknown'?1-score:0]); }))}];
   }));
