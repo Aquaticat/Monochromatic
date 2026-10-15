@@ -122,6 +122,14 @@ including duplicate and nullish values.
 A missing script-value slot now throws an explicit null-check error before judgment invocation.
 The original facade passed an undefined slot to judgment;
 the independent diagnostic fixture accepts it without establishing real judgment admission.
+`test:native:input-seal` verifies prepared argument identity,
+descriptor admission,
+original proxy failures,
+and the inclusive 10,000-container bound through both wide and deeply nested trees.
+Sealing freezes a parent before validating its children and visits the last child first.
+The original array check counts own keys;
+a missing index offset by an extra enumerable property remains accepted.
+These consumers preserve that behavior rather than introducing stricter array validation.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 
