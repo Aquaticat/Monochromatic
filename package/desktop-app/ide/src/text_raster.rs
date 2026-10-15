@@ -9,11 +9,6 @@ use crate::glyph_cache::{GlyphCache, GlyphKey};
 use crate::selection_paint;
 /// Source layout and geometry are independent of the native widget tree.
 use crate::shaped_text::ShapedView;
-/// Markdown roles share the tuned syntax hues.
-use crate::source_style::{
-    BOLD_ROLE, HEADING_ROLE, ITALIC_ROLE, LINK_ROLE, LINK_URL_ROLE, LIST_ROLE, QUOTE_ROLE,
-    RAW_INLINE_ROLE, STRIKETHROUGH_ROLE,
-};
 /// Propagate malformed font or oversized viewport diagnostics to the native shell.
 use anyhow::{Context, Result, bail};
 /// Positioned glyph runs come from the same layouts used for caret and hit testing.
@@ -25,6 +20,20 @@ use swash::{
     CacheKey, FontRef,
     scale::{ScaleContext, image::Content},
 };
+
+/// Palette values and the role-to-ink translation:
+///  the code painting here and the minimap share them.
+mod palette;
+/// What:
+///  `pub use` re-exports the palette under this module's name.
+/// Why:
+///  Callers written against `text_raster` keep their imports while the palette lives in its own file.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { type CodeColors, ink } from './palette';
+/// ```
+pub use palette::{CodeColors, ink};
 
 /// What:
 ///  Most bytes a source tile's raster may hold:
@@ -38,17 +47,6 @@ use swash::{
 /// export const MAX_RASTER_BYTES = 64 * 1024 * 1024;
 /// ```
 pub const MAX_RASTER_BYTES: u64 = 64 * 1024 * 1024;
-
-/// Native palette values needed by code painting.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct CodeColors {
-    /// Default source ink from the system palette.
-    pub foreground: [u8; 4],
-    /// Selected source ink from the system palette.
-    pub selected: [u8; 4],
-    /// Select the corresponding syntax-color variants.
-    pub dark: bool,
-}
 
 /// A premultiplied RGBA source tile ready for Slint.
 pub struct SourcePixels {
@@ -76,52 +74,6 @@ impl Default for TextRaster {
     fn default() -> Self {
         return Self::new();
     }
-}
-
-/// Translate semantic paint roles into the selected system-theme palette;
-///  the minimap's picture takes its glyph colors from the same function.
-pub fn ink(role: u32, colors: CodeColors) -> [u8; 4] {
-    if role == 64 {
-        return colors.selected;
-    }
-    // The Markdown roles reuse the six tuned hues; their weight or italic face is the second channel.
-    if role == 1 || role == 8 || role == 10 || role == ITALIC_ROLE {
-        if colors.dark {
-            return [199, 146, 234, 255];
-        }
-        return [118, 54, 164, 255];
-    }
-    if role == 2 || role == RAW_INLINE_ROLE {
-        if colors.dark {
-            return [168, 204, 140, 255];
-        }
-        return [50, 101, 32, 255];
-    }
-    if role == 3 || role == STRIKETHROUGH_ROLE || role == QUOTE_ROLE {
-        if colors.dark {
-            return [160, 168, 176, 255];
-        }
-        return [85, 92, 101, 255];
-    }
-    if role == 4 || role == 13 || role == LINK_URL_ROLE || role == LIST_ROLE {
-        if colors.dark {
-            return [240, 188, 122, 255];
-        }
-        return [139, 77, 4, 255];
-    }
-    if role == 5 || role == 12 || role == HEADING_ROLE || role == LINK_ROLE {
-        if colors.dark {
-            return [130, 190, 235, 255];
-        }
-        return [20, 86, 127, 255];
-    }
-    if role == 6 || role == 11 || role == BOLD_ROLE {
-        if colors.dark {
-            return [225, 212, 157, 255];
-        }
-        return [113, 83, 16, 255];
-    }
-    return colors.foreground;
 }
 
 /// Composite straight RGBA input into a premultiplied destination pixel.
