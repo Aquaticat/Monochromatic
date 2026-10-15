@@ -74,7 +74,7 @@ const ctx={
   hasUI:true,
   ui:{async select(title,options){
  selections++;
- assert.deepEqual(options,['Allow','Deny','Stop']);
+ assert.deepEqual(options,['Allow','Stop']);
  assert(title.includes('Complete prepared group:'));
  assert(title.includes(JSON.stringify(code)));
  if(mode==='retired')activeAuthorization=false;
@@ -194,7 +194,7 @@ try{
    1,
    'Each review captures its current native capabilities once'
  );
- if((mode==='retired')||(mode==='stop')||(mode==='cancelled')){
+ if(['retired','deny','stop','cancelled'].includes(mode)){
   assert.equal(
     executions,
     0

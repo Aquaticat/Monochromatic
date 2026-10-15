@@ -273,7 +273,6 @@ await describe({
           action: 'read .env',
           approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
           explanation: promptExplanation,
-          reflectExplanationOnDeny: true,
           notificationInvoker: async function ignoreNotification() {},
         },);
 
