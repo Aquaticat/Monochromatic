@@ -1,8 +1,16 @@
-/** Original native results remain inspectable after transport closes or cancellation fires. @module */
+/**
+ Original native results remain inspectable after transport closes or cancellation fires. @module
+ */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import type { GroupCompletionInput, GroupCompletions } from './group-completion-types.ts';
+import type {
+  GroupCompletionRecord,
+  GroupCompletionInput,
+  GroupCompletions
+} from './group-completion-types.ts';
 
-/** Completion logs describe lifetime transitions without serializing original results. */
+/**
+ Completion logs describe lifetime transitions without serializing original results.
+ */
 const l = tagged({ tag: 'auto-mode-group-completions' });
 
 //region Completion retention precedes delivery and cleanup observes every issued native result.
@@ -27,25 +35,49 @@ export function createGroupCompletions<const Outcome>({
   signal,
   onParentAbort,
 }: GroupCompletionInput<Outcome>): GroupCompletions<Outcome> {
-  /** Captured original state remains shared with the collector's cancellation owner. */
-  const rl = tagged({ tag: createGroupCompletions.name, l });
+  /**
+   Captured original state remains shared with the collector's cancellation owner.
+   */
+  const rl = tagged({
+    tag: createGroupCompletions.name,
+    l
+  });
   rl.debug('binding original native completion observer');
-  /** Detach original parent and member listeners in declaration order. */
+  /**
+   Detach original parent and member listeners in declaration order.
+   */
   function detach(): void {
-    /** Cleanup logs retain the original owner boundary without reading results. */
-    const dl = tagged({ tag: detach.name, l: rl });
+    /**
+     Cleanup logs retain the original owner boundary without reading results.
+     */
+    const dl = tagged({
+      tag: detach.name,
+      l: rl
+    });
     dl.debug('detaching original completion listeners');
-    signal.removeEventListener('abort', onParentAbort);
+    signal.removeEventListener(
+      'abort',
+      onParentAbort
+    );
     for (const record of records) {
       record.removeAbort?.();
       record.removeAbort = undefined;
     }
   }
-  /** Publish settled delivery only after all original outcomes have been retained. */
+  /**
+   Publish settled delivery only after all original outcomes have been retained.
+   */
   function completed(): void {
-    /** Completion counting observes only the presence of retained outcomes. */
-    const cl = tagged({ tag: completed.name, l: rl });
-    if (records.every(function isCompleteRecord(record) { return record.completion !== undefined; })) {
+    /**
+     Completion counting observes only the presence of retained outcomes.
+     */
+    const cl = tagged({
+      tag: completed.name,
+      l: rl
+    });
+    if (records.every(function isCompleteRecord(record: Readonly<GroupCompletionRecord<Outcome>>) {
+      return record.completion !== undefined;
+    })) {
       detach();
       if ((!groupState.primary) && (!groupState.closed)) groupState.phase = 'settled';
       cl.debug('all original native outcomes retained');
@@ -58,12 +90,22 @@ export function createGroupCompletions<const Outcome>({
 
    @param completion - original issued native completion or immediate outcome
 
-   @returns completed observation after original listener cleanup
    */
-  async function observeCompletion({ record, completion }: Parameters<GroupCompletions<Outcome>['observeCompletion']>[0]): Promise<void> {
-    /** Observation logs omit the original native value and failure contents. */
-    const ol = tagged({ tag: observeCompletion.name, l: rl });
+  async function observeCompletion({
+    record,
+    completion
+  }: Parameters<GroupCompletions<Outcome>['observeCompletion']>[0]): Promise<void> {
+    /**
+     Observation logs omit the original native value and failure contents.
+     */
+    const ol = tagged({
+      tag: observeCompletion.name,
+      l: rl
+    });
     ol.debug('observing original issued completion');
+    /**
+     Original completion cleanup runs after either delivery outcome or callback failure.
+     */
     using completionScope = {
       [Symbol.dispose](): void {
         record.removeAbort?.();
@@ -72,23 +114,36 @@ export function createGroupCompletions<const Outcome>({
       },
     };
     try {
-      /** Original await preserves immediate values and thenable settlement. */
+      /**
+       Original await preserves immediate values and thenable settlement.
+       */
       const value = await completion;
-      record.completion = Object.freeze({ status: 'fulfilled', value });
+      record.completion = Object.freeze({
+        status: 'fulfilled',
+        value
+      });
       if (record.state === 'pending') {
         record.state = 'fulfilled';
-        record.ticket.resolve(value);
+        record.ticket
+          .resolve(value);
       }
       ol.debug('retained original fulfilled completion');
     } catch (error) {
-      record.completion = Object.freeze({ status: 'rejected', reason: error });
+      record.completion = Object.freeze({
+        status: 'rejected',
+        reason: error
+      });
       if (record.state === 'pending') {
         record.state = 'rejected';
-        record.ticket.reject(error);
+        record.ticket
+          .reject(error);
       }
       ol.debug('retained original rejected completion');
     }
   }
-  return { detach, observeCompletion };
+  return {
+    detach,
+    observeCompletion
+  };
 }
 //endregion
