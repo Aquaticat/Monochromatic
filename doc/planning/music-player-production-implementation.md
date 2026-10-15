@@ -372,8 +372,13 @@ before saying it matches, QAB):
   `api-ms-win-crt-*` and system DLLs, 44 MB; uncached, 16 minutes; not byte-reproducible between two runs). On
   Windows the build step is now `cargo rustc --release --locked --target ... -- --print link-args` for all targets so a
   linker check costs no rebuild (arm64 restored main's `cargo build` entry and recompiled 2 crates). Attestation of the
-  GNU exe ran only skipped until the real release. Release `0.1.3` (bump commit `4144c6c933` carries it, run
-  `38698502487`): see the release record below once recorded.
+  GNU exe ran only skipped until the real release. RELEASED `music-player-v0.1.3` on 2026-10-15 (bump commit
+  `4144c6c933`, run `38698502487`, first attempt, all jobs green): ten files. I downloaded them: `sha256sum --check`
+  passed for nine files, attestation exit 0 for the GNU exe, the MSVC x64 exe, the musl x64 tarball and the APK
+  (first real attestation of the GNU exe), APK certificate `9de6e9a4...6926`, Linux x64 prints `music-player 0.1.3`.
+  Independent PE parse with `pefile` 2024.8.26: MSVC x64 and arm64 linker 14.51, GNU exe linker 2.46, and none of
+  the three imports `vcruntime*`, `msvcp*`, `libgcc_s*`, `libwinpthread*` or `libstdc++*`. Not run by me: any
+  Windows or macOS binary, the arm64 Linux and musl binaries, anything on a real device.
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
