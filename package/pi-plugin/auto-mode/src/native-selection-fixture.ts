@@ -206,12 +206,18 @@ export function createSelectionFixture({
     first: {
       type: 'noul',
       instructions: 'First fixed predicate',
-      criteria: { true: 'holds', false: 'does not hold' }
+      criteria: {
+        true: 'holds',
+        false: 'does not hold'
+      }
     },
     second: {
       type: 'noul',
       instructions: 'Second fixed predicate',
-      criteria: { true: 'holds', false: 'does not hold' }
+      criteria: {
+        true: 'holds',
+        false: 'does not hold'
+      }
     },
   });
   return selectionModule.createQuestionSelection({

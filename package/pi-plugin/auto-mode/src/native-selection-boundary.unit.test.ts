@@ -10,7 +10,7 @@ import { createSelectionBinding, createSelectionFixture, selectionError } from '
 await describe({
   name: '',
   children: [
-    ...['nonarray', 'empty', 'sparse', 'extra-key', 'symbol-key', 'prototype', 'accessor', 'hidden', 'duplicate', 'foreign'].map(function invalidSelection(kind) {
+    ...['nonarray', 'empty', 'sparse', 'missing', 'extra-key', 'symbol-key', 'prototype', 'accessor', 'hidden', 'duplicate', 'foreign'].map(function invalidSelection(kind) {
       return it({
         name: `rejects ${kind} membership without issuing its original claim`,
         fn: async function rejectsMalformedMembership() {
@@ -24,8 +24,12 @@ await describe({
           const input: unknown[] = [claim];
           if (kind === 'empty') input.length = 0;
           if (kind === 'sparse') input.length = 2;
+          if (kind === 'missing') {
+            input.length = 2;
+            Object.defineProperty(input, 'extra', { value: true });
+          }
           if (kind === 'extra-key') Object.defineProperty(input, 'extra', { value: true });
-          if (kind === 'symbol-key') Object.defineProperty(input, Symbol('unexpected selection member'), { value: true });
+          if (kind === 'symbol-key') Object.defineProperty(input, Symbol('extra property added to selection array'), { value: true });
           if (kind === 'prototype') Object.setPrototypeOf(input, Object.prototype);
           if (kind === 'accessor') Object.defineProperty(input, '0', { get() { 
             reads.count += 1;
@@ -35,7 +39,7 @@ await describe({
           if (kind === 'duplicate') input.push(claim);
           if (kind === 'foreign') input[0] = Object.freeze({});
           /** Exact diagnostics ensure the expected guard, rather than an incidental failure, runs. */
-          const message = (kind === 'accessor') || (kind === 'hidden')
+          const message = (kind === 'accessor') || (kind === 'hidden') || (kind === 'missing')
             ? 'Question batch has an accessor, hidden member or missing member'
             : kind === 'duplicate' ? 'Question batch repeats a claim'
             : kind === 'foreign' ? 'Claim handle is not owned by this judgment'
@@ -67,7 +71,7 @@ await describe({
         },
       });
     }),
-    ...[null, undefined, 1, {}, Object.freeze({}), Object.freeze({ identity: {}, projection: 'mutable identity' }), Object.freeze({ identity: Object.freeze({}) })].map(function invalidBinding(binding, index) {
+    ...[null, undefined, 1, {}, { identity: Object.freeze({}), projection: 'mutable record' }, Object.freeze({}), Object.freeze({ identity: {}, projection: 'mutable identity' }), Object.freeze({ identity: Object.freeze({}) })].map(function invalidBinding(binding, index) {
       return it({
         name: `rejects invalid resolver record ${index}`,
         fn: async function requiresImmutableOccurrence() {
@@ -137,7 +141,9 @@ await describe({
         const baselineClaim = baseline.declare({ definitionId: 'first', bindingHandle: createSelectionBinding('') });
         /** The request's fixed overhead includes the original catalog digest and envelope. */
         const overhead = Buffer.byteLength(
-          JSON.stringify(baseline.requestFor(baseline.issue([baselineClaim]))),
+          JSON.stringify(
+            baseline.requestFor(baseline.issue([baselineClaim])),
+          ),
         );
         /** Exact remaining bytes contain multibyte text, proving byte rather than code-unit accounting. */
         const available = 4_194_304 - overhead;
@@ -148,7 +154,9 @@ await describe({
         /** Identical membership and envelope isolate the wire-size condition. */
         const exactClaim = exact.declare({ definitionId: 'first', bindingHandle: createSelectionBinding(projection) });
         assert.equal(Buffer.byteLength(
-          JSON.stringify(exact.requestFor(exact.issue([exactClaim]))),
+          JSON.stringify(
+            exact.requestFor(exact.issue([exactClaim])),
+          ),
         ), 4_194_304);
         /** One additional byte must reject without issuing the original claim. */
         const oversized = createSelectionFixture();
