@@ -21,6 +21,13 @@ function conversation(wire){
  const body=JSON.stringify(wire);
  assert.equal(body.includes(oldMarker),false);
  assert.equal(body.includes(hiddenMarker),false);
+ for(const question of Object.values(wire.questions)){
+  if(!question.instructions.selectedRule)continue;
+  assert.deepEqual(question.instructions.proposedOperation,{
+   parent:JSON.parse(wire.state.parentProgram),
+   prepared:JSON.parse(wire.state.preparedProgram)
+  });
+ }
  const selected=wire.state.additionalPolicies.filter(function selectedConversation(source){
    return source.inputLocation?.field==='visibleConversation';
  });

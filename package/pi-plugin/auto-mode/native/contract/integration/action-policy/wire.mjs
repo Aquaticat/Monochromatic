@@ -52,6 +52,11 @@ export function bindRuleAssessmentWire(request){
    'preparedJSON',
    'requestBody'
  ])if((typeof envelope[field])!=='string')throw new RuleAssessmentWireError(`Original complete operation field is missing: ${field}`);
+ // Keep the exact operation beside each clause so its meaning is assessed against the proposed action.
+ const proposedOperation=Object.freeze({
+   parent:JSON.parse(envelope.parentJSON),
+   prepared:JSON.parse(envelope.preparedJSON)
+ });
  const sources=envelope.governingSources;
  if((!Array.isArray(sources))||(sources.length === 0)
    ||(Reflect.ownKeys(sources)
@@ -112,7 +117,7 @@ export function bindRuleAssessmentWire(request){
    appendHeadingQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs});
    continue;
   }
-  appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question});
+  appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question,proposedOperation});
  }
  const state={
    fullPolicy:sources[0]

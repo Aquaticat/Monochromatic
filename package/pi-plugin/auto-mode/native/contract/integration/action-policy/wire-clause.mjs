@@ -1,7 +1,7 @@
 import {RuleAssessmentWireError,sha,isRuleCode} from './wire-source.mjs';
 
 //region Preserve source-specific candidate identity and complete source-span checks.
-export function appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question}){
+export function appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question,proposedOperation}){
   if((!binding)||(Object.keys(binding)
     .toSorted()
     .join(',')
@@ -55,7 +55,8 @@ export function appendClauseQuestion({sources,head,binding,definition,index,seen
   const instructions=categorical
    ?{
      predicate:'Estimate the relationship defined by clauseRelationDefinition in the shared state, using its complete instructions and option rubrics.',
-     selectedRule
+     selectedRule,
+     proposedOperation
    }
    :operation
     ?{

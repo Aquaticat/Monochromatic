@@ -132,13 +132,15 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
       /**
        Frozen selection context preserves original serialized inputs and source projections.
        */
+      const sources=readJudgmentSources();
+      /** Current assessment sources retain the same original read and snapshot identity. */
       const envelope = Object.freeze({
         parentJSON,
         preparedJSON,
         requestBody: receipt.request
           .body,
         mandatoryPolicy,
-        governingSources: readJudgmentSources().decisionContext?.sources ?? readJudgmentSources().governingSources,
+        governingSources: sources.decisionContext?.sources ?? sources.governingSources,
         instructionAuthority: 'not-established',
       });
       state.selection = createQuestionSelection({
