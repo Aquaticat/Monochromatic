@@ -37,6 +37,26 @@ type InspectionModule = Readonly<{
   }>;
 }>;
 
+/** Independent test lifetime exposes identities and observable capability boundaries. */
+export type InspectionFixture = Readonly<{
+  owner: ReturnType<InspectionModule['createJudgmentInspection']>;
+  events: string[];
+  failures: Map<string, Error>;
+  state: { onStep?: (point: string) => void };
+  controller: AbortController;
+  byMember: Map<string, object>;
+  bindings: WeakMap<object, InspectionFixtureRecord>;
+  records: InspectionFixtureRecord[];
+  preparedViews: readonly object[];
+  views: Map<object, object>;
+  childGroups: { handle: object }[];
+  preparation: { prepared: boolean; preparationFailed: boolean; preparationFailure?: unknown; handle?: object };
+  lifecycle: { finished: boolean; closeFailed: boolean; finalRecord?: unknown };
+  accounting: object;
+  file: object;
+  fileCalls: Readonly<{ handle: unknown; absolutePath: unknown }>[];
+}>;
+
 /**
  Require the original built export before supplying independent capabilities.
  @param value - copied native namespace

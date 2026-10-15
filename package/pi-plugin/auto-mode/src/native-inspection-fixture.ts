@@ -1,13 +1,13 @@
 /** Independent currentness and retained-state capabilities for built inspection. @module */
 import assert from 'node:assert/strict';
-import { inspectionModule, type InspectionFixtureRecord } from './native-inspection-module-fixture.ts';
+import { inspectionModule, type InspectionFixtureRecord, type InspectionFixture } from './native-inspection-module-fixture.ts';
 
 //region Each fixture retains original records while callbacks expose observation order.
 /**
  Construct independent mutable owners and immutable identities for native inspection.
  @returns built owner with observable capabilities and replaceable lifecycle state
  */
-export function createInspectionFixture() {
+export function createInspectionFixture(): InspectionFixture {
   /** Every callback records entry before a configured original failure. */
   const events: string[] = [];
   /** Callback failures retain exact identity. */
@@ -92,6 +92,6 @@ export function createInspectionFixture() {
   };
   /** Factory must not eagerly call any supplied capability. */
   const owner = inspectionModule.createJudgmentInspection(input);
-  return { owner, input, events, failures, state, controller, byMember, bindings, records, preparedViews, views, childGroups, preparation, lifecycle, accounting, file, fileCalls };
+  return { owner, events, failures, state, controller, byMember, bindings, records, preparedViews, views, childGroups, preparation, lifecycle, accounting, file, fileCalls };
 }
 //endregion
