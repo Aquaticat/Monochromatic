@@ -3425,6 +3425,8 @@ Android, played it at once.
 - The folder and letter rails, long press and the right click are not track-row selects and are unchanged.
 - A tap during the first library load keeps its choice as before, because `selectIndex` loads the track, and the
   loaded track is what `finishLoad` keeps.
+- D129 adds the Auto-play on select setting: with it on, selecting a track that is not current also starts it. The
+  rule above is the default.
 ### D125. The folder names list shows no scrollbar (2026-10-14)
 
 The human asked that the scrollbar on the folders panel go, because the panel has several other ways to say where the
@@ -3615,6 +3617,8 @@ the same rule as the track rows.
 - This changes D73's first paragraph, which said a result for a different track starts that track at once.
   D73's current-track toggle, D72 (a folder result opens its folder without autoplay) and D74's return to the player
   stand.
+- D129: with Auto-play on select on, the result of a track that is not current is also started; this is the default
+  behavior of D127 only while the setting is off.
 - The explicit Play item of the track menu stays play-at-once on both platforms (desktop `play_row_now`, Android
   `playIndex`).
   It is an explicit Play, not a click on a row or a result.
@@ -3661,6 +3665,55 @@ Android when the file of a clicked row cannot be opened.
 - Tests: `controller_flow_tests.rs` (an unreadable select stays and drops the old decoder, the second click retries and
   reports nothing more, a readable file loads and plays and gets its peak, the Play button stays on the row, Next,
   Previous and the natural end still skip).
+
+### D129. Auto-play on select: a setting that brings back play-on-select, default off (2026-10-14)
+
+The human asked for "a setting to auto play on select, default to off".
+The meaning, the Settings row and the stored form below are the implementer's reading of that one line, open to a veto.
+It amends D124 and D127, which stay as the rule for the default.
+
+- With the setting on, a click, a tap or `Enter` on a track row that is not the current track selects it and starts
+  it at once, and so does activating the result of such a track in Search.
+  This is the behavior before D124.
+- With the setting off, which is the default and what an unmigrated or missing value means, D124 and D127 apply as
+  written: the track is only selected.
+- Unchanged in both modes: the current row (or result) still toggles play and pause; the explicit Play item of the
+  track menu still plays at once; the folder and letter rails, long press and right click are not track selects; an
+  unreadable selected row stays selected and is reported once (D128), and with the setting on it simply does not start.
+- The setting is one pure rule on each platform, inputs the setting and whether the row is current, output select only,
+  select and play, or toggle: `rowActivationFor` in `RowActivation.kt` on Android and `row_activation_for` in
+  `row_activation.rs` on desktop.
+  Android `PlayerController.activateRow` takes the setting from the host (tap, `Enter`, Search result); desktop
+  `ui_wire::play_row` reads it from the screen state (click, `Enter`, Search result), and `play_row_now` forces it on
+  for the menu Play.
+- Stored in each platform's existing settings storage, outside the template texts: desktop in `session.json` as
+  `auto_play_on_select` (a missing field is off, an old file loads unchanged, and the shutdown snapshot keeps the stored
+  value); Android in the `session` preferences under `auto_play_on_select` (a missing key is off).
+- The Settings page gets a third row in its own group headed "Playback", after the two template rows, in the stock
+  Settings switch-row form: 72 dp row, 40 dp icon circle (Material Symbols Outlined `autoplay`), the title
+  "Auto-play on select", one supporting line, and a trailing Material 3 switch (52 by 32, 24 dp thumb).
+  It toggles in place on click, tap, `Space` or `Enter` and never opens an editor or changes which template is
+  selected; on an unfolded window the detail pane keeps the selected template's editor.
+  The group heading's 16 dp top padding is the gap between the two groups (D109).
+- The state is shown in more than one way (CXD): the thumb sits right when on and left when off, the track is the accent
+  when on and the canvas with an outline border when off, the thumb holds a check mark when on and a cross when off, and
+  the supporting line names what selecting does, "Selecting a track starts it at once" or "Selecting a track waits for
+  Play".
+  Colors are existing roles only (`primary`, `on-primary`, `outline`, canvas); the dark scheme stays true black.
+- The spoken action of another track's Search result follows the setting: "Select track" when off (D127), "Play track"
+  when on.
+  The switch row is announced as a switch with the title as its label and the state as its value.
+- Keyboard: the switch row is the last stop of the list (Down, Up, Home and End, Tab on Android), with the focus ring of
+  D117 on its group-rounded shape; reaching it selects nothing.
+- A narrow list pane cannot hold the title beside the switch (the pane is 218 px at 600 and 309 px at 850, and about
+  213 dp on the unfolded Android screen), so below 300 px or dp of row width the switch sits under the supporting line,
+  and the title and line wrap instead of being cut.
+  At the 443 dp cover and in the wide pane the switch stays beside the text.
+- Tests: the pure rule on both platforms, the stored value (default off, missing field, round trip, old file), the
+  Settings switch row in real windows (default, click, `Space`, `Enter`, the state it draws, the unfolded detail pane,
+  the ring), the click, `Enter` and Search paths with the setting on and off, and the desktop end-to-end session
+  `auto-play` (off by default, `Space` on the row turns it on, a click plays at once, and the setting survives a
+  restart).
 
 ## Pending after the theme picks (2026-09-04)
 

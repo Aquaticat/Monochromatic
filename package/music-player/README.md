@@ -42,7 +42,8 @@ It saves the root,
 the selected track,
 the position,
 the playback mode,
-and the two template texts,
+the two template texts,
+and the Auto-play on select setting,
 but not the queue,
 so a relaunch rebuilds the queue from disk.
 
@@ -132,15 +133,18 @@ and the playback mode.
 
 On both platforms,
 clicking or tapping a track row that is not the current track selects it and leaves it paused,
-and any track that was playing stops (D124).
+and any track that was playing stops (D124),
+unless the Auto-play on select setting is on (D129),
+which also starts the track at once.
 Clicking or tapping the current row toggles play and pause,
 which also starts a track restored from the last session.
 A track that failed to open stays selected on both platforms and the next click or tap tries it again (D128);
 Next, Previous and the end of a track still skip unreadable files and report them.
 `Enter` on the focused row does the same.
 A Search result for a track follows the same rule (D127):
-the first activation selects the track and leaves it paused, and the second toggles play and pause.
-Only the Play item of the track menu starts a track at once.
+the first activation selects the track and leaves it paused, and the second toggles play and pause,
+or, with Auto-play on select on, the first activation also starts it.
+The Play item of the track menu starts a track at once with the setting on or off.
 
 One playback mode of four applies on both platforms,
 and the app saves it:
@@ -224,6 +228,13 @@ template's editor on the other,
 so selecting a row never navigates.
 A narrower window shows the list,
 and a row opens that template's editor page.
+Under the templates, a Playback group holds one switch row,
+Auto-play on select, which is off by default.
+With it on, a click, tap or `Enter` on a track that is not the current track, and a Search result for one,
+selects the track and starts it at once (D129).
+The row toggles in place by click, tap, `Space` or `Enter`,
+opens no editor and leaves the selected template as it is;
+in a narrow list pane the switch sits under the supporting line.
 The page is drawn on the one canvas color,
 pure white in light and pure black in dark.
 
@@ -337,6 +348,7 @@ The Track rows template is selected when Settings opens.
 Its editor,
 a preview from the open library,
 and the list of insertable fields fill the second pane.
+The Playback group under the templates holds the Auto-play on select switch.
 
 ![Settings with the Track rows template in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/2aebcf0a532bd80b74b94f8a3080f7dd4e25c0ffa8f7facb949e32d54f230c6e/package/music-player/asset/readme/desktop-settings-light.png)
 
@@ -458,7 +470,8 @@ and Move to trash has a red label and a trash icon.
 On the cover display Settings is a single pane.
 It lists the two templates,
 Track rows and Playing track,
-each with a preview line.
+each with a preview line,
+and the Auto-play on select switch under a Playback heading.
 
 ![Settings on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/38060578083a8d54d0789ac615244bdddaaf8e8add7fb05c9e3f6c1296b703d1/package/music-player/asset/readme/android-cover-settings-light.png)
 
@@ -474,7 +487,8 @@ and the mode group wraps to two rows.
 
 ![Inner display with two panes in dark appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/4384c24aa25790016829801c5e13c7b8ef6d631b9aadbdd476d1b9c219e4d30d/package/music-player/asset/readme/android-inner-two-pane-dark.png)
 
-On the inner display Settings keeps the template list on the left with Track rows selected.
+On the inner display Settings keeps the template list on the left with Track rows selected,
+and the Auto-play on select switch under it, below the Playback heading.
 The right pane shows that template's preview from the open library,
 its template text,
 and the fields that can be inserted,
@@ -705,6 +719,10 @@ at commit `49d4db35df873165d6bd6ba09b063c7dafbac2f4`:
   for the Track rows template.
 - `play_circle`,
   for the Playing track template.
+- `autoplay`,
+  for the Auto-play on select row,
+  and `check` and `close`,
+  for the marks in the switch thumb.
 
 Each app embeds the path data as vector code,
 with no icon font and no network access at run time.

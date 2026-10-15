@@ -178,7 +178,8 @@ Use durable decisions for architecture and maintenance context:
 
 ## Settings icons
 
-The Settings rows carry the Material Symbols `queue_music` and `play_circle` icons,
+The Settings rows carry the Material Symbols `queue_music`, `play_circle` and `autoplay` icons,
+and the switch thumb carries `check` and `close`,
 embedded as vector path data in [`SettingsIcons.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/SettingsIcons.kt).
 The icons are Apache License 2.0 material from `google/material-design-icons`,
 and the license text is `LICENSES/Apache-2.0.txt` at the repository root.
@@ -309,14 +310,19 @@ File details has no key of its own outside the menu.
 ## Tapping a track row (D124)
 
 A tap, or `Enter` on the row under the focus ring, goes through `PlayerController.activateRow`.
-On a row that is not the current track it only selects the row:
-`selectIndex` makes it current, pauses the engine, and loads the track paused, so the deck shows it and nothing plays.
+On a row that is not the current track it only selects the row,
+unless Auto-play on select is on (D129), which the host passes in:
+`rowActivationFor` in `core/RowActivation.kt` is the one rule, and `activateRow` maps it to the engine calls.
+With the setting off `selectIndex` makes the row current, pauses the engine, and loads the track paused, so the deck
+shows it and nothing plays; with it on `playIndex` selects and starts it.
 On the current track, playing or paused, it toggles play and pause through `togglePlay`, the call of the deck's Play
 button, so a track restored from the saved session starts, and a track whose last load failed is loaded again.
 The explicit Play row of the track menu still starts a track that is not current at once (`playIndex`).
 A Search result for a track follows the same rule (D127): `PlayerHost.openSearchResult` selects a result that is not
-the current track with `selectIndex` (`SearchActivation.SelectTrack`) and toggles with `togglePlay` for the current
-one; `wiring/PlayerHostWiringTest` taps a result through the real host.
+the current track (`SearchActivation.SelectTrack`, through `activateRow`, so it also starts with the setting on) and
+toggles with `togglePlay` for the current one; `wiring/PlayerHostWiringTest` taps a result through the real host.
+The setting is stored by `SessionStore` in the `session` preferences under `auto_play_on_select`, outside `Session`
+(a missing key is off), and `AutoPlaySettingWiringTest` covers the switch row and the taps with it on and off.
 The desktop app follows the same rule.
 `PlayerControllerRowTest`, `PlayerControllerRowFailureTest` and `wiring/RowTapWiringTest` pin it.
 

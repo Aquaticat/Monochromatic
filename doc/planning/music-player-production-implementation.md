@@ -196,7 +196,7 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 - A click or tap on a track row selects it paused and, on the selected row, toggles play and pause on both platforms
   (D124, decided by the human on 2026-10-14; Enter on the focused row follows it; the track menu's Play and Search
   results still start a track at once). `PlayerController.activateRow` (Android) and `play_row` (desktop) hold the rule;
-  the e2e suite declares one more check for it (111 declared).
+  the e2e suite declares one more check for it (111 declared; D129 adds a setting that also starts the track).
 
 - Since then (D113 to D119): library and analysis follow files automatically (D113: no rescan or re-analyze command;
   the watcher names changed paths and a planner edits the list in place; at 1M tracks a replaced file costs 0.12 ms on
@@ -490,4 +490,10 @@ Read these before repeating them. Each one cost the human a correction.
   (Next, Previous and the end of a track still skip unreadable files); the Android Search field keeps its caret at the
   end of the kept query after a fold change and after `Ctrl+F`. The spoken action of a non-current result is now
   "Select track" (D127, open to the human's veto).
+- [x] Auto-play on select setting (D129, 2026-10-14, branch `feat/auto-play-on-select`): a Settings switch row under a
+  Playback heading, off by default and stored with the session on both platforms; with it on, a click, tap, `Enter` or
+  Search result for a track that is not current also starts it, and the current track, the menu Play, the rails and
+  an unreadable row behave as before. One pure rule per platform (`rowActivationFor`, `row_activation_for`), mutation
+  checked; the desktop e2e suite gains the `auto-play` session (117 declared); the switch moves under the text in a
+  narrow list pane.
 - [ ] Release builds, signing and distribution are outside this plan and were not touched.
