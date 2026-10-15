@@ -593,8 +593,7 @@ Extract the archive and run `bin/music-player`,
 or follow `INSTALL.txt` inside it to add a menu entry and an icon for your user.
 It needs a Wayland or X11 session,
 PipeWire,
-fontconfig,
-and a CPU with AES instructions.
+and fontconfig.
 The program is built on Ubuntu 24.04 and needs a glibc of that age or newer.
 There is no AppImage:
 the program links PipeWire from the host,

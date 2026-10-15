@@ -190,6 +190,10 @@ One release holds, with `<version>` filled in:
   which `gxhash` requires on every target,
   and `+crt-static` for both Windows targets.
   A CPU without AES instructions fails with an illegal instruction, as the existing comments there record.
+  Superseded on 2026-10-15: the fingerprint hash became XXH3-64 from `twox-hash` (issue 545,
+  `doc/decision/music-player-fingerprint-hash.md`), every `+aes` entry was removed, and no CPU feature is required.
+  The release notes of `music-player-v0.1.0` and `music-player-v0.1.1` still carry the old AES sentence and cannot be
+  edited, because releases are immutable.
 
 ### Attestation and checksums
 
