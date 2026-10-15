@@ -64,10 +64,7 @@ export function createInputPool({
   });
   poolState.bytes+=Buffer.byteLength(JSON.stringify(source));
   if((poolState.bytes+poolState.pendingEventBytes)>maximumSnapshotBytes)throw new SourceCollectionError('Loaded session source observations exceed the original snapshot byte bound');
-  const publisher=createInputOnlyPublication(
-    source,
-    systemInput
-  );publisher.capture(carrier);
+  const publisher=createInputOnlyPublication({source,systemInput});publisher.capture(carrier);
   const origin=Object.freeze({
     source,
     publication:publisher.view,

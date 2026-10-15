@@ -790,8 +790,101 @@ Focused lint has zero errors and 439 warnings across those modules.
 Rebuilt serializer-receipt,
 event-receipt,
 approval-context,
-and source-work checks are running;
-the remaining full lint gate is still open.
+and source-work checks pass in
+`${HOME}/temp/agent/pi-native-source-association-consumer-20261015.log`.
+The source-work count remains 9045.
+The request observer now separates its original stream and receipt publication from lifetime validation.
+The caller retains the same private response and receipt maps,
+and original observation generation remains shared through its owner.
+Focused lint has zero errors and 315 warnings across the observer modules.
+Its rebuilt source-work,
+domain,
+changed-dependency,
+and host-lifecycle consumers pass in
+`${HOME}/temp/agent/pi-native-observer-split-consumer-20261015.log`.
+Native syntax passes all 274 modules at that artifact.
+Root lifecycle construction,
+transition publication,
+and diagnostic isolation are separated by commit `4d2b8c4748`.
+Their focused lint has zero errors and 607 warnings.
+The rebuilt manager-constructor,
+CLI-manager,
+host-lifecycle,
+and changed-dependency consumers pass in
+`${HOME}/temp/agent/pi-native-root-lifecycle-consumer-20261015.log`.
+The policy compiler now delegates output packaging and remaining-premise filtering to `compilation-result.mjs`.
+The compiler retains the original evidence and input validation before that final filtering call.
+The full maintained lint recount reports 44 errors and 13464 warnings across 479 files and 486 rules in
+`${HOME}/temp/agent/pi-maintained-observation-splits-lint-20261015.log`.
+Errors decreased from 107;
+warnings increased as extracted untyped module boundaries became visible.
+The compiler retained one file-size error after its first extraction.
+Its rebuilt domain,
+semantic-operating-policy,
+and manual-review consumers pass in
+`${HOME}/temp/agent/pi-native-policy-compilation-consumer-20261015.log`.
+The following extraction places original scheduler and inspected-program coverage in `operation-coverage.mjs`.
+Focused lint now reports zero errors and 234 warnings across the compiler and its output and coverage helpers.
+The rebuilt domain,
+semantic-operating-policy,
+and manual-review consumers also pass on that final extraction in
+`${HOME}/temp/agent/pi-native-operation-coverage-consumer-20261015.log`.
+The remaining full lint gate is still open.
+Commit `41a33c04cc` separates adoption,
+request,
+heading,
+and clause wire projections while retaining original binding checks and batch membership.
+Its focused lint has zero errors and 376 warnings.
+Commit `487e5ad3b0` separates resource,
+run,
+and generated prompt source bindings from authority assembly.
+Its focused lint has zero errors and 384 warnings.
+The rebuilt domain,
+semantic-operating-policy,
+manual-review,
+source-work,
+resource-input,
+context-receipt,
+and retained-history consumers pass in
+`${HOME}/temp/agent/pi-native-wire-authority-consumer-20261015.log`.
+Commit `42a7606059` separates loader publication state from collector snapshot ownership.
+The original private policy-input construction key remains in `system-slot.mjs`;
+the loader retains its publication record and each collector retains its own snapshot map.
+Focused lint has zero errors and 550 warnings.
+The same rebuilt policy and source consumers pass in
+`${HOME}/temp/agent/pi-native-system-slot-split-consumer-20261015.log`.
+The fixed ASCII rule-code check agrees with the original pattern in 196623 comparisons,
+including every UTF-16 code unit in each tag position and line-ending controls.
+Commit `b6dfaf8981` separates message descriptor signatures from publication ownership.
+The original alias map remains private to the publication entry module;
+signature and ownership helpers receive the same original data and map.
+Focused lint has zero errors and 606 warnings across the helpers and their publication callers.
+Rebuilt serializer-receipt,
+event-receipt,
+approval-context,
+and source-work consumers pass in
+`${HOME}/temp/agent/pi-native-handler-publication-split-consumer-20261015.log`.
+Commit `10a606eb32` separates definition validation and answer settlement from question identity ownership.
+Original claim,
+batch,
+and evidence maps remain private to the selection owner.
+Focused lint has zero errors and 463 warnings.
+Rebuilt domain,
+semantic-operating-policy,
+and manual-review consumers pass in
+`${HOME}/temp/agent/pi-native-question-selection-split-consumer-20261015.log`.
+Commit `b48b22a7d6` adds named inputs around the native result converter.
+Generated staging preserves the original SDK functions byte-for-byte and appends the adapter;
+the adversarial source-literal test imports and executes that generated module.
+Package type checking and rebuilt program-value,
+native-return,
+program-queue,
+and domain consumers pass in
+`${HOME}/temp/agent/pi-native-conversion-adapter-types-20261015.log` and
+`${HOME}/temp/agent/pi-native-conversion-adapter-consumer-20261015.log`.
+The first focused converter report has zero errors and 25 warnings;
+the fixture expectation now retains original text directly instead of parsing it back to an unchecked value.
+The next structural work separates the event-receipt and domain fixture assertions.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

@@ -155,7 +155,7 @@ export async function prepareProgram({
    */
   const returnConsumer = await replaceStagedImport({
     source: originalReturnConsumer,
-    binding: 'toScriptValue',
+    binding: 'convertNativeOutcome',
     expected: new URL(
       '../../collector/program-rule-batch-sdk-copy-v2/input/native-script-value.mjs',
       import.meta.url
