@@ -74,12 +74,14 @@ export function createMemberInstructions({ context, sources }: Readonly<{ contex
   }
   /**
    Authenticate original candidate membership before selecting its predicate.
-   @param selection - original member, clause, and predicate
+   @param definitionId - original predicate
+   @param memberId - original prepared member
+   @param rule - original clause
    @returns canonical original claim
    */
-  function claimRuleCandidate(selection: SelectedInstruction) {
-    ensureRuleBindings().read(selection.rule);
-    return claimSelectedInstruction(selection);
+  function claimRuleCandidate({ definitionId, memberId, rule }: SelectedInstruction) {
+    ensureRuleBindings().read(rule);
+    return claimSelectedInstruction({ definitionId, memberId, rule });
   }
   /**
    Resolve an unambiguous original source tag before selecting its predicate.
