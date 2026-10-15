@@ -503,6 +503,10 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs retired",
 ]
 
+[tasks."test:native:manual-group"]
+description = "Verify exact manual approval ownership, native retirement, cancellation, and returned tokens"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-manual-group.test.mjs"
+
 [tasks."test:native:sdk-stream"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream"
 
