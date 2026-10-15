@@ -171,6 +171,33 @@ jobs:
             music-player-alpine-build \
             cargo build --release --locked
 
+      - name: Stage the binaries for the smoke test
+        run: |
+          set -euo pipefail
+          # The smoke test runs from copies outside the cache directories, because the next step trims the
+          # cache directories of everything this repository's own crates produced.
+          mkdir --parents "$RUNNER_TEMP/bin"
+          cp "$CI_CACHE/target-app/debug/music-player" "$RUNNER_TEMP/bin/music-player"
+          cp "$CI_CACHE/target-nws/release/monochromatic-nested-wayland-session" "$RUNNER_TEMP/bin/nws"
+          ls -l "$RUNNER_TEMP/bin"
+
+      - name: Trim the caches to the dependencies
+        # Same condition as the save step; a run that does not save has nothing to trim.
+        if: ${{ steps.cache.outputs.cache-hit != 'true' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.ref == 'refs/heads/feat/music-player-alpine') }}
+        run: |
+          set -euo pipefail
+          # Keep only what a later run reuses. The three crates of this repository (the player, truepeak-core and the
+          # compositor) are rebuilt on every run because their source changes, so their test executables, rlibs and
+          # binaries are dead weight. The unpacked registry sources are re-extracted from registry/cache in seconds.
+          # Measured on x86_64: the entry shrank from 1.13 GB to 0.89 GB.
+          rm --recursive --force "$CI_CACHE/cargo/registry/src"
+          find "$CI_CACHE/target-app/debug" "$CI_CACHE/target-nws/release" -maxdepth 2 -type f \
+            \( -name 'music_player-*' -o -name 'libmusic_player-*' -o -name 'truepeak_core-*' -o -name 'libtruepeak_core-*' \
+               -o -name 'nested_wayland_session-*' -o -name 'libnested_wayland_session-*' \
+               -o -name 'monochromatic_nested_wayland_session-*' \) -delete
+          rm --force "$CI_CACHE/target-app/debug/music-player" "$CI_CACHE/target-nws/release/monochromatic-nested-wayland-session"
+          du --summarize --human-readable "$CI_CACHE/cargo" "$CI_CACHE/target-app" "$CI_CACHE/target-nws"
+
       - name: Save the cargo and target caches
         # Pull requests never save: a branch can only be read by itself, and
         # the repository's cache quota is small. The first condition line
@@ -190,8 +217,8 @@ jobs:
           mkdir --parents "$RUNNER_TEMP/smoke-out"
           podman run --rm \
             --memory=4g --cpus="$BUILD_CPUS" --security-opt label=disable \
-            --volume "$CI_CACHE/target-app/debug/music-player:/opt/music-player/music-player:ro" \
-            --volume "$CI_CACHE/target-nws/release/monochromatic-nested-wayland-session:/opt/music-player/nws:ro" \
+            --volume "$RUNNER_TEMP/bin/music-player:/opt/music-player/music-player:ro" \
+            --volume "$RUNNER_TEMP/bin/nws:/opt/music-player/nws:ro" \
             --volume "$GITHUB_WORKSPACE/package/music-player/desktop-app/fixture:/opt/music-player/fixture:ro" \
             --volume "$RUNNER_TEMP/smoke-out:/tmp/smoke-out" \
             music-player-alpine-smoke \
