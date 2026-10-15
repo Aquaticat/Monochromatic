@@ -4,7 +4,7 @@
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import type { ProgramFacadeInput } from './program-runner-facade-types.ts';
-import type { ProgramRunnerBinding } from './program-runner-binding-types.ts';
+import type { ProgramRunnerBinding, ProgramRunnerTool } from './program-runner-binding-types.ts';
 import type { ProgramEventRecorder } from './program-runner-events-types.ts';
 import type { ProgramRuntime } from './program-runtime-types.ts';
 
@@ -71,7 +71,9 @@ export function createDeclaredProgramFacade({
   /**
    Tool names preserve original order and duplicate definitions.
    */
-  const toolNames = tools.map(function readToolName(tool) { return tool.name; });
+  const toolNames = tools.map(function readToolName(tool: ProgramRunnerTool) {
+    return tool.name;
+  });
   /**
    Original parent token opens the judgment-owned program exactly once.
    */
@@ -107,7 +109,7 @@ export function createDeclaredProgramFacade({
       async function settle(): Promise<void> {
         try { await executeGroup({ origin, program, group, bound, assertParentCurrent }); }
         catch (error) {
-          fl.debug('retaining original reached-group execution failure', error);
+          fl.debug('retaining original reached-group execution failure');
           failures.push(error);
           for (const ticket of bound.tickets) ticket.reject(error);
         }
@@ -129,7 +131,7 @@ export function createDeclaredProgramFacade({
       /**
        Runtime drainage begins before the current native-work snapshot is read.
        */
-      const drained = await Promise.allSettled([
+      const drained: readonly (Readonly<{ status: 'fulfilled'; value: void }> | Readonly<{ status: 'rejected'; reason: unknown }>)[] = await Promise.allSettled([
         run.drain(),
         ...works
       ]);
