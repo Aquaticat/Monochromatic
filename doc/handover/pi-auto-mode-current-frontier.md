@@ -217,11 +217,25 @@ Runner event callbacks are now extracted to `program-runner-events.ts` and its c
 The original record map remains allocated before queue selection.
 Recording precedes start and end event publication;
 the original member ticket resolves only after the end event finishes.
-Independent consumers,
-original-code replay,
-and malformed ticket diagnostics remain pending verification.
-The saved original runner and callback bodies are retained under
+The native build,
+package type check,
+and independent event consumers pass.
+The same consumers pass against the exact saved original callback bodies.
+Six domain comparisons retain identical public results and native execution counts,
+including the permission-versus-prohibition positive control.
+All 23 process-local event omissions or substitutions cause assertion failures;
+the runner and event implementation artifacts retain their original hashes.
+Unknown call identifiers and removed member tickets produce explicit `Error` null-check diagnostics
+instead of the original implicit `TypeError` from reading a missing resolver.
+Both implementations first complete recording and host end-event publication.
+Receipts are `typed-runner-events-comparison.json`,
+`typed-runner-events-omissions.json`,
+and `typed-runner-events-diagnostics.json`.
+The original runner is saved as `program-runner-before-events-types.mjs`;
+the original callbacks are saved as `program-runner-events-original-methods.txt`.
+These artifacts are retained under
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete maintained lint recount remains pending.
 
 ## Tool-call scope correction
 

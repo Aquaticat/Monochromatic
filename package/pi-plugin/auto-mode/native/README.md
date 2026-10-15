@@ -90,6 +90,15 @@ Original native callback identity is captured once.
 Native option getters run before member signal lookup;
 enumerable symbols and primitive object-spread behavior remain intact.
 Missing tool-name lookups reach the original judgment admission callback unchanged.
+`test:native:runner-events` verifies original recorder publication,
+native event payload identity,
+text filtering and coercion,
+usage truthiness and getter order,
+and reverse-order member settlement.
+Start and update callbacks await host event completion.
+Completion records the result and usage before publishing its end event,
+then resolves the original member ticket only after the host finishes that event.
+Opaque callback failures stop later publication and retain their original identity.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 

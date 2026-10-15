@@ -29,7 +29,7 @@ await describe({ name: '', children: [
     const update = fixture.callbacks.onUpdate(partial, call);
     assert.equal(await Promise.race([update, setImmediate('pending')]), 'pending');
     assert.deepEqual(fixture.events[1], { type: 'tool_execution_update', toolCallId: call.id, toolName: call.name, args: call.arguments, partialResult: partial, parentToolCallId: 'parent' });
-    const updateEvent = fixture.events[1];
+    const updateEvent = fixture.events.at(1);
     assert.ok((updateEvent !== null) && ((typeof updateEvent) === 'object') && ('partialResult' in updateEvent) && ('args' in updateEvent));
     assert.equal(updateEvent.partialResult, partial);
     assert.equal(updateEvent.args, call.arguments);
@@ -53,7 +53,7 @@ await describe({ name: '', children: [
     assert.equal(await Promise.race([finish, setImmediate('pending')]), 'pending');
     assert.deepEqual(fixture.recordings, [['start', second], ['finish', fixture.control.record, true, 'a\n\n7\n'], ['usage', usage]]);
     assert.deepEqual(fixture.events[1], { type: 'tool_execution_end', toolCallId: second.id, toolName: second.name, result: outcome.result, isError: true, parentToolCallId: 'parent' });
-    const endEvent = fixture.events[1];
+    const endEvent = fixture.events.at(1);
     assert.ok((endEvent !== null) && ((typeof endEvent) === 'object') && ('result' in endEvent));
     assert.equal(endEvent.result, outcome.result);
     assert.equal(fixture.recordings[1]?.[1], fixture.control.record);
