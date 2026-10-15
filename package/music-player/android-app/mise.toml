@@ -203,6 +203,16 @@ description = "Run host JVM unit tests for the pure-logic core (no device)"
 dir = "{{config_root}}"
 run = "./gradlew :app:testDebugUnitTest --no-daemon --console=plain"
 
+[tasks."trial:depot:prepare-jvm"]
+description = "Install only the Android SDK components needed by disposable host JVM tests"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const sdk = process.env.ANDROID_HOME
+if (!sdk) throw new Error('ANDROID_HOME is unset; install the android-sdk mise tool first.')
+execFileSync('sdkmanager', [`--sdk_root=${sdk}`, 'platforms;android-37.0', 'build-tools;37.0.0', 'platform-tools'], { input: 'y\n'.repeat(50), stdio: ['pipe', 'inherit', 'inherit'] })
+'''
+
 [tasks."test:instrumented:build"]
 description = "Assemble the app + instrumented-test APKs (native .so included; no device). Run on device with am instrument or connectedAndroidTest."
 dir = "{{config_root}}"

@@ -11,6 +11,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  android-host:
+    name: Android host JVM tests and lint
+    runs-on: depot-ubuntu-24.04-4
+    timeout-minutes: 20
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        minimum_release_age: 1d
+        install: false
+    - name: Install the selected Android host tools
+      run: mise install node java android-sdk
+    - name: Prepare the host-test SDK components
+      run: mise run //package/music-player/android-app:trial:depot:prepare-jvm
+    - name: Run Android host unit tests
+      run: mise run //package/music-player/android-app:test:unit
+    - name: Run Android lint
+      run: mise run //package/music-player/android-app:lint
+
   typescript:
     name: Logger build, types, and unit tests
     runs-on: depot-ubuntu-24.04

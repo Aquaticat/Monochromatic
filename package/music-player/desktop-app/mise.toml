@@ -706,6 +706,11 @@ description = "Run representative TypeScript and the shared audio core checks on
 dir = "{{config_root}}/../../.."
 run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job typescript --job audio-core"
 
+[tasks."trial:depot:android"]
+description = "Run Android host JVM tests and lint on Depot CI"
+dir = "{{config_root}}/../../.."
+run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job android-host"
+
 [tasks."trial:github:build"]
 description = "Measure an identical Alpine build and warm repetitions on a disposable GitHub runner"
 dir = "{{config_root}}/../../.."
