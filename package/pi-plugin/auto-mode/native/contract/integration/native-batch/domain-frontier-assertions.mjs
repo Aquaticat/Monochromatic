@@ -15,7 +15,7 @@ function alteredContribution({control,location}){
 
 /** Verify the observed decision and execution against this fixture's original selected contrasts. */
 export function assertDomainReview({env,review,judgment,session,originalBody,settings,measures}){
- const {relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl,derivationControl}=settings;
+ const {relation,requireResolution,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl,providerMetadata}=settings;
  const {assessments,executions,requests,httpCalls,contextCalls,lateContextMutations,progressCalls}=measures;
  const expectedExecutions=settings.expectedExecutions??3;
  if(!review){
@@ -34,13 +34,16 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
    review.inputs.requestObservation.request.body,
    originalBody
  );
- assert.equal(
-   review.requestMaterialInterpretation.admission,
-   'admitted'
- );assert.equal(
-   review.requestMaterialInterpretation.relation,
-   requestRelation
- );
+ assert.equal(Object.hasOwn(review,'requestMaterialInterpretation'),false);
+ assert.equal(Object.hasOwn(review,'requestGoverningUse'),false);
+ assert.equal(Object.hasOwn(review.inputs.requestObservation,'sourceDerivation'),false);
+ assert.equal(Object.hasOwn(review.inputs.requestObservation,'sourceDerivationFailure'),false);
+ assert.ok(review.premiseIssues.every(function toolCallPremise(issue){return !['request-material-instruction-use','request-material-interpretation'].includes(issue.kind);}));
+ if(providerMetadata){
+  const request=JSON.parse(originalBody);
+  if(providerMetadata==='thinking')assert.deepEqual(request.thinking,{type:'enabled'});
+  else assert.deepEqual(request.fixture_provider_option,{value:'extension metadata'});
+ }
  const clauseAbstention=lowConfidenceClause||unresolvedClause!==undefined;
  if(clauseAbstention){
   assert.equal(review.clauseInterpretations.filter(function abstained(clause){return clause.admission==='abstained';}).length,1);
@@ -58,8 +61,7 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
     {depth:3}
   ));
  }
- if(sdkStream&&!receiptControl&&!observedContext&&!unobservedContext&&!derivationControl){
-  assert.equal(review.requestGoverningUse?.state,'represented-by-original-inputs',review.requestGoverningUse?.reason);
+ if(sdkStream&&!receiptControl&&!observedContext&&!unobservedContext){
   const systemContributions=review.inputs.requestObservation.sourceContributions.filter(function originalSystemDerivation(value){return value.systemDerivation!==undefined;});
   assert.ok(systemContributions.length>0,'The normal native serializer must retain its original system input derivation');
   const derivation=systemContributions[0].systemDerivation;
@@ -75,9 +77,7 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
  const result={
    complete:true,
    relation,
-   requestRelation,
-   requestGoverningUse:review.requestGoverningUse?.state,
-   derivationControl,
+   providerMetadata,
    outcome:review.outcome,
    issues,
    sources:review.inputs.instructionSources.length,
@@ -151,26 +151,10 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
      review.inputs.requestObservation.sourceContributions,
      {depth:3}
    ));
-  }else if(derivationControl){
-   assert.equal(review.outcome.state,'unresolved');
-   assert.equal(executions,0);
-   assert.equal(review.requestGoverningUse.state,'unresolved');
-   assert.ok(review.premiseIssues.some(function unaccountedRequestUse(issue){return issue.kind==='request-material-instruction-use';}));
-   assert.ok(review.inputs.requestObservation.sourceDerivationFailure);
   }else if(clauseAbstention){
    assert.equal(review.outcome.state,'unresolved');
    assert.equal(executions,0);
    assert.ok(review.premiseIssues.some(function unresolvedMeaning(issue){return issue.premise==='qualified-rule-interpretation';}));
-  }else if(requestRelation!=='none'&&review.requestGoverningUse?.state!=='represented-by-original-inputs'){
-   assert.equal(
-     review.outcome.state,
-     'unresolved'
-   );assert.equal(
-     executions,
-     0
-   );
-   assert.ok(review.premiseIssues
-     .some(function isRequestInstructionIssue(issue) { return (issue.kind==='request-material-instruction-use'); }));
   }else{
    assert.equal(
      review.outcome.state,

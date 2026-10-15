@@ -18,8 +18,7 @@ import {createApprovedChangeControl} from './approved-change-controls.ts';
 async function runDomainFrontier(){
 const relation=process.argv[2]??'prohibition',
   requireResolution=process.argv
-  .includes('--require-resolution'),requestRelation=process.argv
-  .includes('--request-potential')?'potential-instruction':'none';
+  .includes('--require-resolution');
 assert.ok([
   'permission',
   'prohibition',
@@ -66,9 +65,9 @@ const receiptControl=process.argv
   .includes('--copied-tools')?'copied-tools':process.argv
   .includes('--changed-tool')?'changed-tool':undefined;
 assert.ok((!receiptControl)||sdkStream,'Serializer receipt controls exercise the normal SDK stream');
-const derivationControl=process.argv.find(function derivationArgument(argument){return argument.startsWith('--request-derivation=');})?.slice('--request-derivation='.length);
-assert.ok(derivationControl===undefined||['protocol-field','message-field','appended-message','removed-message','removed-tools','copied-system-input','assistant-role'].includes(derivationControl));
-assert.ok(!derivationControl||(sdkStream&&requestRelation==='potential-instruction'),'Request derivation controls require original SDK serialization and a potential-instruction estimate');
+const providerMetadata=process.argv.find(function metadataArgument(argument){return argument.startsWith('--provider-metadata=');})?.slice('--provider-metadata='.length);
+assert.ok(providerMetadata===undefined||['thinking','extension'].includes(providerMetadata));
+assert.ok(!providerMetadata||sdkStream,'Provider metadata contrasts require original SDK serialization');
 const observations={contextCalls:0,lateContextMutations:0,progressCalls:0,assessments:0,executions:0,requests:0,httpCalls:0,originalBody:undefined,firstDecision:undefined,nextInputQuestions:0};
 const env=await createEnvironment({
   policyText:'RUL:\n '+text+'\n',
@@ -144,18 +143,10 @@ function controlledSdkStream({
   context,
   options
 }){
- if(derivationControl==='copied-system-input'){
-  assert.equal(context.messages[0].role,'system');
-  context.messages[0]={...context.messages[0]};
- }
- if(derivationControl&&derivationControl!=='copied-system-input')return originalSdkStream(model,context,{...options,
+ if(providerMetadata)return originalSdkStream(model,context,{...options,
   onPayload(payload,selectedModel){
-   if(derivationControl==='protocol-field')payload.unaccounted_instruction='An original-unaccounted request instruction';
-   else if(derivationControl==='message-field')payload.messages[0].unaccounted_instruction='An unaccounted message instruction';
-   else if(derivationControl==='appended-message')payload.messages.push({role:'user',content:[{type:'text',text:'An added message instruction'}]});
-   else if(derivationControl==='removed-message')payload.messages.pop();
-   else if(derivationControl==='removed-tools')delete payload.tools;
-   else payload.messages[1].role='assistant';
+   if(providerMetadata==='thinking')payload.thinking={type:'enabled'};
+   else payload.fixture_provider_option={value:'extension metadata'};
    return options.onPayload(payload,selectedModel);
   }
  });
@@ -199,10 +190,11 @@ function controlledSdkStream({
 function authoredWireAnswer({body}){
   observations.assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,observations.originalBody);
   const answers=Object.fromEntries(Object.entries(wire.questions).map(function answerAuthoredDomainQuestion([slot,question]) {
+   assert.notEqual(question.instructions.selectedMaterial,'originalRequestBody','Tool policy must not issue a whole-model-request approval question');
    const selectedClause=question.instructions.selectedRule?.id==='RUL';
    const laterInstruction=nextDecision&&[nextInput,nextResult].some(function receivedLater(text){return question.instructions.selectedRule?.text.includes(text);});
    if(laterInstruction){assert.equal(observations.assessments,2,'Later receipts must not revise the first assessment');observations.nextInputQuestions++;}
-   const choice=laterInstruction?'prohibition':question.instructions.selectedMaterial==='originalRequestBody'?requestRelation:selectedClause?(unresolvedClause??relation):'none';
+   const choice=laterInstruction?'prohibition':selectedClause?(unresolvedClause??relation):'none';
    const score=operatingPolicy?(selectedClause&&lowConfidenceClause?0.599999:choice==='unknown'||choice==='unsupported'?1:0.6):1;
    assert(Object.hasOwn(question.criteria,choice));
    return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(function scoreAuthoredDomainChoice(label) { return ([label,label===choice?score:label==='unknown'?1-score:0]); }))}];
@@ -238,7 +230,6 @@ const runtime=bindNativePolicyRuntime({
   trace(){return undefined;},
   ...(unconfiguredPolicies?{}:operatingPolicy?createNativeSemanticOperatingPolicies():{
    semanticAdmissionPolicy:policy('clause_operation_relation'),
-   requestMaterialAdmissionPolicy:policy('request_instruction_content'),
    headingContextAdmissionPolicy:policy('heading_instruction_content')
   }),
   sendWire:sendAssessment,
@@ -261,7 +252,7 @@ try{
   assert.ok(review,'The original native operation must reach policy review');
   assert.equal(review.outcome.state,'unresolved');
   assert.equal(review.semanticAdmission.state,'not-configured');
-  assert.equal(review.requestMaterialAdmission.state,'not-configured');
+  assert.equal(Object.hasOwn(review,'requestMaterialAdmission'),false);
   assert.equal(review.headingContextAdmission.state,'not-configured');
   assert.equal(review.unitAdoptionAdmission.state,'not-configured');
   assert.equal(observations.assessments,0);
@@ -282,7 +273,7 @@ try{
    lastJudgment:judgment
  }=first??current;
  const measures=first?.measures??observations;
- assertDomainReview({env,review,judgment,session,originalBody:measures.originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl,derivationControl,expectedExecutions},measures});
+ assertDomainReview({env,review,judgment,session,originalBody:measures.originalBody,settings:{relation,requireResolution,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl,providerMetadata,expectedExecutions},measures});
  if(singleCall&&relation==='permission'){
   const programs=judgment.inspect().rootPrograms;
   assert.equal(programs.length,1);
