@@ -132,16 +132,23 @@ jobs:
         echo "version=$version" >> "$GITHUB_OUTPUT"
         rustc "+$toolchain" -vV
 
-    # Package download cache of the preinstalled MSYS2 (C:\msys64): the .pkg.tar.zst files pacman downloads.
+    # Package download cache of the preinstalled MSYS2 (C:\msys64): the .pkg.tar.zst files pacman downloads. The key
+    # rotates once a month (MSYS2 publishes new package versions all the time and a cache entry is never updated), and the
+    # previous month's entry seeds the new one through restore-keys, so at most one small entry per month exists.
+    - name: Name the month for the MSYS2 cache key
+      id: month
+      if: ${{ matrix.flavor == 'gnu' }}
+      run: echo "value=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
+
     - name: Restore the MSYS2 package cache
       id: msys2-cache
       if: ${{ matrix.flavor == 'gnu' }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
         path: C:\msys64\var\cache\pacman\pkg
-        key: msys2-pkg-${{ runner.os }}-${{ runner.arch }}-${{ matrix.msystem }}-${{ hashFiles('.github/workflows/music-player-windows.yml') }}
+        key: msys2-pkg-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.msystem }}-${{ steps.month.outputs.value }}
         restore-keys: |
-          msys2-pkg-${{ runner.os }}-${{ runner.arch }}-${{ matrix.msystem }}-
+          msys2-pkg-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.msystem }}-
 
     # The runner image carries MSYS2 in C:\msys64 (not on PATH). It is used directly, without the
     # msys2/setup-msys2 action, which this repository's allowed-actions list does not permit. The package
@@ -157,6 +164,8 @@ jobs:
       run: |
         set -euo pipefail
         /c/msys64/usr/bin/bash.exe -lc 'pacman --sync --refresh --noconfirm --needed "${MINGW_PACKAGE_PREFIX}-gcc"'
+        # Drop cached files of package versions that are no longer installed, so the saved entry stays small.
+        /c/msys64/usr/bin/bash.exe -lc 'pacman --sync --clean --noconfirm'
         du -sh /c/msys64/var/cache/pacman/pkg
 
     - name: Put the MinGW-w64 tools first on PATH and print them
@@ -359,29 +368,6 @@ jobs:
           exit 1
         fi
         head -n 40 "${RUNNER_TEMP}/launch.log"
-
-    # TEMP proof, removed before merge: the release profile (thin LTO) through GNU ld.
-    - name: Build the release binary (TEMP)
-      if: ${{ matrix.flavor == 'gnu' }}
-      working-directory: package/music-player/desktop-app
-      run: |
-        set -euo pipefail
-        cargo build --release --locked --target "$TARGET"
-        ls -la "target/${TARGET}/release/music-player.exe"
-        "target/${TARGET}/release/music-player.exe" --version
-        python -m pip install --disable-pip-version-check --quiet pefile==2024.8.26
-        python - "target/${TARGET}/release/music-player.exe" <<'PYTHON'
-        import sys
-        import pefile
-        pe = pefile.PE(sys.argv[1], fast_load=True)
-        pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IMPORT"], pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT"]])
-        names = sorted({entry.dll.decode().lower() for attribute in ("DIRECTORY_ENTRY_IMPORT", "DIRECTORY_ENTRY_DELAY_IMPORT") for entry in getattr(pe, attribute, [])})
-        print("release linker version:", pe.OPTIONAL_HEADER.MajorLinkerVersion, pe.OPTIONAL_HEADER.MinorLinkerVersion)
-        print("release imported DLLs:", ", ".join(names))
-        bad = [n for n in names if n.startswith(("libgcc_s", "libwinpthread", "libstdc++"))]
-        if bad:
-            raise SystemExit(f"MinGW runtime DLLs needed: {bad}")
-        PYTHON
 
     - name: Run the tests (cargo nextest)
       working-directory: package/music-player/desktop-app
