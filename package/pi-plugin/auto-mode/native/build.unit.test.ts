@@ -70,7 +70,7 @@ await describe({ name: 'native release publication', children: [it({
     expect(await version(packageRoot)).toBe(expectedVersion);
     const cliPath = join(packageRoot, 'native/cli.mjs');
     const cli = await readFile(cliPath, 'utf8');
-    await writeFile(cliPath, `${cli}\nthrow new Error('fixture CLI loading failure');\n`);
+    await writeFile(cliPath, cli.replace('\n', "\nthrow new Error('fixture CLI loading failure');\n"));
     expect(await rejectedBuild(packageRoot)).toContain('fixture CLI loading failure');
     expect(await realpath(active)).toBe(published);
     expect(await version(packageRoot)).toBe(expectedVersion);
