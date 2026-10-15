@@ -62,11 +62,17 @@ All of this ran on GitHub-hosted runners with `.github/workflows/music-player-wi
   MSVC x64 and arm64 used `...\VC\Tools\MSVC\14.51.36231\bin\HostX64\x64\link.exe` and `HostARM64\arm64\link.exe`
   (PE linker version 14.51, so not lld); the GNU job used `x86_64-w64-mingw32-gcc` with `-fuse-ld=bfd`
   (PE linker version 2.46, GNU ld). The workflow fails if the line names an lld program.
-- C runtime imports of the debug exe (run 38670823208): the UCRT64 build imports only `api-ms-win-crt-*` DLLs
-  and Windows system DLLs, and none of `libgcc_s`, `libwinpthread` or `libstdc++`. The workflow fails otherwise.
+- C runtime imports of the debug exe, read by the workflow's PE inspection step. Before `+crt-static` reached this
+  branch (run 38670823208) the MSVC debug exe imported `vcruntime140.dll` and `api-ms-win-crt-*`. After the merge of
+  `main`, which carries `+crt-static` for both MSVC targets, both MSVC jobs printed "C runtime imports: none"
+  (run 38688163368), so `link.exe` with `+crt-static` leaves no C runtime DLL import in the debug exe.
+  The release exe was not inspected on this branch; the release workflow's own check covers it.
+  The UCRT64 build imports only `api-ms-win-crt-*` DLLs and Windows system DLLs, and none of `libgcc_s`,
+  `libwinpthread` or `libstdc++`; the workflow fails otherwise.
 - A release-profile GNU build with thin LTO built and ran (run 38676895175, about 15 minutes).
-- Tests: on the final head the suite runs 1422 tests on every Windows job with 1422 passed and 1 skipped
-  (run 38688163368). On the Linux host, 1450 passed and 1 skipped; the difference is Linux-only tests.
+- Tests: at commit 11adb30419 (which includes the merge of `main` that carried release 0.1.1) the suite ran 1422 tests
+  on every Windows job with 1422 passed and 1 skipped (run 38688163368).
+  On the Linux host, 1450 passed and 1 skipped; the difference is Linux-only tests.
   The Windows suite had never run before 2026-10-14; the fixes it needed are in
   `doc/troubleshooting/music-player-windows-build-and-test.md`.
 - Under Wine (cross-build in the Fedora 44 container, before the final merge of `main`): 1383 tests run,
@@ -78,6 +84,8 @@ All of this ran on GitHub-hosted runners with `.github/workflows/music-player-wi
 ### UCRT64 chosen over MINGW64
 
 Both MSYS2 environments passed in the four green runs in which both jobs existed. The workflow keeps UCRT64 only.
+The measured C runtime imports of the two were: MINGW64 imported only `msvcrt.dll` (GNU ld 2.47) and UCRT64 imported
+only `api-ms-win-crt-*` DLLs (GNU ld 2.46), both read from the PE inspection step of run 38670823208.
 Rust documents `msvcrt` as the default C library of `x86_64-pc-windows-gnu`
  (`src/doc/rustc/src/platform-support/windows-gnu.md`), so UCRT64 is outside the documented default,
  but it passed every test and imports only `api-ms-win-crt-*` DLLs and Windows system DLLs.
@@ -107,6 +115,8 @@ Each job caches the cargo registry index and downloaded crates, the git database
   The repository's `cargo-publish.yml` uses an exact-key-only cache, which rebuilds everything on any change.
 - The GNU job also caches the MSYS2 package downloads (`pacman` cache, cleaned with `pacman --sync --clean` before the
   save): key `msys2-pkg-v1-<OS>-<arch>-<MSYSTEM>-<YYYY-MM>`, rotating monthly so the cache cannot grow without bound.
+- The entries saved during the branch proof are scoped to the branch (main and pull requests to main cannot restore
+  them) and were deleted afterwards. The first run on `main` after the merge is cold by design.
 - Saves happen only on `main` and on manual dispatch, never on pull requests, and only when the build succeeded and the
   exact key missed. This pull-request rule is written in the workflow and passes actionlint, but has not been exercised
   by a pull request run.
@@ -124,11 +134,17 @@ Measured on the branch (the temporary branch trigger is removed):
   design (that time was not profiled further).
 - Restore-key fallback (run 38675620801, with the key suffix `-probe` added for the test and reverted): every job logged
   "restored from restore-key", rebuilt in 70 to 106 s, then saved a new entry.
+- A last manual dispatch on the final head (commit 8974cf000e, run 38690107583) was a miss on every cache, not a
+  fallback: the entries saved by the earlier runs on the branch were no longer listed 30 minutes later, while the
+  repository was over the cap. It passed all 1422 tests on every Windows job, with totals of 644 s (`msvc-x64`),
+  591 s (`msvc-arm64`) and 783 s (`gnu-x64-ucrt64`), and saved new entries of about the same sizes.
 - Entry sizes after the runs: 653,906,882 bytes (`msvc-x64`), 634,836,019 bytes (`msvc-arm64`), 652,299,238 bytes
   (`gnu-x64-ucrt64`) and 72,795,969 bytes (MSYS2 package cache), about 2.0 GB together.
   The uncompressed `target` directory is 2.3 to 2.5 GB.
 - Repository cache usage right after the warm run was 10,251,013,083 bytes (`gh cache list`), at the 10 GB cap
-  (5.5 GB were reported as used earlier the same day); about 8.2 GB belongs to other workflows.
+  (5.5 GB were reported as used earlier the same day); about 8.2 GB belonged to other workflows.
+  After the last run and the deletion of every entry of this workflow it was 11,070,701,437 bytes, all from other
+  workflows, so the repository is over the cap without these entries.
   GitHub evicts the least recently used entries when the cap is reached, so these entries can be evicted by saves
   from other branches. The first run after an eviction is a cold run; it is not a failure.
 

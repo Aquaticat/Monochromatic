@@ -620,9 +620,11 @@ and `:test:windows-gnu` cross-compiles the tests and runs them under Wine.
 Both run in a container capped at 6 GiB of memory and 4 CPUs.
 This proves the GNU toolchain and most of the code; it is not a Windows run.
 The cross build has no icon (the icon is embedded by a build script that runs only on a Windows host),
-and a few tests behave differently under Wine than on Windows
-(for example, Wine keeps a deleted file visible while it is open);
-the decision record lists them.
+and six tests fail or hang under Wine that pass on the Windows runners;
+`doc/troubleshooting/music-player-windows-build-and-test.md` lists them with what was and was not found.
+`nextest.windows-gnu.toml` ends a hung test after five minutes.
+To start the program under Wine, use a virtual desktop (`wine64 explorer /desktop=mp,1280x800 music-player.exe`):
+on a bare Xvfb screen Slint's frame throttle divides by a refresh rate of 0 and the program exits.
 
 ### Continuous integration
 
