@@ -14,12 +14,37 @@ The review is complete.
 The user accepted decision-core replacement and requested avoiding overengineering.
 The [accepted decision](../decision/pi-auto-mode-decision-core.md) fixes implementation scope.
 
-- [ ] Select current context before semantic candidates and exclude retained archives from model input.
-- [ ] Replace decision composition and re-resolve scoped confirmation without erasing independent prerequisites.
-- [ ] Separate explicit bypass from semantic profile admission while retaining native execution checks.
+- [x] Select current context before semantic candidates and exclude retained archives from model input.
+- [x] Replace decision composition and re-resolve scoped confirmation without erasing independent prerequisites.
+- [x] Separate explicit bypass from semantic profile admission while retaining native execution checks.
 - [ ] Verify prepared-operation identity, freshness, cancellation, deadlines, and configured-host behavior.
 - [ ] Verify activation preserves a usable artifact after build failure and record remaining feature scope.
 - [ ] Remove superseded paths, run relevant lint and tests, and update consumer documentation.
+
+The replacement is `native/contract/integration/action-policy/decision-core.mjs`.
+It replaces `evaluate.mjs`, `index.mjs`, and `reviewer.mjs` on 2026-10-15;
+historical references to those files describe the reviewed implementation.
+The original judgment still owns preparation-inclusive accounting, evidence, closure, and execution.
+Scoped confirmation re-resolves the captured program;
+missing, unsupported, or unresolved independent prerequisites do not open the generic confirmation dialog.
+The rebuilt native approval matrix passed those controls and the valid-confirmation, prohibition,
+retired-evidence, and cancellation controls before core consolidation.
+The consolidated core subsequently passed the native permission, prohibition, and no-policy consumers.
+
+`test:native:decision-context` passed with six assessments and eighteen inert child executions.
+It exercised the five-message floor, the complete latest-user span,
+complete long selected content, follow-up selection, and reload.
+Its positive control retained the old prefix in the main-agent request;
+the assessment wire omitted that prefix, hidden messages, and the raw provider request.
+Receipt provenance remains local and separately validated.
+The projection uses the same `buildVisibleContext` implementation as legacy mode,
+with the running host's entry projector supplied at its boundary.
+
+The rebuilt `test:native:bypass` passed for both inspected and ordinary three-statement programs.
+Native execution completed three and two inert child calls respectively, without assessment.
+Turning bypass off restored guarded admission;
+reload, audit entries, status, and the fixed virtual-input guard passed in both cases.
+These fixture results use authored model replies and presentation, not live provider or human approvals.
 The [whole-system review](../planning/pi-auto-mode-whole-system-review.md)
 recommends replacing the decision core and correcting bypass routing,
 while retaining and requalifying useful native ownership controls.
