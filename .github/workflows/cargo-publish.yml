@@ -688,30 +688,10 @@ jobs:
     - name: Install only the tools this workflow needs
       run: mise install rust
 
-    # Key shape, restore-keys rule, and size budget: doc/decision/ci-caching.md
-    - name: Identify the Rust toolchain for the cache key
-      id: toolchain
-      run: echo "id=${ImageOS}-$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
-
-    - name: Cache cargo build artifacts
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
-      with:
-        path: |
-          package/rust-module/forbidden-regex/target
-          !package/rust-module/forbidden-regex/target/package
-        key: cargo-v2-publish-fr-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/rust-module/forbidden-regex/Cargo.lock') }}
-        restore-keys: |
-          cargo-v2-publish-fr-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
-
+    # Not cached: the cold build takes 6 s; a cache would add restore and save steps for almost no gain (doc/decision/ci-caching.md).
     - name: Build .crate package (verifies by compile)
       working-directory: package/rust-module/forbidden-regex
       run: mise exec rust -- cargo package
-
-    - name: Log cargo directory sizes
-      if: always()
-      run: |
-        du --summarize --human-readable package/rust-module/forbidden-regex/target "$HOME/.cargo/registry" "$HOME/.cargo/git" || true
-        du --max-depth=2 --human-readable package/rust-module/forbidden-regex/target | sort --human-numeric-sort --reverse | head --lines=15 || true
 
     - name: Attest .crate provenance
       if: ${{ !inputs.dry-run }}
@@ -830,30 +810,10 @@ jobs:
     - name: Install only the tools this workflow needs
       run: mise install rust
 
-    # Key shape, restore-keys rule, and size budget: doc/decision/ci-caching.md
-    - name: Identify the Rust toolchain for the cache key
-      id: toolchain
-      run: echo "id=${ImageOS}-$(mise exec rust -- rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"
-
-    - name: Cache cargo build artifacts
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
-      with:
-        path: |
-          package/rust-module/jsonc-edit/target
-          !package/rust-module/jsonc-edit/target/package
-        key: cargo-v2-publish-je-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('package/rust-module/jsonc-edit/Cargo.lock') }}
-        restore-keys: |
-          cargo-v2-publish-je-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-
-
+    # Not cached: the cold build takes under 1 s; a cache would add restore and save steps for almost no gain (doc/decision/ci-caching.md).
     - name: Build .crate package (verifies by compile)
       working-directory: package/rust-module/jsonc-edit
       run: mise exec rust -- cargo package
-
-    - name: Log cargo directory sizes
-      if: always()
-      run: |
-        du --summarize --human-readable package/rust-module/jsonc-edit/target "$HOME/.cargo/registry" "$HOME/.cargo/git" || true
-        du --max-depth=2 --human-readable package/rust-module/jsonc-edit/target | sort --human-numeric-sort --reverse | head --lines=15 || true
 
     - name: Attest .crate provenance
       if: ${{ !inputs.dry-run }}
