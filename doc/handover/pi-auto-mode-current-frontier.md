@@ -144,9 +144,42 @@ then invokes the original context's abort capability.
 The obsolete `reflectExplanationOnDeny` option and its callers are removed.
 The separate headless fallback still records the unavailable approval channel.
 
-Built unit and native confirmation checks are pending after this change.
-The configured Hyper RPC fixture now expects `Allow` and `Stop`;
-its synthetic legacy denial and cancellation inputs continue to test the same stop boundary.
+The JavaScript and owned native builds,
+package type check,
+changed TypeScript lint,
+and focused built confirmation tests pass.
+The lint task reported zero warnings and errors and exited zero;
+its logger subsequently emitted `sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`.
+The abort omission control makes the rejection assertions fail while retaining the original artifact unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/abort-verification.json` records that check.
+
+The native fresh-confirmation suite passes Allow,
+legacy denial,
+Stop,
+cancellation,
+unspecified policy,
+and prohibition without an injected authorization owner.
+The actual configured Hyper RPC host passes the same response routes,
+external cancellation,
+and generic-prerequisite rejection with all 17 configured packages.
+Allow reads the disposable file once;
+all other cases execute no child tool.
+The fixture expects `Allow` and `Stop` and exercises the original production requester.
+`${HOME}/temp/agent/pi-fresh-session-hyper-rpc-original-source-20261014.log` names every preserved receipt.
+
+These host cases author clause meanings for the original policy source and `none` for other candidates.
+They establish confirmation plumbing,
+not live semantic interpretation or genuine human permission.
+The first RPC fixture also assigned the fresh-confirmation meaning to a same-tag occurrence
+inside an extension-produced composite prompt.
+That case remains blocked by unresolved source authority;
+its original outputs are preserved under `pi-hyper-rpc-allow-aIIepr` and `pi-hyper-rpc-allow-rKcQFn`.
+Restricting fixture answers to the intended source does not repair this separate interpretation boundary.
+
+The next check sends the unchanged current captured assessment to Luna,
+using the expanded vocabulary and the adopted `0.60` operating rule.
+Its artifacts live under `${HOME}/temp/agent/pi-luna-current-confirmation-20261014/`.
+Do not replay those calls or replace their original responses.
 
 ## Current Pi execution model
 

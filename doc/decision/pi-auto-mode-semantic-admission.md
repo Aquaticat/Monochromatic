@@ -26,6 +26,18 @@ and authorization requirements remain intact.
 The model score is an operating signal,
 not a measured correctness probability.
 
+The maintained clause vocabulary also includes `fresh-session-approval`:
+an express requirement for a new confirmation from this session's user for the exact prepared group.
+The native host supplies availability and freshness of its pending confirmation channel.
+This meaning supplies no permission and cannot satisfy unrelated authorization requirements.
+The same `0.60` selected-probability rule applies.
+The native confirmation dialog offers `Allow` and `Stop`;
+every non-Allow response records refusal and aborts the current run.
+
+The user clarified that the approval subject is the model-initiated tool operation and its arguments.
+The current native evaluator does not ask a separate whole-request admission question.
+The historical response replay counts in this document retain their original vocabulary and question set.
+
 The prior `0.99` choice was the agent's conservative heuristic under delegated authority.
 It was scoped to Jev and was not empirically calibrated.
 Treating it as a settled Luna requirement was incorrect.
