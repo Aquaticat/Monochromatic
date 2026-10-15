@@ -78,6 +78,13 @@ and live versus retained dependency release.
 Binding segments authenticate dependencies before entering,
 release cached internal freshness before external postchecks,
 and retain paired failures in original order without an added `cause` property.
+`test:native:judgment-sources` checks original native and legacy source handoff,
+receipt authentication order,
+collection and cancellation identity,
+and inert publication.
+Freshness and dependency callbacks retain original failures and publication timing:
+capture returns the current collection after its callback,
+while freshness assertion passes its original snapshot to the callback.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.

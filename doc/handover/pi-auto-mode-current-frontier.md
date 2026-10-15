@@ -2012,9 +2012,25 @@ request authentication order,
 current collection and signal identity,
 callback failures,
 and publication during freshness or dependency observations.
-The final consumer lint pass,
-safeguard omission controls,
-and full maintained recount remain pending for source extraction.
+`f49e36b019` records final consumer formatting.
+All four consumer files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-source-tests-format-final-20261015.log`.
+Final direct suites and type checking pass in
+`${HOME}/temp/agent/pi-source-final-20261015.log`.
+All 24 process-local safeguard changes trigger test failures;
+all three built artifacts retain their starting hashes in `typed-source-omissions.json`.
+The initial control verifier required an assertion error even when an added cancellation check
+correctly caused the original construction error instead.
+The resumed verifier accepts that exact diagnostic for added cancellation rejection,
+and the exact injected diagnostic for an added post-freshness identity check,
+while rechecking starting hashes and retaining completed controls.
+The full maintained recount covers 660 files and 486 rules:
+zero errors and 11255 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-source-lint-20261015.log`.
+All six source implementation and consumer files have zero diagnostics in the full report.
+`child-constructor.mjs` retains 103 warnings.
+Original source handoff and collection extraction are qualified at these tested boundaries.
+Continue the remaining constructor composition and maintained-package quality queue.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
