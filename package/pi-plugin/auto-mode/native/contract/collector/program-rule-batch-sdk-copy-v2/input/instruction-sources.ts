@@ -55,6 +55,7 @@ export function createInstructionSources({
        */
       function readGoverningSources() : ReturnType<GoverningSetInput['readSources']> {
         ready();
+        /** Current selected inputs are distinct from the retained provenance archive. */
         const sources=readJudgmentSources();
         return sources.decisionContext?.sources ?? sources.governingSources;
       }

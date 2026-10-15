@@ -10,7 +10,14 @@ await session.bindExtensions({uiContext:{
   setStatus(key,value){statuses.push({key,value});},
   notify(message,type){notifications.push({message,type});},
 }});
-try {
+{
+ await using cleanup={async [Symbol.asyncDispose](){
+  session.dispose();
+  await session.agent.waitForIdle();
+  runtime.detach();
+  await env.drain();
+  await flushPolicyDiagnostics();
+ }};
  const shortcut=session.extensionRunner.getShortcuts({'app.thinking.cycle':['ctrl+e']}).get('shift+tab');
  assert.ok(shortcut,'Native host must retain the Shift+Tab bypass toggle');
  const ctx=session.extensionRunner.createContext();
@@ -22,15 +29,15 @@ try {
  const inspection=await session.extensionRunner.emitToolCall({type:'tool_call',toolName:'bash',toolCallId:'inspection-probe',input:{command:'rg ydotool .'}});
  assert.equal(inspection,undefined,'Mentioning virtual input as inspection data must remain allowed');
  assert.deepEqual(statuses.at(-1),{key:'auto-mode:bypass',value:'auto-mode: bypass'});
- assert.match(notifications.at(-1).message,/bypass enabled/);
+ assert.ok(notifications.at(-1).message.includes('bypass enabled'));
  await session.prompt('Exercise the explicit bypass with native producer and parallel children.');
  assert.equal(fixtureState.executions,expectedExecutions);
  assert.equal(fixtureState.assessments,0);
  assert.equal(fixtureState.selections,0);
  assert.equal(runtime.inspect().lastReview,undefined,'Bypass must not fabricate a policy approval');
- const entries=session.sessionManager.getBranch().filter(entry=>entry.type==='custom'&&entry.customType==='auto-mode:bypass');
- assert.equal(entries.filter(entry=>entry.data.kind==='toggle'&&entry.data.enabled).length,1);
- assert.ok(entries.some(entry=>entry.data.kind==='allow'));
+ const entries=session.sessionManager.getBranch().filter(function bypassEntry(entry){return entry.type==='custom'&&entry.customType==='auto-mode:bypass';});
+ assert.equal(entries.filter(function enabledToggle(entry){return entry.data.kind==='toggle'&&entry.data.enabled;}).length,1);
+ assert.ok(entries.some(function allowedEntry(entry){return entry.data.kind==='allow';}));
  await session.reload();
  assert.equal(readNativeBypassEnabled(session.extensionRunner.createContext()),true,'Reload must restore explicit bypass from the current session branch');
  const reloaded=session.extensionRunner.getShortcuts({'app.thinking.cycle':['ctrl+e']}).get('shift+tab');
@@ -45,10 +52,4 @@ try {
  const fixedWhileDisabled=await session.extensionRunner.emitToolCall({type:'tool_call',toolName:'bash',toolCallId:'disabled-guard-probe',input:{command:'ydotool key 1:1 1:0'}});
  assert.equal(fixedWhileDisabled?.block,true);
  console.log(JSON.stringify({complete:true,shortcut:true,bypassExecutions:expectedExecutions,bypassAssessments:0,disabledRestoresGuard:true,outsideProfile,audit:true,status:true,reload:true,fixedGuard:true}));
-}finally{
- session.dispose();
- await session.agent.waitForIdle();
- runtime.detach();
- await env.drain();
- await flushPolicyDiagnostics();
 }

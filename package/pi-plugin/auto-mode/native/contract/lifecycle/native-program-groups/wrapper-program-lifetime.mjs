@@ -92,10 +92,10 @@ export function createExecutionWrappers({wrapToolDefinition,readBypass=function 
             ...descriptors,
             executeTool:{
               ...descriptors.executeTool,
-              value:async function executeNativeBypassedChild(...args) {
+              value:async function executeNativeBypassedChild(name,args,options) {
                 assertParentCurrent();
                 if(!bypass)throw new NestedGroupSupportError();
-                const result=await Reflect.apply(descriptors.executeTool.value,base,args);
+                const result=await Reflect.apply(descriptors.executeTool.value,base,[name,args,options]);
                 assertParentCurrent();
                 return result;
               }

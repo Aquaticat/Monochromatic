@@ -18,6 +18,16 @@ export class PolicyReviewPhaseError extends Error {}
 const l=tagged({tag:'auto-mode-decision-core'});
 
 //region A single owner plans, assesses, resolves, and confirms the original prepared operation.
+/** Same-source incorporation needs the original single-member clause interpretation. */
+function captureUnitScope({inputs,unitPolicy,scope}){
+ const inspected=semanticAdmissionScope({policy:unitPolicy,inputs});
+ if(inspected.state!=='matching')return inspected;
+ if(scope.state!=='matching'||inputs.effects.length!==1)
+  return Object.freeze({state:'out-of-profile',reason:'Unit incorporation requires one original member and clause interpretation.'});
+ if(inputs.unitAdoptionPairs.length===0)
+  return Object.freeze({state:'no-unit-pairs',reason:'No bounded original same-source pair needs assessment.'});
+ return inspected;
+}
 /** Current selected sources and the retained native program determine which questions are meaningful. */
 function captureScopes({inputs,policy,headingPolicy,unitPolicy}){
  const scope=semanticAdmissionScope({policy,inputs});
@@ -25,14 +35,7 @@ function captureScopes({inputs,policy,headingPolicy,unitPolicy}){
  const headingScope=inspectedHeading.state==='matching'&&inputs.headingContextCandidates.length===0
   ?Object.freeze({state:'no-heading-context',reason:'No original contextual-heading groups need assessment.'})
   :inspectedHeading;
- const inspectedUnit=semanticAdmissionScope({policy:unitPolicy,inputs});
- let unitScope=inspectedUnit;
- if(inspectedUnit.state==='matching'){
-  if(scope.state!=='matching'||inputs.effects.length!==1)
-   unitScope=Object.freeze({state:'out-of-profile',reason:'Unit incorporation requires one original member and clause interpretation.'});
-  else if(inputs.unitAdoptionPairs.length===0)
-   unitScope=Object.freeze({state:'no-unit-pairs',reason:'No bounded original same-source pair needs assessment.'});
- }
+ const unitScope=captureUnitScope({inputs,unitPolicy,scope});
  return {scope,headingScope,unitScope};
 }
 
@@ -47,14 +50,16 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
  const clauseRelations=scope.state==='matching';
  const headingContexts=headingScope.state==='matching';
  const unitAdoptions=unitScope.state==='matching';
- let evidence;
- if(clauseRelations||headingContexts||unitAdoptions){
+ async function assessSelectedInputs(){
+  if(!(clauseRelations||headingContexts||unitAdoptions))return undefined;
   dl.debug('assessing selected sources within the original shared budget');
   const batch=judgment.issueBoundPolicyBatch({clauseRelations,headingContexts,unitAdoptions,requestMaterial:false});
   await judgment.assess(batch);
-  evidence=judgment.captureBatchEvidence(batch);
+  const evidence=judgment.captureBatchEvidence(batch);
   judgment.assertBatchEvidence(evidence);
+  return evidence;
  }
+ const evidence=await assessSelectedInputs();
  inputs.assertCurrent();
  const compiled=compileBoundClauseProgram({
    judgment,inputs,authorizationInputs,pendingSessionApproval,policy,scope,evidence,
@@ -143,6 +148,7 @@ export function createDecisionGate({
    throw error;
   }
  }
- return Object.freeze({review});
+ const gate=Object.freeze({review});
+ return gate;
 }
 //endregion Original decision ownership

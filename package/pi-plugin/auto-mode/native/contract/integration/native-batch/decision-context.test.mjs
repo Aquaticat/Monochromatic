@@ -35,7 +35,14 @@ function userText(message){
    .map(function value(block){return block.text;}).join('');
 }
 
-try{
+{
+ await using cleanup={async [Symbol.asyncDispose](){
+  session.dispose();
+  await session.agent.waitForIdle();
+  runtime.detach();
+  await env.drain();
+  await flushPolicyDiagnostics();
+ }};
  for(const message of messages)session.sessionManager.appendMessage(message);
  session.agent.state.messages=messages;
  fixtureState.proposalLimit=4;
@@ -71,11 +78,5 @@ try{
  assert.equal(fixtureState.executions,18);
  assert.equal(fixtureState.selections,0);
  console.log(JSON.stringify({complete:true,fullPolicy:true,oldPrefixAbsent:true,hiddenAbsent:true,completeSelectedMessage:true,fiveMessageFloor:true,latestUserSpan:true,followup:true,reload:true,assessments:6,executions:18,providerRequests:0}));
-}finally{
- session.dispose();
- await session.agent.waitForIdle();
- runtime.detach();
- await env.drain();
- await flushPolicyDiagnostics();
 }
 //endregion Consumer context checks

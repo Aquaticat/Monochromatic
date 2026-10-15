@@ -27,6 +27,10 @@ export {
 export { findBudgetModel, } from './budget-model.ts';
 export { buildVisibleContext, } from './visible-context.ts';
 export {
+  registerNativeBypass,
+  readNativeBypassEnabled,
+} from './native-bypass.ts';
+export {
   buildContext,
   buildProjectContext,
   getReusableApproval,
