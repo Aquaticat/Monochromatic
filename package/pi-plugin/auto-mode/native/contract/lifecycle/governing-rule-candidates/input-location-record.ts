@@ -4,6 +4,11 @@
 import { SourceInputLocationError } from './input-location-error.ts';
 
 /**
+ Supported native slot shapes contain at most the discriminator and two companion values.
+ */
+const MAX_LOCATION_FIELDS = 3;
+
+/**
  Establish ordinary record shape before any slot discriminator is read.
 
  @param location - untrusted descriptor value from the original source
@@ -17,22 +22,6 @@ import { SourceInputLocationError } from './input-location-error.ts';
 export function assertInputLocationRecord(location: unknown): asserts location is Record<string, unknown> {
   if ((location === null) || ((typeof location) !== 'object')
     || (Object.getPrototypeOf(location) !== Object.prototype)) throw new SourceInputLocationError('Source input location requires an ordinary record');
-}
-
-/**
- Order original field names after rejecting unsupported symbol keys.
-
- @param left - original own property key
-
- @param right - original own property key
-
- @returns deterministic lexical ordering for exact slot shape comparison
-
- @throws SourceInputLocationError for unsupported nonstring names
- */
-function compareLocationKeys(left: PropertyKey, right: PropertyKey): number {
-  if (((typeof left) !== 'string') || ((typeof right) !== 'string')) throw new SourceInputLocationError('Source input location requires string field names');
-  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 /**
@@ -51,23 +40,32 @@ export function inputLocationShape(location: Record<string, unknown>): string {
    Own key enumeration deliberately includes hidden data properties.
    */
   const keys = Reflect.ownKeys(location);
-  if ((keys.length === 0) || (keys.length > 3)
+  if ((keys.length === 0) || (keys.length > MAX_LOCATION_FIELDS)
     || keys.some(function isNonStringLocationKey(key) { return (typeof key) !== 'string'; })) throw new SourceInputLocationError('Source input location requires supported named slot fields');
   for (const key of keys) {
-    if (!Object.hasOwn(Object.getOwnPropertyDescriptor(location, key), 'value')) throw new SourceInputLocationError('Source input location requires data fields');
+    /**
+     A disappearing own property retains the original descriptor failure category.
+     */
+    const descriptor = Object.getOwnPropertyDescriptor(location, key);
+    if (descriptor === undefined) throw new TypeError('Cannot convert undefined or null to object');
+    if (!Object.hasOwn(descriptor, 'value')) throw new SourceInputLocationError('Source input location requires data fields');
   }
-  return keys.toSorted(compareLocationKeys).join(',');
+  return keys.toSorted(function compareLocationKeys(left, right) {
+    if (((typeof left) !== 'string') || ((typeof right) !== 'string')) throw new SourceInputLocationError('Source input location requires string field names');
+    return left < right ? -1 : left > right ? 1 : 0;
+  })
+    .join(',');
 }
 
 /**
- Ordinal admission preserves the original safe-integer and nonnegative slot profile.
+ Integer admission narrows the original ordinal before its separately retained nonnegative check.
 
  @param value - untrusted ordinal field
 
- @returns whether the value can identify an original native position
+ @returns whether the value is an integer within the native safe-number representation
 
- @example isInputLocationOrdinal(0);
+ @example isInputLocationInteger(0);
  */
-export function isInputLocationOrdinal(value: unknown): value is number {
-  return ((typeof value) === 'number') && Number.isSafeInteger(value) && (value >= 0);
+export function isInputLocationInteger(value: unknown): value is number {
+  return Number.isSafeInteger(value);
 }

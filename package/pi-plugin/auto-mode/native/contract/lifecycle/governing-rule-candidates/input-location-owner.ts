@@ -3,7 +3,12 @@
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { SourceInputLocationError } from './input-location-error.ts';
-import { assertInputLocationRecord, inputLocationShape, isInputLocationOrdinal } from './input-location-record.ts';
+import {
+  assertInputLocationRecord,
+  inputLocationShape,
+  isInputLocationInteger
+} from './input-location-record.ts';
+import { isNamedInputField, isScalarInputField, isMetadataInputField, isIndexedMetadataInputField } from './input-location-fields.ts';
 import type { SourceInputLocation } from './input-location-types.ts';
 
 /**
@@ -28,14 +33,23 @@ export function sourceInputLocation(source: object): SourceInputLocation {
   /**
    Diagnostics mark the wire boundary without exposing source position content.
    */
-  const sl = tagged({ tag: sourceInputLocation.name, l });
+  const sl = tagged({
+    tag: sourceInputLocation.name,
+    l
+  });
   sl.debug('copying original native source input position');
   /**
    Only an original own data property can describe a retained position.
    */
-  const descriptor = Object.getOwnPropertyDescriptor(source, 'inputLocation');
+  const descriptor = Object.getOwnPropertyDescriptor(
+    source,
+    'inputLocation'
+  );
   if (descriptor === undefined) return {};
-  if (!Object.hasOwn(descriptor, 'value')) throw new SourceInputLocationError('Source input location requires a data property');
+  if (!Object.hasOwn(
+    descriptor,
+    'value'
+  )) throw new SourceInputLocationError('Source input location requires a data property');
   /**
    Descriptor values remain untrusted until their ordinary record shape is established.
    */
@@ -45,67 +59,69 @@ export function sourceInputLocation(source: object): SourceInputLocation {
    Exact original own keys distinguish every supported native slot representation.
    */
   const shape = inputLocationShape(location);
-  switch (location.field) {
-    case 'toolGuidelines': {
+  if (location.field === 'toolGuidelines') {
       if ((shape !== 'field,ordinal,toolName') || ((typeof location.toolName) !== 'string')
-        || (!isInputLocationOrdinal(location.ordinal))) throw new SourceInputLocationError('Source input location differs from the native tool-guideline slot');
-      return { inputLocation: { field: location.field, toolName: location.toolName, ordinal: location.ordinal } };
+        || (!isInputLocationInteger(location.ordinal)) || (location.ordinal < 0)) throw new SourceInputLocationError('Source input location differs from the native tool-guideline slot');
+      return { inputLocation: {
+        field: location.field,
+        toolName: location.toolName,
+        ordinal: location.ordinal
+      } };
     }
-    case 'toolSnippets':
-    case 'sections': {
+  if (isNamedInputField(location.field)) {
       if ((shape !== 'field,key') || ((typeof location.key) !== 'string')) throw new SourceInputLocationError('Source input location differs from the native named-text slot');
-      return { inputLocation: { field: location.field, key: location.key } };
+      return { inputLocation: {
+        field: location.field,
+        key: location.key
+      } };
     }
-    case 'customPrompt':
-    case 'appendSystemPrompt':
-    case 'expandedPrompt': {
+  if (isScalarInputField(location.field)) {
       if (shape !== 'field') throw new SourceInputLocationError('Scalar prompt location accepts only its native field');
       return { inputLocation: { field: location.field } };
     }
-    case 'contextFiles': {
-      if ((shape !== 'field,ordinal,path') || (!isInputLocationOrdinal(location.ordinal))
+  if (location.field === 'contextFiles') {
+      if ((shape !== 'field,ordinal,path') || (!isInputLocationInteger(location.ordinal)) || (location.ordinal < 0)
         || ((typeof location.path) !== 'string')) throw new SourceInputLocationError('Context input location requires its native ordinal and path');
-      return { inputLocation: { field: location.field, ordinal: location.ordinal, path: location.path } };
+      return { inputLocation: {
+        field: location.field,
+        ordinal: location.ordinal,
+        path: location.path
+      } };
     }
-    case 'skills': {
-      if ((shape !== 'field,metadataJSON,ordinal') || (!isInputLocationOrdinal(location.ordinal))
+  if (location.field === 'skills') {
+      if ((shape !== 'field,metadataJSON,ordinal') || (!isInputLocationInteger(location.ordinal)) || (location.ordinal < 0)
         || ((typeof location.metadataJSON) !== 'string')) throw new SourceInputLocationError('Skill input location requires its native ordinal and serialized companion metadata');
-      return { inputLocation: { field: location.field, ordinal: location.ordinal, metadataJSON: location.metadataJSON } };
+      return { inputLocation: {
+        field: location.field,
+        ordinal: location.ordinal,
+        metadataJSON: location.metadataJSON
+      } };
     }
-    case 'queuedMessages':
-    case 'customMessage':
-    case 'inputEvent':
-    case 'uninterceptedInput':
-    case 'transformedInput':
-    case 'commandInput':
-    case 'callInput':
-    case 'agentInput':
-    case 'managerInput':
-    case 'customTools':
-    case 'extensionTool':
-    case 'toolLoadoutOutput':
-    case 'toolLoadoutInput':
-    case 'toolLoadoutQuery':
-    case 'handlerResult':
-    case 'contextHandler':
-    case 'eventHandler':
-    case 'resourceCallback': {
+  if (isMetadataInputField(location.field)) {
       if ((shape !== 'field,metadataJSON') || ((typeof location.metadataJSON) !== 'string')) throw new SourceInputLocationError('Constructed message input location requires serialized native metadata');
-      return { inputLocation: { field: location.field, metadataJSON: location.metadataJSON } };
+      return { inputLocation: {
+        field: location.field,
+        metadataJSON: location.metadataJSON
+      } };
     }
-    case 'emitterMessages':
-    case 'sessionMessages':
-    case 'handlerOptions': {
-      if ((shape !== 'field,metadataJSON,ordinal') || (!isInputLocationOrdinal(location.ordinal))
+  if (isIndexedMetadataInputField(location.field)) {
+      if ((shape !== 'field,metadataJSON,ordinal') || (!isInputLocationInteger(location.ordinal)) || (location.ordinal < 0)
         || ((typeof location.metadataJSON) !== 'string')) throw new SourceInputLocationError('Message input location requires its original ordinal and serialized metadata');
-      return { inputLocation: { field: location.field, ordinal: location.ordinal, metadataJSON: location.metadataJSON } };
+      return { inputLocation: {
+        field: location.field,
+        ordinal: location.ordinal,
+        metadataJSON: location.metadataJSON
+      } };
     }
-    case 'nativePromptBuilder': {
-      if ((shape !== 'field,ordinal,slot') || (!isInputLocationOrdinal(location.ordinal))
+  if (location.field === 'nativePromptBuilder') {
+      if ((shape !== 'field,ordinal,slot') || (!isInputLocationInteger(location.ordinal)) || (location.ordinal < 0)
         || ((typeof location.slot) !== 'string')) throw new SourceInputLocationError('Built-in input location requires its original construction ordinal and slot');
-      return { inputLocation: { field: location.field, ordinal: location.ordinal, slot: location.slot } };
+      return { inputLocation: {
+        field: location.field,
+        ordinal: location.ordinal,
+        slot: location.slot
+      } };
     }
-    default: throw new SourceInputLocationError('Source input location names an unsupported native field');
-  }
+  throw new SourceInputLocationError('Source input location names an unsupported native field');
 }
 //endregion
