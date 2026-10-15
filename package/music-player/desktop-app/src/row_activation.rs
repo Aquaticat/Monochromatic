@@ -47,9 +47,9 @@ pub const AUTO_PLAY_ON_SELECT_TITLE: &str = "Auto-play on select";
 #[must_use]
 pub fn auto_play_on_select_supporting_text(enabled: bool) -> &'static str {
     if enabled {
-        return "Selecting a track starts it at once";
+        return "Select and play at once";
     }
-    return "Selecting a track waits for Play";
+    return "Select first, then Play";
 }
 
 /// Tests for the rule and the texts in `row_activation_tests.rs`.

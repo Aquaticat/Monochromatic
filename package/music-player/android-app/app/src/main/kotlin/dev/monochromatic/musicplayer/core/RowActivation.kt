@@ -55,8 +55,8 @@ fun rowActivationFor(autoPlayOnSelect: Boolean, isCurrent: Boolean): RowActivati
 // In TS you'd write (pseudocode):
 // ```ts
 // const autoPlayOnSelectSupportingText = (enabled: boolean): string =>
-//   enabled ? "Selecting a track starts it at once" : "Selecting a track waits for Play";
+//   enabled ? "Select and play at once" : "Select first, then Play";
 // ```
 /** Returns the one-line description of what selecting a track does with Auto-play on select [enabled] or not. */
 fun autoPlayOnSelectSupportingText(enabled: Boolean): String =
-    if (enabled) "Selecting a track starts it at once" else "Selecting a track waits for Play"
+    if (enabled) "Select and play at once" else "Select first, then Play"

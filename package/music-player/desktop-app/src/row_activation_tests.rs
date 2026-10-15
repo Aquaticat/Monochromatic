@@ -20,7 +20,7 @@ fn another_track_starts_with_the_setting_on() {
 
 #[test]
 fn the_supporting_text_names_the_current_choice() {
-    assert_eq!(auto_play_on_select_supporting_text(false), "Selecting a track waits for Play");
-    assert_eq!(auto_play_on_select_supporting_text(true), "Selecting a track starts it at once");
+    assert_eq!(auto_play_on_select_supporting_text(false), "Select first, then Play");
+    assert_eq!(auto_play_on_select_supporting_text(true), "Select and play at once");
     assert_eq!(AUTO_PLAY_ON_SELECT_TITLE, "Auto-play on select");
 }

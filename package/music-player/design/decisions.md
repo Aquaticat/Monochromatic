@@ -3697,8 +3697,7 @@ It amends D124 and D127, which stay as the rule for the default.
   The group heading's 16 dp top padding is the gap between the two groups (D109).
 - The state is shown in more than one way (CXD): the thumb sits right when on and left when off, the track is the accent
   when on and the canvas with an outline border when off, the thumb holds a check mark when on and a cross when off, and
-  the supporting line names what selecting does, "Selecting a track starts it at once" or "Selecting a track waits for
-  Play".
+  the supporting line names what selecting does, "Select and play at once" or "Select first, then Play".
   Colors are existing roles only (`primary`, `on-primary`, `outline`, canvas); the dark scheme stays true black.
 - The spoken action of another track's Search result follows the setting: "Select track" when off (D127), "Play track"
   when on.

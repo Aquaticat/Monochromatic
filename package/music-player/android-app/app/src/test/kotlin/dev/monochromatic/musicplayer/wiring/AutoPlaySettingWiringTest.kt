@@ -178,9 +178,9 @@ class AutoPlaySettingWiringTest {
     fun theSupportingTextFollowsTheState() {
         showHost()
         openSettings()
-        composeTestRule.onNodeWithText("Selecting a track waits for Play").assertExists()
+        composeTestRule.onNodeWithText("Select first, then Play").assertExists()
         switchRow().performClick()
-        composeTestRule.onNodeWithText("Selecting a track starts it at once").assertExists()
+        composeTestRule.onNodeWithText("Select and play at once").assertExists()
     }
 
     /** A tap flips the switch in place, saves the choice, and a second tap flips it back. */

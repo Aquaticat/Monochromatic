@@ -27,7 +27,7 @@ class RowActivationTest {
     /** The supporting line of the setting differs by state and each text states what selecting does. */
     @Test
     fun theSupportingTextNamesTheCurrentChoice() {
-        assertEquals("Selecting a track waits for Play", autoPlayOnSelectSupportingText(enabled = false))
-        assertEquals("Selecting a track starts it at once", autoPlayOnSelectSupportingText(enabled = true))
+        assertEquals("Select first, then Play", autoPlayOnSelectSupportingText(enabled = false))
+        assertEquals("Select and play at once", autoPlayOnSelectSupportingText(enabled = true))
     }
 }

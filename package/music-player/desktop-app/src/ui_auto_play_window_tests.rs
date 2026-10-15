@@ -220,7 +220,7 @@ fn the_switch_row_is_a_named_off_switch_with_its_line_by_default() {
     assert_eq!(touch.accessible_label().as_deref(), Some(AUTO_PLAY_ON_SELECT_TITLE));
     assert_eq!(touch.accessible_checkable(), Some(true));
     assert_eq!(touch.accessible_checked(), Some(false), "off when nothing was saved");
-    assert_eq!(touch.accessible_description().as_deref(), Some("Selecting a track waits for Play"));
+    assert_eq!(touch.accessible_description().as_deref(), Some("Select first, then Play"));
     assert!(!app.get_auto_play_on_select());
 }
 
@@ -255,7 +255,7 @@ fn a_click_toggles_the_switch_in_place_and_saves_each_value() {
     assert_eq!(ElementHandle::find_by_element_type_name(&app, "TemplateEditor").count(), 0, "no editor page opened");
     assert_eq!(
         switch_touch(&app).accessible_description().as_deref(),
-        Some("Selecting a track starts it at once"),
+        Some("Select and play at once"),
         "the line follows the state"
     );
     click_center(&app, &switch_touch(&app));
