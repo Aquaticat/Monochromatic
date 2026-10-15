@@ -268,6 +268,7 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-owner.unit.test.ts",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-group.unit.test.ts",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-result.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-boundary.unit.test.ts",
 ]
 
 [tasks."test:native:resource-input"]
