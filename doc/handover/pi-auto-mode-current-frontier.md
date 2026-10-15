@@ -254,6 +254,9 @@ parent currentness after acquisition,
 native cancellation,
 complete dispatch,
 and scope disposal await independent consumer qualification.
+The first type check exposed a pre-admission signal contract that required already validated `AbortSignal` values.
+The input now retains opaque native signal values until the existing member-preparation owner validates them.
+No earlier runner cancellation guard is introduced for absent native member signals.
 The original method and runner are retained under
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 

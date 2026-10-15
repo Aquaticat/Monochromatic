@@ -58,5 +58,5 @@ export type BindProgramCallsInput = Readonly<{
 export type PrepareReachedMembersInput = Readonly<{
   group: object;
   members: readonly ProgramPreparedMember[];
-  nativeSignals: readonly AbortSignal[];
+  nativeSignals: readonly unknown[];
 }>;

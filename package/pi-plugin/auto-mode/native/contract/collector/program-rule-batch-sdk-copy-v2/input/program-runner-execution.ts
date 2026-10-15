@@ -82,6 +82,7 @@ export async function executeReachedProgramGroup({
    Assessment publication belongs to this complete reached group only.
    */
   const assessment: ProgramAssessment = {};
+  /** Acquired queue ownership lasts through currentness checks and complete native dispatch. */
   using queueTurn = exclusive ? await acquireProgramQueue(runner) : undefined;
   el.debug('checking original parent after queue selection');
   assertParentCurrent();
