@@ -50,11 +50,13 @@ That source behavior alone does not prove Claude Code invokes the hook or enforc
 The user wants resumes allowed but deferred removal of the existing check.
 Their concern is that Claude Code's non-open-source implementation makes unproven changes undesirable.
 Keep the check unchanged until host-level evidence supports a change.
-Any investigation must distinguish hook invocation,
-the actual resume input,
-the emitted response,
-and the host's handling of that response.
 No such runtime verification was performed for this observation.
+
+Follow the [Claude Code upstream bugs policy](../../../.out-of-scope/claude-code-upstream-bugs.md):
+do not file or track upstream Claude Code bugs as GitHub issues,
+or develop elaborate local workarounds for upstream defects.
+This observation does not establish an upstream defect.
+Document the uncertainty without treating it as a request for investigation or a speculative workaround.
 
 ## Setup
 
