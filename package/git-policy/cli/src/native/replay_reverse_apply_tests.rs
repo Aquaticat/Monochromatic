@@ -300,6 +300,10 @@ fn the_search_looks_backwards_from_the_expected_line() {
     let preimage: Vec<Vec<u8>> = vec![b"b\n".to_vec()];
     assert_eq!(find_position(&image, &preimage, 2, false, false), Some(1));
     assert_eq!(find_position(&image, &preimage, 3, false, false), Some(1));
+    // One line behind an expected line far into the image: dividing the position by the distance never lands there.
+    let long: Vec<ImageLine> = image_of(&["a\n", "b\n", "c\n", "d\n", "e\n", "f\n"]);
+    let wanted: Vec<Vec<u8>> = vec![b"e\n".to_vec()];
+    assert_eq!(find_position(&long, &wanted, 5, false, false), Some(4));
 }
 
 /// A hunk that only removes lines has an empty preimage, which the end anchor places after the last line.
