@@ -18,10 +18,6 @@ import type {
 } from './set-types.ts';
 
 /**
- Combined original clause membership stays inside the existing batch profile.
- */
-const MAX_CLAUSES = 512;
-/**
  Set lifecycle diagnostics omit original governing-source content.
  */
 const l = tagged({ tag: 'auto-mode-governing-rule-set' });
@@ -51,7 +47,7 @@ function assertOriginalSources(sources: readonly GoverningSource[]): void {
 
  @returns immutable original source-set selection operations
 
- @throws GoverningRuleBindingError for invalid source membership or exceeded clause bounds
+ @throws GoverningRuleBindingError for invalid source membership
 
  @example createGoverningRuleSet({ readSources, parse });
  */
@@ -199,7 +195,6 @@ export function createGoverningRuleSet({
       headingHandles.push(handle);
     }
   }
-  if (instructionHandles.length > MAX_CLAUSES) throw new GoverningRuleBindingError('Combined policy clause count exceeds the original batch profile');
   /**
    Public tagged enumeration remains stable across current reads.
    */
