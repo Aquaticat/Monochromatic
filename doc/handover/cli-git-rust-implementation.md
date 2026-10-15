@@ -1708,9 +1708,15 @@ that is verification, not a decision for the user.
     `the_clone_request_succeeds_where_the_filesystem_clones` asks the kernel directly and fails on that mutant when
     `TMPDIR` is on a cloning filesystem; shown on btrfs (`TMPDIR=~/temp/agent/clone-probe`) with the mutant applied
     by hand.
-  Container gate on the final head (tag `hardeningZ`, log `hardening-container-8.log`) follows; the earlier gate on
-  `dda72f677c` passed with 1771 unit, 120 binary and 1 consumer test. The two `FAILED` lines inside `live_lock`
-  output are helper processes that fail on purpose.
+  Container gate on the final tested head `2272d27212` (tag `hardeningZ`, log `hardening-container-8.log`): 1773 unit,
+  120 binary and 1 consumer test passed, Clippy finished. The two `FAILED` lines inside `live_lock` output are
+  helper processes that fail on purpose.
+  Landed 2026-10-15 01:58 EDT: merge `10646ded96` on `main` (the only conflict was `final-newline.yml`, which main had
+  changed for caching; the deletion won). Of the gated paths only `.github/workflows/cargo-publish.yml` differs from the
+  tested head, by main's caching change. Issue 990 closed by the merge.
+  Released 0.1.3 (`7cf21e15d6`): dry-run publish passed, run 38689892958 passed every `gpc-*` job, crates.io lists
+  0.1.3, the GitHub release `monochromatic-git-policy-cli-v0.1.3` carries both Linux archives, and
+  `mise upgrade cargo:monochromatic-git-policy-cli` installed it (`.cache/cli-git-bin/git` points at it).
   Lessons: `&&` binds tighter than `||`, so reason about those mutants with explicit parentheses; run parallel
   container runs under distinct `GIT_POLICY_NATIVE_IMAGE_TAG` values; a mutation run needs
   `localhost/git-policy-native-test:<tag>` from a gate on the same head (alias it with `podman tag` for parallel
@@ -1719,10 +1725,9 @@ that is verification, not a decision for the user.
   `serde_json::json!` in tests (it expands to `unwrap`); an auto-push can fail with "missing necessary objects"
   while another session repacks the shared object store, and a retry succeeds; the shared `.git` has a
   commit-graph entry for an unreadable commit (`a2e8a99c`), left alone because other sessions use it.
-  Next: land with the landing pattern (merge `main`, check the gated paths are byte-identical to the tested head,
-  fast-forward the main checkout, push; "Closes #990" must close the issue), bump the wrapper to 0.1.3, push to
-  trigger the `gpc-*` release jobs, then verify with a real-credential commit and push, and finally merge the
-  pathBytes branch.
+  Next: verify the installed 0.1.3 at the user boundary (a real-credential commit and push through it, and a
+  disposable fixture showing it reaps an abandoned stage), then merge the pathBytes branch (merge `main` into it, rerun
+  its gated source) and clean up the retag aliases and merged branches.
   Not verified: Windows (the target is not installed here; `tempfile` and `libc` are unix-only dependencies that
   `bounded_child.rs` already relied on).
   A podman cleanup by the user (`podman image prune --all`) removed `rust:1.97-bookworm`; pull it back, and pin it with
