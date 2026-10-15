@@ -154,7 +154,8 @@ export function inspectProfileSuccessors({
       call,
       group: 1,
       ordinal,
-      bindingName: declaration.id.name,
+      bindingName: declaration.id
+        .name,
       allowed,
       source,
       prefix
