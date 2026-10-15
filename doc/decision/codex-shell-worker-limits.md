@@ -27,7 +27,7 @@ The shared `piwork3285273.slice` has these aggregate limits:
 - CPU quota:
   200%,
   with explicit user authorization to increase only this limit if needed.
-- Tasks: 256.
+- Tasks: 2048, increased from 256 at the user's request on 2026-10-15.
 
 Only the slice's `codex` child is writable inside the sandbox.
 The parent budget remains read-only.

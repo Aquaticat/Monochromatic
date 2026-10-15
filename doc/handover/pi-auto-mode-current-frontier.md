@@ -40,6 +40,18 @@ fresh-confirmation, and uncertain-review controls.
 The out-of-profile bypass fixture requires the new manual fallback after disabling bypass;
 its scripted Stop response is now explicit instead of accidentally approving the fallback.
 Configured-host and live checks remain pending before installation.
+The configured-host candidate checks subsequently pass with all 17 packages in `configured-final.log`.
+Live verification and commits are currently blocked by the shared worker's 256-task limit:
+Mise reports failed thread creation and Git reports failed forks and threaded `lstat`.
+An unrelated portfolio Chromium preview consumes most slots.
+The user instead authorized increasing worker capacity on 2026-10-15.
+The hook requires the exact task limit, so raising systemd alone blocks every shell command.
+The kernel value was restored through the file-edit tool to recover shell access.
+The user then specified 2048 tasks; update the maintained hook and systemd configuration together to that value,
+retaining the 4 GiB memory cap, zero swap, and two-CPU quota; leave the preview running.
+Pending queue: live configured controls, exact manual-group test, final bypass/context checks,
+focused lint/type checking, rendered documentation, native activation, and installed CLI verification.
+Use the candidate's canonical path and preload its own HTTP dispatcher in the configured fixture.
 Scratch multi-task invocations without separators passed later names as arguments;
 only explicit per-task output counts as execution evidence.
 The combined scratch task now sequences independent `mise run` calls.
