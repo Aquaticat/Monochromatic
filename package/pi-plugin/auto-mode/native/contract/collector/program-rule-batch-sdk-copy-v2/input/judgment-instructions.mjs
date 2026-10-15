@@ -84,7 +84,7 @@ function claimRequestMaterial(){
         retained.requestMaterialBinding=Object.freeze({});
         const request=receipt.request;
         const binding=Object.freeze({identity:request,projection:Object.freeze({claimScope:'program-request',requestMaterial:request})});
-        instructionBindings.set(requestMaterialBinding,{kind:'whole-request-material',request,binding});
+        instructionBindings.set(retained.requestMaterialBinding,{kind:'whole-request-material',request,binding});
       }
       return knownSelection().declare({definitionId:'request_instruction_content',bindingHandle:retained.requestMaterialBinding});
     }
