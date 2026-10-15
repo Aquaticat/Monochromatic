@@ -293,28 +293,33 @@ A path written `s<N>/...`,
     Source landed while the pass runs means stopping it and launching again
     (the runbook's rule),
     so these land after `TianqiChen66624` settles.
-3.  The ledger entries for the rounds n150 to n157,
-    B575 onward and M210 onward,
-    are being written in `w152`;
-    lint them,
-    run the scans,
-    and commit them as a docs commit.
-4.  Open items that still stand from the checkpoint headed "2026-10-13 after the hardware change":
+    That round,
+    n159,
+    is running in the keyless worktree `w153`
+    (moved to `db6c26a486` with `git reset --mixed`,
+    so its status lists only n159's changes),
+    scratch `s230`,
+    brief `prompts/prompt-n159-tenth-review-deferred-findings.md`.
+3.  Open items that still stand from the checkpoint headed "2026-10-13 after the hardware change":
     `blockStandingOf` throws `RangeError` on 80,000 inline siblings;
     whether judges quote a year slot bare is unmeasured;
-    a second independent reading of the history-archive fixes is owed;
-    scratch worktrees `w128` to `w159` are not yet in `remove-worktrees.ts`.
+    a second independent reading of the history-archive fixes is owed.
+    The spent scratch worktrees are listed in `remove-worktrees.ts`;
+    the owner runs its `force` mode.
+
+The ledger entries for the rounds n150 to n157
+(B575 to B615 and M210 to M219)
+landed in `2bb5d72bb5`.
 
 #### Identifiers
 
 - Next free:
   worktree `w160`,
-  agent `n159`,
-  scratch `s230`,
+  agent `n160`,
+  scratch `s231`,
   gate `g98`,
-  ledger `B575` and mistake `M210`,
-  both taken by the entries being written in `w152`,
-  which go on from there.
+  ledger `B616`,
+  mistake `M220`.
 
 ### 2026-10-12: the four patches merged, reviewed, and the relaunch of TianqiChen666
 
