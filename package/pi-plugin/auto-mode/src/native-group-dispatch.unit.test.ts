@@ -49,7 +49,7 @@ await describe({ name: '', children: [
       await pending.promise;
     };
     fixture.owner.startDispatch();
-    await entered.promise;
+    assert.equal(await Promise.race([entered.promise, setImmediate('missing-observation')]), undefined);
     await setImmediate();
     assert.equal(fixture.observations.length, 2);
     const marker = Object.freeze({ pending: true });
