@@ -1832,10 +1832,40 @@ their reads remain `undefined`,
 matching the existing typed member-owner representation.
 This is an intentional private own-key change,
 not a claim that every internal object is byte-for-byte identical.
-Focused lint,
-rebuild,
-consumer controls,
-and original-constructor comparison remain pending for preparation.
+All three preparation implementation files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-judgment-preparation-format-third-20261015.log`.
+The owned rebuild,
+domain,
+single-call,
+execution,
+and program-owner suites pass in
+`${HOME}/temp/agent/pi-judgment-preparation-consumers-first-20261015.log`.
+`829fce2c72`,
+`dbb98f4348`,
+and `776f3486be` add independent built preparation consumers;
+`032bdefd82` supplies their final callback contracts.
+All three direct suites and type checking pass before final formatting.
+All five consumer files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-preparation-tests-format-second-20261015.log`.
+The full saved-versus-current constructor comparison matches all six domain scenarios,
+including native execution counts and the permission-versus-prohibition positive control,
+in `typed-preparation-constructor-comparison.json`.
+Final direct verification,
+saved original-body controls,
+guard omissions,
+and the maintained lint recount remain pending.
+
+The preparation commit initially printed prepared OID `5d90f18fab`,
+then the wrapper replayed it as `776f3486be` after a concurrent landing.
+Its `cli-git` push-wait notice was initially misread as a timeout.
+The deciding source emits that notice when waiting begins;
+the completed command had no terminal push-failure diagnostic.
+Direct `git ls-remote` and ancestry checks verified that both preparation commits were already on remote `main`.
+No push retry,
+lock removal,
+or tool change was needed.
+The [source-traced correction](../troubleshooting/cli-git-push-wait-notice.md)
+was rendered and inspected.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
