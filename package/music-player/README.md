@@ -561,7 +561,7 @@ and the Android app on emulators.
 Every other file is built by CI, not yet tested on this platform:
 CI starts each desktop program once with `--version` and does nothing more.
 No build has run on a real Android device, on macOS or on Windows.
-The Alpine files have more checking than the rest, though not on real hardware:
+The Alpine files have more checking than the other CI-built files, though not on real hardware:
 the Alpine workflow runs the unit tests and a headless window and sound check in Alpine containers on both
 architectures, on debug builds, and the release run starts each Alpine program with `--version` in an Alpine image.
 Treat those downloads as unverified and report what you find as issues.

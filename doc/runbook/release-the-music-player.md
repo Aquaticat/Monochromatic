@@ -163,8 +163,8 @@ Only runs on `main` and manual dispatches save them.
 A changed lock file starts from the previous entry and rebuilds only what changed.
 The entries together are about 4 GB, against the repository's 10 GB cap.
 The two Alpine release jobs (`build-desktop-musl`) cache nothing:
-every run builds them from a clean registry and target directory,
-so they take the same time on every run,
+every run builds them from a clean registry and target directory
+(14 to 20 minutes in the two dry runs measured, which makes them the longest jobs of a release run),
 and the repository's cap is not spent on them.
 
 ```bash

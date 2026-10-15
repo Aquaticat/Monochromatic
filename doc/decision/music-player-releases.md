@@ -156,9 +156,9 @@ One release holds, with `<version>` filled in:
 
 ### Build mechanics
 
-- The Rust toolchain is read from `mise.lock` in each job and installed with `rustup`,
+- The Rust toolchain is read from `mise.lock` in each job except the Alpine one and installed with `rustup`,
   so the release never drifts from what the repository builds with,
-  and one mechanism works on every desktop platform.
+  and one mechanism works on every desktop platform that is not Alpine.
   The Android job installs Rust, JDK 21, the Android command-line tools and `cargo-ndk` with mise,
   installs the SDK components with the repository's `prepare:android` task, and builds with the existing
   `build:release` task.
@@ -166,7 +166,8 @@ One release holds, with `<version>` filled in:
   `rustc 1.101.0-nightly (e9bbadf68 2026-10-12)`, which is `nightly-2026-10-13`, the version in the native cache key.
   mise 2026.10 refused to install `cargo-ndk` before Rust was installed through mise
   (`doc/troubleshooting/mise-cargo-backend-needs-rust-installed.md`).
-- The Linux jobs install a package list that builds on the runner images:
+- The glibc Linux jobs install a package list that builds on the runner images
+  (the Alpine job gets its libraries from the packages of `Containerfile.alpine`):
   `pkg-config clang libclang-dev cmake libpipewire-0.3-dev libspa-0.2-dev libfontconfig1-dev libfreetype-dev`.
   It was found by adding packages until the build passed.
   No package was removed to test whether it is needed, so the list may hold more than the minimum.
@@ -298,8 +299,13 @@ the other desktop jobs and the Android job restored their caches by exact key:
 
 - Alpine x86_64 (`ubuntu-24.04`) 20m00s: the image builds 27s, the release build 19m02s
   (dependencies 9m07s, then the crate 9m55s), and packaging 7s.
-- Alpine aarch64 (`ubuntu-24.04-arm`) 14m07s: the image builds 30s, the release build 13m11s
+- Alpine aarch64 (`ubuntu-24.04-arm`) 14m07s: the image builds 30s, the release build 13m13s
   (dependencies 5m16s, then the crate 7m57s), and packaging 4s.
+- Run 38686797998, the same workflow dispatched again 28 minutes later (the Alpine jobs have no cache, so it is a
+  repeat of the cold build, not a warm one): Alpine x86_64 15m18s (release build 14m00s) and aarch64 14m48s,
+  so the repeat differed by 4m42s on x86_64 and 41s on aarch64 with nothing changed.
+  Treat the Alpine job time as 14 to 20 minutes; the spread comes from the runners, not from a cache.
+  The whole second run took 16m09s.
 - Linux x64 3m57s, Linux arm64 3m17s, Android 3m48s, Windows arm64 5m39s, Windows x64 6m05s, macOS arm64 4m28s.
 - The whole run took 20m45s from its creation to the end of the release job.
   Its longest build had been 7m01s in the warm run above, and the checksum job waits for every build,
