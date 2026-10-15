@@ -85,9 +85,16 @@ export function createProgramReaching(ownership: ProgramOwnership): ProgramReach
       /**
        Original source-owned pattern materializes data without evaluating replacement code.
        */
-      const args = materializePattern({ pattern: site.pattern, ...(result === undefined ? {} : { result }) });
+      const args = materializePattern({
+        pattern: site.pattern,
+        ...(result === undefined ? {} : { result })
+      });
       requireJSONInput(args);
-      return Object.freeze({ ...site, args, argsJSON: nonNullishOrThrow(JSON.stringify(args)) });
+      return Object.freeze({
+        ...site,
+        args,
+        argsJSON: nonNullishOrThrow(JSON.stringify(args))
+      });
     }));
     if (Buffer.byteLength(
       JSON.stringify(members.map(function readMemberArguments(member) { 

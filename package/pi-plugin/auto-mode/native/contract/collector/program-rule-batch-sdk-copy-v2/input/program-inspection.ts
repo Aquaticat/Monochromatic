@@ -92,13 +92,17 @@ export function createProgramInspection({
          */
         const record = nonNullishOrThrow(bindings.get(member));
         return Object.freeze({
-          id: record.prepared.id,
-          state: record.execution?.state ?? 'unentered'
+          id: record.prepared
+            .id,
+          state: record.execution
+            ?.state
+            ?? 'unentered'
         });
       })),
       nativeReturns: Object.freeze(group.slots
         .map(function inspectConsumedSlot(slot) { 
-          return nonNullishOrThrow(group.consumer).inspect(slot.handle); 
+          return nonNullishOrThrow(group.consumer)
+            .inspect(slot.handle); 
         }))
     });
   }

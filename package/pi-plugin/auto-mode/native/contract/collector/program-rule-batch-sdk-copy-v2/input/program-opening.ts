@@ -194,8 +194,17 @@ export function createProgramOpening({
         /**
          Original reached-group identity remains independent of copied declaration metadata.
          */
-        const group: ProgramGroup = { handle: Object.freeze({}), program, definition, state: 'unreached', slots: [] };
-        groups.set(group.handle, group);
+        const group: ProgramGroup = {
+          handle: Object.freeze({}),
+          program,
+          definition,
+          state: 'unreached',
+          slots: []
+        };
+        groups.set(
+          group.handle,
+          group
+        );
         return group;
       });
       scope.declaration = declaration;
@@ -223,7 +232,8 @@ export function createProgramOpening({
    @returns original view when published
    */
   function programFor(program: object): ProgramScope['view'] {
-    return nonNullishOrThrow(currentProgram(program).program)
+    return nonNullishOrThrow(currentProgram(program)
+      .program)
       .view;
   }
   return {

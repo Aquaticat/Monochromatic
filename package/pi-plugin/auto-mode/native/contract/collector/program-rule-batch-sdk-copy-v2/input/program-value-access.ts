@@ -70,7 +70,11 @@ export function createProgramValueAccess({
     const group = knownGroup(handle);
     if (!group.consumer) throw new JudgmentConstructionError('Reached group has no fixed native consumer');
     return await group.consumer
-      .invoke({ slot, call, options });
+      .invoke({
+        slot,
+        call,
+        options
+      });
   }
   /**
    Retain the first failure and every distinct original guard occurrence.
@@ -148,7 +152,7 @@ export function createProgramValueAccess({
   }>): string {
     try { 
       return nonNullishOrThrow(group.consumer)
-      .valueFor({ slot: slotHandle, outcome }); 
+        .valueFor({ slot: slotHandle, outcome }); 
     }
     catch (error) {
       if (error instanceof NativeScriptValueGuardError) throw operation(function markInvocationFailure() { 
@@ -213,13 +217,14 @@ export function createProgramValueAccess({
           if (scope.valueReceipt && ((scope.valueReceipt
             .slot
             !== slotHandle) || (scope.valueReceipt
-            .native
-            !== nonNullishOrThrow(slot.native)
-            .identity))) throw new JudgmentConstructionError('Producer script-value receipt cannot be replaced');
+              .native
+              !== nonNullishOrThrow(slot.native)
+              .identity))) throw new JudgmentConstructionError('Producer script-value receipt cannot be replaced');
           scope.valueReceipt ??= Object.freeze({
             slot: slotHandle,
             member: nonNullishOrThrow(slot.member),
-            native: nonNullishOrThrow(slot.native).identity,
+            native: nonNullishOrThrow(slot.native)
+              .identity,
             value
           });
         }

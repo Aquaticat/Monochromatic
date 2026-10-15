@@ -149,8 +149,14 @@ export function createProgramCallBinding({
           handle: Object.freeze({}),
           group,
           ordinal: index,
-          call: Object.freeze({ id: call.id, name: call.name }),
-          tool: Object.freeze({ name: nonNullishOrThrow(tool).name, outputSchema: Boolean(tool?.outputSchema) ? true : undefined })
+          call: Object.freeze({
+            id: call.id,
+            name: call.name
+          }),
+          tool: Object.freeze({
+            name: nonNullishOrThrow(tool).name,
+            outputSchema: Boolean(tool?.outputSchema) ? true : undefined
+          })
         });
       }
       currentGroup(handle);

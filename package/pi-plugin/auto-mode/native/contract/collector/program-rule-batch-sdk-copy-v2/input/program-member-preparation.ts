@@ -107,7 +107,9 @@ export function createProgramMemberPreparation({
          */
         const nativeSignal = nativeSignals[index];
         if ((!member) || (!Object.isFrozen(member))
-          || (member.id !== slot.call.id)
+          || (member.id
+            !== slot.call
+            .id)
           || (member.name !== expected.name)
           || (!Object.isFrozen(member.input))) throw new JudgmentConstructionError('Final child identity differs from bound native call');
         requireJSONInput(member.input);
@@ -118,13 +120,16 @@ export function createProgramMemberPreparation({
          */
         const effectiveSignal = AbortSignal.any([
           signal,
-          parent.execution.origin.signal,
+          parent.execution
+            .origin
+            .signal,
           nativeSignal
         ]);
         effectiveSignal.throwIfAborted();
         pending.push({
           prepared: member,
-          parent: nonNullishOrThrow(scope.view).parent,
+          parent: nonNullishOrThrow(scope.view)
+            .parent,
           effectiveSignal,
           group
         });
