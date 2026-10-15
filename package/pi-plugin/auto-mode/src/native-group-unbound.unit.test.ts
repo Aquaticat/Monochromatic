@@ -13,7 +13,7 @@ await describe({ name: '', children: [
       await fixture.state.work;
       assert.equal(fixture.failures.length, 1);
       const [failure] = fixture.failures;
-      assert.ok(failure?.error instanceof Error);
+      assert.ok(Error.isError(failure?.error,));
       assert.equal(failure.error.message, 'Complete group consumer returned a different member set');
       assert.equal(failure.at, 'group-dispatch');
       assert.deepEqual(fixture.retained, [{ error: fixture.failureToken, at: 'group-dispatch' }]);

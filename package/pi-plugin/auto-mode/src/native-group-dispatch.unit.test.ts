@@ -1,7 +1,7 @@
 /** Original dispatch publication and complete member association reach independent consumers. @module */
 import assert from 'node:assert/strict';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
-import { createDispatchFixture } from './native-group-dispatch-fixture.ts';
+import { createDispatchFixture, throwDispatchFixtureValue } from './native-group-dispatch-fixture.ts';
 
 await describe({ name: '', children: [
   //region Work publication and successful association preserve original identities and callback order.
@@ -60,7 +60,7 @@ await describe({ name: '', children: [
     const fixture = createDispatchFixture();
     const failure = Object.freeze({ original: 'tail failure' });
     fixture.control.current = function failAtTail(): void {
-      if (fixture.control.currentCalls === 2) throw failure;
+      if (fixture.control.currentCalls === 2) throwDispatchFixtureValue(failure);
     };
     fixture.owner.startDispatch();
     await fixture.state.work;
@@ -70,7 +70,9 @@ await describe({ name: '', children: [
   it({ name: 'waits for all observation rejections without replacing original consumer outcomes', fn: async () => {
     const fixture = createDispatchFixture();
     const rejected = Object.freeze({ original: 'observer rejection' });
-    fixture.control.observe = async function failObservation(): Promise<void> { throw rejected; };
+    fixture.control.observe = async function failObservation(): Promise<void> { 
+      throwDispatchFixtureValue(rejected);
+    };
     fixture.owner.startDispatch();
     await fixture.state.work;
     assert.equal(fixture.observations.length, 2);
@@ -88,13 +90,15 @@ await describe({ name: '', children: [
     assert.equal(fixture.calls.length, 0);
     assert.equal(fixture.state.dispatches, 0);
     const [failure] = fixture.retained;
-    assert.ok(failure?.error instanceof Error);
+    assert.ok(Error.isError(failure?.error,));
     assert.equal(failure.error.message, 'Declared member set is incomplete');
     assert.equal(failure.at, 'group-dispatch');
   } }),
   it({ name: 'retains initial currentness failure without native dispatch', fn: async () => {
     const fixture = createDispatchFixture();
-    fixture.control.current = function rejectCurrentness(): void { throw undefined; };
+    fixture.control.current = function rejectCurrentness(): void { 
+      throwDispatchFixtureValue(undefined);
+    };
     fixture.owner.startDispatch();
     await fixture.state.work;
     assert.deepEqual(fixture.retained, [{ error: undefined, at: 'group-dispatch' }]);
@@ -103,7 +107,9 @@ await describe({ name: '', children: [
   ...[undefined, null, 'failure', 73, Object.freeze({ original: 'consumer failure' })].map(function consumerFailure(error) {
     return it({ name: `retains opaque consumer failure ${JSON.stringify(error)}`, fn: async () => {
       const fixture = createDispatchFixture();
-      fixture.control.consume = function failConsumer(): never { throw error; };
+      fixture.control.consume = function failConsumer(): never { 
+        throwDispatchFixtureValue(error);
+      };
       fixture.owner.startDispatch();
       await fixture.state.work;
       assert.deepEqual(fixture.failures, [{ error, at: 'group-consumer' }]);
@@ -114,9 +120,11 @@ await describe({ name: '', children: [
   it({ name: 'resolves published work after dispatcher boundary retention fails', fn: async () => {
     const fixture = createDispatchFixture();
     const failure = Object.freeze({ original: 'retention failure' });
-    fixture.control.current = function failCurrent(): never { throw null; };
+    fixture.control.current = function failCurrent(): never { 
+      throwDispatchFixtureValue(null);
+    };
     fixture.control.retain = function failFirstRetention(input): void {
-      if (input.at === 'group-dispatch') throw failure;
+      if (input.at === 'group-dispatch') throwDispatchFixtureValue(failure);
     };
     fixture.owner.startDispatch();
     await fixture.state.work;
