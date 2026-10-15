@@ -1,5 +1,5 @@
 import {createJudgmentInstructions} from './judgment-instructions.mjs';
-import {createJudgmentDependencyChecks} from './judgment-dependencies.mjs';
+import {createJudgmentDependencyChecks} from './judgment-dependencies.ts';
 
 
 
@@ -48,7 +48,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     const {
       active, ready, dependencyCheck, bindingSegment, assertDependenciesCurrent, isBindingSegmentActive
     } = createJudgmentDependencyChecks({
-      budget, input, receipt, facade, byMember, bindings, trace,
+      budget, readOriginalRequest(){return readMainAgentRequest(input);}, receipt, facade, byMember, bindings, trace,
       readPreparation() {
         const {prepared,preparationFailed,preparationFailure,handle}=preparation.state;
         return { prepared, preparationFailed, preparationFailure, finished:lifecycle.state.finished, closeFailed:lifecycle.state.closeFailed, finalRecord:lifecycle.state.finalRecord, handle };
