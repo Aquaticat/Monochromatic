@@ -65,6 +65,28 @@ impl Drop for TempTree {
     }
 }
 
+/// What: `folder_names_ignore_case` is true when this machine's temporary folder treats `a` and `A` as one name.
+/// Why: Windows and default macOS volumes do; the random trees below then must not hold two names that differ only by case.
+///      The answer is probed once, in a throwaway folder.
+fn folder_names_ignore_case() -> bool {
+    static ANSWER: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    return *ANSWER.get_or_init(|| {
+        let probe = TempTree::new("case-probe");
+        probe.write("probe-a", "x");
+        return probe.path("PROBE-A").exists();
+    });
+}
+
+/// What: `pick_stem` is a random one of `all`, leaving out later names that differ from an earlier one only by case when the
+/// disk ignores case.
+/// Why: `a` and `A` name two folders on Linux but one on Windows, and a random tree that wrote both would not match the
+///      walk's paths. On a case-sensitive disk the list is used as given, so the sequences of random numbers stay as they were.
+pub(crate) fn pick_stem(all: &[&'static str], rng: &mut Rng) -> &'static str {
+    let mut seen: BTreeSet<String> = BTreeSet::new();
+    let usable: Vec<&'static str> = all.iter().copied().filter(|stem| return !folder_names_ignore_case() || seen.insert(stem.to_lowercase())).collect();
+    return usable[rng.below(usable.len())];
+}
+
 /// What: `Rng` is a 64-bit xorshift generator.
 /// Why: a fixed seed repeats a failing sequence of random edits exactly.
 pub(crate) struct Rng(pub(crate) u64);

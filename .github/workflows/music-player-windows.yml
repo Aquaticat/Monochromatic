@@ -1,0 +1,374 @@
+name: music-player-windows
+
+# Builds, tests and smoke-runs the music player desktop app (package/music-player/desktop-app) on real
+# Windows runners, in three flavors that need three different toolchains. Decision and rationale:
+# doc/decision/music-player-windows-linkers.md.
+#
+# - x86_64-pc-windows-msvc on x64 and aarch64-pc-windows-msvc on arm64: Visual Studio's own link.exe
+#   links the program (the .cargo/config.toml of the package sets no linker for either target).
+# - x86_64-pc-windows-gnu on x64: the Rust GNU host toolchain with an MSYS2 MinGW-w64 gcc, so GNU ld
+#   links the program. No Visual Studio tool is used to build that job's program.
+#
+# Every job runs cargo nextest for its target, builds the real binary, prints the linker rustc ran,
+# inspects the PE import table, and starts the program.
+#
+# Caches (one entry per job): the cargo registry index and downloaded crates, the git db, and the package
+# target directory. The key holds the runner OS and architecture, the target, the Rust toolchain version
+# and the hash of both Cargo.lock files; restore-keys fall back to the same target and toolchain without
+# the lockfile hash, so a lockfile change rebuilds only the changed crates. Entries are lean: no
+# incremental directories, no debug info, and this package's own artifacts are pruned before the save.
+# Caches are saved only on main and on workflow_dispatch, never on pull requests (a pull
+# request run still restores the entries main saved).
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+    - 'package/music-player/desktop-app/**'
+    - 'package/music-player/truepeak-core/**'
+    - '.github/workflows/music-player-windows.yml'
+  push:
+    branches:
+    - 'main'
+    paths:
+    - 'package/music-player/desktop-app/**'
+    - 'package/music-player/truepeak-core/**'
+    - '.github/workflows/music-player-windows.yml'
+
+permissions: {}
+
+env:
+  # The root mise config lists heavy dev tools with auto_install on. This workflow does not use mise
+  # (rustup comes with every runner image), but the setting keeps any accidental mise call from building them.
+  # Same pattern as npm-release.yml and music-player-release.yml.
+  MISE_AUTO_INSTALL: 'false'
+  # The Slint UI uses experimental builtins (FlexboxLayout); the package mise.toml sets this for its tasks.
+  # SLINT_EMIT_DEBUG_INFO makes the ElementHandle UI tests find their elements (the mise test task sets it too).
+  SLINT_ENABLE_EXPERIMENTAL_FEATURES: '1'
+  SLINT_EMIT_DEBUG_INFO: '1'
+  # Lean cache entries and fast cold builds: no incremental directories, no debug info in dependencies.
+  CARGO_INCREMENTAL: '0'
+  CARGO_PROFILE_DEV_DEBUG: '0'
+  CARGO_TERM_COLOR: 'always'
+  # Release version of cargo-nextest, and the SHA-256 of its Windows archive per architecture. The archive
+  # URL is https://github.com/nextest-rs/nextest/releases/download/cargo-nextest-<version>/... .
+  NEXTEST_VERSION: '0.9.148'
+
+concurrency:
+  group: music-player-windows-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  windows:
+    name: ${{ matrix.name }}
+    if: ${{ !github.event.repository.fork }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - name: msvc-x64
+          runner: windows-2025
+          target: x86_64-pc-windows-msvc
+          flavor: msvc
+          nextest-target: x86_64-pc-windows-msvc
+          nextest-sha256: bef17504bed9d4994cf860c122e84a90d613b92e6d89584fa9e28bd53ad42e15
+        - name: msvc-arm64
+          runner: windows-11-arm
+          target: aarch64-pc-windows-msvc
+          flavor: msvc
+          nextest-target: aarch64-pc-windows-msvc
+          nextest-sha256: e8b2681657565435b95caf029512cb9e5782db13ad908ca02b1828b92b579dda
+        # UCRT64 is the MSYS2 environment its documentation recommends (MINGW64 is deprecated since 2026-03-15). A
+        # MINGW64 job was run alongside it for four runs and passed the same tests with an msvcrt.dll-only import table;
+        # the measured imports of both are in doc/decision/music-player-windows-linkers.md.
+        - name: gnu-x64-ucrt64
+          runner: windows-2025
+          target: x86_64-pc-windows-gnu
+          flavor: gnu
+          msystem: UCRT64
+          msys-dir: ucrt64
+          nextest-target: x86_64-pc-windows-msvc
+          nextest-sha256: bef17504bed9d4994cf860c122e84a90d613b92e6d89584fa9e28bd53ad42e15
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    env:
+      TARGET: ${{ matrix.target }}
+      FLAVOR: ${{ matrix.flavor }}
+      JOB_NAME: ${{ matrix.name }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+        persist-credentials: false
+
+    # The repository pins its Rust toolchain in mise.lock (a dated nightly shared by every package); read it
+    # from there so this workflow never drifts from what developers build with. The GNU job installs the
+    # GNU HOST toolchain: with the default MSVC host, build scripts and proc macros would still be linked
+    # by Visual Studio's link.exe, and the job would not prove a build free of Microsoft's toolchain.
+    - name: Install the Rust toolchain pinned in mise.lock
+      id: toolchain
+      run: |
+        set -euo pipefail
+        version=$(awk -F'"' '/^\[\[tools\.rust\]\]$/ { in_rust = 1; next } in_rust && /^version = / { print $2; exit }' mise.lock)
+        case "$version" in
+          nightly-????-??-?? | [0-9]*.[0-9]*.[0-9]*) ;;
+          *) echo "::error::Unexpected Rust version in mise.lock: '$version'"; exit 1 ;;
+        esac
+        if [ "$FLAVOR" = 'gnu' ]; then
+          toolchain="${version}-x86_64-pc-windows-gnu"
+        else
+          toolchain="$version"
+        fi
+        rustup toolchain install "$toolchain" --profile minimal --no-self-update
+        echo "RUSTUP_TOOLCHAIN=$toolchain" >> "$GITHUB_ENV"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        rustc "+$toolchain" -vV
+
+    # Package download cache of the preinstalled MSYS2 (C:\msys64): the .pkg.tar.zst files pacman downloads. The key
+    # rotates once a month (MSYS2 publishes new package versions all the time and a cache entry is never updated), and the
+    # previous month's entry seeds the new one through restore-keys, so at most one small entry per month exists.
+    - name: Name the month for the MSYS2 cache key
+      id: month
+      if: ${{ matrix.flavor == 'gnu' }}
+      run: echo "value=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
+
+    - name: Restore the MSYS2 package cache
+      id: msys2-cache
+      if: ${{ matrix.flavor == 'gnu' }}
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: C:\msys64\var\cache\pacman\pkg
+        key: msys2-pkg-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.msystem }}-${{ steps.month.outputs.value }}
+        restore-keys: |
+          msys2-pkg-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.msystem }}-
+
+    # The runner image carries MSYS2 in C:\msys64 (not on PATH). It is used directly, without the
+    # msys2/setup-msys2 action, which this repository's allowed-actions list does not permit. The package
+    # database in the image is stale, so it is refreshed first (`-Sy`); only mingw-w64 packages, which are
+    # self-contained under /ucrt64 or /mingw64, are installed, so a partial MSYS2 upgrade is not a concern.
+    # gcc brings binutils (GNU ld, as, dlltool, windres) and the MinGW-w64 runtime. cmake and ninja come from
+    # the runner image: opusic-sys builds libopus with cmake and picks the Ninja generator when ninja runs.
+    - name: Install MinGW-w64 with the preinstalled MSYS2
+      if: ${{ matrix.flavor == 'gnu' }}
+      env:
+        MSYSTEM: ${{ matrix.msystem }}
+        MSYS2_PATH_TYPE: strict
+      run: |
+        set -euo pipefail
+        /c/msys64/usr/bin/bash.exe -lc 'pacman --sync --refresh --noconfirm --needed "${MINGW_PACKAGE_PREFIX}-gcc"'
+        # Drop cached files of package versions that are no longer installed, so the saved entry stays small.
+        /c/msys64/usr/bin/bash.exe -lc 'pacman --sync --clean --noconfirm'
+        du -sh /c/msys64/var/cache/pacman/pkg
+
+    - name: Put the MinGW-w64 tools first on PATH and print them
+      if: ${{ matrix.flavor == 'gnu' }}
+      env:
+        MSYS_DIR: ${{ matrix.msys-dir }}
+      run: |
+        set -euo pipefail
+        # Strawberry Perl and older MinGW copies on the runner also ship a gcc; the MSYS2 one must win.
+        echo "C:\\msys64\\${MSYS_DIR}\\bin" >> "$GITHUB_PATH"
+        export PATH="/c/msys64/${MSYS_DIR}/bin:$PATH"
+        for tool in gcc ld dlltool windres ar cmake ninja; do
+          printf '%s: ' "$tool"; command -v "$tool"
+        done
+        gcc --version | head -n 1
+        ld --version | head -n 1
+        gcc -dumpmachine
+        # The compiler's default C runtime, from the MinGW-w64 specs: msvcrt for MINGW64, ucrt for UCRT64.
+        echo '#include <stdio.h>' | gcc -E -dM -x c - | grep -E '_UCRT|__MSVCRT__' || true
+
+    - name: Install cargo-nextest
+      env:
+        NEXTEST_TARGET: ${{ matrix.nextest-target }}
+        NEXTEST_SHA256: ${{ matrix.nextest-sha256 }}
+      run: |
+        set -euo pipefail
+        archive="cargo-nextest-${NEXTEST_VERSION}-${NEXTEST_TARGET}.tar.gz"
+        dest="${RUNNER_TEMP}/nextest"
+        mkdir -p "$dest"
+        curl --proto '=https' --tlsv1.2 --location --silent --show-error --fail \
+          --output "${dest}/${archive}" \
+          "https://github.com/nextest-rs/nextest/releases/download/cargo-nextest-${NEXTEST_VERSION}/${archive}"
+        echo "${NEXTEST_SHA256}  ${dest}/${archive}" | sha256sum --check
+        # A path with a drive letter would be read by tar as host:path, so extract from inside the directory.
+        (cd "$dest" && tar --extract --gzip --file "$archive")
+        echo "$(cygpath --windows "$dest")" >> "$GITHUB_PATH"
+
+    # Decide once whether this run may write caches: main and manual dispatch.
+    - name: Decide whether this run saves caches
+      id: policy
+      env:
+        EVENT: ${{ github.event_name }}
+        REF: ${{ github.ref }}
+      run: |
+        set -euo pipefail
+        save=false
+        if [ "$EVENT" != 'pull_request' ]; then
+          case "$REF" in
+            refs/heads/main) save=true ;;
+          esac
+          if [ "$EVENT" = 'workflow_dispatch' ]; then save=true; fi
+        fi
+        echo "save=$save" >> "$GITHUB_OUTPUT"
+        echo "Cache saves allowed: $save (event $EVENT, ref $REF)"
+
+    - name: Restore the cargo and target cache
+      id: cargo-cache
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+          package/music-player/desktop-app/target
+        key: mp-win-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.name }}-${{ matrix.target }}-${{ steps.toolchain.outputs.version }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock', 'package/music-player/truepeak-core/Cargo.lock') }}
+        restore-keys: |
+          mp-win-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.name }}-${{ matrix.target }}-${{ steps.toolchain.outputs.version }}-
+
+    - name: Report the cache restore
+      env:
+        EXACT: ${{ steps.cargo-cache.outputs.cache-hit }}
+        MATCHED: ${{ steps.cargo-cache.outputs.cache-matched-key }}
+        MSYS2_EXACT: ${{ steps.msys2-cache.outputs.cache-hit }}
+      run: |
+        set -euo pipefail
+        if [ "$EXACT" = 'true' ]; then result='exact hit'
+        elif [ -n "$MATCHED" ]; then result="restored from restore-key $MATCHED"
+        else result='miss'; fi
+        echo "cargo and target cache: $result"
+        if [ "$FLAVOR" = 'gnu' ]; then echo "msys2 package cache exact hit: ${MSYS2_EXACT:-false}"; fi
+        {
+          echo "### ${JOB_NAME}"
+          echo "- cargo and target cache: ${result}"
+        } >> "$GITHUB_STEP_SUMMARY"
+        du -sh "$HOME/.cargo/registry" "$HOME/.cargo/git" package/music-player/desktop-app/target 2>/dev/null || true
+
+    # The real binary and the test executables, linked for the target. The tests are built here and run
+    # in a later step so that the cache below is saved even when a test fails.
+    - name: Build the tests (cargo nextest)
+      working-directory: package/music-player/desktop-app
+      run: cargo nextest run --locked --target "$TARGET" --no-run
+
+    - name: Build the binary
+      id: build-binary
+      working-directory: package/music-player/desktop-app
+      run: cargo build --locked --target "$TARGET"
+
+    # Keep the entry lean: this package's own outputs change on every commit and are rebuilt anyway.
+    - name: Prune this package's own artifacts from the cache directory
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' && steps.cargo-cache.outputs.cache-hit != 'true' && steps.policy.outputs.save == 'true' }}
+      working-directory: package/music-player/desktop-app
+      run: |
+        set -euo pipefail
+        find target -type d -name incremental -prune -exec rm -rf {} +
+        for pattern in 'music_player-*' 'libmusic_player-*' 'music-player-*' 'music-player.*' 'truepeak_core-*' 'libtruepeak_core-*' 'truepeak-core-*'; do
+          find target -type f -path '*/deps/*' -name "$pattern" -delete
+          find target -type d \( -path '*/.fingerprint/*' -o -path '*/build/*' \) -name "$pattern" -prune -exec rm -rf {} +
+        done
+        du -sh target "$HOME/.cargo/registry/index" "$HOME/.cargo/registry/cache" "$HOME/.cargo/git/db" 2>/dev/null || true
+
+    - name: Save the cargo and target cache
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' && steps.cargo-cache.outputs.cache-hit != 'true' && steps.policy.outputs.save == 'true' }}
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+          package/music-player/desktop-app/target
+        key: ${{ steps.cargo-cache.outputs.cache-primary-key }}
+
+    - name: Save the MSYS2 package cache
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' && matrix.flavor == 'gnu' && steps.msys2-cache.outputs.cache-hit != 'true' && steps.policy.outputs.save == 'true' }}
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: C:\msys64\var\cache\pacman\pkg
+        key: ${{ steps.msys2-cache.outputs.cache-primary-key }}
+
+    # rustc prints the exact linker command it runs. The first word is the linker program: link.exe for
+    # MSVC, gcc (with -fuse-ld=bfd, so GNU ld) for GNU. lld-link or ld.lld here would be a defect.
+    - name: Print the linker rustc ran
+      working-directory: package/music-player/desktop-app
+      run: |
+        set -euo pipefail
+        cargo rustc --locked --target "$TARGET" --bin music-player -- --print link-args > "${RUNNER_TEMP}/link-args.txt"
+        head -c 400 "${RUNNER_TEMP}/link-args.txt"; echo
+        first=$(head -n 1 "${RUNNER_TEMP}/link-args.txt" | awk '{ print tolower($1) }')
+        case "$first" in
+          *lld*) echo "::error::rustc linked with lld: $first"; exit 1 ;;
+        esac
+        if [ "$FLAVOR" = 'gnu' ]; then
+          grep --quiet -e '-fuse-ld=bfd' "${RUNNER_TEMP}/link-args.txt"
+        fi
+
+    - name: Inspect the PE file
+      working-directory: package/music-player/desktop-app
+      run: |
+        set -euo pipefail
+        python -m pip install --disable-pip-version-check --quiet pefile==2024.8.26
+        exe="target/${TARGET}/debug/music-player.exe"
+        ls -la "$exe"
+        python - "$exe" <<'PYTHON'
+        import sys
+        import pefile
+        pe = pefile.PE(sys.argv[1], fast_load=True)
+        pe.parse_data_directories(directories=[
+            pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IMPORT"],
+            pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT"],
+        ])
+        header = pe.OPTIONAL_HEADER
+        print(f"linker version in the PE header: {header.MajorLinkerVersion}.{header.MinorLinkerVersion}")
+        names = sorted({
+            entry.dll.decode().lower()
+            for attribute in ("DIRECTORY_ENTRY_IMPORT", "DIRECTORY_ENTRY_DELAY_IMPORT")
+            for entry in getattr(pe, attribute, [])
+        })
+        print("imported DLLs:", ", ".join(names))
+        crt = sorted(n for n in names if n == "msvcrt.dll" or n.startswith(("ucrtbase", "api-ms-win-crt", "vcruntime", "msvcp")))
+        print("C runtime imports:", ", ".join(crt) or "none")
+        gcc_runtime = [n for n in names if n.startswith(("libgcc_s", "libwinpthread", "libstdc++"))]
+        if gcc_runtime:
+            raise SystemExit(f"the program needs MinGW runtime DLLs next to it: {gcc_runtime}")
+        PYTHON
+
+    - name: Run the binary (--version)
+      working-directory: package/music-player/desktop-app
+      run: |
+        set -euo pipefail
+        out=$("target/${TARGET}/debug/music-player.exe" --version)
+        echo "$out"
+        expected="music-player $(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head --lines=1 | tr --delete '\r')"
+        test "$out" = "$expected"
+
+    # The program must stay up when started on a folder, with no audio device on the runner. A start that
+    # exits within the wait fails the job.
+    - name: Launch the program and check it stays up
+      working-directory: package/music-player/desktop-app
+      env:
+        RUST_LOG: info
+      run: |
+        set -euo pipefail
+        "target/${TARGET}/debug/music-player.exe" fixture > "${RUNNER_TEMP}/launch.log" 2>&1 &
+        pid=$!
+        sleep 15
+        if kill -0 "$pid" 2>/dev/null; then
+          echo "still running after 15 seconds"
+          kill "$pid" || true
+        else
+          echo "::error::the program exited within 15 seconds"
+          cat "${RUNNER_TEMP}/launch.log"
+          exit 1
+        fi
+        head -n 40 "${RUNNER_TEMP}/launch.log"
+
+    - name: Run the tests (cargo nextest)
+      working-directory: package/music-player/desktop-app
+      run: cargo nextest run --locked --target "$TARGET" --no-fail-fast

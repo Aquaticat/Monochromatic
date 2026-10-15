@@ -43,17 +43,17 @@ const MAX_UNIT_ADOPTION_PAIRS = 64;
  // A selected pair is not proof of incorporation meaning or source authority.
  ```
  */
-export function selectUnitAdoptionPairs(
+export function selectUnitAdoptionPairs<const PreparedMember>(
   {
     candidates,
     readRule,
     member,
   }: {
     readonly candidates: readonly object[];
-    readonly readRule: (handle: object,) => UnitRuleProjection;
-    readonly member: object;
+    readonly readRule: (handle: object,) => UnitRuleProjection<unknown>;
+    readonly member: PreparedMember;
   },
-): readonly UnitAdoptionPair[] {
+): readonly UnitAdoptionPair<PreparedMember>[] {
   /**
    Group only by original occurrence references, not hashes, paths or text.
    */
@@ -65,9 +65,9 @@ export function selectUnitAdoptionPairs(
   /**
    Temporary grouping is local to this decision and does not register new sources.
    */
-  const sources = new Map<object, {
+  const sources = new Map<unknown, {
     readonly candidate: object;
-    readonly projection: UnitRuleProjection
+    readonly projection: UnitRuleProjection<unknown>
   }[]>();
   for (const candidate of candidates) {
     /**
@@ -90,7 +90,7 @@ export function selectUnitAdoptionPairs(
   /**
    Only the supported two-unit profile contributes a structural pair.
    */
-  const pairs: UnitAdoptionPair[] = [];
+  const pairs: UnitAdoptionPair<PreparedMember>[] = [];
   for (const units of sources.values()) {
     if (units.length !== 2)
       continue;

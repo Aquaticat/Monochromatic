@@ -140,6 +140,10 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
             });
             project(app);
         }
+        Update::AudioUnavailable { reason } => {
+            tracing::warn!(%reason, "no audio output is available; the window tells the person");
+            crate::ui_overlays::show_notice(app, crate::ui_notices::audio_unavailable_message());
+        }
         Update::FileGone { path, was_playing } => {
             tracing::info!(path = %path.display(), was_playing, "the selected track's file left the folder");
             if crate::ui_files::was_just_trashed(path) {

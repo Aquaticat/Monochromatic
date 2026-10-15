@@ -86,7 +86,7 @@ fn prepared_fixture(root: &Path, hook_script: Option<(&str, &str)>) -> Fixture {
         commit_index: transaction.join("commit.index"),
         object_directory: shadow.join("objects"),
     };
-    let pathspecs: Vec<String> = vec![String::from("a.txt")];
+    let pathspecs: Vec<OsString> = vec![OsString::from("a.txt")];
     let selection: IndexSelection = IndexSelection {
         mode: TransactionMode::ExplicitPath,
         pathspecs: pathspecs.as_slice(),
@@ -145,7 +145,7 @@ fn prepare(fixture: &Fixture, commit_args: &[&str]) -> Result<PreparedCommit, Pr
         fixture.transaction.as_path(),
         fixture.intended_tree.as_str(),
         &PreparedPaths {
-            committed_paths: vec![String::from("a.txt")],
+            committed_paths: vec![b"a.txt".to_vec()],
             ..PreparedPaths::default()
         },
     );
@@ -176,7 +176,7 @@ fn preparation_leaves_real_refs_index_and_worktree_unchanged() {
     assert_eq!(parsed.prepared_oid, prepared.oid);
     assert_eq!(parsed.intended_tree_oid, fixture.intended_tree);
     assert_eq!(parsed.shadow_path, fixture.shadow.display().to_string());
-    assert_eq!(parsed.committed_paths, vec![String::from("a.txt")]);
+    assert_eq!(parsed.committed_paths, vec![b"a.txt".to_vec()]);
     remove(root.as_path());
 }
 

@@ -17,11 +17,11 @@ export class UnitAdoptionBindingError extends Error {
 /**
  Minimal original rule projection read by the incumbent judgment owner.
  */
-export type UnitRuleProjection = {
+export type UnitRuleProjection<SourceOccurrence = object> = {
   /**
    Original source identity, never equal bytes or a path.
    */
-  readonly sourceOccurrence: object;
+  readonly sourceOccurrence: SourceOccurrence;
   /**
    Tagged adopter code identifies only a structural opportunity.
    */
@@ -39,7 +39,7 @@ export type UnitRuleProjection = {
 /**
  Original member and clause handles remain borrowed identity capabilities.
  */
-export type UnitAdoptionPair = {
+export type UnitAdoptionPair<PreparedMember = object> = {
   /**
    Tagged adopter clause handle.
    */
@@ -51,7 +51,7 @@ export type UnitAdoptionPair = {
   /**
    Single original member to which the selected relationship applies.
    */
-  readonly member: object;
+  readonly member: PreparedMember;
 };
 
 /**

@@ -315,16 +315,70 @@ before saying it matches, QAB):
   11 families and would delete 0, so the DELETE call itself has still never executed (it runs on the first scheduled
   run that finds a stale entry; check that run's log). Feature-branch entries of the Windows agent
   (`mp-win-v1`, about 2.6 GB) count against the cap until that branch merges and its entries are deleted.
-- Task 95, Alpine, branch `feat/music-player-alpine`, worktree `music-player-alp`: the desktop app must run on Alpine
-  (musl, dynamic link expected because Slint loads libwayland and libxkbcommon at run time); the real-window proof uses
-  our own nested compositor `monochromatic-nested-wayland-session`, never sway or weston; if the compositor needs
-  changes they are made in `package/cli/nested-wayland-session` without a version bump. The human authorized
-  publishing that crate whenever needed: after verification bump its version (patch or minor as the agent reports),
-  run the cargo-publish workflow as a dry run first, then let the merge to main publish it.
-- Task 96, Windows linkers, branch `feat/music-player-windows-linkers`, worktree `music-player-win`: Windows MSVC
-  uses `link.exe` instead of `lld-link.exe`, plus a non-MSVC build for `x86_64-pc-windows-gnu`, a Windows CI workflow;
-  Linux stays on rust-lld because mold links ELF only (upstream README, mold 3.0.0, and
-  `doc/audit/tech-mold-linker-vet-2026-10-05.md`) and the human declined it on Linux; macOS keeps its linker.
+- Task 95, Alpine: MERGED to `main` at `2077b5b81e` on 2026-10-15 (decision `doc/decision/music-player-alpine.md`,
+  workflow `.github/workflows/music-player-alpine.yml` on x86_64 and arm64). The app builds and runs on Alpine 3.24.2
+  with Alpine's own rust 1.96.1, dynamic musl (static musl cannot open a window: `dlopen` is unsupported there, and
+  Alpine ships no static fontconfig, freetype or pipewire). Code changes: raw `sched_setscheduler` syscall because musl
+  returns ENOSYS, a cargo feature `alsa-fallback` (PipeWire first, then the default ALSA device), `Update::AudioUnavailable`
+  with a notice in the window. Runtime packages: `apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client
+  wayland-libs-egl libxkbcommon mesa-egl mesa-gles mesa-dri-gallium alsa-lib`. My fresh run on the merged head:
+  `lint:slint`, `lint:clippy` clean and nextest 1448 passed, 1 skipped (host glibc); the agent's Alpine runs (1449
+  passed, 1 skipped on x86_64 and aarch64, smoke OK, window shown through our nested compositor with llvmpipe, audio
+  heard through PipeWire and the ALSA fallback at 440 Hz, notices through the compositor's notification service) are
+  the agent's, not mine. The compositor needed no change, so no publish and no version bump. Unverified: real Alpine
+  hardware, a real GPU, X11, other compositors, edge and postmarketOS. Alpine clippy flags `src/oklch.rs`
+  `manual_range_contains` where host clippy does not (the Alpine guard runs no clippy; not fixed, lint not loosened).
+  The Alpine CI cache entries are 0.93 to 0.95 GB each, over the 650 MB guide, and the agent added the Alpine family
+  to `cache-prune.yml`. Release artifact (task 100): MERGED to `main` at `ff743f8b7e` on 2026-10-15, job `build-desktop-musl` in
+  the release workflow adds `music-player-<version>-linux-musl-x64.tar.gz` and `-arm64.tar.gz` (Alpine build image,
+  `--version` checked in the runtime image). The agent's two dry runs from its branch passed (38684256021 and
+  38686797998); it measured the Alpine x86_64 job at 15 to 20 minutes, which now sets a release's length (about 7
+  minutes before); the job is uncached because the repo cache was at 9.98 of 10 GB (a cache would save at most the
+  9 minutes of the dependency phase on x86_64). Its attestation path ran only as skipped until a real release; the
+  `0.1.2` release (bump commit `c75435f772`, run `38688512043`) is the first real run of it.
+  RELEASED `music-player-v0.1.2` on 2026-10-15 on attempt 2 of that run: attempt 1 failed in two jobs (`build-android`
+  and macOS) at the mise setup step with "GitHub releases API returned 403 Forbidden" and created no tag or release; I
+  reran the two failed jobs. Cause found in the action source (`jdx/mise-action` `c2a87611a1`, `src/index.ts` lines
+  413 to 423 and 985 to 1001): with `minimum_release_age` set and no `version`, every job lists mise releases through
+  the GitHub API with the workflow token, and any 4xx except 429 is non-retryable. Why the API answered 403 is not
+  established (no response headers were read). Planned fix: set the action's `version` input in both mise steps of
+  `music-player-release.yml`, with a comment (the call is skipped then). Verified for 0.1.2: nine assets, `sha256sum
+  --check` passed for eight files, attestation exit 0 for both musl tarballs and the APK (the first real run of that
+  path), APK certificate `9de6e9a4...6926`, musl x64 interpreter `/lib/ld-musl-x86_64.so.1`, and the musl x64 binary
+  printed `music-player 0.1.2` inside `alpine:3.24` with the apk list installed.
+- Task 96, Windows linkers: MERGED to `main` on 2026-10-15 (merge `aa9f48eaf6`; decision
+  `doc/decision/music-player-windows-linkers.md`, workflow `.github/workflows/music-player-windows.yml` with jobs
+  `msvc-x64`, `msvc-arm64`, `gnu-x64-ucrt64`). Windows MSVC now uses `link.exe` (no `linker` key; `+crt-static` kept);
+  the new `x86_64-pc-windows-gnu` target links with mingw-w64 GNU ld (`-fuse-ld=bfd`; UCRT64 kept, MINGW64 deprecated
+  by MSYS2); Linux stays on rust-lld and macOS keeps its linker. mold is not adopted: it has no PE/COFF output
+  (v3.0.0 and unreleased main, README and `doc/audit/tech-mold-linker-vet-2026-10-05.md`; unreleased mold main has a
+  Mach-O linker since 2026-10-08, which could matter for macOS later). My fresh run on the merged head: `lint:slint`,
+  `lint:clippy` clean, nextest 1450 passed, 1 skipped (host glibc). The agent's results, not mine: CI shows
+  `link.exe` for both MSVC jobs and GNU ld for the GNU job; 1422 passed, 1 skipped on all three Windows jobs; no C
+  runtime DLL imports for MSVC, only `api-ms-win-crt-*` for UCRT64; Wine cross-build 1383 run, 1377 passed, 4 failed,
+  2 hung (all six pass on real runners; hang and failures unexplained). Found and not filed: Slint
+  `frame_throttle.rs:58` divides by zero when the display reports a 0 refresh rate (seen under Wine on bare Xvfb;
+  issue draft in `doc/troubleshooting/music-player-windows-build-and-test.md`; a human should rerun the reproduction
+  first). Windows cache entries total about 2.0 GB (653.7, 635.1, 652.3 MB plus 72.8 MB MSYS2), saved only on main
+  and dispatch; the first run on main is cold. Unverified: real Windows desktop, real arm64 hardware, audio under
+  Wine, the PR no-save rule, `link.exe` against `lld-link.exe` link time. Follow-up (task 101): MERGED to
+  `main` at `175aa6287e` on 2026-10-15 after two dry runs from its branch (38692770715, 38695662196; actionlint
+  clean): both `jdx/mise-action` steps set `version: 2026.10.9` and no longer use `minimum_release_age` (the action
+  ignores it once `version` is set; the runbook section "The mise version pin" says how to update it; the 403 root
+  cause stays unestablished); the stale `link.exe` export is gone (both MSVC jobs printed `link.exe`, imports hold no
+  Visual C++ runtime; the x64 MSVC job recompiled 449 crates once because the linker setting changed, 12 to 15
+  minutes, and the next version bump rebuilds and saves a fresh entry); the GNU exe
+  `music-player-<version>-windows-x64-gnu.exe` is a release asset (MinGW-w64, GNU ld 2.46, UCRT dynamic, imports only
+  `api-ms-win-crt-*` and system DLLs, 44 MB; uncached, 16 minutes; not byte-reproducible between two runs). On
+  Windows the build step is now `cargo rustc --release --locked --target ... -- --print link-args` for all targets so a
+  linker check costs no rebuild (arm64 restored main's `cargo build` entry and recompiled 2 crates). Attestation of the
+  GNU exe ran only skipped until the real release. RELEASED `music-player-v0.1.3` on 2026-10-15 (bump commit
+  `4144c6c933`, run `38698502487`, first attempt, all jobs green): ten files. I downloaded them: `sha256sum --check`
+  passed for nine files, attestation exit 0 for the GNU exe, the MSVC x64 exe, the musl x64 tarball and the APK
+  (first real attestation of the GNU exe), APK certificate `9de6e9a4...6926`, Linux x64 prints `music-player 0.1.3`.
+  Independent PE parse with `pefile` 2024.8.26: MSVC x64 and arm64 linker 14.51, GNU exe linker 2.46, and none of
+  the three imports `vcruntime*`, `msvcp*`, `libgcc_s*`, `libwinpthread*` or `libstdc++*`. Not run by me: any
+  Windows or macOS binary, the arm64 Linux and musl binaries, anything on a real device.
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
@@ -518,12 +572,20 @@ Decision numbers D122 to D130 are taken; the next free one is D131.
 - Stale docs: the gallery images in the bullet above; otherwise none known. The README gallery and the Android
   page-control text were rewritten on 2026-10-13, and the peak-sweep start path in
   `android-app/HANDOVER.peak-sweep-optimization.md` and `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
-- Hygiene: `~/temp/agent/agent-polish2/work/` and `~/temp/agent/agent-refresh-cost/lib-1m` (12 GB) hold scratch libraries
-  that can be deleted. A failed decode is retried at every library change, one decode per failed file per change.
+- Hygiene (2026-10-15): I removed the 21 music-player worktrees whose branches are merged into `main` and clean, the
+  `ral`, `xxh3` and `bannerfit` Gradle homes (4.7 to 4.8 GB each) and `agent-refresh-cost` (17 GB). Kept: the worktrees
+  `music-player-production`, `-cover-picker`, `-first-run-access`, `-theme-compose-prototype`, `-relgnu` (in flight),
+  the Gradle homes `aps-gradle-home` (my verify scripts use it) and `tap-gradle-home`, and
+  `~/temp/agent/agent-polish2/work/` (not inspected). The branches themselves were not deleted. A failed decode is retried at every library change, one decode per failed file per change.
 - Rate limit: on 2026-10-12 the Sonnet weekly limit stopped five agents mid-run; a re-login lifted it and they were
   resumed. Their work is committed; check `git log` before relaunching anything.
 - Never verified: a real Plasma session, macOS, Windows, real Android hardware, Android API 33 to 36 for D107 and for
   the D123 failure notification (its device pass ran on the API 37 emulator only).
+- Windows linkers (2026-10-14): the desktop app no longer links with `lld-link` (mold is ELF-only and cannot replace it);
+  the MSVC targets use Visual Studio's `link.exe`, and an `x86_64-pc-windows-gnu` build links with GNU ld. The suite now
+  runs on GitHub Windows runners (`.github/workflows/music-player-windows.yml`), where its first run found eleven
+  Windows-only failures, fixed. Record: `doc/decision/music-player-windows-linkers.md`. Windows is now verified on those
+  runners and under Wine, not on a real machine with speakers.
 
 ### Mistakes made in this effort, and what corrected them
 
@@ -610,4 +672,8 @@ Read these before repeating them. Each one cost the human a correction.
   triggered by a version change in `package/music-player/desktop-app/Cargo.toml` or by a dispatch
   (`doc/decision/music-player-releases.md`, `doc/runbook/release-the-music-player.md`).
   The Android version now derives from that manifest, and a release signing config reads `MUSIC_PLAYER_*` values.
+- [x] Alpine Linux (musl) on x86_64 and aarch64 (2026-10-14, branch `feat/music-player-alpine`): a dynamically linked build
+  with Alpine's own Rust (a static binary cannot link PipeWire or open a window), an opt-in ALSA fallback for machines
+  with no sound server, a window message when no audio output opens, a musl-safe scheduler call, and a CI workflow plus
+  smoke test that runs the app in this repository's compositor (`doc/decision/music-player-alpine.md`).
 - [ ] The first real release is the human's call: it is immutable, and no Windows, macOS or real-device run exists.

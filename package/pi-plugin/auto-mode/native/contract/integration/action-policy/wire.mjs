@@ -1,4 +1,8 @@
-import {createHash} from 'node:crypto';
+import {RuleAssessmentWireError,sha} from './wire-source.mjs';
+import {appendAdoptionQuestion} from './wire-adoption.mjs';
+import {appendRequestQuestion} from './wire-request.mjs';
+import {appendHeadingQuestion} from './wire-heading.mjs';
+import {appendClauseQuestion} from './wire-clause.mjs';
 import {sourceInputLocation} from '../../lifecycle/governing-rule-candidates/input-location.mjs';
 import programCatalog from '../../lifecycle/program-rule-wire/catalog.json' with {type:'json'};
 import {questions as meaningCatalog} from '../../research/instruction-prerequisite-relation/cases.mjs';
@@ -11,10 +15,7 @@ import {ruleAssessmentModel} from './assessment-model.ts';
 
 export {ruleAssessmentModel} from './assessment-model.ts';
 
-export class RuleAssessmentWireError extends Error {
- constructor(message){super(message);this.name=this.constructor
-   .name;}
-}
+export {RuleAssessmentWireError} from './wire-source.mjs';
 const model=ruleAssessmentModel;
 const definitions=Object.freeze({
  operation_violates_rule:programCatalog.operation_violates_rule,
@@ -33,9 +34,7 @@ const guidance=definitions.operation_violates_rule
 if(!definitions.operation_violates_rule
   .instructions
   .startsWith(`${question} `))throw new RuleAssessmentWireError('Operation guidance differs from its fixed definition');
-function sha(value){return createHash('sha256')
-  .update(value)
-  .digest('hex');}
+
 
 /**
  Serialize one original mixed batch without issuing claims or deciding policy.
@@ -90,10 +89,8 @@ export function bindRuleAssessmentWire(request){
  const questions={};
    const pairs=[];
    const seen=new Set();
-   const clauseRelations=new Set();let hasHeadingContent=false;
-     let hasOperation=false;
-     let hasRequestMaterial=false;
-     let unitAdoptionCount=0;
+   const clauseRelations=new Set();
+ const membership={hasHeadingContent:false,hasOperation:false,hasRequestMaterial:false,unitAdoptionCount:0};
  for(const [index,head] of input.entries()){
   if((head?.id!==`q${
     index}`)||(!Object.hasOwn(
@@ -106,265 +103,18 @@ export function bindRuleAssessmentWire(request){
   if(JSON.stringify(head.definition)!==JSON.stringify(definition))throw new RuleAssessmentWireError('Fixed question definition changed');
   const {binding} = head;
   if(head.definitionId==='unit_adoption'){
-   if((!binding)||(Object.keys(binding)
-     .toSorted()
-     .join(',')
-     !=='adopter,claimScope,member,memberOrdinal,target')
-     ||(binding.claimScope!=='member-unit-adoption')
-     ||(binding.memberOrdinal!==0)
-     ||(!binding.member)
-     ||(!Object.isFrozen(binding.member)))throw new RuleAssessmentWireError('Unit adoption lacks its original single-member pair binding');
-   const {
-     adopter,
-     target
-   }=binding;
-   if((!adopter)||(!target)
-     ||(adopter.sourceOrdinal!==target.sourceOrdinal)
-     ||((typeof adopter.code)!=='string')
-     ||(target.kind!=='unclassified-source-span')
-     ||(target.nodeType!=='blockquote'))throw new RuleAssessmentWireError('Unit adoption requires a tagged adopter and quoted target from the same original source');
-   for(const unit of [
-     adopter,
-     target
-   ]){
-    const source=sources[unit.sourceOrdinal];
-    if((!source)||(unit.sourceSHA256!==source.sha256)
-      ||(!Number.isSafeInteger(unit.start))
-      ||(!Number.isSafeInteger(unit.end))
-      ||(unit.start<0)
-      ||(unit.end<=unit.start)
-      ||(unit.end
-        >source.content
-        .length)
-      ||(source.content
-        .slice(
-          unit.start,
-          unit.end
-        )
-        !==unit.text)
-      ||(sha(unit.text)!==unit.textSHA256)
-      ||(!Array.isArray(unit.headings))
-      ||(!unit.headings
-        .every(function isHeadingText(heading) { return ((typeof heading)==='string'); })))throw new RuleAssessmentWireError('Adoption unit differs from its original source span');
-   }
-   const key=`${head.definitionId}:${
-     adopter.sourceOrdinal
-     }:${
-     adopter.start
-     }:${
-     target.start}`;
-   if(seen.has(key))throw new RuleAssessmentWireError('Mixed batch repeats an original unit-adoption pair');
-   seen.add(key);unitAdoptionCount++;
-   if(unitAdoptionCount>64)throw new RuleAssessmentWireError('Unit adoption exceeds the original source bound');
-   function project(unit) { return {
-     sourceOrdinal:unit.sourceOrdinal,
-     start:unit.start,
-     end:unit.end,
-     text:unit.text,
-     headings:unit.headings
-   }; }
-   const slot=`head_${index}`;
-   questions[slot]={
-     type:definition.type,
-     instructions:{
-       predicate:'Use unitAdoptionDefinition in shared state for the complete adopter and exact quoted target. Authority and scope eligibility are code-owned.',
-       memberOrdinal:binding.memberOrdinal,
-       selectedAdopter:project(adopter),
-       selectedTarget:project(target)
-     },
-     criteria:Object.fromEntries(Object.keys(definition.criteria)
-       .map(function initializeAdoptionChoice(label) { return ([
-         label,
-         null
-       ]); }))
-   };
-   pairs.push({
-     slot,
-     id:head.id,
-     type:definition.type
-   });
+   appendAdoptionQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs});
    continue;
   }
   if(head.definitionId==='request_instruction_content'){
-   if((!binding)||(Object.keys(binding)
-     .toSorted()
-     .join(',')
-     !=='claimScope,requestMaterial')
-     ||(binding.claimScope!=='program-request')
-     ||(binding.requestMaterial
-       ?.body
-       !==envelope.requestBody))throw new RuleAssessmentWireError('Whole-request question differs from its retained complete request material');
-   if(hasRequestMaterial)throw new RuleAssessmentWireError('Mixed batch repeats the original whole-request material question');
-   hasRequestMaterial=true;
-   const slot=`head_${index}`;
-   questions[slot]={
-     type:definition.type,
-     instructions:{
-       predicate:'Use requestInstructionDefinition in shared state to assess the complete exact originalRequestBody for this proposal; this is not source authority or governing completeness.',
-       selectedMaterial:'originalRequestBody'
-     },
-     criteria:Object.fromEntries(Object.keys(definition.criteria)
-       .map(function initializeRequestChoice(label) { return ([
-         label,
-         null
-       ]); }))
-   };
-   pairs.push({
-     slot,
-     id:head.id,
-     type:definition.type
-   });
+   appendRequestQuestion({envelope,head,binding,definition,index,membership,questions,pairs});
    continue;
   }
   if(head.definitionId==='heading_instruction_content'){
-   if((!binding)||(Object.keys(binding)
-     .toSorted()
-     .join(',')
-     !=='claimScope,headingContext')
-     ||(binding.claimScope!=='program-heading-context'))throw new RuleAssessmentWireError('Heading question lacks its original source-group scope');
-   const group=binding.headingContext;
-     const ordinal=group?.sourceOrdinal;
-   if((group?.kind!=='source-heading-context')||(!Number.isSafeInteger(ordinal))
-     ||(ordinal<0)
-     ||(ordinal>=sources.length)
-     ||(group.sourceSHA256
-       !==sources[ordinal]
-       .sha256)
-     ||(!Array.isArray(group.headings))
-     ||(group.headings
-       .length
-       ===0)
-     ||(Reflect.ownKeys(group.headings)
-       .length
-       !==(group.headings
-         .length
-         +1)))throw new RuleAssessmentWireError('Heading content lacks its complete original source group');
-   const source=sources[ordinal];
-   for(const heading of group.headings){
-    if((!Number.isSafeInteger(heading.start))||(!Number.isSafeInteger(heading.end))
-      ||(heading.start<0)
-      ||(heading.end<=heading.start)
-      ||(heading.end
-        >source.content
-        .length)
-      ||((typeof heading.text)!=='string')
-      ||(source.content
-        .slice(
-          heading.start,
-          heading.end
-        )
-        !==heading.text)
-      ||(!Number.isInteger(heading.depth))
-      ||(heading.depth<1)
-      ||(heading.depth>6))throw new RuleAssessmentWireError('Selected heading differs from its original source span');
-   }
-   const key=`${head.definitionId}:${
-     ordinal}`;
-   if(seen.has(key))throw new RuleAssessmentWireError('Mixed batch repeats an original heading-context group');
-   seen.add(key);hasHeadingContent=true;
-   const slot=`head_${index}`;
-   questions[slot]={
-     type:definition.type,
-     instructions:{
-       predicate:'Use headingInstructionDefinition in shared state for the complete selected source-local heading group; this is not directive lowering or global coverage.',
-       selectedHeadingContext:{
-         sourceOrdinal:ordinal,
-         headings:group.headings
-       }
-     },
-     criteria:Object.fromEntries(Object.keys(definition.criteria)
-       .map(function initializeHeadingChoice(label) { return ([
-         label,
-         null
-       ]); }))
-   };
-   pairs.push({
-     slot,
-     id:head.id,
-     type:definition.type
-   });
+   appendHeadingQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs});
    continue;
   }
-  if((!binding)||(Object.keys(binding)
-    .toSorted()
-    .join(',')
-    !=='claimScope,governingRule')
-    ||(binding.claimScope!==(operation?'program-instruction':'instruction')))throw new RuleAssessmentWireError('Question scope differs from its original relation definition');
-  const rule=binding.governingRule;
-    const ordinal=rule?.sourceOrdinal;
-  if((!Number.isSafeInteger(ordinal))||(ordinal<0)
-    ||(ordinal>=sources.length))throw new RuleAssessmentWireError('Selected clause has no original source ordinal');
-  const source=sources[ordinal];
-  const unclassified=rule.kind==='unclassified-source-span';
-  if(unclassified?((rule.code!==undefined)||(head.definitionId!=='clause_operation_relation')
-    ||((typeof rule.nodeType)!=='string')
-    ||(!rule.nodeType)):(((typeof rule.code)!=='string')||(!/^[A-Z0-9]{3}$/.test(rule.code))))throw new RuleAssessmentWireError('Selected instruction candidate has no supported original classification');
-  if((rule.sourceSHA256!==source.sha256)||(!Number.isSafeInteger(rule.start))
-    ||(!Number.isSafeInteger(rule.end))
-    ||(rule.start<0)
-    ||(rule.end<=rule.start)
-    ||(rule.end
-      >source.content
-      .length)
-    ||(source.content
-      .slice(
-        rule.start,
-        rule.end
-      )
-      !==rule.text)
-    ||(sha(rule.text)!==rule.textSHA256)
-    ||(!Array.isArray(rule.headings))
-    ||(!rule.headings
-      .every(function isRuleHeadingText(value) { return ((typeof value)==='string'); })))throw new RuleAssessmentWireError('Selected clause differs from its complete source');
-  const candidateKey=`${ordinal}:${
-    unclassified?`span:${rule.start}:${rule.end}`:`code:${rule.code}`}`;
-  const key=`${head.definitionId}:${
-    candidateKey}`;
-  if(seen.has(key))throw new RuleAssessmentWireError('Mixed batch repeats a source-specific logical question');
-  seen.add(key);hasOperation||=head.definitionId==='operation_violates_rule';
-  if(categorical)clauseRelations.add(candidateKey);
-  if(clauseRelations.size>256)throw new RuleAssessmentWireError('Clause interpretation exceeds the fixed 256-clause profile');
-  const slot=`head_${index}`;
-  const selectedRule={
-    ...(unclassified?{
-      kind:rule.kind,
-      nodeType:rule.nodeType,
-      start:rule.start,
-      end:rule.end
-    }:{id:rule.code}),
-    sourceOrdinal:ordinal,
-    text:rule.text,
-    headings:rule.headings
-  };
-  const instructions=categorical
-   ?{
-     predicate:'Estimate the relationship defined by clauseRelationDefinition in the shared state, using its complete instructions and option rubrics.',
-     selectedRule
-   }
-   :operation
-    ?{
-      question,
-      assessmentContext:'Apply `assessmentGuidance` in the shared state to this question.',
-      selectedRule
-    }
-    :{
-      predicate:definition.instructions,
-      selectedRule
-    };
-  questions[slot]={
-    type:definition.type,
-    instructions,
-    criteria:categorical?Object.fromEntries(Object.keys(definition.criteria)
-      .map(function initializeClauseChoice(label) { return ([
-        label,
-        null
-      ]); })):definition.criteria
-  };
-  pairs.push({
-    slot,
-    id:head.id,
-    type:definition.type
-  });
+  appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question});
  }
  const state={
    fullPolicy:sources[0]
@@ -387,11 +137,11 @@ export function bindRuleAssessmentWire(request){
    preparedProgram:envelope.preparedJSON,
    originalRequestBody:envelope.requestBody,
    catalogSHA256:request.catalogSHA256,
-   ...(hasOperation?{assessmentGuidance:guidance}:{}),
+   ...(membership.hasOperation?{assessmentGuidance:guidance}:{}),
    ...(clauseRelations.size > 0?{clauseRelationDefinition:clauseOperationRelation}:{}),
-   ...(hasRequestMaterial?{requestInstructionDefinition:requestInstructionContent}:{}),
-   ...(hasHeadingContent?{headingInstructionDefinition:headingInstructionContent}:{}),
-   ...(unitAdoptionCount?{unitAdoptionDefinition:unitAdoptionRelation}:{}),
+   ...(membership.hasRequestMaterial?{requestInstructionDefinition:requestInstructionContent}:{}),
+   ...(membership.hasHeadingContent?{headingInstructionDefinition:headingInstructionContent}:{}),
+   ...(membership.unitAdoptionCount?{unitAdoptionDefinition:unitAdoptionRelation}:{}),
    establishedEffectFacts:[],
    effectFactCoverage:'not-established',
    authority:'not-established',

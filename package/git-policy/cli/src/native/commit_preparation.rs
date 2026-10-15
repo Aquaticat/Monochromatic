@@ -320,7 +320,7 @@ pub fn write_prepared_record(directory: &Path, record: &PreparedRecord) -> Resul
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct PreparedPaths {
     /// Selected and added paths the commit carries.
-    pub committed_paths: Vec<String>,
+    pub committed_paths: Vec<Vec<u8>>,
     /// Added paths with the blobs their worktree copies receive after landing.
     pub added_paths: Vec<AddedPath>,
     /// Selected corrections and hook changes that the worktree receives after landing.

@@ -1,26 +1,36 @@
-# Per-target build overrides for this crate: the Windows MSVC linker (lld-link) and the static C runtime.
+# Per-target build overrides for this crate: the Windows linkers (MSVC link.exe by default, GNU ld for the GNU target)
+# and the static C runtime of the MSVC builds.
 #
 # The `gxhash` dependency that needed the `aes` CPU target-feature on every target is gone (the fingerprint is XXH3-64
 # from `twox-hash`, which picks its SIMD kernel at run time), so no target here sets `aes` any more.
 # See doc/decision/music-player-fingerprint-hash.md and doc/troubleshooting/gxhash-aes-target-feature.md.
 
-# Windows MSVC. `lld-link.exe` is LLVM's MSVC-compatible linker (a drop-in for
-# Visual Studio's `link.exe`). It must be on PATH: LLVM ships it in its `bin`
-# directory (`C:\Program Files\LLVM\bin`), which is not on PATH by default, so that
-# directory has to be added (see README "Windows" and
-# HANDOVER.windows-toolchain-and-check.md). rustc still discovers the Visual Studio
-# CRT and Windows SDK import libraries and passes them as `/LIBPATH:` arguments,
-# which lld-link consumes unchanged. The `rustflags` line adds `+crt-static`: the C
-# runtime is linked into the .exe, so the released executable does not need the
-# Microsoft Visual C++ Redistributable (VCRUNTIME140.dll) on the user's machine.
-# The release workflow fails if the .exe still imports a Visual C++ runtime DLL.
-# That holds only with the MSVC `link.exe`: an x86_64 build linked by `lld-link.exe`
-# (the pin below) still imports VCRUNTIME140.dll and the api-ms-win-crt DLLs, so the
-# release workflow overrides the linker with CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER.
+# Windows MSVC, x86_64 and arm64. No `linker` key on purpose: rustc then runs Visual
+# Studio's own `link.exe` (it finds the Visual Studio install through vswhere and passes
+# the CRT and Windows SDK import library paths as `/LIBPATH:` arguments), so no LLVM
+# install and no PATH edit are needed. The repository used `lld-link.exe` here until
+# 2026-10-14; the maintainer found it unreliable on Windows, and a release probe showed
+# it leaves the dynamic C runtime in an x86_64 `+crt-static` exe while `link.exe` links
+# it statically. Decision and consequences: doc/decision/music-player-windows-linkers.md.
+# The `rustflags` add `+crt-static`: the C runtime is linked into the .exe, so the
+# released executable does not need the Microsoft Visual C++ Redistributable
+# (VCRUNTIME140.dll) on the user's machine. The release workflow fails if the .exe still
+# imports a Visual C++ runtime DLL, which holds with `link.exe` and did not hold with
+# `lld-link.exe` on x86_64.
 [target.x86_64-pc-windows-msvc]
-linker = "lld-link.exe"
 rustflags = ["-C", "target-feature=+crt-static"]
 
-# Windows arm64 (the release workflow builds it natively on a windows-11-arm runner). It uses the default MSVC linker.
+# Windows arm64 (the release workflow builds it natively on a windows-11-arm runner).
 [target.aarch64-pc-windows-msvc]
 rustflags = ["-C", "target-feature=+crt-static"]
+
+# Windows GNU: the build for developers and users who do not want Microsoft's toolchain.
+# It is linked by mingw-w64 GNU ld through the `gcc` driver, never by lld, and needs no
+# Visual Studio. `-fuse-ld=bfd` pins GNU ld in case a distribution's gcc defaults to
+# another linker. The linker program itself is left to rustc (`gcc` on PATH), because the
+# right name differs by host: MSYS2 on Windows has `gcc`, a Linux cross build has
+# `x86_64-w64-mingw32-gcc`, which the `build:windows-gnu` mise task passes through
+# CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER. No `+crt-static`: the GNU build already
+# imports only Windows system DLLs (checked in CI with a PE import inspection).
+[target.x86_64-pc-windows-gnu]
+rustflags = ["-C", "link-arg=-fuse-ld=bfd"]

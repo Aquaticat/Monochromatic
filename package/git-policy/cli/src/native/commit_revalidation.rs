@@ -62,7 +62,7 @@ pub enum Revalidation {
         /// The settled pass's events, with the fix summary the corrections earned.
         events: Vec<PolicyEvent>,
         /// The paths the replayed commit changes against its new parent.
-        committed_paths: Vec<String>,
+        committed_paths: Vec<Vec<u8>>,
         /// What the re-run `pre-commit` staged.
         hook_changes: HookChanges,
     },
@@ -184,13 +184,13 @@ pub fn revalidate_replay<F: RepositoryFacts>(
         onto,
         is_detached(&context.capture.layout.symbolic_head),
     )?;
-    let candidate_paths: Vec<String> =
+    let candidate_paths: Vec<Vec<u8>> =
         list_changed_index_paths(git, cwd, index.as_path(), onto, workspace.object_directory.as_path())?;
     let base: Option<ObjectId> = parse_object_id(onto.as_bytes());
     checks.facts.use_index(index.as_path(), workspace.object_directory.as_path());
     checks.content = ContentState::new();
     checks.candidates = LifecycleContent::Requested(staged_at_base(base, candidate_paths.as_slice()));
-    let (pass, changed_passes, changed_paths): (PassResult, u64, Vec<String>) = if context.read_only_selection {
+    let (pass, changed_passes, changed_paths): (PassResult, u64, Vec<Vec<u8>>) = if context.read_only_selection {
         checks.can_apply_patches = false;
         (run_policy_pass(request, checks), 0, Vec::new())
     } else {

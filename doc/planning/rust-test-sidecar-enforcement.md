@@ -122,4 +122,11 @@ with the two exemptions, none, and the run exited 0.
 
 ## Record of what shipped
 
-Filled in at release time.
+The rule shipped as `rust/tests-in-sidecars` in `monochromatic-lint` 0.1.3 (rule in `3124762a4e`, version bump in
+`de9bd3a71a`, merge of `main` in `c954f74798`); crates.io lists 0.1.3.
+The repository's own configuration turns the rule on at `error` in `5a85f0c8d1` (`monochromatic-lint.config.jsonc`),
+with one exemption block that switches it off for the fuzz crates' smoke tests under `**/fuzz/**` and `**/*.fuzz/**`
+and for the recorded reproductions under `doc/troubleshooting/`.
+The four inline test modules the evidence section counted were migrated to sidecars before the rule was enabled.
+The release age rule exempts the repository's own published crates by exact name (`4059fc9925`), so a freshly
+published linter or wrapper installs through `mise upgrade <tool>` without waiting the 24 hours other tools wait.

@@ -101,6 +101,7 @@ pub(crate) fn byte_argument(bytes: &[u8]) -> OsString {
 
 /// Create one empty fixture directory owned by this test process and test name.
 pub(crate) fn fixture(name: &str) -> PathBuf {
+    crate::test_support::arm_watchdog();
     let root: PathBuf =
         std::env::temp_dir().join(format!("native-command-{}-{name}", std::process::id()));
     if root.exists() {

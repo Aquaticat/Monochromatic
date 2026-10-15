@@ -6,7 +6,7 @@
 
 use super::*;
 use crate::disk_view::RealDisk;
-use crate::refresh_test_support::{MemoryDisk, Rng, TempTree};
+use crate::refresh_test_support::{MemoryDisk, Rng, TempTree, pick_stem};
 use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap};
 
@@ -200,11 +200,11 @@ fn random_name(rng: &mut Rng) -> String {
     let depth: usize = rng.below(3);
     let mut relative: String = String::new();
     for _ in 0..depth {
-        relative.push_str(STEMS[rng.below(STEMS.len())]);
+        relative.push_str(pick_stem(&STEMS, rng));
         relative.push('/');
     }
     let extension: &str = ["flac", "mp3", "opus", "txt"][rng.below(4)];
-    relative.push_str(&format!("{}.{extension}", STEMS[rng.below(STEMS.len())]));
+    relative.push_str(&format!("{}.{extension}", pick_stem(&STEMS, rng)));
     return relative;
 }
 
@@ -236,7 +236,7 @@ fn random_edit(world: &World, rng: &mut Rng, dirty: &mut DirtyPaths, round: usiz
             }
         }
         4 => {
-            let name = format!("{}/{}", STEMS[rng.below(STEMS.len())], random_name(rng));
+            let name = format!("{}/{}", pick_stem(&STEMS, rng), random_name(rng));
             let path = tree.path(&name);
             let first_new_ancestor: Option<PathBuf> = path.ancestors().skip(1).take_while(|ancestor| return *ancestor != tree.root).filter(|ancestor| return !ancestor.exists()).last().map(Path::to_path_buf);
             let sibling = format!("{}/sibling{round}.flac", name.rsplit_once('/').map_or("", |(parent, _)| return parent));

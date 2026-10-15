@@ -11,9 +11,12 @@ The workflow is `.github/workflows/music-player-release.yml`.
 
 One release holds one file per platform and a checksum file:
 
-- `music-player-<version>-windows-x64.exe` and `music-player-<version>-windows-arm64.exe`
+- `music-player-<version>-windows-x64.exe` and `music-player-<version>-windows-arm64.exe` (linked by Visual Studio)
+- `music-player-<version>-windows-x64-gnu.exe` (built with MinGW-w64 and GNU ld,
+   no Microsoft toolchain)
 - `music-player-<version>-macos-arm64.dmg` (there is no Intel Mac build)
-- `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz`
+- `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz` (glibc)
+- `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz` (Alpine, musl)
 - `music-player-<version>-android.apk`
 - `SHA256SUMS`
 
@@ -65,7 +68,8 @@ The rules the workflow enforces, and fails loudly on:
     The detect job compares the old and new version and starts the build only if the version changed.
 4.  Watch the run:
     `gh run list --workflow music-player-release.yml` and `gh run watch <run id>`.
-    A full run is the desktop builds in parallel with the Android build,
+    A full run is the desktop builds (the two Alpine builds are the slowest, because they are never cached)
+    in parallel with the Android build,
     then a checksum job and the release job.
 5.  Open the release page `https://github.com/Aquaticat/Monochromatic/releases/tag/music-player-v<version>`
     and check that every file listed above and `SHA256SUMS` are attached and that it is marked as a pre-release.
@@ -107,6 +111,38 @@ and the run refuses `dry-run=false`.
 On `main` a dry run signs with the real release key, so the signing path is proven without publishing.
 
 Download a dry run's files with `gh run download <run id> --dir <new empty directory>`.
+Each `asset-*` artifact becomes a subdirectory.
+
+Check the Alpine files of a dry run in a second new empty directory:
+
+```bash
+# Extract the x64 Alpine archive, then print the program interpreter of its binary.
+tar --extract --gzip --file <download dir>/asset-linux-musl-x64/music-player-<version>-linux-musl-x64.tar.gz \
+  --directory <extract dir>
+readelf --program-headers <extract dir>/music-player-<version>-linux-musl-x64/bin/music-player
+```
+
+The interpreter line must read `/lib/ld-musl-x86_64.so.1`,
+and `file` on the arm64 binary must say `ARM aarch64`.
+The job has already started both binaries with `--version` in an Alpine image that holds only the packages of
+`INSTALL.txt`.
+To repeat that by hand,
+mount the binary into `alpine:3.24`, run the `apk add` line of `INSTALL.txt` first,
+and bound the container with `podman run --memory=2g --cpus=2 --rm`.
+
+Check the Windows files of a dry run the same way,
+ in a new empty directory.
+The three `.exe` files print their imports in the log of the step "Package (Windows executable)",
+and the step "Check the linker rustc ran (Windows)" prints the linker program:
+ `link.exe` for the two MSVC files,
+`x86_64-w64-mingw32-gcc` (GNU ld) for `windows-x64-gnu.exe`.
+To repeat the import check on a download,
+ parse the import tables with a PE reader such as the Python `pefile` package
+in a throwaway virtual environment (`objdump -p` from mingw-w64 also works).
+The MSVC files must import no `vcruntime*` or `msvcp*` DLL;
+the GNU file imports the Windows C runtime (`api-ms-win-crt-*`) and system DLLs,
+and must import none of `libgcc_s*`,
+ `libwinpthread*` and `libstdc++*`.
 
 ## When a job fails
 
@@ -142,6 +178,15 @@ so a run after a small change takes minutes and not tens of minutes.
 Only runs on `main` and manual dispatches save them.
 A changed lock file starts from the previous entry and rebuilds only what changed.
 The entries together are about 4 GB, against the repository's 10 GB cap.
+The two Alpine release jobs (`build-desktop-musl`) and the Windows GNU job cache no cargo registry or target directory:
+every run builds them from a clean registry and target directory
+(14 to 20 minutes for the Alpine jobs in the two dry runs measured,
+ which makes them the longest jobs of a release run;
+the Windows GNU time is in `doc/decision/music-player-releases.md`),
+and the repository's cap is not spent on them.
+The Windows GNU job caches only the MSYS2 package downloads (about 70 MB,
+ key `msys2-pkg-v1-...`),
+under the key that `.github/workflows/music-player-windows.yml` also uses.
 
 ```bash
 # List the entries with their sizes.
@@ -154,6 +199,53 @@ gh cache delete <key> --repo Aquaticat/Monochromatic
 To invalidate every entry at once,
 change `v1` in the `key` and `restore-keys` of the cache steps of the workflow.
 The log of each build job prints a notice titled `cache` with `exact_hit` and the matched key.
+
+## The mise version pin
+
+Two steps of the workflow install mise with `jdx/mise-action`
+(the macOS step "Install node (runs the repository's bundle:macos task)" and the Android step
+"Set up mise (skip auto-install of all tools)").
+Both set `version: 2026.10.9`.
+The pin exists because,
+ without it,
+ `minimum_release_age` made every job list mise releases through the GitHub API
+with the workflow token,
+ and one `403 Forbidden` from that call failed the job with no retry
+(run 38688512043,
+ attempt 1,
+ two jobs;
+ the rerun passed).
+With `version` set the action skips the call and ignores `minimum_release_age`,
+ so the workflow does not set it.
+The evidence and the source lines are in `doc/troubleshooting/mise-action-version-ahead-of-release.md`.
+
+Who owns it:
+the maintainer who owns `.github/workflows/music-player-release.yml` (today the project owner).
+No bot bumps action inputs in this repository,
+ so nothing updates the pin unless a person does.
+An old pin keeps working as long as GitHub serves that release's assets;
+it is a maintenance item,
+ not a deadline.
+
+When to update it:
+when a release run needs a newer mise (a `mise.toml` or `mise.lock` change that an older mise rejects),
+or at the latest when you next touch the workflow after a few months.
+
+How to update it:
+
+1.  Pick a published stable release with
+    `gh release list --repo jdx/mise --exclude-drafts --exclude-pre-releases --limit 5`,
+    and pick one at least a day old (the repository's release-age rule for npm packages is one day).
+    Check its assets with `gh release view <tag> --repo jdx/mise --json assets --jq '.assets[].name'`:
+    `mise-<tag>-linux-x64.tar.zst`,
+     `mise-<tag>-macos-arm64.tar.zst` and `SHASUMS256.txt` must be listed.
+2.  Replace the version in both steps,
+     without the leading `v`.
+    Do not add `minimum_release_age` back:
+     the action ignores it while `version` is set.
+3.  Run a dry run (see "Dry run").
+    In both setup steps' logs the line `Selected mise` must be absent,
+    and `mise --version` must print the new version.
 
 ## The Android signing key
 
@@ -223,5 +315,9 @@ Dry runs are not attested.
 The project has run only the Linux x86_64 build and the Android app on emulators.
 The Windows and macOS programs and the Linux arm64 build are built by CI and started with `--version` there,
 and nothing more.
+The Alpine builds are started with `--version` in an Alpine container in the release run;
+a separate workflow (`.github/workflows/music-player-alpine.yml`) runs the unit tests and a headless window and sound
+check in Alpine containers on both architectures, on debug builds and not on the released files.
+No real Alpine machine has run them.
 No build has run on a real Android device.
 A bug report from one of these platforms is the first evidence about it.

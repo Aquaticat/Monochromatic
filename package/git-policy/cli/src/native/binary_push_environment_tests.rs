@@ -194,3 +194,28 @@ fn git_head_of(fixture: &Fixture, repo: &Path, reference: &str) -> String {
         .expect("rev-parse starts");
     return String::from_utf8_lossy(output.stdout.as_slice()).trim().to_owned();
 }
+
+/// A transport that never answers must not hold the commit: the auto-push is stopped at its deadline,
+///  the commit stays saved with the wrapper's own exit status, and the stop is named on the terminal.
+#[test]
+fn a_stalled_auto_push_is_stopped_and_the_commit_stays_saved() {
+    let fixture: Fixture = fixture("push-stalled");
+    let world: PushWorld = push_world(&fixture);
+    let shim: PathBuf = fixture.root.join("shim.sh");
+    executable(shim.as_path(), b"#!/bin/sh\nexec sleep 8\n");
+    let started: std::time::Instant = std::time::Instant::now();
+    let landed: Observed = observe(
+        wrapped_with_marker(&fixture, world.repo.as_path(), &["commit", "--message=second", "a.txt"])
+            .env("CLI_GIT_PUSH_DEADLINE_SECONDS", "1"),
+        b"",
+    );
+    let stderr: String = stderr_of(&landed);
+    assert!(started.elapsed() < std::time::Duration::from_secs(60), "{:?}", started.elapsed());
+    assert_eq!(landed.code, Some(0), "{stderr}");
+    assert!(stderr.contains("git push did not finish within 1 seconds and was stopped"), "{stderr}");
+    assert!(stderr.contains("auto-push to origin failed"), "{stderr}");
+    let head: String = git_head(&fixture, world.repo.as_path());
+    assert_ne!(head, "", "the commit is saved locally: {stderr}");
+    assert_eq!(git_head_of(&fixture, world.bare.as_path(), "refs/heads/main"), "", "nothing reached origin");
+    remove(&fixture);
+}

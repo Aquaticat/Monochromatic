@@ -1,6 +1,7 @@
 //! Controls for the landing lock helpers.
 
 use super::*;
+use crate::owner_lock::{DEFAULT_POLL_DELAY, SilentWait, acquire_owner_lock};
 use crate::transaction_lease::LANDING_LEASE_VARIABLE;
 use crate::test_support::{fixture, remove};
 use crate::transaction_journal::RefFormat;

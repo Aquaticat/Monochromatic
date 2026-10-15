@@ -79,6 +79,10 @@ mod landing_crash;
 #[path = "binary_commit_tests.rs"]
 mod commit;
 
+/// `pathBytes` for a file whose name is not UTF-8 through the commit path.
+#[path = "binary_event_path_commit_tests.rs"]
+mod event_path_commit;
+
 /// The linked-worktree ignored-state copy: the rules file reaches new worktrees, and an interrupted copy recovers.
 #[path = "binary_worktree_copy_tests.rs"]
 mod worktree_copy;

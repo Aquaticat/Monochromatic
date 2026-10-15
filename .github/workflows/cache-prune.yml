@@ -51,6 +51,8 @@ jobs:
           /^(music-player-desktop-v1-.+?)-nightly-/u,
           /^(music-player-android-native-v1-.+?)-nightly-/u,
           /^(mp-win-v1-.+?)-nightly-/u,
+          // The Alpine guard: the runner architecture is the family; the toolchain (Alpine rustc) then the hashes follow.
+          /^(music-player-alpine-[A-Za-z0-9]+)-rustc_/u,
           // The Gradle key has no toolchain date: the family is the runner, then a 64-digit hash.
           /^(music-player-gradle-v1-[A-Za-z0-9]+-[A-Za-z0-9]+)-[0-9a-f]{64}$/u,
         ]

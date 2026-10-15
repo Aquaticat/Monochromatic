@@ -5,10 +5,10 @@ function textOf(result) {
       .join("\n");
 }
 
-export function toScriptValue(
+export function convertNativeOutcome({
   tool,
   outcome
-) {
+}) {
     const { result } = outcome;
     if (tool.outputSchema && (result.structuredContent !== undefined))
         return result.structuredContent;

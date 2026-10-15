@@ -35,6 +35,7 @@ use super::config_schema::CliGitConfig;
 use super::diagnostic_log::debug;
 use super::diagnostics::EngineFailureCode;
 use super::landing_attempt::LandingError;
+use super::path_bytes::{os_from_path_bytes, path_message_text};
 use super::markdown_linter::executable_linter;
 use super::policy_checks::{ShippedChecks, shipped_checks};
 use super::policy_forbidden_strings::default_scanner_settings;
@@ -281,9 +282,30 @@ pub fn decide_selection(region: &CommitRegion, conclusion: Conclusion) -> Select
 }
 
 /// What:
+///  The positional pathspec tokens of the commit region, exactly as the command line gave them.
+/// Why:
+///   The private index selection and the journal must hand Git the same bytes the person typed,
+///  including a name that is not UTF-8.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// region.pathspecs
+/// ```
+fn pathspec_arguments(invocation: &CommitInvocation<'_>) -> Vec<OsString> {
+    let region_arguments: &[OsString] = &invocation.arguments[invocation.subcommand_index + 1..];
+    return invocation
+        .region
+        .pathspecs
+        .iter()
+        .map(|index| { return region_arguments[*index].clone(); })
+        .collect();
+}
+
+/// What:
 ///  The positional pathspec tokens of the commit region as text.
 /// Why:
-///   The private index selection and the private commit arguments name them.
+///   The private commit arguments are text, and a pathspec is removed from them by equal text;
+///  a name that is not UTF-8 is compared by its readable form, the form the arguments themselves have.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -329,7 +351,7 @@ struct Converged {
     /// How many passes changed content before it settled.
     changed_passes: u64,
     /// The paths the corrections wrote.
-    changed_paths: Vec<String>,
+    changed_paths: Vec<Vec<u8>>,
 }
 
 /// What:
@@ -406,10 +428,17 @@ pub fn settled_passes(convergence: &Convergence) -> u64 {
 /// ```ts
 /// createPrivateIndexFacts({ paths: candidatePaths, baseRevision })
 /// ```
-pub fn staged_at_base(base: Option<ObjectId>, paths: &[String]) -> CandidateRequest {
+pub fn staged_at_base(base: Option<ObjectId>, paths: &[Vec<u8>]) -> CandidateRequest {
     return CandidateRequest::StagedAtBase {
         base,
-        pathspecs: paths.iter().map(|path| { return OsString::from(format!(":(top,literal){path}")); }).collect(),
+        pathspecs: paths
+            .iter()
+            .map(|path| {
+                let mut pathspec: Vec<u8> = b":(top,literal)".to_vec();
+                pathspec.extend_from_slice(path.as_slice());
+                return os_from_path_bytes(pathspec.as_slice());
+            })
+            .collect(),
     };
 }
 
@@ -503,6 +532,7 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
     let capture: InvocationCapture = capture_invocation_base(context, cwd, layout)?;
     let base: String = base_revision(&capture);
     let pathspecs: Vec<String> = pathspec_texts(invocation);
+    let pathspec_arguments: Vec<OsString> = pathspec_arguments(invocation);
     write_journal_record(
         workspace.landing.directory.as_path(),
         PREPARING_FILENAME,
@@ -521,7 +551,10 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
             ref_format: capture.layout.ref_format,
             empty_tree_oid: capture.layout.empty_tree_oid.clone(),
             shadow_path: workspace.landing.shadow.display().to_string(),
-            selected_pathspecs: pathspecs.clone(),
+            selected_pathspecs: pathspec_arguments
+                .iter()
+                .map(|pathspec| { return pathspec.as_encoded_bytes().to_vec(); })
+                .collect(),
             invoked_at: capture.layout.invoked_at.clone(),
         })
         .as_str(),
@@ -549,7 +582,7 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
     };
     let index_selection: IndexSelection<'_> = IndexSelection {
         mode: selection.mode,
-        pathspecs: pathspecs.as_slice(),
+        pathspecs: pathspec_arguments.as_slice(),
         pathspec_file: pathspec_file.as_deref(),
         pathspec_file_nul: invocation.region.pathspec_file_nul,
         stage_into_index: invocation.region.include,
@@ -587,7 +620,7 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
             &index_selection,
         )?;
     }
-    let unmerged: Vec<String> =
+    let unmerged: Vec<Vec<u8>> =
         list_unmerged_index_paths(context, cwd, workspace.landing.commit_index.as_path())?;
     if !unmerged.is_empty() {
         return Ok(TransactionResult {
@@ -595,7 +628,11 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
                 code: EngineFailureCode::ContentUnavailable,
                 message: format!(
                     "Automatic commit fixes do not support unmerged index paths: {}",
-                    unmerged.join(", ")
+                    unmerged
+                        .iter()
+                        .map(|path| { return path_message_text(path.as_slice()); })
+                        .collect::<Vec<String>>()
+                        .join(", ")
                 ),
                 trigger: Some(Trigger::PreForward),
                 policy: None,
@@ -605,7 +642,7 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
             landed_oid: None,
         });
     }
-    let candidate_paths: Vec<String> = list_changed_index_paths(
+    let candidate_paths: Vec<Vec<u8>> = list_changed_index_paths(
         context,
         cwd,
         workspace.landing.commit_index.as_path(),

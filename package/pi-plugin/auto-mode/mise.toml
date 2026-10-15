@@ -3,6 +3,7 @@
 # settings verified under the session's 4-GiB aggregate cgroup limit; no rules are disabled.
 auto_mode_lint_resources = """
 process.env.OXLINT_THREADS = '1'
+process.env.GOMAXPROCS = '2'
 process.env.GOMEMLIMIT = '768MiB'
 process.env.NODE_OPTIONS = `${process.env.NODE_OPTIONS ?? ''} --max-old-space-size=512`.trim()
 """
@@ -237,6 +238,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 description = "Verify built native import transformations preserve source and encoding boundaries"
 run = "node src/native-build-imports.unit.test.ts"
 
+[tasks."test:native:direct-imports"]
+description = "Verify generated manager and SDK initialization without a maintained-policy preload"
+run = "node src/native-direct-import.unit.test.ts"
+
 [tasks."test:native:parser"]
 description = "Verify native Markdown qualification against installed and disposable parser packages"
 run = "node src/native-parser.unit.test.ts"
@@ -256,6 +261,15 @@ run = "node src/native-members.unit.test.ts"
 [tasks."test:native:program-value"]
 description = "Verify original result conversion extraction and source qualification guards"
 run = "node src/native-program-value.unit.test.ts"
+
+[tasks."test:native:program-owner"]
+description = "Verify built original program declaration, reached-group, native result, and failure ownership"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-owner.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-group.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-result.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-boundary.unit.test.ts",
+]
 
 [tasks."test:native:resource-input"]
 description = "Verify built native resource copies preserve values, ownership, descriptors, and byte limits"
@@ -520,4 +534,64 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs cancelled --native-context --fresh-session-approval --uncertain-context",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs prohibited --native-context --fresh-session-approval --uncertain-context",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs allow --native-context --fresh-session-approval --uncertain-context --headless",
+]
+[tasks."test:native:relevance-store"]
+description = "Verify original asynchronous cache publication in disposable directories"
+run = 'node --max-old-space-size=512 src/native-relevance-store.unit.test.ts'
+
+[tasks."test:native:answer-values"]
+description = "Verify built scalar, distribution, and serving-model answer admission"
+run = [
+  'node --max-old-space-size=512 src/native-assessment-response.unit.test.ts',
+  'node --max-old-space-size=512 src/native-relation-estimate.unit.test.ts',
+]
+
+[tasks."test:native:question-definitions"]
+description = "Verify pinned catalog admission and independent claim identity indexes"
+run = 'node --max-old-space-size=512 src/native-question-definitions.unit.test.ts'
+
+[tasks."test:native:relevance-cache"]
+description = "Verify policy freshness and cancellation through built asynchronous cache refresh"
+run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-relevance-cache.unit.test.ts'
+
+[tasks."test:native:file-observer"]
+description = "Verify descriptor-bound file observations and original cleanup failures"
+run = 'node --max-old-space-size=512 src/native-file-observer.unit.test.ts'
+[tasks."test:native:question-settlement"]
+description = "Verify original answer admission, terminal diagnostics, and stale settlement"
+run = "node src/native-settlement.unit.test.ts"
+
+[tasks."test:native:question-selection"]
+description = "Verify original canonical membership, bounded issuance, evidence identity, and lifetime"
+run = [
+  "node --max-old-space-size=512 src/native-selection.unit.test.ts",
+  "node --max-old-space-size=512 src/native-selection-boundary.unit.test.ts",
+  "node --max-old-space-size=512 src/native-selection-lifetime.unit.test.ts",
+]
+
+[tasks."test:native:governing-bindings"]
+description = "Verify original source candidates, permanent invalidation, duplicate-code ambiguity, and source bounds"
+run = [
+  "node --max-old-space-size=512 src/native-governing-bindings.unit.test.ts",
+  "node --max-old-space-size=512 src/native-governing-boundary.unit.test.ts",
+  "node --max-old-space-size=512 src/native-governing-set.unit.test.ts",
+]
+
+[tasks."test:native:input-location"]
+description = "Verify original native position slots, descriptor admission, and opaque companion values"
+run = [
+  "node --max-old-space-size=512 src/native-input-location.unit.test.ts",
+  "node --max-old-space-size=512 src/native-input-location-boundary.unit.test.ts",
+]
+
+[tasks."test:native:judgment-input"]
+description = "Verify original native JSON value preservation and construction error identity"
+run = 'node --max-old-space-size=512 src/native-judgment-input.unit.test.ts'
+
+[tasks."test:native:instructions"]
+description = "Verify original instruction identities, source selection, admission, and lifetime through built consumers"
+run = [
+  'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction.unit.test.ts',
+  'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction-lifetime.unit.test.ts',
+  'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction-batch.unit.test.ts',
 ]

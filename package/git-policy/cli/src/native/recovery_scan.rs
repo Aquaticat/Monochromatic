@@ -16,9 +16,8 @@
 /// Debug diagnostics.
 use super::diagnostic_log::debug;
 /// Owner locks.
-use super::owner_lock::{
-    DEFAULT_POLL_DELAY, OwnerLock, SilentWait, acquire_owner_lock, retire_lock_of_dead_owner,
-};
+use super::live_lock::acquire_live_owner_lock;
+use super::owner_lock::{OwnerLock, retire_lock_of_dead_owner};
 /// The fail-closed recovery failure.
 use super::recovery_error::{RecoveryError, io_failure};
 /// Landing evidence.
@@ -275,9 +274,7 @@ pub fn recover_dead_landings(
 /// ```
 pub fn acquire_registry_lock(root: &Path, name: &str) -> Result<OwnerLock, RecoveryError> {
     let directory: PathBuf = root.join(name);
-    // `mut` is required by the notice interface; this wait is silent, as the incumbent's.
-    let mut silent: SilentWait = SilentWait;
-    match acquire_owner_lock(directory.as_path(), DEFAULT_POLL_DELAY, &mut silent) {
+    match acquire_live_owner_lock(directory.as_path(), "a transaction registry lock") {
         Ok(lock) => return Ok(lock),
         Err(error) => return Err(RecoveryError(error.to_string())),
     }
@@ -299,6 +296,22 @@ fn recovered_already(outcomes: &[RecoveryOutcome], path: &Path) -> bool {
         }
     }
     return false;
+}
+
+/// What:
+///  Whether the landing pass owns an entry:
+///  it was known to need the landing lock, or the pass has already recovered it.
+/// Why:
+///   An entry whose owner died after the first inspection is recovered by the landing pass although it did not need
+///  the lock then, and one that vanished before the pass is not recovered at all;
+///  in both cases the main pass must leave it alone instead of acting on its stale inspection.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// needed || outcomes.some((outcome) => outcome.directory === path)
+/// ```
+fn handled_by_the_landing_pass(needed: bool, outcomes: &[RecoveryOutcome], path: &Path) -> bool {
+    return needed || recovered_already(outcomes, path);
 }
 
 /// What:
@@ -348,7 +361,7 @@ pub fn recover_registered_transactions(
         }
     }
     for (index, item) in ordered.iter().enumerate() {
-        if needs[index] || recovered_already(outcomes.as_slice(), item.entry.path.as_path()) {
+        if handled_by_the_landing_pass(needs[index], outcomes.as_slice(), item.entry.path.as_path()) {
             continue;
         }
         let action: RecoveryAction = recover_inspected_entry(place, item)?;

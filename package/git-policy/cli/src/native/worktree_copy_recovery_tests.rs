@@ -8,7 +8,9 @@ use crate::worktree_copy_journal::{
 };
 use crate::worktree_copy_lock::{SETTLEMENT_LOCK_NAME, acquire_worktree_copy_lock};
 use crate::worktree_copy_selection::CopySelection;
-use crate::worktree_copy_stage::stage_ignored_snapshot;
+use crate::worktree_copy_stage::{new_stage_container, stage_ignored_snapshot};
+use crate::worktree_copy_stage_claim::{claim_stage, stage_claims_exist};
+use std::os::unix::fs::PermissionsExt;
 
 /// A repository with an ignored `cache` file and a linked worktree at `topic` that the copy would fill.
 fn linked_source(root: &Path) -> (PathBuf, PathBuf) {
@@ -38,7 +40,7 @@ fn linked_source(root: &Path) -> (PathBuf, PathBuf) {
 fn staged_journal(source: &Path, destination: &Path) -> PendingJournal {
     let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
     let snapshot: StagedSnapshot =
-        stage_ignored_snapshot(&git_context(), source, destination, &[], &CopySelection::Ignored).expect("staged");
+        stage_ignored_snapshot(&git_context(), source, new_stage_container(destination).expect("container").as_path(), &[], &CopySelection::Ignored).expect("staged");
     return create_journal(common.as_path(), destination, &snapshot).expect("journal");
 }
 
@@ -222,6 +224,49 @@ fn pending_check_takes_the_lock_only_for_a_journal() {
     remove(root.as_path());
 }
 
+/// A stage left by a copy that died before its journal existed is removed by recovery, with a notice and no count.
+#[cfg(unix)]
+#[test]
+fn recovery_removes_a_stage_no_journal_names() {
+    let root: PathBuf = fixture("recovery-abandoned-stage");
+    let (source, topic) = linked_source(root.as_path());
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    let claim = claim_stage(common.as_path(), topic.as_path()).expect("claim");
+    std::fs::create_dir(claim.container()).expect("stage");
+    std::fs::set_permissions(claim.container(), std::fs::Permissions::from_mode(0o700)).expect("private");
+    std::fs::write(claim.container().join("half"), b"copied so far").expect("partial copy");
+    let report = recover_worktree_copy_transactions(common.as_path()).expect("recovered");
+    assert_eq!(report.recovered, 0);
+    assert_eq!(report.notices.len(), 1);
+    assert!(report.notices[0].contains("removed the stage"), "{:?}", report.notices);
+    assert!(!claim.container().exists());
+    assert!(!stage_claims_exist(common.as_path()).expect("claims"));
+    remove(root.as_path());
+}
+
+/// A forwarded command that creates no worktree reaps an abandoned stage when no live copy holds the lock,
+/// and leaves it alone while one does.
+#[cfg(unix)]
+#[test]
+fn the_pending_check_reaps_abandoned_stages_only_without_a_live_owner() {
+    let root: PathBuf = fixture("recovery-pending-claim");
+    let (source, topic) = linked_source(root.as_path());
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    let claim = claim_stage(common.as_path(), topic.as_path()).expect("claim");
+    std::fs::create_dir(claim.container()).expect("stage");
+    std::fs::set_permissions(claim.container(), std::fs::Permissions::from_mode(0o700)).expect("private");
+    let mut stderr: Vec<u8> = Vec::new();
+    let held = acquire_worktree_copy_lock(common.as_path(), &mut stderr).expect("held by us");
+    recover_pending_worktree_copies(common.as_path(), &mut stderr).expect("held by a live owner");
+    assert!(claim.container().exists(), "a live copy may still be staging");
+    held.release().expect("released");
+    let mut notices: Vec<u8> = Vec::new();
+    recover_pending_worktree_copies(common.as_path(), &mut notices).expect("reaped");
+    assert!(!claim.container().exists());
+    assert!(String::from_utf8_lossy(notices.as_slice()).contains("removed the stage"));
+    remove(root.as_path());
+}
+
 /// The summary line counts transactions with the singular or plural noun, after the notices.
 #[test]
 fn report_writes_notices_then_summary() {
@@ -305,6 +350,47 @@ fn incumbent_written_journal_is_recovered_natively() {
         read_pending_journals(common.as_path())
             .expect("none left")
             .is_empty()
+    );
+    remove(root.as_path());
+}
+
+/// A destination under something that is not a directory is unregistered,
+///  while a destination whose pointer cannot be read for any other reason is a fault to report.
+#[cfg(unix)]
+#[test]
+fn registration_tells_a_missing_destination_from_an_unreadable_one() {
+    let root: PathBuf = std::fs::canonicalize(fixture("recovery-registration-faults")).expect("canonical");
+    let (source, _topic) = linked_source(root.as_path());
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    let file: PathBuf = root.join("a-file");
+    std::fs::write(file.as_path(), b"not a directory").expect("file");
+    assert_eq!(
+        destination_registration(common.as_path(), file.join("below").as_path()).expect("under a file"),
+        Registration::Unregistered
+    );
+    let unreadable: PathBuf = root.join("unreadable");
+    std::fs::create_dir_all(unreadable.join(".git")).expect("a directory where the pointer file belongs");
+    let failure: WorktreeCopyError =
+        destination_registration(common.as_path(), unreadable.as_path()).expect_err("a directory is not a pointer");
+    assert!(failure.0.contains("could not read worktree registration"), "{}", failure.0);
+    remove(root.as_path());
+}
+
+/// A stage that cannot be examined for any reason other than being absent is a fault, not a missing stage.
+#[cfg(unix)]
+#[test]
+fn a_stage_that_cannot_be_examined_is_a_fault_and_not_a_missing_stage() {
+    let root: PathBuf = fixture("recovery-stage-blocked");
+    let (source, topic) = linked_source(root.as_path());
+    let mut pending: PendingJournal = staged_journal(source.as_path(), topic.as_path());
+    let blocker: PathBuf = root.join("blocker");
+    std::fs::write(blocker.as_path(), b"a file").expect("blocker");
+    pending.journal.stage_container = blocker.join("stage").to_string_lossy().into_owned();
+    let failure: WorktreeCopyError = validate_stage(&pending).expect_err("the stage cannot be examined");
+    assert!(
+        failure.0.contains("could not validate worktree-copy recovery state"),
+        "{}",
+        failure.0
     );
     remove(root.as_path());
 }

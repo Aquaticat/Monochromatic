@@ -17,7 +17,11 @@ backend differs by target.
 - Output:
    the platform's native stack.
    Linux uses a winit window and PipeWire audio (no
-  ALSA/PulseAudio backends).
+  PulseAudio backend).
+   Builds made with the `alsa-fallback` cargo feature
+  (the Alpine build,
+   see [Alpine Linux](#alpine-linux))
+  also open the default ALSA device when no PipeWire daemon answers.
    The window runs on Wayland when `WAYLAND_DISPLAY` (or `WAYLAND_SOCKET`) is set and otherwise on X11 when `DISPLAY` is
   set, because the Slint `backend-winit` feature turns on both of winit's Linux window systems;
    with neither variable set, startup fails with winit's error.
@@ -125,6 +129,127 @@ backend differs by target.
   When the measured gain lands,
    future decoded samples swap to it;
    already-buffered fallback-gain samples are not flushed.
+
+## Alpine Linux
+
+The player builds and runs on Alpine Linux (musl libc),
+on x86_64 and aarch64.
+The decision and every measurement behind it are in [`doc/decision/music-player-alpine.md`](../../../doc/decision/music-player-alpine.md).
+The binary is dynamically linked against Alpine's musl and runs only on musl systems.
+A fully static binary is not possible:
+the PipeWire,
+fontconfig and freetype static libraries do not exist on Alpine,
+and a static musl program cannot `dlopen` the Wayland,
+xkbcommon and EGL libraries a window needs.
+
+### Install the runtime packages
+
+```sh
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
+  mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+```
+
+- `fontconfig` and a font:
+  with no font installed the player panics at startup,
+  so install one (`font-dejavu`
+  is the small one;
+  any font package works).
+- `pipewire-libs`,
+  `libgcc`,
+  `wayland-libs-client`,
+  `wayland-libs-egl`,
+  `libxkbcommon`:
+  libraries the binary links or opens at run time.
+- `mesa-egl`,
+  `mesa-gles`,
+  `mesa-dri-gallium`:
+  the OpenGL ES stack the window draws with
+  (the software rasterizer on a machine with no GPU).
+- `alsa-lib`:
+  the ALSA fallback when no PipeWire daemon runs.
+
+You also need a Wayland compositor,
+and for sound either PipeWire with a session manager or an ALSA device:
+
+```sh
+apk add pipewire wireplumber
+```
+
+Optional:
+`dbus` (a session bus,
+for notifications and the appearance setting),
+`zenity` (the folder chooser when
+no desktop portal runs),
+and `xdg-desktop-portal`.
+
+### Run
+
+Alpine does not create `XDG_RUNTIME_DIR` unless `elogind` runs.
+Wayland and PipeWire need it,
+so create it by hand when it is unset:
+
+```sh
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}"
+mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+music-player path/to/music-folder
+```
+
+### What to expect
+
+- Sound:
+  the player uses PipeWire when a daemon answers,
+  otherwise the default ALSA device (set it in
+  `/etc/asound.conf` or `~/.asoundrc`).
+  With neither,
+  the player starts,
+  shows "No sound output is available,
+  so nothing will be heard.
+  Start a sound server
+  such as PipeWire,
+  or set up an ALSA sound card,
+  then restart the player.",
+  and stays silent.
+- Folder chooser:
+  "Open folder" needs a desktop portal or `zenity`.
+  Without either,
+  the window says "This computer has no folder chooser for the player to open.
+  Install zenity,
+  or start
+  the player with a folder:
+  music-player /path/to/music".
+- Notifications and the appearance setting need a D-Bus session bus.
+  Without one the player logs a warning and runs.
+- Settings,
+  the session and the true-peak cache are written under `$XDG_CONFIG_HOME/musicplayer`
+  (`~/.config/musicplayer` by default).
+
+### Build from source on Alpine
+
+```sh
+apk add rust cargo build-base cmake samurai pkgconf linux-headers clang21-libclang \
+  pipewire-dev alsa-lib-dev fontconfig-dev freetype-dev
+cd package/music-player/desktop-app
+SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 cargo build --release --locked --features alsa-fallback
+```
+
+Unit tests also need `cargo-nextest dbus font-dejavu`:
+
+```sh
+SLINT_EMIT_DEBUG_INFO=1 SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 cargo nextest run --locked --features alsa-fallback
+```
+
+### Checking the Alpine build
+
+`mise run //package/music-player/desktop-app:test:alpine` builds `Containerfile.alpine` with podman,
+runs the unit
+tests,
+builds the app and the repository's nested compositor,
+and runs the app inside that compositor in three
+scenarios (no sound,
+ALSA,
+PipeWire),
+with explicit memory and CPU bounds.
+`.github/workflows/music-player-alpine.yml` runs the same commands on x86_64 and aarch64.
 
 ## Codecs
 
@@ -440,6 +565,73 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    which keeps sub-second or zero-duration tracks from flickering the on-screen progress bar.
    The taskbar progress does not use that helper;
    see "Taskbar progress".
+
+## Windows
+
+Windows has two builds of the same program, selected by the Rust target.
+Both use WASAPI through cpal, the same winit window, and libopus 1.6.1 built from source with CMake.
+The linker is never lld: `.cargo/config.toml` sets no linker for the MSVC targets, and pins GNU ld for the GNU target.
+Why, and what was measured: `doc/decision/music-player-windows-linkers.md`.
+
+### MSVC build (`x86_64-pc-windows-msvc` and `aarch64-pc-windows-msvc`)
+
+This is the default build.
+Visual Studio's own `link.exe` links it; rustc finds the Visual Studio installation through vswhere.
+
+- Install Visual Studio 2022 or newer, or the Build Tools, with the "Desktop development with C++" workload
+  (the MSVC compiler, `link.exe` and a Windows SDK).
+  On Windows on Arm also install "MSVC ARM64 build tools" and build natively on that machine.
+- Install `rustup` with the MSVC host, the nightly pinned in the repository `mise.lock`, and `cmake` (4.x is fine).
+- No LLVM and no PATH change are needed;
+  earlier versions of this package required LLVM's `bin` on PATH for `lld-link.exe`.
+- Run `mise run //package/music-player/desktop-app:build` (release) or `:test` (needs `cargo-nextest`).
+  The output is `target\release\music-player.exe`.
+
+### GNU build (`x86_64-pc-windows-gnu`)
+
+This build needs no Microsoft toolchain.
+The `gcc` driver runs GNU ld from MinGW-w64,
+and the program imports only system DLLs; it needs no MinGW runtime DLL next to it.
+
+- Install MSYS2, open its UCRT64 shell, and run `pacman -S mingw-w64-ucrt-x86_64-gcc`.
+  That package brings GNU ld, `windres` and `dlltool`.
+  Put `C:\msys64\ucrt64\bin` first on the Windows PATH,
+  before Git for Windows and Strawberry Perl, which also ship a `gcc`.
+- Install `rustup` with the GNU host, so that build scripts are not linked by Visual Studio either:
+  `rustup toolchain install nightly-YYYY-MM-DD-x86_64-pc-windows-gnu` with the date from `mise.lock`, and make it the
+  default or set `RUSTUP_TOOLCHAIN` to it.
+- Install `cmake` and `ninja` (the Windows builds of both work with the MSYS2 gcc);
+  `opusic-sys` uses the Ninja generator whenever `ninja` runs.
+- Run `mise run //package/music-player/desktop-app:build:windows-gnu` or `:test:windows-gnu`.
+  The output is `target\x86_64-pc-windows-gnu\release\music-player.exe`.
+
+UCRT64 is the MSYS2 environment its documentation recommends,
+and the build links the Universal C Runtime that Windows 10 and later include.
+The MINGW64 environment (the msvcrt runtime that the Rust platform-support page names as the target default)
+also builds and passes the tests, but MSYS2 deprecated it on 2026-03-15.
+Both were run on GitHub Windows runners; see the decision record.
+
+### Building the GNU target on Linux
+
+`mise run //package/music-player/desktop-app:image:windows-gnu` builds a Fedora image with mingw-w64 and Wine,
+pinned by digest (`Containerfile.windows-gnu`).
+`:build:windows-gnu` then cross-compiles the program,
+and `:test:windows-gnu` cross-compiles the tests and runs them under Wine.
+Both run in a container capped at 6 GiB of memory and 4 CPUs.
+This proves the GNU toolchain and most of the code; it is not a Windows run.
+The cross build has no icon (the icon is embedded by a build script that runs only on a Windows host),
+and six tests fail or hang under Wine that pass on the Windows runners;
+`doc/troubleshooting/music-player-windows-build-and-test.md` lists them with what was and was not found.
+`nextest.windows-gnu.toml` ends a hung test after five minutes.
+To start the program under Wine, use a virtual desktop (`wine64 explorer /desktop=mp,1280x800 music-player.exe`):
+on a bare Xvfb screen Slint's frame throttle divides by a refresh rate of 0 and the program exits.
+
+### Continuous integration
+
+`.github/workflows/music-player-windows.yml` builds, tests and starts the program
+on `windows-2025` (x64) and `windows-11-arm` for the MSVC targets and on `windows-2025` for the GNU target.
+It prints the linker rustc ran, so a `lld` link would fail the job, and the PE import table of the program.
+Each job caches the cargo registry, the git database and the target directory.
 
 ## Taskbar progress
 

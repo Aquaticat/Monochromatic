@@ -109,10 +109,8 @@ fn reading_a_watched_directory_is_not_a_change_but_writing_is() {
         let contents: Vec<u8> = std::fs::read(dir.join("sub").join("a.flac")).expect("file reads");
         assert_eq!(contents, b"x");
     }
-    assert!(
-        rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500)).is_err(),
-        "reading directories and files must not request a rescan"
-    );
+    let during_reads = rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500));
+    assert!(during_reads.is_err(), "reading directories and files must not request a rescan, but one arrived: {during_reads:?}");
     std::fs::write(dir.join("sub").join("b.flac"), b"y").expect("watched fixture should be written");
     assert!(rx.recv_timeout(Duration::from_secs(10)).is_ok(), "a created file must request a rescan");
     drop(watcher);
@@ -168,7 +166,8 @@ fn a_registration_is_followed_by_exactly_one_catch_up_rescan() {
     assert!(rx.recv_timeout(Duration::from_secs(10)).is_ok(), "one catch-up rescan follows the registration");
     // The rescan this triggers reads every directory, as the real one does.
     assert_eq!(std::fs::read_dir(dir.join("sub")).expect("subfolder reads").count(), 1);
-    assert!(rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500)).is_err(), "and no second one");
+    let second = rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500));
+    assert!(second.is_err(), "and no second one, but this arrived: {second:?}");
     drop(watcher);
     std::fs::remove_dir_all(&dir).ok();
 }
@@ -194,6 +193,26 @@ fn watched(tag: &str, files: &[&str]) -> (std::path::PathBuf, SourceWatcher, mps
     return (dir, watcher, rx);
 }
 
+// What:     `assert_names_only_plain_writes_to(named, files)` checks that a report names each of `files` as a plain write and
+//           nothing else. On Windows the report may also name a folder that holds one of the files, as a plain write too,
+//           because Windows reports a folder whose entries were just written as modified; elsewhere the report is exactly
+//           the files.
+// Why:      The refresh looks at the named paths only, so a stray structural entry would read a whole folder.
+fn assert_names_only_plain_writes_to(named: &[(std::path::PathBuf, bool)], files: &[std::path::PathBuf]) {
+    if !cfg!(windows) {
+        let expected: Vec<(std::path::PathBuf, bool)> = files.iter().map(|file| return (file.clone(), false)).collect();
+        assert_eq!(named, expected.as_slice());
+        return;
+    }
+    for file in files {
+        assert!(named.contains(&(file.clone(), false)), "{} is named as a plain write: {named:?}", file.display());
+    }
+    for (path, structural) in named {
+        assert!(!structural, "{} is a plain write, not structural: {named:?}", path.display());
+        assert!(files.iter().any(|file| return file.starts_with(path)), "{} is one of the files or a folder holding one: {named:?}", path.display());
+    }
+}
+
 // What:     A file written in place is reported by its own path and as a write, not as everything.
 // Why:      D113: the refresh looks at the named path only, so one replaced file must not name the library.
 #[test]
@@ -202,7 +221,7 @@ fn a_file_written_in_place_is_reported_by_its_own_path() {
     std::fs::write(dir.join("sub").join("a.flac"), b"second, longer").expect("the file is replaced");
     let change = rx.recv_timeout(Duration::from_secs(10)).expect("a change is reported");
     let Change::Paths(set) = change else { panic!("a write is not everything: {change:?}") };
-    assert_eq!(set.sorted(), vec![(dir.join("sub").join("a.flac"), false)]);
+    assert_names_only_plain_writes_to(&set.sorted(), &[dir.join("sub").join("a.flac")]);
     drop(watcher);
     std::fs::remove_dir_all(&dir).ok();
 }
@@ -250,7 +269,8 @@ fn reads_report_no_change_but_the_write_after_them_does() {
         assert_eq!(std::fs::read(dir.join("sub").join("a.flac")).expect("reads"), b"first");
         assert!(std::fs::symlink_metadata(dir.join("sub").join("a.flac")).is_ok());
     }
-    assert!(rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500)).is_err(), "reads are not changes");
+    let during_reads = rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500));
+    assert!(during_reads.is_err(), "reads are not changes, but this arrived: {during_reads:?}");
     std::fs::write(dir.join("sub").join("a.flac"), b"changed").expect("the file is written");
     assert!(matches!(rx.recv_timeout(Duration::from_secs(10)), Ok(Change::Paths(_))));
     drop(watcher);
@@ -267,7 +287,7 @@ fn a_burst_of_writes_is_one_report_naming_each_file_once() {
         std::fs::write(dir.join("b.flac"), format!("round {round}")).expect("written");
     }
     let Ok(Change::Paths(set)) = rx.recv_timeout(Duration::from_secs(10)) else { panic!("paths are reported") };
-    assert_eq!(set.sorted(), vec![(dir.join("a.flac"), false), (dir.join("b.flac"), false)]);
+    assert_names_only_plain_writes_to(&set.sorted(), &[dir.join("a.flac"), dir.join("b.flac")]);
     assert!(rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS)).is_err(), "and only one report");
     drop(watcher);
     std::fs::remove_dir_all(&dir).ok();

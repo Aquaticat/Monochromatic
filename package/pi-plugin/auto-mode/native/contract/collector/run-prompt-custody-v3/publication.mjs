@@ -64,7 +64,7 @@ function publishScope(scope){
       source,
       index
     ) {
-      const publication=createInputOnlyPublication(source);publication.capture(observations[index]
+      const publication=createInputOnlyPublication({source});publication.capture(observations[index]
         .before);return publication.view;
     }));
     scope.handlerOptionOrigins=Object.freeze(handlerOptionInputs.map(function linkHandlerOptionOrigin(

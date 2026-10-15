@@ -272,11 +272,17 @@ It measures non-current tracks in a background sweep and uses a bounded current-
 
 The desktop build uses Slint with winit on every desktop target.
 Linux targets Wayland and uses PipeWire,
-with no ALSA or PulseAudio backend.
+with no PulseAudio backend.
+The Alpine build also falls back to the default ALSA device when no PipeWire daemon answers.
 macOS targets Apple Silicon and uses CoreAudio.
-Windows targets `x86_64` and `arm64` and uses WASAPI through cpal.
-Only the Linux `x86_64` build has been run by the project;
-the other desktop targets are built by CI and have not been tested on their platform.
+Windows targets `x86_64` and `aarch64` with Visual Studio's `link.exe`,
+plus a GNU `x86_64` build that needs no Microsoft toolchain,
+and uses WASAPI through cpal;
+`desktop-app/README.md` (section "Windows") has the toolchains and tasks.
+The Windows workflow `.github/workflows/music-player-windows.yml` builds all three and runs the test suite on
+GitHub's Windows runners.
+Apart from that, only the Linux `x86_64` build has been run by the project;
+the other desktop targets are built by CI and have not been tested by hand on their platform.
 
 The desktop source implements LauncherEntry D-Bus taskbar progress on Linux and native taskbar progress on Windows.
 These shell integrations are best-effort and are not shown in the gallery.
@@ -545,9 +551,20 @@ because the project is under active development.
 A release holds one file per platform and a `SHA256SUMS` file:
 
 - Windows: `music-player-<version>-windows-x64.exe` and `music-player-<version>-windows-arm64.exe`.
-- macOS: `music-player-<version>-macos-arm64.dmg`, for Apple silicon Macs only.
-  Intel Macs have no download: build from source.
-- Linux: `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz`.
+  `music-player-<version>-windows-x64-gnu.exe` is the same source for x64 built with MinGW-w64 and GNU ld,
+  without Microsoft's toolchain;
+   it needs no Visual C++ runtime either.
+- macOS:
+   `music-player-<version>-macos-arm64.dmg`,
+   for Apple silicon Macs only.
+  Intel Macs have no download:
+   build from source.
+- Linux:
+   `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz`.
+- Alpine Linux:
+   `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz`.
+  These are for Alpine 3.24 or newer (musl libc) on x86_64 or aarch64;
+  the Linux archives above do not run on Alpine.
 - Android: `music-player-<version>-android.apk`.
 
 ### What has been tested
@@ -557,12 +574,21 @@ and the Android app on emulators.
 Every other file is built by CI, not yet tested on this platform:
 CI starts each desktop program once with `--version` and does nothing more.
 No build has run on a real Android device, on macOS or on Windows.
+The Alpine files have more checking than the other CI-built files, though not on real hardware:
+the Alpine workflow runs the unit tests and a headless window and sound check in Alpine containers on both
+architectures, on debug builds, and the release run starts each Alpine program with `--version` in an Alpine image.
 Treat those downloads as unverified and report what you find as issues.
 
 ### Windows
 
 Download the `.exe` that matches your processor and run it.
-It is one standalone program that needs no installer and no Visual C++ runtime.
+On an x64 processor,
+ `windows-x64.exe` (built with Visual Studio's linker) and `windows-x64-gnu.exe` (built with
+MinGW-w64 and GNU ld) are built from the same source;
+ choose the GNU file if you want a build without Microsoft's toolchain.
+On an arm64 processor,
+ use `windows-arm64.exe`.
+Each file is one standalone program that needs no installer and no Visual C++ runtime.
 It is not signed with a developer identity,
 so SmartScreen may show "Windows protected your PC":
 choose "More info",
@@ -592,12 +618,30 @@ Extract the archive and run `bin/music-player`,
 or follow `INSTALL.txt` inside it to add a menu entry and an icon for your user.
 It needs a Wayland or X11 session,
 PipeWire,
-fontconfig,
-and a CPU with AES instructions.
+and fontconfig.
 The program is built on Ubuntu 24.04 and needs a glibc of that age or newer.
 There is no AppImage:
 the program links PipeWire from the host,
 so an AppImage would depend on the host as much as the archive does.
+
+### Alpine Linux download
+
+Use the `linux-musl` archive that matches your processor (`x86_64` is `x64`, `aarch64` is `arm64`).
+Install the runtime packages as root,
+then extract the archive and run `bin/music-player`:
+
+```sh
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
+  mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+```
+
+`INSTALL.txt` inside the archive shows the runtime directory a plain Alpine install lacks and how to add a menu entry.
+Without PipeWire the player plays through the default ALSA device.
+It needs a Wayland compositor;
+the X11 path is untested.
+The binary is dynamically linked against musl and runs only on musl systems.
+The other differences from a Fedora desktop (fonts, the folder chooser, notifications) are in
+[Alpine Linux](#alpine-linux).
 
 ### Android
 
@@ -657,11 +701,13 @@ mise run //package/music-player/desktop-app:test
 
 Linux builds use host development libraries when available and otherwise use the package's Fedora container.
 The application itself runs on the host session.
- Linux requires Wayland and PipeWire.
+ Linux requires Wayland and PipeWire;
+ Alpine Linux also runs the player over ALSA
+(see [Alpine Linux](#alpine-linux)).
  macOS builds target Apple
 Silicon,
- and Windows builds target `x86_64`;
- both build natively.
+ and Windows builds target `x86_64` and `aarch64` (MSVC) and `x86_64` (GNU);
+ all build natively on Windows, and the GNU one also cross-compiles in a container.
 The desktop application accepts one optional file or directory path;
  a file selects its parent directory.
 Pass `--start-playing` only when automatic playback on launch is required.
@@ -672,6 +718,51 @@ See [`desktop-app/README.md`](desktop-app/README.md) for platform prerequisites,
 session locations,
  build verification,
  and signing work.
+
+### Alpine Linux
+
+The player runs on Alpine Linux (musl libc) on x86_64 and aarch64 as a dynamically linked build;
+a static binary cannot open a window.
+Install the runtime packages,
+then run it with a runtime directory:
+
+```sh
+apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client wayland-libs-egl libxkbcommon \
+  mesa-egl mesa-gles mesa-dri-gallium alsa-lib
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}"
+mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+music-player path/to/music-folder
+```
+
+Expect these differences from a Fedora desktop:
+
+- A font package is required;
+  with none installed the player panics at startup.
+- Sound uses PipeWire when a daemon runs (`apk add pipewire wireplumber`),
+  otherwise the default ALSA device.
+  With neither,
+  the window says that no sound output is available.
+- "Open folder" needs a desktop portal or `zenity`;
+  without either the window says so,
+  and a folder can be passed on
+  the command line.
+- Notifications and the appearance setting need a D-Bus session bus.
+
+Build from source on Alpine:
+
+```sh
+apk add rust cargo build-base cmake samurai pkgconf linux-headers clang21-libclang \
+  pipewire-dev alsa-lib-dev fontconfig-dev freetype-dev
+cd package/music-player/desktop-app
+SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 cargo build --release --locked --features alsa-fallback
+```
+
+`mise run //package/music-player/desktop-app:test:alpine` runs the unit tests and a smoke test in Alpine containers,
+and a GitHub workflow runs it on both architectures.
+The full list of packages,
+results and limits is in
+[`desktop-app/README.md`](desktop-app/README.md#alpine-linux) and
+[`doc/decision/music-player-alpine.md`](../../doc/decision/music-player-alpine.md).
 
 ### Android
 

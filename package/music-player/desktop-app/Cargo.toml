@@ -1,6 +1,6 @@
 [package]
 name = "music-player"
-version = "0.1.1"
+version = "0.1.3"
 edition = "2024"
 license = "LGPL-3.0-or-later"
 publish = false
@@ -157,6 +157,10 @@ pipewire = { version = "0.10", features = ["v0_3_49"] }
 # blocking API and async-io backend. macOS has no D-Bus session bus, so it is
 # gated to Linux alongside the launcher integration it powers.
 zbus = "5"
+# ALSA fallback for Linux (src/output_linux.rs), OPTIONAL and compiled only with the `alsa-fallback` feature below.
+# cpal drives ALSA on Linux and links libasound, so a default Linux build, which needs only PipeWire, gets no new
+# link-time or run-time dependency. Same 0.18 line as the non-Linux table, so Cargo.lock holds one cpal.
+cpal = { version = "0.18", optional = true }
 
 # Non-Linux native backend. cpal drives the OS audio engine (src/output_cpal.rs):
 # CoreAudio on macOS, WASAPI on Windows, the counterpart to the PipeWire path. One
@@ -199,9 +203,16 @@ libc = "0.2"
 # The high-level `windows` crate (not `windows-sys`) is required because
 # ITaskbarList3 is a COM interface and needs the crate's IUnknown/Interface
 # machinery; the same crate also exposes the threading call, so one dependency
-# covers both. Built natively on x13-win.
+# covers both. The same crate builds for both Windows ABIs (MSVC and GNU).
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Threading", "Win32_UI_Shell"] }
+
+# `alsa-fallback` makes the Linux output try PipeWire first and the default ALSA device second (src/output_linux.rs).
+# Alpine Linux and other minimal installs run no sound server by default, so the Alpine build turns it on
+# (`cargo build --features alsa-fallback`); it needs libasound (Alpine `alsa-lib-dev` to build, `alsa-lib` to run).
+# Off by default so every other Linux build is unchanged. See ../../../doc/decision/music-player-alpine.md.
+[features]
+alsa-fallback = ["dep:cpal"]
 
 # Headless UI regression tests (src/ui_binding_tests.rs). ElementHandle locates the
 # seek/volume Sliders in the compiled AppWindow, fires the widget's imperative
@@ -226,9 +237,10 @@ slint-build = "1.18.1"
 # Explorer, the taskbar, and Alt-Tab show the app icon (the macOS icon lives in
 # the .app bundle, Linux in the .desktop Icon= name). Gated to cfg(windows) so it
 # is absent from the Linux and macOS dependency graphs entirely, matching the
-# #[cfg(windows)] gate in build.rs. Windows is built natively on x13-win, where
-# Visual Studio's resource compiler is present; winresource invokes it from the
-# build script. winresource is the maintained successor to the winres crate.
+# #[cfg(windows)] gate in build.rs. Both cfg(windows) gates test the HOST running the
+# build script, so a Windows build must run on Windows: there winresource invokes
+# the Windows SDK's rc.exe (MSVC targets) or MinGW-w64's windres (GNU target). A
+# Linux cross-compile of the GNU target skips the icon (see build.rs). winresource is the maintained successor to the winres crate.
 [target.'cfg(windows)'.build-dependencies]
 winresource = "0.1"
 

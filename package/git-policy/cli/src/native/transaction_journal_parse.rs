@@ -12,6 +12,8 @@
 //! const preparing = parsePreparingRecord(bytes);
 //! ```
 
+/// The event form of a pathname and the base64 of its bytes.
+use super::event_path::{EventPath, base64_decode_standard};
 /// Record field readers and the fatal decoder.
 use super::json_record::{decode_fatal, number_equals, parse_object, safe_integer, string_field};
 /// The fail-closed recovery failure.
@@ -183,6 +185,74 @@ impl<'a> RecordReader<'a> {
     }
 
     /// What:
+    ///  A required text field that names a path,
+    ///  with the exact bytes from `bytes_key` when the record has them.
+    /// Why:
+    ///   A name that is not UTF-8 is stored as its readable text and, beside it, the base64 of its bytes;
+    ///  a record written by the incumbent has only the text, which is then the exact name.
+    ///  Bytes whose readable text differs from the text field are a damaged record.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// read.path(key, bytesKey)
+    /// ```
+    pub fn path(&self, key: &str, bytes_key: &str) -> Result<Vec<u8>, RecoveryError> {
+        let text: String = self.string(key)?;
+        if !self.map.contains_key(bytes_key) {
+            return Ok(text.into_bytes());
+        }
+        let encoded: String = self.string(bytes_key)?;
+        return self.exact_path(text.as_str(), encoded.as_str(), bytes_key);
+    }
+
+    /// What:
+    ///  A required array of text that names paths,
+    ///  with the exact bytes of every path from `bytes_key` when the record has them.
+    /// Why:
+    ///   See `path`;
+    ///  the two arrays line up entry for entry.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// read.paths(key, bytesKey)
+    /// ```
+    pub fn paths(&self, key: &str, bytes_key: &str) -> Result<Vec<Vec<u8>>, RecoveryError> {
+        let texts: Vec<String> = self.strings(key)?;
+        if !self.map.contains_key(bytes_key) {
+            return Ok(texts.into_iter().map(String::into_bytes).collect());
+        }
+        let encoded: Vec<String> = self.strings(bytes_key)?;
+        if encoded.len() != texts.len() {
+            return Err(self.malformed(bytes_key));
+        }
+        let mut paths: Vec<Vec<u8>> = Vec::with_capacity(texts.len());
+        for (text, entry) in texts.iter().zip(encoded.iter()) {
+            paths.push(self.exact_path(text.as_str(), entry.as_str(), bytes_key)?);
+        }
+        return Ok(paths);
+    }
+
+    /// What:
+    ///  The bytes a base64 entry names,
+    ///  required to read as the text beside it.
+    /// Why:
+    ///   Both readers of a path accept exactly the pairs the writer prints.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// exactPath(text, encoded)
+    /// ```
+    fn exact_path(&self, text: &str, encoded: &str, bytes_key: &str) -> Result<Vec<u8>, RecoveryError> {
+        let Some(bytes) = base64_decode_standard(encoded) else {
+            return Err(self.malformed(bytes_key));
+        };
+        if EventPath::from_git_bytes(bytes.as_slice()).text() != text {
+            return Err(self.malformed(bytes_key));
+        }
+        return Ok(bytes);
+    }
+
+    /// What:
     ///  A required nested object,
     ///  as its own reader.
     /// Why:
@@ -290,7 +360,7 @@ impl<'a> RecordReader<'a> {
                 return Err(self.malformed(key));
             }
             records.push(AddedPath {
-                path: nested.string("path")?,
+                path: nested.path("path", "pathBytes")?,
                 git_mode,
                 original_oid: nested.string("originalOid")?,
                 intended_oid: nested.string("intendedOid")?,
@@ -391,7 +461,7 @@ pub fn parse_preparing(bytes: &[u8]) -> Result<PreparingRecord, RecoveryError> {
         ref_format,
         empty_tree_oid: read.string("emptyTreeOid")?,
         shadow_path: read.string("shadowPath")?,
-        selected_pathspecs: read.strings("selectedPathspecs")?,
+        selected_pathspecs: read.paths("selectedPathspecs", "selectedPathspecBytes")?,
         invoked_at: read.string("invokedAt")?,
     });
 }
@@ -467,7 +537,7 @@ pub fn parse_prepared(bytes: &[u8]) -> Result<PreparedRecord, RecoveryError> {
         prepared_oid: read.string("preparedOid")?,
         signed: read.boolean("signed")?,
         intended_tree_oid: read.string("intendedTreeOid")?,
-        committed_paths: read.strings("committedPaths")?,
+        committed_paths: read.paths("committedPaths", "committedPathBytes")?,
         added_paths: read.added_paths("addedPaths")?,
         selected_worktree_paths: read.added_paths("selectedWorktreePaths")?,
     });

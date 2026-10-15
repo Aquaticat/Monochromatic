@@ -31,6 +31,12 @@ fn fixture(files_per_folder: usize) -> PathBuf {
     return root;
 }
 
+// What:     `slash_joined` writes a relative path with `/` between its parts, whatever the platform separator is.
+// Why:      The expectations below are written with `/`; Windows would show `\\`.
+fn slash_joined(relative: &Path) -> String {
+    return relative.components().map(|part| return part.as_os_str().to_string_lossy().into_owned()).collect::<Vec<String>>().join("/");
+}
+
 // What:     The streamed walk equals `expand_paths` for the same root.
 // Why:      `expand_paths` is what the queue was always built from.
 #[test]
@@ -38,7 +44,10 @@ fn the_streamed_walk_matches_expand_paths() {
     let root: PathBuf = fixture(7);
     let streamed: Vec<PathBuf> = scan_streaming(&root, usize::MAX, &mut |_batch| {});
     assert_eq!(streamed, expand_paths(vec![root.clone()]));
-    assert!(streamed.iter().any(|path| return path.ends_with("linked.mp3")), "a symlinked audio file is kept");
+    // The fixture makes the symlinks on Unix only (creating one on Windows needs a privilege the test cannot assume).
+    if cfg!(unix) {
+        assert!(streamed.iter().any(|path| return path.ends_with("linked.mp3")), "a symlinked audio file is kept");
+    }
     assert!(!streamed.iter().any(|path| return path.ends_with("cover.jpg") || path.ends_with("._loose.mp3")));
     std::fs::remove_dir_all(&root).expect("the fixture is removed");
 }
@@ -152,7 +161,7 @@ fn the_walk_lists_numbered_names_in_natural_order() {
     let walked: Vec<PathBuf> = scan_streaming(&root, usize::MAX, &mut |_batch| {});
     let shown: Vec<String> = walked
         .iter()
-        .map(|path| return path.strip_prefix(&root).expect("every track is under the root").display().to_string())
+        .map(|path| return slash_joined(path.strip_prefix(&root).expect("every track is under the root")))
         .collect();
     assert_eq!(
         shown,

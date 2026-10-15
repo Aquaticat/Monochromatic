@@ -7,6 +7,13 @@ and Pi source transformations previously exercised in the private integration wo
 The package extension export remains available for legacy consumers.
 The installed native host replaces its legacy extension declaration to avoid duplicate guards.
 
+The [file-observation contract](file-observation.md)
+documents synchronous policy snapshots,
+descriptor cleanup,
+and the scoped filesystem lint exceptions.
+Relevance-cache initialization and publication use asynchronous filesystem operations;
+their refresh owner rechecks original policy identity and cancellation before publishing a view.
+
 `contract/source-provenance.json` records the original relative paths,
 source repository revision,
 and SHA-256 hashes before relocation.
@@ -25,6 +32,26 @@ Imports were relocated to this package graph without changing policy decisions.
 
 The maintained build emits the qualified Pi 1.2.0 source and owned transformations to `dist/native`.
 The package `build` task builds maintained exports before building this native artifact.
+Native policy consumers use the dedicated `./native-policy` package export.
+It shares policy implementations with the extension entry through common build chunks,
+without importing the extension's SDK-dependent transcript code.
+`test:native:direct-imports` starts each generated manager and SDK entry in a fresh process,
+constructs an owned in-memory manager,
+and compares every native policy export's identity with the extension entry.
+`test:native:question-settlement` verifies complete answer admission before publication,
+original failure retention,
+bounded raw and model data,
+and terminal discard on stale bindings or expired judgment budgets.
+Missing raw diagnostics use an absent `raw` property;
+the `failure` property retains the original caught value,
+including `undefined` for a successful decode.
+`test:native:question-selection` exercises the original public selection entry,
+canonical claim and evidence identities,
+ordinary dense membership,
+declaration and batch limits,
+the UTF-8 request bound,
+reentry recovery,
+and current versus retained diagnostic reads.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
@@ -307,3 +334,23 @@ result,
 dependency,
 and cancellation checks for the sole call.
 Native loadout descriptions show the supported forms and retain the underlying tool declarations.
+
+## Original prepared-program lookup
+
+The original native judgment method `preparedProgramFor` returns its retained inspection view,
+or `undefined` before inspection is bound.
+`native/contract/collector/program-rule-batch-sdk-copy-v2/input/program-api.ts`
+mirrors that existing callable contract in `PreparedProgramLookup`.
+Changing absence to a symbol,
+throwing,
+or returning a wrapper would change the native consumer boundary during the typed-owner port.
+Optional private fields still use ordinary optional-property syntax.
+
+The scoped `no-restricted-syntax/no-nullish-union` suppression covers only that return-value alias.
+The deciding implementation is
+`package/oxlint-plugin/no-restricted-syntax/src/rule/no-nullish-union.ts`,
+which rejects nullish union members without contextual options.
+Its `simpleBanRule` helper in `src/rule/_simple-ban-rule.ts` exposes no configuration or allow-list.
+The rule's own documented external-API mirror exception fits this retained native method contract.
+Deriving a nullable result from an unrelated `Map.get` signature would obscure the actual contract;
+the explicit alias records the native method's real absence value.

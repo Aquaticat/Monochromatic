@@ -2,6 +2,11 @@
 
 Decided on branch `chore/ci-caching`, measured on real GitHub runs on 2026-10-15.
 
+The owner deleted `.github/workflows/final-newline.yml` on 2026-10-15 because it recompiled the wrapper on every pull
+request.
+Every mention of that workflow below is a record of what was decided and measured; today the `cli-git-native` cache
+belongs to the version job of `npm-release.yml` alone, and the push to `main` that runs it is the only run that saves.
+
 ## Starting point
 
 The repository was not caching nothing, but the caches that existed did little.
@@ -41,6 +46,31 @@ The repository was not caching nothing, but the caches that existed did little.
   `codeql-overlay-base-database-*` entries (about 5 MB). They are not configured here.
 - `forbidden-strings.yml` (the per-push scan): nothing; it downloads a prebuilt binary.
 - `fs-id.yml`, `scorecard.yml`, `claude.yml`: nothing; they build nothing worth caching.
+- `music-player-release.yml`, job `build-desktop-musl` (the Alpine release tarballs): nothing, decided 2026-10-15
+  while the repository held 9.98 GB of 10 GB. It ships its bytes, which this document allows to stay uncached.
+  A cache could save at most the dependency compile: 9 min 07 s (x86_64) and 5 min 16 s (aarch64) per release.
+  The release build leaves 684 MB of cargo home and 2.3 GB of target directory before any trim, and the compressed
+  size of a trimmed entry was not measured (the Alpine guard's debug-build entries are 949 MB and 928 MB).
+  Details:
+   `doc/decision/music-player-releases.md`.
+- `music-player-release.yml`,
+   the Windows GNU job (`x86_64-pc-windows-gnu`,
+   release asset `windows-x64-gnu.exe`):
+  no cargo or target cache,
+   decided 2026-10-15 while the repository held 11.4 GB of 10 GB.
+  The cold job took 16 min 07 s,
+   of which a cache could save at most the 7 min 14 s of dependency compilation,
+   and
+  it finished before the slowest job of the run.
+   It restores and saves only the MSYS2 package downloads (70 MB) under
+  the key `music-player-windows.yml` uses.
+   Details:
+   `doc/decision/music-player-releases.md`.
+- `music-player-release.yml`,
+   both `jdx/mise-action` steps:
+   pinned to mise 2026.10.9 without `minimum_release_age`,
+   so
+  they make no GitHub API call to resolve the version (a 403 from that call failed two jobs of run 38688512043).
 
 ## Key shapes
 
@@ -98,6 +128,10 @@ also evicts an entry unread for 7 days. The steady state below keeps the newest 
 - `music-player-release.yml`: about 4.0 GB, as reported by its author (seven entries of 387 MB to 651 MB).
 - The Windows music player workflow: four entries of about 610 MB plus msys2 entries of about 69 MB, about 3 GB if each
   family keeps one entry.
+- `music-player-alpine.yml`: two entries (x86_64 and aarch64) of 949 MB and 928 MB, about 1.9 GB.
+  They exceed the 650 MB guide because the debug build of the `turso` crates alone holds about 400 MB of libraries;
+  the entry is already trimmed of the registry sources and of every output of this repository's own crates.
+  `doc/decision/music-player-alpine.md` has the measurements.
 
 That sums to about 9 GB with no headroom, so the rules for large entries below are binding.
 
@@ -210,7 +244,12 @@ Restoring costs as much as the whole install, so the cache is reverted on the br
 - Restore attempt 2 s and a miss in every run; no save ever. Rust toolchain installation takes 15.5 s and Node plus pnpm
   3 to 4 s on Linux. The `cache: false` set in `cargo-publish.yml` removes the inert restore.
 - Resolving the mise version through `minimum_release_age` takes about 10 s per job (log lines `Selected mise` after the
-  restore line). A fixed `version` skips that lookup. This is not a cache and is left as is.
+  restore line).
+   A fixed `version` skips that lookup.
+   This is not a cache;
+   the two steps of
+  `music-player-release.yml` use it since 2026-10-15 (see above),
+   and the other workflows are left as they were.
 
 ## Not verified
 

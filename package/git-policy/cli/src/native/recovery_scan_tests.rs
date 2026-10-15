@@ -289,3 +289,21 @@ fn registry_locks_are_owner_locks() {
     assert!(acquire_registry_lock(scene.registry.join("file.lock").as_path(), "x").is_err());
     scene.finish();
 }
+
+/// The main pass leaves an entry to the landing pass when the entry needed the lock or the pass already recovered it,
+///  and handles it only when neither holds.
+#[test]
+fn the_main_pass_leaves_the_landing_pass_its_entries() {
+    let recovered: PathBuf = PathBuf::from("/registry/recovered");
+    let other: PathBuf = PathBuf::from("/registry/other");
+    let outcomes: Vec<RecoveryOutcome> = vec![RecoveryOutcome {
+        directory: recovered.clone(),
+        action: RecoveryAction::RetiredRemoved,
+    }];
+    // Needed the lock but the pass found nothing to recover (the entry vanished first).
+    assert!(handled_by_the_landing_pass(true, outcomes.as_slice(), other.as_path()));
+    // Did not need the lock when inspected, but the pass recovered it (its owner died in between).
+    assert!(handled_by_the_landing_pass(false, outcomes.as_slice(), recovered.as_path()));
+    assert!(handled_by_the_landing_pass(true, outcomes.as_slice(), recovered.as_path()));
+    assert!(!handled_by_the_landing_pass(false, outcomes.as_slice(), other.as_path()));
+}

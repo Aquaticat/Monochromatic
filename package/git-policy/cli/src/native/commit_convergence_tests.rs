@@ -100,7 +100,7 @@ fn the_final_newline_correction_lands_in_the_private_index() {
     let (root, repo, index): (PathBuf, PathBuf, PathBuf) = scene("commit-convergence-newline", b"changed");
     let outcome: CommitConvergence = converge_index(repo.as_path(), index.as_path(), None);
     assert_eq!(outcome.convergence, Convergence::Settled { changed_passes: 1 }, "{:?}", outcome.pass.events);
-    assert_eq!(outcome.changed_paths, vec![String::from("a.txt")]);
+    assert_eq!(outcome.changed_paths, vec![b"a.txt".to_vec()]);
     assert_eq!(private_text(repo.as_path(), index.as_path()), "changed\n");
     remove(root.as_path());
 }
@@ -185,4 +185,42 @@ fn stored_states_compare_equal_exactly_when_the_corrected_bytes_match() {
     assert!(passes.snapshots_equal(0, 2), "the reversed state repeats the uncorrected one");
     assert!(passes.snapshots_equal(1, 1), "a state equals itself");
     remove(root.as_path());
+}
+
+/// A correction names its file by bytes, so a name that is not UTF-8 reaches the private index unchanged
+///  and is listed back with the same bytes.
+#[test]
+fn a_correction_of_a_name_that_is_not_utf8_is_written_by_its_bytes() {
+    let (root, repo, index): (PathBuf, PathBuf, PathBuf) = scene("commit-convergence-odd-name", b"changed\n");
+    let stage: PrivateStage<'_> = PrivateStage {
+        context: &git_context(),
+        cwd: repo.as_path(),
+        index: index.as_path(),
+        object_directory: None,
+    };
+    let entry: Correction = Correction {
+        path: b"caf\xe9.txt".to_vec(),
+        mode: crate::candidate_object::CandidateMode::Regular,
+        before: std::rc::Rc::from(b"".as_slice()),
+        after: std::rc::Rc::from(b"odd\n".as_slice()),
+    };
+    assert_eq!(stage_correction(&stage, &entry), Ok(()));
+    let mut listing: GitRequest = GitRequest::new(repo.as_path(), &["ls-files", "-z"]);
+    listing.without_prefix = true;
+    listing.index = Some(index.clone());
+    let output = run_git(&git_context(), &listing).expect("ls-files starts");
+    let names: Vec<&[u8]> = output.stdout.split(|byte| { return *byte == 0; }).filter(|name| { return !name.is_empty(); }).collect();
+    assert_eq!(names, vec![b"a.txt".as_slice(), b"caf\xe9.txt".as_slice()]);
+    remove(root.as_path());
+}
+
+/// The patch-conflict failure names a file whose name is not UTF-8 by its readable text and its exact bytes.
+#[test]
+fn a_patch_conflict_over_a_name_that_is_not_utf8_carries_the_exact_bytes() {
+    let pass: PassResult = patch_conflict_pass(&[], b"caf\xe9.txt", String::from("cause"));
+    let [PolicyEvent::EngineFailure { message, path: Some(path), .. }] = pass.events.as_slice() else {
+        panic!("expected one engine failure with a path: {:?}", pass.events);
+    };
+    assert_eq!(message, "Policy patch for caf\u{fffd}.txt does not apply to the private index: cause");
+    assert_eq!((path.text(), path.exact()), ("caf\u{fffd}.txt", Some(b"caf\xe9.txt".as_slice())));
 }

@@ -825,9 +825,782 @@ and manual-review consumers pass in
 `${HOME}/temp/agent/pi-native-policy-compilation-consumer-20261015.log`.
 The following extraction places original scheduler and inspected-program coverage in `operation-coverage.mjs`.
 Focused lint now reports zero errors and 234 warnings across the compiler and its output and coverage helpers.
-The rebuilt compiler consumers are running again on that final extraction in
+The rebuilt domain,
+semantic-operating-policy,
+and manual-review consumers also pass on that final extraction in
 `${HOME}/temp/agent/pi-native-operation-coverage-consumer-20261015.log`.
 The remaining full lint gate is still open.
+Commit `41a33c04cc` separates adoption,
+request,
+heading,
+and clause wire projections while retaining original binding checks and batch membership.
+Its focused lint has zero errors and 376 warnings.
+Commit `487e5ad3b0` separates resource,
+run,
+and generated prompt source bindings from authority assembly.
+Its focused lint has zero errors and 384 warnings.
+The rebuilt domain,
+semantic-operating-policy,
+manual-review,
+source-work,
+resource-input,
+context-receipt,
+and retained-history consumers pass in
+`${HOME}/temp/agent/pi-native-wire-authority-consumer-20261015.log`.
+Commit `42a7606059` separates loader publication state from collector snapshot ownership.
+The original private policy-input construction key remains in `system-slot.mjs`;
+the loader retains its publication record and each collector retains its own snapshot map.
+Focused lint has zero errors and 550 warnings.
+The same rebuilt policy and source consumers pass in
+`${HOME}/temp/agent/pi-native-system-slot-split-consumer-20261015.log`.
+The fixed ASCII rule-code check agrees with the original pattern in 196623 comparisons,
+including every UTF-16 code unit in each tag position and line-ending controls.
+Commit `b6dfaf8981` separates message descriptor signatures from publication ownership.
+The original alias map remains private to the publication entry module;
+signature and ownership helpers receive the same original data and map.
+Focused lint has zero errors and 606 warnings across the helpers and their publication callers.
+Rebuilt serializer-receipt,
+event-receipt,
+approval-context,
+and source-work consumers pass in
+`${HOME}/temp/agent/pi-native-handler-publication-split-consumer-20261015.log`.
+Commit `10a606eb32` separates definition validation and answer settlement from question identity ownership.
+Original claim,
+batch,
+and evidence maps remain private to the selection owner.
+Focused lint has zero errors and 463 warnings.
+Rebuilt domain,
+semantic-operating-policy,
+and manual-review consumers pass in
+`${HOME}/temp/agent/pi-native-question-selection-split-consumer-20261015.log`.
+Commit `b48b22a7d6` adds named inputs around the native result converter.
+Generated staging preserves the original SDK functions byte-for-byte and appends the adapter;
+the adversarial source-literal test imports and executes that generated module.
+Package type checking and rebuilt program-value,
+native-return,
+program-queue,
+and domain consumers pass in
+`${HOME}/temp/agent/pi-native-conversion-adapter-types-20261015.log` and
+`${HOME}/temp/agent/pi-native-conversion-adapter-consumer-20261015.log`.
+The first focused converter report has zero errors and 25 warnings;
+the fixture expectation now retains original text directly instead of parsing it back to an unchecked value.
+Commit `18bc909876` separates event-receipt assertions under the original shared native fixture.
+The first concurrent lint,
+build,
+and commit attempt encountered resource-allocation failures before assertions;
+the separate diagnostics and recovery are recorded in `doc/troubleshooting/pi-sdk-staging.md`.
+The sequential rebuild passes the original event suite and revised generated converter test in
+`${HOME}/temp/agent/pi-native-event-receipt-split-retry-consumer-20261015.log`.
+The package type check also passes after the fixture expectation change.
+The event lint retry reports zero errors and 250 warnings across its source set and the converter test.
+Commit `b42541c5bf` separates domain fixture construction,
+transport controls,
+authored assessment answers,
+and source assertions.
+Its first focused lint reports zero errors and 602 warnings.
+The initial rebuilt run failed before assertions with the already-documented generated-manager import cycle.
+Commit `92a305735c` enters through the maintained policy module before generated manager assertions.
+The rebuilt domain,
+unconfigured-policy,
+semantic-operating-policy,
+single-call,
+changed-dependency,
+next-decision-receipt,
+serializer-receipt,
+and context-receipt consumers then pass in
+`${HOME}/temp/agent/pi-native-domain-fixture-entry-consumer-20261015.log`.
+The failed original log remains in `pi-native-domain-fixture-split-consumer-20261015.log`.
+The full maintained recount covers 513 files and 486 rules:
+16 errors and 13771 warnings remain in
+`${HOME}/temp/agent/pi-maintained-domain-splits-lint-20261015.log`.
+Remaining errors are in the relevance store,
+its cache owner,
+the composed-distribution protocol,
+and the descriptor-bound file observer.
+The relevance store now awaits directory validation and file publication during cache operations;
+its constructor still returns the cache owner synchronously.
+Commit `2d804201df` introduces the asynchronous cache filesystem operations;
+`8b97abd75a` joins owner-local same-key publications before reading their completed entry.
+Commit `32d3e551d4` adds built store consumers using disposable directories.
+Those consumers pass private modes,
+original-value retention,
+concurrent publication,
+symlink rejection,
+malformed and mismatched persisted data,
+digest filename boundaries,
+and invalid probability rejection in
+`${HOME}/temp/agent/pi-native-relevance-store-consumer-20261015.log`.
+Package type verification passed.
+The focused lint pass found an inferred absent promise in initialization
+and a nullable test contract.
+Initialization now declares its pending operation;
+the consumer treats read values as unknown and compares them with the original complete entry.
+The built refresh consumers in `99ecff732d` pass reuse across owners,
+changed-rule membership,
+recursive refresh joining,
+source replacement during classification,
+and source replacement or cancellation during cache hits and publication.
+`${HOME}/temp/agent/pi-native-relevance-refresh-consumer-20261015.log`
+retains those results and the initial fixture declaration failure.
+Commit `fb56538d9e` adds the required explicit fixture return type;
+package type verification then passed in
+`${HOME}/temp/agent/pi-native-file-observer-baseline-20261015.log`.
+
+The built file-observer baseline in the same receipt passes completed synchronous observations,
+short reads,
+descriptor cleanup,
+ordered original read and close failures,
+invalid counts,
+byte bounds,
+and selected-path rejection.
+Commit `0df033dd92` replaces its `finally` with a lexical descriptor owner.
+The exact synchronous filesystem calls retain scoped exceptions documented in
+[the file-observation contract](../../package/pi-plugin/auto-mode/native/file-observation.md).
+The rule has no per-call configuration allow-list;
+changing the observer alone to return asynchronously would change the synchronous policy-selection
+and dependency-finalization consumer contracts.
+The package rules and their severities remain unchanged.
+The rebuilt file observer,
+relevance store and refresh,
+source-freshness work,
+approved-dependency integration,
+and package type checks all pass in
+`${HOME}/temp/agent/pi-native-cache-observer-consumer-20261015.log`.
+Process-local omission controls remove descriptor closure or post-await cache freshness checks
+from the copied modules while loading.
+The committed consumer tests fail in both cases,
+and artifact hashes remain unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/cache-observer-omissions.json`
+retains those results.
+Focused lint now has zero errors and 484 warnings across the changed source and fixtures.
+The complete package recount covers 517 files and 486 rules:
+zero errors and 13812 warnings in
+`${HOME}/temp/agent/pi-maintained-cache-observer-lint-20261015.log`.
+Remaining warnings still prevent the strict lint task from passing.
+Untyped native module boundaries and statement formatting remain the largest unfinished groups.
+Commit `bf9eee5abc` moves the selected-file observer from `file-observer.mjs` to `file-observer.ts`,
+with explicit completed-snapshot and bounded-reader contracts in `file-observation-types.ts`.
+Its direct consumers and provenance mapping now select the typed source.
+Commit `a6e2b905a7` names the selected-path revalidation boundary while retaining its original checks and order.
+The typed port passes the rebuilt observer,
+store,
+refresh,
+source-freshness,
+approved-dependency,
+and package type checks in
+`${HOME}/temp/agent/pi-native-typed-observer-consumer-20261015.log`.
+That scratch runner then reached its lint command outside the repository
+and reproduced the documented missing-monorepo-root diagnostic.
+The separate lint task now pins its repository directory;
+its first pass found only a path-condition line-layout warning.
+That layout is corrected;
+final focused lint passes with zero errors and warnings across the typed observer and new cache/observer fixtures in
+`${HOME}/temp/agent/pi-native-typed-observer-complete-lint-20261015.log`.
+The next typed boundary is structural policy indexing.
+Its original copied JavaScript module is retained under
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/policy-index-before-types.mjs`
+for direct comparison with the typed artifact before qualification.
+Commit `f8db05b2ca` moves `policy-index.mjs` to `policy-index.ts`
+and adds explicit structural-index contracts.
+Commit `c1bd9b7bad` passes original coordinate values to the span checker
+and uses a bounded ASCII tag scan instead of spreading source text.
+The formatted index and its contracts pass focused lint with zero errors and warnings in
+`${HOME}/temp/agent/pi-native-typed-index-final-format-20261015.log`.
+The rebuilt relevance-cache,
+domain,
+semantic operating-policy,
+manual-review,
+and package type checks pass in
+`${HOME}/temp/agent/pi-native-typed-index-consumer-20261015.log`.
+The built old/new comparison matches complete index output or original diagnostic fields for
+12 real-parser documents and six invalid parser trees.
+It includes headings,
+unclassified text,
+quoted and fenced examples,
+astral characters,
+literal tag boundaries,
+duplicate tags,
+and invalid source positions.
+A changed-source control produces different rule handles and index output.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-policy-index-comparison.json`
+retains both artifact hashes and the results.
+The complete lint recount after the typed observer and index ports covers 519 files and 486 rules:
+zero errors and 13665 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-observer-index-lint-20261015.log`.
+The strict package gate remains failing on warnings;
+continue typing the remaining native boundaries and resolving their formatting diagnostics.
+Commits `25b8a629f7`,
+`1ee94a2029`,
+and `18725748e3` type the relevance definition,
+persisted-entry admission,
+and asynchronous store owner.
+The original `store.mjs` is now `store.ts` as of 2026-10-15;
+`definition.mjs` is now `definition.ts` on the same date.
+Cache misses now use the explicit `CACHE_ENTRY_MISSING` domain sentinel,
+and the refresh caller narrows that sentinel before reading an entry.
+The persisted schema and fixed classifier wording remain unchanged.
+Parsed non-object values now receive the cache's invalid-entry diagnostic.
+If an existing file disappears between exclusive-publication rejection and reuse,
+publication now rejects with a cache error instead of returning an absent entry.
+Commit `3f4cb12020` covers parsed primitive and array values,
+stable miss identity,
+that removal boundary,
+and publication recovery after the rejection.
+The initial focused formatter reported ten warnings and one missing return-type error;
+`6b0be39a70` documents helper exports,
+names fixed bounds,
+and adds the disposer return type.
+The rebuilt store,
+refresh,
+and domain consumers pass in
+`${HOME}/temp/agent/pi-native-typed-store-consumer-20261015.log`.
+That run's package type check found `TS9010` and `TS9013` on the fixed question export;
+`e88603cef2` adds its explicit contract.
+Type checking then passes in
+`${HOME}/temp/agent/pi-native-typed-store-types-20261015.log`.
+The typed definition,
+store,
+filesystem admission,
+contracts,
+and store consumer tests pass focused lint with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-store-final-format-20261015.log`.
+The final native artifact is rebuilt in
+`${HOME}/temp/agent/pi-native-typed-store-final-build-20261015.log`.
+Removing the new publication guard through a process-local load hook makes the committed removal test fail;
+the artifact hash stays unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-store-publication-omission.json`
+retains that result.
+The complete maintained lint recount covers 521 files and 486 rules:
+zero errors and 13583 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-store-lint-20261015.log`.
+Commits `1e54dbf7d6`,
+`fbebc54443`,
+`65ccb967e6`,
+and `6fa1a6dce3` type the relevance refresh owner,
+materialized rule keys,
+untrusted answer admission,
+and source-bound publication work.
+The original `cache.mjs` is now `cache.ts` as of 2026-10-15.
+The completion handle is still registered before injected callbacks can recursively refresh.
+The final source and cancellation checks still precede synchronous owner publication without a yield.
+Commit `1f81821698` captures the original caller signal once and excludes later caller-option changes.
+Focused formatting of the typed refresh sources passes with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-refresh-format-20261015.log`.
+Commit `aba3229861` extends built consumers with complete malformed-answer membership,
+no partial publication,
+retained failed-job identity,
+ordered original work and reporting failures,
+single signal capture,
+and source replacement or cancellation during classification and final view preparation.
+The rebuilt store,
+refresh,
+domain,
+semantic-policy,
+manual-review,
+source-freshness,
+and package type sequence passes in
+`${HOME}/temp/agent/pi-native-typed-refresh-consumer-20261015.log`.
+The expanded fixture and consumer tests also pass focused lint with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-refresh-fixture-format-20261015.log`.
+Process-local omissions of the final source check,
+final cancellation check,
+or complete answer admission each make the committed consumers fail.
+The original built refresh hash is unchanged;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-refresh-omissions.json`
+retains those results.
+The complete maintained lint recount covers 524 files and 486 rules:
+zero errors and 13465 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-refresh-lint-20261015.log`.
+Commit `dcd7a9c176` types fixed-question answer admission and its error category.
+The original `selection-values.mjs` and `selection-error.mjs` are now
+`selection-values.ts` and `selection-error.ts` as of 2026-10-15.
+The reader retains scalar bounds,
+original choice-object identity,
+distribution freezing without normalization,
+and descriptor-based serving-model attribution.
+Commit `6e65184e92` adds built consumers for valid and rejected answers;
+`3b774e9be8` corrects their callback signatures to the harness's asynchronous contract.
+The fixture now describes its consumer contract independently of maintained source imports,
+because the artifact-import lint rule also rejects source imports used only for types.
+The rebuilt answer,
+request-claim,
+domain,
+semantic-policy,
+manual-review,
+and package type sequence passes in
+`${HOME}/temp/agent/pi-native-typed-answers-consumer-20261015.log`.
+The original and built typed readers match values,
+diagnostic fields,
+freezing,
+and retained choice identity across 59 cases.
+A changed-choice control changes success to rejection;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-answer-comparison.json`
+records the artifact hashes and cases.
+Process-local omissions of the serving-model byte bound,
+complete distribution check,
+and scalar upper bound each make the committed consumers fail.
+The built artifact remains unchanged;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-answer-omissions.json`
+records those controls.
+Final focused formatting reports no diagnostics in the typed readers or answer tests;
+the independent fixture correction also passes with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-answers-fixture-format-20261015.log`.
+The full maintained lint recount covers 528 files and 486 rules:
+zero errors and 13357 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-answers-lint-20261015.log`.
+Warnings still fail the strict package gate.
+Commit `52d3470048` types fixed question-definition catalog admission;
+`selection-definitions.mjs` is now `selection-definitions.ts` as of 2026-10-15.
+Commits `d5adb29fd4` and `e77dbd1a86` retain scalar-specific rubric keys
+and freeze each admitted predicate through its original kind.
+The original byte digest,
+catalog limits,
+diagnostics,
+definition order,
+scalar rubric order,
+and independent per-definition identity indexes remain explicit contracts.
+Commit `59a3c7d809` adds built consumer coverage for those contracts and rejected catalog shapes.
+The typed catalog and contracts pass focused lint with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-definitions-format-20261015.log`;
+the new catalog consumer tests also pass with zero diagnostics in
+`${HOME}/temp/agent/pi-native-typed-definitions-tests-format-20261015.log`.
+The rebuilt catalog,
+answer-value,
+request-claim,
+domain,
+and package type sequence passes in
+`${HOME}/temp/agent/pi-native-typed-definitions-consumer-20261015.log`.
+The original and built typed catalog readers match across 33 cases,
+including definition values and order,
+criteria order and freezing,
+independent identity indexes,
+original diagnostics,
+and parse-error cause categories.
+A changed digest changes success to rejection;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-definition-comparison.json`
+retains the comparison and artifact hashes.
+Omitting the pinned-byte rejection,
+definition-count rejection,
+or choice-option-count rejection makes the committed consumer tests fail.
+The built artifact remains unchanged;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-definition-omissions.json`
+retains those controls.
+The full maintained lint recount covers 530 files and 486 rules:
+zero errors and 13328 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-definitions-lint-20261015.log`.
+The warning gate remains open.
+Before continuing native type cleanup,
+revisit the documented direct generated-manager and generated-SDK bootstrap cycle,
+which earlier fixtures bypassed by entering through the maintained policy module.
+The current built manager reproduces the same initialization failure on Node 26.11.1:
+`reproduce-direct-manager-import` in `${HOME}/temp/agent/pi-tool-call-scope-20261014`
+exits with `ReferenceError: Cannot access 'SessionManager' before initialization`
+at `native-host/host.ts:160`,
+called by `native-host/bootstrap.ts:236`.
+`${HOME}/temp/agent/pi-native-direct-manager-import-before-20261015.log`
+retains the exact diagnostic.
+The standalone probe asserts callable manager exports after import,
+so it currently fails before reaching those assertions.
+Commit `bdee84f697` adds committed fresh-process regressions for both generated entry orders.
+Both fail with the same manager initialization diagnostic in
+`${HOME}/temp/agent/pi-native-direct-import-regression-before-20261015.log`.
+Commit `63be621a7d` separates the native policy entry from extension initialization.
+The existing bundler emits both entries together so shared policy identities remain common,
+and the native generator selects the package's `./native-policy` export.
+This removes the extension SDK import from the intended native policy dependency graph;
+the built import regressions and complete native host lifecycle checks now pass.
+Host construction and its original method capture remain unchanged.
+The checks also compare every native policy export with the extension's export by identity,
+and exercise manager constructors,
+CLI RPC state and clean shutdown,
+serializer controls,
+domain contrasts,
+and authored approval decisions without provider requests.
+`${HOME}/temp/agent/pi-native-policy-entry-consumers-20261015.log` retains the completed consumer results.
+Its final type check failed with `TS9037` because the config default export lacked an explicit type.
+Commit `6ddeaef3eb` adds that type and removes both policy-preload fixture workarounds.
+The rebuilt direct-import identity,
+publication,
+domain,
+and package type checks pass without either preload in
+`${HOME}/temp/agent/pi-native-policy-unordered-consumers-20261015.log`.
+The original standalone manager probe now passes in
+`${HOME}/temp/agent/pi-native-direct-manager-import-after-20261015.log`.
+The native policy entry,
+generator,
+declarations,
+regression,
+and build config have zero errors and one `tsdoc(multiline-blocks)` warning in
+`${HOME}/temp/agent/pi-native-policy-entry-final-lint-20261015.log`.
+The added config comment needs multiline formatting;
+the earlier zero-warning statement in `12a4a8a00c` was incorrect.
+Commit `6701c3937d` expands that comment.
+The repeated focused lint now passes with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-policy-entry-clean-lint-20261015.log`.
+The full maintained recount before that comment correction covers 532 files and 486 rules:
+zero errors and 13325 warnings in
+`${HOME}/temp/agent/pi-maintained-policy-entry-lint-20261015.log`.
+The direct generated import cycle is resolved;
+continue the remaining native type cleanup at question settlement and selection.
+Commit `2012634ade` ports question settlement to TypeScript and separates complete answer decoding
+from original claim publication.
+Commit `64d3775711` adds built-consumer checks for original answer identity,
+complete membership,
+malformed responses,
+UTF-8 bounds,
+model attribution,
+and predecode/postdecode lifecycle failure.
+The first focused lint exposed explicit nullish unions in the original absent-valued fields.
+Commit `e4b1d58d52` changes missing raw diagnostics and private initial answer/record fields to optional properties.
+This is an explicit record-shape change:
+`raw` is absent when no bounded raw string is retained,
+and initial private claims and batches omit their absent `answer` and `record` fields.
+Original thrown failure values still occupy the `failure` field.
+The public inspection methods continue to expose their existing answer and record projections.
+The direct `discard` owner also omits absent raw text.
+The rebuilt settlement consumers,
+request claims,
+domain contrasts,
+authored approvals,
+and package type check pass in
+`${HOME}/temp/agent/pi-native-typed-settlement-consumer-20261015.log`.
+The old and new settlement implementations agree across 37 authored cases on returned answer values,
+original errors,
+freeze state,
+claim-to-answer identity,
+and terminal transitions,
+with the documented absent-property change checked separately.
+A changed-estimate positive control proves the comparison observes answer differences.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-settlement-comparison.json`
+retains that comparison and artifact hashes.
+The added extra-answer and object-backed-array cases pass focused formatting without diagnostics.
+The final settlement consumer and type check pass in
+`${HOME}/temp/agent/pi-native-typed-settlement-final-controls-20261015.log`.
+Removing the final budget checkpoint,
+current-binding check,
+answer membership rejection,
+model-attribution rejection,
+or raw byte bound makes the committed tests fail.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-settlement-omissions.json`
+records those process-local controls and unchanged artifact hashes.
+The full maintained lint recount covers 536 files and 486 rules:
+zero errors and 13258 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-settlement-lint-20261015.log`.
+All settlement implementation and consumer files have zero diagnostics in that report.
+The remaining warning gate is still open;
+the next boundary is the original question-selection owner in `selection.mjs`.
+Commits `0a7ae510e6`,
+`1c0bca211a`,
+`8c7922a5b8`,
+and `1a66229fc5` port that owner to typed ownership,
+declaration,
+issuance,
+inspection,
+and evidence modules while preserving the original entry path.
+The first focused check found an overlapping owner callback type that hid complete batch fields;
+`a42e76330f` replaces the inherited callback type explicitly.
+The rebuilt public selection consumers pass in
+`${HOME}/temp/agent/pi-native-selection-owner-tests-20261015.log`;
+the package type check passes in
+`${HOME}/temp/agent/pi-native-selection-owner-types-20261015.log`.
+The committed tests cover canonical claim and evidence identity,
+terminal failure retention,
+foreign handles,
+ordinary dense selection arrays,
+original resolver identity,
+reentry recovery,
+declaration and batch caps,
+the exact four MiB UTF-8 request boundary,
+and the distinction between retained diagnostics and current evidence.
+Formatting and descriptor-admission corrections are complete through `6b47e03aa8`.
+The focused lint reports zero diagnostics across all 12 selection source and consumer files in
+`${HOME}/temp/agent/pi-native-selection-owner-final-lint-20261015.log`.
+The saved original owner passes the same committed consumer tests through a process-local entry replacement in
+`${HOME}/temp/agent/pi-native-selection-owner-baseline-tests-20261015.log`.
+The old and new owners agree across 19 authored lifecycle scenarios on values,
+errors,
+checkpoint and resolver counts,
+freeze state,
+and retained identities.
+Both use the same already-qualified catalog and settlement helpers;
+the comparison isolates the selection-owner port.
+A changed-estimate positive control proves that comparison observes answer differences.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-selection-owner-comparison.json`
+retains the comparison and artifact hashes.
+The rebuilt selection and settlement consumers,
+request claims,
+domain contrasts,
+authored manual approvals,
+and package type check pass in
+`${HOME}/temp/agent/pi-native-typed-selection-consumers-20261015.log`.
+Removing reentry,
+binding currentness,
+canonical binding-record identity,
+final issuance lifetime,
+declaration count,
+batch count,
+wire bytes,
+ordinary-array admission,
+descriptor membership,
+canonical claim evidence,
+or canonical batch evidence guards makes the committed tests fail.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-selection-omissions.json`
+records all 11 process-local omissions and unchanged artifact hashes.
+The maintained lint recount covers 547 files and 486 rules:
+zero errors and 13007 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-selection-lint-20261015.log`.
+All selection source and consumer files have zero diagnostics in that full report.
+The warning gate remains open;
+continue typing the original judgment consumers and their retained owner boundaries.
+The next port is original governing-rule binding and source-set ownership.
+Commits `feefb247f9`,
+`f22e014e5d`,
+`ab39c3a8a6`,
+and `8bef59cdd6` introduce typed source projections,
+structural indexing,
+candidate capture,
+heading retention,
+and per-source/set lifetime operations behind the unchanged original entry paths.
+The first focused binding check has zero errors and four formatting warnings.
+The expanded set check identified callback type loss after `Array.isArray` narrowing;
+the occurrence callback now explicitly retains the original source type.
+The built consumer checks cover exact source intervals and digests,
+native JSON representation,
+permanent invalidation,
+duplicate source-code ambiguity,
+and original source/clause limits.
+Their rebuild and broader consumer verification pass in
+`${HOME}/temp/agent/pi-native-governing-bindings-consumers-20261015.log`.
+An added constructor-category regression in `8cd0103039` then exposed a porting error:
+the new error class's literal name replaced the original derived-constructor category.
+The committed consumer fails with `AssertionError [ERR_ASSERTION]`,
+actual `GoverningRuleBindingError` versus expected `TypeError`,
+in `${HOME}/temp/agent/pi-native-governing-error-category-before-20261015.log`.
+The saved original binding and set implementations pass the same complete consumer tests in
+`${HOME}/temp/agent/pi-native-governing-baseline-consumers-20261015.log`.
+The attempt to retain constructor-derived naming in `55ebbbcda2`
+then triggered `unicorn(custom-error-definition)`.
+The installed Oxlint 1.88.0 source explicitly requires a literal class name for minification stability.
+The owner adopts a stable `GoverningRuleBindingError` operation category as an explicit unpublished design change;
+derived construction no longer supplies the category automatically.
+The current consumer asserts that deliberate difference while preserving original message and cause identity.
+No lint rule or suppression changed.
+The [source-audited troubleshooting entry](../troubleshooting/oxlint-custom-error-name.md)
+records the deciding source,
+failing and passing forms,
+and rejected preservation attempt.
+All 14 governing-source implementation and consumer files now have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-native-governing-bindings-final-lint-20261015.log`.
+The final rebuild,
+constructor-contract consumer verification,
+and package type check pass in
+`${HOME}/temp/agent/pi-native-governing-bindings-final-consumers-20261015.log`.
+The saved baseline and typed implementation agree across 15 binding cases and 11 source-set cases on values,
+errors,
+reader/parser call counts,
+freeze state,
+and retained identities.
+A changed-source positive control demonstrates the comparison observes changed output.
+The deliberate derived-error category change is checked separately.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-governing-comparison.json`
+retains the comparison and source/artifact hashes.
+Removing source identity,
+permanent source invalidation,
+digest agreement,
+per-source clause count,
+final construction currentness,
+source-list identity,
+permanent set retirement,
+unique source occurrence,
+source-list count,
+combined clause count,
+or duplicate-code ambiguity guards makes the committed consumers fail.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-governing-omissions.json`
+records all 11 process-local controls and unchanged built artifact hashes.
+The complete maintained lint report covers 559 files and 486 rules:
+zero errors and 12834 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-governing-lint-20261015.log`.
+The structured report independently confirms zero diagnostics in all 14 migrated source and consumer files:
+`${HOME}/temp/agent/pi-maintained-typed-governing-json-lint-20261015.log`.
+Native source-input location serialization used by policy request construction is the next typed boundary.
+Commits `71200e9fc7`,
+`97de715341`,
+and `6dad42e12c` preserve ordinary-record admission,
+exact native slot shapes,
+and original property-read ordering behind the existing entry path.
+The error category follows the documented stable-name design decision.
+The first focused check rejected a switch and a positional function declaration;
+the owner now retains the original ordered branch checks and an inline sorting callback.
+`ed4316f871` adds built consumers for every native slot,
+missing and hidden properties,
+accessor rejection,
+safe ordinal boundaries,
+fresh copies,
+and opaque companion strings.
+The focused report has zero diagnostics across all nine source and consumer files in
+`${HOME}/temp/agent/pi-native-input-location-format-third-20261015.log`.
+The rebuilt consumers,
+request claims,
+domain contrasts,
+authored manual approval paths,
+and package type check pass in
+`${HOME}/temp/agent/pi-native-input-location-consumers-20261015.log`.
+The saved original implementation also passes the consumer suite,
+with only the derived-error category assertion adapted to its explicit historical behavior,
+in `${HOME}/temp/agent/pi-native-input-location-baseline-20261015.log`.
+The baseline and typed implementation agree across 360 authored cases on copied values,
+errors,
+descriptor events,
+property-read order,
+and freeze state.
+The changed-value positive control distinguishes a different original named-text slot value.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-input-location-comparison.json`
+retains the comparison and artifact hashes.
+`77854a77ff` adds null-source and disappearing-proxy-descriptor controls.
+Their final rebuild,
+consumer tests,
+and package type check pass in
+`${HOME}/temp/agent/pi-native-input-location-final-consumers-20261015.log`.
+The expanded baseline suite passes in
+`${HOME}/temp/agent/pi-native-input-location-baseline-expanded-20261015.log`.
+All 15 process-local omissions of descriptor,
+record,
+key,
+slot-shape,
+supported-field,
+safe-integer,
+and nonnegative-ordinal guards fail the committed consumers.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-input-location-omissions.json`
+records those controls and unchanged artifact hashes.
+The maintained lint recount covers 567 files and 486 rules:
+zero errors and 12751 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-input-location-lint-20261015.log`.
+All nine input-position source and consumer files have zero diagnostics in that full report.
+`e813dc328c` moves original judgment input admission behind typed JSON and construction-error owners.
+`cd9ff435c0` and `6e2d274a47` add consumer coverage for preserved values,
+undefined and lossy numeric values,
+array holes,
+native cyclic and bigint errors,
+callback ordering,
+and original cause identity.
+The checker retains its limited role after structural admission;
+it does not become a general validator for callable or symbol values.
+All four source and consumer files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-native-judgment-input-verified-lint-20261015.log`.
+The owned rebuild,
+new consumers,
+request claims,
+domain contrasts,
+and type check pass in
+`${HOME}/temp/agent/pi-native-judgment-input-consumers-20261015.log`.
+The original implementation passes the same consumer suite with its historical derived-error name assertion in
+`${HOME}/temp/agent/pi-native-judgment-input-baseline-20261015.log`.
+The saved original and typed implementations agree across 54 cases on values,
+errors,
+and callback events;
+a negative-zero positive control distinguishes rejected and admitted numeric input.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-judgment-input-comparison.json`
+retains that evidence and artifact hashes.
+Removing missing-value,
+nonfinite-number,
+or negative-zero checks fails the committed tests;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-judgment-input-omissions.json`
+records the controls and unchanged artifact hashes.
+The complete maintained lint recount covers 570 files and 486 rules:
+zero errors and 12726 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-judgment-input-lint-20261015.log`.
+All four judgment-input source and consumer files have zero diagnostics in that full report.
+Instruction-claim construction now routes through the typed owner in `4eba8033e8`.
+`deabf144fd` separates structural adoption selection from later member authentication in its types;
+authority-consuming types retain their authenticated-object defaults.
+`be7a0a8e34` and `dde93c7164` retain original source selection,
+canonical clause/request/member handles,
+and dependency resolution.
+`e8c613b9cf` preserves original bootstrap property reads once in their incumbent order.
+The constructor-read control also verifies that construction does not invoke lazy capabilities.
+Built source,
+member,
+request,
+and batch consumers pass after the owned rebuild;
+package type checking passes in
+`${HOME}/temp/agent/pi-instruction-consumers-second-20261015.log`.
+The existing whole-request consumer and native permission,
+prohibition,
+and unspecified-policy cases passed in the preceding broad consumer run.
+The source and bridge format pass covers 13 files with zero diagnostics in
+`${HOME}/temp/agent/pi-instruction-format-fourth-20261015.log`.
+All five independent consumer files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-instruction-tests-final-lint-20261015.log`.
+The saved original remains
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/judgment-instructions-before-types.mjs`,
+with SHA-256 `202e8affd3aedada221270f4c8d5b4ac9f91844dec57cb32fa53107910db4559`.
+All three committed instruction consumer suites also pass against the saved original implementation in
+`${HOME}/temp/agent/pi-instruction-baseline-20261015.log`.
+A process-local request-identity guard omission makes the built consumer fail its expected rejection assertion in
+`${HOME}/temp/agent/pi-instruction-positive-control-20261015.log`;
+the test reaches the changed instruction resolver.
+The saved original and built typed owners match across 412 observed calls in six scenarios,
+including object identity,
+own keys,
+frozen state,
+errors,
+and callback order.
+Replacing the request occurrence distinguishes the trace as a positive control.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-instruction-comparison.json`
+records that comparison.
+All 25 process-local guard controls fail committed consumers;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-instruction-omissions.json`
+records the omitted guards and unchanged built-artifact hashes.
+The failed-publication control causes the recovery consumer to reject the prematurely retained handle;
+the other controls fail assertion expectations.
+These controls cover observable admission,
+identity,
+retirement,
+publication,
+segment,
+and batch limits;
+they do not establish reachability of every redundant internal projection-identity check.
+Whole-request,
+domain,
+manual-review,
+structural adoption,
+and adoption-consumption tests pass in
+`${HOME}/temp/agent/pi-instruction-broad-20261015.log`.
+The complete maintained lint recount covers 585 files and 486 rules:
+zero errors and 12269 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-instruction-lint-20261015.log`.
+All 18 implementation,
+bridge,
+and consumer files touched by this port have zero diagnostics in that full report.
+The instruction-owner port is qualified.
+Original program ownership in `judgment-programs.mjs` (547 warnings in that report)
+now routes through typed owner modules in `d14153d57f`.
+`0dce710cd3` retains declaration and native return contracts;
+`bc985d13f4`,
+`db749fa089`,
+and `362f24ef07` separate custody,
+opening,
+reached groups,
+native calls,
+value access,
+and retained inspection.
+The original source is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/judgment-programs-before-types.mjs`,
+with SHA-256 `3744591589d89ba1aa3586b10cea037374310a9f9b177d4b24a225f3bbe67b83`.
+The operation contracts compile in
+`${HOME}/temp/agent/pi-program-owner-types-second-20261015.log`.
+`722dae4094` prevents native array admission from widening already declared elements to `any`.
+The native README records the scoped nullish-return alias for the original `preparedProgramFor` API;
+no lint configuration was loosened.
+Private uninitialized record slots now begin absent;
+public retained inspection still includes its original undefined-valued fields.
+Focused lint completion,
+rebuilt native consumers,
+independent owner tests,
+original-baseline comparison,
+and guard controls remain required before qualifying program ownership.
+Then continue `child-constructor.mjs` (471 warnings in the instruction-port report),
+preserving existing behavior and consumer boundaries.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

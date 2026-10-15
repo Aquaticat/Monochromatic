@@ -591,6 +591,7 @@ The main checkout's `.claude/settings.json` has no hit;
 - `.github/workflows/cli-git-performance.yml` is deleted (install branch),
    with the performance harness;
    `perf/*.json` stays.
+- (Removed on 2026-10-14 at the owner's request, together with `package/git-policy/cli/bin/final-newline-workflow.mjs`: the check rebuilt the wrapper on every pull request.)
 - `.github/workflows/final-newline.yml` builds the crate from the checkout (`cargo build --release --locked`) and runs
   `package/git-policy/cli/bin/final-newline-workflow.mjs <executable>`,
   which clones the checkout,

@@ -237,7 +237,7 @@ fn landing_refusals_name_the_field() {
         },
         pack_name: None,
         added_paths: vec![AddedPath {
-            path: String::from("p"),
+            path: b"p".to_vec(),
             git_mode: String::from("100755"),
             original_oid: String::from("o"),
             intended_oid: String::from("i"),

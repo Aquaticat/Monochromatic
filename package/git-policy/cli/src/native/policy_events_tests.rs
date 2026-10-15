@@ -421,7 +421,7 @@ fn concurrent_commit_events_have_the_incumbent_shape() {
         },
         PolicyEvent::ReplayConflict {
             target_ref: String::from("refs/heads/main"),
-            paths: vec![String::from("a.txt"), String::from("b.txt")],
+            paths: vec![EventPath::from_git_bytes(b"a.txt"), EventPath::from_git_bytes(b"b.txt")],
             winning_oid: String::from("w"),
             prepared_oid: String::from("p"),
         },
@@ -443,4 +443,29 @@ fn concurrent_commit_events_have_the_incumbent_shape() {
     for event in &events[..6] {
         assert!(!event_blocks(event), "{event:?}");
     }
+}
+
+/// A replay conflict that names a file whose name is not UTF-8 lists every readable name in `paths`,
+///  then the exact bytes of every path in `pathsBytes`,
+///  and a conflict over UTF-8 names only has no such list.
+#[test]
+fn a_replay_conflict_over_a_name_that_is_not_utf8_adds_paths_bytes() {
+    let conflict = |paths: Vec<EventPath>| -> PolicyEvent {
+        return PolicyEvent::ReplayConflict {
+            target_ref: String::from("refs/heads/main"),
+            paths,
+            winning_oid: String::from("w"),
+            prepared_oid: String::from("p"),
+        };
+    };
+    assert_eq!(
+        render_policy_event(
+            0,
+            &conflict(vec![EventPath::from_git_bytes(b"a.txt"), EventPath::from_git_bytes(b"caf\xe9.txt")])
+        ),
+        "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"core-finding\",\"trigger\":\"pre-forward\",\"coreId\":\"concurrent-commit\",\"code\":\"concurrent-commit/replay-conflict\",\"message\":\"refs/heads/main moved while this commit was prepared, and replaying it conflicts with w in a.txt, caf\u{fffd}.txt; nothing landed. The prepared commit p stays in the object store until gc expires it: resolve with git cherry-pick p.\",\"paths\":[\"a.txt\",\"caf\u{fffd}.txt\"],\"pathsBytes\":[\"YS50eHQ=\",\"Y2Fm6S50eHQ=\"],\"winningOid\":\"w\",\"preparedOid\":\"p\"}\n"
+    );
+    let utf8: String = render_policy_event(0, &conflict(vec![EventPath::from_git_bytes("café.txt".as_bytes())]));
+    assert!(utf8.contains(",\"paths\":[\"café.txt\"],\"winningOid\""), "{utf8}");
+    assert!(!utf8.contains("Bytes"), "{utf8}");
 }

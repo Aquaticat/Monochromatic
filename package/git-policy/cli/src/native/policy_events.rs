@@ -217,8 +217,8 @@ pub enum PolicyEvent {
     ReplayConflict {
         /// The target ref the commit aimed at.
         target_ref: String,
-        /// The conflicting paths in Git path byte order.
-        paths: Vec<String>,
+        /// The conflicting paths in Git path byte order, as the exact bytes Git reported.
+        paths: Vec<EventPath>,
         /// The earliest target commit touching a conflicting path.
         winning_oid: String,
         /// The prepared commit kept for cherry-picking.
@@ -445,9 +445,9 @@ fn path_bytes(path: &EventPath) -> String {
 }
 
 /// What:
-///  Append `,"changedPaths":[...]` and,
+///  Append a list of paths as `,"<text_key>":[...]` and,
 ///  when any of them is not UTF-8,
-///       `,"changedPathBytes":[...]` with one base64 entry per path.
+///       `,"<bytes_key>":[...]` with one base64 entry per path.
 /// Why:
 ///   An array cannot hold an absent entry without JSON `null`,
 ///  which events never
@@ -458,15 +458,13 @@ fn path_bytes(path: &EventPath) -> String {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// line.changedPaths = paths.map(p => p.text); if (paths.some(p => p.exact)) line.changedPathBytes = paths.map(p => base64(p.bytes));
+/// line[textKey] = paths.map(p => p.text); if (paths.some(p => p.exact)) line[bytesKey] = paths.map(p => base64(p.bytes));
 /// ```
-fn push_changed_paths(line: &mut String, paths: &[EventPath]) {
-    line.push_str(format!(",\"changedPaths\":{}", path_array(paths, path_text)).as_str());
+fn push_path_list(line: &mut String, text_key: &str, bytes_key: &str, paths: &[EventPath]) {
+    line.push_str(format!(",\"{text_key}\":{}", path_array(paths, path_text)).as_str());
     for path in paths {
         if path.exact().is_some() {
-            line.push_str(
-                format!(",\"changedPathBytes\":{}", path_array(paths, path_bytes)).as_str(),
-            );
+            line.push_str(format!(",\"{bytes_key}\":{}", path_array(paths, path_bytes)).as_str());
             return;
         }
     }
@@ -566,7 +564,7 @@ pub fn render_policy_event(sequence: u64, event: &PolicyEvent) -> String {
         } => {
             push_text_field(&mut line, "trigger", trigger_name(*trigger));
             line.push_str(format!(",\"passes\":{passes}").as_str());
-            push_changed_paths(&mut line, changed_paths.as_slice());
+            push_path_list(&mut line, "changedPaths", "changedPathBytes", changed_paths.as_slice());
         }
         PolicyEvent::CommitLanded { oid } => {
             push_text_field(&mut line, "oid", oid);
@@ -631,11 +629,11 @@ pub fn render_policy_event(sequence: u64, event: &PolicyEvent) -> String {
                 "message",
                 format!(
                     "{target_ref} moved while this commit was prepared, and replaying it conflicts with {winning_oid} in {}; nothing landed. The prepared commit {prepared_oid} stays in the object store until gc expires it: resolve with git cherry-pick {prepared_oid}.",
-                    paths.join(", ")
+                    paths.iter().map(EventPath::text).collect::<Vec<&str>>().join(", ")
                 )
                 .as_str(),
             );
-            line.push_str(format!(",\"paths\":{}", string_array(paths.as_slice())).as_str());
+            push_path_list(&mut line, "paths", "pathsBytes", paths.as_slice());
             push_text_field(&mut line, "winningOid", winning_oid);
             push_text_field(&mut line, "preparedOid", prepared_oid);
         }

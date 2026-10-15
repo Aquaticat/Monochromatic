@@ -2,6 +2,7 @@
 //! the hook's environment and status, and the failures before the hook starts.
 
 use super::*;
+use crate::owner_lock::{DEFAULT_POLL_DELAY, SilentWait, acquire_owner_lock};
 use crate::hook_dispatch_plan::ConfigParameters;
 use crate::test_support::{executable, fixture, git_context, git_text, remove, repository};
 use std::path::PathBuf;

@@ -674,13 +674,15 @@ fn added_raw_from_ls_tree(output: &[u8]) -> Result<Vec<u8>, CandidateError> {
             return !record.is_empty();
         })
     {
-        let text = String::from_utf8_lossy(record);
-        let Some((metadata, path)) = text.split_once('\t') else {
+        let Some(tab) = record.iter().position(|byte| { return *byte == b'\t'; }) else {
             return Err(CandidateError::new(
                 super::candidate_error::CandidateFailure::ListingMalformed,
                 "cli-git could not list the pushed tree: an entry lacks its path separator.",
             ));
         };
+        // The mode, type and object name are ASCII; the path stays the exact bytes Git printed.
+        let metadata = String::from_utf8_lossy(&record[..tab]);
+        let path: &[u8] = &record[tab + 1..];
         let fields: Vec<&str> = metadata.split(' ').collect();
         if fields.len() != 3 {
             return Err(CandidateError::new(
@@ -694,7 +696,7 @@ fn added_raw_from_ls_tree(output: &[u8]) -> Result<Vec<u8>, CandidateError> {
         let zeros = "0".repeat(fields[2].len());
         raw.extend_from_slice(format!(":000000 {} {zeros} {} A", fields[0], fields[2]).as_bytes());
         raw.push(0);
-        raw.extend_from_slice(path.as_bytes());
+        raw.extend_from_slice(path);
         raw.push(0);
     }
     return Ok(raw);

@@ -22,6 +22,7 @@ use super::worktree_copy_journal::{
 use super::worktree_copy_manifest::{WorktreeCopyEntry, collect_entry_manifest};
 use super::worktree_copy_selection::CopySelection;
 use super::worktree_copy_stage::{StagedSnapshot, stage_ignored_snapshot};
+use super::worktree_copy_stage_claim::{StageClaim, claim_stage};
 use crate::json_record::quote;
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
@@ -261,7 +262,8 @@ pub fn complete_journal(
 /// What:
 ///  Stages, journals and installs the ignored state of one newly created worktree.
 /// Why:
-///   The stage is removed if the journal cannot be created, so no unjournaled stage survives.
+///   The stage is removed if the journal cannot be created, and a process that dies while staging leaves a claim,
+///  so no stage survives without a record that recovery can act on.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -275,22 +277,33 @@ pub fn synchronize_created_worktree(
     registered_roots: &[PathBuf],
     selection: &CopySelection,
 ) -> Result<usize, WorktreeCopyError> {
-    let snapshot: StagedSnapshot = stage_ignored_snapshot(
+    let claim: StageClaim = claim_stage(common_dir, destination_root)?;
+    // `match` on staging: a failure has already removed its container, so only the claim is left to release.
+    let snapshot: StagedSnapshot = match stage_ignored_snapshot(
         context,
         source_root,
-        destination_root,
+        claim.container(),
         registered_roots,
         selection,
-    )?;
+    ) {
+        Ok(snapshot) => snapshot,
+        Err(error) => {
+            claim.release()?;
+            return Err(error);
+        }
+    };
     let pending: PendingJournal = match create_journal(common_dir, destination_root, &snapshot) {
         Ok(pending) => pending,
         Err(error) => {
             // A failed removal replaces the journal failure, as the incumbent's cleanup throws its own error there.
             std::fs::remove_dir_all(snapshot.stage_container.as_path())
                 .map_err(|removal| return raw_failure(&removal))?;
+            claim.release()?;
             return Err(error);
         }
     };
+    // The journal names the stage from here on, so the claim has done its work.
+    claim.release()?;
     let staged: StagedSnapshot = snapshot.clone();
     let outcome: Outcome = complete_journal(pending, &|_intended| return Ok(staged.clone()))?;
     return match outcome {

@@ -414,9 +414,15 @@ Installation cost therefore grows linearly with the entry count.
 A trailing log fragment without a line terminator is an unfinished append;
 recovery ignores it and truncates it before appending.
 A completion phase makes stage removal and journal removal recoverable in either crash order.
+Staging takes minutes and gigabytes, and the journal is written only after it,
+so the stage's name is recorded first:
+a claim file `<id>.stage` beside the journals names the stage container before the container is created,
+with the same temporary file, synchronization and rename as a journal write.
+The claim is removed once a journal names the stage, or once a failed copy has removed the stage.
 A process-birth-identity lock serializes installation and recovery.
-An applicable source waits for an owner proven alive without a time limit,
-after writing one stderr line naming the owner's PID and the lock;
+An applicable source waits for an owner proven alive for at most `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800),
+after writing one stderr line naming the owner's PID and the lock,
+and then fails naming the owner, leaving the lock in place;
 while that owner lives the waiter only reads the owner record,
 and it attempts publication again once the owner releases,
 replaces,
@@ -430,9 +436,9 @@ then fails with a diagnostic listing that evidence and leaves the lock in place.
 The lock is released and retired by renaming it to a unique name before deleting it,
 so a concurrent publication is never emptied in place.
 
-Every later linked-worktree or bare-repository invocation checks for pending journals before forwarding
+Every later linked-worktree or bare-repository invocation checks for pending journals and stage claims before forwarding
 without taking the settlement lock,
-and takes it only to recover when a pending journal exists.
+and takes it only to recover when one exists.
 An invocation that neither creates nor moves worktrees does not wait for the lock:
 while another live process owns it,
 that owner is still writing its own journal or already recovering,
@@ -461,8 +467,19 @@ Every pending transaction then reaches an end:
   and the recovering invocation writes the failure as a notice and continues.
 - Completed cleanup is resumed without reinstalling entries.
 
+After the journals, recovery removes every stage container that a claim names and no pending journal names:
+the lock proves that no live copy is between claiming and journaling,
+so a copy that died while staging (a signal, the out-of-memory killer, a power loss) left it.
+Recovery requires the claim to be a private file naming an absolute path whose last component starts with the reserved
+stage prefix, and the container to be a private directory owned by the user,
+removes it with its read-only subdirectories,
+writes one notice line naming it,
+and removes the claim.
+A claim whose container was never created is removed without a notice.
+
 Malformed or unsafe journal,
 install-log,
+stage claim,
 or stage state fails closed without deleting the journal or a path outside the validated private stage.
 
 After all newly registered destinations settle successfully,
@@ -553,6 +570,35 @@ and distinct on case-insensitive filesystems.
   and the child's later update of an older tip left the remote at the takeover tip.
   A takeover push that races the child on the remote ref can fail,
   and it is then surfaced like any other failed push.
+- No step of auto-push waits without a bound.
+  The push runs under a deadline,
+  `CLI_GIT_PUSH_DEADLINE_SECONDS` whole seconds,
+  600 by default;
+  a zero,
+  negative,
+  fractional or non-numeric value is ignored.
+  Past the deadline the push is asked to end,
+  killed after a five second grace,
+  and recorded as a failed attempt with exit code 124 whose output ends with a line naming the deadline.
+  The commit stays saved and the exit contract below holds.
+  Git's low-speed abort is added to the push's environment
+  (`GIT_HTTP_LOW_SPEED_LIMIT=1000`, `GIT_HTTP_LOW_SPEED_TIME=60`)
+  for each variable the invocation's environment does not set,
+  which also overrides `http.lowSpeedLimit` and `http.lowSpeedTime` from Git configuration.
+  Each read-only Git query before the push
+  (`rev-parse`,
+  `remote get-url`,
+  `symbolic-ref`,
+  `merge-base`)
+  stops at the push deadline or 120 seconds,
+  whichever is shorter,
+  and a stopped query is a coordination failure that names it.
+- A waiter gives up on the lock after the push deadline plus the grace plus 60 seconds,
+  or after `CLI_GIT_PUSH_LOCK_WAIT_SECONDS` when that is set.
+  It never takes a live holder's lock.
+  The commit is reported with the push-failed note and a message naming the lock and the holder's PID.
+  A waiter prints one line naming the pushing process,
+  the branch and the limit as soon as it starts waiting.
 - A joined commit's own `pre-push` hook does not run separately;
   the joined push ran it once for its tip.
 - The existing exit contract holds:
@@ -726,7 +772,19 @@ export type FindingEvent = EventBase & {
 `path` is text.
 A Git pathname that is not valid UTF-8 appears in `path` with each invalid sequence replaced by U+FFFD,
 and `pathBytes` then carries the exact pathname bytes as standard padded base64 (RFC 4648 section 4).
-`pathBytes` is absent whenever `path` is the exact name.
+`pathBytes` is absent whenever `path` is the exact name,
+including a name that holds U+FFFD itself and a name that holds a backslash.
+A reader can therefore rely on this rule:
+when an event has no `pathBytes`, its `path` is the exact name,
+with one exception.
+A finding of `security/forbidden-strings` reports the scanner's masked display of the name in `path`
+(a byte that is not UTF-8 shown as `\xNN`, and a matched segment masked),
+and never has `pathBytes`,
+because the exact bytes would undo the masking.
+Every other event that names a file reports the exact name this way,
+on `git add`, on a commit (landed, blocked, normalized, replayed or recovered), and on direct `check` and `fix`.
+A `message` may also name a file; there the name is readable text with each invalid sequence replaced by U+FFFD,
+and only the `path` fields above carry the exact bytes.
 The retired TypeScript wrapper stopped on such a name and never emitted the field.
 
 `code` is the complete `<policy-id>/<policy-local-code>` value.
@@ -774,6 +832,7 @@ export type CoreFindingEvent = EventBase & {
     | 'concurrent-commit/branch-switched';
   readonly message: string;
   readonly paths?: readonly RepositoryPath[];
+  readonly pathsBytes?: readonly string[];
   readonly winningOid?: GitObjectId;
   readonly preparedOid?: GitObjectId;
 };
@@ -808,6 +867,10 @@ and cannot be disabled or assigned a severity through repository config.
 `paths`,
 `winningOid`,
 and `preparedOid` are present only for `concurrent-commit/replay-conflict`.
+When any conflicting pathname is not valid UTF-8,
+`pathsBytes` lists the base64 bytes of every path in `paths`,
+entry for entry in the same order;
+otherwise it is absent.
 Every `concurrent-commit` finding leaves ref,
 real index,
 and worktree bytes unchanged by cli-git.
@@ -1170,6 +1233,21 @@ files are mode `0600`,
 and every read uses no-follow checks that reject symbolic links,
 non-regular files,
 and unsafe ownership.
+
+A path in a record is the exact pathname bytes.
+Where it is a JSON string,
+a pathname that is not valid UTF-8 is written as its text with each invalid sequence replaced by U+FFFD,
+and the record adds the base64 of the exact bytes beside it:
+`pathBytes` in each object of `addedPaths` and `selectedWorktreePaths`,
+`committedPathBytes` beside `committedPaths`,
+and `selectedPathspecBytes` beside `selectedPathspecs`
+(the list form names every entry once any entry needs it,
+the object form only its own).
+A record whose paths are all valid UTF-8 has none of these fields and is byte for byte what the retired wrapper wrote,
+and a reader treats a missing field as "the text is the exact name".
+A record whose bytes do not read as the text beside them is malformed.
+`captured.json` keeps its own form,
+with every path decoded as Latin-1.
 
 `landing-<n>.json` records the expected old OID,
 the new OID

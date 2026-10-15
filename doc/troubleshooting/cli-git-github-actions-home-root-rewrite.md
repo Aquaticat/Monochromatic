@@ -141,6 +141,9 @@ cli-git already does so in config discovery and trust identity capture.
 
 ### Use a disposable minimal-config clone in CI
 
+Removed on 2026-10-14 at the owner's request, together with `package/git-policy/cli/bin/final-newline-workflow.mjs`: the check rebuilt the wrapper on every pull request.
+The description that follows is the historical design.
+
 `.github/workflows/final-newline.yml` clones the checked-out revision under runner temporary storage,
 writes `export default {};` as `cli-git.config.mjs`,
 trusts it,

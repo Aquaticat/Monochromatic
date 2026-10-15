@@ -14,6 +14,7 @@
 //! ```
 
 /// Raw commit parsing, rewriting, identities, and dropped headers.
+use super::path_bytes::os_from_path_bytes;
 use super::replay_object::{RawCommit, dropped_replay_headers, identity_environment, rewrite_commit_object};
 /// Shadow runs and the raw runner for a merge whose exit status matters.
 use super::replay_shadow::run_shadow_checked;
@@ -46,14 +47,14 @@ pub enum ReplayMerge {
     },
     /// The change conflicts with the target.
     Conflict {
-        /// Conflicting paths in Git path byte order, each once.
-        paths: Vec<String>,
+        /// Conflicting paths in Git path byte order, each once, as the exact bytes Git reported.
+        paths: Vec<Vec<u8>>,
     },
 }
 
 /// What:
 ///  A merge or rebuild failure:
-///       a Git command failed, its output was not UTF-8, or the commit could not be rebuilt.
+///       a Git command failed, or the commit could not be rebuilt.
 /// Why:
 ///   Replay reports each as `transaction-failed`, never as a conflict.
 ///
@@ -65,8 +66,6 @@ pub enum ReplayMerge {
 pub enum ReplayMergeError {
     /// A Git command failed, or `merge-tree` exited above `1`.
     Git(GitFailure),
-    /// The output was not UTF-8 text, so a conflicted path cannot be read as the incumbent reads it.
-    Encoding(String),
     /// The prepared commit could not be rebuilt.
     Rebuild(String),
 }
@@ -105,21 +104,6 @@ pub fn replay_merge_base(
     )
     .map_err(ReplayMergeError::Git)?;
     return Ok(String::from_utf8_lossy(&written.stdout).trim().to_string());
-}
-
-/// What:
-///  Decodes Git output as strict UTF-8, as the incumbent's fatal decoder does.
-/// Why:
-///   A conflicted path that is not UTF-8 fails the replay with the bytes named in the error,
-///       which keeps a non-UTF-8 path from landing under a different name.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-/// ```
-fn strict_utf8(bytes: &[u8]) -> Result<&str, ReplayMergeError> {
-    return std::str::from_utf8(bytes)
-        .map_err(|error| { return ReplayMergeError::Encoding(format!("merge output is not UTF-8: {error}")); });
 }
 
 /// What:
@@ -165,23 +149,23 @@ pub fn merge_replay_tree(
             String::from_utf8_lossy(&output.stderr).trim()
         ))));
     }
-    let text: &str = strict_utf8(&output.stdout)?;
     // The first field is the tree; on a conflict the conflicted paths follow up to an empty record.
-    let mut fields = text.split('\0');
-    let tree_oid: String = fields.next().unwrap_or_default().to_string();
+    // The paths stay bytes: a name that is not UTF-8 is reported with its exact bytes.
+    let mut fields = output.stdout.split(|byte| { return *byte == 0; });
+    let tree_oid: String = String::from_utf8_lossy(fields.next().unwrap_or_default()).into_owned();
     if code == Some(0) {
         return Ok(ReplayMerge::Merged { tree_oid });
     }
-    let mut paths: Vec<String> = Vec::new();
+    let mut paths: Vec<Vec<u8>> = Vec::new();
     for field in fields {
         if field.is_empty() {
             break;
         }
-        if !paths.iter().any(|known| { return known == field; }) {
-            paths.push(String::from(field));
+        if !paths.iter().any(|known| { return known.as_slice() == field; }) {
+            paths.push(field.to_vec());
         }
     }
-    paths.sort_by(|left, right| { return left.as_bytes().cmp(right.as_bytes()); });
+    paths.sort();
     return Ok(ReplayMerge::Conflict { paths });
 }
 
@@ -200,21 +184,29 @@ pub fn first_commit_touching(
     cwd: &Path,
     base: Option<&str>,
     current: &str,
-    paths: &[String],
+    paths: &[Vec<u8>],
 ) -> Result<String, ReplayMergeError> {
     let exclusion: String = base.map(|oid| { return format!("^{oid}"); }).unwrap_or_default();
-    let pathspecs: Vec<String> = paths.iter().map(|path| { return format!(":(top,literal){path}"); }).collect();
+    let pathspecs: Vec<OsString> = paths
+        .iter()
+        .map(|path| {
+            let mut pathspec: Vec<u8> = b":(top,literal)".to_vec();
+            pathspec.extend_from_slice(path.as_slice());
+            return os_from_path_bytes(pathspec.as_slice());
+        })
+        .collect();
     // `mut` lets the arguments be assembled in order.
     let mut arguments: Vec<&str> = vec!["rev-list", "--reverse", current];
     if base.is_some() {
         arguments.push(exclusion.as_str());
     }
     arguments.push("--");
-    arguments.extend(pathspecs.iter().map(String::as_str));
     let mut request: GitRequest = GitRequest::new(cwd, &arguments);
+    request.arguments.extend(pathspecs);
     request.environment = vec![(OsString::from("GIT_LITERAL_PATHSPECS"), OsString::from("0"))];
     let listed = run_git_checked(context, &request).map_err(ReplayMergeError::Git)?;
-    let text: &str = strict_utf8(&listed.stdout)?;
+    // The listing holds object names, which are ASCII.
+    let text: String = String::from_utf8_lossy(&listed.stdout).into_owned();
     return Ok(text
         .lines()
         .find(|line| { return !line.is_empty(); })

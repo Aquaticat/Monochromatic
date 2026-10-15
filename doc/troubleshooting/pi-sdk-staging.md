@@ -380,7 +380,8 @@ then imports the maintained implementation:
 import {createNativeQueryObservation} from '../maintained-policy.mjs';
 ```
 
-The generated maintained-policy module re-exports the package's built entry.
+Before commit `63be621a7d`,
+the generated maintained-policy module re-exported the package's built extension entry.
 That entry includes the upstream SDK import from
 `package/pi-plugin/auto-mode/src/visible-context.ts:19`:
 
@@ -443,9 +444,27 @@ the original serializer emission tests,
 and all copied-system/payload/transcript controls.
 The separate normal SDK fixture still accounts for five contributions and executes three fixture children,
 with zero provider requests.
-The successful entry order verifies the intended consumer;
-it does not fix direct generated-manager or generated-SDK imports.
-Removing this import-order coupling remains native-quality work.
+That successful entry order verified the intended consumer;
+it did not fix direct generated-manager or generated-SDK imports.
+The dedicated policy entry described in this section later removed the coupling.
+
+The 2026-10-15 domain-fixture split reproduced this same diagnostic at the same owned host constructor.
+The first static dependency became the assertion module that imports the generated manager,
+before the runtime's maintained policy dependency.
+The failed built run is
+`${HOME}/temp/agent/pi-native-domain-fixture-split-consumer-20261015.log`.
+The fixture now explicitly imports `../maintained-policy.mjs` before its generated-manager consumers.
+The rebuilt domain,
+unconfigured-policy,
+operating-policy,
+single-call,
+approved-dependency,
+next-decision,
+serializer,
+and context contrast sets pass in
+`${HOME}/temp/agent/pi-native-domain-fixture-entry-consumer-20261015.log`.
+That verified the documented supported entry order after extraction;
+it did not remove the underlying generated import cycle.
 
 The manager publication tests cover original append and context copies,
 separate equal-content owners,
@@ -457,7 +476,94 @@ and accessor rejection without invocation.
 The process-local array identity omission makes the array-replacement assertion fail.
 `verification.json` in the same scratch directory retains the unchanged built-artifact hash.
 
-### What does not work
+### Dedicated native policy entry
+
+The owned graph fix preserves eager host construction and original constructor capture.
+Instead,
+the generator now resolves `./native-policy` at
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/prepare.ts:137`:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-batch/prepare.ts:137
+const maintainedEntry=entry({
+  root:maintainedRoot,
+  subpath:'./native-policy'
+});
+```
+
+The dedicated entry directly re-exports native policy dependencies,
+including the observer at `package/pi-plugin/auto-mode/src/native-policy-api.ts:34`:
+
+```ts
+// package/pi-plugin/auto-mode/src/native-policy-api.ts:34
+export { createNativeQueryObservation } from './native-query-observation.ts';
+```
+
+The same bundler invocation emits the extension and native entries with shared implementation chunks.
+`package/pi-plugin/auto-mode/rolldown.node.config.ts:11` retains the named inputs:
+
+```ts
+// package/pi-plugin/auto-mode/rolldown.node.config.ts:11
+const config: ReturnType<typeof nodeConfig> = nodeConfig({
+  input: {
+    index: './src/index.ts',
+    'native-policy': './src/native-policy-api.ts',
+  },
+});
+```
+
+Shared chunks matter because policy functions,
+error constructors,
+and retained state must have the same identity for native and extension consumers.
+Separately bundling the same implementation would not establish that property.
+The generated policy entry and its shared chunk no longer import the SDK extension entry.
+The runtime proof is `test:native:direct-imports`:
+each fresh process imports either the generated manager or generated SDK first,
+constructs an owned in-memory manager,
+and compares every native policy export with the extension export by identity.
+
+Commit `bdee84f697` added the regression before the fix.
+Both cases failed with the exact original `ReferenceError` on Node 26.11.1 in
+`${HOME}/temp/agent/pi-native-direct-import-regression-before-20261015.log`.
+After the entry split,
+the direct-import and identity checks pass in
+`${HOME}/temp/agent/pi-native-policy-entry-consumers-20261015.log`.
+That run also passes manager constructors,
+host lifecycle replacement and disposal,
+CLI RPC state and clean shutdown,
+serializer controls,
+domain contrasts,
+and authored approval decisions without provider requests.
+Its final type check exposed `TS9037: Default exports can't be inferred with --isolatedDeclarations.`
+The config now explicitly annotates its value with `ReturnType<typeof nodeConfig>`.
+Commit `6ddeaef3eb` also removes the publication and domain fixtures' policy-preload workarounds.
+The rebuilt direct-import identity,
+publication,
+domain,
+and package type checks pass without either preload in
+`${HOME}/temp/agent/pi-native-policy-unordered-consumers-20261015.log`.
+The original standalone manager reproduction also passes in
+`${HOME}/temp/agent/pi-native-direct-manager-import-after-20261015.log`.
+The entry,
+generator,
+declarations,
+regression,
+and build config have zero errors and one `tsdoc(multiline-blocks)` warning in
+`${HOME}/temp/agent/pi-native-policy-entry-final-lint-20261015.log`.
+The added config comment needs multiline formatting;
+the earlier zero-warning statement in `12a4a8a00c` was incorrect.
+Commit `6701c3937d` expands that comment.
+The repeated focused lint now passes with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-policy-entry-clean-lint-20261015.log`.
+
+Reproduce the committed entry checks after building:
+
+```sh
+# Run from the repository root.
+mise run //package/pi-plugin/auto-mode:test:native:direct-imports
+```
+
+### What did not work before the entry split
 
 - Importing the manager directly fails before the test body.
 - Importing the generated SDK before the manager produces the same constructor initialization failure.
@@ -477,7 +583,7 @@ The process-local array identity omission makes the array-replacement assertion 
   [PR 10789](https://github.com/earendil-works/pi/pull/10789).
   Its complete body and comments concern JSONL write coalescing,
   not this import cycle.
-- Prototype: the verified consumer-entry change is local.
+- Prototype: the dedicated policy entry fixes the owned graph locally.
   No upstream patch is justified by this evidence.
 
 The `.out-of-scope/` catalog was checked;
@@ -7429,6 +7535,16 @@ No production configuration change was required.
 The evidence is `pi-native-source-boundaries-final-20261014.log`
 and `pi-native-source-boundaries-remaining-20261014.log` under `${HOME}/temp/agent/`.
 
+The typed file-observer verification reproduced the same scratch-task directory mistake on 2026-10-15.
+Its build,
+consumer checks,
+and type check had completed before the next scratch-owned lint command emitted the diagnostic.
+`${HOME}/temp/agent/pi-native-typed-observer-consumer-20261015.log` retains that boundary.
+The recovered `lint-typed-observer` task pins `dir` to the repository;
+only the failed lint step is resumed.
+Its first recovered pass produced ordinary lint diagnostics,
+confirming recovery of task discovery without rerunning the successful consumer sequence.
+
 A separate full lint attempt during this cleanup failed before producing diagnostics with
 `Error running tsgolint: "exit status: exit status: 2"`
 and `runtime: failed to create new OS thread (have 2 already; errno=11)`.
@@ -7449,6 +7565,42 @@ the same bounded full lint invocation completed across 455 files with 175 errors
 The report is `${HOME}/temp/agent/pi-maintained-source-boundaries-lint-20261014.log`.
 This remains a failing quality gate;
 the higher warning count exposes additional untyped module boundaries rather than qualifying those extractions.
+
+On 2026-10-15,
+overlapping event-fixture verification,
+lint,
+type checking,
+and an explicit-path commit produced separate failures.
+The Git commit reported `cannot fork()` for its transaction-local `pre-commit` hook,
+followed by `Resource temporarily unavailable`.
+Oxlint's TypeScript worker reported
+`runtime: failed to create new OS thread (have 33 already; errno=11)` and `fatal error: newosproc`.
+The native build's `nano-spawn` wrapper reported its preparation child terminated with `SIGABRT`;
+the child supplied no captured stdout or stderr.
+That missing child diagnostic does not establish the same cause as the thread-allocation failure.
+The logs are `pi-native-event-receipt-split-lint-20261015.log` and
+`pi-native-event-receipt-split-consumer-20261015.log` under `${HOME}/temp/agent/`.
+The type check passed in `pi-native-conversion-fixture-types-20261015.log`.
+The failing lint run produced no structured diagnostic report and cannot supply a source lint result.
+
+After the jobs ended,
+the parent slice reported 12 tasks,
+`pids.max=256`,
+and cumulative `pids.events: max 362`.
+There is no immediate pre-failure counter sample tying that counter to a particular allocation.
+The original event-fixture edits remained staged and the explicit-path commit retry succeeded.
+Recovery follows the existing sequential verification workaround with `GOMAXPROCS=2`.
+This serializes the jobs and bounds Go execution parallelism;
+it does not raise the cgroup limits or claim a bound on all operating-system threads.
+The original failed logs remain intact;
+the rebuilt event and converter retry is recorded separately in
+`${HOME}/temp/agent/pi-native-event-receipt-split-retry-consumer-20261015.log`.
+The standalone retry passes the rebuilt event suite and generated converter tests.
+The package's existing lint resource settings now also retain `GOMAXPROCS=2`,
+so subsequent lint invocations do not depend on a manually supplied shell prefix.
+No new upstream defect is established,
+so the existing upstream filing decision remains unchanged.
+
 The follow-up callback shape check first reported
 `no-restricted-syntax(no-variable-function-expression)` for direct variable-assigned callbacks.
 The existing rule source permits callback function expressions where external APIs dictate positional arguments.
