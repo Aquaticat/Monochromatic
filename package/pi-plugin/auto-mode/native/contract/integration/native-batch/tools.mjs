@@ -40,8 +40,7 @@ export function registerOwnedExecutionTools({
     const executionMode=agent.toolExecution;
   // Schema data participates in native argument conversion and validation.
   // Retain descriptors, including TypeBox symbols, without freezing borrowed schemas or encoding JSON.
-  // The request-wide property bound limits retained metadata; callables remain identity dependencies.
-  const schemaCapture={properties:0};
+  // Visit each schema node once; complete metadata and callable identities remain dependencies.
   function captureSchema({
     schema,
     label
@@ -56,8 +55,6 @@ export function registerOwnedExecutionTools({
     seen.add(node);
     const prototype=Object.getPrototypeOf(node);
       const keys=Reflect.ownKeys(node);
-    schemaCapture.properties+=keys.length+1;
-    if(schemaCapture.properties>10_000)throw new ExecutionContextOwnershipError('Original request tool schemas exceed the 10000-property profile');
     if((prototype!==null)&&(prototype!==Object.prototype)
       &&(prototype!==Array.prototype))throw new ExecutionContextOwnershipError(`${label} requires ordinary schema records or arrays`);
     const entries=keys.map(function copySchemaProperty(key) {
