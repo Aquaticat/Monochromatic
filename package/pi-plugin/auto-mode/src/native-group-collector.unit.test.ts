@@ -48,6 +48,30 @@ await describe({ name: '', children: [
     ]);
     await fixture.run.drain();
   } }),
+  it({ name: 'installs the original parent listener once and detaches it at retirement', fn: async () => {
+    const fixture = createCollectorFixture({ memberCount: 0 });
+    const controller = new AbortController();
+    const addListener = controller.signal.addEventListener.bind(controller.signal);
+    const removeListener = controller.signal.removeEventListener.bind(controller.signal);
+    const installed: EventListener[] = [];
+    const removed: EventListener[] = [];
+    Object.defineProperty(controller.signal, 'addEventListener', { value(type: string, listener: EventListener, options: AddEventListenerOptions): void {
+      assert.equal(type, 'abort');
+      assert.deepEqual(options, { once: true });
+      installed.push(listener);
+      addListener(type, listener, options);
+    } });
+    Object.defineProperty(controller.signal, 'removeEventListener', { value(type: string, listener: EventListener): void {
+      assert.equal(type, 'abort');
+      removed.push(listener);
+      removeListener(type, listener);
+    } });
+    const run = collectorFixtureModule.createReachedGroupRun({ ...fixture.input, signal: controller.signal });
+    assert.equal(installed.length, 1);
+    run.retire();
+    assert.deepEqual(removed, installed);
+    await run.drain();
+  } }),
   it({ name: 'collects out-of-order arrival once while retaining original declaration order', fn: async () => {
     const fixture = createCollectorFixture();
     const second = fixture.invoke({ index: 1 });

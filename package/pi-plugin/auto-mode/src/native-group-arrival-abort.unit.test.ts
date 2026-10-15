@@ -6,6 +6,31 @@ import { createCollectorFixture, originalCollectorAbortListener } from './native
 
 await describe({ name: '', children: [
   //region Parent, native, and collector cancellation preserve original transport and native lifetimes.
+  ...['parent', 'native'].map(function directSignal(source) {
+    return it({ name: `retains direct ${source} signal membership before failure callbacks run`, fn: async () => {
+      const fixture = createCollectorFixture({ memberCount: 1 });
+      const pending = Promise.allSettled([fixture.invoke()]);
+      const [call] = fixture.calls;
+      const [member] = call?.members ?? [];
+      const [native] = fixture.native;
+      const [completion] = fixture.completions;
+      assert.ok(member);
+      assert.ok(native);
+      assert.ok(completion);
+      const controller = source === 'parent' ? fixture.parent : native;
+      const listener = originalCollectorAbortListener(controller.signal);
+      controller.signal.removeEventListener('abort', listener);
+      const reason = Object.freeze({ original: source });
+      controller.abort(reason);
+      assert.equal(member.signal.aborted, true);
+      assert.equal(member.signal.reason, reason);
+      assert.equal(fixture.run.inspect().failed, false);
+      fixture.run.retire();
+      completion.resolve('original late completion');
+      await pending;
+      await fixture.run.drain();
+    } });
+  }),
   ...['parent', 'native', 'retire'].map(function cancellationSource(source) {
     return it({ name: `combines ${source} cancellation while retaining issued native outcomes`, fn: async () => {
       const fixture = createCollectorFixture();
@@ -98,6 +123,32 @@ await describe({ name: '', children: [
     assert.equal(fixture.run.inspect().members[0]?.arrival, 'matched');
     assert.equal(fixture.run.inspect().members[0]?.state, 'rejected');
     assert.equal(fixture.calls.length, 0);
+  } }),
+  it({ name: 'installs the original native listener once and removes that exact callback at retirement', fn: async () => {
+    const fixture = createCollectorFixture();
+    const [native] = fixture.native;
+    assert.ok(native);
+    const addListener = native.signal.addEventListener.bind(native.signal);
+    const removeListener = native.signal.removeEventListener.bind(native.signal);
+    const installed: EventListener[] = [];
+    const removed: EventListener[] = [];
+    Object.defineProperty(native.signal, 'addEventListener', { value(type: string, listener: EventListener, options: AddEventListenerOptions): void {
+      assert.equal(type, 'abort');
+      assert.deepEqual(options, { once: true });
+      installed.push(listener);
+      addListener(type, listener, options);
+    } });
+    Object.defineProperty(native.signal, 'removeEventListener', { value(type: string, listener: EventListener): void {
+      assert.equal(type, 'abort');
+      removed.push(listener);
+      removeListener(type, listener);
+    } });
+    const pending = Promise.allSettled([fixture.invoke()]);
+    assert.equal(installed.length, 1);
+    assert.equal(originalCollectorAbortListener(native.signal), installed[0]);
+    fixture.run.retire();
+    await pending;
+    assert.deepEqual(removed, installed);
   } }),
   //endregion
   //region Captured original listeners demonstrate each guard after native event detachment.
