@@ -533,7 +533,7 @@ The main checkout's `.claude/settings.json` has no hit;
    `PNPR_EXCLUDED_PACKAGES` (`file-enforcer.config.ts:1884`) names no git-policy
   package,
    so no exclusion edit is needed.
-- `slopo.ignore.txt:45,50,69,200,309,324,373` carry duplicate-code dismissals whose subjects are deleted TypeScript or
+- (Removed on 2026-10-15 in `91bdc9a9f9`.) `slopo.ignore.txt:45,50,69,200,309,324,373` carry duplicate-code dismissals whose subjects are deleted TypeScript or
   `perf/` files;
    `:298` names `src/native/policy_registry.rs` and stays.
   The file's own header (`slopo.ignore.txt:40`) already counts "10 dead pending a decision",

@@ -1600,9 +1600,9 @@ that is verification, not a decision for the user.
   Interop decision (user): the interop matrix ran once against an incumbent rebuilt in a throwaway container from the
   pinned revision, the results are recorded, and everything that can build or run the old wrapper was then deleted
   (`doc/handover/cli-git-native-interop.md`), leaving static captured fixtures.
-  Still open from the retirement: the `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324,
-  373) wait for a fresh `slopo analyze` report, and the SPEC sections the plan did not name were not re-verified line
-  by line.
+  The `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324, 373 at the time) were removed on
+  2026-10-15 in `91bdc9a9f9`: a key whose cluster lost a member matches nothing, so no fresh `slopo analyze` report was
+  needed. Still open from the retirement: the SPEC sections the plan did not name were not re-verified line by line.
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
