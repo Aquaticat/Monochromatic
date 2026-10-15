@@ -179,8 +179,14 @@ The controls and the guard removal are committed (`ed641c4a1b`). Open: container
 then `mutation:scoped` over `replay_reverse_apply.rs` (`--examine 'find_position|reverse_hunk|matches_at'`),
 `replay_containment.rs` and `replay_patch.rs` to show each control failing on its mutant, then landing and the crate
 release 0.1.5 together with the deletion of the dead policy patch modules already on `main`.
-A long fuzz campaign (900 s per target, 15 targets) started 2026-10-15 as the unit `cli-git-fuzz-campaign`
+The container gate on the merged head (tag `replayH`) passed with 1812 unit, 137 binary and 1 consumer test; the scoped
+verification runs are the units `cli-git-replay-verify-r1` and `-r2` (logs `~/temp/agent/replay-verify-R1.log`, `-R2.log`).
+A long fuzz campaign (900 s per target, 15 targets) runs as the unit `cli-git-fuzz-campaign`
 (log `~/temp/agent/fuzz-campaign-20261015.log`); read it for crashes before the release.
+The fuzz sidecar had fallen behind the subject (stale lockfile version, byte paths in the journal helper, a refusal
+control for linked-worktree creation that the executable replaced with the copy lifecycle); all three are fixed on
+`main`. Every crate version bump must also run `mise run //package/git-policy/cli.fuzz:lock:members`, or the fuzz
+build stops at `cargo vendor --locked`.
 
 ### Remaining after drain
 
