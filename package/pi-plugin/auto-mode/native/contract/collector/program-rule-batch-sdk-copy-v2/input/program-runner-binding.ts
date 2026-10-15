@@ -140,6 +140,7 @@ export function bindReachedProgramGroup<const Recorder extends object>({
    @returns exact native callback return value
    */
   runNative(
+      this: void,
       call: NativeReturnCall,
       options: unknown
     ): unknown {
