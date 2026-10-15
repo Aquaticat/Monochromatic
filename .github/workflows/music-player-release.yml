@@ -391,13 +391,27 @@ jobs:
         ln -s /Applications "${stage}/Applications"
         mkdir -p dist
         asset="music-player-${VERSION}-macos-${ARCH}.dmg"
-        hdiutil create -volname 'Music Player' -srcfolder "$stage" -fs HFS+ -format UDZO -ov "dist/${asset}"
+        # hdiutil fails now and then with "Resource busy" on hosted runners (Spotlight and the disk image
+        # helper still hold the volume), which a short wait cures; retry a few times and then fail.
+        retry() {
+          local attempt=1
+          until "$@"; do
+            if [ "$attempt" -ge 5 ]; then
+              echo "::error::'$*' failed $attempt times."
+              return 1
+            fi
+            echo "::warning::'$*' failed (attempt $attempt); retrying."
+            attempt=$((attempt + 1))
+            sleep 10
+          done
+        }
+        retry hdiutil create -volname 'Music Player' -srcfolder "$stage" -fs HFS+ -format UDZO -ov "dist/${asset}"
         hdiutil verify "dist/${asset}"
         # Open the finished image the way a user does and start the app inside it.
         mount_point=$(mktemp -d)
         hdiutil attach "dist/${asset}" -mountpoint "$mount_point" -nobrowse -readonly
         "${mount_point}/Music Player.app/Contents/MacOS/music-player" --version
-        hdiutil detach "$mount_point"
+        retry hdiutil detach "$mount_point"
         echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
         ls -la dist
 
