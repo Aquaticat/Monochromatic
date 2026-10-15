@@ -67,11 +67,20 @@ export function registerNativeBypass(pi: ForeignHostCapability<ExtensionAPI>): v
     {
     description: 'Toggle auto-mode bypass',
     handler(ctx: ForeignHostCapability<ExtensionContext>): void {
-      /** Toggle selection uses the active branch, including after reload or navigation. */
+      /**
+       Toggle selection uses the active branch, including after reload or navigation.
+       */
       const enabled = !readNativeBypassEnabled(ctx);
-      tagged({ tag: 'toggleNativeBypass', l: rl }).warn(enabled ? 'explicit bypass enabled' : 'explicit bypass disabled');
-      appendBypassToggleEntry({ pi, enabled });
-      announceBypassToggle({ ctx, enabled });
+      tagged({ tag: 'toggleNativeBypass', l: rl })
+        .warn(enabled ? 'explicit bypass enabled' : 'explicit bypass disabled');
+      appendBypassToggleEntry({
+        pi,
+        enabled
+      });
+      announceBypassToggle({
+        ctx,
+        enabled
+      });
     },
   }
   );
@@ -83,7 +92,10 @@ export function registerNativeBypass(pi: ForeignHostCapability<ExtensionAPI>): v
    @mutates ctx - updates displayed bypass status
    */
   function restoreStatus(ctx: ForeignHostCapability<ExtensionContext>): void {
-    tagged({ tag: restoreStatus.name, l: rl })
+    tagged({
+      tag: restoreStatus.name,
+      l: rl
+    })
       .debug('restoring native bypass status from current branch');
     updateBypassStatus({
       ctx,
@@ -92,24 +104,40 @@ export function registerNativeBypass(pi: ForeignHostCapability<ExtensionAPI>): v
   }
   pi.on(
     'session_start',
-    function restoreSession(_event, ctx) { restoreStatus(ctx); }
+    function restoreSession(
+      _event: unknown,
+      ctx
+    ) { restoreStatus(ctx); }
   );
   pi.on(
     'session_tree',
-    function restoreBranch(_event, ctx) { restoreStatus(ctx); }
+    function restoreBranch(
+      _event: unknown,
+      ctx
+    ) { restoreStatus(ctx); }
   );
   pi.on(
     'tool_call',
-    function guardNativeTool(event: ForeignBorrowed<ToolCallEvent>, ctx: ForeignHostCapability<ExtensionContext>): Readonly<{ decision?: ToolCallEventResult }>['decision'] {
-    /** Fixed safety policy precedes explicit bypass and remains active in both modes. */
+    function guardNativeTool(
+      event: ForeignBorrowed<ToolCallEvent>,
+      ctx: ForeignHostCapability<ExtensionContext>
+    ): Readonly<{ decision?: ToolCallEventResult }>['decision'] {
+    /**
+     Fixed safety policy precedes explicit bypass and remains active in both modes.
+     */
     const decision = guardVirtualInput(event);
     if (decision.block) {
-      tagged({ tag: guardNativeTool.name, l: rl }).warn('fixed virtual-input guard blocked native tool');
+      tagged({ tag: guardNativeTool.name, l: rl })
+        .warn('fixed virtual-input guard blocked native tool');
       return decision;
     }
     if (readNativeBypassEnabled(ctx)) {
-      tagged({ tag: guardNativeTool.name, l: rl }).warn('recording explicit native bypass tool admission');
-      appendBypassAllowEntry({ pi, action: describeAction(event) });
+      tagged({ tag: guardNativeTool.name, l: rl })
+        .warn('recording explicit native bypass tool admission');
+      appendBypassAllowEntry({
+        pi,
+        action: describeAction(event)
+      });
     }
     return undefined;
   }
