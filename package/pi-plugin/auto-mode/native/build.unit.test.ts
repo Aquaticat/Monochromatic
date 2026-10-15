@@ -2,7 +2,7 @@
 import { cp, mkdir, mkdtemp, readFile, realpath, symlink, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import spawn from 'nano-spawn';
+import spawn, { SubprocessError } from 'nano-spawn';
 import { describe, expect, it } from '@monochromatic-dev/module-test/ts';
 
 //region Failed generation or loading must preserve the consumer's previous command.
@@ -20,7 +20,8 @@ async function rejectedBuild(packageRoot: string): Promise<string> {
     await build(packageRoot);
   }
   catch (error) {
-    return String(error);
+    if (!(error instanceof SubprocessError)) throw error;
+    return error.stderr;
   }
   throw new Error('The deliberately invalid native release was activated');
 }
