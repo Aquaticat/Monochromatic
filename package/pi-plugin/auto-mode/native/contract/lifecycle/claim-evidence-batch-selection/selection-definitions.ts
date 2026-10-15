@@ -59,6 +59,25 @@ function assertQuestionDefinition(input: Readonly<{ id: string; value: unknown }
     throw new QuestionSelectionError('Choice definition requires two through 255 options');
   }
 }
+
+/** Freeze the admitted definition while retaining scalar rubric order and original choice criteria.
+ * @param definition - Structurally admitted original predicate
+ * @returns Immutable fixed predicate with its original instruction text
+ */
+function freezeDefinition(definition: QuestionDefinition): QuestionDefinition {
+  if (definition.type === 'noul') {
+    return Object.freeze({
+      type: definition.type,
+      instructions: definition.instructions,
+      criteria: Object.freeze({ true: definition.criteria.true, false: definition.criteria.false }),
+    });
+  }
+  return Object.freeze({
+    type: definition.type,
+    instructions: definition.instructions,
+    criteria: Object.freeze(definition.criteria),
+  });
+}
 //endregion
 
 //region Exact definition bytes precede construction of the owner-local claim catalog.
@@ -93,14 +112,7 @@ export function readQuestionDefinitions({ catalogText, catalogSHA256, resolveBin
     /** Stable holder exposes the validated entry without casting parsed data. */
     const original = { id, value };
     assertQuestionDefinition(original);
-    /** Complete definition established by structural admission. */
-    const definition = original.value;
-    /** Scalar rubric order remains true then false; choices retain their original object. */
-    const fixedCriteria = Object.freeze(definition.type === 'noul' ? {
-      true: definition.criteria.true,
-      false: definition.criteria.false,
-    } : definition.criteria);
-    definitions.set(id, Object.freeze({ type: definition.type, instructions: definition.instructions, criteria: fixedCriteria }));
+    definitions.set(id, freezeDefinition(original.value));
     byDefinition.set(id, new WeakMap());
   }
   return { digest, definitions, byDefinition };
