@@ -17,13 +17,13 @@ const MAX_CLAIMS = 1_536;
 //region Canonical claim identity is scoped to one predicate and original binding.
 /**
  Bind declaration to the admitted catalog and original judgment owner.
- *
+ 
  @param owner - original membership and lifetime capabilities
- *
+ 
  @param catalog - pinned definitions and per-predicate identity indexes
- *
+ 
  @returns canonical claim declaration operation
- *
+ 
  @example createClaimDeclaration({ owner, catalog });
  */
 export function createClaimDeclaration({
@@ -35,13 +35,13 @@ export function createClaimDeclaration({
 }>): (input: QuestionDeclaration) => Readonly<object> {
   /**
    Select an original predicate without reissuing or rebinding an existing claim.
-   *
+   
    @param definitionId - untrusted pinned predicate name
-   *
+   
    @param bindingHandle - original enclosing occurrence handle
-   *
+   
    @returns frozen opaque claim handle
-   *
+   
    @throws QuestionSelectionError for absent definitions, changed bindings, or exceeded claim bounds
    */
   function declare({
@@ -88,7 +88,10 @@ export function createClaimDeclaration({
        */
       const handle = Object.freeze({});
       owner.claims
-        .set(handle, { definitionId, definition, bindingHandle, binding, issued: false });
+        .set(
+          handle,
+          { definitionId, definition, bindingHandle, binding, issued: false }
+        );
       canonical.set(
         binding.identity,
         handle

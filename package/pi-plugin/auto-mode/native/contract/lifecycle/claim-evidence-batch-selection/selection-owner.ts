@@ -6,10 +6,8 @@ import { createSelectionOwner } from './selection-ownership.ts';
 import { createClaimDeclaration } from './selection-declaration.ts';
 import { createQuestionIssuance } from './selection-issuance.ts';
 import { createQuestionSettlement } from './selection-settlement.ts';
-import { createQuestionEvidence } from './selection-evidence.ts';
-import { createQuestionInspection } from './selection-inspection.ts';
-import type { QuestionEvidenceOperations } from './selection-evidence.ts';
-import type { QuestionInspection } from './selection-inspection.ts';
+import { createQuestionEvidence, type QuestionEvidenceOperations } from './selection-evidence.ts';
+import { createQuestionInspection, type QuestionInspection } from './selection-inspection.ts';
 import type { QuestionSelectionInput } from './selection-owner-types.ts';
 import type {
   QuestionSettlementInput,
@@ -28,21 +26,21 @@ export type QuestionSelection = QuestionEvidenceOperations & QuestionInspection
 //region Fixed catalog data and judgment-local claim issuance never establish permission.
 /**
  Bind original catalog bytes, occurrence resolution, and judgment lifetime.
- *
+ 
  @param catalogText - untrusted exact pinned definition bytes
- *
+ 
  @param catalogSHA256 - expected digest for original definitions
- *
+ 
  @param budget - original enclosing judgment lifetime
- *
+ 
  @param resolveBinding - trusted synchronous side-effect-free occurrence resolver
- *
+ 
  @param envelope - frozen original judgment projection
- *
+ 
  @returns immutable original selection API
- *
+ 
  @throws QuestionSelectionError for invalid catalog or envelope admission
- *
+ 
  @example createQuestionSelection({ catalogText, catalogSHA256, budget, resolveBinding, envelope });
  */
 export function createQuestionSelection({

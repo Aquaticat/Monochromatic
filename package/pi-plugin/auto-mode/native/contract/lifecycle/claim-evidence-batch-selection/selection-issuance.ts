@@ -23,18 +23,20 @@ const MAX_REQUEST_BYTES = 4_194_304;
 
 /**
  Inspect dense own data properties without invoking member accessors.
- *
+ 
  @param input - untrusted selection array
- *
+ 
  @returns original ordered handle values
- *
+ 
  @throws QuestionSelectionError for nonordinary, sparse, hidden, accessor, or duplicate membership
  */
 function readClaimHandles(input: unknown): readonly unknown[] {
   if ((!Array.isArray(input)) || (Object.getPrototypeOf(input) !== Array.prototype)
     || (input.length === 0)
     || (input.length > MAX_BATCH_CLAIMS)
-    || (Reflect.ownKeys(input).length !== (input.length + 1))) throw new QuestionSelectionError('Question batch needs an ordinary dense claim array within the declared bound');
+    || (Reflect.ownKeys(input)
+      .length
+      !== (input.length + 1))) throw new QuestionSelectionError('Question batch needs an ordinary dense claim array within the declared bound');
   /**
    Descriptor values remain untrusted until owner membership authentication.
    */
@@ -47,8 +49,11 @@ function readClaimHandles(input: unknown): readonly unknown[] {
       input,
       String(index)
     );
-    if ((!property) || (!Object.hasOwn(property, 'value'))
-      || (!property.enumerable)) throw new QuestionSelectionError('Question batch has an accessor, hidden member or missing member');
+    if ((!property) || (!Object.hasOwn(
+      property,
+      'value'
+    ))
+      || (property.enumerable !== true)) throw new QuestionSelectionError('Question batch has an accessor, hidden member or missing member');
     handles.push(property.value);
   }
   if (new Set(handles).size !== handles.length) throw new QuestionSelectionError('Question batch repeats a claim');
@@ -58,15 +63,15 @@ function readClaimHandles(input: unknown): readonly unknown[] {
 //region Original issuance publishes only after every membership and wire check succeeds.
 /**
  Bind request issuance and dispatch inspection to one original owner.
- *
+ 
  @param owner - original membership and lifetime capabilities
- *
+ 
  @param digest - admitted catalog digest
- *
+ 
  @param envelope - original frozen judgment projection
- *
+ 
  @returns original issuance and current dispatch operations
- *
+ 
  @example createQuestionIssuance({ owner, digest, envelope });
  */
 export function createQuestionIssuance({
@@ -83,11 +88,11 @@ export function createQuestionIssuance({
 }> {
   /**
    Publish a bounded request without making failed construction consume claims.
-   *
+   
    @param input - original claim handles in request order
-   *
+   
    @returns frozen opaque issued batch handle
-   *
+   
    @throws QuestionSelectionError for invalid, stale, repeated, or oversized selection
    */
   function issue(input: unknown): Readonly<object> {
@@ -123,7 +128,8 @@ export function createQuestionIssuance({
             id: `q${index}`,
             definitionId: claim.definitionId,
             definition: claim.definition,
-            binding: claim.binding.projection
+            binding: claim.binding
+              .projection
           });
         })),
         semanticQualification: 'not-established',
@@ -138,7 +144,10 @@ export function createQuestionIssuance({
       const handle = Object.freeze({});
       for (const claim of selected) claim.issued = true;
       owner.batches
-        .set(handle, { selected, request, settled: false });
+        .set(
+          handle,
+          { selected, request, settled: false }
+        );
       owner.state
         .batchCount += 1;
       return handle;
@@ -146,11 +155,11 @@ export function createQuestionIssuance({
   }
   /**
    Dispatch only a current original batch that has not reached a terminal response.
-   *
+   
    @param handle - original issued batch handle
-   *
+   
    @returns exact original immutable request
-   *
+   
    @throws QuestionSelectionError for foreign, terminal, or changed batches
    */
   function requestFor(handle: unknown): QuestionRequest {

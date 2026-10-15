@@ -26,24 +26,24 @@ export type QuestionEvidenceOperations = Readonly<{
 
 /**
  Only issued estimates and explicit uncertainty can become relation evidence.
- *
+ 
  @param claim - original claim with retained terminal answer
- *
+ 
  @returns whether the claim lacks usable terminal evidence
  */
 function lacksUsableAnswer(claim: SelectionClaim): boolean {
   return (!claim.issued) || ((claim.answer
     ?.status
     !== 'estimate') && (claim.answer
-    ?.status
-    !== 'unresolved'));
+      ?.status
+      !== 'unresolved'));
 }
 
 /**
  Authenticate complete terminal membership without checking current dependencies.
- *
+ 
  @param batch - original owner-local issued batch
- *
+ 
  @throws QuestionSelectionError for incomplete or unusable terminal membership
  */
 function assertCompleteBatch(batch: SelectionBatch): void {
@@ -55,13 +55,13 @@ function assertCompleteBatch(batch: SelectionBatch): void {
 //region Canonical captures preserve exact original claim and batch identities.
 /**
  Bind evidence capture to the original owner and frozen judgment envelope.
- *
+ 
  @param owner - original membership and lifetime capabilities
- *
+ 
  @param envelope - retained original judgment projection
- *
+ 
  @returns canonical capture and retained identity operations
- *
+ 
  @example createQuestionEvidence({ owner, envelope });
  */
 export function createQuestionEvidence({
@@ -77,14 +77,13 @@ export function createQuestionEvidence({
   const batchByEvidence = new WeakMap<object, SelectionBatch>();
   /**
    Retain one immutable evidence object for the original settled claim.
-   *
+   
    @param claim - admitted original claim whose caller checked capture eligibility
-   *
+   
    @returns canonical retained evidence without semantic or permission qualification
    */
   function canonicalEvidence(claim: SelectionClaim): QuestionEvidence {
-    if (!claim.evidence) {
-      claim.evidence = Object.freeze({
+    claim.evidence ??= Object.freeze({
         definitionId: claim.definitionId,
         definition: claim.definition,
         binding: claim.binding
@@ -95,15 +94,14 @@ export function createQuestionEvidence({
         semanticQualification: 'not-established',
         instructionAuthority: 'not-established',
         permission: false,
-      });
-    }
+    });
     return claim.evidence;
   }
   /**
    Authenticate terminal phase without asserting source or lifetime currentness.
-   *
+   
    @param handle - original issued batch handle
-   *
+   
    @throws QuestionSelectionError for foreign or unusable batches
    */
   function assertCapturableBatch(handle: unknown): void {
@@ -113,11 +111,11 @@ export function createQuestionEvidence({
   }
   /**
    Capture exact issued membership after checking every original dependency.
-   *
+   
    @param handle - original issued batch handle
-   *
+   
    @returns canonical immutable array of original claim evidence
-   *
+   
    @throws QuestionSelectionError for foreign, incomplete, or changed batches
    */
   function captureBatchEvidence(handle: unknown): readonly QuestionEvidence[] {
@@ -145,9 +143,9 @@ export function createQuestionEvidence({
   }
   /**
    Authenticate canonical batch identity independently of original dependency checks.
-   *
+   
    @param evidence - untrusted evidence array
-   *
+   
    @throws QuestionSelectionError for copied or foreign captured arrays
    */
   function assertCapturedBatchIdentity(evidence: unknown): void {
@@ -161,11 +159,11 @@ export function createQuestionEvidence({
   }
   /**
    Capture original settled evidence while its original dependencies remain current.
-   *
+   
    @param handle - original declared claim handle
-   *
+   
    @returns canonical original evidence record
-   *
+   
    @throws QuestionSelectionError for foreign, unissued, unusable, or changed claims
    */
   function captureEvidence(handle: unknown): QuestionEvidence {
@@ -183,11 +181,11 @@ export function createQuestionEvidence({
   }
   /**
    Authenticate retained identity without granting dependency eligibility.
-   *
+   
    @param claim - original declared claim handle
-   *
+   
    @param evidence - untrusted candidate record
-   *
+   
    @throws QuestionSelectionError for uncaptured, copied, or foreign claim evidence
    */
   function assertCapturedIdentity({

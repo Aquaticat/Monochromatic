@@ -39,19 +39,19 @@ export type QuestionInspection = Readonly<{
 //region Diagnostic retention stays distinct from current usable answers.
 /**
  Bind current inspection and historical retention to original membership.
- *
+ 
  @param owner - original membership and lifetime capabilities
- *
+ 
  @returns current reads and retained diagnostic operations
- *
+ 
  @example createQuestionInspection(owner);
  */
 export function createQuestionInspection(owner: SelectionOwner): QuestionInspection {
   /**
    Inspect original answer state only while its binding remains current.
-   *
+   
    @param handle - original declared claim handle
-   *
+   
    @returns frozen current state without semantic qualification
    */
   function answerFor(handle: unknown): ReturnType<QuestionInspection['answerFor']> {
@@ -72,11 +72,11 @@ export function createQuestionInspection(owner: SelectionOwner): QuestionInspect
   }
   /**
    Read terminal diagnostics while every original dependency remains current.
-   *
+   
    @param handle - original issued batch handle
-   *
+   
    @returns original terminal record
-   *
+   
    @throws QuestionSelectionError for unterminated batches
    */
   function resultFor(handle: unknown): SelectionBatch['record'] {
@@ -94,13 +94,13 @@ export function createQuestionInspection(owner: SelectionOwner): QuestionInspect
   }
   /**
    Retain failed transport without reissuing or reviving any original claim.
-   *
+   
    @param batch - original issued batch handle
-   *
+   
    @param error - original transport or finalization failure
-   *
+   
    @returns terminal discarded record preserving failure identity
-   *
+   
    @throws QuestionSelectionError for already terminal batches
    */
   function discard({
@@ -137,9 +137,9 @@ export function createQuestionInspection(owner: SelectionOwner): QuestionInspect
   }
   /**
    Read retained claim diagnostics without checking freshness or granting permission.
-   *
+   
    @param handle - original declared claim handle
-   *
+   
    @returns frozen historical claim projection
    */
   function inspectClaim(handle: unknown): ReturnType<QuestionInspection['inspectClaim']> {
@@ -157,9 +157,9 @@ export function createQuestionInspection(owner: SelectionOwner): QuestionInspect
   }
   /**
    Read retained batch diagnostics without making stale answers usable evidence.
-   *
+   
    @param handle - original issued batch handle
-   *
+   
    @returns frozen historical batch projection
    */
   function inspectBatch(handle: unknown): ReturnType<QuestionInspection['inspectBatch']> {

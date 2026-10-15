@@ -19,18 +19,21 @@ const l = tagged({ tag: 'auto-mode-question-ownership' });
 
 /**
  Admit the original record without normalizing or copying its identity.
- *
+ 
  @param binding - resolver output awaiting structural admission
- *
+ 
  @returns assertion preserving the original occurrence record
- *
+ 
  @throws QuestionSelectionError for mutable or incomplete resolver output
  */
 function assertQuestionBinding(binding: unknown): asserts binding is QuestionBinding {
   if ((!object(binding)) || (!Object.isFrozen(binding))
     || (!object(binding.identity))
     || (!Object.isFrozen(binding.identity))
-    || (!Object.hasOwn(binding, 'projection'))) throw new QuestionSelectionError('Binding resolver did not return an immutable owned occurrence');
+    || (!Object.hasOwn(
+      binding,
+      'projection'
+    ))) throw new QuestionSelectionError('Binding resolver did not return an immutable owned occurrence');
 }
 
 //region One retained lock covers every handle read and publication operation.
@@ -78,11 +81,11 @@ export function createSelectionOwner({
   };
   /**
    Hold the original synchronous lock even when callbacks throw.
-   *
+   
    @param operation - owner operation executed without reentry
-   *
+   
    @returns original operation result
-   *
+   
    @throws QuestionSelectionError for reentrant binding operations
    */
   function retainedOperation<Result>(operation: () => Result): Result {
@@ -98,9 +101,9 @@ export function createSelectionOwner({
   }
   /**
    Check lifetime inside the original lock before reading current state.
-   *
+   
    @param operation - current owner operation
-   *
+   
    @returns original operation result
    */
   function atomic<Result>(operation: () => Result): Result {
@@ -111,11 +114,11 @@ export function createSelectionOwner({
   }
   /**
    Admit the exact resolver record without copying its occurrence identity.
-   *
+   
    @param handle - enclosing owner's occurrence handle
-   *
+   
    @returns original immutable occurrence record
-   *
+   
    @throws QuestionSelectionError for invalid resolver output
    */
   function resolve(handle: unknown): QuestionBinding {
@@ -128,11 +131,11 @@ export function createSelectionOwner({
   }
   /**
    Authenticate original claim membership before reading retained state.
-   *
+   
    @param handle - untrusted claim handle
-   *
+   
    @returns original owner-local claim
-   *
+   
    @throws QuestionSelectionError for foreign handles
    */
   function knownClaim(handle: unknown): SelectionClaim {
@@ -145,9 +148,9 @@ export function createSelectionOwner({
   }
   /**
    Reject a changed occurrence even if the resolver reuses its identity.
-   *
+   
    @param claim - original retained claim
-   *
+   
    @throws QuestionSelectionError for changed binding records
    */
   function current(claim: SelectionClaim): void {
@@ -155,11 +158,11 @@ export function createSelectionOwner({
   }
   /**
    Authenticate original batch membership before dispatch or retention.
-   *
+   
    @param handle - untrusted batch handle
-   *
+   
    @returns original owner-local batch
-   *
+   
    @throws QuestionSelectionError for foreign handles
    */
   function knownBatch(handle: unknown): SelectionBatch {
