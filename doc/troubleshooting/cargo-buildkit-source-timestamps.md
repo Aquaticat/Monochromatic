@@ -35,7 +35,7 @@ At line 2179,
 the timestamp-based path accepts source timestamps no newer than that reference:
 
 ```rust
-//! Cargo source, src/cargo/core/compiler/fingerprint/mod.rs:2179.
+//! `src/cargo/core/compiler/fingerprint/mod.rs:2179`.
 if path_mtime <= reference_mtime {
     continue;
 }
