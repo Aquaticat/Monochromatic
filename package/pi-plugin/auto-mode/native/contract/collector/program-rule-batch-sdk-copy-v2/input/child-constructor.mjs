@@ -18,6 +18,7 @@ import {createJudgmentLifecycle} from './judgment-lifecycle.ts';
 import {captureJudgmentMembership} from './judgment-membership.ts';
 import {createJudgmentPreparation} from './judgment-preparation.ts';
 import {createJudgmentInspection} from './judgment-inspection.ts';
+import {createJudgmentSources} from './judgment-sources.ts';
 
 //region Fixed session-bound creator; all inputs come from the owned native JSON/prepared-member profile.
 /** Bind one native consumer to source/root/file observers, fixed catalog and owned transport dependencies. */
@@ -27,23 +28,14 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     const budget=createJudgmentBudget({now:function readJudgmentClock() {if(firstClockRead){firstClockRead=false;return startedAt;}return now();},signal,isRetryableTransportFailure});
     budget.checkpoint();
     const input={producerOwner,observer,stream,response};
-    const sourceBinding=observer.beginJudgmentSources?observer.beginJudgmentSources(response):observer.bindJudgmentSources?.(response);
-    const receipt=readMainAgentRequest(input);
-    let judgmentSources=sourceBinding?.sources??receipt.sources;
-    if(sourceBinding&&sourceBinding.request!==receipt)throw new JudgmentConstructionError("Judgment sources do not belong to the original request receipt");
-    const {parentJSON,declaredNames}=captureJudgmentMembership(response);
-    const judgmentCollector=Object.freeze({
-      capture(options){
-        if(options.signal!==signal)throw new JudgmentConstructionError('Dependency sources require original judgment cancellation');
-        collector.assertObservedFresh(judgmentSources);
-        return judgmentSources;
-      },
-      assertObservedFresh(snapshot){
-        if(snapshot!==judgmentSources)throw new JudgmentConstructionError('Dependencies require the original assessed source collection');
-        collector.assertObservedFresh(snapshot);
-      }
+    const sourceOwner=createJudgmentSources({
+      observer,response,signal,collector,
+      readOriginalRequest(){return readMainAgentRequest(input);},
+      assertDependenciesCurrent(){return assertDependenciesCurrent();}
     });
-    const facade=createDependencyFacade({collector:judgmentCollector,rootAdapter,deadlineAt:budget.diagnostics().deadlineAt,rootDirectory,files,trace,now});
+    const {receipt,readCurrentSourceBinding}=sourceOwner;
+    const {parentJSON,declaredNames}=captureJudgmentMembership(response);
+    const facade=createDependencyFacade({collector:sourceOwner.collector,rootAdapter,deadlineAt:budget.diagnostics().deadlineAt,rootDirectory,files,trace,now});
     const bindings=new WeakMap(),byMember=new Map(),childGroups=[];
     const {
       active, ready, dependencyCheck, bindingSegment, assertDependenciesCurrent, isBindingSegmentActive
@@ -84,7 +76,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     }=createJudgmentInstructions({
       ready,bindingSegment,
       isBindingSegmentActive,
-      readJudgmentSources() { return judgmentSources; },
+      readJudgmentSources:sourceOwner.readSourceSnapshot,
       declaredNames,byMember,bindings,knownSelection,parsePolicy,receipt,issue
     });
     
@@ -98,17 +90,12 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     function knownSelection(){return preparation.knownSelection();}
     const preparation=createJudgmentPreparation({
       active,budget,declaredNames,observer,response,receipt,
-      readJudgmentSources(){return judgmentSources;},
-      publishJudgmentSources(sources){judgmentSources=sources;},
+      readJudgmentSources:sourceOwner.readSourceSnapshot,
+      publishJudgmentSources:sourceOwner.publishJudgmentSources,
       facade,signal,parentJSON,catalogText,catalogSHA256,resolveBinding,bindings,byMember
     });
     const {prepare}=preparation;
 
-    /** Return original identities only after the complete current dependency check succeeds. */
-    function readCurrentSourceBinding(){
-      assertDependenciesCurrent();
-      return Object.freeze({request:receipt,sources:judgmentSources});
-    }
     const {
       memberFor, knownMember, knownExecution, parentCurrent,
       assertExecutionEntry, executionEntryFor, beginExecution, executionFor,
@@ -193,7 +180,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       claimInstruction: guardWithInput(claimInstruction),
       captureClaimEvidence: guardWithInput(captureClaimEvidence),
       assertClaimEvidence: guardWithInput(assertClaimEvidence),
-      readSourceSnapshot() { return judgmentSources; },
+      readSourceSnapshot:sourceOwner.readSourceSnapshot,
       readCurrentSourceBinding: guardWithoutInput(readCurrentSourceBinding),
       indexedUnitAdoptionPairs: guardWithoutInput(indexedUnitAdoptionPairs),
       claimUnitAdoption: guardWithInput(claimUnitAdoption),
