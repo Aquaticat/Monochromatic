@@ -46,7 +46,8 @@ await describe({ name: 'prepared native wrapper failures', children: [
   ...[undefined, null, Object.freeze({ reason: 'ordinary opaque native failure' })].map(function nativeFailure(failure, index) {
     return it({ name: `retains ordinary native rejection identity ${index} without closing the group`, fn: async function ordinaryFailure() {
       const fixture = createExecutableFixture();
-      fixture.control.execute = async function rejectNative() { throw failure; };
+      const originalFailure: unknown = failure;
+      fixture.control.execute = async function rejectNative() { throw originalFailure; };
       const [tool] = fixture.wrap();
       assert.ok(tool);
       await assert.rejects(tool.execute('one'), function sameFailure(error) { return error === failure; });

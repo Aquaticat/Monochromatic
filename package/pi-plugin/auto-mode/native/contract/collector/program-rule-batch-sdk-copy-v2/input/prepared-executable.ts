@@ -74,6 +74,11 @@ export function wrapPreparedTools({
     });
     tl.debug('binding original prepared execution callback');
     /**
+     Original enumerable tool metadata is copied before installing the native callback.
+     */
+    const wrapped = {
+      ...original,
+    /**
      Execute an admitted native member using its original context owner.
 
      @param toolCallId - declared original member identifier
@@ -88,7 +93,7 @@ export function wrapPreparedTools({
 
      @throws Error for original ordinal, currentness, turn, or native execution failures
      */
-    async function execute(
+    async execute(
       toolCallId: string,
       params: unknown,
       nativeSignal: unknown,
@@ -98,7 +103,7 @@ export function wrapPreparedTools({
        Execution tracing preserves the wrapper boundary without inspecting native values.
        */
       const el = tagged({
-        tag: execute.name,
+        tag: wrapped.execute.name,
         l: tl
       });
       el.debug('entering original prepared execution callback');
@@ -144,11 +149,9 @@ export function wrapPreparedTools({
         }
         throw error;
       }
-    }
-    return {
-      ...original,
-      execute
+    },
     };
+    return wrapped;
   });
 }
 //endregion

@@ -23,6 +23,27 @@ type ExecutableTool = Readonly<Record<PropertyKey, unknown>> & Readonly<{
   ) => Promise<unknown>;
 }>;
 /**
+ Disposable native callbacks can fail independently of shared group state.
+ */
+type ExecutableControl = {
+  active: () => unknown;
+  waitForTurn: (ordinal: number) => unknown;
+  execute: (input: OwnedInput) => unknown;
+};
+/**
+ Independent fixtures expose only the native identities and observations asserted by consumers.
+ */
+type ExecutableFixture = Readonly<{
+  original: Readonly<{ name: string; label: string }>;
+  judgment: unknown;
+  events: string[];
+  invocations: OwnedInput[];
+  failures: unknown[];
+  batchState: { executionGuardFailed: boolean };
+  control: ExecutableControl;
+  wrap: (overrides?: Readonly<Record<string, unknown>>) => readonly ExecutableTool[];
+}>;
+/**
  The independent consumer accepts runtime probes without importing implementation declarations.
  */
 type ExecutableModule = Readonly<{
@@ -116,7 +137,7 @@ export function createGuard(): AggregateError {
 
  @example createExecutableFixture();
  */
-export function createExecutableFixture() {
+export function createExecutableFixture(): ExecutableFixture {
   /**
    Original tool metadata is copied while native execution receives this exact object.
    */
@@ -147,11 +168,7 @@ export function createExecutableFixture() {
   /**
    Native callback controls remain replaceable without global mocks.
    */
-  const control: {
-    active: () => unknown;
-    waitForTurn: (ordinal: number) => unknown;
-    execute: (input: OwnedInput) => unknown;
-  } = {
+  const control: ExecutableControl = {
     active() { return undefined; },
     waitForTurn() { return undefined; },
     execute() { return 'native result'; },
@@ -166,7 +183,16 @@ export function createExecutableFixture() {
   function wrap(overrides: Readonly<Record<string, unknown>> = {}): readonly ExecutableTool[] {
     return executable.wrapPreparedTools({
       tools: [original],
-      ordinalByID: new Map([['one', 0], ['two', 1]]),
+      ordinalByID: new Map([
+        [
+          'one',
+          0
+        ],
+        [
+          'two',
+          1
+        ]
+      ]),
       serial: false,
       waitForTurn(ordinal: number) {
         events.push(`turn:${ordinal}`);

@@ -8,9 +8,9 @@ await describe({ name: 'prepared native wrappers', children: [
   //region Tool snapshots preserve object-spread observations and original execution ownership.
   it({ name: 'copies enumerable metadata once and retains original native definition and input identity', fn: async function nativeIdentity() {
     const fixture = createExecutableFixture();
-    const symbol = Symbol('original native metadata');
+    const symbol = Symbol('metadata copied from the original native tool');
     const reads: string[] = [];
-    const inherited = Object.create({ inherited: true });
+    const inherited: unknown = Object.create({ inherited: true });
     Object.defineProperties(inherited, {
       name: { value: 'tool', enumerable: true },
       label: { get() { reads.push('label');
@@ -51,7 +51,9 @@ await describe({ name: 'prepared native wrappers', children: [
     const wrappers = fixture.wrap({ tools: ['ab', null, undefined] });
     assert.equal(wrappers[0]?.[0], 'a');
     assert.equal(wrappers[0]?.[1], 'b');
-    for (const wrapper of wrappers) assert.equal(await wrapper.execute('one'), 'native result');
+    await Promise.all(wrappers.map(async function executePrimitive(wrapper) {
+      assert.equal(await wrapper.execute('one'), 'native result');
+    }));
     assert.deepEqual(fixture.invocations.map(function original(input) { return input.tool; }), ['ab', null, undefined]);
   } }),
   it({ name: 'preserves opaque source getter failures during wrapper construction', fn: async function metadataFailure() {
