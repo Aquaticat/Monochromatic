@@ -6,12 +6,28 @@ import { publicKeys, selectionKeys } from './native-api-keys-fixture.ts';
 /** Recorded calls retain the exact arguments and receiver seen by original owners. */
 type ObservedCall = Readonly<{ name: string; args: readonly unknown[]; receiver: unknown }>;
 
+/** Current retained selection exposes independent observable callbacks. */
+type FixtureSelection = Readonly<{ inspectBatch: FixtureAPICall; inspectClaim: FixtureAPICall }>;
+
+/** Independent mutable controls and built consumer access remain separate. */
+type APIFixture = Readonly<{
+  events: string[];
+  calls: ObservedCall[];
+  guarded: FixtureAPICall[];
+  failures: Map<string, unknown>;
+  results: Map<string, unknown>;
+  state: { selection: FixtureSelection };
+  input: Record<string, unknown>;
+  construct: () => FixturePublicAPI;
+  method: (input: Readonly<{ name: string; api: FixturePublicAPI }>) => FixtureAPICall;
+}>;
+
 /**
  Bind independently observed owners without requiring real selection or transport state.
 
  @returns independent public factory, original functions, and mutable fault controls
  */
-export function createAPIFixture() {
+export function createAPIFixture(): APIFixture {
   /** Ordered events distinguish operation entry, owner calls, and operation exit. */
   const events: string[] = [];
   /** Every underlying invocation retains original argument cardinality. */
@@ -49,7 +65,7 @@ export function createAPIFixture() {
     };
   }
   /** Selection identities can change after assembly without rebuilding the public judgment. */
-  const state = { selection: { inspectBatch: owner('inspectBatch'), inspectClaim: owner('inspectClaim') } };
+  const state: APIFixture['state'] = { selection: { inspectBatch: owner('inspectBatch'), inspectClaim: owner('inspectClaim') } };
   /**
    Preserve ordinary operation semantics while exposing the exact supplied callback.
 
@@ -70,7 +86,7 @@ export function createAPIFixture() {
 
    @returns current selection identity
    */
-  function knownSelection() {
+  function knownSelection(): FixtureSelection {
     step('selection');
     return state.selection;
   }

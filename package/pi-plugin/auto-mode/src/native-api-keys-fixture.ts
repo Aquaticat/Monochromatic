@@ -43,6 +43,6 @@ const unguarded = new Set<string>([...directKeys, ...selectionKeys]);
 const noInput = new Set<string>(noInputKeys);
 
 /** Every remaining public operation must retain exactly one input argument. */
-export const oneInputKeys = publicKeys.filter(function oneInput(name) {
+export const oneInputKeys: readonly string[] = publicKeys.filter(function oneInput(name) {
   return !unguarded.has(name) && !noInput.has(name);
 });
