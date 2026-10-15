@@ -112,6 +112,16 @@ jobs `msvc-x64`, `msvc-arm64` and `gnu-x64-ucrt64`.
   not a console. The x64 jobs print plain text in the same case. That code does not depend on the attach,
   but no control run of a console-subsystem build covered this exact case.
 
+- Release workflow, dispatch with `dry-run` true from this branch, run 38757804504 at `7e5024d176`: every job passed.
+  The detect job printed `dry_run=true`; the step "Package (Windows executable)" printed `subsystem 2` for the x64,
+  arm64 and GNU executables of the release profile; the notes carry "The executable opens no console window";
+  the release job printed `DRY RUN, would run: gh release create` and created nothing.
+- Positive control for that release check: the exact Python text extracted from `music-player-release.yml`
+  was run with `pefile` 2024.8.26 on two executables from the windows-gnu image's `x86_64-w64-mingw32-gcc`.
+  The `-mconsole` file (Subsystem 3) failed with the `::error::The Subsystem field ... is 3` line and exit status 1;
+  the `-mwindows` file (Subsystem 2) passed.
+  The release run itself did not build a console-subsystem file.
+
 ## Not verified
 
 - Nobody looked at a Windows desktop: that a double-click opens no window is inferred from Subsystem 2 and the
