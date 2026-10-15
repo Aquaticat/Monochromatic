@@ -1,7 +1,7 @@
 import {QuestionSelectionError} from './selection-error.ts';
 import {object} from './selection-values.ts';
 import {readQuestionDefinitions} from './selection-definitions.ts';
-import {createQuestionSettlement} from './selection-settlement.mjs';
+import {createQuestionSettlement} from './selection-settlement.ts';
 
 export {QuestionSelectionError} from './selection-error.ts';
 export {readAssessmentResponse,readRelationEstimate} from './selection-values.ts';
