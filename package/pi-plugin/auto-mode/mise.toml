@@ -171,6 +171,13 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-queue.unit.test.ts",
 ]
 
+[tasks."test:native:group-current"]
+description = "Verify original collector currentness and cancellation observation"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-current.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-current-abort.unit.test.ts",
+]
+
 [tasks."test:native:group-lifetime"]
 description = "Verify original collector retirement, draining, and retained inspection"
 run = [
