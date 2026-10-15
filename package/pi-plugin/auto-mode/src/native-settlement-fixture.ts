@@ -59,14 +59,24 @@ const settlementModule: SettlementModule = loaded;
 
 /**
  Create disposable original claims with controllable owner lifetime checks.
+
  @param checkpoint - optional enclosing budget failure point
+
  @param current - optional original binding failure point
+
  @param definitions - pinned definitions for this fixture's selected claims
+
  @returns original owner records and its bound settlement operation
+
+ @example
+ ```ts
+ const fixture = createSettlementFixture();
+ fixture.settle({ batch: fixture.handle, answerText });
+ ```
  */
 export function createSettlementFixture({
-  checkpoint = function currentBudget() {},
-  current = function currentBinding() {},
+  checkpoint = function currentBudget() { return undefined; },
+  current = function currentBinding() { return undefined; },
   definitions = [
     { type: 'noul', criteria: { true: 'holds', false: 'does not hold' } },
     { type: 'noul', criteria: { true: 'holds', false: 'does not hold' } },
