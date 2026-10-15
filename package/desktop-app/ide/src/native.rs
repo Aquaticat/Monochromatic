@@ -308,6 +308,10 @@ mod write_wait_tests;
 mod write_wait_timer_tests;
 /// The wrap indicator's symbol.
 use ide_app::wrap_sign::Sign;
+/// Bind caret and selection callbacks.
+use input::{bind_keys, bind_pointer};
+/// Shared rendering entry point.
+use render::{bind_appearance, render};
 /// The one entry point of the native window.
 pub use start::run;
 /// Tile bounds of the displayed and requested windows.
@@ -316,6 +320,8 @@ use tile::TileBounds;
 use tile_build::TileWorker;
 /// What a background measurement is valid for.
 use tile_pass::PassKey;
+/// Bind viewport changes without line-snapping native scrolling.
+use viewport::bind_viewport;
 
 /// Shared UI-thread state;
 ///  there is no project-writing operation.

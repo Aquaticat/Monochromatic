@@ -4,11 +4,8 @@
 
 /// The window, the shared state, and the modules whose bindings are installed at startup.
 use super::{
-    AppWindow, State, find, frame_trace,
-    input::{bind_keys, bind_pointer},
-    language, minimap, navigation, reload,
-    render::{bind_appearance, render},
-    viewport::bind_viewport,
+    AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, find, frame_trace, language, minimap,
+    navigation, reload, render,
 };
 /// Inspection-only hint and diagnostic injection from a JSON file;
 ///  debug builds only.
