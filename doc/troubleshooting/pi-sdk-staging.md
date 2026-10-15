@@ -7276,6 +7276,15 @@ and `${HOME}/temp/agent/pi-native-source-work-green-20261014.log` retain the fai
 The `green` filename is a stage label,
 not a passing result.
 
+The subsequent unchanged repetitions of the first remedy all passed;
+`binding-set-after.json` records complete process durations of 8224.54,
+6064.67,
+and 6179.07 milliseconds.
+The remaining duplicate validation is being tested through `readCurrentSourceBinding()`:
+the original judgment validates dependencies before returning its original request and source identities.
+This lets the governing-source owner avoid separately repeating the same observer and collector reads.
+The unchanged 10000-open regression and the approved-dependency rejection controls remain required.
+
 A separate full lint attempt during this cleanup failed before producing diagnostics with
 `Error running tsgolint: "exit status: exit status: 2"`
 and `runtime: failed to create new OS thread (have 2 already; errno=11)`.

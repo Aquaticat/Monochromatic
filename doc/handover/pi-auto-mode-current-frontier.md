@@ -507,8 +507,16 @@ The logs are `${HOME}/temp/agent/pi-native-source-work-red-20261014.log`
 and `${HOME}/temp/agent/pi-native-source-work-green-20261014.log`;
 the latter filename names the intended stage,
 not its actual failed assertion result.
-Unchanged repetitions of this changed artifact are now running in
-`${HOME}/temp/agent/pi-native-binding-set-after-20261014.log`.
+Unchanged repetitions of this changed artifact all passed.
+Their complete process durations were 8224.54,
+6064.67,
+and 6179.07 milliseconds;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-after.json` retains the results.
+These include setup and shutdown and are not judgment-only latency measurements.
+The next change introduces `readCurrentSourceBinding()` on the original judgment.
+It returns original request and source identities only after `assertDependenciesCurrent()` succeeds.
+The governing-source owner uses that operation instead of independently repeating observer and collector checks.
+Its build and the unchanged work-bound regression are pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
