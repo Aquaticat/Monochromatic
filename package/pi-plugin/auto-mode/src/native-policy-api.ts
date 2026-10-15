@@ -7,6 +7,7 @@
 //region Native consumers import only policy, observation, transport, and approval boundaries.
 
 export { askUser } from './ask-user.ts';
+export { registerNativeBypass, readNativeBypassEnabled } from './native-bypass.ts';
 export { createAssessmentSender } from './assessment-sender.ts';
 export { createNativeSemanticOperatingPolicies } from './semantic-operating-policy.ts';
 export { VERDICT_ENTRY_TYPE } from './types.ts';

@@ -56,6 +56,7 @@ export function createNativeBatchHandler({
   headingContextAdmissionPolicy,
   unitAdoptionAdmissionPolicy,
   approvalHost
+  ,readBypass=function readNoBypass(){return false;}
 }){
  const reviewer=createBoundPolicyReviewer({
    producerOwner,
@@ -90,13 +91,16 @@ export function createNativeBatchHandler({
     response:assistantMessage,
     stream
   });
-  const reviewState={reviewed:undefined};
+  const bypass=readBypass()===true;
+  const reviewState={reviewed:undefined,bypassed:false};
   function assertFresh(){
+   if(bypass&&readBypass()!==true)throw new NativeBatchBindingError('Explicit bypass was disabled before this group completed; retry with guardrail checks');
    if(producerOwner.judgmentFor({
      response:assistantMessage,
      stream
    })!==judgment)throw new NativeBatchBindingError('Original complete-group judgment changed');
    if(reviewState.reviewed){reviewState.reviewed.assertCurrent();return;}
+   if(reviewState.bypassed){judgment.assertDependenciesCurrent();return;}
    judgment.checkpoint();
    if(judgment.inspect()
      .prepared)judgment.assertDependenciesCurrent();
@@ -126,6 +130,12 @@ export function createNativeBatchHandler({
       judgment,
       tools:context.tools??[]
     });
+    if(bypass){
+     assertFresh();
+     judgment.finalize();
+     reviewState.bypassed=true;
+     return {block:false};
+    }
     reviewState.reviewed=await reviewer.review(assistantMessage);
     reviewState.reviewed.assertCurrent();
     if((reviewState.reviewed.outcome

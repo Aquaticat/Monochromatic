@@ -44,6 +44,7 @@ export function bindNativePolicyRuntime({
   headingContextAdmissionPolicy,
   unitAdoptionAdmissionPolicy,
   approvalHost,
+  readBypass,
   sendWire,
   wrapToolDefinition,
   readSessionDisposalState,
@@ -137,6 +138,7 @@ export function bindNativePolicyRuntime({
    headingContextAdmissionPolicy,
    unitAdoptionAdmissionPolicy,
    approvalHost
+   ,readBypass
  });
  async function executeToolBatch(input){
   trace('policy-runtime.batch');

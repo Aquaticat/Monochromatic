@@ -27,6 +27,7 @@ import {
   readActiveSessionConstructedInputs,
 } from './resource-dependencies.mjs';
 import { registerHostResource } from './resource-reload.ts';
+import { registerNativeBypass } from '../maintained-policy.mjs';
 
 //region Native services receive the original loader from its policy owner.
 
@@ -95,6 +96,7 @@ export function createHostResource({
     });
     al.debug('capturing original native resource API');
     nativeApi.current = pi;
+    registerNativeBypass(pi);
   }
   /**
    The original policy owner receives existing options and one additional native API observer.

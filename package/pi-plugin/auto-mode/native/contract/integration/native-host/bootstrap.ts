@@ -24,6 +24,7 @@ import {
 } from './host.ts';
 import {
   askUser,
+  readNativeBypassEnabled,
   createAssessmentSender,
   createNativeSemanticOperatingPolicies,
   VERDICT_ENTRY_TYPE
@@ -185,6 +186,7 @@ function bindSession({
    */
   const endpoint = new URL(`${endpointBase}/chat/completions`).href;
   return bindNativePolicyRuntime({
+    readBypass() { return readNativeBypassEnabled(root.session.extensionRunner.createContext()); },
     root,
     lifecycle,
     policyInput: resource.policyInput,

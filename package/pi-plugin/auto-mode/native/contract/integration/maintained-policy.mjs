@@ -1,6 +1,8 @@
 /** The existing SDK stager resolves the maintained artifact before fixture HOME changes. */
 export {
   askUser,
+  registerNativeBypass,
+  readNativeBypassEnabled,
   createAssessmentSender,
   createNativeSemanticOperatingPolicies,
   VERDICT_ENTRY_TYPE,
