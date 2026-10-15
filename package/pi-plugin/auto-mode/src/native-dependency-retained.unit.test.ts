@@ -17,17 +17,31 @@ await describe({ name: '', children: [
     f.preparation.preparationFailed = true;
     f.preparation.preparationFailure = preparationFailure;
     f.preparation.finished = true;
-    assert.throws(function failedClosure() { f.owner.active(); }, { message: 'Judgment finalization failed permanently', cause: finalizationFailure });
-    assert.throws(function releaseFailedClosure() { f.owner.assertDependenciesCurrent(); }, { message: 'Failed finalization cannot release dependencies' });
+    assert.throws(function failedClosure() { 
+      f.owner.active(); 
+    }, { message: 'Judgment finalization failed permanently', cause: finalizationFailure });
+    assert.throws(function releaseFailedClosure() { 
+      f.owner.assertDependenciesCurrent(); 
+    }, { message: 'Failed finalization cannot release dependencies' });
     f.preparation.closeFailed = false;
-    assert.throws(function failedPreparation() { f.owner.active(); }, { message: 'Judgment preparation failed permanently', cause: preparationFailure });
-    assert.throws(function releaseFailedPreparation() { f.owner.assertDependenciesCurrent(); }, { message: 'Judgment has no prepared dependency handle' });
+    assert.throws(function failedPreparation() { 
+      f.owner.active(); 
+    }, { message: 'Judgment preparation failed permanently', cause: preparationFailure });
+    assert.throws(function releaseFailedPreparation() { 
+      f.owner.assertDependenciesCurrent(); 
+    }, { message: 'Judgment has no prepared dependency handle' });
     f.preparation.preparationFailed = false;
-    assert.throws(function finishedJudgment() { f.owner.active(); }, { message: 'Judgment evidence collection is finished' });
+    assert.throws(function finishedJudgment() { 
+      f.owner.active(); 
+    }, { message: 'Judgment evidence collection is finished' });
     f.preparation.finished = false;
     f.preparation.prepared = false;
-    assert.throws(function releaseUnprepared() { f.owner.assertDependenciesCurrent(); }, { message: 'Judgment has no prepared dependency handle' });
-    assert.ok(f.events.every(function onlyState(point) { return point === 'state'; }));
+    assert.throws(function releaseUnprepared() { 
+      f.owner.assertDependenciesCurrent(); 
+    }, { message: 'Judgment has no prepared dependency handle' });
+    assert.ok(f.events.every(function onlyState(point) { 
+      return point === 'state'; 
+    }));
   } }),
   it({ name: 'retains original request and program checks after the decision deadline', fn: async function retainedAfterDeadline() {
     /** Completed judgments do not reuse the expired decision clock for dependency release. */
@@ -49,10 +63,16 @@ await describe({ name: '', children: [
       /** Exact original failure becomes the permanent eligibility cause. */
       const failure = new Error(`retained ${point} failed`);
       f.state.failures.set(point, failure);
-      assert.throws(function failedRetained() { f.owner.assertDependenciesCurrent(); }, function same(error: unknown) { return error === failure; });
+      assert.throws(function failedRetained() { 
+        f.owner.assertDependenciesCurrent(); 
+      }, function same(error: unknown) { 
+        return error === failure; 
+      });
       f.state.failures.clear();
       f.events.length = 0;
-      assert.throws(function repeatRetained() { f.owner.assertDependenciesCurrent(); }, { message: 'Original relation evidence lost dependency eligibility', cause: failure });
+      assert.throws(function repeatRetained() { 
+        f.owner.assertDependenciesCurrent(); 
+      }, { message: 'Original relation evidence lost dependency eligibility', cause: failure });
       assert.deepEqual(f.events, []);
     } });
   }),
@@ -61,7 +81,9 @@ await describe({ name: '', children: [
     const f = createDependencyFixture();
     f.preparation.finished = true;
     f.state.currentRequest = Object.freeze({});
-    assert.throws(function replacedRetainedRequest() { f.owner.assertDependenciesCurrent(); }, { message: 'Enclosing request observation changed' });
+    assert.throws(function replacedRetainedRequest() { 
+      f.owner.assertDependenciesCurrent(); 
+    }, { message: 'Enclosing request observation changed' });
     assert.deepEqual(f.events, ['state', 'state', 'request']);
   } }),
   ...['deadline', 'cancellation'].map(function lifetimeFailure(kind) {
@@ -70,10 +92,14 @@ await describe({ name: '', children: [
       const f = createDependencyFixture();
       if (kind === 'deadline') f.clock.at = 5_000;
       else f.controller.abort(new Error('original cancellation'));
-      assert.throws(function expiredActive() { f.owner.active(); }, { name: kind === 'deadline' ? 'JudgmentDeadlineError' : 'JudgmentCancelledError' });
+      assert.throws(function expiredActive() { 
+        f.owner.active(); 
+      }, { name: kind === 'deadline' ? 'JudgmentDeadlineError' : 'JudgmentCancelledError' });
       assert.deepEqual(f.events, ['state', 'checkpoint']);
       f.events.length = 0;
-      assert.throws(function retiredActive() { f.owner.active(); }, { message: 'Original relation evidence lost dependency eligibility' });
+      assert.throws(function retiredActive() { 
+        f.owner.active(); 
+      }, { message: 'Original relation evidence lost dependency eligibility' });
       assert.deepEqual(f.events, []);
     } });
   }),

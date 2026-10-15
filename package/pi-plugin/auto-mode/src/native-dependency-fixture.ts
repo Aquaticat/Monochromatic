@@ -32,6 +32,7 @@ type DependencyFixture = ReturnType<typeof createBudgetFixture> & Readonly<{
   retainedProjection: object;
   finalizeHandles: unknown[];
   retainedHandles: unknown[];
+  operation: () => object;
 }>;
 
 //region Each original judgment gets independent cancellation, clock, and dependency callbacks.
@@ -104,7 +105,18 @@ export function createDependencyFixture(): DependencyFixture {
     state.onStep?.(point);
     if (state.failures
       .has(point)) throw state.failures
-      .get(point);
+        .get(point);
+  }
+  /**
+   Run an original caller operation whose failure value crosses the callback boundary.
+
+   @returns original opaque operation result
+
+   @throws configured original operation failure
+   */
+  function operation(): object {
+    visit('operation');
+    return handle;
   }
   /**
    Native membership order deliberately differs from alphabetical order.
@@ -129,43 +141,58 @@ export function createDependencyFixture(): DependencyFixture {
     );
     bindings.set(
       member,
-      id === 'absent' ? {} : { preparedProgram: { assertCurrent() { visit(`program:${id}`); } } }
+      id === 'absent' ? {} : { preparedProgram: { assertCurrent(): void { 
+        visit(`program:${id}`); 
+      } } }
     );
   }
   /**
    Independent capability contract proves native owner calls the original boundaries.
    */
   const owner = dependencyModule.createJudgmentDependencyChecks({
-    budget: { checkpoint() { visit('checkpoint');
-    budgetFixture.budget.checkpoint(); } },
-    readOriginalRequest() { visit('request');
-    return state.currentRequest; },
+    budget: { checkpoint() { 
+      visit('checkpoint');
+    budgetFixture.budget
+      .checkpoint(); 
+    } },
+    readOriginalRequest() { 
+      visit('request');
+    return state.currentRequest; 
+    },
     receipt,
     facade: {
-      finalize(value: unknown) { visit('finalize');
+      finalize(value: unknown) { 
+        visit('finalize');
       finalizeHandles.push(value);
       assert.equal(
         value,
         preparation.handle
       );
-      return liveProjection; },
-      checkRetained(value: unknown) { visit('retained');
+      return liveProjection; 
+      },
+      checkRetained(value: unknown) { 
+        visit('retained');
       retainedHandles.push(value);
       assert.equal(
         value,
         preparation.handle
       );
-      return retainedProjection; },
+      return retainedProjection; 
+      },
     },
     byMember,
     bindings,
-    trace(event: string) { assert.equal(
+    trace(event: string) { 
+      assert.equal(
       event,
       'binding-segment.postcheck'
     );
-    visit('trace'); },
-    readPreparation() { visit('state');
-    return preparation; },
+    visit('trace'); 
+    },
+    readPreparation() { 
+      visit('state');
+    return preparation; 
+    },
   });
   return {
     ...budgetFixture,
@@ -179,6 +206,7 @@ export function createDependencyFixture(): DependencyFixture {
     retainedProjection,
     finalizeHandles,
     retainedHandles
+    ,operation
   };
 }
 //endregion

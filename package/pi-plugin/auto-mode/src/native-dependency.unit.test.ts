@@ -26,8 +26,10 @@ await describe({ name: '', children: [
     const f = createDependencyFixture();
     for (const value of [undefined, null, false, 0, Object.freeze({})]) {
       f.events.length = 0;
-      assert.equal(f.owner.dependencyCheck(function readOriginal() { f.events.push('read');
-      return value; }), value);
+      assert.equal(f.owner.dependencyCheck(function readOriginal() { 
+        f.events.push('read');
+      return value; 
+      }), value);
       assert.deepEqual(f.events, ['read', 'program:z', 'program:a']);
     }
   } }),
@@ -38,13 +40,21 @@ await describe({ name: '', children: [
       /** Later failures must not replace this original cause. */
       const first = new Error(`original ${point} failure`);
       f.state.failures.set(point, first);
-      assert.throws(function failedActive() { f.owner.active(); }, function same(error: unknown) { return error === first; });
+      assert.throws(function failedActive() { 
+        f.owner.active(); 
+      }, function same(error: unknown) { 
+        return error === first; 
+      });
       f.state.failures.clear();
       /** Raw dependency checking retains its original unguarded callback behavior. */
       const second = new Error('later observation failure');
       assert.throws(function laterDependencyFailure() {
-        f.owner.dependencyCheck(function failLater() { throw second; });
-      }, function same(error: unknown) { return error === second; });
+        f.owner.dependencyCheck(function failLater() { 
+          throw second; 
+        });
+      }, function same(error: unknown) { 
+        return error === second; 
+      });
       for (const operation of [f.owner.active, f.owner.ready, f.owner.assertDependenciesCurrent]) {
         f.events.length = 0;
         assert.throws(operation, { name: 'JudgmentConstructionError', message: 'Original relation evidence lost dependency eligibility', cause: first });
@@ -56,25 +66,35 @@ await describe({ name: '', children: [
     /** Equal-looking foreign request identity must fail before prepared program callbacks. */
     const f = createDependencyFixture();
     f.state.currentRequest = Object.freeze({});
-    assert.throws(function replacedRequest() { f.owner.active(); }, { name: 'JudgmentConstructionError', message: 'Enclosing request observation changed' });
+    assert.throws(function replacedRequest() { 
+      f.owner.active(); 
+    }, { name: 'JudgmentConstructionError', message: 'Enclosing request observation changed' });
     assert.deepEqual(f.events, ['state', 'checkpoint', 'request']);
     f.state.currentRequest = f.receipt;
     f.events.length = 0;
-    assert.throws(function restoredRequest() { f.owner.ready(); }, { message: 'Original relation evidence lost dependency eligibility' });
+    assert.throws(function restoredRequest() { 
+      f.owner.ready(); 
+    }, { message: 'Original relation evidence lost dependency eligibility' });
     assert.deepEqual(f.events, []);
   } }),
   it({ name: 'keeps incomplete membership and direct state-read failures outside retained eligibility', fn: async function preservesBoundary() {
     /** Membership can become available after its original readiness refusal. */
     const f = createDependencyFixture();
     f.preparation.prepared = false;
-    assert.throws(function incompleteMembership() { f.owner.ready(); }, { message: 'Complete final prepared membership is unavailable' });
+    assert.throws(function incompleteMembership() { 
+      f.owner.ready(); 
+    }, { message: 'Complete final prepared membership is unavailable' });
     assert.equal(f.events.includes('finalize'), false);
     f.preparation.prepared = true;
     f.owner.ready();
     /** Direct state reads precede the dependency retention boundary. */
     const failure = new Error('state reader failed');
     f.state.failures.set('state', failure);
-    assert.throws(function failedState() { f.owner.active(); }, function same(error: unknown) { return error === failure; });
+    assert.throws(function failedState() { 
+      f.owner.active(); 
+    }, function same(error: unknown) { 
+      return error === failure; 
+    });
     f.state.failures.clear();
     f.owner.active();
   } }),
@@ -87,10 +107,16 @@ await describe({ name: '', children: [
       f.state.onStep = function failAfterEntry(current) {
         if (current === 'finalize') f.state.failures.set(point, failure);
       };
-      assert.throws(function failedReady() { f.owner.ready(); }, function same(error: unknown) { return error === failure; });
+      assert.throws(function failedReady() { 
+        f.owner.ready(); 
+      }, function same(error: unknown) { 
+        return error === failure; 
+      });
       delete f.state.onStep;
       f.state.failures.clear();
-      assert.throws(function retiredReady() { f.owner.ready(); }, { message: 'Original relation evidence lost dependency eligibility', cause: failure });
+      assert.throws(function retiredReady() { 
+        f.owner.ready(); 
+      }, { message: 'Original relation evidence lost dependency eligibility', cause: failure });
     } });
   }),
 ] });

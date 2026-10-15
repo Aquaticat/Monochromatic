@@ -15,41 +15,56 @@ await describe({ name: '', children: [
       assert.deepEqual(f.events, ['state', 'checkpoint', 'request', 'program:z', 'program:a', 'state', 'state', 'finalize', 'checkpoint', 'program:z', 'program:a']);
       f.events.length = 0;
       assert.throws(function nestedSegment() {
-        f.owner.bindingSegment(function forbiddenNestedBody() { throw new Error('nested body must not run'); });
+        f.owner.bindingSegment(function forbiddenNestedBody() { 
+          throw new Error('nested body must not run'); 
+        });
       }, { message: 'Original binding segments cannot nest' });
       assert.deepEqual(f.events, []);
       f.owner.ready();
       assert.deepEqual(f.events, ['state', 'checkpoint', 'state', 'checkpoint']);
       f.events.length = 0;
-      assert.equal(f.owner.dependencyCheck(function internalRead() { f.events.push('internal');
-      return value; }), value);
+      assert.equal(f.owner.dependencyCheck(function internalRead() { 
+        f.events.push('internal');
+      return value; 
+      }), value);
       assert.deepEqual(f.events, ['internal']);
-      f.state.onStep = function releasedPostcheck() { assert.equal(f.owner.isBindingSegmentActive(), false); };
+      f.state.onStep = function releasedPostcheck() { 
+        assert.equal(f.owner.isBindingSegmentActive(), false); 
+      };
       return value;
     }), value);
     assert.equal(f.owner.isBindingSegmentActive(), false);
     assert.deepEqual(f.events, ['internal', 'trace', 'state', 'checkpoint', 'request', 'program:z', 'program:a', 'state', 'state', 'finalize', 'checkpoint', 'program:z', 'program:a']);
-    assert.equal(f.owner.bindingSegment(function originalUndefined() { return undefined; }), undefined);
+    assert.equal(f.owner.bindingSegment(function originalUndefined() { 
+      return undefined; 
+    }), undefined);
   } }),
   it({ name: 'does not enter a segment or trace after readiness preflight fails', fn: async function excludesFailedEntry() {
     /** Incomplete membership refuses the operation before any segment flag changes. */
     const f = createDependencyFixture();
     f.preparation.prepared = false;
     assert.throws(function unpreparedSegment() {
-      f.owner.bindingSegment(function forbiddenOperation() { throw new Error('operation must not enter'); });
+      f.owner.bindingSegment(function forbiddenOperation() { 
+        throw new Error('operation must not enter'); 
+      });
     }, { message: 'Complete final prepared membership is unavailable' });
     assert.equal(f.owner.isBindingSegmentActive(), false);
     assert.equal(f.events.includes('trace'), false);
     f.preparation.prepared = true;
-    assert.equal(f.owner.bindingSegment(function recoveredOperation() { return f.handle; }), f.handle);
+    assert.equal(f.owner.bindingSegment(function recoveredOperation() { 
+      return f.handle; 
+    }), f.handle);
   } }),
   ...[new Error('original binding failed'), undefined, null, 'original primitive failure'].map(function originalFailure(failure, ordinal) {
     return it({ name: `preserves original operation failure ${ordinal} after successful postcheck`, fn: async function preservesFailure() {
       /** A body failure alone does not retire dependency eligibility. */
       const f = createDependencyFixture();
+      f.state.failures.set('operation', failure);
       assert.throws(function failedOperation() {
-        f.owner.bindingSegment(function failOriginal() { throw failure; });
-      }, function same(error: unknown) { return error === failure; });
+        f.owner.bindingSegment(f.operation);
+      }, function same(error: unknown) { 
+        return error === failure; 
+      });
       assert.equal(f.owner.isBindingSegmentActive(), false);
       assert.equal(f.events.includes('trace'), true);
       f.owner.ready();
@@ -65,16 +80,22 @@ await describe({ name: '', children: [
         f.owner.bindingSegment(function originalOperation() {
           f.events.length = 0;
           f.state.failures.set(point, failure);
-          f.state.onStep = function releasedBeforePostcheck() { assert.equal(f.owner.isBindingSegmentActive(), false); };
+          f.state.onStep = function releasedBeforePostcheck() { 
+            assert.equal(f.owner.isBindingSegmentActive(), false); 
+          };
           return f.handle;
         });
-      }, function same(error: unknown) { return error === failure; });
+      }, function same(error: unknown) { 
+        return error === failure; 
+      });
       assert.equal(f.owner.isBindingSegmentActive(), false);
       assert.equal(f.events[0], 'trace');
       f.state.failures.clear();
       delete f.state.onStep;
       f.events.length = 0;
-      assert.throws(function retiredSegment() { f.owner.ready(); }, { message: 'Original relation evidence lost dependency eligibility', cause: failure });
+      assert.throws(function retiredSegment() { 
+        f.owner.ready(); 
+      }, { message: 'Original relation evidence lost dependency eligibility', cause: failure });
       assert.deepEqual(f.events, []);
     } });
   }),
@@ -86,10 +107,11 @@ await describe({ name: '', children: [
       const operationFailure = useUndefined ? undefined : new Error('operation failed');
       /** Distinct second failure becomes the retained eligibility cause. */
       const postcheckFailure = useUndefined ? undefined : new Error('postcheck failed');
+      f.state.failures.set('operation', operationFailure);
       assert.throws(function pairedFailure() {
         f.owner.bindingSegment(function failedOriginal() {
           f.state.failures.set('trace', postcheckFailure);
-          throw operationFailure;
+          return f.operation();
         });
       }, function originalAggregate(error: unknown) {
         assert.ok(error instanceof AggregateError);
@@ -102,7 +124,9 @@ await describe({ name: '', children: [
       });
       assert.equal(f.owner.isBindingSegmentActive(), false);
       f.state.failures.clear();
-      assert.throws(function retiredAfterPair() { f.owner.active(); }, { message: 'Original relation evidence lost dependency eligibility', cause: postcheckFailure });
+      assert.throws(function retiredAfterPair() { 
+        f.owner.active(); 
+      }, { message: 'Original relation evidence lost dependency eligibility', cause: postcheckFailure });
     } });
   }),
 ] });
