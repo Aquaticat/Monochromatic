@@ -16,14 +16,18 @@ await describe({
         const properties = ['readJudgment', 'response', 'stream', 'signal', 'knownMember', 'knownExecution', 'ready', 'dependencyCheck', 'assertDependenciesCurrent', 'parentCurrent', 'bindings', 'childGroups', 'operation'];
         const reads: string[] = [];
         const supplied: Record<string, unknown> = {};
-        for (const property of properties) Object.defineProperty(supplied, property, { get() { reads.push(property);
-        return input[property]; } });
+        for (const property of properties) Object.defineProperty(supplied, property, { get() { 
+          reads.push(property);
+        return input[property]; 
+        } });
         const owner = createFixtureProgramOwner(supplied);
         assert.equal(Object.isFrozen(owner), true);
         assert.deepEqual(Object.keys(owner), ['bindPreparedProgram', 'preparedProgramFor', 'openProgram', 'programFor', 'reachProgramGroup', 'reachedGroupFor', 'bindProgramCalls', 'prepareReachedMembers', 'invokeProgramNative', 'scriptValueFor', 'markProgramGuard', 'inspectReachedGroup', 'inspectProgram']);
         assert.deepEqual(reads, properties);
         assert.deepEqual(events, []);
-        assert.throws(function foreignProgram() { owner.programFor({}); }, { message: 'Program handle is not owned by this judgment' });
+        assert.throws(function foreignProgram() { 
+          owner.programFor({}); 
+        }, { message: 'Program handle is not owned by this judgment' });
         assert.deepEqual(reads, properties);
       },
     }),
@@ -42,7 +46,9 @@ await describe({
         assert.equal(owner.preparedProgramFor(member), view);
         assert.equal(record.preparedProgram?.assertCurrent, assertCurrent);
         assert.deepEqual(events, ['member', 'dependencies', 'parent', 'member', 'ready', 'dependency-check', 'tools', 'ready', 'member', 'dependencies', 'parent']);
-        assert.throws(function repeatedInspection() { owner.bindPreparedProgram({ member, declaration, assertCurrent }); }, { message: 'Original prepared program inspection is already bound' });
+        assert.throws(function repeatedInspection() { 
+          owner.bindPreparedProgram({ member, declaration, assertCurrent }); 
+        }, { message: 'Original prepared program inspection is already bound' });
       },
     }),
     it({
@@ -50,13 +56,21 @@ await describe({
       fn: async function originalInspectionAdmission() {
         const fixture = createProgramOwnerFixture();
         const { owner, member, declaration, assertCurrent, record } = fixture;
-        assert.throws(function copiedDeclaration() { owner.bindPreparedProgram({ member, declaration: { ...declaration }, assertCurrent }); }, { name: 'ResultProgramProfileError' });
+        assert.throws(function copiedDeclaration() { 
+          owner.bindPreparedProgram({ member, declaration: { ...declaration }, assertCurrent }); 
+        }, { name: 'ResultProgramProfileError' });
         const changed = declareFixtureProgram({ source: 'return await tools.read({ path: "changed.txt" });', toolNames: ['read'] });
-        assert.throws(function changedSource() { owner.bindPreparedProgram({ member, declaration: changed, assertCurrent }); }, { message: 'Inspected program differs from the original prepared source' });
-        assert.throws(function missingReader() { owner.bindPreparedProgram({ member, declaration, assertCurrent: undefined }); }, { message: 'Prepared program requires its original tool-dependency reader' });
+        assert.throws(function changedSource() { 
+          owner.bindPreparedProgram({ member, declaration: changed, assertCurrent }); 
+        }, { message: 'Inspected program differs from the original prepared source' });
+        assert.throws(function missingReader() { 
+          owner.bindPreparedProgram({ member, declaration, assertCurrent: undefined }); 
+        }, { message: 'Prepared program requires its original tool-dependency reader' });
         assert.equal(record.preparedProgram, undefined);
         fixture.begin();
-        assert.throws(function enteredMember() { owner.bindPreparedProgram({ member, declaration, assertCurrent }); }, { message: 'Prepared program inspection requires an unentered original root member' });
+        assert.throws(function enteredMember() { 
+          owner.bindPreparedProgram({ member, declaration, assertCurrent }); 
+        }, { message: 'Prepared program inspection requires an unentered original root member' });
       },
     }),
     ...['readyFailure', 'toolFailure'].map(function originalInspectionFailure(field) {
@@ -67,7 +81,11 @@ await describe({
           const failure = new Error('original inspection failure');
           if (field === 'readyFailure') fixture.state.readyFailure = failure;
           else fixture.state.toolFailure = failure;
-          assert.throws(function inspectOriginalSource() { fixture.owner.bindPreparedProgram({ member: fixture.member, declaration: fixture.declaration, assertCurrent: fixture.assertCurrent }); }, function originalFailure(error) { return error === failure; });
+          assert.throws(function inspectOriginalSource() { 
+            fixture.owner.bindPreparedProgram({ member: fixture.member, declaration: fixture.declaration, assertCurrent: fixture.assertCurrent }); 
+          }, function originalFailure(error) { 
+            return error === failure; 
+          });
           assert.equal(fixture.record.preparedProgram, undefined);
         },
       });
@@ -89,11 +107,19 @@ await describe({
         assert.equal(view.permission, 'not-established');
         assert.equal(Object.isFrozen(view), true);
         assert.equal(Object.isFrozen(program), true);
-        assert.throws(function repeatOpening() { owner.openProgram({ parentToken: view.parent, toolNames: ['read', 'write'] }); }, { message: 'Parent execution already reserved its program declaration' });
-        assert.throws(function earlySuccessor() { owner.reachProgramGroup({ program, ordinal: 1 }); }, { message: 'Successor group requires the owned producer script value' });
-        for (const ordinal of [-1, 2, 0.5, Number.NaN, '0']) assert.throws(function invalidGroupOrdinal() { owner.reachProgramGroup({ program, ordinal }); }, { message: 'Program group ordinal is outside original source' });
+        assert.throws(function repeatOpening() { 
+          owner.openProgram({ parentToken: view.parent, toolNames: ['read', 'write'] }); 
+        }, { message: 'Parent execution already reserved its program declaration' });
+        assert.throws(function earlySuccessor() { 
+          owner.reachProgramGroup({ program, ordinal: 1 }); 
+        }, { message: 'Successor group requires the owned producer script value' });
+        for (const ordinal of [-1, 2, 0.5, Number.NaN, '0']) assert.throws(function invalidGroupOrdinal() { 
+          owner.reachProgramGroup({ program, ordinal }); 
+        }, { message: 'Program group ordinal is outside original source' });
         const initial = owner.inspectProgram(program);
-        assert.deepEqual(initial.groups.map(function originalState(group) { return group.state; }), ['unreached', 'unreached']);
+        assert.deepEqual(initial.groups.map(function originalState(group) { 
+          return group.state; 
+        }), ['unreached', 'unreached']);
         assert.equal(initial.producerValueReady, false);
         assert.equal(Object.hasOwn(initial, 'failure'), true);
         const reached = owner.reachProgramGroup({ program, ordinal: 0 });
@@ -102,8 +128,12 @@ await describe({
         assert.equal(reached.declaration, declaration);
         assert.deepEqual(reached.members[0]?.args, { path: 'source.txt' });
         assert.equal(Object.isFrozen(reached.members), true);
-        assert.throws(function copiedProgram() { owner.programFor({ ...program }); }, { message: 'Program handle is not owned by this judgment' });
-        assert.throws(function copiedGroup() { owner.reachedGroupFor({ ...reached.handle }); }, { message: 'Reached group handle is not owned by this judgment' });
+        assert.throws(function copiedProgram() { 
+          owner.programFor({ ...program }); 
+        }, { message: 'Program handle is not owned by this judgment' });
+        assert.throws(function copiedGroup() { 
+          owner.reachedGroupFor({ ...reached.handle }); 
+        }, { message: 'Reached group handle is not owned by this judgment' });
       },
     }),
     ...['missing', 'callables'].map(function openingFailure(kind) {
@@ -115,15 +145,21 @@ await describe({
           if (kind === 'callables') owner.bindPreparedProgram({ member, declaration, assertCurrent });
           const parentToken = fixture.begin();
           const message = kind === 'missing' ? 'Native program requires its original declaration captured before policy review' : 'Runtime callables differ from the original prepared program';
-          assert.throws(function failedOpening() { owner.openProgram({ parentToken, toolNames: [] }); }, { message });
+          assert.throws(function failedOpening() { 
+            owner.openProgram({ parentToken, toolNames: [] }); 
+          }, { message });
           const program = record.program?.handle;
           assert.ok(program);
           const inspection = owner.inspectProgram(program);
           assert.equal(inspection.status, 'failed');
           assert.equal(inspection.failure, record.program?.failure);
           assert.equal(Object.hasOwn(inspection, 'declaration'), true);
-          assert.throws(function retryFailedProgram() { owner.programFor(program); }, { message: 'Program declaration failed permanently', cause: inspection.failure });
-          assert.throws(function reopenFailedProgram() { owner.openProgram({ parentToken, toolNames: ['read', 'write'] }); }, { message: 'Parent execution already reserved its program declaration' });
+          assert.throws(function retryFailedProgram() { 
+            owner.programFor(program); 
+          }, { message: 'Program declaration failed permanently', cause: inspection.failure });
+          assert.throws(function reopenFailedProgram() { 
+            owner.openProgram({ parentToken, toolNames: ['read', 'write'] }); 
+          }, { message: 'Parent execution already reserved its program declaration' });
         },
       });
     }),
@@ -135,7 +171,9 @@ await describe({
         const reached = fixture.owner.reachProgramGroup({ program, ordinal: 0 });
         assert.ok(fixture.record.execution);
         fixture.record.execution.state = 'returned';
-        assert.throws(function returnedParent() { fixture.owner.programFor(program); }, { message: 'Program parent execution has returned' });
+        assert.throws(function returnedParent() { 
+          fixture.owner.programFor(program); 
+        }, { message: 'Program parent execution has returned' });
         fixture.state.dependencyFailure = new Error('original dependencies retired');
         fixture.parent.abort(new Error('original parent cancelled'));
         const count = fixture.events.length;

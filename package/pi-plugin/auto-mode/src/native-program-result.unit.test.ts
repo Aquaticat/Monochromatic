@@ -31,7 +31,9 @@ await describe({
         assert.equal(producer.value(), 'original producer text');
         assert.equal(fixture.owner.inspectProgram(program).producerValueReady, true);
         const successor = createProgramGroupFixture({ fixture, program, ordinal: 1 });
-        assert.deepEqual(successor.reached.members.map(function originalArguments(member) { return member.args; }), [{ text: 'original producer text' }, { path: 'original producer text' }]);
+        assert.deepEqual(successor.reached.members.map(function originalArguments(member) { 
+          return member.args; 
+        }), [{ text: 'original producer text' }, { path: 'original producer text' }]);
         const slots = successor.bind();
         assert.equal(slots.length, 2);
         successor.prepare();
@@ -42,7 +44,11 @@ await describe({
         const inspection = fixture.owner.inspectProgram(program);
         assert.equal(inspection.producerValueReady, true);
         assert.deepEqual(inspection.guardFailures, []);
-        assert.deepEqual(inspection.groups.map(function originalConversions(group) { return group.nativeReturns.map(function count(value) { return value.conversionCount; }); }), [[1], [1, 1]]);
+        assert.deepEqual(inspection.groups.map(function originalConversions(group) { 
+          return group.nativeReturns.map(function count(value) { 
+          return value.conversionCount; 
+        }); 
+        }), [[1], [1, 1]]);
       },
     }),
     it({
@@ -70,7 +76,9 @@ await describe({
         const program = fixture.open();
         const group = createProgramGroupFixture({ fixture, program });
         const deferred = Promise.withResolvers<unknown>();
-        group.bind({ runNative: function originalPending() { return deferred.promise; } });
+        group.bind({ runNative: function originalPending() { 
+          return deferred.promise; 
+        } });
         group.prepare();
         group.markReturned();
         const pending = group.invoke();
@@ -79,7 +87,9 @@ await describe({
         deferred.resolve(group.outcomes[0]);
         assert.equal(await pending, group.outcomes[0]);
         assert.equal(fixture.owner.inspectReachedGroup(group.reached.handle).nativeReturns[0]?.state, 'returned');
-        assert.throws(function retiredValue() { group.value(); }, { name: 'NativeScriptValueGuardError' });
+        assert.throws(function retiredValue() { 
+          group.value(); 
+        }, { name: 'NativeScriptValueGuardError' });
         assert.equal(fixture.owner.inspectProgram(program).guardFailures.length, 1);
       },
     }),
@@ -94,7 +104,11 @@ await describe({
         assert.equal(fixture.owner.markProgramGuard({ program, error: first }), first);
         const second = fixture.owner.markProgramGuard({ program, error: new Error('second original result failure') });
         assert.notEqual(second, first);
-        assert.throws(function guardedProgram() { fixture.owner.programFor(program); }, function originalFirstGuard(error) { return error === first; });
+        assert.throws(function guardedProgram() { 
+          fixture.owner.programFor(program); 
+        }, function originalFirstGuard(error) { 
+          return error === first; 
+        });
         const inspection = fixture.owner.inspectProgram(program);
         assert.equal(inspection.status, 'open');
         assert.deepEqual(inspection.guardFailures, [first, second]);
@@ -107,11 +121,17 @@ await describe({
         const fixture = createProgramOwnerFixture();
         const program = fixture.open();
         const group = createProgramGroupFixture({ fixture, program });
-        const failure = await nativeReturnFailure(function invokeUnboundGroup() { return fixture.owner.invokeProgramNative({ group: group.reached.handle, slot: {}, call: {} }); });
+        const failure = await nativeReturnFailure(function invokeUnboundGroup() { 
+          return fixture.owner.invokeProgramNative({ group: group.reached.handle, slot: {}, call: {} }); 
+        });
         assert.ok(Error.isError(failure,));
         assert.equal(failure.message, 'Reached group has no fixed native consumer');
-        assert.throws(function unboundValue() { fixture.owner.scriptValueFor({ group: group.reached.handle, slot: {}, outcome: {} }); }, { name: 'NativeScriptValueGuardError' });
-        assert.throws(function foreignValue() { fixture.owner.scriptValueFor({ group: {}, slot: {}, outcome: {} }); }, { name: 'NativeScriptValueGuardError' });
+        assert.throws(function unboundValue() { 
+          fixture.owner.scriptValueFor({ group: group.reached.handle, slot: {}, outcome: {} }); 
+        }, { name: 'NativeScriptValueGuardError' });
+        assert.throws(function foreignValue() { 
+          fixture.owner.scriptValueFor({ group: {}, slot: {}, outcome: {} }); 
+        }, { name: 'NativeScriptValueGuardError' });
         assert.deepEqual(fixture.owner.inspectProgram(program).guardFailures, []);
         group.bind();
         group.prepare();
@@ -140,11 +160,17 @@ await describe({
             assert.ok(record?.execution);
             record.execution.state = 'active';
           }
-          assert.throws(function rejectOriginalValue() { fixture.owner.scriptValueFor({ group: group.reached.handle, slot: kind === 'foreign-slot' ? {} : slots[0], outcome: kind === 'copied-outcome' ? { ...outcome } : outcome }); }, { name: 'NativeScriptValueGuardError' });
+          assert.throws(function rejectOriginalValue() { 
+            fixture.owner.scriptValueFor({ group: group.reached.handle, slot: kind === 'foreign-slot' ? {} : slots[0], outcome: kind === 'copied-outcome' ? { ...outcome } : outcome }); 
+          }, { name: 'NativeScriptValueGuardError' });
           const inspection = fixture.owner.inspectProgram(program);
           assert.equal(inspection.guardFailures.length, 1);
           assert.equal(inspection.producerValueReady, false);
-          assert.throws(function retainGuardOnLaterUse() { fixture.owner.programFor(program); }, function sameGuard(error) { return error === inspection.guardFailures[0]; });
+          assert.throws(function retainGuardOnLaterUse() { 
+            fixture.owner.programFor(program); 
+          }, function sameGuard(error) { 
+            return error === inspection.guardFailures[0]; 
+          });
         },
       });
     }),
@@ -160,8 +186,12 @@ await describe({
         assert.ok(outcome);
         outcome.isError = true;
         await group.invoke();
-        const first = await nativeReturnFailure(function originalFailure() { return group.value(); });
-        const second = await nativeReturnFailure(function repeatedFailure() { return group.value(); });
+        const first = await nativeReturnFailure(function originalFailure() { 
+          return group.value(); 
+        });
+        const second = await nativeReturnFailure(function repeatedFailure() { 
+          return group.value(); 
+        });
         assert.equal(first, second);
         assert.ok(Error.isError(first,));
         assert.notEqual(first.name, 'NativeScriptValueGuardError');
@@ -179,7 +209,9 @@ await describe({
         group.prepare();
         await group.invoke();
         fixture.state.operationFailure = { callback: 'readGuardedScriptValue', error: new Error('original publication boundary failed') };
-        assert.throws(function failedPublicationBoundary() { group.value(); }, { name: 'NativeScriptValueGuardError' });
+        assert.throws(function failedPublicationBoundary() { 
+          group.value(); 
+        }, { name: 'NativeScriptValueGuardError' });
         const inspection = fixture.owner.inspectProgram(program);
         assert.equal(inspection.producerValueReady, false);
         assert.equal(inspection.guardFailures.length, 1);

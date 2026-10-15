@@ -87,11 +87,29 @@ export const PROGRAM_OWNER_SOURCE = 'const result = await tools.read({ path: "so
  @example createProgramOwnerFixture();
  */
 export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Readonly<{ source?: string }> = {}): ProgramOwnerFixture {
+  /**
+   Original host callback order remains observable independently of owner state.
+   */
   const events: string[] = [];
+  /**
+   Fixture-local controls expose only independently selected failures and publication outcomes.
+   */
   const state: FixtureProgramState = {};
+  /**
+   Judgment cancellation stays independent of parent and native child cancellation.
+   */
   const controller = new AbortController();
+  /**
+   Original parent cancellation can retire without changing the judgment signal.
+   */
   const parent = new AbortController();
+  /**
+   Opaque root member belongs only to this disposable fixture.
+   */
   const member = Object.freeze({});
+  /**
+   Original prepared-member record remains independently controlled by the fixture.
+   */
   const record: FixtureProgramRecord = {
     prepared: Object.freeze({
       id: 'root',
@@ -100,15 +118,36 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
     }),
     effectiveSignal: controller.signal,
   };
+  /**
+   Fixture-owned member records authenticate exact handles without reconstructing owner behavior.
+   */
   const bindings = new WeakMap<object, FixtureProgramRecord>([[
     member,
     record
   ]]);
+  /**
+   Only fixture-reserved original parent tokens resolve through execution lookup.
+   */
   const executions = new WeakMap<object, FixtureProgramRecord>();
+  /**
+   Original child publication remains observable without exposing private native slots.
+   */
   const childGroups: object[] = [];
+  /**
+   Original enclosing judgment identity remains distinct from response and stream identities.
+   */
   const judgment = Object.freeze({});
+  /**
+   Original native response identity is never reconstructed from matching fields.
+   */
   const response = Object.freeze({});
+  /**
+   Original native stream occurrence remains independent of the judgment and response.
+   */
   const stream = Object.freeze({});
+  /**
+   The built original decoder owns every declaration used by this fixture.
+   */
   const declaration = declareFixtureProgram({
     source,
     toolNames: [
@@ -128,9 +167,11 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
 
    @returns original fixture judgment
    */
-  function readJudgment(): object { events.push('judgment');
+  function readJudgment(): object { 
+    events.push('judgment');
   if (state.judgmentFailure) throw state.judgmentFailure;
-  return judgment; }
+  return judgment; 
+  }
   /**
    Known member lookup authenticates exact original handles before reading state.
 
@@ -141,6 +182,9 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
   function knownMember(handle: unknown): FixtureProgramRecord {
     events.push('member');
     if ((handle === null) || ((typeof handle) !== 'object')) throw new Error('Fixture member is foreign');
+    /**
+     Original lookup must find the exact fixture-owned record before exposing it.
+     */
     const value = bindings.get(handle);
     if (!value) throw new Error('Fixture member is foreign');
     return value;
@@ -154,6 +198,9 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
    */
   function knownExecution(token: object): FixtureProgramRecord {
     events.push('execution');
+    /**
+     Original lookup must find the exact fixture-owned record before exposing it.
+     */
     const value = executions.get(token);
     if ((!value) || (value.execution
       ?.token
@@ -163,28 +210,36 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
   /**
    Original lifetime can fail independently of dependency eligibility.
    */
-  function ready(): void { events.push('ready');
-  if (state.readyFailure) throw state.readyFailure; }
+  function ready(): void { 
+    events.push('ready');
+  if (state.readyFailure) throw state.readyFailure; 
+  }
   /**
    Source preparation invokes the exact original captured tool reader.
 
    @param check - original source dependency check
    */
-  function dependencyCheck(check: () => void): void { events.push('dependency-check');
-  check(); }
+  function dependencyCheck(check: () => void): void { 
+    events.push('dependency-check');
+  check(); 
+  }
   /**
    Live program use requires original source dependencies to remain current.
    */
-  function assertDependenciesCurrent(): void { events.push('dependencies');
-  if (state.dependencyFailure) throw state.dependencyFailure; }
+  function assertDependenciesCurrent(): void { 
+    events.push('dependencies');
+  if (state.dependencyFailure) throw state.dependencyFailure; 
+  }
   /**
    Entry checks preserve the original prepared member's effective cancellation signal.
 
    @param original - fixture-owned original record
    */
-  function parentCurrent(original: FixtureProgramRecord): void { events.push('parent');
+  function parentCurrent(original: FixtureProgramRecord): void { 
+    events.push('parent');
   original.effectiveSignal
-    .throwIfAborted(); }
+    .throwIfAborted(); 
+  }
   /**
    Synchronous operation callbacks retain their original names and result identity.
 
@@ -200,6 +255,9 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
         .error;
     return run();
   }
+  /**
+   Captured original capabilities can also construct independent built owners.
+   */
   const input = {
     readJudgment,
     response,
@@ -215,6 +273,9 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
     childGroups,
     operation
   };
+  /**
+   The built native entry owns every program and group transition under test.
+   */
   const owner = createFixtureProgramOwner(input);
   assert.equal(
     events.length,
@@ -226,6 +287,9 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
    @returns original parent token
    */
   function begin(): object {
+    /**
+     Each original parent entry receives its own opaque execution occurrence.
+     */
     const token = Object.freeze({});
     record.execution = {
       token,
