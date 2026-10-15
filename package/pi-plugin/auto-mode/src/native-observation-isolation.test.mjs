@@ -13,6 +13,7 @@ const mode=process.argv.find(function modeArgument(value){return value.startsWit
 const failure=process.argv.includes('--assessment-failure')?'assessment':'observation';
 assert.ok(['allow','stop','cancel','headless'].includes(mode));
 const observations={contextCalls:0,lateContextMutations:0,progressCalls:0,assessments:0,executions:0,requests:0,httpCalls:0,warmingUp:true,failAssessment:false,selections:0};
+/** @type {{pi:unknown,abortTask:Promise<void>|undefined}} */
 const fixture={pi:undefined,abortTask:undefined};
 const {env,session,root,lifecycle}=await createDomainFixtureEnvironment({settings,observations,readRuntime(){return runtime;},extensionFactories:[function capturePi(pi){fixture.pi=pi;}]});
 const code='return await tools.fixture_value({path:"seed"});';

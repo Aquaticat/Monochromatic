@@ -1,5 +1,6 @@
 import {createHash} from 'node:crypto';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
+import {caughtValueText} from '@monochromatic-dev/module-caught-value/ts';
 import {bindPreparedTuiApproval} from '../../lifecycle/incumbent-tui-group/approval-presentation.mjs';
 
 //region Manual approval owns prepared execution independently of automatic evidence.
@@ -82,7 +83,7 @@ export function createManualGroup({response,stream,signal,assertOperationCurrent
   const action=`Complete prepared group:\n${scope}`;
   const approvalFingerprint=createHash('sha256').update(scope).digest('hex');
   const closure=Object.freeze({kind:'manual-prepared-group'});
-  const detail=Error.isError(error)?error.message:'Automatic evidence capture or assessment did not complete';
+  const detail=caughtValueText(error);
   state.approval=bindPreparedTuiApproval({
    ...host,action,approvalFingerprint,closure,signal,assertPreparedCurrent:current,
    explanation:`Auto-mode could not assess this operation: ${detail}. Review the complete prepared operation and choose Allow or Stop.`

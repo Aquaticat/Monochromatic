@@ -19,6 +19,21 @@ The existing approval binder currently requires the missing observation itself;
 replace that requirement for this fallback while retaining exact prepared-group identity and native cancellation.
 The primary-chat capture gate described in this section remains pending in parallel with that correction.
 
+The disposable release `native-release-Jx9I6F` verifies manual fallback after missing observation
+and failed assessment: Allow executes one native child; Stop, cancellation, and headless sessions execute none.
+The maintained fixture is `src/native-observation-isolation.test.mjs`.
+The subsequent disposable release `native-release-S8Ip9X` keeps prompt and event capture passive.
+Its navigation, cancellation, reload, fork, and resume controls pass.
+The retry fixture initially set overrides before native resource loading replaced them;
+setting and asserting overrides on the constructed session verifies both agent and provider retries.
+The native prompt callback fixture also passes capture failures before and after callbacks,
+exactly-once invocation, and preservation of original thrown values.
+Package type checking passes; focused lint found remaining errors that are being corrected.
+The combined regression, configured-host, and live checks remain pending before installation.
+Scratch multi-task invocations without separators passed later names as arguments;
+only explicit per-task output counts as execution evidence.
+The combined scratch task now sequences independent `mise run` calls.
+
 After the replacement handoff, the user reported `Root lease has been retired` and `Connection error.`.
 The real session beginning at 22:17:29 UTC records connection failures on `llmgateway-devpass/mimo-v2.6-pro`,
 followed by a lease error on `opencode-go/mimo-v2.6-pro`.
