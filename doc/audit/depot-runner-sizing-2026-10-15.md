@@ -44,7 +44,8 @@ It compares CPU/job pairs `4/4`,
 and `64/64`.
 Each pair gets one ephemeral runner and two rounds with separate Cargo cache namespaces.
 Each round contains a cold build,
-two unchanged repetitions,+a CLI-name source change,
+two unchanged repetitions,
+a CLI-name source change,
 and an unchanged repetition of the changed source.
 Every exported executable must print the expected version inside the production Alpine runtime.
 [Main execution](https://github.com/Aquaticats/Monochromatic/actions/runs/38822116503),
@@ -138,7 +139,9 @@ they do not justify larger allocations.
 ## Cost and allocation recommendation
 
 Published Linux runner rates are USD $0.003 per allocated CPU-minute.
-The measured build seconds multiplied by that rate estimate gross compute usage,
+Build seconds divided by 60,
+multiplied by allocated CPUs and USD $0.003,
+estimate gross compute usage,
 before included allowances and excluding setup.
 These are modeled charges,
 not invoice entries.

@@ -171,7 +171,7 @@ a complete unchanged release migration is not established.
 [Depot container builds][build-docs] retain image layers for subsequent builds.
 Tool installation reuse and reuse of compiled dependencies are separate opportunities to measure.
 The trial measured cold and warm Depot executions;
-the controlled GitHub comparison is still running.
+the controlled GitHub comparison and corrected runner-sizing follow-up have completed.
 
 ## Rate-limit and cache probes
 
@@ -673,10 +673,24 @@ Evidence and a positive control for the upper-bound calculation are recorded in 
 
 ## Interview process correction
 
+The user clarified that the migration is not apples to apples.
+The reports now distinguish controlled allocation measurements from the value and cost of expanded CI capabilities.
+Proposed replacement wording for existing `AGENTS.md` rule `EVL`,
+pending acceptance:
+"Usage/migration advice:
+inspect usage/config,
+parallel implementations,
+TODOs/workarounds,
+suppressions,
+and policies.
+Evaluate desired capabilities and target workload,
+not just today's jobs."
+The proposal is 192 characters after whitespace normalization and preserves the existing evidence categories.
+
 The agent answered the larger-runner follow-up with an unexecuted measurement proposal,
 despite the authorized trial and the user's request to use its resources.
 The user explicitly directed execution.
-The missing experiment is now running.
+The missing experiment has completed with all corrected configurations passing.
 Proposed replacement wording for existing `AGENTS.md` rule `PXQ`,
 pending acceptance:
 "Complete the tracked queue.
