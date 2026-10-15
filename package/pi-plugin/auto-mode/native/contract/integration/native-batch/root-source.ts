@@ -257,12 +257,17 @@ export function managerSource(source: string): string {
    'context-observer.ts',
    import.meta.url
  ).href;
- /** Original event callbacks retain the same captured manager pool. */
- const eventObserverUrl=new URL('event-observer.ts',import.meta.url).href;
+ /**
+  Original event callbacks retain the same captured manager pool.
+  */
+ const eventObserverUrl=new URL(
+   'event-observer.ts',
+   import.meta.url
+ ).href;
  return `import {observeMessageCopies,recordMessageInputProjection} from ${JSON.stringify(publicationUrl)};\nimport {captureLoadedInputs} from ${JSON.stringify(loadedUrl)};\n`
   +`import {createLoadoutQueryObserver} from ${JSON.stringify(queryUrl)};\n`
-  +`import {createNativeEventObserver as createEventObserver} from ${JSON.stringify(eventObserverUrl)};\n`
-  +`export function createNativeEventObserver(manager) { return createEventObserver(bindEventHandlerCapture(manager)); }\n`
+   +`import {createNativeEventObserver as createEventObserver} from ${JSON.stringify(eventObserverUrl)};\n`
+   +`export function createNativeEventObserver(manager) { return createEventObserver(bindEventHandlerCapture(manager)); }\n`
    +`import {createNativeContextObserver as createContextObserver} from ${JSON.stringify(contextObserverUrl)};\n`
    +`export function createNativeContextObserver(manager) { return createContextObserver(bindContextHandlerCapture(manager)); }\n`
    +`let attachContextCopies,readSessionInput,assertSessionInputs,readConstructedInputs,readInputUsage,captureQueuedInput,captureCustomMessageInput,captureInputEvent,captureUninterceptedInput,captureTransformedInput,captureCommandInput,captureCallInput,captureAgentInput,captureCustomToolDescriptions,bindContextHandlerCapture,bindEventHandlerCapture,bindHandlerResultOutput,captureToolLoadoutOutput,captureToolLoadoutInput,captureToolLoadoutQuery;\nexport function attachNativeContextCopies(manager,observer) { return attachContextCopies(manager,observer); }\n`

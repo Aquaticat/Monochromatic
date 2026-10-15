@@ -271,8 +271,11 @@ function createInputPool({
     permission:false
   });
   bytes+=Buffer.byteLength(JSON.stringify(source));
-  if(bytes+pendingEventBytes>maximumSnapshotBytes)throw new SourceCollectionError('Loaded session source observations exceed the original snapshot byte bound');
-  const publisher=createInputOnlyPublication(source,systemInput);publisher.capture(carrier);
+  if((bytes+pendingEventBytes)>maximumSnapshotBytes)throw new SourceCollectionError('Loaded session source observations exceed the original snapshot byte bound');
+  const publisher=createInputOnlyPublication(
+    source,
+    systemInput
+  );publisher.capture(carrier);
   const origin=Object.freeze({
     source,
     publication:publisher.view,
@@ -354,7 +357,10 @@ function createInputPool({
      retainConstructedInput({
        ...input,
        value:inputFields.length===1?value.content:value,
-       systemInput:{message,expected:value},
+       systemInput:{
+         message,
+         expected:value
+       },
        metadata:{
          role,
          method,
@@ -731,22 +737,40 @@ function createInputPool({
    function publish(){
     if(records.length===0)return;
     pendingEventBytes-=retainedBytes;
-    retainConstructedInput({carrier:Object.freeze({records}),value:records,metadata:{method:records[0].kind,part},inputField:'eventHandler',inputOrigin:'native-event-handler'});
-    if(bytes+pendingEventBytes>maximumSnapshotBytes)throw new SourceCollectionError('Native event observations exceed the original snapshot byte bound');
+    retainConstructedInput({
+      carrier:Object.freeze({records}),
+      value:records,
+      metadata:{
+        method:records[0]
+          .kind,
+        part
+      },
+      inputField:'eventHandler',
+      inputOrigin:'native-event-handler'
+    });
+    if((bytes+pendingEventBytes)>maximumSnapshotBytes)throw new SourceCollectionError('Native event observations exceed the original snapshot byte bound');
     records=[];retainedBytes=0;part++;
    }
    function capture(input){
     if(failure)return;
     try{
      if(closed)throw new SourceCollectionError('Native event source was already completed');
-     const record=Object.freeze({kind:input.kind,phase:input.phase,ordinal:input.ordinal,path:input.path,value:copyToolMetadata({value:input.value})});
+     const record=Object.freeze({
+       kind:input.kind,
+       phase:input.phase,
+       ordinal:input.ordinal,
+       path:input.path,
+       value:copyToolMetadata({value:input.value})
+     });
      const recordBytes=Buffer.byteLength(JSON.stringify(record));
-     if(recordBytes+2>65_536)throw new SourceCollectionError('Native event callback value exceeds the original source byte bound');
-     if(retainedBytes+recordBytes+1>65_536)publish();
+     if((recordBytes+2)>65_536)throw new SourceCollectionError('Native event callback value exceeds the original source byte bound');
+     if((retainedBytes+recordBytes
+       +1)>65_536)publish();
      if(records.length===0)reserve();
      // Array delimiters and commas are charged before any complete emission publication.
      const addedBytes=recordBytes+(records.length===0?2:1);
-     if(bytes+pendingEventBytes+addedBytes>maximumSnapshotBytes)throw new SourceCollectionError('Native event observations exceed the original snapshot byte bound');
+     if((bytes+pendingEventBytes
+       +addedBytes)>maximumSnapshotBytes)throw new SourceCollectionError('Native event observations exceed the original snapshot byte bound');
      records.push(record);retainedBytes+=addedBytes;pendingEventBytes+=addedBytes;
     }catch(error){
      failure=new InputCaptureError(error);
@@ -764,7 +788,10 @@ function createInputPool({
      if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
     }
    }
-   return Object.freeze({capture,complete});
+   return Object.freeze({
+     capture,
+     complete
+   });
   },
   /** Retain original context inputs and complete results under the existing manager budget. */
   captureContextHandler(input){
@@ -775,7 +802,12 @@ function createInputPool({
     retainConstructedInput({
       carrier:input,
       value,
-      metadata:{method:input.kind,phase:input.phase,ordinal:input.ordinal,path:input.path},
+      metadata:{
+        method:input.kind,
+        phase:input.phase,
+        ordinal:input.ordinal,
+        path:input.path
+      },
       inputField:'contextHandler',
       inputOrigin:'native-context-handler'
     });

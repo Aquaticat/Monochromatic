@@ -9,7 +9,9 @@ import {observeDeclaredFile} from '../external-dependency-controls/file-observer
 import {ObservedFileMissingError} from '../external-dependency-controls/errors.ts';
 import {RuleRelevanceCacheError} from './definition.mjs';
 
-export function digest(value) { return createHash('sha256').update(value).digest('hex'); }
+export function digest(value) { return createHash('sha256')
+  .update(value)
+  .digest('hex'); }
 /** Only application-owned private directories may contain persisted relevance data. */
 function privateDirectory({
   path,
@@ -25,7 +27,8 @@ function privateDirectory({
    error
  });}
  const stat=lstatSync(path);
- if((!stat.isDirectory())||stat.isSymbolicLink()||((stat.mode&0o777)!==0o700))throw new RuleRelevanceCacheError(`Relevance cache directory is not a private ordinary directory: ${path}`);
+ if((!stat.isDirectory())||stat.isSymbolicLink()
+   ||((stat.mode&0o777)!==0o700))throw new RuleRelevanceCacheError(`Relevance cache directory is not a private ordinary directory: ${path}`);
 }
 /** Content-addressed data cache, not an approval store or source-authentication mechanism. */
 export function createRelevanceStore({
@@ -34,11 +37,15 @@ export function createRelevanceStore({
   profileKey,
   trace
 }){
- if((typeof directory)!=='string'||(!directory)||(typeof trace)!=='function')throw new RuleRelevanceCacheError('Private cache directory and diagnostic sink are required');
+ if(((typeof directory)!=='string')||(!directory)
+   ||((typeof trace)!=='function'))throw new RuleRelevanceCacheError('Private cache directory and diagnostic sink are required');
  for(const key of [
    'repository',
    'primaryBranch'
- ])if((typeof namespace?.[key])!=='string'||(!namespace[key])||(namespace[key].length>4096))throw new RuleRelevanceCacheError('Repository identity and primary branch are required cache namespace data');
+ ])if(((typeof namespace?.[key])!=='string')||(!namespace[key])
+   ||(namespace[key]
+     .length
+     >4_096))throw new RuleRelevanceCacheError('Repository identity and primary branch are required cache namespace data');
  privateDirectory({
    path:directory,
    trace
@@ -55,7 +62,7 @@ export function createRelevanceStore({
    trace
  });
  function fileFor(key){
-  if((typeof key)!=='string'||(!/^[a-f0-9]{64}$/.test(key)))throw new RuleRelevanceCacheError('Cache entry key is not a content digest');
+  if(((typeof key)!=='string')||(!/^[a-f0-9]{64}$/.test(key)))throw new RuleRelevanceCacheError('Cache entry key is not a content digest');
   return `${key}.json`;
  }
  function read(key){
@@ -64,7 +71,7 @@ export function createRelevanceStore({
     root,
     relativePath:fileFor(key),
     requiredMode:0o600,
-    maxBytes:4096
+    maxBytes:4_096
   });}
   catch(error){
    if(error instanceof ObservedFileMissingError){trace({
@@ -78,10 +85,19 @@ export function createRelevanceStore({
   try{entry=JSON.parse(observed.bytes
     .toString('utf8'));}
   catch(error){throw new RuleRelevanceCacheError(
-    'Relevance cache entry is incomplete or malformed: '+key,
+    `Relevance cache entry is incomplete or malformed: ${key}`,
     {cause:error}
   );}
-  if((Object.keys(entry).toSorted().join(',')!=='key,probability,profileKey,qualification,schema')||(entry.schema!==1)||(entry.key!==key)||(entry.profileKey!==profileKey)||(entry.qualification!=='not-established')||(!Number.isFinite(entry.probability))||(entry.probability<0)||(entry.probability>1))
+  if((Object.keys(entry)
+    .toSorted()
+    .join(',')
+    !=='key,probability,profileKey,qualification,schema')||(entry.schema!==1)
+    ||(entry.key!==key)
+    ||(entry.profileKey!==profileKey)
+    ||(entry.qualification!=='not-established')
+    ||(!Number.isFinite(entry.probability))
+    ||(entry.probability<0)
+    ||(entry.probability>1))
    throw new RuleRelevanceCacheError(`Relevance cache entry has a different profile or invalid estimate: ${key}`);
   trace({
     event:'cache-hit',
@@ -92,7 +108,8 @@ export function createRelevanceStore({
    key,
    probability
  }){
-  if((!Number.isFinite(probability))||(probability<0)||(probability>1))throw new RuleRelevanceCacheError('Relevance estimate must be finite and between zero and one');
+  if((!Number.isFinite(probability))||(probability<0)
+    ||(probability>1))throw new RuleRelevanceCacheError('Relevance estimate must be finite and between zero and one');
   const entry=Object.freeze({
     schema:1,
     key,
@@ -101,9 +118,15 @@ export function createRelevanceStore({
     qualification:'not-established'
   });
   try{writeFileSync(
-    join(root,fileFor(key)),
-    JSON.stringify(entry)+'\n',
-    {flag:'wx',mode:0o600}
+    join(
+      root,
+      fileFor(key)
+    ),
+    `${JSON.stringify(entry)}\n`,
+    {
+      flag:'wx',
+      mode:0o600
+    }
   );}
   catch(error){
    if(error?.code!=='EEXIST')throw error;

@@ -395,7 +395,10 @@ function createMessagePublication({
 }
 
 /** Original loaded values retain input identity only; no text-part or payload capability is issued. */
-export function createInputOnlyPublication(source, systemInput){
+export function createInputOnlyPublication(
+  source,
+  systemInput
+){
  const publication=createMessagePublication({
    source,
    input:{},
@@ -594,23 +597,41 @@ export function readHandlerPayloadPublication(value){
 /** Original tool declarations retain existing source membership only while their native input remains current. */
 export function readOriginalToolPublication(value){
  const known=aliases.get(value);
- return (known?.kind==='tool-declaration')&&known.owner.current(value)?known.owner.view:undefined;
+ return (known?.kind==='tool-declaration')
+   &&known.owner
+   .current(value)?known.owner
+     .view:undefined;
 }
 
 /** Original serializer values are captured before callbacks; unsupported native data retains its failure. */
-export function snapshotOriginalToolEmission({tool,converted}){
+export function snapshotOriginalToolEmission({
+  tool,
+  converted
+}){
  const l=tagged({tag:'auto-mode-handler-publication'});
- const fl=tagged({tag:snapshotOriginalToolEmission.name,l});
+ const fl=tagged({
+   tag:snapshotOriginalToolEmission.name,
+   l
+ });
  fl.debug('capturing original converted tool data before payload callbacks');
- try{return Object.freeze({tool,value:copyMessageData(converted)});}
+ try{return Object.freeze({
+   tool,
+   value:copyMessageData(converted)
+ });}
  catch(error){
   fl.debug(String(error));
-  return Object.freeze({tool,error});
+  return Object.freeze({
+    tool,
+    error
+  });
  }
 }
 
 /** Original system fields retain captured input membership only while the native message remains current. */
 export function readOriginalSystemPublication(value){
  const known=aliases.get(value);
- return (known?.kind==='system-input')&&known.owner.current(value)?known.owner.view:undefined;
+ return (known?.kind==='system-input')
+   &&known.owner
+   .current(value)?known.owner
+     .view:undefined;
 }

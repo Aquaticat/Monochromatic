@@ -95,16 +95,33 @@ export function createRequestObservationOwner({
     );
     try {
       assertScopeLifetime(scope);
-      if(!verifySources&&scope.preparingSources){
-       const sources=collector.captureJudgmentSources({original:scope.sources,signal:scope.signal,extend:true});
-       scope.judgmentBinding=Object.freeze({request:scope.receipt,sources});
+      if((!verifySources)&&scope.preparingSources){
+       const sources=collector.captureJudgmentSources({
+         original:scope.sources,
+         signal:scope.signal,
+         extend:true
+       });
+       scope.judgmentBinding=Object.freeze({
+         request:scope.receipt,
+         sources
+       });
       }
       if(verifySources)verifySources();
       else collector.assertObservedFresh(scope.judgmentBinding
         ?.sources
         ??scope.sources);
       assertScopeLifetime(scope);
-    } catch(error){if(error instanceof RootLeaseSuspendedError)throw error;tagged({tag:assertScope.name,l}).error(inspect(error,{depth:6,maxStringLength:2048}));if(!scope.invalidated){scope.invalidated=true;scope.invalidationCause=error;}throw new RequestObservationStaleError(
+    } catch(error){if(error instanceof RootLeaseSuspendedError)throw error;tagged({
+      tag:assertScope.name,
+      l
+    })
+      .error(inspect(
+        error,
+        {
+          depth:6,
+          maxStringLength:2_048
+        }
+      ));if(!scope.invalidated){scope.invalidated=true;scope.invalidationCause=error;}throw new RequestObservationStaleError(
       'Observed request is no longer current',
       {cause:error}
     );}
@@ -176,14 +193,14 @@ export function createRequestObservationOwner({
    const binding=bindJudgmentSources(response);
    const scope=responses.get(response);
    if(scope.sourcePreparationClosed)throw new RequestObservationProfileError('Original judgment source preparation was already sealed');
-   if(typeof collector.captureJudgmentSources!=='function')throw new RequestObservationProfileError('Native preparation requires its original source handoff');
+   if((typeof collector.captureJudgmentSources)!=='function')throw new RequestObservationProfileError('Native preparation requires its original source handoff');
    scope.preparingSources=true;
    return binding;
   }
   /** Seal the complete prepared source collection once without creating another request or judgment. */
   function sealJudgmentSources(response){
    const scope=object(response)?responses.get(response):undefined;
-   if(!scope?.preparingSources||scope.sourcePreparationClosed)throw new RequestObservationProfileError('No original native source preparation remains open');
+   if((!scope?.preparingSources)||scope.sourcePreparationClosed)throw new RequestObservationProfileError('No original native source preparation remains open');
    validate(scope);
    scope.preparingSources=false;
    scope.sourcePreparationClosed=true;
@@ -192,9 +209,10 @@ export function createRequestObservationOwner({
   /** Bind approved execution to the assessed collection while retaining later inputs for subsequent decisions. */
   function retainApprovedSources(response){
    const scope=object(response)?responses.get(response):undefined;
-   if(!scope?.sourcePreparationClosed||scope.preparingSources)throw new RequestObservationProfileError('Approved execution requires sealed original judgment sources');
+   if((!scope?.sourcePreparationClosed)||scope.preparingSources)throw new RequestObservationProfileError('Approved execution requires sealed original judgment sources');
    validate(scope);
-   collector.retainApprovedSources(scope.judgmentBinding.sources);
+   collector.retainApprovedSources(scope.judgmentBinding
+     .sources);
    validate(scope);
   }
   async function streamFunction(

@@ -60,7 +60,10 @@ async function evaluateOriginalPolicy({
    inputs,
    ownerFor:authorizationOwnerFor
  });
- const pendingSessionApproval=capturePendingSessionApproval({judgment,host:approvalHost});
+ const pendingSessionApproval=capturePendingSessionApproval({
+   judgment,
+   host:approvalHost
+ });
  const scope=semanticAdmissionScope({
    policy,
    inputs
