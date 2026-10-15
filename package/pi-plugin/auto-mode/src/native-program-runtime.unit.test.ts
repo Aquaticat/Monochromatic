@@ -122,7 +122,7 @@ await describe({ name: '', children: [
   } }),
   it({ name: 'passes the original member cancellation context through the source tool', fn: async () => {
     const fixture = createProgramRuntimeFixture();
-    const [, , native] = fixture.native;
+    const native = fixture.native.at(2);
     assert.ok(native);
     const failure = new Error('original native member cancelled');
     native.abort(failure);
