@@ -732,6 +732,13 @@ A ruling stated the run between two marks as a list of named characters,
 and each family around a name shipped a doubled mark until the re-review found it (ledger M208).
 A brief gave the limit of 50 lines for outputs and did not say that it covers the files an agent reads,
 and a reviewer read sources in ranges up to 347 lines (ledger M209).
+Ten fix rounds in a row left their tests and code uncommitted in one worktree,
+so that no build from before a change survived
+and the reviews could not say which defects predate a round (ledger M218).
+Four builds then gave identical oracle grids,
+run sites,
+replay rows and recounts of the elisions,
+and each review of them still found new defects in code next to the changed code (ledger M219).
 
 The rule:
 an example in a brief that claims a failing result is run before the brief is sent,
@@ -788,6 +795,18 @@ A temporary edit of a source file for an attribution run is checked by the file'
 and the hand-back lists the file (ledger M183).
 A file outside an author's list is edited only for a reason the hand-back names,
 and rounds whose lists overlap are merged by hand (ledger M182).
+Each round's tests and code are committed before the next round starts,
+even when a later round will change them,
+and the brief of the next round names the commit it starts from (ledger M218).
+A review loop stops when the checks that measure what ships
+(oracle grids,
+corpus counts,
+replay)
+stay identical across builds and each review finds defects in code next to the changed code:
+the corpus reach of what is open is measured,
+the work is landed,
+and the rest is fixed after the launch,
+each fix as its own commit (ledger M219).
 
 What enforces it:
 habit,

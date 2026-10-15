@@ -15,9 +15,9 @@ Every entry here has landed,
 and none of them is committed.
 The file was named for the fixes decided and not yet landed,
 and carries the name of what it holds now.
-The one fix of this work still not landed,
+The one fix of this work that was still not landed when it was written,
 the container markers inside the refusal run,
-is filed in
+was built by n151 and is filed in
 [Audit ledger: the consistency pass, the re-review and the refusal run](audit-ledger-consistency-pass-re-review-and-the-refusal-run.md).
 The entries of the eighth review that n133 closed,
 and the two limits it left accepted,
@@ -88,7 +88,8 @@ the floors loop dropped a gain on the page as it was when the gain was judged,
 and nothing asked again once other drops and refusals had changed the page.
 
 Fixed.
-`readmittedSlicesOf` in `src/corpus-run/pass-consistency-apply-readmit.ts` runs passes of screens (`screenSide`) and trials (`trialOf`)
+`readmittedSlicesOf` in `src/corpus-run/pass-consistency-apply-readmit.ts`
+runs passes of screens (`screenSide`) and trials (`trialOf`)
 in page order until a pass admits none,
 and `settledSlicesOf` calls it after the floors loop.
 An admitted splice is never dropped again and the admitted set only grows,
@@ -116,7 +117,8 @@ every injected break of its modes A0 and C1 is caught,
 and its mode 3 catches 63 of 750 where it caught 58.
 n134's guard 1 (the plan returns without `readmittedSlicesOf`) fails 5 lines of the readmit test,
 and its guard 2 (`screenSide` returns before reading) fails 5 lines of the screen test
-and takes the dropped variant of `p06` to 14,703 ms at 500 slices and 60,836 ms at 1,000 against 76 and 197 ms with the screen.
+and takes the dropped variant of `p06` to 14,703 ms at 500 slices and 60,836 ms at 1,000
+against 76 and 197 ms with the screen.
 n134 did not show the conditions of `isScreenable` red;
 n137 did,
 one by one:
@@ -215,7 +217,8 @@ which n136,
 n139 and n140 narrowed.
 
 Red evidence:
-n134's guard 4 (the conversion removed from both readers) fails 5 lines of the `parse-mdx` tests and 3 of the `consistency-prose-text` tests,
+n134's guard 4 (the conversion removed from both readers) fails 5 lines of the `parse-mdx` tests
+and 3 of the `consistency-prose-text` tests,
 and the refusal-text test,
 which does not depend on the conversion,
 shows its 2 passes and no failure.
@@ -335,7 +338,8 @@ so its record changes.
 The fix touches the files of both fix rounds and is made after the merge.
 
 Evidence of the present state:
-guard G9 of n133 (the refusal for `marks === 'unrecorded'` removed) fails the case that expects a throw for `kept-current`
+guard G9 of n133 (the refusal for `marks === 'unrecorded'` removed)
+fails the case that expects a throw for `kept-current`
 under a `replace` plan in a section that recorded no marks beside the words (it returned instead).
 
 Outcome written on 2026-10-14.
@@ -439,7 +443,8 @@ commit:
 pending.
 
 Found on 2026-10-14 by n133 (reported under "Requirements not met").
-`readProof` and `isPartOfAWord` in `consistency-fold-apostrophes.ts` and `bringsAtEdge` in `consistency-splice-readings.ts`
+`readProof` and `isPartOfAWord` in `consistency-fold-apostrophes.ts`
+and `bringsAtEdge` in `consistency-splice-readings.ts`
 are private helpers that the exported callers reach
 (`proofViewOf`,
 `markReadingsInEnglish`,

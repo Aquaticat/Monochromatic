@@ -28,8 +28,9 @@ a reference that decodes to a quotation mark makes the page unavailable,
 an escape is read as the character it escapes,
 the white space is the proof's own,
 and a single line break inside a paragraph shows as a space.
-One part of that model is decided and not yet landed,
-the container markers at the start of a line (B574).
+A fifth part of that model,
+the container markers at the start of a line (B574),
+was found by n149 and built by n151.
 
 The fixes of n147 and the findings they answer are filed in
 [Audit ledger: the consistency pass, the tenth review](audit-ledger-consistency-pass-tenth-review.md).
@@ -58,8 +59,11 @@ The names that only a hand-back or a review gives (test names,
 guard names,
 the helpers of test fixtures,
 the names of probes and the names of logs) were not searched.
-The container markers are not yet built,
-and the independent review of n149 (n150) has not reported.
+The container markers were built by n151.
+The review of n149 (n150),
+the round that answered it
+and the rounds after them are filed in
+[Audit ledger: the consistency pass, what the refusal run steps over](audit-ledger-consistency-pass-what-the-refusal-run-steps-over.md).
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -607,14 +611,14 @@ unchanged from the re-review,
 and the other page that stays carried is the blank line of B567 (K7),
 which the ruling keeps.
 
-## B574: container markers at the start of a line inside the refusal run are not yet unread
+## B574: container markers at the start of a line inside the refusal run were not unread
 
 Found on 2026-10-14 by n149 (its residual for the line breaks),
 decided by the lead the same day.
 
 Fix decided on 2026-10-14;
-not yet landed;
-n151 is to build it;
+landed by n151;
+uncommitted at the time of writing;
 commit:
 pending.
 
@@ -627,5 +631,67 @@ so the run ends there and the gain is not refused.
 The lead decided:
 container markers and indentation at the start of a line inside the paragraph are unread by the run.
 
-Outcome:
-pending.
+Outcome written on 2026-10-15.
+Built by n151.
+`src/consistency-paragraphs.ts` gives its blocks a `quoteDepth` and has a new `quoteDepthAt`.
+`src/consistency-run-steps.ts` has `markersAfterBreakOf` and `containerStepAt`
+(with the private `lineBreakBeforeMarkersAt`),
+and `markPastRunOf` in `src/consistency-closing-marks.ts` steps the quotation markers (`>`) after one break
+and,
+on the leading side,
+jumps back to the break.
+The marker steps live in `containerStepAt` and not in `src/consistency-closing-marks.ts`,
+which had passed the limit of 300 lines (303).
+The tests were red first:
+the pages C1 to C5 of the shipped-marks test,
+and the unit tests of the paragraphs,
+the closing marks and the run steps;
+C6 to C9 were green already,
+kept by another guard,
+and stay as regression pages.
+`markersAfterBreakOf`,
+`containerStepAt` and `ignorableWidthAt` have no unit test of their own,
+and are covered through `markPastRunOf`.
+The guards for the forward step and for the backward jump were removed once each and failed.
+In the container probes eight cases now name the mark `’`.
+
+Checked by n153:
+113,764 two-line shapes
+(a quotation or list piece before each line,
+zero to three pieces from sixteen kinds,
+seven separators,
+twenty-seven context prefixes and ten suffixes,
+the trailing side with `kittens` and the leading side with `He ate ’`)
+were read through `markPastRunOf` and through the page grammar.
+None was missed,
+and none was stepped where the reader sees separate blocks.
+The grammar shows the marks adjacent on 11,628 pages and not on 102,136,
+so both classes are populated and the probe can fail.
+The whole pass was run on 34 pages:
+every page that should refuse is `kept-current`,
+and the pages that should ship
+(a list marker,
+a `1.` marker,
+a deeper `>`,
+a zero-width space before the marker,
+a blank quotation line,
+a blank line and an indented paragraph,
+a thematic break,
+a footnote definition line)
+ship a separate block.
+Six pages differ from what the reviewer first wrote and are right:
+`2.` does not interrupt a paragraph and its digits stand between the marks,
+a table row `| ’ |` has `|` between the marks,
+a four-space `> ` is text,
+a comment line between is a separate block,
+and a heading marker or a fence line builds no group (B578).
+Eight pages with the repeated paragraph second in a quotation,
+a list item,
+a quotation in a list item,
+a second list item or a footnote definition were all refused,
+so the text of a slice keeps the context that the depth needs.
+The run steps `*`,
+`_`,
+`~`,
+a backtick and tags on purpose,
+and the review did not count that as an overstep.

@@ -546,22 +546,40 @@ Part of [the package README](../README.md).
   and no two groups claiming one span (B435);
   the pass that judges them and carries the choice to every place is ledger B431.
 - **The consistency pass carries words and leaves every mark where it was.**
-  Rules of the lead on 2026-10-13 and 2026-10-14 after the fourth to seventh independent reviews,
+  Rules of the lead on 2026-10-13,
+  2026-10-14 and 2026-10-15 after the independent reviews of the pass,
   and of the owner's question of 2026-10-13,
   "Can't we pre-fix the apostrophe things deterministically?"
-  Built in ledger B463 to B500 and uncommitted when this was written.
-  The mark rule:
+  Recorded in ledger B463 to B615,
+  and uncommitted when this was written.
+  Decided and not yet landed:
+  the word test and the pairing of typography reading shown text through markup (B597,
+  B605),
+  `'the '90s'` (B604),
+  readers that parse a slice with the page's definitions (B609,
+  B610,
+  B615),
+  and the smaller findings B598,
+  B611 to B614.
+  The words rule:
   the span the pass replaces is the words alone.
   The single marks that touch each edge of the span are read at the chosen place and at the receiving place.
-  There are four such marks:
+  Eight single marks count when a splice is judged:
   `'`,
   `‘`,
-  `’` and U+02BC.
+  `’`,
+  U+02BC,
+  `‚`,
+  `‛`,
+  `‹` and `›`.
   The straight mark,
   `’` and U+02BC are one mark,
   and `‘` equals only itself.
-  From artifact generation 17 they are recorded with the located place.
-  A splice is unavailable in four cases.
+  From artifact generation 17 the record of a located place stores four of them
+  (`'`,
+  `‘`,
+  `’` and U+02BC).
+  A splice is unavailable in each of these cases.
   The two places differ in a touching mark.
   The loose marks inside the two sets of words differ in sequence.
   A mark stands beside the receiving words and the edge character of the incoming words is of another class
@@ -573,10 +591,6 @@ Part of [the package README](../README.md).
   A loose mark is a single mark with no letter or digit directly on both sides of it.
   When a splice goes ahead each loose mark of the incoming words is written in the receiving place's form,
   so a straight mark carried onto a curly page arrives curly.
-  An apostrophe that arrives with the words is written the same way:
-  in the form the receiving words share when they share one,
-  otherwise in the form the page's prose apostrophes outside the span share when they share one,
-  otherwise as the chosen place wrote it.
   A place the splice cannot carry is carried by a writer's paragraph when a writer was asked and the bench chooses it,
   and otherwise keeps its words.
   A writer's paragraph is withheld when it no longer holds,
@@ -586,15 +600,19 @@ Part of [the package README](../README.md).
   the chosen place,
   a place kept for its context,
   and a place that already reads as the chosen one.
-  The proven-apostrophe rule:
-  an edge single mark is an apostrophe only when nothing in the whole page's prose can pair with it.
+  Two groups that share a block are settled together over the English as it stood when the pass began,
+  and the group that gives way keeps its places' words.
+  A gain is a splice whose incoming words bring an edge mark that the receiving words lack:
+  an apostrophe at the start or the end of the span.
+  A gain is carried only when the apostrophe is proven.
+  An edge single mark is an apostrophe only when nothing in the whole page's prose can pair with it.
   The proof reads the prose of the English:
   code,
   markup and its attributes,
   comments,
   link destinations,
   addresses and emphasis marks are blanked first.
-  The possible partners are every single quotation character.
+  Every single quotation character is a possible partner.
   The backtick and `‘`,
   `‚`,
   `‛`,
@@ -603,51 +621,157 @@ Part of [the package README](../README.md).
   `’` and U+02BC count by kind:
   an attached mark is inert,
   a trailing mark is a closer,
-  a leading mark an opener,
+  a leading mark of any apostrophe-like form is an opener,
   and a free mark both.
+  A mark reads attached,
+  trailing,
+  leading or free by what stands beside it:
+  a trailing mark is followed by white space,
+  punctuation other than a single mark,
+  or the end of the text,
+  a leading mark is preceded the same way,
+  a letter or digit of another script,
+  a symbol or a pictograph beside it makes it free,
+  and so does another single mark directly beside it.
+  Closing emphasis,
+  strong or strikethrough delimiters from the parse and a link's closing tail
+  can stand between a word and its trailing mark;
+  a closing double quotation mark or a closing parenthesis cannot.
   A trailing mark is proven when no possible opener stands before it,
   and a leading mark when no possible closer stands after it.
   A proven apostrophe belongs to its word,
   is inside the span and travels with it.
-  An edge apostrophe in the incoming words that the receiving words lack is the gain case.
-  It is decided on the page with every edit of the pass applied:
+  The proof is decided on the page with every edit of the pass applied:
   an edit is left out,
   with a finding,
   when the apostrophe it carries in is not proven there,
   and the check repeats until no edit drops.
-  A joint is read past closing marks.
-  An apostrophe after closing emphasis,
-  a closing straight or curly double mark,
-  a closing bracket or a link and its destination,
-  and before a letter or digit,
-  joins the word,
-  so no stand sits inside `**cat**'s`,
-  `"cat"'s` or `[the cat](x)'s`.
-  Every other edge mark stays outside the span and keeps the refusal.
-  Corpus counts of 2026-10-13 (the 92 English pages `people/<id>/page.en.md` of the pinned corpus,
+  A splice that adds or removes a mark that is a quotation mark on the page,
+  free or partnered,
+  is refused.
+  The refusal run.
+  A gain is also refused when a kept mark would stand next to the arriving one for the eye.
+  The pass looks across the run between the receiving words and the kept mark on the gain side,
+  or one wide run away,
+  and refuses when it reaches a mark.
+  The run is stated by what the page shows between the two marks,
+  and never by a list of characters.
+  It steps over white space of every kind,
+  a single line break inside a paragraph or a setext heading
+  (a soft break,
+  two spaces and a break,
+  a backslash and a break)
+  together with the container markers and the indentation that open the next line inside the same paragraph,
+  a line made only of invisible or non-ASCII space characters,
+  every character that shows nothing or a blank gap
+  (the default-ignorable characters,
+  the C0 and C1 controls other than the breaks and U+0000,
+  and U+2800),
+  U+0085,
+  U+2028 and U+2029 as line breaks,
+  the characters of emphasis,
+  strikethrough and code markup (`*`,
+  `_`,
+  `~` and the backtick),
+  literal or not,
+  tags,
+  footnote references and links,
+  a backslash escape read as the character it shows
+  (an escaped `*` steps,
+  an escaped `&` is a visible character),
+  and a character reference that is not itself a mark.
+  It ends at a character that shows,
+  a visible backslash (`\’` is no escape),
+  a blank line,
+  and any other block.
+  Whether two marks share a paragraph is read from the page's own parse,
+  with a line of invisible characters taken as inside the paragraph.
+  The page-wide reference refusal:
+  a character reference that decodes to a quotation-like character
+  (23 named references,
+  decimal ones of up to 7 digits and hexadecimal ones of up to 6)
+  makes every splice of that page unavailable,
+  wherever the reference stands,
+  with the kept reason `edge-reference-mark`.
+  It counts only where the page shows the reference as text:
+  not in code,
+  a tag attribute,
+  a link destination or title,
+  a comment,
+  or behind a backslash.
+  The English of every slice of the page is read,
+  slices read alone included.
+  Span edges are whole units on shown words.
+  A backslash escape of ASCII punctuation and a character reference that the parser decodes are each one unit,
+  shown as the character they stand for.
+  An edge cuts or keeps a unit exactly as it would that character,
+  and never splits it;
+  a quote whose edge falls inside a unit is widened to the whole unit.
+  Text that only looks like a reference (`Q&A;`) is no unit at an edge.
+  The word test at an edge reads shown text,
+  and runs on the final,
+  widened edges:
+  a unit counts as its shown character,
+  default-ignorable characters are transparent,
+  and `&` between two word characters joins them.
+  An edge that would cut a shown word leaves the receiving place as it was,
+  and refuses a chosen place.
+  Typography acts only on prose that the page parse shows.
+  Curling a mark,
+  the ellipsis,
+  the guillemets and the unification of quote style of a page read one mask built from the parse.
+  Front matter,
+  comments,
+  code of any kind,
+  math,
+  expressions,
+  tags and their attributes,
+  link destinations and titles,
+  and bare addresses are no prose;
+  an indented line is prose,
+  since the MDX grammar has no indented code.
+  A text that the grammar refuses has no prose.
+  The elision and quoted-number readings of a straight mark on a curly page:
+  a listed elision (`'tis`,
+  `'twas`,
+  `'til`,
+  `'em`,
+  `'cause`,
+  `'round`,
+  `'n'` between two words,
+  and a decade or a year of two digits and no third such as `'90s` and `'99`)
+  curls to `’` when it is unpaired,
+  and when it begins a quotation the pair curls as a quotation.
+  An elision inside a quotation curls to `’` and never takes the place of the opener that waits.
+  A two-digit number directly followed by a closing straight mark (`'42'`) is a quoted number and pairs.
+  Pairing is nested,
+  emphasis and link delimiters are opening and closing context,
+  and an opener followed by markup is an opener.
+  A replacement whose marks still cannot all pair keeps them straight,
+  with no guessed glyph.
+  Between the elision and the quoted-number readings of `'NN`,
+  the one that leaves fewer marks unpaired wins,
+  and a tie keeps the elision (decided and not yet landed).
+  Detail for each rule is in the ledger:
+  the marks and the proof in B463 to B555,
+  the refusal run in B557,
+  B564 to B567,
+  B574 and B575 to B589,
+  the page-wide reference refusal in B564 and B575,
+  span edges in B590 to B598,
+  elisions and pairing in B563,
+  B568 and B599 to B605,
+  and the prose mask in B606 to B615.
+  Corpus counts (the 92 English pages `people/<id>/page.en.md` of the pinned corpus,
   2,799 prose blocks,
-  counted with the package's own parser by `s177/counts.md`):
-  - 1,199 single marks stand in prose,
-    in 779 blocks.
-  - 1,148 are attached,
-    like the apostrophe of `don't` (65 straight,
-    1,083 curly).
-  - 33 trail a word:
-    28 have no possible partner and are all `’` after `s` in nine words,
-    and 5 have a partner and all close a single quotation.
-  - 4 follow closing markup and precede `s`,
-    all `’`.
-  - 10 lead a word and are not after markup:
-    9 are `‘` openers and 1 is `’round`.
-  - 4 are free:
-    `’` closing a quotation after sentence punctuation.
-  - No trailing mark with a partner looks like a plural possessive,
-    and the pages hold no `'90s` and no `goin'`.
-  - The marks in front matter (14),
-    HTML comments (17),
-    flow JSX (381),
-    flow expressions (19) and inline code (1) are not counted.
-  The production function run over the 92 pages finds 28 trailing and 5 leading proven marks (`s178/replay.out`).
+  counted with the package's own parser):
+  - The production function proves 27 trailing and 1 leading marks,
+    and the pass ships 25 and 1.
+  - The run finds a kept mark beyond the receiving words at 50 sites in 24 pages.
+  - No page holds a reference that is a mark (0 pages).
+  - The prose mask changes no character outside prose on the 92 pages
+    (the 1,237 slices;
+    ledger B606).
   What a reader of a page sees as a result of the accepted limits:
   - A place whose edge mark differs from the chosen place's keeps its own wording or takes a writer's paragraph.
     So does a place whose words stand beside a mark and end in another class of character than the incoming words,
@@ -672,18 +796,18 @@ Part of [the package README](../README.md).
     which costs model calls.
   - A page whose own apostrophes mix straight and curly keeps the form of the chosen place for an arriving apostrophe,
     since the page offers no one form to follow.
-  - Quote-like characters outside the four marks (the backtick,
-    U+00B4,
-    U+2032,
-    the low and angle quotation marks)
+  - Quote-like characters that are none of the eight marks
+    (the backtick,
+    U+00B4 and U+2032)
     stay inside a span at a quote's edge,
     and a replacement replaces them.
   - A corner bracket directly beside a span is not recorded and stays where it is.
   - A block carried in part leaves the place code could not move as it was,
     with the finding `consistency-partly-carried`.
-  - Two groups that share a block are settled together over the English as it stood when the pass began.
-    The group that gives way keeps its places' words,
-    so the page stays inconsistent for that group.
+  - A quoted letter such as `the letter 'n' is` keeps the reading of `rock 'n' roll`,
+    since no context separates them.
+  - `<!-->` and `<!--->` are read as comments that never end,
+    where CommonMark calls them complete.
   - The generation 17 reader holds no English,
     so it cannot check a recorded mark or that an edge apostrophe was proven.
     A forged record that the pass never writes

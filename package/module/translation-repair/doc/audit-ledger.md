@@ -305,7 +305,31 @@ named for that subject and listed here.
   spaces and line breaks,
   the elisions that open a quotation,
   the limits accepted,
-  and the container markers still to build.
+  and the container markers at the start of a line.
+- [Audit ledger: the consistency pass, what the refusal run steps over](audit-ledger-consistency-pass-what-the-refusal-run-steps-over.md):
+  What the reviews after that round found in the refusal run:
+  the page-wide refusal for a reference that is a mark,
+  the invisible characters,
+  controls and separators it steps over,
+  what it reads as a blank line,
+  and the lines of invisible characters that stay inside a paragraph.
+- [Audit ledger: the consistency pass, span edges as whole units](audit-ledger-consistency-pass-span-edges-as-whole-units.md):
+  Span edges that cut a character reference or a backslash escape,
+  took in text that only looks like a reference,
+  or left half a word,
+  and the units the edges are made of now.
+- [Audit ledger: the consistency pass, elisions, quoted numbers and pairing](audit-ledger-consistency-pass-elisions-quoted-numbers-and-pairing.md):
+  The pairing of single marks on a curly page:
+  elisions inside a quotation,
+  the quoted letter,
+  nested quotations,
+  opening marks beside markup and quoted numbers,
+  with the cases decided and not yet landed.
+- [Audit ledger: the consistency pass, the prose mask and slices parsed alone](audit-ledger-consistency-pass-the-prose-mask-and-slices-parsed-alone.md):
+  Typography only on the prose that the page parse shows,
+  the cache versions that moved with it,
+  and the readers that parse a slice alone,
+  with the findings decided and not yet landed.
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
   Sheets that lacked a block their role needs to judge or write.
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
@@ -426,6 +450,11 @@ named for that subject and listed here.
   ninth and tenth reviews of the consistency pass and the re-review:
   the rule breaches of each round,
   and the six mistakes of the lead's briefs and rulings in them.
+- [Audit ledger: process mistakes, agents and briefs in the reference, edge and prose mask rounds](audit-ledger-process-agents-and-briefs-reference-edge-and-prose-mask-rounds.md):
+  The rule breaches of the rounds from the review of n149 to the review of n156,
+  and two mistakes of the lead's own:
+  ten fix rounds without a commit,
+  and a review loop that was not stopped.
 - [Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md):
   The lead's own slips as they were collected at the close of each batch of work.
 - [Audit ledger: process mistakes, checks run before a commit](audit-ledger-process-commit-gates.md):
@@ -651,6 +680,10 @@ Filed in:
 - [Audit ledger: the consistency pass, the independent oracle and the rules for marks](audit-ledger-consistency-pass-independent-oracle-and-mark-rules.md)
 - [Audit ledger: the consistency pass, the tenth review](audit-ledger-consistency-pass-tenth-review.md)
 - [Audit ledger: the consistency pass, the re-review and the refusal run](audit-ledger-consistency-pass-re-review-and-the-refusal-run.md)
+- [Audit ledger: the consistency pass, what the refusal run steps over](audit-ledger-consistency-pass-what-the-refusal-run-steps-over.md)
+- [Audit ledger: the consistency pass, span edges as whole units](audit-ledger-consistency-pass-span-edges-as-whole-units.md)
+- [Audit ledger: the consistency pass, elisions, quoted numbers and pairing](audit-ledger-consistency-pass-elisions-quoted-numbers-and-pairing.md)
+- [Audit ledger: the consistency pass, the prose mask and slices parsed alone](audit-ledger-consistency-pass-the-prose-mask-and-slices-parsed-alone.md)
 
 ## Process mistakes in this audit
 
@@ -670,6 +703,7 @@ Filed in:
 - [Audit ledger: process mistakes, stopping and waiting](audit-ledger-process-stopping-and-waiting.md)
 - [Audit ledger: process mistakes, agents and briefs](audit-ledger-process-agents-and-briefs.md)
 - [Audit ledger: process mistakes, agents and briefs in the consistency fix rounds](audit-ledger-process-agents-and-briefs-consistency-fix-rounds.md)
+- [Audit ledger: process mistakes, agents and briefs in the reference, edge and prose mask rounds](audit-ledger-process-agents-and-briefs-reference-edge-and-prose-mask-rounds.md)
 - [Audit ledger: process mistakes, the lead's slips by batch of work](audit-ledger-process-the-leads-slips-by-batch.md)
 - [Audit ledger: work merged from parallel briefs](audit-ledger-work-merged-from-parallel-briefs.md)
 - [Audit ledger: process mistakes, questions and handoffs to the owner](audit-ledger-process-questions-to-the-owner.md)

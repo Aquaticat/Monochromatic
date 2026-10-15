@@ -675,6 +675,24 @@ so a Markdown reading of structure skips it,
 as the declared-name guard and the floor already did (ledger B113).
 The contributor reader found a link's label end with `indexOf('](')`
 and took the whole token for a name when the label was empty (ledger B126).
+A reader that parses a slice alone says what a slice alone cannot see:
+a footnote or reference definition held in another slice,
+and the text around an edit region.
+Parsed alone,
+`[^1]` and `[b's]` are plain text,
+so the refusal run read a footnote reference as characters between two marks
+and shipped a doubled mark,
+and the prose mask curled a label at its reference and not at its definition;
+a fragment of an edit region that cuts an inline element is refused by the grammar alone,
+or is parsed from the middle of a tag.
+Every reader that parses a slice takes the page's definitions with it
+(`refine-envelope.ts` collects them),
+an edit-region fragment gets its reading from the slice it lands in with the fragment in place,
+and a reader that cannot do either names that blind spot in its header
+(ledger B609,
+B610,
+B615;
+decided and not yet landed).
 
 What enforces it:
 `blank-line-splits.unit.test.ts`,
@@ -840,6 +858,20 @@ and a quotation that begins with such a word shipped `’Tis the season,'`
 with its closing mark straight (ledger B563,
 B568,
 M207).
+Then the word test at a span edge and the pairing context of typography read the written text
+and not the text that the reader sees:
+an edge was placed inside a word that a reference,
+a plain ampersand or a zero-width space joined (ledger B596),
+a quote ended or started beside emphasis,
+link or tag delimiters inside one shown word and shipped half a word (ledger B597),
+and a quotation opened by a tag end or by emphasis markup kept a straight mark beside a curly one
+(ledger B602,
+B605).
+Typography curled marks inside link destinations,
+titles,
+addresses,
+expressions,
+code and math until its mask was built from the parse (ledger B606).
 
 The rule:
 a span covers only what the quote matched,
@@ -881,6 +913,20 @@ a paired and an unpaired quotation are probed with it,
 a quotation that begins with a word the option treats specially among them (ledger B563,
 B568,
 M207).
+The word test at a span edge and the pairing context of typography read shown text,
+and what the parse does not show is transparent:
+references,
+escapes,
+default-ignorable characters,
+emphasis,
+strike and code delimiters,
+link brackets with their destination and title,
+tags,
+comments and expressions (ledger B596,
+B597,
+B605).
+Typography touches only the text that the page parse shows as prose,
+through the one mask that every typography reader shares (ledger B606).
 A quote a model gives back is evidence of where it points,
 not text to compare or splice:
 it is located in the text it quotes,
