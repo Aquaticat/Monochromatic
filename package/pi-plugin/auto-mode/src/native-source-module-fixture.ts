@@ -37,7 +37,8 @@ type SourceModule = Readonly<{
  */
 function assertSourceModule(value: unknown): asserts value is SourceModule {
   if ((value === null) || ((typeof value) !== 'object')
-    || (!('createJudgmentSources' in value)) || ((typeof value.createJudgmentSources) !== 'function'))
+    || (!('createJudgmentSources' in value))
+    || ((typeof value.createJudgmentSources) !== 'function'))
     throw new Error('Built judgment source export is unavailable');
 }
 

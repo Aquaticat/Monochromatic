@@ -91,25 +91,33 @@ export function createSourceFixture(): SourceFixture {
   function step(point: string): void {
     events.push(point);
     state.onStep?.(point);
-    if (state.failures.has(point)) throw state.failures.get(point);
+    if (state.failures
+      .has(point)) throw state.failures
+      .get(point);
   }
   /**
    Fallback observation must remain after original request lookup.
    */
   const receipt = Object.freeze({
-    /** Original fallback collection is observed only when bound sources are absent. */
+    /**
+     Original fallback collection is observed only when bound sources are absent.
+     */
     get sources(): object {
     step('receiptSources'); 
     return fallback; 
   } });
   state.bindingRequest = receipt;
   state.bindingResult = {
-    /** Bound source getter records selection before request authentication. */
+    /**
+     Bound source getter records selection before request authentication.
+     */
     get sources(): unknown {
       step('bindingSources'); 
       return state.bindingSources; 
     },
-    /** Bound request getter follows source selection. */
+    /**
+     Bound request getter follows source selection.
+     */
     get request(): unknown {
       step('bindingRequest'); 
       return state.bindingRequest; 

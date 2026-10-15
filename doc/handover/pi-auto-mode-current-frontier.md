@@ -1987,13 +1987,34 @@ with SHA-256 `0303111624e942b4d71ff419b459dda1a9ec4f7c3276317e122d7fb530c3c2b4`.
 `3f722d3466` records the final source-owner formatting.
 Both implementation files have zero focused diagnostics in
 `${HOME}/temp/agent/pi-judgment-source-lint-final-20261015.log`.
-The owned rebuild and type check have completed successfully;
-consumer verification is still running in
+The owned rebuild,
+type check,
+domain,
+single-call,
+dependency,
+preparation,
+and inspection suites pass in
 `${HOME}/temp/agent/pi-judgment-source-consumers-first-20261015.log`.
-Direct source consumers,
-saved-constructor comparison,
-guard controls,
-and the full maintained recount remain pending for source extraction.
+The six saved-constructor scenarios match public domain outcomes and native execution counts,
+including the permission/prohibition positive control,
+in `typed-source-constructor-comparison.json`.
+`741544d19d` and `8b1996d2f7` add independent built source consumers.
+Direct suites and type checking pass in
+`${HOME}/temp/agent/pi-source-tests-first-20261015.log`
+and `${HOME}/temp/agent/pi-source-types-first-20261015.log`.
+The same suites pass against the saved original handoff,
+collector,
+and current-binding statements in
+`${HOME}/temp/agent/pi-source-original-blocks-20261015.log`.
+These consumers retain native/legacy callback receiver and response identity,
+receipt fallback,
+request authentication order,
+current collection and signal identity,
+callback failures,
+and publication during freshness or dependency observations.
+The final consumer lint pass,
+safeguard omission controls,
+and full maintained recount remain pending for source extraction.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
