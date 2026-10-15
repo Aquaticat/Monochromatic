@@ -253,6 +253,13 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-completion-failure.unit.test.ts",
 ]
 
+[tasks."test:native:prepared-executable"]
+description = "Verify original native wrapper snapshots, queue turns, and shared context-guard failures"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-executable.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-executable-failure.unit.test.ts",
+]
+
 [tasks."test:native:group-lifetime"]
 description = "Verify original collector retirement, draining, and retained inspection"
 run = [
