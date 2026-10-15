@@ -584,6 +584,40 @@ Dependency artifacts survive this invalidation.
 The full sizing rerun and troubleshooting record are required before completion.
 The completed-job GitHub log retrieval workaround also needs its troubleshooting record.
 
+The corrected full reruns are `38822116503` and `38822116510`,
+at trial commit `ef616a2900`.
+Intermediate runs `38821765989` and `38821765814` failed during mise setup,
+before compilation,
+with `GitHub releases API returned 403 Forbidden`.
+The trial follows the recorded workaround in `mise-action-version-ahead-of-release.md`:
+pin published mise `2026.10.9` with an explanatory comment.
+Every main-matrix job passed setup and reached compilation after that change.
+The cache and completed-job log investigations now exist in
+`doc/troubleshooting/cargo-buildkit-source-timestamps.md`
+and `doc/troubleshooting/gh-completed-job-logs.md`;
+rendered review and the final application results remain pending.
+The durable minimal reproduction lives on the trial branch under `depot-trial/cache-repro/`.
+
+The Alpine behavior run completed successfully:
+1,461 tests passed,
+one was skipped,
+and all existing no-audio,
+ALSA,
+and PipeWire graphical smoke scenarios passed.
+The report records the scope limitation.
+
+Local collection and documentation checks encountered task-allocation failures;
+the enclosing worker slice reported a 256-task ceiling.
+These local failures are separate from cloud runner outcomes.
+Bounded CPU affinity and sequential commands allowed some checks to resume,
+but do not establish a permanent fix.
+The committed minimal fixture's first attempt failed before its container started.
+Its rerun completed successfully,
+including the stale-output negative control and corrected output after package invalidation.
+The user subsequently reported the Codex issue corrected;
+the worker ceiling now measures 2,048 tasks and local command execution resumed.
+No cloud build input or measurement was changed by that local recovery.
+
 The parallel history check inspected complete October 15 API pages:
 13 Alpine and 33 Windows runs.
 Four exact-commit completed push pairs exist;

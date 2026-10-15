@@ -31,6 +31,8 @@ The individual successful observations remain valid,
 but they do not establish safe cache reuse across repeated source snapshots.
 Trial commit `4648e5ad3d` adds source-content invalidation of the local packages;
 the full rerun is pending.
+The [cache investigation](../troubleshooting/cargo-buildkit-source-timestamps.md)
+preserves the minimal failing case and its verified package-clean remedy.
 
 These are observed executions,
 not vendor benchmark claims.
@@ -103,6 +105,17 @@ These are filesystem measurements inside that build,
 not account-wide billable storage.
 
 ## Existing checks newly exercised through Depot CI
+
+The existing Alpine task also passed on a four-CPU Depot GitHub runner in
+[run 38820372915](https://github.com/Aquaticats/Monochromatic/actions/runs/38820372915).
+Nextest reported 1,461 passing tests and one skipped test.
+The graphical smoke task drew the application window for no-audio,
+ALSA,
+and PipeWire scenarios,
+then confirmed the PipeWire stream was linked to its null sink.
+It finished with `SMOKE OK`.
+This exercises the existing smoke checks,
+not every desktop interaction or Android instrumentation.
 
 Run `wjr4cmpjvs` passed the logger's build,
 type check,

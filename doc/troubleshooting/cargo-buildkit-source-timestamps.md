@@ -35,7 +35,7 @@ At line 2179,
 the timestamp-based path accepts source timestamps no newer than that reference:
 
 ```rust
-// Cargo source, src/cargo/core/compiler/fingerprint/mod.rs:2179
+//! Cargo source, src/cargo/core/compiler/fingerprint/mod.rs:2179.
 if path_mtime <= reference_mtime {
     continue;
 }
@@ -85,6 +85,9 @@ the first changed program,
 the deliberately stale negative control,
 and the corrected program.
 It removes its disposable container in cleanup.
+The committed fixture at trial revision `67f7340dd5` passed on rerun.
+Its initial container startup failed with local task-allocation pressure;
+that attempt provided no cache verification evidence.
 
 Working patterns are a newly timestamped source change and a package clean followed by a rebuild.
 The failing pattern is an older changed source snapshot paired with a newer artifact for different source content.
