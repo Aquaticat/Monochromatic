@@ -716,6 +716,11 @@ description = "Prepare and reuse a Depot CI image containing the Node tools and 
 dir = "{{config_root}}/../../.."
 run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job typescript-snapshot --job typescript-snapshot-use"
 
+[tasks."trial:depot:validation"]
+description = "Validate image reuse, Android case counts, and cloud device prerequisites together"
+dir = "{{config_root}}/../../.."
+run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job typescript-snapshot --job typescript-snapshot-use --job android-host --job device-prerequisites"
+
 [tasks."trial:github:build"]
 description = "Measure an identical Alpine build and warm repetitions on a disposable GitHub runner"
 dir = "{{config_root}}/../../.."
