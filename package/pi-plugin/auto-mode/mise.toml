@@ -642,6 +642,10 @@ run = [
 description = "Verify original native JSON value preservation and construction error identity"
 run = 'node --max-old-space-size=512 src/native-judgment-input.unit.test.ts'
 
+[tasks."test:native:request"]
+description = "Verify original producer authentication precedes request receipt observation"
+run = 'node --max-old-space-size=512 src/native-request.unit.test.ts'
+
 [tasks."test:native:judgment-api"]
 description = "Verify original public method guards, call identity, forwarding, and lazy inspection"
 run = [
