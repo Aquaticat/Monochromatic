@@ -500,10 +500,10 @@ export { createNativeQueryObservation } from './native-query-observation.ts';
 ```
 
 The same bundler invocation emits the extension and native entries with shared implementation chunks.
-`package/pi-plugin/auto-mode/rolldown.node.config.ts:9` retains the named inputs:
+`package/pi-plugin/auto-mode/rolldown.node.config.ts:11` retains the named inputs:
 
 ```ts
-// package/pi-plugin/auto-mode/rolldown.node.config.ts:9
+// package/pi-plugin/auto-mode/rolldown.node.config.ts:11
 const config: ReturnType<typeof nodeConfig> = nodeConfig({
   input: {
     index: './src/index.ts',

@@ -1242,6 +1242,23 @@ zero errors and 13325 warnings in
 `${HOME}/temp/agent/pi-maintained-policy-entry-lint-20261015.log`.
 The direct generated import cycle is resolved;
 continue the remaining native type cleanup at question settlement and selection.
+Commit `2012634ade` ports question settlement to TypeScript and separates complete answer decoding
+from original claim publication.
+Commit `64d3775711` adds built-consumer checks for original answer identity,
+complete membership,
+malformed responses,
+UTF-8 bounds,
+model attribution,
+and predecode/postdecode lifecycle failure.
+The first focused lint exposed explicit nullish unions in the original absent-valued fields.
+Commit `e4b1d58d52` changes missing raw diagnostics and private initial answer/record fields to optional properties.
+This is an explicit record-shape change:
+`raw` is absent when no bounded raw string is retained,
+and initial private claims and batches omit their absent `answer` and `record` fields.
+Original thrown failure values still occupy the `failure` field.
+The public inspection methods continue to expose their existing answer and record projections.
+The direct `discard` owner also omits absent raw text.
+Consumer verification and a differential comparison against the prior settlement implementation are pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
