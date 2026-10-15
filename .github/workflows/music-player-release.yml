@@ -18,6 +18,11 @@ name: music-player-release
 # - Android is signed with the project release key from repository secrets. The secrets are read
 #   only in the Android job, and only on main; every other ref signs with a throwaway key.
 # - Windows and macOS binaries are not signed with a developer identity.
+# - Caches: each build job restores the cargo registry and the target directory (and the Android job the
+#   Gradle caches and the Android SDK) under a key made of the runner, target, toolchain and lock file hash,
+#   with a restore key that drops the lock file hash so a dependency change rebuilds only what changed.
+#   Only runs on main and manual dispatches save caches. The bytes of a release are still the bytes this
+#   run built and attested: cargo and Gradle rebuild whatever their own fingerprints say changed.
 
 on:
   workflow_dispatch:
@@ -63,6 +68,7 @@ jobs:
       should_build: ${{ steps.detect.outputs.should_build }}
       dry_run: ${{ steps.detect.outputs.dry_run }}
       use_release_key: ${{ steps.detect.outputs.use_release_key }}
+      save_cache: ${{ steps.detect.outputs.save_cache }}
       version: ${{ steps.detect.outputs.version }}
       version_code: ${{ steps.detect.outputs.version_code }}
       tag: ${{ steps.detect.outputs.tag }}
@@ -159,6 +165,12 @@ jobs:
           use_release_key=true
         fi
 
+        # Only runs on main and manual dispatches save caches. This workflow has no pull request trigger.
+        save_cache=false
+        if [ "$EVENT_NAME" = 'workflow_dispatch' ] || [ "$REF" = 'refs/heads/main' ] || [ "$REF" = 'refs/heads/feat/music-player-release-workflow' ]; then # TEMP: branch removed before merge
+          save_cache=true
+        fi
+
         # A push builds only when the version changed; a dispatch always builds, and a real
         # dispatch builds only if the tag is free. An existing tag skips, it never fails.
         should_build=false
@@ -177,6 +189,7 @@ jobs:
           echo "should_build=$should_build"
           echo "dry_run=$dry_run"
           echo "use_release_key=$use_release_key"
+          echo "save_cache=$save_cache"
           echo "version=$after"
           echo "version_code=$code"
           echo "tag=$tag"
@@ -241,6 +254,32 @@ jobs:
           echo "::error::Runner host is $host but this job builds $TARGET natively."
           exit 1
         fi
+
+    # Registry downloads and compiled dependencies. The key names the runner, target, toolchain and lock file;
+    # the restore key drops the lock file hash, so a changed lock file starts from the previous dependencies
+    # and cargo rebuilds only the crates whose version changed (cargo-publish.yml's exact-key cache rebuilds all).
+    - name: Restore the cargo and target caches
+      id: cache
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+          package/music-player/desktop-app/target
+        key: music-player-desktop-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock') }}
+        restore-keys: |
+          music-player-desktop-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}-${{ env.RUSTUP_TOOLCHAIN }}-
+
+    - name: Report the cache restore
+      shell: bash
+      env:
+        PRIMARY_KEY: ${{ steps.cache.outputs.cache-primary-key }}
+        MATCHED_KEY: ${{ steps.cache.outputs.cache-matched-key }}
+        EXACT_HIT: ${{ steps.cache.outputs.cache-hit }}
+      run: |
+        echo "::notice title=cache::cargo cache exact_hit=${EXACT_HIT:-false} matched='${MATCHED_KEY}' primary='${PRIMARY_KEY}'"
+        du -sh package/music-player/desktop-app/target 2>/dev/null || echo 'no target directory restored'
 
     # Ubuntu equivalents of the Fedora -devel packages in the desktop-app Containerfile:
     # pipewire (the audio backend, bindgen needs libclang), fontconfig and freetype (Slint fonts).
@@ -361,7 +400,7 @@ jobs:
         # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
         minimum_release_age: 1d
         install: false
-        # A release is built cold: no restored cache can change its bytes.
+        # Only node is installed here, which takes seconds; the cargo and target caches carry the real cost.
         cache: false
 
     - name: Package (macOS disk image)
@@ -410,6 +449,39 @@ jobs:
         echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
         ls -la dist
 
+    # The target directory keeps the compiled dependencies only. This package's own artifacts, its path
+    # dependency's, the final binary and the incremental directory are rebuilt every run anyway, so saving
+    # them would only grow the entry. Everything is already copied into dist/ above.
+    - name: Trim the target directory before caching
+      if: ${{ needs.detect.outputs.save_cache == 'true' && steps.cache.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        for profile_dir in package/music-player/desktop-app/target/release package/music-player/desktop-app/target/${TARGET}/release; do
+          if [ -d "$profile_dir" ]; then
+            rm -rf "${profile_dir}/incremental"
+            rm -f "${profile_dir}"/music-player "${profile_dir}"/music-player.* "${profile_dir}"/*.d
+            for sub in deps .fingerprint build; do
+              if [ -d "${profile_dir}/${sub}" ]; then
+                find "${profile_dir}/${sub}" -maxdepth 1 \( -name 'music_player*' -o -name 'music-player*' -o -name 'libmusic_player*' \
+                  -o -name 'truepeak_core*' -o -name 'truepeak-core*' -o -name 'libtruepeak_core*' \) -exec rm -rf {} +
+              fi
+            done
+          fi
+        done
+        du -sh package/music-player/desktop-app/target ~/.cargo/registry/index ~/.cargo/registry/cache ~/.cargo/git/db 2>/dev/null || true
+
+    - name: Save the cargo and target caches
+      if: ${{ needs.detect.outputs.save_cache == 'true' && steps.cache.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+          package/music-player/desktop-app/target
+        key: ${{ steps.cache.outputs.cache-primary-key }}
+
     - name: Attest provenance
       if: ${{ needs.detect.outputs.dry_run == 'false' }}
       uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
@@ -438,14 +510,76 @@ jobs:
       VERSION_CODE: ${{ needs.detect.outputs.version_code }}
       USE_RELEASE_KEY: ${{ needs.detect.outputs.use_release_key }}
       DRY_RUN: ${{ needs.detect.outputs.dry_run }}
-      # Dependencies are downloaded fresh and no build cache is restored, so a release is built cold.
-      GRADLE_OPTS: '-Dorg.gradle.caching=false'
     steps:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
         fetch-depth: 1
         persist-credentials: false
+
+    # Cache key parts that are read from the repository, never copied into this file: the pinned Rust version
+    # from mise.lock, and the Android SDK component versions from the lines of the prepare:android task in
+    # mise.toml, so the SDK cache key changes exactly when the components do.
+    - name: Read the cache key parts
+      id: parts
+      run: |
+        set -euo pipefail
+        toolchain=$(awk -F'"' '/^\[\[tools\.rust\]\]$/ { in_rust = 1; next } in_rust && /^version = / { print $2; exit }' mise.lock)
+        components=$(grep -E '^const want(Platform|BuildTools|Ndk) = ' mise.toml | sha256sum | cut -c1-16)
+        if [ -z "$toolchain" ] || [ -z "$components" ]; then
+          echo '::error::Could not read the Rust version or the Android components.'
+          exit 1
+        fi
+        echo "toolchain=$toolchain" >> "$GITHUB_OUTPUT"
+        echo "components=$components" >> "$GITHUB_OUTPUT"
+
+    # Restore before mise installs anything, so that mise finds the Android SDK already in place and
+    # prepare:android only fills gaps. The restore key drops the component hash: an older SDK is a head start.
+    - name: Restore the Android SDK cache
+      id: cache-sdk
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: ~/.local/share/mise/installs/android-sdk
+        key: music-player-android-sdk-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.parts.outputs.components }}
+        restore-keys: |
+          music-player-android-sdk-v1-${{ runner.os }}-${{ runner.arch }}-
+
+    - name: Restore the Gradle caches
+      id: cache-gradle
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper/dists
+        key: music-player-gradle-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package/music-player/android-app/**/*.gradle.kts', 'package/music-player/android-app/gradle.properties', 'package/music-player/android-app/gradle/wrapper/gradle-wrapper.properties') }}
+        restore-keys: |
+          music-player-gradle-v1-${{ runner.os }}-${{ runner.arch }}-
+
+    - name: Restore the cargo and native target caches
+      id: cache-native
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+          package/music-player/android-app/rust/target
+        key: music-player-android-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.parts.outputs.toolchain }}-${{ steps.parts.outputs.components }}-${{ hashFiles('package/music-player/android-app/rust/Cargo.lock') }}
+        restore-keys: |
+          music-player-android-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.parts.outputs.toolchain }}-${{ steps.parts.outputs.components }}-
+
+    - name: Report the cache restores
+      env:
+        SDK_HIT: ${{ steps.cache-sdk.outputs.cache-hit }}
+        SDK_MATCH: ${{ steps.cache-sdk.outputs.cache-matched-key }}
+        GRADLE_HIT: ${{ steps.cache-gradle.outputs.cache-hit }}
+        GRADLE_MATCH: ${{ steps.cache-gradle.outputs.cache-matched-key }}
+        NATIVE_HIT: ${{ steps.cache-native.outputs.cache-hit }}
+        NATIVE_MATCH: ${{ steps.cache-native.outputs.cache-matched-key }}
+      run: |
+        echo "::notice title=cache::android sdk exact_hit=${SDK_HIT:-false} matched='${SDK_MATCH}'"
+        echo "::notice title=cache::gradle exact_hit=${GRADLE_HIT:-false} matched='${GRADLE_MATCH}'"
+        echo "::notice title=cache::cargo and native target exact_hit=${NATIVE_HIT:-false} matched='${NATIVE_MATCH}'"
 
     - name: Set up mise (skip auto-install of all tools)
       uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
@@ -456,7 +590,8 @@ jobs:
         # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
         minimum_release_age: 1d
         install: false
-        # A release is built cold: no restored cache can change its bytes.
+        # The tools that cost time are cached by the steps above (Android SDK, Gradle, cargo); the rest install in
+        # seconds, and mise's own whole-directory cache would store the toolchains untrimmed.
         cache: false
 
     # The versions come from mise.lock: the repository's pinned Rust (with the two Android targets that
@@ -473,6 +608,13 @@ jobs:
     # build-tools 37.0.0, NDK 29.0.13846066, platform-tools) into the mise-managed SDK.
     - name: Install the Android SDK components
       run: mise run prepare:android
+
+    - name: Save the Android SDK cache
+      if: ${{ needs.detect.outputs.save_cache == 'true' && steps.cache-sdk.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: ~/.local/share/mise/installs/android-sdk
+        key: ${{ steps.cache-sdk.outputs.cache-primary-key }}
 
     - name: Restore the project release key
       if: ${{ needs.detect.outputs.use_release_key == 'true' }}
@@ -558,7 +700,7 @@ jobs:
         # Signature and certificate.
         certs=$(mise exec java -- "${tools}/apksigner" verify --verbose --print-certs "dist/${asset}")
         echo "$certs"
-        fingerprint=$(awk -F': ' '/certificate SHA-256 digest/ { print $2; exit }' <<< "$certs")
+        fingerprint=$(awk -F': ' '/certificate SHA-256 digest/ { print $NF; exit }' <<< "$certs")
         if [ "$USE_RELEASE_KEY" = 'true' ]; then
           if [ "$fingerprint" != "$EXPECTED_ANDROID_CERT_SHA256" ]; then
             echo "::error::APK certificate ${fingerprint} is not the project release certificate."
@@ -569,6 +711,47 @@ jobs:
           exit 1
         fi
         echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
+
+    # Only dependency artifacts are kept: this package's own Rust artifacts, the copied-out libraries and the
+    # incremental directories are rebuilt every run anyway.
+    - name: Trim the native target directory before caching
+      if: ${{ needs.detect.outputs.save_cache == 'true' && steps.cache-native.outputs.cache-hit != 'true' }}
+      run: |
+        set -euo pipefail
+        root=package/music-player/android-app/rust/target
+        for profile_dir in "$root/release" "$root/aarch64-linux-android/release" "$root/x86_64-linux-android/release"; do
+          if [ -d "$profile_dir" ]; then
+            rm -rf "${profile_dir}/incremental"
+            rm -f "${profile_dir}"/*.so "${profile_dir}"/*.d
+            for sub in deps .fingerprint build; do
+              if [ -d "${profile_dir}/${sub}" ]; then
+                find "${profile_dir}/${sub}" -maxdepth 1 \( -name 'musicplayer_native*' -o -name 'musicplayer-native*' -o -name 'libmusicplayer_native*' \
+                  -o -name 'truepeak_core*' -o -name 'truepeak-core*' -o -name 'libtruepeak_core*' \) -exec rm -rf {} +
+              fi
+            done
+          fi
+        done
+        du -sh "$root" ~/.cargo/registry/index ~/.cargo/registry/cache ~/.cargo/git/db ~/.gradle/caches ~/.gradle/wrapper/dists ~/.local/share/mise/installs/android-sdk 2>/dev/null || true
+
+    - name: Save the cargo and native target caches
+      if: ${{ needs.detect.outputs.save_cache == 'true' && steps.cache-native.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+          package/music-player/android-app/rust/target
+        key: ${{ steps.cache-native.outputs.cache-primary-key }}
+
+    - name: Save the Gradle caches
+      if: ${{ needs.detect.outputs.save_cache == 'true' && steps.cache-gradle.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper/dists
+        key: ${{ steps.cache-gradle.outputs.cache-primary-key }}
 
     - name: Delete the key material
       if: ${{ always() }}
