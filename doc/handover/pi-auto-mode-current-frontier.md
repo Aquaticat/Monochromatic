@@ -2304,6 +2304,26 @@ The original dependency facade is qualified at these tested boundaries.
 Continue the native program execution queue with original recorder scope and serial queue ownership,
 then its reached-program runner composition.
 
+`113d71975c` moves original recorder and queue ownership behind `program-scope.ts`,
+with unchanged native entry paths and private token/public label publication.
+`ba72ea82cf` formats that implementation;
+the three-file scope has zero lint diagnostics.
+`95994b387b` adds independent recorder and queue consumers.
+The first fixture lint identifies a self-referential constructor inference error;
+an explicit native constructor type preserves the proxy's checked receiver without unsafe inferred values.
+The rebuilt artifact,
+package type check,
+existing native queue controls,
+and new recorder/queue consumers pass in
+`${HOME}/temp/agent/pi-program-scope-first-20261015.log`.
+The tests retain immediate queue-tail publication,
+normal and exceptional release,
+idempotent disposal,
+and the original unresolved successor after a predecessor rejection.
+Original-body replay,
+omission controls,
+and final focused formatting remain pending.
+
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
 Its `cli-git` push-wait notice was initially misread as a timeout.

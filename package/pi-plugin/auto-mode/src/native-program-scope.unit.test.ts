@@ -55,7 +55,11 @@ await describe({ name: '', children: [
     /** This exact original failure must escape without wrapping. */
     const failure = new Error('Original native recorder construction failed');
     /** Native construction failure occurs after collision checking and before publication. */
-    const NestedCallRecorder = new Proxy(Map, { construct() { throw failure; } });
+    const NestedCallRecorder = new Proxy(Map, {
+      construct() {
+        throw failure;
+      },
+    });
     assert.throws(function failed() {
       scopeModule.requireProgramScope({ runner: { scopes }, carrier: { token: {} }, parentId: 'parent', NestedCallRecorder });
     }, function original(error: unknown) { return error === failure; });
