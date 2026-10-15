@@ -2,7 +2,10 @@
 
 ## Status and decision being tested
 
-The bounded trial executions have finished.
+The initial bounded trial executions have finished.
+A runner-size and Cargo-parallelism follow-up is executing in
+[run 38819692881](https://github.com/Aquaticats/Monochromatic/actions/runs/38819692881).
+The allocation ranking remains provisional until its measurements are incorporated.
 Graphical testing and account-wide billing visibility remain unresolved acceptance gaps.
 This report follows the [confirmed trial brief](../planning/depot-ci-trial.md).
 The user prefers the USD $20 Developer plan if intentional GitHub routing keeps it useful and convenient.
