@@ -1,0 +1,37 @@
+# Alpine Linux (musl libc) build and run image for the `music-player` desktop app.
+# Alpine is the second supported Linux target beside the Fedora glibc image in `Containerfile`:
+# see ../../../doc/decision/music-player-alpine.md for the measurements behind every choice here.
+#
+# Two stages:
+#   build    Rust toolchain, C toolchain and the -dev packages the crate graph links or parses at build time.
+#   runtime  The smallest apk set a user needs to run the dynamically linked binary (the deliverable list in
+#            README.md under "Alpine Linux"), plus the app binary.
+#
+# The base is pinned by digest (the multi-arch index digest of alpine:3.24.2, the stable release on 2026-10-14),
+# so x86_64 and aarch64 builds start from the same Alpine content. Refresh both the tag and the digest together:
+#   podman pull docker.io/library/alpine:3.24 && podman inspect docker.io/library/alpine:3.24 --format '{{.Digest}}'
+FROM docker.io/library/alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS build
+
+# Build packages:
+#   rust, cargo            Alpine's own musl-hosted toolchain (the repo pins no toolchain; Slint 1.18 needs
+#                          a recent stable, and Alpine 3.24 ships 1.96).
+#   build-base             gcc, g++, make, musl-dev: cc for C dependencies.
+#   cmake, samurai         opusic-sys compiles its bundled libopus 1.6.1 through CMake; samurai is Alpine's
+#                          ninja.
+#   clang21-libclang       libclang for bindgen (pipewire's libspa-sys). clang-dev is not needed; bindgen only
+#                          loads libclang and uses the system headers.
+#   pipewire-dev           libpipewire-0.3 and libspa headers for the `pipewire` crate (link-time dependency).
+#   alsa-lib-dev           libasound for the cpal ALSA output on Linux.
+#   fontconfig-dev, freetype-dev  linked by Slint's font stack.
+#   linux-headers          bindgen parses pipewire headers that include <linux/...>.
+#   pkgconf                pkg-config used by the *-sys crates.
+#   cargo-nextest          the test runner (RNQ), from Alpine so aarch64 needs no prebuilt download.
+#   dbus                   dbus-daemon for the notification tests, which start a private session bus.
+RUN apk add --no-cache \
+      rust cargo \
+      build-base cmake samurai pkgconf linux-headers \
+      clang21-libclang \
+      pipewire-dev alsa-lib-dev \
+      fontconfig-dev freetype-dev \
+      cargo-nextest \
+      dbus

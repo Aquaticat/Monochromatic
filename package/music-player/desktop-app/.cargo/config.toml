@@ -22,6 +22,15 @@
 [target.x86_64-unknown-linux-gnu]
 rustflags = ["-C", "target-feature=+aes"]
 
+# Alpine Linux and every other musl libc Linux target. Alpine's own rustc reports the host triple
+# x86_64-alpine-linux-musl (aarch64-alpine-linux-musl on arm64), a different name from the rustup
+# x86_64-unknown-linux-musl, and a target table matches one exact triple, so a cfg table is the one entry that
+# covers both spellings. Without it gxhash hits its compile_error! on an Alpine build. aarch64 needs +aes for the
+# same reason (neon is baseline there, aes is not). Consequence: the binary needs the ARM crypto extension on
+# aarch64, which a Raspberry Pi 3 or 4 CPU lacks. See doc/decision/music-player-alpine.md.
+[target.'cfg(all(target_os = "linux", target_env = "musl"))']
+rustflags = ["-C", "target-feature=+aes"]
+
 # Intel macOS.
 [target.x86_64-apple-darwin]
 rustflags = ["-C", "target-feature=+aes"]
