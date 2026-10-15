@@ -1,5 +1,6 @@
 import { sealPreparedInput } from './prepared-input-seal.ts';
 import { schedulePreparedCalls } from './prepared-schedule.ts';
+import { completePreparedBatch } from './prepared-completion.ts';
 
 export class PreparedBatchContractError extends Error {}
 export class PreparedBatchExecutionError extends Error {
@@ -199,29 +200,6 @@ export async function dispatchPreparedBatch({
     completion.settled=await Promise.allSettled(scheduled.map(runMember));
   }
   const {settled}=completion;
-  if(batchState.decision===undefined)throw new PreparedBatchContractError('Prepared batch completed without admission outcome');
-  if(failures.length > 0)throw new PreparedBatchExecutionError(
-    'Prepared batch retained lifecycle failures',
-    {
-      failures,
-      outcomes:settled,
-      assessmentDecision:batchState.decision
-    }
-  );
-  const rejected=settled.filter(function isRejectedResult(result) { return (result.status==='rejected'); });
-  if(rejected.length > 0)throw new PreparedBatchExecutionError(
-    'Prepared batch has unhandled native outcomes',
-    {
-      failures:rejected.map(function readRejection(result) { return (result.reason); }),
-      outcomes:settled,
-      assessmentDecision:batchState.decision
-    }
-  );
-  return Object.freeze({
-    decision:batchState.decision,
-    assessmentCount:snapshots.length,
-    members:snapshots[0]??Object.freeze([]),
-    outcomes:Object.freeze(settled.map(function readCompletedValue(result) { return (result.value); }))
-  });
+  return completePreparedBatch({ batchState, failures, settled, snapshots, PreparedBatchContractError, PreparedBatchExecutionError });
 }
 //endregion
