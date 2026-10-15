@@ -20,20 +20,23 @@ const l = tagged({ tag: 'auto-mode-program-runner-binding' });
 /** Copy native options with JavaScript spread semantics before replacing only the original member signal.
  @param options - original native callback options, including opaque primitive spread inputs
  
- @param signal - original reached member cancellation rather than a replacement controller
+ @param readSignal - original member lookup evaluated after native option getters
  
  @returns original enumerable options with the member's cancellation source
  */
 function memberOptions<const Options>({
   options,
-  signal
+  readSignal
 }: Readonly<{
   options: Options;
-  signal: ProgramRunnerGroup['members'][number]['signal'];
+  readSignal: () => ProgramRunnerGroup['members'][number]['signal'];
 }>): Options & Readonly<{ signal: ProgramRunnerGroup['members'][number]['signal'] }> {
+  /** Option copying preserves original getter order before native member lookup. */
+  const ol = tagged({ tag: memberOptions.name, l });
+  ol.debug('copying original native options before reading member cancellation');
   return {
     ...options,
-    signal
+    signal: readSignal()
   };
 }
 
@@ -120,17 +123,12 @@ export function bindReachedProgramGroup<const Recorder extends object>({
    */
   const nativeRun = runner.host
     .runOwnedToolCall;
-  /**
-   Judgment admission receives the original tool lookup result, including a missing definition.
+  /** Forward original native call after copying options and resolving its member signal.
+   @param call - original native call identity supplied by the judgment
+   @param options - original opaque native option spread input
+   @returns exact native callback return value
    */
-  const slots = origin.judgment
-    .bindProgramCalls({
-    group: group.handle,
-    calls,
-    tools: calls.map(function readNativeDefinition(call) {
-      return tools.find(function matchesCall(tool) { return tool.name === call.name; });
-    }),
-    runNative(
+  function runNative(
       call: NativeReturnCall,
       options: unknown
     ): unknown {
@@ -138,26 +136,41 @@ export function bindReachedProgramGroup<const Recorder extends object>({
        Native callback logs identify the boundary without inspecting opaque options or arguments.
        */
       const nl = tagged({
-        tag: 'runNative',
+        tag: runNative.name,
         l: rl
       });
       nl.debug('forwarding original native member with its associated cancellation');
-      /**
-       Successfully bound calls have their original member ordinal before native entry.
+      /** Read member cancellation only after original option spread getters complete.
+       @returns original reached member signal
        */
-      const ordinal = nonNullishOrThrow(ordinals.get(call.id));
-      /**
-       Original complete-group association remains the source of the member signal.
-       */
-      const member = nonNullishOrThrow(group.members[ordinal]);
+      function readMemberSignal(): ProgramRunnerGroup['members'][number]['signal'] {
+        /** Bound call lookup follows the original native option-copy boundary. */
+        const sl = tagged({ tag: readMemberSignal.name, l: nl });
+        sl.debug('reading original bound native member cancellation');
+        /** Successfully bound calls have their original member ordinal before native entry. */
+        const ordinal = nonNullishOrThrow(ordinals.get(call.id));
+        /** Original complete-group association remains the source of the member signal. */
+        const member = nonNullishOrThrow(group.members[ordinal]);
+        return member.signal;
+      }
       return nativeRun(
         call,
         memberOptions({
           options,
-          signal: member.signal
+          readSignal: readMemberSignal
         })
       );
-    },
+    }
+  /** Judgment admission receives original tool lookup results, including absent definitions. */
+  const slots = origin.judgment.bindProgramCalls({
+    group: group.handle,
+    calls,
+    tools: calls.map(function readNativeDefinition(call) {
+      return tools.find(function matchesCall(tool) {
+        return tool.name === call.name;
+      });
+    }),
+    runNative,
   });
   rl.debug('published original native slots and member result tickets');
   return {
