@@ -1835,16 +1835,20 @@ Each step is its own commit,
 
 ## Not established
 
-- Whether the jobs changed by the install branch work on GitHub:
-   `final-newline.yml` and the `version` job of
-  `npm-release.yml` were checked with `actionlint` 1.7.12 and their commands were run locally against the installed
-  0.1.0 executable,
-   but neither job ran on a hosted runner.
-  That includes whether hosted Ubuntu runners have `git-lfs` (the native ripple's `git add` needs it in a checkout
-  with LFS attributes) and whether the runner's glibc and Git meet the executable's needs and the 2.55.0 floor.
+- Whether the `version` job of `npm-release.yml` works on GitHub:
+  it was checked with `actionlint` 1.7.12 and its commands were run locally against the installed 0.1.0 executable,
+   but it has never run on a hosted runner, because every push so far found no pending changeset and skipped it
+  (runs 38676475783, 38689708686); a run needs a pending changeset and opens or updates the Version Packages pull
+  request.
+  Measured on 2026-10-15 from the runner image notes (`images/ubuntu/Ubuntu2404-Readme.md`, image 20261012.334.1):
+  hosted Ubuntu 24.04 has Git 2.55.0 (exactly the floor), Git LFS 3.8.0 and glibc 2.39, so the executable's needs are
+  met there.
+  `final-newline.yml` was deleted on 2026-10-15.
 - Hosts older than glibc 2.39:
-   the release archive's x86_64 file needs `GLIBC_2.39`;
-   no older host was tried.
+   the release archive's x86_64 file needs `GLIBC_2.39` (`pidfd_spawnp` and `pidfd_getpid`, measured on the 0.1.4
+  archive with `objdump -T`); no older host was tried, and the README says the archives do not start there.
+  The `ubuntu-latest` label moves to Ubuntu 26.04 in November 2026, so the wrapper's x86_64 build job names
+  `ubuntu-24.04` to keep the floor.
 - Whether `security/forbidden-strings` reports a finding at the post-commit trigger with 0.1.1:
    the throwaway commits had the rules file present and exited 0,
    and no commit with a forbidden string was made.
