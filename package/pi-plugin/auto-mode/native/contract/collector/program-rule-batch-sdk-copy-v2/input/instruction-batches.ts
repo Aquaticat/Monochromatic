@@ -102,7 +102,8 @@ export function createInstructionBatches({
     if (((typeof clauseRelations) !== 'boolean') || ((typeof requestMaterial) !== 'boolean')
       || ((typeof headingContexts) !== 'boolean')
       || ((typeof unitAdoptions) !== 'boolean')
-      || ((!clauseRelations) && (!requestMaterial)
+      || ((!clauseRelations)
+      && (!requestMaterial)
       && (!headingContexts)
       && (!unitAdoptions))) throw new JudgmentConstructionError('Bound policy batch requires explicit code-selected semantic uses');
     /**

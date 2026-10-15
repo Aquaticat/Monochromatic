@@ -13,7 +13,7 @@ import type {
   FixtureInstructionModule,
   FixtureInstructionHarness,
   FixtureInstructionState
-} from './native-instruction-contract.ts';
+} from './native-instruction-fixture-types.ts';
 
 /**
  Require the original native constructor before supplying independently owned fixture inputs.
@@ -72,7 +72,7 @@ export function createInstructionFixture({
    Original source list remains replaceable only through fixture-owned state.
    */
   const state: FixtureInstructionState = {
-    sources: Object.freeze(contents.map(createGoverningSource)),
+    sources: Object.freeze(contents.map(function originalSource(content) { return createGoverningSource(content); })),
     active: false,
     hostPolicy: {},
   };
@@ -152,18 +152,17 @@ export function createInstructionFixture({
    */
   function bindingSegment<Result>(operation: () => Result): Result {
     events.push(`enter:${operation.name}`);
+    /** Nested original source segments restore their caller's active state. */
     const previous = state.active;
     state.active = true;
-    try { 
-      return operation(); 
-    }
-    finally { 
-      state.active = previous; 
-      events.push(`exit:${operation.name}`); 
-    }
+    /** Original fixture segment closes even when the selected operation fails. */
+    using segment = { [Symbol.dispose](): void { state.active = previous; events.push(`exit:${operation.name}`); } };
+    return operation();
   }
   /**
    Observe selection's original active-segment decision.
+
+   @returns original fixture segment state
    */
   function isBindingSegmentActive(): boolean { 
     events.push('active'); 
@@ -171,6 +170,8 @@ export function createInstructionFixture({
   }
   /**
    Read the exact retained original source list.
+
+   @returns original host policy and source-list references
    */
   function readJudgmentSources(): Readonly<{
     hostGoverningPolicy: unknown;
@@ -196,6 +197,8 @@ export function createInstructionFixture({
   }
   /**
    Preserve original question-selection callback timing.
+
+   @returns original fixture declaration callback
    */
   function knownSelection(): Readonly<{ declare: typeof declare }> { 
     events.push('selection'); 
@@ -211,6 +214,7 @@ export function createInstructionFixture({
   function issue(claims: readonly object[]): object {
     events.push('issue');
     if (state.issueFailure) throw state.issueFailure;
+    /** Immutable batch retains the original declaration order. */
     const batch = Object.freeze([...claims]);
     batches.push(batch);
     return batch;

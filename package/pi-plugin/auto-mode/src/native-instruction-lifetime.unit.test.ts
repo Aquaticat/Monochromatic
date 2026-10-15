@@ -15,7 +15,7 @@ await describe({
         const { input, events } = createInstructionFixture();
         const properties = ['ready', 'bindingSegment', 'isBindingSegmentActive', 'readJudgmentSources', 'declaredNames', 'byMember', 'bindings', 'knownSelection', 'parsePolicy', 'receipt', 'issue'];
         const reads: string[] = [];
-        const supplied = Object.create(null);
+        const supplied: Record<string, unknown> = {};
         for (const property of properties) {
           Object.defineProperty(supplied, property, { get() { 
             reads.push(property); 
@@ -35,7 +35,7 @@ await describe({
         const fixture = createInstructionFixture();
         const missingParser = createFixtureInstructions({ ...fixture.input, parsePolicy: undefined });
         assert.equal(missingParser.requestMaterialFor(), fixture.receipt.request);
-        assert.ok(missingParser.claimRequestMaterial());
+        assert.equal(Object.isFrozen(missingParser.claimRequestMaterial()), true);
         assert.throws(function noParser() { 
           missingParser.indexedRuleCandidates(); 
         }, { message: 'Original host-selected policy and qualified parser are required for instruction claims' });
