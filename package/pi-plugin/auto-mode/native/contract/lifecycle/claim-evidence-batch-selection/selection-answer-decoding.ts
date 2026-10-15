@@ -10,8 +10,9 @@ import type {
   SettlementClaim,
 } from './selection-settlement-types.ts';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
+import { caughtValueText } from '@monochromatic-dev/module-caught-value/ts';
 
-/** Decode diagnostics omit original answer text and model content. */
+/** Decode diagnostics retain the original failure without replacing its identity. */
 const l = tagged({ tag: 'auto-mode-question-answer-decoding' });
 
 //region A malformed member makes the complete response unusable.
@@ -59,7 +60,7 @@ export function decodeQuestionAnswers({
     });
     return { failure: undefined, values };
   } catch (error) {
-    dl.debug('retaining original response decoding failure');
+    dl.debug(`retaining original response decoding failure: ${caughtValueText(error)}`);
     return {
       failure: error,
       values: selected.map(function createMalformedAnswer() { return Object.freeze({ status: 'malformed' }); }),
