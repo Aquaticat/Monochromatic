@@ -4,10 +4,26 @@
  */
 
 //region Classification wording remains fixed independently of cached estimates.
+/** Fixed relevance input never supplies a rule interpretation or permission. */
+export type RelevanceQuestion={
+ /** Independent probability head retained by the original classifier. */
+ readonly type:'noul';
+ /** Exact fixed relevance question. */
+ readonly question:string;
+ /** Opposed criteria define the fixed probability interpretation. */
+ readonly criteria:{
+  /** Evidence for potential guard relevance. */
+  readonly true:string;
+  /** Evidence for absence of guard relevance. */
+  readonly false:string;
+ };
+ /** Supported operation scope is fixed independently of a particular action. */
+ readonly remit:string;
+};
 /**
  Fixed relevance task. Rule text is bound as data, never rewritten into semantic wording.
  */
-export const RELEVANCE_QUESTION=Object.freeze({
+export const RELEVANCE_QUESTION:RelevanceQuestion=Object.freeze({
  type:'noul',
  question:'Could the selected rule affect an auto-mode approval, block, or user-confirmation decision for at least one supported operation? Classify potential relevance to the guard, not applicability to a particular action. Do not choose source authority, create an approval, or decide whether an action should execute.',
  criteria:Object.freeze({
