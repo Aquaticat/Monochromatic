@@ -6,7 +6,7 @@ import {createRequestProducerOwner} from '../../collector/request-producer-judgm
 import {createRequestObservationOwner} from '../../lifecycle/root-lifecycle-retirement-entry/observer.mjs';
 import {createJudgmentConstructor} from "./generated/judgment.mjs";
 import {bindPolicySessionCollector} from '../policy-source/system-slot.mjs';
-import {registerOriginalJudgmentStart} from '../action-policy/judgment-start.mjs';
+import {createOperationCurrentness} from './operation-currentness.mjs';
 import {createNativeBatchHandler} from './handler.mjs';
 import {
   ruleAssessmentCatalogText,
@@ -32,7 +32,6 @@ export function bindNativePolicyRuntime({
   root,
   lifecycle,
   policyInput,
-  endpoint,
   rootDirectory,
   parsePolicy,
   catalogText=ruleAssessmentCatalogText,
@@ -65,6 +64,7 @@ export function bindNativePolicyRuntime({
  if(agent.signal!==undefined)throw new NativePolicyRuntimeError('Cannot change policy ownership during an active agent run');
  if(agent.executeToolBatch!==undefined)throw new NativePolicyRuntimeError('The original session already has a complete-group executor');
  lifecycle.assertActive(lifecycle.capture(root));
+ const currentness=createOperationCurrentness(root);
  trace('policy-runtime.bind');
  const collector=bindPolicySessionCollector({
    input:policyInput,
@@ -73,10 +73,9 @@ export function bindNativePolicyRuntime({
  const observer=createRequestObservationOwner({
    originalStream,
    terminalFetch,
-   lifecycle,
+   lifecycle:currentness,
    root,
    collector,
-   endpoint,
    prepareSourceAssociation:prepareNativeSourceAssociation
  });
  const producerOwner=createRequestProducerOwner({now});
@@ -98,8 +97,8 @@ export function bindNativePolicyRuntime({
    observer,
    collector,
    rootAdapter:Object.freeze({
-     prepare:function captureOriginalRootLease() { return (lifecycle.capture(root)); },
-     finalize:function checkOriginalRootLease(lease) { return (lifecycle.assertActive(lease)); }
+     prepare:function captureOperationRoot() { return (currentness.capture(root)); },
+     finalize:function checkOperationRoot(operation) { return (currentness.assertActive(operation)); }
    }),
    rootDirectory,
    files,
@@ -169,11 +168,6 @@ export function bindNativePolicyRuntime({
    });},
    executeToolBatch,
    invalidateObserver:function invalidateRequestObservation() { observer.invalidate(); },
-   registerJudgmentStart:function registerOriginalJudgment() { return (registerOriginalJudgmentStart({
-     agent,
-     producerOwner,
-     stream
-   })); },
    registerExecutionTools:function registerOriginalExecutionTools() { return (registerOwnedExecutionTools({
      session,
      producerOwner,

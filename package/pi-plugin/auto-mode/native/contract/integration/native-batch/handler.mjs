@@ -87,9 +87,10 @@ export function createNativeBatchHandler({
     response:assistantMessage,
     stream
   });
-  const judgment=producerOwner.judgmentFor({
+  const judgment=producerOwner.beginJudgment({
     response:assistantMessage,
-    stream
+    stream,
+    signal
   });
   const bypass=readBypass()===true;
   const reviewState={reviewed:undefined,bypassed:false};

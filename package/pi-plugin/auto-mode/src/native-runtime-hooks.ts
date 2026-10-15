@@ -76,8 +76,6 @@ const l = tagged({ tag: 'auto-mode-native-runtime-hooks', },);
 
  @param invalidateObserver - original observer's retirement operation
 
- @param registerJudgmentStart - original judgment-start hook registration
-
  @param registerExecutionTools - original execution-tool owner registration
 
  @param isSessionDisposed - fixed native disposal-completion reader
@@ -98,7 +96,7 @@ const l = tagged({ tag: 'auto-mode-native-runtime-hooks', },);
  ```ts
  const hooks = installNativePolicyHooks({
    agent, previousStream, observedStream, executeToolBatch,
-   invalidateObserver, registerJudgmentStart, registerExecutionTools,
+   invalidateObserver, registerExecutionTools,
    isSessionDisposed, onDetached,
  });
  // Dispose the original Session and await its Agent before calling hooks.detach().
@@ -111,7 +109,6 @@ export function installNativePolicyHooks(
     observedStream,
     executeToolBatch,
     invalidateObserver,
-    registerJudgmentStart,
     registerExecutionTools,
     isSessionDisposed,
     onDetached,
@@ -121,7 +118,6 @@ export function installNativePolicyHooks(
     readonly observedStream: unknown;
     readonly executeToolBatch: unknown;
     readonly invalidateObserver: () => void;
-    readonly registerJudgmentStart: NativePolicyHookRegistration;
     readonly registerExecutionTools: NativePolicyHookRegistration;
     readonly isSessionDisposed: () => boolean;
     readonly onDetached: () => void;
@@ -182,7 +178,6 @@ export function installNativePolicyHooks(
     // Reserve the original executor slot before installing any other hook.
     agent.executeToolBatch = executeToolBatch;
     agent.streamFunction = observedStream;
-    removals.add(registerJudgmentStart(),);
     removals.add(registerExecutionTools(),);
   }
   catch (error) {

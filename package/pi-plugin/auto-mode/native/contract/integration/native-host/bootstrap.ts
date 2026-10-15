@@ -167,24 +167,6 @@ function bindSession({
     l:log
   });
   l.debug('binding original native session to maintained policy runtime');
-  /**
-   The selected model supplies the observed main-request endpoint.
-   */
-  const baseUrl = root.session
-    .model
-    ?.baseUrl
-    ?? 'https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1';
-  /**
-   Preserve the prior single trailing-slash normalization.
-   */
-  const endpointBase = baseUrl.endsWith('/') ? baseUrl.slice(
-    0,
-    -1
-  ) : baseUrl;
-  /**
-   Request observation uses the complete native completion URL.
-   */
-  const endpoint = new URL(`${endpointBase}/chat/completions`).href;
   return bindNativePolicyRuntime({
     readBypass() { return readNativeBypassEnabled(root.session
       .extensionRunner
@@ -192,7 +174,6 @@ function bindSession({
     root,
     lifecycle,
     policyInput: resource.policyInput,
-    endpoint,
     rootDirectory: options.cwd,
     parsePolicy: parser.parse,
     files: [],

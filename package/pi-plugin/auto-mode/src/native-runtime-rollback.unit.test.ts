@@ -11,7 +11,7 @@ import { thrownValues, throwNativeValue, } from './native-query-test-fixture.ts'
 await describe({
   name: 'native hook installation rollback',
   children: [
-    ...(['registerJudgmentStart', 'registerExecutionTools',] as const).flatMap(function registrationCases(phase,) {
+    ...(['registerExecutionTools',] as const).flatMap(function registrationCases(phase,) {
       return [false, undefined, new Error('Original registration failed',),].map(function failureCase(original, index,) {
         return it({
           name: `${phase} preserves original failure ${index} after complete rollback`,
@@ -30,7 +30,7 @@ await describe({
             expect(failures[0],).toBe(original,);
             expect(f.agent.executeToolBatch,).toBeUndefined();
             expect(f.agent.streamFunction,).toBe(f.options.previousStream,);
-            expect(f.events,).toEqual(phase === 'registerJudgmentStart' ? ['invalidate',] : ['register-start', 'remove-start', 'invalidate',],);
+            expect(f.events,).toEqual(['invalidate',],);
           },
         },);
       },);
@@ -44,10 +44,9 @@ await describe({
         const [failure,] = thrownValues(function install() {
           installNativePolicyHooks({
             ...f.options,
-            registerJudgmentStart() {
-              return function remove(): void {
-                throw cleanup;
-              };
+            invalidateObserver() {
+              f.events.push('invalidate',);
+              throw cleanup;
             },
             registerExecutionTools() { throw original; },
           },);
@@ -75,7 +74,7 @@ await describe({
         expect(thrownValues(function install() {
           installNativePolicyHooks({
             ...f.options,
-            registerJudgmentStart() {
+            registerExecutionTools() {
               f.agent.streamFunction = foreign;
               f.agent.executeToolBatch = foreign;
               throw original;

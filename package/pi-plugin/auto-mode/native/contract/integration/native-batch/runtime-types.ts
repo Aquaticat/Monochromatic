@@ -42,7 +42,6 @@ export type NativePolicyRuntimeInput = {
   readonly root: NativeHostSessionInput['root'];
   readonly lifecycle: unknown;
   readonly policyInput: unknown;
-  readonly endpoint: string;
   readonly rootDirectory: string;
   readonly parsePolicy: NativeMarkdownParser['parse'];
   readonly catalogText?: string;
