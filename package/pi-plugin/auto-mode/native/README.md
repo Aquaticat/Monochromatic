@@ -13,7 +13,14 @@ and SHA-256 hashes before relocation.
 Entries marked `previous-generated-input` are snapshots of earlier generated owned helpers.
 They are build inputs here;
 their original generators and historical results are not retroactively changed.
-The `input` directories preserve those snapshots separately from newly generated Pi modules.
+The `input` directories hold maintained code separately from newly generated Pi modules.
+The original hashes describe relocation provenance,
+not current file contents.
+The program runner,
+prepared dispatcher,
+and judgment constructor in `collector/program-rule-batch-sdk-copy-v2/input/`
+now contain their integrated implementations directly.
+The build exports them through bridges without patching their source bodies.
 Imports were relocated to this package graph without changing policy decisions.
 
 The maintained build emits the qualified Pi 1.2.0 source and owned transformations to `dist/native`.

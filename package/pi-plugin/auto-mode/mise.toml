@@ -39,7 +39,8 @@ extends = "lint:types"
 description = "Check every maintained native module with the consuming Node parser"
 shell = "node --input-type=module-typescript -e"
 run = """
-const { readdir } = await import('node:fs/promises')
+const { readdir, readFile } = await import('node:fs/promises')
+const { stripTypeScriptTypes } = await import('node:module')
 const { join } = await import('node:path')
 const { default: spawn } = await import('nano-spawn')
 const paths = await readdir('native', { recursive: true })
@@ -47,7 +48,16 @@ const modules = paths.filter(function isModule(path) {
   return path.endsWith('.mjs') || path.endsWith('.ts')
 })
 for (const path of modules) {
-  await spawn(process.execPath, ['--check', join('native', path)], { stdio: 'inherit' })
+  const filename = join('native', path)
+  const source = await readFile(filename, 'utf8')
+  const javascript = path.endsWith('.ts') ? stripTypeScriptTypes(source, { sourceUrl: filename }) : source
+  try {
+    await spawn(process.execPath, ['--check', '--input-type=module'], {
+      stdin: { string: javascript }, stdout: 'inherit', stderr: 'inherit',
+    })
+  } catch (error) {
+    throw new Error(`Native module failed syntax verification: ${filename}`, { cause: error })
+  }
 }
 console.log(JSON.stringify({ complete: true, parsedNativeModules: modules.length }))
 """
