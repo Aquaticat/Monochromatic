@@ -189,6 +189,7 @@ export function createProgramGroupFixture({
      @returns original native outcome
      */
       runNative: function runOriginalNative(
+    this: void,
     call: FixtureProgramCall,
     originalOptions: unknown
   ): unknown {
