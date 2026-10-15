@@ -4,10 +4,12 @@ import {flushPolicyDiagnostics} from '../maintained-policy.mjs';
 
 /** Authored internal facts exercise routing without claiming source authority. */
 function rule(
+  {
   id,
   effect,
   priority=1,
   applicability='applies'
+}
 ){
  return {
    id,
@@ -21,8 +23,10 @@ const cases=[
    name:'uncertain permission requires confirmation',
    premises:'incomplete',
    rules:[rule(
-     'permit',
-     'permit'
+     {
+      id: 'permit',
+      effect: 'permit'
+    }
    )],
    state:'unresolved'
  },
@@ -36,8 +40,10 @@ const cases=[
    name:'established prohibition survives incomplete premises',
    premises:'incomplete',
    rules:[rule(
-     'deny',
-     'prohibit'
+     {
+      id: 'deny',
+      effect: 'prohibit'
+    }
    )],
    state:'resolved',
    verdict:'deny'
@@ -47,12 +53,16 @@ const cases=[
    premises:'complete',
    rules:[
      rule(
-       'deny',
-       'prohibit'
+       {
+      id: 'deny',
+      effect: 'prohibit'
+    }
      ),
      rule(
-       'permit',
-       'permit'
+       {
+      id: 'permit',
+      effect: 'permit'
+    }
      )
    ],
    state:'resolved',
@@ -63,14 +73,18 @@ const cases=[
    premises:'complete',
    rules:[
      rule(
-       'deny',
-       'prohibit'
+       {
+      id: 'deny',
+      effect: 'prohibit'
+    }
      ),
      rule(
-       'possible',
-       'permit',
-       0,
-       'unresolved'
+       {
+      id: 'possible',
+      effect: 'permit',
+      priority: 0,
+      applicability: 'unresolved'
+    }
      )
    ],
    state:'resolved',
@@ -81,13 +95,17 @@ const cases=[
    premises:'incomplete',
    rules:[
      rule(
-       'deny',
-       'prohibit'
+       {
+      id: 'deny',
+      effect: 'prohibit'
+    }
      ),
      rule(
-       'permit',
-       'permit',
-       0
+       {
+      id: 'permit',
+      effect: 'permit',
+      priority: 0
+    }
      )
    ],
    state:'unresolved'
@@ -96,10 +114,12 @@ const cases=[
    name:'inapplicable prohibition does not block review',
    premises:'incomplete',
    rules:[rule(
-     'deny',
-     'prohibit',
-     0,
-     'does-not-apply'
+     {
+      id: 'deny',
+      effect: 'prohibit',
+      priority: 0,
+      applicability: 'does-not-apply'
+    }
    )],
    state:'unresolved'
  },
@@ -107,10 +127,12 @@ const cases=[
    name:'uncertain prohibition is not established',
    premises:'incomplete',
    rules:[rule(
-     'possible',
-     'prohibit',
-     0,
-     'unresolved'
+     {
+      id: 'possible',
+      effect: 'prohibit',
+      priority: 0,
+      applicability: 'unresolved'
+    }
    )],
    state:'unresolved'
  },
@@ -118,8 +140,10 @@ const cases=[
    name:'complete permission retains automatic approval',
    premises:'complete',
    rules:[rule(
-     'permit',
-     'permit'
+     {
+      id: 'permit',
+      effect: 'permit'
+    }
    )],
    state:'resolved',
    verdict:'approve'
@@ -128,8 +152,10 @@ const cases=[
    name:'complete prohibition retains automatic denial',
    premises:'complete',
    rules:[rule(
-     'deny',
-     'prohibit'
+     {
+      id: 'deny',
+      effect: 'prohibit'
+    }
    )],
    state:'resolved',
    verdict:'deny'
