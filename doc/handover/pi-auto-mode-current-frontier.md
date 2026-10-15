@@ -721,7 +721,20 @@ Commits `a1f2204eed` and `0fc4da484c` document original ownership
 and separate sequential dispatch from clock lifetime.
 Commit `a4d9d43970` moves the consumer to typed tests using the existing module-test harness
 and built native imports.
-The rebuilt typed consumers and updated focused quality checks are pending.
+The rebuilt typed consumer tasks pass.
+Their first typed lint exposes copied-artifact import classification and callback-return errors;
+the unsafe-value warnings are absent.
+The tests now follow the existing native fixture pattern:
+load the copied module through its artifact URL,
+check the required exports,
+and invoke an independently typed consumer interface.
+They do not add copied output to the TypeScript source project.
+The final formatting pass reports zero errors and 27 remaining warnings;
+the following edits separate callback statements and complete the fixture assertion documentation.
+Final package type checking and focused lint are running on those edits.
+Rebuilt typed-consumer repetition,
+the updated TypeScript overlap omission,
+and original approval-consumer checks remain queued.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
