@@ -129,6 +129,26 @@ Look at `gh release list --repo Aquaticat/Monochromatic`:
   Release the next patch version instead,
   and state in that release's notes that the previous version is broken.
 
+## Caches
+
+The build jobs restore cargo, target and Gradle caches (keys that start with `music-player-`),
+so a run after a small change takes minutes and not tens of minutes.
+Only runs on `main` and manual dispatches save them.
+A changed lock file starts from the previous entry and rebuilds only what changed.
+The entries together are about 4 GB, against the repository's 10 GB cap.
+
+```bash
+# List the entries with their sizes.
+gh cache list --repo Aquaticat/Monochromatic --key music-player- --limit 50
+
+# Delete one entry, for example when it is suspected to be bad.
+gh cache delete <key> --repo Aquaticat/Monochromatic
+```
+
+To invalidate every entry at once,
+change `v1` in the `key` and `restore-keys` of the cache steps of the workflow.
+The log of each build job prints a notice titled `cache` with `exact_hit` and the matched key.
+
 ## The Android signing key
 
 The release key signs every Android release.

@@ -551,6 +551,8 @@ It is not signed with a developer identity,
 so SmartScreen may show "Windows protected your PC":
 choose "More info",
 then "Run anyway".
+The executable is built as a console program,
+so Windows opens a console window next to the app.
 The program takes one optional folder or file to open: `music-player.exe C:\Music`.
 
 ### macOS

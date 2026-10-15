@@ -101,7 +101,15 @@ One release holds, with `<version>` filled in:
   The `.exe` is the whole program: Slint renders without extra files, and the C runtime is linked in statically
   (`+crt-static` in `package/music-player/desktop-app/.cargo/config.toml`),
   so a clean machine needs no Visual C++ Redistributable.
-  The job lists the DLLs the executable imports and fails if a Visual C++ runtime DLL is among them.
+  The job reads the executable's import tables with `pefile` and fails if a Visual C++ runtime DLL is among them.
+  That check found that `+crt-static` is not enough on x86_64:
+  the repository's config pins `lld-link.exe` for that target,
+  and an executable linked by it still imports `VCRUNTIME140.dll` and the `api-ms-win-crt` DLLs,
+  while the same code linked by the MSVC `link.exe` imports only system DLLs (the arm64 job, and an x64 probe run).
+  The release build therefore sets `CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe`,
+  which takes precedence over the config file and leaves the developers' `lld-link` pin alone.
+  The executable is built as a console program (no `windows_subsystem` attribute exists in the source),
+  so Windows opens a console window next to the app; the notes and the README say so, and the source is unchanged.
   The icon is embedded by the existing `build.rs`.
 - macOS: `music-player-<version>-macos-arm64.dmg`, a native build on `macos-15`.
   macOS x64 is not built: the owner decided on 2026-10-14 that the release ships Apple silicon only.
@@ -142,10 +150,30 @@ One release holds, with `<version>` filled in:
 - The Linux jobs install the minimal development packages found by building:
   `pkg-config clang libclang-dev cmake libpipewire-0.3-dev libspa-0.2-dev libfontconfig1-dev libfreetype-dev`.
   Windowing and GL libraries are loaded at run time and need no headers.
-- Every build uses `cargo build --release --locked` (and Gradle without its build cache).
-  No cache is restored or saved, and mise's tool cache is off:
-  a release is built cold so that the attested bytes cannot depend on an earlier run.
-  The cost is a longer run, which a release can afford.
+- Every build uses `cargo build --release --locked`.
+- Caches, decided by the owner on 2026-10-15 over this document's first choice of cold builds.
+  Each desktop job restores `~/.cargo/registry/index`, `~/.cargo/registry/cache`, `~/.cargo/git/db`
+  and the package `target` directory under the key
+  `music-player-desktop-v1-<OS>-<arch>-<target triple>-<Rust version from mise.lock>-<hash of Cargo.lock>`,
+  with a restore key that drops the lock file hash.
+  So a changed `Cargo.lock` starts from the previous dependencies and cargo rebuilds only the crates whose version
+  changed, where `cargo-publish.yml`'s exact-key cache would rebuild everything.
+  The Android job does the same for `android-app/rust/target`
+  (key: runner, Rust version, hash of the SDK component lines of `prepare:android`, hash of its `Cargo.lock`)
+  and restores `~/.gradle/caches` (dependencies, transforms and the Gradle build cache)
+  and `~/.gradle/wrapper/dists` under a key from the Gradle build files, with the same kind of restore key.
+  Before saving, a step deletes this package's own artifacts, its path dependency's, the final binary and the
+  incremental directories, because they are rebuilt on every run anyway.
+  Only runs on `main` and manual dispatches save caches (the detect job's `save_cache` output),
+  and the workflow has no pull request trigger.
+  The restore and save steps are `actions/cache/restore` and `actions/cache/save` at the commit `cargo-publish.yml`
+  uses, so a run saves only on an exact-key miss and after its build succeeded.
+  mise's own tool cache stays off, and the Android SDK is not cached (see the measurements below).
+  No pnpm store is cached because the release builds no JavaScript package.
+  Provenance is unchanged: the attested bytes are the bytes the run built and uploaded,
+  and cargo and Gradle rebuild whatever their own fingerprints say changed.
+  A stale or poisoned cache entry is the new risk: the key names the toolchain and the lock file,
+  and a bad entry is cured by changing the `v1` in the keys.
 - Each desktop binary is started with `--version` on its own runner, and the output must be the product version.
   This is the only run any non-Linux binary gets.
 - `.cargo/config.toml` gained `+aes` entries for `aarch64-unknown-linux-gnu` and `aarch64-pc-windows-msvc`,
@@ -190,6 +218,30 @@ workflow, so a throwaway-signed or debug-signed APK can never be published.
 Dry runs on `main` sign with the real key, so the signing path is proven before a real release;
 the file is a workflow artifact that expires after one day.
 
+## Measurements
+
+Dry runs on GitHub, 2026-10-15, branch `feat/music-player-release-workflow`, wall time per job:
+
+- Cold run 38667490084 (every cache missed, then saved):
+  Android 11m23s, Windows arm64 11m01s, macOS arm64 11m18s, Windows x64 10m13s, Linux x64 9m08s,
+  Linux arm64 7m07s.
+- Warm run 38668625715 (every cache hit by exact key):
+  Android 1m52s, Windows arm64 5m59s, macOS arm64 4m33s, Windows x64 7m01s, Linux x64 3m02s,
+  Linux arm64 3m16s.
+- Fallback run 38669453427, whose exact keys were made to miss while saving was off, so only the restore keys could
+  match: all seven restore steps reported a miss on the exact key and restored the entry by prefix,
+  and the jobs took Android 2m19s, Windows arm64 5m50s, macOS arm64 3m23s, Windows x64 6m24s, Linux x64 4m03s,
+  Linux arm64 3m25s.
+  So a changed lock file costs about as little as a warm run, not a cold one.
+
+Compressed size of each saved entry (what counts against the repository's 10 GB cap):
+macOS arm64 517 MB, Windows arm64 601 MB, Windows x64 609 MB, Linux x64 617 MB, Linux arm64 606 MB,
+Android cargo and native target 387 MB, Gradle 651 MB.
+That is about 4.0 GB for one generation of the keys, and up to twice that while a lock file change leaves the
+previous entries beside the new ones until GitHub evicts the least recently used.
+The repository already held about 5.5 GB before this workflow, so the budget is tight:
+evictions of other workflows' caches are possible, and the sizes should be rechecked after the first runs on `main`.
+
 ## Consequences
 
 - The first real release of a version is permanent.
@@ -209,6 +261,10 @@ the file is a workflow artifact that expires after one day.
 - The repository-level secrets are visible to any workflow with write access to the repository.
   Restricting them to a protected environment limited to `main` would close that,
   and was not requested.
+- The Android APK is about 160 MB, because it carries two ABIs of the native engine and the two Turso libraries.
+  Release assets allow far more.
+- The macOS arm64 job once failed with `hdiutil: create failed - Resource busy`, which passed in the next run;
+  the job now retries `hdiutil create` and `detach` up to five times.
 - Two version-bearing manifests must be bumped together,
   and their lock files refreshed with `cargo update --workspace`,
   because the release builds with `--locked`.
@@ -228,5 +284,8 @@ the file is a workflow artifact that expires after one day.
   fragile SDK linking (`desktop-app-code-signing.md`); native runners exist for every target and are free here.
 - An environment-scoped secret store:
   the owner asked for repository secrets; see the consequences.
-- A cache for compiled dependencies:
-  rejected for releases because it could change the attested bytes and the saving does not matter for a release.
+- Cold release builds with no cache: this document's first choice, overruled by the owner on 2026-10-15.
+- Caching the Android SDK and NDK:
+  restoring the 1.0 GB entry took 17 seconds against 25 seconds to install the components,
+  so it saved 8 seconds for a fifth of the repository's cache budget.
+  It was built, measured and removed.
