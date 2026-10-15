@@ -66,7 +66,7 @@ assertDispatcherModule(dispatcher);
 /**
  Original error constructor is exposed for exact consumer assertions.
  */
-export const { PreparedBatchContractError } = dispatcher;
+export const PreparedBatchContractError: new (message: string) => Error = dispatcher.PreparedBatchContractError;
 
 /** Seal disposable fixture arguments through the built artifact.
  @param input - disposable prepared argument
