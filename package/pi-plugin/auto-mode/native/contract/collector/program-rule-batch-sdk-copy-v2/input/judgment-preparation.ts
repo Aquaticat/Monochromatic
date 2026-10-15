@@ -31,15 +31,31 @@ export function createJudgmentPreparation(input: JudgmentPreparationInput): Judg
   /**
    Entry diagnostics do not inspect original source or prepared-member contents.
    */
-  const rl = tagged({ tag: createJudgmentPreparation.name, l });
+  const rl = tagged({
+    tag: createJudgmentPreparation.name,
+    l
+  });
   rl.debug('binding original judgment preparation');
   /**
    Original capabilities remain fixed while their live source and dependency reads stay lazy.
    */
   const {
-    active, budget, declaredNames, observer, response, receipt, readJudgmentSources,
-    publishJudgmentSources, facade, signal, parentJSON, catalogText, catalogSHA256,
-    resolveBinding, bindings, byMember,
+    active,
+    budget,
+    declaredNames,
+    observer,
+    response,
+    receipt,
+    readJudgmentSources,
+    publishJudgmentSources,
+    facade,
+    signal,
+    parentJSON,
+    catalogText,
+    catalogSHA256,
+    resolveBinding,
+    bindings,
+    byMember,
   } = input;
   /**
    Preparation outcome remains distinct from later assessment and evidence closure.
@@ -74,13 +90,18 @@ export function createJudgmentPreparation(input: JudgmentPreparationInput): Judg
     /**
      Every successful and failed exit releases only the transient preparation flag.
      */
-    using preparation = { [Symbol.dispose](): void { state.preparing = false; } };
+    using preparation = { [Symbol.dispose](): void { 
+      state.preparing = false; 
+    } };
     try {
       /**
        Complete immutable inputs are serialized before any source sealing or dependency preparation.
        */
-      const preparedJSON = capturePreparedJudgmentJSON({ members, declaredNames });
-      if (observer.beginJudgmentSources) {
+      const preparedJSON = capturePreparedJudgmentJSON({
+        members,
+        declaredNames
+      });
+      if (Boolean(observer.beginJudgmentSources)) {
         /**
          Prepared sources must still belong to the original request receipt.
          */
@@ -98,22 +119,36 @@ export function createJudgmentPreparation(input: JudgmentPreparationInput): Judg
       /**
        Original mandatory policy is retained by identity after its existing completeness check.
        */
-      const mandatoryPolicy = readJudgmentSources().mandatoryPolicy;
-      if (!mandatoryPolicy || !Object.isFrozen(mandatoryPolicy) || typeof mandatoryPolicy.content !== 'string') {
+      const {mandatoryPolicy} = readJudgmentSources();
+      if ((!mandatoryPolicy) || (!Object.isFrozen(mandatoryPolicy)) || (typeof mandatoryPolicy.content) !== 'string') {
         throw new JudgmentConstructionError('Original request lacks complete owned mandatory policy');
       }
       /**
        Frozen selection context preserves original serialized inputs and source projections.
        */
       const envelope = Object.freeze({
-        parentJSON, preparedJSON, requestBody: receipt.request.body, mandatoryPolicy,
+        parentJSON,
+        preparedJSON,
+        requestBody: receipt.request.body,
+        mandatoryPolicy,
         governingSources: readJudgmentSources().governingSources,
         instructionAuthority: 'not-established',
       });
-      state.selection = createQuestionSelection({ catalogText, catalogSHA256, budget, resolveBinding, envelope });
+      state.selection = createQuestionSelection({
+        catalogText,
+        catalogSHA256,
+        budget,
+        resolveBinding,
+        envelope
+      });
       active();
       budget.checkpoint();
-      publishJudgmentMembers({ members, bindings, byMember, signal });
+      publishJudgmentMembers({
+        members,
+        bindings,
+        byMember,
+        signal
+      });
       state.handle = dependencyHandle;
       state.prepared = true;
     } catch (error) {
@@ -122,6 +157,10 @@ export function createJudgmentPreparation(input: JudgmentPreparationInput): Judg
       throw error;
     }
   }
-  return { state, prepare, knownSelection };
+  return {
+    state,
+    prepare,
+    knownSelection
+  };
 }
 //endregion

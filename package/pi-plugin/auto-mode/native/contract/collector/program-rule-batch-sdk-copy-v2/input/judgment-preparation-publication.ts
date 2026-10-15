@@ -39,15 +39,18 @@ export function publishJudgmentMembers({
      Original declaration order supplies the question binding's complete projection.
      */
     const projection = Object.freeze({ memberOrdinal: ordinal });
-    bindings.set(bindingHandle, {
+    bindings.set(
+      bindingHandle,
+      {
       binding: Object.freeze({ identity, projection }),
       prepared: member,
-      execution: undefined,
-      parent: undefined,
-      program: undefined,
       effectiveSignal: signal,
-    });
-    byMember.set(member.id, bindingHandle);
+    }
+    );
+    byMember.set(
+      member.id,
+      bindingHandle
+    );
   }
 }
 //endregion
