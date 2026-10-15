@@ -68,11 +68,11 @@ export function bindRuleRelevanceCache({selection,parse,directory,namespace,prof
  const context:RelevanceRefreshContext={selection,parse,assessBatch,trace,profileKey,policyScope,store,publish};
  /**
   Publish the completion handle before any injected classifier can recursively refresh.
-  @param input - original caller cancellation options
+  @param signal - original caller cancellation signal
   @returns identical original completion for this source occurrence
   */
- function refresh(input:RelevanceRefreshInput={}):Promise<RelevanceView>{
-  input.signal?.throwIfAborted();
+ function refresh({signal}:RelevanceRefreshInput={}):Promise<RelevanceView>{
+  signal?.throwIfAborted();
   /** Capture remains synchronous and belongs to the incumbent source selector. */
   const source=selection.capture();
   selection.assertCurrent(source);
@@ -82,6 +82,9 @@ export function bindRuleRelevanceCache({selection,parse,directory,namespace,prof
   /** Register completion before refresh work can call an injected callback. */
   const job=Promise.withResolvers<RelevanceView>();
   jobs.set(source,job);
+  /** Capture the original signal once, excluding later changes to caller-owned options. */
+  const input:{signal?:AbortSignal}={};
+  if(signal!==undefined)input.signal=signal;
   /** Settle the original completion with preserved work and reporting failures. */
   async function run():Promise<void>{
    try{
