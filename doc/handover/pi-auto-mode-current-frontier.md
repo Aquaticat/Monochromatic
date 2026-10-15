@@ -1539,10 +1539,43 @@ All three committed instruction consumer suites also pass against the saved orig
 A process-local request-identity guard omission makes the built consumer fail its expected rejection assertion in
 `${HOME}/temp/agent/pi-instruction-positive-control-20261015.log`;
 the test reaches the changed instruction resolver.
-Direct baseline trace comparison,
-the remaining guard-removal controls,
-and the complete maintained lint recount remain required before qualifying this port
-and continuing to program ownership.
+The saved original and built typed owners match across 412 observed calls in six scenarios,
+including object identity,
+own keys,
+frozen state,
+errors,
+and callback order.
+Replacing the request occurrence distinguishes the trace as a positive control.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-instruction-comparison.json`
+records that comparison.
+All 25 process-local guard controls fail committed consumers;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-instruction-omissions.json`
+records the omitted guards and unchanged built-artifact hashes.
+The failed-publication control causes the recovery consumer to reject the prematurely retained handle;
+the other controls fail assertion expectations.
+These controls cover observable admission,
+identity,
+retirement,
+publication,
+segment,
+and batch limits;
+they do not establish reachability of every redundant internal projection-identity check.
+Whole-request,
+domain,
+manual-review,
+structural adoption,
+and adoption-consumption tests pass in
+`${HOME}/temp/agent/pi-instruction-broad-20261015.log`.
+The complete maintained lint recount covers 585 files and 486 rules:
+zero errors and 12269 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-instruction-lint-20261015.log`.
+All 18 implementation,
+bridge,
+and consumer files touched by this port have zero diagnostics in that full report.
+The instruction-owner port is qualified.
+Next is original program ownership in `judgment-programs.mjs` (547 warnings),
+then `child-constructor.mjs` (471 warnings),
+while preserving the existing behavior and consumer boundaries.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
