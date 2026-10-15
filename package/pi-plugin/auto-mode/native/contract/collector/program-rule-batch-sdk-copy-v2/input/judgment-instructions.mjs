@@ -188,7 +188,6 @@ function claimSelectedInstruction({definitionId,memberId,rule}){
     claimHeadingContext,
     issueBoundPolicyBatch,
     claim,
-    ensureRuleBindings,
     indexedRuleCandidates,
     readRuleCandidate,
     indexedInstructionCandidates,
@@ -198,8 +197,7 @@ function claimSelectedInstruction({definitionId,memberId,rule}){
     issueProgramRuleBatch,
     issueRuleAssessmentBatch,
     claimRuleCandidate,
-    claimInstruction,
-    claimSelectedInstruction
+    claimInstruction
   });
 }
 

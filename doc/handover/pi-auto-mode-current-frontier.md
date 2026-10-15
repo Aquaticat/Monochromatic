@@ -358,6 +358,16 @@ and genuine Allow check from the unfinished lint and module-splitting work.
 Continue the maintained-package quality queue without reopening the completed live approval.
 Commit `4e7545abda` consolidates one-time original instruction-handle publication;
 its changed source is not part of the currently running pre-cleanup split regression artifact.
+The pre-cleanup split artifact subsequently passed the full direct-runtime regression sequence.
+Commit `a4bfcb943e` scopes judgment activity cleanup with `using`
+and separates guarded result consumption.
+The focused check of the constructor and its new owner modules now has zero lint errors.
+Commit `a66c5d5c96` applies named callbacks,
+owned state records,
+and scoped cleanup to both prepared dispatchers,
+preserving their separate root and child execution behavior.
+The current owned build and full native lint report are running;
+the latest cleanup still requires consumer regression checks.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
