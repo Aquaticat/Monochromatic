@@ -2897,10 +2897,20 @@ Use this finite delivery queue:
 - [ ] Integrate the implementation into the maintained package and necessary host path.
   The product must not depend on private scratch files.
   Run package checks against that integration.
-- [ ] Build,
+  The maintained implementation,
+  native build,
+  installation,
+  package type checks,
+  and scoped behavioral checks are complete.
+  Full package lint remains open with the October 14 measured diagnostics.
+- [x] Build,
   install,
   and exercise the actual plugin through its host,
   including native approval and cancellation.
+  The configured production CLI passes with the selected Hyper model,
+  live Luna decisions,
+  and the user's genuine Allow for the exact original disposable read.
+  Separate scripted Stop and dismissal controls abort without child execution.
 
 Further source work must fix a named failure of these delivery criteria;
 standalone inventory expansion is not the default next step.
