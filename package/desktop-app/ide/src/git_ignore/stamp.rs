@@ -21,7 +21,14 @@ use std::{fs, io::ErrorKind, os::unix::fs::MetadataExt, path::Path};
 /// type Stamp = { inode: number; length: number; seconds: number; nanoseconds: number } | undefined;
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub struct Stamp(Option<(u64, u64, i64, i64)>);
+pub struct Stamp(
+    /// The inode,
+    ///  length,
+    ///  seconds,
+    ///  and nanoseconds of the file,
+    ///  or nothing when it is absent or cannot be inspected.
+    Option<(u64, u64, i64, i64)>,
+);
 
 /// Stamps come only from metadata calls.
 impl Stamp {

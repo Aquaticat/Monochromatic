@@ -25,7 +25,9 @@ pub const SOURCE: &str = "language support";
 
 /// The failures kept per server process, and their wording.
 mod trouble;
+/// The failures kept for one server process.
 pub(super) use trouble::Trouble;
+/// The wording of a kept failure.
 use trouble::failure_text;
 
 /// What:

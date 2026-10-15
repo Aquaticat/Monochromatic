@@ -76,7 +76,11 @@ pub enum GlobalSource {
     GitConfig,
     /// A fixed file,
     ///  or none.
-    File(Option<PathBuf>),
+    File(
+        /// The path of the file,
+        ///  or nothing for no global rules.
+        Option<PathBuf>,
+    ),
 }
 
 /// What:
