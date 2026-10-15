@@ -1697,6 +1697,24 @@ Then continue the remaining constructor preparation,
 assessment,
 finalization,
 and inspection paths.
+`fd6b78e388` and `19d2e8beda` extract original response membership and prepared-member JSON validation
+into typed snapshot modules.
+The response still validates native arguments before rereading and serializing original content;
+prepared validation still authenticates every identity before serializing any prepared input.
+The original one-MiB bounds,
+64-member response limit,
+native serializer behavior,
+and original failure messages remain the intended contract.
+Independent consumers in `ebddcfd5c0` cover complete frozen identities,
+serializer callback order,
+invalid membership,
+exact byte boundaries,
+original primitive prepared inputs,
+and serializer failures.
+Their owned build,
+type check,
+built consumer checks,
+and comparison against the saved original validation blocks remain pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
