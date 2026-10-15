@@ -5,7 +5,7 @@ import {
   JudgmentBudgetError,
   JudgmentCancelledError,
   JudgmentDeadlineError
-} from './candidate.mjs';
+} from './candidate.ts';
 
 //region Disposable clocks and cancellation exercise the built original budget without network access.
 /** Default transport failures do not receive a retry. */
