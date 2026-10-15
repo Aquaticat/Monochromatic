@@ -523,6 +523,14 @@ a visible CLI-name source change,
 and an unchanged repetition of that changed source.
 Every export must print the expected runtime version from the production Alpine runtime stage.
 The workflow is bounded to six concurrent runners and 75 minutes per job.
+The larger-runner follow-up,
+[run 38820672079](https://github.com/Aquaticats/Monochromatic/actions/runs/38820672079)
+at commit `7cd7b9e508`,
+adds pairs `32/16`,
+`32/32`,
+`64/16`,
+and `64/64` with the same measurement task,
+bounded to four concurrent runners and 45 minutes per job.
 Scoped configuration lint and resolved Bake-variable inspection passed before result collection.
 The measured GitHub runner had four CPUs;
 the separate container builder already had sixteen.
@@ -549,7 +557,9 @@ separate fixed-job-count hardware effects from increased Cargo concurrency,
 calculate provider charges and the user's combined time cost,
 and update the allocation recommendation with spread and limitations.
 The independent coverage queue also runs the existing `test:alpine` task through
-`.github/workflows/depot-trial-alpine-checks.yml` on a disposable four-CPU Depot GitHub runner.
+`.github/workflows/depot-trial-alpine-checks.yml` on a disposable four-CPU Depot GitHub runner,
+in [run 38820372915](https://github.com/Aquaticats/Monochromatic/actions/runs/38820372915)
+at commit `1c1334f700`.
 It exercises application unit tests and the existing no-audio,
 ALSA,
 and PipeWire graphical smoke scenarios.
