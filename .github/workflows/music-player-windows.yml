@@ -581,7 +581,9 @@ jobs:
 
 
         def check(name, condition, detail):
-            print(f"{'ok  ' if condition else 'FAIL'} {name}: {detail}", flush=True)
+            # Escapes non-ASCII characters (an ESC byte shows as a left arrow in an OEM code page) so the print cannot fail on the
+            # step's code page.
+            print(f"{'ok  ' if condition else 'FAIL'} {name}: {detail.encode('ascii', 'backslashreplace').decode()}", flush=True)
             if not condition:
                 failures.append(name)
 
