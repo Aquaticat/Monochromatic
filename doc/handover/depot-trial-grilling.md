@@ -503,6 +503,35 @@ its first version passed a CommonMark-to-HTML render check with Pandoc.
 Commit `1c9599732d` added the rate-limit evidence and expanded coverage scope;
 that version also passed rendering.
 
+## Runner sizing follow-up
+
+The user asked whether a bigger Depot runner would help.
+No runner-size scaling experiment has executed.
+The measured GitHub runner had four CPUs;
+the separate container builder already had sixteen.
+Every comparison used `cargo --jobs 4`.
+The container dashboard showed 89% average CPU and 13% peak memory utilization.
+This suggests investigating CPU scaling,
+but does not establish the speedup from additional CPUs or a different Cargo job count.
+
+Current [runner pricing](https://depot.dev/docs/github-actions/runner-types)
+is USD $0.012/minute for four CPUs,
+$0.024 for eight,
+and $0.048 for sixteen.
+Doubling size must halve elapsed time to preserve compute charges or included-minute consumption.
+Under the user's elapsed-time valuation,
+a smaller improvement can still reduce combined cost if this job determines relevant CI completion.
+
+The [container builder documentation](https://depot.dev/docs/container-builds/overview)
+lists sixteen CPUs on all plans;
+32 and 64 CPUs require Startup or Business and use two or four times the included minutes.
+This distinction matters to the Developer-plan preference.
+Proposed measurement,
+not a queued or executed change:
+repeat equivalent cold and changed-source builds across runner sizes and Cargo job counts,
+with unchanged-input repetitions to establish variation.
+No production size setting changed in response to this question.
+
 ## Interview process correction
 
 Q13 expanded the interview into agent working habits.
