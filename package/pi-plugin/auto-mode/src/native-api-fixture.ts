@@ -56,7 +56,13 @@ type APIFixture = Readonly<{
 
  @returns original published callback
  */
-function method({ name, api }: Readonly<{ name: string; api: FixturePublicAPI }>): FixtureAPICall {
+function method({
+  name,
+  api
+}: Readonly<{
+  name: string;
+  api: FixturePublicAPI
+}>): FixtureAPICall {
   return nonNullishOrThrow(api[name]);
 }
 
@@ -121,13 +127,28 @@ export function createAPIFixture(): APIFixture {
     function originalOwner(): unknown {
       return results.get(name);
     }
-    return new Proxy(originalOwner, {
-      apply(target: FixtureAPICall, receiver: unknown, args: unknown[]): unknown {
-        calls.push({ name, args, receiver });
-        step(name);
-        return Reflect.apply(target, receiver, args);
+    return new Proxy(
+      originalOwner,
+      {
+        apply(
+          target: FixtureAPICall,
+          receiver: unknown,
+          args: unknown[]
+        ): unknown {
+          calls.push({
+            name,
+            args,
+            receiver
+          });
+          step(name);
+          return Reflect.apply(
+            target,
+            receiver,
+            args
+          );
+        }
       }
-    });
+    );
   }
   /**
    Selection identities can change after assembly without rebuilding the public judgment.

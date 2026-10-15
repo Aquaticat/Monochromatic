@@ -35,7 +35,9 @@ function assertAPIModule(value: unknown): asserts value is APIModule {
   if ((value === null) || ((typeof value) !== 'object')
     || (!('createJudgmentAPI' in value)))
     throw new Error('Built judgment API export is unavailable');
-  /** Factory lookup follows namespace membership narrowing. */
+  /**
+   Factory lookup follows namespace membership narrowing.
+   */
   const factory = value.createJudgmentAPI;
   if ((typeof factory) !== 'function') throw new Error('Built judgment API export is unavailable');
 }
