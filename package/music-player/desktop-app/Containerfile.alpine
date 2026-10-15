@@ -34,4 +34,5 @@ RUN apk add --no-cache \
       pipewire-dev alsa-lib-dev \
       fontconfig-dev freetype-dev \
       cargo-nextest \
-      dbus
+      dbus \
+      font-dejavu
