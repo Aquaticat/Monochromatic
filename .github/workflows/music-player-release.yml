@@ -192,13 +192,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - { os: linux, arch: x64, target: x86_64-unknown-linux-gnu, runner: ubuntu-24.04 }
-        - { os: linux, arch: arm64, target: aarch64-unknown-linux-gnu, runner: ubuntu-24.04-arm }
-        - { os: macos, arch: arm64, target: aarch64-apple-darwin, runner: macos-15 }
         - { os: windows, arch: x64, target: x86_64-pc-windows-msvc, runner: windows-2025 }
         # Native Windows arm64 runner, free for public repositories (GA 2025-08-07):
         # doc/decision/forbidden-strings-windows-arm64-release-target.md
-        - { os: windows, arch: arm64, target: aarch64-pc-windows-msvc, runner: windows-11-arm }
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -268,7 +264,10 @@ jobs:
         if [ "$TARGET" = 'x86_64-pc-windows-msvc' ]; then
           lld-link.exe --version
         fi
-        cargo build --release --locked --target "$TARGET"
+        export CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe # PROBE
+        cargo build --release --locked --target "$TARGET" -vv > ../../../build-vv.log 2>&1 # PROBE
+        grep -E 'MultiThreaded|CMAKE_C_FLAGS|link\.exe|lld-link|crt-static' ../../../build-vv.log | cut -c1-300 | sort --unique | head -40 || true # PROBE
+        grep -E 'Running `rustc --crate-name music_player --edition' ../../../build-vv.log | cut -c1-1500 | tail -2 || true # PROBE
 
     - name: Smoke test the binary (--version)
       shell: bash
@@ -430,7 +429,7 @@ jobs:
 
   build-android:
     needs: detect
-    if: ${{ needs.detect.outputs.should_build == 'true' }}
+    if: ${{ needs.detect.outputs.should_build == 'false' }} # PROBE
     runs-on: ubuntu-24.04
     permissions:
       contents: read
