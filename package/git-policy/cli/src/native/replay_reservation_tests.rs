@@ -198,6 +198,62 @@ fn a_reservation_held_past_the_limit_ends_the_wait() {
     remove(root.as_path());
 }
 
+/// A wait is over at its limit exactly, not before it.
+#[test]
+fn a_wait_is_over_at_its_limit_exactly() {
+    let limit: Duration = Duration::from_millis(200);
+    assert!(!limit_reached(Duration::from_millis(199), limit));
+    assert!(limit_reached(limit, limit));
+    assert!(limit_reached(Duration::from_millis(201), limit));
+}
+
+/// The default wait holds while another transaction's reservation stands,
+///  and ends once it is released.
+#[test]
+fn the_default_wait_lasts_as_long_as_the_reservation() {
+    let (root, registry) = registry_of("replay-reservation-await-default");
+    let first_directory: PathBuf = transaction(registry.as_path(), FIRST, "2026-10-10T00:00:00.000Z", true);
+    let second_directory: PathBuf = transaction(registry.as_path(), SECOND, "2026-10-10T00:00:01.000Z", true);
+    let mut holder: LandingReservation =
+        LandingReservation::open(registry.as_path(), first_directory.as_path(), FIRST, false);
+    assert!(holder.reserve(1).expect("granted"));
+    let waiter: LandingReservation =
+        LandingReservation::open(registry.as_path(), second_directory.as_path(), SECOND, false);
+    let (sender, receiver) = std::sync::mpsc::channel::<Result<(), ReservationError>>();
+    std::thread::spawn(move || {
+        let _sent = sender.send(waiter.await_slot());
+    });
+    assert!(
+        receiver.recv_timeout(Duration::from_millis(400)).is_err(),
+        "the wait ended while the reservation stood"
+    );
+    holder.release().expect("released");
+    receiver
+        .recv_timeout(Duration::from_secs(10))
+        .expect("the wait did not end after the release")
+        .expect("the wait succeeds");
+    remove(root.as_path());
+}
+
+/// Releasing a reservation that never wrote a request is not an error,
+///  and a request that cannot be removed for any other reason is.
+#[cfg(unix)]
+#[test]
+fn a_release_without_a_request_succeeds_and_other_failures_are_reported() {
+    let (root, registry) = registry_of("replay-reservation-release-kinds");
+    let directory: PathBuf = transaction(registry.as_path(), FIRST, "2026-10-10T00:00:00.000Z", true);
+    LandingReservation::open(registry.as_path(), directory.as_path(), FIRST, false)
+        .release()
+        .expect("no request to remove");
+    let file: PathBuf = root.join("not-a-directory");
+    std::fs::write(&file, b"x").expect("file");
+    let failure: ReservationError = LandingReservation::open(registry.as_path(), file.as_path(), FIRST, false)
+        .release()
+        .expect_err("the request path cannot be inspected");
+    assert!(matches!(failure, ReservationError::Write(_)), "{failure}");
+    remove(root.as_path());
+}
+
 /// An older live request that is never granted ends a younger transaction's wait for the grant at the limit,
 ///  and the younger transaction's request is withdrawn by its release.
 #[test]

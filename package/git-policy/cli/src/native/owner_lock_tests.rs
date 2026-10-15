@@ -402,6 +402,62 @@ fn a_retirement_rechecks_the_owner_first() {
     remove(root.as_path());
 }
 
+/// A rename that fails the way a lock removed by a racing process fails.
+fn rename_finds_nothing(_from: &Path, _to: &Path) -> std::io::Result<()> {
+    return Err(std::io::ErrorKind::NotFound.into());
+}
+
+/// A rename that fails for a reason other than a vanished lock.
+fn rename_is_refused(_from: &Path, _to: &Path) -> std::io::Result<()> {
+    return Err(std::io::ErrorKind::InvalidInput.into());
+}
+
+/// A lock that vanishes after the owner check needs no retirement,
+///  and any other rename failure is reported with the step that failed.
+#[test]
+fn a_retirement_tells_a_vanished_lock_from_a_failed_rename() {
+    let root: PathBuf = fixture("owner-lock-retire-failures");
+    let lock_directory: PathBuf = root.join("landing.lock");
+    plant(lock_directory.as_path(), 1, "linux:1", "dead");
+    retire_dead_lock_with(lock_directory.as_path(), "dead", rename_finds_nothing)
+        .expect("a vanished lock is settled");
+    let error: OwnerLockError =
+        retire_dead_lock_with(lock_directory.as_path(), "dead", rename_is_refused)
+            .expect_err("a refused rename is a failure");
+    assert!(matches!(
+        error,
+        OwnerLockError::Io {
+            operation: "retiring the dead owner lock",
+            ..
+        }
+    ));
+    assert_eq!(
+        token_of(lock_directory.as_path()),
+        "dead",
+        "nothing was moved"
+    );
+    remove(root.as_path());
+}
+
+/// A moved lock that cannot be put back for a reason other than an occupied name is a failure.
+#[test]
+fn a_restore_that_finds_nothing_to_move_fails() {
+    let root: PathBuf = fixture("owner-lock-restore-failure");
+    let error: OwnerLockError = restore_moved(
+        root.join("missing.stale").as_path(),
+        root.join("landing.lock").as_path(),
+    )
+    .expect_err("nothing to move");
+    assert!(matches!(
+        error,
+        OwnerLockError::Io {
+            operation: "restoring the owner lock",
+            ..
+        }
+    ));
+    remove(root.as_path());
+}
+
 /// A malformed blocking record stops the acquirer and stays in place.
 #[test]
 fn a_malformed_blocking_record_stops_the_acquirer() {

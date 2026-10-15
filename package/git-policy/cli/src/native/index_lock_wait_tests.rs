@@ -195,6 +195,9 @@ fn backoff_squares_then_stops_at_the_cap() {
     assert_eq!(second, BackoffState { step: 3, multiplier: 9 });
     let near_cap: BackoffState = BackoffState { step: 31, multiplier: 961 };
     assert_eq!(next_backoff(near_cap), BackoffState { step: 31, multiplier: BACKOFF_MAX_MULTIPLIER });
+    // A step that lands on the cap exactly is still a step; only one that would pass it is held back.
+    let lands_on_cap: BackoffState = BackoffState { step: 5, multiplier: 989 };
+    assert_eq!(next_backoff(lands_on_cap), BackoffState { step: 6, multiplier: BACKOFF_MAX_MULTIPLIER });
     let at_cap: BackoffState = BackoffState { step: 31, multiplier: BACKOFF_MAX_MULTIPLIER };
     assert_eq!(next_backoff(at_cap), at_cap);
 }

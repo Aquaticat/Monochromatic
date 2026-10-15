@@ -67,6 +67,47 @@ fn invalid_owner_records_are_unproven() {
     );
 }
 
+/// Each way the record read can fail has its own outcome:
+///  a vanished or replaced lock asks for another attempt,
+///  an unreadable record is unproven and names why,
+///  and any other failure is an error.
+#[cfg(unix)]
+#[test]
+fn each_failed_record_read_has_its_own_outcome() {
+    use std::os::unix::fs::PermissionsExt;
+    let common: PathBuf = fixture("lock-record-read-failures");
+    let lock: PathBuf = lock_of(common.as_path());
+    assert_eq!(read_published(lock.as_path()).expect("vanished"), Published::Retry, "the lock vanished");
+    std::fs::write(&lock, b"x").expect("a file in place of the lock");
+    assert_eq!(
+        read_published(lock.as_path()).expect("replaced"),
+        Published::Retry,
+        "the lock was replaced by a file"
+    );
+    std::fs::remove_file(&lock).expect("remove the file");
+    let record: PathBuf = lock.join(OWNER_RECORD_NAME);
+    std::fs::create_dir_all(&record).expect("a directory in place of the record");
+    match read_published(lock.as_path()).expect("a directory is evidence") {
+        Published::Unproven(evidence) => assert!(evidence.ends_with("is unreadable (EISDIR)"), "{evidence}"),
+        other => panic!("expected unproven evidence, got {other:?}"),
+    }
+    std::fs::remove_dir(&record).expect("remove the directory");
+    std::os::unix::fs::symlink(OWNER_RECORD_NAME, &record).expect("a record that links to itself");
+    assert!(read_published(lock.as_path()).is_err(), "a link loop is not evidence");
+    std::fs::remove_file(&record).expect("remove the link");
+    std::fs::write(&record, b"x").expect("a record");
+    std::fs::set_permissions(&record, std::fs::Permissions::from_mode(0o000)).expect("close the record");
+    // A superuser reads the record anyway, so only an ordinary user shows the refusal.
+    if std::fs::read(&record).is_err() {
+        match read_published(lock.as_path()).expect("an unreadable record is evidence") {
+            Published::Unproven(evidence) => assert!(evidence.ends_with("is unreadable (EACCES)"), "{evidence}"),
+            other => panic!("expected unproven evidence, got {other:?}"),
+        }
+    }
+    std::fs::set_permissions(&record, std::fs::Permissions::from_mode(0o600)).expect("open the record");
+    remove(common.as_path());
+}
+
 /// A free lock is acquired, published with a private owner record that names this process, and released by removing it.
 #[cfg(unix)]
 #[test]

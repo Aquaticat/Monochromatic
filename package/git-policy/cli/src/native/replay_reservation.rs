@@ -284,7 +284,7 @@ impl LandingReservation {
     /// ```
     fn refuse_after(&self, started: Instant, limit: Duration) -> Result<(), ReservationError> {
         let waited: Duration = started.elapsed();
-        if waited < limit {
+        if !limit_reached(waited, limit) {
             return Ok(());
         }
         let holder_pid: Option<i64> = live_holder(self.lock_directory().as_path())?.map(|record| {
@@ -368,6 +368,19 @@ impl LandingReservation {
         }
         return Ok(());
     }
+}
+
+/// What:
+///  Whether a wait has used up its limit; a wait of exactly the limit has.
+/// Why:
+///   The clock cannot be set to land on the limit, so the comparison is a function a test can call with chosen values.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const limitReached = (waitedMs: number, limitMs: number): boolean => waitedMs >= limitMs;
+/// ```
+fn limit_reached(waited: Duration, limit: Duration) -> bool {
+    return waited >= limit;
 }
 
 /// What:

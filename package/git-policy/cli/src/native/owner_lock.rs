@@ -445,11 +445,42 @@ fn names_token(owner: &PublishedOwner, token: &str) -> bool {
 /// async function retireDeadLock({ lockDirectory, deadToken }): Promise<typeof LOCK_BUSY>;
 /// ```
 fn retire_dead_lock(lock_directory: &Path, dead_token: &str) -> Result<(), OwnerLockError> {
+    return retire_dead_lock_with(lock_directory, dead_token, rename_directory);
+}
+
+/// What:
+///  Rename a directory on the real filesystem.
+/// Why:
+///   `std::fs::rename` is generic over its path types, so the retirement's injectable step needs this plain function.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await rename(from, to);
+/// ```
+fn rename_directory(from: &Path, to: &Path) -> std::io::Result<()> {
+    return std::fs::rename(from, to);
+}
+
+/// What:
+///  Retire a dead owner's lock with the rename step supplied by the caller.
+/// Why:
+///   The lock can vanish between the owner check and the rename, a window only a racing process opens;
+///  a rename that fails the way a vanished lock fails lets a test reach that arm without a race.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function retireDeadLockWith({ lockDirectory, deadToken, rename }): Promise<void>;
+/// ```
+fn retire_dead_lock_with(
+    lock_directory: &Path,
+    dead_token: &str,
+    rename: fn(&Path, &Path) -> std::io::Result<()>,
+) -> Result<(), OwnerLockError> {
     if !names_token(&read_owner(lock_directory)?, dead_token) {
         return Ok(());
     }
     let stale: PathBuf = sibling_name(lock_directory, "stale")?;
-    match std::fs::rename(lock_directory, stale.as_path()) {
+    match rename(lock_directory, stale.as_path()) {
         Ok(()) => {}
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
         Err(error) => {

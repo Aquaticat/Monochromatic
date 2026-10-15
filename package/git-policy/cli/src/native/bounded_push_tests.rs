@@ -307,6 +307,8 @@ fn a_push_that_honors_the_stop_request_ends_within_the_grace() {
 #[cfg(unix)]
 #[test]
 fn a_flooding_push_is_stopped_and_its_output_capped() {
+    // The bound below is measured against the constant itself, so the constant's value is pinned here.
+    assert_eq!(MAX_PUSH_OUTPUT, 4_194_304);
     let attempt: PushAttempt = run_bounded_push(
         shell("head -c 20000000 /dev/zero; exec sleep 8"),
         Duration::from_secs(60),
