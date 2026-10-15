@@ -1192,6 +1192,16 @@ The warning gate remains open.
 Before continuing native type cleanup,
 revisit the documented direct generated-manager and generated-SDK bootstrap cycle,
 which earlier fixtures bypassed by entering through the maintained policy module.
+The current built manager reproduces the same initialization failure on Node 26.11.1:
+`reproduce-direct-manager-import` in `${HOME}/temp/agent/pi-tool-call-scope-20261014`
+exits with `ReferenceError: Cannot access 'SessionManager' before initialization`
+at `native-host/host.ts:160`,
+called by `native-host/bootstrap.ts:236`.
+`${HOME}/temp/agent/pi-native-direct-manager-import-before-20261015.log`
+retains the exact diagnostic.
+The standalone probe asserts callable manager exports after import,
+so it currently fails before reaching those assertions.
+No bootstrap implementation change has landed yet.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
