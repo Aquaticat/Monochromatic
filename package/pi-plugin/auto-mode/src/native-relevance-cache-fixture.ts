@@ -90,11 +90,27 @@ const cacheModule=loaded;
 //endregion
 
 //region Test-local ownership allows deterministic changes during asynchronous work.
+/** Every callback and source replacement belongs to one disposable cache owner. */
+type CacheFixture=AsyncDisposable&{
+  /** Independent cache owner sharing only this fixture's persisted entries. */
+  readonly open:()=>Cache;
+  /** Advance the original policy occurrence. */
+  readonly replace:(content:string)=>void;
+  /** Original classifier requests retained for membership checks. */
+  readonly requests:Assessment['request'][];
+  /** Controlled callbacks run at real operation boundaries. */
+  readonly callbacks:{
+    /** Optional mutation at a real diagnostic boundary. */
+    onEvent?:(event:string)=>void;
+    /** Optional mutation during original classifier delivery. */
+    onAssessment?:()=>void;
+  };
+};
 /**
  Create an independent policy owner and disposable cache directory.
  @returns cache controls whose mutations remain inside the test
  */
-export async function cacheFixture(){
+export async function cacheFixture():Promise<CacheFixture>{
   const scratch=join(homedir(),'temp/agent');
   await mkdir(scratch,{recursive:true,mode:0o700});
   const root=await mkdtemp(join(scratch,'pi-native-cache-owner-'));
