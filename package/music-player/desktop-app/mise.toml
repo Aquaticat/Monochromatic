@@ -214,13 +214,14 @@ runWindowsGnu(['build', '--release', '--target', gnuTarget])
 description = "cargo nextest run for x86_64-pc-windows-gnu (native on Windows with MSYS2, else cross-compiled in the container and run under Wine)"
 # Same SLINT_EMIT_DEBUG_INFO reason as the host `test` task. The container forwards it with -e. --no-fail-fast runs every
 # test so that one failure does not hide the others (under Wine a few behave differently from Windows; see README "Windows"),
-# and the slow-timeout kills a test that has run for five minutes, because under Wine a test can hang instead of failing.
+# and nextest.windows-gnu.toml makes nextest kill a test that has run for five minutes, because under Wine a test can hang
+# instead of failing. (cargo nextest run takes `--config KEY=VALUE` for Cargo, not for nextest, so the timeout needs this file.)
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 {{vars.windows_gnu_dispatch}}
 process.env.SLINT_EMIT_DEBUG_INFO = '1'
-runWindowsGnu(['nextest', 'run', '--target', gnuTarget, '--no-fail-fast', '--config', 'profile.default.slow-timeout.period="60s"', '--config', 'profile.default.slow-timeout.terminate-after=5'])
+runWindowsGnu(['nextest', 'run', '--target', gnuTarget, '--no-fail-fast', '--config-file', 'nextest.windows-gnu.toml'])
 """
 
 [tasks.mcp]

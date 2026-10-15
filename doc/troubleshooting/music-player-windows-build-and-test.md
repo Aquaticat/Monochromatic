@@ -163,6 +163,30 @@ Fedora installs the cross tool only as `x86_64-w64-mingw32-windres`; MSYS2 on Wi
 
 `Containerfile.windows-gnu` links `/usr/local/bin/windres` to the prefixed tool.
 
+## A fingerprint test failed on NTFS: file times have 100 ns resolution
+
+### Symptom
+
+After `main` added `peakcache::tests::fingerprint_feeds_path_size_and_mtime_to_the_shared_function`, run 38685877917
+ failed that test on all three Windows jobs (`src\\peakcache_tests.rs:124`, `assertion \`left == right\` failed`).
+
+### Root cause
+
+The test set a modified time of 1,700,000,000 s plus 123,456,789 ns and expected the key for exactly that value.
+NTFS stores file times in 100 ns ticks, so the file system returned 123,456,700 ns and the wrapper hashed that.
+The file-system rounding is inferred from the passing result after the change, not read from a log of the left and
+ right values.
+
+### Fix
+
+The test uses 123,456,700 ns (a multiple of 100) for both times, with a comment (commit 11adb30419).
+
+## A workflow check compared the binary version with a fixed string
+
+The `--version` step of `.github/workflows/music-player-windows.yml` compared the output with `music-player 0.1.0`.
+The merge of `main` that carried release 0.1.1 failed that step on every job (run 38684829641, after the cache
+ saves), and release 0.1.2 would have again. The step now reads the version from `Cargo.toml`.
+
 ## The default Fedora mirror was about 50 KiB/s
 
 The image build downloads hundreds of megabytes of packages (gcc, mingw, Wine).
@@ -173,7 +197,8 @@ The image build downloads hundreds of megabytes of packages (gcc, mingw, Wine).
 
 These were seen in `mise run //package/music-player/desktop-app:test:windows-gnu`
  (cross-built GNU binaries run by `wine64` in `localhost/monochromatic/music-player-windows-gnu`, Fedora 44, Wine 11.0).
-The same tests pass on the real Windows runners (1383 tests run, 1382 passed, 1 skipped, on all jobs in the green runs).
+The same tests pass on the real Windows runners (1383 tests run, 1382 passed, 1 skipped, on all jobs in the green runs
+ of that time; after later changes from `main` the Windows jobs run 1422 tests, all passed, 1 skipped).
 
 The last full Wine run (fonts installed) ended with 1383 tests run: 1377 passed (2 flagged leaky), 4 failed, 2 killed,
  1 skipped, in 1855 s.
@@ -199,20 +224,23 @@ The last full Wine run (fonts installed) ended with 1383 tests run: 1377 passed 
   (read from `/proc/<pid>/task/*/stat`), so it is blocked, not spinning.
   The 20 s `PATIENCE` deadline of `Scan::pump` did not fire, so the block is outside that loop.
   Both tests apply a hand-built `SearchState::NoMatch` answer. The cause was not found.
-- The nextest `--config` override `slow-timeout.terminate-after=5` did not end the hung tests after five periods;
-  the run reported slow tests up to 1620 s, and they were killed by hand. Do not rely on that flag for Wine runs.
+  Run alone, the first test hangs again at once: with a 5 s period and `terminate-after = 2` nextest reported
+  `TIMEOUT [10.253s]`, so the hang is deterministic under Wine and not a contention effect of the full run.
+- The first Wine runs passed `--config profile.default.slow-timeout...` to `cargo nextest run`, and the hung tests were
+  never terminated (slow-test lines up to 1620 s, killed by hand). `cargo nextest run --help` documents
+  `--config <KEY=VALUE>` as "Override a Cargo configuration value": it is Cargo's option, passed to Cargo, so nextest
+  never saw it. The timeout now comes from `nextest.windows-gnu.toml` through nextest's `--config-file`, and the
+  `TIMEOUT` result above shows that route ends a hung test.
 
 ### Launching the release exe under Wine
 
 The cross-built `music-player.exe` (release, 43,460,608 bytes) imports only system DLLs and `msvcrt.dll` (no
  `libgcc_s`, `libwinpthread` or `libstdc++`), and its PE linker version is 2.46 (GNU ld), read with
  `x86_64-w64-mingw32-objdump -p`.
-`wine64 music-player.exe --version` prints `music-player 0.1.0`.
+`wine64 music-player.exe --version` prints the version from `Cargo.toml`.
 
-- Started directly on a bare Xvfb screen, the app scanned the 8-track fixture, created its window and then panicked in
-  Slint `i-slint-backend-winit-1.18.1/frame_throttle.rs:58` with "attempt to divide by zero".
-  The line divides by `monitor.refresh_rate_millihertz()`, so Wine's virtual monitor reported a refresh rate of 0.
-  Real Windows monitors report a rate; this is the Wine and Xvfb pairing, not a defect found on Windows.
+- Started directly on a bare Xvfb screen, the app scanned the 8-track fixture, created its window and then panicked
+  with exit code 101: see the section "Slint divides by a refresh rate of 0 under Wine on Xvfb".
 - Started inside a Wine virtual desktop (`wine64 explorer /desktop=mp,1280x800 music-player.exe /work/fixture`) the
   app stayed up for the 25 s observed, and `xdotool` listed a visible `Music Player` window of 488x634.
   No screenshot was taken, so what the window drew is not verified.
@@ -227,9 +255,120 @@ A Wine failure that the real runners do not reproduce is not a defect of the Win
 Treat the real runners as the authority, and Wine as a cross-compile proof that the binary builds, starts, and passes
  the large majority of the suite.
 
+## Slint divides by a refresh rate of 0 under Wine on Xvfb
+
+### Symptom
+
+The cross-built app, started on a bare Xvfb screen, scanned the fixture, created its window, and then ended with
+ exit code 101:
+
+```text
+thread 'main' (344) panicked at .../i-slint-backend-winit-1.18.1/frame_throttle.rs:58:46:
+attempt to divide by zero
+```
+
+### Root cause
+
+`i-slint-backend-winit` 1.18.1 (`frame_throttle.rs:51-58`; the same lines are in `slint-ui/slint` master at commit
+ 60e27ac6dae1, read 2026-10-15) treats only a missing refresh rate as unknown:
+
+```rust
+let refresh_interval_millihertz = winit_window
+    .current_monitor()
+    .and_then(|monitor| monitor.refresh_rate_millihertz())
+    .unwrap_or(60000) as u64;
+...
+std::time::Duration::from_millis((1000 * 1000) / refresh_interval_millihertz);
+```
+
+`winit` 0.30.13 on Windows returns `Some(mode.dmDisplayFrequency * 1000)`
+ (`src/platform_impl/windows/monitor.rs:190`), so a display that reports a frequency of 0 gives `Some(0)`,
+ `unwrap_or` does not replace it, and the division panics.
+Wine's virtual monitor on Xvfb is such a display; real Windows monitors report a rate.
+That Wine reports 0 is inferred from the panic, not read from Wine's source or a log of the value.
+The panic was not seen on the real runners.
+
+### Verification
+
+- Harness: `wine-smoke`-style run in the image (Xvfb, `XDG_RUNTIME_DIR` set, `WINEDLLOVERRIDES=mscoree,mshtml=d`,
+  `wine64 music-player.exe /work/fixture` for 25 s, debug build).
+- Unpatched: the app exited early with code 101 and the panic above.
+- With the one-line patch to a copy of the 1.18.1 registry source, applied as a Cargo `patch.crates-io` path override
+  (`--config 'patch.crates-io.i-slint-backend-winit.path="/proto/i-slint-backend-winit"'`): the app was still running
+  after 25 s and `xdotool` listed a visible `Music Player` window of 480x600.
+- Both runs used the same fixture, image and script; only the patch differed.
+
+### Verified workarounds
+
+- Start the app in a Wine virtual desktop (`wine64 explorer /desktop=mp,1280x800 music-player.exe`), where the monitor
+  reports a rate. Tradeoff: it is a Wine-only launch form and says nothing about the app on Windows.
+- The patch, applied to the dependency (not to this repository):
+
+```diff
+--- a/frame_throttle.rs
++++ b/frame_throttle.rs
+@@ -51,6 +51,8 @@
+         let refresh_interval_millihertz = winit_window
+             .current_monitor()
+             .and_then(|monitor| monitor.refresh_rate_millihertz())
++            // A driver can report 0 for "the hardware default" (dmDisplayFrequency 0 or 1 on Windows).
++            .filter(|millihertz| *millihertz > 0)
+             .unwrap_or(60000) as u64;
+         let window_adapter = self.window_adapter.clone();
+         let timer = Rc::downgrade(&self.timer);
+```
+
+  Tradeoff: a monitor that truly refreshes below 1 Hz cannot exist, so no real rate is changed; 60 Hz is only the
+  fallback for an unknown rate, as it already is for a missing one.
+
+### What does not work
+
+- `SLINT_BACKEND=winit-software` does not avoid it: the throttle runs for every winit window.
+- Patching Slint inside this repository was not attempted; the patch above stays a dependency-side proof.
+
 ## Upstream filing decision
 
+### Slint
+
+- `.out-of-scope/` has no entry for Slint.
+- Is it upstream's fault: the unguarded division is upstream behavior; the trigger is a display that reports 0.
+- Can upstream fix it: yes, with the one-line change above.
+- Do they support the use case: `winit` and Windows are supported; Wine is not stated either way.
+- Would the repo welcome a contribution: `CONTRIBUTING.md` on master asks for self-contained changes and says AI coding
+  assistants read `AGENTS.md`; no ban on AI-assisted filings was found in `CONTRIBUTING.md`.
+- Will they likely fix it: no signal against; the file's last commit is 2026-05-29.
+- Prototype: done above, with before and after.
+- Duplicate search on `slint-ui/slint` (issues and pull requests, open and closed) for `refresh_rate_millihertz`
+  and `frame_throttle divide by zero refresh rate` returned no result on 2026-10-15.
+- Result: all six constraints hold, so the draft below is fileable once a human has re-run the reproduction and
+  corrected its disclosure line. It is not filed: filing is outside the scope of this task and the default policy is
+  not to file, so the maintainer decides.
+
+~~~md
+Title: winit backend: frame throttle divides by zero when the monitor reports a 0 Hz refresh rate
+
+Labels: bug, winit
+
+`internal/backends/winit/frame_throttle.rs` `request_throttled_redraw` uses
+`monitor.refresh_rate_millihertz().unwrap_or(60000)`, which only replaces a missing rate. winit's Windows backend
+returns `Some(dmDisplayFrequency * 1000)`, so a display that reports a frequency of 0 (allowed by the Windows API for
+"hardware default") gives `Some(0)`, and `(1000 * 1000) / refresh_interval_millihertz` panics.
+
+Reproduction: a Windows build of a Slint app run under Wine on an Xvfb screen; the window is created, then
+`thread 'main' panicked at .../i-slint-backend-winit-1.18.1/frame_throttle.rs:58:46: attempt to divide by zero`.
+
+Suggested fix: `.filter(|millihertz| *millihertz > 0)` before `.unwrap_or(60000)`. With that change the same app stayed
+up for the 25 s observed and showed its window.
+
+Disclosure: the investigation and this text were produced with an AI assistant. The reproduction, the source trace and
+the before and after runs were run by that assistant; no human has re-run them yet.
+~~~
+
+### notify
+
 - `.out-of-scope/` has no entry for `notify` or GitHub Actions policy.
+- The read-triggers-modified event and the `nextest --config` finding are not upstream defects: the second is
+  documented behavior of nextest.
 - Duplicate search: `gh search issues --repo notify-rs/notify "FILE_ACTION_MODIFIED ModifyKind::Any windows"` returned
   no result on 2026-10-15.
 - The `Modify(Any)` mapping is the backend's coarse design, not a defect with a clear fix; no minimal fix was
