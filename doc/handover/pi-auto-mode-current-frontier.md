@@ -1029,6 +1029,32 @@ zero errors and 13665 warnings in
 `${HOME}/temp/agent/pi-maintained-typed-observer-index-lint-20261015.log`.
 The strict package gate remains failing on warnings;
 continue typing the remaining native boundaries and resolving their formatting diagnostics.
+Commits `25b8a629f7`,
+`1ee94a2029`,
+and `18725748e3` type the relevance definition,
+persisted-entry admission,
+and asynchronous store owner.
+The original `store.mjs` is now `store.ts` as of 2026-10-15;
+`definition.mjs` is now `definition.ts` on the same date.
+Cache misses now use the explicit `CACHE_ENTRY_MISSING` domain sentinel,
+and the refresh caller narrows that sentinel before reading an entry.
+The persisted schema and fixed classifier wording remain unchanged.
+Parsed non-object values now receive the cache's invalid-entry diagnostic.
+If an existing file disappears between exclusive-publication rejection and reuse,
+publication now rejects with a cache error instead of returning an absent entry.
+Commit `3f4cb12020` covers parsed primitive and array values,
+stable miss identity,
+that removal boundary,
+and publication recovery after the rejection.
+The initial focused formatter reported ten warnings and one missing return-type error;
+`6b0be39a70` documents helper exports,
+names fixed bounds,
+and adds the disposer return type.
+The rebuilt store,
+refresh,
+domain,
+and package type verification is running in
+`${HOME}/temp/agent/pi-native-typed-store-consumer-20261015.log`.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
