@@ -55,8 +55,11 @@ the document map's "Task numbers in these documents" says how to read them.
 
 - [The first handover document, 2026-07-16 to 2026-08-15](translation-repair-history-first-handover-to-2026-08-15.md):
   milestone one,
+  milestone two,
+  milestone three's first round,
   initial provider behaviour,
   the corpus passes of late July,
+  the per-call deadline and idle guard measurements and the panel-size confound,
   the early package state,
   and the work of 2026-08-13 to 2026-08-15 that the document recorded last.
 - [2026-08-05 to 2026-08-07](translation-repair-history-2026-08-05-to-07.md):
@@ -65,18 +68,27 @@ the document map's "Task numbers in these documents" says how to read them.
   the recall benchmark,
   the editor ensemble and the naturalness lane,
   measurable repair quality,
-  and the introduced-defect probe;
+  the introduced-defect probe,
+  the sensitivity checks of the probe and the checkers,
+  and round three's preparation and first runs;
   the roster alias trap is also recorded in the first handover entry.
 - [2026-08-07 to 2026-08-12](translation-repair-history-2026-08-07-to-12.md):
   run interpretation,
   deadlines,
-  naturalness,
+  the Kimi-K3 schema-mismatch degradation,
+  how the sample is drawn and its sheets joined to verdicts,
+  the introduced-defect probe and the naturalness audit,
   and round-three grading.
 - [2026-08-12 to 2026-08-15](translation-repair-history-2026-08-12-to-15.md):
   probe blindness,
+  the overnight census of unread signals,
+  coverage tables,
+  the judge crosscheck,
   attribution,
   voting,
-  and cache incidents;
+  cache incidents,
+  the invisible character that welded paragraphs,
+  and the channel marker that came back;
   the first handover entry records the nights of 2026-08-13 to 2026-08-15 too,
   so those nights appear in both entries.
 - [2026-08-15 to 2026-08-19](translation-repair-history-2026-08-15-to-19.md):
@@ -85,21 +97,29 @@ the document map's "Task numbers in these documents" says how to read them.
   slice identity and cache keys,
   insertion anchors and the delivery ledger,
   the lane handed a passage the archive never translated,
+  the removal of the proportional aligner,
   the block grouper,
   the section census and coverage probe,
   quote anchoring,
   the fidelity trial and the displacement screen,
+  the state record after the displacement screen was rebuilt,
   judge bias,
-  and the window trial's blockers.
+  and the window trial's pre-flight,
+  plumbing
+  and blockers.
 - [2026-08-19 to 2026-08-21](translation-repair-history-2026-08-19-to-21.md):
   reading-stage runs,
   window experiments,
+  the critic voice-loss alarm and the code work it blocked,
+  the end-to-end corpus pass stopped on purpose,
   and scope correction.
 - [2026-08-21 to 2026-08-23](translation-repair-history-2026-08-21-to-23.md):
   the document that began on the 21st and ended on the 23rd:
   consolidation,
   the document publisher,
+  the ratio guard,
   the roster sweep and median baseline,
+  the runaway emission bound,
   and the size note;
   six of its files are 2026-08-23 work,
   the far-longer tail and the note floor,
@@ -108,7 +128,7 @@ the document map's "Task numbers in these documents" says how to read them.
   the settled-neither measurement,
   the size note boundary verification
   and the throw-assertion sweep finish,
-  while the next entry is a separate record of the 23rd alone.
+  while the entry for 2026-08-23 alone is a separate record of that day.
 - [2026-08-23, the work recorded for that day alone](translation-repair-history-2026-08-23-single-day.md):
   absence evidence and its decision,
   adopting option B for the archived text on the lane contest,
@@ -121,7 +141,8 @@ the document map's "Task numbers in these documents" says how to read them.
   checker width,
   ballots,
   publication verification,
-  and generation changes.
+  generation changes,
+  and branch tests for the modules the suite reaches only through a caller.
 - [2026-08-24 to 2026-08-25](translation-repair-history-2026-08-24-to-25.md):
   work that reached the 25th,
   where the 2026-08-23 to 2026-08-24 entry stops at the 24th:
@@ -129,9 +150,15 @@ the document map's "Task numbers in these documents" says how to read them.
   telemetry,
   error text,
   provider boundaries,
+  the empty-runs verification fix and the combined build of the parked work,
+  the naming of the two-lane artifact family and the landing rehearsal,
+  the documentation of the report commands,
+  refusal reporting with the policy on repeated messages,
   and the reach of the test suite.
 - [2026-08-26, the package audit and the work after it](translation-repair-history-2026-08-26-audit-and-the-work-after-it.md):
-  the audit and its close,
+  the audit,
+  the major and minor findings it landed,
+  and its close,
   then the overlap and straggler-grace measurements
   and the readiness signal the owner rejected.
 - [Stop of 2026-09-01](translation-repair-history-2026-09-01-stop.md):

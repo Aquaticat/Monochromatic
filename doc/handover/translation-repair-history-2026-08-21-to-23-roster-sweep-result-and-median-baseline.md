@@ -7,7 +7,9 @@ where the median landed and the file's own history was found wrong about why,
 what the exclusion buys,
 and the second commit's blocker,
 a collision with the policy that protects page-only content.
-The partial-prefix figures its opening mentions are recorded in `translation-repair-history-2026-08-21-to-23-ratio-guard-instrument-and-estimator-choice.md`.
+The sweep behind the partial-prefix figures its opening mentions,
+and the warning not to read band and tail endpoints off a partial prefix,
+are recorded in `translation-repair-history-2026-08-21-to-23-ratio-guard-instrument-and-estimator-choice.md`.
 
 Part of [Translation repair history: 2026-08-21 to 2026-08-23](translation-repair-history-2026-08-21-to-23.md),
 which lists every file of this record.

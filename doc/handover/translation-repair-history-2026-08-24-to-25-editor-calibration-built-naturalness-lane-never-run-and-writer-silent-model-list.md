@@ -1,14 +1,18 @@
 # Translation repair history 2026-08-24 to 2026-08-25: the editor calibration built, the naturalness lane it never ran and the writer calibration's missing silent-model list
 
-The provenance note of 2026-08-25 that names six sections aged out of the working handover,
-moved unedited,
+The provenance note of 2026-08-25 that counts six sections aged out of the working handover and moved unedited,
+and that names the three sections kept there,
+then the three aged-out sections filed here:
 the editor calibration built once its blocker proved imaginary,
 the naturalness lane the editor calibration never ran,
 and the writer calibration that had no silent-model list,
 found by auditing it against its own module note.
-Some of the sections the note names are filed by subject in other files of this group.
-The reseat evidence,
-the sizing and the finished runs are in `translation-repair-history-2026-08-24-to-25-editor-calibration-reseat-evidence-zero-rounds-sizing-power-14-slice-result-refiner-column-and-second-run.md`.
+The other three aged-out sections are filed by subject in other files of this group:
+the availability record and the record that carries the numbers are in `translation-repair-history-2026-08-24-to-25-telemetry-meter-timing-and-candidate-ledger.md`,
+and the first reading of the zero-content anomaly on the deepseek seat is in `translation-repair-history-2026-08-24-to-25-provider-wire-boundaries.md`.
+The three kept sections,
+and the reseat evidence,
+are in `translation-repair-history-2026-08-24-to-25-editor-calibration-reseat-evidence-the-14-slice-run-and-the-second-calibration.md`.
 
 Part of [Translation repair history: 2026-08-24 to 2026-08-25](translation-repair-history-2026-08-24-to-25.md),
 which lists every file of this record.

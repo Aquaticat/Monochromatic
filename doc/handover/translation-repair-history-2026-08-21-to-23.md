@@ -65,7 +65,9 @@ named for that subject and listed here.
   what the exclusion buys,
   and the second commit's blocker,
   a collision with the policy that protects page-only content.
-  The partial-prefix figures its opening mentions are recorded in `translation-repair-history-2026-08-21-to-23-ratio-guard-instrument-and-estimator-choice.md`.
+  The sweep behind the partial-prefix figures its opening mentions,
+  and the warning not to read band and tail endpoints off a partial prefix,
+  are recorded in `translation-repair-history-2026-08-21-to-23-ratio-guard-instrument-and-estimator-choice.md`.
   Sections:
   - [2026-08-22, sweep complete: production pairing never manufactures a flag, and contamination outlives it](translation-repair-history-2026-08-21-to-23-roster-sweep-result-and-median-baseline.md#2026-08-22-sweep-complete-production-pairing-never-manufactures-a-flag-and-contamination-outlives-it)
   - [2026-08-22, `#163` Commit A: the median landed, and the file's own history was wrong about why](translation-repair-history-2026-08-21-to-23-roster-sweep-result-and-median-baseline.md#2026-08-22-163-commit-a-the-median-landed-and-the-files-own-history-was-wrong-about-why)

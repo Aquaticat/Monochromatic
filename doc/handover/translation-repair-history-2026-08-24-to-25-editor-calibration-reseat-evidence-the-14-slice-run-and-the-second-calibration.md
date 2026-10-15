@@ -1,6 +1,6 @@
-# Translation repair history 2026-08-24 to 2026-08-25: what the editor calibration can say about the reseat, what zero rounds mean, how large a run must be, the 14-slice result, the refiner column, the power inputs and the second calibration
+# Translation repair history 2026-08-24 to 2026-08-25: the editor calibration's reseat evidence, the 14-slice run and the second calibration
 
-The provenance note of 2026-08-26 that names the sections moved unedited from the working handover,
+The provenance note of 2026-08-26 that says this file's sections moved unedited from the working handover,
 what settled artifacts already say about the editor seat,
 the cases where zero rounds does not mean nothing was repaired,
 how many slices a calibration needs,

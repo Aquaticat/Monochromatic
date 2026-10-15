@@ -58,7 +58,12 @@ named for that subject and listed here.
   what the earlier stops cost,
   and the two-entry validation that started.
   The sections its warning says size their work against a corpus-wide pass are not in this file;
-  they are in the other files of this record.
+  the ones that gate or time a full pass or its relaunch are in these files of this group:
+  `translation-repair-history-2026-08-19-to-21-corpus-pass-stopped-on-purpose.md` for the stop and the relaunch gates,
+  `translation-repair-history-2026-08-19-to-21-reading-stage-re-ask-settled-entry-and-census.md` for the gate on a pass
+  and the cost figure to read before planning one,
+  and `translation-repair-history-2026-08-19-to-21-window-in-repair-lane-and-verify-instruments.md` for the fix that lands
+  before the 92-entry relaunch.
 - [Translation repair history 2026-08-19 to 2026-08-21: damage instruments that see past one slice](translation-repair-history-2026-08-19-to-21-damage-instruments-beyond-one-slice.md):
   The assembly-level repetition check,
   wired into both lanes,

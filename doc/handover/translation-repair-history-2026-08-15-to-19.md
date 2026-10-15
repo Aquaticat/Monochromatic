@@ -87,7 +87,7 @@ named for that subject and listed here.
   the items left open and untouched,
   the two reviews presumed stalled,
   and the judgement carried forward about reading a slice in isolation.
-- [Translation repair history 2026-08-15 to 2026-08-19: the window trial's blockers, the comments filed on the wrong tracker and the state the next session inherits](translation-repair-history-2026-08-15-to-19-window-trial-blockers-wrong-tracker-comments-and-state-the-next-session-inherits.md):
+- [Translation repair history 2026-08-15 to 2026-08-19: the window trial's pre-flight and plumbing, its blockers, the comments filed on the wrong tracker and the state the next session inherits](translation-repair-history-2026-08-15-to-19-window-trial-preflight-plumbing-blockers-wrong-tracker-comments-and-state-the-next-session-inherits.md):
   The pre-flight and plumbing for running production selection with a wider window,
   the review finding that the two-arm design does not measure the window,
   the missing verdict at document scale,
