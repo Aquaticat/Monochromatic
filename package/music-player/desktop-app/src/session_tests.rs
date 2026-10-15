@@ -199,3 +199,20 @@ fn the_migration_rewrite_keeps_the_setting() {
     assert!(rewritten.auto_play_on_select, "the rewrite did not drop the setting");
     assert!(std::fs::read_to_string(&path).expect("the file exists").contains("\"playback_mode\""));
 }
+
+/// The entry points the window and the shutdown use read and write the session file of the config home (D129).
+#[cfg(target_os = "linux")]
+#[test]
+fn the_real_entry_points_read_and_write_the_session_file_of_the_config_home() {
+    let path = use_disposable_config_home("entry_points");
+    assert!(!Session::load_auto_play_on_select(), "no file means off");
+    let before = Session { position_secs: 5.0, ..Session::default() };
+    before.save().expect("the first save writes the file");
+    assert!(path.exists(), "the file is in the config home");
+    assert!(!Session::load_auto_play_on_select(), "a file without the setting means off");
+    Session::save_auto_play_on_select(true).expect("turning the setting on saves");
+    assert!(Session::load_auto_play_on_select(), "the saved setting loads back");
+    assert!((Session::load().position_secs - 5.0).abs() < f64::EPSILON, "saving the setting keeps the other fields");
+    Session::save_auto_play_on_select(false).expect("turning the setting off saves");
+    assert!(!Session::load_auto_play_on_select(), "and it loads back off");
+}

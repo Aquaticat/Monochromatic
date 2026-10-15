@@ -254,6 +254,29 @@ fn session_path() -> Option<PathBuf> {
     return identity::config_dir().map(|directory| return directory.join("session.json"));
 }
 
+/// What: `use_disposable_config_home` points this process's config home at a new temporary directory and gives the
+/// session file path inside it, after checking that the path really is inside.
+/// Why: the entry points that read and write the user's own session file (`load`, `save_auto_play_on_select`, the
+/// shutdown snapshot) can be tested without touching it; the check runs before any write, so a platform whose config
+/// home ignores `XDG_CONFIG_HOME` fails the test instead of writing the user's file.
+#[cfg(all(test, target_os = "linux"))]
+pub(crate) fn use_disposable_config_home(test: &str) -> PathBuf {
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("the clock is after the epoch")
+        .as_nanos();
+    let home = std::env::temp_dir().join(format!("mp_config_{test}_{nanos}"));
+    std::fs::create_dir_all(&home).expect("the disposable config home is created");
+    // SAFETY: nextest runs each test in its own process, and the test sets this before it starts any thread of its own,
+    // so no other thread reads the environment while it changes.
+    unsafe {
+        std::env::set_var("XDG_CONFIG_HOME", &home);
+    }
+    let path = session_path().expect("the config home resolves");
+    assert!(path.starts_with(&home), "the session file {path:?} is not inside the disposable home {home:?}");
+    return path;
+}
+
 /// Session persistence tests.
 #[cfg(test)]
 #[path = "session_tests.rs"]

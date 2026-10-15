@@ -487,3 +487,19 @@ fn the_shutdown_snapshot_keeps_the_ui_fields_of_the_stored_session() {
     let off = rig.controller.session_over(Session::default());
     assert!(!off.auto_play_on_select, "and it must not turn it on either");
 }
+
+#[cfg(target_os = "linux")]
+#[test]
+fn the_shutdown_snapshot_reads_the_stored_session_of_the_config_home() {
+    let rig = rig("snapshot_reads_config_home", RATE);
+    crate::session::use_disposable_config_home("snapshot_reads_config_home");
+    let stored = Session {
+        track_rows_template: Some("$mi(title)$".to_string()),
+        auto_play_on_select: true,
+        ..Session::default()
+    };
+    stored.save().expect("the stored session is written to the disposable home");
+    let snapshot = rig.controller.current_session();
+    assert!(snapshot.auto_play_on_select, "the snapshot keeps the stored setting");
+    assert_eq!(snapshot.track_rows_template.as_deref(), Some("$mi(title)$"));
+}
