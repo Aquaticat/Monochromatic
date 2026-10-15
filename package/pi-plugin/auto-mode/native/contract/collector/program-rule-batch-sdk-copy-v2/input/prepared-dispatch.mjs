@@ -1,6 +1,7 @@
 import { sealPreparedInput } from './prepared-input-seal.ts';
 import { schedulePreparedCalls } from './prepared-schedule.ts';
 import { completePreparedBatch } from './prepared-completion.ts';
+import { wrapPreparedTools } from './prepared-executable.ts';
 
 export class PreparedBatchContractError extends Error {}
 export class PreparedBatchExecutionError extends Error {
@@ -84,24 +85,8 @@ export async function dispatchPreparedBatch({
     'Prepared group cancelled',
     {cause:signal.reason}
   );assertFresh({stage});}
-  const executableTools=tools.map(function wrapOwnedTool(original) { return (({
-    ...original,
-    async execute(toolCallId,params,nativeSignal,nativeOnUpdate){
-    const args=[toolCallId,params,nativeSignal,nativeOnUpdate];
-    const ordinal=ordinalByID.get(args[0]);
-    if(ordinal===undefined)throw new PreparedBatchContractError('Execution has no declared member ordinal');
-    if(serial)await turns[ordinal]
-      .promise;
-    try{active('member-execute');}catch(error){failures.push(error);throw error;}
-    if(batchState.executionGuardFailed){const error=new PreparedBatchContractError('An execution context guard failed; remaining group members cannot start');failures.push(error);throw error;}
-    try{return await executeWithOwnedContext({
-      judgment:executionJudgment,
-      tool:original,
-      args
-    });}
-    catch(error){if(error instanceof NativeExecutionGuardError){batchState.executionGuardFailed=true;failures.push(error);}throw error;}
-  }
-  })); });
+  function waitForTurn(ordinal) { return turns[ordinal].promise; }
+  const executableTools = wrapPreparedTools({ tools, ordinalByID, serial, waitForTurn, active, failures, batchState, executionJudgment, executeWithOwnedContext, NativeExecutionGuardError, PreparedBatchContractError });
   function onAbort() {  block('Prepared group cancelled before execution'); }
   signal.addEventListener(
     'abort',
