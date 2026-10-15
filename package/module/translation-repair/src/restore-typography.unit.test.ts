@@ -300,7 +300,8 @@ await describe({
     },),
     it({
       name: 'RESTORES a possessive apostrophe after a link or an emphasis span, which the archive '
-        + 'curls, and leaves an opening quote after a span alone (class seventy, mikaela_khara, 2026-09-19)',
+        + 'curls, and reads a mark between letters beside a span as the apostrophe it is (class seventy, mikaela_khara, '
+        + '2026-09-19; n159)',
       fn: async () => {
         const convention = `Every other line here reads didn${APOSTROPHE}t.`;
         expect(restoreTypography({
@@ -313,11 +314,19 @@ await describe({
           replaced: 'She hummed the opening.',
           convention,
         },),).toBe(`She hummed *Cat Chorus*${APOSTROPHE}s opening.`,);
+        // CHANGED IN n159 (X7): the emphasis delimiters show a reader nothing, so the first mark stands between two letters
+        // (`Chorus'sad`) and is the apostrophe it is without the asterisks, and the last is a trailing apostrophe; the text
+        // without the asterisks is restored the same way, which the next expectation shows.
         expect(restoreTypography({
           replacement: "She hummed *Cat Chorus*'sad tune' twice.",
           replaced: 'She hummed twice.',
           convention,
-        },),).toBe("She hummed *Cat Chorus*'sad tune' twice.",);
+        },),).toBe(`She hummed *Cat Chorus*${APOSTROPHE}sad tune${APOSTROPHE} twice.`,);
+        expect(restoreTypography({
+          replacement: "She hummed Cat Chorus'sad tune' twice.",
+          replaced: 'She hummed twice.',
+          convention,
+        },),).toBe(`She hummed Cat Chorus${APOSTROPHE}sad tune${APOSTROPHE} twice.`,);
       },
     },),
     it({
@@ -524,8 +533,9 @@ await describe({
           'She said ‘sit ’round’ and ‘wait ’til’ dawn.',
           'He said ‘give them ’em’ and left.',
           'He said ‘it was great ’cause cats’ and left.',
-          // `'90s'` is a quoted number (n156, W7): its two marks pair, and the `'the` before it has no closing mark left.
-          "He said 'the ‘90s’ and left.",
+          // `'90s'` is a quoted number (n156, W7), but the readings that pair its marks or the `'the` before it with the last mark
+          // leave the same number of marks unpaired, and a tie keeps the elision (n159): the last mark closes the quotation.
+          'He said ‘the ’90s’ and left.',
           '‘Give ’em hell,’ she said.',
           '“She said ‘give ’em hell’ to us.”',
           'He said ‘it was ’twas’ and left.',

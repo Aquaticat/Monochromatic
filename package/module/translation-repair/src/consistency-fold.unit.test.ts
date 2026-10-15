@@ -879,7 +879,7 @@ await describe({
         },),
         it({
           name: 'LOCATES A WORD WHOSE EDGE IS NO JOINT: the whole compound, a mark beside a space, a plural beside the '
-            + 'apostrophe that closes it, and a neighbour that is Greek, Han, an emoji or another mark',
+            + 'apostrophe that closes it, and a neighbour that is Han, an emoji or another mark, where a Greek letter cuts',
           fn: async () => {
             expect([
               locateWords({ haystack: 'The so-called cat', words: 'so-called', },),
@@ -898,7 +898,9 @@ await describe({
               { kind: 'once', start: 4, end: 9, },
               { kind: 'once', start: 8, end: 19, },
               { kind: 'once', start: 11, end: 20, },
-              { kind: 'once', start: 0, end: 3, },
+              // CHANGED IN n159 (X9): a letter of any script that sets its words apart by spaces is a letter of a word, so
+              // the Greek `ω` after `cat` makes `cat` half a word, which the span does not name.
+              { kind: 'none', },
               { kind: 'once', start: 0, end: 3, },
               { kind: 'once', start: 0, end: 3, },
               { kind: 'once', start: 2, end: 5, },

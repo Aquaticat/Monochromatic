@@ -127,5 +127,63 @@ await describe({
         ],).toEqual([false, false,],);
       },
     },),
+    it({
+      name: 'READS THE MARKUP THAT SHOWS NOTHING AS NOT THERE (n159, X1): emphasis, strong, a link label, a tag and a code span between '
+        + 'two pieces of one word let the letters on both sides join',
+      fn: async () => {
+        expect([
+          spanCuts({ text: 'The kit*tens* ate.', quote: 'kit', },),
+          spanCuts({ text: 'The kit*tens* ate.', quote: 'tens', },),
+          spanCuts({ text: 'The **kit**tens ate.', quote: 'kit', },),
+          spanCuts({ text: 'The [kit](u)tens ate.', quote: 'kit', },),
+          spanCuts({ text: 'The <b>kit</b>tens ate.', quote: 'kit', },),
+          spanCuts({ text: 'The dogs*s* bowl.', quote: 'dogs', },),
+          spanCuts({ text: 'The kit<b class="x">tens</b> ate.', quote: 'kit', },),
+          spanCuts({ text: 'The kit<!-- note -->tens ate.', quote: 'kit', },),
+          spanCuts({ text: 'The *kitten*\'s bowl.', quote: 'kitten', },),
+        ],).toEqual([true, true, true, true, true, true, true, true, true,],);
+      },
+    },),
+    it({
+      name: 'CUTS NO WORD AT A WHOLE WORD BESIDE EACH DELIMITER (n159, X1): the word stands apart from what is beside the markup',
+      fn: async () => {
+        expect([
+          spanCuts({ text: 'The *kittens* ate.', quote: 'kittens', },),
+          spanCuts({ text: 'The **kittens** ate.', quote: 'kittens', },),
+          spanCuts({ text: 'The [kittens](u) ate.', quote: 'kittens', },),
+          spanCuts({ text: 'The <b>kittens</b> ate.', quote: 'kittens', },),
+          spanCuts({ text: 'A *dogs*, kittens ate.', quote: 'dogs', },),
+          spanCuts({ text: 'The kit\n\ntens ate.', quote: 'kit', },),
+          spanCuts({ text: 'The kit\n- tens ate.', quote: 'kit', },),
+        ],).toEqual([false, false, false, false, false, false, false,],);
+      },
+    },),
+    it({
+      name: 'READS A LETTER, MARK OR DIGIT OF ANY SCRIPT AS A WORD CHARACTER AT AN EDGE (n159, X9), and an underscore between two of '
+        + 'them joins them',
+      fn: async () => {
+        expect([
+          spanCuts({ text: 'Привет мир', quote: 'Прив', },),
+          spanCuts({ text: 'Γειά σου', quote: 'Γει', },),
+          spanCuts({ text: 'dogs_cats ate', quote: 'dogs', },),
+          spanCuts({ text: 'snake_case ate', quote: 'case', },),
+          spanCuts({ text: 'שלום עולם', quote: 'של', },),
+          spanCuts({ text: 'x١٢٣ y', quote: 'x', },),
+        ],).toEqual([true, true, true, true, true, true,],);
+      },
+    },),
+    it({
+      name: 'CUTS NO WORD AT WHOLE WORDS OF OTHER SCRIPTS OR AT A LONE UNDERSCORE (n159, X9)',
+      fn: async () => {
+        expect([
+          spanCuts({ text: 'Привет мир', quote: 'Привет', },),
+          spanCuts({ text: 'Γειά σου', quote: 'Γειά', },),
+          spanCuts({ text: 'dogs _ cats ate', quote: 'dogs', },),
+          spanCuts({ text: 'See _dogs_ ate', quote: 'dogs', },),
+          spanCuts({ text: 'See dogs_ ate', quote: 'dogs', },),
+          spanCuts({ text: 'x² y', quote: 'x', },),
+        ],).toEqual([false, false, false, false, false, false,],);
+      },
+    },),
   ],
 },);

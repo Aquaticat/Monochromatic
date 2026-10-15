@@ -789,6 +789,33 @@ const SPAN_EDGES: readonly EdgePage[] = [
   insideWord({ name: 'N4 a reference ampersand between letters before the receiving quote', before: 'Call AT&amp;T now.', marked: 'Call AT&amp;⟦2T now2⟧.', },),
   insideWord({ name: 'N5 a plain ampersand between letters after the receiving quote', before: 'Our R&D team.', marked: 'Our ⟦2R2⟧&D team.', },),
   insideWord({ name: 'N6 a plain ampersand between letters before the receiving quote', before: 'Our R&D team.', marked: 'Our R&⟦2D team2⟧.', },),
+  // The markup that shows nothing between two pieces of one word (n159, X1): the word a reader sees is cut there as at a letter.
+  insideWord({ name: 'X1a emphasis after the receiving quote', before: 'The kit*tens* ate.', marked: 'The ⟦2kit2⟧*tens* ate.', },),
+  insideWord({ name: 'X9a an underscore joins the receiving word to the word after it', before: 'The kit_tens ate.', marked: 'The ⟦2kit2⟧_tens ate.', },),
+  insideWord({ name: 'X9b a Greek letter beside the receiving quote is a word character', before: 'The kittenω naps.', marked: 'The ⟦2kitten2⟧ω naps.', },),
+  insideWord({ name: 'X1b emphasis around the receiving quote', before: 'The kit*tens* ate.', marked: 'The kit*⟦2tens2⟧* ate.', },),
+  insideWord({ name: 'X1c strong emphasis before the receiving word', before: 'The **kit**tens ate.', marked: 'The **⟦2kit2⟧**tens ate.', },),
+  insideWord({ name: 'X1d a link label then a word', before: 'The [kit](u)tens ate.', marked: 'The [⟦2kit2⟧](u)tens ate.', },),
+  insideWord({ name: 'X1e a tag then a word', before: 'The <b>kit</b>tens ate.', marked: 'The <b>⟦2kit2⟧</b>tens ate.', },),
+  {
+    name: 'X1f the chosen place is half a word, so the chosen words stand nowhere',
+    template: 'The ⟦1dogs1⟧*s* bowl. The ⟦2kittens2⟧ ate. A ⟦3cat3⟧ naps.',
+    shipped: '## One\n\nThe dogs*s* bowl. The kittens ate. A cat naps.',
+    outcomes: NONE_TOUCHED,
+  },
+  // Controls: a whole word beside each delimiter still carries.
+  {
+    name: 'X1g control: a whole emphasised receiving word carries',
+    template: 'The ⟦1dogs’1⟧ bowl. The *⟦2kittens2⟧* ate. A ⟦3cat3⟧ naps.',
+    shipped: '## One\n\nThe dogs’ bowl. The *dogs’* ate. A dogs’ naps.',
+    outcomes: ALL_CARRIED,
+  },
+  {
+    name: 'X1h control: a whole receiving word in a link label carries',
+    template: 'The ⟦1dogs’1⟧ bowl. The [⟦2kittens2⟧](u) ate. A ⟦3cat3⟧ naps.',
+    shipped: '## One\n\nThe dogs’ bowl. The [dogs’](u) ate. A dogs’ naps.',
+    outcomes: ALL_CARRIED,
+  },
   {
     name: 'M11 chosen quote begins after a numeric reference of a letter, so the chosen words stand nowhere',
     template: 'See k&#105;⟦1ttens bowl1⟧ now. The ⟦2kittens2⟧ ate. A ⟦3cat3⟧ naps.',
@@ -1017,6 +1044,20 @@ async function seenOf(
   };
 }
 
+/**
+ What stands between the receiving word and its kept mark, a reference whose definition is in the second section: a name for the
+ case, the text, the second section and the outcome of the place. A link definition stands alone in its section because the
+ definitions are joined by a line break, as the refinement gate joins them (`collectDefinitions`), and a line break after a
+ footnote definition continues its paragraph. The text of a reference link is a word the span would join (`kittens` and `x`), so
+ the pass names no span there; a footnote reference shows nothing, so the span is found and its kept mark is kept.
+ */
+const DEFINED_ELSEWHERE: readonly (readonly [string, string, string, string,])[] = [
+  ['a footnote reference', '[^1]', 'The kittens nap.\n\n[^1]: A note.\n', 'kept-current'],
+  ['a footnote reference and a space', '[^1] ', 'The kittens nap.\n\n[^1]: A note.\n', 'kept-current'],
+  ['two footnote references', '[^1][^1]', 'The kittens nap.\n\n[^1]: A note.\n', 'kept-current'],
+  ['a reference link', '[x][r]', 'The kittens nap.\n\n[r]: https://x.example/r\n', 'unlocated'],
+];
+
 await describe({
   name: shippedPageOf.name,
   concurrency: DEFAULT_CONCURRENCY,
@@ -1194,6 +1235,28 @@ await describe({
           },).toEqual({
             shipped: entry.shipped,
             outcomes: entry.outcomes,
+          },);
+        },
+      },);
+    },),
+    ...DEFINED_ELSEWHERE.map(function definedElsewhereCase([name, between, definitions, outcome,],) {
+      return it({
+        name: `KEEPS THE RECEIVING WORDS WHEN THE DEFINITION OF THE REFERENCE BEFORE THE KEPT MARK STANDS IN ANOTHER SLICE (n159, X2): ${name}`,
+        fn: async () => {
+          /**
+           The page run through the pass, the definitions in the second section.
+           */
+          const page = await shippedPageOf({
+            template: `The ⟦1dogs’1⟧ bowl is full. The ⟦2kittens2⟧${between}’ bowl is empty. A ⟦3cat3⟧ naps.`,
+            silentWriters: true,
+            secondSection: definitions,
+          },);
+          expect({
+            shipped: nonNullishOrThrow(page.shipped.split('\n\n## Two',)[0],),
+            outcome: page.outcomes[1],
+          },).toEqual({
+            shipped: `## One\n\nThe dogs’ bowl is full. The kittens${between}’ bowl is empty. A cat naps.`,
+            outcome,
           },);
         },
       },);

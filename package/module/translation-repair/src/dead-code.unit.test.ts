@@ -110,8 +110,14 @@ type LocatedDeclaration = TopDeclaration & {
  one process runs; the meter is module-private state, which no fixture can
  reach without an export (ledger B30, a choice the owner may veto for a meter
  passed in).
+
+ `proseMaskBuilds` counts the prose masks built since the process began, so a test sees how many slices one page pass parsed
+ (each slice once, n159, X5); the count is module-private state, which no fixture can reach without an export.
  */
-const PACKAGE_SEAMS: ReadonlySet<string> = new Set(['run-spend-meter.ts#resetRunSpend',],);
+const PACKAGE_SEAMS: ReadonlySet<string> = new Set([
+  'run-spend-meter.ts#resetRunSpend',
+  'typography-prose-mask.ts#proseMaskBuilds',
+],);
 
 /**
  Syntax that stands in a type position, whose names run nothing.

@@ -97,7 +97,9 @@ await describe({
         // (2026-09-28, ledger M28) re-keys every ballot cast under version 5.
         // Version 7 (2026-10-15) re-keys every ballot cast before the
         // eligibility validator read prose guillemets from the page parse.
-        expect(key,).toBe('1c5863aca8278d626c3772d675c41607e9fb1fe93a674dfbfd74394bc7b27096',);
+        // Version 8 (2026-10-15, n159) re-keys every ballot cast before the
+        // validator refused a refused candidate that carries a guillemet.
+        expect(key,).toBe('fb873f8bdb2b9a99ed145173661ff296db363df19a0c1b0327d9064084e8d087',);
       },
     },),
     it({

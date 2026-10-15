@@ -93,4 +93,19 @@ export const SEAT_OPENROUTER_ONLY_CHECKER = 'xiaomi/mimo-v2.6-flash' as const;
  */
 export const SEAT_OPENROUTER_DECISIONS = 'typesafe/jev-1.13' as const;
 
+/**
+ The seats that can hold an editor chair, by the id each answers to. The lane asks a window of quorum plus one from a bench the
+ prompt rotates (`stage-fanout-window.ts`), so which of them are seated moves whenever a sheet's wording does (n161: the house
+ tense rule); a test of a whole editor round reads the seated ones against this list.
+ */
+export const SEATS_THAT_CAN_EDIT: readonly string[] = [
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_OPENROUTER_ONLY,
+];
+
 //endregion Roster seats

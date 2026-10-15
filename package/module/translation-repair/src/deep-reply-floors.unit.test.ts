@@ -294,9 +294,18 @@ await describe({
               stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 
-            expect(produced.validity
-              .map(function kindOf(entry,): string {
-                return `${entry.modelId}: ${entry.validation.kind}`;
+            // The slate lists the voices in the order the prompt-rotated bench answered (it moved when the house tense rule
+            // changed the prompt), so the entries are read back in the roster's order.
+            expect([DEEP_VOICE, ORDINARY_VOICE,]
+              .map(function kindOf(modelId,): string {
+                return `${modelId}: ${
+                  produced.validity
+                    .find(function isVoice(entry,): boolean {
+                      return entry.modelId === modelId;
+                    },)
+                    ?.validation
+                    .kind
+                }`;
               },),).toEqual([
               `${DEEP_VOICE}: invalid`,
               `${ORDINARY_VOICE}: valid`,

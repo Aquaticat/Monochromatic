@@ -23,6 +23,7 @@ import {
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
+import { sortedByModelId, } from '../model-order.test-fixture.ts';
 import { translateLaneClient, } from './translate-lane-script.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
@@ -82,7 +83,15 @@ await describe({
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
-        expect(round,).toEqual({
+        // The ballots come in the order of a bench the prompt rotates (it moved when the house tense rule changed the prompt),
+        // so they are compared sorted by judge.
+        expect({
+          ...round,
+          round: {
+            ...round.round,
+            ballots: sortedByModelId({ items: round.round.ballots, },),
+          },
+        },).toEqual({
           round: {
             producers: [
               {
@@ -102,29 +111,31 @@ await describe({
                 matched: [],
               },
             ],
-            ballots: [
-              {
-                modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-                best: 1,
-                reason: 'scripted',
-                weight: 1,
-                selfVote: false,
-              },
-              {
-                modelId: SEAT_HYPER_VISION,
-                best: 1,
-                reason: 'scripted',
-                weight: 1,
-                selfVote: false,
-              },
-              {
-                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                best: 1,
-                reason: 'scripted',
-                weight: 0.5,
-                selfVote: true,
-              },
-            ],
+            ballots: sortedByModelId({
+              items: [
+                {
+                  modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                  best: 1,
+                  reason: 'scripted',
+                  weight: 1,
+                  selfVote: false,
+                },
+                {
+                  modelId: SEAT_HYPER_VISION,
+                  best: 1,
+                  reason: 'scripted',
+                  weight: 1,
+                  selfVote: false,
+                },
+                {
+                  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  best: 1,
+                  reason: 'scripted',
+                  weight: 0.5,
+                  selfVote: true,
+                },
+              ],
+            },),
           },
           authors: [
             SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -238,15 +249,18 @@ await describe({
           SEAT_HYPER_VISION,
           SEAT_HYPER_OPENROUTER_VISION_EDITOR,
         ],);
+        // The ballots come in the order of a bench the prompt rotates (it moved when the house tense rule changed the prompt),
+        // so the judges are compared sorted.
         expect(round.round
           .ballots
           .map(function judge(ballot,): string {
             return ballot.modelId;
-          },),).toEqual([
+          },)
+          .toSorted(),).toEqual([
             SEAT_HYPER_VISION,
             SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          ],);
+          ].toSorted(),);
       },
     },),
   ],

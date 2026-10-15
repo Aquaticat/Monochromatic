@@ -19,40 +19,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { proseMask, } from '../dist/final/node/index.mjs';
-
-/**
- Prose flag of every straight quote mark of a text, in order of appearance.
-
- @param text - text whose mask is read
-
- @returns `P` for a mark in prose, `N` for a mark that is not
-
- @example
- ```ts
- quoteFlags({ text: 'a "b" it\'s', },); // 'PPP'
- ```
- */
-function quoteFlags({ text, }: { readonly text: string; },): string {
-  /**
-   Mask of the text.
-   */
-  const mask = proseMask({ text, },);
-  return Array.from({ length: text.length, },)
-    .map(function flagOf(
-      _unused,
-      index,
-    ): string {
-      /**
-       Unit under the scan.
-       */
-      const unit = text.charAt(index,);
-      if ((unit !== '\'') && (unit !== '"'))
-        return '';
-      return (mask[index] === true) ? 'P' : 'N';
-    },)
-    .join('',);
-}
+import { proseMaskReading, } from '../dist/final/node/index.mjs';
+import { quoteFlags, } from './quote-flags.test-fixture.ts';
 
 /**
  Source files whose rules read the mask.
@@ -66,7 +34,7 @@ const READERS: readonly string[] = [
 ];
 
 await describe({
-  name: 'proseMask (n156, W1)',
+  name: 'proseMaskReading (n156, W1)',
   children: [
     it({
       name: 'READS A LINK LABEL AS PROSE AND ITS DESTINATION AND TITLE AS NOT, whichever mark quotes the title, and an image '
@@ -240,7 +208,7 @@ await describe({
         /**
          Mask of the text.
          */
-        const mask = proseMask({ text, },);
+        const { mask, } = proseMaskReading({ text, },);
         expect({
           length: mask.length === text.length,
           flags: quoteFlags({ text, },),
@@ -252,7 +220,7 @@ await describe({
     },),
     it({
       name: 'IS THE ONE SCANNER OF PROSE: every rule that reads quotes, ellipses or guillemets takes its mask from '
-        + '`proseMask`, and none keeps a scanner of its own for code or tags',
+        + '`proseMaskReading`, and none keeps a scanner of its own for code or tags',
       fn: async () => {
         /**
          Whether each reader's source calls the shared mask.
@@ -268,7 +236,7 @@ await describe({
             ),
             'utf8',
           );
-          return `${reader}:${source.includes('proseMask({',)}`;
+          return `${reader}:${source.includes('proseMaskReading({',)}`;
         },),);
         expect(calls,).toEqual(READERS.map(function expected(reader,): string {
           return `${reader}:true`;

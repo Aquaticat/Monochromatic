@@ -34,6 +34,7 @@ import {
   successiveClients,
   UNANCHORED_CHECK,
 } from '../introduced-defect-scripted-client.test-fixture.ts';
+import { sortedByModelId, } from '../model-order.test-fixture.ts';
 import { napCase, } from '../relabel-case.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
@@ -215,10 +216,17 @@ await describe({
               'VERIFY damaged whiskers 1 admissible claim',
               'VERIFY damaged mittens 0 admissible claims',
             ],);
-            expect(items,).toEqual([
+            // The claims are listed in the order the probers answered, from a bench the prompt rotates (it moved when the house
+            // tense rule changed the prompt), so each item's claims are compared sorted by prober.
+            expect(items.map(function claimsSorted(item,) {
+              return {
+                ...item,
+                claims: sortedByModelId({ items: item.claims, },),
+              };
+            },),).toEqual([
               {
                 relabelCase: cases[0],
-                claims: everyClaim,
+                claims: sortedByModelId({ items: everyClaim, },),
                 kind: 'damaged',
               },
               {

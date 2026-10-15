@@ -208,7 +208,7 @@ await describe({
     },),
     it({
       name: 'READS AN EMPHASIS DELIMITER IN OPENING POSITION AS A PLACE A QUOTATION OPENS (U6): `*`, `_`, `~` and runs of them '
-        + 'open it, and a delimiter that closes a span after a word does not, so `Chorus*\'sad` stays read as before',
+        + 'open it, and a delimiter that closes a span after a word does not, so `Chorus*\'sad` is read as `Chorus\'sad` is (n159)',
       fn: async () => {
         /**
          The replacement as the restoration writes it on a curly page.
@@ -233,8 +233,10 @@ await describe({
           'He said **‘hi’** and the dogs’ bowl',
           'He said ([‘hi’]) and the dogs’ bowl',
           '*‘hi’* and the dogs’ bowl',
-          'She hummed *Cat Chorus*\'sad tune\' twice.',
-          'She hummed _Cat Chorus_\'sad tune\' twice.',
+          // CHANGED IN n159 (X7): the delimiters show a reader nothing, so `Chorus*'sad` is the mark between two letters that
+          // `Chorus'sad` is, an apostrophe, and the mark that ends `tune'` is a trailing apostrophe.
+          'She hummed *Cat Chorus*’sad tune’ twice.',
+          'She hummed _Cat Chorus_’sad tune’ twice.',
           // The destination of a link is no prose to the mask (n156, W1), so its `'q'` is no pair of marks that no word before
           // opens: the label's apostrophe curls, and the address stays as written.
           '[the dogs’ bowl](http://x.example/\'q\')',
@@ -348,7 +350,9 @@ await describe({
           },);
         },),).toEqual([
           'He said ‘he is ‘42’ years old’ today.',
-          'the 1990s and ’90s and ‘90s’ music',
+          // CHANGED IN n159: both readings pair one pair and leave one mark unpaired, and a tie keeps the elision, so the closing
+          // mark closes the quotation that the first `'90s` opens (before, the quoted number always took the pair).
+          'the 1990s and ‘90s and ’90s’ music',
           'He said ‘99’ and left.',
           'Back in ’99, she left',
           'The ’99 and ’00 crops.',

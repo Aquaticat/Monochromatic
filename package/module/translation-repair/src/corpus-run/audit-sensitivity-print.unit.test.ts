@@ -37,6 +37,23 @@ const FIRST = nonNullishOrThrow(RUN_MODELS.checkerModelIds[0],);
 const SECOND = nonNullishOrThrow(RUN_MODELS.checkerModelIds[1],);
 const THIRD = nonNullishOrThrow(RUN_MODELS.checkerModelIds[2],);
 
+/**
+ The auditors of the flipped arm in the order the report lists them. The auditors are asked from a bench rotated by the prompt,
+ so the order they answer in moves whenever a sheet's wording does (n161: the house tense rule); the cases that script the first,
+ second and third voice of a report name the voices by that order.
+ */
+const ASKED = (await auditReportOver({
+  reportFor: function quiet() {
+    return QUIET_AUDIT_REPORT;
+  },
+  clean: false,
+},)).rows.map(function modelOf(row,): string {
+  return row.modelId;
+},);
+const ASKED_FIRST = nonNullishOrThrow(ASKED[0],);
+const ASKED_SECOND = nonNullishOrThrow(ASKED[1],);
+const ASKED_THIRD = nonNullishOrThrow(ASKED[2],);
+
 await describe({
   name: '',
   concurrency: DEFAULT_CONCURRENCY,
@@ -78,7 +95,7 @@ await describe({
               reportFor: function perVoice(modelId,) {
                 return {
                   verdict: 'defects-found',
-                  findings: (modelId === FIRST)
+                  findings: (modelId === ASKED_FIRST)
                     ? [
                       POLARITY_FINDING,
                       ELSEWHERE_FINDING,
@@ -96,7 +113,7 @@ await describe({
               row: nonNullishOrThrow(report.rows[0],),
               arm: 'flipped',
             },),).toEqual([
-              `  VOICE flipped ${FIRST} verdict=defects-found claims=2 oracleHits=1 dropped=0`,
+              `  VOICE flipped ${ASKED_FIRST} verdict=defects-found claims=2 oracleHits=1 dropped=0`,
               '    ORACLE altered-polarity: 不吃罐头 || eat canned food',
               '    other  omission: 窗台 || -',
             ],);
@@ -104,7 +121,7 @@ await describe({
               row: nonNullishOrThrow(report.rows[1],),
               arm: 'flipped',
             },),).toEqual([
-              `  VOICE flipped ${SECOND} verdict=defects-found claims=1 oracleHits=1 dropped=1 [unknown-category (bogus)]`,
+              `  VOICE flipped ${ASKED_SECOND} verdict=defects-found claims=1 oracleHits=1 dropped=1 [unknown-category (bogus)]`,
               '    ORACLE altered-polarity: 不吃 || They eat',
             ],);
           },
@@ -126,7 +143,7 @@ await describe({
               reportFor: function perVoice(modelId,) {
                 return {
                   verdict: 'defects-found',
-                  findings: (modelId === THIRD)
+                  findings: (modelId === ASKED_THIRD)
                     ? [
                       NARROW_POLARITY_FINDING,
                       UNKNOWN_CATEGORY_FINDING,
@@ -146,16 +163,16 @@ await describe({
             },),).toEqual([
               'SENSITIVITY arm=flipped expected=agreement heard=3/3 corroborated=1 agreed=1 agreedVoices=3 near=2 '
               + 'oracleVoices=3 findings=0',
-              `  VOICE flipped ${FIRST} verdict=defects-found claims=1 oracleHits=1 dropped=0`,
+              `  VOICE flipped ${ASKED_FIRST} verdict=defects-found claims=1 oracleHits=1 dropped=0`,
               '    ORACLE altered-polarity: 不吃罐头 || eat canned food',
-              `  VOICE flipped ${SECOND} verdict=defects-found claims=1 oracleHits=1 dropped=0`,
+              `  VOICE flipped ${ASKED_SECOND} verdict=defects-found claims=1 oracleHits=1 dropped=0`,
               '    ORACLE altered-polarity: 不吃罐头 || eat canned food',
-              `  VOICE flipped ${THIRD} verdict=defects-found claims=1 oracleHits=1 dropped=1 [unknown-category (bogus)]`,
+              `  VOICE flipped ${ASKED_THIRD} verdict=defects-found claims=1 oracleHits=1 dropped=1 [unknown-category (bogus)]`,
               '    ORACLE altered-polarity: 不吃 || They eat',
               '  CORROBORATED flipped altered-polarity voices=2 at 不吃罐头 || eat canned food',
               '  AGREED flipped altered-polarity voices=3 spans=不吃 / 不吃罐头 / 不吃罐头',
-              `  NEAR flipped overlapping-focus: altered-polarity (${FIRST}) against altered-polarity (${THIRD})`,
-              `  NEAR flipped overlapping-focus: altered-polarity (${SECOND}) against altered-polarity (${THIRD})`,
+              `  NEAR flipped overlapping-focus: altered-polarity (${ASKED_FIRST}) against altered-polarity (${ASKED_THIRD})`,
+              `  NEAR flipped overlapping-focus: altered-polarity (${ASKED_SECOND}) against altered-polarity (${ASKED_THIRD})`,
             ],);
           },
         },),

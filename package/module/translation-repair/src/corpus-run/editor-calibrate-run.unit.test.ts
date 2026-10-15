@@ -34,14 +34,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
-import {
-  SEAT_BEDROCK_ONLY_TEXT,
-  SEAT_HYPER_ONLY,
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_OPENROUTER_ONLY,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-} from '../roster-seats.test-fixture.ts';
+import { SEATS_THAT_CAN_EDIT, } from '../roster-seats.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { benchSliceOf, } from './editor-calibrate-rounds.test-fixture.ts';
@@ -329,30 +322,30 @@ await describe({
             },);
 
             /**
-             Seats whose text shipped, in the order the lane seats them.
+             The standing, the shipped heading and the credit lines.
              */
-            const shippers = [
-              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-              SEAT_HYPER_ONLY,
-              SEAT_HYPER_OPENROUTER_UNMEASURED,
-              SEAT_BEDROCK_ONLY_TEXT,
-              SEAT_OPENROUTER_ONLY,
-            ];
-
-            expect(printed.lines.slice(2,).filter(function standingOrShipping(line,): boolean {
+            const printedLines = printed.lines.slice(2,).filter(function standingOrShipping(line,): boolean {
               return line.includes('wrote shipping text',) || line.startsWith('\nEDITOR',)
                 || line.startsWith('  NO JUDGED ROUNDS',);
-            },),).toEqual([
+            },);
+            expect(printedLines.slice(0, 3,),).toEqual([
               '\nEDITOR standing over 0 judged rounds, from 0 of 1 slice; 1 round drew no ballot',
               '  NO JUDGED ROUNDS. The seat has no standing, since no ballot was cast on any round it produced: a '
               + 'slate of one candidate, which is what every producer proposing the same wording leaves, needs no '
               + 'vote, and a panel whose every judge abstained or failed casts none. Draw more slices.',
               '\nEDITORS SHIPPED on 1 of 1 slice, 1 of them with no editor round judged at all',
-              ...shippers.map(function credited(modelId,): string {
-                return `  ${modelId}: wrote shipping text on 1 of 1 slice`;
-              },),
             ],);
+            // The lane seats six editors from a bench the prompt rotates (it moved when the house tense rule changed the
+            // prompt), so which six of the seats that can hold an editor chair are credited moves with the sheet. Six distinct
+            // seats of the roster, each credited once, is what holds.
+            expect(new Set(printedLines.slice(3,),).size,).toBe(6,);
+            expect(printedLines.slice(3,).filter(function isUncredited(line,): boolean {
+              return !SEATS_THAT_CAN_EDIT
+                .map(function credited(modelId,): string {
+                  return `  ${modelId}: wrote shipping text on 1 of 1 slice`;
+                },)
+                .includes(line,);
+            },),).toEqual([],);
             expect(printed.lines[2],).toBe(
               '  slice 1 of 1 (mittens chunk 0): 1 editor round, 0 refiner rounds (nothing eligible to rewrite), '
                 + '6 editors shipping',

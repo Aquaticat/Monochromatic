@@ -88,7 +88,7 @@ await describe({
         + 'change to the FIXTURE INPUTS of this case moves it too, and must not, because those inputs are '
         + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(35,);
+        expect(SLICE_CACHE_VERSION,).toBe(36,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.
@@ -151,8 +151,10 @@ await describe({
         //
         // VERSION 35 IN n156 (typography read from the page parse): the version is key input, so the literal moved with it
         // and was filled in by running this case after the bump, which is the only way to get a hash.
+        //
+        // VERSION 36 IN n159 (the context of a mark read as the text a reader sees): moved the same way.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('f32c50c49665b3c9791d2e85b74019831a7cf4dc23c1a88e722d7fd1304dae14',);
+          .toBe('16e41b48a58f28a9a2e960b2d2dbbc862100d0f9633ba87a861d50e7ee146e91',);
       },
     },),
     it({

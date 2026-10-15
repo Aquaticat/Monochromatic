@@ -1412,7 +1412,15 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
-  'consistency-shown-edge.ts#isWordCharacter': {
+  'latin-letters.ts#isSpacedScriptWordCharacter': {
+    tests: 1,
+    why: SCANNER,
+  },
+  'page-definitions.ts#withDefinitions': {
+    tests: 1,
+    why: SENTINEL,
+  },
+  'typography-link-text.ts#isSpace': {
     tests: 1,
     why: SCANNER,
   },

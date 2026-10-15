@@ -141,6 +141,39 @@ function scriptedGathering(
   };
 }
 
+/**
+ A verify manifest with each item's claimants sorted. The claimants are listed in the order the probers answered, from a bench the
+ prompt rotates, which moved when the house tense rule changed the prompt, so both manifests are read in one order.
+
+ @param text - the manifest JSON
+
+ @returns The manifest JSON with every item's claimants sorted
+
+ @example
+ ```ts
+ const sorted = claimantsSorted({ text: '{"items":[{"claimants":["b","a"]}]}', });
+ ```
+ */
+function claimantsSorted({ text, }: { readonly text: string; },): string {
+  /**
+   The manifest read back.
+   */
+  const parsed = JSON.parse(text,) as { readonly items: readonly { readonly claimants: readonly string[]; }[]; };
+  return JSON.stringify(
+    {
+      ...parsed,
+      items: parsed.items.map(function sortedItem(item,) {
+        return {
+          ...item,
+          claimants: item.claimants.toSorted(),
+        };
+      },),
+    },
+    undefined,
+    2,
+  );
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -303,14 +336,16 @@ await describe({
               ),
             ).toBe(formatVerifySheet({ items, },),);
             expect(
-              await readFile(
-                join(
-                  scratch.path,
-                  'probe-verify-manifest.json',
+              claimantsSorted({
+                text: await readFile(
+                  join(
+                    scratch.path,
+                    'probe-verify-manifest.json',
+                  ),
+                  'utf8',
                 ),
-                'utf8',
-              ),
-            ).toBe(formatVerifyManifest({ items, },),);
+              },),
+            ).toBe(claimantsSorted({ text: formatVerifyManifest({ items, },), },),);
           },
         },),
 

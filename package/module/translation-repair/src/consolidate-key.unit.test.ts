@@ -368,7 +368,7 @@ await describe({
         + 'source-grammar calque removal, absolute naturalness review, required correction mode, and second bounded correction, then on 2026-08-29 for '
         + 'render-aware absolute review, rejected-base correction prompts, absolute correction eligibility, exact-half participation, continuous correction, distinct confirmation responsibility, rejected-strategy threading, durable payload replay, and contributor authority flooring, '
         + 'and on 2026-09-28 for the slate judges beside the writers (ledger X11), and on 2026-10-11 for the run-off '
-        + 'rules (version 21), and on 2026-10-15 for prose read from the page parse (version 22). '
+        + 'rules (version 21), and on 2026-10-15 for prose read from the page parse (versions 22 and 23). '
         + 'These policies are not text fields, '
         + 'so comparing two calls would not notice a stale settlement, which is why this pins a value',
       fn: async () => {
@@ -396,10 +396,12 @@ await describe({
         // Version 21 (2026-10-11) runs off a tied slate whose standing drew no
         // ballot, and runs off on a strict majority of the archive-flawed ballots.
         // Version 22 (2026-10-15) collapses twins and floors guillemets by the
-        // prose the page parse shows, which moved this literal to the value this
-        // expectation names.
+        // prose the page parse shows, which moved this literal.
+        // Version 23 (2026-10-15, n159) reads a shortcut reference and an
+        // address label as no prose and floors a refused candidate that carries a
+        // guillemet, which moved this literal to the value this expectation names.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '469b1aae1a3df22c93c308d6ae13c692a0f476166963f87d6e84c834f4f925f0',
+          '85caa765b36f80e3f877de8f92efbd3b2aaef6cbddf64946ce72a1377f98d61c',
         );
       },
     },),

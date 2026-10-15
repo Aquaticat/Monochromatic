@@ -51,6 +51,7 @@ import {
   REVIEW_REFERENCE,
   REVIEW_SOURCE,
 } from '../fidelity-reference.test-fixture.ts';
+import { sortedByModelId, } from '../model-order.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -448,6 +449,68 @@ const FOUR_ROWS = [
 ];
 
 /**
+ A row, or a document of rows, read back from JSON: only the parts the ballots sort touches are typed.
+ */
+type SortableDocument = {
+  readonly ballots?: readonly { readonly modelId: string; }[];
+  readonly rows?: readonly SortableDocument[];
+};
+
+/**
+ A row with its ballots sorted by model id.
+
+ @param row - the row, or any object that may hold ballots
+
+ @returns The row with its ballots sorted, the row itself where it holds none
+
+ @example
+ ```ts
+ const sorted = rowWithSortedBallots({ row: { ballots: [], }, },);
+ ```
+ */
+function rowWithSortedBallots({ row, }: { readonly row: SortableDocument; },): SortableDocument {
+  return (row.ballots === undefined)
+    ? row
+    : {
+      ...row,
+      ballots: sortedByModelId({ items: row.ballots, },),
+    };
+}
+
+/**
+ A row, or a document of rows, as JSON text with every row's ballots sorted by judge. The ballots are kept in the order the
+ prompt-rotated bench answered, which moved when the house tense rule changed the prompt, so both the text the run kept and the
+ text the test expects are read in one order.
+
+ @param text - JSON of one row or of an object that holds rows
+
+ @returns The same text with each row's ballots sorted by model id, indented by two spaces
+
+ @example
+ ```ts
+ const sorted = ballotsSorted({ text: JSON.stringify({ rows: [], }), });
+ ```
+ */
+function ballotsSorted({ text, }: { readonly text: string; },): string {
+  /**
+   The text read back.
+   */
+  const parsed = JSON.parse(text,) as SortableDocument;
+  return JSON.stringify(
+    (parsed.rows === undefined)
+      ? rowWithSortedBallots({ row: parsed, },)
+      : {
+        ...parsed,
+        rows: parsed.rows.map(function sortedRow(row,): SortableDocument {
+          return rowWithSortedBallots({ row, },);
+        },),
+      },
+    undefined,
+    2,
+  );
+}
+
+/**
  Plan entry of one row, from its position in the matrix.
 
  @param position - where the row sits
@@ -746,27 +809,27 @@ await describe({
             /**
              Each row's file text, one per position, written as the row completed.
              */
-            const rowFiles = await Promise.all(FOUR_ROWS.map(function readRowFile(_row, position,): Promise<string> {
-              return readFile(
-                join(
-                  runDir,
-                  `row-${String(position,)}.json`,
+            const rowFiles = await Promise.all(FOUR_ROWS.map(async function readRowFile(_row, position,): Promise<string> {
+              return ballotsSorted({
+                text: await readFile(
+                  join(
+                    runDir,
+                    `row-${String(position,)}.json`,
+                  ),
+                  'utf8',
                 ),
-                'utf8',
-              );
+              },);
             },),);
             expect(rowFiles,).toEqual(FOUR_ROWS.map(function rowText(row,): string {
-              return JSON.stringify(
-                row,
-                undefined,
-                2,
-              );
+              return ballotsSorted({ text: JSON.stringify(row,), },);
             },),);
-            expect(await readFile(
-              keptAt,
-              'utf8',
-            ),).toBe(JSON.stringify(
-              {
+            expect(ballotsSorted({
+              text: await readFile(
+                keptAt,
+                'utf8',
+              ),
+            },),).toBe(ballotsSorted({
+              text: JSON.stringify({
                 startedAt: STARTED_AT,
                 finishedAt: FINISHED_AT,
                 pipelineDigest: DIGEST,
@@ -791,15 +854,11 @@ await describe({
                   withContext: false,
                 },
                 rows: FOUR_ROWS,
-              },
-              undefined,
-              2,
-            ),);
-            expect(seen.written,).toBe(`${JSON.stringify(
-              { rows: FOUR_ROWS, },
-              undefined,
-              2,
-            )}\n`,);
+              },),
+            },),);
+            expect(ballotsSorted({ text: seen.written, },),).toBe(ballotsSorted({
+              text: JSON.stringify({ rows: FOUR_ROWS, },),
+            },),);
           },
         },),
         it({
@@ -895,11 +954,9 @@ await describe({
               undefined,
               2,
             ),);
-            expect(seen.written,).toBe(`${JSON.stringify(
-              { rows: [FOUR_ROWS[0],], },
-              undefined,
-              2,
-            )}\n`,);
+            expect(ballotsSorted({ text: seen.written, },),).toBe(ballotsSorted({
+              text: JSON.stringify({ rows: [FOUR_ROWS[0],], },),
+            },),);
           },
         },),
       ],

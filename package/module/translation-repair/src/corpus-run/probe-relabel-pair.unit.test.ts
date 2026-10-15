@@ -131,9 +131,42 @@ function claimLinesOf(
     readonly category: string;
   },
 ): readonly string[] {
-  return RUN_MODELS.checkerModelIds.map(function line(modelId,): string {
-    return `    ${modelId} ${admissibility} (${category})`;
-  },);
+  return RUN_MODELS.checkerModelIds
+    .map(function line(modelId,): string {
+      return `    ${modelId} ${admissibility} (${category})`;
+    },)
+    .toSorted();
+}
+
+/**
+ Printed lines with each run of claim lines (four spaces in) sorted. The probers' claims print in the order of a bench the prompt
+ rotates, which moved when the house tense rule changed the prompt, so each run is compared in one order.
+
+ @param lines - what the probe printed
+
+ @returns The lines with every run of claim lines sorted
+
+ @example
+ ```ts
+ const sorted = claimRunsSorted({ lines: ['RELABEL cat', '    b x', '    a x', ], },);
+ ```
+ */
+function claimRunsSorted({ lines, }: { readonly lines: readonly string[]; },): readonly string[] {
+  /**
+   Lines read so far, the open run of claim lines kept apart until it ends.
+   */
+  const sorted: string[] = [];
+  const run: string[] = [];
+  for (const line of lines) {
+    if (line.startsWith('    ',)) {
+      run.push(line,);
+    } else {
+      sorted.push(...run.toSorted(), line,);
+      run.length = 0;
+    }
+  }
+  sorted.push(...run.toSorted(),);
+  return sorted;
 }
 
 /**
@@ -212,7 +245,7 @@ await describe({
              */
             const heard = `heard=${String(ROSTER_SIZE,)}/${String(ROSTER_SIZE,)}`;
 
-            expect(printed.lines,).toEqual([
+            expect(claimRunsSorted({ lines: printed.lines, },),).toEqual([
               'RELABEL tabby positions=2 issuesServed=1 beforeChars=53 afterChars=15',
               '  run-recorded  corroborated=0',
               ...claimLinesOf({

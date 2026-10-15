@@ -119,6 +119,7 @@ const MARKED_CLASSES: readonly string[] = [
   'FloorGroundDisagreementError',
   'FootnoteOverflowError',
   'FootnoteRewriteError',
+  'FragmentLandingError',
   'FrontMatterCompletenessError',
   'FrontMatterParseError',
   'GenerationDriftError',
@@ -263,6 +264,9 @@ const NAMED_PARTS: Record<string, string> = {
   'wordForCount({ count: partialText.length, one: \'character\', many: \'characters\', },)':
     'noun agreeing with a count, both forms authored here',
   'String(droppedCount,)': 'count',
+  'String(slice,)': 'length of the slice a fragment lands in, in UTF-16 units',
+  'String(start,)': 'offset in the slice where a fragment\'s replaced region starts',
+  'String(end,)': 'offset in the slice where a fragment\'s replaced region ends',
   'whereCarried({ traces, },)': 'fixed clause naming slice indices whose original carries a dropped destination',
   'String(sourceDistinct,)': 'count',
   'String(pageDistinct,)': 'count',

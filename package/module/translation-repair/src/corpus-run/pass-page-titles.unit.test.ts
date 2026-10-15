@@ -483,6 +483,13 @@ await describe({
           },
         },),
         it({
+          name: 'STANDS AT VERSION TWO since the sheet of the page title reading carries the house rule that quoted words keep '
+            + 'the speaker\'s tense (n161), which a reading cached under version one was written without',
+          fn: async () => {
+            expect(PAGE_TITLE_CACHE_VERSION,).toBe(2,);
+          },
+        },),
+        it({
           name: 'IS THE SHA-256 OF ONE JSON VALUE carrying the cache version, so moving the version moves every key '
             + '(ledger M25) and no two questions share bytes (ledger X15)',
           fn: async () => {

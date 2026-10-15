@@ -1051,6 +1051,46 @@ await describe({
             expect(outcome.patchedText,).toBe('The cat’s dish stays full. It chases red butterflies.',);
           },
         },),
+
+        it({
+          name: 'READS THE REGION AS PART OF ITS SLICE: the tail of a tag with an attribute is no prose, '
+            + 'so only the apostrophe after the tag is restored',
+          fn: async () => {
+            /** Slice with a curly convention and a tag attribute whose apostrophe is no prose. */
+            const slice = 'The dogs’ bowl. <Note {...a} b="it\'s" /> It\'s here.';
+            /** Region that starts inside the tag. */
+            const region = '{...a} b="it\'s" /> It\'s here.';
+            /** Where the region starts in the slice. */
+            const startOffset = slice.indexOf(region,);
+            /** The one envelope, over the region. */
+            const envelope = {
+              envelopeId: 'envelope/landing',
+              startOffset,
+              endOffset: startOffset + region.length,
+              baseText: region,
+              baseHash: hashContent({ content: region, },),
+              issueIds: ['adjudicated/landing',],
+            };
+
+            const outcome = applyPatchOperations({
+              targetText: slice,
+              envelopes: [envelope,],
+              operations: [
+                {
+                  envelopeId: envelope.envelopeId,
+                  baseHash: envelope.baseHash,
+                  newText: '{...a} b="it\'s" /> It\'s there.',
+                },
+              ],
+              preservation: { mode: 'skip', },
+            },);
+
+            expect(outcome.applied.map(function toText(operation,): string {
+              return operation.newText;
+            },),).toEqual(['{...a} b="it\'s" /> It’s there.',],);
+            expect(outcome.patchedText,).toBe('The dogs’ bowl. <Note {...a} b="it\'s" /> It’s there.',);
+          },
+        },),
       ],
     },),
   ],

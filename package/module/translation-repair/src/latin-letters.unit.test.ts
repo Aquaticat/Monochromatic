@@ -27,6 +27,7 @@ import {
   isLatinLetter,
   isLatinLetterOrMark,
   isLatinWordCharacter,
+  isSpacedScriptWordCharacter,
   latinWordSpans,
   lowerCaseLatinWords,
 } from '../dist/final/node/index.mjs';
@@ -373,6 +374,29 @@ await describe({
           isLatinLetterOrMark({ character: '\u{FB01}', },),
           isLatinCapital({ character: '\u{1D400}', },),
         ],).toEqual([false, false, false, false,],);
+      },
+    },),
+    it({
+      name: 'ADMITS, IN THE SHOWN-WORD TEST (n159, X9), A LETTER, MARK OR DECIMAL DIGIT OF ANY SCRIPT THAT SEPARATES ITS WORDS WITH SPACES, '
+        + 'and not the signs, the unspaced scripts Han, Hiragana and Katakana, the modifier letter apostrophe, or an empty string',
+      fn: async () => {
+        expect([
+          'a',
+          'П',
+          'ω',
+          '5',
+          '\u{0663}',
+          '\u{0301}',
+          '猫',
+          'あ',
+          'カ',
+          '\u{02BC}',
+          '_',
+          '-',
+          '',
+        ].map(function admits(character,): boolean {
+          return isSpacedScriptWordCharacter({ character, },);
+        },),).toEqual([true, true, true, true, true, true, false, false, false, false, false, false, false,],);
       },
     },),
     it({

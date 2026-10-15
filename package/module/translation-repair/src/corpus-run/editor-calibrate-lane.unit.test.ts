@@ -15,14 +15,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { runEditorLane, } from '../../dist/final/node/index.mjs';
-import {
-  SEAT_BEDROCK_ONLY_TEXT,
-  SEAT_HYPER_ONLY,
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_OPENROUTER_ONLY,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-} from '../roster-seats.test-fixture.ts';
+import { SEATS_THAT_CAN_EDIT, } from '../roster-seats.test-fixture.ts';
 import { benchSliceOf, } from './editor-calibrate-rounds.test-fixture.ts';
 import { shippingLaneClient, } from './editor-lane-script.test-fixture.ts';
 import { scriptedClient, } from './scripted-width-client.test-fixture.ts';
@@ -73,24 +66,24 @@ await describe({
             },);
 
             /**
-             Seats whose text shipped, in the order the lane seats them.
+             Seats whose text shipped, in the order the lane seated them.
              */
-            const shippers = [
-              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-              SEAT_HYPER_ONLY,
-              SEAT_HYPER_OPENROUTER_UNMEASURED,
-              SEAT_BEDROCK_ONLY_TEXT,
-              SEAT_OPENROUTER_ONLY,
-            ];
+            const { editorShipped, } = rounds;
 
+            // The lane seats six editors from a bench the prompt rotates (it moved when the house tense rule changed the
+            // prompt), so which six of the seats that can hold an editor chair are seated moves with the sheet. Six distinct
+            // seats of the roster is what holds.
+            expect(new Set(editorShipped,).size,).toBe(6,);
+            expect(editorShipped.filter(function isUnseatable(modelId,): boolean {
+              return !SEATS_THAT_CAN_EDIT.includes(modelId,);
+            },),).toEqual([],);
             expect(rounds,).toEqual({
               editor: [
                 {
                   producers: [
                     {
                       kind: 'composite',
-                      contributors: shippers,
+                      contributors: editorShipped,
                     },
                   ],
                   ballots: [],
@@ -98,7 +91,7 @@ await describe({
               ],
               refiner: [],
               refineAsked: false,
-              editorShipped: shippers,
+              editorShipped,
               refinerShipped: [],
               refinerHeard: [],
             },);

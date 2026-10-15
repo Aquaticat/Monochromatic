@@ -70,12 +70,14 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  Version 14 refuses disputed archive wording and keys the dispute note.
  Version 15 carries every floor, sheet and quorum change made after 14 landed.
  Version 16 reads the typography fold and the guillemet floor from the page parse (n156).
+ Version 17 reads a shortcut reference and an address label as no prose and floors a refused candidate that carries a
+ guillemet (n159).
  These questions changed without input fields.
 
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = '0a5329f8a6c14f7f0cd6c439cba9b6dac78efebea982f0505c9e737c173c626d';
+const LEGACY_WINDOWLESS_KEY = 'a6db752857b7648baa9ecc7e2a4f7d7639c1c37815141e14b63f9037ccf04355';
 
 /**
  One slice's key, with whatever this case wants to vary.

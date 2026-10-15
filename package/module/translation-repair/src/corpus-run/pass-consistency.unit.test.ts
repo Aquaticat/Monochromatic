@@ -1311,7 +1311,11 @@ await describe({
             if (group.verdict.kind === 'asked') {
               expect(group.verdict.usable,).toBe(group.verdict.ballots.length,);
               expect(group.verdict.winner,).toEqual({ kind: 'chosen', label: 'OCCURRENCE 1', },);
-              expect(group.verdict.ballots[0],).toEqual({
+              // The ballots are listed in the order of a bench the prompt rotates, which moved when the house tense rule changed
+              // the prompt, so the ballot of the first seat asked is found by its seat and not by its position.
+              expect(group.verdict.ballots.find(function isFirstAsked(ballot,): boolean {
+                return ballot.seat === run.asked[0];
+              },),).toEqual({
                 seat: run.asked[0],
                 reason: 'The first rendering is the most faithful to the original, and the others differ in wording only.',
                 quotes: SENTENCE_QUOTES,
@@ -2969,8 +2973,15 @@ await describe({
             },);
             // The seats the script makes throw are the only findings: four judges of the first round, six writers and four
             // judges of the choice, each a lost voice, and the quorums the rest closed on.
-            expect(run.consistency.findings,).toEqual([
-              'group 1: stage-voice-lost (page-consistency inception/mercury-2.5)',
+            // The first round asks five judges from a bench the prompt rotates (it moved when the house tense rule changed the
+            // prompt), so which of the late judges the script makes throw is among the five moves with the sheet. One of them is
+            // lost, and it leads the findings.
+            expect(RUN_LATE_JUDGES
+              .slice(4,)
+              .map(function lostFirst(seat,): string {
+                return `group 1: stage-voice-lost (page-consistency ${seat})`;
+              },),).toContain(run.consistency.findings[0],);
+            expect(run.consistency.findings.slice(1,),).toEqual([
               'group 1: stage-roster-incomplete (page-consistency 4/5)',
               'group 1: stage-voice-lost (page-consistency-writers hf:moonshotai/Kimi-K3)',
               'group 1: stage-voice-lost (page-consistency-writers minimax-m3)',

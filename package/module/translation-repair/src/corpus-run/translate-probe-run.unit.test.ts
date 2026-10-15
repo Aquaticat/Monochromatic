@@ -393,15 +393,19 @@ await describe({
         },);
 
         expect(probed.refusal,).toBe('',);
-        expect(probed.lines,).toEqual([
+        // The renderings print in the order of a bench the prompt rotates (it moved when the house tense rule changed the
+        // prompt), so the lines of the two voices are compared sorted.
+        expect(probed.lines.slice(0, 5,),).toEqual([
           'TRANSLATE Mittens: source 2 blocks / 34 chars, target 0 blocks / 0 chars, coverage 0.000 (barely translated)',
           'TRANSLATE section subdivides into 1 slice; probing the first 1',
           '\n--- slice: 34 source chars, 0 target chars ---',
           'SOURCE: ## 其二：Boots\n\n猫猫每天下午都在窗台上打盹，直到太阳落下。',
           'HEARD 2/2',
+        ],);
+        expect(probed.lines.slice(5,).toSorted(),).toEqual([
           `  ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER}: The cat naps on the sill.`,
           `  ${SEAT_SYNTHETIC_VISION_WITHHELD}: The cat dozes on the sill.`,
-        ],);
+        ].toSorted(),);
       },
     },),
     it({

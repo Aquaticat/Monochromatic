@@ -17,6 +17,7 @@ import {
 
 import {
   type BenchSlice,
+  compareCodePoints,
   runBenchRow,
 } from '../../dist/final/node/index.mjs';
 import {
@@ -24,6 +25,7 @@ import {
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
+import { sortedByModelId, } from '../model-order.test-fixture.ts';
 import { translateLaneClient, } from './translate-lane-script.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
@@ -84,6 +86,26 @@ function quarterSecondClock(): { readonly now: () => number; } {
   };
 }
 
+/**
+ Orders two call summaries by the stage that asked and the model that answered, in code-point order.
+
+ @param left - the first summary: stage, model, outcome and token counts
+ @param right - the second summary
+
+ @returns Negative when the first sorts first, positive when the second does, zero for the same stage and model
+
+ @example
+ ```ts
+ const ordered = [['b', 'x',], ['a', 'y',],].toSorted(byStageAndModel); // a first
+ ```
+ */
+function byStageAndModel(left: readonly unknown[], right: readonly unknown[],): number {
+  return compareCodePoints({
+    left: `${String(left[0],)} ${String(left[1],)}`,
+    right: `${String(right[0],)} ${String(right[1],)}`,
+  },);
+}
+
 await describe({
   name: runBenchRow.name,
   concurrency: 1,
@@ -104,7 +126,15 @@ await describe({
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
-        expect(row,).toEqual({
+        // The ballots come in the order of a bench the prompt rotates (it moved when the house tense rule changed the prompt),
+        // so they are compared sorted by judge.
+        expect({
+          ...row,
+          round: {
+            ...row.round,
+            ballots: sortedByModelId({ items: row.round.ballots, },),
+          },
+        },).toEqual({
           width: 2,
           pass: 1,
           entryId: 'mittens',
@@ -137,29 +167,31 @@ await describe({
                 modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               },
             ],
-            ballots: [
-              {
-                modelId: SEAT_HYPER_VISION,
-                best: 3,
-                reason: 'scripted',
-                weight: 1,
-                selfVote: false,
-              },
-              {
-                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                best: 3,
-                reason: 'scripted',
-                weight: 0.5,
-                selfVote: true,
-              },
-              {
-                modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-                best: 3,
-                reason: 'scripted',
-                weight: 1,
-                selfVote: false,
-              },
-            ],
+            ballots: sortedByModelId({
+              items: [
+                {
+                  modelId: SEAT_HYPER_VISION,
+                  best: 3,
+                  reason: 'scripted',
+                  weight: 1,
+                  selfVote: false,
+                },
+                {
+                  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  best: 3,
+                  reason: 'scripted',
+                  weight: 0.5,
+                  selfVote: true,
+                },
+                {
+                  modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                  best: 3,
+                  reason: 'scripted',
+                  weight: 1,
+                  selfVote: false,
+                },
+              ],
+            },),
           },
           candidateCount: 3,
           heardTranslators: 2,
@@ -169,6 +201,8 @@ await describe({
           ],
           ms: 250,
         },);
+        // Within one stage the calls come in the order of a bench the prompt rotates (it moved when the house tense rule changed
+        // the prompt), so the calls are compared sorted by stage and model.
         expect(calls.map(function summary(call,): readonly unknown[] {
           return [
             call.schema,
@@ -178,7 +212,7 @@ await describe({
             call.completionTokens,
             call.tokens,
           ];
-        },),).toEqual([
+        },).toSorted(byStageAndModel,),).toEqual([
           [
             'translation_report',
             SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -219,7 +253,7 @@ await describe({
             0,
             0,
           ],
-        ],);
+        ].toSorted(byStageAndModel,),);
       },
     },),
 

@@ -99,6 +99,15 @@ await describe({
         },),
 
         it({
+          name: 'ANSWERS THE PINNED KEY for the base question, so a change to the version, the shape or the '
+            + 'fields moves it on purpose (the version moved from 6 to 7 with the n159 readers: a stored refinement '
+            + 'was decided by quote and word-edge readers that changed)',
+          fn: async () => {
+            expect(refineSliceKey(BASE,),).toBe('5c860d23641bafd7681e8616c8540db8641e04d3416c2f829e3168fe2493681c',);
+          },
+        },),
+
+        it({
           name: 'MOVES WHEN THE DEFINITIONS MOVE, which is what separates this key '
             + 'from the accuracy pass\'s own. Definitions come from the whole '
             + 'assembled document, so a neighbouring slice settling differently '
