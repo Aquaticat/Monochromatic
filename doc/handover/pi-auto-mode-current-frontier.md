@@ -9,6 +9,29 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+The latest user instruction is to stop this agent's cleanup once Pi is functional,
+then draft a prompt for MiMo v2.6 Pro to continue lint fixes.
+The Shift+Tab regression is repaired through `775efbc86c`,
+with formatting in `5e40bca7c4`.
+The built native bootstrap now registers `shift+tab`.
+The built native bypass consumer passes enabled execution of a producer and parallel children,
+zero policy assessments in bypass,
+disabled-mode prohibition,
+reload restoration,
+visible status,
+audit entries,
+and the fixed virtual-input guard in both modes.
+Native and maintained builds plus package type checking pass.
+The installed command resolves to this rebuilt native host;
+an already-running Pi process needs a restart to acquire the changed runtime.
+Physical keyboard delivery in that running terminal has not been exercised.
+The lint queue remains paused for this agent.
+Use [the MiMo handoff prompt](pi-auto-mode-mimo-lint-prompt.md) for the next cleanup session.
+The warning counts in the historical entries are measurements of their named commits,
+not a recount after the bypass repair.
+
+### Historical regression and cleanup evidence
+
 User-reported regression takes priority over the warning cleanup:
 the native migration lost the Shift+Tab bypass toggle.
 `mise run probe-native-bypass` in `${HOME}/temp/agent/pi-tool-call-scope-20261014`
@@ -20,7 +43,8 @@ The legacy entry point owns the toggle,
 while native resource construction only captures its API and does not register a replacement.
 The prior blanket statement that Pi is functional is retracted for interactive feature parity.
 The provider and approval checks remain valid within their tested surfaces.
-No bypass restoration has been applied.
+At the initial diagnosis no bypass restoration had been applied;
+the active-work section records its subsequent repair.
 See the Shift+Tab section in `doc/troubleshooting/pi-sdk-staging.md` for reproduction and source evidence.
 The native replacement must preserve explicit bypass behavior,
 the fixed virtual-input guard,

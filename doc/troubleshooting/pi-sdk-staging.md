@@ -38,7 +38,8 @@ for (const declaration of legacy) {
   await spawn(process.execPath, [join(packageRoot, 'dist/native/cli.mjs'), 'remove', source, '--no-approve'], {
 ```
 
-The replacement resource factory only captures the extension API in
+Before the repair,
+the replacement resource factory only captured the extension API in
 `package/pi-plugin/auto-mode/native/contract/integration/native-host/resources.ts:97`:
 
 ```ts
@@ -82,7 +83,7 @@ it does not test physical keyboard input in the user's running terminal.
 
 ### Workarounds and rejected conclusions
 
-No workaround or restoration has been applied or verified.
+At initial diagnosis no workaround or restoration had been applied or verified.
 Changing the user's thinking-cycle binding is not supported by the evidence:
 it is already on Ctrl+E.
 Simply displaying a toggle would not restore its execution semantics.
@@ -92,7 +93,51 @@ retains explicit user control and the fixed virtual-input guard.
 Those behaviors,
 session restoration,
 audit entries,
-and visible status need verification when restoring the feature.
+and visible status were required restoration checks.
+
+### Repair and verification on 2026-10-15
+
+The native resource factory now calls `registerNativeBypass(pi)` immediately after capturing its API.
+`src/native-bypass.ts` restores the original shortcut,
+branch-backed toggle entries,
+session status,
+allow audit entries,
+and fixed virtual-input guard.
+The native batch handler captures explicit bypass before dispatch,
+retains prepared execution ownership,
+and skips semantic assessment without issuing a policy verdict.
+It rejects revocation at its freshness boundaries.
+
+The first execution test exposed an additional integration failure:
+`PolicySlotBindingError: Native extension event callbacks changed after source capture`.
+The new audit callback changed the event observation during nested execution.
+Commit `775efbc86c` uses the existing retained-source lifecycle for both resolved approval and explicit bypass,
+renamed `retainExecutionSources` to describe its actual responsibility.
+The collector still validates original dependencies and append-only receipt growth.
+The bypass test asserts that `lastReview` remains undefined.
+
+The maintained build,
+native build,
+package `lint:types`,
+and `test:native:bypass` pass.
+The built integration consumer runs a producer and parallel children in a disposable native session:
+
+```json
+{"complete":true,"shortcut":true,"bypassExecutions":3,"bypassAssessments":0,"disabledRestoresProhibition":true,"audit":true,"status":true,"reload":true,"fixedGuard":true}
+```
+
+The original built-bootstrap probe now reports:
+
+```json
+{"positiveControl":["shift+tab","shift+tab"],"currentNativeHost":["shift+tab"]}
+```
+
+The duplicate control registration is the injected control plus the restored built-in registration.
+The installed command uses the rebuilt native artifact.
+An existing Pi process retains its old runtime until restarted;
+extension reload alone does not replace that runtime.
+These checks exercise native shortcut registration and its actual handler,
+not physical keyboard delivery in the user's running terminal.
 
 ### Upstream filing decision
 
