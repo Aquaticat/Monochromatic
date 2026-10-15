@@ -132,6 +132,7 @@ export function createProgramRuntimeFixture(): ProgramRuntimeFixture {
         return site.group === ordinal; 
       })
         .map(function reachedMember(site) {
+        /** Original member arguments distinguish source callsites by identity and content. */
         const args = Object.freeze({ site: site.alias });
         return Object.freeze({
           ...site,
@@ -309,9 +310,11 @@ export function createProgramRuntimeFixture(): ProgramRuntimeFixture {
       );
       calls.push(call);
       step('dispatch');
+      /** Exact original group handle selects independently controlled native outcomes. */
       const ordinal = views.findIndex(function originalHandle(view) { 
         return view.handle === call.handle; 
       });
+      /** Every declared group has its own controlled completion transport. */
       const groupTickets = tickets[ordinal];
       assert.ok(groupTickets);
       return groupTickets.map(function completion(ticket) { 
@@ -338,6 +341,7 @@ export function createProgramRuntimeFixture(): ProgramRuntimeFixture {
    @returns original published program tool
    */
   function tool(index = 0): RuntimeFixtureTool {
+    /** Read the published tool without reconstructing its owned identity. */
     const selected = run.tools[index];
     assert.ok(selected);
     return selected;
@@ -348,10 +352,13 @@ export function createProgramRuntimeFixture(): ProgramRuntimeFixture {
    @returns original native transport result
    */
   async function invoke(index = 0): Promise<unknown> {
+    /** Source membership selects original arguments and cancellation context. */
     const site = sites[index];
+    /** Native signal belongs to this source member rather than the runtime parent. */
     const controller = native[index];
     assert.ok(site);
     assert.ok(controller);
+    /** Invocation reuses the exact declared argument object. */
     const args = views[site.group]
       ?.members[site.ordinal]
       ?.args;
@@ -367,6 +374,7 @@ export function createProgramRuntimeFixture(): ProgramRuntimeFixture {
    @returns independently controlled original native completions
    */
   function completions(ordinal = 0): readonly PromiseWithResolvers<unknown>[] {
+    /** Tests settle only the transport belonging to the requested source group. */
     const selected = tickets[ordinal];
     assert.ok(selected);
     return selected;

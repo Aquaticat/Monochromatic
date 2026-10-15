@@ -226,16 +226,16 @@ export function createRuntimeLifetimeFixture(): RuntimeLifetimeFixture {
     /**
      Entry retains the exact original callback owner and mutable inspection object.
      */
-    const entry = {
+    const registered = {
       run,
       inspection,
       state
     };
     reached.set(
       ordinal,
-      entry
+      registered
     );
-    return entry;
+    return registered;
   }
   /** Read one independently registered original group.
    @param ordinal - original source group ordinal
@@ -243,11 +243,14 @@ export function createRuntimeLifetimeFixture(): RuntimeLifetimeFixture {
    @returns exact fixture-owned entry
    */
   function entry(ordinal: number): RuntimeLifetimeEntry {
+    /** Independently registered entry must exist before a test reads its callbacks. */
     const result = reached.get(ordinal);
     assert.ok(result);
     return result;
   }
-  add(7);
+  /** First source ordinal deliberately differs from insertion position and sorted order. */
+  const firstSourceOrdinal = 7;
+  add(firstSourceOrdinal);
   add(2);
   /**
    Original judgment methods preserve their receiver and exact program argument.
@@ -265,6 +268,7 @@ export function createRuntimeLifetimeFixture(): RuntimeLifetimeFixture {
       marked.push(input);
       events.push('mark');
       if (control.throwAt === 'mark') throw control.failure;
+      /** Each retained failure receives a distinct fixture-owned guard identity. */
       const guard = new Error(`original guard ${guards.length}`);
       guards.push(guard);
       return guard;
