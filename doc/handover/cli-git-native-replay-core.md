@@ -158,9 +158,9 @@ Resumed on 2026-10-15 (user: the named work is to be done, not listed). The bran
 137 binary and 1 consumer test and Clippy clean.
 The mutation campaign runs as the systemd user unit `cli-git-replay-campaign` (driver
 `~/temp/agent/replay-campaign-20261015.ts`, status `~/temp/agent/replay-campaign.status` ending with `campaign done`,
-logs `~/temp/agent/replay-mutation-P1.log` to `-P4.log`), started 2026-10-15 09:56 EDT with `--timeout 300` (the task
-accepts it now). Lanes: P1 `replay_patch`, P2 `replay_reverse_apply`, P3 containment, object, capture order,
-reservation and shared paths, P4 the other seven files. Each lane uses its own image tag `replayP1` to `replayP4`,
+logs `~/temp/agent/replay-mutation-P1.log` to `-P5.log`), restarted 2026-10-15 10:06 EDT (the first start had one lane with 189 of 429 mutants) with `--timeout 300` (the task
+accepts it now). Lanes: P1 `replay_patch`, P2 `replay_reverse_apply`, P3 containment, capture order and shared paths,
+P5 object and reservation, P4 the other seven files. Each lane uses its own image tag `replayP1` to `replayP5`,
 aliases of the gate image `replayG`. Read every MISSED or TIMEOUT line when it ends; kill each with a test shown to
 fail on the mutant, or justify it from the code.
 
