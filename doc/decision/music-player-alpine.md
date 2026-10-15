@@ -240,12 +240,16 @@ never a person's own files.
 
 Unit tests inside Alpine:
 `cargo nextest run --features alsa-fallback`,
-1410 run,
-1410 passed,
-1 skipped.
-The host baseline on glibc is 1406 passed,
+1448 run,
+1448 passed,
 1 skipped,
-before the four tests this change adds.
+on x86_64 and on aarch64 (native runner) in CI,
+and 1410 passed on the first local run before main's newer tests merged.
+The host run on glibc (`mise run //package/music-player/desktop-app:test`,
+after merging main) passes 1447 with the
+same 1 skipped;
+the one extra test on Alpine is the one in `src/output_linux_tests.rs`,
+which exists only with `alsa-fallback`.
 The notification tests need `dbus-daemon` (apk `dbus`) and the UI tests need a font.
 
 ### The compositor needed no change
@@ -286,62 +290,162 @@ Each architecture runs natively (`ubuntu-latest` and `ubuntu-24.04-arm`) and:
    a non-blank screenshot,
    and the audio line for that scenario.
 
-Caching:
-`CARGO_HOME`,
-the app target directory and the compositor target directory are bind-mounted from
-`.ci-cache`,
-restored with `actions/cache/restore` and saved with `actions/cache/save`,
-only from runs on main or
-manual dispatch.
-The key is the runner architecture,
-the Alpine `rustc` version with a hash of the `-dev` package versions,
-and the
-two lockfile hashes.
-The restore key is the same without the lockfile hash,
-so a changed lockfile rebuilds only the crates that changed.
-`CARGO_INCREMENTAL=0` and `CARGO_PROFILE_DEV_DEBUG=0` keep the entries lean.
-The local equivalent is `mise run //package/music-player/desktop-app:test:alpine`.
+### Caching
+
+The guard caches,
+and the cache was proven on GitHub,
+not assumed.
+`CARGO_HOME` (registry and git),
+the app target directory and the compositor target directory are bind-mounted from `.ci-cache`,
+restored with `actions/cache/restore` and saved with `actions/cache/save`
+(both pinned to the repository's SHA `27d5ce7f107fe9357f9df03efb73ab90386fccae`).
+
+- The key is `music-player-alpine-<runner arch>-<rustc version and a hash of the -dev package versions>-<hash of the
+  two Cargo.lock files>`.
+  The restore key is the same without the lockfile hash,
+  so a changed lockfile restores the newest entry of the same architecture and toolchain and rebuilds only the
+  crates that changed.
+- Only pushes to main and manual dispatches save;
+  a pull request restores and never saves.
+  A run that restored the exact key saves nothing.
+- Entries stay lean:
+  `CARGO_INCREMENTAL=0` and `CARGO_PROFILE_DEV_DEBUG=0` leave no incremental directories and no debug info,
+  and a trim step deletes what the next run rebuilds anyway
+  (the unpacked registry sources,
+  and the outputs of the player,
+  `truepeak-core` and the compositor).
+  The trim took the x86_64 entry from 1,134,955,562 to 948,893,157 bytes.
+- The family is listed in `.github/workflows/cache-prune.yml` (`music-player-alpine-<arch>`),
+  so only the newest entry per architecture and ref stays.
+  The largest part is the debug build of the `turso` crates (about 400 MB of static and shared libraries),
+  so the entry stays above the 650 MB guide in `doc/decision/ci-caching.md`;
+  the pair costs about 1.9 GB of the repository cap,
+  which that document's budget now lists.
+- The local equivalent is `mise run //package/music-player/desktop-app:test:alpine`.
+
+Measured on branch pushes of 2026-10-15 (the repository cap is 10 GB):
+
+- Cold,
+  key missed on both architectures (run 38678771471,
+  attempt 2):
+  x86_64 16 min 50 s (nextest 9 min 25 s,
+  compositor 5 min 19 s),
+  aarch64 11 min 9 s (nextest 5 min 56 s,
+  compositor 3 min 11 s).
+  Entries saved:
+  X64 948,893,157 bytes,
+  ARM64 928,035,774 bytes.
+- Warm,
+  same lockfiles (the same run,
+  attempt 3):
+  both jobs logged `Cache hit for:` (exact key) and saved nothing.
+  Restore took 18 s (x86_64) and 13 s (aarch64).
+  x86_64 5 min 35 s (nextest 2 min 38 s,
+  app 37 s,
+  compositor 39 s),
+  aarch64 5 min 11 s (nextest 2 min 35 s,
+  app 37 s,
+  compositor 34 s).
+  Only the three path crates recompiled.
+- Lockfile change (run 38677516601,
+  before the trim step existed):
+  one transitive dependency (`crossbeam-utils`) was bumped in the compositor's `Cargo.lock`.
+  The exact key missed,
+  the log read `Cache hit for restore-key:`,
+  and cargo rebuilt only that crate,
+  `crossbeam-channel` and the path crates.
+  The bump was reverted afterwards.
+- Merge of main with an unchanged lockfile (run 38678226939) was an exact hit on both architectures,
+  x86_64 5 min 54 s and aarch64 5 min 12 s.
+- The first dry run failed (run 38675162941) because the Ubuntu 24.04 runners ship podman 4.9.3,
+  whose builder reads each line of a Containerfile heredoc as an instruction (`Unknown instruction`).
+  The smoke script in `Containerfile.alpine` is therefore written with `printf`,
+  one argument per line.
 
 ## Release artifact the release workflow should add
 
-A separate release workflow (`.github/workflows/music-player-release.yml`,
-not edited here) should add an Alpine job
-next to the glibc Linux job.
-Artifact names:
-`music-player-<version>-linux-musl-x86_64.tar.gz` and `music-player-<version>-linux-musl-aarch64.tar.gz`,
-where `<version>` is the `version` in `package/music-player/desktop-app/Cargo.toml`.
-Each archive holds one directory of the same name containing `music-player` and the license texts from `LICENSES`.
+`.github/workflows/music-player-release.yml` belongs to another change and was not edited here.
+Its job `build-desktop` builds glibc tarballs `music-player-<version>-linux-x64.tar.gz` and
+`music-player-<version>-linux-arm64.tar.gz`
+(`doc/decision/music-player-releases.md`).
+Alpine needs two more assets from a job that runs once per architecture,
+named to match that scheme:
+
+- `music-player-<version>-linux-musl-x64.tar.gz` on `ubuntu-24.04`,
+- `music-player-<version>-linux-musl-arm64.tar.gz` on `ubuntu-24.04-arm`.
+
+Each archive has the layout of the glibc one
+(`bin/music-player`,
+the launcher file,
+the icon,
+`LICENSE`,
+`INSTALL.txt`),
+with an `INSTALL.txt` that names the Alpine packages and the musl requirement.
+The workflow artifact is `asset-linux-musl-<arch>`,
+so the existing `asset-*` download picks it up,
+and the expected list in the `SHA256SUMS` job gains the two names.
 
 Job steps,
-run once per architecture on `ubuntu-latest` (x86_64) and `ubuntu-24.04-arm` (aarch64),
-with
-`permissions: contents: read, id-token: write, attestations: write`:
+with `permissions: contents: read, id-token: write, attestations: write` and the `VERSION` of the `detect` job:
 
 1. Checkout with `actions/checkout`,
    `persist-credentials: false`.
-2. Build the image:
-   `podman build --target build --tag music-player-alpine-build --file package/music-player/desktop-app/Containerfile.alpine "$(mktemp -d)"`.
-3. Build in the container with the shipping profile (thin LTO,
-   stripped) and the feature:
-   `podman run --rm --memory=12g --cpus=4 --security-opt label=disable --volume "$PWD/package/music-player:/src:ro"`
-   `--volume "$RUNNER_TEMP/cargo:/cargo" --volume "$RUNNER_TEMP/target:/target" --env CARGO_HOME=/cargo`
-   `--env CARGO_TARGET_DIR=/target --env SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 --workdir /src/desktop-app`
-   `music-player-alpine-build cargo build --release --locked --features alsa-fallback`.
-4. Verify the libraries,
-   not just the link:
-   build the `runtime` stage
-   (`podman build --target runtime --tag music-player-alpine-runtime ...`) and run
-   `music-player --version` in it with the binary bind-mounted,
-   which fails if the runtime package list is short.
-5. Optionally run the smoke test (the `smoke` image) against the release binary.
-6. Package:
-   copy the binary and `package/music-player/desktop-app/LICENSES/*` into
-   `music-player-<version>-linux-musl-<arch>/`,
-   then `tar --create --gzip --file music-player-<version>-linux-musl-<arch>.tar.gz`.
-7. Attest with `actions/attest-build-provenance`,
-   `subject-path` the tarball.
-8. Upload with `actions/upload-artifact`,
-   name `music-player-<version>-linux-musl-<arch>`.
+2. Build the images from the repository's `Containerfile.alpine`:
+
+   ```sh
+   # the release job, per architecture
+   context="$(mktemp -d)"
+   podman build --target build --tag music-player-alpine-build \
+     --file package/music-player/desktop-app/Containerfile.alpine "$context"
+   podman build --target runtime --tag music-player-alpine-runtime \
+     --file package/music-player/desktop-app/Containerfile.alpine "$context"
+   ```
+
+3. Build with the shipping profile and the feature.
+   There is no `--target` option because Alpine's host triple is already the musl one:
+
+   ```sh
+   # the release job, per architecture
+   mkdir --parents "$RUNNER_TEMP/cargo" "$RUNNER_TEMP/target"
+   podman run --rm --memory=12g --cpus=4 --security-opt label=disable \
+     --volume "$PWD/package/music-player:/src:ro" \
+     --volume "$RUNNER_TEMP/cargo:/cargo" --volume "$RUNNER_TEMP/target:/target" \
+     --env CARGO_HOME=/cargo --env CARGO_TARGET_DIR=/target \
+     --env SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 --workdir /src/desktop-app \
+     music-player-alpine-build \
+     cargo build --release --locked --features alsa-fallback
+   ```
+
+4. Check the libraries,
+   not only the link.
+   The `runtime` image holds exactly the packages listed above,
+   so this fails if that list is short:
+
+   ```sh
+   # the release job, per architecture
+   podman run --rm --security-opt label=disable \
+     --volume "$RUNNER_TEMP/target/release/music-player:/usr/local/bin/music-player:ro" \
+     music-player-alpine-runtime music-player --version
+   ```
+
+   The output must equal `music-player ${VERSION}`,
+   as the glibc job checks.
+   The release binary also passed `--version` and all three smoke scenarios in a local run;
+   the job may add the scenarios by running `music-player-smoke` in the `smoke` image.
+5. Package like the glibc job (fixed order,
+   owner and timestamps),
+   with the stage name `music-player-${VERSION}-linux-musl-${ARCH}`,
+   and `ARCH` equal to `x64` or `arm64`.
+6. Attest the tarball with `actions/attest-build-provenance`,
+   then upload it with `actions/upload-artifact` under the name `asset-linux-musl-${ARCH}`.
+
+The release binary measured 54 MB.
+On a local run with 8 cpus the final crate compile (thin LTO) took 5 min 28 s after the dependencies were built.
+A full cold release build on a 4 vCPU runner was not timed.
+If the job caches `$RUNNER_TEMP/target` and `$RUNNER_TEMP/cargo`,
+its key should start with `music-player-alpine-release-` and `.github/workflows/cache-prune.yml` then needs the
+matching `FAMILIES` pattern,
+because the existing Alpine pattern does not match that prefix.
 
 The release notes should say:
 needs Alpine 3.24 or newer on musl,
@@ -379,8 +483,12 @@ the ARM crypto extension (see the consequences).
   Alpine creates it with `elogind` or by hand:
   `mkdir -p /tmp/xdg-runtime && chmod 700 /tmp/xdg-runtime` and export it.
 - `cargo clippy` on Alpine's stable 1.96.1 reports `manual_range_contains` in `src/oklch.rs`,
-  a rule the repository's nightly host toolchain does not flag;
-  the Alpine guard therefore runs tests and builds,
+  which the repository's nightly host clippy (`mise run //package/music-player/desktop-app:lint:clippy`) does not
+  flag:
+  that task finished with no finding on 2026-10-15.
+  The two compilers disagree and the behavior of the flagged code differs for NaN,
+  so the Alpine guard runs tests,
+  builds and the smoke test,
   not clippy,
   and the lint was not loosened.
 - Not verified:

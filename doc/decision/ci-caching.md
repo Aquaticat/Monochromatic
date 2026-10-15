@@ -98,6 +98,10 @@ also evicts an entry unread for 7 days. The steady state below keeps the newest 
 - `music-player-release.yml`: about 4.0 GB, as reported by its author (seven entries of 387 MB to 651 MB).
 - The Windows music player workflow: four entries of about 610 MB plus msys2 entries of about 69 MB, about 3 GB if each
   family keeps one entry.
+- `music-player-alpine.yml`: two entries (x86_64 and aarch64) of 949 MB and 928 MB, about 1.9 GB.
+  They exceed the 650 MB guide because the debug build of the `turso` crates alone holds about 400 MB of libraries;
+  the entry is already trimmed of the registry sources and of every output of this repository's own crates.
+  `doc/decision/music-player-alpine.md` has the measurements.
 
 That sums to about 9 GB with no headroom, so the rules for large entries below are binding.
 
