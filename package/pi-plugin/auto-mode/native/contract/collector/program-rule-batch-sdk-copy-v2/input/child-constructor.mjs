@@ -17,6 +17,7 @@ import {createJudgmentExecutions} from './execution-owner.ts';
 import {createJudgmentLifecycle} from './judgment-lifecycle.ts';
 import {captureJudgmentMembership} from './judgment-membership.ts';
 import {createJudgmentPreparation} from './judgment-preparation.ts';
+import {createJudgmentInspection} from './judgment-inspection.ts';
 
 //region Fixed session-bound creator; all inputs come from the owned native JSON/prepared-member profile.
 /** Bind one native consumer to source/root/file observers, fixed catalog and owned transport dependencies. */
@@ -147,22 +148,12 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       childGroups,
       operation
     });
-    function preparedMemberFor(member){
-      const record=knownMember(member);
-      assertDependenciesCurrent();
-      parentCurrent(record);
-      return Object.freeze({
-        prepared:record.prepared,
-        signal:record.effectiveSignal,
-        programInspection:record.preparedProgram?.view
-      });
-    }
-    function originalFileFor(member){
-      ready();const record=knownMember(member);parentCurrent(record);
-      return facade.originalFile({handle:preparation.state.handle,absolutePath:record.prepared.input.path});
-    }
-    function memberExecutionStates(){return Object.freeze([...byMember.entries()].map(function readExecutionState([id,handle]) { return (Object.freeze({id,state:bindings.get(handle).execution?.state??'unentered'})); }));}
-    function inspect(){return Object.freeze({prepared:preparation.state.prepared,preparationFailed:preparation.state.preparationFailed,preparationFailure:preparation.state.preparationFailure,finished:lifecycle.state.finished,closeFailed:lifecycle.state.closeFailed,accounting:budget.diagnostics(),finalRecord:lifecycle.state.finalRecord,memberExecutions:memberExecutionStates(),preparedPrograms:Object.freeze([...byMember.values()].flatMap(function readPreparedProgramView(member) {const inspection=bindings.get(member).preparedProgram;return inspection?[inspection.view]:[];})),rootPrograms:Object.freeze([...byMember.values()].flatMap(function readRootProgramView(member) {const record=bindings.get(member);return record.program?[inspectProgram(record.program.handle)]:[];})),childGroups:Object.freeze(childGroups.map(function inspectChildGroup(group) { return (inspectReachedGroup(group.handle)); }))});}
+    const {preparedMemberFor,originalFileFor,inspect}=createJudgmentInspection({
+      preparation:preparation.state,lifecycle:lifecycle.state,budget,byMember,bindings,childGroups,
+      knownMember,assertDependenciesCurrent,parentCurrent,ready,
+      originalFile(input){return facade.originalFile(input);},
+      inspectProgram,inspectReachedGroup
+    });
     /** Retain the original synchronous operation guard for one-input public methods. */
     function guardWithInput(run) {
       return function invokeJudgmentOperation(input) {
