@@ -87,57 +87,35 @@ Character,
 line,
 and column coordinates are intentionally absent because policies inspect exact bytes.
 
-A patch is valid only when all conditions hold:
+A fix is a correction and not a diff:
+the repository path,
+the file mode (which the fix keeps),
+the bytes the policy read,
+and the complete bytes the file should hold.
+The retired TypeScript wrapper carried a textual unified Git diff and applied it with `git apply --cached --3way`;
+the native engine already holds the corrected bytes, so it writes them directly.
+A commit transaction stores them with `git hash-object -w --stdin` and points the private index entry at the blob with
+`git update-index --add --cacheinfo`;
+a direct fix writes the worktree file.
+The patch parser and applier modules (`policy_patch.rs`, `policy_patch_validate.rs`) remain in the crate but nothing in
+the executable calls them.
+A correction that the private index cannot take is a failure of the pass and names its path.
+The engine does not compare a correction's bytes with the candidate's:
+a pass counts as changed only when its resulting state differs from the preceding state
+(see "Whole-sequence fixing").
 
-- trigger is `pre-forward` or `direct-fix`;
-- finding has `path`;
-- patch path equals finding path;
-- patch target ID identifies the same mutable candidate and path;
-- revision is absent;
-- patch bytes are one textual unified Git diff;
-- old and new paths resolve to exactly the candidate path;
-- no rename,
-  copy,
-  mode change,
-  submodule,
-  binary patch,
-  absolute path,
-  traversal,
-  or second path is present;
-- applying with Git three-way semantics changes bytes;
-- resulting candidate remains a regular or executable file;
-- direct fix preserves the original file mode.
-
-`trackedFiles` lists index entries of the lifecycle's current candidate state that match Git pathspecs,
-glob magic included,
-with their `HEAD` counterparts;
-inside a commit transaction the counterpart is the recorded preparation base,
-not live `HEAD`.
-Commit transactions read the private commit index,
-add and direct lifecycles read their private projection,
-and post-commit and manual-push lifecycles return no tracked files.
-Bytes load through one lazy batch.
-
-A patch whose target ID names a tracked file that is not a candidate adds that path to the commit.
-It is valid only when,
-in addition to the candidate rules:
-
-- the lifecycle is a commit transaction outside read-only selection;
-- the real index captured at invocation,
-  the private commit index,
-  and the preparation base hold the same ordinary blob and mode for the path;
-- the worktree copy is a regular file whose bytes and executable bit match that blob.
-
+A correction for a tracked file that the fix did not select (an added path) exists only for a direct fix.
+It is valid only when `HEAD` holds the file as an ordinary file with the blob the correction was computed against,
+the real index holds that same blob with `HEAD`'s mode,
+and the worktree copy is a regular file whose bytes and executable bit match that blob.
 Otherwise the engine exits `2` with `patch-conflict`,
 naming the path,
 which state differs,
 and the remedies:
-stage the path so the fix applies to the staged copy,
-or restore it to match `HEAD`.
-A tracked target naming a candidate path at the candidate's exact revision applies as that candidate.
-
-A patch that applies but produces identical bytes is invalid rather than a convergence change.
-Patch validation failure exits `2` and identifies the policy and path without echoing patch bytes.
+include the path in the fix pathspecs so the fix applies to its worktree copy,
+or restore it to match `HEAD` (`git restore --staged --worktree -- <path>`).
+A commit transaction journals only the paths it selected:
+its records carry an empty list of added paths.
 
 ## Configuration validation
 
@@ -686,7 +664,8 @@ The built-in order is
 `require-root`,
 `linked-worktree-only`,
 `branch-worktree-only`,
-then `add-explicit`.
+`add-explicit`,
+then `final-newline`.
 The transform order is atomic push,
 commit only,
 then status hints off.
@@ -705,7 +684,7 @@ A pass begins with one exact candidate state.
 Later policies see earlier patches.
 Any changed candidate makes every finding in that pass provisional and restarts the complete order.
 
-The engine retains up to eight candidate states in private temporary storage.
+The engine retains the initial candidate state and up to eight changed states in private temporary storage.
 States serialize as ordered entries of repository path,
 mode,
 revision identity,
@@ -716,7 +695,8 @@ After each pass:
 
 - exact equality with the preceding state means stable;
 - exact equality with any non-adjacent retained state means cycle failure;
-- a changed eighth pass means pass-limit failure;
+- after eight changed passes the engine runs one more pass:
+  it settles when that pass proposes nothing and is a pass-limit failure when it still proposes a change;
 - otherwise start the next pass at the first built-in policy.
 
 Stable warning-only or clean state exits `0` when Git does not run.
