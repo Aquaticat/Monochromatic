@@ -30,6 +30,10 @@ transcript investigation was stopped.
   prefer the USD $20 Developer plan if it fits without excessive inconvenience.
   Compare Developer with GitHub routing and selective overage before recommending Startup.
   No subscription or billing change is authorized by this preference.
+  The user then clarified that the current seven-day trial is still on Startup
+  and explicitly wants the evaluation to use its available resources freely.
+  Do not constrain trial coverage to Developer allowances;
+  evaluate future monthly placement separately from current trial execution.
   The time-value objective now guides latency tradeoffs;
   no absolute wait threshold has been chosen.
 - The user confirmed that the music-player release taking about 24 minutes is a relevant example.
