@@ -83,20 +83,15 @@ jobs:
           flavor: msvc
           nextest-target: aarch64-pc-windows-msvc
           nextest-sha256: e8b2681657565435b95caf029512cb9e5782db13ad908ca02b1828b92b579dda
+        # UCRT64 is the MSYS2 environment its documentation recommends (MINGW64 is deprecated since 2026-03-15). A
+        # MINGW64 job was run alongside it for four runs and passed the same tests with an msvcrt.dll-only import table;
+        # the measured imports of both are in doc/decision/music-player-windows-linkers.md.
         - name: gnu-x64-ucrt64
           runner: windows-2025
           target: x86_64-pc-windows-gnu
           flavor: gnu
           msystem: UCRT64
           msys-dir: ucrt64
-          nextest-target: x86_64-pc-windows-msvc
-          nextest-sha256: bef17504bed9d4994cf860c122e84a90d613b92e6d89584fa9e28bd53ad42e15
-        - name: gnu-x64-mingw64
-          runner: windows-2025
-          target: x86_64-pc-windows-gnu
-          flavor: gnu
-          msystem: MINGW64
-          msys-dir: mingw64
           nextest-target: x86_64-pc-windows-msvc
           nextest-sha256: bef17504bed9d4994cf860c122e84a90d613b92e6d89584fa9e28bd53ad42e15
     runs-on: ${{ matrix.runner }}
@@ -364,6 +359,29 @@ jobs:
           exit 1
         fi
         head -n 40 "${RUNNER_TEMP}/launch.log"
+
+    # TEMP proof, removed before merge: the release profile (thin LTO) through GNU ld.
+    - name: Build the release binary (TEMP)
+      if: ${{ matrix.flavor == 'gnu' }}
+      working-directory: package/music-player/desktop-app
+      run: |
+        set -euo pipefail
+        cargo build --release --locked --target "$TARGET"
+        ls -la "target/${TARGET}/release/music-player.exe"
+        "target/${TARGET}/release/music-player.exe" --version
+        python -m pip install --disable-pip-version-check --quiet pefile==2024.8.26
+        python - "target/${TARGET}/release/music-player.exe" <<'PYTHON'
+        import sys
+        import pefile
+        pe = pefile.PE(sys.argv[1], fast_load=True)
+        pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IMPORT"], pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT"]])
+        names = sorted({entry.dll.decode().lower() for attribute in ("DIRECTORY_ENTRY_IMPORT", "DIRECTORY_ENTRY_DELAY_IMPORT") for entry in getattr(pe, attribute, [])})
+        print("release linker version:", pe.OPTIONAL_HEADER.MajorLinkerVersion, pe.OPTIONAL_HEADER.MinorLinkerVersion)
+        print("release imported DLLs:", ", ".join(names))
+        bad = [n for n in names if n.startswith(("libgcc_s", "libwinpthread", "libstdc++"))]
+        if bad:
+            raise SystemExit(f"MinGW runtime DLLs needed: {bad}")
+        PYTHON
 
     - name: Run the tests (cargo nextest)
       working-directory: package/music-player/desktop-app

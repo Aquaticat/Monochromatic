@@ -315,6 +315,12 @@ fn peak_reports_for(reports: &Arc<Mutex<Vec<SweepReport>>>, name: &str) -> usize
         .sum();
 }
 
+// What:     Two overlapping sweeps of one load decode each track once: the shared claims leave a track to whichever sweep took it.
+// Why:      A report with a peak is either a decode or a peek at the cache. The sweep that is not quiet peeks the cache once,
+//           before its workers start, and reports every hit. If the quiet sweep had already stored a track by then (a thread
+//           that starts late, as on a loaded Windows runner, does that), the track was reported twice for one decode and the
+//           count below was 2. The quiet sweep is therefore started only after the first sweep has finished its peek (its
+//           first progress report comes right after it), so the cache is empty at the peek and every report is a decode.
 #[test]
 fn two_sweeps_of_one_load_decode_a_track_only_once() {
     let path = temp_cache("claims");
@@ -336,6 +342,12 @@ fn two_sweeps_of_one_load_decode_a_track_only_once() {
             announce: Vec::new(),
             refresh_id: None,
         });
+        if !quiet {
+            assert!(
+                wait_for(20, || return reports.lock().unwrap_or_else(PoisonError::into_inner).iter().any(|report| return matches!(report, SweepReport::Progress { .. }))),
+                "the first sweep finished its peek and began"
+            );
+        }
     }
     assert!(wait_for(20, || return final_progress_seen(&reports, tracks.len())), "the sweep of the load finished");
     thread::sleep(Duration::from_millis(1_000));

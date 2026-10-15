@@ -415,6 +415,11 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   resumed. Their work is committed; check `git log` before relaunching anything.
 - Never verified: a real Plasma session, macOS, Windows, real Android hardware, Android API 33 to 36 for D107 and for
   the D123 failure notification (its device pass ran on the API 37 emulator only).
+- Windows linkers (2026-10-14): the desktop app no longer links with `lld-link` (mold is ELF-only and cannot replace it);
+  the MSVC targets use Visual Studio's `link.exe`, and an `x86_64-pc-windows-gnu` build links with GNU ld. The suite now
+  runs on GitHub Windows runners (`.github/workflows/music-player-windows.yml`), where its first run found eleven
+  Windows-only failures, fixed. Record: `doc/decision/music-player-windows-linkers.md`. Windows is now verified on those
+  runners and under Wine, not on a real machine with speakers.
 
 ### Mistakes made in this effort, and what corrected them
 
