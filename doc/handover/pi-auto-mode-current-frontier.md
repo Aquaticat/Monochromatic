@@ -9,6 +9,18 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
+### MiMo first-group failure reopened
+
+The real MiMo session at 23:29:17 UTC reached manual fallback on its first group of two Bash calls.
+The displayed error was `Original policy review and evidence closure failed`.
+The session records the user's Stop response and two aborted tool results.
+The prior installed controls covered authored codemode responses and did not establish this boundary.
+The handoff-ready conclusion is withdrawn pending reproduction and correction.
+
+- [ ] Recover the nested failure and reproduce the exact two-call shape in a disposable host.
+- [ ] Correct the demonstrated cause and verify the real configured consumer boundary.
+- [ ] Retain regression evidence and update the MiMo handoff readiness.
+
 ### Host-isolation replacement complete
 
 The corrected native host is installed as `native-release-Yhc7sX` and verified through the original `pi` command.
