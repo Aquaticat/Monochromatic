@@ -86,7 +86,10 @@ export function createPreparationFixture({ catalog }: Readonly<{ catalog?: strin
   const catalogText = catalog ?? JSON.stringify({ first: {
     type: 'noul',
     instructions: 'Fixed predicate',
-    criteria: { true: 'holds', false: 'does not hold' }
+    criteria: {
+      true: 'holds',
+      false: 'does not hold'
+    }
   } });
   /**
    Every prepared value is independently frozen before native admission.
@@ -155,7 +158,10 @@ export function createPreparationFixture({ catalog }: Readonly<{ catalog?: strin
       .get(point)
       ?? 0) + 1;
     state.counts
-      .set(point, count);
+      .set(
+        point,
+        count
+      );
     /**
      Exact occurrence is retained independently of the original failure object.
      */
@@ -194,7 +200,8 @@ export function createPreparationFixture({ catalog }: Readonly<{ catalog?: strin
   const input = {
     active: function active(): void { 
       visit('active');
-    budgetFixture.budget.checkpoint(); 
+    budgetFixture.budget
+      .checkpoint(); 
     },
     budget: {
       ...budgetFixture.budget,
@@ -226,7 +233,8 @@ export function createPreparationFixture({ catalog }: Readonly<{ catalog?: strin
         visit('prepareDependencies');
       assert.equal(
         signal,
-        budgetFixture.controller.signal
+        budgetFixture.controller
+          .signal
       );
       return handle; 
       },
