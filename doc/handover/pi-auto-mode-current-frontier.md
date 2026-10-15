@@ -16,8 +16,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 772 files and 486 rules,
-with zero errors and 10433 warnings.
+The latest complete lint report covers 778 files and 486 rules,
+with zero errors and 10383 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -37,13 +37,14 @@ original-code replay,
 domain comparisons,
 and deliberate omission controls.
 Reached-program runtime is also qualified.
-Continue reached-program runner contracts.
+Continue the remaining native dispatcher and profile contracts.
 The collector implementation and new consumers have zero diagnostics in the full report.
 The latest report has zero runtime,
 extracted runner-binding,
 extracted runner-event,
-or extracted runner-execution diagnostics,
-and retains 72 warnings in `program-runner.mjs`.
+extracted runner-execution,
+or extracted runner-facade diagnostics,
+and retains 22 warnings in `program-runner.mjs`.
 Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
 No current user-input blocker exists.
 
@@ -305,7 +306,14 @@ Six domain comparisons retain identical public outcomes and execution counts,
 with the permission-versus-prohibition positive control.
 All 31 deliberate facade omissions or substitutions cause assertion failures;
 the runner and facade artifacts retain their starting hashes.
-The complete lint recount is pending.
+The complete maintained lint recount covers 778 files and 486 rules,
+with zero errors and 10383 warnings.
+All six facade implementation and consumer files have zero diagnostics.
+The strict package-wide warning gate remains failing.
+The full report is
+`${HOME}/temp/agent/pi-maintained-typed-runner-facade-final-lint-20261015.log`.
+The remaining runner class adapter retains 22 warnings;
+the prepared dispatcher retains 185 warnings and is the next extraction boundary.
 The original facade runner is retained as `program-runner-before-facade-types.mjs`,
 and its original method is retained as `program-runner-facade-original-method.txt`.
 The typed facade adds an explicit null check for missing script-value slots.
