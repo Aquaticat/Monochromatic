@@ -1744,6 +1744,22 @@ Continue the constructor's assessment,
 evidence closure,
 preparation publication,
 and retained inspection paths.
+`512fcf8523` and `3919aeb0ec` move original assessment,
+evidence capture,
+and finalization into typed lifecycle owners.
+The shared operation exclusion,
+issued and attempted batch memberships,
+original transport budget,
+failure aggregation,
+and retained closure record remain coupled to one judgment.
+`0fdd07f189` declares exact disposal and closure-result contracts.
+The saved pre-extraction constructor is
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/child-constructor-before-lifecycle-types.mjs`.
+Final formatting,
+owned rebuild,
+consumer coverage,
+original-constructor comparisons,
+and guard controls remain pending for this extraction.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

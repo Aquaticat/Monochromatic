@@ -53,7 +53,7 @@ export function createJudgmentFinalization({
         if (!knownSelection()
           .inspectBatch(batch)
           .settled) knownSelection()
-          .discard({
+            .discard({
           batch,
           error: new JudgmentConstructionError('Judgment closed before this question batch was dispatched')
         });
@@ -65,7 +65,7 @@ export function createJudgmentFinalization({
       const batches = bindingSegment(function readIssuedBatchResults() {
         return Object.freeze([...issuedBatches].map(function readBatchResult(batch) { 
           return knownSelection()
-          .resultFor(batch); 
+            .resultFor(batch); 
         }));
       });
       /**
@@ -103,7 +103,7 @@ export function createJudgmentFinalization({
         accounting: budget.diagnostics(),
         batches: Object.freeze([...issuedBatches].map(function inspectIssuedBatch(batch) { 
           return knownSelection()
-          .inspectBatch(batch); 
+            .inspectBatch(batch); 
         }))
       });
       throw error;

@@ -47,7 +47,7 @@ export function createJudgmentEvidence({
       .assertCapturableBatch(batch);
     return bindingSegment(function readBatchEvidence() { 
       return knownSelection()
-      .captureBatchEvidence(batch); 
+        .captureBatchEvidence(batch); 
     });
   }
   /**

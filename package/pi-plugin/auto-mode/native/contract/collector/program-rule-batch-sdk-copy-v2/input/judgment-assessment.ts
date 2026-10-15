@@ -8,6 +8,31 @@ import type {
   JudgmentAssessmentOperations
 } from './judgment-lifecycle-types.ts';
 
+/**
+ Retain both original failures as ordered peers without introducing a single-cause projection.
+
+ @param error - original assessment failure
+
+ @param retentionError - subsequent terminal-retention failure
+
+ @returns original aggregate shape with both failures and no cause property
+ */
+function createAssessmentRetentionError({
+  error,
+  retentionError
+}: Readonly<{
+  error: unknown;
+  retentionError: unknown;
+}>): AggregateError {
+  return new AggregateError(
+    [
+      error,
+      retentionError
+    ],
+    'Assessment failure and terminal retention failure'
+  );
+}
+
 //region Issuance precedes original transport attempts and terminal answer retention.
 /**
  Bind original assessment to fixed selection, dependency, and shared transport lifetime capabilities.
@@ -93,7 +118,7 @@ export function createJudgmentAssessment({
        */
       const request = bindingSegment(function readBatchRequest() { 
         return knownSelection()
-        .requestFor(batch); 
+          .requestFor(batch); 
       });
       /**
        The original budget supplies exact attempt, cancellation, and deadline fields to transport.
@@ -106,16 +131,25 @@ export function createJudgmentAssessment({
       });
       return bindingSegment(function settleAssessmentAnswer() {
         return knownSelection()
-          .settle({ batch, ...readAssessmentResponse(answer) });
+          .settle({
+            batch,
+            ...readAssessmentResponse(answer)
+          });
       });
     } catch (error) {
       try {
         if (!knownSelection()
           .inspectBatch(batch)
           .settled) knownSelection()
-          .discard({ batch, error });
+            .discard({
+              batch,
+              error
+            });
       } catch (retentionError) {
-        throw new AggregateError([error, retentionError], 'Assessment failure and terminal retention failure', { cause: retentionError });
+        throw createAssessmentRetentionError({
+          error,
+          retentionError
+        });
       }
       throw error;
     }
