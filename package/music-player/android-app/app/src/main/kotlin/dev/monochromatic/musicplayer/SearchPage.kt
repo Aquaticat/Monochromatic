@@ -287,14 +287,6 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 // ```
 import androidx.compose.foundation.text.input.TextFieldState
 
-// What:     `import androidx.compose.foundation.text.input.rememberTextFieldState` keeps the field state saved.
-// Why:      The state restores its text and caret after an activity recreation (D126).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const input = useSessionState({ value: query, caret: query.length });
-// ```
-import androidx.compose.foundation.text.input.rememberTextFieldState
 
 // What:     `import androidx.compose.foundation.text.KeyboardOptions` labels the keyboard action as Search.
 // Why:      The IME action is Search, not playback, so the keyboard shows the search key.
@@ -385,6 +377,24 @@ import androidx.compose.runtime.DisposableEffect
 // observe(() => input.value).subscribe(onQueryChange);
 // ```
 import androidx.compose.runtime.snapshotFlow
+
+// What:     `import androidx.compose.runtime.saveable.Saver` describes how the field state is saved and restored.
+// Why:      A saved field state is restored only while it still holds the host's query, so a stale one is dropped.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const saver = { save: (input) => input.snapshot(), restore: (saved) => (saved.text === query ? saved : null) };
+// ```
+import androidx.compose.runtime.saveable.Saver
+
+// What:     `import androidx.compose.runtime.saveable.rememberSaveable` keeps the field state across a recreation.
+// Why:      The query survives an activity recreation in the host, and the caret should survive it with the query.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const input = useSessionState(() => ({ value: query, caret: query.length }), saver);
+// ```
+import androidx.compose.runtime.saveable.rememberSaveable
 
 // What:     `import androidx.compose.runtime.remember` keeps the focus requester across recomposition.
 // Why:      A new focus requester on every frame would lose the field's focus binding.
@@ -1162,6 +1172,24 @@ private fun searchInnerPage(
     }
 }
 
+// What:     `private fun restoreOnlyWhileHolding(query: String): Saver<TextFieldState, Any>` saves a field state as the
+//           standard saver does, and refuses to restore one whose text is not [query].
+// Why:      Compose keeps a saved value that no composable consumed, and saves it again with the next recreation, so a
+//           header that returns to an earlier layout position gets back the state it had when it last stood there. That
+//           state is older than the host's query, and the field would then overwrite the newer query with it (D126).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const restoreOnlyWhileHolding = (query) => ({ save, restore: (s) => (text(s) === query ? restore(s) : null) });
+// ```
+/** Saver of a field state that restores a saved state only when its text equals the first [query] it was given. */
+private fun restoreOnlyWhileHolding(query: String): Saver<TextFieldState, Any> = Saver(
+    save = { state -> with(TextFieldState.Saver) { save(state) } },
+    restore = { saved ->
+        TextFieldState.Saver.restore(saved)?.takeIf { restored -> restored.text.toString() == query }
+    },
+)
+
 // What:     `@Composable private fun searchHeader(...)` draws the Back, query field, and Clear row.
 // Why:      One header holds all three controls (D48), and the field takes focus and the keyboard on entry (D63).
 //
@@ -1193,8 +1221,9 @@ private fun searchHeader(
     /** Software keyboard controller, or null when the platform offers none. */
     val keyboard = LocalSoftwareKeyboardController.current
     /** Field text and caret, saved across an activity recreation; starts from the kept query, caret at its end. */
-    val fieldState: TextFieldState =
-        rememberTextFieldState(initialText = query, initialSelection = TextRange(query.length))
+    val fieldState: TextFieldState = rememberSaveable(saver = restoreOnlyWhileHolding(query)) {
+        TextFieldState(initialText = query, initialSelection = TextRange(query.length))
+    }
     /** Newest query, for the mirror below, which outlives the composition that started it. */
     val latestQuery: String by rememberUpdatedState(query)
     /** Newest actions, for the mirror below, which outlives the composition that started it. */

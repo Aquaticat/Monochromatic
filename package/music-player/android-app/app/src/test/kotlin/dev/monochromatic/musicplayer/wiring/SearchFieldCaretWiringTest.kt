@@ -317,6 +317,50 @@ class SearchFieldCaretWiringTest {
         assertEquals(TextRange(2), selection())
     }
 
+    // What:     `@Test fun aSavedFieldFromAnEarlierLayoutDoesNotOverwriteTheNewerKeptQuery()` is the unfold case.
+    // Why:      A fold or unfold recreates the activity. Compose saves again a value that no composable consumed, so
+    //           a header back at its first position was handed the "lan" saved there before "x" was typed on the
+    //           cover, and its mirror wrote "lan" over the newer "lanx" (seen on the emulator).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("stale", () => { type("lan"); relaunch(cover); type("x"); relaunch(inner); expect(q).toBe("lanx"); });
+    // ```
+    /** After inner, cover and inner, each with a recreation, the query is "lanx" and typing goes after it. */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun aSavedFieldFromAnEarlierLayoutDoesNotOverwriteTheNewerKeptQuery() {
+        /** Layout that the next composition draws; a plain value, so only a recreation reads a new one. */
+        var coverLayout = false
+        /** Restores saved state the way a recreated activity does. */
+        val restoration = StateRestorationTester(composeTestRule)
+        restoration.setContent {
+            /** Query kept as the host keeps it, across recreation. */
+            var saved: String by rememberSaveable { mutableStateOf("") }
+            if (coverLayout) {
+                Box(modifier = Modifier.width(COVER_WIDTH_DP.dp)) {
+                    page(keptQuery = saved, onQuery = { text -> saved = text; query = text })
+                }
+            } else {
+                Box(modifier = Modifier) { page(keptQuery = saved, onQuery = { text -> saved = text; query = text }) }
+            }
+        }
+        composeTestRule.waitForIdle()
+        type("lan")
+        coverLayout = true
+        restoration.emulateSavedInstanceStateRestore()
+        composeTestRule.waitForIdle()
+        assertEquals("lan", query)
+        type("x")
+        assertEquals("lanx", query)
+        coverLayout = false
+        restoration.emulateSavedInstanceStateRestore()
+        composeTestRule.waitForIdle()
+        assertEquals("the newer query survives the return to the first layout", "lanx", query)
+        assertEquals(TextRange(4), selection())
+        type("v")
+        assertEquals("lanxv", query)
+    }
+
     // What:     `@Test fun aRecreatedActivityKeepsTheCaretTheUserPlaced()` restores the saved field state.
     // Why:      The query survives a recreation in the host through saved state; the caret should come back with it
     //           instead of jumping to the end.
