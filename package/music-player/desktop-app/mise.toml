@@ -695,3 +695,13 @@ run = "depot bake --file package/music-player/desktop-app/depot-trial/bake.hcl -
 description = "Run the disposable Depot CI repository-access check"
 dir = "{{config_root}}/../../.."
 run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job connection"
+
+[tasks."trial:depot:dependencies"]
+description = "Install the locked workspace dependencies in a disposable trial sandbox"
+dir = "{{config_root}}/../../.."
+run = "pnpm install --frozen-lockfile"
+
+[tasks."trial:depot:coverage"]
+description = "Run representative TypeScript and the shared audio core checks on Depot CI"
+dir = "{{config_root}}/../../.."
+run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job typescript --job audio-core"
