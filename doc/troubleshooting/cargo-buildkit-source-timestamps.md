@@ -91,8 +91,9 @@ that attempt provided no cache verification evidence.
 
 Working patterns are a newly timestamped source change and a package clean followed by a rebuild.
 The failing pattern is an older changed source snapshot paired with a newer artifact for different source content.
-The full application rerun remains pending;
-the local fixture alone does not verify the full BuildKit workaround.
+The full application rerun subsequently passed in both corrected workflows.
+The local fixture establishes the stale-timestamp mechanism;
+the repeated application builds verify the BuildKit workaround at the consumer boundary.
 
 ## Verified workaround and application rerun
 
@@ -116,9 +117,16 @@ Registry dependency artifacts survive.
 Unchanged content retains the local package artifacts.
 The package list must expand if another local path dependency is introduced.
 
-Runs `38822116503` and `38822116510` test this change with the original repeated source-change assertion.
+Runs `38822116503` and `38822116510` tested this change with the original repeated source-change assertion.
 They use the fixed trial source and separately populated caches for each round.
-Their results must be recorded before treating the full workaround as verified.
+All ten configurations passed all ten outputs:
+100 checked artifacts,
+including two source changes per configuration and their unchanged repetitions.
+Both baseline outputs and the deliberately changed CLI name matched in every round.
+This verifies the full workaround for the tested application inputs and local package set.
+[Main execution](https://github.com/Aquaticats/Monochromatic/actions/runs/38822116503),
+[large-runner execution](https://github.com/Aquaticats/Monochromatic/actions/runs/38822116510),
+[measurements and limitations](../audit/depot-runner-sizing-2026-10-15.md)
 
 ## What does not work
 

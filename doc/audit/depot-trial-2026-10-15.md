@@ -119,6 +119,34 @@ and 700,660 KiB in its Cargo download cache.
 These are filesystem measurements inside that build,
 not account-wide billable storage.
 
+## Runner sizing follow-up
+
+The corrected matrix averaged 526.7 seconds cold at four CPUs/four jobs,
+320.4 at eight/eight,
+246.6 at sixteen/sixteen,
+212.0 at thirty-two/thirty-two,
+and 323.4 at sixty-four/sixty-four.
+Sixteen CPUs with only four Cargo jobs averaged 476.6 seconds.
+The measured benefit therefore requires increasing compilation concurrency as well as allocating CPUs.
+The sixteen/sixteen configuration has the lowest cold-build combined cost at the user's time valuation.
+Source rebuilds put eight/eight and sixteen/sixteen within one US cent of combined cost,
+an unresolved economic tie given the observed spread.
+See the [sizing report](depot-runner-sizing-2026-10-15.md)
+for every configuration,
+raw evidence,
+cost method,
+and processor-model limitations.
+
+The separate default container builder already has sixteen CPUs.
+With sixteen Cargo jobs,
+its two cold observations took 268.558 and 265.417 seconds,
+including artifact download;
+all unchanged repetitions and runtime assertions passed.
+The original four-job cold observation was 468 seconds,
+but had no repeated cold baseline and predates the cache fix.
+These results support using more concurrency on the existing builder before paying for a larger allocation.
+[Container evidence](depot-container-concurrency-2026-10-15.evidence.json)
+
 ## Existing checks newly exercised through Depot CI
 
 The existing Alpine task also passed on a four-CPU Depot GitHub runner in
@@ -168,7 +196,8 @@ The desktop suite's documented prerequisites include a graphical session,
 user services,
 and isolated audio routing.
 The Android emulator workflow also requires a headed host-GPU launch under the repository's emulator skill.
-Neither graphical suite has run in this trial.
+Neither the full desktop keyboard-interaction suite nor Android instrumentation ran in this trial.
+The separate Alpine graphical smoke scenarios did pass as recorded in this section.
 This is a gap in the tested environment,
 not proof that Depot cannot host a suitable environment.
 [Prerequisite run](https://depot.dev/orgs/l4zncjjbj5/workflows/jp9w8gw62r),
@@ -254,6 +283,12 @@ That bundle combines separate observations,
 not a measured recurring workload.
 [CI billing rules](https://depot.dev/docs/ci/overview)
 
+These scenarios cost a subset of the expanded target coverage,
+not an apples-to-apples replacement of current GitHub jobs.
+Additional tests and experiments are intended benefits with additional resource needs;
+their value is not captured by current-build speedup alone.
+The scenarios retain the initial four-job build observation and are not a completed forecast for the target workflow.
+
 The following scenarios assume 30 days,
 25 GB storage,
 one 226-second source-change container build per bundle,
@@ -306,7 +341,7 @@ The calculation does not assume Startup has faster default hardware than Develop
 The user's accounting applies to the union of relevant unfinished CI intervals.
 A faster Linux job saves none of that elapsed time when a longer required Windows job still determines completion.
 The individual build differences therefore cannot be multiplied by commit count to forecast monthly value.
-This trial has not replayed an equivalent complete cross-platform change stream.
+This trial has not replayed the expanded target coverage over a complete cross-platform change stream.
 
 A follow-up inspected every October 15 run returned for the Alpine and Windows workflows:
 13 Alpine runs and 33 Windows runs at the query time.
@@ -322,6 +357,7 @@ even an instantaneous Linux build would not advance the combined completion time
 The fourth pair had a Linux failure and is excluded from successful-completion comparisons.
 This is observed history,
 not a forecast for all revisions or a reason to omit Linux coverage.
+It also does not value newly enabled checks or experiments that were absent from those historical runs.
 The upper-bound calculation was checked with a positive control where Linux finishes 60 seconds later
 and correctly reports 60 seconds of possible earlier completion.
 [Paired job timestamps](depot-platform-overlap-2026-10-15.evidence.json),
@@ -330,8 +366,10 @@ and correctly reports 60 seconds of possible earlier completion.
 
 ## Recommended allocation and check frequency
 
-These are proposed operating arrangements,
-not deployed routing rules.
+These are proposed operating arrangements for the expanded target workflow,
+not deployed routing rules or a complete migration-cost forecast.
+The Developer preference follows the user's budget priorities;
+the trial has not yet demonstrated that all desired graphical tests and experiments fit its allowances conveniently.
 
 - Developer with intentional GitHub routing is the first choice.
   It preserves the USD $180 base-price saving and the measured Depot execution routes.

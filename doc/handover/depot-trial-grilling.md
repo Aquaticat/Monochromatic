@@ -3,8 +3,17 @@
 ## Purpose and current state
 
 The user subsequently requested immediate execution of the agreed trial.
-Execution has begun;
+The bounded trial and runner-sizing follow-up have completed;
 the interview is complete.
+The [trial report](../audit/depot-trial-2026-10-15.md)
+records remaining coverage and account-access limits.
+The user explicitly clarified that this is not an apples-to-apples migration.
+Controlled build comparisons answer sizing questions;
+the migration recommendation must evaluate the expanded coverage,
+reusable environments,
+agent-requested experiments,
+convenience,
+and total target-workload cost.
 
 The user is trialing Depot and requested a grilling interview on 2026-10-15.
 The user has delegated the technical recommendation after establishing priorities and budget.
@@ -507,7 +516,7 @@ that version also passed rendering.
 
 The user asked whether a bigger Depot runner would help,
 then corrected the agent for stopping at a proposed experiment instead of continuing the authorized trial.
-The sizing experiment is now executing in
+The original sizing experiment executed in
 [run 38819692881](https://github.com/Aquaticats/Monochromatic/actions/runs/38819692881),
 from trial commit `84a0b9c5ab`.
 It compares CPU/job-count pairs `4/4`,
@@ -534,7 +543,7 @@ bounded to four concurrent runners and 45 minutes per job.
 Scoped configuration lint and resolved Bake-variable inspection passed before result collection.
 The measured GitHub runner had four CPUs;
 the separate container builder already had sixteen.
-Every comparison used `cargo --jobs 4`.
+The initial provider comparison used `cargo --jobs 4`.
 The container dashboard showed 89% average CPU and 13% peak memory utilization.
 This suggests investigating CPU scaling,
 but does not establish the speedup from additional CPUs or a different Cargo job count.
@@ -551,20 +560,21 @@ The [container builder documentation](https://depot.dev/docs/container-builds/ov
 lists sixteen CPUs on all plans;
 32 and 64 CPUs require Startup or Business and use two or four times the included minutes.
 This distinction matters to the Developer-plan preference.
-Active queue:
-finish the source-cache correctness investigation and rerun the sizing matrix with the fix,
-collect every sizing result,
-separate fixed-job-count hardware effects from increased Cargo concurrency,
-calculate provider charges and the user's combined time cost,
-and update the allocation recommendation with spread and limitations.
-The container-product follow-up also runs two isolated cold builds and unchanged repeats
+The execution queue is complete:
+the source-cache investigation,
+corrected matrix,
+result collection,
+cost calculations,
+and allocation recommendation are recorded in the
+[sizing report](../audit/depot-runner-sizing-2026-10-15.md).
+The container-product follow-up also completed two isolated cold builds and unchanged repeats
 with 16 Cargo jobs on the existing default builder.
 It uses the dedicated trial project,
 fresh Cargo cache scopes,
 the production runtime version assertion,
 and the existing 1,800-second Cargo execution bound.
 This measures the no-size-upgrade concurrency option instead of extrapolating GitHub-runner measurements to it.
-The independent coverage queue also runs the existing `test:alpine` task through
+The independent coverage check completed the existing `test:alpine` task through
 `.github/workflows/depot-trial-alpine-checks.yml` on a disposable four-CPU Depot GitHub runner,
 in [run 38820372915](https://github.com/Aquaticats/Monochromatic/actions/runs/38820372915)
 at commit `1c1334f700`.
@@ -588,8 +598,8 @@ Cleaning the affected package restored the correct result.
 Trial commit `4648e5ad3d` hashes copied source content and invalidates `music-player` and `truepeak-core`
 when it differs from the target cache's recorded content.
 Dependency artifacts survive this invalidation.
-The full sizing rerun and troubleshooting record are required before completion.
-The completed-job GitHub log retrieval workaround also needs its troubleshooting record.
+The corrected full sizing rerun passed.
+Both the cache investigation and completed-job GitHub log retrieval workaround have troubleshooting records.
 
 The corrected full reruns are `38822116503` and `38822116510`,
 at trial commit `ef616a2900`.
@@ -602,7 +612,8 @@ Every main-matrix job passed setup and reached compilation after that change.
 The cache and completed-job log investigations now exist in
 `doc/troubleshooting/cargo-buildkit-source-timestamps.md`
 and `doc/troubleshooting/gh-completed-job-logs.md`;
-rendered review and the final application results remain pending.
+their rendered reviews passed,
+and the final application results passed in both corrected workflows.
 The durable minimal reproduction lives on the trial branch under `depot-trial/cache-repro/`.
 
 The Alpine behavior run completed successfully:
@@ -625,21 +636,27 @@ The user subsequently reported the Codex issue corrected;
 the worker ceiling now measures 2,048 tasks and local command execution resumed.
 No cloud build input or measurement was changed by that local recovery.
 
-At 23:30 UTC,
-the corrected `16/16`,
-`16/8`,
-`8/8`,
-`32/16`,
-`32/32`,
-and `64/16` jobs have completed successfully with every runtime assertion.
-The `16/16` cold builds took 247.635 and 245.628 seconds;
-source-change builds took 126.077 and 118.838 seconds.
-The corresponding `8/8` cold builds took 326.549 and 314.320 seconds;
-source changes took 142.939 and 141.260 seconds.
-Other matrix configurations and the default-builder concurrency probe remain active.
-The latter started with build `5s3508wm66` in the dedicated trial project.
-Final ranking must use the complete corrected evidence,
-with the original failed matrices retained separately.
+The final corrected matrix passed all 100 checked outputs across ten CPU/job configurations.
+Cold means were 526.7 seconds at `4/4`,
+320.4 at `8/8`,
+246.6 at `16/16`,
+212.0 at `32/32`,
+and 323.4 at `64/64`.
+Keeping only four jobs on sixteen CPUs averaged 476.6 seconds.
+The default container builder with sixteen jobs passed both cold builds in 268.558 and 265.417 seconds,
+plus all four unchanged repetitions.
+The [sizing report](../audit/depot-runner-sizing-2026-10-15.md)
+contains ranges,
+hardware differences,
+source-rebuild results,
+costs,
+and source links.
+It recommends `16/16` for cold builds determining completion;
+`8/8` and `16/16` are an unresolved economic tie for the measured source rebuild.
+These are allocation findings,
+not a verdict on the broader migration's value.
+Original failed matrices remain separate evidence.
+No trial execution or result collection remains queued.
 
 The parallel history check inspected complete October 15 API pages:
 13 Alpine and 33 Windows runs.
