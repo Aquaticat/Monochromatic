@@ -355,18 +355,32 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
     CLI preflight and the real checkout run `kbz7cjc5vt` succeeded.
     The user subsequently connected `depot-managed-runners`,
     verified in the organization installation listing.
-    Run `38813764705` started actual jobs on GitHub and Depot runners.
-    Both are executing the same Alpine build definition.
+    In run `38813764705`,
+    GitHub's build passed with 869.508 seconds cold,
+    then 1.975 and 1.716 seconds for same-job warm repeats.
+    The Depot runner attempt failed with lost communication and no step results.
+    Minimal runner run `38815232329` subsequently executed `uname` successfully.
+    The original Depot build job was retried once and is running as job `116700352199`.
+    This later execution does not establish the first failure's cause.
   - Broader checks and deliberate failure detection:
     Run `wjr4cmpjvs` passed logger build/types/unit tests and all 80 shared audio-core tests.
     Its creation-to-finish interval was 152 seconds.
     Android host tests and lint passed as `3tvq2wvskh` in 218 seconds.
     The Gradle test task executed;
-    its report count still needs inspection to exclude an empty test result.
+    run `jp9w8gw62r` inspected 127 cached XML suites containing 1,289 tests from that first execution.
     Branch `trial/depot-20261015` contains the disposable workflows without release credentials.
     A GitHub reference job uses the identical Alpine build definition and unchanged-source repetitions.
   - Scheduling and rolling budgets:
-    preserve the existing policy and test admission separately from execution.
+    the existing script passed fixture replays for allowed and rejected windows,
+    exact expiry,
+    cancelled,
+    failed,
+    queued,
+    and missing analysis jobs.
+    A 926-run skipped fixture issued 926 sequential job-history calls.
+    Concurrent fixture requests with absent analysis jobs both admitted;
+    this exposes a missing reservation in that modeled interval,
+    not a demonstrated live incident.
   - Runtime and monthly cost:
     collect bounded-run evidence and retain the USD $200 ceiling.
   - Non-CI experiments and parallel throughput:
@@ -376,13 +390,32 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
     Depot's container build parallelism documentation says builds in the same project and architecture
     share a builder by default.
     Separate benchmark latency from contention and aggregate throughput.
+    Standalone SDK execution passed with an absolute executable path,
+    including cleanup in 4.396 seconds.
+    Two standalone sandboxes then ran overlapping commands for 9.882 seconds and both stopped.
+    These prove the execution route and limited concurrency,
+    not linker performance or unlimited capacity.
     No linker benchmark has run yet.
 - Source invalidation build `jbld9m545r` rebuilt the application in 3 minutes 17 seconds.
   Its exported executable displayed the deliberately changed CLI name,
   proving the changed source reached the executable.
-  The disposable source marker is being restored after this verification.
-- Prepared-image run `qrjbnf2gbv` finished creating the Node/dependency snapshot;
-  its consumer job is still running.
+  The disposable source marker was restored in `d5ab91d795`.
+- Prepared-image run `qrjbnf2gbv` passed after a 252.433-second additional mise cache lookup.
+  Run `jp9w8gw62r` reused the image and passed with that extra action cache disabled.
+  Its complete parallel validation took 118 seconds.
+  See the [cache observation](../troubleshooting/depot-snapshot-mise-cache.md)
+  and [standalone command workaround](../troubleshooting/depot-sandbox-command-path.md).
+- The cloud device prerequisite probe found `/dev/kvm`,
+  no `/dev/dri` entries,
+  no display or Wayland session,
+  an offline systemd user manager,
+  and no PipeWire,
+  `pactl`,
+  or Weston executables.
+  No emulator was launched and no graphical interaction coverage is claimed.
+- Dependency invalidation build `41xd3lwh8d` is running with Cargo regenerating a disposable lockfile
+  from `log` version `0.4.34` to `0.4.33`.
+  The source checkout's lockfile is untouched.
 - The trial brief and corrected ownership scope are confirmed.
   No interview question is pending.
 - Account-wide spending controls remain unverified;
