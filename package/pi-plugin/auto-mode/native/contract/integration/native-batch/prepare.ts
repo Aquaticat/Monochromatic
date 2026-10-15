@@ -131,9 +131,9 @@ await mkdir(
   }
 );
 /**
- The maintained package entry supplies the canonical policy and approval implementation.
+ The native policy entry shares canonical implementation without evaluating the extension's SDK imports.
  */
-const maintainedEntry=entry({root:maintainedRoot});
+const maintainedEntry=entry({root:maintainedRoot,subpath:'./native-policy'});
 // The incumbent stager owns import aliases. Native fixtures may change HOME after this link is prepared.
 await writeFile(
   join(
