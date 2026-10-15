@@ -252,9 +252,10 @@ before saying it matches, QAB):
   unchanged never releases it, only a dispatch with dry-run false on main does); (2) copy
   `~/.local/share/music-player-release-keys` (`music-player-release.p12`, plaintext `credentials.txt`) into KeePassXC
   and delete the plaintext; (3) vetoable choices: macOS ad-hoc signing, no Android SDK cache (measured 17 s restore
-  against 25 s install), macOS x64 dropped, AppImage not built (a design reason, not a CI result); (4) product gaps
-  the agent found: the Windows exe is a console-subsystem binary (a console window opens), the apk is about 160 MB,
-  placeholder icon, no third-party license notices, Linux needs glibc 2.39+ and AES. Cache budget: 4.0 GB steady
+  against 25 s install), macOS x64 dropped, and AppImage (the human ruled 2026-10-15: not needed while the program ships as a single
+  executable application; the placeholder icon is fine too, so both are settled); (4) product gaps the agent found:
+  the Windows exe is a console-subsystem binary (a console window opens), the apk is about 160 MB, no third-party
+  license notices, Linux needs glibc 2.39+ and AES. Cache budget: 4.0 GB steady
   state from this workflow alone against the 10 GB cap (task 97 owns the policy). The Alpine (task 95) and Windows
   (task 96) agents write the artifact names and job steps; apply them to the release workflow as a follow-up when
   they report (the agent has finished, so a new agent or me).
