@@ -7,7 +7,6 @@ import {createJudgmentDependencyChecks} from './judgment-dependencies.mjs';
 
 
 import {createJudgmentBudget} from "../../../lifecycle/judgment-budget-error-occurrences/controls-private/candidate.ts";
-import {createQuestionSelection} from "../../../lifecycle/claim-evidence-batch-selection/selection.mjs";
 import {createDependencyFacade} from "../../../lifecycle/native-text-read-contract/dependencies.mjs";
 import {readMainAgentRequest} from "../../request-producer-group-consumer/request.mjs";
 
@@ -17,7 +16,7 @@ import {createJudgmentPrograms} from './judgment-programs.mjs';
 import {createJudgmentExecutions} from './execution-owner.ts';
 import {createJudgmentLifecycle} from './judgment-lifecycle.ts';
 import {captureJudgmentMembership} from './judgment-membership.ts';
-import {capturePreparedJudgmentJSON} from './judgment-prepared-input.ts';
+import {createJudgmentPreparation} from './judgment-preparation.ts';
 
 //region Fixed session-bound creator; all inputs come from the owned native JSON/prepared-member profile.
 /** Bind one native consumer to source/root/file observers, fixed catalog and owned transport dependencies. */
@@ -44,19 +43,20 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       }
     });
     const facade=createDependencyFacade({collector:judgmentCollector,rootAdapter,deadlineAt:budget.diagnostics().deadlineAt,rootDirectory,files,trace,now});
-    const bindings=new WeakMap(),byMember=new Map(),childGroups=[];let prepared=false,preparing=false,preparationFailed=false,preparationFailure,handle,selection;
+    const bindings=new WeakMap(),byMember=new Map(),childGroups=[];
     const {
       active, ready, dependencyCheck, bindingSegment, assertDependenciesCurrent, isBindingSegmentActive
     } = createJudgmentDependencyChecks({
       budget, input, receipt, facade, byMember, bindings, trace,
       readPreparation() {
+        const {prepared,preparationFailed,preparationFailure,handle}=preparation.state;
         return { prepared, preparationFailed, preparationFailure, finished:lifecycle.state.finished, closeFailed:lifecycle.state.closeFailed, finalRecord:lifecycle.state.finalRecord, handle };
       }
     });
     const lifecycle=createJudgmentLifecycle({
       knownSelection,ready,active,bindingSegment,assertDependenciesCurrent,budget,
       finalizeDependencies(dependencyHandle){return facade.finalize(dependencyHandle);},
-      readDependencyHandle(){return handle;},
+      readDependencyHandle(){return preparation.state.handle;},
       parentJSON,send
     });
     const {operation,issue,assess,finalize,captureBatchEvidence,assertBatchEvidence,captureClaimEvidence,assertClaimEvidence}=lifecycle;
@@ -94,39 +94,15 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     
     
     
-    function knownSelection(){if(!selection)throw new JudgmentConstructionError('Judgment question selection was not prepared');return selection;}
-    function prepare(members){
-      active();if(prepared||preparing)throw new JudgmentConstructionError('Prepared judgment membership cannot be replaced or reentered');preparing=true;
-      using preparation={ [Symbol.dispose](){preparing=false;} };
-      try {
-        const preparedJSON=capturePreparedJudgmentJSON({members,declaredNames});
-        if(observer.beginJudgmentSources){const binding=observer.sealJudgmentSources(response);if(binding.request!==receipt)throw new JudgmentConstructionError("Prepared sources lost their original request receipt");judgmentSources=binding.sources;}
-        const dependencyHandle=facade.prepare({signal});
-        active();facade.finalize(dependencyHandle);budget.checkpoint();
-        const mandatoryPolicy=judgmentSources.mandatoryPolicy;
-        if(!mandatoryPolicy||!Object.isFrozen(mandatoryPolicy)||typeof mandatoryPolicy.content!=='string')throw new JudgmentConstructionError('Original request lacks complete owned mandatory policy');
-        const envelope=Object.freeze({parentJSON,preparedJSON,requestBody:receipt.request.body,mandatoryPolicy,governingSources:judgmentSources.governingSources,instructionAuthority:'not-established'});
-        selection=createQuestionSelection({catalogText,catalogSHA256,budget,resolveBinding,envelope});
-        active();budget.checkpoint();
-        // Publish immutable occurrence records only after complete input and dependency checks.
-        for(const [ordinal,member] of members.entries()){
-          const bindingHandle=Object.freeze({}),identity=Object.freeze({});
-          const projection=Object.freeze({memberOrdinal:ordinal});
-          bindings.set(bindingHandle,{binding:Object.freeze({identity,projection}),prepared:member,execution:undefined,parent:undefined,program:undefined,effectiveSignal:signal});byMember.set(member.id,bindingHandle);
-        }
-        handle=dependencyHandle;prepared=true;
-      } catch(error){preparationFailed=true;preparationFailure=error;throw error;}
-    }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    function knownSelection(){return preparation.knownSelection();}
+    const preparation=createJudgmentPreparation({
+      active,budget,declaredNames,observer,response,receipt,
+      readJudgmentSources(){return judgmentSources;},
+      publishJudgmentSources(sources){judgmentSources=sources;},
+      facade,signal,parentJSON,catalogText,catalogSHA256,resolveBinding,bindings,byMember
+    });
+    const {prepare}=preparation;
+
     /** Return original identities only after the complete current dependency check succeeds. */
     function readCurrentSourceBinding(){
       assertDependenciesCurrent();
@@ -183,10 +159,10 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     }
     function originalFileFor(member){
       ready();const record=knownMember(member);parentCurrent(record);
-      return facade.originalFile({handle,absolutePath:record.prepared.input.path});
+      return facade.originalFile({handle:preparation.state.handle,absolutePath:record.prepared.input.path});
     }
     function memberExecutionStates(){return Object.freeze([...byMember.entries()].map(function readExecutionState([id,handle]) { return (Object.freeze({id,state:bindings.get(handle).execution?.state??'unentered'})); }));}
-    function inspect(){return Object.freeze({prepared,preparationFailed,preparationFailure,finished:lifecycle.state.finished,closeFailed:lifecycle.state.closeFailed,accounting:budget.diagnostics(),finalRecord:lifecycle.state.finalRecord,memberExecutions:memberExecutionStates(),preparedPrograms:Object.freeze([...byMember.values()].flatMap(function readPreparedProgramView(member) {const inspection=bindings.get(member).preparedProgram;return inspection?[inspection.view]:[];})),rootPrograms:Object.freeze([...byMember.values()].flatMap(function readRootProgramView(member) {const record=bindings.get(member);return record.program?[inspectProgram(record.program.handle)]:[];})),childGroups:Object.freeze(childGroups.map(function inspectChildGroup(group) { return (inspectReachedGroup(group.handle)); }))});}
+    function inspect(){return Object.freeze({prepared:preparation.state.prepared,preparationFailed:preparation.state.preparationFailed,preparationFailure:preparation.state.preparationFailure,finished:lifecycle.state.finished,closeFailed:lifecycle.state.closeFailed,accounting:budget.diagnostics(),finalRecord:lifecycle.state.finalRecord,memberExecutions:memberExecutionStates(),preparedPrograms:Object.freeze([...byMember.values()].flatMap(function readPreparedProgramView(member) {const inspection=bindings.get(member).preparedProgram;return inspection?[inspection.view]:[];})),rootPrograms:Object.freeze([...byMember.values()].flatMap(function readRootProgramView(member) {const record=bindings.get(member);return record.program?[inspectProgram(record.program.handle)]:[];})),childGroups:Object.freeze(childGroups.map(function inspectChildGroup(group) { return (inspectReachedGroup(group.handle)); }))});}
     /** Retain the original synchronous operation guard for one-input public methods. */
     function guardWithInput(run) {
       return function invokeJudgmentOperation(input) {
