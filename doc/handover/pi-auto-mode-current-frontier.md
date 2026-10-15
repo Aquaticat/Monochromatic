@@ -1885,11 +1885,20 @@ and reached groups separate from live eligibility.
 The saved constructor is `child-constructor-before-inspection-types.mjs`
 in the same scratch directory,
 with SHA-256 `bb100fcead79be4ad62a52867952e723d239686bd91babbbb285f5e7722e98c4`.
-Focused lint,
-rebuild,
-direct consumers,
-comparison,
-and guard controls remain pending for inspection.
+Both inspection implementation files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-judgment-inspection-format-second-20261015.log`.
+`f88983e3a2` records the final member-access formatting.
+The owned rebuild,
+type check,
+domain,
+execution,
+lifecycle,
+and preparation suites pass in
+`${HOME}/temp/agent/pi-judgment-inspection-consumers-first-20261015.log`.
+Direct inspection consumers,
+original comparison,
+guard controls,
+and the full maintained recount remain pending for inspection.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
