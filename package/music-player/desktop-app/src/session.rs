@@ -5,7 +5,7 @@
 //! during migration. The former `page_control_style` key is ignored on read and no longer written.
 
 /// Owned filesystem path used for the source root and selected track.
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Serde derives used by current output and the private migration input.
 use serde::{Deserialize, Serialize};
@@ -34,6 +34,8 @@ pub struct Session {
     pub track_rows_template: Option<String>,
     /// Playing track template text the user edited, or None to use the default.
     pub playing_template: Option<String>,
+    /// Auto-play on select (D129): whether selecting a track also starts it. Off when the file has no such field.
+    pub auto_play_on_select: bool,
 }
 
 /// Private permissive input shape that recognizes current and former fields.
@@ -60,6 +62,8 @@ struct StoredSession {
     track_rows_template: Option<String>,
     /// Playing track template text, when the user edited it.
     playing_template: Option<String>,
+    /// Auto-play on select, when a newer build saved it.
+    auto_play_on_select: bool,
 }
 
 /// Supplies defaults for missing fields in the permissive input shape.
@@ -76,6 +80,7 @@ impl Default for StoredSession {
             repeat_track: None,
             track_rows_template: None,
             playing_template: None,
+            auto_play_on_select: false,
         };
     }
 }
@@ -92,6 +97,7 @@ impl Default for Session {
             playback_mode: PlaybackMode::InOrder,
             track_rows_template: None,
             playing_template: None,
+            auto_play_on_select: false,
         };
     }
 }
@@ -131,6 +137,7 @@ impl Session {
                 playback_mode,
                 track_rows_template: stored.track_rows_template,
                 playing_template: stored.playing_template,
+                auto_play_on_select: stored.auto_play_on_select,
             },
             should_rewrite,
         );
@@ -161,14 +168,20 @@ impl Session {
         let Some(path) = session_path() else {
             return Session::default();
         };
-        let Ok(text) = std::fs::read_to_string(&path) else {
+        return Session::load_at(&path);
+    }
+
+    /// What: `load_at` reads the session file at `path`, with the same fallbacks as `load`.
+    /// Why: the persistence tests read a file in a temporary directory, never the user's own session file.
+    fn load_at(path: &Path) -> Session {
+        let Ok(text) = std::fs::read_to_string(path) else {
             return Session::default();
         };
         let Ok((stored, has_current_mode)) = Session::parse_stored(&text) else {
             return Session::default();
         };
         let (session, should_rewrite) = Session::from_stored(stored, has_current_mode);
-        if should_rewrite && let Err(error) = session.save() {
+        if should_rewrite && let Err(error) = session.save_at(path) {
             tracing::warn!(?error, "failed to rewrite migrated playback session");
         }
         return session;
@@ -191,17 +204,48 @@ impl Session {
         return session.save();
     }
 
+    /// What: `load_auto_play_on_select` reads the Auto-play on select setting; off when the file has none.
+    /// Why: the window starts from the saved choice (D129), and a session file written before the setting existed must
+    /// keep loading, with the setting off.
+    #[must_use]
+    pub fn load_auto_play_on_select() -> bool {
+        return Session::load().auto_play_on_select;
+    }
+
+    /// What: `save_auto_play_on_select` writes the setting and keeps every other field as it is.
+    /// Why: the Settings switch saves here, and the playback record is rewritten by the controller separately.
+    pub fn save_auto_play_on_select(enabled: bool) -> std::io::Result<()> {
+        let Some(path) = session_path() else {
+            return Ok(());
+        };
+        return Session::save_auto_play_on_select_at(&path, enabled);
+    }
+
+    /// What: `save_auto_play_on_select_at` is `save_auto_play_on_select` for the session file at `path`.
+    /// Why: the persistence tests write a file in a temporary directory, never the user's own session file.
+    fn save_auto_play_on_select_at(path: &Path, enabled: bool) -> std::io::Result<()> {
+        let mut session = Session::load_at(path);
+        session.auto_play_on_select = enabled;
+        return session.save_at(path);
+    }
+
     /// What: `save` writes the playback record as JSON to the session file.
     /// Why: the controller and the template editor both persist through this one file.
     pub fn save(&self) -> std::io::Result<()> {
         let Some(path) = session_path() else {
             return Ok(());
         };
+        return self.save_at(&path);
+    }
+
+    /// What: `save_at` writes the playback record as JSON to the file at `path`, creating its directory.
+    /// Why: `save` and the persistence tests share one writer.
+    fn save_at(&self, path: &Path) -> std::io::Result<()> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
         let json = serde_json::to_string_pretty(self).map_err(std::io::Error::other)?;
-        return std::fs::write(&path, json);
+        return std::fs::write(path, json);
     }
 }
 

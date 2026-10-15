@@ -470,3 +470,20 @@ fn the_engine_sleeps_for_its_idle_timeout_unless_a_drain_hold_is_running() {
     consume(&mut rig.consumer, RATE as usize);
     assert!(rig.controller.tick_playback());
 }
+
+#[test]
+fn the_shutdown_snapshot_keeps_the_ui_fields_of_the_stored_session() {
+    let rig = rig("snapshot_keeps_ui_fields", RATE);
+    let stored = Session {
+        track_rows_template: Some("$mi(title)$".to_string()),
+        playing_template: Some("$mi(track)$".to_string()),
+        auto_play_on_select: true,
+        ..Session::default()
+    };
+    let snapshot = rig.controller.session_over(stored);
+    assert!(snapshot.auto_play_on_select, "a shutdown save must not turn Auto-play on select off");
+    assert_eq!(snapshot.track_rows_template.as_deref(), Some("$mi(title)$"));
+    assert_eq!(snapshot.playing_template.as_deref(), Some("$mi(track)$"));
+    let off = rig.controller.session_over(Session::default());
+    assert!(!off.auto_play_on_select, "and it must not turn it on either");
+}

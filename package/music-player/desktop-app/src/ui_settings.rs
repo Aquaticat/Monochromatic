@@ -5,6 +5,7 @@
 //! Why: the editor rules live in `template_editor_state`; this module keeps the editor value in the screen
 //! state while either page is open and applies the valid templates to the track rows and the deck.
 
+use music_player::row_activation::auto_play_on_select_supporting_text;
 use music_player::session::Session;
 use music_player::template_editor_state::TemplateEditorState;
 use music_player::template_editor::TemplateEditorEdit;
@@ -22,6 +23,10 @@ use crate::{AppWindow, EditorFieldRow, EditorPreviewRow, SettingsTemplateRow};
 /// Why: the production function writes the user's session file, so the window tests swap in one that records the texts.
 type SaveTemplates = fn(Option<&str>, Option<&str>) -> std::io::Result<()>;
 
+/// What: `SaveAutoPlay` is the function that persists the Auto-play on select setting.
+/// Why: the production function writes the user's session file, so the window tests swap in one that records the value.
+type SaveAutoPlay = fn(bool) -> std::io::Result<()>;
+
 thread_local! {
     /// What: the text of each template whose draft did not apply when the editor was last left, as (track rows, playing track).
     /// Why: leaving the editor rebuilds it from the applied texts, which used to drop a draft that did not apply without a
@@ -31,6 +36,9 @@ thread_local! {
     /// What: the persistence function of this UI thread.
     /// Why: only the event-loop thread saves templates, and tests replace it per test thread.
     static SAVER: std::cell::Cell<SaveTemplates> = const { std::cell::Cell::new(Session::save_templates) };
+    /// What: the persistence function of the Auto-play on select setting on this UI thread.
+    /// Why: only the event-loop thread saves it, and tests replace it per test thread so a click never writes the user's file.
+    static AUTO_PLAY_SAVER: std::cell::Cell<SaveAutoPlay> = const { std::cell::Cell::new(Session::save_auto_play_on_select) };
 }
 
 /// What: `replace_saver` makes this thread persist templates through `saver`.
@@ -40,13 +48,25 @@ pub(crate) fn replace_saver(saver: SaveTemplates) {
     SAVER.set(saver);
 }
 
-/// What: `wire` registers the Settings and editor callbacks and loads the saved templates into the state.
-/// Why: the saved templates must be in the state before the first projection, so the rows show them.
+/// What: `replace_auto_play_saver` makes this thread persist the Auto-play on select setting through `saver`.
+/// Why: a test that clicks the switch must never write the user's session file.
+#[cfg(test)]
+pub(crate) fn replace_auto_play_saver(saver: SaveAutoPlay) {
+    AUTO_PLAY_SAVER.set(saver);
+}
+
+/// What: `wire` registers the Settings and editor callbacks and loads the saved templates and the Auto-play on select
+/// setting into the state.
+/// Why: both must be in the state before the first projection, so the rows show the templates, the switch shows its
+/// state, and the first click on a track already follows the saved setting.
 pub(crate) fn wire(app: &AppWindow) {
     let (track_rows, playing) = Session::load_templates();
+    let auto_play_on_select = Session::load_auto_play_on_select();
+    tracing::info!(auto_play_on_select, "loaded the Auto-play on select setting");
     update_state(|state| {
         state.track_rows_template = track_rows;
         state.playing_template = playing;
+        state.auto_play_on_select = auto_play_on_select;
     });
     wire_callbacks(app);
 }
@@ -76,6 +96,12 @@ pub(crate) fn wire_callbacks(app: &AppWindow) {
     app.on_settings_back(move || {
         if let Some(window) = back_weak.upgrade() {
             close_settings(&window);
+        }
+    });
+    let toggle_weak = app.as_weak();
+    app.on_settings_toggle_auto_play(move || {
+        if let Some(window) = toggle_weak.upgrade() {
+            toggle_auto_play_on_select(&window);
         }
     });
     let layout_weak = app.as_weak();
@@ -209,6 +235,21 @@ pub(crate) fn close_settings(window: &AppWindow) {
         state.editor = None;
         state.route = Route::Player;
     });
+    project(window);
+}
+
+/// What: `toggle_auto_play_on_select` flips Auto-play on select, saves it and reprojects the switch row.
+/// Why: the row toggles in place (D129): the route, the selected template and the editor are left as they are, and the
+/// new value governs the next click, Enter or Search result at once.
+fn toggle_auto_play_on_select(window: &AppWindow) {
+    let enabled = !read_state(|state| return state.auto_play_on_select);
+    update_state(|state| {
+        state.auto_play_on_select = enabled;
+    });
+    tracing::info!(enabled, "toggled Auto-play on select");
+    if let Err(error) = AUTO_PLAY_SAVER.get()(enabled) {
+        tracing::warn!(?error, "failed to save the Auto-play on select setting");
+    }
     project(window);
 }
 
@@ -393,6 +434,9 @@ pub(crate) fn project_pages(window: &AppWindow) {
             })
             .collect(),
     ));
+    let auto_play_on_select = read_state(|state| return state.auto_play_on_select);
+    window.set_auto_play_on_select(auto_play_on_select);
+    window.set_auto_play_on_select_text(auto_play_on_select_supporting_text(auto_play_on_select).into());
     let selected = read_state(|state| return state.editor.as_ref().map_or(0, |editor| return index_of_kind(editor.kind())));
     window.set_settings_selected(i32::try_from(selected).unwrap_or(0));
     let Some(page) = view else {
