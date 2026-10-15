@@ -168,7 +168,9 @@ export function consumeSourceAssociations(inputs: SourceContributionInputs,): So
   rl.debug('original contribution association consumption completed',);
   return Object.freeze({
     ...(inputs.requestObservation === undefined ? {} : { governingUse: inspectRequestSourceDerivation({
-      observation: inputs.requestObservation, contributions: inputs.requestSourceContributions ?? [], uses,
+      observation: inputs.requestObservation,
+      contributions: inputs.requestSourceContributions ?? [],
+      uses,
     }) }),
     uses: Object.freeze(uses,),
     issues: Object.freeze(issues,),

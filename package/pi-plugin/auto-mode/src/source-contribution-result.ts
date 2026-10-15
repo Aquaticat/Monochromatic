@@ -82,7 +82,9 @@ export type SourceContributionIssue = {
  Owned frozen result lists do not freeze the original referenced records.
  */
 export type SourceContributionResult = {
-  /** Complete request use requires native field coverage and every original contribution membership. */
+  /**
+   Complete request use requires native field coverage and every original contribution membership.
+   */
   readonly governingUse?: RequestGoverningUse;
   /**
    Issuance-ordered partial contribution uses.

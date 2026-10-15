@@ -272,9 +272,13 @@ export type SourceContribution = {
  Original request receipt exposes its owner's contribution list.
  */
 export type ContributionRequestObservation = {
-  /** Complete native field derivation is separate from partial contribution records. */
+  /**
+   Complete native field derivation is separate from partial contribution records.
+   */
   readonly sourceDerivation?: RequestSourceDerivation;
-  /** Unsupported native request fields retain their original diagnostic. */
+  /**
+   Unsupported native request fields retain their original diagnostic.
+   */
   readonly sourceDerivationFailure?: string;
   /**
    Original serialized request occurrence.
