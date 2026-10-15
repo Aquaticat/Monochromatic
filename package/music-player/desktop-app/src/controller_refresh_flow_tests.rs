@@ -113,7 +113,7 @@ fn a_folder_deleted_and_recreated_with_other_files_is_listed_as_it_is_now() {
     std::fs::remove_dir_all(rig.root.join("album")).expect("removed");
     rig.put("album/z.flac", "tone.opus");
     rig.controller.handle_command(named(rig.root.join("album"), true));
-    let names: Vec<String> = rig.controller.queue.tracks().iter().map(|path| return path.strip_prefix(&rig.root).expect("below the root").to_string_lossy().into_owned()).collect();
+    let names: Vec<String> = rig.controller.queue.tracks().iter().map(|path| return path.strip_prefix(&rig.root).expect("below the root").components().map(|part| return part.as_os_str().to_string_lossy().into_owned()).collect::<Vec<String>>().join("/")).collect();
     assert_eq!(names, vec!["keep.flac", "album/z.flac"]);
     assert!(rig.wait_for_peaks("z.flac", 1));
 }

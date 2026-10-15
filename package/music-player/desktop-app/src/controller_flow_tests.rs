@@ -281,7 +281,8 @@ fn removing_the_selected_file_reports_it_and_stops_playback() {
     open(&mut controller, &library);
     controller.handle_command(Command::SelectIndex(1));
     controller.handle_command(Command::Play);
-    let gone = library.root.join("A/2.flac");
+    // Built part by part so that the separators are the ones the walk puts in the queue paths.
+    let gone = library.root.join("A").join("2.flac");
     std::fs::remove_file(&gone).expect("the selected file is removed");
     controller.handle_command(Command::Rescan);
     assert!(!controller.playing);

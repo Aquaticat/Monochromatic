@@ -290,10 +290,6 @@ jobs:
         path: C:\msys64\var\cache\pacman\pkg
         key: ${{ steps.msys2-cache.outputs.cache-primary-key }}
 
-    - name: Run the tests (cargo nextest)
-      working-directory: package/music-player/desktop-app
-      run: cargo nextest run --locked --target "$TARGET" --no-fail-fast
-
     # rustc prints the exact linker command it runs. The first word is the linker program: link.exe for
     # MSVC, gcc (with -fuse-ld=bfd, so GNU ld) for GNU. lld-link or ld.lld here would be a defect.
     - name: Print the linker rustc ran
@@ -368,3 +364,7 @@ jobs:
           exit 1
         fi
         head -n 40 "${RUNNER_TEMP}/launch.log"
+
+    - name: Run the tests (cargo nextest)
+      working-directory: package/music-player/desktop-app
+      run: cargo nextest run --locked --target "$TARGET" --no-fail-fast

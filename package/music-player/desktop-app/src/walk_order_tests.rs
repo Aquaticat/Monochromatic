@@ -4,7 +4,7 @@
 //           where the walk would put it, and every folder's run must be exactly the files under it.
 
 use super::*;
-use crate::refresh_test_support::{Rng, TempTree};
+use crate::refresh_test_support::{Rng, TempTree, pick_stem};
 
 /// The name parts: they collide on case, digits and leading zeros, so natural order differs from byte order.
 const STEMS: [&str; 16] = ["a", "A", "b", "B", "a2", "a10", "a02", "Track 2", "Track 10", "é", "ß", "日本", "1", "01", "z", "Z z"];
@@ -15,11 +15,11 @@ fn random_name(rng: &mut Rng, suffix: &str) -> String {
     let depth: usize = rng.below(4);
     let mut relative: String = String::new();
     for _ in 0..depth {
-        relative.push_str(STEMS[rng.below(STEMS.len())]);
+        relative.push_str(pick_stem(&STEMS, rng));
         relative.push('/');
     }
     let extension: &str = ["flac", "mp3", "opus", "txt"][rng.below(4)];
-    relative.push_str(&format!("{}{suffix}.{extension}", STEMS[rng.below(STEMS.len())]));
+    relative.push_str(&format!("{}{suffix}.{extension}", pick_stem(&STEMS, rng)));
     return relative;
 }
 

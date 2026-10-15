@@ -109,10 +109,8 @@ fn reading_a_watched_directory_is_not_a_change_but_writing_is() {
         let contents: Vec<u8> = std::fs::read(dir.join("sub").join("a.flac")).expect("file reads");
         assert_eq!(contents, b"x");
     }
-    assert!(
-        rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500)).is_err(),
-        "reading directories and files must not request a rescan"
-    );
+    let during_reads = rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500));
+    assert!(during_reads.is_err(), "reading directories and files must not request a rescan, but one arrived: {during_reads:?}");
     std::fs::write(dir.join("sub").join("b.flac"), b"y").expect("watched fixture should be written");
     assert!(rx.recv_timeout(Duration::from_secs(10)).is_ok(), "a created file must request a rescan");
     drop(watcher);
@@ -168,7 +166,8 @@ fn a_registration_is_followed_by_exactly_one_catch_up_rescan() {
     assert!(rx.recv_timeout(Duration::from_secs(10)).is_ok(), "one catch-up rescan follows the registration");
     // The rescan this triggers reads every directory, as the real one does.
     assert_eq!(std::fs::read_dir(dir.join("sub")).expect("subfolder reads").count(), 1);
-    assert!(rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500)).is_err(), "and no second one");
+    let second = rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500));
+    assert!(second.is_err(), "and no second one, but this arrived: {second:?}");
     drop(watcher);
     std::fs::remove_dir_all(&dir).ok();
 }
@@ -250,7 +249,8 @@ fn reads_report_no_change_but_the_write_after_them_does() {
         assert_eq!(std::fs::read(dir.join("sub").join("a.flac")).expect("reads"), b"first");
         assert!(std::fs::symlink_metadata(dir.join("sub").join("a.flac")).is_ok());
     }
-    assert!(rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500)).is_err(), "reads are not changes");
+    let during_reads = rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500));
+    assert!(during_reads.is_err(), "reads are not changes, but this arrived: {during_reads:?}");
     std::fs::write(dir.join("sub").join("a.flac"), b"changed").expect("the file is written");
     assert!(matches!(rx.recv_timeout(Duration::from_secs(10)), Ok(Change::Paths(_))));
     drop(watcher);
