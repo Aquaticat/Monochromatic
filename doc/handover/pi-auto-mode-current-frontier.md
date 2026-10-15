@@ -1516,12 +1516,28 @@ authority-consuming types retain their authenticated-object defaults.
 `be7a0a8e34` and `dde93c7164` retain original source selection,
 canonical clause/request/member handles,
 and dependency resolution.
-The initial type check identified closure-narrowing and first-member access corrections;
-the initial format pass still reports documentation and type diagnostics.
-These ports are not yet qualified.
-Next complete those corrections,
-exercise the built consumers against the saved original,
-and verify guard-removal controls before continuing to program ownership.
+`e8c613b9cf` preserves original bootstrap property reads once in their incumbent order.
+The constructor-read control also verifies that construction does not invoke lazy capabilities.
+Built source,
+member,
+request,
+and batch consumers pass after the owned rebuild;
+package type checking passes in
+`${HOME}/temp/agent/pi-instruction-consumers-second-20261015.log`.
+The existing whole-request consumer and native permission,
+prohibition,
+and unspecified-policy cases passed in the preceding broad consumer run.
+The source and bridge format pass covers 13 files with zero diagnostics in
+`${HOME}/temp/agent/pi-instruction-format-fourth-20261015.log`.
+All five independent consumer files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-instruction-tests-final-lint-20261015.log`.
+The saved original remains
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/judgment-instructions-before-types.mjs`,
+with SHA-256 `202e8affd3aedada221270f4c8d5b4ac9f91844dec57cb32fa53107910db4559`.
+Direct baseline comparison,
+guard-removal controls,
+and the complete maintained lint recount remain required before qualifying this port
+and continuing to program ownership.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
