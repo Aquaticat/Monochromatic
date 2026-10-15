@@ -2069,7 +2069,27 @@ and source,
 preparation,
 and instruction consumers pass in
 `${HOME}/temp/agent/pi-composition-contract-final-20261015.log`.
-Constructor composition remains pending.
+`3bf53fc710` moves original public assembly into typed capability contracts
+while retaining constructor ownership and the final budget checkpoint.
+The public surface has 55 methods.
+`734054d14e` records assembly formatting.
+`cf8571fe7d` and `0578a7cdd2` add independent built consumers
+for every guarded and direct method,
+frozen property order,
+lazy retained selection,
+argument cardinality,
+callback and receiver identity,
+and failure propagation.
+The initial direct consumers pass;
+fixture declaration checking reports `TS9010`,
+`TS9013`,
+and `TS9016` under isolated declarations.
+`3378daf2f3` supplies explicit independent fixture contracts.
+Final consumer verification,
+saved original comparison,
+guard controls,
+and the maintained lint recount remain pending.
+Constructor composition remains pending beyond public assembly.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
