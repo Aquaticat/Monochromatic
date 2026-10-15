@@ -83,6 +83,11 @@ transcript investigation was stopped.
 - Q17 accepts deeper Depot dependence when measured benefits justify it.
   Portable checks are not a hard requirement;
   the intentional GitHub/Depot split remains a requirement.
+- In Q18 the user reported the USD $200/month plan,
+  a seven-day trial,
+  and no usage so far.
+  These are user-reported account facts.
+  Exact expiry and configured spending controls remain unverified.
 
 ## Measured release example
 
@@ -195,7 +200,10 @@ storage,
 and CI-specific cap behavior require account-level verification.
 Current account plan,
 trial credits,
-and cap settings have not been inspected.
+and cap settings have not been inspected directly.
+The user subsequently reported the USD $200/month plan,
+a seven-day trial,
+and no usage.
 The browser skill's account inspection returned `No browser is available`;
 browser discovery returned an empty list.
 No Depot page opened and no authentication or billing setting changed.
@@ -210,10 +218,10 @@ No organization token was available in `DEPOT_TOKEN`,
 and none was created.
 The inspected organization response exposes identity rather than billing configuration.
 Current usage and an enforceable aggregate cap remain unknown.
-Q18 asks the user for visible plan or trial status,
-expiry,
-usage,
-and spending-limit details because the inspected access paths did not provide them.
+The Q18 answer supplies plan,
+trial duration,
+and reported usage;
+it does not establish an expiry timestamp or spending-limit behavior.
 
 [GitHub billing][github-billing] lists cache overage at $0.07 per GB-month,
 where its GB unit is a GiB.
@@ -302,7 +310,14 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
 
 - The ownership question remains unresolved;
   no repository transfer is authorized.
-- Await Q18 account details;
+- Await Q19 confirmation of the trial brief:
+  intentional hybrid routing,
+  broader coverage,
+  reuse across relevant input changes,
+  rolling budgets without current counting overhead,
+  correct outputs and failure detection,
+  and the combined cost objective within USD $200/month.
+- Verify account spending controls before resource-consuming execution;
   the supported usage endpoint rejected the available user-token credential.
 - Preserve existing explicit-release handling during the proposed trial.
   The current release workflow serializes runs with `cancel-in-progress: false`;

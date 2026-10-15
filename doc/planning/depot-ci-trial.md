@@ -64,9 +64,9 @@ Existing checks provide concrete starting points:
   browser tests,
   and end-to-end tests.
 
-The first measurement slice uses music-player components.
-The eventual coverage target spans the repository;
-the initial slice is not a limit on that target.
+The initial evaluation includes music-player components and representative repository checks.
+The coverage target spans the repository;
+the first workloads are not a limit on that target.
 Check frequency remains an engineering recommendation to make from runtime,
 failure-detection,
 and cost evidence.
@@ -166,7 +166,10 @@ The current browser connection could not inspect account settings;
 CLI authentication itself is verified.
 The documented usage endpoint rejected the available user token because it requires an organization token.
 No token was created;
-account-specific budget facts remain outstanding.
+the user subsequently reported the USD $200/month plan,
+a seven-day trial,
+and no usage so far.
+Exact trial expiry and configured spending controls remain unverified.
 
 ## Result and adoption boundary
 
