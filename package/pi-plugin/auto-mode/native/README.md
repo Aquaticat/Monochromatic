@@ -163,6 +163,17 @@ Turn failures propagate without entering the retained native-failure list.
 Currentness failures enter that list before context-guard state is inspected.
 Only original native guard instances close the shared group to later execution.
 Ordinary native failures retain their original identity without being added to that list by the wrapper.
+`test:native:profile-call` verifies original direct-call admission,
+callable membership,
+source bounds,
+and private argument-pattern ownership.
+Escaped identifiers keep their original source text and decoded callable name.
+Callsite and callee-span envelopes are frozen;
+the borrowed pattern remains the exact original decoder result.
+Validation preserves original property-read order and opaque thrown values.
+Synthetic parser nodes retain the original fractional end-position admission;
+this does not establish that the parser emits such positions.
+The computed-member fixture `tools[tool]` isolates computed syntax rejection from property-kind rejection.
 Retained execution remains callable after a caller replaces the wrapper's `execute` property.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.

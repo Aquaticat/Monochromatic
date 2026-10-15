@@ -9,7 +9,7 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
-Original call inspection is being extracted to `profile-call.ts` and `profile-call-types.ts`.
+Original call inspection now delegates to `profile-call.ts` and `profile-call-types.ts`.
 The original pattern decoder and diagnostic constructor remain borrowed from `result-pattern.mjs`.
 Native build,
 package type checking,
@@ -21,8 +21,29 @@ and retain both parallel combinators.
 The computed-member omission exposed overlapping rejection guards in the first consumer fixture:
 `tools["tool"]` was still rejected by the property-kind check.
 The added `tools[tool]` fixture isolates computed-member rejection.
-Omission controls remain pending;
-the last qualified package recount remains the executable-wrapper report recorded here.
+All 26 process-local omissions or substitutions produce assertion failures;
+the built profile inspector and call helper retain their original hashes.
+Final package type checking,
+built consumers,
+and original replay pass after adding the isolated computed-member fixture.
+The complete recount has zero diagnostics in the call helper,
+its types,
+and its three consumer files.
+The remaining profile inspector has 101 warnings;
+`prepared-dispatch.mjs` has 121 and is the next native boundary.
+Receipts are `typed-profile-call-comparison.json` and `typed-profile-call-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The complete lint output is
+`${HOME}/temp/agent/pi-maintained-typed-profile-call-final-lint-20261015.log`.
+The saved original profile inspector has SHA-256
+`a637372dd68a7fcf2cac28661021aface213396afe31e5ad0ad556f7a087da12`.
+Replay retains the original call body and original `requireProfile` predicate,
+borrowing the original error constructor and decoder through the extracted helper boundary.
+Consumers preserve decoder argument identity,
+property read ordering,
+escaped-identifier source text,
+and original fractional end-position admission for synthetic nodes.
+That synthetic case does not establish that the parser emits fractional source positions.
 
 The tool-call scope correction,
 live Hyper/Gemma assessment,
@@ -31,8 +52,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 797 files and 486 rules,
-with zero errors and 10319 warnings.
+The latest complete lint report covers 802 files and 486 rules,
+with zero errors and 10293 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
