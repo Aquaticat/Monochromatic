@@ -152,8 +152,14 @@ export function objectNode(input: Input = {}): object {
       method: false,
       kind: 'init',
       shorthand: false,
-      key: { type: 'Identifier', name: 'value' },
-      value: { type: 'Literal', value: 1 },
+      key: {
+        type: 'Identifier',
+        name: 'value'
+      },
+      value: {
+        type: 'Literal',
+        value: 1
+      },
       ...input
     }]
   };

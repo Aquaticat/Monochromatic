@@ -95,7 +95,10 @@ export function readOwnedPattern({
       && ((value === null) || ((typeof value) === 'string')
         || ((typeof value) === 'boolean')
         || (((typeof value) === 'number') && Number.isFinite(value)
-          && (!Object.is(value, -0)))))) {
+          && (!Object.is(
+            value,
+            -0
+          )))))) {
       throw new ResultProgramProfileError('non-JSON literal');
     }
     return owned({
@@ -176,7 +179,7 @@ export function readOwnedPattern({
         .type
         === 'Literal') && ((typeof property.key
           .value) === 'string') ? property.key
-          .value : undefined;
+            .value : undefined;
     if (!(((typeof key) === 'string') && (key !== '__proto__')
       && (!keys.has(key)))) {
       throw new ResultProgramProfileError('duplicate, prototype-setting or unsupported key');
