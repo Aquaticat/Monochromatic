@@ -372,12 +372,14 @@ At the launch of `TianqiChen66624`:
 4.  Open items that still stand from the checkpoint headed "2026-10-13 after the hardware change":
     `blockStandingOf` throws `RangeError` on 80,000 inline siblings;
     whether judges quote a year slot bare is unmeasured;
-    the history-archive fixes in `730c503608` have had no reading by an agent that wrote none of them.
-    The reading n165
+    the history-archive fixes in `730c503608` were read by n165
     (brief `prompts/prompt-n165-history-refiling-third-reading.md`,
-    worktree `w160`,
-    scratch `s236`)
-    is running.
+    report `s236/review.md`),
+    which found the second reading's findings fixed and the cuts exact;
+    its seven low findings were fixed in `d6f7f9ae12`
+    (round n167,
+    hand-back `s238/handback-n167.md`),
+    and the top index clauses the lead wrote there have had no independent reading.
     From the review of n159 (Y5):
     the page's definitions miss those inside a list,
     a blockquote or an HTML block,
