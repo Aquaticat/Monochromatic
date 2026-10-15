@@ -311,12 +311,23 @@ The direct-integration build and type checks passed.
 The first runtime suite stopped before executing its test because the formatting commit had inserted
 `readonly #state` into `policy-source/system-slot.mjs`.
 Commit `bbb1aa2f64` removes that TypeScript modifier from JavaScript;
-the rebuilt domain suite now passes and the remaining runtime suites are running.
+the rebuilt domain,
+manual review,
+approval context,
+single call,
+approved dependency,
+event receipt,
+host lifecycle,
+and actual CLI process suites all pass.
 The syntax task separately exposed its own invalid assumption that `node --check` strips TypeScript.
 The task now explicitly strips types before checking TypeScript modules,
 while JavaScript modules reach Node unchanged.
+That syntax task passes 227 maintained modules.
 The native lint report after direct integration contains 533 errors;
 the maintained-package quality queue remains open.
+Commit `53c651c0c0` separates the shared governing-source error to remove the source-history import cycle.
+Its source changes have not yet been rebuilt or verified;
+the passing regression artifact predates that extraction.
 The earlier formatting-only commit is `2728f357f`.
 Its judgment-input formatting was temporarily restored to recover a passing build before this direct integration.
 
