@@ -48,10 +48,11 @@ At that seam:
     A later operation obtains its own snapshot and decision.
 
 Any request/source observation still required for authenticity must be passive for the primary request.
-It may record an observation failure that prevents a dependent tool decision;
+It may record an observation failure that sends the dependent tool decision to manual approval;
 it must not replace a successful chat response with a guard error.
 Do not invent provenance when observation fails.
 Do not turn that failure into automatic approval or execution.
+The user's 2026-10-15 correction requires manual fallback when observation or assessment evidence is unavailable.
 
 This design does not assume a permanent root lease must be repaired for every UI command.
 Currentness is a comparison against the operation's captured native state,
@@ -104,7 +105,8 @@ B precedes C because it retains useful tested behavior rather than replacing unr
 - Initial and follow-up chat, provider switching, automatic retry, in-flight cancellation,
   tree navigation, message editing, reload, fork, resume, and shutdown remain usable with no tools.
 - Inject an auto-mode observation or assessment failure: ordinary chat continues;
-  the affected tool group does not execute and reports the affected decision plainly.
+  the affected tool group opens manual approval explaining the failure and the complete prepared operation.
+  Allow executes that exact operation; Stop and cancellation execute nothing.
 - A successful tool group after provider switching and navigation proves the guard still operates,
   rather than being silently bypassed to make chat pass.
 - Cancelled navigation preserves a still-current operation where Pi permits it;

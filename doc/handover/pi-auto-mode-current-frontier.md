@@ -11,6 +11,14 @@ Updated 2026-10-15.
 
 ### Reopened consumer failures
 
+The user corrected the fallback on 2026-10-15:
+unavailable observation or assessment evidence must fall back to manual approval,
+not withhold the operation outright.
+Implementation and failure-isolation tests must exercise Allow, Stop, and cancellation.
+The existing approval binder currently requires the missing observation itself;
+replace that requirement for this fallback while retaining exact prepared-group identity and native cancellation.
+The primary-chat capture gate described in this section remains pending in parallel with that correction.
+
 After the replacement handoff, the user reported `Root lease has been retired` and `Connection error.`.
 The real session beginning at 22:17:29 UTC records connection failures on `llmgateway-devpass/mimo-v2.6-pro`,
 followed by a lease error on `opencode-go/mimo-v2.6-pro`.
