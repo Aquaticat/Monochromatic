@@ -19,13 +19,35 @@ export type IndexedMetadataInputField = 'skills' | 'emitterMessages' | 'sessionM
  Source positions copy only the original native slot fields admitted by the wire boundary.
  */
 export type SourceInputPosition =
-  | { field: 'toolGuidelines'; toolName: string; ordinal: number }
-  | { field: 'toolSnippets' | 'sections'; key: string }
+  | {
+    field: 'toolGuidelines';
+    toolName: string;
+    ordinal: number
+  }
+  | {
+    field: 'toolSnippets' | 'sections';
+    key: string
+  }
   | { field: 'customPrompt' | 'appendSystemPrompt' | 'expandedPrompt' }
-  | { field: 'contextFiles'; ordinal: number; path: string }
-  | { field: IndexedMetadataInputField; ordinal: number; metadataJSON: string }
-  | { field: MetadataInputField; metadataJSON: string }
-  | { field: 'nativePromptBuilder'; ordinal: number; slot: string };
+  | {
+    field: 'contextFiles';
+    ordinal: number;
+    path: string
+  }
+  | {
+    field: IndexedMetadataInputField;
+    ordinal: number;
+    metadataJSON: string
+  }
+  | {
+    field: MetadataInputField;
+    metadataJSON: string
+  }
+  | {
+    field: 'nativePromptBuilder';
+    ordinal: number;
+    slot: string
+  };
 
 /**
  Absent source position remains an omitted property rather than an invented native slot.
