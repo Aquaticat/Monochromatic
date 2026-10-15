@@ -45,7 +45,9 @@ await describe({ name: 'original prepared native lifecycle', children: [
       if (boundary === 'start') fixture.control.start = pending;
       if (boundary === 'finish') fixture.control.finish = pending;
       if (boundary === 'native') fixture.control.native = pending;
-      async function observe(): Promise<unknown> { const result = await fixture.run(); settled.value = true; return result; }
+      async function observe(): Promise<unknown> { const result = await fixture.run();
+      settled.value = true;
+      return result; }
       const running = observe();
       await immediate();
       const observed = [...fixture.events];

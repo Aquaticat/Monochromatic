@@ -28,7 +28,10 @@ export type PreparedLifecyclePreparation = Readonly<{
 type LifecycleNotifications = Readonly<{
   onStart?: (call: ProgramNativeCall) => unknown;
   onFinish?: (result: unknown) => unknown;
-  onUpdate?: (partial: unknown, call: ProgramNativeCall) => unknown;
+  onUpdate?: (
+    partial: unknown,
+    call: ProgramNativeCall
+  ) => unknown;
 }>;
 
 /**
@@ -56,7 +59,10 @@ export type PreparedLifecycleInput = Readonly<{
   onStart: LifecycleNotifications['onStart'];
   onFinish: LifecycleNotifications['onFinish'];
   onUpdate: LifecycleNotifications['onUpdate'];
-  runToolCall: (call: ProgramNativeCall, options: PreparedLifecycleOptions) => unknown;
+  runToolCall: (
+    call: ProgramNativeCall,
+    options: PreparedLifecycleOptions
+  ) => unknown;
   executableTools: readonly PreparedExecutableTool[];
   assistantMessage: unknown;
   context: unknown;
