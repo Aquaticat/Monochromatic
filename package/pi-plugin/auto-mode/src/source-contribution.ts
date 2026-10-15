@@ -5,6 +5,7 @@
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { PolicyInputBindingError, } from './policy-input-binding-error.ts';
+import { inspectRequestSourceDerivation } from './request-source-derivation.ts';
 import { inspectMessageContribution, } from './source-contribution-message.ts';
 import { inspectRetainedInputContribution } from './source-contribution-retained-input.ts';
 import { inspectRunContribution, } from './source-contribution-run.ts';
@@ -166,6 +167,9 @@ export function consumeSourceAssociations(inputs: SourceContributionInputs,): So
   }
   rl.debug('original contribution association consumption completed',);
   return Object.freeze({
+    ...(inputs.requestObservation === undefined ? {} : { governingUse: inspectRequestSourceDerivation({
+      observation: inputs.requestObservation, contributions: inputs.requestSourceContributions ?? [], uses,
+    }) }),
     uses: Object.freeze(uses,),
     issues: Object.freeze(issues,),
   },);

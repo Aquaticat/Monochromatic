@@ -27,4 +27,5 @@ export type RequestGoverningUse = {
   readonly request: object;
   readonly state: 'represented-by-original-inputs' | 'unresolved';
   readonly permission: false;
+  readonly reason?: string;
 };

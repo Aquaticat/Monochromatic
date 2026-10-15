@@ -3,6 +3,7 @@
 
  @module
  */
+import type { RequestSourceDerivation } from './request-source-derivation-types.ts';
 
 //region Original input and publication identities are not authority declarations
 
@@ -271,6 +272,10 @@ export type SourceContribution = {
  Original request receipt exposes its owner's contribution list.
  */
 export type ContributionRequestObservation = {
+  /** Complete native field derivation is separate from partial contribution records. */
+  readonly sourceDerivation?: RequestSourceDerivation;
+  /** Unsupported native request fields retain their original diagnostic. */
+  readonly sourceDerivationFailure?: string;
   /**
    Original serialized request occurrence.
    */
