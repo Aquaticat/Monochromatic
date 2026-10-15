@@ -25,7 +25,9 @@ await describe({
         /** Budget callbacks inspect the exact claims the production function will update. */
         const fixture = createSettlementFixture({ checkpoint() {
           checks.count += 1;
-          assert.ok(fixture.batch.selected.every(function unanswered(claim) { return claim.answer === undefined; }));
+          assert.ok(fixture.batch.selected.every(function unanswered(claim) {
+            return claim.answer === undefined;
+          }));
         } });
         /** Serving attribution is retained only for a completely admitted response. */
         const record = fixture.settle({ batch: fixture.handle, answerText: validText, model: 'serving-model' });
@@ -48,7 +50,11 @@ await describe({
           assert.equal(Object.isFrozen(claim.answer), true);
           assert.equal(claim.model, 'serving-model');
         }
-        assert.throws(function settleTwice() { fixture.settle({ batch: fixture.handle, answerText: validText }); }, /already has a terminal response/);
+        assert.throws(function settleTwice() {
+          fixture.settle({ batch: fixture.handle, answerText: validText });
+        }, function terminalBatch(error) {
+          return (error instanceof Error) && (error.message === 'Question batch already has a terminal response');
+        });
         assert.equal(fixture.batch.record, record);
       },
     }),
@@ -63,7 +69,9 @@ await describe({
         ]) });
         assert.deepEqual(record.answers, [{ status: 'estimate', value: { choice: 'yes', probabilities: { yes: 0.75, no: 0.25 } } }]);
         assert.equal(Object.hasOwn(record, 'model'), false);
-        assert.ok(fixture.batch.selected.every(function noModel(claim) { return !Object.hasOwn(claim, 'model'); }));
+        assert.ok(fixture.batch.selected.every(function noModel(claim) {
+          return !Object.hasOwn(claim, 'model');
+        }));
       },
     }),
 
@@ -73,7 +81,7 @@ await describe({
     ...[
       undefined,
       42,
-      '\ud800',
+      '\uD800',
       '{',
       '{}',
       '[]',
@@ -97,7 +105,7 @@ await describe({
           const record = fixture.settle({ batch: fixture.handle, answerText, model: 'valid-model' });
           assert.equal(record.malformed, true);
           assert.equal(record.discarded, false);
-          assert.ok(record.failure instanceof Error);
+          assert.ok(Error.isError(record.failure,));
           assert.deepEqual(record.answers, [{ status: 'malformed' }, { status: 'malformed' }]);
           assert.equal(Object.hasOwn(record, 'raw'), ((typeof answerText) === 'string') && (Buffer.byteLength(answerText) <= 65_536));
           assert.equal(Object.hasOwn(record, 'model'), false);
@@ -110,7 +118,7 @@ await describe({
         },
       });
     }),
-    ...['', 1, null, '\ud800', 'a'.repeat(257), 'é'.repeat(129)].map(function malformedModel(model, index) {
+    ...['', 1, null, '\uD800', 'a'.repeat(257), 'é'.repeat(129)].map(function malformedModel(model, index) {
       return it({
         name: `rejects malformed serving attribution ${index}`,
         fn: async function rejectsModelAttribution() {
@@ -120,7 +128,7 @@ await describe({
           const record = fixture.settle({ batch: fixture.handle, answerText: validText, model });
           assert.equal(record.malformed, true);
           assert.equal(Object.hasOwn(record, 'model'), false);
-          assert.ok(record.failure instanceof Error);
+          assert.ok(Error.isError(record.failure,));
           assert.equal(record.failure.message, 'Assessment model attribution is malformed');
         },
       });
@@ -162,13 +170,17 @@ await describe({
             },
             current() { if (point === 'current-binding') throw failure; },
           });
-          assert.throws(function settleStaleBatch() { fixture.settle({ batch: fixture.handle, answerText: validText }); }, function originalError(error) { return error === failure; });
+          assert.throws(function settleStaleBatch() {
+            fixture.settle({ batch: fixture.handle, answerText: validText });
+          }, function originalError(error) {
+            return error === failure;
+          });
           assert.equal(fixture.batch.record?.failure, failure);
           assert.equal(fixture.batch.record?.discarded, true);
           assert.equal(fixture.batch.record?.malformed, false);
           assert.equal(fixture.batch.record?.raw, validText);
           assert.equal(fixture.batch.settled, true);
-          assert.ok(fixture.batch.record);
+          assert.ok(fixture.batch.record !== undefined);
           assert.deepEqual(fixture.batch.record.answers, [{ status: 'discarded' }, { status: 'discarded' }]);
           for (const [index, claim] of fixture.batch.selected.entries()) assert.equal(claim.answer, fixture.batch.record.answers[index]);
         },
@@ -179,10 +191,16 @@ await describe({
       fn: async function rejectsForeignBatch() {
         /** A foreign handle must not settle the actual original batch. */
         const fixture = createSettlementFixture();
-        assert.throws(function foreignBatch() { fixture.settle({ batch: {}, answerText: validText }); }, /Foreign fixture batch/);
+        assert.throws(function foreignBatch() {
+          fixture.settle({ batch: {}, answerText: validText });
+        }, function foreignError(error) {
+          return (error instanceof Error) && (error.message === 'Foreign fixture batch');
+        });
         assert.equal(fixture.batch.settled, false);
         assert.equal(fixture.batch.record, undefined);
-        assert.ok(fixture.batch.selected.every(function untouched(claim) { return claim.answer === undefined; }));
+        assert.ok(fixture.batch.selected.every(function untouched(claim) {
+          return claim.answer === undefined;
+        }));
       },
     }),
 

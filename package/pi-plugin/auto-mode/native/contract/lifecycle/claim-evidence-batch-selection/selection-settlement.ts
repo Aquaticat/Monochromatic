@@ -18,7 +18,9 @@ import type {
  */
 const l = tagged({ tag: 'auto-mode-question-settlement' });
 
-/** Retained answer text uses the existing UTF-8 response bound. */
+/**
+ Retained answer text uses the existing UTF-8 response bound.
+ */
 const ANSWER_MAX_BYTES = 65_536;
 
 //region Only the selection owner can authenticate and settle original batches.

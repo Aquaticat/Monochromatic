@@ -21,7 +21,9 @@ import { caughtValueText } from '@monochromatic-dev/module-caught-value/ts';
  */
 const l = tagged({ tag: 'auto-mode-question-answer-decoding' });
 
-/** Model attribution uses the existing bounded UTF-8 wire profile. */
+/**
+ Model attribution uses the existing bounded UTF-8 wire profile.
+ */
 const MODEL_MAX_BYTES = 256;
 
 //region A malformed member makes the complete response unusable.
@@ -90,7 +92,10 @@ export function decodeQuestionAnswers({
         === 'id,status,value'))
         return Object.freeze({
           status: 'estimate',
-          value: readRelationEstimate({ definition: claim.definition, value: answer.value })
+          value: readRelationEstimate({
+            definition: claim.definition,
+            value: answer.value
+          })
         });
       if ((answer.status === 'unresolved') && (Object.keys(answer)
         .toSorted()
