@@ -179,11 +179,19 @@ export function createMemberFixture(): MemberFixture {
    Default operations preserve native absence, permission, and input sealing.
    */
   const control: Control = {
-    prepare() { return undefined; },
-    assess() { return { block: false }; },
-    active() { return undefined; },
+    prepare() { 
+      return undefined; 
+    },
+    assess() { 
+      return { block: false }; 
+    },
+    active() { 
+      return undefined; 
+    },
     seal,
-    release() { return undefined; },
+    release() { 
+      return undefined; 
+    },
   };
   /**
    Model the dispatcher's original first-decision blocking owner.

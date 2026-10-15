@@ -34,7 +34,9 @@ await describe({ name: 'original prepared member failure ownership', children: [
     return it({ name: `retains original currentness failure at ${stage}`, fn: async function currentness() {
       const fixture = createMemberFixture();
       const failure: unknown = Object.freeze({ stage });
-      fixture.control.active = function original(at) { if (at === stage) throw failure; };
+      fixture.control.active = function original(at) { 
+        if (at === stage) throw failure; 
+      };
       const result = await fixture.run();
       assertRetained({ fixture, result, failure });
       assert.equal(fixture.memberState.entered, true);
@@ -45,7 +47,9 @@ await describe({ name: 'original prepared member failure ownership', children: [
     return it({ name: `retains opaque native preparation failure ${ordinal}`, fn: async function prepareFailure() {
       const fixture = createMemberFixture();
       const originalFailure: unknown = failure;
-      fixture.control.prepare = async function rejectedPreparation() { throw originalFailure; };
+      fixture.control.prepare = async function rejectedPreparation() { 
+        throw originalFailure; 
+      };
       const result = await fixture.run();
       assertRetained({ fixture, result, failure });
       assert.equal(fixture.ready.size, 0);
@@ -82,7 +86,9 @@ await describe({ name: 'original prepared member failure ownership', children: [
   }),
   it({ name: 'retains native cloning failure before publishing readiness', fn: async function cloneFailure() {
     const fixture = createMemberFixture();
-    fixture.control.seal = function uncloneable() { return function nativeValue() {}; };
+    fixture.control.seal = function uncloneable() { 
+      return function nativeValue() {}; 
+    };
     const result = await fixture.run();
     const [failure] = fixture.failures;
     assert.ok(failure instanceof DOMException);
@@ -93,7 +99,9 @@ await describe({ name: 'original prepared member failure ownership', children: [
   it({ name: 'retains release failure after readiness publication and before assessment', fn: async function releaseFailure() {
     const fixture = createMemberFixture();
     const failure: unknown = Object.freeze({ reason: 'original turn release' });
-    fixture.control.release = function original() { throw failure; };
+    fixture.control.release = function original() { 
+      throw failure; 
+    };
     const result = await fixture.run();
     assertRetained({ fixture, result, failure });
     assert.equal(fixture.ready.size, 1);
@@ -103,7 +111,9 @@ await describe({ name: 'original prepared member failure ownership', children: [
   it({ name: 'retains asynchronous assessment failure after publishing its original manifest', fn: async function assessFailure() {
     const fixture = createMemberFixture();
     const failure: unknown = Object.freeze({ reason: 'original assessment' });
-    fixture.control.assess = async function original() { throw failure; };
+    fixture.control.assess = async function original() { 
+      throw failure; 
+    };
     const result = await fixture.run();
     assertRetained({ fixture, result, failure });
     assert.equal(fixture.ready.size, 1);
@@ -113,8 +123,12 @@ await describe({ name: 'original prepared member failure ownership', children: [
   it({ name: 'retains gate rejection within the early preparation block path', fn: async function blockedGate() {
     const fixture = createMemberFixture();
     const failure: unknown = Object.freeze({ reason: 'original gate rejection' });
-    fixture.control.prepare = function original() { return { block: true, reason: 'native block' }; };
-    const running = fixture.run({ block(reason: unknown) { fixture.blockReasons.push(reason); } });
+    fixture.control.prepare = function original() { 
+      return { block: true, reason: 'native block' }; 
+    };
+    const running = fixture.run({ block(reason: unknown) { 
+      fixture.blockReasons.push(reason); 
+    } });
     await immediate();
     fixture.gate.reject(failure);
     const result = await running;
@@ -138,7 +152,11 @@ await describe({ name: 'original prepared member failure ownership', children: [
   it({ name: 'rejects entry marker publication without retaining or blocking it', fn: async function entryPublication() {
     const fixture = createMemberFixture();
     const failure: unknown = Object.freeze({ reason: 'original marker setter' });
-    await assert.rejects(fixture.run({ memberState: { get entered() { return false; }, set entered(_value: boolean) { throw failure; } } }), function original(error: unknown) {
+    await assert.rejects(fixture.run({ memberState: { get entered() { 
+      return false; 
+    }, set entered(_value: boolean) { 
+      throw failure; 
+    } } }), function original(error: unknown) {
       assert.equal(error, failure);
       return true;
     });
@@ -150,8 +168,12 @@ await describe({ name: 'original prepared member failure ownership', children: [
     const fixture = createMemberFixture();
     const original: unknown = Object.freeze({ reason: 'native preparation' });
     const later: unknown = Object.freeze({ reason: 'blocking owner' });
-    fixture.control.prepare = function failed() { throw original; };
-    await assert.rejects(fixture.run({ block() { throw later; } }), function same(error: unknown) {
+    fixture.control.prepare = function failed() { 
+      throw original; 
+    };
+    await assert.rejects(fixture.run({ block() { 
+      throw later; 
+    } }), function same(error: unknown) {
       assert.equal(error, later);
       return true;
     });
@@ -161,7 +183,9 @@ await describe({ name: 'original prepared member failure ownership', children: [
     const fixture = createMemberFixture();
     const original: unknown = Object.freeze({ reason: 'native preparation' });
     const later: unknown = Object.freeze({ reason: 'retention owner' });
-    fixture.control.prepare = function failed() { throw original; };
+    fixture.control.prepare = function failed() { 
+      throw original; 
+    };
     await assert.rejects(fixture.run({ failures: { push(error: unknown) {
       assert.equal(error, original);
       throw later;

@@ -47,7 +47,9 @@ await describe({ name: 'original prepared member values', children: [
   it({ name: 'preserves changed native arguments and the original sequential execution mode', fn: async function sequential() {
     const fixture = createMemberFixture();
     const replacement = { changed: true };
-    fixture.control.prepare = function replace() { fixture.hook.args = replacement; };
+    fixture.control.prepare = function replace() { 
+      fixture.hook.args = replacement; 
+    };
     await fixture.run({ serial: true });
     assert.ok(Object.isFrozen(replacement));
     assert.deepEqual(fixture.ready.get('one'), { groupExecutionMode: 'sequential', id: 'one', name: 'tool', input: replacement });
@@ -70,7 +72,9 @@ await describe({ name: 'original prepared member values', children: [
   it({ name: 'awaits native preparation before reading or sealing its argument slot', fn: async function preparationWait() {
     const fixture = createMemberFixture();
     const preparation = Promise.withResolvers<unknown>();
-    fixture.control.prepare = function pending() { return preparation.promise; };
+    fixture.control.prepare = function pending() { 
+      return preparation.promise; 
+    };
     const running = fixture.run();
     assert.equal(await Promise.race([running, immediate('pending')]), 'pending');
     assert.equal(fixture.memberState.entered, true);
@@ -82,7 +86,9 @@ await describe({ name: 'original prepared member values', children: [
   it({ name: 'awaits assessment and preserves a blocking decision selected while it was pending', fn: async function decisionRace() {
     const fixture = createMemberFixture();
     const assessment = Promise.withResolvers<unknown>();
-    fixture.control.assess = function pending() { return assessment.promise; };
+    fixture.control.assess = function pending() { 
+      return assessment.promise; 
+    };
     const running = fixture.run();
     assert.equal(await Promise.race([running, immediate('pending')]), 'pending');
     assert.equal(fixture.batchState.assessmentStarted, true);
@@ -97,8 +103,12 @@ await describe({ name: 'original prepared member values', children: [
   it({ name: 'does not await synchronous currentness or preparation-release return values', fn: async function synchronousCallbacks() {
     const fixture = createMemberFixture();
     const pending = Promise.withResolvers<unknown>();
-    fixture.control.active = function active() { return pending.promise; };
-    fixture.control.release = function release() { return pending.promise; };
+    fixture.control.active = function active() { 
+      return pending.promise; 
+    };
+    fixture.control.release = function release() { 
+      return pending.promise; 
+    };
     assert.equal(await Promise.race([fixture.run(), immediate('pending')]), undefined);
     pending.resolve(undefined);
   } }),
@@ -107,7 +117,9 @@ await describe({ name: 'original prepared member values', children: [
   ...[undefined, null, false, 0, '', 42, 'native result'].map(function nonblocking(prepared, ordinal) {
     return it({ name: `preserves original nonblocking preparation value ${ordinal}`, fn: async function nativeAbsence() {
       const fixture = createMemberFixture();
-      fixture.control.prepare = function original() { return prepared; };
+      fixture.control.prepare = function original() { 
+        return prepared; 
+      };
       assert.equal(await fixture.run(), undefined);
       assert.deepEqual(fixture.failures, []);
     } });
@@ -134,7 +146,9 @@ await describe({ name: 'original prepared member values', children: [
   ...[undefined, null, false, 0, '', Number.NaN, { opaque: 'original reason' }].map(function originalReason(reason, ordinal) {
     return it({ name: `preserves original preparation block reason ${ordinal}`, fn: async function blockedPreparation() {
       const fixture = createMemberFixture();
-      fixture.control.prepare = function blocked() { return { block: 'truthy', reason }; };
+      fixture.control.prepare = function blocked() { 
+        return { block: 'truthy', reason }; 
+      };
       const result = await fixture.run();
       assert.equal(result, fixture.batchState.decision);
       assert.deepEqual(fixture.blockReasons, [ordinal === 6 ? reason : 'A member preparation blocked this complete group']);
