@@ -78,9 +78,8 @@ function policy(definitionId) { return {
   programProfile,
   accepts:function acceptAuthoredFixtureRelation() { return (true); }
 }; }
-const ctx={
-  hasUI:!headless,
-  ui:{select:async function selectFixtureOutcome(
+function createFixtureSelector() {
+  return async function selectFixtureOutcome(
     title,
     options
   ){
@@ -102,15 +101,19 @@ const ctx={
   return undefined;
  }
  return mode==='deny'?'Deny':mode==='stop'?'Stop':'Allow';
-}},
+  };
+}
+const select=createFixtureSelector();
+const ctx={
+  hasUI:!headless,
+  ui:{select},
   abort(){fixtureState.abortTask=session.abort();}
 };
 if(useNativeContext&&(!headless))await session.bindExtensions({uiContext:{
   ...session.extensionRunner
     .createContext()
     .ui,
-  select:ctx.ui
-    .select
+  select
 }});
 export const runtime=bindNativePolicyRuntime({
   root,

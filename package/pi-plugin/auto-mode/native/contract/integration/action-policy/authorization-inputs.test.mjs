@@ -225,8 +225,8 @@ for(const change of [
 ]){
  const input=fixture();
    const binding=await captureAuthorizationInputs(input.args);
-   const method=input.owner
-     .capture;
+   const method=Object.getOwnPropertyDescriptor(input.owner,'capture');
+ assert.ok(method && Object.hasOwn(method,'value'));
  if(change==='owner')input.retireOwner();
  if(change==='facts')input.authorization
    .satisfaction='satisfied';
@@ -235,7 +235,7 @@ for(const change of [
  assert.throws(binding.assertCurrent);
  input.restoreOwner();input.authorization
    .satisfaction='unsatisfied';input.owner
-     .capture=method;
+     .capture=method.value;
  assert.throws(
    binding.assertCurrent,
    function matchesLostEligibility(error) {
