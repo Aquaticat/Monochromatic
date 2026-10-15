@@ -7,6 +7,13 @@ and Pi source transformations previously exercised in the private integration wo
 The package extension export remains available for legacy consumers.
 The installed native host replaces its legacy extension declaration to avoid duplicate guards.
 
+The [file-observation contract](file-observation.md)
+documents synchronous policy snapshots,
+descriptor cleanup,
+and the scoped filesystem lint exceptions.
+Relevance-cache initialization and publication use asynchronous filesystem operations;
+their refresh owner rechecks original policy identity and cancellation before publishing a view.
+
 `contract/source-provenance.json` records the original relative paths,
 source repository revision,
 and SHA-256 hashes before relocation.

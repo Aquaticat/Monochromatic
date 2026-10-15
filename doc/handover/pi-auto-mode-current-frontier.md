@@ -960,9 +960,24 @@ The rule has no per-call configuration allow-list;
 changing the observer alone to return asynchronously would change the synchronous policy-selection
 and dependency-finalization consumer contracts.
 The package rules and their severities remain unchanged.
-Post-change observer integration,
-focused lint,
-and new fixture formatting remain pending.
+The rebuilt file observer,
+relevance store and refresh,
+source-freshness work,
+approved-dependency integration,
+and package type checks all pass in
+`${HOME}/temp/agent/pi-native-cache-observer-consumer-20261015.log`.
+Process-local omission controls remove descriptor closure or post-await cache freshness checks
+from the copied modules while loading.
+The committed consumer tests fail in both cases,
+and artifact hashes remain unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/cache-observer-omissions.json`
+retains those results.
+Focused lint now has zero errors and 484 warnings across the changed source and fixtures.
+The complete package recount covers 517 files and 486 rules:
+zero errors and 13812 warnings in
+`${HOME}/temp/agent/pi-maintained-cache-observer-lint-20261015.log`.
+Remaining warnings still prevent the strict lint task from passing.
+Untyped native module boundaries and statement formatting remain the largest unfinished groups.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

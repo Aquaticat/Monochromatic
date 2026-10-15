@@ -64,4 +64,19 @@ The baseline receipt is
 
 The cleanup refactor replaces `finally` with a lexical descriptor owner.
 Its disposer captures close failures before the existing ordered failure check.
-Post-change verification remains pending.
+The rebuilt observer,
+cache store,
+cache refresh,
+source-freshness work,
+approved-dependency integration,
+and package type checks pass in
+`${HOME}/temp/agent/pi-native-cache-observer-consumer-20261015.log`.
+
+Process-local omission controls remove descriptor closure or the cache's post-await freshness checks
+from the built module as it loads.
+The committed consumer tests fail in both cases;
+hashes confirm the copied artifacts are unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/cache-observer-omissions.json`
+retains the omission result and artifact identities.
+The focused source and fixture lint pass has no errors;
+its remaining warnings are recorded separately from consumer correctness.
