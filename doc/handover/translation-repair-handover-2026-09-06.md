@@ -349,26 +349,35 @@ At the launch of `TianqiChen66624`:
     Record the read in the pass log.
 2.  The review n162 of the n159 and n161 commits
     (brief `prompts/prompt-n162-review-of-n159-and-n161.md`,
-    findings Z1 onward in `s233/review.md`):
-    rule on each finding,
-    then a fix round,
-    a review by an agent that wrote none of it,
+    findings Z1 to Z11 in `s233/review.md`,
+    none of them on a corpus page)
+    is ruled:
+    every finding is fixed,
+    the lead's own Z4 by the commit comments on `5fe3173cc5` and `277145a862`.
+    The fix round n166
+    (brief `prompts/prompt-n166-z-findings.md`,
+    worktree `w161`,
+    scratch `s237`)
+    is running;
+    then a review by an agent that wrote none of it,
     a gate,
     and landing after `TianqiChen66625` settles.
-3.  The docs round n163
-    (brief `prompts/prompt-n163-docs-n159-to-n161.md`,
-    worktree `w153`,
-    scratch `s234`)
-    writes the ledger for n159 to n161
-    (B616 on,
-    M221 on);
-    the lead copies its docs to the branch,
-    runs the doc guards and the render check,
-    and lands them as a docs commit.
+3.  The docs round n163 landed in `537d79eaaf`
+    (ledger B616 to B628,
+    M221 to M223).
+    The next docs batch records the lead's own mistakes of this round,
+    the rule breaches of n162 and n163,
+    n162's finding on B619,
+    and n166's ledger.
 4.  Open items that still stand from the checkpoint headed "2026-10-13 after the hardware change":
     `blockStandingOf` throws `RangeError` on 80,000 inline siblings;
     whether judges quote a year slot bare is unmeasured;
-    a second independent reading of the history-archive fixes is owed.
+    the history-archive fixes in `730c503608` have had no reading by an agent that wrote none of them.
+    The reading n165
+    (brief `prompts/prompt-n165-history-refiling-third-reading.md`,
+    worktree `w160`,
+    scratch `s236`)
+    is running.
     From the review of n159 (Y5):
     the page's definitions miss those inside a list,
     a blockquote or an HTML block,
