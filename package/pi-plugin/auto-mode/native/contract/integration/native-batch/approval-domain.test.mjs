@@ -51,14 +51,15 @@ session.agent
    lastReview:review,
    lastJudgment:judgment
  }=runtime.inspect();
- const eligible=(!headless)&&(![
+ const independentUnresolved=(!freshSessionApproval)&&['missing','unsupported','unresolved'].includes(mode);
+ const eligible=(!headless)&&(!independentUnresolved)&&(![
    'prohibited',
    ...(uncertainContext?[]:['satisfied'])
  ].includes(mode));
  assert.equal(
    fixtureState.selections,
    eligible?1:0,
-   `Required or uncertain approval reaches the original selector unless a prohibition or unavailable UI blocks it: ${inspect(
+   `Confirmation requires no prohibition, independent unresolved prerequisite, or unavailable UI: ${inspect(
      {
        authorizationCaptures: fixtureState.authorizationCaptures,
        handlerFailure: fixtureState.handlerFailure,
@@ -131,10 +132,10 @@ session.agent
       .length,
     1
   );
- const unresolved=headless&&(![
+ const unresolved=independentUnresolved||(headless&&(![
    'prohibited',
    'satisfied'
- ].includes(mode));
+ ].includes(mode)));
   assert.equal(
     review.outcome
       .state,

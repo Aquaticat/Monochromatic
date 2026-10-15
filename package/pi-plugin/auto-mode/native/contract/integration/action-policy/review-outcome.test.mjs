@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {resolveManualReviewOutcome} from './review-outcome.ts';
+import {resolveManualReviewOutcome,resolveConfirmedOutcome} from './review-outcome.ts';
 import {flushPolicyDiagnostics} from '../maintained-policy.mjs';
 
 /** Authored internal facts exercise routing without claiming source authority. */
@@ -185,6 +185,35 @@ assert.throws(function rejectMalformedRule() { return (resolveManualReviewOutcom
   premises:'incomplete',
   rules:[{id:'invalid'}]
 })); });
+for(const premises of ['complete','incomplete']){
+ for(const channel of ['incumbent-approval','unsupported','unresolved']){
+  const program={
+    premises,
+    rules:[rule({id:'permit',effect:'permit'})],
+    authorizationRequirements:[{
+      id:'independent',applicability:'applies',satisfaction:'unsatisfied',channel
+    }]
+  };
+  const confirmed=resolveConfirmedOutcome(program);
+  assert.equal(confirmed.state,channel==='incumbent-approval'?'resolved':'unresolved');
+  assert.equal(confirmed.verdict,channel==='incumbent-approval'?'approve':undefined);
+  assert.equal(program.authorizationRequirements[0].satisfaction,'unsatisfied');
+ }
+ const mixed={
+   premises,
+   rules:[rule({id:'permit',effect:'permit'})],
+   authorizationRequirements:[
+     {id:'confirm',applicability:'applies',satisfaction:'unsatisfied',channel:'incumbent-approval'},
+     {id:'external',applicability:'applies',satisfaction:'unsatisfied',channel:'unsupported'}
+   ]
+ };
+ assert.equal(resolveManualReviewOutcome(mixed).authorizationRequirements.state,'unresolved');
+ assert.equal(resolveConfirmedOutcome(mixed).state,'unresolved');
+ assert.equal(resolveConfirmedOutcome({
+   ...mixed,rules:[rule({id:'deny',effect:'prohibit'})]
+ }).verdict,'deny');
+ assert.equal(resolveConfirmedOutcome({premises,rules:[]}).verdict,'approve');
+}
 await flushPolicyDiagnostics();
 console.log(JSON.stringify({
   complete:true,
