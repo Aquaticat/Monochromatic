@@ -6,7 +6,10 @@ import type { ProgramNativeCall } from './program-operation-types.ts';
 /**
  Optional properties retain original primitive truthiness and opaque preparation reasons.
  */
-export type PreparedDecisionProperties = Readonly<{ block?: unknown; reason?: unknown }>;
+export type PreparedDecisionProperties = Readonly<{
+  block?: unknown;
+  reason?: unknown
+}>;
 
 /**
  Original manifest members keep independently sealed input snapshots.
@@ -30,7 +33,10 @@ export type PreparedMemberInput = Readonly<{
   hook: Readonly<{ args: unknown }>;
   call: ProgramNativeCall;
   memberState: { entered: boolean };
-  batchState: { assessmentStarted: boolean; decision?: PreparedDecisionProperties };
+  batchState: {
+    assessmentStarted: boolean;
+    decision?: PreparedDecisionProperties
+  };
   ready: Map<string, PreparedMember>;
   scheduled: readonly ProgramNativeCall[];
   snapshots: (readonly PreparedMemberLookup[])[];
@@ -46,6 +52,9 @@ export type PreparedMemberInput = Readonly<{
   block: (reason: unknown) => unknown;
   sealInput: (input: unknown) => unknown;
   releasePreparation: () => unknown;
-  assess: (input: Readonly<{ members: readonly PreparedMemberLookup[]; signal: unknown }>) => unknown;
+  assess: (input: Readonly<{
+    members: readonly PreparedMemberLookup[];
+    signal: unknown
+  }>) => unknown;
   PreparedBatchContractError: new (message: string) => Error;
 }>;

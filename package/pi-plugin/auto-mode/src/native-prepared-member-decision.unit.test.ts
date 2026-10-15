@@ -58,7 +58,9 @@ await describe({ name: 'original prepared member decisions', children: [
     const fixture = createMemberFixture();
     const reads: string[] = [];
     fixture.control.assess = function original() {
-      return { get block() { reads.push('block'); return true; }, get reason() { reads.push('reason'); return 'original'; } };
+      return { get block() { reads.push('block');
+      return true; }, get reason() { reads.push('reason');
+      return 'original'; } };
     };
     assert.deepEqual(await fixture.run(), { block: true, reason: 'original' });
     assert.deepEqual(reads, ['block', 'block', 'reason', 'reason', 'block', 'reason']);
@@ -86,7 +88,8 @@ await describe({ name: 'original prepared member decisions', children: [
   } }),
   it({ name: 'validates an assessment even after its callback selects another original decision', fn: async function invalidAfterDecision() {
     const fixture = createMemberFixture();
-    fixture.control.assess = function original() { fixture.block('original cancellation'); return null; };
+    fixture.control.assess = function original() { fixture.block('original cancellation');
+    return null; };
     assert.deepEqual(await fixture.run(), { block: true, reason: 'Complete group preparation or assessment failed' });
     const [failure] = fixture.failures;
     assert.ok(failure instanceof PreparedBatchContractError);

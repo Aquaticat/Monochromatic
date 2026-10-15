@@ -1,24 +1,43 @@
 /**
  Independent built consumers observe original prepared-member lifecycle and retained ownership. @module
  */
-import { PreparedBatchContractError, seal } from './native-input-seal-fixture.ts';
+import {
+  PreparedBatchContractError,
+  seal
+} from './native-input-seal-fixture.ts';
 
 /**
  Consumer records retain original opaque arguments and blocking reasons.
  */
-export type MemberDecision = Readonly<{ block?: unknown; reason?: unknown }>;
+export type MemberDecision = Readonly<{
+  block?: unknown;
+  reason?: unknown
+}>;
 /**
  Original scheduled call identity is independent of the implementation's declarations.
  */
-type NativeCall = Readonly<{ type: string; id: string; name: string; arguments: unknown }>;
+type NativeCall = Readonly<{
+  type: string;
+  id: string;
+  name: string;
+  arguments: unknown
+}>;
 /**
  Prepared manifest observations retain original mode, identity, and cloned input.
  */
-type Member = Readonly<{ groupExecutionMode: string; id: string; name: string; input: unknown }>;
+type Member = Readonly<{
+  groupExecutionMode: string;
+  id: string;
+  name: string;
+  input: unknown
+}>;
 /**
  Assessment receives original manifest and cancellation identities.
  */
-type Assessment = Readonly<{ members: readonly unknown[]; signal: unknown }>;
+type Assessment = Readonly<{
+  members: readonly unknown[];
+  signal: unknown
+}>;
 /**
  Disposable callbacks support synchronous, asynchronous, and opaque failures.
  */
@@ -37,7 +56,10 @@ type MemberFixture = Readonly<{
   hook: { args: unknown };
   signal: object;
   memberState: { entered: boolean };
-  batchState: { assessmentStarted: boolean; decision?: MemberDecision };
+  batchState: {
+    assessmentStarted: boolean;
+    decision?: MemberDecision
+  };
   ready: Map<string, Member>;
   scheduled: NativeCall[];
   snapshots: (readonly unknown[])[];
@@ -68,13 +90,16 @@ type MemberModule = Readonly<{
  */
 function assertMemberModule(value: unknown): asserts value is MemberModule {
   if ((value === null) || ((typeof value) !== 'object')
-    || !('preparePreparedMember' in value)
+    || (!('preparePreparedMember' in value))
     || ((typeof value.preparePreparedMember) !== 'function')) throw new Error('Built prepared member export is unavailable');
 }
 /**
  Member admission is consumed only from the rebuilt native artifact.
  */
-const loaded: unknown = await import(new URL('../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/prepared-member.ts', import.meta.url).href);
+const loaded: unknown = await import(new URL(
+  '../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/prepared-member.ts',
+  import.meta.url
+).href);
 assertMemberModule(loaded);
 /**
  Explicit contract retains callable narrowing across fixture creation.
@@ -90,33 +115,69 @@ const member: MemberModule = loaded;
  @example createMemberFixture();
  */
 export function createMemberFixture(): MemberFixture {
-  /** Original scheduled identity remains separate from prepared arguments. */
-  const call: NativeCall = { type: 'toolCall', id: 'one', name: 'tool', arguments: {} };
-  /** Native preparation may replace its own argument slot. */
-  const hook: { args: unknown } = { args: { path: 'original', nested: [1, 2] } };
-  /** Original assessment cancellation identity is deliberately opaque. */
+  /**
+   Original scheduled identity remains separate from prepared arguments.
+   */
+  const call: NativeCall = {
+    type: 'toolCall',
+    id: 'one',
+    name: 'tool',
+    arguments: {}
+  };
+  /**
+   Native preparation may replace its own argument slot.
+   */
+  const hook: { args: unknown } = { args: {
+    path: 'original',
+    nested: [1, 2]
+  } };
+  /**
+   Original assessment cancellation identity is deliberately opaque.
+   */
   const signal = { original: 'signal' };
-  /** Native entry is observable before any preparation callback. */
+  /**
+   Native entry is observable before any preparation callback.
+   */
   const memberState = { entered: false };
-  /** Shared admission remains mutable only through original fixture operations. */
+  /**
+   Shared admission remains mutable only through original fixture operations.
+   */
   const batchState: MemberFixture['batchState'] = { assessmentStarted: false };
-  /** Readiness insertion order is independent of declared member order. */
+  /**
+   Readiness insertion order is independent of declared member order.
+   */
   const ready = new Map<string, Member>();
-  /** Declaration order can be extended by multi-member consumer fixtures. */
+  /**
+   Declaration order can be extended by multi-member consumer fixtures.
+   */
   const scheduled = [call];
-  /** Original assessment manifests remain observable by identity. */
+  /**
+   Original assessment manifests remain observable by identity.
+   */
   const snapshots: (readonly unknown[])[] = [];
-  /** Original opaque failures remain available to completion consumers. */
+  /**
+   Original opaque failures remain available to completion consumers.
+   */
   const failures: unknown[] = [];
-  /** Lifecycle observations remain local to this fixture. */
+  /**
+   Lifecycle observations remain local to this fixture.
+   */
   const events: string[] = [];
-  /** Blocking reasons are recorded before the first-decision owner selects one. */
+  /**
+   Blocking reasons are recorded before the first-decision owner selects one.
+   */
   const blockReasons: unknown[] = [];
-  /** Assessment arguments retain their exact original input objects. */
+  /**
+   Assessment arguments retain their exact original input objects.
+   */
   const assessments: Assessment[] = [];
-  /** Original group admission can be independently resolved or rejected. */
+  /**
+   Original group admission can be independently resolved or rejected.
+   */
   const gate = Promise.withResolvers<MemberDecision>();
-  /** Default operations preserve native absence, permission, and input sealing. */
+  /**
+   Default operations preserve native absence, permission, and input sealing.
+   */
   const control: Control = {
     prepare() { return undefined; },
     assess() { return { block: false }; },
@@ -133,7 +194,10 @@ export function createMemberFixture(): MemberFixture {
     events.push('block');
     blockReasons.push(reason);
     if (batchState.decision === undefined) {
-      batchState.decision = Object.freeze({ block: true, reason });
+      batchState.decision = Object.freeze({
+        block: true,
+        reason
+      });
       gate.resolve(batchState.decision);
     }
   }
@@ -146,7 +210,14 @@ export function createMemberFixture(): MemberFixture {
    */
   function run(overrides: Readonly<Record<string, unknown>> = {}): Promise<unknown> {
     return member.preparePreparedMember({
-      hook, call, memberState, batchState, ready, scheduled, snapshots, failures,
+      hook,
+      call,
+      memberState,
+      batchState,
+      ready,
+      scheduled,
+      snapshots,
+      failures,
       serial: false,
       signal,
       gate: { promise: gate.promise, resolve(decision: MemberDecision) {
@@ -179,6 +250,23 @@ export function createMemberFixture(): MemberFixture {
       ...overrides,
     });
   }
-  return { call, hook, signal, memberState, batchState, ready, scheduled, snapshots, failures, events, blockReasons, assessments, gate, control, block, run };
+  return {
+    call,
+    hook,
+    signal,
+    memberState,
+    batchState,
+    ready,
+    scheduled,
+    snapshots,
+    failures,
+    events,
+    blockReasons,
+    assessments,
+    gate,
+    control,
+    block,
+    run
+  };
 }
 //endregion

@@ -2,7 +2,10 @@
  Original preparation seals each input before complete-group assessment and native release. @module
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import type { PreparedDecisionProperties, PreparedMemberInput } from './prepared-member-types.ts';
+import type {
+  PreparedDecisionProperties,
+  PreparedMemberInput
+} from './prepared-member-types.ts';
 
 /**
  Preparation diagnostics omit original arguments and decision reasons.
@@ -88,14 +91,33 @@ function isAbsent(value: unknown): boolean {
  @example preparePreparedMember({ hook, call, memberState, batchState, ready, scheduled, snapshots, failures, serial, signal, gate, active, prepare, block, sealInput, releasePreparation, assess, PreparedBatchContractError });
  */
 export async function preparePreparedMember({
-  hook, call, memberState, batchState, ready, scheduled, snapshots, failures, serial, signal,
-  gate, active, prepare, block, sealInput, releasePreparation, assess, PreparedBatchContractError,
+  hook,
+  call,
+  memberState,
+  batchState,
+  ready,
+  scheduled,
+  snapshots,
+  failures,
+  serial,
+  signal,
+  gate,
+  active,
+  prepare,
+  block,
+  sealInput,
+  releasePreparation,
+  assess,
+  PreparedBatchContractError,
 }: PreparedMemberInput): Promise<unknown> {
   memberState.entered = true;
   /**
    Original native entry is published before any fallible preparation work.
    */
-  const ml = tagged({ tag: preparePreparedMember.name, l });
+  const ml = tagged({
+    tag: preparePreparedMember.name,
+    l
+  });
   ml.debug('entering original prepared member');
   try {
     active('prepare-entry');
@@ -103,7 +125,7 @@ export async function preparePreparedMember({
      Optional native preparation may block the entire original group.
      */
     const prepared = await prepare(hook);
-    if (hasPreparationProperties(prepared) && !isAbsent(prepared.block)) {
+    if (hasPreparationProperties(prepared) && (!isAbsent(prepared.block))) {
       block(prepared.reason || 'A member preparation blocked this complete group');
       return await gate.promise;
     }
@@ -122,10 +144,13 @@ export async function preparePreparedMember({
       name: call.name,
       input: sealInput(structuredClone(sealed)),
     });
-    ready.set(call.id, member);
+    ready.set(
+      call.id,
+      member
+    );
     releasePreparation();
     if ((ready.size === scheduled.length) && (batchState.decision === undefined)
-      && !batchState.assessmentStarted) {
+      && (!batchState.assessmentStarted)) {
       batchState.assessmentStarted = true;
       /**
        The assessment sees declaration order, independent of readiness insertion order.
@@ -137,10 +162,13 @@ export async function preparePreparedMember({
       /**
        Original assessment may settle after cancellation or another retained blocking decision.
        */
-      const assessed = await assess({ members: manifest, signal });
+      const assessed = await assess({
+        members: manifest,
+        signal
+      });
       active('assessment-returned');
-      if (!isAssessmentObject(assessed) || ((typeof assessed.block) !== 'boolean')
-        || (!isAbsent(assessed.block) && (((typeof assessed.reason) !== 'string') || isAbsent(assessed.reason)))) {
+      if ((!isAssessmentObject(assessed)) || ((typeof assessed.block) !== 'boolean')
+        || ((!isAbsent(assessed.block)) && (((typeof assessed.reason) !== 'string') || isAbsent(assessed.reason)))) {
         throw new PreparedBatchContractError('Combined assessment returned an invalid decision');
       }
       if (batchState.decision === undefined) {
@@ -161,7 +189,10 @@ export async function preparePreparedMember({
     failures.push(error);
     ml.debug('retained original preparation or assessment failure');
     block('Complete group preparation or assessment failed');
-    return { block: true, reason: 'Complete group preparation or assessment failed' };
+    return {
+      block: true,
+      reason: 'Complete group preparation or assessment failed'
+    };
   }
 }
 //endregion
