@@ -140,6 +140,22 @@ The saved original dispatcher has SHA-256
 The original dispatcher is saved as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-completion-types.mjs`.
 
+The next extraction delegates original tool snapshots and native execution wrappers to
+`prepared-executable.ts` and `prepared-executable-types.ts`.
+The dispatcher retains its synchronous `turns[ordinal].promise` lookup through a borrowed `waitForTurn` callback.
+Original context ownership and error constructors remain unchanged.
+Independent wrapper consumers are committed;
+formatting,
+type checking,
+built execution,
+original replay,
+domain comparisons,
+and omission controls remain pending.
+Wrapper replay adapts only the original turn lookup expression to the borrowed synchronous callback;
+complete domain replay uses the untouched saved dispatcher.
+The pre-extraction dispatcher is
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-executable-types.mjs`.
+
 The dispatch extraction is implemented in `group-dispatch.ts` and `group-dispatch-types.ts`.
 Its production scope passes focused lint with zero diagnostics.
 The original collector delegates dispatch while retaining its existing arrival code.
