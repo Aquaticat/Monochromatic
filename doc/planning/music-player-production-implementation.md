@@ -245,8 +245,11 @@ before saying it matches, QAB):
   `9de6e9a475f182c36f2513179fd4b14763b0e00fe068c9b8f3e6f08103616926`), checksums, immutable pre-release. The final
   workflow text never ran in CI before merge (only its earlier commits ran, nine dry runs); the dry run on main
   dispatched at merge (run `38675318400`) is that check: read its result before any real release.
-  Open for the human: (1) the first real release (`0.1.0` is on main with no tag; a push never releases it, only a
-  dispatch with dry-run false on main; ask first, releases are immutable); (2) copy
+  Release authority: the human said "Feel free to do real releases. Release early and often." (2026-10-15), so real
+  releases need no further asking: after the dry run on main is green, dispatch with dry-run false (or bump the
+  version in both manifests, which releases on push), then verify the published assets and report the version.
+  Open for the human: (1) nothing for releasing itself (`0.1.0` is on main with no tag; a push that leaves the version
+  unchanged never releases it, only a dispatch with dry-run false on main does); (2) copy
   `~/.local/share/music-player-release-keys` (`music-player-release.p12`, plaintext `credentials.txt`) into KeePassXC
   and delete the plaintext; (3) vetoable choices: macOS ad-hoc signing, no Android SDK cache (measured 17 s restore
   against 25 s install), macOS x64 dropped, AppImage not built (a design reason, not a CI result); (4) product gaps
@@ -302,8 +305,8 @@ desktop keeps an unreadable row selected D128; Search restyled within the decisi
 recents, desktop parity D126; no scrollbar on the folders panel D125; the unplayable and analysis-failure reports are
 system notifications with no in-app fallback when one cannot be posted (D122, D123), and a later unread failure
 notification replaces the earlier; USB debugging on emulators is always allowed (skill rule EMA); the repo's own nested
-compositor is the only nested compositor; CI must cache. Decision numbers D122 to D129 are taken; the next free one is
-D130.
+compositor is the only nested compositor; CI must cache; real releases are authorized, early and often (2026-10-15).
+Decision numbers D122 to D130 are taken; the next free one is D131.
 
 ### Open, not started
 
