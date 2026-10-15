@@ -57,7 +57,9 @@ export function createExecutionOwnership({
    @throws JudgmentConstructionError for foreign membership
    */
   function knownMember(member: unknown): ProgramMemberRecord {
-    /** Read capability preserves native primitive lookup without adding a new rejection boundary. */
+    /**
+     Read capability preserves native primitive lookup without adding a new rejection boundary.
+     */
     const memberBindings: OriginalMembershipRead<ProgramMemberRecord> = bindings;
     /**
      Original record remains shared with child program ownership.

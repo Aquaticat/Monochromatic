@@ -13,7 +13,10 @@ export type JudgmentDependencyState = Readonly<{
   preparationFailure: unknown;
   finished: boolean;
   closeFailed: boolean;
-  finalRecord?: Readonly<{ failure?: unknown; status?: 'evidence-closed' | 'close-failed' }>;
+  finalRecord?: Readonly<{
+    failure?: unknown;
+    status?: 'evidence-closed' | 'close-failed'
+  }>;
   handle?: object;
 }>;
 
