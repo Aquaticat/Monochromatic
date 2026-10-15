@@ -36,22 +36,28 @@ function respond(body: string): Response {
 }
 //endregion
 
+/** Require the actual transport body to retain its string identity. */
+function readHttpBody(options: RequestInit|undefined): string {
+ const body=options?.body;
+ if(typeof body!=='string')throw new Error('Expected exact provider request text');
+ return body;
+}
+
 //region Real budget owner constrains the built sender's physical HTTP invocations.
 await describe({name:'assessment call bundles',children:[
  it({name:'617 questions start three calls in parallel then complete the fourth with exact names',fn:async function completeWorkspaceBatch(){
   const {budget}=createBudgetFixture();
   const gate=Promise.withResolvers<void>();
   const bodies:string[]=[];
-  let active=0;
-  let peak=0;
+  const concurrency={active:0,peak:0};
   const send=createAssessmentSender({now:()=>0,readCredential:()=>assessmentFixtureKey,fetchImpl:async function localHttp(_url,options){
    assert.equal(typeof options?.body,'string');
-   const body=String(options?.body);
+   const body=readHttpBody(options);
    bodies.push(body);
-   active+=1;
-   peak=Math.max(peak,active);
+   concurrency.active+=1;
+   concurrency.peak=Math.max(concurrency.peak,concurrency.active);
    if(bodies.length<=3)await gate.promise;
-   active-=1;
+   concurrency.active-=1;
    return respond(body);
   }});
   const pending=budget.dispatch(input=>send({...input,body:requestBody(617)}));
@@ -59,7 +65,7 @@ await describe({name:'assessment call bundles',children:[
   assert.equal(bodies.length,3);
   gate.resolve();
   const result=JSON.parse(await pending);
-  assert.equal(peak,3);
+  assert.equal(concurrency.peak,3);
   assert.deepEqual(bodies.map(body=>JSON.parse(body).questions.length),[200,200,200,17]);
   assert.deepEqual(Object.keys(result.answers),Array.from({length:617},(_,index)=>`original_${index}`));
   assert.ok(Object.values(result.answers).every(answer=>typeof answer==='object'&&answer!==null&&'noul' in answer&&answer.noul===0.875));
@@ -73,7 +79,7 @@ await describe({name:'assessment call bundles',children:[
   const {budget}=createBudgetFixture();
   const bodies:string[]=[];
   const send=createAssessmentSender({now:()=>0,readCredential:()=>assessmentFixtureKey,fetchImpl:async function localHttp(_url,options){
-   const body=String(options?.body);
+   const body=readHttpBody(options);
    bodies.push(body);
    return respond(body);
   }});
@@ -84,30 +90,30 @@ await describe({name:'assessment call bundles',children:[
  }})),
  it({name:'rejects a fourth bundle without invoking its operations',fn:async function enforceBundleCeiling(){
   const {budget}=createBudgetFixture();
-  let calls=0;
-  const operations=Array.from({length:3},()=>async function localOperation(){calls+=1;return calls;});
+  const state={calls:0};
+  const operations=Array.from({length:3},()=>async function localOperation(){state.calls+=1;return state.calls;});
   const error=await captureBudgetRejection(budget.dispatch(async function consumeBundles({runBundle}){
    await runBundle(operations);
    await runBundle(operations);
    await runBundle(operations);
    await runBundle(operations);
   }));
-  assert.match(String(error),/three sequential call bundles/u);
-  assert.equal(calls,9);
+  assert.ok(String(error).includes('three sequential call bundles'));
+  assert.equal(state.calls,9);
   assert.equal(budget.diagnostics().bundles,3);
   assert.equal(budget.diagnostics().calls,9);
  } }),
  it({name:'cancellation after the first bundle prevents remaining calls and answer publication',fn:async function cancelRemainingBundle(){
   const {budget,controller}=createBudgetFixture();
-  let calls=0;
+  const state={calls:0};
   const send=createAssessmentSender({now:()=>0,readCredential:()=>assessmentFixtureKey,fetchImpl:async function localHttp(_url,options){
-   calls+=1;
-   if(calls===3)controller.abort(new Error('fixture cancellation'));
-   return respond(String(options?.body));
+   state.calls+=1;
+   if(state.calls===3)controller.abort(new Error('fixture cancellation'));
+   return respond(readHttpBody(options));
   }});
   const error=await captureBudgetRejection(budget.dispatch(input=>send({...input,body:requestBody(617)})));
   assert.ok(error instanceof Error);
-  assert.equal(calls,3);
+  assert.equal(state.calls,3);
   assert.equal(budget.diagnostics().bundles,1);
  }}),
  it({name:'rejects overlapping bundles and retires their dispatch capability',fn:async function rejectOverlappingBundles(){
@@ -116,7 +122,7 @@ await describe({name:'assessment call bundles',children:[
   const owner=await budget.dispatch(async function useOwnedBundle({runBundle}){
    const first=runBundle([async function pendingCall(){return await pending.promise;}]);
    const overlap=await captureBudgetRejection(runBundle([async function excludedCall(){return 2;}]));
-   assert.match(String(overlap),/nonoverlapping/u);
+   assert.ok(String(overlap).includes('nonoverlapping'));
    pending.resolve(1);
    assert.deepEqual(await first,[1]);
    return runBundle;
@@ -124,17 +130,17 @@ await describe({name:'assessment call bundles',children:[
   const retired=await captureBudgetRejection(budget.dispatch(async function laterDispatch(){
    return await owner([async function excludedCall(){return 3;}]);
   }));
-  assert.match(String(retired),/completed assessment dispatch/u);
+  assert.ok(String(retired).includes('completed assessment dispatch'));
   assert.equal(budget.diagnostics().calls,1);
  }}),
  it({name:'rejects a fourth parallel call before any invocation',fn:async function enforceParallelCeiling(){
   const {budget}=createBudgetFixture();
-  let calls=0;
+  const state={calls:0};
   const error=await captureBudgetRejection(budget.dispatch(async function oversizedBundle({runBundle}){
-   return await runBundle(Array.from({length:4},()=>async function excludedCall(){calls+=1;return calls;}));
+   return await runBundle(Array.from({length:4},()=>async function excludedCall(){state.calls+=1;return state.calls;}));
   }));
-  assert.match(String(error),/one through three parallel calls/u);
-  assert.equal(calls,0);
+  assert.ok(String(error).includes('one through three parallel calls'));
+  assert.equal(state.calls,0);
   assert.equal(budget.diagnostics().bundles,0);
  }}),
  it({name:'keeps consumed bundles across the one eligible transport retry',fn:async function retainRetryAccounting(){
@@ -149,15 +155,15 @@ await describe({name:'assessment call bundles',children:[
  }}),
  it({name:'a malformed answer prevents all partial evidence from escaping',fn:async function rejectMalformedPartition(){
   const {budget}=createBudgetFixture();
-  let calls=0;
+  const state={calls:0};
   const send=createAssessmentSender({now:()=>0,readCredential:()=>assessmentFixtureKey,fetchImpl:async function localHttp(_url,options){
-   calls+=1;
-   if(calls===2)return Response.json({model:'openai/gpt-6-luna-decisions',answers:[],usage:{input_tokens:0,output_tokens:0}});
-   return respond(String(options?.body));
+   state.calls+=1;
+   if(state.calls===2)return Response.json({model:'openai/gpt-6-luna-decisions',answers:[],usage:{input_tokens:0,output_tokens:0}});
+   return respond(readHttpBody(options));
   }});
   const error=await captureBudgetRejection(budget.dispatch(input=>send({...input,body:requestBody(617)})));
   assert.ok(error instanceof AggregateError);
-  assert.equal(calls,3);
+  assert.equal(state.calls,3);
   assert.equal(budget.diagnostics().bundles,1);
  }}),
 ]});

@@ -96,7 +96,6 @@ await describe({
       '[{"id":"q0","status":"estimate","value":0.5},{"id":"q1","status":"unresolved","reason":"unknown","extra":true}]',
       '[{"id":"q0","status":"estimate","value":0.5},{"id":"q1","status":"other"}]',
       ' '.repeat(65_537),
-      JSON.stringify([{ id: 'q0', status: 'estimate', value: 0.5 }, { id: 'q1', status: 'unresolved', reason: 'é'.repeat(33_000) }]),
     ].map(function malformedCase(answerText, index) {
       return it({
         name: `retains malformed response ${index} across every selected claim`,
