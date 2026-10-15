@@ -40,7 +40,7 @@ await describe({ name: '', children: [
     const [original] = bound.calls;
     assert.ok(original);
     const observed: string[] = [];
-    const key = Symbol('original native option');
+    const key = Symbol('native options copied an enumerable symbol property');
     const options: unknown = Object.create({ inherited: true }, {
       visible: { enumerable: true, get() { 
         observed.push('visible'); 
@@ -70,7 +70,7 @@ await describe({ name: '', children: [
       const bound = fixture.bind();
       const [original] = bound.calls;
       assert.ok(original);
-      const failure = Object.freeze({ original: point });
+      const failure: unknown = Object.freeze({ original: point });
       const observed: string[] = [];
       const options = { get value(): unknown { 
         observed.push('options'); 

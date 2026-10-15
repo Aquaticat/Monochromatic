@@ -135,7 +135,7 @@ export function bindReachedProgramGroup<const Recorder extends object>({
    
    @returns exact native callback return value
    */
-  function runNative(
+  const runNative = function invokeNative(
       call: NativeReturnCall,
       options: unknown
     ): unknown {
@@ -143,7 +143,7 @@ export function bindReachedProgramGroup<const Recorder extends object>({
        Native callback logs identify the boundary without inspecting opaque options or arguments.
        */
       const nl = tagged({
-        tag: runNative.name,
+          tag: invokeNative.name,
         l: rl
       });
       nl.debug('forwarding original native member with its associated cancellation');
@@ -176,7 +176,7 @@ export function bindReachedProgramGroup<const Recorder extends object>({
           readSignal: readMemberSignal
         })
       );
-    }
+    };
   /**
    Judgment admission receives original tool lookup results, including absent definitions.
    */
