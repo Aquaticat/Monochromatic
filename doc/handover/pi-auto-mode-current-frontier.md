@@ -2385,6 +2385,30 @@ then the remaining collector,
 runtime,
 and reached-program runner composition.
 
+The next original failure-owner body is now behind `group-failures.ts`,
+with dedicated occurrence/state contracts and the original native bridge.
+The original helper is retained in `program-collector-failures-before-types.mjs`.
+Occurrence append,
+primary failure publication,
+pending rejection,
+and cancellation retain their original order.
+Abort caching remains after callback completion,
+so callback reentry and failure must be checked before qualifying the port.
+The internal token now has stable diagnostic category `RecordedGroupFailureError`;
+the original `RecordedFailure` inherited `Error` as its `name`.
+This is an intentional unpublished diagnostic change under the existing literal error-category convention,
+not an equivalence claim for the token's name or constructor identity.
+The underlying occurrence's original error identity must remain unchanged.
+Read-only inspection of
+`${HOME}/temp/agent/oxc-oxlint188-20261015/crates/oxc_linter/src/rules/unicorn/custom_error_definition.rs`
+confirms that the rule requires the class naming convention and a literal matching name.
+The [existing error-category investigation](../troubleshooting/oxlint-custom-error-name.md)
+records that convention and lack of a preserving per-rule configuration.
+The new failure owner's build,
+consumer tests,
+original-body comparison,
+and omission controls remain pending.
+
 Auto-pushing `6973251c83` was separately rejected with `GH006` and no detailed requirement.
 The original local signature verified,
 the current protection settings were read,
