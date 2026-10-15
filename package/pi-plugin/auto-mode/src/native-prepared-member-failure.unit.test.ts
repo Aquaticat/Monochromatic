@@ -131,6 +131,7 @@ await describe({ name: 'original prepared member failure ownership', children: [
     } });
     await immediate();
     fixture.gate.reject(failure);
+    await assert.doesNotReject(running);
     const result = await running;
     assertRetained({ fixture, result, failure });
     assert.deepEqual(fixture.blockReasons, ['native block', 'Complete group preparation or assessment failed']);

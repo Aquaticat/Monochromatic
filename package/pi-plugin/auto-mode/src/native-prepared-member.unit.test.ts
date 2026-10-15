@@ -114,6 +114,27 @@ await describe({ name: 'original prepared member values', children: [
   } }),
   //endregion
   //region Existing admission and original preparation truthiness remain observable.
+  it({ name: 'preserves callable preparation results and reads their original block reason once', fn: async function callablePreparation() {
+    const fixture = createMemberFixture();
+    const reads: string[] = [];
+    const prepared = function blockedNativeResult() {
+      return undefined;
+    };
+    Object.defineProperties(prepared, {
+      block: { value: true },
+      reason: { get() {
+        reads.push('reason');
+        return 'original callable result';
+      } },
+    });
+    fixture.control.prepare = function original() {
+      return prepared;
+    };
+    assert.equal(await fixture.run(), fixture.batchState.decision);
+    assert.deepEqual(fixture.blockReasons, ['original callable result']);
+    assert.deepEqual(reads, ['reason']);
+    assert.deepEqual(fixture.failures, []);
+  } }),
   ...[undefined, null, false, 0, '', 42, 'native result'].map(function nonblocking(prepared, ordinal) {
     return it({ name: `preserves original nonblocking preparation value ${ordinal}`, fn: async function nativeAbsence() {
       const fixture = createMemberFixture();

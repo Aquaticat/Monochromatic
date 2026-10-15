@@ -9,8 +9,15 @@ Updated 2026-10-15.
 
 ## Active work on 2026-10-15
 
-The next extraction targets the dispatcher's original `beforeToolCall` member preparation.
-It must preserve original hook entry,
+The dispatcher now delegates original `beforeToolCall` member preparation to
+`prepared-member.ts` and `prepared-member-types.ts`.
+Native build,
+package type checking,
+and all three built consumer suites pass.
+Original replay,
+domain comparisons,
+and omission controls are pending.
+Consumers cover original hook entry,
 input sealing,
 declaration-ordered manifests,
 shared assessment admission,

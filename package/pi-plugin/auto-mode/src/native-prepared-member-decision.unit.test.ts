@@ -10,6 +10,7 @@ await describe({ name: 'original prepared member decisions', children: [
   //region Original assessment admission rejects malformed decisions before publication.
   ...[undefined, null, false, 0, '', function callable() {}, {}, { block: 'false' },
     { block: true }, { block: true, reason: '' }, { block: true, reason: false }, { block: true, reason: 0 },
+    { block: true, reason: { opaque: true } }, { block: true, reason: 42 },
   ].map(function invalidAssessment(assessed, ordinal) {
     return it({ name: `retains invalid original assessment ${ordinal}`, fn: async function invalid() {
       const fixture = createMemberFixture();
