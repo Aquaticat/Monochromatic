@@ -212,13 +212,14 @@ runWindowsGnu(['build', '--release', '--target', gnuTarget])
 
 [tasks."test:windows-gnu"]
 description = "cargo nextest run for x86_64-pc-windows-gnu (native on Windows with MSYS2, else cross-compiled in the container and run under Wine)"
-# Same SLINT_EMIT_DEBUG_INFO reason as the host `test` task. The container forwards it with -e.
+# Same SLINT_EMIT_DEBUG_INFO reason as the host `test` task. The container forwards it with -e. --no-fail-fast runs every
+# test so that one failure does not hide the others (under Wine a few behave differently from Windows; see README "Windows").
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 {{vars.windows_gnu_dispatch}}
 process.env.SLINT_EMIT_DEBUG_INFO = '1'
-runWindowsGnu(['nextest', 'run', '--target', gnuTarget])
+runWindowsGnu(['nextest', 'run', '--target', gnuTarget, '--no-fail-fast'])
 """
 
 [tasks.mcp]
