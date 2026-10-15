@@ -187,7 +187,8 @@ zig = "0.15.2"
 # Language servers the read-only Slint IDE (package/desktop-app/ide) looks up by program name on PATH, one block per
 # language family (the IDE's table is Helix's built-in languages.toml at the revision pinned in the IDE's Cargo.toml,
 # plus src/language/config). A language shows hover and inlay hints only when one of its servers is found. The IDE runs
-# every server in a sandbox without network access, so none of these may fetch anything at start. None is pinned:
+# every server in a sandbox without network access, so remote schemas and catalogs (for example taplo's and
+# yaml-language-server's schemastore lookups) are not fetched and only local schemas apply. None is pinned:
 # mise.lock records the resolved versions. TypeScript (TypeScript 7 in the project), rust-analyzer, slint-lsp and qmlls
 # are provided elsewhere. The npm servers need node, which this file provides.
 
