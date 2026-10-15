@@ -1031,3 +1031,8 @@ Executed after the final recommendation commit (filled in that commit's follow-u
   bit-for-bit verification before pinning a prebuilt tarball in repository config; recheck issue
   #1708 and the 3.0.x release list at adoption time.
 - Cleanup executed after the final commit; the record is in "Cleanup record".
+- Follow-up 2026-10-14: the user considered mold for every platform and tried it for the Windows build.
+  mold 3.0.0 (the latest release) links ELF only, and its unreleased main branch adds a Mach-O linker but no PE/COFF
+  output, so it cannot link for Windows.
+  The user declined adopting it on Linux alone; Linux stays on rust-lld.
+  Record: `doc/decision/music-player-windows-linkers.md`.
