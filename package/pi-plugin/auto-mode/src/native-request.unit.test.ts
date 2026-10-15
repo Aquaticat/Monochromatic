@@ -60,6 +60,10 @@ await describe({ name: '', children: ['success', 'producer', 'observer'].map(fun
           return function authenticate(this: unknown, input: unknown) {
             assert.equal(this, producerOwner);
             assert.deepEqual(input, { stream, response });
+            assert.ok((input !== null) && ((typeof input) === 'object'));
+            assert.ok(('stream' in input) && ('response' in input));
+            assert.equal(input.stream, stream);
+            assert.equal(input.response, response);
             events.push('producer.call');
             if (state.fail === 'producer') throw failure;
           };
