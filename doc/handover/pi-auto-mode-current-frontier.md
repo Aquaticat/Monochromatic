@@ -1369,8 +1369,17 @@ native JSON representation,
 permanent invalidation,
 duplicate source-code ambiguity,
 and original source/clause limits.
-Their rebuild and broader consumer verification are running in
+Their rebuild and broader consumer verification pass in
 `${HOME}/temp/agent/pi-native-governing-bindings-consumers-20261015.log`.
+An added constructor-category regression in `8cd0103039` then exposed a porting error:
+the new error class's literal name replaced the original derived-constructor category.
+The committed consumer fails with `AssertionError [ERR_ASSERTION]`,
+actual `GoverningRuleBindingError` versus expected `TypeError`,
+in `${HOME}/temp/agent/pi-native-governing-error-category-before-20261015.log`.
+The saved original binding and set implementations pass the same complete consumer tests in
+`${HOME}/temp/agent/pi-native-governing-baseline-consumers-20261015.log`.
+The typed error now derives its name from the actual constructor;
+the regression remains committed and post-fix verification is pending.
 Saved-baseline comparison,
 guard-omission controls,
 and final lint remain pending for this port.
