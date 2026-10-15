@@ -1669,14 +1669,26 @@ that is verification, not a decision for the user.
   Verification so far: host Clippy clean; container gate 1713 unit, 119 binary and 1 consumer test passed;
   the concurrent e2e passed 36 scenario runs on Git 2.55.0 with 2 skipped (the gate task now builds Git 2.55.0 only,
   because the wrapper refuses older Git and the 2.39.5 and 2.40.0 rows failed by design).
-  Tests that hold a lock now end a stuck coordinator after a ceiling and fail instead of hanging the run, which turned
-  the four push-fix timeout mutants into failures (they are rerun in the scoped mutation below).
-  Scoped mutation of the new and changed modules and of `recovery_files.rs`, `transaction_registry.rs`,
-  `recovery_scan.rs` runs in two batches (logs `~/temp/agent/hardening-mutation-A.log` and `-B.log`); the first
-  attempt stopped at a planted control whose test I had renamed, fixed in `020d28b095` and shown to be noticed on the
-  host; the rerun skips the planted phase (`NATIVE_MUTATION_SKIP_PLANTED=1`).
-  Next: read the mutation results and kill or justify every survivor, land with the landing pattern, bump the wrapper
-  to 0.1.3, push to trigger the `gpc-*` release jobs, then verify with a real-credential commit and push.
+  Tests that hold a lock now end a stuck coordinator after a ceiling and fail instead of hanging the run.
+  Mutation campaign d (four lanes, started 2026-10-14 20:04 EDT, finished 23:51 EDT, about 3h45m, six of them in
+  parallel at one mutant per minute each) ran the source from before the controls below: 8 missed in lane A, 24 in B1,
+  14 in B2, 38 in C. Controls for the first 55 are in `a39daccaf4` and `82b5395334`; the survivors not yet handled
+  when the campaign ended are:
+  - lane A: `bounded_push.rs` 211 (`ask_to_stop` body), 238 (`<`), 301 (`>`);
+  - lane B1: `worktree_copy_lock.rs` 289 (`Drop for WorktreeCopyLease`), 321, 434 (`unit_random` x3), 509:42, 593:38;
+  - lane B2: `recovery_scan.rs` 348:25;
+  - lane C: `worktree_copy_stage_claim.rs` 134, 215, 270; `worktree_copy_transaction.rs` 90 x2, 94;
+    `worktree_copy_recovery.rs` 122, 123, 153; `worktree_copy_journal.rs` 875, 885.
+  To justify with code instead of a test: `recovery_files.rs` 214 (reading into an empty slice returns 0, same result),
+  `index_writer_coordination.rs` 373 (`OwnerLock::drop` performs the same release), and the `#[cfg(not(unix))]` and
+  `#[cfg(not(target_os = "linux"))]` mutants in `worktree_copy_stage.rs` (90, 122, 227) that the Linux gate never
+  compiles. `worktree_copy_stage.rs` 104 is killed only on a reflink-capable filesystem.
+  Lesson: `&&` binds tighter than `||`, so reason about those mutants with explicit parentheses; and run parallel
+  container gates under distinct `GIT_POLICY_NATIVE_IMAGE_TAG` values.
+  Next: control the survivors above, run the container gate (`hardeningW` is running; its first attempt failed only on
+  a Clippy `unwrap` in a test, fixed in `86af44e9c5`), rerun the scoped mutation over the changed files to show the
+  kills, land with the landing pattern, bump the wrapper to 0.1.3, push to trigger the `gpc-*` release jobs, then
+  verify with a real-credential commit and push.
   Not verified: Windows (the target is not installed here; `tempfile` and `libc` are unix-only dependencies that
   `bounded_child.rs` already relied on).
   A podman cleanup by the user (`podman image prune --all`) removed `rust:1.97-bookworm`; pull it back, and pin it with
