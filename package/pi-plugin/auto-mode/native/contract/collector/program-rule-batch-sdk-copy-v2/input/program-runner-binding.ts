@@ -128,6 +128,8 @@ export function bindReachedProgramGroup<const Recorder extends object>({
    */
   const nativeRun = runner.host
     .runOwnedToolCall;
+  /** Original native adapter retains its externally dictated positional callback signature. */
+  const nativeCallbacks = {
   /** Forward original native call after copying options and resolving its member signal.
    @param call - original native call identity supplied by the judgment
    
@@ -135,7 +137,7 @@ export function bindReachedProgramGroup<const Recorder extends object>({
    
    @returns exact native callback return value
    */
-  const runNative = function invokeNative(
+  runNative(
       call: NativeReturnCall,
       options: unknown
     ): unknown {
@@ -143,7 +145,7 @@ export function bindReachedProgramGroup<const Recorder extends object>({
        Native callback logs identify the boundary without inspecting opaque options or arguments.
        */
       const nl = tagged({
-          tag: invokeNative.name,
+          tag: nativeCallbacks.runNative.name,
         l: rl
       });
       nl.debug('forwarding original native member with its associated cancellation');
@@ -176,7 +178,8 @@ export function bindReachedProgramGroup<const Recorder extends object>({
           readSignal: readMemberSignal
         })
       );
-    };
+    },
+  };
   /**
    Judgment admission receives original tool lookup results, including absent definitions.
    */
@@ -189,7 +192,7 @@ export function bindReachedProgramGroup<const Recorder extends object>({
         return tool.name === call.name;
       });
     }),
-    runNative,
+    runNative: nativeCallbacks.runNative,
   });
   rl.debug('published original native slots and member result tickets');
   return {

@@ -29,6 +29,7 @@ await describe({ name: '', children: [
     assert.equal(admission.tools[1], fixture.input.tools[0]);
     assert.equal(bound.calls[0]?.arguments, fixture.input.group.members[0]?.declaration.args);
     assert.equal(bound.calls[1]?.arguments, fixture.input.group.members[1]?.declaration.args);
+    assert.equal(bound.tickets.length, 2);
     const [first, second] = bound.tickets;
     assert.ok(first);
     assert.ok(second);

@@ -1,7 +1,9 @@
 /**
  Independent runner binding contracts describe observable native call and signal association. @module
  */
-/** Original native calls retain their declared type, parent-derived identifier, and argument identity. */
+/**
+ Original native calls retain their declared type, parent-derived identifier, and argument identity.
+ */
 export type RunnerBindingCall = Readonly<{
   type: 'toolCall';
   id: string;
