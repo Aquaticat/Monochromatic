@@ -661,6 +661,10 @@ run = [
 description = "Verify original constructor ordering, captured bootstrap inputs, and preparation-inclusive lifetime"
 run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-constructor.unit.test.ts'
 
+[tasks."test:native:publication"]
+description = "Verify every public method is connected to its independently recorded original owner"
+run = 'node --max-old-space-size=512 src/native-publication.unit.test.ts'
+
 [tasks."test:native:instructions"]
 description = "Verify original instruction identities, source selection, admission, and lifetime through built consumers"
 run = [
