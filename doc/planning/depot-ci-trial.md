@@ -167,19 +167,18 @@ and 1,000,000 passing test results.
 Both plans publish unlimited concurrency.
 The cheaper plan's smaller allowances change placement and retention decisions;
 they do not by themselves imply serial execution.
-Included usage is 250 GB combined cache/registry storage,
+Startup includes 250 GB combined cache/registry storage,
 20,000 CI minutes,
 20,000 GitHub runner minutes,
 5,000 container build minutes,
 and 1,000,000 passing test results.
 Larger CI machines consume the allowance faster.
 
-Before resource-consuming execution,
+Before recurring paid execution,
 account plan,
-trial allowance,
 current usage,
 and applicable cap semantics
-must be inspectable so the proposed run budget can fit the user's ceiling.
+must be inspectable so the proposed monthly allocation can fit the user's ceiling.
 Published per-product limits do not yet prove an aggregate billing cap.
 The current browser connection could not inspect account settings;
 CLI authentication itself is verified.
@@ -189,6 +188,10 @@ the user subsequently reported the USD $200/month plan,
 a seven-day trial,
 and no usage so far.
 Exact trial expiry and configured spending controls remain unverified.
+The user subsequently authorized immediate execution during the unused Startup trial
+and clarified that its available resources should be used for the evaluation.
+Developer allowances constrain the future recommendation,
+not the scope of these trial measurements.
 
 ## Result and adoption boundary
 
