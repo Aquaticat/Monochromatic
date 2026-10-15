@@ -296,16 +296,31 @@ Continue the runner's declared-program facade,
 including reached-group settlement,
 retained failures,
 and aggregate draining.
-The facade extraction and independent consumers are now committed;
-build,
-type checking,
-original replay,
-omission controls,
-and the complete lint recount remain pending.
+The facade extraction and independent consumers are now committed.
+The native build,
+package type checking,
+and both independent consumer suites pass.
+The same consumers pass against the exact original facade method.
+Six domain comparisons retain identical public outcomes and execution counts,
+with the permission-versus-prohibition positive control.
+All 31 deliberate facade omissions or substitutions cause assertion failures;
+the runner and facade artifacts retain their starting hashes.
+The complete lint recount is pending.
 The original facade runner is retained as `program-runner-before-facade-types.mjs`,
 and its original method is retained as `program-runner-facade-original-method.txt`.
-The typed facade adds an explicit null check for missing script-value slots;
-measure that malformed-input diagnostic separately from valid-call equivalence.
+The typed facade adds an explicit null check for missing script-value slots.
+The diagnostic probe measures rejection before judgment invocation;
+the original facade forwarded undefined to the independently controlled judgment.
+That fixture does not validate slots and does not establish real judgment admission for malformed input.
+Receipts are `typed-runner-facade-comparison.json`,
+`typed-runner-facade-omissions.json`,
+and `typed-runner-facade-diagnostics.json`.
+Build,
+type check,
+and consumer results are retained in
+`${HOME}/temp/agent/pi-runner-facade-second-verification-20261015.log`.
+Original replay is retained in
+`${HOME}/temp/agent/pi-runner-facade-original-replay-20261015.log`.
 The original method and runner are retained under
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 

@@ -110,6 +110,18 @@ Parent currentness and cancellation are checked after acquisition;
 the acquired turn remains held through asynchronous dispatch and is released on normal or exceptional exit.
 The original predecessor-rejection behavior retains an unresolved published successor.
 Native member signals reach the existing judgment admission validator unchanged.
+`test:native:runner-facade` verifies the original frozen tool snapshot,
+prepared-source equality,
+judgment opening,
+native slot publication before execution,
+and aggregate drainage.
+Runtime drainage starts before the retained native-work snapshot is read.
+Execution failures reject the original member tickets and remain retained across repeated drains.
+Aggregate failure order preserves execution failures before runtime or settlement rejections,
+including duplicate and nullish values.
+A missing script-value slot now throws an explicit null-check error before judgment invocation.
+The original facade passed an undefined slot to judgment;
+the independent diagnostic fixture accepts it without establishing real judgment admission.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 
