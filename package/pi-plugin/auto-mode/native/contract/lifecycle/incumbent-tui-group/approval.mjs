@@ -15,7 +15,6 @@ export function bindOriginalTuiApproval({
   judgment,
   producerOwner,
   observer,
-  collector,
   response,
   stream,
   pi,
@@ -87,9 +86,10 @@ export function bindOriginalTuiApproval({
       })!==judgment)||(judgment.inspect()
         .finalRecord
         !==closure))throw new OriginalTuiApprovalError('Original TUI judgment closure changed');
-      if((judgment.readSourceSnapshot?.()??judgment.sourceSnapshot
-        ??source.sources)!==sources)throw new OriginalTuiApprovalError('Original approval judgment source snapshot changed');
-      observer.assertFresh(source);collector.assertObservedFresh(sources);judgment.assertDependenciesCurrent();signal.throwIfAborted();
+      const currentBinding=judgment.readCurrentSourceBinding();
+      if(currentBinding.request!==source)throw new OriginalTuiApprovalError('Original approval request receipt changed');
+      if(currentBinding.sources!==sources)throw new OriginalTuiApprovalError('Original approval judgment source snapshot changed');
+      signal.throwIfAborted();
       if((ctx.ui!==ui)||(ui.select!==select)
         ||(pi.appendEntry!==appendEntry)
         ||(ctx.abort!==abort))throw new OriginalTuiApprovalError('Original native approval capabilities changed');

@@ -13,14 +13,14 @@ function compiledCalls({
   if(declaration.profile==='awaited-literal-single-call'){
     if(declaration.bindingName===undefined){
       requireProfile(
-        (body.length===1)&&(body[0]
+        {condition:(body.length===1)&&(body[0]
           .type
           ==='ReturnStatement')
           &&(body[0]
             .argument
             ?.type
             ==='AwaitExpression'),
-        'compiled single return changed'
+        message:'compiled single return changed'}
       );
       return [body[0]
         .argument
@@ -28,7 +28,7 @@ function compiledCalls({
     }
     const [first,second]=body;
     requireProfile(
-      (body.length===2)&&(first.type==='VariableDeclaration')
+      {condition:(body.length===2)&&(first.type==='VariableDeclaration')
         &&(first.kind==='const')
         &&(first.declarations
           .length
@@ -52,18 +52,18 @@ function compiledCalls({
         &&(second.argument
           .name
           ===declaration.bindingName),
-      'compiled single binding changed'
+      message:'compiled single binding changed'}
     );
     return [first.declarations[0]
       .init
       .argument];
   }
   requireProfile(
-    (declaration.profile==='awaited-string-result-then-literal-parallel')&&(body.length===2),
-    'compiled profile changed'
+    {condition:(declaration.profile==='awaited-string-result-then-literal-parallel')&&(body.length===2),
+    message:'compiled profile changed'}
   );
   const [first,second]=body;requireProfile(
-    (first.type==='VariableDeclaration')&&(first.declarations
+    {condition:(first.type==='VariableDeclaration')&&(first.declarations
       .length
       ===1)
       &&(first.declarations[0]
@@ -78,7 +78,7 @@ function compiledCalls({
       &&(second.argument
         .type
         ==='AwaitExpression'),
-    'compiled producer binding changed'
+    message:'compiled producer binding changed'}
   );
   const producer=first.declarations[0]
     .init
@@ -86,7 +86,7 @@ function compiledCalls({
     const group=second.argument
       .argument;
   requireProfile(
-    (group.type==='CallExpression')&&(group.callee
+    {condition:(group.type==='CallExpression')&&(group.callee
       .type
       ==='MemberExpression')
       &&(group.callee
@@ -101,7 +101,7 @@ function compiledCalls({
       &&(group.arguments[0]
         .type
         ==='ArrayExpression'),
-    'compiled successor changed'
+    message:'compiled successor changed'}
   );
   return [
     producer,
@@ -125,34 +125,34 @@ export function declareResultProgram(input){
     }
   );
   requireProfile(
-    (parsed.diagnostics
+    {condition:(parsed.diagnostics
       .length
       ===0)&&(parsed.program
         .body
         .length
         ===1),
-    'compiled parent did not parse'
+    message:'compiled parent did not parse'}
   );
   const fn=parsed.program
     .body[0];requireProfile(
-    (fn.type==='FunctionDeclaration')&&(fn.start===0)
+    {condition:(fn.type==='FunctionDeclaration')&&(fn.start===0)
       &&(fn.end===wrapped.length),
-    'compiled parent boundary changed'
+    message:'compiled parent boundary changed'}
   );
   const calls=compiledCalls({
     body:fn.body
       .body,
     declaration
   });requireProfile(
-    calls.length
+    {condition:calls.length
       ===declaration.sites
       .length,
-    'compiled member count changed'
+    message:'compiled member count changed'}
   );
   const pieces=[];let cursor=0;
   for(const [index,call] of calls.entries()){
     const site=declaration.sites[index];requireProfile(
-      (call?.type==='CallExpression')&&(call.callee
+      {condition:(call?.type==='CallExpression')&&(call.callee
         .type
         ==='MemberExpression')
         &&(call.callee
@@ -166,7 +166,7 @@ export function declareResultProgram(input){
         &&(!call.callee
           .computed)
         &&(!call.optional),
-      'compiled alias changed'
+      message:'compiled alias changed'}
     );
     const start=call.callee
       .start
@@ -174,11 +174,11 @@ export function declareResultProgram(input){
       const end=call.callee
         .end
         -prefix.length;requireProfile(
-      (start>=cursor)&&(end>start)
+      {condition:(start>=cursor)&&(end>start)
         &&(end
           <=declaration.compiledSource
           .length),
-      'compiled alias span'
+      message:'compiled alias span'}
     );
     pieces.push(
       declaration.compiledSource
@@ -192,8 +192,8 @@ export function declareResultProgram(input){
   }
   pieces.push(declaration.compiledSource
     .slice(cursor));requireProfile(
-    pieces.join('')===declaration.source,
-    'compiled program did not reconstruct original source'
+    {condition:pieces.join('')===declaration.source,
+    message:'compiled program did not reconstruct original source'}
   );
   return declaration;
 }

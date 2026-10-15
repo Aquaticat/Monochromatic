@@ -366,8 +366,221 @@ Commit `a66c5d5c96` applies named callbacks,
 owned state records,
 and scoped cleanup to both prepared dispatchers,
 preserving their separate root and child execution behavior.
-The current owned build and full native lint report are running;
-the latest cleanup still requires consumer regression checks.
+The dispatcher cleanup build passed;
+the full native structured lint report contains 312 errors.
+Its domain checks passed,
+but manual uncertainty Allow exhausted the original preparation deadline.
+The same built artifact passed that exact Allow case in isolation,
+with one selector call,
+three executions,
+and no provider calls.
+The cause remains unestablished;
+the interrupted sequence does not qualify the remaining consumer suites.
+Commits `17cd623ee4`,
+`4dddea7b46`,
+and `d3d0de3168` separate reached-group failure and completion ownership,
+retain delivery state explicitly,
+and represent idle group work with a settled promise.
+Their owned build and queue tests pass.
+The domain sequence stopped at `JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
+An unrelated bounded CPU stress task was active during this run;
+its overlap does not establish the cause.
+The complete regression sequence remains pending after that task finishes.
+Commits `443d6bc709` and `d4e52c5394` separate original resource capture,
+reload,
+binding,
+and governing-policy ownership and scope their cleanup.
+Their owned build passes.
+The focused structured lint report contains no errors across these resource modules and the group-runtime modules.
+It still exits with failure because warnings remain;
+`package/config/oxlint/src/config-base.ts:31` sets `denyWarnings: true`.
+Zero error-severity diagnostics therefore do not mean the lint task passes.
+Commit `fe77f1d9d6` retains base-composition and governing-source lifetime state explicitly.
+The adjacent policy reviewer now scopes review activity and retains compilation results in its review record.
+The source-lifetime and native host-hook changes subsequently built successfully.
+The syntax task passed all 241 maintained native modules,
+and package type checking passed.
+The full lint attempt failed before producing diagnostics:
+`tsgolint` emitted `failed to create new OS thread (have 2 already; errno=11)`.
+The post-stress domain and manual-uncertainty suites passed;
+ordinary native-context Allow then exhausted the original judgment deadline.
+That exact case passed three unchanged isolated repeats,
+with total process durations from 7205.50 to 7954.08 milliseconds.
+These durations include setup and shutdown;
+they are not judgment-only timings or evidence of a permanent timing remedy.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/native-allow-repeat.json` retains each result and CPU counters.
+The subsequent approval-context,
+single-call,
+approved-dependency,
+event-receipt,
+host-lifecycle,
+CLI-process,
+queue,
+resource-reload,
+resource-copy,
+and context-receipt suites all passed on that unchanged artifact.
+The complete log is `${HOME}/temp/agent/pi-native-resource-runtime-remaining-20261014.log`.
+Later source changes name remaining profile callbacks,
+separate program inspection,
+replace profile regex scans,
+and retain the original reload and assessment await boundaries.
+Those later edits remain pending build and consumer verification.
+Their owned build subsequently passed;
+the expanded resource/runtime regression sequence is running again on that artifact.
+The full lint retry with `GOMAXPROCS=2` completed across 438 files,
+reporting 203 errors and 12801 warnings.
+All error-severity findings are in native source.
+The later request-hook callback correction and explicit input-key comparators still need their focused lint check.
+Direct source-consumer comparisons passed 456 identifier cases and 152 whitespace cases
+against the replaced regex behavior.
+The current full report is `${HOME}/temp/agent/pi-maintained-resource-lint-retry-20261014.log`;
+the current running regression log is `${HOME}/temp/agent/pi-native-profile-cleanup-regressions-20261014.log`.
+The user requested another status update during cleanup;
+the answer distinguished the completed live installation from unfinished lint and intermittent deadline verification.
+The profile-cleanup regression run subsequently stopped at ordinary native-context Allow:
+`JudgmentDeadlineError: Judgment preparation and assessment deadline expired`
+led to the original selector assertion `0 !== 1`.
+Its preceding domain and manual-uncertainty suites passed.
+This recurrence remains unresolved;
+the earlier isolated passes do not establish a timing remedy.
+Commit `fe24956975` separates the run-prompt owner into emission,
+rendering,
+retained-input,
+context,
+publication,
+and lifecycle modules while retaining its original scope and failure maps.
+Its owned build passes.
+Focused structured lint reports zero errors and 1082 warnings across the eight changed modules;
+the warning gate still fails.
+Consumer verification is running in `${HOME}/temp/agent/pi-native-run-owner-regressions-20261014.log`.
+That run subsequently passed all domain cases and manual uncertainty Allow,
+Deny,
+Stop,
+and cancellation.
+Its prohibited case stopped at `JudgmentDeadlineError`,
+with the outcome assertion reporting `undefined` instead of a policy outcome.
+Commit `c3cb4b1f97` separates loaded-input field selection,
+history,
+manager frames,
+events,
+tools,
+Agent inputs,
+and user inputs while retaining the original pool budget.
+The first loaded-input build passed;
+focused lint exposed detached method references after extraction.
+Those callbacks now use named function values;
+the updated build and focused checks remain pending.
+Named function expressions still produced `typescript(unbound-method)` findings.
+Commit `13dc500508` declares the loaded callbacks before constructing their returned facade.
+Its build passes;
+the loaded-pool lint subset now has zero errors and 51 warnings.
+The other new loaded modules still need the updated full subset check.
+The user requested status twice during this work;
+the replies distinguished verified live installation from unfinished quality work and the timing diagnosis.
+Unchanged ordinary Allow repetitions on the loaded-input build failed twice and passed once.
+Their complete process durations were 10089.97,
+8502.33,
+and 12054.84 milliseconds,
+including setup and shutdown.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-before.json` retains the results and CPU counters.
+Both separate CPU-profile runs passed,
+for ordinary Allow and manual-uncertainty prohibition.
+Their profiles identify repeated source-freshness validation as a sampled runtime cost;
+these separate modes are not a before/after timing comparison.
+An instrumented Allow fixture failed at `DependencyDeadlineError`
+after 23740 opens of its original governing file.
+The exact captured counts are in
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/loaded-allow-fs.json`.
+The new `test:native:source-freshness-work` task exercises the built Allow consumer
+and requires fewer than 10000 governing-file opens for that fixed fixture.
+Its required-red run precedes the proposed complete-binding-set validation change.
+Required-red commit `971f1bd` completed the native Allow fixture,
+then failed its work-bound assertion with 45637 governing-file opens.
+Commit `5b29e43e8d` validates local source-binding identities between fresh common-parent checks.
+Individual public source assertions still perform their original parent freshness check.
+The updated owned build passes.
+The same native Allow fixture then completed with 15653 opens,
+but the new work-bound regression still fails its 10000-open limit.
+This is a measured reduction in repeated reads,
+not completion of the performance fix or a full regression pass.
+The logs are `${HOME}/temp/agent/pi-native-source-work-red-20261014.log`
+and `${HOME}/temp/agent/pi-native-source-work-green-20261014.log`;
+the latter filename names the intended stage,
+not its actual failed assertion result.
+Unchanged repetitions of this changed artifact all passed.
+Their complete process durations were 8224.54,
+6064.67,
+and 6179.07 milliseconds;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/binding-set-after.json` retains the results.
+These include setup and shutdown and are not judgment-only latency measurements.
+The next change introduces `readCurrentSourceBinding()` on the original judgment.
+It returns original request and source identities only after `assertDependenciesCurrent()` succeeds.
+The governing-source owner uses that operation instead of independently repeating observer and collector checks.
+Commit `2ea0d1c836` builds successfully.
+The unchanged work-bound regression still fails at 14185 opens after the Allow scenario completes.
+`${HOME}/temp/agent/pi-native-current-source-work-20261014.log` retains that result.
+A profile of this artifact is collecting evidence for the next caller to address;
+the 10000-open bound remains unchanged.
+The next built Allow probes still failed that bound:
+`48e2532d46` put nested rule reads inside the original synchronous binding segment and measured 13233 opens;
+`45c180d7d7` collected related policy selections in that segment and measured 12169 opens;
+removing the repeated request observation before `active()` measured 11224 opens.
+Each fixture completed its Allow scenario before failing the work assertion.
+The current probe reads a prepared member's input and program inspection together after one dependency check.
+The complete rejection and lifecycle suites remain pending.
+Commit `b3f980b0f8` also fixes an extraction error:
+the whole-request claim branch must register `retained.requestMaterialBinding`,
+not the removed standalone variable.
+The built `test:native:request-claim` consumer passes original request identity,
+repeated selector reuse,
+foreign-handle rejection,
+and dependency retirement.
+A process-local omission restored the removed variable reference and failed with
+`ReferenceError: requestMaterialBinding is not defined`;
+the built module hash was unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/request-claim-omission.json` records that control.
+The prepared-member probe measured 10812 policy opens;
+using the original judgment's validated identities during approval measured 10634.
+Selecting the matching source before validating its binding did not change this fixture's 10634-open count.
+That fixture therefore supplies no performance evidence for source lookup paths that encounter earlier unrelated sources.
+Removing the redundant dependency check before complete source validation measured 10236 opens.
+The native Allow scenario passes,
+but the unchanged 10000-open regression remains red.
+The broader domain,
+manual review,
+approval,
+single-call,
+changed-dependency,
+event,
+host,
+and CLI regression sequence is running against this frozen built artifact.
+The user requested status during this work;
+the response reported the verified live flow,
+the remaining work-bound failure,
+the last full lint counts,
+and the absence of a reliable completion estimate.
+The first broader regression sequence passed on `ac35a7c2ac`:
+domain,
+manual review,
+approval context,
+single-call,
+changed-dependency,
+event-receipt,
+host-lifecycle,
+and CLI-process checks.
+Batch candidate selection consolidation then measured 10208 opens;
+removing duplicate decision-wrapper validation before original approval measured 10086.
+Commit `f79ac0ea45` reads execution origins through the already-required native entry check.
+Its built work-bound regression passes at 9046 opens without changing the 10000-open limit.
+The baseline required-red count remains 45637.
+`${HOME}/temp/agent/pi-native-entry-origin-work-20261014.log` records the passing consumer.
+The final expanded regression sequence is running in
+`${HOME}/temp/agent/pi-native-source-boundaries-final-20261014.log`.
+It adds program queue,
+resource reload,
+resource input,
+context receipts,
+and the whole-request claim consumer to the prior sequence.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

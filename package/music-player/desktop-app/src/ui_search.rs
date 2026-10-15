@@ -194,8 +194,8 @@ pub(crate) fn activate_result(window: &AppWindow, engine: &dyn Host, position: u
     };
     match found.index_in_library {
         Some(index) if found.kind == SearchResultKind::Track => {
-            // D127: a result follows the row click rule (D124): a track that is not current is only selected, the current
-            // track toggles play and pause.
+            // D127, D129: a result follows the row click rule (D124): a track that is not current is only selected
+            // (and started with Auto-play on select on), the current track toggles play and pause.
             crate::ui_wire::play_row(engine, index);
             update_state(|state| {
                 state.route = Route::Player;

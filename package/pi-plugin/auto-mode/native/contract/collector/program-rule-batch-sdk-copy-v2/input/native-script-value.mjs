@@ -1,7 +1,7 @@
 function textOf(result) {
     return (result.content ?? [])
-        .filter((block) => block.type === "text")
-      .map((block) => block.text)
+        .filter(function isTextBlock(block) { return (block.type === "text"); })
+      .map(function readBlockText(block) { return (block.text); })
       .join("\n");
 }
 

@@ -405,12 +405,12 @@ export function bindRuleAssessmentWire(request){
  });
  const bodyBytes=Buffer.byteLength(body);
  if(bodyBytes>1_048_576){
-  const sourceTexts=sources.map(source=>source.content);
+  const sourceTexts=sources.map(function readSelectedSourceContent(source) { return (source.content); });
   const selectedTexts=Object.values(questions)
-    .map(value=>value.instructions
+    .map(function readSelectedRuleText(value) { return (value.instructions
       .selectedRule
       ?.text
-      ??'');
+      ??''); });
   const sizes={
     bodyBytes,
     sourceCount:sources.length,

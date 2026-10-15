@@ -362,20 +362,20 @@ fun templateEditor(
         // ```
         Column(
             modifier = Modifier.weight(1f).fillMaxWidth().imePadding().verticalScroll(rememberScrollState())
-                .windowInsetsPadding(WindowInsets.navigationBars).padding(start = startInset),
+                .windowInsetsPadding(WindowInsets.navigationBars),
         ) {
-            destinationSectionHeading(text = "Preview", bottom = DESTINATION_HEADING_GAP)
+            destinationSectionHeading(text = "Preview", bottom = DESTINATION_HEADING_GAP, startInset = startInset)
             /** The preview rows the state yields from the last template that applied. */
             val rows: List<TemplatePreviewRow> = state.previewRows
             for (row in rows) {
-                templateEditorPreviewRowView(row = row)
+                templateEditorPreviewRowView(row = row, startInset = startInset)
                 HorizontalDivider(thickness = DESTINATION_HAIRLINE, color = MaterialTheme.colorScheme.outlineVariant)
             }
             for (note in state.previewNotes) {
                 Text(
                     text = note,
                     modifier = Modifier.padding(
-                        start = DESTINATION_SIDE_INSET,
+                        start = DESTINATION_SIDE_INSET + startInset,
                         end = DESTINATION_SIDE_INSET,
                         top = DESTINATION_SMALL_GAP,
                     ),
@@ -383,19 +383,23 @@ fun templateEditor(
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
-            templateEditorTemplateField(state = state, actions = actions)
-            destinationSectionHeading(text = "Fields", bottom = DESTINATION_HEADING_GAP)
+            templateEditorTemplateField(state = state, actions = actions, startInset = startInset)
+            destinationSectionHeading(text = "Fields", bottom = DESTINATION_HEADING_GAP, startInset = startInset)
             /** The insertable fields of the open template with their values. */
             val entries: List<TemplateEditorFieldEntry> = state.fields
             for (entry in entries) {
-                templateEditorFieldRow(entry = entry, onInsert = { actions.onInsertField(entry.mode) })
+                templateEditorFieldRow(
+                    entry = entry,
+                    startInset = startInset,
+                    onInsert = { actions.onInsertField(entry.mode) },
+                )
                 HorizontalDivider(thickness = DESTINATION_HAIRLINE, color = MaterialTheme.colorScheme.outlineVariant)
             }
             if (state.canReset) {
                 TextButton(
                     onClick = actions.onReset,
                     modifier = Modifier.padding(
-                        start = DESTINATION_SIDE_INSET - BUTTON_LABEL_INSET,
+                        start = DESTINATION_SIDE_INSET - BUTTON_LABEL_INSET + startInset,
                         top = DESTINATION_SMALL_GAP,
                         bottom = DESTINATION_SIDE_INSET,
                     ).defaultMinSize(minHeight = DESTINATION_TOUCH_TARGET).focusRing(CircleShape),
@@ -462,11 +466,11 @@ internal fun destinationHeader(
 // ```
 /** Draws one section heading in the label role, marked as a heading. */
 @Composable
-internal fun destinationSectionHeading(text: String, bottom: Dp) {
+internal fun destinationSectionHeading(text: String, bottom: Dp, startInset: Dp = 0.dp) {
     Text(
         text = text,
         modifier = Modifier.padding(
-            start = DESTINATION_SIDE_INSET,
+            start = DESTINATION_SIDE_INSET + startInset,
             end = DESTINATION_SIDE_INSET,
             top = DESTINATION_SECTION_GAP,
             bottom = bottom,
@@ -486,10 +490,15 @@ internal fun destinationSectionHeading(text: String, bottom: Dp) {
 // ```
 /** Draws one preview row: the title, and under it the supporting line when the template yields one. */
 @Composable
-private fun templateEditorPreviewRowView(row: TemplatePreviewRow) {
+private fun templateEditorPreviewRowView(row: TemplatePreviewRow, startInset: Dp) {
     Column(
         modifier = Modifier.fillMaxWidth().heightIn(min = ROW_MIN_HEIGHT)
-            .padding(horizontal = DESTINATION_SIDE_INSET, vertical = ROW_VERTICAL_PADDING),
+            .padding(
+                start = DESTINATION_SIDE_INSET + startInset,
+                end = DESTINATION_SIDE_INSET,
+                top = ROW_VERTICAL_PADDING,
+                bottom = ROW_VERTICAL_PADDING,
+            ),
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
@@ -520,13 +529,18 @@ private fun templateEditorPreviewRowView(row: TemplatePreviewRow) {
 // ```
 /** Draws the template field with its monospace text, its focus reporting, and its mistakes or help. */
 @Composable
-private fun templateEditorTemplateField(state: TemplateEditorState, actions: TemplateEditorActions) {
+private fun templateEditorTemplateField(
+    state: TemplateEditorState,
+    actions: TemplateEditorActions,
+    startInset: Dp,
+) {
     /** The mistake lines of the field's current text, empty when it applies. */
     val mistakes: List<String> = state.mistakeLines
     OutlinedTextField(
         value = templateEditorTextValue(state),
         onValueChange = { value -> actions.onEdit(templateEditorEditOf(value)) },
-        modifier = Modifier.fillMaxWidth().padding(horizontal = DESTINATION_SIDE_INSET)
+        modifier = Modifier.fillMaxWidth()
+            .padding(start = DESTINATION_SIDE_INSET + startInset, end = DESTINATION_SIDE_INSET)
             .onFocusChanged { focusState -> actions.onFocusChanged(focusState.isFocused) },
         textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
         label = { Text(text = "Template") },
@@ -632,7 +646,8 @@ private fun templateEditorHelpLines(help: TemplateHelp) {
 }
 
 // What:     `@Composable private fun templateEditorFieldRow(...)` draws one insertable field as a list row.
-// Why:      The whole row inserts the field, and it shows the field's value beside its name.
+// Why:      The whole row inserts the field, and it shows the field's value beside its name. The ring lies inside the
+//           row's edge (D120) and adds no padding, so the row's text keeps the column of the section headings (D130).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -640,7 +655,7 @@ private fun templateEditorHelpLines(help: TemplateHelp) {
 // ```
 /** Draws one field row: its name, its value for the first preview track, and the call a tap inserts. */
 @Composable
-private fun templateEditorFieldRow(entry: TemplateEditorFieldEntry, onInsert: () -> Unit) {
+private fun templateEditorFieldRow(entry: TemplateEditorFieldEntry, startInset: Dp, onInsert: () -> Unit) {
     ListItem(
         modifier = Modifier.fillMaxWidth()
             .padding(
@@ -650,9 +665,8 @@ private fun templateEditorFieldRow(entry: TemplateEditorFieldEntry, onInsert: ()
             .defaultMinSize(minHeight = DESTINATION_TOUCH_TARGET)
             .focusRing(RectangleShape, placement = FocusRingPlacement.INSIDE)
             .clickable(role = Role.Button, onClick = onInsert)
-            // The ring lies just inside the row's edge (D120), so the content keeps the room it had when the ring
-            // was reserved outside the row.
-            .padding(horizontal = FOCUS_RING_OUTSET),
+            // The crease moves the text only: the row's box, state layer and inside ring keep the pane edge (D130).
+            .padding(start = startInset),
         supportingContent = {
             Text(
                 text = templateEditorFieldValueText(entry.value),

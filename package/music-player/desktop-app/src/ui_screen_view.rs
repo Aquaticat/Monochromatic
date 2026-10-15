@@ -113,6 +113,8 @@ pub struct ScreenState {
     pub track_rows_template: Option<String>,
     /// Saved playing track template text, or None for the default.
     pub playing_template: Option<String>,
+    /// Auto-play on select (D129): whether a click, Enter or Search result on another track also starts it.
+    pub auto_play_on_select: bool,
     /// Template editor value while Settings or the editor is open.
     pub editor: Option<TemplateEditorState>,
     /// Length and peak of each library path, as the engine has reported them.

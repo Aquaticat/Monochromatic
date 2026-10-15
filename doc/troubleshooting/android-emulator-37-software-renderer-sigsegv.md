@@ -248,12 +248,37 @@ systemd-run --user --unit=agent-fold-headful --collect --property=MemoryMax=12G 
 ```
 
 (The owned AVD also needs its own `HOME`, `ANDROID_USER_HOME` and `ANDROID_AVD_HOME`, and a private adb server port, as
-in the agent's notes.)
+in the agent's notes.
+Every `adb` call for that emulator, including `emu kill`, must run with the same `HOME` and port:
+in one session the shell's real `HOME` showed the device as `unauthorized` and failed the console token check,
+see `android-emulator-console-token-container-home.md`.)
 Result: `sys.boot_completed=1` after 98 s, no ANR dialog and no crash, with the journal naming the AMD Radeon RX 7600
 as the GL and Vulkan device, at a load average above 60 on 16 cores.
 So the failures were launch flags and container limits, not host load.
 Use this form for agent sessions: no `-no-window`, no `xvfb-run`, no container, Vulkan left at its default.
 The window opens on the human's session; close it with `adb emu kill` after `sync`.
+
+## Separate incident: SIGABRT in a gRPC callback of the headful launch (2026-10-14)
+
+This happened with the working headful launch form above, so it is not the SwiftShader boot crash and not the llvmpipe
+crash below.
+It is recorded as a separate incident: the cause is not shown.
+
+- Emulator 37.2.12, the owned Pixel 9 Pro Fold AVD copy, ports 5772 and 5773, `-gpu host`, as its own systemd user unit
+  with `MemoryMax=12G`.
+  The guest booted (about 35 s), a 35-track library was pushed, an APK was installed and the demo-mode broadcasts were
+  sent; the emulator process then aborted about a minute later.
+- `coredumpctl info` names the emitter and signal: `qemu-system-x86_64`, signal 6 (ABRT), raised by
+  `__libcpp_verbose_abort` from a frame of the emulator binary inside `grpc::internal::CallbackWithSuccessTag::Proceed`,
+  run by a gRPC event-engine worker thread of `libandroid-webrtc.so`.
+- The journal line just before it, at the second the core was dumped, was
+  `Netsim Wifi ipv6:... is gone due to CANCELLED` followed by `Got goaway [2] ... Cancelling all calls`.
+  Another agent's emulator unit (`-ports 5592,5593`) was running when this one started and was gone when the
+  relaunch was prepared, so a shared netsim daemon is one candidate; nothing here shows it.
+- Workaround that held: a fresh reflink copy of the AVD and the same launch form booted again and ran the rest of the
+  scripted captures with no abort; the session ended with `sync`, a wait of 8 s, `sync` and `adb emu kill`.
+- Not done: no reproduction on purpose, no `-no-netsim` or other flag was tried, because the launch rule allows one
+  form only.
 
 ## Separate incident: mid-session SIGSEGV under llvmpipe in a container (2026-10-05)
 

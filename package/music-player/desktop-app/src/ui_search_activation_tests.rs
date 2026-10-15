@@ -26,9 +26,21 @@ fn track_result(index: usize) -> SearchResult {
 // What:     Puts Search on screen with the given results and the given current track, then activates `position`.
 // Why:      Every case differs only in the results, the current track and the activated position.
 fn activate(results: Vec<SearchResult>, current: Option<usize>, position: usize) -> (Vec<String>, Route) {
+    return activate_with_setting(false, results, current, position);
+}
+
+// What:     `activate` with Auto-play on select set first.
+// Why:      D129: the setting changes what a track result does, and nothing else about the activation.
+fn activate_with_setting(
+    auto_play_on_select: bool,
+    results: Vec<SearchResult>,
+    current: Option<usize>,
+    position: usize,
+) -> (Vec<String>, Route) {
     let (app, host) = fresh_window_at(850.0, 900.0);
     load_library(&app);
     update_state(|state| {
+        state.auto_play_on_select = auto_play_on_select;
         state.route = Route::Search;
         state.current_index = current;
         state.search_ui.results = results;
@@ -92,5 +104,45 @@ fn a_folder_result_with_a_library_position_still_opens_its_folder() {
         ..track_result(0)
     };
     let (sent, _route) = activate(vec![folder], Some(0), 0);
+    assert_eq!(sent, vec!["scope 2".to_string()]);
+}
+
+// What:     With Auto-play on select on, a track result that is not current is selected and starts at once.
+// Why:      D129: the setting restores the behavior before D127 for results.
+#[test]
+fn with_auto_play_on_a_track_result_that_is_not_current_selects_and_starts_the_track() {
+    let (sent, route) = activate_with_setting(true, vec![track_result(2)], Some(0), 0);
+    assert_eq!(sent, vec!["select 2".to_string(), "play".to_string()]);
+    assert_eq!(route, Route::Player, "the page returns to the player (D74)");
+}
+
+// What:     With Auto-play on select on and nothing current, a track result selects and starts.
+// Why:      The first activation after launch is the case the setting is for.
+#[test]
+fn with_auto_play_on_a_track_result_with_nothing_current_selects_and_starts_the_track() {
+    let (sent, _route) = activate_with_setting(true, vec![track_result(1)], None, 0);
+    assert_eq!(sent, vec!["select 1".to_string(), "play".to_string()]);
+}
+
+// What:     With Auto-play on select on, the result of the current track still toggles.
+// Why:      D129: the current track toggles in both modes, so a second activation pauses instead of restarting.
+#[test]
+fn with_auto_play_on_the_result_of_the_current_track_still_toggles() {
+    let (sent, _route) = activate_with_setting(true, vec![track_result(2)], Some(2), 0);
+    assert_eq!(sent, vec!["toggle".to_string()]);
+}
+
+// What:     With Auto-play on select on, a folder result still only opens its folder.
+// Why:      D129: folders are not tracks, so the setting does not reach them.
+#[test]
+fn with_auto_play_on_a_folder_result_still_opens_its_folder_without_a_track_command() {
+    let folder = SearchResult {
+        kind: SearchResultKind::Folder,
+        name: "Beck".to_owned(),
+        folder_name: "Beck".to_owned(),
+        index_in_library: None,
+        ..track_result(0)
+    };
+    let (sent, _route) = activate_with_setting(true, vec![folder], Some(0), 0);
     assert_eq!(sent, vec!["scope 2".to_string()]);
 }
