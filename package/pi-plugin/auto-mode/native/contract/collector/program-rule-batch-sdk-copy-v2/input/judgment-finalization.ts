@@ -2,7 +2,10 @@
  Original evidence closure retains complete terminal batch diagnostics without granting execution permission. @module
  */
 import { JudgmentConstructionError } from './judgment-error.ts';
-import type { JudgmentLifecycleContext, JudgmentEvidenceClosure } from './judgment-lifecycle-types.ts';
+import type {
+  JudgmentLifecycleContext,
+  JudgmentEvidenceClosure
+} from './judgment-lifecycle-types.ts';
 
 //region Evidence closes once after original batch retention, dependency checks, and final budget accounting.
 /**
@@ -18,9 +21,24 @@ import type { JudgmentLifecycleContext, JudgmentEvidenceClosure } from './judgme
 
  @example createJudgmentFinalization({ input, state, issuedBatches, attemptedBatches });
  */
-export function createJudgmentFinalization({ input, state, issuedBatches }: JudgmentLifecycleContext): () => JudgmentEvidenceClosure {
-  /** Original finalization capabilities stay lazy until the public close operation. */
-  const { knownSelection, ready, active, bindingSegment, finalizeDependencies, readDependencyHandle, budget, parentJSON } = input;
+export function createJudgmentFinalization({
+  input,
+  state,
+  issuedBatches
+}: JudgmentLifecycleContext): () => JudgmentEvidenceClosure {
+  /**
+   Original finalization capabilities stay lazy until the public close operation.
+   */
+  const {
+    knownSelection,
+    ready,
+    active,
+    bindingSegment,
+    finalizeDependencies,
+    readDependencyHandle,
+    budget,
+    parentJSON
+  } = input;
   /**
    Close the original evidence group once, retaining exact failure when closure cannot complete.
 
@@ -32,41 +50,61 @@ export function createJudgmentFinalization({ input, state, issuedBatches }: Judg
     if (state.finished || state.closeFailed) throw new JudgmentConstructionError('Judgment already has a finalization outcome');
     try {
       for (const batch of issuedBatches) {
-        if (!knownSelection().inspectBatch(batch).settled) knownSelection().discard({
+        if (!knownSelection()
+          .inspectBatch(batch)
+          .settled) knownSelection()
+          .discard({
           batch,
           error: new JudgmentConstructionError('Judgment closed before this question batch was dispatched')
         });
       }
       ready();
-      /** Complete terminal batch results retain original issuance order inside the dependency segment. */
+      /**
+       Complete terminal batch results retain original issuance order inside the dependency segment.
+       */
       const batches = bindingSegment(function readIssuedBatchResults() {
-        return Object.freeze([...issuedBatches].map(function readBatchResult(batch) { return knownSelection().resultFor(batch); }));
+        return Object.freeze([...issuedBatches].map(function readBatchResult(batch) { 
+          return knownSelection()
+          .resultFor(batch); 
+        }));
       });
-      /** Original dependency projection is retained before the final active and budget checks. */
+      /**
+       Original dependency projection is retained before the final active and budget checks.
+       */
       const dependencies = finalizeDependencies(readDependencyHandle());
       active();
-      /** Original final accounting is published only after the last dependency check succeeds. */
+      /**
+       Original final accounting is published only after the last dependency check succeeds.
+       */
       const accounting = budget.finish();
       state.finished = true;
-      /** Frozen closure explicitly withholds policy authority and human permission. */
+      /**
+       Frozen closure explicitly withholds policy authority and human permission.
+       */
       const finalRecord = Object.freeze({
         evidenceOnly: true as const,
         status: 'evidence-closed' as const,
         policyVerdict: 'not-established' as const,
         instructionAuthority: 'not-established' as const,
         humanPermission: false as const,
-        dependencies, accounting, parentJSON, batches
+        dependencies,
+        accounting,
+        parentJSON,
+        batches
       });
       state.finalRecord = finalRecord;
       return finalRecord;
     } catch (error) {
       state.closeFailed = true;
       state.finalRecord = Object.freeze({
-        retainedOnly: true,
+        retainedOnly: true as const,
         status: 'close-failed',
         failure: error,
         accounting: budget.diagnostics(),
-        batches: Object.freeze([...issuedBatches].map(function inspectIssuedBatch(batch) { return knownSelection().inspectBatch(batch); }))
+        batches: Object.freeze([...issuedBatches].map(function inspectIssuedBatch(batch) { 
+          return knownSelection()
+          .inspectBatch(batch); 
+        }))
       });
       throw error;
     }

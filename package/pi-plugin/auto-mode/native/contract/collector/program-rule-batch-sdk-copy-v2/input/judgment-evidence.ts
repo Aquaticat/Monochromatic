@@ -2,7 +2,10 @@
  Original evidence capture preserves membership authentication before dependency eligibility checks. @module
  */
 import { JudgmentConstructionError } from './judgment-error.ts';
-import type { JudgmentLifecycleContext, JudgmentEvidenceOperations } from './judgment-lifecycle-types.ts';
+import type {
+  JudgmentLifecycleContext,
+  JudgmentEvidenceOperations
+} from './judgment-lifecycle-types.ts';
 
 //region Captured evidence retains original identities without independently granting permission.
 /**
@@ -16,9 +19,19 @@ import type { JudgmentLifecycleContext, JudgmentEvidenceOperations } from './jud
 
  @example createJudgmentEvidence({ input, issuedBatches, state, attemptedBatches });
  */
-export function createJudgmentEvidence({ input, issuedBatches }: JudgmentLifecycleContext): JudgmentEvidenceOperations {
-  /** Original callback references are retained without eagerly reading selection or eligibility. */
-  const { knownSelection, ready, bindingSegment, assertDependenciesCurrent } = input;
+export function createJudgmentEvidence({
+  input,
+  issuedBatches
+}: JudgmentLifecycleContext): JudgmentEvidenceOperations {
+  /**
+   Original callback references are retained without eagerly reading selection or eligibility.
+   */
+  const {
+    knownSelection,
+    ready,
+    bindingSegment,
+    assertDependenciesCurrent
+  } = input;
   /**
    Authenticate original batch and terminal phase before retaining any eligibility failure.
 
@@ -30,8 +43,12 @@ export function createJudgmentEvidence({ input, issuedBatches }: JudgmentLifecyc
    */
   function captureBatchEvidence(batch: object): ReturnType<JudgmentEvidenceOperations['captureBatchEvidence']> {
     if (!issuedBatches.has(batch)) throw new JudgmentConstructionError('Question batch is not owned by this judgment');
-    knownSelection().assertCapturableBatch(batch);
-    return bindingSegment(function readBatchEvidence() { return knownSelection().captureBatchEvidence(batch); });
+    knownSelection()
+      .assertCapturableBatch(batch);
+    return bindingSegment(function readBatchEvidence() { 
+      return knownSelection()
+      .captureBatchEvidence(batch); 
+    });
   }
   /**
    Authenticate exact retained batch identity before observing current dependencies.
@@ -39,7 +56,8 @@ export function createJudgmentEvidence({ input, issuedBatches }: JudgmentLifecyc
    @param evidence - candidate original captured batch evidence
    */
   function assertBatchEvidence(evidence: unknown): void {
-    knownSelection().assertCapturedBatchIdentity(evidence);
+    knownSelection()
+      .assertCapturedBatchIdentity(evidence);
     assertDependenciesCurrent();
   }
   /**
@@ -51,7 +69,8 @@ export function createJudgmentEvidence({ input, issuedBatches }: JudgmentLifecyc
    */
   function captureClaimEvidence(claim: unknown): ReturnType<JudgmentEvidenceOperations['captureClaimEvidence']> {
     ready();
-    return knownSelection().captureEvidence(claim);
+    return knownSelection()
+      .captureEvidence(claim);
   }
   /**
    Authenticate exact retained claim identity before observing current dependencies.
@@ -59,9 +78,15 @@ export function createJudgmentEvidence({ input, issuedBatches }: JudgmentLifecyc
    @param evidence - original claim and candidate canonical evidence
    */
   function assertClaimEvidence(evidence: Parameters<JudgmentEvidenceOperations['assertClaimEvidence']>[0]): void {
-    knownSelection().assertCapturedIdentity(evidence);
+    knownSelection()
+      .assertCapturedIdentity(evidence);
     assertDependenciesCurrent();
   }
-  return { captureBatchEvidence, assertBatchEvidence, captureClaimEvidence, assertClaimEvidence };
+  return {
+    captureBatchEvidence,
+    assertBatchEvidence,
+    captureClaimEvidence,
+    assertClaimEvidence
+  };
 }
 //endregion

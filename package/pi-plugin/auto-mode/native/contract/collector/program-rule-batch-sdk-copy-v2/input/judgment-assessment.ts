@@ -3,7 +3,10 @@
  */
 import { readAssessmentResponse } from '../../../lifecycle/claim-evidence-batch-selection/selection-values.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
-import type { JudgmentLifecycleContext, JudgmentAssessmentOperations } from './judgment-lifecycle-types.ts';
+import type {
+  JudgmentLifecycleContext,
+  JudgmentAssessmentOperations
+} from './judgment-lifecycle-types.ts';
 
 //region Issuance precedes original transport attempts and terminal answer retention.
 /**
@@ -21,9 +24,22 @@ import type { JudgmentLifecycleContext, JudgmentAssessmentOperations } from './j
 
  @example createJudgmentAssessment({ input, state, issuedBatches, attemptedBatches });
  */
-export function createJudgmentAssessment({ input, state, issuedBatches, attemptedBatches }: JudgmentLifecycleContext): JudgmentAssessmentOperations {
-  /** Captured callbacks retain original selection, currentness, and transport invocation order. */
-  const { knownSelection, ready, bindingSegment, budget, send } = input;
+export function createJudgmentAssessment({
+  input,
+  state,
+  issuedBatches,
+  attemptedBatches
+}: JudgmentLifecycleContext): JudgmentAssessmentOperations {
+  /**
+   Captured callbacks retain original selection, currentness, and transport invocation order.
+   */
+  const {
+    knownSelection,
+    ready,
+    bindingSegment,
+    budget,
+    send
+  } = input;
   /**
    Publish judgment batch membership only after original selection issuance succeeds.
 
@@ -33,8 +49,11 @@ export function createJudgmentAssessment({ input, state, issuedBatches, attempte
    */
   function issue(claims: Parameters<JudgmentAssessmentOperations['issue']>[0]): ReturnType<JudgmentAssessmentOperations['issue']> {
     ready();
-    /** Original selection owns the issued batch before judgment membership is published. */
-    const batch = knownSelection().issue(claims);
+    /**
+     Original selection owns the issued batch before judgment membership is published.
+     */
+    const batch = knownSelection()
+      .issue(claims);
     issuedBatches.add(batch);
     return batch;
   }
@@ -52,33 +71,58 @@ export function createJudgmentAssessment({ input, state, issuedBatches, attempte
   async function assess(batch: object): Promise<Awaited<ReturnType<JudgmentAssessmentOperations['assess']>>> {
     if (state.operating) throw new JudgmentConstructionError('Judgment operations cannot overlap or reenter');
     state.operating = true;
-    /** Original operation exclusion is released on every successful and failed exit. */
-    using activity = { [Symbol.dispose]() { state.operating = false; } };
+    /**
+     Original operation exclusion is released on every successful and failed exit.
+     */
+    using activity = { [Symbol.dispose](): void { 
+      state.operating = false; 
+    } };
     if (!issuedBatches.has(batch)) throw new JudgmentConstructionError('Question batch is not owned by this judgment');
     if (attemptedBatches.has(batch)) throw new JudgmentConstructionError('Question batch cannot be assessed concurrently or sampled again');
     attemptedBatches.add(batch);
     state.assessing = true;
-    /** Original assessment phase ends independently of transport success or retained failure. */
-    using assessment = { [Symbol.dispose]() { state.assessing = false; } };
+    /**
+     Original assessment phase ends independently of transport success or retained failure.
+     */
+    using assessment = { [Symbol.dispose](): void { 
+      state.assessing = false; 
+    } };
     try {
-      /** Dependency checks surround the original selection request lookup. */
-      const request = bindingSegment(function readBatchRequest() { return knownSelection().requestFor(batch); });
-      /** The original budget supplies exact attempt, cancellation, and deadline fields to transport. */
+      /**
+       Dependency checks surround the original selection request lookup.
+       */
+      const request = bindingSegment(function readBatchRequest() { 
+        return knownSelection()
+        .requestFor(batch); 
+      });
+      /**
+       The original budget supplies exact attempt, cancellation, and deadline fields to transport.
+       */
       const answer = await budget.dispatch(function sendAssessmentAttempt(attempt) {
-        return send(Object.freeze({ request, ...attempt }));
+        return send(Object.freeze({
+          request,
+          ...attempt
+        }));
       });
       return bindingSegment(function settleAssessmentAnswer() {
-        return knownSelection().settle({ batch, ...readAssessmentResponse(answer) });
+        return knownSelection()
+          .settle({ batch, ...readAssessmentResponse(answer) });
       });
     } catch (error) {
       try {
-        if (!knownSelection().inspectBatch(batch).settled) knownSelection().discard({ batch, error });
+        if (!knownSelection()
+          .inspectBatch(batch)
+          .settled) knownSelection()
+          .discard({ batch, error });
       } catch (retentionError) {
-        throw new AggregateError([error, retentionError], 'Assessment failure and terminal retention failure');
+        throw new AggregateError([error, retentionError], 'Assessment failure and terminal retention failure', { cause: retentionError });
       }
       throw error;
     }
   }
-  return { issue, assess };
+  return {
+    issue,
+    assess
+  };
 }
 //endregion

@@ -1,11 +1,17 @@
 /**
  Original judgment lifecycle contracts retain evidence closure, transport attempts, and terminal diagnostics. @module
  */
-import type { JudgmentBudget, JudgmentBudgetSnapshot, JudgmentAttempt } from '../../../lifecycle/judgment-budget-error-occurrences/controls-private/types.ts';
+import type {
+  JudgmentBudget,
+  JudgmentBudgetSnapshot,
+  JudgmentAttempt
+} from '../../../lifecycle/judgment-budget-error-occurrences/controls-private/types.ts';
 import type { QuestionSelection } from '../../../lifecycle/claim-evidence-batch-selection/selection-owner.ts';
 import type { QuestionRequest } from '../../../lifecycle/claim-evidence-batch-selection/selection-owner-types.ts';
 
-/** Successful original evidence closure does not establish policy, instruction authority, or permission. */
+/**
+ Successful original evidence closure does not establish policy, instruction authority, or permission.
+ */
 export type JudgmentEvidenceClosure = Readonly<{
   evidenceOnly: true;
   status: 'evidence-closed';
@@ -18,7 +24,9 @@ export type JudgmentEvidenceClosure = Readonly<{
   batches: readonly ReturnType<QuestionSelection['resultFor']>[];
 }>;
 
-/** Failed closure retains original failure and batch inspection without implying live eligibility. */
+/**
+ Failed closure retains original failure and batch inspection without implying live eligibility.
+ */
 export type JudgmentClosureFailure = Readonly<{
   retainedOnly: true;
   status: 'close-failed';
@@ -27,7 +35,9 @@ export type JudgmentClosureFailure = Readonly<{
   batches: readonly ReturnType<QuestionSelection['inspectBatch']>[];
 }>;
 
-/** Shared private lifecycle state preserves operation guards and original closure outcomes. */
+/**
+ Shared private lifecycle state preserves operation guards and original closure outcomes.
+ */
 export type JudgmentLifecycleState = {
   operating: boolean;
   assessing: boolean;
@@ -36,7 +46,9 @@ export type JudgmentLifecycleState = {
   finalRecord?: JudgmentEvidenceClosure | JudgmentClosureFailure;
 };
 
-/** Original judgment capabilities remain lazy until their corresponding operation boundary. */
+/**
+ Original judgment capabilities remain lazy until their corresponding operation boundary.
+ */
 export type JudgmentLifecycleInput = Readonly<{
   knownSelection: () => QuestionSelection;
   ready: () => void;
@@ -50,7 +62,9 @@ export type JudgmentLifecycleInput = Readonly<{
   send: (input: JudgmentAttempt & Readonly<{ request: QuestionRequest }>) => Promise<unknown>;
 }>;
 
-/** Original issued and attempted memberships are separate from copied batch metadata. */
+/**
+ Original issued and attempted memberships are separate from copied batch metadata.
+ */
 export type JudgmentLifecycleContext = Readonly<{
   input: JudgmentLifecycleInput;
   state: JudgmentLifecycleState;
@@ -58,7 +72,9 @@ export type JudgmentLifecycleContext = Readonly<{
   attemptedBatches: WeakSet<object>;
 }>;
 
-/** Evidence operations preserve original membership-first and currentness check ordering. */
+/**
+ Evidence operations preserve original membership-first and currentness check ordering.
+ */
 export type JudgmentEvidenceOperations = Readonly<{
   captureBatchEvidence: (batch: object) => ReturnType<QuestionSelection['captureBatchEvidence']>;
   assertBatchEvidence: QuestionSelection['assertCapturedBatchIdentity'];
@@ -66,13 +82,17 @@ export type JudgmentEvidenceOperations = Readonly<{
   assertClaimEvidence: QuestionSelection['assertCapturedIdentity'];
 }>;
 
-/** Issuance and assessment retain one original attempt set and one original transport budget. */
+/**
+ Issuance and assessment retain one original attempt set and one original transport budget.
+ */
 export type JudgmentAssessmentOperations = Readonly<{
   issue: QuestionSelection['issue'];
   assess: (batch: object) => Promise<ReturnType<QuestionSelection['settle']>>;
 }>;
 
-/** Synchronous public guards and asynchronous assessment share the same original operation exclusion. */
+/**
+ Synchronous public guards and asynchronous assessment share the same original operation exclusion.
+ */
 export type JudgmentLifecycle = JudgmentEvidenceOperations & JudgmentAssessmentOperations & Readonly<{
   state: JudgmentLifecycleState;
   operation: <Result>(run: () => Result) => Result;
