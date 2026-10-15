@@ -18,11 +18,17 @@ import type {
 } from './store-types.ts';
 
 //region Namespace and filename construction admit only bounded original identities.
-/** Permission bits compared independently of the directory type. */
+/**
+ Permission bits compared independently of the directory type.
+ */
 const permissionMask=0o777;
-/** Cache directories exclude access by other users. */
+/**
+ Cache directories exclude access by other users.
+ */
 const privateDirectoryMode=0o700;
-/** SHA-256 uses exactly this many hexadecimal characters. */
+/**
+ SHA-256 uses exactly this many hexadecimal characters.
+ */
 const digestWidth=64;
 /**
  Admit only private ordinary directories before cache reads or publications.
@@ -32,6 +38,7 @@ const digestWidth=64;
  @param trace - original diagnostic sink
  
  @throws RuleRelevanceCacheError when directory type or permissions differ
+ 
  @example
  ```ts
  await privateDirectory({path:directory,trace});
@@ -77,6 +84,7 @@ export async function privateDirectory({
  @returns filename beneath the original namespace directory
  
  @throws RuleRelevanceCacheError when the key is not a lowercase SHA-256 spelling
+ 
  @example
  ```ts
  const filename=cacheFilename(key);
@@ -161,6 +169,7 @@ function validEntry(value:unknown):value is RelevanceEntry{
  @returns validated frozen entry or the explicit missing-estimate sentinel
  
  @throws RuleRelevanceCacheError when persisted fields fail admission
+ 
  @example
  ```ts
  const entry=readPersistedEntry({root,key,profileKey,trace});

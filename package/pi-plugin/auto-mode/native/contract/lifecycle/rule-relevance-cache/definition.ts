@@ -4,20 +4,34 @@
  */
 
 //region Classification wording remains fixed independently of cached estimates.
-/** Fixed relevance input never supplies a rule interpretation or permission. */
+/**
+ Fixed relevance input never supplies a rule interpretation or permission.
+ */
 export type RelevanceQuestion={
- /** Independent probability head retained by the original classifier. */
+ /**
+  Independent probability head retained by the original classifier.
+  */
  readonly type:'noul';
- /** Exact fixed relevance question. */
+ /**
+  Exact fixed relevance question.
+  */
  readonly question:string;
- /** Opposed criteria define the fixed probability interpretation. */
+ /**
+  Opposed criteria define the fixed probability interpretation.
+  */
  readonly criteria:{
-  /** Evidence for potential guard relevance. */
+  /**
+   Evidence for potential guard relevance.
+   */
   readonly true:string;
-  /** Evidence for absence of guard relevance. */
+  /**
+   Evidence for absence of guard relevance.
+   */
   readonly false:string;
  };
- /** Supported operation scope is fixed independently of a particular action. */
+ /**
+  Supported operation scope is fixed independently of a particular action.
+  */
  readonly remit:string;
 };
 /**

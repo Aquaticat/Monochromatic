@@ -22,7 +22,9 @@ import type {
 } from './store-types.ts';
 
 //region The synchronous owner retains fixed namespace and asynchronous work lifetimes.
-/** Namespace components are bounded before their content digest is derived. */
+/**
+ Namespace components are bounded before their content digest is derived.
+ */
 const maximumNamespaceLength=4_096;
 /**
  Derive the original content-addressed identity without interpreting the input.
@@ -30,6 +32,7 @@ const maximumNamespaceLength=4_096;
  @param value - exact serialized namespace, profile, or rule material
  
  @returns lowercase SHA-256 spelling
+ 
  @example
  ```ts
  const key=digest(serializedRule);
@@ -54,6 +57,7 @@ export function digest(value:string):string{
  @returns owner joining initialization and same-key publication before exposing estimates
  
  @throws RuleRelevanceCacheError when directory, namespace, or diagnostic configuration is invalid
+ 
  @example
  ```ts
  const store=createRelevanceStore({directory,namespace,profileKey,trace});
