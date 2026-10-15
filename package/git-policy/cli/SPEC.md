@@ -1423,7 +1423,8 @@ The shadow `config` has this layout:
   repositoryformatversion = <copied value>
   hooksPath = <git-common-dir>/hooks
 [extensions]
-  ; every extensions.* key of the real repository, copied with its value
+  ; every extensions.* key of the real repository, copied with its value;
+  ; the section is omitted when the repository has none
 [include]
   path = <git-common-dir>/config
 [core]
@@ -1806,7 +1807,7 @@ landing copies every object the new commit reaches that exists only in the shado
 into the real object store:
 
 ```text
-git --git-dir=<shadow> pack-objects --revs --local --stdout
+git --git-dir=<shadow> pack-objects --revs --local --stdout --quiet
   | git index-pack --stdin --keep=<keep message>
 ```
 
@@ -2187,7 +2188,7 @@ in the worktree's own Git directory
 
 - The capture lock `capture.lock` is an owner lock
   (see "Locks"):
-  unbounded wait while its owner lives,
+  a wait while its owner lives, bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800),
   and a dead or zombie owner's lock is retired by the next acquirer.
   A transaction holds it only while it allocates its sequence number and captures:
   the private index built from the preparation base and the selected worktree paths,
@@ -2261,7 +2262,7 @@ and runs no process when no shared path is among the transaction's worktree-capt
 Otherwise it lists the first-parent history since the preparation base once
 (`git rev-list --first-parent <current> ^<base>`,
 without `^<base>` for an unborn base,
-and one `git diff-tree --stdin --root -r -z --raw --no-renames -m --first-parent`),
+and one `git diff-tree --stdin --root -r -z --raw --no-abbrev --no-renames -m --first-parent`),
 and reads the record of each listed commit.
 For a shared path:
 
@@ -2323,16 +2324,17 @@ After both locks are released:
     (`run_auto_maintenance` in Git's `builtin/commit.c`):
     `git maintenance run --auto --quiet` with `--detach` or `--no-detach`.
     The decision mirrors `prepare_auto_maintenance` in Git's `run-command.c`:
-    `maintenance.auto`,
-    falling back to a positive `gc.auto`,
-    enables it;
+    an explicit `maintenance.auto` decides alone;
+    otherwise a positive `gc.auto` enables it,
+    and neither key set enables it as well;
     `maintenance.autoDetach`,
     falling back to `gc.autoDetach`,
     then to `true`,
     selects detaching.
     Git before 2.47 rejects `--detach` with exit status 129,
     so the step retries without it,
-    the form native `git commit` used there.
+    the form native `git commit` used there
+    (unreachable under the 2.55.0 gate).
     `--quiet` is fixed,
     so the background notice never interleaves with JSONL output.
     Its exit status is ignored,
@@ -2410,23 +2412,24 @@ is retired by the next acquirer.
 
 - Landing lock,
   `<git-dir>/cli-git-transactions/landing.lock`:
-  unbounded wait while its owner lives.
+  a wait while its owner lives, bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800).
 - Reservation lock,
   `<git-dir>/cli-git-transactions/reservation.lock`:
-  unbounded wait while its owner lives.
+  a wait while its owner lives, bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800).
 - Hook lock,
   `<git-common-dir>/cli-git/hook.lock`:
-  unbounded wait while its owner lives.
+  a wait while its owner lives, bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800).
 - Capture lock,
   `<git-dir>/cli-git-captures/capture.lock`:
-  unbounded wait while its owner lives,
+  a wait while its owner lives, bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800),
   held only while one transaction captures
   (see "Capture order").
 - Push locks,
   `<git-common-dir>/cli-git/push/<encoded-ref>.lock`:
-  unbounded wait while their owner lives.
+  a wait while their owner lives, bounded by the push deadline plus the grace plus 60 seconds
+  or by `CLI_GIT_PUSH_LOCK_WAIT_SECONDS` when that is set.
 - Worktree-copy settlement lock:
-  unbounded wait while its owner lives,
+  a wait while its owner lives, bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800),
   bounded wait for an owner record without evidence,
   held only by applicable sources
   (see "Linked-worktree ignored-state synchronization").
@@ -2463,8 +2466,8 @@ by appending it through `GIT_CONFIG_COUNT`,
 and `GIT_CONFIG_VALUE_<n>` while preserving existing entries,
 so native Git leaves an owner PID file beside each lock
 and the shim's restoration of `GIT_CONFIG_PARAMETERS` does not remove the setting.
-The wrapper installs the entry into its own environment at startup,
-so every Git it forwards or spawns inherits it.
+The wrapper adds the entry to the environment of each child it forwards or spawns,
+not to its own environment.
 Nothing is appended when the last numbered `core.lockfilePid` entry already reads as true,
 or when `GIT_CONFIG_COUNT` is malformed,
 so Git still reports the caller's error.
@@ -2503,7 +2506,7 @@ The verdict is proven alive,
 dead,
 or evidence-free:
 
-- A proven-alive owner gets an unbounded wait with one human-readable stderr line naming the holder.
+- A proven-alive owner gets a wait bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (default 1800) with one human-readable stderr line naming the holder.
 - A dead or evidence-free owner gets Git-style quadratic backoff with jitter up to
   `indexLock.unprovenOwnerTimeoutMs`,
   then `index-lock-unproven-owner` with exit `2`,
@@ -2574,8 +2577,9 @@ A nested commit transaction lands under the ancestor's landing lock the same way
 
 At wrapper startup,
 before config loading or forwarding,
-recovery enumerates every published transaction under `<git-dir>/cli-git-transactions/`
-and the legacy directory.
+recovery enumerates every published transaction under `<git-dir>/cli-git-transactions/`.
+A legacy `<git-dir>/cli-git-transaction` directory is not enumerated:
+the command stops with exit `2` and instructions.
 Management help returns before recovery.
 
 - An owner that is alive with a matching birth identity is skipped at debug log level;
@@ -2870,7 +2874,7 @@ and configuration:
 - a lock whose owner is a zombie is retired by the owner-lock acquirer,
   the hook dispatcher shim,
   and the transaction-owner liveness check;
-- an unbounded wait released when the holder exits,
+- a wait released when the holder exits (and abandoned after `CLI_GIT_LOCK_WAIT_SECONDS`),
   and a leftover lock from a killed Git producing `index-lock-unproven-owner` after the timeout with the lock retained;
 - a concurrent `git add` during a landing waits and then succeeds;
 - `git cli-git fix` concurrent with a landing keeps its real index check valid;
@@ -2893,7 +2897,7 @@ Recovery:
   after the index install,
   and before added-path worktree completion,
   each leaving no shadow repository and no `.keep` carrying the transaction's keep message after recovery;
-- a legacy `cli-git-transaction` directory still recovers.
+- a legacy `cli-git-transaction` directory stops the command with exit `2` and instructions instead of recovering.
 
 Auto-push:
 
@@ -2920,15 +2924,10 @@ so this suite is an inherent part of the transaction protocol.
 
 - A mise task (`test:e2e:concurrent:native`) builds the release executable into an image and runs a consumer script
   inside `podman` with stated memory and CPU bounds.
-- The image provides Git 2.39.5,
-   2.40.0 and 2.55.0.
+- The image provides Git 2.55.0 only.
   The native executable requires Git 2.55.0
   (see "Compatibility and degradation"),
-  so the supported run is `--git 2.55.0`,
-   which runs the whole catalog.
-  The two older versions stay in the image from the retired wrapper's suite;
-  the native executable refuses them,
-   so runs on them fail by design.
+  so the run covers the whole catalog on that version.
   Distribution images that ship an older Git do not qualify as the only Git.
 - Each run creates new repositories and a local bare remote inside the container,
   never touching host repositories.
@@ -3039,7 +3038,7 @@ A pushed commit with no known published commit on its destination scans its fina
 Directly pushed tree and blob targets scan their complete content.
 Deduplicate exact candidate identities across updates.
 Load unique Git blobs through one `git cat-file --batch` process per evaluation.
-Materialize scanner files with no more than 64 concurrent lanes.
+The scanner reads candidate content in process, and no scanner file is materialized.
 Wrapper-added latency for every forwarded real Git command must remain strictly less than `2,000 ms`.
 Explicit dry runs bypass manual-push policies.
 Pure ref deletion is clean.
@@ -3053,8 +3052,7 @@ Do not exclude unrelated nested files sharing those basenames.
 Findings are redacted;
 the scanner must not expose matched bytes.
 A missing rules file named by configuration,
-a scanner failure,
-and a materialized-file read failure are engine failures that exit `2`;
+and a scanner failure are engine failures that exit `2`;
 an incomplete policy result emits `policy-incomplete`.
 The policy defaults to error and is warn-unsafe.
 Preserve the independent SLSA-attested CI invocation.
@@ -3092,7 +3090,9 @@ Every real index entry remains exact during direct fix.
 Issue #356 records measured budgets;
 this specification does not invent numeric thresholds.
 
-The benchmark harness uses built production artifacts and disposable repositories.
+The benchmark harness that produced the records in `perf/` and its `perf:*` task no longer exist;
+a new measurement needs a new harness.
+A harness uses built production artifacts and disposable repositories.
 Each scenario has a paired direct-real-Git baseline using the same executable,
 repository,
 command,
@@ -3171,7 +3171,7 @@ Earlier sweeps,
 superseded because every landing then left one more pack in the real store
 (see "Post-landing"),
 so later batches in a sweep ran against more packs than earlier ones:
-four sweeps of one build (`2ec229081`,
+four sweeps (the first at revision `2ec229081`, the other three at `d42a4fab3`,
 Git 2.47.3,
 concurrency 8,
 30 recorded batches per setting,
@@ -3183,7 +3183,9 @@ so the run-to-run band of either setting
 (about 1150 to 1270 ms)
 is more than ten times the 91 ms between their means,
 and `1` had the lower p95 in only two of the four runs.
-`4` (5257 to 5392 ms) and `8` (5615 to 5806 ms) were slower than both in every run.
+`8` (5615 to 5806 ms) was slower than both in every run,
+and `4` (5257 to 5392 ms) was slower than both in three runs;
+in the second run its p95 (5318 ms) was below both.
 Per-commit medians do separate:
 `1` gave 2586 to 2767 ms and `2` gave 3024 to 3106 ms in every run,
 with 1.16 to 1.24 against 1.63 to 1.71 lost races per commit.

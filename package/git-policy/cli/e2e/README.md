@@ -26,12 +26,10 @@ mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1 --scenario
   then a summary.
   The task exits non-zero when any scenario fails or errors.
 - `--scenario` takes comma-separated scenario names;
-  `--git` takes comma-separated versions among `2.39.5`,
-  `2.40.0`,
-  and `2.55.0`.
-- The native executable requires Git 2.55.0 or newer, so the supported run selects `--git 2.55.0`.
-  Without `--git`, the 2.39.5 and 2.40.0 runs fail by design (measured on 2026-10-14, seed 91442351:
-  52 of 114 runs failed, all on those two versions; with `--git 2.55.0` and seed 1, 36 scenarios pass and 2 skip).
+  `--git` takes comma-separated versions, and the image provides `2.55.0` only.
+- The native executable requires Git 2.55.0 or newer and runs nothing on an older Git,
+  so the image builds that one version.
+  On 2026-10-14 with seed 1, 36 scenarios passed and 2 skipped.
 
 The TypeScript wrapper that this suite first verified is retired;
  its last commit is
@@ -67,11 +65,9 @@ mise run //package/git-policy/cli:e2e:concurrent:trace
 
 - Node 24.11.0,
   the version the suite has always run with;
-- Git 2.39.5,
-  Git 2.40.0,
-  and Git 2.55.0,
-  built from checksum-pinned kernel.org tarballs,
-  installed under `/opt/git/<version>`;
+- Git 2.55.0,
+  built from a checksum-pinned kernel.org tarball,
+  installed under `/opt/git/2.55.0`;
 - no Git on the default `PATH`,
   so each scenario picks its Git by `PATH` order.
 
@@ -81,10 +77,11 @@ The native image adds `/opt/native/bin/git`,
 
 The native executable requires Git 2.55.0 or newer and runs nothing on an older Git
 (`SPEC.md` "Compatibility and degradation"),
-so only the 2.55.0 runs are supported ones.
-The rest of this section describes why the image also carries 2.39.5 and 2.40.0:
-the retired TypeScript wrapper degraded on them,
- and the suite kept the versions.
+so the image carries no other version.
+The rest of this section records why the image once also carried 2.39.5 and 2.40.0:
+the retired TypeScript wrapper degraded on them.
+The `replayPlumbing` skips and the `replay-unavailable-*` scenarios below stay in the catalog for that history,
+and no supported run exercises the `absent` ones.
 
 For the retired wrapper,
  Git 2.40.0 was the oldest release with every feature it used,
