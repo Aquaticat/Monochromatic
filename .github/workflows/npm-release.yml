@@ -121,8 +121,7 @@ jobs:
       - name: Install dependencies
         run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
-      # The cache shares its key with final-newline.yml, whose pull request runs only restore it, so the push to main
-      # that runs this job seeds them. Key shape and size budget: doc/decision/ci-caching.md
+      # The push to main that runs this job seeds the cache. Key shape and size budget: doc/decision/ci-caching.md
       - name: Identify the Rust toolchain for the cache key
         id: toolchain
         run: echo "id=${ImageOS}-$(rustc --verbose --version | awk '/^commit-hash:/ { print $2 }')" >> "$GITHUB_OUTPUT"

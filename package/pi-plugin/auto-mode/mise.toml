@@ -526,6 +526,17 @@ run = [
 description = "Verify original asynchronous cache publication in disposable directories"
 run = 'node --max-old-space-size=512 src/native-relevance-store.unit.test.ts'
 
+[tasks."test:native:answer-values"]
+description = "Verify built scalar, distribution, and serving-model answer admission"
+run = [
+  'node --max-old-space-size=512 src/native-assessment-response.unit.test.ts',
+  'node --max-old-space-size=512 src/native-relation-estimate.unit.test.ts',
+]
+
+[tasks."test:native:question-definitions"]
+description = "Verify pinned catalog admission and independent claim identity indexes"
+run = 'node --max-old-space-size=512 src/native-question-definitions.unit.test.ts'
+
 [tasks."test:native:relevance-cache"]
 description = "Verify policy freshness and cancellation through built asynchronous cache refresh"
 run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-relevance-cache.unit.test.ts'

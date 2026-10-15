@@ -114,6 +114,15 @@ fn comparison_streams_whole_files() {
     remove(root.as_path());
 }
 
+/// The read limit and the comparison chunk keep their documented sizes.
+///  The comparison test sizes its files from the chunk, and no test builds a file as large as the limit,
+///  so only the values themselves pin the arithmetic that produces them.
+#[test]
+fn recovery_sizes_keep_their_documented_values() {
+    assert_eq!(RECOVERY_FILE_LIMIT, 2_147_483_648);
+    assert_eq!(COMPARISON_CHUNK, 65_536);
+}
+
 /// Owned links keep the inode,
 ///  and a link to another inode is removed and refused.
 #[test]

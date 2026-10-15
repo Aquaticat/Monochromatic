@@ -31,7 +31,8 @@ use super::private_storage::{
     sync_directory, write_exclusive_synced, write_private_file,
 };
 /// Owner lock acquisition, its poll delay, its silent wait notice and its failure.
-use super::owner_lock::{DEFAULT_POLL_DELAY, OwnerLockError, SilentWait, acquire_owner_lock};
+use super::live_lock::acquire_live_owner_lock;
+use super::owner_lock::OwnerLockError;
 /// Random identity bytes formatted as a UUID.
 use super::random_id::random_uuid;
 /// One Git start and its failure text.
@@ -209,12 +210,8 @@ pub fn capture_in_order<Value, Failure: From<CaptureOrderError>>(
 ) -> Result<(CaptureStamp, Value), Failure> {
     let store: PathBuf = ensure_capture_store(git_dir).map_err(CaptureOrderError::from)?;
     // Released when this function returns, through the owner lock's drop.
-    let lock = acquire_owner_lock(
-        store.join(CAPTURE_LOCK_NAME).as_path(),
-        DEFAULT_POLL_DELAY,
-        &mut SilentWait,
-    )
-    .map_err(CaptureOrderError::Lock)?;
+    let lock = acquire_live_owner_lock(store.join(CAPTURE_LOCK_NAME).as_path(), "the capture lock")
+        .map_err(CaptureOrderError::Lock)?;
     // The test-only marker of the incumbent's `captureInOrder`: reached once the capture lock is held.
     reach_transaction_phase(Phase::CaptureLocked, None).map_err(CaptureOrderError::Phase)?;
     let worktree_id: String = ensure_worktree_id(store.as_path()).map_err(CaptureOrderError::from)?;

@@ -15,6 +15,7 @@ use super::json_record::quote;
 use super::worktree_copy_error::{WorktreeCopyError, failure_with_cause, raw_failure};
 use super::worktree_copy_lock::try_acquire_worktree_copy_lock;
 use super::worktree_copy_stage::StagedSnapshot;
+use super::worktree_copy_stage_claim::{reap_abandoned_stages, stage_claims_exist};
 use super::worktree_copy_transaction::{Outcome, complete_journal, snapshot_from_journal};
 use crate::worktree_copy_journal::{
     PendingJournal, Phase, Role, assert_private_path, read_pending_journals, remove_pending_journal,
@@ -249,6 +250,7 @@ pub fn recover_worktree_copy_transactions(
             notices.push(line);
         }
     }
+    notices.extend(reap_abandoned_stages(common_dir)?);
     return Ok(RecoveryReport { recovered, notices });
 }
 
@@ -297,7 +299,7 @@ pub fn recover_pending_worktree_copies(
     common_dir: &Path,
     stderr: &mut dyn Write,
 ) -> Result<(), WorktreeCopyError> {
-    if read_pending_journals(common_dir)?.is_empty() {
+    if read_pending_journals(common_dir)?.is_empty() && !stage_claims_exist(common_dir)? {
         return Ok(());
     }
     let Some(lease) = try_acquire_worktree_copy_lock(common_dir)? else {

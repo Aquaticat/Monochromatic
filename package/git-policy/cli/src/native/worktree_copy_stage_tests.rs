@@ -45,7 +45,7 @@ fn stage_mirrors_selected_entries_with_modes_and_links() {
     let staged: StagedSnapshot = stage_ignored_snapshot(
         &git_context(),
         source.as_path(),
-        destination.as_path(),
+        new_stage_container(destination.as_path()).expect("container").as_path(),
         &[std::fs::canonicalize(source.as_path()).expect("canonical")],
         &CopySelection::Ignored,
     )
@@ -131,7 +131,7 @@ fn nested_registered_worktree_is_not_copied() {
         std::fs::canonicalize(source.as_path())
             .expect("canonical source")
             .as_path(),
-        destination.as_path(),
+        new_stage_container(destination.as_path()).expect("container").as_path(),
         &[nested_root],
         &CopySelection::Ignored,
     )
@@ -169,7 +169,7 @@ fn failed_copy_removes_its_stage() {
         std::fs::canonicalize(source.as_path())
             .expect("canonical source")
             .as_path(),
-        destination.as_path(),
+        new_stage_container(destination.as_path()).expect("container").as_path(),
         &[],
         &CopySelection::Ignored,
     )
@@ -221,11 +221,112 @@ fn staging_under_a_missing_parent_fails_with_cause() {
         std::fs::canonicalize(source.as_path())
             .expect("canonical source")
             .as_path(),
-        destination.as_path(),
+        new_stage_container(destination.as_path()).expect("container").as_path(),
         &[],
         &CopySelection::Ignored,
     )
     .expect_err("missing parent");
     assert!(failure.0.contains("No such file or directory"));
     remove(root.as_path());
+}
+
+/// A clone request that the filesystem accepts leaves the destination as the clone made it,
+///  so no bytes are copied over it.
+fn clone_accepts_and_copies_nothing(_source: &std::fs::File, _destination: &std::fs::File) -> bool {
+    return true;
+}
+
+/// A clone request that the filesystem refuses.
+fn clone_refuses(_source: &std::fs::File, _destination: &std::fs::File) -> bool {
+    return false;
+}
+
+/// The bytes are copied exactly when the clone is refused:
+///  an accepted clone is trusted to have filled the file, and a refused one never leaves it empty.
+#[test]
+fn bytes_are_copied_exactly_when_the_clone_is_refused() {
+    let root: PathBuf = fixture("stage-clone-choice");
+    std::fs::write(root.join("source"), b"payload").expect("source");
+    copy_file_exclusive_with(
+        root.join("source").as_path(),
+        root.join("accepted").as_path(),
+        clone_accepts_and_copies_nothing,
+    )
+    .expect("accepted");
+    assert_eq!(std::fs::read(root.join("accepted")).expect("accepted"), b"");
+    copy_file_exclusive_with(
+        root.join("source").as_path(),
+        root.join("refused").as_path(),
+        clone_refuses,
+    )
+    .expect("refused");
+    assert_eq!(std::fs::read(root.join("refused")).expect("refused"), b"payload");
+    remove(root.as_path());
+}
+
+/// The real clone request says it cloned exactly when the destination holds the source's bytes,
+///  on any filesystem: a refusal leaves the new file empty and an acceptance fills it.
+#[cfg(target_os = "linux")]
+#[test]
+fn the_clone_request_reports_what_it_did() {
+    let root: PathBuf = fixture("stage-clone-report");
+    std::fs::write(root.join("source"), vec![9_u8; 8192]).expect("source");
+    let input: std::fs::File = std::fs::File::open(root.join("source")).expect("input");
+    let output: std::fs::File = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(root.join("clone"))
+        .expect("output");
+    let cloned: bool = try_clone(&input, &output);
+    let held: Vec<u8> = std::fs::read(root.join("clone")).expect("clone bytes");
+    if cloned {
+        assert_eq!(held, vec![9_u8; 8192], "an accepted clone fills the destination");
+    } else {
+        assert!(held.is_empty(), "a refused clone leaves the destination empty");
+    }
+    remove(root.as_path());
+}
+
+/// Where the filesystem accepts a clone, the clone request accepts it too.
+///  The probe asks the kernel directly on a separate pair of files, so the answer does not depend on `try_clone`;
+///  on a filesystem without clones (tmpfs, overlay) both sides are refusals and the test shows nothing.
+#[cfg(target_os = "linux")]
+#[test]
+fn the_clone_request_succeeds_where_the_filesystem_clones() {
+    use std::os::unix::io::AsRawFd;
+    let root: PathBuf = fixture("stage-clone-supported");
+    std::fs::write(root.join("source"), vec![5_u8; 8192]).expect("source");
+    let pair = |name: &str| -> (std::fs::File, std::fs::File) {
+        let input: std::fs::File = std::fs::File::open(root.join("source")).expect("input");
+        let output: std::fs::File = std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(root.join(name))
+            .expect("output");
+        return (input, output);
+    };
+    let (probe_input, probe_output) = pair("probe");
+    // SAFETY: both descriptors are open for the call, and FICLONE takes the source descriptor as its argument.
+    let supported: bool = unsafe {
+        libc::ioctl(probe_output.as_raw_fd(), libc::FICLONE, probe_input.as_raw_fd())
+    } == 0;
+    let (input, output) = pair("clone");
+    assert_eq!(try_clone(&input, &output), supported);
+    remove(root.as_path());
+}
+
+/// Only the roots strictly inside the source are nested, and the source itself and its neighbours are not.
+#[test]
+fn only_strictly_nested_roots_are_nested() {
+    let source: PathBuf = PathBuf::from("/work/source");
+    let roots: Vec<PathBuf> = vec![
+        PathBuf::from("/work/source"),
+        PathBuf::from("/work/source/inner"),
+        PathBuf::from("/work/source-neighbour"),
+        PathBuf::from("/work/other"),
+    ];
+    assert_eq!(
+        nested_under(source.as_path(), roots.as_slice()),
+        vec![PathBuf::from("/work/source/inner")]
+    );
 }

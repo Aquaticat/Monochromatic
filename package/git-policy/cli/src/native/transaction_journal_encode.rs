@@ -15,6 +15,8 @@
 //! ```
 
 /// The ordered writer and array encoding.
+/// The event form of a pathname and the base64 of its bytes.
+use super::event_path::{EventPath, base64_standard};
 use super::json_record::{ObjectWriter, string_array};
 /// The record types and their wire names.
 use super::transaction_journal::{
@@ -81,6 +83,28 @@ fn encode_lock(lock: &LockIdentity) -> String {
 }
 
 /// What:
+///  Append a list of paths as `key`, the readable text of each, and,
+///  when any path is not UTF-8, as `bytes_key`, the base64 of the exact bytes of every path.
+/// Why:
+///   The incumbent wrote only text, so a list whose paths are all UTF-8 stays byte for byte what it wrote;
+///  a name that is not UTF-8 cannot be a JSON string, and an array has no absent entry, so the byte list names every
+///  path once it is needed at all (the rule of `changedPathBytes` in events).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// record[key] = paths.map(p => p.text); if (paths.some(p => p.exact)) record[bytesKey] = paths.map(p => base64(p.bytes));
+/// ```
+fn push_path_list(writer: &mut ObjectWriter, key: &str, bytes_key: &str, paths: &[Vec<u8>]) {
+    let event_paths: Vec<EventPath> = paths.iter().map(|path| { return EventPath::from_git_bytes(path.as_slice()); }).collect();
+    let texts: Vec<String> = event_paths.iter().map(|path| { return String::from(path.text()); }).collect();
+    writer.raw(key, string_array(texts.as_slice()).as_str());
+    if event_paths.iter().any(|path| { return path.exact().is_some(); }) {
+        let encoded: Vec<String> = event_paths.iter().map(|path| { return base64_standard(path.bytes()); }).collect();
+        writer.raw(bytes_key, string_array(encoded.as_slice()).as_str());
+    }
+}
+
+/// What:
 ///  Encode a list of added-path records.
 /// Why:
 ///   Shared by `prepared.json` and `landing-<n>.json`.
@@ -96,8 +120,12 @@ fn encode_added_paths(records: &[AddedPath]) -> String {
             text.push(',');
         }
         let mut writer: ObjectWriter = ObjectWriter::new();
+        let path: EventPath = EventPath::from_git_bytes(record.path.as_slice());
+        writer.string("path", path.text());
+        if let Some(exact) = path.exact() {
+            writer.string("pathBytes", base64_standard(exact).as_str());
+        }
         writer
-            .string("path", record.path.as_str())
             .string("gitMode", record.git_mode.as_str())
             .string("originalOid", record.original_oid.as_str())
             .string("intendedOid", record.intended_oid.as_str());
@@ -210,12 +238,9 @@ pub fn encode_preparing(record: &PreparingRecord) -> String {
         .string("objectDirectory", record.object_directory.as_str())
         .string("refFormat", ref_format_name(record.ref_format))
         .string("emptyTreeOid", record.empty_tree_oid.as_str())
-        .string("shadowPath", record.shadow_path.as_str())
-        .raw(
-            "selectedPathspecs",
-            string_array(record.selected_pathspecs.as_slice()).as_str(),
-        )
-        .string("invokedAt", record.invoked_at.as_str());
+        .string("shadowPath", record.shadow_path.as_str());
+    push_path_list(&mut writer, "selectedPathspecs", "selectedPathspecBytes", record.selected_pathspecs.as_slice());
+    writer.string("invokedAt", record.invoked_at.as_str());
     return format!("{}\n", writer.finish());
 }
 
@@ -234,11 +259,9 @@ pub fn encode_prepared(record: &PreparedRecord) -> String {
         .string("shadowPath", record.shadow_path.as_str())
         .string("preparedOid", record.prepared_oid.as_str())
         .boolean("signed", record.signed)
-        .string("intendedTreeOid", record.intended_tree_oid.as_str())
-        .raw(
-            "committedPaths",
-            string_array(record.committed_paths.as_slice()).as_str(),
-        )
+        .string("intendedTreeOid", record.intended_tree_oid.as_str());
+    push_path_list(&mut writer, "committedPaths", "committedPathBytes", record.committed_paths.as_slice());
+    writer
         .raw(
             "addedPaths",
             encode_added_paths(record.added_paths.as_slice()).as_str(),

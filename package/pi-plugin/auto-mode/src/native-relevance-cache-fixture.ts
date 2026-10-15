@@ -125,10 +125,7 @@ type CacheModule={
     /**
      No external model is used.
      */
-    readonly assessBatch:(input:Assessment)=>Promise<readonly {
-      readonly id:string;
-      readonly probability:number
-    }[]>;
+    readonly assessBatch:(input:Assessment)=>Promise<unknown>;
     /**
      Events expose controlled operation boundaries.
      */
@@ -207,6 +204,10 @@ type CacheFixture=AsyncDisposable&{
      Optional mutation during original classifier delivery.
      */
     onAssessment?:()=>void;
+    /**
+     Optional untrusted classifier delivery for complete answer-admission checks.
+     */
+    answer?:(request:Assessment['request'])=>unknown;
   };
 };
 /**
@@ -305,6 +306,7 @@ export async function cacheFixture():Promise<CacheFixture>{
       assessBatch({request}){
         requests.push(request);
         callbacks.onAssessment?.();
+        if(callbacks.answer!==undefined)return Promise.resolve(callbacks.answer(request));
         /**
          Authored estimates exercise delivery without a provider request.
          */

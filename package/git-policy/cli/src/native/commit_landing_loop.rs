@@ -22,6 +22,7 @@ use super::commit_transaction::{CommitInvocation, TransactionStop, failed};
 use super::commit_workspace::CommitWorkspace;
 use super::commit_worktree_records::{HookChanges, settled_entry};
 use super::diagnostic_log::debug;
+use super::event_path::EventPath;
 use super::landing_attempt::{LandingOutcome, LandingPayload, LandingRequest, land_transaction};
 use super::landing_findings::{LANDING_FINDING_EXIT_CODE, landing_finding};
 use super::landing_objects::migrate_shadow_objects;
@@ -63,7 +64,7 @@ struct Candidate {
     /// The tree `pre-commit` last approved.
     approved_tree: String,
     /// The paths an explicit-path landing resets.
-    committed_paths: Vec<String>,
+    committed_paths: Vec<Vec<u8>>,
     /// The policy-added paths.
     added_paths: Vec<AddedPath>,
     /// The selected, corrected and hook-changed worktree completions.
@@ -111,7 +112,7 @@ pub struct LoopInput<'a, F: RepositoryFacts> {
     /// Whether interactive or include selection forbids automatic patches.
     pub read_only_selection: bool,
     /// The paths an explicit-path commit carries.
-    pub committed_paths: Vec<String>,
+    pub committed_paths: Vec<Vec<u8>>,
     /// The policy-added paths.
     pub added_paths: Vec<AddedPath>,
     /// The worktree completions.
@@ -170,7 +171,7 @@ fn retarget_records(
 ) -> Result<Vec<AddedPath>, TransactionStop> {
     let mut retargeted: Vec<AddedPath> = Vec::new();
     for record in records {
-        let Some((mode, oid)) = settled_entry(input.context, input.cwd, index, record.path.as_bytes())? else {
+        let Some((mode, oid)) = settled_entry(input.context, input.cwd, index, record.path.as_slice())? else {
             continue;
         };
         if mode != record.git_mode {
@@ -291,7 +292,11 @@ fn replay_candidate<F: RepositoryFacts>(
             )?;
             let last: Vec<PolicyEvent> = vec![PolicyEvent::ReplayConflict {
                 target_ref: input.capture.layout.target_ref.clone(),
-                paths: conflict.paths,
+                paths: conflict
+                    .paths
+                    .iter()
+                    .map(|path| { return EventPath::from_git_bytes(path.as_slice()); })
+                    .collect(),
                 winning_oid: conflict.winning_oid,
                 prepared_oid: conflict.prepared_oid,
             }];
@@ -327,7 +332,7 @@ fn replay_candidate<F: RepositoryFacts>(
             candidate.approved_tree.as_str(),
         )?
     };
-    let (tree, index, revalidation_events, revalidated_paths, revalidated_hooks): (String, PathBuf, Vec<PolicyEvent>, Vec<String>, HookChanges) =
+    let (tree, index, revalidation_events, revalidated_paths, revalidated_hooks): (String, PathBuf, Vec<PolicyEvent>, Vec<Vec<u8>>, HookChanges) =
         match revalidation {
             Revalidation::Blocked { events, exit_code } => {
                 return Ok(Err(LoopOutcome::Failed {
@@ -347,7 +352,7 @@ fn replay_candidate<F: RepositoryFacts>(
         Ok(found) => found,
         Err(error) => return Ok(Err(replay_failure(input.capture, onto, replay_error_text(&error)))),
     };
-    let committed_paths: Vec<String> = union_paths(input.committed_paths.as_slice(), revalidated_paths);
+    let committed_paths: Vec<Vec<u8>> = union_paths(input.committed_paths.as_slice(), revalidated_paths);
     let mut worktree_records: Vec<AddedPath> = retarget_records(input.invocation, index.as_path(), input.worktree_records.as_slice())?;
     worktree_records.extend(revalidated_hooks.worktree_records.iter().cloned());
     let mut events: Vec<PolicyEvent> = replayed_events(
@@ -384,8 +389,8 @@ fn replay_candidate<F: RepositoryFacts>(
 /// ```ts
 /// [...new Set([...committedPaths, ...revalidatedPaths])]
 /// ```
-pub fn union_paths(committed: &[String], revalidated: Vec<String>) -> Vec<String> {
-    let mut paths: Vec<String> = committed.to_vec();
+pub fn union_paths(committed: &[Vec<u8>], revalidated: Vec<Vec<u8>>) -> Vec<Vec<u8>> {
+    let mut paths: Vec<Vec<u8>> = committed.to_vec();
     for path in revalidated {
         if !paths.contains(&path) {
             paths.push(path);
@@ -486,7 +491,7 @@ fn replay_error_text(error: &ReplayError) -> String {
 /// throw error
 /// ```
 fn reservation_stop(error: ReservationError) -> TransactionStop {
-    return failed(format!("the landing reservation failed: {error:?}"));
+    return failed(format!("the landing reservation failed: {error}"));
 }
 
 /// What:

@@ -64,7 +64,7 @@ fn the_selection_flags_follow_the_options() {
 /// A candidate request names each path literally and rooted at the top, and carries the base.
 #[test]
 fn the_candidate_request_names_paths_literally() {
-    let request: CandidateRequest = staged_at_base(None, &[String::from("a[1].txt"), String::from("dir/b.txt")]);
+    let request: CandidateRequest = staged_at_base(None, &[b"a[1].txt".to_vec(), b"dir/b.txt".to_vec()]);
     assert_eq!(
         request,
         CandidateRequest::StagedAtBase {
@@ -181,4 +181,17 @@ fn a_capture_lists_worktree_changes_for_all_or_include() {
     assert!(stages_worktree(false, true));
     assert!(stages_worktree(true, true));
     assert!(!stages_worktree(false, false));
+}
+
+/// A path that is not UTF-8 reaches Git byte for byte in its literal, rooted pathspec.
+#[cfg(unix)]
+#[test]
+fn the_candidate_request_keeps_the_bytes_of_a_name_that_is_not_utf8() {
+    use std::os::unix::ffi::OsStrExt;
+    let request: CandidateRequest = staged_at_base(None, &[b"caf\xe9.txt".to_vec()]);
+    let CandidateRequest::StagedAtBase { pathspecs, .. } = request else {
+        panic!("expected a staged request");
+    };
+    assert_eq!(pathspecs.len(), 1);
+    assert_eq!(pathspecs[0].as_bytes(), b":(top,literal)caf\xe9.txt");
 }

@@ -17,7 +17,9 @@
 //! ```
 
 /// Foreign-lock evidence readers used to explain the failure.
-use super::index_lock_wait::{WaitFailure, unproven_owner_message, wait_for_index_lock};
+use super::index_lock_wait::{
+    WaitFailure, live_holder_timeout_message, unproven_owner_message, wait_for_index_lock,
+};
 /// The host side effects of the wait.
 use super::index_lock_wait_host::HostWaitEffects;
 /// Index-writer classification of a resolved command.
@@ -33,7 +35,8 @@ use super::transaction_gate::{Gate, recover_for_command};
 /// Running real Git for the location query and recovery.
 use super::transaction_git::GitContext;
 /// The owner lock and its silent wait.
-use super::owner_lock::{DEFAULT_POLL_DELAY, OwnerLock, SilentWait, acquire_owner_lock};
+use super::live_lock::acquire_live_owner_lock;
+use super::owner_lock::OwnerLock;
 /// The landing lease and its variable.
 use super::transaction_lease::{LANDING_LEASE_VARIABLE, format_landing_lease, has_valid_landing_lease};
 /// Registry names and creation.
@@ -184,9 +187,7 @@ fn acquire_landing(context: &GitContext, identity: &WorktreeIdentity, location: 
         return Err(CoordinationFailure::Stop(error.0));
     }
     let lock_directory: std::path::PathBuf = location.registry_root.join(LANDING_LOCK_NAME);
-    // `mut` is required by the notice interface; this wait is silent, as the incumbent's.
-    let mut silent: SilentWait = SilentWait;
-    match acquire_owner_lock(lock_directory.as_path(), DEFAULT_POLL_DELAY, &mut silent) {
+    match acquire_live_owner_lock(lock_directory.as_path(), "the landing lock") {
         Ok(lock) => return Ok(lock),
         Err(error) => return Err(CoordinationFailure::Stop(error.to_string())),
     }
@@ -225,6 +226,22 @@ pub fn wait_for_lock(
                 &evidence,
                 &verdict,
                 budget,
+                reason.as_str(),
+            )));
+        }
+        Err(WaitFailure::LiveHolderTimedOut {
+            lock_path,
+            pid,
+            command,
+            waited_ms,
+            consequence: reason,
+            ..
+        }) => {
+            return Err(CoordinationFailure::Stop(live_holder_timeout_message(
+                lock_path.as_path(),
+                pid,
+                command.as_deref(),
+                waited_ms,
                 reason.as_str(),
             )));
         }

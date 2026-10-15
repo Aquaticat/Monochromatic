@@ -13,6 +13,7 @@
 //! ```
 
 use super::candidate_object::CandidateMode;
+use super::path_bytes::os_from_path_bytes;
 use super::policy_content::Correction;
 use super::transaction_git::{GitContext, GitOutput, GitRequest, run_git};
 use std::path::Path;
@@ -66,13 +67,9 @@ pub fn git_mode(mode: CandidateMode) -> &'static str {
 /// await stageCorrection({ indexPath, correction });
 /// ```
 pub fn stage_correction(stage: &PrivateStage<'_>, correction: &Correction) -> Result<(), String> {
-    let path: String = match String::from_utf8(correction.path.clone()) {
-        Ok(text) => text,
-        Err(_) => return Err(String::from("a correction names a path that is not UTF-8")),
-    };
     let blob: String = write_blob(stage, correction.after.as_ref())?;
     let mode: &str = git_mode(correction.mode);
-    return update_entry(stage, mode, blob.as_str(), path.as_str());
+    return update_entry(stage, mode, blob.as_str(), correction.path.as_slice());
 }
 
 /// What:
@@ -102,11 +99,13 @@ fn write_blob(stage: &PrivateStage<'_>, bytes: &[u8]) -> Result<String, String> 
 /// ```ts
 /// await git(['update-index', '--add', '--cacheinfo', mode, oid, path], { indexPath });
 /// ```
-fn update_entry(stage: &PrivateStage<'_>, mode: &str, oid: &str, path: &str) -> Result<(), String> {
+fn update_entry(stage: &PrivateStage<'_>, mode: &str, oid: &str, path: &[u8]) -> Result<(), String> {
     let mut request: GitRequest = GitRequest::new(
         stage.cwd,
-        &["update-index", "--add", "--cacheinfo", mode, oid, path],
+        &["update-index", "--add", "--cacheinfo", mode, oid],
     );
+    // The path is the exact bytes Git reported, so a name that is not UTF-8 reaches Git unchanged.
+    request.arguments.push(os_from_path_bytes(path));
     request.without_prefix = true;
     request.index = Some(stage.index.to_path_buf());
     request.object_directory = stage.object_directory.map(Path::to_path_buf);

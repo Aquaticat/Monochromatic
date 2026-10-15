@@ -402,6 +402,62 @@ fn a_retirement_rechecks_the_owner_first() {
     remove(root.as_path());
 }
 
+/// A rename that fails the way a lock removed by a racing process fails.
+fn rename_finds_nothing(_from: &Path, _to: &Path) -> std::io::Result<()> {
+    return Err(std::io::ErrorKind::NotFound.into());
+}
+
+/// A rename that fails for a reason other than a vanished lock.
+fn rename_is_refused(_from: &Path, _to: &Path) -> std::io::Result<()> {
+    return Err(std::io::ErrorKind::InvalidInput.into());
+}
+
+/// A lock that vanishes after the owner check needs no retirement,
+///  and any other rename failure is reported with the step that failed.
+#[test]
+fn a_retirement_tells_a_vanished_lock_from_a_failed_rename() {
+    let root: PathBuf = fixture("owner-lock-retire-failures");
+    let lock_directory: PathBuf = root.join("landing.lock");
+    plant(lock_directory.as_path(), 1, "linux:1", "dead");
+    retire_dead_lock_with(lock_directory.as_path(), "dead", rename_finds_nothing)
+        .expect("a vanished lock is settled");
+    let error: OwnerLockError =
+        retire_dead_lock_with(lock_directory.as_path(), "dead", rename_is_refused)
+            .expect_err("a refused rename is a failure");
+    assert!(matches!(
+        error,
+        OwnerLockError::Io {
+            operation: "retiring the dead owner lock",
+            ..
+        }
+    ));
+    assert_eq!(
+        token_of(lock_directory.as_path()),
+        "dead",
+        "nothing was moved"
+    );
+    remove(root.as_path());
+}
+
+/// A moved lock that cannot be put back for a reason other than an occupied name is a failure.
+#[test]
+fn a_restore_that_finds_nothing_to_move_fails() {
+    let root: PathBuf = fixture("owner-lock-restore-failure");
+    let error: OwnerLockError = restore_moved(
+        root.join("missing.stale").as_path(),
+        root.join("landing.lock").as_path(),
+    )
+    .expect_err("nothing to move");
+    assert!(matches!(
+        error,
+        OwnerLockError::Io {
+            operation: "restoring the owner lock",
+            ..
+        }
+    ));
+    remove(root.as_path());
+}
+
 /// A malformed blocking record stops the acquirer and stays in place.
 #[test]
 fn a_malformed_blocking_record_stops_the_acquirer() {
@@ -500,4 +556,193 @@ fn failures_are_described() {
         .to_string(),
         "no source"
     );
+}
+
+/// A live holder that never releases makes a bounded wait give up after its limit,
+///  naming the holder and leaving its lock untouched.
+#[cfg(target_os = "linux")]
+#[test]
+fn a_bounded_wait_gives_up_on_a_live_holder_and_leaves_its_lock() {
+    let root: PathBuf = fixture("owner-lock-timeout");
+    let lock_directory: PathBuf = root.join("push.lock");
+    let mut sleeper: Child = Command::new("sleep").arg("60").spawn().expect("sleeper");
+    let pid: i64 = i64::from(sleeper.id());
+    let identity: String = process_birth_identity(pid).expect("probe").expect("alive");
+    plant(lock_directory.as_path(), pid, identity.as_str(), "foreign");
+    let mut counter: WaitCounter = WaitCounter::default();
+    let started: Instant = Instant::now();
+    let (finished_tx, finished_rx) = std::sync::mpsc::channel::<()>();
+    let outcome: Result<OwnerLock, OwnerLockError> = std::thread::scope(|scope| {
+        let handle = scope.spawn(|| {
+            let outcome: Result<OwnerLock, OwnerLockError> = acquire_owner_lock_for(
+                lock_directory.as_path(),
+                Duration::from_millis(5),
+                &mut counter,
+                Duration::from_millis(150),
+            );
+            let _sent = finished_tx.send(());
+            return outcome;
+        });
+        if finished_rx.recv_timeout(Duration::from_secs(10)).is_err() {
+            // Ending the holder lets a wait without a limit retire its lock and finish.
+            sleeper.kill().expect("kill");
+            sleeper.wait().expect("reap");
+        }
+        return handle.join().expect("waiter thread");
+    });
+    let elapsed: Duration = started.elapsed();
+    let failure: OwnerLockError = outcome.expect_err("a live holder keeps the lock");
+    assert!(
+        elapsed >= Duration::from_millis(150),
+        "waited the whole limit: {elapsed:?}"
+    );
+    assert!(
+        elapsed < Duration::from_secs(20),
+        "gave up promptly: {elapsed:?}"
+    );
+    assert_eq!(counter.count, 1);
+    match failure {
+        OwnerLockError::WaitTimedOut {
+            path,
+            waited,
+            holder_pid,
+        } => {
+            assert_eq!(path, lock_directory);
+            assert!(waited >= Duration::from_millis(150));
+            assert_eq!(holder_pid, Some(pid));
+        }
+        other => panic!("expected a timeout, got {other}"),
+    }
+    assert_eq!(token_of(lock_directory.as_path()), "foreign");
+    sleeper.kill().expect("kill");
+    sleeper.wait().expect("reap");
+    assert_eq!(
+        entries(root.as_path()),
+        ["push.lock"],
+        "no candidate remains"
+    );
+    remove(root.as_path());
+}
+
+/// A bounded wait that finds the lock free, or freed within its limit, takes it
+///  without a timeout.
+#[test]
+fn a_bounded_wait_takes_a_free_lock_and_one_freed_in_time() {
+    let root: PathBuf = fixture("owner-lock-bounded-free");
+    let lock_directory: PathBuf = root.join("push.lock");
+    let mut counter: WaitCounter = WaitCounter::default();
+    let first: OwnerLock = acquire_owner_lock_for(
+        lock_directory.as_path(),
+        DEFAULT_POLL_DELAY,
+        &mut counter,
+        Duration::ZERO,
+    )
+    .expect("a free lock is taken even with no time to wait");
+    assert_eq!(counter.count, 0);
+    first.release().expect("release");
+    let mut holder: Child = start_holder(root.as_path(), lock_directory.as_path(), 300);
+    let second: OwnerLock = acquire_owner_lock_for(
+        lock_directory.as_path(),
+        DEFAULT_POLL_DELAY,
+        &mut counter,
+        Duration::from_secs(60),
+    )
+    .expect("freed within the limit");
+    assert_eq!(counter.count, 1);
+    assert!(holder.wait().expect("helper exit").success());
+    second.release().expect("release");
+    remove(root.as_path());
+}
+
+/// The timeout text names the lock,
+///  the waiting time and the holder when known.
+#[test]
+fn a_timeout_is_described_with_the_lock_and_the_holder() {
+    let path: PathBuf = PathBuf::from("/repo/.git/cli-git/push.lock");
+    assert_eq!(
+        OwnerLockError::WaitTimedOut {
+            path: path.clone(),
+            waited: Duration::from_millis(661_900),
+            holder_pid: Some(80782),
+        }
+        .to_string(),
+        "gave up after waiting 661 seconds for the owner lock /repo/.git/cli-git/push.lock, \
+         which process 80782 still holds; the lock was left in place"
+    );
+    assert_eq!(
+        OwnerLockError::WaitTimedOut {
+            path,
+            waited: Duration::from_secs(3),
+            holder_pid: None,
+        }
+        .to_string(),
+        "gave up after waiting 3 seconds for the owner lock /repo/.git/cli-git/push.lock, \
+         which a process whose record could not be read still holds; the lock was left in place"
+    );
+}
+
+/// Counts both notices a wait can send.
+#[derive(Default)]
+struct SlowCounter {
+    /// First-moment notices.
+    waiting: u32,
+    /// Slow-wait notices with the time each reported.
+    slow: Vec<Duration>,
+}
+
+/// The counter records each call.
+impl WaitNotice for SlowCounter {
+    /// Record the first moment.
+    fn waiting(&mut self) {
+        self.waiting += 1;
+    }
+
+    /// Record a slow-wait notice.
+    fn slow(&mut self, waited: Duration) {
+        self.slow.push(waited);
+    }
+}
+
+/// A wait that outlasts the slow threshold sends exactly one slow notice,
+///  after the first-moment notice,
+///  and a wait that ends sooner sends none.
+#[cfg(target_os = "linux")]
+#[test]
+fn a_slow_wait_sends_one_slow_notice() {
+    let root: PathBuf = fixture("owner-lock-slow");
+    let lock_directory: PathBuf = root.join("push.lock");
+    let mut sleeper: Child = Command::new("sleep").arg("60").spawn().expect("sleeper");
+    let pid: i64 = i64::from(sleeper.id());
+    let identity: String = process_birth_identity(pid).expect("probe").expect("alive");
+    plant(lock_directory.as_path(), pid, identity.as_str(), "foreign");
+    let mut counter: SlowCounter = SlowCounter::default();
+    let outcome: Result<OwnerLock, OwnerLockError> = acquire_within(
+        lock_directory.as_path(),
+        Duration::from_millis(5),
+        &mut counter,
+        Duration::from_millis(400),
+        Duration::from_millis(100),
+    );
+    sleeper.kill().expect("kill");
+    sleeper.wait().expect("reap");
+    assert!(matches!(
+        outcome,
+        Err(OwnerLockError::WaitTimedOut { .. })
+    ));
+    assert_eq!(counter.waiting, 1);
+    assert_eq!(counter.slow.len(), 1, "{:?}", counter.slow);
+    assert!(counter.slow[0] >= Duration::from_millis(100), "{:?}", counter.slow);
+    assert!(counter.slow[0] < Duration::from_millis(390), "{:?}", counter.slow);
+    let mut quick: SlowCounter = SlowCounter::default();
+    let free: OwnerLock = acquire_within(
+        root.join("free.lock").as_path(),
+        Duration::from_millis(5),
+        &mut quick,
+        Duration::from_secs(5),
+        Duration::from_millis(100),
+    )
+    .expect("free");
+    free.release().expect("release");
+    assert_eq!((quick.waiting, quick.slow.len()), (0, 0));
+    remove(&root);
 }

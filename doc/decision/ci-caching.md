@@ -2,6 +2,11 @@
 
 Decided on branch `chore/ci-caching`, measured on real GitHub runs on 2026-10-15.
 
+The owner deleted `.github/workflows/final-newline.yml` on 2026-10-15 because it recompiled the wrapper on every pull
+request.
+Every mention of that workflow below is a record of what was decided and measured; today the `cli-git-native` cache
+belongs to the version job of `npm-release.yml` alone, and the push to `main` that runs it is the only run that saves.
+
 ## Starting point
 
 The repository was not caching nothing, but the caches that existed did little.

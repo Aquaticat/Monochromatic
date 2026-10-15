@@ -90,7 +90,7 @@ fn scenario(name: &str) -> Scenario {
 }
 
 /// Runs the post-index computation for one scenario with explicit inputs.
-fn compute(scenario: &Scenario, mode: TransactionMode, committed: &[String], guarded: &[String], exact: bool, base: &str) {
+fn compute(scenario: &Scenario, mode: TransactionMode, committed: &[Vec<u8>], guarded: &[Vec<u8>], exact: bool, base: &str) {
     compute_landing_post_index(
         &git_context(),
         scenario.repo.as_path(),
@@ -165,7 +165,7 @@ fn index_mode_with_unborn_base_uses_the_empty_tree() {
 fn explicit_path_mode_resets_committed_paths_only() {
     let scenario = scenario("landing-index-explicit");
     let base = scenario.initial.clone();
-    compute(&scenario, TransactionMode::ExplicitPath, &["a.txt".to_string()], &[], false, base.as_str());
+    compute(&scenario, TransactionMode::ExplicitPath, &[b"a.txt".to_vec()], &[], false, base.as_str());
     let post = entries(scenario.repo.as_path(), scenario.post_index.as_path());
     let landed = entries(scenario.repo.as_path(), scenario.landed_index.as_path());
     assert!(landed.lines().any(|line| { return line.ends_with("\ta.txt"); }));
@@ -184,7 +184,7 @@ fn explicit_path_mode_keeps_a_guarded_path_restaged_since_invocation() {
     let base = scenario.initial.clone();
     let restaged = blob(scenario.repo.as_path(), scenario.root.as_path(), "restaged.txt", "restaged\n");
     stage(scenario.repo.as_path(), scenario.pre_landing_index.as_path(), "guard.txt", restaged.as_str());
-    compute(&scenario, TransactionMode::ExplicitPath, &[], &["guard.txt".to_string()], false, base.as_str());
+    compute(&scenario, TransactionMode::ExplicitPath, &[], &[b"guard.txt".to_vec()], false, base.as_str());
     let post = entries(scenario.repo.as_path(), scenario.post_index.as_path());
     assert!(post.contains(&format!("{restaged}")), "{post}");
     remove(&scenario.root);
@@ -195,7 +195,7 @@ fn explicit_path_mode_keeps_a_guarded_path_restaged_since_invocation() {
 fn explicit_path_mode_resets_a_guarded_path_that_nobody_restaged() {
     let scenario = scenario("landing-index-guarded-reset");
     let base = scenario.initial.clone();
-    compute(&scenario, TransactionMode::ExplicitPath, &[], &["a.txt".to_string()], false, base.as_str());
+    compute(&scenario, TransactionMode::ExplicitPath, &[], &[b"a.txt".to_vec()], false, base.as_str());
     let post = entries(scenario.repo.as_path(), scenario.post_index.as_path());
     let landed = entries(scenario.repo.as_path(), scenario.landed_index.as_path());
     assert!(
@@ -224,7 +224,7 @@ fn explicit_paths_are_reset_with_literal_pathspecs_disabled_for_the_magic_prefix
             post_index: scenario.post_index.as_path(),
             landed_tree: scenario.landed_tree.as_str(),
             base_revision: scenario.initial.as_str(),
-            committed_paths: &["a.txt".to_string()],
+            committed_paths: &[b"a.txt".to_vec()],
             guarded_paths: &[],
             exact_private_index: false,
         },
@@ -293,5 +293,92 @@ fn index_mode_tolerates_a_captured_index_that_cannot_form_a_tree() {
     let post = entries(scenario.repo.as_path(), scenario.post_index.as_path());
     assert!(post.contains("\ta.txt"), "{post}");
     assert!(post.contains("\tother.txt"), "{post}");
+    remove(&scenario.root);
+}
+
+/// Runs real Git against one index file with exact argument bytes and returns its raw standard output.
+fn git_with_index_bytes(repo: &Path, index: &Path, arguments: &[Vec<u8>]) -> Vec<u8> {
+    use std::os::unix::ffi::OsStringExt;
+    let output = Command::new(REAL_GIT)
+        .current_dir(repo)
+        .env("GIT_INDEX_FILE", index)
+        .args(arguments.iter().map(|argument| { return std::ffi::OsString::from_vec(argument.clone()); }))
+        .output()
+        .expect("git runs");
+    assert!(output.status.success(), "git failed: {}", String::from_utf8_lossy(&output.stderr));
+    return output.stdout;
+}
+
+/// Stages a path named by exact bytes at a blob in an index.
+fn stage_bytes(repo: &Path, index: &Path, path: &[u8], blob_oid: &str) {
+    let mut spec: Vec<u8> = format!("100644,{blob_oid},").into_bytes();
+    spec.extend_from_slice(path);
+    git_with_index_bytes(
+        repo,
+        index,
+        &[b"update-index".to_vec(), b"--add".to_vec(), b"--cacheinfo".to_vec(), spec],
+    );
+}
+
+/// The stage records of an index with their exact path bytes.
+fn entries_bytes(repo: &Path, index: &Path) -> Vec<u8> {
+    return git_with_index_bytes(repo, index, &[b"ls-files".to_vec(), b"--stage".to_vec(), b"-z".to_vec()]);
+}
+
+/// A scenario whose landed index also holds the path `caf\xe9.txt`, a name that is not UTF-8.
+fn scenario_with_odd_name(name: &str) -> Scenario {
+    let mut scenario = scenario(name);
+    let odd = blob(scenario.repo.as_path(), scenario.root.as_path(), "odd.txt", "odd\n");
+    stage_bytes(scenario.repo.as_path(), scenario.landed_index.as_path(), b"caf\xe9.txt", odd.as_str());
+    scenario.landed_tree = git_with_index(scenario.repo.as_path(), scenario.landed_index.as_path(), &["write-tree"]);
+    return scenario;
+}
+
+/// Whether the raw stage listing holds an entry for exactly this path.
+fn lists(listing: &[u8], path: &[u8]) -> bool {
+    let mut ending: Vec<u8> = b"\t".to_vec();
+    ending.extend_from_slice(path);
+    return listing.split(|byte| { return *byte == 0; }).any(|record| { return record.ends_with(ending.as_slice()); });
+}
+
+/// An explicit-path landing resets a committed name that is not UTF-8 to the landed tree by its exact bytes,
+///  and not the name with the replacement character.
+#[test]
+fn explicit_path_mode_resets_a_committed_name_that_is_not_utf8() {
+    let scenario = scenario_with_odd_name("landing-index-odd-explicit");
+    let base = scenario.initial.clone();
+    compute(&scenario, TransactionMode::ExplicitPath, &[b"caf\xe9.txt".to_vec()], &[], false, base.as_str());
+    let post = entries_bytes(scenario.repo.as_path(), scenario.post_index.as_path());
+    assert!(lists(&post, b"caf\xe9.txt"), "{}", String::from_utf8_lossy(&post));
+    assert!(!lists(&post, "caf\u{fffd}.txt".as_bytes()));
+    remove(&scenario.root);
+}
+
+/// Index mode merges a landed name that is not UTF-8 into a real index that changed since invocation.
+#[test]
+fn index_mode_merges_a_landed_name_that_is_not_utf8() {
+    let scenario = scenario_with_odd_name("landing-index-odd-merge");
+    let base = scenario.initial.clone();
+    compute(&scenario, TransactionMode::Index, &[], &[], false, base.as_str());
+    let post = entries_bytes(scenario.repo.as_path(), scenario.post_index.as_path());
+    assert!(lists(&post, b"caf\xe9.txt"), "{}", String::from_utf8_lossy(&post));
+    assert!(lists(&post, b"other.txt"));
+    assert!(!lists(&post, "caf\u{fffd}.txt".as_bytes()));
+    remove(&scenario.root);
+}
+
+/// A guarded name that is not UTF-8 is reset while nobody restaged it, and kept once someone did.
+#[test]
+fn explicit_path_mode_guards_a_name_that_is_not_utf8() {
+    let scenario = scenario_with_odd_name("landing-index-odd-guarded");
+    let base = scenario.initial.clone();
+    compute(&scenario, TransactionMode::ExplicitPath, &[], &[b"caf\xe9.txt".to_vec()], false, base.as_str());
+    let reset = entries_bytes(scenario.repo.as_path(), scenario.post_index.as_path());
+    assert!(lists(&reset, b"caf\xe9.txt"), "{}", String::from_utf8_lossy(&reset));
+    let restaged = blob(scenario.repo.as_path(), scenario.root.as_path(), "restaged.txt", "restaged\n");
+    stage_bytes(scenario.repo.as_path(), scenario.pre_landing_index.as_path(), b"caf\xe9.txt", restaged.as_str());
+    compute(&scenario, TransactionMode::ExplicitPath, &[], &[b"caf\xe9.txt".to_vec()], false, base.as_str());
+    let kept = entries_bytes(scenario.repo.as_path(), scenario.post_index.as_path());
+    assert!(String::from_utf8_lossy(&kept).contains(restaged.as_str()), "{}", String::from_utf8_lossy(&kept));
     remove(&scenario.root);
 }

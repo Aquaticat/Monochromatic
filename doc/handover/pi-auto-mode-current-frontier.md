@@ -1073,6 +1073,83 @@ retains that result.
 The complete maintained lint recount covers 521 files and 486 rules:
 zero errors and 13583 warnings in
 `${HOME}/temp/agent/pi-maintained-typed-store-lint-20261015.log`.
+Commits `1e54dbf7d6`,
+`fbebc54443`,
+`65ccb967e6`,
+and `6fa1a6dce3` type the relevance refresh owner,
+materialized rule keys,
+untrusted answer admission,
+and source-bound publication work.
+The original `cache.mjs` is now `cache.ts` as of 2026-10-15.
+The completion handle is still registered before injected callbacks can recursively refresh.
+The final source and cancellation checks still precede synchronous owner publication without a yield.
+Commit `1f81821698` captures the original caller signal once and excludes later caller-option changes.
+Focused formatting of the typed refresh sources passes with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-refresh-format-20261015.log`.
+Commit `aba3229861` extends built consumers with complete malformed-answer membership,
+no partial publication,
+retained failed-job identity,
+ordered original work and reporting failures,
+single signal capture,
+and source replacement or cancellation during classification and final view preparation.
+The rebuilt store,
+refresh,
+domain,
+semantic-policy,
+manual-review,
+source-freshness,
+and package type sequence passes in
+`${HOME}/temp/agent/pi-native-typed-refresh-consumer-20261015.log`.
+The expanded fixture and consumer tests also pass focused lint with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-refresh-fixture-format-20261015.log`.
+Process-local omissions of the final source check,
+final cancellation check,
+or complete answer admission each make the committed consumers fail.
+The original built refresh hash is unchanged;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-refresh-omissions.json`
+retains those results.
+The complete maintained lint recount covers 524 files and 486 rules:
+zero errors and 13465 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-refresh-lint-20261015.log`.
+Commit `dcd7a9c176` types fixed-question answer admission and its error category.
+The original `selection-values.mjs` and `selection-error.mjs` are now
+`selection-values.ts` and `selection-error.ts` as of 2026-10-15.
+The reader retains scalar bounds,
+original choice-object identity,
+distribution freezing without normalization,
+and descriptor-based serving-model attribution.
+Commit `6e65184e92` adds built consumers for valid and rejected answers;
+`3b774e9be8` corrects their callback signatures to the harness's asynchronous contract.
+The fixture now describes its consumer contract independently of maintained source imports,
+because the artifact-import lint rule also rejects source imports used only for types.
+The rebuilt answer,
+request-claim,
+domain,
+semantic-policy,
+manual-review,
+and package type sequence passes in
+`${HOME}/temp/agent/pi-native-typed-answers-consumer-20261015.log`.
+The original and built typed readers match values,
+diagnostic fields,
+freezing,
+and retained choice identity across 59 cases.
+A changed-choice control changes success to rejection;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-answer-comparison.json`
+records the artifact hashes and cases.
+Process-local omissions of the serving-model byte bound,
+complete distribution check,
+and scalar upper bound each make the committed consumers fail.
+The built artifact remains unchanged;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-answer-omissions.json`
+records those controls.
+Final focused formatting reports no diagnostics in the typed readers or answer tests;
+the independent fixture correction also passes with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-answers-fixture-format-20261015.log`.
+The full maintained lint recount covers 528 files and 486 rules:
+zero errors and 13357 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-answers-lint-20261015.log`.
+Warnings still fail the strict package gate.
+The next boundary is admission of fixed question-definition catalogs.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

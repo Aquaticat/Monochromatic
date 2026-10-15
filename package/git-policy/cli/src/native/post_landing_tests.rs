@@ -122,7 +122,7 @@ fn an_install_failure_keeps_the_shadow_and_the_directory() {
     let hook_plan: HookDispatchPlan = plan(lock.as_path(), &[]);
     let missing: String = String::from("1111111111111111111111111111111111111111");
     let records: Vec<AddedPath> = vec![AddedPath {
-        path: String::from("added.txt"),
+        path: b"added.txt".to_vec(),
         git_mode: String::from("100644"),
         original_oid: missing.clone(),
         intended_oid: missing,
@@ -256,7 +256,7 @@ fn blob_only_in_shadow(scene: &Scene, content: &str) -> String {
 fn shadow_record(scene: &Scene, path: &str, original: &str, intended: &str) -> AddedPath {
     std::fs::write(scene.repo.join(path), original).expect("worktree copy");
     return AddedPath {
-        path: String::from(path),
+        path: path.as_bytes().to_vec(),
         git_mode: String::from("100644"),
         original_oid: blob_only_in_shadow(scene, original),
         intended_oid: blob_only_in_shadow(scene, intended),
@@ -294,7 +294,7 @@ fn both_record_lists_are_copied_from_the_shadow_before_it_is_removed() {
     .expect("completed");
     assert_eq!(
         outcome.worktree.rewritten,
-        vec![String::from("added.txt"), String::from("fixed.txt")]
+        vec![b"added.txt".to_vec(), b"fixed.txt".to_vec()]
     );
     assert!(outcome.worktree.conflicted.is_empty());
     assert_eq!(
@@ -330,7 +330,7 @@ fn a_concurrently_changed_copy_is_kept_without_failing_the_commit() {
     .expect("completed");
     assert_eq!(
         outcome.worktree.conflicted,
-        vec![String::from("edited.txt")]
+        vec![b"edited.txt".to_vec()]
     );
     assert!(outcome.worktree.rewritten.is_empty());
     assert_eq!(

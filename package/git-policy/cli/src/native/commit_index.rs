@@ -30,7 +30,7 @@ use super::forwarding::git_command;
 use std::io::Read;
 use std::fs::FileTimes;
 /// `OsString` is owned operating-system text.
-use std::ffi::OsString;
+use std::ffi::{OsStr, OsString};
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
 
@@ -74,8 +74,9 @@ pub fn copy_index_with_timestamps(source: &Path, destination: &Path) -> std::io:
 pub struct IndexSelection<'selection> {
     /// Commit selection mode.
     pub mode: TransactionMode,
-    /// Positional pathspecs of the command.
-    pub pathspecs: &'selection [String],
+    /// Positional pathspecs of the command,
+    ///  exactly as the command line gave them.
+    pub pathspecs: &'selection [OsString],
     /// Materialized pathspec file, when the command names one.
     pub pathspec_file: Option<&'selection Path>,
     /// Whether the pathspec file separates records with NUL.
@@ -98,18 +99,19 @@ pub struct IndexSelection<'selection> {
 /// ```ts
 /// selectionArguments({ pathspecs, pathspecFile, pathspecFileNul });
 /// ```
-fn selection_arguments(selection: &IndexSelection) -> Vec<String> {
+fn selection_arguments(selection: &IndexSelection) -> Vec<OsString> {
     return match selection.pathspec_file {
         None => {
-            let mut arguments: Vec<String> = vec![String::from("--")];
+            let mut arguments: Vec<OsString> = vec![OsString::from("--")];
             arguments.extend(selection.pathspecs.iter().cloned());
             arguments
         }
         Some(file) => {
-            let mut arguments: Vec<String> =
-                vec![format!("--pathspec-from-file={}", file.display())];
+            let mut option: OsString = OsString::from("--pathspec-from-file=");
+            option.push(file.as_os_str());
+            let mut arguments: Vec<OsString> = vec![option];
             if selection.pathspec_file_nul {
-                arguments.push(String::from("--pathspec-file-nul"));
+                arguments.push(OsString::from("--pathspec-file-nul"));
             }
             arguments
         }
@@ -126,12 +128,12 @@ fn selection_arguments(selection: &IndexSelection) -> Vec<String> {
 /// ```ts
 /// await runTransactionGit({ gitPath, cwd, indexPath, objectDirectory, args });
 /// ```
-fn private_git(
+fn private_git<S: AsRef<OsStr>>(
     context: &GitContext,
     cwd: &Path,
     index: &Path,
     object_directory: &Path,
-    arguments: &[String],
+    arguments: &[S],
 ) -> Result<GitOutput, GitFailure> {
     return run_git_checked(
         context,
@@ -184,7 +186,7 @@ pub fn initialize_commit_index(
             &["read-tree".to_string(), selection.base_revision.to_string()],
         )?;
     }
-    let mut arguments: Vec<String> = vec![String::from("add"), String::from("--all")];
+    let mut arguments: Vec<OsString> = vec![OsString::from("add"), OsString::from("--all")];
     arguments.extend(selection_arguments(selection));
     private_git(
         context,
@@ -240,19 +242,17 @@ pub fn list_unmerged_index_paths(
     context: &GitContext,
     cwd: &Path,
     commit_index: &Path,
-) -> Result<Vec<String>, GitFailure> {
+) -> Result<Vec<Vec<u8>>, GitFailure> {
     let output: GitOutput = run_git_checked(
         context,
         &indexed_request(cwd, &["ls-files", "--unmerged", "-z"], Some(commit_index), None),
     )?;
-    let text: &str = std::str::from_utf8(output.stdout.as_slice())
-        .map_err(|_| { return GitFailure(String::from("Git returned non-UTF-8 output.")); })?;
-    let mut paths: Vec<String> = Vec::new();
-    for record in text.split('\0') {
-        let Some(tab) = record.find('\t') else {
+    let mut paths: Vec<Vec<u8>> = Vec::new();
+    for record in output.stdout.split(|byte| { return *byte == 0; }) {
+        let Some(tab) = record.iter().position(|byte| { return *byte == b'\t'; }) else {
             continue;
         };
-        let path: String = String::from(&record[tab + 1..]);
+        let path: Vec<u8> = record[tab + 1..].to_vec();
         if !paths.contains(&path) {
             paths.push(path);
         }
@@ -275,7 +275,7 @@ pub fn list_changed_index_paths(
     commit_index: &Path,
     base_revision: &str,
     object_directory: &Path,
-) -> Result<Vec<String>, GitFailure> {
+) -> Result<Vec<Vec<u8>>, GitFailure> {
     let output: GitOutput = run_git_checked(
         context,
         &indexed_request(
@@ -285,12 +285,11 @@ pub fn list_changed_index_paths(
             Some(object_directory),
         ),
     )?;
-    let text: &str = std::str::from_utf8(output.stdout.as_slice())
-        .map_err(|_| { return GitFailure(String::from("Git returned non-UTF-8 output.")); })?;
-    return Ok(text
-        .split('\0')
+    return Ok(output
+        .stdout
+        .split(|byte| { return *byte == 0; })
         .filter(|path| { return !path.is_empty(); })
-        .map(String::from)
+        .map(<[u8]>::to_vec)
         .collect());
 }
 
@@ -346,21 +345,25 @@ pub fn prepare_interactive_selection(
     selection: &IndexSelection,
 ) -> Result<(), GitFailure> {
     let mode: &str = if patch { "--patch" } else { "--interactive" };
-    let mut arguments: Vec<String> = vec![String::from("add"), String::from(mode)];
+    let mut arguments: Vec<OsString> = vec![OsString::from("add"), OsString::from(mode)];
     arguments.extend(selection_arguments(selection));
-    let os_arguments: Vec<OsString> = arguments.iter().map(OsString::from).collect();
-    let mut command = git_command(context.real_git.as_path(), os_arguments.as_slice(), context.overlay.as_slice());
+    // The message shows the command as text; the command itself keeps the exact bytes.
+    let shown: String = arguments
+        .iter()
+        .map(|argument| { return argument.to_string_lossy().into_owned(); })
+        .collect::<Vec<String>>()
+        .join(" ");
+    let mut command = git_command(context.real_git.as_path(), arguments.as_slice(), context.overlay.as_slice());
     command
         .current_dir(cwd)
         .env("GIT_INDEX_FILE", commit_index)
         .env("GIT_OBJECT_DIRECTORY", object_directory);
     let status: std::process::ExitStatus = command
         .status()
-        .map_err(|error| { return GitFailure(format!("git {} could not start: {error}", arguments.join(" "))); })?;
+        .map_err(|error| { return GitFailure(format!("git {shown} could not start: {error}")); })?;
     if !status.success() {
         return Err(GitFailure(format!(
-            "git {} exited {}",
-            arguments.join(" "),
+            "git {shown} exited {}",
             status.code().map_or_else(|| { return String::from("by signal"); }, |code| { return code.to_string(); })
         )));
     }

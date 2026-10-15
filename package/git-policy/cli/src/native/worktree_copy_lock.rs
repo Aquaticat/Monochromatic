@@ -12,6 +12,7 @@
 
 use super::index_lock_wait::{BackoffState, INITIAL_BACKOFF, jittered_wait, next_backoff};
 use super::json_record::quote;
+use super::live_lock::{LIVE_WAIT_VARIABLE, live_wait_limit};
 use super::owner_lock_record::{OwnerLockRecord, owner_lock_holder_is_alive};
 use super::process_identity::current_birth_identity;
 use super::random_id::random_uuid;
@@ -305,6 +306,35 @@ impl Drop for WorktreeCopyLease {
 /// await removeLockOf({ lockDirectory, leaseToken });
 /// ```
 fn remove_lock_of(lock: &Path, lease_token: &str) -> Result<bool, WorktreeCopyError> {
+    return remove_lock_of_with(lock, lease_token, rename_lock);
+}
+
+/// The rename that frees a published lock name,
+///  as a plain function so a test can supply another.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await rename(from, to);
+/// ```
+fn rename_lock(from: &Path, to: &Path) -> std::io::Result<()> {
+    return std::fs::rename(from, to);
+}
+
+/// What:
+///  `remove_lock_of` with the rename that frees the published name supplied by the caller.
+/// Why:
+///   A lock that vanishes between the read and the rename, and a rename that is refused, are races and faults a test
+///  cannot otherwise provoke on demand.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await removeLockOf({ lockDirectory, leaseToken, rename });
+/// ```
+fn remove_lock_of_with(
+    lock: &Path,
+    lease_token: &str,
+    rename: fn(&Path, &Path) -> std::io::Result<()>,
+) -> Result<bool, WorktreeCopyError> {
     match read_published(lock)? {
         Published::Owner(owner) if owner.lease_token == lease_token => {}
         _ => return Ok(false),
@@ -315,7 +345,7 @@ fn remove_lock_of(lock: &Path, lease_token: &str) -> Result<bool, WorktreeCopyEr
         random_uuid().map_err(|error| return raw_failure(&error.0))?
     ));
     // `match` on the rename: a vanished lock is simply not ours to remove; any other failure is fatal.
-    match std::fs::rename(lock, retired.as_path()) {
+    match rename(lock, retired.as_path()) {
         Ok(()) => {}
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
         Err(error) => return Err(raw_failure(&error)),
@@ -490,9 +520,20 @@ fn attempt(lock: &Path, owner: &LockOwner) -> Result<Attempt, WorktreeCopyError>
 /// ```ts
 /// await waitWhileOwnerLives({ lockDirectory, owner });
 /// ```
-fn wait_while_owner_lives(lock: &Path, owner: &LockOwner) -> Result<(), WorktreeCopyError> {
+fn wait_while_owner_lives(lock: &Path, owner: &LockOwner, limit: Duration) -> Result<(), WorktreeCopyError> {
+    let started: Instant = Instant::now();
     loop {
         std::thread::sleep(LIVE_OWNER_POLL);
+        if started.elapsed() >= limit {
+            let message: String = format!(
+                "cli-git: gave up after waiting {} seconds for PID {}, which still holds worktree-copy settlement {}; {} sets how long cli-git waits. cli-git left the lock in place.",
+                started.elapsed().as_secs(),
+                owner.owner_pid,
+                quote(lock.to_string_lossy().as_ref()),
+                LIVE_WAIT_VARIABLE
+            );
+            return Err(failure_with_cause(message.as_str(), None));
+        }
         match read_published(lock)? {
             Published::Owner(current) if current.lease_token == owner.lease_token => {
                 if !owner_alive(&current)? {
@@ -522,7 +563,7 @@ fn live_holder_line(lock: &Path, owner: &LockOwner) -> String {
 }
 
 /// What:
-///  Acquires the settlement lock: waits without limit for a proven-live owner, retires a dead one,
+///  Acquires the settlement lock: waits for a proven-live owner up to this process's wait limit, retires a dead one,
 ///  and gives an owner without evidence the bounded wait before failing.
 /// Why:
 ///   Installation and recovery of one repository must never interleave, and no lock is taken from an owner that might still run.
@@ -534,6 +575,24 @@ fn live_holder_line(lock: &Path, owner: &LockOwner) -> String {
 pub fn acquire_worktree_copy_lock(
     common_dir: &Path,
     stderr: &mut dyn Write,
+) -> Result<WorktreeCopyLease, WorktreeCopyError> {
+    return acquire_worktree_copy_lock_for(common_dir, stderr, live_wait_limit());
+}
+
+/// What:
+///  Acquires the settlement lock, waiting for each proven-live owner for at most `live_limit`.
+/// Why:
+///   A live owner that never releases would otherwise hold every later command for good;
+///  the refusal names it and leaves its lock in place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await using lease = await acquireWorktreeCopyLock(commonDir, { liveLimitMs });
+/// ```
+pub fn acquire_worktree_copy_lock_for(
+    common_dir: &Path,
+    stderr: &mut dyn Write,
+    live_limit: Duration,
 ) -> Result<WorktreeCopyLease, WorktreeCopyError> {
     let lock: PathBuf = ensure_journal_root(common_dir)?.join(SETTLEMENT_LOCK_NAME);
     let owner: LockOwner = current_owner()?;
@@ -552,7 +611,7 @@ pub fn acquire_worktree_copy_lock(
                         .write_all(line.as_bytes())
                         .map_err(|error| return raw_failure(&error))?;
                 }
-                wait_while_owner_lives(lock.as_path(), &holder)?;
+                wait_while_owner_lives(lock.as_path(), &holder, live_limit)?;
                 continue;
             }
             Attempt::Retry => None,

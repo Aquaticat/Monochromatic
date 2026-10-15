@@ -13,7 +13,9 @@ use super::CandidateStore;
 /// The store's fixtures: a store over real Git, an object name, and a worktree writer.
 use super::tests::{rev_parse, store, write};
 /// The mode a record carries.
-use crate::candidate_object::CandidateMode;
+use crate::candidate_object::{CandidateMode, ObjectId};
+/// The record a pushed tree lists.
+use crate::candidate_record::CandidateRecord;
 /// The record under test.
 use crate::candidate_tree::TreeRecord;
 /// Shared fixture directories and real Git.
@@ -98,5 +100,22 @@ fn a_failed_listing_is_reported() {
     let mut subject: CandidateStore = store(repo.as_path());
     let error = subject.head_tree_records().expect_err("listing fails");
     assert!(error.message.contains("ls-tree"), "{}", error.message);
+    remove(root.as_path());
+}
+
+/// A pushed tree lists a name that is not UTF-8 by its exact bytes.
+#[test]
+fn a_pushed_tree_lists_a_name_that_is_not_utf8_exactly() {
+    let root: PathBuf = fixture("store-pushed-tree-bytes");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    write(repo.as_path(), b"bad\xff.txt", b"bytes\n");
+    write(repo.as_path(), b"plain.txt", b"text\n");
+    git(repo.as_path(), &["add", "--all"]);
+    git(repo.as_path(), &["commit", "--quiet", "--message=files"]);
+    let tree: ObjectId = rev_parse(repo.as_path(), "HEAD^{tree}");
+    let mut subject: CandidateStore = store(repo.as_path());
+    let records: Vec<CandidateRecord> = subject.tree_records(&tree).expect("tree records");
+    let paths: Vec<&[u8]> = records.iter().map(|record| { return record.path.as_slice(); }).collect();
+    assert_eq!(paths, vec![b"bad\xff.txt".as_slice(), b"plain.txt".as_slice()]);
     remove(root.as_path());
 }

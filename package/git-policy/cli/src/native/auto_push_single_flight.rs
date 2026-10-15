@@ -19,17 +19,19 @@ use super::auto_push_record::{
     LAST_PUSHED_SUFFIX, LastPushedOutcome, LastPushedRead, LastPushedRecord,
     read_last_pushed_record, write_last_pushed_record,
 };
+use super::bounded_push::{PUSH_DEADLINE_VARIABLE, STOP_GRACE, lock_wait_limit};
+use super::bounded_query::{QueryOutput, query_deadline, run_bounded_query};
 use super::diagnostic_log::debug;
 use super::js_text::trim_javascript;
 use super::owner_lock::{
-    DEFAULT_POLL_DELAY, OwnerLock, OwnerLockError, WaitNotice, acquire_owner_lock,
+    DEFAULT_POLL_DELAY, OwnerLock, OwnerLockError, WaitNotice, acquire_owner_lock_for,
 };
 /// Owned OS strings for Git arguments and the child environment.
 use std::ffi::OsString;
 /// `Path` and `PathBuf` are borrowed and owned filesystem paths.
 use std::path::{Path, PathBuf};
-/// `Command` starts real Git; `Stdio` connects its streams.
-use std::process::{Command, Stdio};
+/// `Command` starts real Git.
+use std::process::Command;
 
 /// Tag used for diagnostics from this module.
 const TAG: &str = "cli-git";
@@ -66,6 +68,13 @@ pub enum SingleFlightError {
     Io(std::io::Error),
     /// The owner lock could not be acquired.
     Lock(OwnerLockError),
+    /// A Git query was still running at its deadline and was stopped.
+    TimedOut {
+        /// Arguments of the query, for the diagnostic.
+        arguments: String,
+        /// The deadline it exceeded, in whole seconds.
+        seconds: u64,
+    },
 }
 
 impl std::fmt::Display for SingleFlightError {
@@ -84,6 +93,11 @@ impl std::fmt::Display for SingleFlightError {
             ),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Lock(error) => write!(formatter, "{error}"),
+            Self::TimedOut { arguments, seconds } => write!(
+                formatter,
+                "git {arguments} did not finish within {seconds} seconds and was stopped; \
+                 {PUSH_DEADLINE_VARIABLE} sets the limit"
+            ),
         };
     }
 }
@@ -239,19 +253,34 @@ fn describe_arguments(arguments: &[OsString]) -> String {
 /// (await nanoSpawn(gitPath, args, { cwd })).stdout.trim();
 /// ```
 pub fn git_output(git: &PushGit, arguments: &[OsString]) -> Result<String, SingleFlightError> {
-    let output = git_command(git, arguments)
-        .stdin(Stdio::null())
-        .output()
-        .map_err(SingleFlightError::Start)?;
-    if !output.status.success() {
+    let output = run_query(git, arguments)?;
+    if output.code != Some(0) {
         return Err(SingleFlightError::Git {
             arguments: describe_arguments(arguments),
-            code: output.status.code(),
+            code: output.code,
             stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
         });
     }
     let text = String::from_utf8_lossy(&output.stdout);
     return Ok(trim_javascript(&text).to_owned());
+}
+
+/// What:
+///  Run a read-only Git query with its own deadline and capture its streams separately.
+/// Why:
+///   A query that never returns would hold the caller, and the push lock behind it, for good.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await nanoSpawn(gitPath, args, { cwd, signal: AbortSignal.timeout(deadlineMs) })
+/// ```
+pub fn run_query(git: &PushGit, arguments: &[OsString]) -> Result<QueryOutput, SingleFlightError> {
+    return run_bounded_query(
+        git_command(git, arguments),
+        describe_arguments(arguments).as_str(),
+        query_deadline(&git.environment),
+        STOP_GRACE,
+    );
 }
 
 /// Argument list from string literals.
@@ -323,11 +352,8 @@ fn create_directory(directory: &Path) -> std::io::Result<()> {
 /// async function tipContains({ gitPath, cwd, oid, tip }): Promise<boolean>; // throws
 /// ```
 pub fn tip_contains(git: &PushGit, oid: &str, tip: &str) -> Result<bool, SingleFlightError> {
-    let output = git_command(git, &argv(&["merge-base", "--is-ancestor", oid, tip]))
-        .stdin(Stdio::null())
-        .output()
-        .map_err(SingleFlightError::Start)?;
-    return match output.status.code() {
+    let output = run_query(git, &argv(&["merge-base", "--is-ancestor", oid, tip]))?;
+    return match output.code {
         Some(0) => Ok(true),
         Some(NOT_ANCESTOR_EXIT_CODE) => Ok(false),
         code => Err(SingleFlightError::Git {
@@ -423,9 +449,14 @@ pub fn run_single_flight_push(
         return Ok(joined_outcome(record));
     }
     let mut observer = WaitObserver { on_wait };
-    let lock: OwnerLock =
-        acquire_owner_lock(&paths.lock_directory, DEFAULT_POLL_DELAY, &mut observer)
-            .map_err(SingleFlightError::Lock)?;
+    // A live holder that outlives its own push deadline is stuck; waiting forever behind it would stall every commit.
+    let lock: OwnerLock = acquire_owner_lock_for(
+        &paths.lock_directory,
+        DEFAULT_POLL_DELAY,
+        &mut observer,
+        lock_wait_limit(&git.environment),
+    )
+    .map_err(SingleFlightError::Lock)?;
     let after = read_record(&paths.record_path)?;
     let late = match &after {
         LastPushedRead::Record(record)

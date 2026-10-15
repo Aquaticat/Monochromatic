@@ -23,6 +23,8 @@
 use super::blob_batch::load_blob_batch;
 /// Diagnostics.
 use super::diagnostic_log::{debug, warn};
+/// Exact path bytes as file names, and as text for messages.
+use super::path_bytes::{os_from_path_bytes, path_message_text};
 /// Unique temporary names.
 use super::random_id::random_uuid;
 /// The fail-closed recovery failure.
@@ -93,14 +95,14 @@ pub enum WorktreeFileState {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type AddedWorktreeInstallResult = { rewritten: string[]; conflicted: string[] };
+/// type AddedWorktreeInstallResult = { rewritten: Uint8Array[]; conflicted: Uint8Array[] };
 /// ```
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct InstallResult {
     /// Paths whose copy now holds the landed bytes because this call wrote them.
-    pub rewritten: Vec<String>,
+    pub rewritten: Vec<Vec<u8>>,
     /// Paths left alone because their copy changed after the check.
-    pub conflicted: Vec<String>,
+    pub conflicted: Vec<Vec<u8>>,
 }
 
 /// What:
@@ -490,14 +492,15 @@ pub fn install_added_worktree_files(
             Err(message) => return Err(RecoveryError(message)),
         };
     for record in records {
-        let destination: PathBuf = repository_root.join(record.path.as_str());
+        let destination: PathBuf = repository_root.join(os_from_path_bytes(record.path.as_slice()));
+        let shown: String = path_message_text(record.path.as_slice());
         let (Some(intended), Some(original)) = (
             blobs.get(&record.intended_oid),
             blobs.get(&record.original_oid),
         ) else {
             return Err(RecoveryError(format!(
                 "Git blob batch omitted a worktree completion object for {}.",
-                record.path
+                shown
             )));
         };
         let state: WorktreeFileState = match inspect_worktree_file(
@@ -524,7 +527,7 @@ pub fn install_added_worktree_files(
                         "Worktree copy of {path} changed or disappeared while cli-git completed the commit; \
                          the committed bytes remain in HEAD and your worktree state was kept. \
                          Compare it with HEAD (git diff HEAD -- {path}).",
-                        path = record.path
+                        path = shown
                     )
                     .as_str(),
                 );
@@ -546,7 +549,7 @@ pub fn install_added_worktree_files(
                     "Worktree copy of {path} changed while its replacement was prepared; \
                      the committed bytes remain in HEAD and your edit was kept. \
                      Compare it with HEAD (git diff HEAD -- {path}).",
-                    path = record.path
+                    path = shown
                 )
                 .as_str(),
             );
@@ -555,7 +558,7 @@ pub fn install_added_worktree_files(
         }
         debug(
             "installAddedWorktreeFiles",
-            format!("rewrote {} with its landed bytes", record.path).as_str(),
+            format!("rewrote {shown} with its landed bytes").as_str(),
         );
         result.rewritten.push(record.path.clone());
     }

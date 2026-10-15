@@ -99,7 +99,7 @@ pub enum LandingPayload {
         exact_private_index: bool,
         /// Paths a commit hook changed,
         ///  reconciled only while their real index entry is unchanged since invocation.
-        guarded_paths: Vec<String>,
+        guarded_paths: Vec<Vec<u8>>,
     },
     /// A normalization whose settled tree equals the base.
     NormalizeOnly {
@@ -238,7 +238,7 @@ pub struct LandingRequest<'request> {
     /// The commit or normalization to land.
     pub payload: &'request LandingPayload,
     /// Paths an explicit-path commit carries.
-    pub committed_paths: &'request [String],
+    pub committed_paths: &'request [Vec<u8>],
     /// Policy-added path records.
     pub added_paths: &'request [AddedPath],
     /// Selected newline correction records.
@@ -533,7 +533,7 @@ fn compute_post_index(
     post: &Path,
 ) -> Result<(), LandingError> {
     let base: String = base_revision(request.capture);
-    let (landed_index, exact_private_index, guarded_paths): (&Path, bool, &[String]) = match request.payload {
+    let (landed_index, exact_private_index, guarded_paths): (&Path, bool, &[Vec<u8>]) = match request.payload {
         LandingPayload::Commit { landed_index, exact_private_index, guarded_paths, .. } => {
             (landed_index.as_path(), *exact_private_index, guarded_paths.as_slice())
         }

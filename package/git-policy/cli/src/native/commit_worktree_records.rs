@@ -15,10 +15,10 @@
 use super::candidate_object::CandidateMode;
 use super::diagnostic_log::debug;
 use super::direct_fix_install::InstallChange;
+use super::path_bytes::os_from_path_bytes;
 use super::transaction_git::{GitContext, GitFailure, GitOutput, GitRequest, run_git_checked};
 use super::transaction_journal::AddedPath;
 use super::worktree_completion::{WorktreeFileState, inspect_worktree_file};
-use std::ffi::OsString;
 use std::path::Path;
 
 /// Module tag for diagnostics.
@@ -34,12 +34,12 @@ const RAW_FIELD_COUNT: usize = 5;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type HookChanges = { paths: readonly string[]; worktreeRecords: readonly AddedPathRecord[] };
+/// type HookChanges = { paths: readonly Uint8Array[]; worktreeRecords: readonly AddedPathRecord[] };
 /// ```
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct HookChanges {
     /// Every path whose entry differs between the tree the hook saw and the tree it left.
-    pub paths: Vec<String>,
+    pub paths: Vec<Vec<u8>>,
     /// Modified ordinary files whose worktree copy receives the committed bytes while it holds the pre-hook bytes.
     pub worktree_records: Vec<AddedPath>,
 }
@@ -55,7 +55,7 @@ impl HookChanges {
     /// combineHookChanges({ earlier, later });
     /// ```
     pub fn combine(earlier: &HookChanges, later: &HookChanges) -> HookChanges {
-        let mut paths: Vec<String> = earlier.paths.clone();
+        let mut paths: Vec<Vec<u8>> = earlier.paths.clone();
         for path in &later.paths {
             if !paths.contains(path) {
                 paths.push(path.clone());
@@ -79,12 +79,13 @@ impl HookChanges {
 /// ```ts
 /// parseRawChanges(output);
 /// ```
-fn parse_hook_changes(output: &str) -> Result<HookChanges, GitFailure> {
-    let fields: Vec<&str> = output.split('\0').collect();
+fn parse_hook_changes(output: &[u8]) -> Result<HookChanges, GitFailure> {
+    let fields: Vec<&[u8]> = output.split(|byte| { return *byte == 0; }).collect();
     let mut changes: HookChanges = HookChanges::default();
     let mut index: usize = 0;
     while index < fields.len() {
-        let field: &str = fields[index];
+        // The metadata is ASCII; a path is bytes and is never decoded.
+        let field: String = String::from_utf8_lossy(fields[index]).into_owned();
         if field.is_empty() {
             index += 1;
             continue;
@@ -97,10 +98,10 @@ fn parse_hook_changes(output: &str) -> Result<HookChanges, GitFailure> {
             return Err(GitFailure(format!("git diff-tree returned a malformed record: {field:?}")));
         }
         let (from_mode, to_mode, from_oid, to_oid) = (metadata[0], metadata[1], metadata[2], metadata[3]);
-        changes.paths.push(String::from(*path));
+        changes.paths.push(path.to_vec());
         if from_mode == to_mode && (to_mode == "100644" || to_mode == "100755") {
             changes.worktree_records.push(AddedPath {
-                path: String::from(*path),
+                path: path.to_vec(),
                 git_mode: String::from(to_mode),
                 original_oid: String::from(from_oid),
                 intended_oid: String::from(to_oid),
@@ -137,9 +138,7 @@ pub fn describe_hook_changes(
     request.without_prefix = true;
     request.object_directory = Some(object_directory.to_path_buf());
     let output: GitOutput = run_git_checked(context, &request)?;
-    let text: &str = std::str::from_utf8(output.stdout.as_slice())
-        .map_err(|_| { return GitFailure(String::from("Git returned non-UTF-8 output.")); })?;
-    let changes: HookChanges = parse_hook_changes(text)?;
+    let changes: HookChanges = parse_hook_changes(output.stdout.as_slice())?;
     debug(
         TAG,
         format!("pre-commit changed {} staged paths; the commit keeps them as native Git does", changes.paths.len()).as_str(),
@@ -199,7 +198,7 @@ pub fn settled_entry(
     let mut pathspec: Vec<u8> = b":(top,literal)".to_vec();
     pathspec.extend_from_slice(path);
     let mut request: GitRequest = GitRequest::new(cwd, &["ls-files", "--stage", "-z", "--"]);
-    request.arguments.push(os_from_bytes(pathspec));
+    request.arguments.push(os_from_path_bytes(pathspec.as_slice()));
     request.without_prefix = true;
     request.index = Some(index.to_path_buf());
     let output: GitOutput = run_git_checked(context, &request)?;
@@ -214,27 +213,6 @@ pub fn settled_entry(
         }
     }
     return Ok(None);
-}
-
-/// What:
-///  Raw bytes as an operating-system string.
-/// Why:
-///   A Git path is bytes, and only the platform decides how to pass them on.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// Buffer.from(bytes)
-/// ```
-fn os_from_bytes(bytes: Vec<u8>) -> OsString {
-    #[cfg(unix)]
-    {
-        use std::os::unix::ffi::OsStringExt;
-        return OsString::from_vec(bytes);
-    }
-    #[cfg(not(unix))]
-    {
-        return OsString::from(String::from_utf8_lossy(bytes.as_slice()).into_owned());
-    }
 }
 
 /// What:
@@ -279,7 +257,7 @@ pub fn selected_worktree_records(
             }
         }
         records.push(AddedPath {
-            path: String::from_utf8_lossy(change.path.as_slice()).into_owned(),
+            path: change.path.clone(),
             git_mode: String::from(git_mode),
             original_oid,
             intended_oid: entry_oid,
@@ -298,7 +276,7 @@ pub fn selected_worktree_records(
 /// join(repositoryRoot, path)
 /// ```
 fn path_from_bytes(bytes: &[u8]) -> std::path::PathBuf {
-    return std::path::PathBuf::from(os_from_bytes(bytes.to_vec()));
+    return std::path::PathBuf::from(os_from_path_bytes(bytes));
 }
 
 /// Controls for this module stay out of the release executable.
