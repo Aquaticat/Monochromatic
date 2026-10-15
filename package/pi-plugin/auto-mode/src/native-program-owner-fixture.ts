@@ -102,7 +102,7 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
 
    @returns original fixture judgment
    */
-  function readJudgment(): object { events.push('judgment'); return judgment; }
+  function readJudgment(): object { events.push('judgment'); if (state.judgmentFailure) throw state.judgmentFailure; return judgment; }
   /**
    Known member lookup authenticates exact original handles before reading state.
 
@@ -157,7 +157,11 @@ export function createProgramOwnerFixture({ source = PROGRAM_OWNER_SOURCE }: Rea
 
    @returns original callback result
    */
-  function operation<Result>(run: () => Result): Result { events.push(`operation:${run.name}`); return run(); }
+  function operation<Result>(run: () => Result): Result {
+    events.push(`operation:${run.name}`);
+    if (state.operationFailure?.callback === run.name) throw state.operationFailure.error;
+    return run();
+  }
   const input = { readJudgment, response, stream, signal: controller.signal, knownMember, knownExecution, ready, dependencyCheck, assertDependenciesCurrent, parentCurrent, bindings, childGroups, operation };
   const owner = createFixtureProgramOwner(input);
   assert.equal(events.length, 0);

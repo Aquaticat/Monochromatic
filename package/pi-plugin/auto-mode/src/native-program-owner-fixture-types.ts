@@ -154,6 +154,8 @@ export type FixtureProgramState = {
   readyFailure?: Error;
   dependencyFailure?: Error;
   toolFailure?: Error;
+  judgmentFailure?: Error;
+  operationFailure?: Readonly<{ callback: string; error: Error }>;
 };
 
 /**
