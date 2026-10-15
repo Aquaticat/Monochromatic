@@ -10,7 +10,7 @@ import { SemanticAdmissionPolicyError, } from './semantic-admission-error.ts';
 /**
  Adopted operating cutoff is not an empirical accuracy estimate.
  */
-const minimumSelectedScore = 0.8;
+const minimumSelectedScore = 0.6;
 /**
  Preserve the incumbent decoder's tolerance for normalized distributions.
  */
@@ -150,7 +150,7 @@ export function admitsOperatingChoice({
     rl.debug('retaining a lower-scoring categorical meaning',);
     return false;
   }
-  // In a normalized nonnegative distribution, a score of 0.8 leaves at most 0.200001 for every other label.
+  // In a normalized nonnegative distribution, a score of 0.6 leaves at most 0.400001 for every other label.
   // The cutoff therefore establishes a unique leading choice, including the decoder's normalization tolerance.
   rl.debug('admitting a supported categorical estimate under the operating cutoff',);
   return true;

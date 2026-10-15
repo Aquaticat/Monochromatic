@@ -9,6 +9,29 @@ Updated 2026-10-14.
 
 ## Adopted Luna migration
 
+The user subsequently lowered the selected-option probability cutoff from `0.80` to `0.60` on 2026-10-14.
+The maintained cutoff and unit/native boundary fixtures are updated and verified.
+Both maintained and native builds,
+package type checking,
+and the changed TypeScript lint scope pass.
+Built admission tests accept supported meanings at `0.60` and abstain at `0.599999`.
+Native HTTP fixtures pass permission,
+prohibition,
+unspecified,
+lower-score,
+unknown,
+and unsupported controls with zero provider requests.
+Removing the cutoff process-locally makes the boundary assertions fail;
+the built artifact remains unchanged.
+The isolated Qwen CLI also passes with clean shutdown and zero provider requests.
+Replaying the original baseline through the built consumer admits 29 of 84 answers,
+compared with four at `0.80`.
+There are 28 admitted clause meanings and one admitted request-content meaning;
+the other 55 answers remain unadmitted.
+`${HOME}/temp/agent/pi-luna-score-semantics-20261014/measurement-six.json`
+and `cutoff-verification.json` retain the recount and guard control.
+The `0.80` results in this section remain historical measurements.
+
 The user selected `gpt-6-luna-decisions`,
 excluded Perplexity,
 and accepted scores of `0.80` or higher to reduce manual request judgment.
@@ -270,7 +293,26 @@ Every case makes zero provider requests.
 The built source-contribution and request-obligation regressions pass,
 including preservation of independent premises;
 package type checking also passes.
-Process-local guard omissions and the final isolated CLI recheck remain pending.
+The process-local unsupported-protocol-field guard omission fails the native unresolved-outcome assertion:
+without that guard,
+the fixture incorrectly resolves the request.
+The verification record at `${HOME}/temp/agent/pi-request-derivation-controls-20261014/verification.json`
+retains the unchanged built-artifact hash.
+The initial verifier expected a later assertion;
+it was corrected to recognize the actual earlier outcome assertion.
+The final native rebuild and isolated Qwen CLI also pass,
+with zero provider requests and clean shutdown.
+
+The user subsequently asked about Jev 1.14 and whether `0.80` gates the correct quantity.
+The [Jev release check](../planning/pi-auto-mode-jev-1-14-current-contract.md)
+establishes native release availability but no qualified replacement through the current gateway.
+The [Luna score trace](../planning/pi-auto-mode-luna-score-semantics.md)
+confirms that the built consumer gates selected-option probability for each interpretation.
+The baseline has 83 clause questions and one content question;
+three clause answers and the content answer pass.
+Applying `0.80` to the separate confidence field selects the same four baseline answers.
+Neither score is established as whole-decision correctness,
+and the suitability of requiring a unique meaning for every candidate remains a separate design question.
 
 ## Original native RPC approval verification
 
