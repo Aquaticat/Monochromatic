@@ -3,15 +3,16 @@ export {
 } from './consistency-cache-version.ts';
 export {
   countConsistency,
-  occurrencesOf,
-  type QuoteOccurrences,
   slotInSpan,
   winnerOf,
 } from './consistency-count.ts';
+export { occurrencesOf, } from './consistency-occurrences.ts';
+export { type QuoteOccurrences, } from './consistency-occurrences.ts';
 export { edgeFreeWordsOf, } from './consistency-edge-marks.ts';
 export {
   foldedWordsOf,
   locateWords,
+  marksHeldBesideWords,
   type SpanSearch,
   standsOf,
 } from './consistency-fold.ts';
@@ -19,6 +20,13 @@ export {
   quoteBounds,
   quoteCore,
 } from './consistency-quote-bounds.ts';
+export {
+  wholeEndOf,
+  wholeSpanOf,
+  wholeStartOf,
+} from './consistency-whole-end.ts';
+export { edgeUnitsOf, } from './consistency-edge-units.ts';
+export { cutsShownWord, } from './consistency-shown-edge.ts';
 export {
   asLocated,
   locatedContradicted,
@@ -82,6 +90,7 @@ export {
 export {
   aroundBlocksOf,
   type CarryChosenPlace,
+  type CarryEdgeWords,
   type CarryReceivingPlace,
   chosenEnglishBlocksOf,
   keepingBlockOf,
@@ -102,16 +111,6 @@ export type {
   NoWinnerReason,
   UnlocatedReason,
 } from './consistency-count-types.ts';
-export {
-  agreedQuoteOf,
-  agreedSlotOf,
-  agreedSlotWordsOf,
-  agreedWordsOf,
-  isKeptByMajority,
-  majorityChoiceOf,
-  tiedForFirstOf,
-  usableVoicesOf,
-} from './consistency-majority.ts';
 export {
   applyConsistencyEdits,
   type AppliedEdits,
@@ -195,6 +194,11 @@ export {
   writtenParagraphsOf,
 } from './corpus-run/pass-consistency-carry-candidates.ts';
 export {
+  crossingOfUnit,
+  crossingWordsLost,
+  crossingWordsOf,
+} from './corpus-run/pass-consistency-carry-crossing.ts';
+export {
   carryAll,
   carryToUnit,
 } from './corpus-run/pass-consistency-carry.ts';
@@ -246,14 +250,6 @@ export {
 export { runPassConsistency, } from './corpus-run/pass-consistency.ts';
 export { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
 export {
-  type AppliedConsistency,
-  applyConsistency,
-} from './corpus-run/pass-consistency-apply.ts';
-export {
-  editsChangingLocatedWords,
-  type LeftOutEdit,
-} from './corpus-run/pass-consistency-apply-located.ts';
-export {
   askConsistencyBench,
   type ConsistencyAsked,
 } from './corpus-run/pass-consistency-ask.ts';
@@ -291,6 +287,7 @@ export { assertGroupFits, } from './corpus-run/artifact-two-lane-read-consistenc
 export { assertAskedGroupCoherent, } from './corpus-run/artifact-two-lane-read-consistency-coherence.ts';
 export { assertSlicesCoherent, } from './corpus-run/artifact-two-lane-read-consistency-slices.ts';
 export { parseConsistencyOccurrence, } from './corpus-run/artifact-two-lane-read-consistency-occurrence.ts';
+export { parseConsistencyRendering, } from './corpus-run/artifact-two-lane-read-consistency-rendering.ts';
 export {
   parseConsistencyBallot,
   parseConsistencyRepeat,

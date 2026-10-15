@@ -10,7 +10,10 @@ import type {
 } from './artifact-two-lane-consistency.ts';
 import { askCarryChoice, } from './pass-consistency-carry-ask.ts';
 import { shownOf, } from './pass-consistency-carry-offers.ts';
-import { sliceOfUnit, } from './pass-consistency-carry-units.ts';
+import {
+  sliceOfUnit,
+  unitLabelsOf,
+} from './pass-consistency-carry-units.ts';
 import type {
   CarryContext,
   CarryUnit,
@@ -24,7 +27,12 @@ import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 // THE BENCH'S CHOICE AMONG A BLOCK'S CANDIDATES, and what the choice comes to:
 // the carry's record for each receiving place of the block and the replacements
 // the winner makes. A block with no alternative to its own English is not put to
-// the bench.
+// the bench. A splice wins for a block that is carried in part: it replaces the
+// words of the receiving places code can move the chosen words into, and the places
+// it cannot keep their words, which `settleCarried` leaves `kept-current` because no
+// replacement names them. The bench's record is the block's, one under each place,
+// so the splice stands among the candidates of every place of the block, and a
+// finding says which places were carried and which kept their words.
 
 /**
  The record of a carry that ended without a choice among candidates, once for
@@ -73,9 +81,9 @@ export function carryWithoutChoice(
 
  @param winner - the candidate the choices named, as a list of zero or one
 
- @returns A replacement of the words of each receiving place for the splice, a replacement of the block for a writer's block carrying every receiving place, and none when the current block or nobody won
+ @returns A replacement of the words of each receiving place that has one for the splice, a replacement of the block for a writer's block carrying every receiving place, and none when the current block or nobody won
 
- @throws {@link ConsistencyInvariantError} when the splice won in a unit with a receiving place whose words cannot be moved by code, since no splice is offered then
+ @throws {@link ConsistencyInvariantError} when the splice won in a unit none of whose receiving places has words that code can move, since no splice is offered then
 
  @example
  ```ts
@@ -102,25 +110,33 @@ function editsOf(
    */
   const { sliceIndex, } = sliceOfUnit({ unit, },);
   if (named.kind === 'splice') {
-    return unit.receivers
-      .map(function editOf(receiver,): PendingEdit {
+    /**
+     The replacement of each receiving place that has one; a place without one keeps its words.
+     */
+    const edits = unit.receivers
+      .flatMap(function editOf(receiver,): readonly PendingEdit[] {
         /**
          How the chosen words are moved into this place.
          */
         const { plan, } = receiver;
-        if (plan.kind !== 'replace') {
-          throw new ConsistencyInvariantError({ invariant:
-            `the splice won for ${receiver.label}, whose words cannot be moved by code, and a splice is offered only when every receiving place of the block can be spliced`, },);
-        }
-        return {
-          kind: 'splice',
-          placePositions: [receiver.position,],
-          sliceIndex,
-          start: plan.start,
-          end: plan.end,
-          text: plan.text,
-        };
+        return (plan.kind === 'replace')
+          ? [
+            {
+              kind: 'splice',
+              placePositions: [receiver.position,],
+              sliceIndex,
+              start: plan.start,
+              end: plan.end,
+              text: plan.text,
+            },
+          ]
+          : [];
       },);
+    if (edits.length === 0) {
+      throw new ConsistencyInvariantError({ invariant:
+        `the splice won for ${unitLabelsOf({ unit, },)}, none of whose receiving places has words that code can move, and a splice is offered only when some receiving place of the block can be spliced`, },);
+    }
+    return edits;
   }
   return [
     {
@@ -136,6 +152,63 @@ function editsOf(
         .end,
       text: named.text,
     },
+  ];
+}
+
+/**
+ The finding for a block the splice carried in part, in the words of the other findings of the carry.
+
+ @param unit - the unit
+
+ @param winner - the candidate the choices named, as a list of zero or one
+
+ @returns A finding, as a list of zero or one, naming the places the chosen words were moved into and the places that kept their words because code cannot move the chosen words into them; none unless the splice won and some receiving place of the block has no replacement
+
+ @example
+ ```ts
+ const findings = partlyCarriedFindingOf({ unit, winner: [], },);
+ ```
+ */
+function partlyCarriedFindingOf(
+  {
+    unit,
+    winner,
+  }: {
+    readonly unit: CarryUnit;
+    readonly winner: readonly CarryOffer[];
+  },
+): readonly string[] {
+  /**
+   The candidate that won, if any.
+   */
+  const [named,] = winner;
+  if (named?.kind !== 'splice')
+    return [];
+  /**
+   Labels of the receiving places the splice moved the chosen words into.
+   */
+  const carried = unit.receivers
+    .filter(function isCarried({ plan, },): boolean {
+      return plan.kind === 'replace';
+    },)
+    .map(function labelOf({ label, },): string {
+      return label;
+    },);
+  /**
+   Labels of the receiving places that kept their words.
+   */
+  const kept = unit.receivers
+    .filter(function isKept({ plan, },): boolean {
+      return plan.kind !== 'replace';
+    },)
+    .map(function labelOf({ label, },): string {
+      return label;
+    },);
+  if (kept.length === 0)
+    return [];
+  return [
+    `consistency-partly-carried (${unitLabelsOf({ unit, },)}): the splice won, so code moved the chosen words into `
+    + `${carried.join(' and ',)} and left ${kept.join(' and ',)} as it was, since code cannot move them there`,
   ];
 }
 
@@ -277,6 +350,14 @@ export async function choose(
     labels,
     quorum: asked.quorum,
   },);
+  /**
+   The candidate the choices named, as a list of zero or one.
+   */
+  const winner = (choice.kind === 'chosen')
+    ? offers.filter(function isNamed({ label, },): boolean {
+      return label === choice.label;
+    },)
+    : [];
   return {
     carries: placeLabels.map(function carryOf(label,): ArtifactConsistencyCarry {
       return {
@@ -301,15 +382,15 @@ export async function choose(
     },),
     edits: editsOf({
       unit,
-      winner: (choice.kind === 'chosen')
-        ? offers.filter(function isNamed({ label, },): boolean {
-          return label === choice.label;
-        },)
-        : [],
+      winner,
     },),
     findings: [
       ...findings,
       ...asked.findings,
+      ...partlyCarriedFindingOf({
+        unit,
+        winner,
+      },),
     ],
   };
 }

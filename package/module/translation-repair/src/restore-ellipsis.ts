@@ -61,7 +61,8 @@ function ellipsisFormOf(
  Converts only when the replaced region and the document together show one
  form and never the other. A run of U+2026, which Chinese writes doubled,
  becomes one three-dot ellipsis; a run of exactly three dots becomes one
- U+2026. Text inside a backtick span or a tag is never touched.
+ U+2026. Only the text the page parse shows as prose is touched
+ (`typography-prose-mask.ts`): code of any kind, an address, an expression, a tag and its attributes are never.
 
  @param replacement - text a stage wrote
 

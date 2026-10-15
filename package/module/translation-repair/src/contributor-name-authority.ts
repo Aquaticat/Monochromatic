@@ -7,6 +7,7 @@ import { contextRoot, } from './log-context.ts';
 import {
   parseMarkdownBody,
   requireMarkdownRefusal,
+  withMarkdownExhaustionRefused,
 } from './parse-mdx.ts';
 
 /**
@@ -130,7 +131,12 @@ function referenceLinkLabels({ text, }: { readonly text: string; },): ReadonlyMa
     /**
      Nodes still to visit, so a deep tree is walked without recursion.
      */
-    const pending: Nodes[] = [parseMarkdownBody({ body: text, },),];
+    const pending: Nodes[] = [
+      withMarkdownExhaustionRefused({
+        parse: parseMarkdownBody,
+        input: { body: text, },
+      },),
+    ];
     for (
       let node = pending.pop();
       node !== undefined;

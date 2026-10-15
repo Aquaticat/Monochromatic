@@ -1,15 +1,29 @@
-import { isAsciiDigit, } from './ascii-letters.ts';
 import {
-  codePointAt,
-  codePointBefore,
-} from './code-points.ts';
-import { edgeFreeWordsOf, } from './consistency-edge-marks.ts';
+  addressRangesOf,
+  standsOutsideAddresses,
+} from './consistency-addresses.ts';
+import { closingJointsOf, } from './consistency-closing-marks.ts';
+import {
+  edgeFreeRangeOf,
+  edgeFreeWordsOf,
+} from './consistency-edge-marks.ts';
 import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
 import {
-  isLatinLetter,
-  isLatinLetterOrMark,
-} from './latin-letters.ts';
-import { normalizePunctuation, } from './quote-normalize.ts';
+  isSingleMark,
+  singleMarkAt,
+} from './consistency-loose-marks.ts';
+import { withProvenApostrophes, } from './consistency-fold-apostrophes.ts';
+import type { PageEnglish, } from './consistency-page-english.ts';
+import {
+  foldWithOffsets,
+  type OffsetFoldedText,
+  offsetsInFold,
+  writtenPointsOf,
+} from './consistency-fold-offsets.ts';
+import { emphasisDelimitersOf, } from './consistency-prose-text.ts';
+import { cutsShownWord, } from './consistency-shown-edge.ts';
+import { cutsWord, } from './consistency-word-joints.ts';
+import { wholeSpanOf, } from './consistency-whole-end.ts';
 import { wordStarts, } from './word-bounds.ts';
 
 //region Consistency fold
@@ -24,20 +38,95 @@ import { wordStarts, } from './word-bounds.ts';
 // space at the quote's two edges (`consistency-edge-marks.ts`), and answers
 // where the quote stands in the English as the English holds it, at the
 // boundaries of words (`word-bounds.ts`). The span the English holds is what
-// every later step uses, never the judge's string.
+// every later step uses, never the judge's string. A STAND is one place where the folded
+// words are found in the English, from a start offset to an end offset at word
+// boundaries (the `once` of a `SpanSearch` is the one stand); a quote can have no stand,
+// one or several, and a stand that a joint of a word cuts (a mark that makes one word of what
+// stands on its two sides, `consistency-word-joints.ts`) is no stand.
 //
 // A WORD HERE IS ALSO JOINED BY ITS OWN MARKS, for this locator alone (the
 // glossary's reading in `word-bounds.ts` is unchanged): a hyphen or an
-// apostrophe between two letters, and a full stop or a comma between two digits,
-// join them into one word, so `so` is no stand inside `so-called`, `t` none
-// inside `don't`, `dog` none inside `dog's` and `5 dollars` none inside
-// `0.5 dollars`. A Greek letter, a Han character or an emoji beside a word joins
-// nothing, as before.
+// apostrophe between two letters or digits (a Latin letter with its accents or an ASCII
+// digit, `latin-letters.ts`), and a full stop, a comma, a colon or
+// a slash between two digits, join them into one word, so `so` is no stand inside
+// `so-called`, `t` none inside `don't`, `dog` none inside `dog's`, `2 tall` none
+// inside `5'2 tall` and `5 dollars` none inside `0.5 dollars`. An apostrophe with
+// nothing joined before it (`'90s`, `'em`, `'Tis`) joins nothing. An apostrophe after
+// markup that ends in a letter or a digit, or after a closing bracket or closing curly
+// double quotation mark, joins the same way: `the **cat**` is no stand inside
+// `the **cat**'s bowl` and a link's text none inside `[the cat](x)'s`. A Greek letter, a
+// Han character or an emoji beside a word joins nothing, as before. Which marks join,
+// and how emphasis marks beside one are read, is `consistency-word-joints.ts`.
+//
+// A STAND INSIDE A WEB OR MAIL ADDRESS IS NO STAND. A carry that replaced `cats` in
+// `https://cats.example.org/page` would edit the link, so a stand that lies wholly
+// inside an address is dropped before the stands are counted: `cats` is found once
+// in `Visit [the cats](https://cats.example.org/page) now.`, in the link's text,
+// and nowhere in `Visit https://cats.example.org/page now.`. What an address is
+// (a run holding `://` from its scheme, a run starting with `www.`, a run holding
+// an `@` with a letter or a digit on each side and a full stop after it) is
+// `consistency-addresses.ts`. THE LOCATOR SEES TEXT ONLY: its callers hand it the
+// English of a slice and none holds a parse of it, so a Markdown link
+// destination that is no address (`[cats](cats-page)`) is not read here.
+//
+// AN EDGE OF THE SPAN NEVER FALLS INSIDE A BACKSLASH ESCAPE OR A CHARACTER REFERENCE. A quote that begins or ends between a
+// backslash and the character it escapes, or inside a reference the parser decodes (`amp; cats`, `the cats` and a backslash),
+// names the whole unit, which is then kept or cut at the edge as the character it shows would be (`consistency-whole-end.ts`,
+// `consistency-edge-units.ts`): a replacement never writes half of one.
+//
+// THE SPAN IS THE WORDS LOOKED FOR AND THE PROVEN APOSTROPHE BESIDE THEM, no
+// other character. The words carry no single mark at their edges, paired with
+// anything or not (`consistency-edge-marks.ts`), so `the parents’` and `the parents`
+// name the same words. A single mark the English holds just outside where they
+// stand is taken into the span only when it is PROVEN an apostrophe: a trailing
+// mark that no earlier quotation-like character of the page's prose could have
+// opened a quotation for (`the parents’`), a leading mark that no later one could
+// close a quotation for (`’round the`), whether or not any judge copied it
+// (`consistency-proven-apostrophes.ts`, which states the rule, the corpus counts it
+// rests on and the page-wide reading). Such a mark is part of its word, is carried
+// in with the chosen words and is removed with the replaced ones. Every other single
+// mark stays where the English has it when the span is replaced: the mark that opens
+// or closes a quotation, an apostrophe with a possible partner, and any `‘`.
+// Telling those apart takes a guess about the English around the words, and a span
+// widened over a mark guessed wrong deletes a quotation mark from the page, so the
+// guess is not made: a mark with a possible partner is the case this file leaves to
+// the refusal. Two places whose words are the same and whose English differs only by
+// such a mark hold the same words, and whether a replacement can carry those words
+// between them without writing a pairing of words and marks neither place wrote is
+// the splice's question (`consistency-splice.ts`), answered from the marks the located
+// rendering records beside its span. THE PROOF READS THE WHOLE PAGE: the locator finds the
+// words in the English of one slice, and a caller that holds the English of the page hands
+// it, with the offset where the slice starts in it (`page`, `consistency-page-english.ts`),
+// so a quotation that opens in one slice and closes in another is seen; a caller that hands
+// no page gets the slice as the page. The stretches of the page that the Markdown grammar
+// does not read as words (code, the strings of a component, comments, link destinations)
+// hold no partner (`consistency-prose-text.ts`).
+//
+// A SINGLE MARK THE QUOTE HELD BESIDE ITS WORDS CHOOSES BETWEEN STANDS, and is
+// span content only once a stand is chosen and the mark is a proven apostrophe.
+// The choice reads the English as it always did: a proven apostrophe is a single
+// mark directly beside the words like any other, so a stand that holds one and a
+// stand of the same words that holds none are told apart by the evidence and by
+// nothing else. With evidence of a mark on that side the stand with the apostrophe
+// is the place, and the span is then widened over it; with none both stands stay
+// and the place is ambiguous, the apostrophe choosing nothing.
+// When the words stand more than once and there is mark
+// evidence for a side (the judges held a single mark directly beside the
+// words on it, with no character between the mark and the words), only the
+// stands where the English holds a single mark directly beside the words on
+// that side are kept, and exactly one left is the place; none or several left
+// is ambiguous. Without evidence nothing changes. The caller can give the
+// evidence per side (`marks`), which is how a count of many judges' quotes
+// reaches the locator (`consistency-majority.ts`, `markEvidenceOf`), since the
+// folded words it hands over hold no mark; a caller that hands over a judge's
+// own quote and no evidence gets the evidence that quote holds by itself. This
+// is what keeps `the cats'` a single place in `Fill the cats' bowl. Then the
+// cats nap.`
 //
 // THE FOLD IS NOT ONE UNIT TO ONE, since a run of whitespace folds to one or two
 // units, so the folded English carries a map from each folded unit back to the
 // offsets of the original it stands for, and every offset returned indexes the
-// English as it was given.
+// English as it was given (the fold itself is `consistency-fold-offsets.ts`).
 //
 // FOLDING A FOLDED TEXT CHANGES NOTHING. A blank line folds to TWO line breaks,
 // which read again are two breaks and so a blank line again, where one break
@@ -83,157 +172,13 @@ export type SpanSearch =
   };
 
 /**
- A text in the fold, with the offsets of the original each folded unit stands for.
- */
-type FoldedText = {
-  /**
-   The folded text.
-   */
-  readonly folded: string;
-
-  /**
-   Offset in the original where the original stretch of each folded UTF-16
-   unit starts.
-   */
-  readonly starts: readonly number[];
-
-  /**
-   Exclusive offset in the original where it ends.
-   */
-  readonly ends: readonly number[];
-};
-
-/**
- Whether a character is whitespace.
-
- @param character - one whole character
-
- @returns Whether it is whitespace
-
- @example
- ```ts
- const space = isWhitespace({ character: '\n', },); // true
- ```
- */
-function isWhitespace({ character, }: { readonly character: string; },): boolean {
-  // TRIM CHANGES A SINGLE CHARACTER ONLY WHEN IT IS WHITESPACE, which is the
-  // question here (spacing); the character is not compared with the empty string.
-  return character.trim() !== character;
-}
-
-/**
- Units a blank line folds to: two line breaks, so the folded text read again
- holds a blank line again.
- */
-const BLANK_LINE = [
-  '\n',
-  '\n',
-] as const;
-
-/**
- Units any other run of whitespace folds to.
- */
-const SPACE = [' ',] as const;
-
-/**
- Folds a text and keeps the offsets of the original each folded unit stands
- for. A run of whitespace holding two line breaks or more is a blank line, a
- paragraph boundary, and folds to two line breaks; any other run folds to one
- space. Every unit of a run stands for the whole run.
-
- @param text - text in the original
-
- @returns The folded text and the offsets of the original each folded unit stands for
-
- @example
- ```ts
- const { folded, } = foldWithOffsets({ text: 'girl,\nwasn’t  she', },); // "girl, wasn't she"
- ```
- */
-function foldWithOffsets({ text, }: { readonly text: string; },): FoldedText {
-  /**
-   Folded units, each with the original stretch it stands for.
-   */
-  const units: {
-    readonly unit: string;
-    readonly start: number;
-    readonly end: number
-  }[] = [];
-  /**
-   Whitespace run being read: where it began and ended, and how many line breaks it holds.
-   */
-  const run = {
-    open: false,
-    start: 0,
-    end: 0,
-    breaks: 0,
-  };
-  /**
-   Closes the whitespace run being read, folded to one unit.
-   */
-  function closeRun(): void {
-    if (!run.open)
-      return;
-    for (const unit of (run.breaks >= 2) ? BLANK_LINE : SPACE) {
-      units.push({
-        unit,
-        start: run.start,
-        end: run.end,
-      },);
-    }
-    run.open = false;
-  }
-  /**
-   Offset in the original reached so far.
-   */
-  const reached = { at: 0, };
-  for (const character of normalizePunctuation({ text, },)) {
-    if (isWhitespace({ character, },)) {
-      if (!run.open) {
-        run.open = true;
-        run.start = reached.at;
-        run.breaks = 0;
-      }
-      run.end = reached.at + character.length;
-      if (character === '\n')
-        run.breaks += 1;
-    }
-    else {
-      closeRun();
-      for (
-        let index = 0;
-        index < character.length;
-        index += 1
-      ) {
-        units.push({
-          unit: character.charAt(index,),
-          start: reached.at,
-          end: reached.at + character.length,
-        },);
-      }
-    }
-    reached.at += character.length;
-  }
-  closeRun();
-  return {
-    folded: units.map(function unitOf({ unit, },): string {
-      return unit;
-    },)
-      .join('',),
-    starts: units.map(function startOf({ start, },): number {
-      return start;
-    },),
-    ends: units.map(function endOf({ end, },): number {
-      return end;
-    },),
-  };
-}
-
-/**
  The words of a quote in the fold, without the sentence punctuation, space and
- invisible characters at its two edges, and without a quotation mark or a
- bracket at an edge that pairs with nothing inside the words or encloses all of
- them. Reading the result again gives the result.
+ invisible characters at its two edges, without any single mark at an edge
+ (paired with something inside the words or not), and without a double
+ quotation mark or a bracket at an edge that pairs with nothing inside the
+ words or encloses all of them. A backslash escape and a character reference the
+ parser decodes are each cut or kept whole, as the character they show would be.
+ Reading the result again gives the result.
 
  @param text - quote as a judge gave it, or the folded words of one
 
@@ -245,82 +190,271 @@ function foldWithOffsets({ text, }: { readonly text: string; },): FoldedText {
  ```
  */
 export function foldedWordsOf({ text, }: { readonly text: string; },): string {
-  return edgeFreeWordsOf({
-    points: Array.from(foldWithOffsets({ text, },)
-      .folded,),
-  },)
+  return edgeFreeWordsOf(writtenPointsOf({ folded: foldWithOffsets({ text, },), },),)
     .join('',);
 }
 
 /**
- Marks that join the two letters beside them into one word.
- */
-const LETTER_JOINERS = '-\'';
-
-/**
- Marks that join the two digits beside them into one number.
- */
-const DIGIT_JOINERS = '.,';
-
-/**
- Whether the character at an offset of a folded English joins the two characters
- beside it into one word: a hyphen or an apostrophe between two letters, a full
- stop or a comma between two digits.
-
- @param text - folded English
-
- @param at - offset of the character asked about, which may lie outside the text
-
- @returns Whether the character there is a joint
+ On which sides a single mark stood directly beside some words: before them,
+ after them, or both.
 
  @example
  ```ts
- const joint = isJointAt({ text: 'so-called', at: 2, },); // true
+ const marks: MarksBeside = { before: false, after: true, };
  ```
  */
-function isJointAt(
+export type MarksBeside = {
+  /**
+   Whether a single mark stood directly before the words.
+   */
+  readonly before: boolean;
+
+  /**
+   Whether a single mark stood directly after the words.
+   */
+  readonly after: boolean;
+};
+
+/**
+ A quote read for the words it names and the single marks it held directly
+ beside them.
+ */
+type ReadQuote = {
+  /**
+   The folded words, without the marks and punctuation at the quote's edges.
+   */
+  readonly needle: string;
+
+  /**
+   Whether the quote held a single mark directly before the words: the
+   character just before them, as the judge wrote it, is one.
+   */
+  readonly heldBefore: boolean;
+
+  /**
+   Whether the quote held a single mark directly after the words.
+   */
+  readonly heldAfter: boolean;
+};
+
+/**
+ Reads a quote for its words and for whether a single mark stood directly
+ beside them on either side.
+
+ @param text - quote as a judge gave it, or the folded words of one
+
+ @returns The words and the two sides a single mark stood directly beside
+
+ @example
+ ```ts
+ const quote = readQuote({ text: 'the cats\'', },); // { needle: 'the cats', heldBefore: false, heldAfter: true }
+ ```
+ */
+function readQuote({ text, }: { readonly text: string; },): ReadQuote {
+  /**
+   The quote in the fold with the character each unit stood for.
+   */
+  const folded = foldWithOffsets({ text, },);
+  /**
+   The folded quote, one whole character each, and the characters as the judge wrote them.
+   */
+  const {
+    points,
+    originals,
+  } = writtenPointsOf({ folded, },);
+  /**
+   Where the words stand among the characters.
+   */
+  const {
+    from,
+    to,
+  } = edgeFreeRangeOf({
+    points,
+    originals,
+  },);
+  /**
+   The words.
+   */
+  const needle = points.slice(
+    from,
+    to,
+  )
+    .join('',);
+  /**
+   The folded units before the words.
+   */
+  const before = points.slice(
+    0,
+    from,
+  )
+    .join('',);
+  /**
+   Offset in the folded units where the words start, which differs from `from` after a character beyond the first plane.
+   */
+  const startUnit = before.length;
+  return {
+    needle,
+    heldBefore: isSingleMark({ character: folded.originals[startUnit - 1] ?? '', },),
+    heldAfter: isSingleMark({ character: folded.originals[startUnit + needle.length] ?? '', },),
+  };
+}
+
+/**
+ On which sides a judge's quote held a single mark directly beside its words:
+ the character just outside the words, as the judge wrote it, is one of the
+ four single marks. A space or a line break between the mark and the words is
+ a character between, and a double quotation mark is no single mark.
+
+ @param text - quote as a judge gave it
+
+ @returns Whether a single mark stood directly before the words and directly after them
+
+ @example
+ ```ts
+ const marks = marksHeldBesideWords({ text: 'the cats\'', },); // { before: false, after: true }
+ ```
+ */
+export function marksHeldBesideWords({ text, }: { readonly text: string; },): MarksBeside {
+  /**
+   The quote read for its words and the marks beside them.
+   */
+  const {
+    heldBefore,
+    heldAfter,
+  } = readQuote({ text, },);
+  return {
+    before: heldBefore,
+    after: heldAfter,
+  };
+}
+
+/**
+ The offsets in an English of the stretch a stand of the needle covers.
+
+ @param folded - the English in the fold, with the character each unit stood for
+
+ @param at - where the stand starts in the folded English
+
+ @param length - length of the needle
+
+ @returns Where the stand starts in the English as it was given and the exclusive offset where it ends
+
+ @throws {@link ConsistencyInvariantError} when a position of the stand has no
+ offsets in the original, since every folded unit stands for a stretch of it
+
+ @example
+ ```ts
+ const { start, end, } = standSpan({ folded: foldWithOffsets({ text: 'The cat', },), at: 4, length: 3, },); // { start: 4, end: 7 }
+ ```
+ */
+function standSpan(
   {
-    text,
+    folded,
     at,
+    length,
   }: {
-    readonly text: string;
+    readonly folded: OffsetFoldedText;
     readonly at: number;
+    readonly length: number;
   },
-): boolean {
-  if ((at < 0) || (at >= text.length))
-    return false;
+): {
+  readonly start: number;
+  readonly end: number;
+} {
   /**
-   The character at the offset, one UTF-16 unit.
+   Offset in the English where the first folded unit's stretch starts.
    */
-  const joiner = text.charAt(at,);
+  const start = folded.starts[at];
   /**
-   The whole character before it.
+   Exclusive offset in the English where the last folded unit's stretch ends.
    */
-  const before = codePointBefore({
-    text,
-    at,
-  },);
-  /**
-   The whole character after it.
-   */
-  const after = codePointAt({
-    text,
-    at: at + 1,
-  },);
-  if (LETTER_JOINERS.includes(joiner,)) {
-    return isLatinLetterOrMark({ character: before, },)
-      && isLatinLetter({ character: after, },);
+  const end = folded.ends[(at + length) - 1];
+  if ((start === undefined) || (end === undefined)) {
+    throw new ConsistencyInvariantError({ invariant:
+      `a folded position ${String(at,)} of the English has no offsets in it, and every folded unit stands for a stretch of it`, },);
   }
-  return DIGIT_JOINERS.includes(joiner,)
-    && isAsciiDigit({ character: before, },)
-    && isAsciiDigit({ character: after, },);
+  return {
+    start,
+    end,
+  };
+}
+
+/**
+ The stands of a needle that hold a single mark directly beside the words on
+ each side the quote held one on. A quote that held none on either side keeps
+ every stand.
+
+ @param haystack - the English as the place holds it
+
+ @param folded - the English in the fold
+
+ @param stands - start offsets of the stands in the folded English
+
+ @param needle - the folded words looked for
+
+ @param quote - the quote the stands were looked for by
+
+ @returns The stands that fit, in the order they were given
+
+ @throws {@link ConsistencyInvariantError} when a stand has no offsets in the original
+
+ @example
+ ```ts
+ const kept = standsBesideMarks({ haystack, folded, stands, needle, quote: readQuote({ text: 'the cats\'', },), },);
+ ```
+ */
+function standsBesideMarks(
+  {
+    haystack,
+    folded,
+    stands,
+    needle,
+    quote,
+  }: {
+    readonly haystack: string;
+    readonly folded: OffsetFoldedText;
+    readonly stands: readonly number[];
+    readonly needle: string;
+    readonly quote: ReadQuote;
+  },
+): readonly number[] {
+  return stands.filter(function holdsTheMarks(at,): boolean {
+    /**
+     Where the stand lies in the English.
+     */
+    const {
+      start,
+      end,
+    } = standSpan({
+      folded,
+      at,
+      length: needle.length,
+    },);
+    /**
+     The single mark directly before the stand, as a list of zero or one.
+     */
+    const marksBefore = singleMarkAt({
+      text: haystack,
+      at: start - 1,
+    },);
+    /**
+     The single mark directly after it.
+     */
+    const marksAfter = singleMarkAt({
+      text: haystack,
+      at: end,
+    },);
+    return ((!quote.heldBefore) || (marksBefore.length > 0)) && ((!quote.heldAfter) || (marksAfter.length > 0));
+  },);
 }
 
 /**
  Every start of a needle in a folded English where it stands at the boundaries
  of words and neither of its edges is a joint of a longer word.
 
- @param folded - English in the fold
+ @param haystack - the English as it was given, which the delimiters of its emphasis are read from by the parse
+
+ @param folded - the English in the fold, with the character each unit stood for
 
  @param needle - folded words looked for
 
@@ -328,62 +462,119 @@ function isJointAt(
 
  @example
  ```ts
- const starts = apartStartsOf({ folded: 'the so-called cat', needle: 'so', },); // []
+ const text = 'the so-called cat';
+ const starts = apartStartsOf({ haystack: text, folded: foldWithOffsets({ text, },), needle: 'so', },); // []
  ```
  */
 function apartStartsOf(
   {
+    haystack,
     folded,
     needle,
   }: {
-    readonly folded: string;
+    readonly haystack: string;
+    readonly folded: OffsetFoldedText;
     readonly needle: string;
   },
 ): readonly number[] {
-  return wordStarts({
-    text: folded,
+  /**
+   The stands at the boundaries of words, whether or not they are part of a longer word.
+   */
+  const starts = wordStarts({
+    text: folded.folded,
     needle,
     end: 'word',
-  },)
-    .filter(function standsApart(at,): boolean {
-      /**
-       Offset one past the last unit of the stand.
-       */
-      const end = at + needle.length;
-      /**
-       The offsets of the two units either side of each edge of the stand.
-       */
-      const edges = [
-        at - 1,
-        at,
-        end - 1,
-        end,
-      ];
-      return !edges.some(function isEdgeJoint(offset,): boolean {
-        return isJointAt({
-          text: folded,
-          at: offset,
-        },);
-      },);
+  },);
+  if (starts.length === 0)
+    return starts;
+  /**
+   The delimiters of the English's emphasis by the parse, at the offsets of the English as it was given.
+   */
+  const delimiters = emphasisDelimitersOf({ english: haystack, },);
+  /**
+   Where a stand may end inside a word made with an apostrophe after closing marks, read once for the whole English.
+   */
+  const joints = closingJointsOf({
+    folded: folded.folded,
+    originals: folded.originals,
+    closing: offsetsInFold({
+      offsets: delimiters.closing,
+      folded,
+    },),
+  },);
+  /**
+   Every delimiter of emphasis, at the offsets of the fold.
+   */
+  const emphasis = offsetsInFold({
+    offsets: delimiters.offsets,
+    folded,
+  },);
+  /**
+   The stands at the boundaries of words that are no part of a longer word.
+   */
+  const apart = starts.filter(function standsApart(at,): boolean {
+    return !cutsWord({
+      folded: folded.folded,
+      originals: folded.originals,
+      joints,
+      emphasis,
+      at,
+      end: at + needle.length,
     },);
+  },);
+  if (apart.length === 0)
+    return apart;
+  return standsOutsideAddresses({
+    stands: apart,
+    length: needle.length,
+    addresses: addressRangesOf({ text: folded.folded, },),
+  },);
 }
 
 /**
  Where a quote's words stand in an English, once, never or more than once, at
  the boundaries of words: a Latin letter or digit at the first or last
- character of the words may not have another beside it in the English, so `so`
+ character of the words may not have another beside it in the English as it is written (and, once the final edges are known,
+as a reader sees it: below), so `so`
  is not found inside `also`, and an edge of the words that is a joint of a
- longer word (a hyphen or an apostrophe between two letters, a full stop or a
- comma between two digits) is no boundary, so `so` is not found inside
+ longer word (a hyphen or an apostrophe between two letters or digits, or after
+ markup that ends in a letter or a digit; a full stop, a comma, a colon or a
+ slash between two digits) is no boundary, so `so` is not found inside
  `so-called`. Han text needs no boundary.
+
+ The span is the words and the proven apostrophe directly beside them, if any:
+ a trailing apostrophe after their last character that no earlier quotation-like
+ character of the page's prose could have opened a quotation for (`the parents’`),
+ a leading one before their first that no later one could close a quotation for
+ (`’round the`), whether or not the quote copied it (`consistency-proven-apostrophes.ts`).
+ Every other single mark the English holds just outside the words, quotation mark
+ or apostrophe, is never inside the span. When the words stand more than once
+ and there is mark evidence for a side, only the stands with a single mark
+ directly beside them on that side are kept, a proven apostrophe being one such
+ mark and no better than another; the span is widened over a proven apostrophe
+ only once the one stand is chosen. An edge of the stand that falls inside a backslash escape or a character reference the parser
+ decodes is taken to the edge of that unit and cut again as the character it shows would be (`wholeSpanOf`), before any apostrophe
+ is read. The word test is then run again on those final edges, reading the text a reader sees (`cutsShownWord`,
+ `consistency-shown-edge.ts`: a reference or an escape is its shown character, a default-ignorable character is nothing, an
+ ampersand between two word characters joins them like a hyphen), and an edge that cuts a shown word names no span (`none`);
+ the count of stands (`standsOf`) is not changed by it. The evidence is the one the caller gives, or,
+ when it gives none, what the quote handed over held directly beside its words by
+ itself.
 
  @param haystack - the English as the place holds it
 
  @param words - quote as a judge gave it, or the folded words of one
 
+ @param marks - on which sides the evidence holds, for a caller whose words hold no mark because many judges' quotes were folded into them; the quote's own marks are the evidence when absent
+
+ @param apostrophes - `proven` to take the proven apostrophes beside the words into the span, `outside` to leave the span at the words alone, as the slot of a frame is found inside a span that already holds its apostrophes
+
+ @param page - the English of the whole page the haystack belongs to and where the haystack starts in it, which the proof of an apostrophe reads; the haystack alone is the page where absent
+
  @returns That the words stand nowhere, the offsets of the one span they name
- in the English, or that they stand more than once (a stand inside a longer word
- is no stand); nowhere for a quote that shows a reader nothing
+ in the English, or that they stand more than once and no mark evidence
+ chooses one of the stands (a stand inside a longer word is no stand);
+ nowhere for a quote that shows a reader nothing
 
  @throws {@link ConsistencyInvariantError} when a found position has no offsets
  in the original, since every folded unit stands for a stretch of it
@@ -397,63 +588,103 @@ export function locateWords(
   {
     haystack,
     words,
+    marks,
+    apostrophes = 'proven',
+    page,
   }: {
     readonly haystack: string;
     readonly words: string;
+    readonly marks?: MarksBeside;
+    readonly apostrophes?: 'proven' | 'outside';
+    readonly page?: PageEnglish;
   },
 ): SpanSearch {
   /**
+   The words to look for, and the single marks the quote held directly beside them.
+   */
+  const read = readQuote({ text: words, },);
+  /**
+   The quote with the evidence the caller gave in place of the marks it held itself.
+   */
+  const quote: ReadQuote = (marks === undefined)
+    ? read
+    : {
+      ...read,
+      heldBefore: marks.before,
+      heldAfter: marks.after,
+    };
+  /**
    The words to look for.
    */
-  const needle = foldedWordsOf({ text: words, },);
+  const { needle, } = quote;
   if (needle === '')
     return { kind: 'none', };
   /**
    The English in the fold with its offsets.
    */
-  const {
-    folded,
-    starts,
-    ends,
-  } = foldWithOffsets({ text: haystack, },);
+  const folded = foldWithOffsets({ text: haystack, },);
   /**
    Where the words stand in the folded English, at word boundaries and at no joint of a longer word, overlaps included.
    */
   const stands = apartStartsOf({
+    haystack,
     folded,
     needle,
   },);
-  /**
-   Where the words first stand in the folded English.
-   */
-  const [at,] = stands;
-  if (at === undefined)
+  if (stands.length === 0)
     return { kind: 'none', };
-  if (stands.length > 1)
+  /**
+   The stands that remain once a single mark the quote held beside the words chooses among several.
+   */
+  const [at, ...others] = (stands.length > 1)
+    ? standsBesideMarks({
+      haystack,
+      folded,
+      stands,
+      needle,
+      quote,
+    },)
+    : stands;
+  if ((at === undefined) || (others.length > 0))
     return { kind: 'many', };
   /**
-   Offset in the English where the first folded unit's stretch starts.
+   Where the one stand lies in the English, the words alone, taken whole where an edge of the stand falls inside a backslash escape or
+   a character reference and then cut at the edge as the character that unit shows would be.
    */
-  const start = starts[at];
-  /**
-   Exclusive offset in the English where the last folded unit's stretch ends.
-   */
-  const end = ends[(at + needle.length) - 1];
-  if ((start === undefined) || (end === undefined)) {
-    throw new ConsistencyInvariantError({ invariant:
-      `a folded position ${String(at,)} of the English has no offsets in it, and every folded unit stands for a stretch of it`, },);
-  }
+  const bare = wholeSpanOf({
+    text: haystack,
+    ...standSpan({
+      folded,
+      at,
+      length: needle.length,
+    },),
+  },);
+  // The word test again on the edges the span has now, reading the text a reader sees (n156, W2): an edge that cuts a shown word
+  // names no span.
+  if (cutsShownWord({
+    text: haystack,
+    start: bare.start,
+    end: bare.end,
+    needle,
+  },))
+    return { kind: 'none', };
   return {
     kind: 'once',
-    start,
-    end,
+    ...((apostrophes === 'proven')
+      ? withProvenApostrophes({
+        haystack,
+        ...bare,
+        ...((page === undefined) ? {} : { page, }),
+      },)
+      : bare),
   };
 }
 
 /**
  How many times a quote's words stand in an English, at word boundaries and at
  no joint of a longer word, overlaps included, read in the same fold as
- {@link locateWords}.
+ {@link locateWords}. It counts every stand, whatever single marks stand beside
+ it, and so does not choose among them as {@link locateWords} does.
 
  @param haystack - the English as the place holds it
 
@@ -476,8 +707,8 @@ export function standsOf(
   },
 ): number {
   return apartStartsOf({
-    folded: foldWithOffsets({ text: haystack, },)
-      .folded,
+    haystack,
+    folded: foldWithOffsets({ text: haystack, },),
     needle: foldedWordsOf({ text: words, },),
   },)
     .length;

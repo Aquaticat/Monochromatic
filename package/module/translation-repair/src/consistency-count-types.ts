@@ -54,7 +54,9 @@ export type ConsistencyRendering =
 
     /**
      The words the place's English holds where the majority's quotes stand,
-     without the punctuation that closes them, never a judge's string.
+     without the punctuation that closes them, never a judge's string. A proven
+     apostrophe directly beside the words (`consistency-proven-apostrophes.ts`)
+     belongs to its word, so the quote starts or ends with it.
      */
     readonly quote: string;
 
@@ -67,6 +69,37 @@ export type ConsistencyRendering =
      Offset in the English where the quote starts.
      */
     readonly start: number;
+
+    /**
+     The single mark the English holds directly before the span, as the
+     English writes it; absent when no single mark stands there or when the mark
+     is a proven apostrophe, which the span covers. The span covers no other
+     mark, so a replacement leaves it on the page, and the splice
+     (`consistency-splice.ts`) compares it between two places.
+     */
+    readonly markBefore?: string;
+
+    /**
+     The single mark the English holds directly after the span, as the English
+     writes it; absent when no single mark stands there or when the mark is a
+     proven apostrophe, which the span covers.
+     */
+    readonly markAfter?: string;
+
+    /**
+     The single mark the English holds past a run of markup or opening characters before the span, as the English writes
+     it (`'*5 cats`: the `'` before the `*`); absent when no mark stands there, when the mark stands directly before the
+     span (`markBefore` names it), or when a proven apostrophe is the span's own. It is read from the English the counter
+     holds and is NOT recorded: a generation 17 record stores the marks directly beside a span alone, so a reader of the
+     record holds no such mark, and the planner reads it only in the pass that counted it.
+     */
+    readonly markPastBefore?: string;
+
+    /**
+     The single mark the English holds past a run of markup or closing characters after the span, as the English writes it
+     (`*kittens*’`: the `’` after the `*`); absent as `markPastBefore` is. Not recorded either.
+     */
+    readonly markPastAfter?: string;
 
     /**
      For a frame: the slot words the English holds where the majority's slots

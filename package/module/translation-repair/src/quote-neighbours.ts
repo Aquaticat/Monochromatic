@@ -1,6 +1,12 @@
-import { isAsciiDigit, } from './ascii-letters.ts';
+import {
+  isAsciiDigit,
+  isAsciiDigits,
+} from './ascii-letters.ts';
 import { isCasedLetter, } from './cased-letters.ts';
-import { codePointBefore, } from './code-points.ts';
+import {
+  codePointAt,
+  codePointBefore,
+} from './code-points.ts';
 
 //region Quote neighbours
 // WHAT STANDS BESIDE A STRAIGHT QUOTE, read by whole code point: whether a
@@ -194,6 +200,270 @@ const SPAN_CLOSERS: ReadonlySet<string> = new Set([
  */
 export function closesSpan({ character, }: { readonly character: string; },): boolean {
   return SPAN_CLOSERS.has(character,);
+}
+
+// A LEADING ELISION is a straight mark that stands for the letters a word dropped at its start (`'tis`, `'em`, `rock 'n' roll`,
+// `'99`, `'90s`). The `'n'` counts only with a word directly before and after it, each across one space (`rock 'n' roll`, `fish 'n'
+// chips`), so `The letters 'a', 'n' and 'e'` and `He said 'n'` pair as quotations; `the letter 'n' is silent` reads as the unit
+// all the same, an accepted limit, as no test of the neighbours tells it from `rock 'n' roll`. Its curly form is the closing single mark, the apostrophe, never the opening single mark, WHEN NO LATER STRAIGHT
+// MARK CLOSES IT as a quotation: an elision written as an opening mark is a wrong mark in the shipped page (`‘tis fine`). A
+// mark that a later one does close begins a quotation (`'Tis the season,' she said`, `'Round things are best'`), and the pair
+// curls as a quotation, so the closing mark does not stay straight on a curly page. The `'n'` of `rock 'n' roll` is two
+// apostrophes that never pair. THE LIST IS CLOSED and matched as a whole word, case
+// folded, so a word that only begins like one (`'tisane'`, `'emperor'`, `'rounders'`, `'1990s'`) is not an elision and still
+// pairs as a quotation.
+
+/**
+ The words, lower case, that a straight mark before them stands in for dropped letters of: it is, it was, until, them, because
+ and around.
+ */
+const ELISION_WORDS: ReadonlySet<string> = new Set([
+  'tis',
+  'twas',
+  'til',
+  'em',
+  'cause',
+  'round',
+],);
+
+/**
+ The length of the longest word of `ELISION_WORDS`, so a word read after the mark is cut one unit past it.
+ */
+const LONGEST_ELISION = 5;
+
+/**
+ The length of a decade written as an elision: two digits and an `s`.
+ */
+const DECADE_LENGTH = 3;
+
+/**
+ The length of a year written as an elision: two digits and nothing after them.
+ */
+const YEAR_LENGTH = 2;
+
+/**
+ Where the space after the `'n'` stands, counted from the first mark: the letter, the second mark, then the space.
+ */
+const SPACE_AFTER_UNIT = 3;
+
+/**
+ Where the word after the `'n'` starts, counted from the first mark: one past the space after the unit.
+ */
+const WORD_AFTER_UNIT = 4;
+
+/**
+ Whether a straight mark opens the `'n'` of `rock 'n' roll`: the letter, a second straight mark, a word directly before the
+ first mark and a word directly after the second, each across one space. A quoted letter between two words (`the letter 'n'
+ is silent`) reads the same, an accepted limit, since no test of the neighbours tells the two apart.
+
+ @param text - text being read
+
+ @param at - offset of the first straight mark, whose letter follows it
+
+ @returns Whether a word stands before the first mark and after the second, each across one space
+
+ @example
+ ```ts
+ const unit = standsBetweenWords({ text: "Rock 'n' roll.", at: 5, },); // true
+ ```
+ */
+function standsBetweenWords(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): boolean {
+  if (text.charAt(at + 2,) !== '\'')
+    return false;
+  if (text.charAt(at - 1,) !== ' ')
+    return false;
+  if (text.charAt(at + SPACE_AFTER_UNIT,) !== ' ')
+    return false;
+  /**
+   Whether a word stands before the space that precedes the first mark.
+   */
+  const wordBefore = bindsWord({ character: sequenceBefore({
+    text,
+    at: at - 1,
+  },), },);
+
+  /**
+   Whether a word stands after the space that follows the second mark.
+   */
+  const wordAfter = bindsWord({ character: codePointAt({
+    text,
+    at: at + WORD_AFTER_UNIT,
+  },), },);
+  return wordBefore && wordAfter;
+}
+
+/**
+ Whether the straight mark at an offset is a leading elision by the word after it: one of the closed list, the `n` of `'n'`
+ between two words (`standsBetweenWords`), a year of two digits (`'99`) or a decade (two digits and an `s`). Only what
+ follows the mark is asked, and for the `'n'` the word before it; the caller asks what else stands before it.
+
+ @param text - text being read
+
+ @param at - offset of the straight mark
+
+ @returns Whether the whole word after the mark is an elision
+
+ @example
+ ```ts
+ const elides = isLeadingElision({ text: "It was 'tis fine.", at: 7, },); // true
+ ```
+ */
+export function isLeadingElision(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): boolean {
+  /**
+   Offset where the word after the mark starts.
+   */
+  const wordStart = at + 1;
+  /**
+   How many units of the word after the mark are read, whole code points, cut one unit past the longest elision.
+   */
+  const reading = { length: 0, };
+  while (reading.length <= LONGEST_ELISION) {
+    /**
+     The code point at the end of the word read so far.
+     */
+    const character = codePointAt({
+      text,
+      at: wordStart + reading.length,
+    },);
+    if (!bindsWord({ character, },))
+      break;
+    reading.length += character.length;
+  }
+  /**
+   The word after the mark with its case folded.
+   */
+  const folded = text.slice(
+    wordStart,
+    wordStart + reading.length,
+  )
+    .toLowerCase();
+  if (ELISION_WORDS.has(folded,))
+    return true;
+  if (folded === 'n')
+    return standsBetweenWords({
+      text,
+      at,
+    },);
+  // A year of two digits (`'99`) and a decade (`'90s`) are both written with the mark for the dropped century.
+  if (folded.length === YEAR_LENGTH)
+    return isAsciiDigits({ text: folded, },);
+  return (folded.length === DECADE_LENGTH)
+    && isAsciiDigits({
+      text: folded.slice(
+        0,
+        DECADE_LENGTH - 1,
+      ),
+    },)
+    && folded.endsWith('s',);
+}
+
+/**
+ Whether the straight mark at an offset opens the `'n'` of `rock 'n' roll`: a leading elision whose letter is followed by a
+ second straight mark, with a word before the first and after the second (`standsBetweenWords`), so the two marks both stand
+ for dropped letters and are never the marks of one quotation.
+
+ @param text - text being read
+
+ @param at - offset of the straight mark
+
+ @returns Whether the word after the mark is `n` and a straight mark follows it
+
+ @example
+ ```ts
+ const pair = isElisionPair({ text: "Rock 'n' roll.", at: 5, },); // true
+ ```
+ */
+export function isElisionPair(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): boolean {
+  /**
+   The letter after the mark, in lower case.
+   */
+  const letter = text.charAt(at + 1,)
+    .toLowerCase();
+  return (letter === 'n') && isLeadingElision({
+    text,
+    at,
+  },);
+}
+
+/**
+ Whether the straight mark at an offset is the second mark of the `'n'` of `rock 'n' roll`: it follows an `n` that a straight mark
+ opens (`isElisionPair`) and is the straight mark that opening one looks for. The unit is one: neither of its marks opens or
+ closes a quotation.
+
+ @param text - text being read
+
+ @param at - offset of the straight mark
+
+ @returns Whether the mark closes the unit `'n'`
+
+ @example
+ ```ts
+ const end = isElisionPairEnd({ text: "Rock 'n' roll.", at: 7, },); // true
+ ```
+ */
+export function isElisionPairEnd(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): boolean {
+  return (at >= 2)
+    && (text.charAt(at,) === '\'')
+    && isElisionPair({
+      text,
+      at: at - 2,
+    },)
+    && (text.charAt(at - 2,) === '\'');
+}
+
+/**
+ The punctuation after which a straight single mark with no word after it is the closing mark of a clause or an apostrophe and
+ nothing else: the stops and pauses, the dashes, a closing double quotation mark or guillemet and a closing brace.
+ */
+const PUNCTUATION_BEFORE_CLOSING: ReadonlySet<string> = new Set(Array.from(',.;:!?…-–—”’»›"}',),);
+
+/**
+ Whether the character before a straight single mark with no word after it is punctuation that a closing single mark follows: a
+ stop, a pause, a dash or a closing quotation mark.
+
+ @param character - the character before the mark, empty at a text boundary
+
+ @returns Whether it is such punctuation
+
+ @example
+ ```ts
+ const follows = precedesClosingMark({ character: ',', },); // true
+ ```
+ */
+export function precedesClosingMark({ character, }: { readonly character: string; },): boolean {
+  return PUNCTUATION_BEFORE_CLOSING.has(character,);
 }
 
 //endregion Quote neighbours

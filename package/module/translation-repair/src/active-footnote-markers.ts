@@ -19,6 +19,7 @@ import { maskInvisibleLines, } from './mask-invisible-lines.ts';
 import {
   parseMdxBody,
   requireMdxRefusal,
+  withMdxExhaustionRefused,
 } from './parse-mdx.ts';
 import { maskHtmlComments, } from './mask-html-comments.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
@@ -166,6 +167,8 @@ function placedReferences(
  positioned text node, or the raw behind the text nodes of an unpositioned run (ledger B123). The text
  of an autolink literal is its URL and is never read.
 
+ @internal
+
  @param text - whole document or structural slice with canonical offsets
 
  @returns Active references and definition openers in source order
@@ -200,7 +203,10 @@ export function activeFootnoteMarkers({ text, }: { readonly text: string; },): r
     /**
      A whole-document syntax failure cannot authorize raw-text marker edits.
      */
-    const root = parseMdxBody({ body: parsedText, },);
+    const root = withMdxExhaustionRefused({
+      parse: parseMdxBody,
+      input: { body: parsedText, },
+    },);
     /**
      References of each unpositioned run, keyed by the run's first member,
      where the walk emits them in source order.

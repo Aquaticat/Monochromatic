@@ -281,8 +281,15 @@ import type { SliceReplacement, } from './splice-slices.ts';
  identity context differs, so its key differs. An entry that records no death
  asks the question it asked before and keeps its key, so the version stays
  where it is and the answers already bought for those entries stay usable.
+
+ Version 16 is a TYPOGRAPHY change: the prose mask the typography fold (`straightenProseQuotes`, which `collapseKey` reads) and
+ the guillemet floor (`translate-guillemets.ts`) share is read from the page parse now, so a quote or a guillemet in a link
+ destination or title, an address, code, math, an expression or a tag is no prose, and a text the grammar refuses has no prose
+ at all. A slate collapsed or a candidate refused under 15 may be one the new reading keeps apart or accepts. The check that
+ would let the change ride inside 15 could not be made with a control (see version 35 of the repair slice key), so the number
+ moves.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 15;
+export const TRANSLATE_SLICE_CACHE_VERSION = 16;
 
 /**
  Models the translate lane seats.

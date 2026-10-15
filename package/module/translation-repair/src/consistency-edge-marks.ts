@@ -1,34 +1,61 @@
-import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
+import { edgeUnitsOf, } from './consistency-edge-units.ts';
+import { isSingleMark, } from './consistency-loose-marks.ts';
 import { isClosing, } from './consistency-quote-bounds.ts';
-import { continuesLatinWord, } from './latin-letters.ts';
+import { continuesLatinWordOrCompatibilityForm, } from './latin-letters.ts';
 
 //region Consistency edge marks
 // WHICH CHARACTERS AT THE TWO EDGES OF A QUOTE ARE NOT ITS WORDS. A judge copies
 // the words of a place's English with the sentence punctuation that closed them
 // (`consistency-quote-bounds.ts`), and also with the quotation marks or the
 // brackets the English happened to hold around them: `"So she was kind".` and
-// `So she was kind` name one span. A mark is an edge mark only where the words
-// it encloses do not need it: a quotation mark or a bracket that pairs with one
-// INSIDE the quote belongs to the words (`"So she was kind," she said`, `So she
-// was (kind)`), since moving the words without the mark would leave the other one
-// stranded, and no floor reads quotation marks.
+// `So she was kind` name one span. A double quotation mark or a bracket is an
+// edge mark only where the words it encloses do not need it: one that pairs with
+// one INSIDE the quote belongs to the words (`"So she was kind," she said`, `So
+// she was (kind)`), since moving the words without the mark would leave the other
+// one stranded, and no floor reads quotation marks. The same holds for the end of
+// the quote: a backslash escape and a character reference the parser decodes are
+// each one unit with the character they show (`consistency-edge-units.ts`), and
+// the unit is kept or taken off exactly as that character would be (`cats\.` goes
+// like `cats.`, `dogs&#39;` like `dogs'`, `cats &amp;` stays like `cats &`), so an
+// edge never falls between a backslash and its character or inside a reference.
 //
 // THE FOLD HAS TURNED CURLY QUOTES, SINGLE AND DOUBLE, AND THE CORNER BRACKETS
 // INTO THE STRAIGHT ONES (`quote-normalize.ts`), so only the straight marks and
-// the ASCII brackets are met here.
+// the ASCII brackets are met here, and the modifier letter apostrophe (U+02BC),
+// which the fold leaves as it is.
 //
-// AN APOSTROPHE AT A WORD EDGE IS PART OF THE WORD (`'Tis`, `goin'`, `the cats'`).
-// A single quotation mark that touches a letter on one side and is neither
-// closed nor opened by a mark across the quote stays in the span; one that
-// touches no letter is read by counting as before. A pair that encloses the
-// whole quote is still trimmed, with an apostrophe inside it left in place
-// (`'the cats' bowl'` names `the cats' bowl`).
+// EVERY SINGLE MARK AT AN EDGE IS TAKEN OFF, whether or not it pairs with
+// anything in the quote, and no guess about what it is decides an edge. The quote
+// alone cannot say whether `'The cat naps` opens a quotation the judge copied half
+// of or `the cats'` ends a plural, and a mark that stays on the words because a
+// guess paired it with one inside (`'the cats' bowl`) is inside the span and is
+// deleted by a replacement. The words a quote names therefore never carry a single
+// mark at an edge, two judges who copied the same words with and without it name
+// the same words. The mark is not lost: `edgeFreeRangeOf` says where the words
+// stand, so the locator (`consistency-fold.ts`) can read the mark that stood
+// directly beside them. A mark that is a proven apostrophe
+// (`consistency-proven-apostrophes.ts`) is taken into the span with its word, and
+// every other mark is left where the English holds it, outside the span and
+// recorded beside it; the splice (`consistency-splice.ts`) refuses to move words
+// between places that differ in a mark beside them, in a proven apostrophe at an
+// edge or in a quotation mark inside them.
 //
-// A FIXED POINT: edges are taken off one character at a time, the words read
-// again after each, until neither edge moves. A mark exposed by taking another
-// off (`("cat").`) goes too, and every decision reads the words that are left and
-// nothing outside them, so the words of a quote that has been read once are
-// read again unchanged.
+// ONE READING OF THE WHOLE QUOTE, THEN ONE STEP PER CHARACTER TAKEN OFF. Which
+// bracket closes which, and how many double marks and brackets of each kind stand
+// before each position are worked out once; every question an edge asks after
+// that (does this mark pair inside what is left, is what is left balanced) is
+// answered from those tables without reading the words again, so the time taken
+// grows with the length of the quote and not with its square.
+//
+// A DOUBLE MARK BETWEEN TWO WORD CHARACTERS PAIRS WITH NOTHING, and a word character is the
+// neighbour test of the consistency pass (`continuesLatinWordOrCompatibilityForm`,
+// `latin-letters.ts`: a Latin letter, an ASCII digit or a compatibility character of those, so
+// `𝓠"𝓾` is read as inside a word like `s"u`); the rest of the package tests a neighbour with
+// `continuesLatinWord`, as written.
+//
+// A FIXED POINT: edges are taken off one character at a time until neither edge
+// moves. A mark exposed by taking another off (`("cat").`) goes too, and the
+// words of a quote that has been read once are read again unchanged.
 
 /**
  A bracket pair: an opening bracket and its closing bracket.
@@ -69,540 +96,538 @@ const BRACKET_PAIRS: readonly BracketPair[] = [
 ];
 
 /**
- The straight quotation marks, which open and close with one character.
+ The straight double quotation mark, which opens and closes with one character and pairs only by counting.
  */
-const QUOTE_MARKS = '"\'';
+const DOUBLE_MARK = '"';
 
 /**
- Whether a character is a straight quotation mark.
-
- @param point - one whole character
-
- @returns Whether it is a double or a single straight quotation mark
-
- @example
- ```ts
- const quote = isQuoteMark({ point: '"', },); // true
- ```
+ Position value of a bracket that pairs with no other.
  */
-function isQuoteMark({ point, }: { readonly point: string; },): boolean {
-  return QUOTE_MARKS.includes(point,);
-}
+const NO_PARTNER = -1;
 
 /**
- The closing bracket of an opening one, as a list of zero or one.
-
- @param point - one whole character
-
- @returns The closing bracket, none when the character opens no bracket pair
-
- @example
- ```ts
- const [closer,] = closerOf({ point: '(', },); // ')'
- ```
- */
-function closerOf({ point, }: { readonly point: string; },): readonly string[] {
-  return BRACKET_PAIRS
-    .filter(function opensIt({ opener, },): boolean {
-      return opener === point;
-    },)
-    .map(function closerOfPair({ closer, },): string {
-      return closer;
-    },);
-}
-
-/**
- The opening bracket of a closing one, as a list of zero or one.
-
- @param point - one whole character
-
- @returns The opening bracket, none when the character closes no bracket pair
-
- @example
- ```ts
- const [opener,] = openerOf({ point: ')', },); // '('
- ```
- */
-function openerOf({ point, }: { readonly point: string; },): readonly string[] {
-  return BRACKET_PAIRS
-    .filter(function closesIt({ closer, },): boolean {
-      return closer === point;
-    },)
-    .map(function openerOfPair({ opener, },): string {
-      return opener;
-    },);
-}
-
-/**
- The straight single quotation mark, which is also the apostrophe.
- */
-const APOSTROPHE = '\'';
-
-/**
- What a quotation mark is among the words.
-
- `interior` stands between two word characters (the apostrophe of `wasn't`).
- `matched` is a single quotation mark that opens before a letter and is closed
- by a mark after one, or closes after a letter and has an opener before it.
- `apostrophe` is a single quotation mark that touches a letter on one side and
- is neither closed nor opened by a matching mark across the stretch read (the
- `'` of `'Tis`, `goin'` and `the cats'`), so it is part of the word it touches.
- `bare` touches no letter, or is a double quotation mark, and can only pair by
- counting. `absent` marks a position that holds no mark of the kind read.
- */
-type MarkRole = 'absent' | 'interior' | 'apostrophe' | 'matched' | 'bare';
-
-/**
- What each quotation mark of one kind in a stretch of the words is: a mark
- between two word characters, a single mark that opens or closes a pair, a
- single mark that is an apostrophe, or a mark that only counts. The roles are
- listed by position among the words, `absent` at every position that holds no
- such mark.
+ How many characters of one kind stand before each position of the words: the
+ count at a position covers the positions before it, so the count between two
+ positions is one subtraction.
 
  @param points - the words, one whole character each
 
- @param from - first position read
+ @param counts - whether the character at a position is of the kind
 
- @param to - exclusive position the reading stops at
-
- @param mark - the quotation mark read
-
- @returns The roles, indexed by position among the words
+ @returns The counts, one longer than the words
 
  @example
  ```ts
- const roles = markRolesIn({ points: Array.from('the cats\'',), from: 0, to: 9, mark: '\'', },); // ['absent', ..., 'apostrophe']
+ const before = countsBefore({ points: Array.from('(a)(',), counts: ({ point, },) => point === '(', },); // [0, 1, 1, 1, 2]
  ```
  */
-function markRolesIn(
+function countsBefore(
   {
     points,
-    from,
-    to,
-    mark,
+    counts,
   }: {
     readonly points: readonly string[];
-    readonly from: number;
-    readonly to: number;
-    readonly mark: string;
+    readonly counts: ({
+      point,
+      at,
+    }: {
+      readonly point: string;
+      readonly at: number;
+    },) => boolean;
   },
-): readonly MarkRole[] {
-  // Both are built by this one pass, in position order, and read by no one before it ends.
+): readonly number[] {
   /**
-   The role of each mark met, indexed by position, mutated only inside this function.
+   The counts so far, mutated only inside this function.
    */
-  const roles = Array.from(
-    { length: to, },
-    function absentRole(): MarkRole {
-      return 'absent';
-    },
-  );
+  const before = [0,];
+  for (const [at, point,] of points.entries()) {
+    before.push((before[at] ?? 0) + (counts({
+      point,
+      at,
+    },)
+      ? 1
+      : 0),);
+  }
+  return before;
+}
+
+/**
+ The bracket each bracket of one pair closes or is closed by, read in order with
+ the openers on a stack.
+
+ @param points - the words, one whole character each
+
+ @param pair - the bracket pair read
+
+ @returns The position of each bracket's partner, `-1` where the character is
+ no bracket of the pair or pairs with none
+
+ @example
+ ```ts
+ const partners = bracketPartnersOf({ points: Array.from('(a)',), pair: { opener: '(', closer: ')', }, },); // [2, -1, 0]
+ ```
+ */
+function bracketPartnersOf(
+  {
+    points,
+    pair,
+  }: {
+    readonly points: readonly string[];
+    readonly pair: BracketPair;
+  },
+): readonly number[] {
+  /**
+   The partner of each position, mutated only inside this function.
+   */
+  const partners = points.map(function noPartner(): number {
+    return NO_PARTNER;
+  },);
   /**
    Positions of the openers not yet closed, innermost last, mutated only inside this function.
    */
   const open: number[] = [];
-  for (
-    let at = from;
-    at < to;
-    at += 1
-  ) {
-    if (points[at] !== mark)
-      continue;
-    /**
-     Whether a word character stands before the mark.
-     */
-    const wordBefore = continuesLatinWord({ character: points[at - 1] ?? '', },);
-    /**
-     Whether a word character stands after it.
-     */
-    const wordAfter = continuesLatinWord({ character: points[at + 1] ?? '', },);
-    if (wordBefore && wordAfter) {
-      roles[at] = 'interior';
-    }
-    else if ((mark !== APOSTROPHE) || ((!wordBefore) && (!wordAfter))) {
-      roles[at] = 'bare';
-    }
-    else if (wordAfter) {
-      // An opener is an apostrophe until a closer after it takes it.
-      roles[at] = 'apostrophe';
+  for (const [at, point,] of points.entries()) {
+    if (point === pair.opener) {
       open.push(at,);
     }
-    else {
+    else if (point === pair.closer) {
       /**
-       The innermost opener still open, none when nothing before the mark opened.
+       The innermost opener still waiting, none when the closer closes nothing.
        */
       const opener = open.pop();
-      if (opener === undefined) {
-        roles[at] = 'apostrophe';
-      }
-      else {
-        roles[opener] = 'matched';
-        roles[at] = 'matched';
+      if (opener !== undefined) {
+        partners[opener] = at;
+        partners[at] = opener;
       }
     }
   }
-  return roles;
+  return partners;
 }
 
 /**
- How many quotation marks of one kind a stretch of the words holds that can
- pair: those not standing between two word characters, such as the apostrophe
- of `wasn't`, and, for the single mark, not an apostrophe that touches a letter
- and has no matching mark across the stretch.
+ What one bracket pair's brackets are among the words.
+ */
+type BracketTable = {
+  /**
+   The pair.
+   */
+  readonly pair: BracketPair;
+
+  /**
+   The position of each bracket's partner, `-1` where there is none.
+   */
+  readonly partners: readonly number[];
+
+  /**
+   How many openers of the pair stand before each position.
+   */
+  readonly openersBefore: readonly number[];
+
+  /**
+   How many closers of the pair stand before each position.
+   */
+  readonly closersBefore: readonly number[];
+};
+
+/**
+ Everything an edge asks about the words, worked out once.
+ */
+type EdgeTables = {
+  /**
+   The words, one whole character each.
+   */
+  readonly points: readonly string[];
+
+  /**
+   How many double quotation marks that can pair (those not between two word characters) stand before each position.
+   */
+  readonly doublesBefore: readonly number[];
+
+  /**
+   One table per bracket pair.
+   */
+  readonly brackets: readonly BracketTable[];
+};
+
+/**
+ Reads the words once for everything their edges will ask.
 
  @param points - the words, one whole character each
 
- @param from - first position read
-
- @param to - exclusive position the reading stops at
-
- @param mark - the quotation mark counted
-
- @returns The count
+ @returns The tables
 
  @example
  ```ts
- const marks = pairableMarksIn({ points: Array.from('"cat" naps',), from: 0, to: 10, mark: '"', },); // 2
+ const tables = edgeTablesOf({ points: Array.from('"cat"',), },);
  ```
  */
-function pairableMarksIn(
-  {
+function edgeTablesOf({ points, }: { readonly points: readonly string[]; },): EdgeTables {
+  return {
     points,
+    doublesBefore: countsBefore({
+      points,
+      counts: function pairsByCounting({
+        point,
+        at,
+      },): boolean {
+        return (point === DOUBLE_MARK)
+          && (!(continuesLatinWordOrCompatibilityForm({ character: points[at - 1] ?? '', },)
+            && continuesLatinWordOrCompatibilityForm({ character: points[at + 1] ?? '', },)));
+      },
+    },),
+    brackets: BRACKET_PAIRS.map(function tableOf(pair,): BracketTable {
+      return {
+        pair,
+        partners: bracketPartnersOf({
+          points,
+          pair,
+        },),
+        openersBefore: countsBefore({
+          points,
+          counts: function isOpener({ point, },): boolean {
+            return point === pair.opener;
+          },
+        },),
+        closersBefore: countsBefore({
+          points,
+          counts: function isCloser({ point, },): boolean {
+            return point === pair.closer;
+          },
+        },),
+      };
+    },),
+  };
+}
+
+/**
+ How many counted characters stand in a stretch of the words.
+
+ @param before - the counts before each position
+
+ @param from - first position of the stretch
+
+ @param to - exclusive position the stretch stops at
+
+ @returns The count, none for an empty stretch
+
+ @example
+ ```ts
+ const inside = countBetween({ before: [0, 1, 1, 2,], from: 1, to: 3, },); // 1
+ ```
+ */
+function countBetween(
+  {
+    before,
     from,
     to,
-    mark,
   }: {
-    readonly points: readonly string[];
+    readonly before: readonly number[];
     readonly from: number;
     readonly to: number;
-    readonly mark: string;
   },
 ): number {
-  return markRolesIn({
-    points,
-    from,
-    to,
-    mark,
-  },)
-    .filter(function isPairable(role,): boolean {
-      return (role === 'matched') || (role === 'bare');
-    },)
-    .length;
+  return (to <= from) ? 0 : ((before[to] ?? 0) - (before[from] ?? 0));
 }
 
 /**
- What the quotation mark at one position of the words is, read over all of
- them: an edge mark that touches a letter and pairs with no mark across the
- words is an apostrophe and part of the word.
-
- @param points - the words, one whole character each
-
- @param at - position of the mark, which holds a quotation mark
-
- @returns The role of the mark
-
- @throws {@link ConsistencyInvariantError} when the position holds no quotation mark
-
- @example
- ```ts
- const role = markRoleAt({ points: Array.from('\'Tis',), at: 0, },); // 'apostrophe'
- ```
+ The stretch of the words that is left: what an edge question is asked about.
  */
-function markRoleAt(
-  {
-    points,
-    at,
-  }: {
-    readonly points: readonly string[];
-    readonly at: number;
-  },
-): MarkRole {
+type Stretch = {
   /**
-   The mark at the position.
+   The tables of all the words.
    */
-  const mark = points[at] ?? '';
+  readonly tables: EdgeTables;
+
   /**
-   The role of every mark of that kind among all the words, by position.
+   First position left.
    */
-  const roles = markRolesIn({
-    points,
-    from: 0,
-    to: points.length,
-    mark,
-  },);
+  readonly from: number;
+
   /**
-   The role of the mark asked about.
+   Exclusive position what is left stops at.
    */
-  const role = roles[at] ?? 'absent';
-  if (role === 'absent') {
-    throw new ConsistencyInvariantError({ invariant:
-      `position ${String(at,)} of the words holds no quotation mark of the kind read, and the role of a quotation mark is asked only for a position that holds one`, },);
-  }
-  return role;
-}
+  readonly to: number;
+};
 
 /**
- Whether a quotation mark at an edge belongs to the words: it pairs with a mark
- across them, or it is an apostrophe that touches a letter.
+ Whether the first and last characters left are one mark and its pair, around
+ words that hold that mark in order: the mark encloses all of them.
 
- @param role - what the mark is among all the words
+ @param tables - the tables of all the words
 
- @returns Whether the edge keeps it
+ @param from - first position left
 
- @example
- ```ts
- const keeps = isWordMark({ role: 'apostrophe', },); // true
- ```
- */
-function isWordMark({ role, }: { readonly role: MarkRole; },): boolean {
-  return (role === 'apostrophe') || (role === 'matched');
-}
-
-/**
- Whether a stretch of the words holds the brackets of one pair in order and
- balanced: none closes before it opens, and as many close as open.
-
- @param points - the words, one whole character each
-
- @param from - first position read
-
- @param to - exclusive position the reading stops at
-
- @param opener - the pair's opening bracket
-
- @param closer - the pair's closing bracket
-
- @returns Whether the stretch is balanced for the pair
-
- @example
- ```ts
- const balanced = isBalanced({ points: Array.from('a (b) c',), from: 0, to: 7, opener: '(', closer: ')', },); // true
- ```
- */
-function isBalanced(
-  {
-    points,
-    from,
-    to,
-    opener,
-    closer,
-  }: {
-    readonly points: readonly string[];
-    readonly from: number;
-    readonly to: number;
-    readonly opener: string;
-    readonly closer: string;
-  },
-): boolean {
-  /**
-   Brackets opened and not yet closed, mutated only inside this function.
-   */
-  const depth = { open: 0, };
-  for (const point of points.slice(
-    from,
-    to,
-  )) {
-    if (point === opener)
-      depth.open += 1;
-    else if (point === closer) {
-      if (depth.open === 0)
-        return false;
-      depth.open -= 1;
-    }
-  }
-  return depth.open === 0;
-}
-
-/**
- Whether the first and last characters of the words are one mark and its pair,
- around words that hold that mark in order: the mark encloses all of them.
-
- @param points - the words, one whole character each
+ @param to - exclusive position what is left stops at
 
  @returns Whether the first and last characters enclose what is between them
 
  @example
  ```ts
- const encloses = enclosesAll({ points: Array.from('"cat"',), },); // true
+ const encloses = enclosesAll({ tables: edgeTablesOf({ points: Array.from('"cat"',), },), from: 0, to: 5, },); // true
  ```
  */
-function enclosesAll({ points, }: { readonly points: readonly string[]; },): boolean {
-  if (points.length < 2)
+function enclosesAll(
+  {
+    tables,
+    from,
+    to,
+  }: Stretch,
+): boolean {
+  if ((to - from) < 2)
     return false;
   /**
-   The first character.
+   The first character left.
    */
-  const first = points[0] ?? '';
+  const first = tables.points[from] ?? '';
   /**
-   The last character.
+   Position of the last character left.
    */
-  const last = points.at(-1,) ?? '';
-  if (isQuoteMark({ point: first, },)) {
-    return (first === last) && ((pairableMarksIn({
-      points,
-      from: 1,
-      to: points.length - 1,
-      mark: first,
+  const lastAt = to - 1;
+  if (first === DOUBLE_MARK) {
+    return (tables.points[lastAt] === DOUBLE_MARK) && ((countBetween({
+      before: tables.doublesBefore,
+      from: from + 1,
+      to: lastAt,
     },) % 2) === 0);
   }
+  return tables.brackets
+    .some(function enclosesWith({
+      pair,
+      partners,
+    },): boolean {
+      return (first === pair.opener) && (partners[from] === lastAt);
+    },);
+}
+
+/**
+ Whether the first character left is not one of the words.
+
+ @param tables - the tables of all the words
+
+ @param from - first position left
+
+ @param to - exclusive position what is left stops at
+
+ @returns Whether to take it off: closing punctuation, space or an invisible
+ character; a double quotation mark that pairs with nothing in the rest by
+ counting; any single mark; an opening bracket with no closing one in the rest;
+ or a closing bracket, which can close nothing before it
+
+ @example
+ ```ts
+ const off = dropsAtStart({ tables: edgeTablesOf({ points: Array.from('"cat naps',), },), from: 0, to: 9, },); // true
+ ```
+ */
+function dropsAtStart(
+  {
+    tables,
+    from,
+    to,
+  }: Stretch,
+): boolean {
   /**
-   The closing bracket of the first character, none when it opens no pair.
+   The first character left.
    */
-  const [closer,] = closerOf({ point: first, },);
-  return (closer === last) && isBalanced({
+  const point = tables.points[from] ?? '';
+  if (isClosing({ point, },))
+    return true;
+  if (point === DOUBLE_MARK) {
+    return (countBetween({
+      before: tables.doublesBefore,
+      from: from + 1,
+      to,
+    },) % 2) === 0;
+  }
+  if (isSingleMark({ character: point, },))
+    return true;
+  return tables.brackets
+    .some(function dropsBracket({
+      pair,
+      closersBefore,
+    },): boolean {
+      if (point === pair.closer)
+        return true;
+      return (point === pair.opener) && (countBetween({
+        before: closersBefore,
+        from: from + 1,
+        to,
+      },) === 0);
+    },);
+}
+
+/**
+ Whether the last character left is not one of the words.
+
+ @param tables - the tables of all the words
+
+ @param from - first position left
+
+ @param to - exclusive position what is left stops at
+
+ @returns Whether to take it off: closing punctuation, space or an invisible
+ character; a double quotation mark that pairs with nothing before it by
+ counting; any single mark; a closing bracket with no opening one before it;
+ or an opening bracket, which can open nothing after it. The tables hold what each
+ unit shows, so an escape or a reference is taken off whole or kept whole
+
+ @example
+ ```ts
+ const off = dropsAtEnd({ tables: edgeTablesOf({ points: Array.from('cat naps."',), },), from: 0, to: 10, },); // true
+ ```
+ */
+function dropsAtEnd(
+  {
+    tables,
+    from,
+    to,
+  }: Stretch,
+): boolean {
+  /**
+   Position of the last character left.
+   */
+  const lastAt = to - 1;
+  /**
+   The last character left.
+   */
+  const point = tables.points[lastAt] ?? '';
+  if (isClosing({ point, },))
+    return true;
+  if (point === DOUBLE_MARK) {
+    return (countBetween({
+      before: tables.doublesBefore,
+      from,
+      to: lastAt,
+    },) % 2) === 0;
+  }
+  if (isSingleMark({ character: point, },))
+    return true;
+  return tables.brackets
+    .some(function dropsBracket({
+      pair,
+      openersBefore,
+    },): boolean {
+      if (point === pair.opener)
+        return true;
+      return (point === pair.closer) && (countBetween({
+        before: openersBefore,
+        from,
+        to: lastAt,
+      },) === 0);
+    },);
+}
+
+/**
+ Where the words of a quote stand among its characters once the marks and
+ punctuation at its two edges are taken off, read to a fixed point.
+
+ @param points - the folded quote, one whole character each
+
+ @param originals - the characters as the judge wrote them, one for each of the points, which tell an escape from a backslash
+ before a curly mark the fold turned straight; the points themselves where absent
+
+ @returns The position of the first character that is one of the words and the
+ exclusive position after the last, equal when the quote holds none, an escape or a reference never cut in two
+
+ @example
+ ```ts
+ const { from, to, } = edgeFreeRangeOf({ points: Array.from('"cat naps".',), },); // { from: 1, to: 9 }
+ ```
+ */
+export function edgeFreeRangeOf(
+  {
     points,
-    from: 1,
-    to: points.length - 1,
-    opener: first,
-    closer,
+    originals = points,
+  }: {
+    readonly points: readonly string[];
+    readonly originals?: readonly string[];
+  },
+): {
+  readonly from: number;
+  readonly to: number;
+} {
+  /**
+   The quote one unit at a time: a backslash with the character it escapes and a reference the parser decodes are one.
+   */
+  const units = edgeUnitsOf({
+    points,
+    originals,
   },);
-}
-
-/**
- Whether the first character of the words is not one of them.
-
- @param points - the words, one whole character each
-
- @returns Whether to take it off: closing punctuation, space or an invisible
- character; a quotation mark or an opening bracket that pairs with nothing in
- the rest; or a closing bracket, which can close nothing before it
-
- @example
- ```ts
- const off = dropsAtStart({ points: Array.from('"cat naps',), },); // true
- ```
- */
-function dropsAtStart({ points, }: { readonly points: readonly string[]; },): boolean {
   /**
-   The first character.
+   Everything the edges will ask about the words, over what each unit shows.
    */
-  const point = points[0] ?? '';
-  if (isClosing({ point, },))
-    return true;
-  if (isQuoteMark({ point, },)) {
-    // A MARK THAT TOUCHES A LETTER AND PAIRS ACROSS THE WORDS, OR PAIRS WITH NOTHING, IS PART OF THEM.
+  const tables = edgeTablesOf({
+    points: units.map(function shownBy({ shown, },): string {
+      return shown;
+    },),
+  },);
+  /**
+   What is left of the words, as indexes among the units, and whether an edge moved in the last reading, mutated only inside this
+   function.
+   */
+  const left = {
+    from: 0,
+    to: units.length,
+    moved: true,
+  };
+  while (left.moved && (left.from < left.to)) {
+    // A MARK THAT ENCLOSES ALL THE WORDS GOES WITH ITS PAIR, both at once: taken
+    // one at a time, the first off would leave the other pairing with nothing
+    // inside and the pair split.
+    if (enclosesAll({
+      tables,
+      from: left.from,
+      to: left.to,
+    },)) {
+      left.from += 1;
+      left.to -= 1;
+      continue;
+    }
     /**
-     What the first mark is among all the words.
+     Whether the start is taken off in this reading.
      */
-    const role = markRoleAt({
-      points,
-      at: 0,
+    const startOff = dropsAtStart({
+      tables,
+      from: left.from,
+      to: left.to,
     },);
-    if (isWordMark({ role, },))
-      return false;
-    return (pairableMarksIn({
-      points,
-      from: 1,
-      to: points.length,
-      mark: point,
-    },) % 2) === 0;
-  }
-  /**
-   The closing bracket of the first character, none when it opens no pair.
-   */
-  const [closer,] = closerOf({ point, },);
-  if (closer !== undefined) {
-    return !points.slice(1,)
-      .includes(closer,);
-  }
-  /**
-   The opening bracket of the first character, none when it closes no pair.
-   */
-  const openers = openerOf({ point, },);
-  return openers.length > 0;
-}
-
-/**
- Whether the last character of the words is not one of them.
-
- @param points - the words, one whole character each
-
- @returns Whether to take it off: closing punctuation, space or an invisible
- character; a quotation mark or a closing bracket that pairs with nothing before
- it; or an opening bracket, which can open nothing after it
-
- @example
- ```ts
- const off = dropsAtEnd({ points: Array.from('cat naps."',), },); // true
- ```
- */
-function dropsAtEnd({ points, }: { readonly points: readonly string[]; },): boolean {
-  /**
-   The last character.
-   */
-  const point = points.at(-1,) ?? '';
-  if (isClosing({ point, },))
-    return true;
-  if (isQuoteMark({ point, },)) {
+    if (startOff)
+      left.from += 1;
     /**
-     What the last mark is among all the words.
+     Whether the end is, read after the start.
      */
-    const role = markRoleAt({
-      points,
-      at: points.length - 1,
+    const endOff = (left.from < left.to) && dropsAtEnd({
+      tables,
+      from: left.from,
+      to: left.to,
     },);
-    if (isWordMark({ role, },))
-      return false;
-    return (pairableMarksIn({
-      points,
-      from: 0,
-      to: points.length - 1,
-      mark: point,
-    },) % 2) === 0;
+    if (endOff)
+      left.to -= 1;
+    left.moved = startOff || endOff;
   }
   /**
-   The opening bracket of the last character, none when it closes no pair.
+   The first unit left, as a list of zero or one.
    */
-  const [opener,] = openerOf({ point, },);
-  if (opener !== undefined) {
-    return !points.slice(
-      0,
-      -1,
+  const [firstLeft,] = units.slice(
+    left.from,
+    left.from + 1,
+  );
+  /**
+   Index among the characters where the first unit left starts, past the last character when none is left.
+   */
+  const from = (firstLeft === undefined) ? points.length : firstLeft.from;
+  /**
+   The last unit left, as a list of zero or one; none when the words are empty.
+   */
+  const [lastLeft,] = (left.to > left.from)
+    ? units.slice(
+      left.to - 1,
+      left.to,
     )
-      .includes(opener,);
-  }
-  /**
-   The closing bracket of the last character, none when it opens no pair.
-   */
-  const closers = closerOf({ point, },);
-  return closers.length > 0;
-}
-
-/**
- The words once one reading of the two edges has taken off what is not theirs.
-
- @param points - the words so far, one whole character each
-
- @returns The words after the reading, the same ones when no edge moved
-
- @example
- ```ts
- const next = edgeStepOf({ points: Array.from('"cat".',), },); // Array.from('"cat"',)
- ```
- */
-function edgeStepOf({ points, }: { readonly points: readonly string[]; },): readonly string[] {
-  if (points.length === 0)
-    return points;
-  // A MARK THAT ENCLOSES ALL THE WORDS GOES WITH ITS PAIR, both at once: taken
-  // one at a time, the first off would leave the other pairing with nothing
-  // inside and the pair split.
-  if (enclosesAll({ points, },)) {
-    return points.slice(
-      1,
-      -1,
-    );
-  }
-  /**
-   The words with the start taken off when it is not theirs.
-   */
-  const fromStart = dropsAtStart({ points, },) ? points.slice(1,) : points;
-  if ((fromStart.length > 0) && dropsAtEnd({ points: fromStart, },)) {
-    return fromStart.slice(
-      0,
-      -1,
-    );
-  }
-  return fromStart;
+    : [];
+  return {
+    from,
+    to: (lastLeft === undefined) ? from : lastLeft.to,
+  };
 }
 
 /**
@@ -610,6 +635,8 @@ function edgeStepOf({ points, }: { readonly points: readonly string[]; },): read
  off, read to a fixed point.
 
  @param points - the folded quote, one whole character each
+
+ @param originals - the characters as the judge wrote them, one for each of the points; the points themselves where absent
 
  @returns The words, empty when the quote holds none
 
@@ -619,28 +646,28 @@ function edgeStepOf({ points, }: { readonly points: readonly string[]; },): read
  ```
  */
 export function edgeFreeWordsOf(
-  { points, }: { readonly points: readonly string[]; },
+  {
+    points,
+    originals = points,
+  }: {
+    readonly points: readonly string[];
+    readonly originals?: readonly string[];
+  },
 ): readonly string[] {
   /**
-   The words so far and whether an edge moved in the last reading, mutated only inside this function.
+   Where the words stand.
    */
-  const reading = {
-    words: points,
-    moved: true,
-  };
-  while (reading.moved) {
-    /**
-     The words before this reading.
-     */
-    const before = reading.words;
-    /**
-     The words after it.
-     */
-    const after = edgeStepOf({ points: before, },);
-    reading.words = after;
-    reading.moved = after.length < before.length;
-  }
-  return reading.words;
+  const {
+    from,
+    to,
+  } = edgeFreeRangeOf({
+    points,
+    originals,
+  },);
+  return points.slice(
+    from,
+    to,
+  );
 }
 
 //endregion Consistency edge marks

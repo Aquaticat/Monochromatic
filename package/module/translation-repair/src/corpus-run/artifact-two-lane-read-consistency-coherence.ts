@@ -248,6 +248,8 @@ function assertOutcomesFollow(
       framed: group.repeat
         .kind
         === 'refrain',
+      // A generation fifteen section kept no mark beside a span, so its splice is recounted by the words alone.
+      marks: 'unrecorded',
     },);
     /**
      Whether the outcome is one a replacement can end in.
@@ -303,6 +305,7 @@ export function assertAskedGroupCoherent(
     assertSpanGroupCoherent({
       group,
       path,
+      generation,
     },);
     return;
   }

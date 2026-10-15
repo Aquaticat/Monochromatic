@@ -85,10 +85,18 @@ export {
   LintBinaryTextError,
 } from './semantic-wrap-run-error.ts';
 export {
+  placeSlices,
   type SliceReplacement,
   SliceSpliceError,
   spliceSlices,
 } from './splice-slices.ts';
+export {
+  contentWrite,
+  type PlacedSlice,
+  placementsOf,
+  type Write,
+  type Written,
+} from './splice-slice-places.ts';
 
 export {
   REFINE_CACHE_VERSION,

@@ -1,5 +1,9 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import { locateWords, } from '../consistency-fold.ts';
+import {
+  holdsEdgeApostrophe,
+  isSingleMark,
+} from '../consistency-loose-marks.ts';
 import { carriesOrCutsMarkup, } from '../consistency-markup.ts';
 import type {
   ConsistencyRendering,
@@ -16,7 +20,24 @@ import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consiste
 // folded words (`consistency-fold.ts`) are compared with the folded words a
 // strict majority of the usable ballots quoted. The English the span stands in
 // is not in the file, so "the words stand exactly once there" is the pass's
-// check alone, as it is for the first shape.
+// check alone, as it is for the first shape. The single marks a generation
+// seventeen place records beside its span (`markBefore`, `markAfter`) are read
+// as recorded for the same reason: nothing in the file holds the English they
+// stood in to check them against, and the occurrence reader
+// (`artifact-two-lane-read-consistency-occurrence.ts`) has already checked that
+// each is one single mark.
+//
+// A GENERATION SEVENTEEN QUOTE MAY END OR BEGIN WITH ONE APOSTROPHE the ballots'
+// folded words lack: the span takes in the proven apostrophe beside the words
+// (`the parents’`, `’round the`; `consistency-proven-apostrophes.ts`), and the record
+// stores the span as the quote with no new field. The reader accepts such a quote and
+// checks what the file can show: at most one of the three apostrophe-like marks at
+// each edge, directly beside a letter or a digit, never the opening curly single mark
+// (`edgeMarksContradictedBySpan`). A READER HOLDS NO ENGLISH AND CANNOT VERIFY THAT THE
+// MARK IS PROVEN, that no single quotation character of the page's prose could pair with it, any more
+// than it can verify that the words stand once in the English; that is the pass's
+// check alone. Generations fifteen and sixteen are read as before, with neither
+// the check nor the planner's reading of the mark.
 
 /**
  The recorded rendering read as the counter's located rendering.
@@ -60,6 +81,8 @@ export function asLocatedBySpan(
     quote: rendering.quote,
     core: rendering.quote,
     start: rendering.start,
+    ...((rendering.markBefore === undefined) ? {} : { markBefore: rendering.markBefore, }),
+    ...((rendering.markAfter === undefined) ? {} : { markAfter: rendering.markAfter, }),
   };
   if (rendering.slot === undefined)
     return bare;
@@ -69,6 +92,7 @@ export function asLocatedBySpan(
   const inside = locateWords({
     haystack: rendering.quote,
     words: rendering.slot,
+    apostrophes: 'outside',
   },);
   if (inside.kind !== 'once') {
     throw new ArtifactParseError({
@@ -81,6 +105,45 @@ export function asLocatedBySpan(
     slot: rendering.slot,
     slotStart: inside.start,
   };
+}
+
+/**
+ Whether the recorded words of a located rendering hold at an edge a single mark
+ the pass could not have put there. The words a quote names carry no single mark at
+ their edges, and the only one a generation seventeen span takes in is a proven
+ apostrophe (`consistency-proven-apostrophes.ts`): one of the three apostrophe-like
+ marks with a letter or a digit directly inside it, at most one at each edge. The
+ opening curly single mark, two marks in a row, and a mark with a space or any other
+ character inside it are marks the pass leaves outside the span. THIS CHECK CANNOT
+ SAY THAT THE MARK IS PROVEN: that depends on the single quotation characters of the
+ prose of the place's English, which the file does not hold.
+
+ @param rendering - recorded rendering, located
+
+ @returns Whether the words start or end with a single mark that is no apostrophe beside a letter or a digit
+
+ @example
+ ```ts
+ const wrong = edgeMarksContradictedBySpan({ rendering, },);
+ ```
+ */
+export function edgeMarksContradictedBySpan(
+  { rendering, }: { readonly rendering: Extract<ArtifactConsistencyRendering, { readonly kind: 'located'; }>; },
+): boolean {
+  /**
+   The whole characters of the recorded words.
+   */
+  const points = Array.from(rendering.quote,);
+  return ([
+    'start',
+    'end',
+  ] as const).some(function refusesEdge(side,): boolean {
+    return isSingleMark({ character: ((side === 'start') ? points[0] : points.at(-1,)) ?? '', },)
+      && (!holdsEdgeApostrophe({
+        text: rendering.quote,
+        side,
+      },));
+  },);
 }
 
 /**

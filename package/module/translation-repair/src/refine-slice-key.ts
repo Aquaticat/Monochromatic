@@ -220,8 +220,15 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  2026-09-27, before every cache version's current value was set; three
  directories another user owns, which the audit could not list, are left
  out of that count.
+
+ Version 6 is a TYPOGRAPHY change, as version 7 of the repair slice key is (`repair-slice-key.ts`): the rewrite a settlement
+ stores is the replacement with its quote style restored (`restoreTypography`, `refine-stage-replies.ts`), and the restoration now
+ reads the page parse, so a straight mark in a link destination or title, an address, code, math, an expression or a tag stays,
+ a lone straight mark before markup opens a quotation and a quoted number pairs. The prompts, the roster and the key are the
+ same, so a record written under 5 would be served with the old restored text. The check that would let the change ride inside 5
+ could not be made with a control (see version 35 of the repair slice key), so the number moves.
  */
-export const REFINE_CACHE_VERSION = 5;
+export const REFINE_CACHE_VERSION = 6;
 
 /**
  Everything about this run that changes what the voices are ASKED.

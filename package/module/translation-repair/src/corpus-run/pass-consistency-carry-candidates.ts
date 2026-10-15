@@ -3,12 +3,14 @@ import {
   type Logger,
 } from '@monochromatic-dev/module-logger/ts';
 
+import type { CarryEdgeWords, } from '../consistency-carry-sheet-parts.ts';
 import type { CarryBlock, } from '../consistency-carry-standing.ts';
 import { standsOf, } from '../consistency-fold.ts';
 import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
 import type { DeclaredNamePair, } from '../linked-title-declared-name.ts';
 import { wrapReplacementText, } from '../semantic-wrap.ts';
 import { foldTranslation, } from '../translator-answer-fold.ts';
+import { crossingWordsLost, } from './pass-consistency-carry-crossing.ts';
 import { consistencyFloorVerdict, } from './pass-consistency-floors.ts';
 import type { ConsistencySliceFacts, } from './pass-consistency-slices.ts';
 import type { ConsistencyWriterVoice, } from './pass-consistency-cache.ts';
@@ -248,6 +250,8 @@ function keptWordsLost(
 
  @param keeping - English words of other places inside the block that must stay as they are
 
+ @param crossing - stretches of words of places that must stay as they are and run over an edge of the block, each of which must stand at that edge of the paragraph
+
  @param facts - the slice
 
  @param declared - name pairs the front matter declares
@@ -262,7 +266,7 @@ function keptWordsLost(
 
  @example
  ```ts
- const { written, findings, } = writtenParagraphsOf({ voices, english, block, keeping: [], facts, declared, declaredNames, l, },);
+ const { written, findings, } = writtenParagraphsOf({ voices, english, block, keeping: [], crossing: [], facts, declared, declaredNames, l, },);
  ```
  */
 export function writtenParagraphsOf(
@@ -271,6 +275,7 @@ export function writtenParagraphsOf(
     english,
     block,
     keeping,
+    crossing,
     facts,
     declared,
     declaredNames,
@@ -280,6 +285,7 @@ export function writtenParagraphsOf(
     readonly english: string;
     readonly block: CarryBlock;
     readonly keeping: readonly string[];
+    readonly crossing: readonly CarryEdgeWords[];
     readonly facts: ConsistencySliceFacts;
     readonly declared: readonly DeclaredNamePair[];
     readonly declaredNames: readonly string[];
@@ -343,6 +349,21 @@ export function writtenParagraphsOf(
         return {
           kept: [],
           finding: [`consistency-candidate-refused (${seat}): the paragraph no longer holds the words of another place that must stay as they are`,],
+        };
+      }
+      /**
+       The stretches of words of a place that must stay as it is and runs over an edge of the block, which this paragraph
+       does not hold at that edge.
+       */
+      const edgeLost = crossingWordsLost({
+        paragraph: text,
+        crossing,
+      },);
+      if (edgeLost.length > 0) {
+        wl.warn(`withheld ${seat} from the bench: its paragraph no longer holds, at the edge of the block, the words of a place that runs over it`,);
+        return {
+          kept: [],
+          finding: [`consistency-candidate-refused (${seat}): the paragraph no longer holds, at the edge of the block, the words of a place that runs over it and must stay as they are`,],
         };
       }
       /**

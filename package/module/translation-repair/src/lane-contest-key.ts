@@ -163,8 +163,17 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  differs. An entry that records no death asks the question it asked before and
  keeps its key, so the version stays where it is and the answers already bought
  for those entries stay usable.
+
+ 7: the validator that decides each lane's eligibility reads prose guillemets
+ through the prose mask built from the page parse (`translate-guillemets.ts`,
+ `typography-prose-mask.ts`), so a guillemet in a comment, a link or code no
+ longer counts and a candidate the grammar refuses has no prose. That changes
+ which lanes reach a contest. The check that would let the change ride inside 6
+ (no slice-cache record written after the change, shown beside a control that
+ finds records) could not be made with a working control, so the number moves,
+ as the slice, refine and translate versions moved for the same reader.
  */
-export const LANE_CONTEST_CACHE_VERSION = 6;
+export const LANE_CONTEST_CACHE_VERSION = 7;
 
 /**
  Everything about this run that changes what the judges are ASKED, folded into

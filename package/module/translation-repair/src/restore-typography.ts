@@ -1,9 +1,15 @@
 import { placeClosingPunctuation, } from './closing-punctuation.ts';
 import { codePointAt, } from './code-points.ts';
-import { nestedSinglePairs, } from './nested-single-quotes.ts';
+import {
+  nestedSinglePairs,
+  opensBeforeMarkup,
+} from './nested-single-quotes.ts';
 import {
   bindsWord,
   closesSpan,
+  isElisionPairEnd,
+  isLeadingElision,
+  precedesClosingMark,
   sequenceBefore,
 } from './quote-neighbours.ts';
 import { restoreEllipsis, } from './restore-ellipsis.ts';
@@ -129,8 +135,9 @@ function countStraightDoubles(
 }
 
 /**
- Counts straight single quotes shaped like an opening quote: a non-word
- character before, a word character after.
+ Counts straight single quotes shaped like an opening quote that no closing quote pairs with: a non-word character before, a
+ word character after, no leading elision (`'tis`), which is an apostrophe and waits for no partner, and no pair. A quote
+ that pairs is a quotation's opening and has its partner, elision or not.
 
  One such quote anywhere in the replacement means a trailing straight quote
  elsewhere may be closing it, so the trailing rule then leaves every one
@@ -140,20 +147,24 @@ function countStraightDoubles(
 
  @param mask - which units are prose
 
- @returns How many opening-shaped singles it holds
+ @param paired - the offsets of the opening marks that a closing mark pairs with
+
+ @returns How many opening-shaped singles with no partner it holds
 
  @example
  ```ts
- countOpeningSingles({ text: "rock 'n' roll", mask, },);
+ countOpeningSingles({ text: "rock 'n' roll", mask, paired: new Set(), },);
  ```
  */
 function countOpeningSingles(
   {
     text,
     mask,
+    paired,
   }: {
     readonly text: string;
     readonly mask: readonly boolean[];
+    readonly paired: ReadonlySet<number>;
   },
 ): number {
   return (function count(): number {
@@ -187,7 +198,18 @@ function countOpeningSingles(
       },), },);
       if (boundBefore)
         continue;
-      if (boundAfter)
+      // A leading elision (`'tis`) that no closing mark pairs with is an apostrophe, not the opening of a quotation that wants
+      // its partner, and a mark that is paired has its partner. A mark with markup or punctuation after it (`'(hi)`, `'*hi*`) is
+      // opening-shaped like one with a word after it (`opensBeforeMarkup`, `nested-single-quotes.ts`).
+      if (paired.has(index,) || (!(boundAfter || opensBeforeMarkup({
+        text,
+        at: index,
+      },))))
+        continue;
+      if (!isLeadingElision({
+        text,
+        at: index,
+      },))
         seen += 1;
     }
     return seen;
@@ -205,11 +227,30 @@ function countOpeningSingles(
  then in open-close order, since an odd count means the quote is doing
  something this rule cannot read.
 
- Text inside a backtick span or a tag is never touched, because a straight
- quote there is code or markup rather than prose. A trailing apostrophe, a
- word character before it and none after, converts only when the replacement
- holds no straight single quote shaped like an opening one. The ellipsis form
- follows the same reading through `restoreEllipsis`.
+ Only the text the page parse shows as prose is touched (`typography-prose-mask.ts`): a
+ straight quote in a link destination or title, an address, code of any kind,
+ math, an expression, a tag or one of its attributes, a comment or front matter
+ is code or markup rather than prose, and a text the grammar refuses has no
+ prose at all. A quotation whose first character is markup or punctuation
+ (`'(hi)'`, `'*hi*'`, `'$5'`) pairs like any other, both marks curled or neither. A trailing apostrophe, a
+ word character or punctuation (a stop, a pause, a dash, a closing quotation
+ mark) before it and no word after, converts only when the replacement
+ holds no straight single quote shaped like an opening one, so one that no pair
+ claimed curls to the closing single mark, which is the apostrophe too
+ (`bowls,'`, `cats'`). A leading elision
+ (`'tis`, `'em`, `'99`, `'90s`, the `'n'` between two words; `isLeadingElision`, `quote-neighbours.ts`)
+ that no later straight single quote closes converts to the apostrophe, never
+ to an opening quotation mark, and is no opening quote that a trailing
+ apostrophe must wait for; one inside a quotation, after an opening mark that
+ is waiting for its closing mark, converts to the apostrophe too and never takes
+ that opening mark's place (`'give 'em hell'`). A QUOTATION THAT BEGINS WITH A
+ LISTED WORD, one whose elision a later straight mark closes (`'Tis the season,'
+ she said`, `'Round things are best'`, `'90s kids'`), is a quotation: the pair
+ converts to the opening and the closing single mark, as any pair does, so no
+ straight mark is left on a curly page. The `'n'` of `rock 'n' roll` is the
+ exception, one unit of two apostrophes whose marks neither open nor close a
+ quotation (`'Rock 'n' roll,' she said`). The ellipsis form follows the same
+ reading through `restoreEllipsis`.
 
  @param replacement - text the editor wrote
 
@@ -313,10 +354,11 @@ export function restoreTypography(
    opening-shaped quote is left without its partner.
    */
   const convertTrailing = wantsCurlyApostrophe
-    && ((countOpeningSingles({
+    && (countOpeningSingles({
       text: replacement,
       mask,
-    },) - openings.size) === 0);
+      paired: openings,
+    },) === 0);
 
   return (function scan(): string {
     /**
@@ -347,12 +389,17 @@ export function restoreTypography(
       }
       if ((character === '\'') && wantsCurlyApostrophe) {
         /**
-         Whether the character before binds this quote into a word.
+         The character before the quote, with any combining marks on it.
          */
-        const boundBefore = bindsWord({ character: sequenceBefore({
+        const before = sequenceBefore({
           text: replacement,
           at: index,
-        },), },);
+        },);
+
+        /**
+         Whether the character before binds this quote into a word.
+         */
+        const boundBefore = bindsWord({ character: before, },);
 
         /**
          Whether the character after does.
@@ -365,17 +412,31 @@ export function restoreTypography(
         /**
          Whether a closed inline span stands before the quote.
          */
-        const spanBefore = closesSpan({ character: sequenceBefore({
+        const spanBefore = closesSpan({ character: before, },);
+
+        /**
+         Whether the quote stands in closing shape: no word after it, and a word or punctuation that a closing mark follows
+         before it. The closing single mark is also the apostrophe, so one that no pair claimed curls to it
+         (`bowls,'`, `cats'`) when no unpaired opening-shaped quote could be its partner.
+         */
+        const closingShape = (!boundAfter) && (boundBefore || precedesClosingMark({ character: before, },));
+
+        /**
+         Whether the quote is the second mark of the `'n'` of `rock 'n' roll`, an apostrophe whatever else the page holds.
+         */
+        const endsElisionPair = isElisionPairEnd({
           text: replacement,
           at: index,
-        },), },);
+        },);
 
         /**
          Whether the quote reads as an apostrophe inside or trailing a word:
-         inside a word, or trailing a word with nothing that could pair
-         with it.
+         inside a word, in closing shape with nothing that could pair
+         with it, or the second mark of the `'n'` of `rock 'n' roll`.
          */
-        const wordApostrophe = boundBefore && (boundAfter || convertTrailing);
+        const wordApostrophe = (boundBefore && boundAfter)
+          || (closingShape && convertTrailing)
+          || endsElisionPair;
 
         /**
          Whether the quote reads as a possessive after a closed span: the
@@ -399,9 +460,22 @@ export function restoreTypography(
         const spanApostrophe = spanBefore && (clitic || trailsSpan);
 
         /**
+         Whether the quote stands for the dropped letters at the start of a word (`'tis`, `'em`, `'90s`), which curls to the
+         apostrophe whether or not a later straight mark could close it as a pair.
+         */
+        const elision = (!boundBefore)
+          && boundAfter
+          && isLeadingElision({
+            text: replacement,
+            at: index,
+          },);
+
+        /**
          Whether the quote reads as an apostrophe either way.
          */
-        const apostrophe = wordApostrophe || spanApostrophe;
+        const apostrophe = wordApostrophe
+          || spanApostrophe
+          || elision;
         rebuilt.push(apostrophe ? CURLY_APOSTROPHE : character,);
         continue;
       }

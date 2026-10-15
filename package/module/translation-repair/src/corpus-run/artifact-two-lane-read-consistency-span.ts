@@ -9,16 +9,23 @@ import {
 } from '../consistency-majority.ts';
 import { planConsistencyEdit, } from '../consistency-splice.ts';
 import { consistencyLabels, } from '../consistency-wire.ts';
+import {
+  artifactGenerationCarriesPartialUnits,
+  artifactGenerationRecordsMarks,
+  type TwoLaneArtifactGeneration,
+} from './artifact-two-lane-contract.ts';
 import type {
   ArtifactConsistencyGroup,
   ArtifactConsistencyOccurrence,
 } from './artifact-two-lane-consistency.ts';
+import { assertCarriesRecount, } from './artifact-two-lane-read-consistency-carry-recount.ts';
 import {
-  assertCarriesRecount,
-  outcomesAfter,
-} from './artifact-two-lane-read-consistency-carry-recount.ts';
+  assertCarriedOutcomes,
+  type CarriedPlace,
+} from './artifact-two-lane-read-consistency-span-shared.ts';
 import {
   asLocatedBySpan,
+  edgeMarksContradictedBySpan,
   locatedContradictedBySpan,
   reasonContradictedBySpan,
 } from './artifact-two-lane-read-consistency-span-located.ts';
@@ -41,7 +48,31 @@ import {
 // reach is the English of a slice, which the file does not hold for slices the
 // pass left alone, so "the words stand exactly once there" is the pass's check
 // alone, and the text of the current English candidate of a carry is taken as
-// recorded.
+// recorded. A splice is recounted with the marks beside and inside the words
+// compared from generation seventeen, which recorded them
+// (`consistency-splice.ts`), and by the words alone before, as those sections
+// were written.
+//
+// A UNIT CARRIED IN PART IS READ FROM THE RECORD ALONE, from generation seventeen.
+// The places of one block share one bench record, so the carries recorded under
+// them are the same candidates, ballots and decision, and a splice among the
+// candidates was built from the places of the block code could move the chosen words
+// into. A place whose recomputed plan is `unavailable` then ends `kept-current` when
+// the splice was chosen, a place whose plan is `replace` ends in one of the
+// outcomes a replacement can end in, and a splice candidate under a place whose
+// plan is `unavailable` is accepted only when another place of the group, recorded
+// under the same record, has a `replace` plan (`artifact-two-lane-read-consistency-span-shared.ts`).
+// Sixteen and fifteen keep the rule they were written under: such a place withholds
+// the splice, so no carry of theirs holds a splice candidate under it.
+//
+// A SPLICE THAT BRINGS AN APOSTROPHE TO AN EDGE IS ALLOWED TO HAVE BEEN LEFT OUT.
+// Whether a proven apostrophe carried to an edge where the receiving words held none
+// is still an apostrophe on the page the pass makes depends on the quotation characters
+// of the English and on the other replacements, which the record does not hold. So a
+// place whose plan is `replace` and whose words would gain such an apostrophe
+// (`bringsEdgeApostrophe`) may end `kept-current` after the splice was chosen, as well
+// as in the outcomes a replacement ends in. The reader checks that the outcome is one
+// the carry allows; it cannot check that the apostrophe was in fact not proven there.
 
 /**
  A group the bench was asked about.
@@ -57,14 +88,17 @@ type AskedGroup = ArtifactConsistencyGroup & { readonly verdict: { readonly kind
 
  @param path - where the place sits, for the parse error
 
+ @param generation - generation the section was written under, which says whether the edges of a located place's words may hold a proven apostrophe and are checked for one
+
  @returns The place's rendering in the counter's form
 
  @throws {@link ArtifactParseError} when a located rendering is not the agreed
- words or slot, or an unlocated one gives a reason the ballots contradict
+ words or slot, holds at an edge a single mark the pass could not have put
+ there, or an unlocated one gives a reason the ballots contradict
 
  @example
  ```ts
- const rendering = assertSpanRenderingAgrees({ group, occurrence, path, },);
+ const rendering = assertSpanRenderingAgrees({ group, occurrence, path, generation: 17, },);
  ```
  */
 function assertSpanRenderingAgrees(
@@ -72,10 +106,12 @@ function assertSpanRenderingAgrees(
     group,
     occurrence,
     path,
+    generation,
   }: {
     readonly group: AskedGroup;
     readonly occurrence: ArtifactConsistencyOccurrence;
     readonly path: string;
+    readonly generation: TwoLaneArtifactGeneration;
   },
 ): ConsistencyRendering {
   /**
@@ -126,6 +162,13 @@ function assertSpanRenderingAgrees(
       reason: 'words that show a reader something and hold their markup in pairs, and a slot that does the same and is not all of them',
     },);
   }
+  if (artifactGenerationRecordsMarks({ generation, },) && edgeMarksContradictedBySpan({ rendering, },)) {
+    throw new ArtifactParseError({
+      path: `${path}.rendering`,
+      reason: 'words that hold at most one apostrophe at an edge, directly beside a letter or a digit and never the opening '
+        + 'curly single mark, since the pass puts only a proven apostrophe there',
+    },);
+  }
   /**
    The slot the ballots pin down inside the recorded words, none for a run or when they pin none.
    */
@@ -161,13 +204,20 @@ function assertSpanRenderingAgrees(
 
  @param path - where the group sits, for the parse error
 
+ @param marks - whether a splice is recounted with the marks beside and inside
+ the words compared, as a section that recorded them was written
+
+ @param partialUnits - whether the section records a unit carried in part, so a
+ place code cannot move the chosen words into may sit under a splice built for
+ another place of its record and keeps its words when the splice is chosen
+
  @throws {@link ArtifactParseError} when an outcome is not the one the ballots,
  the recorded renderings and the carries give, or the carries are not one per
  receiving place
 
  @example
  ```ts
- assertSpanOutcomesFollow({ group, renderings, path, },);
+ assertSpanOutcomesFollow({ group, renderings, path, marks: 'compared', partialUnits: true, },);
  ```
  */
 function assertSpanOutcomesFollow(
@@ -175,10 +225,14 @@ function assertSpanOutcomesFollow(
     group,
     renderings,
     path,
+    marks,
+    partialUnits,
   }: {
     readonly group: AskedGroup;
     readonly renderings: readonly ConsistencyRendering[];
     readonly path: string;
+    readonly marks: 'compared' | 'unrecorded';
+    readonly partialUnits: boolean;
   },
 ): void {
   /**
@@ -202,6 +256,10 @@ function assertSpanOutcomesFollow(
    Labels of the places the chosen rendering is carried to, which the carries must name in order.
    */
   const receivers: string[] = [];
+  /**
+   The places the chosen words are carried to, with what each is checked against once all are known.
+   */
+  const carriedTo: CarriedPlace[] = [];
   group.occurrences
     .forEach(function checkOne(
     occurrence,
@@ -260,6 +318,7 @@ function assertSpanOutcomesFollow(
       framed: group.repeat
         .kind
         === 'refrain',
+      marks,
     },);
     if (plan.kind === 'same') {
       requireOutcome({ expected: 'consistent', },);
@@ -278,24 +337,18 @@ function assertSpanOutcomesFollow(
         reason: `a carry for ${occurrence.label}, which the chosen words are carried to`,
       },);
     }
-    if ((plan.kind === 'unavailable')
-      && carry.candidates
-      .some(function isSplice(candidate,): boolean {
-        return candidate.kind === 'splice';
-      },)) {
-      throw new ArtifactParseError({
-        path: `${path}.carries`,
-        reason: `no splice candidate for ${occurrence.label}, whose frame or the chosen frame has no slot to move the words by`,
-      },);
-    }
-    if (!outcomesAfter({ carry, },)
-      .includes(occurrence.outcome,)) {
-      throw new ArtifactParseError({
-        path: `${here}.outcome`,
-        reason: `${outcomesAfter({ carry, },)
-          .join(', ',)}, for a carry that decided as recorded`,
-      },);
-    }
+    carriedTo.push({
+      occurrence,
+      here,
+      plan: plan.kind,
+      carry,
+    },);
+  },);
+  assertCarriedOutcomes({
+    carriedTo,
+    path,
+    marks,
+    partialUnits,
   },);
   if ((group.carries ?? []).map(function labelOf({ label, },): string {
     return label;
@@ -317,21 +370,27 @@ function assertSpanOutcomesFollow(
 
  @param path - where the group sits, for the parse error
 
+ @param generation - generation the section was written under, which says
+ whether the marks beside each located place's words were recorded and a splice
+ is recounted with them compared (seventeen) or by the words alone (sixteen)
+
  @throws {@link ArtifactParseError} when the usable count, a rendering, the
  winner, the run-off, a carry or an outcome is not what the ballots give
 
  @example
  ```ts
- assertSpanGroupCoherent({ group, path, },);
+ assertSpanGroupCoherent({ group, path, generation: 17, },);
  ```
  */
 export function assertSpanGroupCoherent(
   {
     group,
     path,
+    generation,
   }: {
     readonly group: AskedGroup;
     readonly path: string;
+    readonly generation: TwoLaneArtifactGeneration;
   },
 ): void {
   /**
@@ -371,6 +430,7 @@ export function assertSpanGroupCoherent(
       group,
       occurrence,
       path: `${path}.occurrences[${String(at,)}]`,
+      generation,
     },);
   },);
   if (!sameWinner({
@@ -395,6 +455,8 @@ export function assertSpanGroupCoherent(
     group,
     renderings,
     path,
+    marks: artifactGenerationRecordsMarks({ generation, },) ? 'compared' : 'unrecorded',
+    partialUnits: artifactGenerationCarriesPartialUnits({ generation, },),
   },);
 }
 

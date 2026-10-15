@@ -82,6 +82,7 @@ export {
 } from './slice-selection.ts';
 export { restoreEllipsis, } from './restore-ellipsis.ts';
 export { restoreTypography, } from './restore-typography.ts';
+export { proseMask, } from './typography-prose-mask.ts';
 export { describeSelfPreference, } from './self-preference-line.ts';
 export {
   type SelectionRound,
@@ -96,6 +97,8 @@ export {
   parseMdxBody,
   requireMarkdownRefusal,
   requireMdxRefusal,
+  withMarkdownExhaustionRefused,
+  withMdxExhaustionRefused,
 } from './parse-mdx.ts';
 export { treeNodes, } from './mdast-tree-nodes.ts';
 export { type ParseFinding, } from './parse-document.ts';
@@ -291,5 +294,8 @@ export * from './repeat-census-barrel.ts';
 export * from './judge-fidelity-probe-barrel.ts';
 export * from './settled-audit-run-barrel.ts';
 export * from './consistency-barrel.ts';
+export * from './consistency-apply-barrel.ts';
+export * from './consistency-reading-barrel.ts';
+export * from './built-artifact-barrel.ts';
 
 //endregion Public barrel

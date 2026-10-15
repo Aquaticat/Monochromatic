@@ -95,6 +95,8 @@ function foldParagraph({ text, }: { readonly text: string; },): string {
  A PASSAGE NESTED TOO DEEPLY TO READ is returned as written: its paragraphs
  cannot be located, and the text is one a floor refuses anyway.
 
+ @internal
+
  @param text - Markdown passage
 
  @returns Same passage as its paragraphs render, one line each

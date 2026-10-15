@@ -252,17 +252,30 @@ export function assertCarriesRecount(
 
  @param carry - the carry
 
+ @param spliceMovesIt - whether code can move the chosen words into the place,
+ which a reader of a section that records a unit carried in part answers from the
+ place's recomputed plan; false for a place whose plan is `unavailable`, which
+ keeps its words when the splice was chosen. A writer's paragraph rewrites the
+ place whatever the plan was, so the answer changes nothing for one.
+
  @returns Outcomes the place may have: kept-current for the current English, a
- failure or no decision; replaced, kept-floor or overlapped for a splice or a
- writer's paragraph
+ failure, no decision, or the splice for a place the splice does not move;
+ replaced, kept-floor or overlapped for a splice or a writer's paragraph
+ otherwise
 
  @example
  ```ts
- const allowed = outcomesAfter({ carry, },);
+ const allowed = outcomesAfter({ carry, spliceMovesIt: true, },);
  ```
  */
 export function outcomesAfter(
-  { carry, }: { readonly carry: ArtifactConsistencyCarry; },
+  {
+    carry,
+    spliceMovesIt = true,
+  }: {
+    readonly carry: ArtifactConsistencyCarry;
+    readonly spliceMovesIt?: boolean;
+  },
 ): readonly ConsistencyOccurrenceOutcome[] {
   if (carry.decision
     .kind
@@ -279,7 +292,7 @@ export function outcomesAfter(
     .find(function isChosen(candidate,): boolean {
       return candidate.label === label;
     },);
-  return (chosen?.kind === 'current')
+  return ((chosen?.kind === 'current') || ((chosen?.kind === 'splice') && (!spliceMovesIt)))
     ? ['kept-current',]
     : [
       'replaced',

@@ -199,8 +199,13 @@ function namesShownOnce(
     readonly shown: readonly string[];
   },
 ): boolean {
+  /**
+   The labels the sheet showed, as a set, so each label a ballot gave is looked up in constant time and the work grows with the
+   number of labels, never with the number of pairs of labels.
+   */
+  const shownLabels = new Set(shown,);
   return labels.every(function isShown(label,): boolean {
-    return shown.includes(label,);
+    return shownLabels.has(label,);
   },) && (new Set(labels,).size === labels.length);
 }
 

@@ -5,13 +5,19 @@ import type {
 import { isInsertionChunk, } from './chunk-placement.ts';
 import { wordForCount, } from './count-word.ts';
 import {
-  composeInsertion,
+  composedInsertion,
   documentLineEnding,
 } from './insertion-separator.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
 import { assertSliceIndexing, } from './slice-indexing.ts';
-import { matchSpanEdges, } from './span-edge-match.ts';
+import {
+  contentWrite,
+  type PlacedSlice,
+  placementsOf,
+  type SpliceEdit,
+  type Write,
+} from './splice-slice-places.ts';
 
 //region Slice splicing
 // Rebuilding a whole translation from per-slice results.
@@ -103,69 +109,6 @@ type PlacedReplacement = {
    be a field nothing reads.
    */
   readonly span: DocumentChunk;
-};
-
-/**
- One write assembly performs, which is not one replacement.
-
- Several anchors can share a boundary, and their separators are decided once
- for the whole group rather than by each in turn, so the group is ONE edit.
-
- @example
- ```ts
- const edit: SpliceEdit = { kind: 'insertion', startOffset: 12, endOffset: 12, orderIndex: 3, fragments, };
- ```
- */
-type SpliceEdit = {
-  /**
-   Whether this writes over existing text or into a place where none is.
-   */
-  readonly kind: 'content';
-
-  /**
-   Where the span being written over starts.
-   */
-  readonly startOffset: number;
-
-  /**
-   Where it ends, exclusive.
-   */
-  readonly endOffset: number;
-
-  /**
-   Slice this edit is ordered by, which for a group is its earliest.
-   */
-  readonly orderIndex: number;
-
-  /**
-   Text to write, exactly as its lane produced it.
-   */
-  readonly text: string;
-} | {
-  /**
-   Whether this writes over existing text or into a place where none is.
-   */
-  readonly kind: 'insertion';
-
-  /**
-   Boundary the anchors share.
-   */
-  readonly startOffset: number;
-
-  /**
-   Same boundary, since an anchor covers nothing.
-   */
-  readonly endOffset: number;
-
-  /**
-   Earliest slice anchored here, which orders this group against the rest.
-   */
-  readonly orderIndex: number;
-
-  /**
-   What the lanes produced for those slices, in document order.
-   */
-  readonly fragments: readonly string[];
 };
 
 /**
@@ -271,6 +214,10 @@ function plannedEdits(
         return anchored.replacement
           .replacementText;
       },),
+      sliceIndexes: inOrder.map(function toIndex(anchored,): number {
+        return anchored.replacement
+          .sliceIndex;
+      },),
     };
   },);
   return [
@@ -327,6 +274,52 @@ export function spliceSlices(
     readonly replacements: readonly SliceReplacement[];
   },
 ): string {
+  return placeSlices({
+    targetText,
+    slices,
+    replacements,
+  },)
+    .text;
+}
+
+/**
+ Rebuilds the translation with every replacement written in and says where each replacement's words landed.
+
+ THE ONE PLACE THE PAGE IS ASSEMBLED: {@link spliceSlices} is this function's text, so a reader of the page that wants to
+ know where a slice's English stands in it asks here and not a reconstruction.
+
+ @param targetText - translation the slices were cut from
+
+ @param slices - slice pairs in document order
+
+ @param replacements - text to write, in any order
+
+ @returns The translation, and for each replacement the range its words occupy and where its first character stands; an
+ anchored fragment that shows a reader nothing writes nothing and has no entry
+
+ @throws {@link Error} when a replacement names a slice that does not exist,
+ when two name the same slice, or when two slices carry one index: each means
+ the caller and the slicing disagree, and each silently drops text
+
+ @example
+ ```ts
+ const { text, placed, } = placeSlices({ targetText, slices, replacements, },);
+ ```
+ */
+export function placeSlices(
+  {
+    targetText,
+    slices,
+    replacements,
+  }: {
+    readonly targetText: string;
+    readonly slices: readonly ChunkPair[];
+    readonly replacements: readonly SliceReplacement[];
+  },
+): {
+  readonly text: string;
+  readonly placed: readonly PlacedSlice[];
+} {
   /**
    Target span per slice index, so a replacement is resolved by the index it
    names rather than by its position in the slice list.
@@ -454,16 +447,23 @@ export function spliceSlices(
    */
   const eol = documentLineEnding({ targetText, },);
 
-  return edits.reduce(
+  /**
+   What each write left behind, in the order the writes were made, mutated only inside this function.
+   */
+  const writes: Write[] = [];
+  /**
+   The translation once every write is made.
+   */
+  const text = edits.reduce(
     function spliceOne(
-      text: string,
+      current: string,
       edit,
     ): string {
       /**
        Everything before this edit, which no earlier write has touched: edits
        run backwards through the document, so the prefix is still the archive.
        */
-      const head = text.slice(
+      const head = current.slice(
         0,
         edit.startOffset,
       );
@@ -472,7 +472,15 @@ export function spliceSlices(
        Everything after it, as it will stand: later offsets were written
        first, so this is what the edit's text will actually meet.
        */
-      const tail = text.slice(edit.endOffset,);
+      const tail = current.slice(edit.endOffset,);
+
+      /**
+       The text the span held, whose line-ending edges a content span keeps.
+       */
+      const replaced = current.slice(
+        edit.startOffset,
+        edit.endOffset,
+      );
 
       /**
        Text going in. A content span carries its lane's text with the span's
@@ -482,25 +490,31 @@ export function spliceSlices(
        separators.
        */
       const written = (edit.kind === 'insertion')
-        ? composeInsertion({
+        ? composedInsertion({
           fragments: edit.fragments,
           before: head,
           after: tail,
           eol,
         },)
-        : matchSpanEdges({
-          replaced: text.slice(
-            edit.startOffset,
-            edit.endOffset,
-          ),
+        : contentWrite({
+          replaced,
           text: edit.text,
         },);
+      writes.push({
+        edit,
+        written,
+        replacedLength: edit.endOffset - edit.startOffset,
+      },);
       return head
-        + written
+        + written.text
         + tail;
     },
     targetText,
   );
+  return {
+    text,
+    placed: placementsOf({ writes, },),
+  };
 }
 
 //endregion Slice splicing

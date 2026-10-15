@@ -3,7 +3,10 @@ import {
   parseDocument,
   type ParseFinding,
 } from './parse-document.ts';
-import { requireMarkdownRefusal, } from './parse-mdx.ts';
+import {
+  requireMarkdownRefusal,
+  withMarkdownExhaustionRefused,
+} from './parse-mdx.ts';
 
 //region Assembly regressions
 // Whole-document differences shared by ordinary assembly and counterfactual withdrawal.
@@ -157,7 +160,10 @@ function countParseFindings(
     readonly kind: string;
   },
 ): number {
-  return parseDocument({ text, },)
+  return withMarkdownExhaustionRefused({
+    parse: parseDocument,
+    input: { text, },
+  },)
     .parseFindings
     .filter(function isKind(finding,): boolean {
       return finding.kind === kind;

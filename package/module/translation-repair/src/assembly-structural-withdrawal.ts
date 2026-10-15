@@ -137,7 +137,7 @@ export type AdvancingWithdrawal = {
  // => 8
  ```
  */
-function sharedPrefixLength(
+export function sharedPrefixLength(
   {
     left,
     right,
@@ -178,7 +178,7 @@ function sharedPrefixLength(
  // => 6
  ```
  */
-function sharedSuffixLength(
+export function sharedSuffixLength(
   {
     left,
     right,

@@ -4,12 +4,14 @@ import type {
   SpliceOnlyKind,
 } from '../consistency-carry-standing.ts';
 import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
+import { crossingOfUnit, } from './pass-consistency-carry-crossing.ts';
 import type { ConsistencyPlace, } from './pass-consistency-group.ts';
 import type { ConsistencySliceFacts, } from './pass-consistency-slices.ts';
 import type {
   CarryReceiver,
   CarryUnit,
   DecidedGroup,
+  UnwritableReason,
 } from './pass-consistency-types.ts';
 
 //region Pass consistency carry units
@@ -27,9 +29,39 @@ import type {
 // replace them, and that is settled where the edits are applied, but this
 // group's rewrite of a block never takes them away unasked.
 //
-// A TABLE, A CODE BLOCK OR A SETEXT HEADING HOLDS NO PARAGRAPH A WRITER CAN
-// REWRITE. The unit of such a place is the whole English, as for words that lie
-// in no block, and it names the kind, so the finding says what the place stood in.
+// A TABLE, A CODE BLOCK, A SETEXT HEADING OR A PREFORMATTED BLOCK HOLDS NO
+// PARAGRAPH A WRITER CAN REWRITE. The unit of such a place is the whole English,
+// as for words that lie in no block, and it names the kind, so the finding says
+// what the place stood in.
+//
+// A BLOCK THAT OVERLAPS THE WORDS OF A RECEIVING PLACE OUTSIDE IT THAT HAS A
+// SPLICE IS NOT WRITABLE. A place whose words lie in no single block (they cross a
+// paragraph boundary) is carried by its splice, which may run into the next
+// paragraph; a rewrite of that paragraph for another place of the group would then
+// address the same words as the splice, and two replacements of one group may not
+// (`pass-consistency-apply.ts`). The unit keeps its real block and is marked not
+// writable, so its places are carried by their splices or keep their English, and
+// the finding says the paragraph overlaps another receiving place. A receiving
+// place whose plan is `unavailable` has no splice and so no edit that could meet a
+// rewrite: it is left out of this test, because the plan is known before any writer
+// is asked and a place no edit addresses cannot make the block unwritable. A place
+// whose words cross a block boundary has that plan whenever the chosen words hold a
+// different number of block breaks than its own words do (`consistency-block-breaks.ts`),
+// since no page with such a splice passes the structure floor, so only a place whose
+// chosen words cross as many boundaries as its own can make its neighbour unwritable.
+// What keeps that place's record true is the unit's `crossing` list: the stretch of its words that lies inside the
+// block, with the edge of the block it stands at, which a writer's paragraph must hold there
+// (`pass-consistency-carry-crossing.ts`).
+//
+// THE WORDS OF A PLACE THAT MUST STAY AND RUN OVER AN EDGE OF THE BLOCK. A place of the
+// group that is not a receiving place (the chosen place, a place the majority keeps for
+// its context, a place that already reads as the chosen place does) is listed in
+// `keeping` only when its words lie wholly inside the block. When they run over an edge
+// of the block, the stretch inside the block is listed in `crossing` instead, with the
+// edge it stands at, exactly as for a receiving place whose plan is `unavailable`. A
+// receiving place whose plan is `replace` is in neither list, since its words are
+// replaced, and the located words of a place of another group are in neither list
+// either, since the apply stage holds them (`pass-consistency-apply-located.ts`).
 
 /**
  A receiving place with the block of its English that holds its words.
@@ -52,9 +84,9 @@ export type HeldReceiver = {
   readonly block: readonly CarryBlock[];
 
   /**
-   The kind of block (a table, a code block, a setext heading) that holds its
-   words where no paragraph rewrite can carry words to them, as a list of zero
-   or one.
+   The kind of block (a table, a code block, a setext heading, a preformatted
+   block) that holds its words where no paragraph rewrite can carry words to
+   them, as a list of zero or one.
    */
   readonly spliceOnlyIn: readonly SpliceOnlyKind[];
 };
@@ -82,6 +114,13 @@ export type KeptWords = {
    The words.
    */
   readonly core: string;
+
+  /**
+   Present when the words are the located words of a place of another group of the page, and absent when they are
+   those of a place of this group. A stretch of this group's words that runs over an edge of a block is held at the
+   edge by the block's unit; one of another group's is held where the groups' replacements meet.
+   */
+  readonly ofOtherGroup?: true;
 };
 
 /**
@@ -118,14 +157,15 @@ export function isKeptOutcome({ outcome, }: { readonly outcome: string; },): boo
 
  The words of every place of every other group of the page that has a located
  rendering are listed with them, whatever became of the place: that group's
- carry may replace them, and this group's rewrite of a block must not.
+ carry may replace them, and this group's rewrite of a block must not. Those
+ words are marked as another group's.
 
  @param decided - the group with its renderings and provisional outcomes
 
  @param others - the page's other groups, in any order; the result does not depend on it
 
  @returns The words with their slice and offset, in page order and without
- repeats
+ repeats; where this group and another locate the very same words, the entry is this group's
 
  @example
  ```ts
@@ -192,6 +232,7 @@ export function keptWordsOf(
                   .sliceIndex,
                 start: rendering.start,
                 core: rendering.core,
+                ofOtherGroup: true,
               },
             ]
             : [];
@@ -366,7 +407,7 @@ function unitKeyOf({ held, }: { readonly held: HeldReceiver; },): string {
 
  @param members - the receivers of one stretch, in page order
 
- @returns The block of their English, whether a writer can be given it, and the kind of block no paragraph rewrite can carry words into that holds the words
+ @returns The block of their English, whether a writer can be given it, the kind of block no paragraph rewrite can carry words into that holds the words, and, as a list of zero or one, why a unit in no such kind is not writable
 
  @throws {@link ConsistencyInvariantError} when the receivers' slice carries no English
 
@@ -381,6 +422,7 @@ function stretchOf(
   readonly block: CarryBlock;
   readonly writable: boolean;
   readonly spliceOnlyIn: readonly SpliceOnlyKind[];
+  readonly unwritable: readonly UnwritableReason[];
 } {
   /**
    The first receiver, whose slice and block every member shares.
@@ -399,8 +441,13 @@ function stretchOf(
       block,
       writable: true,
       spliceOnlyIn: [],
+      unwritable: [],
     };
   }
+  /**
+   The kind of block that holds the words, none where no kind does.
+   */
+  const [kind,] = first.spliceOnlyIn;
   /**
    The whole English of the receivers' slice.
    */
@@ -416,7 +463,89 @@ function stretchOf(
     },
     writable: false,
     spliceOnlyIn: first.spliceOnlyIn,
+    unwritable: (kind === undefined) ? ['no-single-block',] : [],
   };
+}
+
+/**
+ Whether a block overlaps the located words of a receiving place that is carried
+ apart from it by a splice. A block and the splice of such a place would address
+ the same words, and two replacements of one group may not. A receiving place
+ whose plan is not a replacement has no splice and is not counted.
+
+ @param block - the block of a unit
+
+ @param members - the unit's own receiving places
+
+ @param held - every receiving place of the group with its block
+
+ @returns Whether the words of a receiving place outside the unit that has a splice lie, wholly or in part, inside the block
+
+ @example
+ ```ts
+ const overlapped = overlapsOutsideReceiver({ block, sliceIndex: 1, members, held, },);
+ ```
+ */
+function overlapsOutsideReceiver(
+  {
+    block,
+    members,
+    held,
+  }: {
+    readonly block: CarryBlock;
+    readonly members: readonly HeldReceiver[];
+    readonly held: readonly HeldReceiver[];
+  },
+): boolean {
+  /**
+   The first member of the unit, whose slice every member shares.
+   */
+  const [first,] = members;
+  if (first === undefined)
+    return false;
+  /**
+   The slice the unit stands in.
+   */
+  const { sliceIndex, } = first.receiver
+    .place
+    .slice;
+  return held.some(function reachesBlock({ receiver, },): boolean {
+    /**
+     Offset where the place's located words start, and the words themselves.
+     */
+    const {
+      start,
+      core,
+    } = receiver.rendering;
+    /**
+     Exclusive offset where they end.
+     */
+    const end = start + core.length;
+    /**
+     Whether the place is one of the unit's own receiving places.
+     */
+    const isMember = members.some(function sameReceiver(member,): boolean {
+      return member.receiver === receiver;
+    },);
+    /**
+     The slice the place stands in.
+     */
+    const { sliceIndex: placeSlice, } = receiver.place
+      .slice;
+    if (isMember)
+      return false;
+    if (placeSlice !== sliceIndex)
+      return false;
+    // A PLACE WITH NO SPLICE HAS NO EDIT, so nothing addresses its words and a rewrite of the block cannot meet one. The
+    // plan was made before any writer was asked (`pass-consistency-decide.ts`) and is read here as it stands.
+    /**
+     How the chosen words are moved into the place.
+     */
+    const { plan, } = receiver;
+    if (plan.kind !== 'replace')
+      return false;
+    return (start < block.end) && (block.start < end);
+  },);
 }
 
 /**
@@ -477,6 +606,7 @@ export function unitsOf(
         block,
         writable,
         spliceOnlyIn,
+        unwritable,
       } = stretchOf({ members, },);
       /**
        The slice the members stand in.
@@ -486,12 +616,40 @@ export function unitsOf(
         .place
         .slice
         .sliceIndex;
+      /**
+       Whether no receiving place outside the unit has its words in part inside the block; where one has, the block's
+       rewrite and that place's splice would address the same words.
+       */
+      const overlapped = overlapsOutsideReceiver({
+        block,
+        members,
+        held,
+      },);
+      /**
+       Whether the block is one a writer could be given and the overlap is what takes it away.
+       */
+      const overlapTakesIt = writable && overlapped;
+      /**
+       Why the unit is not writable, as a list of zero or one: the overlap, or what the stretch says.
+       */
+      const [unwritableBecause,] = overlapTakesIt ? ['overlaps-outside-receiver',] as const : unwritable;
+      /**
+       Whether the unit stays writable.
+       */
+      const stays = !overlapTakesIt;
       return {
         block,
-        writable,
+        writable: writable && stays,
+        ...((unwritableBecause === undefined) ? {} : { unwritableBecause, }),
         spliceOnlyIn,
         receivers: members.map(function receiverOf({ receiver, },): CarryReceiver {
           return receiver;
+        },),
+        crossing: crossingOfUnit({
+          block,
+          members,
+          held,
+          kept,
         },),
         keeping: kept
           .filter(function standsInBlock(

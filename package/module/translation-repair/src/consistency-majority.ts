@@ -1,5 +1,9 @@
 import type { ConsistencyVoice, } from './consistency-count-types.ts';
-import { foldedWordsOf, } from './consistency-fold.ts';
+import {
+  foldedWordsOf,
+  marksHeldBesideWords,
+  type MarksBeside,
+} from './consistency-fold.ts';
 import {
   type ConsistencyQuoteWire,
   isUsableConsistencyBallot,
@@ -7,8 +11,9 @@ import {
 
 //region Consistency majority
 // What a strict majority of a group's usable ballots agree on: a quote, a
-// slot, a choice, a kept place. Strict means more than half of the usable
-// ballots, so a tie agrees on nothing.
+// slot, a choice, a kept place, and the side of a quote's words on which a
+// single mark stood. Strict means more than half of the usable ballots, so a
+// tie agrees on nothing.
 
 /**
  The text a strict majority of usable ballots gave, as a list of zero or one.
@@ -54,9 +59,86 @@ function majorityText(
 }
 
 /**
- What each ballot that quoted a place quoted.
+ The quote entries of a group's ballots, grouped by the label of the place each names, each group in ballot order. A group of
+ many places asks the quotes of every place, so they are grouped once for the group and each place is looked up, rather than
+ every ballot being read again for each place.
+ */
+export type QuotesByLabel = ReadonlyMap<string, readonly ConsistencyQuoteWire[]>;
+
+/**
+ How many ballots keep each place of a group, by the place's label; a label no ballot keeps is absent.
+ */
+export type KeepsByLabel = ReadonlyMap<string, number>;
+
+/**
+ Groups the quote entries of ballots by the place they name.
 
  @param voices - usable ballots
+
+ @returns For each label a ballot quoted, the entries in the order of the ballots and of the entries of each ballot
+
+ @example
+ ```ts
+ const quotesByLabel = quotesByLabelOf({ voices, },); // quotesByLabel.get('OCCURRENCE 1') holds the quotes of that place
+ ```
+ */
+export function quotesByLabelOf({ voices, }: { readonly voices: readonly ConsistencyVoice[]; },): QuotesByLabel {
+  /**
+   The entries of each label, mutated only inside this function.
+   */
+  const grouped = new Map<string, ConsistencyQuoteWire[]>();
+  for (const voice of voices) {
+    for (const entry of voice.quotes) {
+      /**
+       The entries of the label so far.
+       */
+      const given = grouped.get(entry.label,);
+      if (given === undefined) {
+        grouped.set(
+          entry.label,
+          [entry,],
+        );
+      }
+      else {
+        given.push(entry,);
+      }
+    }
+  }
+  return grouped;
+}
+
+/**
+ Counts the ballots that keep each place, a place a ballot lists twice counting once for that ballot.
+
+ @param voices - usable ballots
+
+ @returns For each label a ballot keeps, the number of ballots that keep it
+
+ @example
+ ```ts
+ const keepsByLabel = keepsByLabelOf({ voices, },); // keepsByLabel.get('OCCURRENCE 2') is the ballots that keep that place
+ ```
+ */
+export function keepsByLabelOf({ voices, }: { readonly voices: readonly ConsistencyVoice[]; },): KeepsByLabel {
+  /**
+   The number of ballots for each label, mutated only inside this function.
+   */
+  const counted = new Map<string, number>();
+  for (const voice of voices) {
+    for (const label of new Set(voice.keep,)) {
+      counted.set(
+        label,
+        (counted.get(label,) ?? 0) + 1,
+      );
+    }
+  }
+  return counted;
+}
+
+/**
+ What each ballot that quoted a place quoted.
+
+ @param quotesByLabel - the quote entries of the group's ballots by label
 
  @param label - the place's label
 
@@ -64,24 +146,19 @@ function majorityText(
 
  @example
  ```ts
- const quoted = quotesOfPlace({ voices, label: 'OCCURRENCE 1', },);
+ const quoted = quotesOfPlace({ quotesByLabel: quotesByLabelOf({ voices, }), label: 'OCCURRENCE 1', },);
  ```
  */
 function quotesOfPlace(
   {
-    voices,
+    quotesByLabel,
     label,
   }: {
-    readonly voices: readonly ConsistencyVoice[];
+    readonly quotesByLabel: QuotesByLabel;
     readonly label: string;
   },
 ): readonly ConsistencyQuoteWire[] {
-  return voices.flatMap(function quotesOf(voice,): readonly ConsistencyQuoteWire[] {
-    return voice.quotes
-      .filter(function namesPlace(entry,): boolean {
-        return entry.label === label;
-      },);
-  },);
+  return quotesByLabel.get(label,) ?? [];
 }
 
 /**
@@ -91,6 +168,9 @@ function quotesOfPlace(
  @param voices - usable ballots
 
  @param label - the place's label
+
+ @param quotesByLabel - the quote entries of these ballots by label, which a caller that asks many places reads once for the
+ group; read from the ballots where absent
 
  @returns The agreed quote, or none
 
@@ -103,14 +183,16 @@ export function agreedQuoteOf(
   {
     voices,
     label,
+    quotesByLabel = quotesByLabelOf({ voices, },),
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
+    readonly quotesByLabel?: QuotesByLabel;
   },
 ): readonly string[] {
   return majorityText({
     given: quotesOfPlace({
-      voices,
+      quotesByLabel,
       label,
     },)
       .map(function textOf(entry,): string {
@@ -131,6 +213,9 @@ export function agreedQuoteOf(
 
  @param label - the place's label
 
+ @param quotesByLabel - the quote entries of these ballots by label, which a caller that asks many places reads once for the
+ group; read from the ballots where absent
+
  @returns The folded words more than half of the usable ballots quoted, or none
 
  @example
@@ -142,14 +227,16 @@ export function agreedWordsOf(
   {
     voices,
     label,
+    quotesByLabel = quotesByLabelOf({ voices, },),
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
+    readonly quotesByLabel?: QuotesByLabel;
   },
 ): readonly string[] {
   return majorityText({
     given: quotesOfPlace({
-      voices,
+      quotesByLabel,
       label,
     },)
       .map(function wordsOf(entry,): string {
@@ -157,6 +244,72 @@ export function agreedWordsOf(
       },),
     of: voices.length,
   },);
+}
+
+/**
+ On which sides the usable ballots give evidence of a single mark beside a
+ place's agreed words. A side holds when more than half of all the usable
+ ballots (not of those that agreed on the words) quoted the agreed words with a
+ single mark directly beside them on that side. A ballot that quoted the words
+ without the mark, other words, or nothing for the place is no evidence for the
+ side and is counted in the usable ballots all the same.
+
+ @param voices - usable ballots
+
+ @param label - the place's label
+
+ @param words - the folded words the quotes agreed on
+
+ @param quotesByLabel - the quote entries of these ballots by label, which a caller that asks many places reads once for the
+ group; read from the ballots where absent
+
+ @returns Whether the evidence holds for the side before the words and for the side after them
+
+ @example
+ ```ts
+ const { before, after, } = markEvidenceOf({ voices, label: 'OCCURRENCE 1', words: 'the cats', },);
+ ```
+ */
+export function markEvidenceOf(
+  {
+    voices,
+    label,
+    words,
+    quotesByLabel = quotesByLabelOf({ voices, },),
+  }: {
+    readonly voices: readonly ConsistencyVoice[];
+    readonly label: string;
+    readonly words: string;
+    readonly quotesByLabel?: QuotesByLabel;
+  },
+): MarksBeside {
+  /**
+   What each ballot that quoted the agreed words held directly beside them.
+   */
+  const held = quotesOfPlace({
+    quotesByLabel,
+    label,
+  },)
+    .filter(function quotesTheWords(entry,): boolean {
+      return foldedWordsOf({ text: entry.quote, },) === words;
+    },)
+    .map(function heldBy(entry,): MarksBeside {
+      return marksHeldBesideWords({ text: entry.quote, },);
+    },);
+  return {
+    before: (held.filter(function heldBefore({ before, },): boolean {
+      return before;
+    },)
+      .length
+      * 2)
+      > voices.length,
+    after: (held.filter(function heldAfter({ after, },): boolean {
+      return after;
+    },)
+      .length
+      * 2)
+      > voices.length,
+  };
 }
 
 /**
@@ -170,6 +323,9 @@ export function agreedWordsOf(
 
  @param words - the folded words the quotes agreed on
 
+ @param quotesByLabel - the quote entries of these ballots by label, which a caller that asks many places reads once for the
+ group; read from the ballots where absent
+
  @returns The folded slot words more than half of the usable ballots gave beside them, or none
 
  @example
@@ -182,15 +338,17 @@ export function agreedSlotWordsOf(
     voices,
     label,
     words,
+    quotesByLabel = quotesByLabelOf({ voices, },),
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
     readonly words: string;
+    readonly quotesByLabel?: QuotesByLabel;
   },
 ): readonly string[] {
   return majorityText({
     given: quotesOfPlace({
-      voices,
+      quotesByLabel,
       label,
     },)
       .filter(function besideTheWords(entry,): boolean {
@@ -215,6 +373,9 @@ export function agreedSlotWordsOf(
 
  @param quote - the quote a majority agreed on, when the slot is asked beside it
 
+ @param quotesByLabel - the quote entries of these ballots by label, which a caller that asks many places reads once for the
+ group; read from the ballots where absent
+
  @returns The agreed slot, or none
 
  @example
@@ -227,15 +388,17 @@ export function agreedSlotOf(
     voices,
     label,
     quote,
+    quotesByLabel = quotesByLabelOf({ voices, },),
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
     readonly quote?: string;
+    readonly quotesByLabel?: QuotesByLabel;
   },
 ): readonly string[] {
   return majorityText({
     given: quotesOfPlace({
-      voices,
+      quotesByLabel,
       label,
     },)
       .filter(function besideTheQuote(entry,): boolean {
@@ -366,6 +529,9 @@ export function usableVoicesOf(
 
  @param label - the place's label
 
+ @param keepsByLabel - how many of these ballots keep each place, which a caller that asks many places reads once for the
+ group; read from the ballots where absent
+
  @returns Whether more than half of them list the label in their kept places
 
  @example
@@ -377,17 +543,14 @@ export function isKeptByMajority(
   {
     voices,
     label,
+    keepsByLabel = keepsByLabelOf({ voices, },),
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
+    readonly keepsByLabel?: KeepsByLabel;
   },
 ): boolean {
-  return (voices.filter(function keeps(voice,): boolean {
-    return voice.keep
-      .includes(label,);
-  },)
-    .length
-    * 2) > voices.length;
+  return ((keepsByLabel.get(label,) ?? 0) * 2) > voices.length;
 }
 
 //endregion Consistency majority

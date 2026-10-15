@@ -17,6 +17,7 @@ import {
   chosenPlaceOf,
   plannedPlace,
 } from './pass-consistency-decide.ts';
+import type { EdgeVerdict, } from './pass-consistency-edge-refusal.ts';
 import type { ConsistencyPlace, } from './pass-consistency-group.ts';
 import type { ConsistencyRunOffAsked, } from './pass-consistency-run-off.ts';
 import type {
@@ -168,6 +169,11 @@ export function countAsked(
           .current,
         sliceIndex: place.slice
           .sliceIndex,
+        // THE PROOF OF AN APOSTROPHE READS THE PAGE the place's slice belongs to, not the slice alone.
+        ...((place.slice
+          .page
+          === undefined) ? {} : { page: place.slice
+            .page, }),
       };
     },),
     framed: repeat.kind === 'refrain',
@@ -286,6 +292,15 @@ export function settleAsked(
     outcomes: planned.map(function outcomeOf(entry,): ConsistencyOccurrenceOutcome {
       return entry.outcome;
     },),
+    ...(planned.some(function isRefused({ edge, },): boolean {
+      return edge !== undefined;
+    },)
+      ? {
+        leftBecause: planned.map(function edgeOf({ edge, },): EdgeVerdict {
+          return edge ?? 'unrefused';
+        },),
+      }
+      : {}),
     edits: [],
     carries: [],
     findings: [
@@ -386,6 +401,7 @@ export function settleCarried(
       ): ConsistencyOccurrenceOutcome {
         return replacing.has(position,) ? 'replaced' : outcome;
       },),
+    ...((decided.leftBecause === undefined) ? {} : { leftBecause: decided.leftBecause, }),
     edits: carried.flatMap(function editsOf(entry,): readonly PendingEdit[] {
       return entry.edits;
     },),

@@ -33,7 +33,11 @@ type BreakSpan = {
 
  @returns Non-overlapping spans, retaining the original line endings
 
- @throws {@link MdxParseError} when the shared slice grammar refuses this input
+ THE ENGINE'S STACK EXHAUSTION IS READ AS THE REFUSAL ONLY WHERE THE PARSE ENDS, inside `parseSliceBody`. The walk of the
+ parsed tree (the loop over `pending`) is no part of the parse: an exhaustion it raises is no fact about the text and
+ propagates.
+
+ @throws {@link MdxParseError} when the shared slice grammar refuses this input, or the parse exhausted the stack
 
  @example
  ```ts
@@ -79,6 +83,8 @@ function sourceBreakSpans({ text, }: { readonly text: string; },): readonly Brea
  Canonical source and its offsets remain untouched outside this presentation.
  Explicit absent-incumbent provenance is required in addition to empty archive
  wording; omission of that fact conservatively preserves the original view.
+
+ @internal
 
  @param sourceText - canonical original, never modified in place
 

@@ -264,8 +264,10 @@ export function splitTargetOnlyRun(
     },);
   }
   catch (error) {
-    // Only the grammar's own refusal keeps the passage whole; anything else
-    // is an unexpected state that must keep propagating.
+    // Only the grammar's own refusal keeps the passage whole, and the slice
+    // grammar reads an exhaustion of its own parse as that refusal (`parseSliceBody`);
+    // anything else, an exhaustion of the code that reads the blocks included, is
+    // an unexpected state that must keep propagating.
     requireMdxRefusal({ error, },);
     return whole;
   }

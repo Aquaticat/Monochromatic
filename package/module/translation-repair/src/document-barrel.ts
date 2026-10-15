@@ -106,9 +106,11 @@ export {
 export { isIndexPairList, } from './index-pair-list.ts';
 export { groupNodes, } from './group-nodes.ts';
 export {
-  composeInsertion,
+  composedInsertion,
   documentLineEnding,
   fragmentBody,
+  fragmentCut,
+  type FragmentPlace,
 } from './insertion-separator.ts';
 export {
   buildSliceDelivery,

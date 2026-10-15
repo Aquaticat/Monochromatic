@@ -1,6 +1,9 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { foldCarriageReturns, } from './line-endings.ts';
-import { requireMdxRefusal, } from './parse-mdx.ts';
+import {
+  requireMdxRefusal,
+  withMdxExhaustionRefused,
+} from './parse-mdx.ts';
 import { parseSliceBody, } from './parse-slice-body.ts';
 
 //region Line structure
@@ -112,7 +115,10 @@ export function isLineStructured(
     .text;
   try {
     return shortBlocks({
-      lengths: parseSliceBody({ text: folded, },)
+      lengths: withMdxExhaustionRefused({
+        parse: parseSliceBody,
+        input: { text: folded, },
+      },)
         .root
         .children
         .map(function toLength(block,): number {

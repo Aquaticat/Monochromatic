@@ -5,6 +5,7 @@ import {
 import {
   parseMarkdownBody,
   requireMarkdownRefusal,
+  withMarkdownExhaustionRefused,
 } from './parse-mdx.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
@@ -144,7 +145,12 @@ function renderingAtoms({ text, }: { readonly text: string; },): readonly Protec
     return read.skeleton
       .atoms;
   try {
-    return walkAtoms({ root: parseMarkdownBody({ body: text, },), },);
+    return walkAtoms({
+      root: withMarkdownExhaustionRefused({
+        parse: parseMarkdownBody,
+        input: { body: text, },
+      },),
+    },);
   }
   catch (error) {
     // Only the plain grammar's refusal reads as no atoms; anything else is
@@ -180,6 +186,8 @@ function carriedDestinations({ text, }: { readonly text: string; },): ReadonlySe
 /**
  Findings for every source href whose worded link the rendering unwrapped
  while keeping the destination.
+
+ @internal
 
  @param sourceText - original slice
 

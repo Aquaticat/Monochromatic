@@ -1,13 +1,20 @@
+import { markPastRunOf, } from './consistency-closing-marks.ts';
 import { locateWords, } from './consistency-fold.ts';
+import { singleMarkAt, } from './consistency-loose-marks.ts';
 import { carriesOrCutsMarkup, } from './consistency-markup.ts';
 import {
   agreedSlotWordsOf,
   agreedWordsOf,
   isKeptByMajority,
+  keepsByLabelOf,
   majorityChoiceOf,
+  markEvidenceOf,
+  type QuotesByLabel,
+  quotesByLabelOf,
   tiedForFirstOf,
   usableVoicesOf,
 } from './consistency-majority.ts';
+import { unlessOverlapping, } from './consistency-count-overlap.ts';
 import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
 import type {
   ConsistencyCount,
@@ -15,6 +22,7 @@ import type {
   ConsistencyVoice,
   ConsistencyWinner,
 } from './consistency-count-types.ts';
+import type { PageEnglish, } from './consistency-page-english.ts';
 import type { ConsistencyEnglish, } from './consistency-wire.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
 
@@ -28,99 +36,60 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 // of spaces do not make two quotes two texts. A STRICT MAJORITY OF THE USABLE
 // BALLOTS must name one span, and that span must stand exactly once in the
 // English; the place then carries the words the English holds there, never a
-// judge's string. A ballot whose quote stands nowhere or twice is one of the
+// judge's string, and the span never begins or ends between the halves of a character reference the parser decodes or of a
+// backslash escape (`wholeSpanOf`, `consistency-whole-end.ts`: a quote that stops before the semicolon of `&amp;` or starts at
+// its `amp;` names the span with the whole reference, and one that stops before the full stop in `\.` names the span without
+// it, the unit being kept or cut as the character it shows would be). A ballot whose quote stands nowhere or twice is one of the
 // usable ballots that did not agree. Otherwise the place is unlocated and stays
 // as it stands. THE CHOICE WINS ON A STRICT MAJORITY and only with the quorum
 // the gather closed on, and only if its own span is located; two or more labels
 // tied for first are named as the finalists of a run-off, which the pass asks
 // once (`finalists`). A PLACE IS KEPT when a strict majority list it.
 //
+// WORDS THAT STAND MORE THAN ONCE ARE TOLD APART BY THE MARKS THE BALLOTS COPIED.
+// The agreed words are folded and hold no mark, so the counter gives the locator
+// the evidence itself (`markEvidenceOf` in `consistency-majority.ts`): a side
+// holds when a strict majority of the usable ballots (not of those that agreed
+// on the words) quoted the agreed words with a single mark directly beside them
+// on that side, and a ballot that copied no mark is no evidence against it. The
+// locator uses it only where the words stand more than once, in a plain group
+// and in a frame alike.
+//
 // A SLOT IS NO CONDITION OF A SPAN. A frame's slot words are agreed the same way
 // inside the span, and a place whose slot is not agreed (or is all of the span,
 // or stands twice, or cuts markup) is still located, only without a slot, which
 // leaves the code splice unavailable for it and the writers to carry the slot.
 //
+// A LOCATED RENDERING RECORDS THE SINGLE MARKS BESIDE ITS SPAN. The span is the
+// words and the proven apostrophe beside them, if there is one (`the parents’`,
+// `consistency-proven-apostrophes.ts`): that mark is inside the span and is not
+// recorded beside it. An apostrophe with a possible partner or a quotation mark the
+// English holds directly before or after the span stays outside; the rendering
+// keeps it (`markBefore`, `markAfter`) so the splice (`consistency-splice.ts`) can
+// refuse to move words between two places that hold different marks beside them,
+// which would write a pairing of words and marks neither place wrote. WHETHER A MARK IS
+// PROVEN IS ASKED OF THE WHOLE PAGE, not of the place's slice: a place carries the
+// English of its page (`page`, `consistency-page-english.ts`), so a closing mark whose
+// quotation opened in an earlier slice is no apostrophe of the words.
+//
+// A MARK ONE RUN OF MARKUP BEYOND THE SPAN IS RECORDED TOO, apart from the mark directly
+// beside it. When the span is followed (or preceded) by a run of emphasis characters, a
+// backtick, closing brackets or double quotation marks, a link's destination, any unit no reader
+// reads as a word (a tag, a footnote label, a comment, a character reference) or horizontal white
+// space on its line, and a single mark ends the run (`*kittens*’`, `` `kittens`’ ``), the rendering keeps that mark as
+// `markPastAfter` (`markPastBefore` on the leading side), read by `markPastRunOf`
+// (`consistency-closing-marks.ts`). It is no part of the comparison of the marks beside the
+// words; the splice uses it to refuse a replacement that would bring a proven apostrophe to
+// that edge, which would sit next to it as a second apostrophe (`*dogs’*’`). The field is
+// absent when no run stands there, and it is not written to the record, which holds only the
+// marks directly beside the words.
+//
 // A SPAN THAT CANNOT BE MOVED WHOLE STAYS WHERE IT IS: one that cuts markup or
 // carries a footnote mark (`consistency-markup.ts`), and two places of one slice
-// whose words overlap, are left unlocated.
+// whose words overlap (`consistency-count-overlap.ts`), are left unlocated.
 //
 // NOTHING HERE WRITES TEXT. The words a replacement carries are words the
 // English holds, and the splice (`consistency-splice.ts`) only moves them.
-
-/**
- Where a text stands inside another.
-
- @example
- ```ts
- const found: QuoteOccurrences = { kind: 'once', at: 4, };
- ```
- */
-export type QuoteOccurrences =
-  | {
-    /**
-     The text stands nowhere in the other.
-     */
-    readonly kind: 'none';
-  }
-  | {
-    /**
-     The text stands exactly once.
-     */
-    readonly kind: 'once';
-
-    /**
-     Offset of that one occurrence.
-     */
-    readonly at: number;
-  }
-  | {
-    /**
-     The text stands more than once, overlaps included.
-     */
-    readonly kind: 'many';
-  };
-
-/**
- Where a text stands inside another: nowhere, once, or more than once,
- overlaps included.
-
- @param haystack - text searched
-
- @param needle - text looked for, never empty
-
- @returns That it is absent, the offset of its one occurrence, or that it
- occurs more than once
-
- @example
- ```ts
- const found = occurrencesOf({ haystack: 'aaa', needle: 'aa', },); // { kind: 'many' }
- ```
- */
-export function occurrencesOf(
-  {
-    haystack,
-    needle,
-  }: {
-    readonly haystack: string;
-    readonly needle: string;
-  },
-): QuoteOccurrences {
-  if (!haystack.includes(needle,))
-    return { kind: 'none', };
-  /**
-   Offset of the first occurrence.
-   */
-  const at = haystack.indexOf(needle,);
-  if (haystack.includes(
-    needle,
-    at + 1,
-  ))
-    return { kind: 'many', };
-  return {
-    kind: 'once',
-    at,
-  };
-}
 
 /**
  The slot words a strict majority gave inside a located span, as the English
@@ -133,6 +102,9 @@ export function occurrencesOf(
  @param words - the folded words the span was agreed by
 
  @param span - the English's own words of the span
+
+ @param quotesByLabel - the quote entries of these ballots by label, which a caller that asks many places reads once for the
+ group; read from the ballots where absent
 
  @returns The slot as the span holds it and its offset in the span, as a list of
  zero or one; none when the ballots do not agree on a slot, it shows a reader
@@ -150,11 +122,13 @@ export function slotInSpan(
     label,
     words,
     span,
+    quotesByLabel = quotesByLabelOf({ voices, },),
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
     readonly words: string;
     readonly span: string;
+    readonly quotesByLabel?: QuotesByLabel;
   },
 ): readonly {
   readonly slot: string;
@@ -166,6 +140,7 @@ export function slotInSpan(
   const [slotWords,] = agreedSlotWordsOf({
     voices,
     label,
+    quotesByLabel,
     words,
   },);
   if ((slotWords === undefined) || rendersAsNothing({ text: slotWords, },))
@@ -176,6 +151,7 @@ export function slotInSpan(
   const inside = locateWords({
     haystack: span,
     words: slotWords,
+    apostrophes: 'outside',
   },);
   if (inside.kind !== 'once')
     return [];
@@ -206,13 +182,17 @@ export function slotInSpan(
 
  @param english - the place's English
 
+ @param page - the English of the whole page the place belongs to and where the place's English starts in it, which the proof of an apostrophe reads; the place's English alone is the page where absent
+
  @param framed - whether the group is a frame with a slot
+
+ @param quotesByLabel - the quote entries of the usable ballots by label, read once for the group
 
  @returns The located rendering, carrying the words the English holds, or why it is not
 
  @example
  ```ts
- const rendering = locatedRendering({ voices, label: 'OCCURRENCE 1', english, framed: false, },);
+ const rendering = locatedRendering({ voices, label: 'OCCURRENCE 1', english, framed: false, quotesByLabel, },);
  ```
  */
 function locatedRendering(
@@ -220,12 +200,16 @@ function locatedRendering(
     voices,
     label,
     english,
+    page,
     framed,
+    quotesByLabel,
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
     readonly english: ConsistencyEnglish;
+    readonly page?: PageEnglish;
     readonly framed: boolean;
+    readonly quotesByLabel: QuotesByLabel;
   },
 ): ConsistencyRendering {
   if (english.kind === 'absent') {
@@ -240,6 +224,7 @@ function locatedRendering(
   const [words,] = agreedWordsOf({
     voices,
     label,
+    quotesByLabel,
   },);
   if (words === undefined) {
     return {
@@ -254,11 +239,18 @@ function locatedRendering(
     };
   }
   /**
-   Where the words stand in the English.
+   Where the words stand in the English, the single marks a strict majority of the usable ballots copied beside them choosing between stands.
    */
   const found = locateWords({
     haystack: english.text,
     words,
+    marks: markEvidenceOf({
+      voices,
+      label,
+      words,
+      quotesByLabel,
+    },),
+    ...((page === undefined) ? {} : { page, }),
   },);
   if (found.kind === 'none') {
     return {
@@ -273,12 +265,17 @@ function locatedRendering(
     };
   }
   /**
+   Where the span ends, which the locator has taken whole where a judge's quote stopped inside a character reference or a
+   backslash escape.
+   */
+  const spanEnd = found.end;
+  /**
    The English's own words of the span.
    */
   const span = english.text
     .slice(
     found.start,
-    found.end,
+    spanEnd,
   );
   if (carriesOrCutsMarkup({ text: span, },)) {
     return {
@@ -286,14 +283,51 @@ function locatedRendering(
       reason: 'markup',
     };
   }
-  if (!framed) {
-    return {
-      kind: 'located',
-      quote: span,
-      core: span,
-      start: found.start,
-    };
-  }
+  /**
+   The single mark directly before the span, as the English holds it, as a list of zero or one; a proven apostrophe the span took in is not beside it.
+   */
+  const [markBefore,] = singleMarkAt({
+    text: english.text,
+    at: found.start - 1,
+  },);
+  /**
+   The single mark directly after the span, as the English holds it, as a list of zero or one.
+   */
+  const [markAfter,] = singleMarkAt({
+    text: english.text,
+    at: spanEnd,
+  },);
+  /**
+   The single mark past a run of markup or opening characters before the span, none when a run is absent or ends in no mark.
+   */
+  const [markPastBefore,] = markPastRunOf({
+    text: english.text,
+    at: found.start,
+    side: 'before',
+  },);
+  /**
+   The single mark past a run of markup or closing characters after the span.
+   */
+  const [markPastAfter,] = markPastRunOf({
+    text: english.text,
+    at: spanEnd,
+    side: 'after',
+  },);
+  /**
+   The span with the marks beside it, which the splice compares between places.
+   */
+  const bare: Extract<ConsistencyRendering, { readonly kind: 'located'; }> = {
+    kind: 'located',
+    quote: span,
+    core: span,
+    start: found.start,
+    ...((markBefore === undefined) ? {} : { markBefore, }),
+    ...((markAfter === undefined) ? {} : { markAfter, }),
+    ...((markPastBefore === undefined) ? {} : { markPastBefore, }),
+    ...((markPastAfter === undefined) ? {} : { markPastAfter, }),
+  };
+  if (!framed)
+    return bare;
   /**
    The slot inside the span, none when the ballots did not pin one down.
    */
@@ -302,79 +336,12 @@ function locatedRendering(
     label,
     words,
     span,
+    quotesByLabel,
   },);
   return {
-    kind: 'located',
-    quote: span,
-    core: span,
-    start: found.start,
+    ...bare,
     ...inSpan,
   };
-}
-
-/**
- Takes the rendering of every place whose located words overlap another place
- of the same slice, since one run of English cannot be two renderings and
- replacing the one would damage the other.
-
- @param places - slice of each place, in page order, where it is known
-
- @param renderings - each place's rendering as located, in the same order
-
- @returns The renderings, a place that overlaps another unlocated
-
- @example
- ```ts
- const separated = unlessOverlapping({ places, renderings, },);
- ```
- */
-function unlessOverlapping(
-  {
-    places,
-    renderings,
-  }: {
-    readonly places: readonly { readonly sliceIndex?: number; }[];
-    readonly renderings: readonly ConsistencyRendering[];
-  },
-): readonly ConsistencyRendering[] {
-  return renderings.map(function separated(
-    rendering,
-    position,
-  ): ConsistencyRendering {
-    if (rendering.kind !== 'located')
-      return rendering;
-    /**
-     Slice this place stands in, where the caller knows it.
-     */
-    const sliceIndex = places[position]
-      ?.sliceIndex;
-    if (sliceIndex === undefined)
-      return rendering;
-    /**
-     Whether another place of the slice has words over these.
-     */
-    const overlaps = renderings.some(function sharesWords(
-      other,
-      otherPosition,
-    ): boolean {
-      return (otherPosition !== position) && (other.kind === 'located')
-        && (places[otherPosition]
-          ?.sliceIndex
-          === sliceIndex)
-        && (rendering.start < (other.start
-          + other.core
-          .length))
-        && (other.start < (rendering.start
-          + rendering.core
-          .length));
-    },);
-    return overlaps
-      ? {
-        kind: 'unlocated',
-        reason: 'overlaps-another',
-      }
-      : rendering;
-  },);
 }
 
 /**
@@ -383,7 +350,8 @@ function unlessOverlapping(
  @param voices - every heard ballot with its seat
 
  @param places - label and English of each place, in page order, with the slice
- it stands in where the caller knows it
+ it stands in where the caller knows it and the English of the whole page with
+ the offset where the place's English starts in it
 
  @param framed - whether the group is a frame with a slot
 
@@ -408,6 +376,7 @@ export function countConsistency(
       readonly label: string;
       readonly english: ConsistencyEnglish;
       readonly sliceIndex?: number;
+      readonly page?: PageEnglish;
     }[];
     readonly framed: boolean;
     readonly quorum: number;
@@ -427,6 +396,15 @@ export function countConsistency(
     labels,
   },);
   /**
+   The quotes of the usable ballots by place, read once for the group so each place is looked up and the ballots are not read
+   again for every place.
+   */
+  const quotesByLabel = quotesByLabelOf({ voices: usableVoices, },);
+  /**
+   How many usable ballots keep each place, read once for the group for the same reason.
+   */
+  const keepsByLabel = keepsByLabelOf({ voices: usableVoices, },);
+  /**
    Each place's rendering.
    */
   const renderings = unlessOverlapping({
@@ -436,7 +414,9 @@ export function countConsistency(
         voices: usableVoices,
         label: place.label,
         english: place.english,
+        ...((place.page === undefined) ? {} : { page: place.page, }),
         framed,
+        quotesByLabel,
       },);
     },),
   },);
@@ -447,6 +427,7 @@ export function countConsistency(
     return isKeptByMajority({
       voices: usableVoices,
       label: place.label,
+      keepsByLabel,
     },);
   },);
   /**

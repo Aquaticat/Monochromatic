@@ -479,8 +479,19 @@ import type { RepairModels, } from './repair-contract.ts';
  apparatus kinds it excuses a drop by (ledger B28, `introduced-defect-wire.ts`);
  checked on 2026-09-29: still no slice-cache file written after 04:27 UTC on
  2026-09-27, where a control from midnight finds 494.
+
+ Version 35 is a TYPOGRAPHY change, the kind version 7 names: the quote style the repair restores into the replaced region
+ (`restoreTypography`, called by `apply-patch.ts` before every gate) is read from the page parse now, so a straight mark in a link
+ destination or title, an address, code, math, an expression or a tag is left alone where the old mask could curl it, a lone
+ straight mark before markup (`'*cat*'`) opens a quotation, and a quoted number (`'42'`) pairs. Every prompt and every roster is
+ identical, so the key is too, and a record the old restoration wrote holds replacement text the new one would ship differently.
+ The agent runs hold no record this number could make stale as far as the checks that could be made show: the audit of
+ 2026-10-05 recorded the newest of 13,714 records as written before 34 was set, `cache-account-audit` finds none under this
+ worktree's own runs directory, and a `find` for files newer than 34 over the one runs directory that could be listed found
+ nothing, but its control since January found nothing either, so it proves no absence. The number moves because the one check
+ that would let the change ride inside 34 could not be made with a control.
  */
-export const SLICE_CACHE_VERSION = 34;
+export const SLICE_CACHE_VERSION = 35;
 /**
  Everything about a repair run that changes what the models are ASKED, folded
  into every cache key.

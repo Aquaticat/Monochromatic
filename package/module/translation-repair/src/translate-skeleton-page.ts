@@ -6,6 +6,7 @@ import { explicitBreakCounts, } from './source-only-breaks.ts';
 import {
   parseMarkdownBody,
   requireMarkdownRefusal,
+  withMarkdownExhaustionRefused,
 } from './parse-mdx.ts';
 import {
   blockDetail,
@@ -95,7 +96,10 @@ function readRelaxed({ text, }: { readonly text: string; },): SkeletonRead {
     /**
      Page under the grammar that tolerates an unbalanced tag.
      */
-    const root: DeepReadonlyData<Root> = parseMarkdownBody({ body: text, },);
+    const root: DeepReadonlyData<Root> = withMarkdownExhaustionRefused({
+      parse: parseMarkdownBody,
+      input: { body: text, },
+    },);
     return {
       kind: 'read',
       skeleton: {
@@ -142,6 +146,8 @@ function readRelaxed({ text, }: { readonly text: string; },): SkeletonRead {
  Tries the strict grammar first so a well-formed page is read exactly as the
  candidate side reads it, and downgrades to plain markdown only where the
  strict grammar refuses.
+
+ @internal
 
  @param text - exact page source, empty where the slice has no page
 

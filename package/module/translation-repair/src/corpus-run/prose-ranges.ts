@@ -177,7 +177,11 @@ function frontMatterEnd({ text, }: { readonly text: string; },): number {
  enough to exhaust its parser's stack, reads as having no blocks at all (ledger B100): no code span
  or sentence start is read off it, so its backticks are prose to the callers,
  and the Han residue floor, which reads every original, page and candidate
- through this, still answers rather than throwing.
+ through this, still answers rather than throwing. `parseBodyTolerant` reads the stack exhaustion of each of its two parses as
+ that parse's refusal at the parse call; this function wraps nothing more, so an exhaustion raised by other code stays
+ uncaught.
+
+ @internal
 
  @param text - text under scan, front matter included when present
 

@@ -1,29 +1,69 @@
 import { standsOf, } from '../consistency-fold.ts';
 import { consistencyLabel, } from '../consistency-wire.ts';
-import { isKeptOutcome, } from './pass-consistency-carry-units.ts';
-import type {
-  PendingEdit,
-  SettledGroup,
-} from './pass-consistency-types.ts';
+import {
+  replacedKeyOf,
+  type SettledIndex,
+} from './pass-consistency-apply-index.ts';
+import type { PendingEdit, } from './pass-consistency-types.ts';
 
 //region Pass consistency apply located
-// A BLOCK REPLACEMENT MUST NOT CHANGE THE WORDS ANOTHER GROUP LOCATED IN IT. A
-// writer's block is written for one group, with the words of the other groups
-// listed as words to keep, and the candidate is withheld when it loses them. The
-// groups settle at the same time, though, and a writer is only asked to keep, so
-// the replacement is checked again where all the groups' replacements meet: a
-// block replacement that covers a located place of another group and changes
-// its words is left out. The test reads the English as it stood when the pass
-// began and the located words of every group, so it does not depend on the order
-// the groups come in.
+// A REPLACEMENT MUST NOT CHANGE THE WORDS ANOTHER GROUP LOCATED, UNLESS THAT
+// GROUP IS REPLACING THEM ITSELF. A writer's block is written for one group,
+// with the words of the other groups listed as words to keep, and the candidate
+// is withheld when it loses them. The groups settle at the same time, though,
+// and a writer is only asked to keep, so the replacement is checked again where
+// all the groups' replacements meet: a block replacement that covers a located
+// place of another group and changes its words is left out. The test reads the
+// English as it stood when the pass began and the located words of every group,
+// so it does not depend on the order the groups come in.
 //
-// A CODE SPLICE IS HELD TO THE PLACES ANOTHER GROUP KEEPS. It replaces the words
-// of its own receiving places, so it can change another group's words only where
-// they overlap, and where the other group's place is a receiving place too the
-// earlier group wins (`pass-consistency-apply.ts`). Where the other group's place
-// is one that group keeps (its chosen place, a place the majority keeps for its
-// context, a place that already reads as the chosen one), no group's replacement
-// is meant to change it, so the splice that does is left out.
+// A CODE SPLICE IS HELD TO THE PLACES ANOTHER GROUP DOES NOT REPLACE. It
+// replaces the words of its own receiving places, so it can change another
+// group's words only where they overlap. Where the other group has a pending
+// replacement of its own over that place in the slice, the two replacements
+// meet and the earlier group wins (`pass-consistency-apply.ts`). Where it has
+// none (the place is its chosen place, a place the majority keeps for its
+// context, a place that already reads as the chosen one, a place whose carry
+// ended with its own English standing, or any other place no replacement of
+// the group carries), no group's replacement is meant to change the place, so
+// the splice that does is left out. What a place's group replaces is read from
+// the group's pending replacements, never from the name of the place's
+// provisional outcome.
+//
+// A SPLICE THAT IS MADE NEVER LEAVES A PLACE IT CHANGED UNRECORDED. The place a
+// splice is spared is carried by a replacement of its group that holds the
+// place's words, so the two replacements overlap and the later of them is left
+// out (`pass-consistency-apply.ts`), recording the place `overlapped`.
+
+/**
+ A located place of one group, with where its words start.
+
+ @example
+ ```ts
+ const place: ChangedPlace = { group: 1, position: 2, label: 'OCCURRENCE 3', start: 26, };
+ ```
+ */
+type ChangedPlace = {
+  /**
+   Position of the place's group on the page, from zero.
+   */
+  readonly group: number;
+
+  /**
+   Position of the place among its group's places, from zero.
+   */
+  readonly position: number;
+
+  /**
+   Label of the place.
+   */
+  readonly label: string;
+
+  /**
+   Offset in the slice's English where the place's located words start.
+   */
+  readonly start: number;
+};
 
 /**
  A replacement left out for changing words another group located, with the
@@ -31,7 +71,7 @@ import type {
 
  @example
  ```ts
- const left: LeftOutEdit = { group: 0, edit, other: { group: 1, label: 'OCCURRENCE 3', }, };
+ const left: LeftOutEdit = { group: 0, edit, other: { group: 1, label: 'OCCURRENCE 3', start: 26, }, };
  ```
  */
 export type LeftOutEdit = {
@@ -125,95 +165,12 @@ function changesWords(
 }
 
 /**
- The places of one other group, in a slice, whose located words a replacement
- changes.
-
- @param edit - the replacement
-
- @param other - the other group
-
- @param otherPosition - position of that group on the page, from zero
-
- @param sliceIndex - the slice
-
- @param english - the slice's English as it stood when the pass began
-
- @returns The places, in the order of the group's places
-
- @example
- ```ts
- const places = placesChangedBy({ edit, other, otherPosition: 1, sliceIndex: 2, english, },);
- ```
- */
-function placesChangedBy(
-  {
-    edit,
-    other,
-    otherPosition,
-    sliceIndex,
-    english,
-  }: {
-    readonly edit: PendingEdit;
-    readonly other: SettledGroup;
-    readonly otherPosition: number;
-    readonly sliceIndex: number;
-    readonly english: string;
-  },
-): readonly LeftOutEdit['other'][] {
-  return other.places
-    .flatMap(function changedPlace(
-      place,
-      position,
-    ): readonly LeftOutEdit['other'][] {
-      /**
-       This place's rendering.
-       */
-      const rendering = other.renderings[position];
-      /**
-       This place's provisional outcome.
-       */
-      const outcome = other.outcomes[position];
-      if (rendering?.kind !== 'located')
-        return [];
-      /**
-       The slice the place stands in.
-       */
-      const placeSlice = place.slice
-        .sliceIndex;
-      if (placeSlice !== sliceIndex)
-        return [];
-      // A splice is held only to the places its group keeps; a receiving place of another group is arbitrated by order.
-      if ((edit.kind === 'splice') && ((outcome === undefined) || (!isKeptOutcome({ outcome, },))))
-        return [];
-      /**
-       Whether the replacement changes this place's words.
-       */
-      const changes = changesWords({
-        edit,
-        english,
-        words: {
-          start: rendering.start,
-          core: rendering.core,
-        },
-      },);
-      return changes
-        ? [
-          {
-            group: otherPosition,
-            label: consistencyLabel({ position, },),
-            start: rendering.start,
-          },
-        ]
-        : [];
-    },);
-}
-
-/**
  The replacements of a slice that change the located words of a place of another
- group: a block replacement against any located place, a code splice against a
- place its group keeps.
+ group: a block replacement against any located place, a code splice against
+ every located place its group does not replace in the slice.
 
- @param settled - the groups in page order, with their pending replacements
+ @param index - the page's groups read by slice, which holds the slice's replacements and located places and no other
+ slice's, so the cost of a slice does not grow with the number of slices
 
  @param sliceIndex - the slice
 
@@ -223,65 +180,104 @@ function placesChangedBy(
 
  @example
  ```ts
- const leftOut = editsChangingLocatedWords({ settled, sliceIndex: 2, english, },);
+ const leftOut = editsChangingLocatedWords({ index: settledIndexOf({ settled, },), sliceIndex: 2, english, },);
  ```
  */
 export function editsChangingLocatedWords(
   {
-    settled,
+    index,
     sliceIndex,
     english,
   }: {
-    readonly settled: readonly SettledGroup[];
+    readonly index: SettledIndex;
     readonly sliceIndex: number;
     readonly english: string;
   },
 ): readonly LeftOutEdit[] {
-  return settled.flatMap(function leftOutOf(
-    group,
-    groupPosition,
-  ): readonly LeftOutEdit[] {
-    return group.edits
-      .filter(function isHere(edit,): boolean {
-        return edit.sliceIndex === sliceIndex;
+  /**
+   What the page's groups hold by slice, and the places they replace in their slices.
+   */
+  const {
+    places,
+    edits: indexedEdits,
+    replaced,
+  } = index;
+  /**
+   The located places in the slice, in the order of the groups.
+   */
+  const placesHere = places.get(sliceIndex,) ?? [];
+  /**
+   The replacements addressed to the slice, in the order of the groups.
+   */
+  const editsHere = indexedEdits.get(sliceIndex,) ?? [];
+  return editsHere.flatMap(function changedBy({
+    group: groupPosition,
+    edit,
+  },): readonly LeftOutEdit[] {
+    /**
+     The places of the other groups, in this slice, whose located words the replacement changes.
+     */
+    const changed = placesHere
+      .filter(function isChanged(place,): boolean {
+        if (place.group === groupPosition)
+          return false;
+        // A place its group replaces is arbitrated by order against the other replacements, so a code splice is not held to it.
+        if ((edit.kind === 'splice') && replaced.has(replacedKeyOf({
+          group: place.group,
+          position: place.position,
+          sliceIndex,
+        },),))
+          return false;
+        /**
+         Where the located words of the place start and what they are.
+         */
+        const {
+          start,
+          core,
+        } = place.rendering;
+        return changesWords({
+          edit,
+          english,
+          words: {
+            start,
+            core,
+          },
+        },);
       },)
-      .flatMap(function changedBy(edit,): readonly LeftOutEdit[] {
-        /**
-         The places of the other groups, in this slice, whose located words the replacement changes.
-         */
-        const changed = settled.flatMap(function placesOf(
-          other,
-          otherPosition,
-        ): readonly LeftOutEdit['other'][] {
-          return (otherPosition === groupPosition)
-            ? []
-            : placesChangedBy({
-              edit,
-              other,
-              otherPosition,
-              sliceIndex,
-              english,
-            },);
-        },);
-        /**
-         The first of them in page order.
-         */
-        const [first,] = changed.toSorted(function inPageOrder(
-          left,
-          right,
-        ): number {
-          return (left.start - right.start) || (left.group - right.group);
-        },);
-        return (first === undefined)
-          ? []
-          : [
-            {
-              group: groupPosition,
-              edit,
-              other: first,
-            },
-          ];
+      .map(function changedPlace({
+        group,
+        position,
+        rendering,
+      },): ChangedPlace {
+        return {
+          group,
+          position,
+          label: consistencyLabel({ position, },),
+          start: rendering.start,
+        };
       },);
+    /**
+     The first of them in page order.
+     */
+    const [first,] = changed.toSorted(function inPageOrder(
+      left,
+      right,
+    ): number {
+      return (left.start - right.start) || (left.group - right.group);
+    },);
+    return (first === undefined)
+      ? []
+      : [
+        {
+          group: groupPosition,
+          edit,
+          other: {
+            group: first.group,
+            label: first.label,
+            start: first.start,
+          },
+        },
+      ];
   },);
 }
 

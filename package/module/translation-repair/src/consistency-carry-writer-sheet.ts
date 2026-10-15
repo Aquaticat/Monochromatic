@@ -4,6 +4,7 @@ import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import {
   aroundBlocksOf,
   type CarryChosenPlace,
+  type CarryEdgeWords,
   type CarryReceivingPlace,
   chosenEnglishBlocksOf,
   keepingBlockOf,
@@ -85,6 +86,16 @@ export type CarryWriterSubject = {
   readonly keeping: readonly string[];
 
   /**
+   Stretches of the words of places of the group that run over an edge of that
+   paragraph and must stay as they are (the chosen place, a place kept for its context,
+   a place that already agrees, a receiving place that code cannot move the chosen
+   words into), each of which must come out of the rewrite at the edge it stood at: the
+   first words of the paragraph where the place comes in over its start, the last words
+   where it goes out over its end. Absent where no place runs over an edge.
+   */
+  readonly crossing?: readonly CarryEdgeWords[];
+
+  /**
    The original block before the receiving places' block, where it has one in
    its slice.
    */
@@ -133,11 +144,13 @@ export type CarryWriterSubject = {
 
  @param keeping - whether the paragraph holds words of other places that must stay
 
+ @param crossing - whether the paragraph holds words of a place that runs over an edge of it, which must stay at that edge
+
  @returns Rule text, ending in the house rules and the reply format
 
  @example
  ```ts
- const rules = writerRules({ lineStructured: false, marks, several: false, keeping: false, },);
+ const rules = writerRules({ lineStructured: false, marks, several: false, keeping: false, crossing: false, },);
  ```
  */
 function writerRules(
@@ -146,6 +159,7 @@ function writerRules(
     marks,
     several,
     keeping,
+    crossing,
   }: {
     readonly lineStructured: boolean;
     readonly marks: {
@@ -154,6 +168,7 @@ function writerRules(
     };
     readonly several: boolean;
     readonly keeping: boolean;
+    readonly crossing: boolean;
   },
 ): string {
   /**
@@ -178,6 +193,12 @@ function writerRules(
   const keepingRule = keeping
     ? '\n- The paragraph also holds words of other places, of this repeat or of another (WORDS OF OTHER PLACES TO KEEP EXACTLY). They stay exactly as they are, character for character, wherever they stand.'
     : '';
+  /**
+   The rule about the stretch of a place that runs over an edge of the paragraph.
+   */
+  const crossingRule = crossing
+    ? '\n- An entry of WORDS OF OTHER PLACES TO KEEP EXACTLY marked as the FIRST or the LAST words of the paragraph belongs to a place that runs over the edge of the paragraph. Those words stay the first or the last words of your paragraph, exactly as they are, and you change nothing of them.'
+    : '';
   return [
     `You are a bilingual Chinese-to-English translator working on a memorial archive.
 
@@ -189,7 +210,7 @@ Rules:
 - Change only the words that render the repeated wording. Every other word of the CURRENT ENGLISH PARAGRAPH stays exactly as it is: its names, its tense, its punctuation, its line breaks and its Markdown, apart from what the next rules allow.
 - Adapt only what ${own} own ORIGINAL requires. The CHOSEN RENDERING may carry a word that renders Chinese standing outside the repeated wording in the chosen place, such as an "also" that renders a word standing before the repeated wording there. Never carry such a word here: a word renders ORIGINAL in a place only where that place's ORIGINAL has the Chinese it renders, so the repeated wording is rendered as the chosen place renders it without that word, and a word of this paragraph that renders ORIGINAL outside the repeated wording stays as this paragraph has it.
 - In a frame with a slot, the slot content is each place's own: the SLOT IN THE ORIGINAL of a place is rendered with that place's own words, placed where the chosen place's frame places its slot (CHOSEN PLACE: ENGLISH SLOT, where it is shown), in grammatical English, and the frame words around it follow the CHOSEN RENDERING.
-- The surrounding ORIGINAL blocks are context for this place, not part of the paragraph: render nothing of them.${keepingRule}
+- The surrounding ORIGINAL blocks are context for this place, not part of the paragraph: render nothing of them.${keepingRule}${crossingRule}
 - ONE TENSE, IN THIS ORDER: where TENSE CANDIDATES are shown, the entry records a death, and the life of a person who has died is told in the past tense by the house rule; a line of it told in the present is moved to the past. Then the tense the page holds for what is still true as it is read. Never let one sentence start in one tense and finish in another.
 - Do not add content the ORIGINAL does not support and do not drop content it states.
 - Names, handles and place names already used by this paragraph and by DECLARED NAMES are authoritative; keep them exactly. ${NAME_FORM_SCOPE_RULE}
@@ -254,6 +275,9 @@ export function buildCarryWriterMessages(
     subject.after ?? '',
     subject.paragraph,
     ...subject.keeping,
+    ...(subject.crossing ?? []).map(function wordsOf({ words, },): string {
+      return words;
+    },),
     subject.chosen
       .paragraph,
     subject.chosen
@@ -330,9 +354,15 @@ export function buildCarryWriterMessages(
         several: subject.receiving
           .length
           > 1,
-        keeping: subject.keeping
+        keeping: (subject.keeping
           .length
+          + (subject.crossing
+            ?.length
+            ?? 0))
           > 0,
+        crossing: (subject.crossing
+          ?.length
+          ?? 0) > 0,
       },)}${(identityBlock === '') ? '' : `\n\n${DECLARED_IDENTITY_RULES}`}`,
     },
     {
@@ -364,6 +394,7 @@ export function buildCarryWriterMessages(
       }${
         keepingBlockOf({
           keeping: subject.keeping,
+          crossing: subject.crossing ?? [],
           fence,
         },)
       }${

@@ -354,6 +354,7 @@ export function parseConsistency(
     groups,
     slices,
     path: `${path}.slices`,
+    generation,
   },);
   return {
     groups,

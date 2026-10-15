@@ -55,6 +55,7 @@ export {
 export { isIsoStampText, } from './iso-stamp-text.ts';
 export {
   continuesLatinWord,
+  continuesLatinWordOrCompatibilityForm,
   foldLatinWord,
   foldedLatinWords,
   isCombiningMark,

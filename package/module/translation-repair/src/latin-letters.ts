@@ -154,7 +154,10 @@ export function isLatinLetterOrMark({ character, }: { readonly character: string
 
 /**
  Whether one character continues a Latin word already begun: a word
- character, or a combining mark.
+ character, or a combining mark. It reads the character as written, so a
+ compatibility character (a mathematical or fullwidth letter, a ligature, `™`,
+ `²`) does not continue a word here; the consistency pass alone reads a compatibility letter or digit as one
+ (`continuesLatinWordOrCompatibilityForm`), and never a symbol or a number that is no digit (`™`, `²`).
 
  @param character - one UTF-16 unit, empty past a text's edge
 
@@ -163,10 +166,103 @@ export function isLatinLetterOrMark({ character, }: { readonly character: string
  @example
  ```ts
  continuesLatinWord({ character: '\u{0301}', },); // true
+ continuesLatinWord({ character: '\u{FF21}', },); // false, a fullwidth capital A
  ```
  */
 export function continuesLatinWord({ character, }: { readonly character: string; },): boolean {
   return isLatinWordCharacter({ character, },) || isCombiningMark({ character, },);
+}
+
+/**
+ First code point past ASCII, so a character below it that is no word character is none under any form.
+ */
+const FIRST_PAST_ASCII = '\u{0080}';
+
+/* oxlint-disable no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with no quantifier, so the test is bounded and cannot backtrack; the Unicode general categories for letters and decimal digits have no string API */
+/**
+ A whole character that is a letter or a decimal digit of any script.
+ */
+const LETTER_OR_DIGIT_OF_ANY_SCRIPT = /^[\p{L}\p{Nd}]$/u;
+/* oxlint-enable no-restricted-syntax/no-regex */
+
+/**
+ Whether a whole character is a letter or a decimal digit of any script. It is the category test, and no test of a Latin word:
+ a word's edge or a mail address needs it as it is, and the neighbour test of the consistency pass
+ (`continuesLatinWordOrCompatibilityForm`) asks it of a compatibility character so that a symbol or a number that is no digit
+ (`™`, `²`, `①`) is no letter of a word.
+
+ @param character - one whole character, empty past an edge of a text
+
+ @returns Whether it is a letter or a decimal digit
+
+ @example
+ ```ts
+ const letter = isLetterOrDigitOfAnyScript({ character: '猫', },); // true
+ ```
+ */
+export function isLetterOrDigitOfAnyScript({ character, }: { readonly character: string; },): boolean {
+  return LETTER_OR_DIGIT_OF_ANY_SCRIPT.test(character,);
+}
+
+/**
+ Whether one character is the neighbour of a mark that a word runs on through, as the consistency pass reads it:
+ a character `continuesLatinWord` admits, or a whole character that is none of them as written but whose NFKC form
+ is made of them alone and that is itself a letter or a decimal digit (`Ａ`, `１`, `𝓠`, `𝐀`, `𝟏`, `ﬁ`). A symbol or a number
+ that is no decimal digit is none (`™`, `²`, `①`, `Ⅻ`): a mark beside one has no word beside it.
+
+ THE ONE NEIGHBOUR TEST OF THE CONSISTENCY PASS, AND WHY IT DIFFERS FROM `continuesLatinWord`. The pass keeps a word
+ and the apostrophes, quotation marks and brackets beside it together, and a page may spell a word with
+ mathematical script letters (`𝓠𝓾𝓪𝓷’s`) or fullwidth ones, which a reader sees as the Latin word. Every other
+ reader in the package (glossary word bounds, quote locating, alignment, preservation tokens, ballots, archive name
+ runs) is measured against the text as written and keeps `continuesLatinWord`, so a compatibility character
+ changes nothing outside the pass.
+
+ THE COMPATIBILITY FORM IS READ ONLY FOR A WHOLE CHARACTER. A caller that reads by code point hands over a
+ mathematical letter beyond the first plane whole and it counts; a caller that reads by UTF-16 unit hands over
+ half of one, a lone surrogate, whose form is itself, and it does not count. A form of several characters counts when
+ every one of them is a Latin letter, an ASCII digit or a combining mark (`ﬁ` is `fi`), and a form with any other
+ character in it does not (`½` is `1⁄2`, `℃` is `°C`, `µ` is a Greek letter). A character that is no letter and no decimal
+ digit does not count whatever its form is (`Ⅻ` is `XII`, `™` is `TM`, `²` is `2`, `①` is `1`). ASCII and the
+ characters the plain test admits are decided before any form is computed; only a non-ASCII character the plain test
+ refuses is normalised.
+
+ @param character - one whole character, or one UTF-16 unit, empty past a text's edge
+
+ @returns True for a character a word runs on through, as written or by its compatibility form
+
+ @example
+ ```ts
+ continuesLatinWordOrCompatibilityForm({ character: '\u{0301}', },); // true
+ continuesLatinWordOrCompatibilityForm({ character: '\u{FF21}', },); // true, a fullwidth capital A
+ ```
+ */
+export function continuesLatinWordOrCompatibilityForm({ character, }: { readonly character: string; },): boolean {
+  if (continuesLatinWord({ character, },))
+    return true;
+  if (character < FIRST_PAST_ASCII)
+    return false;
+  /**
+   The whole characters of the text it was given.
+   */
+  const points = Array.from(character,);
+  if (points.length !== 1)
+    return false;
+  // A symbol or a number that is no decimal digit is no letter of a word, whatever its form is made of.
+  if (!isLetterOrDigitOfAnyScript({ character, },))
+    return false;
+  /**
+   What the character is under NFKC.
+   */
+  const form = character.normalize('NFKC',);
+  if (form === character)
+    return false;
+  /**
+   The whole characters of that form.
+   */
+  const formPoints = Array.from(form,);
+  return formPoints.every(function isWordCharacterAsWritten(point,): boolean {
+    return continuesLatinWord({ character: point, },);
+  },);
 }
 
 /**

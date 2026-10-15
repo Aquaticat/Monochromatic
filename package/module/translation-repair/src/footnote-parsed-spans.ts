@@ -11,6 +11,7 @@ import {
   unpositionedRuns,
 } from './footnote-unpositioned-runs.ts';
 import { gfmMarkerSpans, } from './gfm-marker-spans.ts';
+import { disjointSpans, } from './footnote-span-union.ts';
 import { maskHtmlComments, } from './mask-html-comments.ts';
 import { maskInvisibleLines, } from './mask-invisible-lines.ts';
 import {
@@ -18,6 +19,8 @@ import {
   parseMdxBody,
   requireMarkdownRefusal,
   requireMdxRefusal,
+  withMarkdownExhaustionRefused,
+  withMdxExhaustionRefused,
 } from './parse-mdx.ts';
 
 //region Footnote parsed spans
@@ -244,49 +247,6 @@ function ownSpans(
 }
 
 /**
- Puts spans in source order and joins those that overlap or touch, so a search
- over them is sound. A masked comment can lie inside a code span or a link's
- destination, and one text can give the same span twice.
-
- @param spans - spans in any order
-
- @returns Disjoint spans in source order
-
- @example
- ```ts
- const joined = disjointSpans({ spans: [{ start: 4, end: 9, }, { start: 0, end: 5, },], },);
- ```
- */
-function disjointSpans({ spans, }: { readonly spans: readonly ParsedSpan[]; },): readonly ParsedSpan[] {
-  /**
-   Owned result list.
-   */
-  const joined: ParsedSpan[] = [];
-  for (const span of spans.toSorted(function bySource(
-    left,
-    right,
-  ): number {
-    return left.start - right.start;
-  },)) {
-    /**
-     Latest span joined so far, absent before the first.
-     */
-    const last = joined.at(-1,);
-    if ((last !== undefined) && (span.start <= last.end))
-      joined[joined.length - 1] = {
-        start: last.start,
-        end: Math.max(
-          last.end,
-          span.end,
-        ),
-      };
-    else
-      joined.push(span,);
-  }
-  return joined;
-}
-
-/**
  Reads the spans one parse of the masked text gives, a masked comment's among
  them.
 
@@ -458,7 +418,10 @@ function plainReading(
 ): GrammarReading | typeof NO_PLAIN_READING {
   try {
     return readTree({
-      root: parseMarkdownBody({ body: masked, },),
+      root: withMarkdownExhaustionRefused({
+        parse: parseMarkdownBody,
+        input: { body: masked, },
+      },),
       masked,
       comments,
     },);
@@ -608,6 +571,8 @@ export type FragmentReading = {
  follows the grammar the page most likely has, which is the strict one for
  a corpus that compiles as MDX upstream.
 
+ @internal
+
  @param text - fragment to read, whose front matter is not split and whose
  comments are masked here
 
@@ -674,7 +639,10 @@ export function fragmentReadingOf({ text, }: { readonly text: string; },): Fragm
      What the strict grammar settles.
      */
     const strict = readTree({
-      root: parseMdxBody({ body: masked, },),
+      root: withMdxExhaustionRefused({
+        parse: parseMdxBody,
+        input: { body: masked, },
+      },),
       masked,
       comments,
     },);

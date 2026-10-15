@@ -2,7 +2,9 @@ import type {
   ConsistencyCount,
   ConsistencyRendering,
 } from '../consistency-count-types.ts';
+import { pageApostropheFormOf, } from '../consistency-apostrophe-forms.ts';
 import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
+import { quoteReferencesIn, } from '../consistency-quote-references.ts';
 import { runOffWinnerOf, } from '../consistency-run-off.ts';
 import { planConsistencyEdit, } from '../consistency-splice.ts';
 import { consistencyLabel, } from '../consistency-wire.ts';
@@ -10,6 +12,10 @@ import type {
   ArtifactConsistencyRunOff,
   ConsistencyOccurrenceOutcome,
 } from './artifact-two-lane-consistency.ts';
+import {
+  type EdgeRefusal,
+  edgeRefusalOf,
+} from './pass-consistency-edge-refusal.ts';
 import type { ConsistencyPlace, } from './pass-consistency-group.ts';
 import type { ConsistencyRunOffAsked, } from './pass-consistency-run-off.ts';
 import type {
@@ -175,7 +181,9 @@ export function chosenPlaceOf(
 
  @param framed - whether the group is a frame with a slot
 
- @returns The provisional outcome and the receiver, as a list of zero or one
+ @returns The provisional outcome and the receiver, as a list of zero or one; and, for a place whose splice the planner
+ refused at the edge of the span on the English around it, where the recorded words and marks alone would let code move the
+ chosen words in, the refusal, which the record keeps as the reason the place was left as it was
 
  @example
  ```ts
@@ -199,6 +207,7 @@ export function plannedPlace(
 ): {
   readonly outcome: ConsistencyOccurrenceOutcome;
   readonly receiver: readonly CarryReceiver[];
+  readonly edge?: EdgeRefusal;
 } {
   /**
    This place's rendering.
@@ -233,12 +242,108 @@ export function plannedPlace(
     };
   }
   /**
+   The wording the receiving place's slice carries now, the English the receiving words were located in.
+   */
+  const { current: receivingWording, } = place.slice;
+  /**
+   The character references of the page that decode to a quotation-like character: those of the English of the whole page where
+   the pass holds it, else of the receiving slice, and those of the English of every slice of the page, a slice read alone
+   included (`wholePageReferences`). The planner and the record of the edge refusal ask this one function, for any splice.
+
+   @returns The references as the English writes them, none where the receiving place carries no wording
+   */
+  function pageReference(): readonly string[] {
+    if (receivingWording.kind !== 'present')
+      return [];
+    /**
+     The English of the whole page and where the receiving slice starts in it, absent where the pass holds one slice alone, and
+     the references of the English of every slice, absent for facts built without them.
+     */
+    const {
+      page,
+      wholePageReferences,
+    } = place.slice;
+    /**
+     The references of the page's own English, or of the receiving slice's where the pass holds one slice alone.
+     */
+    const own = quoteReferencesIn({ english: (page === undefined) ? receivingWording.text : page.text, },);
+    return (wholePageReferences === undefined)
+      ? own
+      : [
+        ...new Set([
+          ...own,
+          ...wholePageReferences,
+        ],),
+      ];
+  }
+  /**
    What putting the chosen words here by code amounts to.
    */
   const plan = planConsistencyEdit({
     chosen: winning.rendering,
     target: rendering,
     framed,
+    marks: 'compared',
+    // The English is handed so the planner can read every mark outside the receiving words before and after the splice.
+    ...((receivingWording.kind === 'present') ? { english: receivingWording.text, } : {}),
+    pageReference,
+    // The English of the page is read only when the receiving words share no apostrophe form.
+    pageApostrophe: function pageApostropheOfPage(): readonly string[] {
+      /**
+       The wording the receiving place's slice carries now.
+       */
+      const { current, } = place.slice;
+      if (current.kind !== 'present')
+        return [];
+      /**
+       The English of the page and where the receiving slice starts in it, absent where the pass holds one slice alone.
+       */
+      const { page, } = place.slice;
+      /**
+       The page the chosen words' slice starts in, absent where the pass holds one slice alone.
+       */
+      const chosenPage = winning.place
+        .slice
+        .page;
+      /**
+       The chosen words as the chosen place holds them.
+       */
+      const {
+        core: chosenCore,
+        start: chosenStart,
+      } = winning.rendering;
+      /**
+       The receiving words.
+       */
+      const { core: receivingCore, } = rendering;
+      /**
+       Where the chosen words end in their slice.
+       */
+      const chosenEnd = chosenStart + chosenCore.length;
+      /**
+       Where the chosen words stand in the page, none where the pass holds one slice alone. They arrive with their
+       apostrophes, so they say nothing of the page's form.
+       */
+      const apart = (chosenPage === undefined)
+        ? []
+        : [
+          {
+            start: chosenPage.offset + chosenStart,
+            end: chosenPage.offset + chosenEnd,
+          },
+        ];
+      return pageApostropheFormOf({
+        english: current.text,
+        start: rendering.start,
+        end: rendering.start + receivingCore.length,
+        ...((page === undefined)
+          ? {}
+          : {
+            page,
+            apart,
+          }),
+      },);
+    },
   },);
   if (plan.kind === 'same') {
     return {
@@ -246,8 +351,22 @@ export function plannedPlace(
       receiver: [],
     };
   }
+  /**
+   Why the splice was refused at the edge of the span, where the recorded words and marks alone would let code move the
+   chosen words in; none where it was not, or where the pass holds no English of the place.
+   */
+  const edge = ((plan.kind === 'unavailable') && (receivingWording.kind === 'present'))
+    ? edgeRefusalOf({
+      chosen: winning.rendering,
+      target: rendering,
+      framed,
+      english: receivingWording.text,
+      pageReference,
+    },)
+    : 'unrefused';
   return {
     outcome: 'kept-current',
+    ...((edge === 'unrefused') ? {} : { edge, }),
     receiver: [
       {
         place,

@@ -1,6 +1,6 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import { carriesOrCutsMarkup, } from '../consistency-markup.ts';
-import { occurrencesOf, } from '../consistency-count.ts';
+import { occurrencesOf, } from '../consistency-occurrences.ts';
 import { quoteCore, } from '../consistency-quote-bounds.ts';
 import type {
   ConsistencyRendering,

@@ -9,6 +9,7 @@ import type { DeepReadonlyData, } from './readonly-data.ts';
 import {
   parseMdxBody,
   requireMdxRefusal,
+  withMdxExhaustionRefused,
 } from './parse-mdx.ts';
 import {
   type ProtectedAtom,
@@ -184,7 +185,10 @@ function parseStrictly({ text, }: { readonly text: string; },): ParseAttempt {
   try {
     return {
       kind: 'parsed',
-      root: parseMdxBody({ body: text, },),
+      root: withMdxExhaustionRefused({
+        parse: parseMdxBody,
+        input: { body: text, },
+      },),
     };
   }
   catch (error) {

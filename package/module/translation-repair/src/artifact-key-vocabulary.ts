@@ -14,6 +14,7 @@ import {
   ARTIFACT_SCHEMA_VERSION_V14,
   ARTIFACT_SCHEMA_VERSION_V15,
   ARTIFACT_SCHEMA_VERSION_V16,
+  ARTIFACT_SCHEMA_VERSION_V17,
 } from './corpus-run/artifact-two-lane-contract.ts';
 import { ARTIFACT_SCHEMA_VERSION_V1, } from './artifact-schema-version.ts';
 
@@ -58,7 +59,9 @@ import { ARTIFACT_SCHEMA_VERSION_V1, } from './artifact-schema-version.ts';
  from this table for that reason: `isolatedDeclarations` requires the
  annotation, the annotation widens the literals, and a computed key of type
  `string` builds an object with an index signature instead of named fields.
- `artifact-build.ts` writes its keys out and names this table in a comment.
+ The keys are written out where the results are made: `repair-result.ts` declares `changedSliceIndices`,
+ `withdrawnSliceIndices` and `sliceCritics`, `slice-delivery.ts` declares `sliceIndex` and passes `changedSliceIndices`, and
+ `translate-assemble.ts` and `repair-assemble.ts` write all of them between them.
 
  @example
  ```ts
@@ -149,6 +152,7 @@ const KEYS_BY_GENERATION: Readonly<Record<number, ArtifactKeyVocabulary>> = {
   [ARTIFACT_SCHEMA_VERSION_V14]: SLICE_SPELLED_KEYS,
   [ARTIFACT_SCHEMA_VERSION_V15]: SLICE_SPELLED_KEYS,
   [ARTIFACT_SCHEMA_VERSION_V16]: SLICE_SPELLED_KEYS,
+  [ARTIFACT_SCHEMA_VERSION_V17]: SLICE_SPELLED_KEYS,
 };
 
 /**

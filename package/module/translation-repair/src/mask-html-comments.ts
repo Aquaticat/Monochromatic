@@ -83,37 +83,31 @@ function blankRegion({ region, }: { readonly region: string; },): string {
 }
 
 /**
- Masks every HTML comment with same-length whitespace.
- Single linear pass; the output is byte-length-identical to the input,
- so positions parsed from the masked text index the original text exactly.
+ The HTML comments of a text, as the parser's mask finds them. Single linear pass: each comment runs from an opening `<!--` to
+ the first closing `-->` that starts after the opener's four characters, and the scan goes on past the comment's end, so an
+ opener inside a comment, or the dashes an opener shares with a closer, start no comment of their own. This is the one
+ definition of where the comments of a page are: `maskHtmlComments` blanks them and the readers of the consistency pass name their
+ units (`commentUnitsOf`, `consistency-unread-units.ts`) from the same regions.
 
  @param text - body text possibly carrying HTML comments
 
- @returns Masked text plus each region in original offsets
+ @returns Each comment in original offsets, in source order
 
  @example
  ```ts
- const { masked, regions, } = maskHtmlComments({ text: body, },);
+ const regions = commentRegionsOf({ text: 'a<!-- b -->c', },); // one region from 1 to 11
  ```
  */
-export function maskHtmlComments(
+export function commentRegionsOf(
   { text, }: { readonly text: string; },
-): {
-  readonly masked: string;
-  readonly regions: readonly MaskedCommentRegion[];
-} {
+): readonly MaskedCommentRegion[] {
   /**
-   Alternating kept and blanked slices in source order.
-   */
-  const parts: string[] = [];
-
-  /**
-   Masked regions in source order.
+   Comment regions in source order.
    */
   const regions: MaskedCommentRegion[] = [];
 
   /**
-   Scan position; everything before it is already in parts.
+   Scan position; everything before it is in no region or in one already found.
    */
   let cursor = 0;
 
@@ -125,10 +119,8 @@ export function maskHtmlComments(
       COMMENT_OPEN,
       cursor,
     );
-    if (openAt === (-1)) {
-      parts.push(text.slice(cursor,),);
+    if (openAt === (-1))
       break;
-    }
 
     /**
      Matching close past the opening delimiter, when the comment closes.
@@ -150,18 +142,6 @@ export function maskHtmlComments(
       ? closeAt + COMMENT_CLOSE.length
       : text.length;
 
-    parts.push(
-      text.slice(
-      cursor,
-      openAt,
-    ),
-      blankRegion({
-      region: text.slice(
-        openAt,
-        endOffset,
-      ),
-    },)
-    );
     regions.push({
       startOffset: openAt,
       endOffset,
@@ -169,6 +149,60 @@ export function maskHtmlComments(
     },);
     cursor = endOffset;
   }
+  return regions;
+}
+
+/**
+ Masks every HTML comment with same-length whitespace.
+ Single linear pass; the output is byte-length-identical to the input,
+ so positions parsed from the masked text index the original text exactly.
+
+ @param text - body text possibly carrying HTML comments
+
+ @returns Masked text plus each region in original offsets
+
+ @example
+ ```ts
+ const { masked, regions, } = maskHtmlComments({ text: body, },);
+ ```
+ */
+export function maskHtmlComments(
+  { text, }: { readonly text: string; },
+): {
+  readonly masked: string;
+  readonly regions: readonly MaskedCommentRegion[];
+} {
+  /**
+   Masked regions in source order.
+   */
+  const regions = commentRegionsOf({ text, },);
+
+  /**
+   Alternating kept and blanked slices in source order.
+   */
+  const parts: string[] = [];
+
+  /**
+   Offset where the kept text after the last region starts.
+   */
+  let cursor = 0;
+
+  for (const region of regions) {
+    parts.push(
+      text.slice(
+        cursor,
+        region.startOffset,
+      ),
+      blankRegion({
+        region: text.slice(
+          region.startOffset,
+          region.endOffset,
+        ),
+      },),
+    );
+    cursor = region.endOffset;
+  }
+  parts.push(text.slice(cursor,),);
 
   /**
    Masked result;

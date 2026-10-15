@@ -133,6 +133,8 @@ export function withoutHtmlComments({ text, }: { readonly text: string; },): str
  chose. A passage the grammar refuses has no blocks to pair, and reading it
  whole is what an unequal count already falls back to.
 
+ @internal
+
  @param text - passage, comments already cut
 
  @returns Blocks in order, each the exact source text of one top-level node

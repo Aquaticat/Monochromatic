@@ -117,7 +117,9 @@ export function tenseCandidateGroups(
         };
       }
       catch (error) {
-        // Only the grammar's refusal is a handled state; anything else keeps propagating.
+        // Only the grammar's refusal is a handled state, and the slice grammar reads an exhaustion of its own parse as
+        // that refusal (`parseSliceBody`); anything else, an exhaustion of the code that reads the blocks included,
+        // keeps propagating.
         requireMdxRefusal({ error, },);
         tl.warn(
           `the text on offer labelled ${source.label} was refused by the shared slice grammar (${

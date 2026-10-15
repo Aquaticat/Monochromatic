@@ -299,8 +299,18 @@ import type { LaneText, } from './translate-candidates.ts';
  its key differs. An entry that records no death asks the question it asked
  before and keeps its key, so the version stays where it is and the answers
  already bought for those entries stay usable.
+
+ 22: the slate's twin collapse (`collapseKey`, `straightenProseQuotes`) and the
+ validator's prose guillemet floor (`translate-guillemets.ts`) read prose from
+ the page parse (`typography-prose-mask.ts`), so two renderings that differ by a
+ mark in a comment or a link address no longer collapse, and a text the grammar
+ refuses has no prose. That changes which candidates a slate holds as one. The
+ check that would let the change ride inside 21 (no slice-cache record written
+ after the change, shown beside a control that finds records) could not be made
+ with a working control, so the number moves, as the slice, refine and translate
+ versions moved for the same reader.
  */
-export const CONSOLIDATE_CACHE_VERSION = 21;
+export const CONSOLIDATE_CACHE_VERSION = 22;
 
 /**
  What a line-structured slice appends to its key material.

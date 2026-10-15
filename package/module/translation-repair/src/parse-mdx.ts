@@ -19,6 +19,7 @@ import {
 import {
   type NestingExcess,
   STACK_OVERFLOW_ACCOUNT,
+  STACK_OVERFLOW_MESSAGE,
 } from './nesting-vocabulary.ts';
 import { NAMED_POSITION_UNSTATED, } from './refusal-text.ts';
 
@@ -591,12 +592,18 @@ export function parseMdxBody({ body, }: { readonly body: string; },): Root {
  invariant breaks (a parsed node without a position). The narrowing stands
  here once, where a case reaches the rethrow.
 
+ THE ENGINE'S OWN STACK EXHAUSTION IS NOT READ HERE. A catch cannot tell an exhaustion
+ raised by the parse from one raised by other code of its block, and only the first is a
+ fact about the text. The call that makes the parse reads its exhaustion as the refusal
+ ({@link withMdxExhaustionRefused}), so a refusal reaches this catch as the refusal and an
+ exhaustion of the block's other code reaches it raw and propagates.
+
  @param error - what the catch caught
 
- @returns The refusal
+ @returns The refusal the grammar raised, or the one {@link withMdxExhaustionRefused} built for an exhaustion of the parse
 
- @throws The caught value unchanged when it is anything but the grammar's
- refusal, an unexpected state that must keep propagating
+ @throws The caught value unchanged when it is anything but the grammar's refusal,
+ the engine's stack exhaustion among it, an unexpected state that must keep propagating
 
  @example
  ```ts
@@ -607,6 +614,52 @@ export function requireMdxRefusal({ error, }: { readonly error: unknown; },): Md
   if (error instanceof MdxParseError)
     return error;
   throw error;
+}
+
+/**
+ Makes one strict-grammar parse call, reading the engine's stack exhaustion it raises as the grammar's refusal.
+
+ THE EXHAUSTION IS READ WHERE THE PARSE CALL ENDS and not in the catch of the block around it: a parse that
+ runs out of stack where the refusal for it could not be built (the nesting check, or the handler that builds the
+ refusal, standing within a few frames of the end of the stack) raises the engine's `RangeError` itself, and it is a
+ fact about the text just as the refusal built in time is. The refusal is built here, after the stack has unwound to this
+ call, so a boundary reads the page as text and goes on. An exhaustion raised by any other code of the boundary's block
+ is not raised by this call, reaches {@link requireMdxRefusal} raw and propagates.
+
+ @param parse - the parse call, such as `parseMdxBody`, whose exhaustion is a fact about the text it was given
+
+ @param input - what the parse is given
+
+ @returns What the parse returns
+
+ @throws {@link MdxParseError} built here, with the exhaustion as its cause, when the parse raises the engine's stack
+ exhaustion; any other failure of the parse unchanged
+
+ @example
+ ```ts
+ const root = withMdxExhaustionRefused({ parse: parseMdxBody, input: { body: 'A cat naps.', }, },);
+ ```
+ */
+export function withMdxExhaustionRefused<Input, Output>(
+  {
+    parse,
+    input,
+  }: {
+    readonly parse: (input: Input,) => Output;
+    readonly input: Input;
+  },
+): Output {
+  try {
+    return parse(input,);
+  }
+  catch (error) {
+    if (!isStackOverflow(error,))
+      throw error;
+    throw new MdxParseError({
+      cause: error,
+      droppedColumns: 0,
+    },);
+  }
 }
 
 /**
@@ -738,14 +791,17 @@ export function parseMarkdownBody({ body, }: { readonly body: string; },): Root 
  {@link parseMarkdownBody} raises as a {@link MarkdownParseError}. Where the
  strict grammar turns every failure into an {@link MdxParseError}, this one
  lets any other failure propagate, any other `RangeError` among them (ledger
- B100).
+ B100). THE ENGINE'S OWN STACK EXHAUSTION IS NOT READ HERE, for the reason
+ {@link requireMdxRefusal} gives: the call that makes the parse reads its exhaustion as the
+ refusal ({@link withMarkdownExhaustionRefused}), and an exhaustion of the block's other
+ code reaches this catch raw and propagates.
 
  @param error - what the catch caught
 
- @returns The refusal
+ @returns The refusal the plain grammar raised, or the one {@link withMarkdownExhaustionRefused} built for an exhaustion of the parse
 
  @throws The caught value unchanged when it is anything but the plain
- grammar's refusal, an unexpected state that must keep propagating
+ grammar's refusal, the engine's stack exhaustion among it, an unexpected state that must keep propagating
 
  @example
  ```ts
@@ -757,5 +813,131 @@ export function requireMarkdownRefusal({ error, }: { readonly error: unknown; },
     return error;
   throw error;
 }
+
+/**
+ Makes one plain-grammar parse call, reading the engine's stack exhaustion it raises as the grammar's refusal.
+
+ THE EXHAUSTION IS READ WHERE THE PARSE CALL ENDS, for the reason {@link withMdxExhaustionRefused} gives: a parse that
+ ran out of stack where the refusal for it could not be built raises the engine's `RangeError`, and that is the nesting
+ too deep to read that the refusal names. The refusal is built here, after the stack has unwound to this call. An
+ exhaustion raised by any other code of the boundary's block is not raised by this call and propagates.
+
+ @param parse - the parse call, such as `parseMarkdownBody`, whose exhaustion is a fact about the text it was given
+
+ @param input - what the parse is given
+
+ @returns What the parse returns
+
+ @throws {@link MarkdownParseError} built here, with the exhaustion as its cause, when the parse raises the engine's stack
+ exhaustion; any other failure of the parse unchanged
+
+ @example
+ ```ts
+ const root = withMarkdownExhaustionRefused({ parse: parseMarkdownBody, input: { body: 'A cat naps.', }, },);
+ ```
+ */
+export function withMarkdownExhaustionRefused<Input, Output>(
+  {
+    parse,
+    input,
+  }: {
+    readonly parse: (input: Input,) => Output;
+    readonly input: Input;
+  },
+): Output {
+  try {
+    return parse(input,);
+  }
+  catch (error) {
+    if (!isStackOverflow(error,))
+      throw error;
+    throw new MarkdownParseError({
+      reading: 'stack-exhausted',
+      cause: error,
+    },);
+  }
+}
+
+//region Refusals built before the stack is short
+// A REFUSAL IS BUILT WITH THE STACK ALMOST SPENT, and the first refusal a process builds cannot be. V8 compiles
+// a function the first time it is called, and a compile that finds too little stack to run in fails with the
+// engine's own `RangeError` for a stack exhaustion (`src/codegen/compiler.cc`, `FailWithPreparedException`, in V8's
+// source). So a body that exhausts the stack reached `new MdxParseError(...)` in the refusal handler of `parseMdxBody` with that code
+// still uncompiled, and what escaped `parseMdxBody` was a raw `RangeError` and not the refusal this module
+// promises. MEASURED on the built package with the stack-edge search of `stack-edge.test-fixture.ts`: in a process
+// that had built no refusal, 299 of 300 searches found the raw `RangeError`, with the handler's `new MdxParseError`
+// at the top of its stack, and 100 of 100 in a process with the optimizing compilers off; after one refusal taken at
+// a safe depth, 99 of 100 found the refusal (the hundredth was the search's own recursion overflowing).
+//
+// THE CODE THAT BUILDS EACH REFUSAL IS RUN ONCE WHEN THE MODULE LOADS, so it is compiled before any stack is short
+// of room for compiling it. The sample cause is a `RangeError` with the engine's message, the one a runaway recursion
+// raises, so the constructors take the branch a real exhaustion takes. WHAT THIS DOES NOT PROMISE: V8 discards the
+// compiled form of a function that goes unused through enough garbage collections and compiles it again on its next
+// call, so a long-lived process that has built no refusal for a long time is back where a new one starts; and a caller
+// that stands so close to the end of the stack that not even a small function can run still gets a raw `RangeError`,
+// from the nesting check that runs first or from the handler. THAT RESIDUAL IS READ WHERE THE PARSE CALL ENDS:
+// `withMdxExhaustionRefused` and `withMarkdownExhaustionRefused` wrap the parse call of every boundary that narrows
+// with `requireMdxRefusal` or `requireMarkdownRefusal`, and build the same refusal from the engine's `RangeError`
+// after the stack has unwound to them. The catch of the boundary does not read it: an exhaustion raised by other code
+// of the same block is no fact about the text.
+//
+// WHAT HOLDS AT THE STACK EDGE, and what does not. Where the exhaustion falls inside such a wrapper the refusal is
+// built and the caller of the parse reads the page as text. That is not the end of the work: the work that follows the
+// parse (for the consistency pass, the rest of `proseViewOf` in `consistency-prose-text.ts`) needs more stack than the
+// handler has left there, so a raw `RangeError` can still escape that work and reach `corpus-run/pass-consistency.ts`,
+// which stops the pass for that page and leaves the page its wording; sweeps of about 1,500 caller depths over six
+// attempts around the depth where `proseViewOf` exhausts the stack found it return the normal view or a raw
+// `RangeError`, and never a converted view read as text (the edge moved between attempts as the engine compiled
+// frames, so this is no proof that no window exists). The pass does not stand near that edge: measured on the built
+// package, the engine allows 10,936 nested calls of a trivial body, a body at the nesting bound needs 16 or 17 calls
+// more than a trivial one, and the pass is 42 to 51 calls deep when it reads the prose of a small slice, the parse's
+// own calls included. So the edge is out of the pass's reach in practice.
+
+/**
+ The refusals of each grammar for a stack exhaustion.
+ */
+type ReadyRefusals = {
+  /**
+   The strict grammar's refusal.
+   */
+  readonly strict: MdxParseError;
+
+  /**
+   The plain grammar's refusal.
+   */
+  readonly plain: MarkdownParseError;
+};
+
+/**
+ Builds each refusal for a stack exhaustion once and drops it.
+
+ @returns The refusals built, which the module-level call that runs this at load drops
+
+ @example
+ ```ts
+ const { strict, plain, } = readyRefusals();
+ ```
+ */
+function readyRefusals(): ReadyRefusals {
+  /**
+   What an engine raises for a runaway recursion, as far as the refusals read it.
+   */
+  const exhaustion = new RangeError(STACK_OVERFLOW_MESSAGE,);
+  return {
+    strict: new MdxParseError({
+      cause: exhaustion,
+      droppedColumns: droppedWidth({ body: '', },),
+    },),
+    plain: new MarkdownParseError({
+      reading: 'stack-exhausted',
+      cause: exhaustion,
+    },),
+  };
+}
+
+// The refusals are built when the module loads and dropped: building them is the work, so their code is compiled.
+readyRefusals();
+
+//endregion Refusals built before the stack is short
 
 //endregion MDX parsing

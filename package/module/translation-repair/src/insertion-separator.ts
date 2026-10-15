@@ -34,6 +34,37 @@ const BLOCK_SEPARATOR_LINES = 2;
 const NOT_FOUND = -1;
 
 /**
+ Where one fragment's words stand in the text written at an insertion boundary.
+
+ @example
+ ```ts
+ const place: FragmentPlace = { fragment: 0, englishAt: 2, from: 4, to: 20, };
+ ```
+ */
+export type FragmentPlace = {
+  /**
+   Which fragment of the boundary this is, counted from zero in the order the fragments were given.
+   */
+  readonly fragment: number;
+
+  /**
+   The offset where the fragment's first character would stand, so a character past the blank lines cut from the fragment's
+   start stands at this offset plus its own; before `from` when blank lines were cut.
+   */
+  readonly englishAt: number;
+
+  /**
+   Where the fragment's body starts in the text.
+   */
+  readonly from: number;
+
+  /**
+   Where it ends, exclusive.
+   */
+  readonly to: number;
+};
+
+/**
  Reads the line ending a document uses.
 
  FROM THE DOCUMENT rather than from the platform. A translation written on
@@ -142,7 +173,7 @@ function leadingLineEndings(
 
  THE TRAILING SIDE TAKES SPACES TOO, including the two that would make a
  Markdown hard break. That is safe HERE and only here: every caller reaches
- this through {@link composeInsertion}, which joins fragments with a blank
+ this through {@link composedInsertion}, which joins fragments with a blank
  line, and a hard break before a blank line breaks nothing. A join that ever
  put two fragments on consecutive lines would make those spaces meaningful
  again, and this would have to narrow to blank lines alone.
@@ -158,6 +189,29 @@ function leadingLineEndings(
  */
 export function fragmentBody(
   { fragment, }: { readonly fragment: string; },): string {
+  return fragmentCut({ fragment, },)
+    .body;
+}
+
+/**
+ Cuts the blank-line material from around one fragment and says where its body began.
+
+ @param fragment - text a lane produced for one slice
+
+ @returns The body, which {@link fragmentBody} gives, and the offset in the fragment where it starts, which a reader of the
+ page the fragment lands in needs to find the fragment's words
+
+ @example
+ ```ts
+ const { body, start, } = fragmentCut({ fragment: '\n\n  The cat naps.\n\n', },); // start: 2
+ ```
+ */
+export function fragmentCut(
+  { fragment, }: { readonly fragment: string; },
+): {
+  readonly body: string;
+  readonly start: number;
+} {
   /**
    How much of the fragment is left once its leading whitespace is gone.
    */
@@ -183,12 +237,15 @@ export function fragmentBody(
    Where the body starts: after the blank lines, before any indentation.
    */
   const bodyStart = (lastBreak === NOT_FOUND) ? 0 : (lastBreak + 1);
-  return fragment.slice(bodyStart,)
-    .trimEnd();
+  return {
+    body: fragment.slice(bodyStart,)
+      .trimEnd(),
+    start: bodyStart,
+  };
 }
 
 /**
- Builds the text to write at one insertion boundary.
+ Builds the text to write at one insertion boundary and says where each fragment's words land in it.
 
  A FRAGMENT THAT SHOWS A READER NOTHING WRITES NOTHING, asked of
  `rendersAsNothing` (ledger B40): asked of an empty-string comparison, a
@@ -204,14 +261,16 @@ export function fragmentBody(
 
  @param eol - line ending this document uses
 
- @returns Text to write at that boundary, separators included
+ @returns The text to write, separators included, and where the words of each fragment stand in that text, in the order of
+ the fragments; a fragment that shows a reader nothing writes nothing and has no entry, and the text is empty exactly when
+ no fragment said anything
 
  @example
  ```ts
- const written = composeInsertion({ fragments, before, after, eol, },);
+ const { text, placed, } = composedInsertion({ fragments, before, after, eol, },);
  ```
  */
-export function composeInsertion(
+export function composedInsertion(
   {
     fragments,
     before,
@@ -223,25 +282,50 @@ export function composeInsertion(
     readonly after: string;
     readonly eol: string;
   },
-): string {
+): {
+  readonly text: string;
+  readonly placed: readonly FragmentPlace[];
+} {
+  /**
+   Each fragment cut to its body, with the offset in the fragment where the body starts.
+   */
+  const cuts = fragments.map(function toCut(fragment,): ReturnType<typeof fragmentCut> {
+    return fragmentCut({ fragment, },);
+  },);
+  /**
+   Whether each fragment says something to a reader.
+   */
+  const says = cuts.map(function saysSomething({ body, },): boolean {
+    return !rendersAsNothing({ text: body, },);
+  },);
   /**
    Fragments reduced to their own text, joined by one blank line.
 
    Joined here rather than by each fragment carrying its own blank lines,
    which would put two between every pair.
    */
-  const body = fragments
-    .map(function toBody(fragment,): string {
-      return fragmentBody({ fragment, },);
-    },)
-    .filter(function saysSomething(text,): boolean {
-      return !rendersAsNothing({ text, },);
+  const spoken = cuts.filter(function isSpoken(
+    _cut,
+    at,
+  ): boolean {
+    return says[at] === true;
+  },);
+  /**
+   The bodies of the fragments that say something, joined by one blank line.
+   */
+  const body = spoken
+    .map(function toBody({ body: text, },): string {
+      return text;
     },)
     .join(eol.repeat(BLOCK_SEPARATOR_LINES,),);
   // No fragment said anything: every one was filtered out, and the join of
   // none is the empty string exactly.
-  if (body === '')
-    return '';
+  if (body === '') {
+    return {
+      text: '',
+      placed: [],
+    };
+  }
 
   /**
    Line endings the archive already provides before this boundary, which are
@@ -279,9 +363,42 @@ export function composeInsertion(
   const closing = (after === '')
     ? eol
     : eol.repeat(BLOCK_SEPARATOR_LINES - following,);
-  return opening
-    + body
-    + closing;
+  /**
+   Where the body of the next fragment that says something starts in the text, mutated only inside this function.
+   */
+  const cursor = { at: opening.length, };
+  /**
+   Where each fragment's words stand in the text.
+   */
+  const placed = cuts.flatMap(function placeOf(
+    {
+      body: text,
+      start,
+    },
+    at,
+  ): readonly FragmentPlace[] {
+    if (says[at] !== true)
+      return [];
+    /**
+     The offset where this fragment's body starts in the text.
+     */
+    const bodyAt = cursor.at;
+    cursor.at += text.length + (eol.length * BLOCK_SEPARATOR_LINES);
+    return [
+      {
+        fragment: at,
+        englishAt: bodyAt - start,
+        from: bodyAt,
+        to: bodyAt + text.length,
+      },
+    ];
+  },);
+  return {
+    text: opening
+      + body
+      + closing,
+    placed,
+  };
 }
 
 //endregion Insertion separator

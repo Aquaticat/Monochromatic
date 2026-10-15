@@ -18,18 +18,26 @@ import type { UnplacedReason, } from '../repeat-groups-types.ts';
 // consistency pass composed, and what the pass wrote stands over the polish,
 // the consolidation and the contest it settled after.
 //
-// TWO SHAPES, TWO GENERATIONS. Generation fifteen carries the section as the
+// THREE GENERATIONS, TWO SHAPES. Generation fifteen carries the section as the
 // first pass to write it recorded it: ballots counted by the exact text of a
 // quote, a located place carrying the judge's string, a slot a condition of
 // being located, and the chosen words carried by code alone. It stays readable
-// as written. GENERATION SIXTEEN is the section the pass writes now: ballots
+// as written. GENERATION SIXTEEN is the second shape: ballots
 // agree when their quotes locate one span of the place's own English, a located
 // place carries the words and the offset the English holds, a slot is no
 // condition of being located, a tie for first is run off among the finalists
 // (`verdict.runOff`), and the chosen rendering is carried by writers and a
-// choice among candidates (`group.carries`). The keys a generation does not
-// write are refused in it by the reader, and the outcome words and winner
-// reasons it does not give are refused too.
+// choice among candidates (`group.carries`). It stays readable as written too.
+// GENERATION SEVENTEEN is the section the pass writes now: the second shape,
+// a place that ended `overlapped` names the place it gave way to
+// (`gaveWayTo`), which the reader resolves, and a located place records the
+// single marks its English holds directly beside the span (`markBefore`,
+// `markAfter`), which the reader compares when it recounts a splice; an apostrophe
+// the locator proved belongs to its word, so the recorded words hold it and neither
+// key does, and the reader refuses recorded words that start or end with any other
+// single mark. The keys a
+// generation does not write are refused in it by the reader, and the outcome
+// words and winner reasons it does not give are refused too.
 
 /**
  What became of one place of a group.
@@ -39,9 +47,12 @@ import type { UnplacedReason, } from '../repeat-groups-types.ts';
  carried it. `kept-context` is a place a strict majority kept for its
  surroundings. `kept-floor` is a place whose replacement a floor refused.
  `overlapped` is a place whose replacement overlaps one of an earlier group in
- the same slice, or changes the words of a place another group located or
- keeps, and was left out for it; it never names an overlap with a place of its
- own group, whose places in one block are carried by one replacement. `unlocated` is a place whose rendering the ballots did not pin
+ the same slice, or would change the words of a place another group located
+ and does not itself replace in that slice, and was left out for it; or a
+ place whose own located words a replacement that was made changed. It never
+ names an overlap with a place of its own group, whose places in one block are
+ carried by one replacement. From generation seventeen it carries `gaveWayTo`,
+ the place of another group in the same slice that it gave way to. `unlocated` is a place whose rendering the ballots did not pin
  down. `untouched` is a place of a group that decided nothing. `kept-current`
  (generation sixteen) is a place whose carry ended with its own English
  standing: the choice among the candidates kept it, reached no decision, had no
@@ -72,6 +83,44 @@ export const CONSISTENCY_OCCURRENCE_OUTCOMES: Readonly<Record<ConsistencyOccurre
   overlapped: true,
   unlocated: true,
   untouched: true,
+};
+
+/**
+ Why the pass left a place as it was after the splice was chosen and the recorded words let code move the chosen words in.
+
+ The five `gain-` reasons are those of a splice that carries an edge apostrophe into the place and was left out on the final
+ page: `gain-pairs` (another quotation mark of the page could pair with the apostrophe), `gain-unproves` (making the splice
+ would unprove the apostrophe a splice that stands carries in), `gain-floors` (the floors refuse the slice with the splice),
+ `gain-overlaps` (its words overlap a replacement that is made) and `gain-refused` (the floors refused the other
+ replacements of the slice, which keeps its wording whole). The three `edge-` reasons are those of a splice refused at the edge
+ of the span on the English around it, or on the page: `edge-second-mark` (a single mark past a run of markup beyond the edge
+ the splice brings an apostrophe to), `edge-reading-changes` (a single mark outside the words that would read differently) and
+ `edge-reference-mark` (the splice brings an apostrophe, and the page holds a character reference that decodes to a
+ quotation-like character, such as `&#39;` or `&rsquo;`, which no reader of the raw English sees as a mark).
+ */
+export type ConsistencyKeptReason =
+  | 'gain-pairs'
+  | 'gain-unproves'
+  | 'gain-floors'
+  | 'gain-overlaps'
+  | 'gain-refused'
+  | 'edge-second-mark'
+  | 'edge-reading-changes'
+  | 'edge-reference-mark';
+
+/**
+ Every reason a place can have been left as it was for, keyed by the union so the compiler refuses a member the record
+ lacks, in the order a reader lists them.
+ */
+export const CONSISTENCY_KEPT_REASONS: Readonly<Record<ConsistencyKeptReason, true>> = {
+  'gain-pairs': true,
+  'gain-unproves': true,
+  'gain-floors': true,
+  'gain-overlaps': true,
+  'gain-refused': true,
+  'edge-second-mark': true,
+  'edge-reading-changes': true,
+  'edge-reference-mark': true,
 };
 
 /**
@@ -116,6 +165,21 @@ export type ArtifactConsistencyRendering =
     readonly start?: number;
 
     /**
+     Generation seventeen: the single mark, one character, the place's English
+     holds directly before the span, as the English writes it; absent where none
+     stands there, and where the mark is a proven apostrophe, which the recorded
+     words hold. Generations fifteen and sixteen record none.
+     */
+    readonly markBefore?: string;
+
+    /**
+     Generation seventeen: the single mark the place's English holds directly
+     after the span; absent where none stands there, and where the mark is a
+     proven apostrophe, which the recorded words hold.
+     */
+    readonly markAfter?: string;
+
+    /**
      For a frame: the slot words. Generation fifteen: as the majority quoted
      them. Generation sixteen: as the English holds them inside the span, absent
      where the ballots did not pin a slot down.
@@ -133,6 +197,26 @@ export type ArtifactConsistencyRendering =
      */
     readonly reason: UnlocatedReason;
   };
+
+/**
+ A place of a group of the section, named by where its group stands and its label.
+
+ @example
+ ```ts
+ const name: ArtifactConsistencyPlaceName = { group: 1, label: 'OCCURRENCE 3', };
+ ```
+ */
+export type ArtifactConsistencyPlaceName = {
+  /**
+   Position, from zero, of the place's group among the section's groups.
+   */
+  readonly group: number;
+
+  /**
+   Label the sheet gave the place within its group.
+   */
+  readonly label: string;
+};
 
 /**
  One place of a group.
@@ -187,6 +271,23 @@ export type ArtifactConsistencyOccurrence = {
    What became of the place.
    */
   readonly outcome: ConsistencyOccurrenceOutcome;
+
+  /**
+   Generation seventeen: for a place that ended `overlapped`, and no other, the
+   place of another group in the same slice that it gave way to: the place of
+   the replacement made over its words, or the place whose located words its
+   replacement would have changed. Absent from every other place and from
+   every place of an older generation.
+   */
+  readonly gaveWayTo?: ArtifactConsistencyPlaceName;
+
+  /**
+   Generation seventeen: for a place that ended `kept-current` because the pass left it as it was after the splice was
+   chosen and the recorded words let code move the chosen words in, why. The reader cannot check the reason, which rests
+   on English the record does not hold, but it accepts `kept-current` beside a replacement plan only with one from the
+   closed set. Absent from every other place and from every place of an older generation.
+   */
+  readonly keptBecause?: ConsistencyKeptReason;
 };
 
 /**

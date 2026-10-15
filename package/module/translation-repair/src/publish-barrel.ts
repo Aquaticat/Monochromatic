@@ -69,6 +69,7 @@ export {
 } from './corpus-run/would-ship-text.ts';
 
 export {
+  consistencyColumnOf,
   type JudgedEntry,
   judgePublishedEntry,
 } from './corpus-run/verify-published-entry.ts';

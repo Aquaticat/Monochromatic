@@ -18,6 +18,14 @@ export const NESTING_BOUND = 256;
 export const DELIMITER_BOUND = 1_024;
 
 /**
+ The text the engine puts at the start of a stack exhaustion's message.
+ V8 raises it as a `RangeError` reading "Maximum call stack size exceeded"
+ (read off `Error.message` of a runaway recursion on the installed runtime);
+ another engine may end it with a full stop, so only its start is compared.
+ */
+export const STACK_OVERFLOW_MESSAGE = 'Maximum call stack size exceeded';
+
+/**
  The account of a stack exhaustion, in the same words as {@link nestingAccount}.
  */
 export const STACK_OVERFLOW_ACCOUNT = 'nested too deeply to read: the parser exhausted its stack';

@@ -1,3 +1,4 @@
+import { edgeUnitsOf, } from './consistency-edge-units.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Consistency quote bounds
@@ -5,15 +6,21 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 // English with the space that happened to open them and the punctuation that
 // happened to close them, and a quote that carries either beside one that does
 // not still agrees. The words a replacement takes or gives are the quote
-// without both, read one whole character at a time so a character beyond the
-// first plane is never cut in halves.
+// without both, read one whole unit at a time (`consistency-edge-units.ts`): a
+// character beyond the first plane is never cut in halves, and neither is a
+// backslash escape or a character reference the parser decodes. A unit at an
+// edge is kept or cut as the character it shows would be, so `cats\.` ends at
+// `cats` like `cats.`, `cats&nbsp;` like `cats `, and `dogs&#39;` keeps its
+// reference whole like `dogs'`, which this reading never takes off. The fold of
+// `consistency-edge-marks.ts` and the span located in an English
+// (`consistency-whole-end.ts`) cut the same edges by the same units.
 
 /**
  Characters that close a sentence or a clause, taken off the end of a quote
  before it is compared or replaced, so a quote that carries the punctuation
- beside one that does not still agree.
+ beside one that does not still agrees.
  */
-const CLOSING_PUNCTUATION = '.,;:!?…。！？，；：、';
+const CLOSING_PUNCTUATION: ReadonlySet<string> = new Set(Array.from('.,;:!?…。！？，；：、',),);
 
 /**
  What a search answers when it found nothing.
@@ -56,7 +63,7 @@ function isVariationSelector({ point, }: { readonly point: string; },): boolean 
 /**
  Whether a character closes a quote without being part of its words.
 
- @param point - one whole character
+ @param point - one whole character, or the text a unit shows a reader
 
  @returns Whether it is closing punctuation, space or an invisible character,
  and no variation selector
@@ -69,7 +76,7 @@ function isVariationSelector({ point, }: { readonly point: string; },): boolean 
 export function isClosing({ point, }: { readonly point: string; },): boolean {
   if (isVariationSelector({ point, },))
     return false;
-  return CLOSING_PUNCTUATION.includes(point,) || rendersAsNothing({ text: point, },);
+  return CLOSING_PUNCTUATION.has(point,) || rendersAsNothing({ text: point, },);
 }
 
 /**
@@ -101,7 +108,8 @@ function nonNegativeOr(
 /**
  Where a quote's words begin and end: after the space and invisible characters
  that open it, and before the punctuation, space and invisible characters that
- close it. A variation selector stays with the character it follows.
+ close it, a backslash escape or a character reference counting as the one
+ character it shows. A variation selector stays with the character it follows.
 
  @param quote - words as a judge quoted them
 
@@ -125,22 +133,26 @@ export function quoteBounds(
    */
   const points = Array.from(quote,);
   /**
-   Index of the first character the words keep, past the end when it keeps none.
+   The quote one unit at a time: a backslash with the character it escapes and a reference are one.
+   */
+  const units = edgeUnitsOf({ points, },);
+  /**
+   Index among the units of the first one the words keep, past the end when they keep none.
    */
   const first = nonNegativeOr({
-    index: points.findIndex(function isKept(point,): boolean {
-      return !rendersAsNothing({ text: point, },);
+    index: units.findIndex(function isKept({ shown, },): boolean {
+      return !rendersAsNothing({ text: shown, },);
     },),
-    otherwise: points.length,
+    otherwise: units.length,
   },);
   /**
-   Index one past the last character the words keep, the first index when it keeps none.
+   Index among the units one past the last one the words keep, the first index when they keep none.
    */
-  const last = points.findLastIndex(function isWord(
-    point,
+  const last = units.findLastIndex(function isWord(
+    { shown, },
     at,
   ): boolean {
-    return (at >= first) && (!isClosing({ point, },));
+    return (at >= first) && (!isClosing({ point: shown, },));
   },) + 1;
   /**
    UTF-16 length of the characters before an index.
@@ -157,14 +169,34 @@ export function quoteBounds(
       .join('',)
       .length;
   }
+  /**
+   The first unit the words keep, as a list of zero or one.
+   */
+  const [firstKept,] = units.slice(
+    first,
+    first + 1,
+  );
+  /**
+   Index among the characters where the first kept unit starts, past the last character when none is kept.
+   */
+  const startPoint = (firstKept === undefined) ? points.length : firstKept.from;
+  /**
+   The last unit the words keep, as a list of zero or one.
+   */
+  const [lastKept,] = units.slice(
+    last - 1,
+    last,
+  );
+  /**
+   Index among the characters where the words end.
+   */
+  const endPoint = (lastKept === undefined) ? 0 : lastKept.to;
   return {
-    start: unitsBefore({ index: first, },),
-    end: unitsBefore({
-      index: Math.max(
-        last,
-        first,
-      ),
-    },),
+    start: unitsBefore({ index: startPoint, },),
+    end: unitsBefore({ index: Math.max(
+      endPoint,
+      startPoint,
+    ), },),
   };
 }
 

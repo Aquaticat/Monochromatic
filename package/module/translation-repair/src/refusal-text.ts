@@ -1,4 +1,5 @@
 import { errorName, } from './error-name.ts';
+import { isStackOverflow, } from './nesting-bound.ts';
 
 //region Refusal text
 // Renders a caught value as text that carries no quoted content.
@@ -81,6 +82,11 @@ export function refusalText(
 ): string {
   if (namesWithoutQuoting(error,))
     return error.message;
+
+  // THE ENGINE'S STACK EXHAUSTION IS NAMED IN PLAIN WORDS: its message is fixed engine text that quotes nothing, and the
+  // class name `RangeError` alone does not tell a reader what ran out.
+  if (isStackOverflow(error,))
+    return 'refused because the engine ran out of call stack space';
 
   return `refused by ${errorName({ error, },)}`;
 }

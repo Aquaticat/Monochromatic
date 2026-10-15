@@ -8,7 +8,10 @@ import { parseSliceBody, } from './parse-slice-body.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
 import { explicitBreakCounts, } from './source-only-breaks.ts';
 
-import { requireMdxRefusal, } from './parse-mdx.ts';
+import {
+  requireMdxRefusal,
+  withMdxExhaustionRefused,
+} from './parse-mdx.ts';
 import type {
   AtomKind,
   ProtectedAtom,
@@ -397,7 +400,10 @@ export function readSliceSkeleton(
     const {
       root,
       tags,
-    } = parseSliceBody({ text, },);
+    } = withMdxExhaustionRefused({
+      parse: parseSliceBody,
+      input: { text, },
+    },);
 
     return {
       kind: 'read',

@@ -4,6 +4,7 @@ import { maskInvisibleLines, } from './mask-invisible-lines.ts';
 import {
   parseMdxBody,
   requireMdxRefusal,
+  withMdxExhaustionRefused,
 } from './parse-mdx.ts';
 
 //region Strict refusal offset
@@ -137,7 +138,10 @@ export function strictRefusalOffset(
    */
   const { masked, } = maskHtmlComments({ text: unwelded, },);
   try {
-    parseMdxBody({ body: masked, },);
+    withMdxExhaustionRefused({
+      parse: parseMdxBody,
+      input: { body: masked, },
+    },);
     return { refused: false, };
   }
   catch (error) {

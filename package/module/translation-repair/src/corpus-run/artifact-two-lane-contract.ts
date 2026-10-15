@@ -71,7 +71,7 @@ export const ARTIFACT_SCHEMA_VERSION_V14 = 14;
 
 /**
  Generation fifteen, the one the first consistency pass wrote, still read and
- no longer written (generation sixteen is): a slice where the repair lane recorded
+ no longer written (generation seventeen is): a slice where the repair lane recorded
  `not-applicable` (an archive-absent insertion) and the translate lane
  therefore alone had a passage to work on is recorded as a `sole-lane`
  contest verdict, with no ballots and no roster asked.
@@ -102,8 +102,8 @@ export const ARTIFACT_SCHEMA_VERSION_V14 = 14;
 export const ARTIFACT_SCHEMA_VERSION_V15 = 15;
 
 /**
- Generation sixteen, the one the pass writes (`artifact-two-lane-build.ts`,
- `pass-schema-guard.ts`): the consistency section records the page-level pass
+ Generation sixteen, still read and no longer written (generation seventeen
+ is): the consistency section records the page-level pass
  as it counts ballots by the span of the place's own English they locate, runs
  off a tie for first, and carries the chosen rendering by writers and a choice
  among candidates.
@@ -125,8 +125,98 @@ export const ARTIFACT_SCHEMA_VERSION_V15 = 15;
 
  Everything else the generation fifteen record holds (the sole-lane verdict, the
  tense finding) is this generation's too.
+
+ A section of this generation records an overlapped place with no name for the
+ place it gave way to, so its reader keeps the check the section was written
+ under: a replacement, a refused replacement or any located place of another
+ group in the slice is enough for an overlapped place to stand beside.
+
+ No pass wrote this generation: the last pass before it wrote fifteen, and
+ seventeen landed before the next pass ran (ledger entry for the fourth
+ consistency review). Its reader recounts ballots and finds a frame's slot with
+ the locator as it now stands, whose reading of marks at the edge of a quote and
+ of the joints of a word has changed since, so a section some other tool wrote
+ under the earlier reading may be refused. No generation-gated locator is kept
+ for files that do not exist.
  */
 export const ARTIFACT_SCHEMA_VERSION_V16 = 16;
+
+/**
+ Generation seventeen, the one the pass writes (`artifact-two-lane-build.ts`,
+ `pass-schema-guard.ts`): a place of the consistency section that ended
+ `overlapped` names the place it gave way to, and a located place records the
+ single marks the English holds beside its words.
+
+ WHAT MOVED FROM SIXTEEN, all inside the `consistency` section
+ (`corpus-run/artifact-two-lane-consistency.ts` states it): an occurrence that
+ ended `overlapped` carries `gaveWayTo`, the position of the other group on the
+ page and the label of its place, and no other occurrence carries the key. A
+ reader of this generation resolves the name: the group and the place exist, the
+ group is another one, the place stands in the same slice and either was
+ replaced or refused by the floors or has a located rendering. Generation
+ sixteen recorded an overlapped place with nothing to say what it overlapped, so
+ a reader of it accepted one beside any located place of another group in its
+ slice; that check stays for a generation sixteen file, and a reader of sixteen
+ refuses `gaveWayTo`.
+
+ A located rendering of this generation also stores `markBefore` and
+ `markAfter` when present: the single mark (one of the eight the pass counts: the
+ straight apostrophe, the opening and closing curly single mark, the modifier letter
+ apostrophe, the low and the reversed single mark and both single angle marks;
+ one character) the English holds directly before and directly
+ after the span, as the English writes it, absent where none stands there. The
+ span never covers one, except an apostrophe the locator proved
+ (`consistency-proven-apostrophes.ts`): that mark belongs to its word, so the
+ recorded words start or end with it and no `markBefore` or `markAfter` holds it.
+ The splice is unavailable for two places that differ in a mark beside the span,
+ whose words hold different quotation marks, or that hold a different number of
+ block breaks (a blank line, or a line break the Markdown parse reads as a new
+ block), so a reader of this generation recounts each splice with the marks compared
+ (`planConsistencyEdit` with `marks: 'compared'`). A splice that brings a proven
+ apostrophe to an edge where the receiving words hold none is a replacement, and
+ whether the mark is still an apostrophe on the page the pass makes is decided by the
+ pass, with every replacement made (`corpus-run/pass-consistency-apply-gains.ts`):
+ a splice whose carried mark is not proven there is left out, and its place ends
+ `kept-current`. A reader of sixteen and of
+ fifteen refuses both keys and recounts a splice by the words alone
+ (`marks: 'unrecorded'`), which is how those generations were written.
+
+ WHAT A READER OF THIS GENERATION CHECKS OF A PROVEN APOSTROPHE: the recorded
+ words of a located rendering may start or end with one apostrophe-like single
+ mark with a letter or a digit directly inside it (the straight apostrophe, the
+ closing curly mark or the modifier letter apostrophe), and the reader refuses
+ recorded words that start or end with any other single mark (the opening curly
+ mark, two marks, a mark beside a space). It holds no English, so it cannot verify
+ that the mark was proven: the closing mark of a quotation recorded inside the
+ words would read the same, and that case is left to the planner, which is
+ recounted from the recorded words and marks. A reader of sixteen and of fifteen
+ applies none of this.
+
+ A UNIT MAY BE CARRIED IN PART, which no earlier section could record. The places
+ of one block share one bench record: the same candidates, ballots and decision
+ are recorded under each of them. When the splice is among the candidates because
+ code can move the chosen words into some places of the block, the places code
+ cannot move them into (their plan is `unavailable`) keep their words, and a
+ reader of this generation reads each place from the record alone: a place whose
+ recomputed plan is `unavailable` is `kept-current` after a splice was chosen (and
+ ends as a writer's paragraph decides when one was chosen), a place whose plan is
+ `replace` ends in `replaced`, `kept-floor` or `overlapped`, or in `kept-current`
+ when the splice was chosen and would bring an apostrophe to an edge where the
+ place's words hold none (the reader can check that this outcome is allowed and
+ cannot check whether the mark was proven on the page, which the record does not
+ hold) and then only with the reason the pass left the place alone, `keptBecause`, one
+ of a closed set that the reader requires and cannot check, and a splice
+ candidate under a place whose plan is `unavailable` is accepted only when
+ another place of the group, recorded under the same candidates, ballots and
+ decision, has a `replace` plan, since a block with no such place was offered no
+ splice. A reader of sixteen and of fifteen keeps the older rule, that a splice
+ candidate for a place whose plan is `unavailable` is refused and a place whose
+ plan is `replace` or whose carry chose a splice or a writer's paragraph is never
+ `kept-current`, which is how those sections were written.
+
+ Everything else the generation sixteen record holds is this generation's too.
+ */
+export const ARTIFACT_SCHEMA_VERSION_V17 = 17;
 
 /**
  Generation before archive-original spans were sealed; the archive's front
@@ -237,6 +327,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V14,
   ARTIFACT_SCHEMA_VERSION_V15,
   ARTIFACT_SCHEMA_VERSION_V16,
+  ARTIFACT_SCHEMA_VERSION_V17,
 ];
 
 /**
@@ -262,7 +353,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V13
   | typeof ARTIFACT_SCHEMA_VERSION_V14
   | typeof ARTIFACT_SCHEMA_VERSION_V15
-  | typeof ARTIFACT_SCHEMA_VERSION_V16;
+  | typeof ARTIFACT_SCHEMA_VERSION_V16
+  | typeof ARTIFACT_SCHEMA_VERSION_V17;
 
 /**
  Narrows numeric artifact version to known two-lane generation.
@@ -434,6 +526,69 @@ export function artifactGenerationCountsBySpan(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
   return generation >= ARTIFACT_SCHEMA_VERSION_V16;
+}
+
+/**
+ Reports whether generation records, for a place of the consistency section
+ that ended overlapped, the place it gave way to, so that its reader resolves
+ the name. An older section recorded the outcome alone and is read under the
+ weaker check it was written under.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether an overlapped place of the section names the place it gave way to
+
+ @example
+ ```ts
+ artifactGenerationNamesOverlap({ generation: 17, });
+ ```
+ */
+export function artifactGenerationNamesOverlap(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V17;
+}
+
+/**
+ Reports whether generation records, for a located place of the consistency
+ section, the single marks the English holds directly beside its span, so that
+ its reader compares them when it recounts a splice. An older section kept no
+ mark and is recounted by the words of the places alone.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether a located place may carry `markBefore` and `markAfter`, and a splice is recounted with the marks compared
+
+ @example
+ ```ts
+ artifactGenerationRecordsMarks({ generation: 17, });
+ ```
+ */
+export function artifactGenerationRecordsMarks(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V17;
+}
+
+/**
+ Reports whether generation may record a unit carried in part: a splice chosen
+ for a block whose places are not all ones code can move the chosen words into,
+ the others `kept-current`. An older section was written when one such place
+ withheld the splice from its whole block, and its reader keeps that rule.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether a place whose plan is `unavailable` may sit under a splice candidate its block shares, and ends `kept-current` when the splice is chosen
+
+ @example
+ ```ts
+ artifactGenerationCarriesPartialUnits({ generation: 17, });
+ ```
+ */
+export function artifactGenerationCarriesPartialUnits(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V17;
 }
 
 /**
@@ -747,7 +902,7 @@ export type SettledArtifact = {
    Which generation this is, stated rather than inferred from which fields
    happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V16;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V17;
 
   /**
    Corpus entry this covers.

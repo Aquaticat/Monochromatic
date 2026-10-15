@@ -2,6 +2,7 @@ import { treeNodes, } from './mdast-tree-nodes.ts';
 import {
   parseMdxBody,
   requireMdxRefusal,
+  withMdxExhaustionRefused,
 } from './parse-mdx.ts';
 import { withoutHtmlComments, } from './translate-address-drop.ts';
 
@@ -78,7 +79,12 @@ function formulaReading({ text, }: { readonly text: string; },): FormulaReading 
   try {
     return {
       kind: 'read',
-      count: treeNodes({ root: parseMdxBody({ body: withoutHtmlComments({ text, },), },), },)
+      count: treeNodes({
+        root: withMdxExhaustionRefused({
+          parse: parseMdxBody,
+          input: { body: withoutHtmlComments({ text, },), },
+        },),
+      },)
         .filter(isFormula,)
         .length,
     };
@@ -91,6 +97,8 @@ function formulaReading({ text, }: { readonly text: string; },): FormulaReading 
 
 /**
  Findings for a candidate forming more formulas than its original.
+
+ @internal
 
  @param sourceText - original slice
 

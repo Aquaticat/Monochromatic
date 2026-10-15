@@ -18,6 +18,8 @@ import {
   parseMarkdownBody,
   parseMdxBody,
   requireMdxRefusal,
+  withMarkdownExhaustionRefused,
+  withMdxExhaustionRefused,
 } from './parse-mdx.ts';
 import {
   type ContainerSpan,
@@ -192,7 +194,10 @@ export function parseBodyTolerant(
 } {
   try {
     return {
-      root: parseMdxBody({ body, },),
+      root: withMdxExhaustionRefused({
+        parse: parseMdxBody,
+        input: { body, },
+      },),
       findings: [],
     };
   }
@@ -204,7 +209,10 @@ export function parseBodyTolerant(
      */
     const refusal = requireMdxRefusal({ error, },);
     return {
-      root: parseMarkdownBody({ body, },),
+      root: withMarkdownExhaustionRefused({
+        parse: parseMarkdownBody,
+        input: { body, },
+      },),
       findings: [{
         kind: 'mdx-downgraded',
         startOffset: bodyOffset,

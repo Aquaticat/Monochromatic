@@ -22,6 +22,11 @@ import {
 // the rest of the slice as the document reader did, and reporting the tag lets
 // the slice skeleton carry it as an atom, so a candidate that drops the tag
 // fails the floor deterministically rather than at the page grammar.
+//
+// A line is a lone tag only when nothing but the white space Markdown ends a line with (a space, a tab, a carriage return)
+// follows the tag's bracket, as the MDX parser reads it. Any other white space after the bracket, a no-break space for
+// one, is text: the line is then no tag line, and no mask leaves part of it standing as a character that is not blank to
+// CommonMark between two spaces (n156, W5).
 
 /**
  One container tag standing without its partner inside a slice.
@@ -114,6 +119,42 @@ function isWhitespaceOnly({ text, }: { readonly text: string; },): boolean {
 }
 
 /**
+ The characters Markdown ends a line with, besides its text: a space, a tab and the carriage return of a line break the scan cut
+ at its line feed. Any other white space (a no-break space, a wide space, a byte order mark) is text to the MDX parser, so a
+ line that ends in one is not a line of one tag.
+ */
+const LINE_END_SPACE: ReadonlySet<string> = new Set([
+  ' ',
+  '\t',
+  '\r',
+],);
+
+/**
+ Cuts the white space Markdown ends a line with off the end of a line.
+
+ @param line - line without its line feed
+
+ @returns The line without trailing spaces, tabs and carriage returns; any other white space stays, since it is text
+
+ @example
+ ```ts
+ trimLineEnd({ line: '<details> \t\r', },); // '<details>'
+ ```
+ */
+function trimLineEnd({ line, }: { readonly line: string; },): string {
+  /**
+   Where the line ends once the spaces, tabs and carriage returns are cut: the exclusive end of the last other character.
+   */
+  const end = { at: line.length, };
+  while ((end.at > 0) && LINE_END_SPACE.has(line.charAt(end.at - 1,),))
+    end.at -= 1;
+  return line.slice(
+    0,
+    end.at,
+  );
+}
+
+/**
  Whether a text holds an angle bracket, which a tag's own brackets enclose none of.
 
  @param text - text between a tag's brackets
@@ -156,9 +197,9 @@ function tagOnLine(
   },
 ): readonly TagLine[] {
   /**
-   Line without trailing whitespace, which the corpus leaves on lines freely.
+   Line without trailing white space, which the corpus leaves on lines freely: the white space Markdown ends a line with.
    */
-  const trimmed = line.trimEnd();
+  const trimmed = trimLineEnd({ line, },);
 
   /**
    Whether the line is bracketed like a tag.
@@ -287,12 +328,12 @@ function multiLineTagEnd(
     '\n',
     close,
   );
-  if (!isWhitespaceOnly({
-    text: text.slice(
+  if (trimLineEnd({
+    line: text.slice(
       close + 1,
       (lastLineEnd === (-1)) ? text.length : lastLineEnd,
     ),
-  },))
+  },) !== '')
     return -1;
   return close + 1;
 }

@@ -3,18 +3,12 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
-import type { ConsistencyRendering, } from '../consistency-count-types.ts';
-import {
-  applyConsistencyEdits,
-  type ConsistencyEdit,
-} from '../consistency-splice.ts';
-import { consistencyLabel, } from '../consistency-wire.ts';
 import type { DeclaredNamePair, } from '../linked-title-declared-name.ts';
 import type {
   ArtifactConsistencyGroup,
-  ArtifactConsistencyOccurrence,
-  ArtifactConsistencyRendering,
+  ArtifactConsistencyPlaceName,
   ArtifactConsistencySlice,
+  ConsistencyKeptReason,
   ConsistencyOccurrenceOutcome,
 } from './artifact-two-lane-consistency.ts';
 import {
@@ -22,12 +16,19 @@ import {
   consistencyFloorVerdict,
 } from './pass-consistency-floors.ts';
 import type { ConsistencySliceFacts, } from './pass-consistency-slices.ts';
-import {
-  editsChangingLocatedWords,
-  type LeftOutEdit,
-} from './pass-consistency-apply-located.ts';
-import type { SettledGroup, } from './pass-consistency-types.ts';
 import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
+import { settledSlicesOf, } from './pass-consistency-apply-plan.ts';
+import {
+  gainFindingOf,
+  keptReasonOfGain,
+} from './pass-consistency-apply-settled.ts';
+import {
+  carriedPlaceName,
+  finalGroupsOf,
+  pendingNamed,
+  winnerOver,
+} from './pass-consistency-apply-record.ts';
+import type { SettledGroup, } from './pass-consistency-types.ts';
 
 //region Pass consistency apply
 // WHERE THE GROUPS' REPLACEMENTS MEET EACH OTHER AND THE FLOORS. Every group
@@ -42,19 +43,71 @@ import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 // earlier one stays `overlapped`, whether the floors then pass or refuse its
 // slice. `OVERLAPPED` NEVER NAMES A PLACE OF THE REPLACEMENT'S OWN GROUP: the
 // places of one group that a block holds are carried by one replacement
-// (`pass-consistency-carry.ts`), so no two replacements of a group address the
-// same words.
+// (`pass-consistency-carry.ts`), and the standing of a span
+// (`consistency-carry-standing.ts`) names no block around the block of other
+// words of the same English, at any depth of nesting (a span that no single
+// paragraph of a container holds has no block), so the blocks of a group's
+// replacements never nest. A BREACH IS CAUGHT WHERE THE REPLACEMENTS ARE NAMED:
+// `sliceEditsOf` (`pass-consistency-apply-record.ts`) throws a
+// `ConsistencyInvariantError` naming both replacements when two replacements of
+// one group overlap in a slice, before any outcome is recorded, so a change that
+// breaks the guarantee fails here in the writer and not when a resume reads the
+// section back, where `assertGaveWayResolves` refuses an overlapped place that
+// names its own group.
 //
-// A BLOCK REPLACEMENT THAT CHANGES THE WORDS ANOTHER GROUP LOCATED IS LEFT OUT.
-// A writer's block for one group can cover a place of another group, and the
-// groups settle at the same time, so the writer is only asked to keep those words
-// (`pass-consistency-carry-units.ts`). Here the replacement that covers another
-// group's located place and changes its words is left out whichever group comes
-// first, recorded `overlapped` for every place it carried, with a finding and a
-// warning that name both. A code splice replaces only the words of its own
-// receiving places, so it is left out only against a place another group keeps
-// (`pass-consistency-apply-located.ts`); against another group's receiving place
-// the earlier group wins.
+// A REPLACEMENT THAT CHANGES THE WORDS ANOTHER GROUP LOCATED IS LEFT OUT UNLESS
+// THAT GROUP IS REPLACING THEM. A writer's block for one group can cover a place
+// of another group, and the groups settle at the same time, so the writer is only
+// asked to keep those words (`pass-consistency-carry-units.ts`). Here the
+// replacement that covers another group's located place and changes its words is
+// left out whichever group comes first, recorded `overlapped` for every place it
+// carried, with a finding and a warning that name both. A code splice replaces
+// only the words of its own receiving places, so it is left out against every
+// located place of another group that group has no pending replacement over in
+// the slice (`pass-consistency-apply-located.ts`); against a place the other
+// group replaces, the earlier group wins.
+//
+// AN OVERLAPPED PLACE NAMES WHAT IT GAVE WAY TO (`gaveWayTo`): the located place
+// whose words the replacement would have changed, for a replacement left out
+// here, and the place carried by the earlier replacement that won the words, for
+// a later one that overlapped it. THE GROUP THAT GIVES WAY KEEPS ITS PLACES' WORDS AS
+// THEY WERE, so the page stays inconsistent for that group, the cost of settling the
+// groups at the same time over the English as it stood when the pass began.
+//
+// NO REPLACEMENT THAT IS MADE CHANGES THE LOCATED WORDS OF A PLACE THAT IS NOT
+// ALREADY RECORDED `overlapped`. A block is made only where it changes no located
+// words of another group. A code splice is made over such words only where their
+// group replaces them, and that replacement holds the words, so the two meet and
+// one of them is the later one, left out. The place is then `overlapped` and
+// names what it gave way to, either from the left-out branch or from the branch
+// that overlaps a later replacement with an earlier one, so nothing is left to
+// record once the replacements are made. `pass-consistency-apply.unit.test.ts`
+// pins this over every small arrangement of groups built through `applyConsistency`.
+//
+// A CODE SPLICE THAT CARRIES AN APOSTROPHE IN IS CHECKED ON THE WHOLE PAGE. The planner
+// (`consistency-splice.ts`) plans a replacement that brings a proven apostrophe to an
+// edge where the receiving words held none, and whether that mark stays an apostrophe
+// depends on the quotation characters of the receiving page, in any slice of it, and on
+// the other replacements of the pass. So before the first slice is applied, the page is
+// looked at with every replacement of every slice made
+// (`pass-consistency-apply-plan.ts`, `pass-consistency-apply-gains.ts`): a splice whose
+// carried apostrophe is not proven there is left out, repeated until the choice no
+// longer changes, and the splices left out are then tried again one at a time on the
+// final page (`pass-consistency-apply-readmit.ts`), so one that the page would carry is
+// made. Each place a splice that stays out carried is recorded `kept-current` with a
+// finding. THE FINDING STATES THE REASON THAT HOLDS ON THE FINAL PAGE, not the reason the
+// first reading gave: a mark of the page that could pair with the splice's apostrophe, a
+// carried apostrophe of a splice that stands that it would unprove, a floor that refuses the
+// slice with it, words that overlap a replacement that is made, or a slice the floors
+// refused that keeps its wording whole (`gainFindingOf`). THE RECORD OF EACH PLACE STATES THE SAME REASON AS DATA
+// (`keptBecause`, a closed set: `keptReasonOfGain`), which the reader of the artifact requires for a place
+// the pass left alone after the splice was chosen; the planner's own refusals at the edge of a span
+// (`edgeRefusalOf`) are recorded the same way.
+// THE FLOORS RUN BEFORE ANYTHING IS RECORDED, inside `settledSlicesOf`, in the same loop as that
+// check: a slice the floors refuse keeps its wording, which puts back the words its replacements
+// took out (a closing mark among them), so the page is looked at again without the refused
+// slice's replacements, and what that leaves out is put through the floors again, until no floor
+// refuses another slice. The loop over its result only records what that settled, slice by slice.
 //
 // A REPLACEMENT CARRIES SEVERAL PLACES WHEN A WRITER'S BLOCK DOES: the block is
 // rewritten once for every receiving place in it, so the replacement is named by
@@ -84,95 +137,6 @@ export type AppliedConsistency = {
    */
   readonly findings: readonly string[];
 };
-
-/**
- The name a replacement is reported under, in the words an operator reads the
- pass's log in: the group counted from one and the labels of the receiving
- places it carries.
-
- @param group - position of the group on the page, from zero
-
- @param places - positions of the receiving places in the group, from zero
-
- @returns Name unique across the page's replacements
-
- @example
- ```ts
- const id = editId({ group: 0, places: [1, 2,], },); // 'group 1 OCCURRENCE 2 and OCCURRENCE 3'
- ```
- */
-function editId(
-  {
-    group,
-    places,
-  }: {
-    readonly group: number;
-    readonly places: readonly number[];
-  },
-): string {
-  return `group ${String(group + 1,)} ${
-    places
-      .map(function labelOf(place,): string {
-        return consistencyLabel({ position: place, },);
-      },)
-      .join(' and ',)
-  }`;
-}
-
-/**
- The key a place's final outcome is kept under.
-
- @param group - position of the group on the page, from zero
-
- @param place - position of the place in the group, from zero
-
- @returns The key
-
- @example
- ```ts
- const key = placeKey({ group: 0, place: 1, },); // '0:1'
- ```
- */
-function placeKey(
-  {
-    group,
-    place,
-  }: {
-    readonly group: number;
-    readonly place: number;
-  },
-): string {
-  return `${String(group,)}:${String(place,)}`;
-}
-
-/**
- A rendering as the artifact records it.
-
- @param rendering - the counter's rendering
-
- @returns The recorded rendering
-
- @example
- ```ts
- const recorded = recordedRendering({ rendering, },);
- ```
- */
-function recordedRendering(
-  { rendering, }: { readonly rendering: ConsistencyRendering; },
-): ArtifactConsistencyRendering {
-  if (rendering.kind === 'unlocated') {
-    return {
-      kind: 'unlocated',
-      reason: rendering.reason,
-    };
-  }
-  return {
-    kind: 'located',
-    quote: rendering.quote,
-    start: rendering.start,
-    ...((rendering.slot === undefined) ? {} : { slot: rendering.slot, }),
-  };
-}
 
 /**
  Runs the floors on a changed slice.
@@ -277,6 +241,70 @@ export function applyConsistency(
    */
   const findings: string[] = [];
   /**
+   The place each overlapped place gave way to, by group and place.
+   */
+  const gaveWayTo = new Map<string, ArtifactConsistencyPlaceName>();
+  /**
+   Records the place that every place a replacement carried gave way to.
+
+   @param carriers - replacements with the places each carries
+
+   @param ids - names of the replacements
+
+   @param name - the place they gave way to
+   */
+  function recordGaveWay(
+    {
+      carriers,
+      ids,
+      name,
+    }: {
+      readonly carriers: ReadonlyMap<string, readonly string[]>;
+      readonly ids: readonly string[];
+      readonly name: ArtifactConsistencyPlaceName;
+    },
+  ): void {
+    for (const id of ids) {
+      for (const key of carriers.get(id,) ?? []) {
+        gaveWayTo.set(
+          key,
+          name,
+        );
+      }
+    }
+  }
+  /**
+   Why the pass left a place as it was, by group and place, for the places a code splice that was left out carried.
+   */
+  const keptBecause = new Map<string, ConsistencyKeptReason>();
+  /**
+   Records why a code splice that was left out leaves every place it carried as it was.
+
+   @param carriers - replacements with the places each carries
+
+   @param id - name of the splice
+
+   @param reason - why the final page does not carry it
+   */
+  function recordKept(
+    {
+      carriers,
+      id,
+      reason,
+    }: {
+      readonly carriers: ReadonlyMap<string, readonly string[]>;
+      readonly id: string;
+      readonly reason: ConsistencyKeptReason;
+    },
+  ): void {
+    for (const key of carriers.get(id,) ?? []) {
+      keptBecause.set(
+        key,
+        reason,
+      );
+    }
+  }
+  /**
    Records what became of a replacement for every place it carried.
 
    @param carriers - replacements with the places each carries
@@ -305,81 +333,39 @@ export function applyConsistency(
       }
     }
   }
-  for (const facts of slices) {
-    /**
-     Places each of this slice's replacements carries, by the replacement's name.
-     */
-    const carriers = new Map<string, readonly string[]>();
-    /**
-     This slice's replacements, earlier groups first.
-     */
-    const edits = settled.flatMap(function editsIn(
-      group,
-      groupPosition,
-    ): readonly ConsistencyEdit[] {
-      return group.edits
-        .filter(function inThisSlice(edit,): boolean {
-          return edit.sliceIndex === facts.sliceIndex;
-        },)
-        .map(function named(edit,): ConsistencyEdit {
-          /**
-           Name of the replacement.
-           */
-          const id = editId({
-            group: groupPosition,
-            places: edit.placePositions,
-          },);
-          carriers.set(
-            id,
-            edit.placePositions
-              .map(function keyOf(place,): string {
-                return placeKey({
-                  group: groupPosition,
-                  place,
-                },);
-              },),
-          );
-          return {
-            id,
-            start: edit.start,
-            end: edit.end,
-            text: edit.text,
-          };
-        },);
-    },);
-    if ((edits.length === 0) || (facts.current
-      .kind
-      !== 'present'))
-      continue;
-    /**
-     The wording the slice carries now.
-     */
-    const currentText = facts.current
-      .text;
-    /**
-     The block replacements that change the words another group located, which are not made.
-     */
-    const leftOut = editsChangingLocatedWords({
+  for (
+    const {
+      plan: {
+        facts,
+        currentText,
+        carriers,
+        pendings,
+        leftOut,
+        toMake,
+        unprovenGains,
+      },
+      made,
+      verdict,
+      gainReasons,
+    } of settledSlicesOf({
       settled,
-      sliceIndex: facts.sliceIndex,
-      english: currentText,
+      slices,
+      floorsOn: function floorsOfPlan(
+        {
+          plan,
+          candidateText,
+        },
+      ): ConsistencyFloorVerdict {
+        return floorsOn({
+          facts: plan.facts,
+          currentText: plan.currentText,
+          candidateText,
+          declared,
+          declaredNames,
+        },);
+      },
     },)
-      .map(function namedLeftOut({
-        group,
-        edit,
-        other,
-      },): {
-        readonly id: string;
-        readonly other: LeftOutEdit['other'];
-      } {
-        return {
-          id: editId({
-            group,
-            places: edit.placePositions,
-          },),
-          other,
-        };
-      },);
+  ) {
     for (const {
       id,
       other,
@@ -391,6 +377,14 @@ export function applyConsistency(
         + `changes the words that group ${String(other.group + 1,)} ${other.label} located`;
       al.warn(sentence,);
       findings.push(sentence,);
+      recordGaveWay({
+        carriers,
+        ids: [id,],
+        name: {
+          group: other.group,
+          label: other.label,
+        },
+      },);
     }
     recordOutcome({
       carriers,
@@ -399,38 +393,78 @@ export function applyConsistency(
       },),
       outcome: 'overlapped',
     },);
-    /**
-     The replacements that are made, where they do not overlap an earlier one.
-     */
-    const toMake = edits.filter(function isMade({ id, },): boolean {
-      return !leftOut.some(function isLeftOut(left,): boolean {
-        return left.id === id;
+    for (const { id, } of unprovenGains) {
+      /**
+       Why the replacement is left out, on the final page.
+       */
+      const reason = gainReasons.get(id,);
+      if (reason === undefined) {
+        throw new ConsistencyInvariantError({ invariant:
+          `slice ${String(facts.sliceIndex,)} left out the consistency replacement of ${id} and gave no reason, `
+            + 'and the settling gives a reason for every replacement it leaves out', },);
+      }
+      /**
+       What is reported of the replacement left out.
+       */
+      const sentence = gainFindingOf({
+        sliceIndex: facts.sliceIndex,
+        id,
+        reason,
       },);
+      al.warn(sentence,);
+      findings.push(sentence,);
+      recordKept({
+        carriers,
+        id,
+        reason: keptReasonOfGain({ reason, },),
+      },);
+    }
+    recordOutcome({
+      carriers,
+      ids: unprovenGains.map(function idOf({ id, },): string {
+        return id;
+      },),
+      outcome: 'kept-current',
     },);
-    if (toMake.length === 0)
+    // A slice with nothing to make was never put through the floors.
+    if ((made === undefined) || (verdict === undefined))
       continue;
-    /**
-     The slice with every replacement that does not overlap an earlier one made.
-     */
-    const made = applyConsistencyEdits({
-      english: currentText,
-      edits: toMake,
-    },);
     recordOutcome({
       carriers,
       ids: made.overlapped,
       outcome: 'overlapped',
     },);
     /**
-     What the floors make of the slice as it would ship.
+     The replacements that were made, in priority order.
      */
-    const verdict = floorsOn({
-      facts,
-      currentText,
-      candidateText: made.text,
-      declared,
-      declaredNames,
+    const madeEdits = toMake.filter(function wasMade({ id, },): boolean {
+      return made.applied
+        .includes(id,);
     },);
+    /**
+     The replacements left out for overlapping an earlier one.
+     */
+    const losers = toMake.filter(function wasOverlapped({ id, },): boolean {
+      return made.overlapped
+        .includes(id,);
+    },);
+    for (const loser of losers) {
+      /**
+       The replacement that won the words the later one overlapped.
+       */
+      const winner = winnerOver({
+        loser,
+        made: madeEdits,
+      },);
+      recordGaveWay({
+        carriers,
+        ids: [loser.id,],
+        name: carriedPlaceName(pendingNamed({
+          pendings,
+          id: winner.id,
+        },),),
+      },);
+    }
     if (verdict.kind === 'passes') {
       recordOutcome({
         carriers,
@@ -462,59 +496,11 @@ export function applyConsistency(
     );
   }
   return {
-    groups: settled.map(function finalGroup(
-      group,
-      groupPosition,
-    ): ArtifactConsistencyGroup {
-      return {
-        repeat: group.repeat,
-        occurrences: group.places
-          .map(function finalPlace(
-            place,
-            position,
-          ): ArtifactConsistencyOccurrence {
-            /**
-             Rendering of this place.
-             */
-            const rendering = group.renderings[position];
-            /**
-             Outcome of this place before the replacements met each other and the floors.
-             */
-            const provisional = group.outcomes[position];
-            if ((rendering === undefined) || (provisional === undefined)) {
-              throw new ConsistencyInvariantError({ invariant:
-                `${consistencyLabel({ position, },)} of group ${String(groupPosition + 1,)} has no rendering `
-                  + 'or outcome, and both are made for every place', },);
-            }
-            /**
-             What the replacements and the floors made of this place's replacement, if it had one.
-             */
-            const decided = outcomes.get(placeKey({
-              group: groupPosition,
-              place: position,
-            },),);
-            if ((provisional === 'replaced') && (decided === undefined)) {
-              throw new ConsistencyInvariantError({ invariant:
-                `${consistencyLabel({ position, },)} of group ${String(groupPosition + 1,)} was to be replaced `
-                  + 'and no replacement was applied, left out or refused, and every pending replacement is one of the three', },);
-            }
-            return {
-              label: consistencyLabel({ position, },),
-              sliceIndex: place.slice
-                .sliceIndex,
-              startOffset: place.startOffset,
-              endOffset: place.endOffset,
-              line: place.line,
-              ...((place.slotStartOffset === undefined) ? {} : { slotStartOffset: place.slotStartOffset, }),
-              ...((place.slotEndOffset === undefined) ? {} : { slotEndOffset: place.slotEndOffset, }),
-              rendering: recordedRendering({ rendering, },),
-              outcome: decided ?? provisional,
-            };
-          },),
-        unplaced: group.unplaced,
-        verdict: group.verdict,
-        carries: group.carries,
-      };
+    groups: finalGroupsOf({
+      settled,
+      outcomes,
+      gaveWayTo,
+      keptBecause,
     },),
     slices: changed,
     findings,

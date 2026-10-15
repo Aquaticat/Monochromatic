@@ -13,7 +13,7 @@ import { proseMask, } from './typography-prose-mask.ts';
 // same scan finds curly doubles in 71 archives), so the floor stands aside
 // wherever the original or the page it would replace carries one. Only
 // prose is read: a guillemet in a code span or a tag is content, and
-// comments are cut. The editor sheet's «REGION n» marker is the sheet-leak
+// comments are cut; a candidate the grammar refuses has no prose to read (`typography-prose-mask.ts`). The editor sheet's «REGION n» marker is the sheet-leak
 // floor's to refuse, which runs first and names it as the sheet's own.
 
 /**

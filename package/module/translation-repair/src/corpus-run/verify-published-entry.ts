@@ -136,6 +136,37 @@ function weighedAs(
 }
 
 /**
+ Renders the column that says whether the artifact's consistency section was
+ read and at which generation.
+
+ PRINTS TWO COUNTS, NEVER A WORDING. Without it a replay of an old artifact
+ prints nothing about the section, and a section that was never read looks the
+ same as one that was read and held no group.
+
+ @param groups - how many groups of repeated wording the section holds
+
+ @param generation - generation the artifact was read at
+
+ @returns Column text for the entry line
+
+ @example
+ ```ts
+ console.log(consistencyColumnOf({ groups: 2, generation: 16, },),);
+ ```
+ */
+export function consistencyColumnOf(
+  {
+    groups,
+    generation,
+  }: {
+    readonly groups: number;
+    readonly generation: number;
+  },
+): string {
+  return `consistency-groups=${String(groups,)} read-at-generation=${String(generation,)}`;
+}
+
+/**
  What one entry came to: whether its page agreed with its artifact, and the
  lines that say so.
 
@@ -233,7 +264,16 @@ export async function judgePublishedEntry(
     agreement,
     lines: [
       `${entryId}: wordings=${String(wordings,)} silent=${String(silentSlices,)} `
-      + `${weighedAs({ weight, },)} missing=${String(missing.length,)}`,
+      + `${weighedAs({ weight, },)} missing=${String(missing.length,)} ${
+        consistencyColumnOf({
+          groups: read.artifact
+            .consistency
+            .groups
+            .length,
+          generation: read.artifact
+            .artifactSchemaVersion,
+        },)
+      }`,
       ...((wrongLength && (weight.kind === 'weighed'))
         ? [
           // THE NOUN FOLLOWS THE SIZE OF THE DIFFERENCE, not its sign: a page

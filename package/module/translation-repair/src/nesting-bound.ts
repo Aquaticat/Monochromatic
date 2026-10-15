@@ -24,6 +24,7 @@ import {
   type NestingGrammar,
   type NestingReading,
   STACK_OVERFLOW_ACCOUNT,
+  STACK_OVERFLOW_MESSAGE,
 } from './nesting-vocabulary.ts';
 
 //region Nesting bound
@@ -60,14 +61,6 @@ import {
 // a backtick in its backtick info string, and one the parser takes for raw
 // text all count the lines after them. Measured on the built package before
 // this rule: each of those passed a text that the parser then nested.
-
-/**
- The text the engine puts at the start of a stack exhaustion's message.
- V8 raises it as a `RangeError` reading "Maximum call stack size exceeded"
- (read off `Error.message` of a runaway recursion on the installed runtime);
- another engine may end it with a full stop, so only its start is compared.
- */
-const STACK_OVERFLOW_MESSAGE = 'Maximum call stack size exceeded';
 
 /**
  Columns of indentation that make one level of nesting.

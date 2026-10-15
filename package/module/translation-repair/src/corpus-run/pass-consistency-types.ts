@@ -1,6 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from '../chat-contract.ts';
+import type { CarryEdgeWords, } from '../consistency-carry-sheet-parts.ts';
 import type {
   CarryBlock,
   SpliceOnlyKind,
@@ -19,6 +20,7 @@ import type {
   ConsistencyOccurrenceOutcome,
 } from './artifact-two-lane-consistency.ts';
 import type { ConsistencyCacheValue, } from './pass-consistency-cache.ts';
+import type { EdgeVerdict, } from './pass-consistency-edge-refusal.ts';
 import type { ConsistencyPlace, } from './pass-consistency-group.ts';
 
 //region Pass consistency types
@@ -116,6 +118,26 @@ export type CarryReceiver = LocatedPlace & {
 };
 
 /**
+ Why a unit that stands in no kind of block cannot be given to a writer.
+
+ - `'no-single-block'`: the words of its receiving places lie in no single block
+   (they cross a paragraph boundary, or lie in a container no paragraph holds), so
+   the unit is the whole English of the slice.
+ - `'overlaps-outside-receiver'`: its block is a paragraph or heading that overlaps
+   the located words of another receiving place of the group outside the unit
+   whose plan is a replacement, which that place's splice replaces. A receiving
+   place whose plan is unavailable has no splice and does not count, and a place
+   whose words cross a block boundary has that plan when the chosen words hold a
+   different number of block breaks than its own words do.
+
+ @example
+ ```ts
+ const reason: UnwritableReason = 'no-single-block';
+ ```
+ */
+export type UnwritableReason = 'no-single-block' | 'overlaps-outside-receiver';
+
+/**
  The receiving places that one rewrite of one stretch of the English carries the
  chosen rendering to. Places are grouped by the stretch that holds them: the
  innermost block, a paragraph or a heading, that holds the words of each, or the
@@ -126,7 +148,7 @@ export type CarryReceiver = LocatedPlace & {
 
  @example
  ```ts
- const unit: CarryUnit = { block, writable: true, spliceOnlyIn: [], receivers: [receiver,], keeping: [], };
+ const unit: CarryUnit = { block, writable: true, spliceOnlyIn: [], receivers: [receiver,], keeping: [], crossing: [], };
  ```
  */
 export type CarryUnit = {
@@ -138,15 +160,24 @@ export type CarryUnit = {
   /**
    Whether the block is a paragraph or a heading a writer can be given: false for
    the whole English of a slice, which holds words that lie in no single block,
-   and which only the code splice and the current English stand for.
+   and which only the code splice and the current English stand for, and false
+   for a paragraph whose rewrite would address words that another receiving place
+   of the group has outside it.
    */
   readonly writable: boolean;
 
   /**
-   The kind of block (a table, a code block, a setext heading) that holds the
-   words of the receiving places where no paragraph rewrite can carry words to
-   them, as a list of zero or one; none for a paragraph, a heading and words in
-   no single block.
+   Why the unit is not writable, where no kind of block in `spliceOnlyIn` says so:
+   present for a unit that is not writable and stands in no such kind, absent for a
+   writable unit and for a unit that stands in a kind of block.
+   */
+  readonly unwritableBecause?: UnwritableReason;
+
+  /**
+   The kind of block (a table, a code block, a setext heading, a preformatted
+   block) that holds the words of the receiving places where no paragraph
+   rewrite can carry words to them, as a list of zero or one; none for a
+   paragraph, a heading and words in no single block.
    */
   readonly spliceOnlyIn: readonly SpliceOnlyKind[];
 
@@ -163,6 +194,19 @@ export type CarryUnit = {
    of every other group of the page, whatever became of that place.
    */
   readonly keeping: readonly string[];
+
+  /**
+   The stretches of the words of places of the group outside the unit whose words
+   must stay as they are and that run over an edge of the block, each with the edge
+   of the block it stands at: the chosen place, a place the majority keeps for its
+   context, a place that already reads as the chosen place does, and a receiving
+   place that has no splice (its plan is `unavailable`). A writer's block that does
+   not hold the stretch at that edge would leave the place's words changed, although
+   the record would have the place as kept as it was. A receiving place whose plan is
+   `replace` and the places of other groups are not listed. None where no such place
+   reaches into the block.
+   */
+  readonly crossing: readonly CarryEdgeWords[];
 };
 
 /**
@@ -344,6 +388,13 @@ export type SettledGroup = {
    provisional until the floors have spoken.
    */
   readonly outcomes: readonly ConsistencyOccurrenceOutcome[];
+
+  /**
+   For each place, in the order of the places, why the planner refused the splice at the edge of the span on the English
+   around it, where the recorded words and marks alone let code move the chosen words in; `unrefused` for a place not so
+   refused. Absent where no place was.
+   */
+  readonly leftBecause?: readonly EdgeVerdict[];
 
   /**
    The replacements the winner would make.

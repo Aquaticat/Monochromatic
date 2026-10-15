@@ -203,10 +203,11 @@ export function straightenQuotes({ text, }: { readonly text: string; },): string
 
 /**
  Straightens the curly quotation marks of a rendering's prose only: the
- typography fold read where the typography restoration reads. A quote inside
- a backtick span or a tag is code or markup, which the restoration never
- touches (`typography-prose-mask.ts`), so two renderings apart there are two
- texts. For a whole slice, which may carry code; a title or a single phrase
+ typography fold read where the typography restoration reads. A quote that is
+ no prose text of the page parse (in a link destination or title, an address,
+ code, math, an expression or a tag) is code or markup, which the restoration
+ never touches (`typography-prose-mask.ts`), so two renderings apart there are
+ two texts. For a whole slice, which may carry code; a title or a single phrase
  has none, and takes {@link straightenQuotes}.
  Length-preserving like {@link straightenQuotes}.
 

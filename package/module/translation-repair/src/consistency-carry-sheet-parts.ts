@@ -240,9 +240,52 @@ export function chosenEnglishBlocksOf(
 }
 
 /**
+ The stretch of a place's words that lies inside a paragraph although the place
+ runs over an edge of it, and the edge the stretch must stay at.
+
+ @example
+ ```ts
+ const crossing: CarryEdgeWords = { edge: 'start', words: 'to sleep', };
+ ```
+ */
+export type CarryEdgeWords = {
+  /**
+   The edge of the paragraph the stretch stands at: `start` where the place comes in
+   over the start of the paragraph, `end` where it goes out over the end.
+   */
+  readonly edge: 'start' | 'end';
+
+  /**
+   The stretch of the place's words inside the paragraph.
+   */
+  readonly words: string;
+};
+
+/**
+ The line that says where a stretch of a crossing place's words must stay, in the
+ list of words to keep.
+
+ @param crossing - the stretch and its edge
+
+ @returns The words followed by what is asked of them, in one entry of the list
+
+ @example
+ ```ts
+ const entry = crossingEntryOf({ crossing: { edge: 'start', words: 'to sleep', }, },);
+ ```
+ */
+function crossingEntryOf({ crossing, }: { readonly crossing: CarryEdgeWords; },): string {
+  return (crossing.edge === 'start')
+    ? `${crossing.words}\n(these are the FIRST words of the paragraph: the place they belong to runs on from the previous paragraph, so they stay the first words of your paragraph, exactly as they are)`
+    : `${crossing.words}\n(these are the LAST words of the paragraph: the place they belong to runs on into the next paragraph, so they stay the last words of your paragraph, exactly as they are)`;
+}
+
+/**
  The fenced block naming words of other places that must stay as they are.
 
  @param keeping - the words, one entry for each place
+
+ @param crossing - stretches of places that run over an edge of the paragraph, each of which must stay at that edge
 
  @param fence - fence no shown text contains
 
@@ -250,21 +293,32 @@ export function chosenEnglishBlocksOf(
 
  @example
  ```ts
- const block = keepingBlockOf({ keeping: ['The cat naps',], fence, },);
+ const block = keepingBlockOf({ keeping: ['The cat naps',], crossing: [], fence, },);
  ```
  */
 export function keepingBlockOf(
   {
     keeping,
+    crossing = [],
     fence,
   }: {
     readonly keeping: readonly string[];
+    readonly crossing?: readonly CarryEdgeWords[];
     readonly fence: string;
   },
 ): string {
-  return (keeping.length === 0)
+  /**
+   The entries of the list: the words to keep wherever they stand, then the stretches that stay at an edge.
+   */
+  const entries = [
+    ...keeping,
+    ...crossing.map(function entryOf(stretch,): string {
+      return crossingEntryOf({ crossing: stretch, },);
+    },),
+  ];
+  return (entries.length === 0)
     ? ''
-    : `${fence} WORDS OF OTHER PLACES TO KEEP EXACTLY ${fence}\n${keeping.join('\n',)}\n`;
+    : `${fence} WORDS OF OTHER PLACES TO KEEP EXACTLY ${fence}\n${entries.join('\n',)}\n`;
 }
 
 //endregion Consistency carry sheet parts

@@ -7,6 +7,7 @@ import type {
 } from '../consistency-carry-sheet-parts.ts';
 import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 import { applyConsistencyEdits, } from '../consistency-splice.ts';
+import { UnhandledMemberInvariantError, } from '../unhandled-member.ts';
 import type { ArtifactConsistencyRepeat, } from './artifact-two-lane-consistency.ts';
 import { askCarryWriters, } from './pass-consistency-carry-ask.ts';
 import {
@@ -32,18 +33,27 @@ import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 
 //region Pass consistency carry offers
 // THE TEXTS OFFERED FOR A BLOCK, apart from the current one: the chosen words
-// moved into every receiving place of the block by code, where that is possible
-// and the floors pass it, and the blocks the translate stage's writer bench
+// moved by code into the receiving places of the block that code can move them
+// into, where the floors pass it, and the blocks the translate stage's writer bench
 // writes for it. And what the sheets of both questions show of the places.
 //
-// THE SPLICE IS NOT HELD TO THE WORDS OF OTHER GROUPS. It replaces the exact
+// A BLOCK CAN BE CARRIED IN PART. The splice is built from the receiving places of
+// the block that have a replacement, and a receiving place whose words cannot be
+// moved by code (its plan is `unavailable`) keeps its words beside them. Only a
+// block with no receiving place that has a replacement is offered no splice, and
+// is left to the writers or to the current block. The bench records one choice for
+// the block, so the same candidates, ballots and decision stand under each of its
+// places, the splice among them included.
+//
+// THE SPLICE IS NOT HELD TO THE WORDS OF OTHER GROUPS HERE. It replaces the exact
 // words of its own receiving places and nothing else, so it can change another
 // group's words only where those words overlap its own, and that meeting is
 // settled where all the groups' replacements are applied
-// (`pass-consistency-apply.ts`): the earlier group wins an overlap of two
-// receiving places, and a replacement is left out where it changes the words of
-// a place another group keeps. A writer's block, which can rewrite words well
-// away from its receiving places, is held to the listed words here.
+// (`pass-consistency-apply.ts`): the earlier group wins an overlap with a place
+// another group has a replacement over, and a replacement is left out where it
+// changes the words of a located place another group does not replace. A
+// writer's block, which can rewrite words well away from its receiving places,
+// is held to the listed words here.
 
 /**
  What both sheets of a block's carry show of its places.
@@ -229,8 +239,11 @@ export function shownOf(
 }
 
 /**
- The block with the chosen words moved into every receiving place by code, when
- that is possible for all of them and every floor passes it.
+ The block with the chosen words moved by code into the receiving places that
+ have a replacement, when every floor passes it. A receiving place whose words
+ cannot be moved by code keeps its words in that block, and the block is still
+ offered as long as some other receiving place of it has a replacement; a block
+ where none has gets no splice.
 
  @param unit - the unit
 
@@ -289,11 +302,9 @@ export function splicedParagraphOf(
         ]
         : [];
     },);
-  /**
-   The places the block's replacements are for.
-   */
-  const { receivers, } = unit;
-  if (edits.length < receivers.length) {
+  // A BLOCK WHOSE EVERY RECEIVING PLACE HAS NO REPLACEMENT HAS NO SPLICE; one with a replacement for some places is spliced
+  // for those, and the others keep their words (`choose` in `pass-consistency-carry-choose.ts` records which).
+  if (edits.length === 0) {
     return {
       spliced: [],
       findings: [],
@@ -343,6 +354,49 @@ export function splicedParagraphOf(
     spliced: [],
     findings: [`consistency-candidate-refused (splice of ${unitLabelsOf({ unit, },)}): ${refusal}`,],
   };
+}
+
+/**
+ Why no paragraph of a unit can be rewritten, in the words of the finding.
+
+ @param unit - a unit that is not writable
+
+ @returns The reason the unit records: the kind of block that holds its words, or why no single block does
+
+ @throws {@link ConsistencyInvariantError} when the unit stands in no kind of block and records no reason, since a unit that is not writable has one or the other
+
+ @throws {@link UnhandledMemberInvariantError} when a member of `UnwritableReason` has no branch here, which the compiler rules out
+
+ @example
+ ```ts
+ const reason = unwritableReasonOf({ unit, },);
+ ```
+ */
+function unwritableReasonOf({ unit, }: { readonly unit: CarryUnit; },): string {
+  /**
+   The kind of block that holds the words, none where no kind does.
+   */
+  const [kind,] = unit.spliceOnlyIn;
+  if (kind !== undefined)
+    return `the words that render the repeated wording stand in a ${kind}, so no paragraph can be rewritten`;
+  /**
+   Why the unit is not writable, where it stands in no kind of block.
+   */
+  const { unwritableBecause, } = unit;
+  if (unwritableBecause === undefined) {
+    throw new ConsistencyInvariantError({ invariant:
+      `${unitLabelsOf({ unit, },)} stands in a unit that is not writable and in no kind of block, and such a unit records why it is not writable`, },);
+  }
+  if (unwritableBecause === 'no-single-block')
+    return 'the words that render the repeated wording lie in no single block of the English, so no paragraph can be rewritten';
+  if (unwritableBecause === 'overlaps-outside-receiver') {
+    return 'the paragraph that holds the words that render the repeated wording overlaps the words of another receiving place '
+      + 'of the group that lie outside it, so no paragraph can be rewritten';
+  }
+  throw new UnhandledMemberInvariantError({
+    what: 'reason a unit is not writable',
+    member: unwritableBecause,
+  },);
 }
 
 /**
@@ -400,16 +454,10 @@ export async function writtenOffers(
     };
   }
   if (!unit.writable) {
-    /**
-     The kind of block that holds the words, none for words in no single block.
-     */
-    const [kind,] = unit.spliceOnlyIn;
     return {
       written: [],
       findings: [
-        (kind === undefined)
-          ? `consistency-writers-not-asked (${unitLabelsOf({ unit, },)}): the words that render the repeated wording lie in no single block of the English, so no paragraph can be rewritten`
-          : `consistency-writers-not-asked (${unitLabelsOf({ unit, },)}): the words that render the repeated wording stand in a ${kind}, so no paragraph can be rewritten`,
+        `consistency-writers-not-asked (${unitLabelsOf({ unit, },)}): ${unwritableReasonOf({ unit, },)}`,
       ],
     };
   }
@@ -431,6 +479,7 @@ export async function writtenOffers(
     subject: {
       repeat,
       ...shown,
+      crossing: unit.crossing,
       paragraph: unit.block
         .text,
       lineStructured: sliceOfUnit({ unit, },)
@@ -454,6 +503,7 @@ export async function writtenOffers(
     english,
     block: unit.block,
     keeping: unit.keeping,
+    crossing: unit.crossing,
     facts: sliceOfUnit({ unit, },),
     declared: context.declared,
     declaredNames: context.declaredNames,

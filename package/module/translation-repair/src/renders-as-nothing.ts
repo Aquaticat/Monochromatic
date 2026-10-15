@@ -12,9 +12,11 @@
 //
 // NOTHING, HERE, IS WHAT UNICODE SAYS RENDERS AS NOTHING: White_Space;
 // Default_Ignorable_Code_Point, which Unicode derives from the format
-// characters, the variation selectors and the fillers, less White_Space
-// (`DerivedCoreProperties.txt`, Unicode 18.0.0); and the controls (Cc), which
-// no page shows as text. Every character the intake fold removes is
+// characters, the variation selectors and the fillers, less White_Space; and
+// the controls (Cc), which no page shows as text. THE PROPERTIES ARE READ FROM
+// the runtime's own Unicode tables (the `\p{...}` classes of `SHOWS_NOTHING` and `IS_DEFAULT_IGNORABLE`), so the set is
+// the one of whichever Unicode version the runtime ships; the source applies
+// no version of its own. Every character the intake fold removes is
 // default-ignorable, and every one it turns into a space is White_Space, so a
 // text this calls something still says something after the fold.
 
@@ -24,6 +26,12 @@
  default-ignorable code point, or a control.
  */
 const SHOWS_NOTHING = /^[\p{White_Space}\p{Default_Ignorable_Code_Point}\p{Cc}]$/u;
+
+/**
+ Whether one code point is a default-ignorable one and nothing else: a format character, a variation selector, a filler, with
+ no white space or control.
+ */
+const IS_DEFAULT_IGNORABLE = /^\p{Default_Ignorable_Code_Point}$/u;
 /* oxlint-enable no-restricted-syntax/no-regex */
 
 /**
@@ -46,6 +54,24 @@ export function rendersAsNothing({ text, }: { readonly text: string; },): boolea
       return false;
   }
   return true;
+}
+
+/**
+ Whether one character is a default-ignorable code point (Unicode's Default_Ignorable_Code_Point): a zero-width or format
+ character, the soft hyphen, the combining grapheme joiner, a filler, a variation selector, the byte order mark. Unicode derives
+ the property without White_Space, so a space is none of them.
+
+ @param character - one whole code point, which is two UTF-16 units beyond the first plane
+
+ @returns Whether the character is default-ignorable
+
+ @example
+ ```ts
+ const ignorable = isDefaultIgnorable({ character: '\u{200B}', },); // true
+ ```
+ */
+export function isDefaultIgnorable({ character, }: { readonly character: string; },): boolean {
+  return IS_DEFAULT_IGNORABLE.test(character,);
 }
 
 //endregion Renders as nothing
