@@ -2297,9 +2297,12 @@ The full plain-text lint recount reports 696 files,
 zero errors,
 and 11045 warnings in
 `${HOME}/temp/agent/pi-maintained-typed-facade-lint-20261015.log`.
-The structured reader correctly rejected that non-JSON output;
-a structured report is being generated to locate the remaining queue.
+The structured reader correctly rejected that non-JSON output.
+The subsequent structured recount confirms the same totals and zero diagnostics across all fourteen facade files in
+`${HOME}/temp/agent/pi-maintained-typed-facade-structured-lint-20261015.log`.
 The original dependency facade is qualified at these tested boundaries.
+Continue the native program execution queue with original recorder scope and serial queue ownership,
+then its reached-program runner composition.
 
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
