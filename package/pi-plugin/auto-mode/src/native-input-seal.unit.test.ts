@@ -7,7 +7,9 @@ await describe({ name: seal.name, children: [
   //region Primitive admission preserves identity and does not serialize values.
   ...[undefined, null, true, false, '', '雪\\\n"', 0, -0, 1.5, Number.MAX_VALUE].map(function validPrimitive(input, index) {
     return it({ name: `retains primitive fixture ${index}`, fn: async function preservePrimitive() {
-      assert.ok(Object.is(seal(input), input));
+      assert.doesNotThrow(function acceptedPrimitive() {
+        assert.ok(Object.is(seal(input), input));
+      });
     } });
   }),
   ...[Symbol('unsupported prepared argument value'), 1n, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, function unsupportedFunction() {}].map(function invalidPrimitive(input, index) {
@@ -59,7 +61,9 @@ await describe({ name: seal.name, children: [
     const accepted = Array.from({ length: 9_999 }, function container() { 
       return {}; 
     });
-    assert.equal(seal(accepted), accepted);
+    assert.doesNotThrow(function inclusiveBound() {
+      assert.equal(seal(accepted), accepted);
+    });
     assert.ok(accepted.every(function frozenContainer(value) { 
       return Object.isFrozen(value); 
     }));
@@ -87,7 +91,9 @@ await describe({ name: seal.name, children: [
     }
     const root = containers[0];
     assert.notEqual(root, undefined);
-    assert.equal(seal(root), root);
+    assert.doesNotThrow(function deepBound() {
+      assert.equal(seal(root), root);
+    });
     assert.ok(containers.every(function frozenContainer(container) {
       return Object.isFrozen(container);
     }));

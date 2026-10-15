@@ -47,7 +47,9 @@ await describe({ name: 'prepared argument descriptors', children: [
     const compensated: unknown[] = [];
     compensated.length = 1;
     Object.defineProperty(compensated, 'extra', { value: undefined, enumerable: true });
-    assert.equal(seal(compensated), compensated);
+    assert.doesNotThrow(function originalCompensatedHole() {
+      assert.equal(seal(compensated), compensated);
+    });
     assert.equal(Object.hasOwn(compensated, '0'), false);
     assert.ok(Object.isFrozen(compensated));
     const hidden = [true];
