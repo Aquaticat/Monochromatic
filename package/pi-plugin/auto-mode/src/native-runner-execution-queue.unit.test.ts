@@ -41,7 +41,9 @@ await describe({ name: '', children: [
       const fixture = createRunnerExecutionFixture();
       fixture.control.sequential = true;
       const barrier = Promise.withResolvers<void>();
-      fixture.control.dispatch = async function pendingDispatch(): Promise<void> { await barrier.promise; };
+      fixture.control.dispatch = async function pendingDispatch(): Promise<void> { 
+        await barrier.promise; 
+      };
       const work = fixture.execute();
       const tail = fixture.input.runner.queueTail;
       assert.equal(await Promise.race([work, setImmediate('pending')]), 'pending');
@@ -50,7 +52,11 @@ await describe({ name: '', children: [
       if (failed) barrier.reject(fixture.control.failure);
       else barrier.resolve();
       let caught: unknown;
-      try { await work; } catch (error) { caught = error; }
+      try { 
+        await work; 
+      } catch (error) { 
+        caught = error; 
+      }
       assert.equal(caught, failed ? fixture.control.failure : undefined);
       assert.equal(await Promise.race([tail, setImmediate('missing-release')]), undefined);
       assert.equal(fixture.steps.includes('dispatch:done'), !failed);
@@ -70,7 +76,11 @@ await describe({ name: '', children: [
       else fixture.abort.abort(fixture.control.failure);
       previous.resolve();
       let caught: unknown;
-      try { await work; } catch (error) { caught = error; }
+      try { 
+        await work; 
+      } catch (error) { 
+        caught = error; 
+      }
       assert.equal(caught, fixture.control.failure);
       assert.deepEqual(fixture.steps, ['sequential', 'parent']);
       assert.deepEqual(fixture.dispatched, []);
@@ -85,7 +95,11 @@ await describe({ name: '', children: [
     const work = fixture.execute();
     previous.reject(fixture.control.failure);
     let caught: unknown;
-    try { await work; } catch (error) { caught = error; }
+    try { 
+      await work; 
+    } catch (error) { 
+      caught = error; 
+    }
     assert.equal(caught, fixture.control.failure);
     assert.notEqual(fixture.input.runner.queueTail, previous.promise);
     assert.equal(await Promise.race([fixture.input.runner.queueTail, setImmediate('pending')]), 'pending');

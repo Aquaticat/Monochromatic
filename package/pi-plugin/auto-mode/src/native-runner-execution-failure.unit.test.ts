@@ -13,7 +13,11 @@ await describe({ name: '', children: [
       fixture.control.failAt = point;
       const previous = fixture.input.runner.queueTail;
       let caught: unknown;
-      try { await fixture.execute(); } catch (error) { caught = error; }
+      try { 
+        await fixture.execute(); 
+      } catch (error) { 
+        caught = error; 
+      }
       assert.equal(caught, fixture.control.failure);
       const order = ['sequential', 'parent', 'context', 'dispatch'];
       assert.deepEqual(fixture.steps, order.slice(0, order.indexOf(point) + 1));
@@ -44,7 +48,9 @@ await describe({ name: '', children: [
         else if ((point === 'parent') || (point === 'current')) dispatch.assertFresh();
         else if (point === 'native') dispatch.runToolCall(call, {});
         else dispatch.assess({ members });
-      } catch (error) { caught = error; }
+      } catch (error) { 
+        caught = error; 
+      }
       assert.equal(caught, fixture.control.failure);
       assert.deepEqual(fixture.steps.slice(start), point === 'current' ? ['parent', 'current'] : [point]);
       assert.equal(dispatch.memberForExecution('parent/1'), previous);

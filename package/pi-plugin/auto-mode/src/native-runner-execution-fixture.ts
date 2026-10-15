@@ -91,22 +91,27 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
    Original host receiver is checked at every borrowed method boundary.
    */
   const host: ExecutionInput['runner']['host'] = {
-    isSequential(): boolean { assert.equal(
+    isSequential(): boolean { 
+      assert.equal(
       this,
       host
     );
     step('sequential');
-    return control.sequential; },
-    getContext(): unknown { assert.equal(
+    return control.sequential; 
+    },
+    getContext(): unknown { 
+      assert.equal(
       this,
       host
     );
     step('context');
-    return context; },
+    return context; 
+    },
     prepareOwnedToolCall(
       hook,
       parent
-    ): unknown { assert.equal(
+    ): unknown { 
+      assert.equal(
       this,
       host
     );
@@ -116,11 +121,13 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
       parent
     ]);
     step('prepare');
-    return value; },
+    return value; 
+    },
     finishOwnedToolCall(
       hook,
       parent
-    ): unknown { assert.equal(
+    ): unknown { 
+      assert.equal(
       this,
       host
     );
@@ -130,8 +137,10 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
       parent
     ]);
     step('after');
-    return value; },
-    emit(event): void { assert.equal(
+    return value; 
+    },
+    emit(event): void { 
+      assert.equal(
       this,
       host
     );
@@ -139,13 +148,15 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
       'event',
       event
     ]);
-    step(event.type); }
+    step(event.type); 
+    }
   };
   /**
    Original judgment receiver remains unchanged during admission and native invocation.
    */
   const judgment: ExecutionInput['origin']['judgment'] = {
-    reachedGroupFor(group): unknown { assert.equal(
+    reachedGroupFor(group): unknown { 
+      assert.equal(
       this,
       judgment
     );
@@ -154,8 +165,10 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
       group
     ]);
     step('current');
-    return value; },
-    prepareReachedMembers(input): readonly object[] { assert.equal(
+    return value; 
+    },
+    prepareReachedMembers(input): readonly object[] { 
+      assert.equal(
       this,
       judgment
     );
@@ -164,8 +177,10 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
       input
     ]);
     step('assess');
-    return control.handles; },
-    invokeProgramNative(input): unknown { assert.equal(
+    return control.handles; 
+    },
+    invokeProgramNative(input): unknown { 
+      assert.equal(
       this,
       judgment
     );
@@ -174,13 +189,15 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
       input
     ]);
     step('native');
-    return value; }
+    return value; 
+    }
   };
   /**
    Recorder callbacks remain independently visible when native dispatch invokes its event callbacks.
    */
   const recorder: ExecutionInput['bound']['scope']['recorder'] = {
-    start(call): unknown { assert.equal(
+    start(call): unknown { 
+      assert.equal(
       this,
       recorder
     );
@@ -189,12 +206,14 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
       call
     ]);
     step('start');
-    return value; },
+    return value; 
+    },
     finish(
       record,
       isError,
       text
-    ): void { assert.equal(
+    ): void { 
+      assert.equal(
       this,
       recorder
     );
@@ -204,8 +223,10 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
       isError,
       text
     ]);
-    step('finish'); },
-    addUsage(usage): void { assert.equal(
+    step('finish'); 
+    },
+    addUsage(usage): void { 
+      assert.equal(
       this,
       recorder
     );
@@ -213,7 +234,8 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
       'usage',
       usage
     ]);
-    step('usage'); }
+    step('usage'); 
+    }
   };
   /**
    Calls deliberately use the reverse order of the original definition snapshot.
@@ -269,29 +291,39 @@ export function createRunnerExecutionFixture(): ExecutionFixture {
         ['parent/2', 1]
       ]),
       tickets: calls.map(function ticketFor(call) {
-        return { resolve(outcome: unknown): void { observations.push([
+        return { resolve(outcome: unknown): void { 
+          observations.push([
           'resolve',
           call,
           outcome
         ]);
-        step(`resolve:${call.id}`); } };
+        step(`resolve:${call.id}`); 
+        } };
       })
     },
-    assertParentCurrent(): void { step('parent'); },
-    async dispatchPreparedBatch(prepared): Promise<void> { dispatched.push(prepared);
+    assertParentCurrent(): void { 
+      step('parent'); 
+    },
+    async dispatchPreparedBatch(prepared): Promise<void> { 
+      dispatched.push(prepared);
     step('dispatch');
     await control.dispatch?.(prepared);
-    step('dispatch:done'); }
+    step('dispatch:done'); 
+    }
   };
   /** Invoke the built native execution owner with original fixture input identities.
    */
-  async function execute(): Promise<void> { await executionModule.executeReachedProgramGroup(input); }
+  async function execute(): Promise<void> { 
+    await executionModule.executeReachedProgramGroup(input); 
+  }
   /** Require completed dispatcher entry before a consumer invokes its native callbacks.
    @returns original captured dispatcher input
    */
-  function dispatch(): ExecutionDispatch { const [captured] = dispatched;
+  function dispatch(): ExecutionDispatch { 
+    const [captured] = dispatched;
   assert.ok(captured);
-  return captured; }
+  return captured; 
+  }
   return {
     input,
     control,

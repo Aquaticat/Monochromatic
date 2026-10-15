@@ -46,27 +46,37 @@ await describe({ name: '', children: [
     const fixture = createRunnerExecutionFixture();
     await fixture.execute();
     const dispatch = fixture.dispatch();
-    assert.throws(function beforeAssessment() { dispatch.memberForExecution('parent/1'); }, { message: 'Prepared child has no owned execution handle' });
+    assert.throws(function beforeAssessment() { 
+      dispatch.memberForExecution('parent/1'); 
+    }, { message: 'Prepared child has no owned execution handle' });
     const members = Object.freeze([{ id: 'parent/1', name: 'second', input: Object.freeze({ original: 'prepared' }) }]);
     fixture.control.onStep = function duringAssessment(point) {
-      if (point === 'assess') assert.throws(function beforePublication() { dispatch.memberForExecution('parent/1'); }, { message: 'Prepared child has no owned execution handle' });
+      if (point === 'assess') assert.throws(function beforePublication() { 
+        dispatch.memberForExecution('parent/1'); 
+      }, { message: 'Prepared child has no owned execution handle' });
     };
     assert.deepEqual(dispatch.assess({ members }), { block: false });
     const admission = fixture.observations.at(-1)?.[1];
     assert.ok((admission !== null) && ((typeof admission) === 'object') && ('members' in admission) && ('group' in admission) && ('nativeSignals' in admission));
     assert.equal(admission.members, members);
     assert.equal(admission.group, fixture.input.group.handle);
-    assert.deepEqual(admission.nativeSignals, fixture.input.group.members.map(function signal(member) { return member.signal; }));
+    assert.deepEqual(admission.nativeSignals, fixture.input.group.members.map(function signal(member) { 
+      return member.signal; 
+    }));
     assert.equal(dispatch.memberForExecution('parent/2'), fixture.control.handles[1]);
     assert.equal(dispatch.memberForExecution('parent/1'), fixture.control.handles[0]);
-    assert.throws(function unknownMember() { dispatch.memberForExecution('missing'); }, { message: 'Prepared child has no owned execution handle' });
+    assert.throws(function unknownMember() { 
+      dispatch.memberForExecution('missing'); 
+    }, { message: 'Prepared child has no owned execution handle' });
     fixture.control.onStep = function ignoreStep() {};
     const previous = fixture.control.handles;
     fixture.control.handles = [Object.freeze({ original: 'replacement handle' })];
     assert.deepEqual(dispatch.assess({ members }), { block: false });
     assert.notEqual(dispatch.memberForExecution('parent/1'), previous[0]);
     assert.equal(dispatch.memberForExecution('parent/1'), fixture.control.handles[0]);
-    assert.throws(function absentMember() { dispatch.memberForExecution('parent/2'); }, { message: 'Prepared child has no owned execution handle' });
+    assert.throws(function absentMember() { 
+      dispatch.memberForExecution('parent/2'); 
+    }, { message: 'Prepared child has no owned execution handle' });
   } }),
   it({ name: 'connects original event callbacks to the same reached group recorder and ticket', fn: async () => {
     const fixture = createRunnerExecutionFixture();
@@ -93,9 +103,15 @@ await describe({ name: '', children: [
     fixture.control.onStep = function replaceAtContext(point) {
       if (point !== 'context') return;
       fixture.input.origin.judgment = {
-        reachedGroupFor(): never { throw new Error('replacement judgment used'); },
-        prepareReachedMembers(): never { throw new Error('replacement judgment used'); },
-        invokeProgramNative(): never { throw new Error('replacement judgment used'); }
+        reachedGroupFor(): never { 
+          throw new Error('replacement judgment used'); 
+        },
+        prepareReachedMembers(): never { 
+          throw new Error('replacement judgment used'); 
+        },
+        invokeProgramNative(): never { 
+          throw new Error('replacement judgment used'); 
+        }
       };
       fixture.input.bound.slots = [];
       fixture.input.bound.ordinals = new Map();
