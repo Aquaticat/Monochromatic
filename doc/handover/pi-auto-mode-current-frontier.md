@@ -892,8 +892,25 @@ the separate diagnostics and recovery are recorded in `doc/troubleshooting/pi-sd
 The sequential rebuild passes the original event suite and revised generated converter test in
 `${HOME}/temp/agent/pi-native-event-receipt-split-retry-consumer-20261015.log`.
 The package type check also passes after the fixture expectation change.
-The event lint retry remains pending.
-The next structural work separates the domain fixture and its assertions.
+The event lint retry reports zero errors and 250 warnings across its source set and the converter test.
+Commit `b42541c5bf` separates domain fixture construction,
+transport controls,
+authored assessment answers,
+and source assertions.
+Its first focused lint reports zero errors and 602 warnings.
+The initial rebuilt run failed before assertions with the already-documented generated-manager import cycle.
+Commit `92a305735c` enters through the maintained policy module before generated manager assertions.
+The rebuilt domain,
+unconfigured-policy,
+semantic-operating-policy,
+single-call,
+changed-dependency,
+next-decision-receipt,
+serializer-receipt,
+and context-receipt consumers then pass in
+`${HOME}/temp/agent/pi-native-domain-fixture-entry-consumer-20261015.log`.
+The failed original log remains in `pi-native-domain-fixture-split-consumer-20261015.log`.
+The remaining structural lint errors are being recounted before filesystem and cache cleanup.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

@@ -447,6 +447,24 @@ The successful entry order verifies the intended consumer;
 it does not fix direct generated-manager or generated-SDK imports.
 Removing this import-order coupling remains native-quality work.
 
+The 2026-10-15 domain-fixture split reproduced this same diagnostic at the same owned host constructor.
+The first static dependency became the assertion module that imports the generated manager,
+before the runtime's maintained policy dependency.
+The failed built run is
+`${HOME}/temp/agent/pi-native-domain-fixture-split-consumer-20261015.log`.
+The fixture now explicitly imports `../maintained-policy.mjs` before its generated-manager consumers.
+The rebuilt domain,
+unconfigured-policy,
+operating-policy,
+single-call,
+approved-dependency,
+next-decision,
+serializer,
+and context contrast sets pass in
+`${HOME}/temp/agent/pi-native-domain-fixture-entry-consumer-20261015.log`.
+This verifies the documented supported entry order after extraction;
+it still does not remove the underlying generated import cycle.
+
 The manager publication tests cover original append and context copies,
 separate equal-content owners,
 cross-owner reuse,
