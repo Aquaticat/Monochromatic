@@ -129,7 +129,10 @@ export function createMemberFixture(): MemberFixture {
    */
   const hook: { args: unknown } = { args: {
     path: 'original',
-    nested: [1, 2]
+    nested: [
+      1,
+      2
+    ]
   } };
   /**
    Original assessment cancellation identity is deliberately opaque.
@@ -228,10 +231,13 @@ export function createMemberFixture(): MemberFixture {
       failures,
       serial: false,
       signal,
-      gate: { promise: gate.promise, resolve(decision: MemberDecision) {
+      gate: {
+        promise: gate.promise,
+        resolve(decision: MemberDecision) {
         events.push('resolve');
         gate.resolve(decision);
-      } },
+      }
+      },
       active(stage: string) {
         events.push(`active:${stage}`);
         return control.active(stage);

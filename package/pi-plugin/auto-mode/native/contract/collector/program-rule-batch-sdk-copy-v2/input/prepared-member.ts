@@ -133,7 +133,7 @@ export async function preparePreparedMember({
       /**
        Original fallback observes the native reason only once.
        */
-      const reason = prepared.reason;
+      const {reason} = prepared;
       block(isAbsent(reason) ? 'A member preparation blocked this complete group' : reason);
       return await gate.promise;
     }
