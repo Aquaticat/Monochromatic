@@ -2404,9 +2404,15 @@ Read-only inspection of
 confirms that the rule requires the class naming convention and a literal matching name.
 The [existing error-category investigation](../troubleshooting/oxlint-custom-error-name.md)
 records that convention and lack of a preserving per-rule configuration.
-The new failure owner's build,
-consumer tests,
+`2439fc3802` introduces the typed owner;
+`f5b768de69` formats its source.
+The five-file focused report has zero diagnostics,
+and the owned native rebuild and package type check pass in
+`${HOME}/temp/agent/pi-group-failures-build-first-20261015.log`
+and `pi-group-failures-types-first-20261015.log`.
+Direct consumer tests,
 original-body comparison,
+the explicit diagnostic-category contrast,
 and omission controls remain pending.
 
 Auto-pushing `6973251c83` was separately rejected with `GH006` and no detailed requirement.
