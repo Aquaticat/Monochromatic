@@ -494,6 +494,21 @@ The exact captured counts are in
 The new `test:native:source-freshness-work` task exercises the built Allow consumer
 and requires fewer than 10000 governing-file opens for that fixed fixture.
 Its required-red run precedes the proposed complete-binding-set validation change.
+Required-red commit `971f1bd` completed the native Allow fixture,
+then failed its work-bound assertion with 45637 governing-file opens.
+Commit `5b29e43e8d` validates local source-binding identities between fresh common-parent checks.
+Individual public source assertions still perform their original parent freshness check.
+The updated owned build passes.
+The same native Allow fixture then completed with 15653 opens,
+but the new work-bound regression still fails its 10000-open limit.
+This is a measured reduction in repeated reads,
+not completion of the performance fix or a full regression pass.
+The logs are `${HOME}/temp/agent/pi-native-source-work-red-20261014.log`
+and `${HOME}/temp/agent/pi-native-source-work-green-20261014.log`;
+the latter filename names the intended stage,
+not its actual failed assertion result.
+Unchanged repetitions of this changed artifact are now running in
+`${HOME}/temp/agent/pi-native-binding-set-after-20261014.log`.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

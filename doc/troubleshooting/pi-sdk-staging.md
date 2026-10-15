@@ -7261,6 +7261,21 @@ The fixture-specific count log is
 The instrumentation preserves native filesystem results;
 its timing overhead means it is not an uninstrumented latency estimate.
 
+The committed `test:native:source-freshness-work` regression uses the actual built Allow consumer.
+Before the change,
+the native scenario completed and its work-bound assertion failed at 45637 policy opens.
+After complete-binding-set validation,
+the native scenario again completed,
+and the same assertion failed at 15653 opens.
+Both exceed its 10000-open limit.
+The change checks every local binding identity between fresh common-parent checks;
+individual public source assertions retain their own parent freshness check.
+This reduces measured repeated filesystem work without yet completing the performance remedy.
+`${HOME}/temp/agent/pi-native-source-work-red-20261014.log`
+and `${HOME}/temp/agent/pi-native-source-work-green-20261014.log` retain the failing assertions.
+The `green` filename is a stage label,
+not a passing result.
+
 A separate full lint attempt during this cleanup failed before producing diagnostics with
 `Error running tsgolint: "exit status: exit status: 2"`
 and `runtime: failed to create new OS thread (have 2 already; errno=11)`.
