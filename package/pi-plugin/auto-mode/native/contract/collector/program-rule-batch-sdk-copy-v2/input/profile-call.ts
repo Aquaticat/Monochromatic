@@ -59,7 +59,8 @@ export function inspectProfileCall({
   cl.debug('inspecting original tool call');
   if ((call?.type !== 'CallExpression') || call.optional
     || (call.arguments
-      .length !== 1)) {
+      .length
+      !== 1)) {
     throw new ResultProgramProfileError('direct single-argument call required');
   }
   /**
@@ -69,11 +70,14 @@ export function inspectProfileCall({
   if ((callee.type !== 'MemberExpression') || callee.computed
     || callee.optional
     || (callee.object
-      .type !== 'Identifier')
+      .type
+      !== 'Identifier')
     || (callee.object
-      .name !== 'tools')
+      .name
+      !== 'tools')
     || (callee.property
-      .type !== 'Identifier')
+      .type
+      !== 'Identifier')
     || (!allowed.has(callee.property
       .name))) {
     throw new ResultProgramProfileError('owned tool identifier required');
