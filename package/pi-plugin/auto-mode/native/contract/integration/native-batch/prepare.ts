@@ -39,6 +39,7 @@ import {
   codemode,
   tui,
   maintainedRoot
+  ,nativeRoot
 } from '../current-sdk/paths.ts';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 
@@ -133,10 +134,7 @@ await mkdir(
 /**
  The native policy entry shares canonical implementation without evaluating the extension's SDK imports.
  */
-const maintainedEntry=entry({
-  root:maintainedRoot,
-  subpath:'./native-policy'
-});
+const maintainedEntry=pathToFileURL(join(nativeRoot,'policy/native-policy.mjs')).href;
 // The incumbent stager owns import aliases. Native fixtures may change HOME after this link is prepared.
 await writeFile(
   join(

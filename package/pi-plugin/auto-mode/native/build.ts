@@ -6,7 +6,7 @@
 import {
   cp,
   mkdir,
-  rm,
+  mkdtemp,
 } from 'node:fs/promises';
 import {
   dirname,
@@ -14,7 +14,8 @@ import {
 } from 'node:path';
 import spawn from 'nano-spawn';
 import { buildPiSource, } from './build-source.ts';
-import { NativeSourceBuildError, } from './build-contract.ts';
+import { NativeSourceBuildError, qualifiedRelease, } from './build-contract.ts';
+import { activateNativeBuild } from './build-activation.ts';
 
 //region The maintained artifact owns every native module loaded at runtime.
 
@@ -35,31 +36,26 @@ if ((arguments_.length > 1) || ((arguments_.length === 1) && (arguments_[0] !== 
  */
 const packageRoot = dirname(import.meta.dirname,);
 /**
- Ignored build destination contains upstream emission and owned transformations.
+ Stable command location changes only after the new release has loaded successfully.
  */
-const output = join(
+const active = join(
   packageRoot,
   'dist/native',
 );
 await mkdir(
-  output,
+  dirname(active),
   { recursive: true, },
 );
-if (arguments_[0] !== '--owned') await buildPiSource({
-  packageRoot,
-  output,
-},);
-// Replace only this build's copied contract tree so retired modules cannot remain importable.
-await rm(
-  join(
-    output,
-    'contract'
-  ),
-  {
-    recursive: true,
-    force: true
-  },
-);
+/** Each release keeps stable module URLs, including while another release is activated. */
+const output=await mkdtemp(join(dirname(active),'native-release-'));
+if (arguments_[0] !== '--owned') await buildPiSource({packageRoot,output});
+else {
+  await cp(join(active,'pi'),join(output,'pi'),{recursive:true});
+  await cp(join(active,'source-manifest.json'),join(output,'source-manifest.json'));
+  await cp(join(active,'PI-LICENSE.txt'),join(output,'PI-LICENSE.txt'));
+}
+// Bind this release to the same maintained policy build instead of a future mutable output.
+await cp(join(packageRoot,'dist/final/node'),join(output,'policy'),{recursive:true});
 await cp(
   join(
     import.meta.dirname,
@@ -131,9 +127,18 @@ await spawn(
     },
   },
 );
+/** Loading the actual CLI validates the generated module graph before publication. */
+const checked=await spawn(process.execPath,[join(output,'cli.mjs'),'--version'],{
+  cwd:packageRoot,
+  stderr:'inherit',
+});
+if(checked.stdout.trim()!==qualifiedRelease.version)
+  throw new NativeSourceBuildError('Generated native command did not report the qualified version');
+await activateNativeBuild({output,active});
 console.log(JSON.stringify({
   complete: true,
   output,
+  active,
   installedSourcesModified: false,
 },),);
 
