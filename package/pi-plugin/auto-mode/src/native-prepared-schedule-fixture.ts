@@ -38,7 +38,9 @@ type DispatcherModule = Readonly<{ PreparedBatchContractError: new (message: str
 
 /** Check the built callable before binding the independent consumer.
  @param value - built schedule namespace
- *
+ 
+ @returns narrowed independent scheduling contract
+ 
  @throws Error when the built export is absent
  */
 function assertScheduleModule(value: unknown): asserts value is ScheduleModule {
@@ -48,7 +50,9 @@ function assertScheduleModule(value: unknown): asserts value is ScheduleModule {
 }
 /** Check the original error constructor without implementation declarations.
  @param value - built dispatcher namespace
- *
+ 
+ @returns narrowed original dispatcher constructor
+ 
  @throws Error when the original constructor is absent
  */
 function assertDispatcherModule(value: unknown): asserts value is DispatcherModule {
@@ -83,12 +87,16 @@ export const PreparedBatchContractError: new (message: string) => Error = dispat
 
 /** Unused capabilities must never run during scheduling.
  @throws Error if scheduling invokes an execution capability
+ 
+ @example unexpectedExecution();
  */
 export function unexpectedExecution(): never {
   throw new Error('Scheduling invoked an execution capability');
 }
 /** Build independent valid judgment support without any implementation import.
  @returns fresh judgment capabilities that must remain uninvoked
+ 
+ @example judgment();
  */
 export function judgment(): Record<string, unknown> {
   return {
@@ -100,10 +108,12 @@ export function judgment(): Record<string, unknown> {
 }
 /** Invoke the built scheduler using fresh defaults and explicit malformed overrides.
  @param input - disposable caller overrides
- *
+ 
  @returns original scheduled snapshots and queue selection
- *
+ 
  @throws Error for original admission or observation failures
+ 
+ @example schedule();
  */
 export function schedule(input: ScheduleInput = {}): ScheduleResult {
   return scheduling.schedulePreparedCalls({

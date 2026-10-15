@@ -20,7 +20,7 @@ await describe({ name: 'prepared schedule policy', children: [
   it({ name: 'accepts inherited and callable judgment support without invoking capabilities', fn: async function inheritedCapabilities() {
     const inherited: unknown = Object.create(judgment());
     assert.doesNotThrow(function accept() { assert.equal(schedule({ executionJudgment: inherited }).serial, false); });
-    const callable = function enclosingJudgment() { throw new Error('Judgment must not run'); };
+    function callable() { throw new Error('Judgment must not run'); }
     for (const [name, value] of Object.entries(judgment())) Object.defineProperty(callable, name, { value });
     assert.doesNotThrow(function acceptCallable() { assert.equal(schedule({ executionJudgment: callable }).serial, false); });
   } }),

@@ -15,7 +15,7 @@ export type PreparedScheduleTool = ProgramRunnerTool & Readonly<{ createExecutio
 export type PreparedScheduleInput = Readonly<{
   calls: readonly ProgramNativeCall[];
   tools: readonly PreparedScheduleTool[];
-  executionJudgment: Readonly<Record<string, unknown>> | null | undefined;
+  executionJudgment?: Readonly<Record<string, unknown>>;
   executionMode?: string;
   PreparedBatchContractError: new (message: string) => Error;
 }>;

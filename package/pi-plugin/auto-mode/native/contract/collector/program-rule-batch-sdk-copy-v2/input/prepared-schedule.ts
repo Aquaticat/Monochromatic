@@ -26,22 +26,31 @@ const EXECUTION_METHODS = [
   'finishExecution'
 ] as const;
 
+/** Preserve original truthiness without changing property-read order.
+ @param value - original observed value
+ @returns whether original admission treats the value as absent
+ */
+function isAbsent(value: unknown): boolean {
+  const present = Boolean(value);
+  return !present;
+}
+
 //region Validate and clone complete native groups before inspecting context capability or queue policy.
 /** Prepare original call snapshots and select the original sequential execution branch.
  @param calls - declared native calls before preparation
- *
+ 
  @param tools - original tool definitions in lookup order
- *
+ 
  @param executionJudgment - original judgment whose support is inspected without invocation
- *
+ 
  @param executionMode - caller scheduling mode with the original parallel default
- *
+ 
  @param PreparedBatchContractError - original dispatcher error constructor
- *
+ 
  @returns frozen per-call snapshots and complete-group queue selection
- *
+ 
  @throws Error for original invalid calls, mode, or missing native capabilities
- *
+ 
  @example schedulePreparedCalls({ calls, tools, executionJudgment, PreparedBatchContractError });
  */
 export function schedulePreparedCalls({
@@ -63,8 +72,8 @@ export function schedulePreparedCalls({
     || (calls.length > MAX_MEMBERS)
     || calls.some(function isInvalidCall(call: ProgramNativeCall) {
       return (call.type !== 'toolCall') || ((typeof call.id) !== 'string')
-        || (!Boolean(call.id)) || ((typeof call.name) !== 'string')
-        || (!Boolean(call.name));
+        || (isAbsent(call.id)) || ((typeof call.name) !== 'string')
+        || (isAbsent(call.name));
     })
     || (new Set(calls.map(function readCallId(call: ProgramNativeCall) {
       return call.id;
@@ -76,7 +85,7 @@ export function schedulePreparedCalls({
     return Object.freeze(structuredClone(call));
   }));
   if ((executionMode !== 'parallel') && (executionMode !== 'sequential')) throw new PreparedBatchContractError('Unknown batch execution mode');
-  if ((!Boolean(executionJudgment)) || EXECUTION_METHODS.some(function isMissingExecutionSupport(name) {
+  if ((isAbsent(executionJudgment)) || EXECUTION_METHODS.some(function isMissingExecutionSupport(name) {
     return (typeof executionJudgment?.[name]) !== 'function';
   })) throw new PreparedBatchContractError('Enclosing judgment lacks required native execution occurrence support');
   for (const call of scheduled) {
@@ -86,7 +95,7 @@ export function schedulePreparedCalls({
     const tool = tools.find(function matchesTool(value) {
       return value.name === call.name;
     });
-    if ((Boolean(tool)) && ((typeof tool?.createExecutionContext) !== 'function')) throw new PreparedBatchContractError(`Tool ${JSON.stringify(call.name)} lacks required native context support; the complete group was not started`);
+    if ((!isAbsent(tool)) && ((typeof tool?.createExecutionContext) !== 'function')) throw new PreparedBatchContractError(`Tool ${JSON.stringify(call.name)} lacks required native context support; the complete group was not started`);
   }
   /**
    An explicit sequential mode bypasses per-tool execution-mode reads after capability validation.
