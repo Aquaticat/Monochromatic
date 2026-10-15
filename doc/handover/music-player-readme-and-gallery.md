@@ -137,7 +137,12 @@ another `HOME` needs that `HOME` for `adb emu kill` (the console token lives the
 Gradle home is signed with another key, so `adb uninstall` first; after `cmd device_state base-state 0` the cover
 display needs `KEYCODE_WAKEUP` and `wm dismiss-keyguard` before a capture is not black.
 
-Last updated: 2026-10-14.
+On 2026-10-15, after every gallery branch had been pushed to `main`, `mise run
+//package/config/lfs-r2-worker:check:markdown-urls` ran and printed `26/26 Worker object URLs verified`, with every
+embedded README gallery URL answering `ok`, so the R2 check noted above has now run. Opening the README on github.com
+in a logged-out browser was not done.
+
+Last updated: 2026-10-15.
 
 ## Goal
 

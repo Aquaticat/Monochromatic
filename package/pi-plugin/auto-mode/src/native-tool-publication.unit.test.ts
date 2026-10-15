@@ -49,9 +49,6 @@ function assertPublicationModule(value: unknown): asserts value is PublicationMo
   }
 }
 
-// Initialize the original policy entry used by the integration environment before inspecting its native dependencies.
-await import(new URL('../dist/native/contract/integration/maintained-policy.mjs', import.meta.url).href);
-
 /** Native staging emits these exact modules for the host and serializer. */
 const managerNamespace: unknown = await import(new URL(
   '../dist/native/contract/integration/native-batch/generated/session-manager.mjs', import.meta.url,

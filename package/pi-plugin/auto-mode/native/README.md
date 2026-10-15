@@ -32,6 +32,26 @@ Imports were relocated to this package graph without changing policy decisions.
 
 The maintained build emits the qualified Pi 1.2.0 source and owned transformations to `dist/native`.
 The package `build` task builds maintained exports before building this native artifact.
+Native policy consumers use the dedicated `./native-policy` package export.
+It shares policy implementations with the extension entry through common build chunks,
+without importing the extension's SDK-dependent transcript code.
+`test:native:direct-imports` starts each generated manager and SDK entry in a fresh process,
+constructs an owned in-memory manager,
+and compares every native policy export's identity with the extension entry.
+`test:native:question-settlement` verifies complete answer admission before publication,
+original failure retention,
+bounded raw and model data,
+and terminal discard on stale bindings or expired judgment budgets.
+Missing raw diagnostics use an absent `raw` property;
+the `failure` property retains the original caught value,
+including `undefined` for a successful decode.
+`test:native:question-selection` exercises the original public selection entry,
+canonical claim and evidence identities,
+ordinary dense membership,
+declaration and batch limits,
+the UTF-8 request bound,
+reentry recovery,
+and current versus retained diagnostic reads.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.

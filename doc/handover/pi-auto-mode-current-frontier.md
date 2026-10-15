@@ -1185,7 +1185,138 @@ or choice-option-count rejection makes the committed consumer tests fail.
 The built artifact remains unchanged;
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-definition-omissions.json`
 retains those controls.
-The full maintained lint recount is pending for this boundary.
+The full maintained lint recount covers 530 files and 486 rules:
+zero errors and 13328 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-definitions-lint-20261015.log`.
+The warning gate remains open.
+Before continuing native type cleanup,
+revisit the documented direct generated-manager and generated-SDK bootstrap cycle,
+which earlier fixtures bypassed by entering through the maintained policy module.
+The current built manager reproduces the same initialization failure on Node 26.11.1:
+`reproduce-direct-manager-import` in `${HOME}/temp/agent/pi-tool-call-scope-20261014`
+exits with `ReferenceError: Cannot access 'SessionManager' before initialization`
+at `native-host/host.ts:160`,
+called by `native-host/bootstrap.ts:236`.
+`${HOME}/temp/agent/pi-native-direct-manager-import-before-20261015.log`
+retains the exact diagnostic.
+The standalone probe asserts callable manager exports after import,
+so it currently fails before reaching those assertions.
+Commit `bdee84f697` adds committed fresh-process regressions for both generated entry orders.
+Both fail with the same manager initialization diagnostic in
+`${HOME}/temp/agent/pi-native-direct-import-regression-before-20261015.log`.
+Commit `63be621a7d` separates the native policy entry from extension initialization.
+The existing bundler emits both entries together so shared policy identities remain common,
+and the native generator selects the package's `./native-policy` export.
+This removes the extension SDK import from the intended native policy dependency graph;
+the built import regressions and complete native host lifecycle checks now pass.
+Host construction and its original method capture remain unchanged.
+The checks also compare every native policy export with the extension's export by identity,
+and exercise manager constructors,
+CLI RPC state and clean shutdown,
+serializer controls,
+domain contrasts,
+and authored approval decisions without provider requests.
+`${HOME}/temp/agent/pi-native-policy-entry-consumers-20261015.log` retains the completed consumer results.
+Its final type check failed with `TS9037` because the config default export lacked an explicit type.
+Commit `6ddeaef3eb` adds that type and removes both policy-preload fixture workarounds.
+The rebuilt direct-import identity,
+publication,
+domain,
+and package type checks pass without either preload in
+`${HOME}/temp/agent/pi-native-policy-unordered-consumers-20261015.log`.
+The original standalone manager probe now passes in
+`${HOME}/temp/agent/pi-native-direct-manager-import-after-20261015.log`.
+The native policy entry,
+generator,
+declarations,
+regression,
+and build config have zero errors and one `tsdoc(multiline-blocks)` warning in
+`${HOME}/temp/agent/pi-native-policy-entry-final-lint-20261015.log`.
+The added config comment needs multiline formatting;
+the earlier zero-warning statement in `12a4a8a00c` was incorrect.
+Commit `6701c3937d` expands that comment.
+The repeated focused lint now passes with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-policy-entry-clean-lint-20261015.log`.
+The full maintained recount before that comment correction covers 532 files and 486 rules:
+zero errors and 13325 warnings in
+`${HOME}/temp/agent/pi-maintained-policy-entry-lint-20261015.log`.
+The direct generated import cycle is resolved;
+continue the remaining native type cleanup at question settlement and selection.
+Commit `2012634ade` ports question settlement to TypeScript and separates complete answer decoding
+from original claim publication.
+Commit `64d3775711` adds built-consumer checks for original answer identity,
+complete membership,
+malformed responses,
+UTF-8 bounds,
+model attribution,
+and predecode/postdecode lifecycle failure.
+The first focused lint exposed explicit nullish unions in the original absent-valued fields.
+Commit `e4b1d58d52` changes missing raw diagnostics and private initial answer/record fields to optional properties.
+This is an explicit record-shape change:
+`raw` is absent when no bounded raw string is retained,
+and initial private claims and batches omit their absent `answer` and `record` fields.
+Original thrown failure values still occupy the `failure` field.
+The public inspection methods continue to expose their existing answer and record projections.
+The direct `discard` owner also omits absent raw text.
+The rebuilt settlement consumers,
+request claims,
+domain contrasts,
+authored approvals,
+and package type check pass in
+`${HOME}/temp/agent/pi-native-typed-settlement-consumer-20261015.log`.
+The old and new settlement implementations agree across 37 authored cases on returned answer values,
+original errors,
+freeze state,
+claim-to-answer identity,
+and terminal transitions,
+with the documented absent-property change checked separately.
+A changed-estimate positive control proves the comparison observes answer differences.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-settlement-comparison.json`
+retains that comparison and artifact hashes.
+The added extra-answer and object-backed-array cases pass focused formatting without diagnostics.
+The final settlement consumer and type check pass in
+`${HOME}/temp/agent/pi-native-typed-settlement-final-controls-20261015.log`.
+Removing the final budget checkpoint,
+current-binding check,
+answer membership rejection,
+model-attribution rejection,
+or raw byte bound makes the committed tests fail.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-settlement-omissions.json`
+records those process-local controls and unchanged artifact hashes.
+The full maintained lint recount covers 536 files and 486 rules:
+zero errors and 13258 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-settlement-lint-20261015.log`.
+All settlement implementation and consumer files have zero diagnostics in that report.
+The remaining warning gate is still open;
+the next boundary is the original question-selection owner in `selection.mjs`.
+Commits `0a7ae510e6`,
+`1c0bca211a`,
+`8c7922a5b8`,
+and `1a66229fc5` port that owner to typed ownership,
+declaration,
+issuance,
+inspection,
+and evidence modules while preserving the original entry path.
+The first focused check found an overlapping owner callback type that hid complete batch fields;
+`a42e76330f` replaces the inherited callback type explicitly.
+The rebuilt public selection consumers pass in
+`${HOME}/temp/agent/pi-native-selection-owner-tests-20261015.log`;
+the package type check passes in
+`${HOME}/temp/agent/pi-native-selection-owner-types-20261015.log`.
+The committed tests cover canonical claim and evidence identity,
+terminal failure retention,
+foreign handles,
+ordinary dense selection arrays,
+original resolver identity,
+reentry recovery,
+declaration and batch caps,
+the exact four MiB UTF-8 request boundary,
+and the distinction between retained diagnostics and current evidence.
+The latest focused source check has zero errors and seven warnings before final formatting corrections.
+Saved-implementation comparison,
+guard-omission controls,
+broader native consumers,
+and the maintained warning recount remain pending for this owner.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

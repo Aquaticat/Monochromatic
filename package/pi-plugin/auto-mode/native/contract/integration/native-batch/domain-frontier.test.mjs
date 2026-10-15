@@ -1,5 +1,3 @@
-// Initialize the supported policy entry before assertion helpers inspect generated SDK constructors.
-import '../maintained-policy.mjs';
 import assert from 'node:assert/strict';
 import {assertDomainReview} from './domain-frontier-assertions.mjs';
 import {readDomainFixtureSettings} from './domain-fixture-settings.mjs';
