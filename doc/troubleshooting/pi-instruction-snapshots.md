@@ -1,5 +1,126 @@
 # Pi 0.87.1 and 1.0.0 instruction snapshots can miss later prompt transformations
 
+## Pi 1.2.0 native prompt submission rejected by owned capture ceilings on 2026-10-15
+
+### Symptom and root cause
+
+The user restarted the native Pi host and submitted a prompt with bypass off.
+The owned `RunPromptCustodyError` displayed
+`Native run prompt derivation is incomplete or no longer current`.
+The nested deciding error was
+`Original callback option input exceeds the source byte bound`.
+This was an auto-mode integration defect, not a Pi token limit or provider budget.
+
+At pre-repair commit `5ccee1f7b7`,
+`package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody-v3/handler-option-inputs.mjs:16`
+applied a single-text fixture limit to a complete serialized callback-option bundle:
+
+```javascript
+// package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody-v3/handler-option-inputs.mjs:16 at 5ccee1f7b7
+if(Buffer.byteLength(content)>65_536)throw new SourceCollectionError('Original callback option input exceeds the source byte bound');
+```
+
+The configured CLI fixture measured 83938 bytes at that boundary.
+The tool-loadout source then measured 113905 bytes at another 65536-byte limit.
+Process-local controls exposed further rejection of a 2850095-byte linked snapshot at one MiB,
+then a follow-up run at 5282773 bytes against four MiB.
+With user/project skills,
+the shared receipt check failed with 13 resource receipts occupying 158177 bytes
+and 110 session receipts occupying 4298044 bytes.
+These are repeated serialized evidence bytes, not heap measurements.
+
+The first functionality claim was unsupported:
+its CLI smoke test used a minimal policy and only `codemode,read`.
+That fixture could pass while the configured workspace and follow-up prompt failed.
+Raising one threshold at a time moved the failure to another owned threshold.
+
+### Repair and verification
+
+The user explicitly accepted removal of arbitrary capture size/count ceilings on 2026-10-15.
+The repaired capture paths retain complete text, metadata, source lists and clause indexes.
+They retain ownership, freshness, cancellation and descriptor validation.
+The generic diagnostic now includes the deciding nested error message.
+
+The metadata copier replaces incidental depth-based cycle rejection with explicit ancestor tracking at
+`package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody/messages.mjs:60`:
+
+```javascript
+// package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody/messages.mjs:60
+if(active.has(value))throw new SourceCollectionError('Tool metadata contains a cycle');
+active.add(value);
+pending.push({leave:true,value});
+```
+
+The work stack removes an object from `active` after its descendants finish.
+Shared metadata can therefore occur in separate branches;
+message aliases retain their separate rejection rule.
+Receipt counter validation now checks exact numeric representation at
+`package/pi-plugin/auto-mode/src/input-receipt-budget.ts:161`:
+
+```typescript
+// package/pi-plugin/auto-mode/src/input-receipt-budget.ts:161
+if ((!Number.isSafeInteger(resourceUsage.count + sessionUsage.count,))
+  || (!Number.isSafeInteger(resourceUsage.bytes + sessionUsage.bytes,))) {
+```
+
+Run the built consumer controls from the repository root:
+
+```bash
+# Repository root
+mise run //package/pi-plugin/auto-mode:build
+mise run //package/pi-plugin/auto-mode:test:native:prompt-capacity
+mise run //package/pi-plugin/auto-mode:test:native:resource-input
+mise run //package/pi-plugin/auto-mode:test:native:event-receipts
+mise run //package/pi-plugin/auto-mode:test:native:governing-bindings
+```
+
+The original prompt regression was committed red in `49b0dd1b08`.
+The repaired built tests pass complete initial/follow-up prompts,
+text and lists beyond the former ceilings,
+a 10000-level data tree,
+shared metadata,
+event histories beyond 128 receipts,
+and source indexes beyond 512 clauses.
+Negative controls still reject cycles, message aliases, unsupported values,
+proxy records, accessors, stale sources and duplicate source occurrences.
+Type checking passes.
+
+The installed CLI also completed initial and follow-up prompts with bypass off,
+the copied repository instructions,
+the actual configured packages,
+default tools,
+and user/project skills.
+The private `capture-removal-repro` task under
+`${HOME}/temp/agent/pi-tool-call-scope-20261014` uses a disposable home,
+read-only package mounts,
+network isolation and local provider responses.
+It applies no capacity overrides.
+This establishes offline prompt handling, not live-provider or physical-terminal behavior.
+
+### Tradeoffs and rejected approaches
+
+Complete capture can retain more memory than the former failing fixture profile.
+Arbitrary serialized-byte ceilings did not establish a total-memory guarantee.
+Provider/request constraints and executable-program admission remain separate.
+Run owners retain original scopes through their session history;
+session/resource pools retain original receipt publications and owned copies.
+No source is silently truncated or dropped to satisfy a fixture threshold.
+
+Repeated threshold increases were rejected because the next independent threshold failed.
+The standard SDK with the legacy extension completed the same prompt control,
+but was not installed as a rollback or treated as proof of tool-guard correctness.
+
+### Upstream filing decision
+
+No upstream issue or draft is appropriate.
+This incident's deciding checks are owned repository code.
+Upstream fault is disproved by the source trace;
+fixability, supported upstream use, contribution policy and maintainer willingness
+are not gates for this local repair.
+The tested fix is the owned consumer patch, not an upstream prototype.
+The existing upstream tracker discussion concerns instruction visibility,
+not these repository-added capture ceilings.
+
 ## Symptom and relevance
 
 An authorization consumer that copies project context during its `before_agent_start` handler
