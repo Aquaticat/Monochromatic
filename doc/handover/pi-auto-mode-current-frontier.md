@@ -1976,6 +1976,25 @@ zero errors and 11275 warnings in
 Dependency eligibility and original binding-segment extraction are qualified at these tested boundaries.
 Continue original source binding and the remaining constructor composition.
 
+`d9c4ea53d8` and `af01ad50c2` introduce typed original source handoff and collection ownership.
+The native preparation callback still precedes request authentication;
+legacy observers retain their existing binding callback or receipt-source fallback.
+The collection adapter still requires the original cancellation signal and source identity
+before invoking freshness callbacks.
+Preparation publication and current binding reads retain the same mutable collection lifetime.
+The saved constructor is `child-constructor-before-source-types.mjs` in the same scratch directory,
+with SHA-256 `0303111624e942b4d71ff419b459dda1a9ec4f7c3276317e122d7fb530c3c2b4`.
+`3f722d3466` records the final source-owner formatting.
+Both implementation files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-judgment-source-lint-final-20261015.log`.
+The owned rebuild and type check have completed successfully;
+consumer verification is still running in
+`${HOME}/temp/agent/pi-judgment-source-consumers-first-20261015.log`.
+Direct source consumers,
+saved-constructor comparison,
+guard controls,
+and the full maintained recount remain pending for source extraction.
+
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
 Its `cli-git` push-wait notice was initially misread as a timeout.
