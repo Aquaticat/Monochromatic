@@ -121,8 +121,10 @@ await describe({name:'',children:[
       closeSync(fd);
       throw original;
     }});});
-    assert.ok(error instanceof AggregateError);
-    const errors:readonly unknown[]=error.errors;
+    assert.ok(Error.isError(error));
+    assert.equal(error.name,'ObservationLifecycleError');
+    assert.ok(error.cause instanceof AggregateError);
+    const errors:readonly unknown[]=error.cause.errors;
     assert.equal(errors.length,2);
     assert.equal(errors[0],original);
     const closeError=errors[1];
@@ -134,8 +136,9 @@ await describe({name:'',children:[
     return it({name:`rejects invalid read count ${String(count)}`,fn:async function invalidRead(){
       await using current=await fixture();
       const error=failure(function readFailure(){return observer.observeDeclaredFile({...current.input,read(){return count;}});});
-      assert.ok(error instanceof AggregateError);
+      assert.ok(Error.isError(error));
       assert.equal(error.name,'ObservationLifecycleError');
+      assert.ok(error.cause instanceof AggregateError);
     }});
   }),
   it({name:'rejects incomplete reads and declared byte-bound overflow',fn:async function readBounds(){
