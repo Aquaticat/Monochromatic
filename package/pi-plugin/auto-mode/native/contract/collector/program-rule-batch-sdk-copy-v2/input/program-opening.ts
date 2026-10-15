@@ -38,6 +38,9 @@ export function createProgramOpening({
   state,
   ownership
 }: ProgramContext & Readonly<{ ownership: ProgramOwnership }>): ProgramOpening {
+  /**
+   Captured original judgment capabilities remain fixed throughout this helper’s lifetime.
+   */
   const {
     readJudgment,
     response,
@@ -49,10 +52,16 @@ export function createProgramOpening({
     assertDependenciesCurrent,
     parentCurrent
   } = input;
+  /**
+   Private ownership maps are shared without reading original source or native results.
+   */
   const {
     programs,
     groups
   } = state;
+  /**
+   Original custody readers retain their distinct retained and current-use boundaries.
+   */
   const { currentProgram } = ownership;
   /**
    Publish source inspection only after original source and dependency checks succeed.
@@ -70,6 +79,9 @@ export function createProgramOpening({
     declaration,
     assertCurrent
   }: BindPreparedProgramInput): PreparedProgramView {
+    /**
+     Original retained record preserves the judgment owner’s published identity and state.
+     */
     const record = knownMember(member);
     if ((record.parent !== undefined) || record.execution) throw new JudgmentConstructionError('Prepared program inspection requires an unentered original root member');
     if (record.preparedProgram) throw new JudgmentConstructionError('Original prepared program inspection is already bound');
@@ -82,6 +94,9 @@ export function createProgramOpening({
     ready();
     dependencyCheck(assertCurrent);
     ready();
+    /**
+     Immutable view publishes the original declaration and owned identities together.
+     */
     const view: PreparedProgramView = Object.freeze({
       kind: 'original-prepared-program-inspection',
       member,
@@ -103,6 +118,9 @@ export function createProgramOpening({
    @returns original inspection when bound
    */
   function preparedProgramFor(member: object): PreparedProgramLookup {
+    /**
+     Original retained record preserves the judgment owner’s published identity and state.
+     */
     const record = knownMember(member);
     assertDependenciesCurrent();
     parentCurrent(record);
@@ -125,6 +143,9 @@ export function createProgramOpening({
     parentToken: object;
     toolNames: readonly string[]
   }>): object {
+    /**
+     Original retained record preserves the judgment owner’s published identity and state.
+     */
     const record = knownExecution(parentToken);
     if (record.execution
       .state
@@ -135,7 +156,13 @@ export function createProgramOpening({
       .signal
       .throwIfAborted();
     if (record.program) throw new JudgmentConstructionError('Parent execution already reserved its program declaration');
+    /**
+     Opaque program identity is reserved before declaration construction can fail.
+     */
     const program = Object.freeze({});
+    /**
+     Original program scope retains declaration, terminal failure, and producer receipt state.
+     */
     const scope: ProgramScope = {
       handle: program,
       status: 'opening',
@@ -149,16 +176,24 @@ export function createProgramOpening({
       record
     );
     try {
+      /**
+       Original prepared inspection supplies the source decoder’s authenticated declaration.
+       */
       const declaration = record.preparedProgram
         ?.view
         .declaration;
       if (!declaration) throw new JudgmentConstructionError('Native program requires its original declaration captured before policy review');
       if ((!Array.isArray(toolNames))
         || declaration.sites
-        .some(function isUnknownToolSite(site) { return !toolNames.includes(site.name); })) throw new JudgmentConstructionError('Runtime callables differ from the original prepared program');
+        .some(function isUnknownToolSite(site) { 
+          return !toolNames.includes(site.name); 
+        })) throw new JudgmentConstructionError('Runtime callables differ from the original prepared program');
       currentProgram(program);
       scope.groups = declaration.groups
         .map(function createUnreachedGroup(definition): ProgramGroup {
+        /**
+         Original reached-group identity remains independent of copied declaration metadata.
+         */
         const group: ProgramGroup = { handle: Object.freeze({}), program, definition, state: 'unreached', slots: [] };
         groups.set(group.handle, group);
         return group;

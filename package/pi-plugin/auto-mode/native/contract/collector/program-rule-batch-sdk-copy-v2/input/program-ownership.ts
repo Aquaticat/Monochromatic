@@ -64,6 +64,9 @@ export function createProgramOwnership({
    @throws JudgmentConstructionError for a foreign program handle
    */
   function knownProgram(program: object): ProgramExecutionRecord {
+    /**
+     Original retained record preserves the judgment owner’s published identity and state.
+     */
     const record = programs.get(program);
     if ((!record) || (nonNullishOrThrow(record.program)
       .handle
@@ -78,7 +81,13 @@ export function createProgramOwnership({
    @returns current original parent execution record
    */
   function currentProgram(program: object): ProgramExecutionRecord {
+    /**
+     Original retained record preserves the judgment owner’s published identity and state.
+     */
     const record = knownProgram(program);
+    /**
+     Original program scope retains declaration, terminal failure, and producer receipt state.
+     */
     const scope = nonNullishOrThrow(record.program);
     if (scope.guardFailure) throw scope.guardFailure;
     if (scope.status === 'failed') throw new JudgmentConstructionError(
@@ -103,6 +112,9 @@ export function createProgramOwnership({
    @returns original group record
    */
   function knownGroup(handle: object): ProgramGroup {
+    /**
+     Original reached-group identity remains independent of copied declaration metadata.
+     */
     const group = groups.get(handle);
     if (!group) throw new JudgmentConstructionError('Reached group handle is not owned by this judgment');
     return group;
@@ -115,6 +127,9 @@ export function createProgramOwnership({
    @returns current original group
    */
   function currentGroup(handle: object): ProgramGroup {
+    /**
+     Original reached-group identity remains independent of copied declaration metadata.
+     */
     const group = knownGroup(handle);
     currentProgram(group.program);
     if (group.state === 'failed') throw new JudgmentConstructionError(
@@ -139,6 +154,9 @@ export function createProgramOwnership({
     group: ProgramGroup;
     slot: object
   }>): ProgramSlot {
+    /**
+     Original retained record preserves the judgment owner’s published identity and state.
+     */
     const record = slots.get(slot);
     if ((!record) || (record.group !== group)) throw new JudgmentConstructionError('Native slot is not owned by this reached group');
     return record;

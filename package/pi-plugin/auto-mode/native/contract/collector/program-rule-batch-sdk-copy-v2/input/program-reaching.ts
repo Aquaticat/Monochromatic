@@ -29,6 +29,9 @@ const MAX_REACHED_ARGUMENT_BYTES = 1_048_576;
  @example createProgramReaching(ownership);
  */
 export function createProgramReaching(ownership: ProgramOwnership): ProgramReaching {
+  /**
+   Original custody readers retain their distinct retained and current-use boundaries.
+   */
   const {
     currentProgram,
     currentGroup
@@ -49,8 +52,17 @@ export function createProgramReaching(ownership: ProgramOwnership): ProgramReach
     program: object;
     ordinal: number
   }>): ProgramGroup['view'] {
+    /**
+     Original parent record supplies the reserved execution and cancellation dependency.
+     */
     const parent = currentProgram(program);
+    /**
+     Original program scope retains declaration, terminal failure, and producer receipt state.
+     */
     const scope = nonNullishOrThrow(parent.program);
+    /**
+     Original reached-group identity remains independent of copied declaration metadata.
+     */
     const group = scope.groups[ordinal];
     if ((!Number.isSafeInteger(ordinal)) || (!group)) throw new JudgmentConstructionError('Program group ordinal is outside original source');
     if (group.state === 'failed') throw new JudgmentConstructionError(
@@ -58,20 +70,34 @@ export function createProgramReaching(ownership: ProgramOwnership): ProgramReach
       { cause: group.failure }
     );
     if (group.state !== 'unreached') return group.view;
+    /**
+     Only a retained producer value may populate successor argument patterns.
+     */
     const result = ordinal === 0 ? undefined : scope.valueReceipt
       ?.value;
     if ((ordinal > 0) && (!scope.valueReceipt)) throw new JudgmentConstructionError('Successor group requires the owned producer script value');
+    /**
+     Complete materialized members remain frozen in original source order.
+     */
     const members = Object.freeze(group.definition
       .members
       .map(function materializeGroupMember(site): ReachedProgramSite {
+      /**
+       Original source-owned pattern materializes data without evaluating replacement code.
+       */
       const args = materializePattern({ pattern: site.pattern, ...(result === undefined ? {} : { result }) });
       requireJSONInput(args);
       return Object.freeze({ ...site, args, argsJSON: nonNullishOrThrow(JSON.stringify(args)) });
     }));
     if (Buffer.byteLength(
-      JSON.stringify(members.map(function readMemberArguments(member) { return member.args; })),
+      JSON.stringify(members.map(function readMemberArguments(member) { 
+        return member.args; 
+      })),
     ) > MAX_REACHED_ARGUMENT_BYTES) throw new JudgmentConstructionError('Reached group argument data exceeds one MiB');
     currentProgram(program);
+    /**
+     Immutable view publishes the original declaration and owned identities together.
+     */
     const view: ReachedProgramView = Object.freeze({
       handle: group.handle,
       ordinal,

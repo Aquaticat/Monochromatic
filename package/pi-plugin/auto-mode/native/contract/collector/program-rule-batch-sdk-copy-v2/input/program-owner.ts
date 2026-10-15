@@ -49,6 +49,9 @@ export function createJudgmentPrograms(input: JudgmentProgramsInput): JudgmentPr
     childGroups,
     operation
   } = input;
+  /**
+   Captured capabilities preserve constructor property reads without rereading caller getters.
+   */
   const originalInput: JudgmentProgramsInput = {
     readJudgment,
     response,
@@ -64,17 +67,32 @@ export function createJudgmentPrograms(input: JudgmentProgramsInput): JudgmentPr
     childGroups,
     operation
   };
+  /**
+   Program construction diagnostics omit original source and native argument values.
+   */
   const rl = tagged({
     tag: createJudgmentPrograms.name,
     l
   });
   rl.debug('binding original program ownership');
+  /**
+   Private maps belong to this original judgment and are never reconstructed from metadata.
+   */
   const state = createProgramState();
+  /**
+   Shared helpers borrow the same captured capabilities and private ownership maps.
+   */
   const context = {
     input: originalInput,
     state
   };
+  /**
+   Original handle readers keep retained inspection separate from current-use admission.
+   */
   const ownership = createProgramOwnership(context);
+  /**
+   Composed operations share the original judgment’s fixed capabilities and custody maps.
+   */
   const {
     bindPreparedProgram,
     preparedProgramFor,
@@ -84,18 +102,30 @@ export function createJudgmentPrograms(input: JudgmentProgramsInput): JudgmentPr
     ...context,
     ownership
   });
+  /**
+   Composed operations share the original judgment’s fixed capabilities and custody maps.
+   */
   const {
     reachProgramGroup,
     reachedGroupFor
   } = createProgramReaching(ownership);
+  /**
+   Complete native call binding retains the original fixed return consumer.
+   */
   const bindProgramCalls = createProgramCallBinding({
     ...context,
     ownership
   });
+  /**
+   Final child publication retains original arguments, call identities, and cancellation.
+   */
   const prepareReachedMembers = createProgramMemberPreparation({
     input: originalInput,
     ownership
   });
+  /**
+   Composed operations share the original judgment’s fixed capabilities and custody maps.
+   */
   const {
     invokeProgramNative,
     scriptValueFor,
@@ -104,6 +134,9 @@ export function createJudgmentPrograms(input: JudgmentProgramsInput): JudgmentPr
     input: originalInput,
     ownership
   });
+  /**
+   Composed operations share the original judgment’s fixed capabilities and custody maps.
+   */
   const {
     inspectReachedGroup,
     inspectProgram

@@ -57,7 +57,13 @@ export function createProgramInspection({
   input,
   ownership
 }: Pick<ProgramContext, 'input'> & Readonly<{ ownership: ProgramOwnership }>): ProgramInspection {
+  /**
+   Captured original judgment capabilities remain fixed throughout this helper’s lifetime.
+   */
   const { bindings } = input;
+  /**
+   Original custody readers retain their distinct retained and current-use boundaries.
+   */
   const {
     knownGroup,
     knownProgram
@@ -70,6 +76,9 @@ export function createProgramInspection({
    @returns frozen retained group evidence
    */
   function inspectReachedGroup(handle: object): ReachedGroupInspection {
+    /**
+     Original reached-group identity remains independent of copied declaration metadata.
+     */
     const group = knownGroup(handle);
     return Object.freeze({
       retainedOnly: true,
@@ -78,6 +87,9 @@ export function createProgramInspection({
       state: group.state,
       failure: group.failure,
       members: Object.freeze((group.members ?? []).map(function inspectMemberExecution(member) {
+        /**
+         Original retained record preserves the judgment owner’s published identity and state.
+         */
         const record = nonNullishOrThrow(bindings.get(member));
         return Object.freeze({
           id: record.prepared.id,
@@ -85,7 +97,9 @@ export function createProgramInspection({
         });
       })),
       nativeReturns: Object.freeze(group.slots
-        .map(function inspectConsumedSlot(slot) { return nonNullishOrThrow(group.consumer).inspect(slot.handle); }))
+        .map(function inspectConsumedSlot(slot) { 
+          return nonNullishOrThrow(group.consumer).inspect(slot.handle); 
+        }))
     });
   }
   /**
@@ -96,6 +110,9 @@ export function createProgramInspection({
    @returns frozen retained program evidence
    */
   function inspectProgram(program: object): OriginalProgramInspection {
+    /**
+     Original program scope retains declaration, terminal failure, and producer receipt state.
+     */
     const scope = nonNullishOrThrow(knownProgram(program)
       .program);
     return Object.freeze({
@@ -106,7 +123,9 @@ export function createProgramInspection({
       producerValueReady: scope.valueReceipt !== undefined,
       guardFailures: Object.freeze([...scope.guardFailures]),
       groups: Object.freeze(scope.groups
-        .map(function inspectOwnedGroup(group) { return inspectReachedGroup(group.handle); }))
+        .map(function inspectOwnedGroup(group) { 
+          return inspectReachedGroup(group.handle); 
+        }))
     });
   }
   return {

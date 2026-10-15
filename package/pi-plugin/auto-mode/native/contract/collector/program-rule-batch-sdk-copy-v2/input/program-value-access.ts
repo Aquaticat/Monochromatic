@@ -32,7 +32,13 @@ export function createProgramValueAccess({
   input,
   ownership
 }: Pick<ProgramContext, 'input'> & Readonly<{ ownership: ProgramOwnership }>): ProgramValueAccess {
+  /**
+   Captured original judgment capabilities remain fixed throughout this helper’s lifetime.
+   */
   const { operation } = input;
+  /**
+   Original custody readers retain their distinct retained and current-use boundaries.
+   */
   const {
     knownGroup,
     knownProgram,
@@ -58,6 +64,9 @@ export function createProgramValueAccess({
     call,
     options
   }: NativeReturnInput & Readonly<{ group: object }>): Promise<NativeReturnOutcome> {
+    /**
+     Original reached-group identity remains independent of copied declaration metadata.
+     */
     const group = knownGroup(handle);
     if (!group.consumer) throw new JudgmentConstructionError('Reached group has no fixed native consumer');
     return await group.consumer
@@ -79,8 +88,14 @@ export function createProgramValueAccess({
     program: object;
     error: unknown
   }>): NativeScriptValueGuardError {
+    /**
+     Original program scope retains declaration, terminal failure, and producer receipt state.
+     */
     const scope = nonNullishOrThrow(knownProgram(program)
       .program);
+    /**
+     Original result guard identity is reused when the caught failure is already associated.
+     */
     const guard = scriptValueGuard({ error });
     if (!scope.seenGuards
       .has(guard)) {
@@ -101,10 +116,15 @@ export function createProgramValueAccess({
    */
   function requireReturnConsumer(handle: object): ProgramGroup {
     try {
+      /**
+       Original reached-group identity remains independent of copied declaration metadata.
+       */
       const group = knownGroup(handle);
       if (!group.consumer) throw new JudgmentConstructionError('Reached group has no fixed native consumer');
       return group;
-    } catch (error) { throw scriptValueGuard({ error }); }
+    } catch (error) { 
+      throw scriptValueGuard({ error }); 
+    }
   }
   /**
    Preserve ordinary native failures while retaining code-owned value guards on the program.
@@ -126,13 +146,17 @@ export function createProgramValueAccess({
     slotHandle: object;
     outcome: unknown
   }>): string {
-    try { return nonNullishOrThrow(group.consumer)
-      .valueFor({ slot: slotHandle, outcome }); }
+    try { 
+      return nonNullishOrThrow(group.consumer)
+      .valueFor({ slot: slotHandle, outcome }); 
+    }
     catch (error) {
-      if (error instanceof NativeScriptValueGuardError) throw operation(function markInvocationFailure() { return markProgramGuard({
+      if (error instanceof NativeScriptValueGuardError) throw operation(function markInvocationFailure() { 
+        return markProgramGuard({
         program: group.program,
         error
-      }); });
+      }); 
+      });
       throw error;
     }
   }
@@ -156,7 +180,13 @@ export function createProgramValueAccess({
     slot: object;
     outcome: unknown
   }>): string {
+    /**
+     Original reached-group identity remains independent of copied declaration metadata.
+     */
     const group = requireReturnConsumer(handle);
+    /**
+     Original native conversion supplies supported text before producer receipt publication.
+     */
     const value = consumeScriptValue({
       group,
       slotHandle,
@@ -165,10 +195,16 @@ export function createProgramValueAccess({
     try {
       return operation(function readGuardedScriptValue() {
         currentGroup(handle);
+        /**
+         Original slot retains native call identity before prepared-member publication.
+         */
         const slot = knownSlot({
           group,
           slot: slotHandle
         });
+        /**
+         Original program scope retains declaration, terminal failure, and producer receipt state.
+         */
         const scope = nonNullishOrThrow(knownProgram(group.program)
           .program);
         if (group.definition
@@ -189,10 +225,14 @@ export function createProgramValueAccess({
         }
         return value;
       });
-    } catch (error) { throw operation(function markConversionFailure() { return markProgramGuard({
+    } catch (error) { 
+      throw operation(function markConversionFailure() { 
+      return markProgramGuard({
       program: group.program,
       error
-    }); }); }
+    }); 
+    }); 
+    }
   }
   return {
     invokeProgramNative,
