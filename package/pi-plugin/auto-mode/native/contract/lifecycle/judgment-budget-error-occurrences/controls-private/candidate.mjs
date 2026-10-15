@@ -1,21 +1,22 @@
+import {
+  JudgmentAttemptLimitError,
+  JudgmentBudgetError,
+  JudgmentCancelledError,
+  JudgmentDeadlineError
+} from './errors.mjs';
+
+export {
+  JudgmentAttemptLimitError,
+  JudgmentBudgetError,
+  JudgmentCancelledError,
+  JudgmentDeadlineError
+} from './errors.mjs';
+
 //region Cooperative accounting for one enclosing judgment, never a permission or execution lease.
-export class JudgmentBudgetError extends Error {
-/**
- * Preserve the original cause for caller-owned diagnostics.
- * @param {string} message - failed budget operation
- * @param {ErrorOptions} [options] - original failure provenance
- */
-constructor(
-  message,
-  options
-){super(
-  message,
-  options
-);this.name=this.constructor
-  .name;}}
-export class JudgmentDeadlineError extends JudgmentBudgetError {}
-export class JudgmentCancelledError extends JudgmentBudgetError {}
-export class JudgmentAttemptLimitError extends JudgmentBudgetError {}
+/** Original preparation-inclusive duration in milliseconds. */
+const durationMs = 5_000;
+/** Shared client-attempt allowance across all dispatches in one judgment. */
+const attemptLimit = 3;
 
 /**
  * Own one preparation-inclusive deadline and client-attempt ceiling.
@@ -29,7 +30,7 @@ export function createJudgmentBudget({
 }) {
   if((typeof now)!=='function')throw new JudgmentBudgetError('Judgment requires an owned monotonic clock');
   const startedAt=now();
-  const deadlineAt=startedAt+5_000;
+  const deadlineAt=startedAt+durationMs;
   if((!Number.isFinite(startedAt))||(!Number.isFinite(deadlineAt))
     ||(deadlineAt<=startedAt))throw new JudgmentBudgetError('Judgment clock cannot represent its deadline');
   if(((typeof signal?.aborted)!=='boolean')||((typeof isRetryableTransportFailure)!=='function'))throw new JudgmentBudgetError('Judgment requires cancellation and an owned transport classifier');
@@ -113,6 +114,15 @@ export function createJudgmentBudget({
     );
   }
   /**
+   Classify only the original transport failure and retain classifier exceptions separately.
+   @param {unknown} error - original failed attempt
+   @returns {boolean} fixed transport classifier decision
+   */
+  function classifyRetry(error) {
+    try { return isRetryableTransportFailure(error); }
+    catch(classificationError) { throwClassificationFailure({error,classificationError}); }
+  }
+  /**
    * Return only a response completed inside the original attempt and lifetime limits.
    * @template Result
    * @param {(input: Readonly<{signal: AbortSignal, deadlineAt: number, attempt: number}>) => Promise<Result>} operation - original transport attempt
@@ -126,9 +136,9 @@ export function createJudgmentBudget({
     using attemptScope={ [Symbol.dispose]() { accounting.running=false; } };
     {
       // At most one retry can occur across every dispatch through this boundary.
-      for(let invocation=0;invocation<3;invocation+=1){
+      for(let invocation=0;invocation<attemptLimit;invocation+=1){
         checkpoint();
-        if(accounting.attempts>=3)throw new JudgmentAttemptLimitError('Judgment exhausted its three client attempts');
+        if(accounting.attempts>=attemptLimit)throw new JudgmentAttemptLimitError('Judgment exhausted its three client attempts');
         accounting.attempts+=1;
         const attempt=accounting.attempts;
         const retry=invocation>0;
@@ -140,9 +150,9 @@ export function createJudgmentBudget({
             state:'started'
           })
         );
-        /** @type {Result} */
-        let value;
-        try {value=await operation(Object.freeze({
+        /** @type {{value: Result | undefined}} */
+        const response={value:undefined};
+        try {response.value=await operation(Object.freeze({
           signal,
           deadlineAt,
           attempt
@@ -158,14 +168,8 @@ export function createJudgmentBudget({
             })
           );
           retainFailureAtCheckpoint(error);
-          if(accounting.retryUsed||(accounting.attempts>=3))throw error;
-          /** @type {boolean | undefined} */
-          let retryable;
-          try {retryable=isRetryableTransportFailure(error);}
-          catch(classificationError){throwClassificationFailure({
-            error,
-            classificationError
-          });}
+          if(accounting.retryUsed||(accounting.attempts>=attemptLimit))throw error;
+          const retryable=classifyRetry(error);
           if((typeof retryable)!=='boolean')throwClassificationFailure({
             error,
             classificationError:new JudgmentBudgetError('Transport classifier must return a synchronous Boolean')
@@ -193,7 +197,7 @@ export function createJudgmentBudget({
             state:'succeeded'
           })
         );
-        return value;
+        return response.value;
       }
       throw new JudgmentBudgetError('Judgment retry loop ended without an outcome');
     }
