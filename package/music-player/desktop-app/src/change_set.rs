@@ -323,6 +323,15 @@ pub(crate) fn event_is_a_plain_write(kind: &EventKind) -> bool {
     };
 }
 
+/// What: `folder_was_only_read_or_touched` is true on Windows for an unspecific "modified" event about a folder that exists.
+/// Why: Windows reports a folder as modified when its entries are merely read (the last-access time moves; measured on a
+///      GitHub Windows runner on 2026-10-15: `read_dir` of a watched folder produced `Modify(Any)` for that folder and
+///      nothing else). Real changes inside the folder come as their own events (`Create`, `Remove`, rename, or a modified
+///      file), so the folder event adds nothing and, left in, makes every refresh request another one. Elsewhere it is false.
+pub(crate) fn folder_was_only_read_or_touched(kind: &EventKind, path: &std::path::Path) -> bool {
+    return cfg!(windows) && matches!(kind, EventKind::Modify(ModifyKind::Any)) && path.is_dir();
+}
+
 /// What: `impl Change { ... }` opens the block that holds the methods of `Change`.
 /// Why: the translation from a raw event and the merge of two changes belong to the type.
 ///
@@ -382,20 +391,6 @@ impl Change {
         if event.need_rescan() {
             return Some(Change::Everything);
         }
-        // What:     `let structural: bool = !matches!(event.kind, EventKind::Modify(ModifyKind::Data(_) | ModifyKind::Metadata(_)));`
-        //           asks whether the event is anything other than a write of data or metadata. `matches!` is a macro (the
-        //           `!` marks code that expands at compile time) that answers true when a value fits a pattern;
-        //           `EventKind::Modify(...)` matches the modify case and looks inside it, `|` means "or", and `_` is a
-        //           wildcard for the detail that is ignored. The leading `!` negates the result.
-        // Why:      An entry that appeared, disappeared or was renamed is structural; a file whose bytes were only written is
-        //           not, and needs no look inside it.
-        // Gotcha:   `!` here appears twice with two meanings: after a name it marks a macro, in front of an expression it
-        //           is "not".
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const structural: boolean = !(event.kind.type === "modify" && (event.kind.sub === "data" || event.kind.sub === "metadata"));
-        // ```
         // What:     `let structural: bool = !event_is_a_plain_write(&event.kind);` asks whether the event is anything other than
         //           a write. The leading `!` negates the answer.
         // Why:      An entry that appeared, disappeared or was renamed is structural; a file whose bytes were only written is
@@ -424,6 +419,14 @@ impl Change {
         // for (const path of event.paths) {
         // ```
         for path in &event.paths {
+            // What:     `if folder_was_only_read_or_touched(&event.kind, path) { continue; }` skips a folder that was merely
+            //           touched, here and only on Windows.
+            // Why:      Reading a folder's entries makes Windows report that folder as modified (its last-access time moved),
+            //           so each refresh, whose walk reads every folder, would request the next one without end. The entries
+            //           of a folder that really changed arrive as events of their own.
+            if folder_was_only_read_or_touched(&event.kind, path) {
+                continue;
+            }
             // What:     `set.insert(path.clone(), structural);` copies the borrowed path into an owned one with `.clone()`
             //           and adds it. `.clone()` duplicates the path text.
             // Why:      The set must own its paths, but the loop only borrows them.
@@ -433,6 +436,12 @@ impl Change {
             // set.insert(path, structural);
             // ```
             set.insert(path.clone(), structural);
+        }
+        // What:     `if set.is_empty() && !event.paths.is_empty() { return None; }` drops an event whose every path was a
+        //           folder only touched.
+        // Why:      Such an event changes nothing the list shows.
+        if set.is_empty() && !event.paths.is_empty() {
+            return None;
         }
         // What:     `if set.is_empty() { return Some(Change::Everything); }` leaves with "everything" when the event named no
         //           path at all.
