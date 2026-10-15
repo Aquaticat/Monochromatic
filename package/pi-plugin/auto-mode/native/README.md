@@ -153,6 +153,17 @@ while retaining the original decision and first assessment snapshot identities.
 Without a snapshot,
 each completion receives a fresh frozen empty member list.
 Original getter ordering and opaque observation failures remain unchanged.
+`test:native:prepared-executable` verifies original tool metadata snapshots,
+context-owner identity,
+native argument identity,
+and execution-turn admission.
+Serial members await their selected turn before currentness checks;
+parallel members never look up a turn.
+Turn failures propagate without entering the retained native-failure list.
+Currentness failures enter that list before context-guard state is inspected.
+Only original native guard instances close the shared group to later execution.
+Ordinary native failures retain their original identity without being added to that list by the wrapper.
+Retained execution remains callable after a caller replaces the wrapper's `execute` property.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 

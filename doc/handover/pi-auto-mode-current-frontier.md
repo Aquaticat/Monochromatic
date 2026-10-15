@@ -16,8 +16,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 792 files and 486 rules,
-with zero errors and 10335 warnings.
+The latest complete lint report covers 797 files and 486 rules,
+with zero errors and 10319 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -144,13 +144,38 @@ The next extraction delegates original tool snapshots and native execution wrapp
 `prepared-executable.ts` and `prepared-executable-types.ts`.
 The dispatcher retains its synchronous `turns[ordinal].promise` lookup through a borrowed `waitForTurn` callback.
 Original context ownership and error constructors remain unchanged.
-Independent wrapper consumers are committed;
-formatting,
+The native build,
+package type check,
+both built consumers,
+and original wrapper replay pass.
+Six complete domain comparisons preserve outcomes and native execution counts,
+including the permission-versus-prohibition positive control.
+All 17 process-local omissions or substitutions produce assertion failures;
+the built wrapper and dispatcher hashes remain unchanged.
+The retained-callback control first failed with a raw getter error;
+the final test explicitly asserts successful completion,
+so reintroducing that read now produces an assertion failure.
+Final consumer execution,
 type checking,
-built execution,
-original replay,
-domain comparisons,
-and omission controls remain pending.
+and original replay pass after that test correction.
+The full maintained recount has zero diagnostics in the wrapper,
+its types,
+and its three consumer files.
+The dispatcher now has 121 warnings;
+`program-profile-inspect.mjs` has 127 and is the next native boundary to extract.
+Wrapper consumers retain original metadata getter order,
+native argument identity,
+turn failure ownership,
+synchronous currentness semantics,
+and shared guard-failure admission.
+Diagnostic callback names are captured before wrapper publication,
+so retained execution never rereads a replaced wrapper method.
+Receipts are `typed-prepared-executable-comparison.json` and `typed-prepared-executable-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The full lint output is
+`${HOME}/temp/agent/pi-maintained-typed-prepared-executable-final-lint-20261015.log`.
+The saved original dispatcher has SHA-256
+`70fd8fc54b6af128c5c29bf7dd4f7f63ff2dc194cbccd7fd0936645aa7b1de69`.
 Wrapper replay adapts only the original turn lookup expression to the borrowed synchronous callback;
 complete domain replay uses the untouched saved dispatcher.
 The pre-extraction dispatcher is
