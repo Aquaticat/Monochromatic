@@ -19,7 +19,7 @@ The reproduction found an 83938-byte callback-option bundle rejected by a 65536-
 A process-local control then exposed a 113905-byte tool-loadout bundle rejected by the same-sized pool cap.
 Both payloads already pass their upstream one-MiB copy budgets.
 After those controls,
-the base-linked snapshot hits a separate one-MiB aggregate cap.
+the 2850095-byte base-linked snapshot hits a separate one-MiB aggregate cap.
 These are bounded-capture integration failures;
 no provider request or instruction permission is needed to reproduce the initial failure.
 Current scratch harness:
@@ -27,6 +27,38 @@ Current scratch harness:
 The controls are process-local hooks;
 production capture limits have not yet changed.
 Stop the lint queue until normal prompt submission is repaired and tested.
+
+Follow-up evidence:
+with the actual user and project skills mounted read-only,
+the callback options occupy 113164 bytes and the initial linked snapshot occupies 3400316 bytes.
+An event callback also exceeds the 65536-byte per-record limit.
+Process-local alignment of these limits permits the first prompt to complete.
+A second prompt then exceeds the run's four-MiB accounting limit at 5282773 bytes.
+After a further process-local control,
+the shared receipt check rejects resource usage of 13 records and 158177 bytes
+plus session usage of 110 records and 4298044 bytes.
+The count remains within the approved 128-record limit;
+the bytes exceed four MiB.
+Raising successive caps has therefore not established a production repair.
+The standard installed Pi SDK with the legacy auto-mode extension passes two prompts using
+the same configured packages,
+repository instructions,
+and user/project skills in a network-isolated disposable fixture.
+This is a recovery experiment,
+not an installed rollback or evidence that its tool guard has been requalified.
+
+The user asked why these limits exist and whether Pi itself is at fault.
+The answer retracts the broader functionality claim:
+these are owned experimental capture limits carried into normal use,
+not upstream Pi requirements or financial/model-token budgets.
+The proposed direction is to remove arbitrary instruction-capture size/count ceilings
+while preserving structural validation,
+ownership,
+cancellation,
+and unrelated execution or provider constraints.
+This proposal has not been applied.
+See [the capture-capacity repair proposal](../planning/pi-native-capture-capacity-repair.md).
+The new committed native regression consumer in `49b0dd1b08` is intentionally red against the current build.
 
 The latest user instruction is to stop this agent's cleanup once Pi is functional,
 then draft a prompt for MiMo v2.6 Pro to continue lint fixes.
