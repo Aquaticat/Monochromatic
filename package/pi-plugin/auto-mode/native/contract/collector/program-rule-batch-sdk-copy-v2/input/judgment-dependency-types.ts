@@ -6,6 +6,16 @@ import type { ProgramMemberRecord } from './program-state-types.ts';
 import type { JudgmentPreparationState } from './judgment-preparation-types.ts';
 
 /**
+ Optional closure evidence is absent until original finalization completes or fails.
+ */
+type JudgmentDependencyClosure = Readonly<{
+  record?: Readonly<{
+    failure?: unknown;
+    status?: 'evidence-closed' | 'close-failed';
+  }>;
+}>;
+
+/**
  Shared preparation and closure values are read only at original operation boundaries.
  */
 export type JudgmentDependencyState = Readonly<{
@@ -14,12 +24,7 @@ export type JudgmentDependencyState = Readonly<{
   preparationFailure: unknown;
   finished: boolean;
   closeFailed: boolean;
-  finalRecord?: Partial<Readonly<{
-    record: Readonly<{
-      failure?: unknown;
-      status?: 'evidence-closed' | 'close-failed'
-    }>;
-  }>>['record'];
+  finalRecord?: JudgmentDependencyClosure['record'];
   handle?: JudgmentPreparationState['handle'];
 }>;
 

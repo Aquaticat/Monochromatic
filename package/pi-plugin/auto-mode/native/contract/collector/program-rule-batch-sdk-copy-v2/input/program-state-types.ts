@@ -122,7 +122,7 @@ export type JudgmentProgramsInput = Readonly<{
   knownMember: (member: unknown) => ProgramMemberRecord;
   knownExecution: (token: object) => ProgramExecutionRecord;
   ready: () => void;
-  dependencyCheck: (assertCurrent: () => void) => void;
+  dependencyCheck: <Result>(assertCurrent: () => Result) => Result;
   assertDependenciesCurrent: () => unknown;
   parentCurrent: (record: ProgramMemberRecord) => void;
   bindings: WeakMap<object, ProgramMemberRecord>;

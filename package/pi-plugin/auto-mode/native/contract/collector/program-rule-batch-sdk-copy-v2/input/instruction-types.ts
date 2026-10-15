@@ -26,6 +26,11 @@ export type InstructionMember = Readonly<{
 }>;
 
 /**
+ Optional parser ownership is captured once before individual judgments are constructed.
+ */
+export type InstructionParserOptions = Readonly<{ parsePolicy?: GoverningSetInput['parse'] }>;
+
+/**
  Bootstrap capabilities retain synchronous dependency boundaries and original request identity.
  */
 export type JudgmentInstructionsInput = Readonly<{
@@ -43,7 +48,7 @@ export type JudgmentInstructionsInput = Readonly<{
   byMember: ReadonlyMap<string, object>;
   bindings: Pick<WeakMap<object, InstructionMember>, 'get' | 'has'>;
   knownSelection: () => Pick<QuestionSelection, 'declare'>;
-  parsePolicy?: Partial<GoverningSetInput>['parse'];
+  parsePolicy?: InstructionParserOptions['parsePolicy'];
   receipt: Readonly<{ request: object }>;
   issue: (claims: readonly object[]) => object;
 }>;

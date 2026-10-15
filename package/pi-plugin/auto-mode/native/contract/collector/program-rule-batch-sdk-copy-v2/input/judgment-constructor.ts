@@ -10,7 +10,7 @@ import type {
 import type {JudgmentPublicAPI} from './judgment-api-types.ts';
 import {createJudgmentFoundation} from './judgment-foundation.ts';
 import type { QuestionSelection } from '../../../lifecycle/claim-evidence-batch-selection/selection-owner.ts';
-import {createJudgmentAPI} from './judgment-api.ts';
+import {publishJudgment} from './judgment-publication.ts';
 import {createJudgmentInstructions} from './instruction-owner.ts';
 import {createJudgmentDependencyChecks} from './judgment-dependencies.ts';
 
@@ -86,10 +86,43 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       l:rl
     });
     cl.debug('constructing original judgment');
-    /** Original foundation preserves budget, source, membership, and facade ordering. */
-    /** Original owner capabilities retain captured method identities. */
-    const {budget,requestInput,sourceOwner,receipt,readCurrentSourceBinding,parentJSON,declaredNames,facade,bindings,byMember,childGroups}=createJudgmentFoundation({now,producerOwner,observer,collector,rootAdapter,rootDirectory,files,isRetryableTransportFailure,trace,startedAt,signal,response,stream,assertDependenciesCurrent(){return assertDependenciesCurrent();}});
-    /** Original owner capabilities retain captured method identities. */
+    /**
+     Original foundation preserves budget, source, membership, and facade ordering.
+     */
+    /**
+     Original owner capabilities retain captured method identities.
+     */
+    const {
+      budget,
+      requestInput,
+      sourceOwner,
+      receipt,
+      readCurrentSourceBinding,
+      parentJSON,
+      declaredNames,
+      facade,
+      bindings,
+      byMember,
+      childGroups
+    }=createJudgmentFoundation({
+      now,
+      producerOwner,
+      observer,
+      collector,
+      rootAdapter,
+      rootDirectory,
+      files,
+      isRetryableTransportFailure,
+      trace,
+      startedAt,
+      signal,
+      response,
+      stream,
+      assertDependenciesCurrent(){return assertDependenciesCurrent();}
+    });
+    /**
+     Original owner capabilities retain captured method identities.
+     */
     const {
       active,
       ready,
@@ -108,12 +141,32 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       bindings,
       trace,
       readPreparation() {
-        /** Original owner capabilities retain captured method identities. */
-    const {prepared,preparationFailed,preparationFailure,handle}=preparation.state;
-        return { prepared, preparationFailed, preparationFailure, finished:lifecycle.state.finished, closeFailed:lifecycle.state.closeFailed, finalRecord:lifecycle.state.finalRecord, handle };
+        /**
+         Original owner capabilities retain captured method identities.
+         */
+    const {
+      prepared,
+      preparationFailed,
+      preparationFailure,
+      handle
+    }=preparation.state;
+        return {
+          prepared,
+          preparationFailed,
+          preparationFailure,
+          finished:lifecycle.state
+          .finished,
+          closeFailed:lifecycle.state
+          .closeFailed,
+          finalRecord:lifecycle.state
+          .finalRecord,
+          handle
+        };
       }
     });
-    /** Original lifecycle shares preparation and dependency boundaries. */
+    /**
+     Original lifecycle shares preparation and dependency boundaries.
+     */
     const lifecycle=createJudgmentLifecycle({
       knownSelection,
       ready,
@@ -125,44 +178,20 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
         return facade.finalize(dependencyHandle);
       },
       readDependencyHandle(){
-        return preparation.state.handle;
+        return preparation.state
+          .handle;
       },
       parentJSON,
       send
     });
-    /** Original owner capabilities retain captured method identities. */
-    const {
-      operation,
-      issue,
-      assess,
-      finalize,
-      captureBatchEvidence,
-      assertBatchEvidence,
-      captureClaimEvidence,
-      assertClaimEvidence
-    }=lifecycle;
-    /** Original owner capabilities retain captured method identities. */
-    const {
-      resolveBinding,
-      indexedUnitAdoptionPairs,
-      claimUnitAdoption,
-      requestMaterialFor,
-      claimRequestMaterial,
-      claimHeadingContext,
-      issueBoundPolicyBatch,
-      claim,
-      indexedRuleCandidates,
-      readRuleCandidate,
-      indexedInstructionCandidates,
-      indexedHeadingContextCandidates,
-      inspectRuleSources,
-      readPolicySelection,
-      claimProgramRuleCandidate,
-      issueProgramRuleBatch,
-      issueRuleAssessmentBatch,
-      claimRuleCandidate,
-      claimInstruction
-    }=createJudgmentInstructions({
+    /**
+     Original owner capabilities retain captured method identities.
+     */
+    const {operation,issue}=lifecycle;
+    /**
+     Original owner capabilities retain captured method identities.
+     */
+    const instructions=createJudgmentInstructions({
       ready,
       bindingSegment,
       isBindingSegmentActive,
@@ -175,8 +204,12 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       receipt,
       issue
     });
+    /** Captured original methods link subsequent owners without invoking them. */
+    const {resolveBinding}=instructions;
 
-    /** Original preparation remains lazy until native members are complete. */
+    /**
+     Original preparation remains lazy until native members are complete.
+     */
     const preparation=createJudgmentPreparation({
       active,
       budget,
@@ -195,26 +228,24 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       bindings,
       byMember
     });
-    /** Original owner capabilities retain captured method identities. */
+    /**
+     Original owner capabilities retain captured method identities.
+     */
     const {prepare}=preparation;
 
-    /** Original owner capabilities retain captured method identities. */
-    const {
-      memberFor,
-      knownMember,
-      knownExecution,
-      parentCurrent,
-      assertExecutionEntry,
-      executionEntryFor,
-      beginExecution,
-      executionFor,
-      finishExecution,
-      inspectExecution
-    }=createJudgmentExecutions({
+    /**
+     Original owner capabilities retain captured method identities.
+     */
+    const executions=createJudgmentExecutions({
       bindings,
       byMember,
       readClosure(){
-        return {finished:lifecycle.state.finished,closeFailed:lifecycle.state.closeFailed};
+        return {
+          finished:lifecycle.state
+          .finished,
+          closeFailed:lifecycle.state
+          .closeFailed
+        };
       },
       readJudgment(){
         return judgment;
@@ -223,22 +254,12 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       stream,
       assertDependenciesCurrent
     });
-    /** Original owner capabilities retain captured method identities. */
-    const {
-      bindPreparedProgram,
-      preparedProgramFor,
-      openProgram,
-      programFor,
-      reachProgramGroup,
-      reachedGroupFor,
-      bindProgramCalls,
-      prepareReachedMembers,
-      invokeProgramNative,
-      scriptValueFor,
-      markProgramGuard,
-      inspectReachedGroup,
-      inspectProgram
-    }=createJudgmentPrograms({
+    /** Captured original methods link subsequent owners without invoking them. */
+    const {knownMember,knownExecution,parentCurrent}=executions;
+    /**
+     Original owner capabilities retain captured method identities.
+     */
+    const programs=createJudgmentPrograms({
       readJudgment() { 
         return judgment; 
       },
@@ -255,12 +276,12 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       childGroups,
       operation
     });
-    /** Original owner capabilities retain captured method identities. */
-    const {
-      preparedMemberFor,
-      originalFileFor,
-      inspect
-    }=createJudgmentInspection({
+    /** Captured original methods link subsequent owners without invoking them. */
+    const {inspectProgram,inspectReachedGroup}=programs;
+    /**
+     Original owner capabilities retain captured method identities.
+     */
+    const inspection=createJudgmentInspection({
       preparation:preparation.state,
       lifecycle:lifecycle.state,
       budget,
@@ -278,64 +299,10 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       inspectReachedGroup
     });
     budget.checkpoint();
-    /** Public ownership is published after the final construction checkpoint. */
-    const judgment=createJudgmentAPI({
-      bindPreparedProgram,
-      preparedProgramFor,
-      openProgram,
-      programFor,
-      reachProgramGroup,
-      reachedGroupFor,
-      bindProgramCalls,
-      prepareReachedMembers,
-      invokeProgramNative,
-      scriptValueFor,
-      markProgramGuard,
-      inspectReachedGroup,
-      originalFileFor,
-      preparedMemberFor,
-      assertExecutionEntry,
-      executionEntryFor,
-      inspectProgram,
-      memberFor,
-      beginExecution,
-      executionFor,
-      finishExecution,
-      inspectExecution,
-      prepare,
-      claim,
-      claimInstruction,
-      captureClaimEvidence,
-      assertClaimEvidence,
-      readSourceSnapshot:sourceOwner.readSourceSnapshot,
-      readCurrentSourceBinding,
-      indexedUnitAdoptionPairs,
-      claimUnitAdoption,
-      requestMaterialFor,
-      claimRequestMaterial,
-      claimHeadingContext,
-      issueBoundPolicyBatch,
-      indexedRuleCandidates,
-      indexedInstructionCandidates,
-      indexedHeadingContextCandidates,
-      inspectRuleSources,
-      readPolicySelection,
-      issueRuleAssessmentBatch,
-      readRuleCandidate,
-      claimRuleCandidate,
-      claimProgramRuleCandidate,
-      issueProgramRuleBatch,
-      captureBatchEvidence,
-      assertBatchEvidence,
-      issue,
-      assess,
-      finalize,
-      assertDependenciesCurrent,
-      inspect,
-      active,
-      knownSelection,
-      operation,
-    });
+    /**
+     Public ownership is published after the final construction checkpoint.
+     */
+    const judgment=publishJudgment({programs,executions,lifecycle,instructions,inspection,sourceOwner,prepare,knownSelection,active,assertDependenciesCurrent,readCurrentSourceBinding});
     return judgment;
   };
 }
