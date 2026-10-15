@@ -1122,9 +1122,30 @@ Commit `6e65184e92` adds built consumers for valid and rejected answers;
 `3b774e9be8` corrects their callback signatures to the harness's asynchronous contract.
 The fixture now describes its consumer contract independently of maintained source imports,
 because the artifact-import lint rule also rejects source imports used only for types.
-Built consumers,
-old/new artifact comparisons,
-and final package validation are pending for this typed boundary.
+The rebuilt answer,
+request-claim,
+domain,
+semantic-policy,
+manual-review,
+and package type sequence passes in
+`${HOME}/temp/agent/pi-native-typed-answers-consumer-20261015.log`.
+The original and built typed readers match values,
+diagnostic fields,
+freezing,
+and retained choice identity across 59 cases.
+A changed-choice control changes success to rejection;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-answer-comparison.json`
+records the artifact hashes and cases.
+Process-local omissions of the serving-model byte bound,
+complete distribution check,
+and scalar upper bound each make the committed consumers fail.
+The built artifact remains unchanged;
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-answer-omissions.json`
+records those controls.
+Final focused formatting reports no diagnostics in the typed readers or answer tests;
+the independent fixture correction also passes with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-answers-fixture-format-20261015.log`.
+The full maintained lint recount is pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
