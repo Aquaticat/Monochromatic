@@ -7,6 +7,24 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-14.
 
+## Current Pi execution model
+
+On 2026-10-14,
+the user corrected the requested Pi execution model to `hyper/gemma-4-26b-a4b-it`.
+Use that provider and model for subsequent Pi work and configured-host verification.
+The decision model remains Luna with the separately adopted `0.60` selected-probability cutoff.
+Historical Qwen verification records retain their original model identities.
+
+The installed `@charmland/pi-hyper-provider` version is `0.4.2`.
+The existing native model store contains the exact requested Hyper model.
+Pi's saved default was `opencode-go/mimo-v2.6-pro`;
+Qwen had been selected explicitly by the earlier verification commands.
+Pi's native settings owner has now saved `hyper` and `gemma-4-26b-a4b-it`
+as the global defaults,
+with every unrelated parsed setting preserved.
+`${HOME}/temp/agent/pi-hyper-model-20261014/selection.json` records the change.
+An isolated configured-host RPC check is pending.
+
 ## Adopted Luna migration
 
 The user subsequently lowered the selected-option probability cutoff from `0.80` to `0.60` on 2026-10-14.
