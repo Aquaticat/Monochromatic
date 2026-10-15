@@ -1201,7 +1201,15 @@ called by `native-host/bootstrap.ts:236`.
 retains the exact diagnostic.
 The standalone probe asserts callable manager exports after import,
 so it currently fails before reaching those assertions.
-No bootstrap implementation change has landed yet.
+Commit `bdee84f697` adds committed fresh-process regressions for both generated entry orders.
+Both fail with the same manager initialization diagnostic in
+`${HOME}/temp/agent/pi-native-direct-import-regression-before-20261015.log`.
+Commit `63be621a7d` separates the native policy entry from extension initialization.
+The existing bundler emits both entries together so shared policy identities remain common,
+and the native generator selects the package's `./native-policy` export.
+This removes the extension SDK import from the intended native policy dependency graph;
+the built import regressions and host lifecycle checks still need to qualify that change.
+Host construction and its original method capture remain unchanged.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
