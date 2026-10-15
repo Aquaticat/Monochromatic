@@ -270,7 +270,26 @@ Every case makes zero provider requests.
 The built source-contribution and request-obligation regressions pass,
 including preservation of independent premises;
 package type checking also passes.
-Process-local guard omissions and the final isolated CLI recheck remain pending.
+The process-local unsupported-protocol-field guard omission fails the native unresolved-outcome assertion:
+without that guard,
+the fixture incorrectly resolves the request.
+The verification record at `${HOME}/temp/agent/pi-request-derivation-controls-20261014/verification.json`
+retains the unchanged built-artifact hash.
+The initial verifier expected a later assertion;
+it was corrected to recognize the actual earlier outcome assertion.
+The final native rebuild and isolated Qwen CLI also pass,
+with zero provider requests and clean shutdown.
+
+The user subsequently asked about Jev 1.14 and whether `0.80` gates the correct quantity.
+The [Jev release check](../planning/pi-auto-mode-jev-1-14-current-contract.md)
+establishes native release availability but no qualified replacement through the current gateway.
+The [Luna score trace](../planning/pi-auto-mode-luna-score-semantics.md)
+confirms that the built consumer gates selected-option probability for each interpretation.
+The baseline has 83 clause questions and one content question;
+three clause answers and the content answer pass.
+Applying `0.80` to the separate confidence field selects the same four baseline answers.
+Neither score is established as whole-decision correctness,
+and the suitability of requiring a unique meaning for every candidate remains a separate design question.
 
 ## Original native RPC approval verification
 
