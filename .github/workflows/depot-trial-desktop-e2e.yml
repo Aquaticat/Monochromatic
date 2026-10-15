@@ -12,9 +12,11 @@ permissions:
 jobs:
   desktop:
     runs-on: depot-ubuntu-24.04-16
-    timeout-minutes: 10
+    timeout-minutes: 60
     env:
       MISE_AUTO_INSTALL: 'false'
+      CARGO_BUILD_JOBS: '16'
+      LIBGL_ALWAYS_SOFTWARE: '1'
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
@@ -25,7 +27,17 @@ jobs:
         version: 2026.10.9
         install: false
         cache: false
-    - name: Install the probe runtime
-      run: mise install node
+    - name: Install build runtimes
+      run: mise install node rust pnpm
     - name: Probe desktop session prerequisites
       run: mise run //package/music-player/desktop-app:trial:depot:desktop:probe
+    - name: Provision desktop prerequisites
+      run: mise run //package/music-player/desktop-app:trial:depot:desktop:prepare
+    - name: Install workspace dependencies
+      run: mise run prepare:pnpm:install
+    - name: Build the desktop application
+      run: mise run //package/music-player/desktop-app:trial:depot:desktop:build
+    - name: Build the compositor
+      run: mise run //package/cli/nested-wayland-session:build
+    - name: Exercise the full desktop interaction suite
+      run: mise run //package/music-player/desktop-app:trial:depot:desktop:run
