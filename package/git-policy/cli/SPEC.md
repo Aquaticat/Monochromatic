@@ -1134,7 +1134,8 @@ the transaction records:
   honoring a caller-set `GIT_INDEX_FILE`,
   `GIT_DIR`,
   `GIT_WORK_TREE`,
-  and global `--git-dir` and `--work-tree`;
+  and the effective directory of `-C`;
+  global `--git-dir` and `--work-tree` do not reach these queries;
 - the selected paths;
 - the reflog nonce;
 - the invocation start time.
@@ -1158,7 +1159,7 @@ so capture order can keep every landed-capture record a transaction may replay o
     and `captured.json` is written.
 
 Every private index copy and every index install carries the source index's access and modification times
-(`index-file-timestamps.ts`):
+(`copy_index_with_timestamps` in `commit_index.rs`):
 Git re-hashes a cached entry only when its mtime is not older than the index file's mtime,
 so a fresh timestamp would hide same-size edits made in the second Git cached their stat
 (`doc/troubleshooting/git-racy-index-copy.md`,
@@ -1173,8 +1174,8 @@ named by a random UUID.
 The directory is built under a reserved staging name and published by rename
 only after `owner.json` is complete,
 so every published transaction names its owner.
-Enumeration ignores staging names;
-an unpublished staging directory never blocks recovery and remains for diagnosis.
+Enumeration lists staging directories as staging entries;
+recovery never recovers one whose owner is dead and leaves it in place for diagnosis.
 
 ```text
 <git-dir>/cli-git-transactions/
@@ -1184,19 +1185,18 @@ an unpublished staging directory never blocks recovery and remains for diagnosis
     owner.json             PID, process-birth identity, schema version, invocation start time
     preparing.json         invocation capture facts
     prepared.json          shadow repository path, prepared OID, signed flag, intended tree
-    reservation-request    empty marker written when the transaction asks for the reservation
+    reservation-request    JSON state record written when the transaction asks for the reservation
     index-lock-<n>.json    identity of the real index.lock attempt <n> created, written right after creating it
     landing-<n>.json       one per landing attempt inside the critical section
     ref-updated.json       exact landed OID
     index-installed        empty completion marker
-    hooks/                 hook dispatcher shim: dispatch.mjs, plan.json, and one entry per preparation event
+    hooks/                 plan.json and one entry per preparation event, each a link to the executable
     captured.index         real index at invocation
     commit.index           private commit index native preparation commits
     pre-landing-<n>.index  exact copy of the real index attempt <n> computed against
     post-<n>.index         post-index attempt <n> installs
-    install-<n>.index      post-index hard link attempt <n> renames over the real index
-    candidate-<k>.state, patch-<k>.diff   convergence snapshots and patch files
-    replay-<r>/            replay <r>: commit.index of the replayed tree, candidate-*.state, patch-*.diff
+    install.index          post-index hard link the install renames over the real index
+    replay-<r>/            replay <r>: commit.index of the replayed tree
     replay-message-<r>     exact message bytes a signed replay passes to git commit-tree -F
     captured.json          capture stamp, next sequence before the base, worktree-captured paths
 
@@ -1221,12 +1221,13 @@ before the private index exists
 
 State files are created exclusively and never rewritten,
 so a crash leaves the newest complete state readable.
-Journal records use schema version 2.
+Per-transaction state records use schema version 2;
+landed-capture records and `plan.json` use schema version 1.
 Directories are mode `0700`,
 files are mode `0600`,
 and every read uses no-follow checks that reject symbolic links,
 non-regular files,
-and unsafe ownership.
+and files over the read size limit.
 
 A path in a record is the exact pathname bytes.
 Where it is a JSON string,
@@ -1253,8 +1254,9 @@ the migrated pack name
 (see "Object migration"),
 and the added-path and selected-worktree records.
 
-The legacy single-journal `<git-dir>/cli-git-transaction` directory is recovered read-only
-until no retained legacy directory can exist.
+The legacy single-journal `<git-dir>/cli-git-transaction` directory is not recovered:
+a command that meets one stops with exit `2` and asks for any Git command through the previous cli-git executable,
+which recovers it.
 
 ### Private preparation
 
@@ -1525,16 +1527,16 @@ and `core.hooksPath` alone does not disable config-based hooks
 (`doc/troubleshooting/git-hook-disable-switches.md`),
 so both are required.
 
-- The shim is a runtime-generated Node program,
-  not a shell script,
-  and nothing new ships in the tarball.
-  `<tx>/hooks/dispatch.mjs` holds the program text,
-  and `<tx>/hooks/plan.json` holds the dispatch plan,
-  encoded with `JSON.stringify` at the final interpolation.
+- Each hook entry is the native executable itself.
+  `<tx>/hooks/plan.json` holds the dispatch plan,
+  encoded at the final interpolation,
+  and Git starts the entry under the event's name,
+  so the executable dispatches by the name it was started under.
+  Nothing new ships beyond the executable.
 - `<tx>/hooks/pre-commit`,
   `prepare-commit-msg`,
-  and `commit-msg` are executable files whose first line is `#!<process.execPath>`
-  and whose body imports `dispatch.mjs` by absolute file URL with the event name.
+  and `commit-msg` are those entries (symbolic links on Unix;
+  on Windows, which has not been run, hard links or copies named `<event>.exe`).
   `post-commit` is intentionally absent,
   so it never runs during preparation.
 - The plan records the repository's own `core.hooksPath`
@@ -1568,10 +1570,6 @@ so both are required.
   and an index writer whose `GIT_INDEX_FILE` names the transaction's private index
   never takes the landing lock.
 
-The shebang form for Windows,
-where Git for Windows parses shebangs itself,
-and for a `process.execPath` containing spaces is pending verification.
-
 Hooks observe the branch state listed in "Private `HEAD` shape".
 A `pre-commit` hook that runs `git stash` writes its entry to the shadow's private `refs/stash`
 but still transiently touches the shared worktree;
@@ -1591,8 +1589,7 @@ and when a valid preparation lease is inherited.
 ### Policy evaluation during preparation
 
 Preparation constructs candidate facts from the private index,
-validates one-target ordinary text patches,
-applies them sequentially through `git apply --cached --3way`,
+writes each policy's corrections into the private index,
 and restarts the whole ordered policy sequence after exact candidate changes.
 Only the final unchanged pass emits findings.
 Revalidation after a replay runs every policy again
@@ -1617,7 +1614,7 @@ Unmerged indexes block automatic correction.
 For ordinary index semantics:
 
 1.  Copy the real index captured at invocation.
-2.  Apply selected patches to the copy with `git apply --cached --3way`.
+2.  Write the selected corrections into the copy.
 3.  Run native `git commit` privately with the copied index.
 4.  Record `prepared.json`.
 
@@ -1641,33 +1638,21 @@ and revert conclusions use index-commit semantics only.
 
 #### Added paths
 
-Paths added by policy patches join the candidate paths of every later pass,
-the explicit-path post-index selection,
-and the prepared journal,
-which records each path's mode,
-original blob,
-and intended blob.
-After the landing installs the real index and writes `index-installed`,
-and before cleanup,
-each added path's worktree copy is compared with both blobs:
-intended bytes are left alone,
-original bytes are replaced through a same-directory temporary file and rename with the recorded mode,
-and any other bytes are kept with a warning,
-because the commit has landed and overwriting would discard a concurrent edit.
-Unsupported interactive/include modes use read-only checks and direct-fix guidance when needed.
+A commit transaction adds no paths of its own:
+its prepared record carries an empty list of added paths,
+and only the selected paths and the hook-staged changes below reach the landing.
+The record field remains from the retired design,
+in which policy patches could add tracked files to the commit.
 
-Direct fix admits added paths under the same precondition,
+Direct fix admits added paths under the precondition in "Finding and patch validation":
 `HEAD`,
-real index,
-private index,
-and worktree all holding the target blob,
-through `createAddedPathTracker`,
-which commit transactions share.
+the real index,
+and the worktree copy all hold the blob the correction was computed against.
 It has no journal or index step:
 converged bytes of added paths join the direct-fix worktree installation.
 Precondition failures are `patch-conflict` with direct-fix remedies
-(select the path,
- or restore it to `HEAD`).
+(include the path in the pathspecs,
+or restore it to `HEAD`).
 
 #### Hook-staged changes
 
