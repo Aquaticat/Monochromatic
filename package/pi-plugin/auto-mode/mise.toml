@@ -171,6 +171,13 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-program-queue.unit.test.ts",
 ]
 
+[tasks."test:native:group-failures"]
+description = "Verify original group failure retention and cancellation publication"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-failure.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-group-abort.unit.test.ts",
+]
+
 [tasks."test:native:group-completions"]
 description = "Verify original retained completions, conditional delivery, and listener cleanup"
 run = [
