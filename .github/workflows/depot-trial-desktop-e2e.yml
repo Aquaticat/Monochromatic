@@ -28,4 +28,4 @@ jobs:
     - name: Install the probe runtime
       run: mise install node
     - name: Probe desktop session prerequisites
-      run: mise run //package/music-player/desktop-app/depot-trial/desktop-e2e:probe
+      run: mise run //package/music-player/desktop-app:trial:depot:desktop:probe
