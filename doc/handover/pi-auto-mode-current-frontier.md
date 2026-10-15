@@ -16,8 +16,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 752 files and 486 rules,
-with zero errors and 10621 warnings.
+The latest complete lint report covers 758 files and 486 rules,
+with zero errors and 10568 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -39,7 +39,8 @@ and deliberate omission controls.
 Reached-program runtime is also qualified.
 Continue reached-program runner contracts.
 The collector implementation and new consumers have zero diagnostics in the full report.
-The latest report has zero runtime diagnostics and retains 260 warnings in `program-runner.mjs`.
+The latest report has zero runtime or extracted runner-binding diagnostics,
+and retains 207 warnings in `program-runner.mjs`.
 Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
 No current user-input blocker exists.
 
@@ -180,17 +181,37 @@ Native option spread remains generic and preserves primitive,
 symbol,
 and getter behavior;
 member cancellation lookup follows the option getters.
-Independent consumer tests and exact original-method replay are committed or prepared,
-but build,
-type checking,
-lint,
-replay,
-and omission qualification remain pending.
+Independent consumer tests pass after the native build and package type check,
+as do the existing program-owner consumers affected by the wider tool-lookup input type.
+The same binding consumers pass against the exact saved original method.
+Six domain comparisons retain identical public outcomes and native execution counts,
+with a permission-versus-prohibition positive control.
+All 23 deliberate binding omissions or substitutions produce assertion failures,
+and both runner and binding artifacts retain their starting hashes.
+The complete lint report has zero errors and 10568 warnings across 758 files and 486 rules;
+all seven extracted binding and consumer files have zero diagnostics.
+The original runner class and its remaining execution methods are not yet qualified as clean.
 The complete original runner is saved as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/program-runner-before-binding-types.mjs`,
 with SHA-256 `fc2e5c4e145641e023a4d841a42f6e83628c7ecba1d8ce7f9fd87a2f7f3ce121`.
-Unknown native call identifiers use an explicit non-null check instead of an implicit missing-member access;
-measure that malformed-input diagnostic contrast before calling the helper qualified.
+Unknown native call identifiers and removed reached-member slots now produce an explicit `Error` null-check diagnostic
+instead of the original implicit `TypeError` from reading the missing member's signal.
+Both implementations first evaluate original option getters and stop before native execution;
+the diagnostic contrast is measured separately from valid-call equivalence.
+Receipts are `typed-runner-binding-comparison.json`,
+`typed-runner-binding-omissions.json`,
+and `typed-runner-binding-diagnostics.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+The final build,
+type check,
+built consumers,
+original replay,
+omission controls,
+and diagnostic contrasts pass in
+`${HOME}/temp/agent/pi-runner-binding-final-verification-20261015.log`.
+The full report is
+`${HOME}/temp/agent/pi-maintained-typed-runner-binding-final-lint-20261015.log`.
+Continue the runner's native event callbacks and reached-group execution lifecycle.
 
 ## Tool-call scope correction
 

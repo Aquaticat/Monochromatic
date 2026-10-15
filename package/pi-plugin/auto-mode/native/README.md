@@ -82,6 +82,14 @@ then inspects the current reached map and preserves the earliest retained progra
 Independent lifetime consumers cover callback failures,
 partial retirement,
 and frozen snapshots that retain child inspection identity.
+`test:native:runner-binding` verifies original recorder reuse,
+parent-derived call numbering,
+complete slot admission,
+and distinct unresolved result tickets.
+Original native callback identity is captured once.
+Native option getters run before member signal lookup;
+enumerable symbols and primitive object-spread behavior remain intact.
+Missing tool-name lookups reach the original judgment admission callback unchanged.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 
