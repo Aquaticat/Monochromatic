@@ -172,6 +172,26 @@ consumers,
 and full lint report are in
 `${HOME}/temp/agent/pi-maintained-typed-program-runtime-final-cleaner-lint-20261015.log`.
 
+Runner group binding is now extracted to `program-runner-binding.ts` and its contract file.
+The original runner class delegates its private binding method to that helper.
+The original `bindProgramCalls` tool-array declaration now admits absent name-lookup results,
+matching its existing runtime rejection boundary without introducing an earlier runner check.
+Native option spread remains generic and preserves primitive,
+symbol,
+and getter behavior;
+member cancellation lookup follows the option getters.
+Independent consumer tests and exact original-method replay are committed or prepared,
+but build,
+type checking,
+lint,
+replay,
+and omission qualification remain pending.
+The complete original runner is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-runner-before-binding-types.mjs`,
+with SHA-256 `fc2e5c4e145641e023a4d841a42f6e83628c7ecba1d8ce7f9fd87a2f7f3ce121`.
+Unknown native call identifiers use an explicit non-null check instead of an implicit missing-member access;
+measure that malformed-input diagnostic contrast before calling the helper qualified.
+
 ## Tool-call scope correction
 
 The user clarified that automatic mode is meant to check model-initiated tool calls.
