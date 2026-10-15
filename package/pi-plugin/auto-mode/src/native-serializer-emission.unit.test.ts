@@ -11,7 +11,7 @@ type EmissionModule = {
     readonly apiKey: string;
     readonly maxRetries: number;
     readonly fetch: () => Promise<Response>;
-    readonly onPayload: (payload: { readonly messages: readonly { readonly content: string }[];
+    readonly onPayload: (payload: { readonly messages: readonly { readonly role: string; readonly content: string }[];
       readonly tools?: readonly object[] }, model: object) => void;
   }) => { readonly result: () => Promise<{ readonly stopReason: string }> };
   readonly readNativeSerializedPayload: (value: unknown) => unknown;
@@ -88,6 +88,9 @@ await describe({ name: '', children: [false, true].map(function toolCase(withToo
             const origin = built.readNativeSerializedPayload(payload);
             assertEmission(origin);
             expect(origin.model).toBe(model);
+            expect(origin.modelId).toBe(model.id);
+            expect(origin.messageCount).toBe(payload.messages.length);
+            expect(origin.toolCount).toBe(payload.tools?.length ?? 0);
             expect(selectedModel).toBe(model);
             expect(origin.messages).toBe(context.messages);
             expect(origin.normalizedMessages).not.toBe(context.messages);
@@ -97,6 +100,13 @@ await describe({ name: '', children: [false, true].map(function toolCase(withToo
             const system = built.readNativeSystemPayload(payload.messages[0]);
             assertEmission(system);
             expect(system.messages).toBe(origin.normalizedMessages);
+            expect(system.ordinal).toBe(0);
+            expect(system.role).toBe(payload.messages[0]?.role);
+            if ((!Array.isArray(system.normalizedMessages)) || (!Array.isArray(system.transformedMessages)))
+              throw new Error('Native system emission is missing its inner normalization observations');
+            expect(system.normalizedMessages).not.toBe(origin.normalizedMessages);
+            expect(system.message).toBe(system.normalizedMessages[0]);
+            expect(system.message).toBe(system.transformedMessages[0]);
             expect(system.text).toBe(payload.messages[0]?.content);
             expect(system.text).toContain('First system input');
             expect(system.text).toContain('Second system input');
@@ -115,6 +125,16 @@ await describe({ name: '', children: [false, true].map(function toolCase(withToo
               expect(tools.tools[0]).toBe(tool);
               expect(Object.isFrozen(tools)).toBe(true);
               expect(built.readNativeToolPayload([...(payload.tools ?? [])])).toBeUndefined();
+              /** Each native map result also retains its exact declaration and owned pre-callback value. */
+              const converted = payload.tools?.[0];
+              /** Original output membership does not follow an equal object copy. */
+              const emitted = built.readNativeToolPayload(converted);
+              assertEmission(emitted);
+              expect(emitted.tool).toBe(tool);
+              expect(emitted.value).toEqual(converted);
+              expect(emitted.value).not.toBe(converted);
+              expect(Object.isFrozen(emitted.value)).toBe(true);
+              expect(built.readNativeToolPayload({ ...converted })).toBeUndefined();
             }
             else expect(tools).toBeUndefined();
           },

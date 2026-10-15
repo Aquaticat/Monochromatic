@@ -5,8 +5,9 @@
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { PolicyInputBindingError, } from './policy-input-binding-error.ts';
+import { inspectRequestSourceDerivation } from './request-source-derivation.ts';
 import { inspectMessageContribution, } from './source-contribution-message.ts';
-import { inspectToolContribution } from './source-contribution-tool.ts';
+import { inspectRetainedInputContribution } from './source-contribution-retained-input.ts';
 import { inspectRunContribution, } from './source-contribution-run.ts';
 import type {
   SourceContributionIssue,
@@ -122,15 +123,24 @@ export function consumeSourceAssociations(inputs: SourceContributionInputs,): So
         source,
         run,
       },);
-    /** Original manager tool inputs have their own input-only publication membership. */
-    const toolLinked = (source !== undefined) && (run !== undefined)
+    /**
+     Original manager system and tool inputs retain their original publication membership.
+     */
+    const inputLinked = (source !== undefined) && (run !== undefined)
       && (association !== undefined)
-      && inspectToolContribution({ association, source, run });
-    /** Exact source identity is required independently of any supporting link. */
+      && inspectRetainedInputContribution({
+        association,
+        source,
+        run
+      });
+    /**
+     Exact source identity is required independently of any supporting link.
+     */
     const accounted = (source !== undefined) && (association !== undefined)
       && (association.source === source.source)
       && (base || runLinked
-        || messageLinked || toolLinked);
+        || messageLinked
+        || inputLinked);
     uses.push(Object.freeze({
       contribution: contribution.contribution,
       request: contribution.request,
@@ -157,6 +167,11 @@ export function consumeSourceAssociations(inputs: SourceContributionInputs,): So
   }
   rl.debug('original contribution association consumption completed',);
   return Object.freeze({
+    ...(inputs.requestObservation === undefined ? {} : { governingUse: inspectRequestSourceDerivation({
+      observation: inputs.requestObservation,
+      contributions: inputs.requestSourceContributions ?? [],
+      uses,
+    }) }),
     uses: Object.freeze(uses,),
     issues: Object.freeze(issues,),
   },);

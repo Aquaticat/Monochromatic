@@ -42,6 +42,7 @@ function compilation({
    requestMaterialInterpretation,
    headingContextInterpretations,
    requestSourceAssociationUses:sourceUses.uses,
+   requestGoverningUse:sourceUses.governingUse,
    unitAdoptionInterpretations
  });
 }
@@ -366,7 +367,8 @@ export function compileBoundClauseProgram({
  });
  const finalIssues=requestMaterialInterpretation?retainRequestMaterialObligations({
    issues:headingIssues,
-   interpretation:requestMaterialInterpretation
+   interpretation:requestMaterialInterpretation,
+   governingUse:sourceUses.governingUse
  }):headingIssues;
  return compilation({
    issues:finalIssues,

@@ -61,8 +61,14 @@ const sdkStream=process.argv
 const receiptControl=process.argv
   .includes('--copied-payload')?'copied-payload':process.argv
   .includes('--copied-transcript')?'copied-transcript':process.argv
-  .includes('--copied-system')?'copied-system':undefined;
+  .includes('--copied-system')?'copied-system':process.argv
+  .includes('--copied-tool')?'copied-tool':process.argv
+  .includes('--copied-tools')?'copied-tools':process.argv
+  .includes('--changed-tool')?'changed-tool':undefined;
 assert.ok((!receiptControl)||sdkStream,'Serializer receipt controls exercise the normal SDK stream');
+const derivationControl=process.argv.find(function derivationArgument(argument){return argument.startsWith('--request-derivation=');})?.slice('--request-derivation='.length);
+assert.ok(derivationControl===undefined||['protocol-field','message-field','appended-message','removed-message','removed-tools','copied-system-input','assistant-role'].includes(derivationControl));
+assert.ok(!derivationControl||(sdkStream&&requestRelation==='potential-instruction'),'Request derivation controls require original SDK serialization and a potential-instruction estimate');
 const observations={contextCalls:0,lateContextMutations:0,progressCalls:0,assessments:0,executions:0,requests:0,httpCalls:0,originalBody:undefined,firstDecision:undefined,nextInputQuestions:0};
 const env=await createEnvironment({
   policyText:'RUL:\n '+text+'\n',
@@ -138,6 +144,32 @@ function controlledSdkStream({
   context,
   options
 }){
+ if(derivationControl==='copied-system-input'){
+  assert.equal(context.messages[0].role,'system');
+  context.messages[0]={...context.messages[0]};
+ }
+ if(derivationControl&&derivationControl!=='copied-system-input')return originalSdkStream(model,context,{...options,
+  onPayload(payload,selectedModel){
+   if(derivationControl==='protocol-field')payload.unaccounted_instruction='An original-unaccounted request instruction';
+   else if(derivationControl==='message-field')payload.messages[0].unaccounted_instruction='An unaccounted message instruction';
+   else if(derivationControl==='appended-message')payload.messages.push({role:'user',content:[{type:'text',text:'An added message instruction'}]});
+   else if(derivationControl==='removed-message')payload.messages.pop();
+   else if(derivationControl==='removed-tools')delete payload.tools;
+   else payload.messages[1].role='assistant';
+   return options.onPayload(payload,selectedModel);
+  }
+ });
+ if(['copied-tool','copied-tools','changed-tool'].includes(receiptControl))return originalSdkStream(
+   model,
+   context,
+   {...options,onPayload(payload,selectedModel){
+    assert.ok(payload.tools.length>0,'Tool receipt control requires an actual native tool output');
+    if(receiptControl==='copied-tools')payload.tools=[...payload.tools];
+    else if(receiptControl==='copied-tool')payload.tools[0]={...payload.tools[0]};
+    else payload.tools[0].function.description='Replacement description prohibits the complete operation';
+    return options.onPayload(payload,selectedModel);
+   }}
+ );
  if(receiptControl==='copied-system')return originalSdkStream(
    model,
    context,
@@ -250,7 +282,7 @@ try{
    lastJudgment:judgment
  }=first??current;
  const measures=first?.measures??observations;
- assertDomainReview({env,review,judgment,session,originalBody:measures.originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl,expectedExecutions},measures});
+ assertDomainReview({env,review,judgment,session,originalBody:measures.originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl,derivationControl,expectedExecutions},measures});
  if(singleCall&&relation==='permission'){
   const programs=judgment.inspect().rootPrograms;
   assert.equal(programs.length,1);

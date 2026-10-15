@@ -2,12 +2,18 @@ import {
   isDeepStrictEqual,
   types
 } from 'node:util';
-import {readHandlerPayloadPublication} from '../../collector/run-prompt-custody-v3/handler-publication.mjs';
-import {prepareNativeToolAssociation} from './tool-source-association.mjs';
+import {readHandlerPayloadPublication,readOriginalToolPublication,readOriginalSystemPublication} from '../../collector/run-prompt-custody-v3/handler-publication.mjs';
+import {copyMessageData} from '../../collector/run-prompt-custody/messages.mjs';
+import {prepareNativeToolAssociation} from './tool-source-association.ts';
+import {captureNativeSystemDerivation} from './system-source-derivation.ts';
+import {deriveNativeRequestSources} from './request-source-derivation.ts';
+import {NativeRequestDerivationError} from './request-derivation-error.ts';
+import {tagged} from '@monochromatic-dev/module-logger/ts';
 import {
   streamSimple,
   readNativeSerializedPayload,
-  readNativeSystemPayload
+  readNativeSystemPayload,
+  readNativeToolPayload
 } from "./generated/openai-stream.mjs";
 
 export class NativeSourceAssociationError extends Error {}
@@ -376,14 +382,22 @@ export function prepareNativeSourceAssociation({
    context,
    options
  })===undefined;
+ const capturedSystemDerivation=messageEligible?captureNativeSystemDerivation({sources,messages:context.messages,
+  dataRecord,denseArray,readSystemPublication:readOriginalSystemPublication}):undefined;
+ const systemDerivation=(capturedSystemDerivation!==undefined&&typeof capturedSystemDerivation!=='symbol')?capturedSystemDerivation:undefined;
  const previous=options?.onPayload;
  const originalMessages=context.messages;
- const toolAssociation=prepareNativeToolAssociation({sources,dataRecord,denseArray});
+ const toolAssociation=prepareNativeToolAssociation({sources,dataRecord,denseArray,copyToolData:copyMessageData,
+  readToolPublication:readOriginalToolPublication,readToolEmission:readNativeToolPayload});
  let owned=[];
    let unresolvedHandlers=[];
    let called=false;
    let sealed=false;
    let payloadOriginFailure;
+   let nativeCardinalities;
+   let derivationFields;
+   let derivationFailure;
+   let derivationBound=false;
  async function onPayload(
    payload,
    selectedModel
@@ -401,13 +415,21 @@ export function prepareNativeSourceAssociation({
   const candidates=[];
   if(originalPayload&&dataRecord(payload)
     &&denseArray(payload.messages)){
+   if(payload.tools===undefined||denseArray(payload.tools))nativeCardinalities=Object.freeze({
+    modelId:origin.modelId,messageCount:origin.messageCount,toolCount:origin.toolCount
+   });
    const original=payload.messages[0];
    const systemSerialization=readNativeSystemPayload(original);
    const originalSystem=(systemSerialization!==undefined)
      &&(systemSerialization.messages===origin.normalizedMessages)
+     &&(systemSerialization.ordinal===0)
+     &&(systemSerialization.message===systemSerialization.normalizedMessages[0])
+     &&(systemSerialization.message===systemSerialization.transformedMessages[0])
+     &&(systemSerialization.role===original?.role)
      &&(systemSerialization.text===original?.content);
-   if(origins&&!originalSystem)payloadOriginFailure??='System content lacks its original native rendering and message emission';
-   if(origins&&dataRecord(original)
+   if((origins||systemDerivation)&&!originalSystem)payloadOriginFailure??='System content lacks its original native rendering and message emission';
+   const originalSystemInputs=systemDerivation?.matches()===true;
+   if((origins||originalSystemInputs)&&dataRecord(original)
      &&originalSystem
      &&((typeof original.content)==='string')
      &&[
@@ -418,7 +440,8 @@ export function prepareNativeSourceAssociation({
       original,
       content:original.content,
       role:original.role,
-      associations:origins,
+      associations:originalSystemInputs?Object.freeze([...(origins??[]),...systemDerivation.associations]):origins,
+      derivation:originalSystemInputs?systemDerivation:undefined,
       serialization:systemSerialization,
       system:true
     });
@@ -463,10 +486,10 @@ export function prepareNativeSourceAssociation({
      ) { return (message===candidate.original?[index]:[]); }):[];
    const {original} = candidate;
    // Observe known message aliases even when their descriptor shape no longer qualifies for a copy.
-   const handlerCurrent=candidate.system||(candidate.associations[0]
+   const handlerCurrent=(candidate.system?(candidate.derivation?.matches()??true):(candidate.associations[0]
      .handlerPublication
      ??candidate.associations[0]
-     .expandedPromptPublication).matchesPayload(original);
+     .expandedPromptPublication).matchesPayload(original));
    const unchanged=handlerCurrent&&(positions.length===1)
      &&dataRecord(original)
      &&(original.role===candidate.role)
@@ -493,6 +516,7 @@ export function prepareNativeSourceAssociation({
      }),
      associations:candidate.associations,
      serialization:candidate.serialization,
+     derivation:candidate.derivation,
      system:candidate.system
    });
   }
@@ -523,7 +547,8 @@ export function prepareNativeSourceAssociation({
     ordinal,
     associations,
     why,
-    serialization
+    serialization,
+    derivation
   }){
    const location=Object.freeze({
      field:'messages',
@@ -535,6 +560,7 @@ export function prepareNativeSourceAssociation({
      location,
      association,
      ...(serialization?{serialization}:{}),
+     ...(derivation?{systemDerivation:derivation}:{}),
      reason:why,
      coverage:'partial-original-prompt-input-contribution',
      permission:false
@@ -558,6 +584,7 @@ export function prepareNativeSourceAssociation({
      ordinal:systemOrdinal,
      associations:associated?system.associations:[undefined],
      serialization:associated?system.serialization:undefined,
+     derivation:associated?system.derivation:undefined,
      why:associated?undefined:payloadOriginFailure??reason
        ??'The payload callback replaced or changed the original native contribution'
    });
@@ -586,10 +613,28 @@ export function prepareNativeSourceAssociation({
     coverage:'partial-original-prompt-input-contribution',
     permission:false
   }));
-  return Object.freeze([...result,...toolAssociation.seal(parsed)]);
+  const contributions=Object.freeze([...result,...toolAssociation.seal(parsed)]);
+  try{
+   if(!nativeCardinalities)throw new NativeRequestDerivationError('Request has no original native serializer cardinalities');
+   derivationFields=deriveNativeRequestSources({parsed,...nativeCardinalities,contributions,dataRecord,denseArray});
+  }catch(error){
+   const l=tagged({tag:'auto-mode-native-source-association'});
+   const fl=tagged({tag:seal.name,l});
+   fl.debug(String(error));
+   if(!(error instanceof NativeRequestDerivationError))throw error;
+   derivationFailure=error.message;
+  }
+  return contributions;
+ }
+ function bindDerivation({request,contributions}){
+  if(!sealed||derivationBound)throw new NativeSourceAssociationError('Request source derivation requires its original single sealing boundary');
+  derivationBound=true;
+  return Object.freeze(derivationFields?{sourceDerivation:Object.freeze({...derivationFields,request,contributions})}
+   :{sourceDerivationFailure:derivationFailure??'Request source derivation was not established'});
  }
  return Object.freeze({
    onPayload,
-   seal
+   seal,
+   bindDerivation
  });
 }

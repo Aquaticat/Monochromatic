@@ -3,11 +3,19 @@ import {inspect} from 'node:util';
 import {inspectNativeSourceDomain} from '../policy-source/source-domain.mjs';
 import {assertNativeSessionInputCapture} from './generated/session-manager.mjs';
 
+/** Each receipt contrast invalidates only its actual transport field and position. */
+function alteredContribution({control,location}){
+ if(control==='copied-system')return location.field==='messages'&&location.ordinal===0;
+ if(control==='copied-tools')return location.field==='tools';
+ if(control==='copied-tool'||control==='changed-tool')return location.field==='tools'&&location.ordinal===0;
+ return Boolean(control);
+}
+
 //region Native review assertions retain every authored contrast and original domain control
 
 /** Verify the observed decision and execution against this fixture's original selected contrasts. */
 export function assertDomainReview({env,review,judgment,session,originalBody,settings,measures}){
- const {relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl}=settings;
+ const {relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl,derivationControl}=settings;
  const {assessments,executions,requests,httpCalls,contextCalls,lateContextMutations,progressCalls}=measures;
  const expectedExecutions=settings.expectedExecutions??3;
  if(!review){
@@ -45,10 +53,22 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
     .length
     >0,'The normal SDK route must retain original native serializer contributions');
   assert.ok(review.requestSourceAssociationUses
-    .every(function matchesExpectedContributionState(use) { return (use.state===((receiptControl==='copied-system'?use.location.ordinal===0:receiptControl)?'unresolved':'accounted')); }),inspect(
+    .every(function matchesExpectedContributionState(use) { return (use.state===(alteredContribution({control:receiptControl,location:use.location})?'unresolved':'accounted')); }),inspect(
     review.requestSourceAssociationUses,
     {depth:3}
   ));
+ }
+ if(sdkStream&&!receiptControl&&!observedContext&&!unobservedContext&&!derivationControl){
+  assert.equal(review.requestGoverningUse?.state,'represented-by-original-inputs',review.requestGoverningUse?.reason);
+  const systemContributions=review.inputs.requestObservation.sourceContributions.filter(function originalSystemDerivation(value){return value.systemDerivation!==undefined;});
+  assert.ok(systemContributions.length>0,'The normal native serializer must retain its original system input derivation');
+  const derivation=systemContributions[0].systemDerivation;
+  assert.ok(derivation.associations.length>0);
+  for(const association of derivation.associations){
+   assert.ok(association.systemInputPublication,'System derivation must use the original manager input publication');
+   assert.ok(systemContributions.some(function originalSystemAssociation(value){return value.association===association;}),
+    'Every original system derivation input must reach contribution consumption');
+  }
  }
  const issues=review.premiseIssues
    .map(function describeUnresolvedIssue(issue) { return (({premise:issue.premise,kind:issue.kind,reason:issue.reason})); });
@@ -56,6 +76,8 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
    complete:true,
    relation,
    requestRelation,
+   requestGoverningUse:review.requestGoverningUse?.state,
+   derivationControl,
    outcome:review.outcome,
    issues,
    sources:review.inputs.instructionSources.length,
@@ -123,17 +145,23 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
    const failedContributions=review.inputs
      .requestObservation
      .sourceContributions
-     .filter(function selectedContribution(value){return receiptControl!=='copied-system'||value.location.ordinal===0;});
+     .filter(function selectedContribution(value){return alteredContribution({control:receiptControl,location:value.location});});
    assert.ok(failedContributions.length>0);
-   assert.ok(failedContributions.every(function namesMissingSerializerOccurrence(value) { return (value.reason?.includes(receiptControl==='copied-system'?'original native rendering and message emission':'original native serializer occurrence')); }),inspect(
+   assert.ok(failedContributions.every(function namesMissingSerializerOccurrence(value) { return (value.reason?.includes(value.location.field==='tools'?'original native declaration emission':receiptControl==='copied-system'?'original native rendering and message emission':'original native serializer occurrence')); }),inspect(
      review.inputs.requestObservation.sourceContributions,
      {depth:3}
    ));
+  }else if(derivationControl){
+   assert.equal(review.outcome.state,'unresolved');
+   assert.equal(executions,0);
+   assert.equal(review.requestGoverningUse.state,'unresolved');
+   assert.ok(review.premiseIssues.some(function unaccountedRequestUse(issue){return issue.kind==='request-material-instruction-use';}));
+   assert.ok(review.inputs.requestObservation.sourceDerivationFailure);
   }else if(clauseAbstention){
    assert.equal(review.outcome.state,'unresolved');
    assert.equal(executions,0);
    assert.ok(review.premiseIssues.some(function unresolvedMeaning(issue){return issue.premise==='qualified-rule-interpretation';}));
-  }else if(requestRelation!=='none'){
+  }else if(requestRelation!=='none'&&review.requestGoverningUse?.state!=='represented-by-original-inputs'){
    assert.equal(
      review.outcome.state,
      'unresolved'

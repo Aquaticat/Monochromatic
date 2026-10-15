@@ -168,8 +168,109 @@ The test enters through the maintained policy consumer:
 direct generated-manager and generated-SDK imports exposed an existing owned bootstrap cycle,
 documented in `doc/troubleshooting/pi-sdk-staging.md`.
 Removing that coupling remains native-quality work.
-Serialized tool contribution consumption is still pending.
+The serialized tool consumer now passes the normal SDK fixture with seven accounted partial contributions,
+including both original tool declarations,
+and three executed fixture children.
+Copied-tool,
+copied-tool-array,
+and changed-description controls leave the affected contributions unresolved and execute no children.
+All existing system/payload/transcript substitution controls still pass,
+with zero provider requests.
+The built membership consumer also passes each original-source/publication/input-occurrence contrast.
+The typed native tool association module passes scoped lint,
+package types,
+the rebuilt SDK control,
+all serializer substitution controls,
+and the actual isolated Qwen CLI with clean shutdown and zero provider requests.
+The original map callback retains each converted value before payload callbacks;
+removing that owned snapshot makes the changed-description control fail.
+`${HOME}/temp/agent/pi-tool-publication-controls-20261014/emission-verification.json`
+retains the unchanged artifact hash.
+The next boundary is complete system-message derivation and original request governing-use consumption.
+The consolidated built contribution regression also passes the base,
+run,
+message,
+publication,
+and tool membership cases through `test:source-contribution`.
+The current tool records remain partial contributions;
+they do not remove `request-material-instruction-use`.
 Complete system and tool governing-use accounting is still required before removing the independent obligation.
+
+The original manager publication now validates its complete selected system input:
+content,
+sections,
+tool declarations,
+and tool removals.
+System inputs without tool declarations receive the same original-owner checks.
+The existing alias index carries these publications through observed native copies;
+no second source inventory or authority registration is added.
+Built manager tests pass for unchanged copies,
+equal replacement messages and sections,
+changed prose and section text,
+replaced removal arrays,
+and accessor rejection without invocation.
+The package type check and four-file scoped lint pass with zero lint diagnostics.
+The rebuilt native SDK and all serializer substitution controls pass with zero provider requests.
+Process-local omission of either the full-field integrity check or field-identity check
+makes its corresponding assertion fail.
+`${HOME}/temp/agent/pi-system-publication-controls-20261014/verification.json`
+records both failures and the unchanged built-artifact hash.
+The serialized system derivation consumer remains the next step;
+these original input publications alone do not establish complete request coverage.
+The isolated Qwen CLI also passes with zero provider requests and clean shutdown.
+The retained-input consumer now handles system and tool publications through the same original membership checks.
+Its built contribution regressions,
+package types,
+and six-file scoped lint pass.
+`src/source-contribution-tool.ts` moved to `src/source-contribution-retained-input.ts` on 2026-10-14.
+The first derivation integration probe found the original system input publication,
+but rejected its emitted system message because the new identity check used the wrong normalization stage.
+Pi normalizes once in `stream` and again inside `convertMessages`;
+the emitted message comes from the latter's transformed transcript.
+The producer receipt now retains that exact inner normalized and transformed transcript,
+and the consumer checks both original identities.
+Native revalidation passes with eight accounted contributions,
+including the complete captured system input,
+and three executed fixture children.
+The built emission test now verifies both actual normalization stages.
+All serializer substitution controls and the package type check pass.
+The request-level consumer is now implemented and under verification.
+It uses the observer's existing JSON parse,
+original producer cardinalities,
+complete system replay inputs,
+whole user-message publications,
+and original converted tool declarations.
+The supported envelope permits the original model and stream fields,
+known numeric controls,
+`store: false`,
+and the native usage-reporting shape.
+Unknown protocol fields,
+additional message fields,
+unsupported message roles,
+missing original sources,
+and changed cardinalities retain an unresolved request-use obligation.
+Successful field coverage can discharge only `request-material-instruction-use`;
+source-domain,
+semantic admission,
+authority,
+delegation,
+and operation premises remain independent.
+The native request-derivation suite now passes permission,
+prohibition,
+and unspecified-policy cases while the request interpretation remains `potential-instruction`.
+Permission executes three fixture children;
+the other outcomes execute none.
+Unsupported protocol and message fields,
+added or removed messages,
+removed tools,
+copied system inputs,
+unsupported roles,
+and copied serialized system or tool values all retain unresolved request use and execute no children.
+Every case makes zero provider requests.
+The built source-contribution and request-obligation regressions pass,
+including preservation of independent premises;
+package type checking also passes.
+Process-local guard omissions and the final isolated CLI recheck remain pending.
 
 ## Original native RPC approval verification
 
