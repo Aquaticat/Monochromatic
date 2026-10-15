@@ -133,6 +133,25 @@ fn try_clone(_source: &std::fs::File, _destination: &std::fs::File) -> bool {
 /// await copyFile(sourcePath, stagePath, COPYFILE_EXCL | COPYFILE_FICLONE);
 /// ```
 pub fn copy_file_exclusive(source: &Path, destination: &Path) -> Result<(), WorktreeCopyError> {
+    return copy_file_exclusive_with(source, destination, try_clone);
+}
+
+/// What:
+///  Creates a destination file exclusively and fills it with the source's bytes,
+///  using the clone request the caller supplies.
+/// Why:
+///   Whether the filesystem clones is the machine's choice, so a test supplies a clone that accepts or refuses
+///  and sees each path taken on every machine.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await copyFileWith({ sourcePath, stagePath, clone });
+/// ```
+fn copy_file_exclusive_with(
+    source: &Path,
+    destination: &Path,
+    clone: fn(&std::fs::File, &std::fs::File) -> bool,
+) -> Result<(), WorktreeCopyError> {
     let mut input: std::fs::File =
         std::fs::File::open(source).map_err(|error| return raw_failure(&error))?;
     let mut output: std::fs::File = std::fs::OpenOptions::new()
@@ -141,7 +160,7 @@ pub fn copy_file_exclusive(source: &Path, destination: &Path) -> Result<(), Work
         .open(destination)
         .map_err(|error| return raw_failure(&error))?;
     // A successful clone already holds every byte, so only a refused clone copies them.
-    if !try_clone(&input, &output) {
+    if !clone(&input, &output) {
         std::io::copy(&mut input, &mut output).map_err(|error| return raw_failure(&error))?;
     }
     return Ok(());
@@ -245,9 +264,23 @@ fn source_exclusions(
 ) -> Vec<PathBuf> {
     let mut exclusions: Vec<PathBuf> = registered_roots.to_vec();
     exclusions.push(stage_container.to_path_buf());
-    return exclusions
-        .into_iter()
+    return nested_under(source_root, exclusions.as_slice());
+}
+
+/// What:
+///  The roots strictly inside the source root, never the source root itself.
+/// Why:
+///   A registered worktree nested in the source is another checkout's state, so the source's own walk must skip it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// roots.filter((root) => root !== sourceRoot && isInside(sourceRoot, root))
+/// ```
+fn nested_under(source_root: &Path, roots: &[PathBuf]) -> Vec<PathBuf> {
+    return roots
+        .iter()
         .filter(|root| return root.as_path() != source_root && root.starts_with(source_root))
+        .cloned()
         .collect();
 }
 
@@ -297,11 +330,7 @@ pub fn stage_ignored_snapshot(
     registered_roots: &[PathBuf],
     selection: &CopySelection,
 ) -> Result<StagedSnapshot, WorktreeCopyError> {
-    let nested: Vec<PathBuf> = registered_roots
-        .iter()
-        .filter(|root| return root.as_path() != source_root && root.starts_with(source_root))
-        .cloned()
-        .collect();
+    let nested: Vec<PathBuf> = nested_under(source_root, registered_roots);
     let git_selected: Vec<String> = select_roots(context, source_root, nested.as_slice(), selection)?;
     create_private_directory(stage_container).map_err(|error| return raw_failure(&error))?;
     let stage_root: PathBuf = stage_container.join(PAYLOAD_NAME);

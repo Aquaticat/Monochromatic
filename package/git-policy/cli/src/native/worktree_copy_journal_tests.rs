@@ -178,6 +178,83 @@ fn validation_refuses_each_malformed_shape() {
     remove(root.as_path());
 }
 
+/// Only an absolute path with no empty, `.` or `..` component is canonical.
+#[test]
+fn only_canonical_absolute_paths_are_accepted() {
+    for accepted in ["/", "/a", "/a/b", "/a/.hidden", "/a/b.c"] {
+        assert!(is_canonical_absolute(accepted), "{accepted}");
+    }
+    for refused in [
+        "", "a", "a/b", "//", "/a/", "/a//b", "/a/./b", "/./a", "/a/.", "/a/..", "/../a", "/a/b/..",
+    ] {
+        assert!(!is_canonical_absolute(refused), "{refused}");
+    }
+}
+
+/// A device or inode is a decimal without a leading zero, and `0` itself is one.
+#[test]
+fn identities_are_canonical_decimals() {
+    let text = |value: &str| return serde_json::Value::String(String::from(value));
+    assert_eq!(decimal_identity(&text("0")), Some(0));
+    assert_eq!(decimal_identity(&text("7")), Some(7));
+    assert_eq!(decimal_identity(&text("10")), Some(10));
+    assert_eq!(decimal_identity(&text("18446744073709551615")), Some(u64::MAX));
+    for refused in ["", "00", "01", "-1", "+1", "1.0", "a", "1 ", "18446744073709551616"] {
+        assert_eq!(decimal_identity(&text(refused)), None, "{refused:?}");
+    }
+    assert_eq!(decimal_identity(&serde_json::json!(7)), None);
+}
+
+/// Each relation between the stage and the destination refuses on its own,
+///  and a repeated path refuses in whichever list it repeats.
+#[test]
+fn each_stage_relation_and_each_repeated_list_is_refused_alone() {
+    let root: PathBuf = fixture("journal-relations");
+    let journal_root: PathBuf = root.join("journals");
+    let path: PathBuf = journal_root.join("id.json");
+    let refuse = |journal: &Journal, expected: String| {
+        let failure: WorktreeCopyError = parse_journal(
+            encode_journal(journal).as_str(),
+            path.as_path(),
+            journal_root.as_path(),
+        )
+        .expect_err("refused");
+        assert_eq!(failure.0, expected);
+    };
+    let relation: String = format!(
+        "cli-git: worktree-copy journal has unsafe private stage relation: {}.",
+        quote(path.to_string_lossy().as_ref())
+    );
+    let duplicates: String = format!(
+        "cli-git: worktree-copy journal contains duplicate repository paths: {}.",
+        quote(path.to_string_lossy().as_ref())
+    );
+    let place = |journal: &mut Journal, container: PathBuf| {
+        journal.stage_container = container.to_string_lossy().into_owned();
+        journal.stage_root = container.join("payload").to_string_lossy().into_owned();
+    };
+    let mut unprefixed: Journal = sample(root.as_path());
+    place(&mut unprefixed, root.join("plain-stage"));
+    refuse(&unprefixed, relation.clone());
+    let mut elsewhere: Journal = sample(root.as_path());
+    place(&mut elsewhere, root.join("elsewhere/.cli-git-worktree-copy-abc"));
+    refuse(&elsewhere, relation.clone());
+    let mut misplaced_payload: Journal = sample(root.as_path());
+    misplaced_payload.stage_root = root
+        .join(".cli-git-worktree-copy-abc/other")
+        .to_string_lossy()
+        .into_owned();
+    refuse(&misplaced_payload, relation);
+    let mut repeated_intent: Journal = sample(root.as_path());
+    repeated_intent.intended_entries.push(String::from("cache"));
+    refuse(&repeated_intent, duplicates.clone());
+    let mut repeated_creation: Journal = sample(root.as_path());
+    let first: InstalledPath = repeated_creation.created_entries[0].clone();
+    repeated_creation.created_entries.push(first);
+    refuse(&repeated_creation, duplicates);
+    remove(root.as_path());
+}
+
 /// The journal root and its parent are created private, and a journal written there reads back exactly.
 #[cfg(unix)]
 #[test]
@@ -265,6 +342,8 @@ fn journal_with_extra_hard_link_is_unsafe() {
     let journal_root: PathBuf = ensure_journal_root(common.as_path()).expect("root");
     let path: PathBuf = journal_root.join("id.json");
     std::fs::write(path.as_path(), encode_journal(&sample(root.as_path()))).expect("journal");
+    // The mode is private, so only the second link makes the file unsafe.
+    std::fs::set_permissions(path.as_path(), std::fs::Permissions::from_mode(0o600)).expect("mode");
     std::fs::hard_link(path.as_path(), root.join("alias")).expect("alias");
     let failure: WorktreeCopyError = read_pending_journals(common.as_path()).expect_err("linked");
     assert!(
@@ -318,5 +397,98 @@ fn removal_deletes_stage_and_journal() {
     remove_pending_journal(&pending).expect("removed");
     assert!(!stage.exists());
     assert!(!path.exists());
+    remove(root.as_path());
+}
+
+/// The complete phase reaches the disk before the stage is touched,
+///  so a removal that stops part way resumes as cleanup.
+#[cfg(unix)]
+#[test]
+fn the_complete_phase_is_written_before_the_stage_is_removed() {
+    let root: PathBuf = fixture("journal-remove-order");
+    let common: PathBuf = root.join("common");
+    std::fs::create_dir(common.as_path()).expect("common");
+    let journal_root: PathBuf = ensure_journal_root(common.as_path()).expect("root");
+    let file: PathBuf = root.join("not-a-directory");
+    std::fs::write(&file, b"x").expect("file");
+    // A stage below a file cannot be inspected, which stops the removal right after the phase is written.
+    let mut journal: Journal = sample(root.as_path());
+    journal.stage_container = file.join("stage").to_string_lossy().into_owned();
+    let path: PathBuf = journal_root.join("id.json");
+    write_journal(path.as_path(), &journal).expect("write");
+    let pending: PendingJournal = PendingJournal {
+        path: path.clone(),
+        journal,
+    };
+    assert!(remove_pending_journal(&pending).is_err());
+    let written: String = std::fs::read_to_string(&path).expect("the journal stays");
+    assert!(written.contains("\"phase\":\"complete\""), "{written}");
+    remove(root.as_path());
+}
+
+/// A path that cannot be inspected or removed is a failure, never an absent path.
+#[cfg(unix)]
+#[test]
+fn removals_report_what_they_cannot_inspect() {
+    let root: PathBuf = fixture("journal-uninspectable");
+    let file: PathBuf = root.join("file");
+    std::fs::write(&file, b"x").expect("file");
+    let below: PathBuf = file.join("below");
+    assert!(prepare_stage_removal(below.as_path()).is_err());
+    assert!(remove_tree_if_present(below.as_path()).is_err());
+    assert!(remove_file_if_present(below.as_path()).is_err());
+    let absent: PathBuf = root.join("absent");
+    prepare_stage_removal(absent.as_path()).expect("an absent stage needs no preparation");
+    remove_tree_if_present(absent.as_path()).expect("an absent tree is removed");
+    remove_file_if_present(absent.as_path()).expect("an absent file is removed");
+    let common: PathBuf = file.clone();
+    assert!(
+        read_pending_journals(common.as_path()).is_err(),
+        "a common directory that is a file cannot hold journals"
+    );
+    remove(root.as_path());
+}
+
+/// A journal root that cannot be created for a reason other than already existing names that reason.
+#[cfg(unix)]
+#[test]
+fn a_refused_creation_names_the_refusal() {
+    let root: PathBuf = fixture("journal-create-refused");
+    let common: PathBuf = std::fs::canonicalize(&root).expect("canonical").join("common");
+    std::fs::create_dir(&common).expect("common");
+    std::fs::set_permissions(&common, std::fs::Permissions::from_mode(0o500)).expect("lock");
+    let outcome = ensure_journal_root(common.as_path());
+    std::fs::set_permissions(&common, std::fs::Permissions::from_mode(0o700)).expect("unlock");
+    // A superuser creates the directory anyway, so only an ordinary user shows the refusal.
+    if let Err(failure) = outcome {
+        assert!(failure.0.contains("Permission denied"), "{}", failure.0);
+    }
+    remove(root.as_path());
+}
+
+/// A private path is refused for the wrong kind, a second link, and a route through a link.
+#[cfg(unix)]
+#[test]
+fn private_paths_are_refused_for_kind_links_and_route() {
+    let root: PathBuf = std::fs::canonicalize(fixture("journal-private-paths")).expect("canonical");
+    let directory: PathBuf = root.join("directory");
+    std::fs::create_dir(&directory).expect("directory");
+    std::fs::set_permissions(&directory, std::fs::Permissions::from_mode(0o700)).expect("mode");
+    let file: PathBuf = root.join("file");
+    std::fs::write(&file, b"x").expect("file");
+    std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o600)).expect("mode");
+    assert_private_path(directory.as_path(), Role::JournalDirectory).expect("a private directory");
+    assert_private_path(directory.as_path(), Role::PrivateStage).expect("a private stage");
+    assert_private_path(file.as_path(), Role::JournalFile).expect("a private file");
+    assert!(assert_private_path(file.as_path(), Role::JournalDirectory).is_err());
+    assert!(assert_private_path(file.as_path(), Role::PrivateStage).is_err());
+    assert!(assert_private_path(directory.as_path(), Role::JournalFile).is_err());
+    std::fs::hard_link(&file, root.join("second-link")).expect("second link");
+    assert!(assert_private_path(file.as_path(), Role::JournalFile).is_err());
+    // A private directory reached through a link to its parent is the same directory by another route.
+    let route: PathBuf = root.join("route");
+    std::os::unix::fs::symlink(&root, &route).expect("link to the parent");
+    let indirect: PathBuf = route.join("directory");
+    assert!(assert_private_path(indirect.as_path(), Role::JournalDirectory).is_err());
     remove(root.as_path());
 }
