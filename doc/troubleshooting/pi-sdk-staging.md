@@ -1,5 +1,79 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Sequential native judgment retries
+
+### Symptom
+
+Oxlint reports `eslint(no-await-in-loop): Unexpected await inside a loop`
+for the original judgment transport attempt in
+`package/pi-plugin/auto-mode/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs`.
+The complete diagnostic includes backticks around `await`.
+The package denies warnings,
+so this finding fails lint even when the runtime consumer passes.
+
+### Rule and application boundaries
+
+The upstream implementation in
+`crates/oxc_linter/src/rules/eslint/no_await_in_loop.rs:94`
+reports syntactic loop ancestry:
+
+```rust
+// oxc/crates/oxc_linter/src/rules/eslint/no_await_in_loop.rs
+if is_in_loop {
+    ctx.diagnostic(no_await_in_loop_diagnostic(span));
+}
+```
+
+The [current rule source](https://github.com/oxc-project/oxc/blob/main/crates/oxc_linter/src/rules/eslint/no_await_in_loop.rs)
+defines a unit rule with no option parser or sequential-retry allow-list.
+The existing local source checkout at commit `288d8cc77984b0a3851c58c423ffe9e6edc79f2e`
+also contains that unconditional diagnostic.
+This is expected rule behavior,
+not an upstream defect.
+
+The linted operation belongs to the original judgment's dispatch loop.
+Its catch branch records the failed attempt,
+rechecks cancellation and deadline,
+classifies the actual transport failure,
+and consumes the judgment's single retry before continuing.
+Starting attempts together would bypass those conditions and spend attempts that may never be allowed.
+The attempt count remains capped at three across dispatches;
+the original preparation-inclusive deadline remains five seconds.
+
+### Verification and exception
+
+The typed budget alone originally reported 55 warnings.
+Adding boundary and retained-state types removed its unsafe-value warnings;
+subsequent statement and error-definition cleanup left the sequential-await diagnostic
+and one return-shape warning.
+The return branch now explicitly returns its never-returning failure helper.
+A next-line `eslint/no-await-in-loop` exception covers only the original transport await.
+The exception retains sequential behavior and does not change any configured rule or admission limit.
+Its final focused lint and rebuilt consumer verification are pending.
+
+Reproduce with the package's `lint:oxlint` task and the explicit budget path.
+`${HOME}/temp/agent/pi-native-budget-shape-lint-20261014.log`
+retains the pre-exception diagnostics.
+Named error fields and explicit input types pass their corresponding rules;
+the unannotated boundary and unsuppressed retry await form the failing controls.
+
+### Rejected alternatives and upstream filing
+
+Parallel attempts are incompatible with failure-dependent retry eligibility.
+The rule provides no targeted configuration alternative;
+disabling it for a file or package would weaken unrelated checks.
+No recursive retry implementation or additional promise chain is introduced.
+
+No upstream report or draft is warranted.
+The rule operates as specified;
+upstream could add an option,
+but the application requires no tool change.
+Supported syntax is already handled.
+Contribution acceptance and likelihood of an upstream change are immaterial to this local exception,
+and no upstream patch is proposed or prototyped.
+The checked `.out-of-scope/` entries contain no applicable Oxlint exemption.
+There is no upstream filing requiring a duplicate search.
+
 ## Owned native program builds depended on source formatting
 
 ### Symptom and cause

@@ -141,7 +141,7 @@ export function createJudgmentBudget({
       return isRetryableTransportFailure(error);
     }
     catch(classificationError) {
-      throwClassificationFailure({
+      return throwClassificationFailure({
         error,
         classificationError
       });
@@ -182,6 +182,7 @@ export function createJudgmentBudget({
         /** @type {{value: Result | undefined}} */
         const response={value:undefined};
         try {
+          // oxlint-disable-next-line eslint/no-await-in-loop -- Original failure classification gates the next attempt; see doc/troubleshooting/pi-sdk-staging.md, "Sequential native judgment retries".
           response.value=await operation(Object.freeze({
           signal,
           deadlineAt,
