@@ -13,8 +13,12 @@ await describe({ name: seal.name, children: [
   ...[Symbol('unsupported prepared argument value'), 1n, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, function unsupportedFunction() {}].map(function invalidPrimitive(input, index) {
     return it({ name: `rejects unsupported fixture ${index} in root and child positions`, fn: async function rejectPrimitive() {
       for (const value of [input, [input], { value: input }]) {
-        assert.throws(function invalidTree() { seal(value); }, { name: 'Error', message: 'Prepared input must be a non-aliased JSON-like tree' });
-        assert.throws(function originalConstructor() { seal(value); }, PreparedBatchContractError);
+        assert.throws(function invalidTree() { 
+          seal(value); 
+        }, { name: 'Error', message: 'Prepared input must be a non-aliased JSON-like tree' });
+        assert.throws(function originalConstructor() { 
+          seal(value); 
+        }, PreparedBatchContractError);
       }
     } });
   }),
@@ -35,7 +39,9 @@ await describe({ name: seal.name, children: [
     const cycle: { self?: object } = {};
     cycle.self = cycle;
     for (const input of [[shared, shared], { first: shared, last: shared }, Object.freeze(cycle)]) {
-      assert.throws(function repeatedObject() { seal(input); }, { message: 'Prepared input must be a non-aliased JSON-like tree' });
+      assert.throws(function repeatedObject() { 
+        seal(input); 
+      }, { message: 'Prepared input must be a non-aliased JSON-like tree' });
     }
   } }),
   it({ name: 'rejects unsupported object and array prototypes', fn: async function rejectPrototypes() {
@@ -43,31 +49,47 @@ await describe({ name: seal.name, children: [
     const array: unknown[] = [];
     Object.setPrototypeOf(array, null);
     for (const input of [new Date(0), new Uint8Array(0), foreign, array]) {
-      assert.throws(function unsupportedPrototype() { seal(input); }, { message: 'Prepared input has an unsupported prototype' });
+      assert.throws(function unsupportedPrototype() { 
+        seal(input); 
+      }, { message: 'Prepared input has an unsupported prototype' });
       assert.equal(Object.isFrozen(input), false);
     }
   } }),
   it({ name: 'counts containers with an inclusive bound and no recursive traversal', fn: async function treeBound() {
-    const accepted = Array.from({ length: 9_999 }, function container() { return {}; });
+    const accepted = Array.from({ length: 9_999 }, function container() { 
+      return {}; 
+    });
     assert.equal(seal(accepted), accepted);
-    assert.ok(accepted.every(function frozenContainer(value) { return Object.isFrozen(value); }));
-    const rejected = Array.from({ length: 10_000 }, function container() { return {}; });
-    assert.throws(function beyondBound() { seal(rejected); }, { message: 'Prepared input exceeds the declared tree bound' });
+    assert.ok(accepted.every(function frozenContainer(value) { 
+      return Object.isFrozen(value); 
+    }));
+    const rejected = Array.from({ length: 10_000 }, function container() { 
+      return {}; 
+    });
+    assert.throws(function beyondBound() { 
+      seal(rejected); 
+    }, { message: 'Prepared input exceeds the declared tree bound' });
     assert.ok(Object.isFrozen(rejected));
     assert.equal(Object.isFrozen(rejected[0]), false);
     assert.ok(Object.isFrozen(rejected[1]));
-    const primitives = Array.from({ length: 10_001 }, function primitive() { return undefined; });
+    const primitives = Array.from({ length: 10_001 }, function primitive() { 
+      return undefined; 
+    });
     assert.equal(seal(primitives), primitives);
   } }),
   it({ name: 'freezes parents and last children before failing the first child', fn: async function partialFreeze() {
     const invalid = { value: Symbol('invalid prepared child value') };
     const valid = { nested: {} };
     const root = { invalid, valid };
-    assert.throws(function partialTraversal() { seal(root); }, PreparedBatchContractError);
+    assert.throws(function partialTraversal() { 
+      seal(root); 
+    }, PreparedBatchContractError);
     for (const value of [root, invalid, valid, valid.nested]) assert.ok(Object.isFrozen(value));
     const untouched = {};
     const secondRoot = { untouched, invalid: Symbol('stop prepared child traversal') };
-    assert.throws(function stopsAtLast() { seal(secondRoot); }, PreparedBatchContractError);
+    assert.throws(function stopsAtLast() { 
+      seal(secondRoot); 
+    }, PreparedBatchContractError);
     assert.ok(Object.isFrozen(secondRoot));
     assert.equal(Object.isFrozen(untouched), false);
   } }),
