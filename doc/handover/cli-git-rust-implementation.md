@@ -1735,8 +1735,16 @@ that is verification, not a decision for the user.
   showed an abandoned stage named by a claim file removed with the notice, while the same `git worktree add` copied
   its ignored files. A fixture path must be canonical (`/home/user` is a symlink here), or the wrapper refuses the
   stage as unsafe.
-  Next: merge the pathBytes branch (merge `main` into it, rerun its gated source), then clean up the retag aliases
-  and merged branches.
+  Released 0.1.4 (`59d3bb2e62`, the pathBytes event field): dry-run publish passed, run 38691411232 passed every
+  `gpc-*` job, crates.io lists 0.1.4, the GitHub release `monochromatic-git-policy-cli-v0.1.4` exists, and
+  `mise upgrade cargo:monochromatic-git-policy-cli` installed it (`.cache/cli-git-bin/git` points at it).
+  Cleaned up: the `git-policy-native-test` and `git-policy-native-mutation` image tags of this work (`hardening*`,
+  `pathbytes*`) and the exited containers of the campaigns; the merged branches and worktrees
+  `fix/cli-git-hardening` and `feat/cli-git-native-pathbytes`. Kept: `feat/cli-git-native-replay-core` and its
+  worktree (unmerged mutation work), and the incumbent-holding images `cli-git-concurrent-e2e` and the interop
+  images, which were not in the image list when checked on 2026-10-15 (another cleanup already removed them), plus the
+  dangling images other sessions may still use.
+  Next: the trailing gates below, starting with the replay-core branch's mutation work.
   Not verified: Windows (the target is not installed here; `tempfile` and `libc` are unix-only dependencies that
   `bounded_child.rs` already relied on).
   A podman cleanup by the user (`podman image prune --all`) removed `rust:1.97-bookworm`; pull it back, and pin it with
