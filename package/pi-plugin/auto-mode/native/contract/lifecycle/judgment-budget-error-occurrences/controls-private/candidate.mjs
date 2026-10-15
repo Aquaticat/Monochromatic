@@ -1,5 +1,11 @@
 //region Cooperative accounting for one enclosing judgment, never a permission or execution lease.
-export class JudgmentBudgetError extends Error {constructor(
+export class JudgmentBudgetError extends Error {
+/**
+ * Preserve the original cause for caller-owned diagnostics.
+ * @param {string} message - failed budget operation
+ * @param {ErrorOptions} [options] - original failure provenance
+ */
+constructor(
   message,
   options
 ){super(
@@ -11,7 +17,11 @@ export class JudgmentDeadlineError extends JudgmentBudgetError {}
 export class JudgmentCancelledError extends JudgmentBudgetError {}
 export class JudgmentAttemptLimitError extends JudgmentBudgetError {}
 
-/** Own one preparation-inclusive deadline and client-attempt ceiling; trusted transport classifier never reads model claims. */
+/**
+ * Own one preparation-inclusive deadline and client-attempt ceiling.
+ * Trusted transport classification never reads model claims.
+ * @param {{now: () => number, signal: AbortSignal, isRetryableTransportFailure: (error: unknown) => boolean}} input - original clock, cancellation and transport classification
+ */
 export function createJudgmentBudget({
   now,
   signal,
@@ -23,6 +33,7 @@ export function createJudgmentBudget({
   if((!Number.isFinite(startedAt))||(!Number.isFinite(deadlineAt))
     ||(deadlineAt<=startedAt))throw new JudgmentBudgetError('Judgment clock cannot represent its deadline');
   if(((typeof signal?.aborted)!=='boolean')||((typeof isRetryableTransportFailure)!=='function'))throw new JudgmentBudgetError('Judgment requires cancellation and an owned transport classifier');
+  /** @type {{lastAt: number, attempts: number, retryUsed: boolean, running: boolean, finished: boolean, checking: boolean, retired: boolean, retirement: unknown}} */
   const accounting={
     lastAt:startedAt,
     attempts:0,
@@ -40,6 +51,7 @@ export function createJudgmentBudget({
     
     
     
+  /** @type {Map<number, Readonly<{attempt: number, retry: boolean, state: 'started' | 'failed' | 'discarded' | 'succeeded', error?: unknown}>>} */
   const records=new Map();
   function checkpoint() {
     if(accounting.retired)throw accounting.retirement;
@@ -64,6 +76,10 @@ export function createJudgmentBudget({
     } catch(error) {accounting.retired=true;accounting.retirement=error;throw error;}
 
   }
+  /**
+   * Check lifetime after a failed attempt without replacing its original error.
+   * @param {unknown} error - original transport failure
+   */
   function retainFailureAtCheckpoint(error) {
     const alreadyRetired=accounting.retired;
     try {checkpoint();}
@@ -76,6 +92,11 @@ export function createJudgmentBudget({
       { cause: terminal }
     );}
   }
+  /**
+   * Preserve transport, classifier and boundary failures together.
+   * @param {{error: unknown, classificationError: unknown}} input - failed attempt and classification
+   * @returns {never} no successful classification
+   */
   function throwClassificationFailure({
     error,
     classificationError
@@ -91,6 +112,12 @@ export function createJudgmentBudget({
       'Transport failure and classifier failure'
     );
   }
+  /**
+   * Return only a response completed inside the original attempt and lifetime limits.
+   * @template Result
+   * @param {(input: Readonly<{signal: AbortSignal, deadlineAt: number, attempt: number}>) => Promise<Result>} operation - original transport attempt
+   * @returns {Promise<Result>} response belonging to the completed attempt
+   */
   async function dispatch(operation) {
     if(accounting.running||accounting.checking)throw new JudgmentBudgetError('Judgment attempts cannot overlap or reenter');
     if((typeof operation)!=='function')throw new JudgmentBudgetError('Judgment transport operation must be an owned function');
@@ -113,6 +140,7 @@ export function createJudgmentBudget({
             state:'started'
           })
         );
+        /** @type {Result} */
         let value;
         try {value=await operation(Object.freeze({
           signal,
@@ -131,6 +159,7 @@ export function createJudgmentBudget({
           );
           retainFailureAtCheckpoint(error);
           if(accounting.retryUsed||(accounting.attempts>=3))throw error;
+          /** @type {boolean | undefined} */
           let retryable;
           try {retryable=isRetryableTransportFailure(error);}
           catch(classificationError){throwClassificationFailure({
