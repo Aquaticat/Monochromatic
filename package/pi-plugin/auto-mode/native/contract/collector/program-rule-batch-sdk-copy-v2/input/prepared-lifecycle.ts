@@ -19,7 +19,7 @@ const l = tagged({ tag: 'auto-mode-prepared-lifecycle' });
 
  @throws Error for original ordinal, callback, queue, or disposal failures
 
- @example runPreparedLifecycle({ call, ordinalByID, waitForPreparation, releaseNextPreparation, releaseNextExecution, onStart, onFinish, onUpdate, runToolCall, executableTools, assistantMessage, context, signal, after, prepareNativeMember, failures, block, PreparedBatchContractError });
+ @example runPreparedLifecycle({ call, ordinalByID, waitForPreparation, releaseNextPreparation, releaseNextExecution, onStart, onFinish, onUpdate, runToolCall, executableTools, assistantMessage, context, signal, after, prepareNativeMember: prepareMember, failures, block, PreparedBatchContractError });
  */
 export async function runPreparedLifecycle({ call, ordinalByID, waitForPreparation, releaseNextPreparation, releaseNextExecution, onStart, onFinish, onUpdate, runToolCall, executableTools, assistantMessage, context, signal, after, prepareNativeMember, failures, block, PreparedBatchContractError }: PreparedLifecycleInput): Promise<unknown> {
   /**
@@ -58,7 +58,7 @@ export async function runPreparedLifecycle({ call, ordinalByID, waitForPreparati
       signal,
       afterToolCall: after,
       onUpdate: onUpdate === undefined ? undefined : function forwardPartialUpdate(partial) { return onUpdate(partial, call); },
-      beforeToolCall: function prepareNativeMemberHook(hook) { return prepareNativeMember({ hook, call, memberState, releasePreparation }); },
+      beforeToolCall: function prepareNativeMember(hook) { return prepareMember({ hook, call, memberState, releasePreparation }); },
     });
     if (!memberState.entered) block('A member failed native preparation before group admission');
     await onFinish?.(result);
