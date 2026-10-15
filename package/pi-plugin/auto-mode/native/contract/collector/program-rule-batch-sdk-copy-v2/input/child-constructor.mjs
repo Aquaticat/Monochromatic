@@ -49,7 +49,12 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     const facade=createDependencyFacade({collector:judgmentCollector,rootAdapter,deadlineAt:budget.diagnostics().deadlineAt,rootDirectory,files,trace,now});
     let evidenceEligibilityFailure,bindingSegmentActive=false;
     const bindings=new WeakMap(),byMember=new Map(),executions=new WeakMap(),childGroups=[],issuedBatches=new Set(),attemptedBatches=new WeakSet();let operating=false,assessing=false,prepared=false,preparing=false,preparationFailed=false,preparationFailure,handle,selection,finished=false,closeFailed=false,finalRecord;
-    function operation(run){if(operating)throw new JudgmentConstructionError('Judgment operations cannot reenter through callbacks');operating=true;try{return run();}finally{operating=false;}}
+    function operation(run){
+      if(operating)throw new JudgmentConstructionError('Judgment operations cannot reenter through callbacks');
+      operating=true;
+      using activity={ [Symbol.dispose](){operating=false;} };
+      return run();
+    }
     function assertPreparedProgramDependencies(){
       for(const member of byMember.values())bindings.get(member).preparedProgram?.assertCurrent();
     }
@@ -63,19 +68,22 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       if(bindingSegmentActive)throw new JudgmentConstructionError('Original binding segments cannot nest');
       // All external identity/phase authentication precedes this internal boundary.
       ready();
-      let value,failure;bindingSegmentActive=true;
-      try{value=run();}
-      catch(error){failure=Object.freeze({cause:error});}
-      finally{bindingSegmentActive=false;}
+      const completed={value:undefined,failure:undefined};
+      {
+        bindingSegmentActive=true;
+        using segment={ [Symbol.dispose](){bindingSegmentActive=false;} };
+        try{completed.value=run();}
+        catch(error){completed.failure=Object.freeze({cause:error});}
+      }
       // No cached freshness remains while observers and diagnostic callbacks run.
       try{trace('binding-segment.postcheck');ready();}
       catch(error){
         evidenceEligibilityFailure??=Object.freeze({cause:error});
-        if(failure)throw new AggregateError([failure.cause,error],'Original binding operation and postcheck failed');
+        if(completed.failure)throw new AggregateError([completed.failure.cause,error],'Original binding operation and postcheck failed');
         throw error;
       }
-      if(failure)throw failure.cause;
-      return value;
+      if(completed.failure)throw completed.failure.cause;
+      return completed.value;
     }
     const {
       resolveBinding,
@@ -86,7 +94,6 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       claimHeadingContext,
       issueBoundPolicyBatch,
       claim,
-      ensureRuleBindings,
       indexedRuleCandidates,
       readRuleCandidate,
       indexedInstructionCandidates,
@@ -96,8 +103,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       issueProgramRuleBatch,
       issueRuleAssessmentBatch,
       claimRuleCandidate,
-      claimInstruction,
-      claimSelectedInstruction
+      claimInstruction
     }=createJudgmentInstructions({
       ready,bindingSegment,
       isBindingSegmentActive() { return bindingSegmentActive; },
@@ -115,6 +121,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     function knownSelection(){if(!selection)throw new JudgmentConstructionError('Judgment question selection was not prepared');return selection;}
     function prepare(members){
       active();if(prepared||preparing)throw new JudgmentConstructionError('Prepared judgment membership cannot be replaced or reentered');preparing=true;
+      using preparation={ [Symbol.dispose](){preparing=false;} };
       try {
         if(!Array.isArray(members)||!Object.isFrozen(members)||members.length!==declaredNames.length)throw new JudgmentConstructionError('Prepared group differs from complete declared membership');
         for(let index=0;index<members.length;index+=1){const member=members[index],expected=declaredNames[index];if(!member||!Object.isFrozen(member)||member.id!==expected.id||member.name!==expected.name||!Object.hasOwn(member,'input')||!Object.isFrozen(member.input))throw new JudgmentConstructionError('Prepared member identity or sealed input differs from the native group');}
@@ -137,7 +144,6 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
         }
         handle=dependencyHandle;prepared=true;
       } catch(error){preparationFailed=true;preparationFailure=error;throw error;}
-      finally{preparing=false;}
     }
     
     
@@ -170,10 +176,11 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
     function issue(claims){ready();const batch=selection.issue(claims);issuedBatches.add(batch);return batch;}
     async function assess(batch){
       if(operating)throw new JudgmentConstructionError('Judgment operations cannot overlap or reenter');operating=true;
-      try {
+      using activity={ [Symbol.dispose](){operating=false;} };
       if(!issuedBatches.has(batch))throw new JudgmentConstructionError('Question batch is not owned by this judgment');
       if(attemptedBatches.has(batch))throw new JudgmentConstructionError('Question batch cannot be assessed concurrently or sampled again');
       attemptedBatches.add(batch);assessing=true;
+      using assessment={ [Symbol.dispose](){assessing=false;} };
       try {
         const request=bindingSegment(function readBatchRequest() { return (selection.requestFor(batch)); });
         const answer=await budget.dispatch(function sendAssessmentAttempt(attempt) { return (send(Object.freeze({request,...attempt}))); });
@@ -182,8 +189,7 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
         try {if(!selection.inspectBatch(batch).settled)selection.discard({batch,error});}
         catch(retentionError){throw new AggregateError([error,retentionError],'Assessment failure and terminal retention failure');}
         throw error;
-      } finally {assessing=false;}
-      } finally {operating=false;}
+      }
     }
     function finalize(){
       if(finished||closeFailed)throw new JudgmentConstructionError('Judgment already has a finalization outcome');
