@@ -422,8 +422,10 @@ jobs:
         ln -s /Applications "${stage}/Applications"
         mkdir -p dist
         asset="music-player-${VERSION}-macos-${ARCH}.dmg"
-        # hdiutil fails now and then with "Resource busy" on hosted runners (Spotlight and the disk image
-        # helper still hold the volume), which a short wait cures; retry a few times and then fail.
+        # hdiutil failed once with "Resource busy" on macos-15 (actions/runner-images#7522 reports it as an
+        # intermittent macOS condition and names retry as the workaround); retry a few times and then fail.
+        # The cause here is unknown and the retry has not yet fired in CI:
+        # doc/troubleshooting/macos-hdiutil-create-resource-busy.md
         retry() {
           local attempt=1
           until "$@"; do
