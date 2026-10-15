@@ -9,6 +9,10 @@ The separate implementation trace owns which returned field actually reaches adm
 No inference request,
 production edit,
 or new acceptance rule is part of this research.
+After this review,
+the user explicitly requested lowering the selected-option probability threshold to `0.60`.
+The [admission decision](../decision/pi-auto-mode-semantic-admission.md) records that subsequent action;
+the `0.80` comparisons in this note retain the reviewed policy and original measurements.
 
 ## The returned fields answer different contract questions
 
@@ -98,8 +102,8 @@ not model accuracy or the fraction of actions that can be handled correctly.
 
 ### Remaining policy question
 
-The [current local decision](../decision/pi-auto-mode-semantic-admission.md)
-defines admission of a supported selected meaning at `0.80` with a unique lead.
+The local decision at the time of this review defined admission of a supported selected meaning at `0.80`
+with a unique lead.
 Comparing the selected meaning's returned probability with that boundary is consistent with
 a threshold on support for that meaning.
 It is not a check that the separate `confidence` field reaches `0.80`.

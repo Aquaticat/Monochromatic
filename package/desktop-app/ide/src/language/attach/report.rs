@@ -88,6 +88,27 @@ impl Drop for EndRecord {
 /// }
 /// ```
 pub(super) fn ended_unexpectedly(server: String, was_ready: bool) {
+    ended_unexpectedly_then(server, was_ready, |_| {});
+}
+
+/// What:
+///  `ended_unexpectedly`,
+///  and hand a copy of the lines to `then` before the record drains them.
+///  `FnOnce(Vec<String>)` is a function that is called at most once with the lines.
+/// Why:
+///  The worker states why a start failed from the same lines the record reports,
+///  once they are complete;
+///  the record still reports them exactly as before.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function endedUnexpectedlyThen(server: string, wasReady: boolean, then: (lines: string[]) => void): void
+/// ```
+pub(super) fn ended_unexpectedly_then(
+    server: String,
+    was_ready: bool,
+    then: impl FnOnce(Vec<String>) + Send + 'static,
+) {
     let record = EndRecord { server, was_ready };
     tokio::spawn(async move {
         let started = Instant::now();
@@ -100,6 +121,7 @@ pub(super) fn ended_unexpectedly(server: String, was_ready: bool) {
             let closed = stderr_tail::is_closed(&record.server);
             tracing::debug!(server = %record.server, waited_ms = started.elapsed().as_millis(), closed, "waited for the end of a server's standard error");
         }
+        then(stderr_tail::lines(&record.server));
         drop(record);
     });
 }
@@ -110,15 +132,19 @@ pub(super) fn ended_unexpectedly(server: String, was_ready: bool) {
 ///  nothing when it wrote none.
 ///  Follows the worker's error
 ///       record of the timed-out start.
+///  The lines are returned,
+///  oldest first,
+///  for the reason shown for the failed start.
 /// Why:
 ///  A server that hangs in its start often says why there.
 ///  A record of its own keeps the
 ///      start-deadline code as it is.
-pub(super) fn stopped_during_start(server: &str) {
+pub(super) fn stopped_during_start(server: &str) -> Vec<String> {
     let lines = stderr_tail::take(server);
     if !lines.is_empty() {
         tracing::warn!(server = %server, stderr_tail = ?lines, "language server wrote this to standard error before it was stopped");
     }
+    return lines;
 }
 
 /// Waiting for the last lines,

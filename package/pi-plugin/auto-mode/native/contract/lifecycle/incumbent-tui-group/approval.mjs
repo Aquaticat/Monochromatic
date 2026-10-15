@@ -75,7 +75,7 @@ export function bindOriginalTuiApproval({
       opts
     ){
       current();if(prompt)throw new OriginalTuiApprovalError('Incumbent askUser opened more than one selector');
-      if((JSON.stringify(options)!==JSON.stringify(['Allow','Deny','Stop']))||(!title.includes(action)))throw new OriginalTuiApprovalError('Incumbent selector did not present the complete original group');
+      if((JSON.stringify(options)!==JSON.stringify(['Allow','Stop']))||(!title.includes(action)))throw new OriginalTuiApprovalError('Incumbent selector did not present the complete original group');
       prompt=Object.freeze({
         title,
         options:Object.freeze([...options])
@@ -132,7 +132,6 @@ export function bindOriginalTuiApproval({
         action,
         approvalFingerprint,
         explanation,
-        reflectExplanationOnDeny:true,
         ...(notificationInvoker?{notificationInvoker}:{})
       });
       if((!forwarded)||(!entry))throw new OriginalTuiApprovalError('Incumbent verdict was not recorded');

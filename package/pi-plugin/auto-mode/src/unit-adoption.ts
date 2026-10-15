@@ -222,6 +222,7 @@ export function consumeUnitAdoptions(
         'permission',
         'prohibition',
         'prerequisite',
+        'fresh-session-approval',
       ].includes(admittedUnitClauseChoice(adopterClause,),);
     /**
      Original source view remains independent of textual equality.
@@ -305,6 +306,7 @@ export function consumeUnitAdoptions(
       'permission',
       'prohibition',
       'prerequisite',
+      'fresh-session-approval',
       'none',
     ].includes(targetRelation,))
       continue;

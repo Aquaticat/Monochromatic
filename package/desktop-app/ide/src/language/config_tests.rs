@@ -135,7 +135,176 @@ fn project_typescript_before_version_seven_is_missing_too() {
     };
     assert_eq!(
         reason,
-        "the project's TypeScript 5.9.3 has no built-in language server; version 7 or later is required"
+        &format!(
+            "the project's TypeScript 5.9.3 in {} has no built-in language server; version 7 or later is required",
+            root.display()
+        )
+    );
+}
+
+/// A document in a package below the root,
+///  with the folder it lives in.
+fn nested_document(root: &Path) -> PathBuf {
+    let folder = root.join("package/app/src");
+    fs::create_dir_all(&folder).expect("package source folder");
+    return folder.join("main.ts");
+}
+
+#[test]
+fn typescript_is_found_from_the_documents_folder_upward_inside_the_project() {
+    let (_directory, root) = project();
+    install_typescript(&root, "7.0.2");
+    let document = nested_document(&root);
+    let mut languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
+    assert!(
+        !languages
+            .refresh("typescript", Some(&document))
+            .expect("refresh"),
+        "the root's install is the one both lookups find"
+    );
+    let launch = languages.launch(typescript::SERVER).expect("launch");
+    assert_eq!(
+        launch.command,
+        root.join("node_modules/typescript/bin/tsc")
+            .to_str()
+            .expect("Unicode path")
+    );
+}
+
+#[test]
+fn typescript_is_found_for_a_project_folder_that_holds_no_install_of_its_own() {
+    // The project folder is above the repository, like a home folder: the install is two folders down.
+    let (_directory, root) = project();
+    let repository = root.join("repository");
+    install_typescript(&repository, "7.0.2");
+    let document = repository.join("package/app/src/main.ts");
+    fs::create_dir_all(document.parent().expect("folder")).expect("source folder");
+    let mut languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
+    assert!(matches!(
+        languages.unavailable(typescript::SERVER),
+        Some(Unavailable::Missing(_))
+    ));
+    assert!(
+        languages
+            .refresh("typescript", Some(&document))
+            .expect("refresh"),
+        "the install below the project folder was not found from the document's folder"
+    );
+    assert_eq!(languages.unavailable(typescript::SERVER), None);
+    let launch = languages.launch(typescript::SERVER).expect("launch");
+    assert_eq!(
+        launch.command,
+        repository
+            .join("node_modules/typescript/bin/tsc")
+            .to_str()
+            .expect("Unicode path")
+    );
+}
+
+#[test]
+fn the_nearest_typescript_install_decides_and_an_older_one_is_not_skipped() {
+    let (_directory, root) = project();
+    install_typescript(&root, "7.0.2");
+    let package = root.join("package/app");
+    install_typescript(&package, "5.9.3");
+    let document = nested_document(&root);
+    let mut languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
+    assert!(
+        languages
+            .refresh("typescript", Some(&document))
+            .expect("refresh"),
+        "the package's TypeScript 5 was skipped for the root's TypeScript 7"
+    );
+    let Some(Unavailable::Missing(reason)) = languages.unavailable(typescript::SERVER) else {
+        panic!("the package's TypeScript 5 was skipped for the root's TypeScript 7");
+    };
+    assert!(
+        reason.contains("TypeScript 5.9.3") && reason.contains("package/app"),
+        "{reason}"
+    );
+    // Back at the root the root's own install serves again.
+    let at_root = root.join("main.ts");
+    assert!(
+        languages
+            .refresh("typescript", Some(&at_root))
+            .expect("refresh")
+    );
+    assert_eq!(languages.unavailable(typescript::SERVER), None);
+}
+
+#[test]
+fn the_registry_follows_the_launcher_to_another_install_of_version_seven() {
+    // Both installs are usable, so availability never changes; only the launcher's location does.
+    let (_directory, root) = project();
+    install_typescript(&root, "7.0.2");
+    install_typescript(&root.join("package/app"), "7.1.0");
+    let document = nested_document(&root);
+    let mut languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
+    assert!(
+        languages
+            .refresh("typescript", Some(&document))
+            .expect("refresh"),
+        "the registry kept the launcher of the other install"
+    );
+    let launch = languages.launch(typescript::SERVER).expect("launch");
+    assert_eq!(
+        launch.command,
+        root.join("package/app/node_modules/typescript/bin/tsc")
+            .to_str()
+            .expect("Unicode path")
+    );
+}
+
+#[test]
+fn a_typescript_install_above_the_project_is_named_but_never_used() {
+    let (_directory, outer) = project();
+    install_typescript(&outer, "7.0.2");
+    let root = outer.join("package/app");
+    fs::create_dir_all(&root).expect("project folder");
+    let document = root.join("src/main.ts");
+    fs::create_dir_all(document.parent().expect("folder")).expect("source folder");
+    let mut languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
+    languages
+        .refresh("typescript", Some(&document))
+        .expect("refresh");
+    let Some(Unavailable::Missing(reason)) = languages.unavailable(typescript::SERVER) else {
+        panic!("an install outside the project was used");
+    };
+    assert!(
+        reason.contains(
+            &outer
+                .join("node_modules/typescript/bin/tsc")
+                .display()
+                .to_string()
+        ),
+        "{reason}"
+    );
+    assert!(
+        reason.contains("open the folder that holds it as the project"),
+        "{reason}"
+    );
+    assert!(
+        reason.contains("TypeScript 7 or later is required"),
+        "{reason}"
+    );
+    assert!(languages.launch(typescript::SERVER).is_none());
+}
+
+#[test]
+fn a_document_outside_the_project_is_looked_up_at_the_project_root_only() {
+    let (_directory, root) = project();
+    let (_other, elsewhere) = project();
+    install_typescript(&elsewhere, "7.0.2");
+    let mut languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
+    languages
+        .refresh("typescript", Some(&elsewhere.join("src/main.ts")))
+        .expect("refresh");
+    assert!(
+        matches!(
+            languages.unavailable(typescript::SERVER),
+            Some(Unavailable::Missing(_))
+        ),
+        "an install beside a document outside the project was used"
     );
 }
 
@@ -143,16 +312,16 @@ fn project_typescript_before_version_seven_is_missing_too() {
 fn registry_is_rebuilt_when_a_missing_program_appears() {
     let (_directory, root) = project();
     let mut languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
-    assert!(!languages.refresh("typescript").expect("refresh"));
+    assert!(!languages.refresh("typescript", None).expect("refresh"));
     install_typescript(&root, "7.0.2");
     assert!(
-        languages.refresh("typescript").expect("refresh"),
+        languages.refresh("typescript", None).expect("refresh"),
         "an installed server stayed missing"
     );
     assert_eq!(languages.unavailable(typescript::SERVER), None);
     assert_eq!(startable(&languages, "main.ts"), [typescript::SERVER]);
     fs::remove_dir_all(root.join("node_modules")).expect("remove dependencies");
-    assert!(languages.refresh("typescript").expect("refresh"));
+    assert!(languages.refresh("typescript", None).expect("refresh"));
     assert!(languages.unavailable(typescript::SERVER).is_some());
 }
 

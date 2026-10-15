@@ -41,7 +41,6 @@ export function bindNativePolicyRuntime({
   effectOwnerFor,
   authorizationOwnerFor,
   semanticAdmissionPolicy,
-  requestMaterialAdmissionPolicy,
   headingContextAdmissionPolicy,
   unitAdoptionAdmissionPolicy,
   approvalHost,
@@ -56,7 +55,7 @@ export function bindNativePolicyRuntime({
   terminalFetch=globalThis.fetch
 }){
  if(((typeof rootDirectory)!=='string')||(!isAbsolute(rootDirectory)))throw new NativePolicyRuntimeError('Original dependency working directory must be an absolute path');
- const configuredSemanticUse=(semanticAdmissionPolicy!==undefined)||(requestMaterialAdmissionPolicy!==undefined)
+ const configuredSemanticUse=(semanticAdmissionPolicy!==undefined)
    ||(headingContextAdmissionPolicy!==undefined)
    ||(unitAdoptionAdmissionPolicy!==undefined);
  if(configuredSemanticUse&&((typeof sendWire)!=='function'))throw new NativePolicyRuntimeError('Configured semantic admission requires a fixed raw-wire transport; normalized answers alone cannot attribute the serving model');
@@ -146,7 +145,6 @@ export function bindNativePolicyRuntime({
    effectOwnerFor,
    authorizationOwnerFor,
    semanticAdmissionPolicy,
-   requestMaterialAdmissionPolicy,
    headingContextAdmissionPolicy,
    unitAdoptionAdmissionPolicy,
    approvalHost

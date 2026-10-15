@@ -33,7 +33,7 @@ await describe({
             expect(interpretation.permission,).toBe(false,);
             expect(interpretation.scopeEstablished,).toBe(relation === 'adopts',);
             expect(result.rules.length,).toBe((relation === 'adopts') && ['permission', 'prohibition',].includes(targetRelation,) ? 1 : 0,);
-            expect(result.authorizationRequirements.length,).toBe((relation === 'adopts') && (targetRelation === 'prerequisite') ? 1 : 0,);
+            expect(result.authorizationRequirements.length,).toBe((relation === 'adopts') && ['prerequisite', 'fresh-session-approval'].includes(targetRelation) ? 1 : 0,);
             expect(result.issues.length,).toBe((relation === 'unknown') || (relation === 'unsupported') ? 1 : 0,);
             expect(f.calls.admissions,).toBe(1,);
             expect(Object.isFrozen(interpretation,),).toBe(true,);

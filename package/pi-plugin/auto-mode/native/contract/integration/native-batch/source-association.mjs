@@ -6,9 +6,6 @@ import {readHandlerPayloadPublication,readOriginalToolPublication,readOriginalSy
 import {copyMessageData} from '../../collector/run-prompt-custody/messages.mjs';
 import {prepareNativeToolAssociation} from './tool-source-association.ts';
 import {captureNativeSystemDerivation} from './system-source-derivation.ts';
-import {deriveNativeRequestSources} from './request-source-derivation.ts';
-import {NativeRequestDerivationError} from './request-derivation-error.ts';
-import {tagged} from '@monochromatic-dev/module-logger/ts';
 import {
   streamSimple,
   readNativeSerializedPayload,
@@ -394,10 +391,6 @@ export function prepareNativeSourceAssociation({
    let called=false;
    let sealed=false;
    let payloadOriginFailure;
-   let nativeCardinalities;
-   let derivationFields;
-   let derivationFailure;
-   let derivationBound=false;
  async function onPayload(
    payload,
    selectedModel
@@ -415,9 +408,6 @@ export function prepareNativeSourceAssociation({
   const candidates=[];
   if(originalPayload&&dataRecord(payload)
     &&denseArray(payload.messages)){
-   if(payload.tools===undefined||denseArray(payload.tools))nativeCardinalities=Object.freeze({
-    modelId:origin.modelId,messageCount:origin.messageCount,toolCount:origin.toolCount
-   });
    const original=payload.messages[0];
    const systemSerialization=readNativeSystemPayload(original);
    const originalSystem=(systemSerialization!==undefined)
@@ -613,28 +603,10 @@ export function prepareNativeSourceAssociation({
     coverage:'partial-original-prompt-input-contribution',
     permission:false
   }));
-  const contributions=Object.freeze([...result,...toolAssociation.seal(parsed)]);
-  try{
-   if(!nativeCardinalities)throw new NativeRequestDerivationError('Request has no original native serializer cardinalities');
-   derivationFields=deriveNativeRequestSources({parsed,...nativeCardinalities,contributions,dataRecord,denseArray});
-  }catch(error){
-   const l=tagged({tag:'auto-mode-native-source-association'});
-   const fl=tagged({tag:seal.name,l});
-   fl.debug(String(error));
-   if(!(error instanceof NativeRequestDerivationError))throw error;
-   derivationFailure=error.message;
-  }
-  return contributions;
- }
- function bindDerivation({request,contributions}){
-  if(!sealed||derivationBound)throw new NativeSourceAssociationError('Request source derivation requires its original single sealing boundary');
-  derivationBound=true;
-  return Object.freeze(derivationFields?{sourceDerivation:Object.freeze({...derivationFields,request,contributions})}
-   :{sourceDerivationFailure:derivationFailure??'Request source derivation was not established'});
+  return Object.freeze([...result,...toolAssociation.seal(parsed)]);
  }
  return Object.freeze({
    onPayload,
-   seal,
-   bindDerivation
+   seal
  });
 }

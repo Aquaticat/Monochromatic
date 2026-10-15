@@ -84,21 +84,25 @@ fn settings() -> Value {
 ///  Add the TypeScript 7 server definition and point every language that used Helix's
 ///       default TypeScript server at it.
 ///  `&mut Configuration` lends the configuration for
-///       modification.
+///       modification;
+///  `Option<&Path>` is the launcher `locate` found,
+///  or nothing.
 /// Why:
-///  The command is an absolute path below the project root,
+///  The command is an absolute path,
 ///  so it does not depend on the
 ///      process working directory the way a relative command would.
+///  Without a located launcher it names the project root's own,
+///  which `locate` then reports as missing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function apply(configuration: Configuration, root: string): void {
-///   configuration.languageServer[SERVER] = { command: join(root, LAUNCHER), args: ['--lsp', '--stdio'], config: settings() };
+/// function apply(configuration: Configuration, root: string, launcher?: string): void {
+///   configuration.languageServer[SERVER] = { command: launcher ?? join(root, LAUNCHER), args: ['--lsp', '--stdio'], config: settings() };
 ///   for (const language of configuration.language)
 ///     for (const server of language.languageServers) if (server.name === DEFAULT_SERVER) server.name = SERVER;
 /// }
 /// ```
-pub(super) fn apply(configuration: &mut Configuration, root: &Path) {
+pub(super) fn apply(configuration: &mut Configuration, root: &Path, launcher: Option<&Path>) {
     // Variables an application-supplied definition of this server adds are kept, for example
     // probe markers in acceptance tests; command, arguments, and settings are always replaced.
     let environment =
@@ -113,7 +117,10 @@ pub(super) fn apply(configuration: &mut Configuration, root: &Path) {
         SERVER.to_string(),
         LanguageServerConfiguration {
             // `to_string_lossy` renders the path as text; availability is checked on the real path.
-            command: root.join(LAUNCHER).to_string_lossy().into_owned(),
+            command: launcher
+                .map_or_else(|| return root.join(LAUNCHER), Path::to_path_buf)
+                .to_string_lossy()
+                .into_owned(),
             args: vec!["--lsp".to_string(), "--stdio".to_string()],
             environment,
             // `Some(...)` is the "value present" variant of `Option`.
@@ -135,10 +142,80 @@ pub(super) fn apply(configuration: &mut Configuration, root: &Path) {
 }
 
 /// What:
-///  Find the project's TypeScript 7 launcher,
+///  The folders a document's TypeScript launcher is looked for in,
+///  nearest first:
+///  the document's own folder,
+///  then each parent,
+///  ending with the project root.
+///  `Vec<PathBuf>` is a growable list of owned paths.
+/// Why:
+///  Node and TypeScript find a package by walking up from the importing file,
+///  so a pnpm monorepo keeps one `node_modules/typescript` at its root
+///      and the packages below it use that one.
+///  A document outside the project,
+///  or none,
+///  is looked up at the project root only:
+///  the search never leaves the project.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function searched(root: string, document?: string): string[]
+/// ```
+fn searched(root: &Path, document: Option<&Path>) -> Vec<PathBuf> {
+    let mut folders = Vec::new();
+    // `and_then` continues only when a document was given; `starts_with` keeps the walk inside the root.
+    let start = document
+        .and_then(Path::parent)
+        .filter(|folder| return folder.starts_with(root));
+    if let Some(first) = start {
+        // `ancestors` yields the folder itself and then each parent in turn.
+        for folder in first.ancestors() {
+            folders.push(folder.to_path_buf());
+            if folder == root {
+                return folders;
+            }
+        }
+    }
+    // A document that is not below the root, or no document, leaves only the root to search.
+    folders.clear();
+    folders.push(root.to_path_buf());
+    return folders;
+}
+
+/// What:
+///  The nearest `node_modules/typescript/bin/tsc` above the project root,
+///  or nothing.
+///  `Option<PathBuf>` is "a path,
+///  or nothing".
+/// Why:
+///  A TypeScript install that exists only outside the project cannot be used,
+///  but the reason shown to the reader can name it,
+///  so they know to open the folder that holds it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function installAbove(root: string): string | undefined
+/// ```
+fn install_above(root: &Path) -> Option<PathBuf> {
+    // `skip(1)` leaves out the root itself, which was already searched.
+    for folder in root.ancestors().skip(1) {
+        let launcher = folder.join(LAUNCHER);
+        if launcher.is_file() {
+            return Some(launcher);
+        }
+    }
+    return None;
+}
+
+/// What:
+///  Find the TypeScript 7 launcher for a document,
 ///  or explain why there is none.
 ///       `Result<PathBuf, String>` is the absolute launcher path or a user-facing reason.
 /// Why:
+///  The nearest install wins,
+///  as in Node's and TypeScript's own resolution,
+///  so a package is analyzed with the TypeScript it imports;
+///  an older install is reported instead of skipped for a farther one.
 ///  A project without TypeScript,
 ///  or with a version before 7,
 ///  has no built-in language
@@ -148,18 +225,59 @@ pub(super) fn apply(configuration: &mut Configuration, root: &Path) {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function locate(root: string): string // throws with the reason
+/// function locate(root: string, document?: string): string // throws with the reason
 /// ```
-pub(super) fn locate(root: &Path) -> Result<PathBuf, String> {
-    let launcher = root.join(LAUNCHER);
-    if !launcher.is_file() {
-        // `Err(...)` is the failure variant of `Result`.
-        return Err(format!(
-            "the project has no TypeScript language server: {} does not exist. Install the project's dependencies; TypeScript 7 or later is required",
-            launcher.display()
-        ));
+pub(super) fn locate(root: &Path, document: Option<&Path>) -> Result<PathBuf, String> {
+    let folders = searched(root, document);
+    for folder in &folders {
+        let launcher = folder.join(LAUNCHER);
+        if !launcher.is_file() {
+            continue;
+        }
+        // The nearest install decides; it is checked here and never skipped.
+        return check_version(folder, launcher);
     }
-    let manifest = root.join(MANIFEST);
+    // The nearest and the farthest searched folder name the whole range in the reason.
+    let nearest = folders
+        .first()
+        .cloned()
+        .unwrap_or_else(|| return root.to_path_buf());
+    let range = if nearest == root {
+        format!(
+            "{} does not exist in the project folder",
+            root.join(LAUNCHER).display()
+        )
+    } else {
+        format!(
+            "no {LAUNCHER} exists in {} or in any folder above it up to the project folder {}",
+            nearest.display(),
+            root.display()
+        )
+    };
+    let above = install_above(root).map_or(String::new(), |launcher| {
+        return format!(
+            ". A TypeScript install exists outside the project folder, at {}; open the folder that holds it as the project to use it",
+            launcher.display()
+        );
+    });
+    // `Err(...)` is the failure variant of `Result`.
+    return Err(format!(
+        "the project has no TypeScript language server: {range}{above}. Install the project's dependencies; TypeScript 7 or later is required"
+    ));
+}
+
+/// What:
+///  Accept the install in `folder` when its package manifest states version 7 or later.
+///       `Result<PathBuf, String>` is the launcher or the reason it cannot be used.
+/// Why:
+///  Only the major version decides whether the package contains the server.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function checkVersion(folder: string, launcher: string): string // throws with the reason
+/// ```
+fn check_version(folder: &Path, launcher: PathBuf) -> Result<PathBuf, String> {
+    let manifest = folder.join(MANIFEST);
     // What: `read_to_string` returns `Result`; `map_err` converts the I/O error into the text
     //       reason, and the trailing `?` returns it on failure.
     // Why: Without a readable manifest the version cannot be shown to be 7 or later.
@@ -198,7 +316,8 @@ pub(super) fn locate(root: &Path) -> Result<PathBuf, String> {
         .unwrap_or(0);
     if major < 7 {
         return Err(format!(
-            "the project's TypeScript {version} has no built-in language server; version 7 or later is required"
+            "the project's TypeScript {version} in {} has no built-in language server; version 7 or later is required",
+            folder.display()
         ));
     }
     // `Ok(...)` is the success variant of `Result`.

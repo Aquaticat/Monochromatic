@@ -60,6 +60,9 @@ const cases = [
   { name: 'a11y-location-title-hidden', file: 'ui/references.slint', before: '            // The list carries the title as its name; the text is not read a second time.\n            accessible-role: none;\n', after: '', test: 'native::accessible_list_tests::location_list_reports_role_name_position_and_the_selected_location', failure: "the location list's title is read besides the list's own name" },
   // The production launch policy refuses rather than running unconfined; the refusal must reach the user.
   { name: 'launch-refused-explained', file: 'src/native/language/message.rs', before: '        ServerState::LaunchRefused { reason } => Some(format!(\n            "{server} was not started, so {wanted} is not available for this file: {reason}."\n        )),', after: '        ServerState::LaunchRefused { reason: _ } => None,', test: 'native::language::state_tests::refused_launch_is_explained_with_its_reason', failure: 'the refused launch was not explained' },
+  // A resting pointer says once for each file why hover is unavailable, only when the support itself is the cause.
+  { name: 'pointer-explains-support-problem', file: 'src/native/language/outcome.rs', before: '&& message::states_support_problem(&pending.outcomes, &language.status);', after: '&& false;', test: 'native::language::hover_tests::resting_pointer_explains_a_missing_server_once_for_each_file', failure: 'the resting pointer did not explain the missing server' },
+  { name: 'pointer-explains-once', file: 'src/native/language/outcome.rs', before: 'language.explained = Some(pending.stamp.file);', after: 'language.explained = None;', test: 'native::language::hover_tests::resting_pointer_explains_a_missing_server_once_for_each_file', failure: 'the same file was explained twice' },
 ];
 // An optional comma-separated list reruns only the named guards.
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;

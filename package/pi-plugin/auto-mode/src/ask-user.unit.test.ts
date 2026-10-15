@@ -16,7 +16,6 @@ import {
 import {
   askUser,
   notifyAsk,
-  DEFAULT_DENY_GUIDANCE,
   VERDICT_ENTRY_TYPE,
 } from '../dist/final/node/index.mjs';
 
@@ -68,6 +67,8 @@ function createMockApi(
  Create an interactive context whose approval dialog returns a fixed choice.
  
  @param choice - drives user approval branch under test
+
+ @param aborts - captures current-run abort calls
  
  @returns mock extension context sufficient for {@link askUser}
  
@@ -79,17 +80,23 @@ function createMockApi(
 function createInteractiveContext(
   {
     choice,
+    aborts = [],
   }: {
-    readonly choice: string;
+    readonly choice?: string;
+    readonly aborts?: string[];
   },
 ): ExtensionContext {
   return {
     hasUI: true,
+    abort(): void {
+      aborts.push('abort',);
+    },
     ui: {
       async select(
         _title: string,
-        _options: string[],
-      ): Promise<string> {
+        options: string[],
+      ): ReturnType<ExtensionContext['ui']['select']> {
+        expect(options,).toEqual(['Allow', 'Stop',],);
         return choice;
       },
     },
@@ -179,61 +186,41 @@ await describe({
 await describe({
   name: askUser.name,
   children: [
-    it({
-      name: 'returns explanation in model-facing block reason when user denies',
-      fn: async function returnsExplanationWhenUserDenies() {
+    ...['Deny', 'Stop', undefined,].map(function stopOutcome(choice) {
+      return it({
+      name: `records refusal and aborts when selection is ${String(choice,)}`,
+      fn: async function stopsCurrentRun() {
         /** Entries appended while processing the denial. */
         const entries: AppendedEntry[] = [];
-        /** Judge reason shown to the user and then reflected to the main model. */
+        /** Current-run abort calls retained independently of the returned decision. */
+        const aborts: string[] = [];
+        /** Judge reason shown in the confirmation dialog. */
         const explanation = 'This may expose secrets from .env.';
         /** Decision returned to the tool-call handler. */
         const decision = await askUser({
           pi: createMockApi({ entries, },),
-          ctx: createInteractiveContext({ choice: 'Deny', },),
+          ctx: createInteractiveContext({ ...(choice !== undefined ? { choice, } : {}), aborts, },),
           action: 'read .env',
           notificationInvoker: ignoreNotification,
           explanation,
-          reflectExplanationOnDeny: true,
         },);
 
         expect(decision.block,).toBe(true,);
         if (!decision.block)
           throw new Error('Expected user denial to block the tool call.',);
-        expect(decision.reason,).toContain(`Guardrail reason: ${explanation}`,);
-        expect(decision.reason,).toContain(`Guidance: ${DEFAULT_DENY_GUIDANCE}`,);
+        expect(decision.reason,).toBe('The user stopped execution. Wait for their next instructions.',);
+        expect(aborts,).toEqual(['abort',],);
         expect(entries,).toHaveLength(1,);
         expect(entries[0],).toEqual({
           customType: VERDICT_ENTRY_TYPE,
           data: {
             action: 'read .env',
             verdict: 'user-deny',
-            reason: explanation,
+            reason: 'user stopped',
           },
         },);
       },
-    },),
-
-    it({
-      name: 'returns default guidance when user denies without reflection opt-in',
-      fn: async function returnsDefaultGuidanceWithoutOptIn() {
-        /** Entries appended while processing the denial. */
-        const entries: AppendedEntry[] = [];
-        /** Fallback explanation that must stay out of the model-facing denial. */
-        const explanation = 'Judge model is unavailable.';
-        /** Decision returned to the tool-call handler. */
-        const decision = await askUser({
-          pi: createMockApi({ entries, },),
-          ctx: createInteractiveContext({ choice: 'Deny', },),
-          action: 'read .env',
-          notificationInvoker: ignoreNotification,
-          explanation,
-        },);
-
-        expect(decision.block,).toBe(true,);
-        if (!decision.block)
-          throw new Error('Expected user denial to block the tool call.',);
-        expect(decision.reason,).toBe(DEFAULT_DENY_GUIDANCE,);
-      },
+      },);
     },),
 
     it({
@@ -269,10 +256,12 @@ await describe({
       fn: async function doesNotBlockWhenUserAllows() {
         /** Entries appended while processing the approval. */
         const entries: AppendedEntry[] = [];
+        /** Abort calls that must remain absent after approval. */
+        const aborts: string[] = [];
         /** Decision returned to the tool-call handler. */
         const decision = await askUser({
           pi: createMockApi({ entries, },),
-          ctx: createInteractiveContext({ choice: 'Allow', },),
+          ctx: createInteractiveContext({ choice: 'Allow', aborts, },),
           action: 'read .env.example',
           notificationInvoker: ignoreNotification,
           approvalFingerprint: READ_ENV_EXAMPLE_APPROVAL_FINGERPRINT,
@@ -280,6 +269,7 @@ await describe({
         },);
 
         expect(decision.block,).toBe(false,);
+        expect(aborts,).toEqual([],);
         expect(entries,).toHaveLength(1,);
         expect(entries[0],).toEqual({
           customType: VERDICT_ENTRY_TYPE,

@@ -2,10 +2,6 @@ import {MISSING_AUTHORIZATION_EVIDENCE} from './authorization-inputs.mjs';
 import {lowerEstablishedClause} from './clause-lowering.mjs';
 import {inspectPolicyPremises} from './premises.mjs';
 import {SemanticAdmissionPolicyError} from './semantic-policy.ts';
-import {
-  consumeRequestMaterial,
-  retainRequestMaterialObligations
-} from './request-material.mjs';
 import {consumeHeadingContexts} from './heading-context.mjs';
 import {consumeSourceAssociations} from './source-association.mjs';
 import {consumeUnitAdoptions} from './unit-adoption.mjs';
@@ -18,7 +14,6 @@ function compilation({
   authorizationRequirements,
   clauses,
   scope,
-  requestMaterialInterpretation,
   headingContextInterpretations=Object.freeze([]),
   sourceUses,
   unitAdoptionInterpretations=Object.freeze([])
@@ -39,10 +34,8 @@ function compilation({
    premiseIssues:Object.freeze(issues),
    clauses:Object.freeze(clauses),
    semanticAdmission:scope,
-   requestMaterialInterpretation,
    headingContextInterpretations,
    requestSourceAssociationUses:sourceUses.uses,
-   requestGoverningUse:sourceUses.governingUse,
    unitAdoptionInterpretations
  });
 }
@@ -57,11 +50,10 @@ export function compileBoundClauseProgram({
   judgment,
   inputs,
   authorizationInputs,
+  pendingSessionApproval,
   policy,
   scope,
   evidence,
-  requestPolicy,
-  requestScope,
   headingPolicy,
   headingScope,
   unitPolicy,
@@ -76,11 +68,10 @@ export function compileBoundClauseProgram({
  const candidates=inputs.instructionCandidates??inputs.ruleCandidates;
  const interpreted=new Set();
  const clauseEnabled=scope.state==='matching';
-   const requestEnabled=requestScope?.state==='matching';
    const headingEnabled=headingScope?.state==='matching';
    const unitEnabled=unitScope?.state==='matching';
  const headingCandidates=inputs.headingContextCandidates??[];
- if((!clauseEnabled)&&(!requestEnabled)
+ if((!clauseEnabled)
    &&(!headingEnabled)
    &&(!unitEnabled))return compilation({
    issues:[...base.issues],
@@ -92,7 +83,7 @@ export function compileBoundClauseProgram({
  });
  judgment.assertBatchEvidence(evidence);
  const clauseCount=clauseEnabled?candidates.length:0;
- const headingStart=clauseCount+(requestEnabled?1:0);
+ const headingStart=clauseCount;
  const headingCount=headingEnabled?headingCandidates.length:0;
  const adoptionStart=headingStart+headingCount;
  const adoptionPairs=unitEnabled?inputs.unitAdoptionPairs:[];
@@ -228,7 +219,8 @@ export function compileBoundClauseProgram({
    }));
    continue;
   }
-  const authorization=record.answer
+  const authorization=record.answer.value.choice==='fresh-session-approval'
+    ?pendingSessionApproval?.authorization:record.answer
     .value
     .choice
     ==="prerequisite"?authorizationInputs?.forClause(rule):undefined;
@@ -262,6 +254,7 @@ export function compileBoundClauseProgram({
     'permission',
     'prohibition',
     'prerequisite',
+    'fresh-session-approval',
     'none'
   ].includes(record.answer
     .value
@@ -316,12 +309,6 @@ export function compileBoundClauseProgram({
    }));
   }
  }
- const requestMaterialInterpretation=requestEnabled?consumeRequestMaterial({
-   judgment,
-   inputs,
-   record:evidence[clauseCount],
-   policy:requestPolicy
- }):undefined;
  const headingContextInterpretations=headingEnabled?consumeHeadingContexts({
    records:evidence.slice(
      headingStart,
@@ -365,20 +352,14 @@ export function compileBoundClauseProgram({
     reason:'The original heading group was assessed, but its independent normative content remains potential, unknown or unadmitted; no directive meaning or delegation is inferred.'
   }):issue;
  });
- const finalIssues=requestMaterialInterpretation?retainRequestMaterialObligations({
-   issues:headingIssues,
-   interpretation:requestMaterialInterpretation,
-   governingUse:sourceUses.governingUse
- }):headingIssues;
  return compilation({
-   issues:finalIssues,
+   issues:headingIssues,
    rules,
    authorizationRequirements,
    clauses:clauses.map(function applyAdoptedClauseUpdate(clause) { return (adopted.updates
      .get(clause.rule)
      ??clause); }),
    scope,
-   requestMaterialInterpretation,
    headingContextInterpretations,
    sourceUses,
    unitAdoptionInterpretations:adopted.interpretations

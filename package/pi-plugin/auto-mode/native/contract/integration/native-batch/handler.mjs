@@ -53,7 +53,6 @@ export function createNativeBatchHandler({
   effectOwnerFor,
   authorizationOwnerFor,
   semanticAdmissionPolicy,
-  requestMaterialAdmissionPolicy,
   headingContextAdmissionPolicy,
   unitAdoptionAdmissionPolicy,
   approvalHost
@@ -67,7 +66,6 @@ export function createNativeBatchHandler({
    effectOwnerFor,
    authorizationOwnerFor,
    semanticAdmissionPolicy,
-   requestMaterialAdmissionPolicy,
    headingContextAdmissionPolicy,
    unitAdoptionAdmissionPolicy,
    approvalHost
