@@ -256,9 +256,11 @@ before saying it matches, QAB):
   and its field rows lost 3 dp of ring padding. Search's rounded result shape (D126) was left alone and is a candidate
   if the human asks. Not verified on a device: the keyboard ring on a template field row.
 - Issue 545, fingerprint hash migration, branch `feat/music-player-xxh3-128`, worktree `music-player-xxh3` (agent
-  started 2026-10-15): the human said "just migrate to XXH3-128" and "just `twox-hash`" (the only hash crate, 2.1.4).
-  The fingerprint becomes 128 bits end to end on desktop and Android, the peak caches re-key once, the `+aes` target
-  feature goes away, and the final commit body carries `Closes #545`. Merge procedure as for the others; the Windows
+  started 2026-10-15): the human said "just migrate to XXH3-128", then "just `twox-hash`" (the only hash crate, 2.1.4),
+  then "if XXH3-64 is available in twox-hash use that". The last ruling stands: XXH3-64, the fingerprint stays a
+  64-bit value in every layer, the peak caches still re-key once (the function changes), the `+aes` target feature
+  goes away, the 128-bit width criterion of the issue is waived by the human, and the final commit body carries
+  `Closes #545`. If the crate lacks XXH3-64 the agent stops and reports. Merge procedure as for the others; the Windows
   agent also edits `desktop-app/.cargo/config.toml`, so expect a trivial conflict.
 - Task 97, existing CI caching, branch `chore/ci-caching`, worktree `ci-caching` (agent started 2026-10-15): restore-keys
   for `cargo-publish.yml`, a pnpm store cache for the three pnpm workflows, `doc/decision/ci-caching.md`, proven by
