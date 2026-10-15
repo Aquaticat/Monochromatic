@@ -76,6 +76,29 @@ The unchanged original collector is saved as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/program-collector-before-dispatch-types.mjs`,
 with SHA-256 `740fd23a569b058f0d46e7c7b12ff9ffcfed85bd6f519f5d5de5408d7fa13912`.
 
+Collector construction and member arrival are now extracted to `group-collector.ts` and `group-arrival.ts`.
+The original `program-collector.mjs` path delegates to those typed owners.
+The native listener retains its original identity for installation,
+manual replay,
+and detachment.
+Completion input now consumes the shared original primary-failure slot,
+including the collector's explicit pre-failure `undefined` value.
+Independent consumers cover capability and frozen-view checks,
+out-of-order arrivals,
+argument serialization,
+replay and reentry,
+combined cancellation,
+late native outcomes,
+and cancellation during final currentness or listener installation.
+Build,
+type checking,
+consumer execution,
+original replay,
+and omission controls remain pending for this extraction.
+The preceding collector body is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/program-collector-before-arrival-types.mjs`,
+with SHA-256 `eada90c16fdb852469c4079f7fea850afbf54c52e55eec199d4f997a3fb9d419`.
+
 ## Tool-call scope correction
 
 The user clarified that automatic mode is meant to check model-initiated tool calls.
