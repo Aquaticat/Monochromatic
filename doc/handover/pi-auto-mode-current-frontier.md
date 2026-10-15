@@ -521,6 +521,17 @@ The unchanged work-bound regression still fails at 14185 opens after the Allow s
 `${HOME}/temp/agent/pi-native-current-source-work-20261014.log` retains that result.
 A profile of this artifact is collecting evidence for the next caller to address;
 the 10000-open bound remains unchanged.
+The next built Allow probes still failed that bound:
+`48e2532d46` put nested rule reads inside the original synchronous binding segment and measured 13233 opens;
+`45c180d7d7` collected related policy selections in that segment and measured 12169 opens;
+removing the repeated request observation before `active()` measured 11224 opens.
+Each fixture completed its Allow scenario before failing the work assertion.
+The current probe reads a prepared member's input and program inspection together after one dependency check.
+The complete rejection and lifecycle suites remain pending.
+Commit `b3f980b0f8` also fixes an extraction error:
+the whole-request claim branch must register `retained.requestMaterialBinding`,
+not the removed standalone variable.
+That branch still needs direct consumer verification.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

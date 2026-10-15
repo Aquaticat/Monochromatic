@@ -7287,6 +7287,15 @@ The unchanged 10000-open regression and the approved-dependency rejection contro
 Commit `2ea0d1c836` builds and completes the Allow scenario,
 but still fails the work bound at 14185 opens.
 `${HOME}/temp/agent/pi-native-current-source-work-20261014.log` records that incomplete remedy.
+Subsequent built Allow work counts were 13233 after batching nested rule reads,
+12169 after collecting policy selections under one synchronous boundary,
+and 11224 after removing the duplicate request read before `active()`.
+All still failed the unchanged work bound after completing their native scenarios.
+The logs are `pi-native-rule-read-work-20261014.log`,
+`pi-native-policy-selection-work-20261014.log`,
+and `pi-native-active-check-work-20261014.log` under `${HOME}/temp/agent/`.
+The constructor retains the original request read through `active()` while the judgment is open,
+and its explicit request read plus retained-dependency validation after evidence closes.
 
 A separate full lint attempt during this cleanup failed before producing diagnostics with
 `Error running tsgolint: "exit status: exit status: 2"`
