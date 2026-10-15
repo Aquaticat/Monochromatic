@@ -220,6 +220,26 @@ fn ask_to_stop(child: &Child) {
 #[cfg(not(unix))]
 fn ask_to_stop(_child: &Child) {}
 
+/// Whether part of the grace is still left after the stop request.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// asked < grace
+/// ```
+fn grace_remains(asked: Duration, grace: Duration) -> bool {
+    return asked < grace;
+}
+
+/// Whether an output of this size is a flood: only a size past the cap is.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// size > MAX_PUSH_OUTPUT
+/// ```
+fn is_flood(size: u64) -> bool {
+    return size > MAX_PUSH_OUTPUT;
+}
+
 /// What:
 ///  Stop a running push: ask politely,
 ///  wait the grace,
@@ -235,7 +255,7 @@ fn ask_to_stop(_child: &Child) {}
 pub fn stop_push(child: &mut Child, grace: Duration) {
     ask_to_stop(child);
     let asked: Instant = Instant::now();
-    while asked.elapsed() < grace {
+    while grace_remains(asked.elapsed(), grace) {
         match child.try_wait() {
             Ok(Some(_)) | Err(_) => return,
             Ok(None) => std::thread::sleep(POLL_PAUSE),
@@ -298,7 +318,7 @@ pub fn wait_until_done(
                 Ok(metadata) => metadata.len(),
                 Err(_) => u64::MAX,
             };
-            if size > MAX_PUSH_OUTPUT {
+            if is_flood(size) {
                 return Ok(Err(StopCause::Flood));
             }
         }

@@ -283,23 +283,40 @@ fn a_push_that_ignores_the_stop_request_is_killed_after_the_grace() {
     assert!(attempt.output.starts_with("up\n"), "{}", attempt.output);
 }
 
-/// A push that honors the stop request ends before the grace is used up.
+/// A push that honors the stop request is asked first:
+///  it sees the request and ends by itself before the grace is used up.
 #[cfg(unix)]
 #[test]
 fn a_push_that_honors_the_stop_request_ends_within_the_grace() {
-    let started: Instant = Instant::now();
     let attempt: PushAttempt = run_bounded_push(
-        shell("exec sleep 8"),
+        shell("trap 'echo got-the-request; exit 0' TERM; echo up; while :; do sleep 0.05; done"),
         Duration::from_millis(200),
-        Duration::from_secs(30),
+        Duration::from_secs(3),
     )
     .expect("runs");
-    assert!(
-        started.elapsed() < Duration::from_secs(20),
-        "{:?}",
-        started.elapsed()
-    );
     assert_eq!(attempt.exit_code, STOPPED_EXIT_CODE);
+    assert!(
+        attempt.output.contains("got-the-request\n"),
+        "{}",
+        attempt.output
+    );
+}
+
+/// The grace is over exactly when the time since the request reaches it.
+#[test]
+fn the_grace_is_over_at_its_length_exactly() {
+    let grace: Duration = Duration::from_millis(400);
+    assert!(grace_remains(Duration::from_millis(399), grace));
+    assert!(!grace_remains(grace, grace));
+    assert!(!grace_remains(Duration::from_millis(401), grace));
+}
+
+/// An output is a flood only when it is larger than the cap.
+#[test]
+fn an_output_is_a_flood_only_past_the_cap() {
+    assert!(!is_flood(MAX_PUSH_OUTPUT - 1));
+    assert!(!is_flood(MAX_PUSH_OUTPUT));
+    assert!(is_flood(MAX_PUSH_OUTPUT + 1));
 }
 
 /// A push that floods its output is stopped,
