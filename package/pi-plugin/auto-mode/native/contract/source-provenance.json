@@ -289,7 +289,7 @@
     },
     {
       "original": "integration/action-policy/evaluate.mjs",
-      "maintained": "integration/action-policy/evaluate.mjs",
+      "maintained": "integration/action-policy/decision-core.mjs",
       "sha256": "6753cdc51ab25fcedb7ac378994c6a93a6a0694ec82b338e17ae61edcda0a1f7",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -310,7 +310,7 @@
     },
     {
       "original": "integration/action-policy/index.mjs",
-      "maintained": "integration/action-policy/index.mjs",
+      "maintained": "integration/action-policy/decision-core.mjs",
       "sha256": "ec4009fe6e2e6a32e40a54b85226a2fd1e89cf0b567af4e3136d2ec828b6a5ea",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -352,7 +352,7 @@
     },
     {
       "original": "integration/action-policy/reviewer.mjs",
-      "maintained": "integration/action-policy/reviewer.mjs",
+      "maintained": "integration/action-policy/decision-core.mjs",
       "sha256": "38eb4d0ff271d7242a536a1853525e57e40ca9e97d0c6e5229f5a00055784856",
       "origin": "authored-source",
       "relocatedLiterals": 0

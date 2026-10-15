@@ -1,5 +1,5 @@
 import {dispatchPreparedBatch} from "./generated/prepared-dispatch.mjs";
-import {createBoundPolicyReviewer} from '../action-policy/reviewer.mjs';
+import {createDecisionGate} from '../action-policy/decision-core.mjs';
 
 export class NativeBatchBindingError extends Error {}
 
@@ -58,7 +58,7 @@ export function createNativeBatchHandler({
   approvalHost
   ,readBypass=function readNoBypass(){return false;}
 }){
- const reviewer=createBoundPolicyReviewer({
+ const reviewer=createDecisionGate({
    producerOwner,
    stream,
    observer,
