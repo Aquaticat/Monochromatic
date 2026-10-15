@@ -1145,7 +1145,11 @@ records those controls.
 Final focused formatting reports no diagnostics in the typed readers or answer tests;
 the independent fixture correction also passes with zero warnings and errors in
 `${HOME}/temp/agent/pi-native-typed-answers-fixture-format-20261015.log`.
-The full maintained lint recount is pending.
+The full maintained lint recount covers 528 files and 486 rules:
+zero errors and 13357 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-answers-lint-20261015.log`.
+Warnings still fail the strict package gate.
+The next boundary is admission of fixed question-definition catalogs.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
