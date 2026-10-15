@@ -2472,10 +2472,15 @@ and retained snapshot publication.
 The first focused source pass found only `eslint(no-useless-constructor)`.
 Assigning the original literal name in the constructor retains explicit message-only construction
 without a redundant superclass-only constructor.
-Final lint,
-rebuild,
-type checking,
-consumer replay,
+`b10fb56679` retains explicit diagnostic initialization;
+`4e03644092` records final fixture formatting.
+All six changed source and consumer files have zero focused diagnostics in
+`${HOME}/temp/agent/pi-group-lifetime-format-second-20261015.log`.
+The owned rebuild,
+package type check,
+and both direct consumer suites pass in
+`${HOME}/temp/agent/pi-group-lifetime-final-20261015.log`.
+Original-function replay,
 domain comparison,
 and omission qualification remain pending.
 
