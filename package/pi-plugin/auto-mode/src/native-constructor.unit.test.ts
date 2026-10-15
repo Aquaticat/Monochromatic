@@ -16,7 +16,9 @@ await describe({ name: '', children: [
     /** Factory creation must not invoke any original observation capability. */
     const construct = constructorModule.createJudgmentConstructor(fixture.options);
     assert.deepEqual(fixture.events, []);
-    fixture.options.now = function replacedClock(): never { throw new Error('Replaced bootstrap clock used'); };
+    fixture.options.now = function replacedClock(): never { 
+      throw new Error('Replaced bootstrap clock used'); 
+    };
     fixture.options.observer = {};
     fixture.state.clock = 101;
     /** First original construction consumes the fixed start before later clock observations. */
@@ -32,7 +34,7 @@ await describe({ name: '', children: [
     assert.deepEqual(view.memberExecutions, []);
     assert.deepEqual(view.childGroups, []);
     assert.equal(view.accounting.startedAt, 100);
-    assert.equal(view.accounting.deadlineAt, 5100);
+    assert.equal(view.accounting.deadlineAt, 5_100);
     assert.deepEqual(fixture.events, constructionEvents);
     fixture.events.length = 0;
     fixture.state.clock = 201;
@@ -50,7 +52,11 @@ await describe({ name: '', children: [
       /** Fixed factory remains usable after one caller observation fails. */
       const construct = constructorModule.createJudgmentConstructor(fixture.options);
       fixture.state.fail = point;
-      assert.throws(function constructFailure() { construct(fixture.occurrence); }, function same(error: unknown) { return error === fixture.failure; });
+      assert.throws(function constructFailure() { 
+        construct(fixture.occurrence); 
+      }, function same(error: unknown) { 
+        return error === fixture.failure; 
+      });
       assert.deepEqual(fixture.events, constructionEvents.slice(0, constructionEvents.indexOf(point) + 1));
       delete fixture.state.fail;
       fixture.events.length = 0;
@@ -64,18 +70,22 @@ await describe({ name: '', children: [
     fixture.controller.abort(fixture.failure);
     /** Factory captures inputs without reading cancellation. */
     const construct = constructorModule.createJudgmentConstructor(fixture.options);
-    assert.throws(function constructCancelled() { construct(fixture.occurrence); }, { name: 'JudgmentCancelledError', cause: fixture.failure });
+    assert.throws(function constructCancelled() { 
+      construct(fixture.occurrence); 
+    }, { name: 'JudgmentCancelledError', cause: fixture.failure });
     assert.deepEqual(fixture.events, []);
   } }),
   it({ name: 'rejects expiry reached during source handoff at final construction checkpoint', fn: async function expired() {
     /** Source handoff advances the original clock without changing the fixed deadline. */
     const fixture = createConstructorFixture();
     fixture.state.onStep = function expireAfterHandoff(point): void {
-      if (point === 'begin') fixture.state.clock = 5100;
+      if (point === 'begin') fixture.state.clock = 5_100;
     };
     /** Original deadline remains preparation-inclusive across owner assembly. */
     const construct = constructorModule.createJudgmentConstructor(fixture.options);
-    assert.throws(function constructExpired() { construct(fixture.occurrence); }, { name: 'JudgmentDeadlineError' });
+    assert.throws(function constructExpired() { 
+      construct(fixture.occurrence); 
+    }, { name: 'JudgmentDeadlineError' });
     assert.deepEqual(fixture.events, constructionEvents);
   } }),
   it({ name: 'retains constructor error identity when original preparation is unavailable', fn: async function unprepared() {
@@ -83,7 +93,9 @@ await describe({ name: '', children: [
     const fixture = createConstructorFixture();
     /** Original lazy selection remains unavailable until explicit preparation. */
     const judgment = constructorModule.createJudgmentConstructor(fixture.options)(fixture.occurrence);
-    assert.throws(function inspectUnprepared() { judgment.inspectBatch({}); }, constructorModule.JudgmentConstructionError);
+    assert.throws(function inspectUnprepared() { 
+      judgment.inspectBatch({}); 
+    }, constructorModule.JudgmentConstructionError);
     assert.deepEqual(fixture.events, constructionEvents);
   } }),
 ] });
