@@ -192,12 +192,15 @@ cpal = "0.18"
 [target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
 libc = "0.2"
 
-# Windows-only runtime bindings. Two Windows features need the Win32 API:
+# Windows-only runtime bindings. Three Windows features need the Win32 API:
 # - src/measure.rs lowers the background sweep thread with SetThreadPriority /
 #   THREAD_PRIORITY_IDLE (the Windows counterpart to Linux SCHED_IDLE and macOS
 #   background QoS).
 # - src/launcher.rs drives the taskbar progress bar through the ITaskbarList3 COM
 #   interface (SetProgressValue / SetProgressState).
+# - src/console_attach_win32.rs attaches the GUI-subsystem executable to the console of its
+#   parent process (AttachConsole, GetStdHandle, SetStdHandle, and CreateFileW for CONOUT$), so
+#   the program opens no console window on a double-click and still prints in a terminal.
 # Pinned to 0.62 so it unifies with the `windows` 0.62 that cpal 0.18 and the
 # Slint/skia stack already pull, keeping a single `windows` crate in the graph.
 # The high-level `windows` crate (not `windows-sys`) is required because
@@ -205,7 +208,7 @@ libc = "0.2"
 # machinery; the same crate also exposes the threading call, so one dependency
 # covers both. The same crate builds for both Windows ABIs (MSVC and GNU).
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Threading", "Win32_UI_Shell"] }
+windows = { version = "0.62", features = ["Win32_Foundation", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Console", "Win32_System_Threading", "Win32_UI_Shell"] }
 
 # `alsa-fallback` makes the Linux output try PipeWire first and the default ALSA device second (src/output_linux.rs).
 # Alpine Linux and other minimal installs run no sound server by default, so the Alpine build turns it on
