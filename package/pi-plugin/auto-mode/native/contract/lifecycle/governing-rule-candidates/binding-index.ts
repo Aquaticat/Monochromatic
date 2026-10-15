@@ -103,7 +103,9 @@ export function referencedGoverningHeadings(index: GoverningBindingIndex): Reado
   /**
    Unreferenced headings consume individual candidate slots.
    */
-  const orphanHeadings = (index.headings ?? []).filter(function isUnreferencedHeading(heading) { return !referenced.has(heading); });
+  const orphanHeadings = (index.headings ?? []).filter(function isUnreferencedHeading(heading) { 
+    return !referenced.has(heading); 
+  });
   if ((index.records
     .length
     + index.unclassified

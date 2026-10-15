@@ -86,7 +86,9 @@ export function captureGoverningCandidates({
       textSHA256: createHash('sha256')
         .update(record.text)
         .digest('hex'),
-      headings: Object.freeze((record.headings ?? []).map(function readHeadingContextText(value) { return value.text; })),
+      headings: Object.freeze((record.headings ?? []).map(function readHeadingContextText(value) { 
+        return value.text; 
+      })),
       authorityEstablishedByIndex: false,
       semanticQualification: 'not-established',
     });
@@ -168,21 +170,27 @@ export function captureGoverningCandidates({
   const orderedClauses = clauses.toSorted(function compareOriginalRecordOffsets(
     left,
     right
-  ) { return left.projection
+  ) { 
+    return left.projection
     .start
     - right.projection
-    .start; });
+    .start; 
+  });
   /**
    Public enumeration exposes only original handles, never private sort records.
    */
-  const instructionHandles = Object.freeze(orderedClauses.map(function originalClauseHandle(clause) { return clause.handle; }));
+  const instructionHandles = Object.freeze(orderedClauses.map(function originalClauseHandle(clause) { 
+    return clause.handle; 
+  }));
   /**
    Diagnostic order follows the same original source intervals.
    */
   const retainedUnclassified = Object.freeze(unclassified.toSorted(function compareSourceSpanOffsets(
     left,
     right
-  ) { return left.start - right.start; }));
+  ) { 
+    return left.start - right.start; 
+  }));
   return {
     records,
     byCode,

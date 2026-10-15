@@ -18,7 +18,9 @@ await describe({
         name: `rejects unavailable or mutable original source ${index}`,
         fn: async function requiresOwnedSource() {
           assert.throws(function bindInvalidSource() {
-            createGoverningBindings({ readSource() { return source; }, parse: governingParser.parse });
+            createGoverningBindings({ readSource() { 
+              return source; 
+            }, parse: governingParser.parse });
           }, governingBindingError('Governing-source reader returned no owned immutable text occurrence'));
         },
       });
@@ -30,7 +32,9 @@ await describe({
           /** Valid original source bytes isolate the missing capability. */
           const source = createGoverningSource('AAA: Original rule.');
           assert.throws(function missingSourceCapability() {
-            createGoverningBindings({ readSource: kind === 'reader' ? undefined : function readOriginalSource() { return source; }, parse: kind === 'parser' ? undefined : governingParser.parse });
+            createGoverningBindings({ readSource: kind === 'reader' ? undefined : function readOriginalSource() { 
+              return source; 
+            }, parse: kind === 'parser' ? undefined : governingParser.parse });
           }, governingBindingError('Original governing-source reader and qualified Markdown parser are required'));
         },
       });
@@ -46,7 +50,9 @@ await describe({
             ...(profile === 'native-json' ? { kind: 'native-run-handler-message-input', contentFormat: 'native-content-json' } : {}),
           });
           assert.throws(function mismatchedOriginalBytes() {
-            createGoverningBindings({ readSource() { return source; }, parse: governingParser.parse });
+            createGoverningBindings({ readSource() { 
+              return source; 
+            }, parse: governingParser.parse });
           }, governingBindingError('Indexed policy bytes differ from the original selected source'));
         },
       });
@@ -58,10 +64,16 @@ await describe({
           /** A legitimate indexed clause gives the negative check a live positive control. */
           const source = createGoverningSource('AAA: Original rule.');
           /** Foreign values cannot borrow that original clause's membership. */
-          const binding = createGoverningBindings({ readSource() { return source; }, parse: governingParser.parse });
+          const binding = createGoverningBindings({ readSource() { 
+            return source; 
+          }, parse: governingParser.parse });
           assert.equal(binding.read(binding.select('AAA')).text, source.content);
-          assert.throws(function foreignOriginalClause() { binding.read(handle); }, governingBindingError('Clause handle is not owned by this original governing-source binding'));
-          assert.throws(function absentOriginalCode() { binding.select(handle === 'AAA' ? 'BBB' : handle); }, governingBindingError('Requested clause is not in the original indexed policy'));
+          assert.throws(function foreignOriginalClause() { 
+            binding.read(handle); 
+          }, governingBindingError('Clause handle is not owned by this original governing-source binding'));
+          assert.throws(function absentOriginalCode() { 
+            binding.select(handle === 'AAA' ? 'BBB' : handle); 
+          }, governingBindingError('Requested clause is not in the original indexed policy'));
         },
       });
     }),
@@ -69,18 +81,24 @@ await describe({
       name: 'counts retained prose and orphan headings toward the exact 512-clause bound',
       fn: async function boundsEveryRetainedSubject() {
         /** Distinct ordinary paragraphs remain unclassified structural subjects. */
-        const content = Array.from({ length: 511 }, function originalParagraph(_value, index) { return `Original prose ${index}.`; }).join('\n\n');
+        const content = Array.from({ length: 511 }, function originalParagraph(_value, index) { 
+          return `Original prose ${index}.`; 
+        }).join('\n\n');
         /** The final orphan heading consumes the last original candidate slot. */
         const source = createGoverningSource(`${content}\n\n# Orphan heading`);
         /** Admission at the exact bound is the positive control for the rejection. */
-        const binding = createGoverningBindings({ readSource() { return source; }, parse: governingParser.parse });
+        const binding = createGoverningBindings({ readSource() { 
+          return source; 
+        }, parse: governingParser.parse });
         assert.equal(binding.indexedCandidates().length, 0);
         assert.equal(binding.indexedInstructionCandidates().length, 512);
         assert.equal(binding.inspect().unclassified.length, 512);
         /** A second orphan heading exceeds the same original profile. */
         const exceeded = createGoverningSource(`${source.content}\n\n## Another orphan heading`);
         assert.throws(function tooManyOriginalSubjects() {
-          createGoverningBindings({ readSource() { return exceeded; }, parse: governingParser.parse });
+          createGoverningBindings({ readSource() { 
+            return exceeded; 
+          }, parse: governingParser.parse });
         }, governingBindingError('Policy clause count exceeds the original question binding profile'));
       },
     }),
@@ -90,7 +108,9 @@ await describe({
         /** Parser execution is observable before the final original source check. */
         const control = { source: createGoverningSource('AAA: Original rule.') };
         assert.throws(function changedWhileIndexing() {
-          createGoverningBindings({ readSource() { return control.source; }, parse(input: Readonly<{ source: string; mdx: boolean }>) {
+          createGoverningBindings({ readSource() { 
+            return control.source; 
+          }, parse(input: Readonly<{ source: string; mdx: boolean }>) {
             control.source = Object.freeze({ ...control.source });
             return governingParser.parse(input);
           } });

@@ -16,7 +16,9 @@ await describe({
           /** Original sources retain distinct occurrence identities even when text matches. */
           const sources = Object.freeze([createGoverningSource('# Scope\n\nAAA: Original rule.'), createGoverningSource(`# Scope\n\n${code}: Original rule.`)]);
           /** The set composes original source indexes without merging text or code values. */
-          const set = createGoverningSet({ readSources() { return sources; }, parse: governingParser.parse });
+          const set = createGoverningSet({ readSources() { 
+            return sources; 
+          }, parse: governingParser.parse });
           /** Both original source handles remain independently selectable by identity. */
           const candidates = set.indexedCandidates();
           /** Contextual headings also retain separate source-owned aggregates. */
@@ -51,13 +53,19 @@ await describe({
             assert.equal(snapshot.sourceOccurrence, sources[ordinal]?.occurrence);
             assert.equal(snapshot.headingContextCandidate, headings[ordinal]);
           }
-          if (code === 'AAA') assert.throws(function ambiguousOriginalCode() { set.select('AAA'); }, governingBindingError('Rule code occurs in multiple sources; select its original clause handle'));
+          if (code === 'AAA') assert.throws(function ambiguousOriginalCode() { 
+            set.select('AAA'); 
+          }, governingBindingError('Rule code occurs in multiple sources; select its original clause handle'));
           else {
             assert.equal(set.select('AAA'), candidates[0]);
             assert.equal(set.select('BBB'), candidates[1]);
           }
-          assert.throws(function missingCode() { set.select('ZZZ'); }, governingBindingError('Requested clause is not in the original source set'));
-          assert.throws(function foreignClause() { set.read({}); }, governingBindingError('Clause handle is not owned by this original source set'));
+          assert.throws(function missingCode() { 
+            set.select('ZZZ'); 
+          }, governingBindingError('Requested clause is not in the original source set'));
+          assert.throws(function foreignClause() { 
+            set.read({}); 
+          }, governingBindingError('Clause handle is not owned by this original source set'));
         },
       });
     }),
@@ -81,17 +89,25 @@ await describe({
           const handle = set.select('AAA');
           if (kind === 'changed') control.sources = Object.freeze([...original]);
           else control.failing = true;
-          assert.throws(function staleOriginalSet() { set.read(handle); }, function originalFailure(error) {
+          assert.throws(function staleOriginalSet() { 
+            set.read(handle); 
+          }, function originalFailure(error) {
             return kind === 'throwing' ? error === failure : governingBindingError('Original governing source list changed')(error);
           });
           /** Retired operations must not call the source reader again after apparent recovery. */
           const reads = control.reads;
           control.sources = original;
           control.failing = false;
-          assert.throws(function recoveredSetRead() { set.indexedCandidates(); }, governingBindingError('Original governing source set lost eligibility'));
-          assert.throws(function retiredSetInspection() { set.inspect(); }, governingBindingError('Original governing source set lost eligibility'));
+          assert.throws(function recoveredSetRead() { 
+            set.indexedCandidates(); 
+          }, governingBindingError('Original governing source set lost eligibility'));
+          assert.throws(function retiredSetInspection() { 
+            set.inspect(); 
+          }, governingBindingError('Original governing source set lost eligibility'));
           assert.equal(control.reads, reads);
-          assert.throws(function foreignBeforeRetirement() { set.read({}); }, governingBindingError('Clause handle is not owned by this original source set'));
+          assert.throws(function foreignBeforeRetirement() { 
+            set.read({}); 
+          }, governingBindingError('Clause handle is not owned by this original source set'));
         },
       });
     }),
@@ -108,9 +124,13 @@ await describe({
             : kind === 'empty' ? Object.freeze([])
             : kind === 'nonarray' ? Object.freeze({ 0: source, length: 1 })
             : kind === 'repeated' ? Object.freeze([source, Object.freeze({ ...source })])
-            : Object.freeze(Array.from({ length: 129 }, function originalEmptySource() { return createGoverningSource(''); }));
+            : Object.freeze(Array.from({ length: 129 }, function originalEmptySource() { 
+              return createGoverningSource(''); 
+            }));
           assert.throws(function invalidOriginalList() {
-            createGoverningSet({ readSources() { return sources; }, parse: governingParser.parse });
+            createGoverningSet({ readSources() { 
+              return sources; 
+            }, parse: governingParser.parse });
           }, governingBindingError(kind === 'repeated' ? 'Original governing source occurrence is repeated' : 'Original governing sources require a bounded immutable source list'));
         },
       });
@@ -119,9 +139,13 @@ await describe({
       name: 'admits exactly 128 original empty sources without inventing candidates',
       fn: async function admitsExactSourceBound() {
         /** Empty Markdown produces no clauses but still consumes original source-list membership. */
-        const sources = Object.freeze(Array.from({ length: 128 }, function originalEmptySource() { return createGoverningSource(''); }));
+        const sources = Object.freeze(Array.from({ length: 128 }, function originalEmptySource() { 
+          return createGoverningSource(''); 
+        }));
         /** The positive control reaches the exact list bound through real original indexes. */
-        const set = createGoverningSet({ readSources() { return sources; }, parse: governingParser.parse });
+        const set = createGoverningSet({ readSources() { 
+          return sources; 
+        }, parse: governingParser.parse });
         assert.equal(set.inspect().length, 128);
         assert.equal(set.indexedInstructionCandidates().length, 0);
       },
@@ -130,17 +154,23 @@ await describe({
       name: 'admits exactly 512 combined clauses and rejects another independently valid source clause',
       fn: async function boundsCombinedMembership() {
         /** Each source stays independently inside the per-source clause bound. */
-        const content = Array.from({ length: 256 }, function originalParagraph(_value, index) { return `Original prose ${index}.`; }).join('\n\n');
+        const content = Array.from({ length: 256 }, function originalParagraph(_value, index) { 
+          return `Original prose ${index}.`; 
+        }).join('\n\n');
         /** Equal text still creates distinct original occurrence membership. */
         const sources = Object.freeze([createGoverningSource(content), createGoverningSource(content)]);
         /** Complete set enumeration observes both independent original indexes. */
-        const set = createGoverningSet({ readSources() { return sources; }, parse: governingParser.parse });
+        const set = createGoverningSet({ readSources() { 
+          return sources; 
+        }, parse: governingParser.parse });
         assert.equal(set.indexedInstructionCandidates().length, 512);
         assert.equal(set.indexedCandidates().length, 0);
         /** One extra independent source clause exceeds only the combined bound. */
         const exceeded = Object.freeze([...sources, createGoverningSource('One more original clause.')]);
         assert.throws(function tooManyCombinedClauses() {
-          createGoverningSet({ readSources() { return exceeded; }, parse: governingParser.parse });
+          createGoverningSet({ readSources() { 
+            return exceeded; 
+          }, parse: governingParser.parse });
         }, governingBindingError('Combined policy clause count exceeds the original batch profile'));
       },
     }),

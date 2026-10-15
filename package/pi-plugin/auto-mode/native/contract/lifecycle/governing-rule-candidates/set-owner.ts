@@ -41,7 +41,9 @@ function assertOriginalSources(sources: readonly GoverningSource[]): void {
   if ((!Array.isArray(sources)) || (!Object.isFrozen(sources))
     || (sources.length === 0)
     || (sources.length > MAX_SOURCES)) throw new GoverningRuleBindingError('Original governing sources require a bounded immutable source list');
-  if (new Set(sources.map(function readGoverningSourceOccurrence(source: GoverningSource) { return source.occurrence; })).size !== sources.length) throw new GoverningRuleBindingError('Original governing source occurrence is repeated');
+  if (new Set(sources.map(function readGoverningSourceOccurrence(source: GoverningSource) { 
+    return source.occurrence; 
+  })).size !== sources.length) throw new GoverningRuleBindingError('Original governing source occurrence is repeated');
 }
 
 //region Original source order and per-source candidate identity remain independently observable.
@@ -139,7 +141,10 @@ export function createGoverningRuleSet({
      */
     const index = createGoverningRuleBindings({
       parse,
-      readSource() { current(); return source; }
+      readSource() { 
+        current(); 
+        return source; 
+      }
     });
     indexes.push(index);
     for (const handle of index.indexedInstructionCandidates()) {
@@ -209,22 +214,28 @@ export function createGoverningRuleSet({
 
    @returns canonical frozen tagged candidate array
    */
-  function indexedCandidates(): readonly Readonly<object>[] { current();
-  return candidates; }
+  function indexedCandidates(): readonly Readonly<object>[] { 
+    current();
+  return candidates; 
+  }
   /**
    Enumerate every retained clause subject while the source list remains current.
 
    @returns canonical frozen complete candidate array
    */
-  function indexedInstructionCandidates(): readonly Readonly<object>[] { current();
-  return instructionCandidates; }
+  function indexedInstructionCandidates(): readonly Readonly<object>[] { 
+    current();
+  return instructionCandidates; 
+  }
   /**
    Enumerate independent contextual-heading subjects while the source list remains current.
 
    @returns canonical frozen aggregate candidate array
    */
-  function indexedHeadingContextCandidates(): readonly Readonly<object>[] { current();
-  return headingContextCandidates; }
+  function indexedHeadingContextCandidates(): readonly Readonly<object>[] { 
+    current();
+  return headingContextCandidates; 
+  }
   /**
    Authenticate original set membership and the unchanged per-source projection.
 

@@ -16,7 +16,9 @@ await describe({
         /** Astral source text makes incorrect code-point offsets observable. */
         const source = createGoverningSource('# Parent\n\nAAA: Read 🐈 file.\n\nPlain interval.\n\n## Child\n\nBBB: Second rule.\n\n## Orphan\n');
         /** The built parser and original source reader produce the real structural binding. */
-        const binding = createGoverningBindings({ readSource() { return source; }, parse: governingParser.parse });
+        const binding = createGoverningBindings({ readSource() { 
+          return source; 
+        }, parse: governingParser.parse });
         /** Tagged candidates retain their own literal code order. */
         const tagged = binding.indexedCandidates();
         /** Complete subjects also retain unclassified prose and an orphan heading. */
@@ -35,7 +37,9 @@ await describe({
         assert.equal(headings.length, 1);
         assert.equal(binding.select('AAA'), tagged[0]);
         assert.equal(binding.select('BBB'), tagged[1]);
-        assert.deepEqual(candidates.map(function originalText(handle) { return binding.read(handle).text; }), ['AAA: Read 🐈 file.', 'Plain interval.', 'BBB: Second rule.', '## Orphan']);
+        assert.deepEqual(candidates.map(function originalText(handle) { 
+          return binding.read(handle).text; 
+        }), ['AAA: Read 🐈 file.', 'Plain interval.', 'BBB: Second rule.', '## Orphan']);
         for (const handle of candidates) {
           /** Each read returns the same frozen original projection. */
           const projection = binding.read(handle);
@@ -61,11 +65,15 @@ await describe({
         assert.equal(context.kind, 'source-heading-context');
         assert.equal(Object.hasOwn(context, 'start'), false);
         assert.equal(context.headings, snapshot.contextualHeadings);
-        assert.deepEqual(snapshot.contextualHeadings.map(function headingText(heading) { return heading.text; }), ['# Parent', '## Child']);
+        assert.deepEqual(snapshot.contextualHeadings.map(function headingText(heading) { 
+          return heading.text; 
+        }), ['# Parent', '## Child']);
         assert.equal(snapshot.headingContextCandidate, headings[0]);
         assert.equal(snapshot.instructionCandidates, candidates);
         assert.deepEqual(snapshot.codes, ['AAA', 'BBB']);
-        assert.deepEqual(snapshot.unclassified.map(function retainedCandidate(entry) { return entry.candidate; }), [candidates[1], candidates[3]]);
+        assert.deepEqual(snapshot.unclassified.map(function retainedCandidate(entry) { 
+          return entry.candidate; 
+        }), [candidates[1], candidates[3]]);
         assert.equal(snapshot.structuralCoverage, 'unclassified-nodes-retained');
         assert.equal(snapshot.stale, false);
         assert.equal(snapshot.failure, undefined);
@@ -73,7 +81,9 @@ await describe({
         assert.equal(Object.isFrozen(snapshot), true);
         assert.equal(Object.isFrozen(snapshot.codes), true);
         assert.equal(Object.isFrozen(snapshot.unclassified), true);
-        assert.throws(function copiedCandidate() { binding.read({ ...tagged[0] }); }, governingBindingError('Clause handle is not owned by this original governing-source binding'));
+        assert.throws(function copiedCandidate() { 
+          binding.read({ ...tagged[0] }); 
+        }, governingBindingError('Clause handle is not owned by this original governing-source binding'));
       },
     }),
     it({
@@ -84,7 +94,12 @@ await describe({
         /** Parser invocation would prove the native representation boundary was lost. */
         const reads = { parse: 0 };
         /** The parser is required as a capability even when this source profile bypasses it. */
-        const binding = createGoverningBindings({ readSource() { return source; }, parse(input: Readonly<{ source: string; mdx: boolean }>) { reads.parse += 1; return governingParser.parse(input); } });
+        const binding = createGoverningBindings({ readSource() { 
+          return source; 
+        }, parse(input: Readonly<{ source: string; mdx: boolean }>) { 
+          reads.parse += 1; 
+          return governingParser.parse(input); 
+        } });
         assert.equal(reads.parse, 0);
         assert.equal(binding.indexedCandidates().length, 0);
         assert.equal(binding.indexedInstructionCandidates().length, 1);
@@ -107,7 +122,9 @@ await describe({
           /** Both empty and fully tagged original Markdown have no unclassified spans. */
           const source = createGoverningSource(content);
           /** The original qualified parser determines the complete source index. */
-          const binding = createGoverningBindings({ readSource() { return source; }, parse: governingParser.parse });
+          const binding = createGoverningBindings({ readSource() { 
+            return source; 
+          }, parse: governingParser.parse });
           assert.equal(binding.indexedInstructionCandidates().length, content === '' ? 0 : 1);
           assert.equal(binding.inspect().structuralCoverage, 'all-top-level-nodes-indexed');
           assert.equal(binding.inspect().headingContextCandidate, undefined);
@@ -137,7 +154,9 @@ await describe({
           const handle = binding.select('AAA');
           if (kind === 'changed') control.source = Object.freeze({ ...original });
           else control.failing = true;
-          assert.throws(function invalidatedRead() { binding.read(handle); }, governingBindingError('Governing-rule binding is no longer current'));
+          assert.throws(function invalidatedRead() { 
+            binding.read(handle); 
+          }, governingBindingError('Governing-rule binding is no longer current'));
           /** Diagnostic inspection itself must not invoke the unavailable source reader. */
           const reads = control.reads;
           /** The first source failure remains available without replacing its cause. */
@@ -149,10 +168,14 @@ await describe({
           else assert.equal(snapshot.failure.message, 'Original governing-source occurrence changed');
           control.source = original;
           control.failing = false;
-          assert.throws(function recoveredRead() { binding.read(handle); }, governingBindingError('Original governing-rule source was already invalidated'));
+          assert.throws(function recoveredRead() { 
+            binding.read(handle); 
+          }, governingBindingError('Original governing-rule source was already invalidated'));
           assert.equal(control.reads, reads);
           assert.equal(binding.inspect().failure, snapshot.failure);
-          assert.throws(function foreignBeforeStaleness() { binding.read({}); }, governingBindingError('Clause handle is not owned by this original governing-source binding'));
+          assert.throws(function foreignBeforeStaleness() { 
+            binding.read({}); 
+          }, governingBindingError('Clause handle is not owned by this original governing-source binding'));
         },
       });
     }),
