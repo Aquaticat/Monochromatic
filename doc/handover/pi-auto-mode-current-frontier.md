@@ -653,7 +653,15 @@ and incomplete-disposal retry.
 Commit `53defdddad` next scopes native wrapper reentrancy and execution cleanup
 and gives owned wrapper constructors named input fields.
 Native execute callbacks retain their positional SDK signature through a fixed factory.
-The updated wrapper consumer checks are running.
+Commit `79622d6e43` derives parent cancellation options without mutable temporary state.
+The rebuilt wrapper consumers pass domain outcomes,
+single-call execution,
+post-approval source/cancellation/argument changes,
+and normal and exceptional program queue release in
+`${HOME}/temp/agent/pi-native-wrapper-lifetimes-consumer-20261014.log`.
+The first wrapper lint found one remaining mutable options binding;
+the subsequent cancellation helper addresses that finding.
+A full maintained-package lint recount is running before the next source cleanup.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
