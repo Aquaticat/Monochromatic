@@ -34,7 +34,10 @@ type ExecutableControl = {
  Independent fixtures expose only the native identities and observations asserted by consumers.
  */
 type ExecutableFixture = Readonly<{
-  original: Readonly<{ name: string; label: string }>;
+  original: Readonly<{
+    name: string;
+    label: string
+  }>;
   judgment: unknown;
   events: string[];
   invocations: OwnedInput[];

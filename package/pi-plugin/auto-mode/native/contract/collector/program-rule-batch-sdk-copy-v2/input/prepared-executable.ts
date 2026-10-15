@@ -154,7 +154,8 @@ export function wrapPreparedTools({
     /**
      Capture the callback name before callers can replace the returned tool's execution property.
      */
-    const executionName = wrapped.execute.name;
+    const executionName = wrapped.execute
+      .name;
     return wrapped;
   });
 }
