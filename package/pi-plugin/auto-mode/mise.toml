@@ -894,4 +894,11 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-tool-after-navigation.test.mjs permission --sdk-stream --http-transport --operating-policy",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-tool-after-navigation.test.mjs prohibition --sdk-stream --http-transport --operating-policy",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --manual=stop",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --manual=cancel",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --manual=headless",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --assessment-failure",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --assessment-failure --manual=stop",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --assessment-failure --manual=cancel",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --assessment-failure --manual=headless",
 ]
