@@ -350,9 +350,9 @@ a preview from the open library,
 and the list of insertable fields fill the second pane.
 The Playback group under the templates holds the Auto-play on select switch.
 
-![Settings with the Track rows template in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/2aebcf0a532bd80b74b94f8a3080f7dd4e25c0ffa8f7facb949e32d54f230c6e/package/music-player/asset/readme/desktop-settings-light.png)
+![Settings with the Track rows template and the Auto-play on select switch off in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/2848bc4d7c2d10a659f5708a26f7da6d70e3d419be264efbe8b0a9f4fe13b34a/package/music-player/asset/readme/desktop-settings-light.png)
 
-![Settings with the Track rows template in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/eb725dda5b69c22394904bf5cf10c27c10dc812d92d1f8a39a5680b754632277/package/music-player/asset/readme/desktop-settings-dark.png)
+![Settings with the Track rows template and the Auto-play on select switch off in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/44d7735d2401ece941e3aa4f94bf5546f4f033c8e3e92b56f12ece8d42ac2364/package/music-player/asset/readme/desktop-settings-dark.png)
 
 #### Track menu and key hints
 
@@ -473,7 +473,7 @@ Track rows and Playing track,
 each with a preview line,
 and the Auto-play on select switch under a Playback heading.
 
-![Settings on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/38060578083a8d54d0789ac615244bdddaaf8e8add7fb05c9e3f6c1296b703d1/package/music-player/asset/readme/android-cover-settings-light.png)
+![Settings with the Auto-play on select switch off on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/eafa459ad9fd32bf09cf26e3b6d04c277ba94cd282b6a7fd2169a2be10b4fb92/package/music-player/asset/readme/android-cover-settings-light.png)
 
 #### Inner display
 
@@ -494,7 +494,7 @@ its template text,
 and the fields that can be inserted,
 each with an example value and its `mi(...)` name.
 
-![Settings with the Track rows template on the inner display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/d09cd01cfc17b434647a0cf10a59b0e70646e737d670501d8a44d61075dd3174/package/music-player/asset/readme/android-inner-settings-dark.png)
+![Settings with the Track rows template and the Auto-play on select switch off on the inner display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/ae30ec73e56aff6900bec6250969ce8fd38837e3e2314d9b680ff0c740674510/package/music-player/asset/readme/android-inner-settings-dark.png)
 
 ## Design record
 

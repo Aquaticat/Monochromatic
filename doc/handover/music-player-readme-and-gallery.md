@@ -86,6 +86,25 @@ README oids were changed to match (`git cli-git fix --policy markdown/autofix` d
 twenty embedded oids were checked against the files again (zero mismatches).
 The R2 check task has not run, since the objects reach R2 on push.
 
+Later on 2026-10-14 the four Settings images were retaken for the Auto-play on select switch row (D129, branch
+`feat/auto-play-on-select`), the only images that show the Settings list (checked with `rg` over the README and by
+viewing the others): `desktop-settings-light.png` and `desktop-settings-dark.png` from a release build in the nested
+compositor (1000 by 800, accent `4E5E8B`, an invented 35-track library with root `Music`, loose tracks `Amber Hour`
+and `Lantern Season`, `Ctrl+Alt+S`, keyboard ring on Track rows, switch off), and `android-cover-settings-light.png`
+and `android-inner-settings-dark.png` from the debug build on a private copy of the Pixel 9 Pro Fold emulator
+(headful, host GPU, demo mode on, an invented 13-track library `ApsLibrary`, the gear on each display, crops
+`1080x2240+0+125` and `2076x1964+0+110`, default off on a fresh install).
+The Android library is smaller than the first gallery's, so the track counts differ in those two images.
+The new sha256 values are `2848bc4d7c2d` (desktop light), `44d7735d2401` (desktop dark), `eafa459ad9fd` (cover) and
+`ae30ec73e56a` (inner), the README oids were set to them, and all twenty embedded oids were checked against their files
+(zero mismatches).
+Facts learned: a file pushed to an emulator needs `scan_volume --arg external_primary` (no trailing dot) and a second
+scan before `is_music` and `duration` are filled, or the app reports an empty library; an adb server started with another
+`HOME` needs that `HOME` for `adb emu kill` (the console token lives there); a debug APK built in another Gradle home is
+signed with another key, so `adb uninstall` first; after `cmd device_state base-state 0` the cover display needs
+`KEYCODE_WAKEUP` and `wm dismiss-keyguard` before a capture is not black.
+The R2 check task has not run, since the objects reach R2 on push.
+
 Last updated: 2026-10-14.
 
 ## Goal
