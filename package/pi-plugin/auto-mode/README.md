@@ -49,11 +49,17 @@ Original source,
 operation,
 authorization,
 and cancellation checks remain active.
-Malformed assessments,
-transport failures,
-and expired judgment deadlines still stop before decision closure;
-they are not successful uncertain assessments.
+Missing observation evidence, malformed assessments, transport failures, and expired assessment deadlines
+fall back to manual approval of the complete prepared operation.
+This fallback retains native operation identity, tool and argument checks, and cancellation.
+It does not create automatic evidence or replace an established policy decision after its dependencies change.
+Without a usable approval interface, execution remains withheld.
 Provider request metadata supplies context and is not independently subject to tool-call approval.
+
+Provider switching, retries, navigation, reload, and ordinary chat remain owned by Pi.
+Prompt and request capture failures are retained for tool review without rejecting the native chat request.
+Each tool decision captures the current native branch;
+navigation invalidates that decision without retiring later prompts.
 
 Native Shift+Tab bypass executes supported native programs without semantic profile admission.
 The fixed virtual-input guard, original execution ownership, cancellation, status, and audit entries remain active.

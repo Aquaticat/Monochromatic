@@ -18,6 +18,10 @@ the shared 15-second assessment budget, deterministic policy resolution, and sco
 Source observation needed for authenticity is passive on primary requests;
 its failure is retained and explained in the manual approval request at tool admission.
 Do not invent source evidence or automatically approve tools after observation failure.
+
+An established policy decision retains its prohibition and independent authorization requirements.
+If those dependencies become stale during confirmation, reject that approval rather than opening a second dialog.
+An operation outside the automatic inspection profile also falls back to manual review when bypass is disabled.
 Manual Allow authorizes the exact prepared operation through the existing approval interface.
 Stop or cancellation does not execute it.
 

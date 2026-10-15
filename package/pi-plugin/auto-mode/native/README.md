@@ -490,9 +490,16 @@ aborts the current run.
 Source freshness,
 exact prepared-group identity,
 and cancellation remain checked during and after approval.
-Transport failures,
-malformed responses,
-and judgment expiry do not become manual approval requests.
+Transport failures, malformed responses, expired assessment budgets, and unavailable observation evidence
+fall back to manual approval of the complete prepared operation.
+The independent manual group owns its original native signal, branch, prepared members, and execution tokens.
+It does not fabricate an automatic assessment receipt.
+An already established policy decision or approval cannot be replaced after its dependencies change.
+Primary prompt and request observation stays passive when capture fails;
+Pi retains its callbacks, errors, retry settings, and transport.
+`test:native:session-actions` exercises native navigation and provider lifecycle behavior.
+`test:native:host-isolation` exercises passive capture and manual fallback.
+`test:native:manual-group` checks exact manual operation identity and execution lifetime.
 `test:native:manual-review` covers uncertainty,
 prohibition precedence,
 confirmation outcomes,
