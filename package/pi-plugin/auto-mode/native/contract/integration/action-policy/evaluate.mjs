@@ -150,6 +150,7 @@ async function evaluateOriginalPolicy({
    headingContextInterpretations:compiled.headingContextInterpretations,
    headingContextAdmission:headingScope,
    requestSourceAssociationUses:compiled.requestSourceAssociationUses,
+   requestGoverningUse:compiled.requestGoverningUse,
    unitAdoptionInterpretations:compiled.unitAdoptionInterpretations,
    unitAdoptionAdmission:unitScope,
    semanticAdmission:compiled.semanticAdmission,

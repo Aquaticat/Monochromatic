@@ -184,7 +184,7 @@ export function handlerProviderSource({
  const observed=replaceOnce({
    source:toolOutputs,
    from:'            const nextParams = await options?.onPayload?.(params, model);',
-   to:'            nativeSerializedPayloads.set(params,Object.freeze({model,messages:context.messages,normalizedMessages:normalizedContext.messages}));\n            const nextParams = await options?.onPayload?.(params, model);'
+   to:'            nativeSerializedPayloads.set(params,Object.freeze({model,modelId:model.id,messages:context.messages,normalizedMessages:normalizedContext.messages,messageCount:params.messages.length,toolCount:params.tools?.length??0}));\n            const nextParams = await options?.onPayload?.(params, model);'
  });
  return `import {recordHandlerPayload,snapshotOriginalToolEmission} from ${JSON.stringify(publicationUrl)};\n`
   +`const nativeSerializedPayloads=new WeakMap(),nativeSystemPayloads=new WeakMap(),nativeToolPayloads=new WeakMap();\n`

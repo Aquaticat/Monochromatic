@@ -42,6 +42,7 @@ function compilation({
    requestMaterialInterpretation,
    headingContextInterpretations,
    requestSourceAssociationUses:sourceUses.uses,
+   requestGoverningUse:sourceUses.governingUse,
    unitAdoptionInterpretations
  });
 }

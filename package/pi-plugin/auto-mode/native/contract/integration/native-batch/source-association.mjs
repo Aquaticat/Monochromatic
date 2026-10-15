@@ -416,7 +416,7 @@ export function prepareNativeSourceAssociation({
   if(originalPayload&&dataRecord(payload)
     &&denseArray(payload.messages)){
    if(payload.tools===undefined||denseArray(payload.tools))nativeCardinalities=Object.freeze({
-    modelId:selectedModel.id,messageCount:payload.messages.length,toolCount:payload.tools?.length??0
+    modelId:origin.modelId,messageCount:origin.messageCount,toolCount:origin.toolCount
    });
    const original=payload.messages[0];
    const systemSerialization=readNativeSystemPayload(original);

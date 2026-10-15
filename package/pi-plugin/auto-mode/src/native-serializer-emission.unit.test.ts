@@ -88,6 +88,9 @@ await describe({ name: '', children: [false, true].map(function toolCase(withToo
             const origin = built.readNativeSerializedPayload(payload);
             assertEmission(origin);
             expect(origin.model).toBe(model);
+            expect(origin.modelId).toBe(model.id);
+            expect(origin.messageCount).toBe(payload.messages.length);
+            expect(origin.toolCount).toBe(payload.tools?.length ?? 0);
             expect(selectedModel).toBe(model);
             expect(origin.messages).toBe(context.messages);
             expect(origin.normalizedMessages).not.toBe(context.messages);
