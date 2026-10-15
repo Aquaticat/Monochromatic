@@ -1052,9 +1052,26 @@ names fixed bounds,
 and adds the disposer return type.
 The rebuilt store,
 refresh,
-domain,
-and package type verification is running in
+and domain consumers pass in
 `${HOME}/temp/agent/pi-native-typed-store-consumer-20261015.log`.
+That run's package type check found `TS9010` and `TS9013` on the fixed question export;
+`e88603cef2` adds its explicit contract.
+Type checking then passes in
+`${HOME}/temp/agent/pi-native-typed-store-types-20261015.log`.
+The typed definition,
+store,
+filesystem admission,
+contracts,
+and store consumer tests pass focused lint with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-store-final-format-20261015.log`.
+The final native artifact is rebuilt in
+`${HOME}/temp/agent/pi-native-typed-store-final-build-20261015.log`.
+Removing the new publication guard through a process-local load hook makes the committed removal test fail;
+the artifact hash stays unchanged.
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/typed-store-publication-omission.json`
+retains that result.
+The complete maintained lint recount is running in
+`${HOME}/temp/agent/pi-maintained-typed-store-lint-20261015.log`.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
