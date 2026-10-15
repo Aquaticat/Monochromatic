@@ -42,6 +42,17 @@ retaining every original instruction occurrence and its source identity.
 Do not drop instructions or silently relax the deadline.
 Do not present size-triggered manual review as the completed repair.
 
+Gateway controls on 2026-10-15 returned HTTP 200 for every small-input request.
+Repeated identical one-question requests took 1692, 390, and 350 milliseconds;
+repeated identical 200-question requests took 766, 1150, and 735 milliseconds.
+Their encoded bodies were 276 and 38973 bytes respectively.
+The receipt is `${HOME}/temp/agent/pi-gateway-small-controls.log`.
+These establish a working route and measured variation,
+not that gateway overhead is absent for the captured workspace input.
+No direct-provider comparison has been performed.
+The resolved repository environment has the Gateway credential but no direct OpenAI API key.
+Do not recommend topping up direct service from the full-context timeout alone.
+
 The user explicitly accepted removal of arbitrary capture limits on 2026-10-15.
 Commits through `c65c7c9a3e` remove fixture-derived byte and occurrence limits from
 prompt options,
