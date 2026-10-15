@@ -110,6 +110,19 @@ it can accept a missing index offset by an extra enumerable property.
 The extraction preserves that behavior and explicitly tests it.
 It also preserves parent freezing before child validation and original proxy failure identity.
 
+The next dispatcher extraction delegates final native outcomes and retained lifecycle failures to
+`prepared-completion.ts` and `prepared-completion-types.ts`.
+Original error constructors remain in the dispatcher.
+Independent completion consumers are committed;
+formatting,
+type checking,
+built execution,
+original replay,
+domain comparisons,
+and omission controls remain pending.
+The original dispatcher is saved as
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/prepared-dispatch-before-completion-types.mjs`.
+
 The dispatch extraction is implemented in `group-dispatch.ts` and `group-dispatch-types.ts`.
 Its production scope passes focused lint with zero diagnostics.
 The original collector delegates dispatch while retaining its existing arrival code.
