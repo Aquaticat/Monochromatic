@@ -115,8 +115,14 @@ export function returnedGroup(input: Input = {}): object {
       type: 'MemberExpression',
       computed: false,
       optional: false,
-      object: { type: 'Identifier', name: 'Promise' },
-      property: { type: 'Identifier', name: 'all' }
+      object: {
+        type: 'Identifier',
+        name: 'Promise'
+      },
+      property: {
+        type: 'Identifier',
+        name: 'all'
+      }
     },
     arguments: [{
       type: 'ArrayExpression',
