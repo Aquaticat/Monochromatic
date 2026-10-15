@@ -292,7 +292,8 @@ not deployed routing rules.
   leaving no room beneath the user's ceiling for overage.
   The trial has not demonstrated enough additional benefit to justify that base price.
 
-Ranking: Developer with routing > Developer with selective overage > Startup.
+Ranking:
+Developer with routing > Developer with selective overage > Startup.
 Routing ranks first because the user explicitly values the USD $180 saving and accepts a hybrid arrangement.
 Selective overage ranks ahead of Startup because the measured moderate-use scenarios cost less than USD $200;
 this ranking must be revisited if graphical tests,
