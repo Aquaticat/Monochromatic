@@ -2032,6 +2032,24 @@ All six source implementation and consumer files have zero diagnostics in the fu
 Original source handoff and collection extraction are qualified at these tested boundaries.
 Continue the remaining constructor composition and maintained-package quality queue.
 
+Constructor composition now has a saved baseline in
+`child-constructor-before-composition-types.mjs`,
+with SHA-256 `43b0254ae670f11c8188567758ae565e2e7d9c121dc71193f02b3a731ec8d8d4`.
+`a3ecae3ca8` preserves caller-owned source types through source handoff and preparation
+without changing the source statements executed at runtime.
+The composition audit found that the original member map includes root records with claim bindings
+and reached-child records without claim bindings.
+The current instruction type describes only the root shape.
+A new built consumer checks original missing-child binding results,
+root projection failure,
+and recovery before that type contract is reconciled.
+The source/preparation rebuild,
+type check,
+and direct consumer sequence are running in
+`${HOME}/temp/agent/pi-source-generic-contract-first-20261015.log`.
+Constructor composition remains pending;
+the new generic source contracts have not yet received their final lint qualification.
+
 The preparation commit initially printed prepared OID `5d90f18fab`,
 then the wrapper replayed it as `776f3486be` after a concurrent landing.
 Its `cli-git` push-wait notice was initially misread as a timeout.
