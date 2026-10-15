@@ -42,7 +42,10 @@ export function publishJudgmentMembers({
     bindings.set(
       bindingHandle,
       {
-      binding: Object.freeze({ identity, projection }),
+      binding: Object.freeze({
+        identity,
+        projection
+      }),
       prepared: member,
       effectiveSignal: signal,
     }

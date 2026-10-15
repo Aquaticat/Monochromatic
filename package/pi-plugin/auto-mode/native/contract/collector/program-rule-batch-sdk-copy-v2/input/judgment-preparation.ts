@@ -101,7 +101,11 @@ export function createJudgmentPreparation(input: JudgmentPreparationInput): Judg
         members,
         declaredNames
       });
-      if (Boolean(observer.beginJudgmentSources)) {
+      /**
+       Original truthiness selects the source-sealing path without invoking its presence marker.
+       */
+      const hasSourceSeal = Boolean(observer.beginJudgmentSources);
+      if (hasSourceSeal) {
         /**
          Prepared sources must still belong to the original request receipt.
          */
@@ -120,7 +124,8 @@ export function createJudgmentPreparation(input: JudgmentPreparationInput): Judg
        Original mandatory policy is retained by identity after its existing completeness check.
        */
       const {mandatoryPolicy} = readJudgmentSources();
-      if ((!mandatoryPolicy) || (!Object.isFrozen(mandatoryPolicy)) || ((typeof mandatoryPolicy.content) !== 'string')) {
+      if ((!mandatoryPolicy) || (!Object.isFrozen(mandatoryPolicy))
+        || ((typeof mandatoryPolicy.content) !== 'string')) {
         throw new JudgmentConstructionError('Original request lacks complete owned mandatory policy');
       }
       /**
@@ -129,9 +134,11 @@ export function createJudgmentPreparation(input: JudgmentPreparationInput): Judg
       const envelope = Object.freeze({
         parentJSON,
         preparedJSON,
-        requestBody: receipt.request.body,
+        requestBody: receipt.request
+          .body,
         mandatoryPolicy,
-        governingSources: readJudgmentSources().governingSources,
+        governingSources: readJudgmentSources()
+          .governingSources,
         instructionAuthority: 'not-established',
       });
       state.selection = createQuestionSelection({
