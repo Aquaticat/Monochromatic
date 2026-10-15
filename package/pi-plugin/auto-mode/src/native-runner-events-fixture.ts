@@ -12,6 +12,7 @@ import type {
 
 /** Require the built export before using its independent consumer signature.
  @param value - built native namespace
+ @returns narrowed original native event factory
  *
  @throws Error when the original event factory is absent
  */

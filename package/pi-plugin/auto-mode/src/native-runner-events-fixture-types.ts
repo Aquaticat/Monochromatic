@@ -5,12 +5,12 @@
 /**
  Native calls retain argument identity throughout recorder and host callbacks.
  */
-export type EventCall = {
+export type EventCall = Readonly<{
   type: 'toolCall';
   id: string;
   name: string;
   arguments: object
-};
+}>;
 /**
  Native completion content remains deliberately opaque until recorder text extraction.
  */

@@ -56,8 +56,8 @@ await describe({ name: '', children: [
     assert.deepEqual(fixture.resolutions, [[1, outcome], [0, unstarted]]);
     assert.deepEqual(fixture.steps, ['start', 'tool_execution_start', 'tool_execution_start:done', 'finish', 'usage', 'tool_execution_end', 'tool_execution_end:done', 'resolve:parent/2', 'finish', 'tool_execution_end', 'tool_execution_end:done', 'resolve:parent/1']);
   } }),
-  ...[undefined, null, false, 0, '', Object.freeze({}), 1, 'usage'].map(function usageCase(usage) {
-    return it({ name: `preserves original usage truthiness for ${String(usage)}`, fn: async () => {
+  ...[undefined, null, false, 0, '', Object.freeze({}), 1, 'usage'].map(function usageCase(usage, index) {
+    return it({ name: `preserves original usage truthiness for case ${index}`, fn: async () => {
       const fixture = createRunnerEventsFixture();
       const [call] = fixture.calls;
       assert.ok(call);
