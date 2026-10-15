@@ -2,17 +2,8 @@ import {
   readPolicyInput,
   assertPolicyInput
 } from './system-slot.mjs';
-
-export class GoverningPolicyBindingError extends Error {
- constructor(
-   message,
-   options
- ){super(
-   message,
-   options
- );this.name=this.constructor
-   .name;}
-}
+import { GoverningPolicyBindingError } from './governing-error.mjs';
+export { GoverningPolicyBindingError } from './governing-error.mjs';
 
 /**
  Bind the bootstrap-selected capture to the judgment's owned sources and unchanged original request.
