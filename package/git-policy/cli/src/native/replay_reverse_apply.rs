@@ -131,10 +131,8 @@ fn find_position(
         line
     };
     let first: i64 = anchored.max(0).min(length);
+    // A negative position has no `usize`, and `matches_at` rejects a position whose preimage runs past the image.
     let matches = |at: i64| -> Option<usize> {
-        if at < 0 || at > length {
-            return None;
-        }
         let index: usize = usize::try_from(at).ok()?;
         return matches_at(image, preimage, index, match_beginning, match_end).then_some(index);
     };

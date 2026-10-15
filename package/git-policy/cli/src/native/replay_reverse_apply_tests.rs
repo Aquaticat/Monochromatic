@@ -267,3 +267,77 @@ fn a_hunk_is_found_by_walking_forward_past_the_expected_line() {
     assert!(reverse_applies(std::slice::from_ref(&hunk), b"z\na\nb\nc\n"));
     assert!(!reverse_applies(std::slice::from_ref(&hunk), b"z\na\nb\nd\n"));
 }
+
+/// An image of unpatched lines, each from text with its newline.
+fn image_of(lines: &[&str]) -> Vec<ImageLine> {
+    return lines
+        .iter()
+        .map(|line| { return ImageLine { text: line.as_bytes().to_vec(), patched: false }; })
+        .collect();
+}
+
+/// The text of every line of an image, to compare whole results.
+fn texts_of(image: &[ImageLine]) -> Vec<String> {
+    return image.iter().map(|line| { return String::from_utf8_lossy(&line.text).into_owned(); }).collect();
+}
+
+/// A hunk from `(marker, text)` lines, each text with its newline unless it is an incomplete last line.
+fn hunk_of(old_start: i64, new_start: i64, lines: &[(u8, &str)]) -> PatchHunk {
+    return PatchHunk {
+        old_start,
+        new_start,
+        lines: lines
+            .iter()
+            .map(|(op, text)| { return PatchLine { op: *op, text: text.as_bytes().to_vec() }; })
+            .collect(),
+    };
+}
+
+/// The search finds a match before the expected line when none sits on or after it.
+#[test]
+fn the_search_looks_backwards_from_the_expected_line() {
+    let image: Vec<ImageLine> = image_of(&["a\n", "b\n", "c\n", "d\n"]);
+    let preimage: Vec<Vec<u8>> = vec![b"b\n".to_vec()];
+    assert_eq!(find_position(&image, &preimage, 2, false, false), Some(1));
+    assert_eq!(find_position(&image, &preimage, 3, false, false), Some(1));
+}
+
+/// A hunk that only removes lines has an empty preimage, which the end anchor places after the last line.
+#[test]
+fn a_removal_only_hunk_reverses_by_restoring_its_lines_at_the_end() {
+    let image: Vec<ImageLine> = image_of(&["x\n", "y\n", "z\n"]);
+    let hunk: PatchHunk = hunk_of(5, 4, &[(b'-', "a\n"), (b'-', "b\n")]);
+    let rebuilt: Vec<ImageLine> = reverse_hunk(&image, &hunk).expect("an empty preimage matches at the end");
+    assert_eq!(texts_of(&rebuilt), ["x\n", "y\n", "z\n", "a\n", "b\n"]);
+    assert!(reverse_applies(&[hunk], b"x\ny\nz\n"));
+}
+
+/// Reversing a hunk replaces its new side by its old side: context and removals take the place of context and additions.
+#[test]
+fn reversing_a_hunk_restores_the_removed_lines_and_drops_the_added_ones() {
+    let image: Vec<ImageLine> = image_of(&["a\n", "c\n", "d\n"]);
+    let hunk: PatchHunk = hunk_of(1, 1, &[(b' ', "a\n"), (b'-', "b\n"), (b'+', "c\n"), (b' ', "d\n")]);
+    let rebuilt: Vec<ImageLine> = reverse_hunk(&image, &hunk).expect("the new side is present");
+    assert_eq!(texts_of(&rebuilt), ["a\n", "b\n", "d\n"]);
+}
+
+/// The search starts at the old side's first line, so of two equal matches the one at that line wins.
+#[test]
+fn the_search_starts_at_the_hunks_old_line() {
+    let hunk_at = |old_start: i64| -> PatchHunk { return hunk_of(old_start, old_start, &[(b'+', "a\n"), (b' ', "z\n")]); };
+    let first: Vec<ImageLine> = image_of(&["p\n", "a\n", "z\n", "q\n", "a\n", "z\n"]);
+    let rebuilt_first: Vec<ImageLine> = reverse_hunk(&first, &hunk_at(5)).expect("two matches");
+    assert_eq!(texts_of(&rebuilt_first), ["p\n", "a\n", "z\n", "q\n", "z\n"]);
+    // Matches at 3 and 5 with the expected line 3: starting one or two lines later would pick the one at 5.
+    let second: Vec<ImageLine> = image_of(&["x\n", "x\n", "x\n", "a\n", "z\n", "a\n", "z\n"]);
+    let rebuilt_second: Vec<ImageLine> = reverse_hunk(&second, &hunk_at(4)).expect("two matches");
+    assert_eq!(texts_of(&rebuilt_second), ["x\n", "x\n", "x\n", "z\n", "a\n", "z\n"]);
+}
+
+/// Only a hunk's last preimage line may be an incomplete line, so a middle line without its newline never matches
+///  an image line that has one.
+#[test]
+fn a_middle_line_without_its_newline_matches_only_exactly() {
+    let hunk: PatchHunk = hunk_of(1, 1, &[(b'+', "b"), (b' ', "c\n")]);
+    assert!(!reverse_applies(&[hunk], b"b\nc\n"));
+}
