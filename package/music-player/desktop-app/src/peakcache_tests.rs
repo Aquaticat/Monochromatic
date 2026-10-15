@@ -110,7 +110,9 @@ fn fingerprint_feeds_path_size_and_mtime_to_the_shared_function() {
     // Why:      Known size and mtime make the expected key computable.
     let file = unique_path("plumbing.flac");
     fs::write(&file, b"hello").expect("plumbing fixture should be written");
-    let mtime = UNIX_EPOCH + Duration::new(1_700_000_000, 123_456_789);
+    // The nanoseconds are a multiple of 100 because Windows stores file times in 100 ns ticks; a finer value would be
+    // rounded by the file system and the expected key below would not match what the wrapper reads back.
+    let mtime = UNIX_EPOCH + Duration::new(1_700_000_000, 123_456_700);
     fs::File::options()
         .write(true)
         .open(&file)
@@ -120,7 +122,7 @@ fn fingerprint_feeds_path_size_and_mtime_to_the_shared_function() {
 
     // What:     compute the expected key from the same inputs through the shared function.
     // Why:      A swapped size/mtime, a missing path, or a wrong unit in the wrapper changes it.
-    let expected = track_fingerprint(&file.to_string_lossy(), 5, 1_700_000_000_123_456_789);
+    let expected = track_fingerprint(&file.to_string_lossy(), 5, 1_700_000_000_123_456_700);
     assert_eq!(fingerprint(&file), Some(expected));
 
     // What:     a different mtime with the same size and path changes the key.
@@ -129,7 +131,7 @@ fn fingerprint_feeds_path_size_and_mtime_to_the_shared_function() {
         .write(true)
         .open(&file)
         .expect("plumbing fixture should reopen")
-        .set_modified(UNIX_EPOCH + Duration::new(1_700_000_001, 123_456_789))
+        .set_modified(UNIX_EPOCH + Duration::new(1_700_000_001, 123_456_700))
         .expect("plumbing fixture mtime should be set again");
     assert_ne!(fingerprint(&file), Some(expected));
 
