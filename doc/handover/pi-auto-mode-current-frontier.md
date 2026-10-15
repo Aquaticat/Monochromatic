@@ -1646,6 +1646,36 @@ Program ownership is qualified for the tested original consumer boundaries.
 This does not establish unreachable trusted-internal misuse branches.
 Continue `child-constructor.mjs` (471 warnings in the instruction-port report),
 preserving existing behavior and consumer boundaries.
+Its original member and execution custody now delegates to typed execution ownership in
+`fc923515e3` and `ccee1949bf`.
+The saved original is
+`${HOME}/temp/agent/pi-tool-call-scope-20261014/child-constructor-before-execution-types.mjs`.
+The typed modules preserve shared member records,
+once-only execution reservation,
+immediate-parent entry checks,
+and cancellation-independent terminal inspection.
+Execution origin types now describe the complete original identity record.
+The five implementation files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-execution-format-third-20261015.log`.
+Independent built consumers now cover original identity and check order,
+foreign handles,
+successful closure,
+dependency and cancellation failures,
+active children after parent return,
+and retained terminal state.
+Their first type check exposed fixture callable narrowing,
+the harness's required asynchronous callbacks,
+and stale assertion narrowing across a mutating call;
+the fixture corrections are committed.
+The rebuilt broad consumers,
+final type check,
+direct owner suites,
+guard controls,
+and original-constructor comparison remain pending.
+Then continue the remaining constructor preparation,
+assessment,
+finalization,
+and inspection paths.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.

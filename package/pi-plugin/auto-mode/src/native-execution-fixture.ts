@@ -74,9 +74,9 @@ type ExecutionFixtureModule = Readonly<{
  @throws Error when the built execution owner is absent
  */
 function assertExecutionModule(value: unknown): asserts value is ExecutionFixtureModule {
-  if ((value === null) || (typeof value) !== 'object'
+  if ((value === null) || ((typeof value) !== 'object')
     || (!('createJudgmentExecutions' in value))
-    || (typeof value.createJudgmentExecutions) !== 'function') throw new Error('Built native execution owner is unavailable');
+    || ((typeof value.createJudgmentExecutions) !== 'function')) throw new Error('Built native execution owner is unavailable');
 }
 
 /**
