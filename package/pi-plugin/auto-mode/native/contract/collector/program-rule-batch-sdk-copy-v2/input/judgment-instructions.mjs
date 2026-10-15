@@ -133,6 +133,18 @@ function readRuleCandidate(rule){
 function indexedInstructionCandidates(){return ensureRuleBindings().indexedInstructionCandidates();}
 function indexedHeadingContextCandidates(){return ensureRuleBindings().indexedHeadingContextCandidates();}
 function inspectRuleSources(){return ensureRuleBindings().inspect();}
+/** Read related original selections inside one synchronous dependency boundary. */
+function readPolicySelection(){
+  return bindingSegment(function readOriginalPolicySelection(){
+    return Object.freeze({
+      ruleCandidates:indexedRuleCandidates(),
+      instructionCandidates:indexedInstructionCandidates(),
+      headingContextCandidates:indexedHeadingContextCandidates(),
+      unitAdoptionPairs:indexedUnitAdoptionPairs(),
+      ruleSourceCoverage:inspectRuleSources()
+    });
+  });
+}
 /** Canonical whole original program/rule identity cannot be resampled through another member. */
     function claimProgramRuleCandidate({definitionId,rule}){
       if(!['operation_violates_rule','clause_operation_relation'].includes(definitionId))throw new JudgmentConstructionError('Unsupported whole-program rule relation definition');
@@ -197,6 +209,7 @@ function claimSelectedInstruction({definitionId,memberId,rule}){
     indexedInstructionCandidates,
     indexedHeadingContextCandidates,
     inspectRuleSources,
+    readPolicySelection,
     claimProgramRuleCandidate,
     issueProgramRuleBatch,
     issueRuleAssessmentBatch,

@@ -33,11 +33,13 @@ export async function capturePolicyInputs({
  const runInstructionCarriers=sourceBinding?.runInstructionCarriers??Object.freeze([]);
  const instructionAuthorities=Object.freeze(sources.filter(function hasSourceAuthority(source) { return (source.authority); })
    .map(function readSourceAuthority(source) { return (source.authority); }));
- const candidates=judgment.indexedRuleCandidates();
- const instructionCandidates=judgment.indexedInstructionCandidates?.()??candidates;
- const headingContextCandidates=judgment.indexedHeadingContextCandidates?.()??Object.freeze([]);
- const unitAdoptionPairs=judgment.indexedUnitAdoptionPairs?.()??Object.freeze([]);
- const ruleSourceCoverage=judgment.inspectRuleSources?.();
+ const {
+  ruleCandidates:candidates,
+  instructionCandidates,
+  headingContextCandidates,
+  unitAdoptionPairs,
+  ruleSourceCoverage
+ }=judgment.readPolicySelection();
  function readRule(handle){return judgment.readRuleCandidate(handle);}
  function sourceViewFor(handle){
   const rule=readRule(handle);
@@ -109,10 +111,11 @@ export async function capturePolicyInputs({
    // Closed judgments retain dependency checks, but cannot reopen candidate selection.
    if(!judgment.inspect()
      .finalRecord){
-    if(judgment.indexedRuleCandidates()!==candidates)throw new PolicyInputBindingError('Original instruction candidates changed');
-    if((judgment.indexedInstructionCandidates?.()??candidates)!==instructionCandidates)throw new PolicyInputBindingError('Original retained instruction candidates changed');
-    if((judgment.indexedHeadingContextCandidates?.()??headingContextCandidates)!==headingContextCandidates)throw new PolicyInputBindingError('Original heading-context candidates changed');
-    if((judgment.indexedUnitAdoptionPairs?.()??unitAdoptionPairs)!==unitAdoptionPairs)throw new PolicyInputBindingError('Original unit-adoption pairs changed');
+    const current=judgment.readPolicySelection();
+    if(current.ruleCandidates!==candidates)throw new PolicyInputBindingError('Original instruction candidates changed');
+    if(current.instructionCandidates!==instructionCandidates)throw new PolicyInputBindingError('Original retained instruction candidates changed');
+    if(current.headingContextCandidates!==headingContextCandidates)throw new PolicyInputBindingError('Original heading-context candidates changed');
+    if(current.unitAdoptionPairs!==unitAdoptionPairs)throw new PolicyInputBindingError('Original unit-adoption pairs changed');
    }
    for(const {
      member,
