@@ -24,11 +24,20 @@ const l = tagged({ tag: 'auto-mode-judgment-binding-segment' });
 
  @returns original aggregate message and ordered failures without an own cause
  */
-function createBindingPostcheckError({ operationFailure, postcheckFailure }: Readonly<{
+function createBindingPostcheckError({
+  operationFailure,
+  postcheckFailure
+}: Readonly<{
   operationFailure: unknown;
   postcheckFailure: unknown;
 }>): AggregateError {
-  return new AggregateError([operationFailure, postcheckFailure], 'Original binding operation and postcheck failed');
+  return new AggregateError(
+    [
+      operationFailure,
+      postcheckFailure
+    ],
+    'Original binding operation and postcheck failed'
+  );
 }
 
 //region Release internal freshness caching before postcheck callbacks and observers.
@@ -92,7 +101,9 @@ export function createJudgmentBindingSegment({
     } = {};
     {
       retained.bindingSegmentActive = true;
-      /** Release cached internal freshness before any external postcheck runs. */
+      /**
+       Release cached internal freshness before any external postcheck runs.
+       */
       using segment = { [Symbol.dispose](): void { 
         retained.bindingSegmentActive = false; 
       } };
@@ -111,7 +122,11 @@ export function createJudgmentBindingSegment({
     catch (error) {
       bl.debug('retaining original binding postcheck failure');
       retained.eligibilityFailure ??= Object.freeze({ cause: error });
-      if (completed.failure) throw createBindingPostcheckError({ operationFailure: completed.failure.cause, postcheckFailure: error });
+      if (completed.failure) throw createBindingPostcheckError({
+        operationFailure: completed.failure
+          .cause,
+        postcheckFailure: error
+      });
       throw error;
     }
     if (completed.failure) throw completed.failure
