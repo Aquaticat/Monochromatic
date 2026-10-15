@@ -67,6 +67,10 @@ transcript investigation was stopped.
   the user delegated the recommendation to the agent.
   Further questions should seek user preferences or constraints,
   not ask the user to design CI machinery.
+- Q13 asked about Claude's working habits while checks run.
+  The user rejected it as irrelevant to Depot.
+  The interviewer withdrew it;
+  keep subsequent questions tied to Depot evaluation and adoption constraints.
 
 ## Measured release example
 
@@ -240,7 +244,6 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
 ## Open questions and next work
 
 - Await the current interview round:
-  Q13 asks whether Claude should continue independent work while required checks remain pending;
   Q14 asks whether budget exhaustion should use a feasible GitHub fallback or leave checks pending;
   Q15 asks whether an evidence-backed future organization transfer is an acceptable option.
   Recommendations are not accepted answers or authorization to transfer the repository.
@@ -251,8 +254,7 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
   coverage,
   and cost evidence.
 - Establish device-test runtime and cost before recommending its frequency.
-- Establish what result Claude actually needs before its next dependent step,
-  through discussion and repository evidence.
+- Compare Depot's effect on relevant completion times without reopening Claude's working habits.
 - Make the technical coverage recommendation,
   preserving supported platforms and recording missing behavior tests.
 - Compare the desired broader CI against the $200 ceiling and repeated work,
@@ -271,6 +273,14 @@ Commit `1c9599732d` added the rate-limit evidence and expanded coverage scope;
 that version also passed rendering.
 
 ## Interview process correction
+
+Q13 expanded the interview into agent working habits.
+The user rejected that topic as irrelevant to Depot,
+and the interviewer withdrew the question.
+Proposed clarification to existing `AGENTS.md` rule `AUT`,
+pending acceptance:
+keep interview questions within the requested decision;
+observed symptoms do not authorize adjacent workflow redesign.
 
 The interviewer stopped after drafting the trial proposal despite unresolved decisions.
 The user asked for further questions even if they might answer that they do not know.
