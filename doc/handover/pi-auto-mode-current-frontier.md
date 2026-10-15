@@ -1149,7 +1149,24 @@ The full maintained lint recount covers 528 files and 486 rules:
 zero errors and 13357 warnings in
 `${HOME}/temp/agent/pi-maintained-typed-answers-lint-20261015.log`.
 Warnings still fail the strict package gate.
-The next boundary is admission of fixed question-definition catalogs.
+Commit `52d3470048` types fixed question-definition catalog admission;
+`selection-definitions.mjs` is now `selection-definitions.ts` as of 2026-10-15.
+Commits `d5adb29fd4` and `e77dbd1a86` retain scalar-specific rubric keys
+and freeze each admitted predicate through its original kind.
+The original byte digest,
+catalog limits,
+diagnostics,
+definition order,
+scalar rubric order,
+and independent per-definition identity indexes remain explicit contracts.
+Commit `59a3c7d809` adds built consumer coverage for those contracts and rejected catalog shapes.
+The typed catalog and contracts pass focused lint with zero warnings and errors in
+`${HOME}/temp/agent/pi-native-typed-definitions-format-20261015.log`;
+the new catalog consumer tests also pass with zero diagnostics in
+`${HOME}/temp/agent/pi-native-typed-definitions-tests-format-20261015.log`.
+Rebuilt consumer execution,
+old/new comparisons,
+and omission controls are pending.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
