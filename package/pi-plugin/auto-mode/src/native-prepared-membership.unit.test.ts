@@ -19,11 +19,23 @@ await describe({
         /** Frozen accessor inputs preserve the original callback contract without replacing serialization. */
         const members = Object.freeze(declaredNames.map(function preparedMember(identity) {
           /** Each input remains independently frozen while recording original serializer calls. */
-          const input = Object.freeze({ toJSON() { events.push(`json:${identity.id}`); return { path: `${identity.id}.txt` }; } });
+          const input = Object.freeze({ toJSON() { 
+            events.push(`json:${identity.id}`);
+          return { path: `${identity.id}.txt` }; 
+          } });
           return Object.freeze({
-            get id() { events.push(`id:${identity.id}`); return identity.id; },
-            get name() { events.push(`name:${identity.id}`); return identity.name; },
-            get input() { events.push(`input:${identity.id}`); return input; }
+            get id() { 
+              events.push(`id:${identity.id}`);
+            return identity.id; 
+            },
+            get name() { 
+              events.push(`name:${identity.id}`);
+            return identity.name; 
+            },
+            get input() { 
+              events.push(`input:${identity.id}`);
+            return input; 
+            }
           });
         }));
         /** Native prepared snapshot retains the same serialized identities and materialized arguments. */
@@ -48,7 +60,10 @@ await describe({
         /** Callback counter distinguishes eager input serialization from original full identity validation. */
         const events: string[] = [];
         /** A throwing serializer is never invoked while later group identity remains invalid. */
-        const input = Object.freeze({ toJSON() { events.push('serialized'); throw new Error('unexpected serialization'); } });
+        const input = Object.freeze({ toJSON() { 
+          events.push('serialized');
+        throw new Error('unexpected serialization'); 
+        } });
         /** Frozen group differs only at its final declared identifier. */
         const members = Object.freeze([
           Object.freeze({ id: 'call-0', name: 'read', input }),
@@ -77,7 +92,9 @@ await describe({
       fn: async () => {
         assert.equal(capturePreparedMembership({ members: Object.freeze([]), declaredNames: [] }), '[]');
         /** Native prepared-array projection is not a second membership decoder in the original constructor. */
-        const members = Object.freeze(Object.defineProperty([], 'toJSON', { value() { return { retained: true }; } }));
+        const members = Object.freeze(Object.defineProperty([], 'toJSON', { value() { 
+          return { retained: true }; 
+        } }));
         assert.equal(capturePreparedMembership({ members, declaredNames: [] }), '{"retained":true}');
       }
     })

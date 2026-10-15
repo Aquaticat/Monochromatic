@@ -16,14 +16,16 @@ await describe({
         const calls = [
           { type: 'toolCall', id: 'first"\n\\', name: 'read', arguments: { path: '../a"\n.txt' } },
           { type: 'text', text: 'original response' },
-          { type: 'toolCall', id: 'second', name: 'write', arguments: { content: '</script>\n${literal}' } }
+          { type: 'toolCall', id: 'second', name: 'write', arguments: { content: `</script>\n\${literal}` } }
         ];
         /** Snapshot is produced by the built original response owner. */
         const snapshot = captureMembership({ content: calls });
         assert.equal(snapshot.parentJSON, JSON.stringify(calls));
         assert.deepEqual(snapshot.declaredNames, [{ id: 'first"\n\\', name: 'read' }, { id: 'second', name: 'write' }]);
         assert.ok(Object.isFrozen(snapshot.declaredNames));
-        assert.ok(snapshot.declaredNames.every(function frozenIdentity(identity) { return Object.isFrozen(identity); }));
+        assert.ok(snapshot.declaredNames.every(function frozenIdentity(identity) { 
+          return Object.isFrozen(identity); 
+        }));
         assert.deepEqual(Reflect.ownKeys(snapshot.declaredNames[0] ?? {}), ['id', 'name']);
         calls.push({ type: 'toolCall', id: 'late', name: 'read', arguments: { path: 'late' } });
         assert.equal(snapshot.declaredNames.length, 2);
@@ -38,11 +40,17 @@ await describe({
         /** Original calls deliberately retain serializer callbacks until the native JSON boundary. */
         const content = ['a', 'b'].map(function nativeCall(id) {
           return { type: 'toolCall', id, name: 'read', arguments: {
-            toJSON() { events.push(`input:${id}`); return { path: `${id}.txt` }; }
+            toJSON() { 
+              events.push(`input:${id}`);
+            return { path: `${id}.txt` }; 
+            }
           } };
         });
         /** The response getter must still be read once for validation and once for serialization. */
-        const response = { get content() { events.push('content'); return content; } };
+        const response = { get content() { 
+          events.push('content');
+        return content; 
+        } };
         /** Built snapshot must preserve every original callback and its order. */
         const snapshot = captureMembership(response);
         assert.deepEqual(events, ['content', 'input:a', 'input:b', 'content', 'input:a', 'input:b']);
@@ -55,11 +63,15 @@ await describe({
         /** Independently generated maximum membership does not reuse production limit constants. */
         const names = membershipNames(64);
         /** Native response retains one original argument object per declared call. */
-        const calls = names.map(function nativeCall(identity) { return { type: 'toolCall', ...identity, arguments: {} }; });
+        const calls = names.map(function nativeCall(identity) { 
+          return { type: 'toolCall', ...identity, arguments: {} }; 
+        });
         assert.deepEqual(captureMembership({ content: calls }).declaredNames, names);
         /** JSON projection may contain scalar or null non-tool parts that do not declare membership. */
         const content = Object.defineProperty([...calls], 'toJSON', {
-          value() { return [null, false, 1, 'text', { type: 'text' }, ...calls]; }
+          value() { 
+            return [null, false, 1, 'text', { type: 'text' }, ...calls]; 
+          }
         });
         assert.deepEqual(captureMembership({ content }).declaredNames, names);
       }
@@ -75,7 +87,9 @@ await describe({
       [{ type: 'toolCall', id: 'a', arguments: {} }],
       [{ type: 'toolCall', name: 'read', arguments: {} }],
       [{ type: 'toolCall', id: 'a', name: 'read', arguments: {} }, { type: 'toolCall', id: 'a', name: 'write', arguments: {} }],
-      membershipNames(65).map(function oversizedCall(identity) { return { type: 'toolCall', ...identity, arguments: {} }; })
+      membershipNames(65).map(function oversizedCall(identity) { 
+        return { type: 'toolCall', ...identity, arguments: {} }; 
+      })
     ].map(function invalidMembership(content, ordinal) {
       return it({
         name: `rejects incomplete or ambiguous native group case ${String(ordinal)}`,

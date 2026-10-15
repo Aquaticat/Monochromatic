@@ -59,7 +59,9 @@ await describe({
       name: 'rejects absent group serialization after completing member admission',
       fn: async () => {
         /** Original empty group isolates the final serializer's absent-result branch. */
-        const members = Object.freeze(Object.defineProperty([], 'toJSON', { value() { return undefined; } }));
+        const members = Object.freeze(Object.defineProperty([], 'toJSON', { value() { 
+          return undefined; 
+        } }));
         assert.throws(() => capturePreparedMembership({ members, declaredNames: [] }), {
           name: 'JudgmentConstructionError', message: 'Prepared member data exceeds the declared JSON profile'
         });
@@ -81,9 +83,13 @@ await describe({
         /** Exact failure identity belongs to the native serializer, not membership admission. */
         const failure = new Error('final prepared serialization failed');
         /** Final array serialization is independently observable after all admission checks succeed. */
-        const members = Object.freeze(Object.defineProperty([], 'toJSON', { value() { throw failure; } }));
+        const members = Object.freeze(Object.defineProperty([], 'toJSON', { value() { 
+          throw failure; 
+        } }));
         assert.throws(() => capturePreparedMembership({ members, declaredNames: [] }),
-          function originalFailure(error) { return error === failure; });
+          function originalFailure(error) { 
+            return error === failure; 
+          });
       }
     })
     //endregion

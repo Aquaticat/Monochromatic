@@ -35,7 +35,10 @@ type DeclaredToolCandidate = Readonly<{
  @returns whether the original part declares a native tool call
  */
 function isDeclaredTool(value: unknown): value is DeclaredToolCandidate {
-  return (typeof value) === 'object' && (value !== null) && ('type' in value) && (value.type === 'toolCall');
+  return ((typeof value) === 'object')
+    && (value !== null)
+    && ('type' in value)
+    && (value.type === 'toolCall');
 }
 
 /**
@@ -46,7 +49,10 @@ function isDeclaredTool(value: unknown): value is DeclaredToolCandidate {
  @returns whether original identifier and name are nonempty strings
  */
 function hasDeclaredIdentity(value: DeclaredToolCandidate): value is DeclaredToolCandidate & JudgmentDeclaredMember {
-  return (typeof value.id) === 'string' && (value.id !== '') && (typeof value.name) === 'string' && (value.name !== '');
+  return ((typeof value.id) === 'string')
+    && (value.id !== '')
+    && ((typeof value.name) === 'string')
+    && (value.name !== '');
 }
 
 //region Original JSON admission precedes declared group identity publication.
@@ -79,7 +85,7 @@ export function captureJudgmentMembership(response: JudgmentResponseInput): Judg
    Serialize the original content after every native argument has passed value-preservation checks.
    */
   const parentJSON = JSON.stringify(response.content);
-  if ((typeof parentJSON) !== 'string' || (Buffer.byteLength(parentJSON) > JUDGMENT_JSON_BYTE_LIMIT)) {
+  if (((typeof parentJSON) !== 'string') || (Buffer.byteLength(parentJSON) > JUDGMENT_JSON_BYTE_LIMIT)) {
     throw new JudgmentConstructionError('Native enclosing response exceeds the declared JSON profile');
   }
   /**
@@ -90,9 +96,16 @@ export function captureJudgmentMembership(response: JudgmentResponseInput): Judg
   /**
    Complete tool membership follows original response order.
    */
-  const declared = content.filter(function selectDeclaredTool(value) { return isDeclaredTool(value); });
-  if ((declared.length === 0) || (declared.length > JUDGMENT_MEMBER_LIMIT) || (!declared.every(function admitDeclaredIdentity(value) { return hasDeclaredIdentity(value); }))
-    || (new Set(declared.map(function declaredId(value) { return value.id; })).size !== declared.length)) {
+  const declared = content.filter(function selectDeclaredTool(value) { 
+    return isDeclaredTool(value); 
+  });
+  if ((declared.length === 0) || (declared.length > JUDGMENT_MEMBER_LIMIT)
+    || (!declared.every(function admitDeclaredIdentity(value) { 
+      return hasDeclaredIdentity(value); 
+    }))
+    || (new Set(declared.map(function declaredId(value) { 
+      return value.id; 
+    })).size !== declared.length)) {
     throw new JudgmentConstructionError('Enclosing judgment requires complete unique native tool membership');
   }
   /**

@@ -29,7 +29,9 @@ await describe({
         name: `rejects non-array serialized response case ${String(ordinal)}`,
         fn: async () => {
           /** A native array can still serialize through a caller-owned projection callback. */
-          const content = Object.defineProperty([], 'toJSON', { value() { return value; } });
+          const content = Object.defineProperty([], 'toJSON', { value() { 
+            return value; 
+          } });
           assert.throws(() => captureMembership({ content }), {
             name: 'JudgmentConstructionError', message: 'Native enclosing response has no content array'
           });
@@ -40,7 +42,9 @@ await describe({
       name: 'rejects absent serialization before parsing the declared response',
       fn: async () => {
         /** Undefined serializer output is distinct from a JSON scalar or empty membership. */
-        const content = Object.defineProperty([], 'toJSON', { value() { return undefined; } });
+        const content = Object.defineProperty([], 'toJSON', { value() { 
+          return undefined; 
+        } });
         assert.throws(() => captureMembership({ content }), {
           name: 'JudgmentConstructionError', message: 'Native enclosing response exceeds the declared JSON profile'
         });
@@ -64,9 +68,13 @@ await describe({
         /** Original serializer error must survive without wrapping or substitution. */
         const failure = new Error('original serializer failure');
         /** Native argument serialization is the first observable response operation after content iteration. */
-        const input = { toJSON() { throw failure; } };
+        const input = { toJSON() { 
+          throw failure; 
+        } };
         assert.throws(() => captureMembership({ content: [{ type: 'toolCall', id: 'a', name: 'read', arguments: input }] }),
-          function originalFailure(error) { return error === failure; });
+          function originalFailure(error) { 
+            return error === failure; 
+          });
       }
     }),
     it({

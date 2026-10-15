@@ -48,7 +48,8 @@ export function capturePreparedJudgmentJSON({
     l
   });
   rl.debug('capturing original prepared membership');
-  if ((!isProgramArray(members)) || (!Object.isFrozen(members)) || (members.length !== declaredNames.length)) {
+  if ((!isProgramArray(members)) || (!Object.isFrozen(members))
+    || (members.length !== declaredNames.length)) {
     throw new JudgmentConstructionError('Prepared group differs from complete declared membership');
   }
   for (let index = 0; index < members.length; index += 1) {
@@ -60,8 +61,14 @@ export function capturePreparedJudgmentJSON({
      Complete declared membership has already been authenticated by the original response snapshot.
      */
     const expected = nonNullishOrThrow(declaredNames[index]);
-    if ((!member) || (!Object.isFrozen(member)) || (member.id !== expected.id) || (member.name !== expected.name)
-      || (!Object.hasOwn(member, 'input')) || (!Object.isFrozen(member.input))) {
+    if ((!member) || (!Object.isFrozen(member))
+      || (member.id !== expected.id)
+      || (member.name !== expected.name)
+      || (!Object.hasOwn(
+        member,
+        'input'
+      ))
+      || (!Object.isFrozen(member.input))) {
       throw new JudgmentConstructionError('Prepared member identity or sealed input differs from the native group');
     }
   }
@@ -70,7 +77,7 @@ export function capturePreparedJudgmentJSON({
    Native serialization runs after every member identity and input-value check succeeds.
    */
   const preparedJSON = JSON.stringify(members);
-  if ((typeof preparedJSON) !== 'string' || (Buffer.byteLength(preparedJSON) > JUDGMENT_JSON_BYTE_LIMIT)) {
+  if (((typeof preparedJSON) !== 'string') || (Buffer.byteLength(preparedJSON) > JUDGMENT_JSON_BYTE_LIMIT)) {
     throw new JudgmentConstructionError('Prepared member data exceeds the declared JSON profile');
   }
   return preparedJSON;
