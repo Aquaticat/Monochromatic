@@ -4,6 +4,8 @@
 
 The user is trialing Depot and requested a grilling interview on 2026-10-15.
 The user has delegated the technical recommendation after establishing priorities and budget.
+The interview remains open:
+the user explicitly requested further questions even when their answer might be uncertain.
 The [trial proposal](../planning/depot-ci-trial.md) records the next evidence-gathering scope.
 No migration or vendor adoption has been accepted.
 The user explicitly requested this handover.
@@ -237,6 +239,14 @@ The broader CI plan must also identify behaviors for which tests do not yet exis
 
 ## Open questions and next work
 
+- Await the current interview round:
+  Q13 asks whether Claude should continue independent work while required checks remain pending;
+  Q14 asks whether budget exhaustion should use a feasible GitHub fallback or leave checks pending;
+  Q15 asks whether an evidence-backed future organization transfer is an acceptable option.
+  Recommendations are not accepted answers or authorization to transfer the repository.
+- The factual exploration agent is checking workflow cancellation settings,
+  bounded recent execution history,
+  and repository rules before the next scheduling questions.
 - Use the [trial proposal](../planning/depot-ci-trial.md) to collect comparable runtime,
   coverage,
   and cost evidence.
@@ -261,6 +271,15 @@ Commit `1c9599732d` added the rate-limit evidence and expanded coverage scope;
 that version also passed rendering.
 
 ## Interview process correction
+
+The interviewer stopped after drafting the trial proposal despite unresolved decisions.
+The user asked for further questions even if they might answer that they do not know.
+Delegating technical judgment does not confirm that the interview is complete.
+The grilling skill requires an empty decision frontier and confirmation of shared understanding before implementation.
+Proposed clarification to existing `AGENTS.md` rule `ASK`,
+pending acceptance:
+"Non-measurable facts: ask. An uncertain answer or delegated technical judgment does not close unresolved preferences;
+offer concrete recommendations and confirm shared understanding."
 
 The interviewer asked for hypothetical rate-limit preferences before inspecting the existing policy and run history.
 The user corrected this;
