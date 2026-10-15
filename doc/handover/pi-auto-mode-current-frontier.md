@@ -1689,8 +1689,10 @@ and all six built artifacts retain their SHA-256 hashes.
 The receipts are `typed-execution-constructor-comparison.json`
 and `typed-execution-omissions.json`
 in `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
-The full maintained lint recount is running;
-the constructor's remaining JavaScript paths are not yet qualified for lint completion.
+The full maintained lint recount covers 615 files and 486 rules:
+zero errors and 11625 warnings in
+`${HOME}/temp/agent/pi-maintained-typed-execution-lint-20261015.log`.
+The constructor's remaining JavaScript paths are not yet qualified for lint completion.
 Then continue the remaining constructor preparation,
 assessment,
 finalization,
