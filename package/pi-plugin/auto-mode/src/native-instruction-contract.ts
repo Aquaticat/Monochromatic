@@ -1,7 +1,7 @@
 /**
  Independent built-consumer contracts exercise original native instruction boundaries. @module
  */
-import type { FixtureGoverningProjection, FixtureGoverningSnapshot } from './native-governing-fixture.ts';
+import type { FixtureGoverningProjection, FixtureGoverningSnapshot, FixtureGoverningSource } from './native-governing-fixture.ts';
 
 /** Fixture declarations retain the exact opaque handle supplied to question selection. */
 export type FixtureInstructionDeclaration = Readonly<{ definitionId: string; bindingHandle: object }>;
@@ -56,4 +56,27 @@ export type FixtureInstructions = Readonly<{
 /** Built native entry is admitted independently before fixture capability injection. */
 export type FixtureInstructionModule = Readonly<{
   createJudgmentInstructions: (input: Readonly<Record<string, unknown>>) => FixtureInstructions;
+}>;
+
+/** Fixture-owned controls permit retirement without mutating shared or installed state. */
+export type FixtureInstructionState = {
+  sources: readonly FixtureGoverningSource[];
+  active: boolean;
+  failure?: Error;
+  issueFailure?: Error;
+  hostPolicy: unknown;
+};
+
+/** Independent harness preserves original capabilities and observable declarations. */
+export type FixtureInstructionHarness = Readonly<{
+  instructions: FixtureInstructions;
+  input: Readonly<Record<string, unknown>>;
+  events: string[];
+  state: FixtureInstructionState;
+  members: readonly object[];
+  byMember: Map<string, object>;
+  bindings: WeakMap<object, Readonly<{ binding: FixtureInstructionBinding }>>;
+  receipt: { request: Readonly<{ body: string }> };
+  declarations: FixtureInstructionDeclaration[];
+  batches: (readonly object[])[];
 }>;

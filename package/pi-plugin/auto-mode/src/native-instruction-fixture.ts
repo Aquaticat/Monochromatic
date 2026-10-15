@@ -3,7 +3,7 @@
  */
 import assert from 'node:assert/strict';
 import { createGoverningSource, governingParser, type FixtureGoverningSource } from './native-governing-fixture.ts';
-import type { FixtureInstructionBinding, FixtureInstructionDeclaration, FixtureInstructionModule } from './native-instruction-contract.ts';
+import type { FixtureInstructionBinding, FixtureInstructionDeclaration, FixtureInstructionModule, FixtureInstructionHarness, FixtureInstructionState } from './native-instruction-contract.ts';
 
 /**
  Require the original native constructor before supplying independently owned fixture inputs.
@@ -38,11 +38,11 @@ export const INSTRUCTION_POLICY = '# Fixture scope\n\nAAA: Adopt the following q
 
  @example createInstructionFixture({ memberCount: 2 });
  */
-export function createInstructionFixture({ contents = [INSTRUCTION_POLICY], memberCount = 1 }: Readonly<{ contents?: readonly string[]; memberCount?: number }> = {}) {
+export function createInstructionFixture({ contents = [INSTRUCTION_POLICY], memberCount = 1 }: Readonly<{ contents?: readonly string[]; memberCount?: number }> = {}): FixtureInstructionHarness {
   /** Each callback records only operation names, never private original content. */
   const events: string[] = [];
   /** Original source list remains replaceable only through fixture-owned state. */
-  const state: { sources: readonly FixtureGoverningSource[]; active: boolean; failure?: Error; issueFailure?: Error; hostPolicy: unknown } = {
+  const state: FixtureInstructionState = {
     sources: Object.freeze(contents.map(createGoverningSource)), active: false, hostPolicy: {},
   };
   /** Exact declarations allow canonical selector identity and publication-order assertions. */
@@ -79,7 +79,7 @@ export function createInstructionFixture({ contents = [INSTRUCTION_POLICY], memb
   /** Observe selection's original active-segment decision. */
   function isBindingSegmentActive(): boolean { events.push('active'); return state.active; }
   /** Read the exact retained original source list. */
-  function readJudgmentSources() { events.push('sources'); return { hostGoverningPolicy: state.hostPolicy, governingSources: state.sources }; }
+  function readJudgmentSources(): Readonly<{ hostGoverningPolicy: unknown; governingSources: readonly FixtureGoverningSource[] }> { events.push('sources'); return { hostGoverningPolicy: state.hostPolicy, governingSources: state.sources }; }
   /**
    Preserve declarations without substituting built claim construction.
    @param input - original predicate and opaque handle
@@ -87,7 +87,7 @@ export function createInstructionFixture({ contents = [INSTRUCTION_POLICY], memb
    */
   function declare(input: FixtureInstructionDeclaration): object { declarations.push(input); events.push(`declare:${input.definitionId}`); return input.bindingHandle; }
   /** Preserve original question-selection callback timing. */
-  function knownSelection() { events.push('selection'); return { declare }; }
+  function knownSelection(): Readonly<{ declare: typeof declare }> { events.push('selection'); return { declare }; }
   /**
    Retain original batch order without invoking any remote assessment.
    @param claims - original complete claim sequence
