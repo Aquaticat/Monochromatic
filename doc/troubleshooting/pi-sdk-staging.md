@@ -7331,7 +7331,7 @@ not a universal latency guarantee.
 The expanded final runtime regression sequence passed in two parts.
 The first part reached the CLI successfully,
 then the scratch runner's next command failed with Mise's
-`Monorepo task paths (like \`//path:task\` or \`:task\`) require a monorepo root configuration.`
+``Monorepo task paths (like `//path:task` or `:task`) require a monorepo root configuration.``
 The task lacked a repository working directory.
 Pinning its `dir` to the repository allowed all remaining queue,
 resource reload,

@@ -599,7 +599,11 @@ tool diagnostic and declaration budgets,
 guideline publication,
 forced-message retirement,
 and governing selection now retain mutable values in their original owned records.
-Their updated build and source-work/resource consumers are running before the full lint recount.
+Their updated build and source-work/resource consumers pass;
+the work count remains 9046.
+The full lint recount is running with `GOMAXPROCS=2` and the package's existing worker and heap limits,
+without concurrent native runtime tests.
+Its log is `${HOME}/temp/agent/pi-maintained-source-boundaries-lint-20261014.log`.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
