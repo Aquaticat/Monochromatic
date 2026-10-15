@@ -959,6 +959,22 @@ fn main() -> Result<()> {
     // ```
     let cli = Cli::parse();
 
+    // What:     `if cli.licenses { ... return Ok(()) }`. Print the embedded license notices to stdout and exit before
+    //           any backend, window or audio setup.
+    // Why:      The notices must be reachable from the program itself (the Windows release is one executable), and
+    //           printing them needs no display, so it works on a headless machine too. A closed pipe (`| head`)
+    //           ends the listing without an error (`write_notices`).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (cli.licenses) { writeNotices(process.stdout); return; }
+    // ```
+    if cli.licenses {
+        tracing::debug!("printing the license notices for --licenses");
+        music_player::licenses::write_notices(&mut std::io::stdout().lock())?;
+        return Ok(());
+    }
+
     // What:     Install Slint's winit backend explicitly, with a window-attributes
     //           hook that stamps the Wayland app id. This `{ ... }` is a BARE BLOCK
     //           SCOPE: the locals inside (`builder`, `backend`, ...) are dropped at

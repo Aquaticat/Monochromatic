@@ -1,9 +1,70 @@
 //! Compiles the Slint UI markup into generated Rust at build time,
+//!  writes the license notices the binary embeds (`src/licenses.rs`),
 //!  and on
 //! Windows embeds the application icon into the .exe.
 
+/// What:     The text a build embeds when no notice file was given.
+/// Why:      Development builds must not need cargo-about; the text says how to get the real notices.
+const NOTICES_PLACEHOLDER: &str = "This build of Music Player carries no third-party license notices.
+Release builds embed them: the release workflow writes them with
+`mise run //package/music-player/desktop-app:notices` and builds with
+MUSIC_PLAYER_THIRD_PARTY_LICENSES set to that file (target/THIRD-PARTY-LICENSES.txt).
+Every release also ships them as a separate file next to the programs.
+";
+
+/// What:     Writes `OUT_DIR/third_party_licenses.txt`: a copy of the file named by
+///           `MUSIC_PLAYER_THIRD_PARTY_LICENSES`, or the placeholder when the variable is unset or empty.
+///           With `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true` a missing variable stops the build.
+/// Why:      The release binaries must carry the notices (the single Windows executable has nothing beside it),
+///           while a development build stays free of the cargo-about step.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const source = process.env.MUSIC_PLAYER_THIRD_PARTY_LICENSES;
+/// if (!source && process.env.MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES === "true") throw new Error("...");
+/// writeFile(`${OUT_DIR}/third_party_licenses.txt`, source ? readFile(source) : PLACEHOLDER);
+/// ```
+fn write_license_notices() {
+    println!("cargo:rerun-if-env-changed=MUSIC_PLAYER_THIRD_PARTY_LICENSES");
+    println!("cargo:rerun-if-env-changed=MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES");
+    let out_dir = std::path::PathBuf::from(std::env::var_os("OUT_DIR").expect("cargo sets OUT_DIR for build scripts"));
+    let destination = out_dir.join("third_party_licenses.txt");
+    let required = std::env::var("MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES").is_ok_and(|value| return value == "true");
+    let source = std::env::var_os("MUSIC_PLAYER_THIRD_PARTY_LICENSES").filter(|value| return !value.is_empty());
+    let Some(source_path) = source.map(std::path::PathBuf::from) else {
+        assert!(
+            !required,
+            "MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES is true, but MUSIC_PLAYER_THIRD_PARTY_LICENSES names no notice \
+             file. Write it with `mise run //package/music-player/desktop-app:notices` and set \
+             MUSIC_PLAYER_THIRD_PARTY_LICENSES to the absolute path of target/THIRD-PARTY-LICENSES.txt, or unset \
+             MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES for a development build without notices."
+        );
+        std::fs::write(&destination, NOTICES_PLACEHOLDER).expect("writing the placeholder notices into OUT_DIR");
+        return;
+    };
+    println!("cargo:rerun-if-changed={}", source_path.display());
+    let text = std::fs::read_to_string(&source_path).unwrap_or_else(|error| {
+        panic!(
+            "MUSIC_PLAYER_THIRD_PARTY_LICENSES names {}, which cannot be read as UTF-8 text: {error}. Write it with \
+             `mise run //package/music-player/desktop-app:notices`.",
+            source_path.display()
+        )
+    });
+    // A notice file always lists Rust crates; anything else is the wrong file.
+    assert!(
+        text.contains("Rust crates under"),
+        "{} lists no Rust crate, so it is not a notice file written by the notices task.",
+        source_path.display()
+    );
+    std::fs::write(&destination, text).expect("writing the license notices into OUT_DIR");
+}
+
 fn main() {
     slint_build::compile("ui/app.slint").expect("Slint UI compilation failed");
+
+    // What:     Write the license notices `src/licenses.rs` embeds.
+    // Why:      See `write_license_notices`.
+    write_license_notices();
 
     // What:     `#[cfg(windows)]` is a conditional-compilation attribute. It
     //           tells the Rust compiler to keep the statement directly below it

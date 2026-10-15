@@ -44,6 +44,7 @@ fn no_args_yields_no_path_and_paused() {
         parse(&[]),
         Cli {
             start_playing: false,
+            licenses: false,
             path: None,
         }
     );
@@ -59,6 +60,7 @@ fn single_folder_loads_paused() {
         parse(&["/music/folder"]),
         Cli {
             start_playing: false,
+            licenses: false,
             path: Some(PathBuf::from("/music/folder")),
         }
     );
@@ -75,6 +77,7 @@ fn single_file_is_accepted() {
         parse(&["/music/a.flac"]),
         Cli {
             start_playing: false,
+            licenses: false,
             path: Some(PathBuf::from("/music/a.flac")),
         }
     );
@@ -91,6 +94,7 @@ fn flag_with_path_enables_start_playing() {
         parse(&["--start-playing", "/music/a.flac"]),
         Cli {
             start_playing: true,
+            licenses: false,
             path: Some(PathBuf::from("/music/a.flac")),
         }
     );
@@ -107,6 +111,7 @@ fn flag_only_with_no_path_is_noop() {
         parse(&["--start-playing"]),
         Cli {
             start_playing: true,
+            licenses: false,
             path: None,
         }
     );
@@ -122,4 +127,19 @@ fn second_path_is_rejected() {
     // Why:      Confirm clap rejects a second positional rather than silently dropping it.
     let result = Cli::try_parse_from(["music-player", "/music/a.flac", "/music/b.opus"]);
     assert!(result.is_err());
+}
+
+// What:     `#[test] fn licenses_flag_is_parsed()`. The `--licenses` flag alone.
+// Why:      `--licenses` is how a user of the single Windows executable reaches the license notices; it must parse
+//           as the flag, open no path and not auto-play.
+#[test]
+fn licenses_flag_is_parsed() {
+    assert_eq!(
+        parse(&["--licenses"]),
+        Cli {
+            start_playing: false,
+            licenses: true,
+            path: None,
+        }
+    );
 }

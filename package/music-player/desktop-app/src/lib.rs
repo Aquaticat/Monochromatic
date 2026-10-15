@@ -36,6 +36,18 @@ pub mod command;
 pub mod cli;
 
 /// What:
+///      `pub mod licenses;` declares the license-notice module (`src/licenses.rs`).
+/// Why:
+///       The binary carries the license notices of everything compiled into it and prints them for
+///           `--licenses`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as licenses from "./licenses";
+/// ```
+pub mod licenses;
+
+/// What:
 ///      `pub mod identity;` the platform identity-string module
 ///           (`src/identity.rs`).
 /// Why:

@@ -111,6 +111,23 @@ pub struct Cli {
     pub start_playing: bool,
 
     /// What:
+    ///      `#[arg(long = "licenses")] pub licenses: bool`.
+    ///  A presence flag like `--start-playing`.
+    /// Why:
+    ///       Prints the license notices the binary carries (`src/licenses.rs`) and exits without opening a window;
+    ///  the single Windows executable has no other place for them.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// // @option("--licenses") licenses: boolean = false;
+    /// ```
+    #[arg(
+        long = "licenses",
+        help = "Print the license notices of the program and of every component built into it, then exit"
+    )]
+    pub licenses: bool,
+
+    /// What:
     ///      `pub path: Option<PathBuf>`.
     ///  A field with NO `#[arg(...)]` flag attribute
     ///           is a POSITIONAL argument;

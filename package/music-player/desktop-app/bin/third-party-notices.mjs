@@ -1,0 +1,288 @@
+#!/usr/bin/env node
+// Write the third-party license notices of one music player binary as one plain-text file.
+// Decision and allow-list: doc/decision/music-player-third-party-licenses.md.
+//
+// Usage, from the folder of the crate whose about.toml lists the targets and accepted licenses:
+//   node <this file> --product desktop --output target/THIRD-PARTY-LICENSES.txt [--features alsa-fallback]
+//   node <this file> --product android --output <file> [--android-libraries <licensee artifacts.json>]
+//
+// What it does, in order, stopping with an error at the first failure:
+//   1. `cargo fetch --locked` (network), so every crate of every listed target has its source on disk.
+//   2. `cargo-about generate --format json --frozen --fail`: one license per crate, chosen from the accepted list in
+//      about.toml in its order of preference, with the crate's own license file when it ships one. A crate whose
+//      license is not accepted or cannot be determined stops it.
+//   3. For every target in about.toml, `cargo tree --edges normal,no-proc-macro`: every registry crate that target
+//      links into the binary must be among the crates cargo-about covered; the counts are printed.
+//   4. The file: the program's own license texts, the bundled assets, the Rust standard library, the Android libraries
+//      when given, and every Rust crate, grouped by license text.
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { parseArgs } from 'node:util';
+
+//region Arguments and paths
+const { values: options } = parseArgs({
+  options: {
+    product: { type: 'string' },
+    output: { type: 'string' },
+    features: { type: 'string', default: '' },
+    'android-libraries': { type: 'string' },
+    'skip-fetch': { type: 'boolean', default: false },
+  },
+});
+if (options.product !== 'desktop' && options.product !== 'android') {
+  throw new Error('--product must be desktop or android, got ' + JSON.stringify(options.product));
+}
+if (!options.output) throw new Error('--output names the notice file to write');
+if (options['android-libraries'] && options.product !== 'android') {
+  throw new Error('--android-libraries applies only to --product android');
+}
+const crateDirectory = process.cwd();
+const scriptDirectory = dirname(new URL(import.meta.url).pathname);
+const musicPlayer = resolve(scriptDirectory, '..', '..');
+const repository = resolve(musicPlayer, '..', '..');
+const output = resolve(options.output);
+const featureArgs = options.features ? ['--features', options.features] : [];
+const newline = String.fromCharCode(10);
+//endregion
+
+//region Commands
+const run = (command, args, extra = {}) =>
+  execFileSync(command, args, { cwd: crateDirectory, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, ...extra });
+
+// cargo-about comes from the repository's mise tools (mise.lock records the version).
+let aboutVersion = '';
+try {
+  aboutVersion = run('cargo-about', ['--version'], { stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+} catch (error) {
+  throw new Error(
+    'cargo-about is not on PATH (' + String(error.message).split(newline)[0] + '). '
+      + 'Install the repository tools with `mise install cargo:cargo-about` and run this through its mise task.',
+    { cause: error },
+  );
+}
+console.log('Using ' + aboutVersion);
+if (!options['skip-fetch']) run('cargo', ['fetch', '--locked'], { stdio: 'inherit' });
+//endregion
+
+//region cargo-about
+const aboutConfig = readFileSync(join(crateDirectory, 'about.toml'), 'utf8');
+const targetsMatch = aboutConfig.match(/^targets = \[([^\]]*)\]/m);
+if (!targetsMatch) throw new Error('about.toml in ' + crateDirectory + ' has no targets list');
+const targets = [...targetsMatch[1].matchAll(/"([^"]+)"/g)].map(match => match[1]);
+const aboutJson = output + '.about.json';
+mkdirSync(dirname(output), { recursive: true });
+rmSync(aboutJson, { force: true });
+// --frozen: the locked graph and no network. --fail: an unaccepted or unknown license stops it.
+run('cargo-about', [
+  '--color', 'never', 'generate', '--format', 'json', '--frozen', '--fail',
+  '--config', 'about.toml', ...featureArgs, '--output-file', aboutJson,
+], { stdio: 'inherit' });
+const about = JSON.parse(readFileSync(aboutJson, 'utf8'));
+rmSync(aboutJson, { force: true });
+if (!Array.isArray(about.licenses) || about.licenses.length === 0) throw new Error('cargo-about wrote no license text');
+const crateKey = item => item.name + ' ' + item.version;
+const covered = new Set(about.licenses.flatMap(license => license.used_by.map(used => crateKey(used.crate))));
+//endregion
+
+//region Coverage check against cargo tree
+const linkedUnion = new Set();
+for (const target of targets) {
+  const tree = run('cargo', [
+    'tree', '--frozen', '--edges', 'normal,no-proc-macro', '--target', target, ...featureArgs,
+    '--prefix', 'none', '--format', '{p}',
+  ], { stdio: ['ignore', 'pipe', 'inherit'] });
+  // A path dependency prints its folder after the version: it is this repository's own code, not a third party's.
+  const linked = [...new Set(tree.split(newline).filter(line => line && !line.includes(' (/')).map(line =>
+    line.replace(/ \(\*\)$/, '').replace(/ \(.*\)$/, '').replace(' v', ' ')
+  ))].sort();
+  const missing = linked.filter(key => !covered.has(key));
+  if (missing.length > 0) {
+    throw new Error(target + ' links crates the notice does not cover: ' + missing.join(', '));
+  }
+  for (const key of linked) linkedUnion.add(key);
+  console.log(target + ': ' + linked.length + ' third-party crates linked, all covered');
+}
+console.log(
+  'cargo-about covered ' + covered.size + ' crates (' + about.licenses.length + ' license texts); '
+    + linkedUnion.size + ' of them are linked into a binary of some target; the other '
+    + (covered.size - linkedUnion.size) + ' are reached only through procedural macros, which run while compiling',
+);
+//endregion
+
+//region Text helpers
+const rule = character => character.repeat(78);
+const heading = title => [rule('='), title, rule('='), ''].join(newline);
+const subheading = title => [title, rule('-'), ''].join(newline);
+const readText = path => readFileSync(path, 'utf8').replace(/\r\n/g, newline).trimEnd();
+// The Rust toolchain's own notice for its standard library is HTML; keep its text and decode the entities it uses.
+const htmlToText = html =>
+  html
+    .replace(/<(head|script|style)[\s\S]*?<\/\1>/g, '')
+    .replace(/<br\s*\/?>/g, newline)
+    .replace(/<\/(p|h[1-6]|li|pre|div|tr)>/g, newline)
+    .replace(/<[^>]+>/g, '')
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .split(newline)
+    .map(line => line.trimEnd())
+    .join(newline)
+    .replace(/\n{3,}/g, newline + newline)
+    .trim();
+//endregion
+
+//region Sections
+const productVersion = readFileSync(join(musicPlayer, 'desktop-app', 'Cargo.toml'), 'utf8')
+  .match(/^\[package\][\s\S]*?^version = "([^"]+)"/m)?.[1];
+if (!productVersion) throw new Error('No [package] version in package/music-player/desktop-app/Cargo.toml');
+const sections = [];
+const title = options.product === 'desktop'
+  ? 'Music Player ' + productVersion + ' for Windows, macOS and Linux: license notices'
+  : 'Music Player ' + productVersion + ' for Android: license notices';
+const intro = options.product === 'desktop'
+  ? [
+    'This file lists the licenses of Music Player and of every third-party component built into the program:',
+    'the program\'s own license, the typeface and icons it draws with, the Rust standard library, and every Rust',
+    'crate (library) compiled into it. `music-player --licenses` prints the same text.',
+    '',
+    'Music Player is licensed under the GNU Lesser General Public License, version 3 or later. The program is built',
+    'with the Slint user interface toolkit, which this project uses under the GNU General Public License, version 3',
+    '(GPL-3.0-only), one of the three licenses Slint offers. Each released program is therefore a combined work that',
+    'you may use, copy and change under the GNU General Public License, version 3. The complete source code of each',
+    'release is the repository tree at its tag (https://github.com/Aquaticat/Monochromatic, tag',
+    'music-player-v' + productVersion + '), and the source of every crate below is published on crates.io under the',
+    'name and version given.',
+    '',
+    'One notice file covers the programs for every platform, so it also names crates that only another platform\'s',
+    'program contains.',
+  ]
+  : [
+    'This file lists the licenses of Music Player for Android and of every third-party component built into the',
+    'app: the app\'s own license, the icons it draws, the Android libraries it includes, the Rust standard library',
+    'and every Rust crate (library) compiled into its native library (libmusicplayer_native.so).',
+    'The app carries the same text as assets/THIRD-PARTY-LICENSES.txt inside the APK.',
+    '',
+    'Music Player is licensed under the GNU Lesser General Public License, version 3 or later. The complete source',
+    'code of each release is the repository tree at its tag (https://github.com/Aquaticat/Monochromatic, tag',
+    'music-player-v' + productVersion + '); the source of every crate below is published on crates.io under the',
+    'name and version given, and the Android libraries are published on Google\'s Maven repository and Maven',
+    'Central under the coordinates given.',
+  ];
+sections.push([heading(title), ...intro, ''].join(newline));
+
+sections.push([
+  heading('Music Player: GNU Lesser General Public License, version 3 or later'),
+  'Copyright (C) the Monochromatic authors.',
+  '',
+  readText(join(repository, 'LICENSE')),
+  '',
+  subheading('The GNU General Public License, version 3, which the license above supplements'),
+  readText(join(repository, 'LICENSES', 'GPL-3.0-or-later.txt')),
+  '',
+].join(newline));
+
+const apacheText = readText(join(repository, 'LICENSES', 'Apache-2.0.txt'));
+const bundled = [heading('Assets drawn by the program')];
+if (options.product === 'desktop') {
+  bundled.push(
+    subheading('Inter typeface (ui/fonts/InterVariable.ttf), SIL Open Font License 1.1'),
+    readText(join(musicPlayer, 'desktop-app', 'LICENSES', 'OFL-1.1.txt')),
+    '',
+  );
+}
+bundled.push(
+  subheading('Material Symbols icons, Apache License 2.0'),
+  'The icons queue_music, play_circle, autoplay, check and close (Outlined style, weight 400, grade 0, optical size',
+  '24) come from https://github.com/google/material-design-icons at commit',
+  '49d4db35df873165d6bd6ba09b063c7dafbac2f4, published by Google under the Apache License, Version 2.0.',
+  'The program embeds their outlines as vector path data, with each outline moved onto a 24 by 24 grid.',
+  '',
+  apacheText,
+  '',
+);
+sections.push(bundled.join(newline));
+
+const sysroot = run('rustc', ['--print', 'sysroot'], { stdio: ['ignore', 'pipe', 'inherit'] }).trim();
+const stdNotice = join(sysroot, 'share', 'doc', 'rust', 'COPYRIGHT-library.html');
+if (!existsSync(stdNotice)) throw new Error('The Rust toolchain at ' + sysroot + ' has no ' + stdNotice);
+const rustcVersion = run('rustc', ['--version'], { stdio: ['ignore', 'pipe', 'inherit'] }).trim();
+sections.push([
+  heading('The Rust standard library'),
+  'Compiled into the program from ' + rustcVersion + '. This is the notice that toolchain ships',
+  '(share/doc/rust/COPYRIGHT-library.html), converted to text. It names the licenses of the standard library and of',
+  'the crates the standard library is built from, with their notices.',
+  '',
+  htmlToText(readFileSync(stdNotice, 'utf8')),
+  '',
+].join(newline));
+//endregion
+
+//region Android libraries
+if (options['android-libraries']) {
+  const artifacts = JSON.parse(readFileSync(resolve(options['android-libraries']), 'utf8'));
+  if (!Array.isArray(artifacts) || artifacts.length === 0) throw new Error('No Android library in ' + options['android-libraries']);
+  const byLicense = new Map();
+  for (const artifact of artifacts) {
+    const ids = (artifact.spdxLicenses ?? []).map(license => license.identifier);
+    if (ids.length === 0 || (artifact.unknownLicenses ?? []).length > 0) {
+      throw new Error('Android library ' + artifact.groupId + ':' + artifact.artifactId + ' has no SPDX license');
+    }
+    const key = ids.join(' OR ');
+    byLicense.set(key, [...(byLicense.get(key) ?? []), artifact.groupId + ':' + artifact.artifactId + ':' + artifact.version]);
+  }
+  const libraryTexts = { 'Apache-2.0': apacheText };
+  const androidSection = [heading('Android libraries (' + artifacts.length + ' artifacts)')];
+  for (const [license, coordinates] of [...byLicense].sort()) {
+    const text = libraryTexts[license];
+    if (!text) throw new Error('No license text for the Android library license ' + license + '; add it to the notices');
+    androidSection.push(
+      subheading('Under ' + license + ': ' + coordinates.length + ' artifacts'),
+      ...coordinates.sort(),
+      '',
+      text,
+      '',
+    );
+  }
+  sections.push(androidSection.join(newline));
+}
+//endregion
+
+//region Rust crates
+const crateSection = [heading('Rust crates (' + covered.size + ' crates, ' + about.licenses.length + ' license texts)')];
+crateSection.push(
+  'Each entry below is one license text and the crates it covers. When a crate offers several licenses, the first of',
+  'these is the one listed: ' + [...aboutConfig.matchAll(/^ {2}"([^"]+)",$/gm)].map(match => match[1]).join(', ') + '.',
+  '',
+);
+const sortedLicenses = [...about.licenses].sort((left, right) =>
+  left.id.localeCompare(right.id) || crateKey(left.used_by[0].crate).localeCompare(crateKey(right.used_by[0].crate))
+);
+for (const license of sortedLicenses) {
+  const crates = [...new Set(license.used_by.map(used => crateKey(used.crate)))].sort();
+  const source = license.source_path
+    ? 'Text from the crate file ' + license.source_path.split(/[\\/]/).slice(-2).join('/')
+    : 'Text: the standard text of this license (no crate file was recognized)';
+  crateSection.push(
+    subheading('Rust crates under ' + license.name + ' (' + license.id + '): ' + crates.length + ' crates'),
+    ...crates,
+    '',
+    source,
+    '',
+    license.text.replace(/\r\n/g, newline).trim(),
+    '',
+  );
+}
+sections.push(crateSection.join(newline));
+//endregion
+
+//region Write
+const text = sections.join(newline) + newline;
+const partial = output + '.partial';
+writeFileSync(partial, text);
+renameSync(partial, output);
+console.log('Wrote ' + output + ': ' + Buffer.byteLength(text) + ' bytes');
+//endregion
