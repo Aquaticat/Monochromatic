@@ -315,12 +315,23 @@ before saying it matches, QAB):
   11 families and would delete 0, so the DELETE call itself has still never executed (it runs on the first scheduled
   run that finds a stale entry; check that run's log). Feature-branch entries of the Windows agent
   (`mp-win-v1`, about 2.6 GB) count against the cap until that branch merges and its entries are deleted.
-- Task 95, Alpine, branch `feat/music-player-alpine`, worktree `music-player-alp`: the desktop app must run on Alpine
-  (musl, dynamic link expected because Slint loads libwayland and libxkbcommon at run time); the real-window proof uses
-  our own nested compositor `monochromatic-nested-wayland-session`, never sway or weston; if the compositor needs
-  changes they are made in `package/cli/nested-wayland-session` without a version bump. The human authorized
-  publishing that crate whenever needed: after verification bump its version (patch or minor as the agent reports),
-  run the cargo-publish workflow as a dry run first, then let the merge to main publish it.
+- Task 95, Alpine: MERGED to `main` at `2077b5b81e` on 2026-10-15 (decision `doc/decision/music-player-alpine.md`,
+  workflow `.github/workflows/music-player-alpine.yml` on x86_64 and arm64). The app builds and runs on Alpine 3.24.2
+  with Alpine's own rust 1.96.1, dynamic musl (static musl cannot open a window: `dlopen` is unsupported there, and
+  Alpine ships no static fontconfig, freetype or pipewire). Code changes: raw `sched_setscheduler` syscall because musl
+  returns ENOSYS, a cargo feature `alsa-fallback` (PipeWire first, then the default ALSA device), `Update::AudioUnavailable`
+  with a notice in the window. Runtime packages: `apk add fontconfig font-dejavu pipewire-libs libgcc wayland-libs-client
+  wayland-libs-egl libxkbcommon mesa-egl mesa-gles mesa-dri-gallium alsa-lib`. My fresh run on the merged head:
+  `lint:slint`, `lint:clippy` clean and nextest 1448 passed, 1 skipped (host glibc); the agent's Alpine runs (1449
+  passed, 1 skipped on x86_64 and aarch64, smoke OK, window shown through our nested compositor with llvmpipe, audio
+  heard through PipeWire and the ALSA fallback at 440 Hz, notices through the compositor's notification service) are
+  the agent's, not mine. The compositor needed no change, so no publish and no version bump. Unverified: real Alpine
+  hardware, a real GPU, X11, other compositors, edge and postmarketOS. Alpine clippy flags `src/oklch.rs`
+  `manual_range_contains` where host clippy does not (the Alpine guard runs no clippy; not fixed, lint not loosened).
+  The Alpine CI cache entries are 0.93 to 0.95 GB each, over the 650 MB guide, and the agent added the Alpine family
+  to `cache-prune.yml`. Release artifact: task 100 (agent `a08518253f8af06ab`, branch `feat/music-player-release-musl`,
+  worktree `music-player-relmusl`) adds `music-player-<version>-linux-musl-x64.tar.gz` and `-arm64.tar.gz` to the
+  release workflow and proves it with a dry run from its branch.
 - Task 96, Windows linkers, branch `feat/music-player-windows-linkers`, worktree `music-player-win`: Windows MSVC
   uses `link.exe` instead of `lld-link.exe`, plus a non-MSVC build for `x86_64-pc-windows-gnu`, a Windows CI workflow;
   Linux stays on rust-lld because mold links ELF only (upstream README, mold 3.0.0, and
