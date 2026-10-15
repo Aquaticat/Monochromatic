@@ -23,7 +23,7 @@ No token needs to be pasted into chat.
 Status:
 TODO
 
-1.  Open [Depot organization settings](https://depot.dev/settings/organization).
+1.  Open [Depot organization settings](https://depot.dev/orgs/_/settings).
     Expect the selected organization's settings;
     select the existing trial organization if another organization is displayed.
 2.  In **GitHub Code Access**,
