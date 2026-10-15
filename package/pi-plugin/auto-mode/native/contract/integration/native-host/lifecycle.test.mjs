@@ -206,7 +206,7 @@ const runtime = await createAgentSessionRuntime(
       await nativeHost.disposeSession(unexpected.session);
     },
       function matchesIncompleteCleanup(error) {
-        return (error instanceof Error) && error.message.includes('cleanup is incomplete');
+        return Error.isError(error) && error.message.includes('cleanup is incomplete');
       }
     );
   }
