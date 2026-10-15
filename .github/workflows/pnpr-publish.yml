@@ -69,7 +69,6 @@ jobs:
           # doc/troubleshooting/mise-action-version-ahead-of-release.md
           minimum_release_age: 1d
           install: false
-          cache: true
 
       # uv runs fonttools for typeface-aquaticat's WOFF2 build (#535).
       - name: Install node, pnpm, and uv
