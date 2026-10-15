@@ -52,6 +52,13 @@ and cancellation precedence around parent-currentness and reached-view callbacks
 Callback-published state is re-read after both callbacks.
 Parent cancellation observation stops for closed transport or fully retained outcomes,
 while partial outcomes and existing failures preserve the original cancellation callback.
+`test:native:group-dispatch` verifies drainable work publication before callbacks,
+complete original member association,
+opaque callback failures,
+and observation after transport closes.
+Invalid returned arrays retain every enumerable completion,
+including extra named properties while skipping holes and inherited positions.
+These unassociated outcomes stay inspectable without acquiring a declared member association.
 Relevance-cache initialization and publication use asynchronous filesystem operations;
 their refresh owner rechecks original policy identity and cancellation before publishing a view.
 

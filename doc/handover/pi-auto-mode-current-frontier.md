@@ -16,8 +16,8 @@ and genuine human Allow verification are complete.
 Do not repeat the completed live or human checks merely to resume the maintained-code cleanup.
 
 The maintained package remains unfinished.
-The latest complete lint report covers 725 files and 486 rules,
-with zero errors and 10889 warnings.
+The latest complete lint report covers 730 files and 486 rules,
+with zero errors and 10841 warnings.
 The strict warning gate still fails.
 Clean extracted pieces do not establish package completeness.
 The preceding 10902-warning report was audited by category:
@@ -33,9 +33,9 @@ and collector currentness are qualified through built consumers,
 original-code replay,
 domain comparisons,
 and deliberate omission controls.
-Continue the connected collector dispatch and arrival implementation,
+Continue the remaining collector construction and arrival implementation,
 then reached-program runtime and runner contracts.
-The last report retains 129 warnings in `program-collector.mjs`,
+The last report retains 81 warnings in `program-collector.mjs`,
 133 in `program-runtime.mjs`,
 and 266 in `program-runner.mjs`.
 Next prioritize the remaining high-count native boundaries using the complete diagnostic report.
@@ -50,10 +50,28 @@ complete member association,
 opaque failure propagation,
 closed transport,
 and retained unassociated array outcomes.
+The native build,
+package type check,
+and built consumer suites pass.
+The same consumers pass against the exact saved original dispatch body.
+Six domain comparisons retain identical public results and native execution counts,
+with a permission-versus-prohibition positive control.
+All 32 process-local dispatch omissions or substitutions are detected;
+the collector and dispatch artifacts retain their original hashes.
+The first omission harness stopped on a selector matching both currentness calls.
+After anchoring the selector to its exact line,
+a phase-publication omission exposed an unbounded observation wait in a test.
+The corrected test checks for missing observation through the package's existing Node scheduling checkpoint.
+The final complete omission run passes with assertion failures for every deliberate change.
+The complete lint report has zero diagnostics in the new dispatch implementation and consumers.
+The package-wide warning gate remains failing.
+Receipts are `typed-group-dispatch-comparison.json` and `typed-group-dispatch-omissions.json`
+under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
 Build,
-consumer execution,
-original-code replay,
-and deliberate omission controls remain pending for this extraction.
+type check,
+consumer replay,
+and omission output are retained in
+`${HOME}/temp/agent/pi-group-dispatch-bounded-final-20261015.log`.
 The unchanged original collector is saved as
 `${HOME}/temp/agent/pi-tool-call-scope-20261014/program-collector-before-dispatch-types.mjs`,
 with SHA-256 `740fd23a569b058f0d46e7c7b12ff9ffcfed85bd6f519f5d5de5408d7fa13912`.
