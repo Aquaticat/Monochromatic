@@ -1,14 +1,31 @@
 /**
  Native host bypass uses the original session audit format and fixed virtual-input guard. @module
  */
-import type { ExtensionAPI, ExtensionContext, ToolCallEvent, ToolCallEventResult } from '@earendil-works/pi-coding-agent';
-import type { ForeignBorrowed, ForeignHostCapability } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ExtensionAPI,
+  ExtensionContext,
+  ToolCallEvent,
+  ToolCallEventResult
+} from '@earendil-works/pi-coding-agent';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import { announceBypassToggle, appendBypassAllowEntry, appendBypassToggleEntry, BYPASS_SHORTCUT, findLatestBypassEnabled, updateBypassStatus } from './bypass.ts';
+import {
+  announceBypassToggle,
+  appendBypassAllowEntry,
+  appendBypassToggleEntry,
+  BYPASS_SHORTCUT,
+  findLatestBypassEnabled,
+  updateBypassStatus
+} from './bypass.ts';
 import { describeAction } from './tool-helpers.ts';
 import { guardVirtualInput } from './virtual-input-guard.ts';
 
-/** Native diagnostics identify explicit user control separately from policy approval. */
+/**
+ Native diagnostics identify explicit user control separately from policy approval.
+ */
 const l = tagged({ tag: 'auto-mode-native-bypass' });
 
 //region Original session entries are the sole source of explicit bypass state.
@@ -37,10 +54,17 @@ export function readNativeBypassEnabled(ctx: ForeignHostCapability<ExtensionCont
  @example registerNativeBypass(pi);
  */
 export function registerNativeBypass(pi: ForeignHostCapability<ExtensionAPI>): void {
-  /** Registration diagnostics omit borrowed API contents. */
-  const rl = tagged({ tag: registerNativeBypass.name, l });
+  /**
+   Registration diagnostics omit borrowed API contents.
+   */
+  const rl = tagged({
+    tag: registerNativeBypass.name,
+    l
+  });
   rl.debug('registering native explicit bypass control');
-  pi.registerShortcut(BYPASS_SHORTCUT, {
+  pi.registerShortcut(
+    BYPASS_SHORTCUT,
+    {
     description: 'Toggle auto-mode bypass',
     handler(ctx: ForeignHostCapability<ExtensionContext>): void {
       /** Toggle selection uses the active branch, including after reload or navigation. */
@@ -49,7 +73,8 @@ export function registerNativeBypass(pi: ForeignHostCapability<ExtensionAPI>): v
       appendBypassToggleEntry({ pi, enabled });
       announceBypassToggle({ ctx, enabled });
     },
-  });
+  }
+  );
   /**
    Restore the existing visible status from the currently selected branch.
 
@@ -59,13 +84,28 @@ export function registerNativeBypass(pi: ForeignHostCapability<ExtensionAPI>): v
 
    @mutates ctx - updates displayed bypass status
    */
-  function restoreStatus(_event: unknown, ctx: ForeignHostCapability<ExtensionContext>): void {
-    tagged({ tag: restoreStatus.name, l: rl }).debug('restoring native bypass status from current branch');
-    updateBypassStatus({ ctx, enabled: readNativeBypassEnabled(ctx) });
+  function restoreStatus(
+    _event: unknown,
+    ctx: ForeignHostCapability<ExtensionContext>
+  ): void {
+    tagged({ tag: restoreStatus.name, l: rl })
+      .debug('restoring native bypass status from current branch');
+    updateBypassStatus({
+      ctx,
+      enabled: readNativeBypassEnabled(ctx)
+    });
   }
-  pi.on('session_start', restoreStatus);
-  pi.on('session_tree', restoreStatus);
-  pi.on('tool_call', function guardNativeTool(event: ForeignBorrowed<ToolCallEvent>, ctx: ForeignHostCapability<ExtensionContext>): ToolCallEventResult | undefined {
+  pi.on(
+    'session_start',
+    restoreStatus
+  );
+  pi.on(
+    'session_tree',
+    restoreStatus
+  );
+  pi.on(
+    'tool_call',
+    function guardNativeTool(event: ForeignBorrowed<ToolCallEvent>, ctx: ForeignHostCapability<ExtensionContext>): ToolCallEventResult | undefined {
     /** Fixed safety policy precedes explicit bypass and remains active in both modes. */
     const decision = guardVirtualInput(event);
     if (decision.block) {
@@ -77,6 +117,7 @@ export function registerNativeBypass(pi: ForeignHostCapability<ExtensionAPI>): v
       appendBypassAllowEntry({ pi, action: describeAction(event) });
     }
     return undefined;
-  });
+  }
+  );
 }
 //endregion

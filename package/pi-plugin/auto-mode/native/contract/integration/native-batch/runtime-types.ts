@@ -35,7 +35,9 @@ export type NativeApprovalHost = {
  Existing native consumers authenticate the forwarded owners before installing policy hooks.
  */
 export type NativePolicyRuntimeInput = {
-  /** Current native session branch supplies explicit user bypass, never model output. */
+  /**
+   Current native session branch supplies explicit user bypass, never model output.
+   */
   readonly readBypass?: () => boolean;
   readonly root: NativeHostSessionInput['root'];
   readonly lifecycle: unknown;

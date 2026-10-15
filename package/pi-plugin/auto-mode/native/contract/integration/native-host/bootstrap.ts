@@ -186,7 +186,9 @@ function bindSession({
    */
   const endpoint = new URL(`${endpointBase}/chat/completions`).href;
   return bindNativePolicyRuntime({
-    readBypass() { return readNativeBypassEnabled(root.session.extensionRunner.createContext()); },
+    readBypass() { return readNativeBypassEnabled(root.session
+      .extensionRunner
+      .createContext()); },
     root,
     lifecycle,
     policyInput: resource.policyInput,

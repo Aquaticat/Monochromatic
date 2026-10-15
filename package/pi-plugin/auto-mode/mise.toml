@@ -835,4 +835,4 @@ run = [
 ]
 [tasks."test:native:bypass"]
 description = "Verify the native Shift+Tab bypass control and restored policy checks"
-run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/bypass.test.mjs prohibited --native-context --bypass-fixture"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/bypass.test.mjs prohibited --native-context --reload-context --bypass-fixture"
