@@ -17,8 +17,8 @@ name: music-player-windows
 # and the hash of both Cargo.lock files; restore-keys fall back to the same target and toolchain without
 # the lockfile hash, so a lockfile change rebuilds only the changed crates. Entries are lean: no
 # incremental directories, no debug info, and this package's own artifacts are pruned before the save.
-# Caches are saved only on main, on workflow_dispatch and on the TEMP branch below, never on pull
-# requests (a pull request run still restores the entries main saved).
+# Caches are saved only on main and on workflow_dispatch, never on pull requests (a pull
+# request run still restores the entries main saved).
 
 on:
   workflow_dispatch:
@@ -30,7 +30,6 @@ on:
   push:
     branches:
     - 'main'
-    - 'feat/music-player-windows-linkers' # TEMP: removed before merge
     paths:
     - 'package/music-player/desktop-app/**'
     - 'package/music-player/truepeak-core/**'
@@ -203,7 +202,7 @@ jobs:
         (cd "$dest" && tar --extract --gzip --file "$archive")
         echo "$(cygpath --windows "$dest")" >> "$GITHUB_PATH"
 
-    # Decide once whether this run may write caches: main, manual dispatch, and the TEMP proof branch.
+    # Decide once whether this run may write caches: main and manual dispatch.
     - name: Decide whether this run saves caches
       id: policy
       env:
@@ -214,7 +213,7 @@ jobs:
         save=false
         if [ "$EVENT" != 'pull_request' ]; then
           case "$REF" in
-            refs/heads/main | refs/heads/feat/music-player-windows-linkers) save=true ;;
+            refs/heads/main) save=true ;;
           esac
           if [ "$EVENT" = 'workflow_dispatch' ]; then save=true; fi
         fi
