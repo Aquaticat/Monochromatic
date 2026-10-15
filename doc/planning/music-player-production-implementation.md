@@ -346,10 +346,25 @@ before saying it matches, QAB):
   --check` passed for eight files, attestation exit 0 for both musl tarballs and the APK (the first real run of that
   path), APK certificate `9de6e9a4...6926`, musl x64 interpreter `/lib/ld-musl-x86_64.so.1`, and the musl x64 binary
   printed `music-player 0.1.2` inside `alpine:3.24` with the apk list installed.
-- Task 96, Windows linkers, branch `feat/music-player-windows-linkers`, worktree `music-player-win`: Windows MSVC
-  uses `link.exe` instead of `lld-link.exe`, plus a non-MSVC build for `x86_64-pc-windows-gnu`, a Windows CI workflow;
-  Linux stays on rust-lld because mold links ELF only (upstream README, mold 3.0.0, and
-  `doc/audit/tech-mold-linker-vet-2026-10-05.md`) and the human declined it on Linux; macOS keeps its linker.
+- Task 96, Windows linkers: MERGED to `main` on 2026-10-15 (merge `aa9f48eaf6`; decision
+  `doc/decision/music-player-windows-linkers.md`, workflow `.github/workflows/music-player-windows.yml` with jobs
+  `msvc-x64`, `msvc-arm64`, `gnu-x64-ucrt64`). Windows MSVC now uses `link.exe` (no `linker` key; `+crt-static` kept);
+  the new `x86_64-pc-windows-gnu` target links with mingw-w64 GNU ld (`-fuse-ld=bfd`; UCRT64 kept, MINGW64 deprecated
+  by MSYS2); Linux stays on rust-lld and macOS keeps its linker. mold is not adopted: it has no PE/COFF output
+  (v3.0.0 and unreleased main, README and `doc/audit/tech-mold-linker-vet-2026-10-05.md`; unreleased mold main has a
+  Mach-O linker since 2026-10-08, which could matter for macOS later). My fresh run on the merged head: `lint:slint`,
+  `lint:clippy` clean, nextest 1450 passed, 1 skipped (host glibc). The agent's results, not mine: CI shows
+  `link.exe` for both MSVC jobs and GNU ld for the GNU job; 1422 passed, 1 skipped on all three Windows jobs; no C
+  runtime DLL imports for MSVC, only `api-ms-win-crt-*` for UCRT64; Wine cross-build 1383 run, 1377 passed, 4 failed,
+  2 hung (all six pass on real runners; hang and failures unexplained). Found and not filed: Slint
+  `frame_throttle.rs:58` divides by zero when the display reports a 0 refresh rate (seen under Wine on bare Xvfb;
+  issue draft in `doc/troubleshooting/music-player-windows-build-and-test.md`; a human should rerun the reproduction
+  first). Windows cache entries total about 2.0 GB (653.7, 635.1, 652.3 MB plus 72.8 MB MSYS2), saved only on main
+  and dispatch; the first run on main is cold. Unverified: real Windows desktop, real arm64 hardware, audio under
+  Wine, the PR no-save rule, `link.exe` against `lld-link.exe` link time. Follow-up (task 101, agent
+  `a51ab5cde3a0f0ccc`, branch `feat/music-player-release-gnu`, worktree `music-player-relgnu`): pin the mise version in
+  the release workflow, remove its stale `CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe` export, add the GNU exe
+  `music-player-<version>-windows-x64-gnu.exe` as a release asset; then I bump to 0.1.3 and release.
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
