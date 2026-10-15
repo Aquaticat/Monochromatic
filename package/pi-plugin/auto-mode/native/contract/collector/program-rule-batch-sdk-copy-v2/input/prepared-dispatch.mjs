@@ -1,3 +1,5 @@
+import { sealPreparedInput } from './prepared-input-seal.ts';
+
 export class PreparedBatchContractError extends Error {}
 export class PreparedBatchExecutionError extends Error {
   constructor(
@@ -28,41 +30,9 @@ import {
 
 
 
-/** Seal ordinary JSON-like input trees only after the supplied preparation hooks finish. */
+/** {@inheritDoc sealPreparedInput} */
 function sealInput(input) {
-  const pending=[input];
-  const seen=new Set();
-  while(pending.length > 0){
-    const value=pending.pop();
-    if((value===null) || (value===undefined)
-      || ((typeof value)==='string')
-      || ((typeof value)==='boolean'))continue;
-    if(((typeof value)==='number') && Number.isFinite(value))continue;
-    if(((typeof value)!=='object') || seen.has(value))throw new PreparedBatchContractError('Prepared input must be a non-aliased JSON-like tree');
-    seen.add(value);
-    if(seen.size>10_000)throw new PreparedBatchContractError('Prepared input exceeds the declared tree bound');
-    const prototype=Object.getPrototypeOf(value);
-    if(Array.isArray(value) ? prototype!==Array.prototype : (prototype!==Object.prototype) && (prototype!==null))throw new PreparedBatchContractError('Prepared input has an unsupported prototype');
-    if(Array.isArray(value) && (Reflect.ownKeys(value)
-      .length
-      !==(value.length
-      +1)))throw new PreparedBatchContractError('Prepared input array is sparse or has extra properties');
-    for(const key of Reflect.ownKeys(value)){
-      if((typeof key)!=='string')throw new PreparedBatchContractError('Prepared input has a symbol key');
-      const property=Object.getOwnPropertyDescriptor(
-        value,
-        key
-      );
-      if((property===undefined) || (!Object.hasOwn(
-        property,
-        'value'
-      )))throw new PreparedBatchContractError('Prepared input has an accessor');
-      if((!property.enumerable) && (!(Array.isArray(value) && (key==='length'))))throw new PreparedBatchContractError('Prepared input has hidden properties');
-      pending.push(property.value);
-    }
-    Object.freeze(value);
-  }
-  return input;
+  return sealPreparedInput({ input, PreparedBatchContractError });
 }
 
 /** Caller owns the complete explicit group and actual SDK runToolCall function. */
