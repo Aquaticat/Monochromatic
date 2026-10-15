@@ -8,26 +8,10 @@
 //! number by a row height.
 //!  The markup only scrolls and draws at positions handed to it.
 
-/// The window,
-///  the source state that owns the map,
-///  the stamp of the displayed text,
-///  and the choice of the
-/// materialized lines for an offset.
-use super::{AppWindow, State, annotate::displayed, tile::requested, viewport::place};
-/// What:
-///  `Assoc` says which side of inserted text a mapped position stays on;
-///  `ChangeSet` is Helix's edit list.
-/// Why:
-///  Rows of a replaced text keep their space above the lines their old lines became.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { Assoc, type ChangeSet } from 'helix-core';
-/// ```
-use helix_core::{Assoc, ChangeSet};
-/// Space held open above a line of a reloaded text,
-///  and the rank that orders severities.
-use ide_app::annotation::{Held, rank};
+/// The source state, the stamp of the displayed text, and the tile and view the map decides.
+use super::{State, annotate::displayed, tile::requested, viewport::place};
+/// The rank that orders severities.
+use ide_app::annotation::rank;
 /// Measured visual rows of every line.
 use ide_app::line_rows::LineRows;
 /// The mapping itself and the height of one code row.
@@ -37,45 +21,30 @@ use ide_app::wrap::has_wrap_width;
 /// The stamp naming a displayed text,
 ///  and one line's block of virtual rows.
 use ide_app::{language::identity::DocumentStamp, virtual_row::Block};
-/// What:
-///  `Model` gives a list its `row_count` and row access;
-///  `VecModel` is the toolkit's growable list model.
-/// Why:
-///  Line-number positions are updated row by row,
-///  so the markup keeps its text elements while scrolling.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { type Model, ArrayModel } from 'slint';
-/// ```
-use slint::{Model, ModelRc, VecModel};
-/// The held clock of the tests.
-#[cfg(test)]
-use std::cell::Cell;
-/// `Rc` shares the persistent model between the state and the window;
-///  `Duration` and `Instant` time held space.
-use std::{
-    ops::Range,
-    rc::Rc,
-    sync::Arc,
-    time::{Duration, Instant},
-};
+/// `VecModel` is the toolkit's growable list model that the placement names.
+use slint::VecModel;
+/// Line ranges, shared pointers to the persistent models and the blocks,
+///  and the clock of the expiry check.
+use std::{ops::Range, rc::Rc, sync::Arc, time::Instant};
 
-/// What:
-///  How long the view must have stood still before a change of rows may move the scroll offset.
-/// Why:
-///  The toolkit animates a wheel notch for 180 ms (`WHEEL_SCROLL_DURATION` in Slint 1.18.1's
-///      `internal/core/items/flickable.rs`) through a binding on the offset,
-///  and assigning the offset removes
-///      that binding:
-///  the scroll would stop short.
-///  Waiting slightly longer than the animation lets it finish.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const SCROLL_QUIET = 200; // milliseconds
-/// ```
-const SCROLL_QUIET: Duration = Duration::from_millis(200);
+/// Space held open above the lines of a replaced text.
+mod held;
+/// The scrolling rule's clock.
+mod quiet;
+/// The window's models and setters for the vertical mapping.
+mod window;
+
+/// Reload and the hold that follows it carry space over to the new text.
+pub(super) use held::{carried, hold};
+/// The test clock the scrolling rule reads instead of the system clock.
+#[cfg(test)]
+pub(super) use quiet::hold_clock;
+/// The moment the scrolling rule reads as now.
+pub(super) use quiet::quiet_now;
+/// Whether the reader scrolled so recently that a wheel animation may still be running.
+use quiet::scrolling;
+/// The persistent models, and handing a placement to the window.
+pub(super) use window::{mark_model, present, top_model};
 
 /// What:
 ///  What the map key is made of:
@@ -323,47 +292,6 @@ pub(super) fn refresh(current: &mut State, scale: f32) -> Option<RowMap> {
     // `?` leaves with nothing when the layout is already current.
     let layout = rebuilt(current, scale)?;
     return install(current, layout);
-}
-
-/// What:
-///  The moment the scrolling rule reads as now:
-///  the system clock,
-///  or in tests the instant they hold it at.
-/// Why:
-///  The rule asks whether 200 ms have passed since the last scroll step;
-///  a test that sleeps through that time can be overtaken by a loaded host,
-///  so a test holds this clock still and moves it by exactly the time it means.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function quietNow(): number { return heldClock ?? performance.now(); }
-/// ```
-pub(super) fn quiet_now() -> Instant {
-    #[cfg(test)]
-    if let Some(held) = HELD_CLOCK.with(Cell::get) {
-        return held;
-    }
-    return Instant::now();
-}
-
-// The instant a test holds the scrolling rule's clock at, if it does; each test thread has its own.
-#[cfg(test)]
-thread_local! {
-    static HELD_CLOCK: Cell<Option<Instant>> = const { Cell::new(None) };
-}
-
-/// Hold the scrolling rule's clock at `at`, or let it run again with `None`.
-#[cfg(test)]
-pub(super) fn hold_clock(at: Option<Instant>) {
-    HELD_CLOCK.with(|held| held.set(at));
-}
-
-/// Whether the reader scrolled so recently that a wheel animation may still be running.
-fn scrolling(current: &State) -> bool {
-    // `is_some_and` answers false when the view never scrolled and otherwise asks the closure.
-    return current
-        .scrolled_at
-        .is_some_and(|at| return quiet_now().saturating_duration_since(at) < SCROLL_QUIET);
 }
 
 /// What:
@@ -647,69 +575,6 @@ pub(super) fn measure(current: &State, anchor_line: i32) -> Placement {
 }
 
 /// What:
-///  Make `model` hold exactly `wanted`,
-///  changing only rows that differ.
-///  `T` is the row type;
-///  `Copy` lets a
-///       row be duplicated like a number and `PartialEq` lets two rows be compared.
-/// Why:
-///  Updating in place changes numbers,
-///  positions,
-///  and letters while scrolling without rebuilding elements.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function update<T>(model: ArrayModel<T>, wanted: T[]): void;
-/// ```
-fn update<T: Copy + PartialEq + 'static>(model: &VecModel<T>, wanted: &[T]) {
-    for (index, row) in wanted.iter().enumerate() {
-        if index >= model.row_count() {
-            model.push(*row);
-        } else if model.row_data(index) != Some(*row) {
-            model.set_row_data(index, *row);
-        }
-    }
-    while model.row_count() > wanted.len() {
-        model.remove(model.row_count() - 1);
-    }
-}
-
-/// What:
-///  Hand a [`Placement`] to the window.
-///  The line-number and severity-mark models are updated row by row.
-/// Why:
-///  The window draws a number and,
-///  where a diagnostic starts,
-///  a letter on each materialized code row.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function present(window: AppWindow, placement: Placement): void;
-/// ```
-pub(super) fn present(window: &AppWindow, placement: Placement) {
-    window.set_content_extent(placement.extent);
-    update(&placement.top_model, &placement.tops);
-    update(&placement.number_model, &placement.numbers);
-    update(&placement.mark_model, &placement.marks);
-    // What: `Rc::clone` copies the pointer; the window compares model pointers, so handing over the same
-    //       model again changes nothing.
-    // Why: The first render installs the model; later ones only confirm it.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // window.rowTops = current.rowTops;
-    // ```
-    window.set_row_tops(ModelRc::from(Rc::clone(&placement.top_model)));
-    window.set_row_numbers(ModelRc::from(Rc::clone(&placement.number_model)));
-    window.set_row_marks(ModelRc::from(Rc::clone(&placement.mark_model)));
-    // `try_from` turns the count into the toolkit's 32-bit integer; a count past its range reads as its largest.
-    window.set_line_count(i32::try_from(placement.lines).unwrap_or(i32::MAX));
-    let (top, height) = placement.anchor;
-    window.set_language_anchor_y(top);
-    window.set_language_anchor_height(height);
-}
-
-/// What:
 ///  Top and height of everything `anchor_line` owns,
 ///  its virtual rows and its code row;
 ///  a pair (tuple).
@@ -728,111 +593,4 @@ pub(super) fn anchor_place(map: &RowMap, anchor_line: i32) -> (f32, f32) {
     let line = (anchor_line.max(0) as usize).min(map.lines() - 1);
     let top = map.block_top(line);
     return (top, map.code_bottom(line) - top);
-}
-
-/// A fresh row-top model for a new source state.
-pub(super) fn top_model() -> Rc<VecModel<f32>> {
-    return Rc::new(VecModel::from(Vec::new()));
-}
-
-/// A fresh model of integers for a new source state:
-///  line numbers and severity marks.
-pub(super) fn mark_model() -> Rc<VecModel<i32>> {
-    return Rc::new(VecModel::from(Vec::new()));
-}
-
-/// What:
-///  How long the space of a replaced text's virtual rows stays open while nothing is painted in it.
-/// Why:
-///  Hints for a reloaded text were measured to arrive 20 to 40 ms after the reload;
-///  one second covers that
-///      many times over,
-///  and space that no answer fills does not stay empty for long.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const ROW_HOLD = 1000; // milliseconds
-/// ```
-const ROW_HOLD: Duration = Duration::from_millis(1000);
-
-/// What:
-///  Before an external change is applied,
-///  where each block of the displayed text will be in the new one:
-///       the mapped character position of its line's start and the heights of its hint part and message part.
-///       `&ChangeSet` lends the edits from the displayed text to the new one;
-///  the answer is a list of triples.
-/// Why:
-///  The rows of the old text are never painted for the new one,
-///  but their space is held open so lines the
-///      change did not touch stay where they are.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function carried(current: State, changes: ChangeSet): [position: number, hints: number, messages: number][];
-/// ```
-pub(super) fn carried(current: &State, changes: &ChangeSet) -> Vec<(usize, f32, f32)> {
-    let text = current.document.text();
-    let mut kept = Vec::new();
-    for block in &current.blocks {
-        let start = text.line_to_char(block.line.min(text.len_lines()));
-        // Text inserted at the line's start pushes the line, and its rows with it, further down.
-        let position = changes.map_pos(start, Assoc::After);
-        kept.push((position, block.hint_part(), block.message_part()));
-    }
-    return kept;
-}
-
-/// What:
-///  After the change was applied,
-///  hold the `carried` space above the lines the positions now lie on,
-///  and
-///       rebuild the map.
-///  `Vec<...>` is moved in.
-/// Why:
-///  Hint space is given up as soon as hints for those lines arrive;
-///  message space stays until its time
-///      has passed,
-///  because diagnostics of one text arrive in several parts.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function hold(current: State, carried: [number, number, number][], scale: number): void;
-/// ```
-pub(super) fn hold(current: &mut State, carried: Vec<(usize, f32, f32)>, scale: f32) {
-    let text = current.document.text();
-    let length = text.len_chars();
-    let mut parts: Vec<Held> = Vec::new();
-    for (position, hints, messages) in carried {
-        let line = text.char_to_line(position.min(length));
-        // What: `last_mut()` lends the latest entry for change, or nothing for an empty list.
-        // Why: Two old lines that became one keep the taller space of the two; positions ascend, so such
-        //      lines follow each other.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const last = parts.at(-1); if (last?.line === line) { ... } else parts.push(...);
-        // ```
-        if let Some(last) = parts.last_mut()
-            && last.line == line
-        {
-            last.hints = last.hints.max(hints);
-            last.messages = last.messages.max(messages);
-        } else {
-            parts.push(Held {
-                line,
-                hints,
-                messages,
-            });
-        }
-    }
-    let next = displayed(current);
-    tracing::debug!(
-        lines = parts.len(),
-        ?next,
-        "held the space of replaced rows"
-    );
-    current
-        .annotations
-        .hold(next, parts, Instant::now() + ROW_HOLD);
-    refresh(current, scale);
 }
