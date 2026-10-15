@@ -1594,11 +1594,35 @@ The native README records the scoped nullish-return alias for the original `prep
 no lint configuration was loosened.
 Private uninitialized record slots now begin absent;
 public retained inspection still includes its original undefined-valued fields.
-Focused lint completion,
-rebuilt native consumers,
-independent owner tests,
-original-baseline comparison,
-and guard controls remain required before qualifying program ownership.
+The owned rebuild,
+native-return consumers,
+single-call consumers,
+domain contrasts,
+program queue,
+and package type check pass in
+`${HOME}/temp/agent/pi-program-owner-consumers-first-20261015.log`.
+All 17 implementation and bridge files have zero focused lint diagnostics in
+`${HOME}/temp/agent/pi-program-owner-format-third-20261015.log`.
+The independent program owner,
+native group,
+result,
+and publication-boundary suites pass in
+`${HOME}/temp/agent/pi-program-owner-direct-third-20261015.log`;
+their package type check passes in
+`${HOME}/temp/agent/pi-program-owner-test-types-third-20261015.log`.
+Those suites also pass against the saved original in
+`${HOME}/temp/agent/pi-program-owner-baseline-20261015.log`.
+The original native converter turns an empty content array into supported empty text;
+the first result fixture incorrectly expected rejection.
+The corrected rejection supplies non-string structured output from a tool declaring an output schema,
+and a separate positive test confirms empty text can populate successor arguments.
+After adding opening preflight cases and formatting,
+all seven fixture and consumer files have zero lint diagnostics in
+`${HOME}/temp/agent/pi-program-owner-tests-format-fourth-20261015.log`.
+The final consumer and type checks,
+direct original-versus-typed callback traces,
+guard omission controls,
+and complete maintained lint recount remain required before qualifying program ownership.
 Then continue `child-constructor.mjs` (471 warnings in the instruction-port report),
 preserving existing behavior and consumer boundaries.
 The handover,
