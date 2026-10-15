@@ -265,7 +265,16 @@ export function createJudgmentConstructor({now,producerOwner,observer,collector,
       childGroups,
       operation
     });
-    function preparedMemberFor(member){const record=knownMember(member);assertDependenciesCurrent();parentCurrent(record);return Object.freeze({prepared:record.prepared,signal:record.effectiveSignal});}
+    function preparedMemberFor(member){
+      const record=knownMember(member);
+      assertDependenciesCurrent();
+      parentCurrent(record);
+      return Object.freeze({
+        prepared:record.prepared,
+        signal:record.effectiveSignal,
+        programInspection:record.preparedProgram?.view
+      });
+    }
     function originalFileFor(member){
       ready();const record=knownMember(member);parentCurrent(record);
       return facade.originalFile({handle,absolutePath:record.prepared.input.path});

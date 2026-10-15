@@ -74,8 +74,7 @@ export async function capturePolicyInputs({
  const members=[];
  for(const {id} of states){
   const member=judgment.memberFor(id);
-  const {prepared} = judgment.preparedMemberFor(member);
-  const programInspection=judgment.preparedProgramFor?.(member);
+  const {prepared,programInspection} = judgment.preparedMemberFor(member);
   const owner=effectOwnerFor?.({
     judgment,
     member,
@@ -124,10 +123,9 @@ export async function capturePolicyInputs({
      evidence,
      programInspection
    } of effects){
-    if(judgment.preparedMemberFor(member)
-      .prepared
-      !==prepared)throw new PolicyInputBindingError('Original prepared effect input changed');
-    if(judgment.preparedProgramFor?.(member)!==programInspection)throw new PolicyInputBindingError('Original prepared program inspection changed');
+    const current=judgment.preparedMemberFor(member);
+    if(current.prepared!==prepared)throw new PolicyInputBindingError('Original prepared effect input changed');
+    if(current.programInspection!==programInspection)throw new PolicyInputBindingError('Original prepared program inspection changed');
     if(owner)owner.assertCurrent(evidence);
    }
   }catch(error){inputState.failure={cause:error};throw error;}
