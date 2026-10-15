@@ -102,7 +102,7 @@ export type ProgramScope = {
  Owner-private maps authenticate opaque handles without relying on copied metadata.
  */
 export type ProgramOwnerState = Readonly<{
-  programs: WeakMap<object, ProgramOwnerRecord>;
+  programs: WeakMap<object, ProgramExecutionRecord>;
   groups: WeakMap<object, ProgramGroup>;
   slots: WeakMap<object, ProgramSlot>;
 }>;
