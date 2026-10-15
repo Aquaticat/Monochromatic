@@ -690,3 +690,8 @@ execFileSync('depot', ['bake', '--file', 'package/music-player/desktop-app/depot
 description = "Inspect the Alpine trial build definition without launching a remote build"
 dir = "{{config_root}}/../../.."
 run = "depot bake --file package/music-player/desktop-app/depot-trial/bake.hcl --print artifact"
+
+[tasks."trial:depot:connection"]
+description = "Run the disposable Depot CI repository-access check"
+dir = "{{config_root}}/../../.."
+run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job connection"
