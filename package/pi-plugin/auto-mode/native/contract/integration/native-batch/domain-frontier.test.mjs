@@ -63,7 +63,7 @@ assert.ok(
   'Unconfigured-policy verification cannot also select operating policies'
 );
 const singleCall=process.argv
-  .find(argument=>argument.startsWith('--single-call='))
+  .find(function isSingleCallOption(argument) { return (argument.startsWith('--single-call=')); })
   ?.slice('--single-call='.length);
 assert.ok((singleCall===undefined)||[
   'direct',
@@ -663,12 +663,12 @@ try{
   );
   assert.ok(
     session.messages
-      .some(message=>(message.role==='toolResult')
+      .some(function hasSuccessfulFixtureResult(message) { return ((message.role==='toolResult')
         &&(!message.isError)
         &&message.content
-        .some(part=>(part.type==='text')
+        .some(function hasFixtureValueText(part) { return ((part.type==='text')
           &&part.text
-          .includes('fixture child value'))),
+          .includes('fixture child value')); })); }),
     'The original single-call result must reach its consumer'
   );
  }

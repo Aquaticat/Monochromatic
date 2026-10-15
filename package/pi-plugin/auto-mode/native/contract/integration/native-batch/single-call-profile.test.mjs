@@ -65,7 +65,7 @@ for(const source of accepted){
   assert.ok(Object.isFrozen(declaration.groups[0]
     .members));
   assert.throws(
-    ()=>{ assertDeclaredProgram({...declaration}); },
+    function rejectCopiedDeclaration() { assertDeclaredProgram({...declaration}); },
     ResultProgramProfileError
   );
 }
@@ -99,10 +99,10 @@ const rejected=[
 ];
 for(const source of rejected){
   assert.throws(
-    ()=>declareResultProgram({
+    function rejectUnsupportedSource() { return (declareResultProgram({
       source,
       toolNames:['read']
-    }),
+    })); },
     ResultProgramProfileError,
     source
   );
@@ -152,7 +152,7 @@ const loadout={
   getNamespace(){return undefined;},
   getPromptGuidelines(){return [];}
 };
-const prepared=createOwnedCodemodeDefinition({getMode:()=> 'only'})
+const prepared=createOwnedCodemodeDefinition({getMode:function readOnlyChildResult() { return ('only'); }})
   .prepareLoadout(loadout);
 assert.ok(prepared.descriptions
   .codemode
