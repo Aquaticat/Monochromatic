@@ -661,7 +661,15 @@ and normal and exceptional program queue release in
 `${HOME}/temp/agent/pi-native-wrapper-lifetimes-consumer-20261014.log`.
 The first wrapper lint found one remaining mutable options binding;
 the subsequent cancellation helper addresses that finding.
-A full maintained-package lint recount is running before the next source cleanup.
+The full maintained-package recount reports 131 errors and 13218 warnings across 456 files and 486 rules.
+`${HOME}/temp/agent/pi-maintained-lifecycle-cleanup-lint-20261014.log` contains the structured diagnostics.
+The constructor,
+dependency owner,
+runtime owner,
+budget,
+and wrapper files now have no error-severity findings in that full scan.
+The warning gate remains open;
+these results do not establish package completion.
 The handover,
 troubleshooting entry,
 and native README were rendered and inspected with Pandoc.
