@@ -10,25 +10,46 @@ import { createMemberInstructions } from './instruction-member.ts';
 import { createInstructionBatches } from './instruction-batches.ts';
 import type { JudgmentInstructionsInput } from './instruction-types.ts';
 
-/** Ownership diagnostics never include original request or governing-source contents. */
+/**
+ Ownership diagnostics never include original request or governing-source contents.
+ */
 const l = tagged({ tag: 'native-judgment-instructions' });
 
 //region Public selectors share one original request, member, source, and question owner.
 /**
  Own original instruction bindings and their shared semantic claim selectors.
+ *
  @param input - original judgment capabilities with lazy source ownership
+ *
  @returns frozen original instruction operations
  */
 export function createJudgmentInstructions(input: JudgmentInstructionsInput) {
-  const rl = tagged({ tag: createJudgmentInstructions.name, l });
+  const rl = tagged({
+    tag: createJudgmentInstructions.name,
+    l
+  });
   rl.debug('retaining original instruction ownership');
   const state = createInstructionState();
-  const context = { input, state };
+  const context = {
+    input,
+    state
+  };
   const sources = createInstructionSources(context);
   const resolveBinding = createInstructionResolver(context);
-  const program = createProgramInstructions({ context, sources });
-  const member = createMemberInstructions({ context, sources });
-  const batches = createInstructionBatches({ input, sources, program, member });
+  const program = createProgramInstructions({
+    context,
+    sources
+  });
+  const member = createMemberInstructions({
+    context,
+    sources
+  });
+  const batches = createInstructionBatches({
+    input,
+    sources,
+    program,
+    member
+  });
   return Object.freeze({
     resolveBinding,
     indexedUnitAdoptionPairs: sources.indexedUnitAdoptionPairs,
