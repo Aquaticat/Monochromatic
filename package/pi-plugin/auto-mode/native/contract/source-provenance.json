@@ -908,7 +908,7 @@
     },
     {
       "original": "lifecycle/rule-relevance-cache/store.mjs",
-      "maintained": "lifecycle/rule-relevance-cache/store.mjs",
+      "maintained": "lifecycle/rule-relevance-cache/store.ts",
       "sha256": "a63f2c8d32d3686bced48f96de90a62073e0c7ddabbd6e9b33f6a148a5d057bc",
       "origin": "authored-source",
       "relocatedLiterals": 0

@@ -2,7 +2,6 @@
  Cache filesystem admission keeps missing files distinct from invalid persisted estimates.
  @module
  */
-import {createHash} from 'node:crypto';
 import {lstat,mkdir} from 'node:fs/promises';
 import {observeDeclaredFile} from '../external-dependency-controls/file-observer.ts';
 import {ObservedFileMissingError} from '../external-dependency-controls/errors.ts';
@@ -10,14 +9,6 @@ import {CACHE_ENTRY_MISSING,RuleRelevanceCacheError} from './definition.ts';
 import type {CacheTrace,RelevanceEntry} from './store-types.ts';
 
 //region Namespace and filename construction admit only bounded original identities.
-/**
- Derive the original content-addressed identity without interpreting the input.
- @param value - exact serialized namespace, profile, or rule material
- @returns lowercase SHA-256 spelling
- */
-export function digest(value:string):string{
- return createHash('sha256').update(value).digest('hex');
-}
 /**
  Admit only private ordinary directories before cache reads or publications.
  @param path - application-owned cache directory

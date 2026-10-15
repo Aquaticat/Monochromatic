@@ -54,7 +54,7 @@ function assertStoreModule(value:unknown):asserts value is StoreModule{
 }
 /** Original artifact selected through the native consumer's file URL. */
 const loaded:unknown=await import(new URL(
-  '../dist/native/contract/lifecycle/rule-relevance-cache/store.mjs',import.meta.url
+  '../dist/native/contract/lifecycle/rule-relevance-cache/store.ts',import.meta.url
 ).href);
 assertStoreModule(loaded);
 /** Fixed checked callable exports. */
@@ -130,7 +130,7 @@ await describe({name:'',children:[
   it({name:'publishes private complete entries and preserves the original value',fn:async function originalPublication(){
     await using current=await fixture();
     const key=storeModule.digest('original');
-    assert.equal(await current.store.read(key),undefined);
+    assert.equal(typeof await current.store.read(key),'symbol');
     assert.equal((await stat(current.directory)).mode&0o777,0o700);
     const first=await current.store.put({key,probability:0.25});
     assert.equal(first.qualification,'not-established');
@@ -171,7 +171,7 @@ await describe({name:'',children:[
   it({name:'rejects malformed and mismatched persisted entries',fn:async function invalidPersistedEntry(){
     await using current=await fixture();
     const key=storeModule.digest('malformed');
-    assert.equal(await current.store.read(key),undefined);
+    assert.equal(typeof await current.store.read(key),'symbol');
     const path=join(current.directory,current.store.namespaceKey,`${key}.json`);
     await writeFile(path,'{',{mode:0o600});
     assertFailure({error:await failure(current.store.read(key)),message:'incomplete or malformed'});

@@ -1,12 +1,10 @@
 import {indexPolicyDocument} from '../../policy-index.ts';
 import {
   RELEVANCE_QUESTION,
+  CACHE_ENTRY_MISSING,
   RuleRelevanceCacheError
 } from './definition.ts';
-import {
-  createRelevanceStore,
-  digest
-} from './store.mjs';
+import {createRelevanceStore,digest} from './store.ts';
 
 /**
  Bind incremental semantic data to the incumbent original policy selector.
@@ -112,10 +110,15 @@ export function bindRuleRelevanceCache({
    return {rule,entry:await store.read(rule.key)};
   }));
   for(const {rule,entry} of cached){
-   if(entry)entries.set(
+   if(typeof entry==='symbol'){
+    if(entry!==CACHE_ENTRY_MISSING)throw new RuleRelevanceCacheError('Unknown relevance cache absence');
+    missing.push(rule);
+    continue;
+   }
+   entries.set(
      rule.id,
      entry
-   );else missing.push(rule);
+   );
   }
   if(missing.length > 0){
    originalCurrent(source);signal?.throwIfAborted();
