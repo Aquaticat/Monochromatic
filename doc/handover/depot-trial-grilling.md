@@ -27,6 +27,12 @@ The user explicitly said looking at Claude transcripts is unnecessary; transcrip
 - The user wants sliding-window rate limits, or an inexpensive way to express them without GitHub's overhead.
   They rejected hypothetical burst/debounce questions and requested inspection of actual GitHub CI history.
 - The user highlighted GitHub's 10 GB cache space as another concern.
+- The user accepts agent-requested cloud checks, while preserving early commits even when broken.
+  Checking uncommitted changes is an optional capability, not a requirement to delay commits.
+- The user knows GitHub cache capacity can be increased for a charge and considers that prohibitively expensive.
+  Paid GitHub cache expansion is not an accepted fallback.
+- Whether app/device checks should run on every push or at agent-requested checkpoints remains undecided.
+  The user answered that they are not sure; no scheduling preference was accepted.
 
 ## Measured release example
 
@@ -78,7 +84,7 @@ This sample does not support attributing the delay solely to machine startup.
 A query for Scorecard runs created since October 14 at 21:00 UTC returned 926 runs.
 No completed gate duration or causal diagnosis has been established.
 
-Depot documents concurrency waiting inside its orchestration system,
+Depot documents [concurrency waiting inside its orchestration system][depot-orchestration],
 but that is not equivalent to the Scorecard rolling execution budgets.
 Searches of current compatibility docs, documentation indexes, API docs, and public CLI request definitions
 did not establish a native configurable rolling-window admission feature.
@@ -88,15 +94,39 @@ Copying the current gate to Depot would still count GitHub runs instead of Depot
 The GitHub cache usage API returned 10,696,470,622 bytes and 15 entries on October 15.
 A subsequent cache listing returned 16 entries, so these endpoints are not a simultaneous snapshot.
 The configured cache cap was not independently queried.
+[GitHub documents paid cache expansion][github-cache], so 10 GB is not a universal hard ceiling.
+The user's objection to expansion is cost.
 
 `depot org list --output json` succeeded and returned the user's Depot organization.
 CLI access is verified without printing credentials or modifying authentication.
 
+## Concrete coverage gaps
+
+The read-only inventory compared workflow declarations, root tasks, and selected music-player tasks.
+It did not execute tests, inspect every package or third-party action, or audit branch protection.
+
+- [Android tasks](../../package/music-player/android-app/mise.toml) include host unit tests,
+  device tests, Android lint, Kotlin checks, and native Rust Clippy.
+  The inspected workflows do not invoke those tasks or their direct test commands.
+  Android release packaging invokes `build:release`;
+  ordinary Kotlin edits are outside that release workflow's selected `Cargo.toml` push paths.
+- [Desktop tasks](../../package/music-player/desktop-app/mise.toml) include
+  [real-keyboard end-to-end tests](../../package/music-player/desktop-e2e/README.md).
+  The inspected workflows do not invoke that suite.
+  Windows and Alpine workflows do run desktop unit and smoke tests.
+- [Shared audio core tasks](../../package/music-player/truepeak-core/mise.toml) include their own all-features test.
+  No dedicated invocation appeared in workflows; building the core as a dependency is not running its tests.
+- [Root tasks](../../mise.toml) expose package builds, lint, unit tests, browser tests, and end-to-end tests.
+  The inspected workflows run selected package checks rather than a general changed-package check pipeline.
+
+These are missing connections to existing checks, not proof that the underlying tests cover all desired behavior.
+The broader CI plan must also identify behaviors for which tests do not yet exist.
+
 ## Open questions and next work
 
 - Explain reusable tool environments, compiled dependency caches, and compilation in plain language.
-- Offer concrete CI coverage examples from repository workflows instead of asking the user to design CI unaided.
-  A read-only agent is comparing workflow triggers with existing local build, lint, and test tasks.
+- Use the measured release example and concrete coverage gaps when designing the trial.
+- Establish device-test runtime and cost before asking the user again to choose a frequency.
 - Establish what result Claude actually needs before its next dependent step, through discussion and repository evidence.
 - Identify desired checks, platform coverage, trial scope, success criteria, and spending constraints.
 - Keep proposals separate from accepted decisions; confirm shared understanding before implementation.
@@ -104,6 +134,7 @@ CLI access is verified without printing credentials or modifying authentication.
 No workflow, Depot resource, credential, or billing setting has been changed in this interview.
 The worktree initially contained an unrelated `mise.lock` modification.
 Commit `86961fee56` created this handover; its first version passed a CommonMark-to-HTML render check with Pandoc.
+Commit `1c9599732d` added the rate-limit evidence and expanded coverage scope; that version also passed rendering.
 
 ## Interview process correction
 
@@ -118,3 +149,5 @@ that those artifacts can answer.
 [ci-docs]: https://depot.dev/docs/ci/overview
 [build-docs]: https://depot.dev/docs/container-builds/overview
 [gate-run]: https://github.com/Aquaticat/Monochromatic/actions/runs/38806855827/job/116669815274
+[depot-orchestration]: https://depot.dev/blog/building-ci-with-durable-lambda
+[github-cache]: https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching
