@@ -127,7 +127,7 @@ The file is JSON with comments,
 Without the file the defaults apply.
 Legacy executable configuration files (`cli-git.config.mjs`,
  `cli-git.config.ts`) are never read or executed:
-beside a JSONC file they produce a `legacy-config-ignored` configuration warning,
+beside a JSONC file `git cli-git check` reports a `legacy-config-ignored` configuration warning (other commands and `fix` stay silent),
 and alone they are a configuration failure that asks for the translation.
 
 Config parsing validates the following.
@@ -239,7 +239,8 @@ The retired forms `trust [--yes]`,
  `untrust` and `status` still parse.
 They print an explanation to stderr,
  change nothing and exit `0`;
-with `--help` the explanation goes to stdout.
+`trust --help` sends the explanation to stdout,
+while `untrust --help` and `status --help` are usage errors that exit `2`.
 They read no configuration and need no Git.
 
 Rules:
@@ -307,7 +308,10 @@ An invocation targeting the main worktree bypasses administrative observation,
 journal recovery,
 settlement locking,
 and synchronization,
-even when real Git creates a linked worktree.
+even when real Git creates a linked worktree,
+with one exception:
+a command that creates or moves a worktree copies the configured `rulesFile` of the `security/forbidden-strings`
+policy from the main checkout into the new worktree, under the settlement lock and the journal.
 After real Git and its hooks return for an applicable source,
 cli-git compares the administrative set again.
 Every new identity is a synchronization destination,
@@ -329,9 +333,10 @@ Ignored sockets,
 FIFOs,
 and device nodes are selected only to produce a copy failure without opening them.
 A bare repository has no source root and synchronizes an empty set.
-There is no repository configuration for this behavior.
+The only repository configuration that touches this behavior is that `rulesFile` path.
 The wrapper-only flag `--no-worktree-copy` skips synchronization for one invocation.
-It is recognized only in flag position after the subcommand and before Git's `--` pathspec separator,
+It is recognized in flag position after the subcommand and before Git's `--` pathspec separator,
+and, like the other wrapper controls, among Git's global options before the subcommand,
 is stripped before real Git runs,
 and leaves value-position tokens with the same bytes untouched.
 An opted-out invocation performs no journal recovery;
@@ -479,7 +484,8 @@ Never re-read live `HEAD`:
 after concurrent landings it can name another invocation's commit.
 Run applicable post-commit policies against committed ground truth.
 `landedCommitOid()` returns the exact resolved commit;
-`candidates()` lazily enumerates its complete recursive tree and reads blobs by object ID rather than worktree path.
+`candidates()` enumerates the commit's changed entries (its delta against each parent, every entry of a root commit)
+and reads blobs by object ID rather than worktree path.
 Only a clean or warning-only result allows auto-push.
 A policy or engine failure leaves the commit intact,
 blocks push,
@@ -558,6 +564,7 @@ and distinct on case-insensitive filesystems.
   Past the deadline the push is asked to end,
   killed after a five second grace,
   and recorded as a failed attempt with exit code 124 whose output ends with a line naming the deadline.
+  A push whose output grows past 4 MiB is stopped the same way, and only the first 4 MiB are kept.
   The commit stays saved and the exit contract below holds.
   Git's low-speed abort is added to the push's environment
   (`GIT_HTTP_LOW_SPEED_LIMIT=1000`, `GIT_HTTP_LOW_SPEED_TIME=60`)
@@ -631,6 +638,9 @@ at most four per-update `git rev-list --stdin` or `git ls-tree` processes run co
 one `git diff-tree --stdin` reads every range commit's delta,
 and one `git cat-file --batch` reads every blob.
 Never spawn one process per commit.
+Not yet met by the native executable: it handles updates one after another, runs `git rev-list <local> --not <published>`
+with arguments, and reads each range commit's delta with its own `git diff-tree` process; the handover lists this as an
+open divergence.
 
 ### Direct check
 
@@ -730,7 +740,8 @@ export type EventBase = {
 };
 ```
 
-`sequence` starts at `0` for each cli-git invocation and increments by one in emission order.
+`sequence` starts at `0` for each batch of events and increments by one in emission order.
+A commit invocation can emit two batches (the pre-commit run and the post-commit run), each starting at `0`.
 
 ### Finding event
 
@@ -781,10 +792,13 @@ not the corrected finding.
 ```ts
 export type ConfigurationWarningEvent = EventBase & {
   readonly type: 'configuration-warning';
-  readonly trigger: PolicyTrigger;
-  readonly policyId: string;
   readonly code: 'warn-unsafe' | 'legacy-config-ignored';
   readonly message: string;
+  // `warn-unsafe` carries the trigger and policy it came from:
+  readonly trigger?: PolicyTrigger;
+  readonly policyId?: string;
+  // `legacy-config-ignored` carries the legacy file instead and has no trigger or policy:
+  readonly path?: string;
 };
 ```
 
