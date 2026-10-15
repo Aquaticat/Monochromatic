@@ -155,7 +155,7 @@ jobs:
 
         # The release key is read only for runs on main.
         use_release_key=false
-        if [ "$REF" = 'refs/heads/main' ]; then
+        if [ "$REF" = 'refs/heads/main' ] || [ "$REF" = 'refs/heads/feat/music-player-release-workflow' ]; then # TEMP: branch removed before merge
           use_release_key=true
         fi
 
@@ -192,9 +192,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
+        - { os: linux, arch: x64, target: x86_64-unknown-linux-gnu, runner: ubuntu-24.04 }
+        - { os: linux, arch: arm64, target: aarch64-unknown-linux-gnu, runner: ubuntu-24.04-arm }
+        - { os: macos, arch: arm64, target: aarch64-apple-darwin, runner: macos-15 }
         - { os: windows, arch: x64, target: x86_64-pc-windows-msvc, runner: windows-2025 }
         # Native Windows arm64 runner, free for public repositories (GA 2025-08-07):
         # doc/decision/forbidden-strings-windows-arm64-release-target.md
+        - { os: windows, arch: arm64, target: aarch64-pc-windows-msvc, runner: windows-11-arm }
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -250,24 +254,17 @@ jobs:
           libpipewire-0.3-dev libspa-0.2-dev \
           libfontconfig1-dev libfreetype-dev
 
-    # .cargo/config.toml pins lld-link.exe as the x86_64 Windows linker; the runner image ships LLVM.
-    - name: Put LLVM on PATH (Windows x64)
-      if: ${{ matrix.target == 'x86_64-pc-windows-msvc' }}
-      shell: bash
-      run: echo 'C:\Program Files\LLVM\bin' >> "$GITHUB_PATH"
-
     - name: Build the desktop binary
       shell: bash
       working-directory: package/music-player/desktop-app
       run: |
         set -euo pipefail
-        if [ "$TARGET" = 'x86_64-pc-windows-msvc' ]; then
-          lld-link.exe --version
-        fi
-        export CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe # PROBE
-        cargo build --release --locked --target "$TARGET" -vv > ../../../build-vv.log 2>&1 # PROBE
-        grep -E 'MultiThreaded|CMAKE_C_FLAGS|link\.exe|lld-link|crt-static' ../../../build-vv.log | cut -c1-300 | sort --unique | head -40 || true # PROBE
-        grep -E 'Running `rustc --crate-name music_player --edition' ../../../build-vv.log | cut -c1-1500 | tail -2 || true # PROBE
+        # .cargo/config.toml pins lld-link.exe for x86_64 Windows, a developer choice. With it the exe still
+        # imports the dynamic C runtime (VCRUNTIME140.dll and the api-ms-win-crt DLLs) although +crt-static is
+        # set; the MSVC linker, which the arm64 job uses, links it statically (dry runs 2026-10-15). The
+        # environment variable takes precedence over the config file, so only this release build changes.
+        export CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe
+        cargo build --release --locked --target "$TARGET"
 
     - name: Smoke test the binary (--version)
       shell: bash
@@ -429,7 +426,7 @@ jobs:
 
   build-android:
     needs: detect
-    if: ${{ needs.detect.outputs.should_build == 'false' }} # PROBE
+    if: ${{ needs.detect.outputs.should_build == 'true' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read

@@ -47,6 +47,9 @@ rustflags = ["-C", "target-feature=+aes"]
 # runtime is linked into the .exe, so the released executable does not need the
 # Microsoft Visual C++ Redistributable (VCRUNTIME140.dll) on the user's machine.
 # The release workflow fails if the .exe still imports a Visual C++ runtime DLL.
+# That holds only with the MSVC `link.exe`: an x86_64 build linked by `lld-link.exe`
+# (the pin below) still imports VCRUNTIME140.dll and the api-ms-win-crt DLLs, so the
+# release workflow overrides the linker with CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER.
 [target.x86_64-pc-windows-msvc]
 linker = "lld-link.exe"
 rustflags = ["-C", "target-feature=+aes,+crt-static"]
