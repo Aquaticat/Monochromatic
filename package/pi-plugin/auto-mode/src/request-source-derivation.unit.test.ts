@@ -79,7 +79,9 @@ await describe({ name: '', children: [
       expect(consumeSourceAssociations(f.input.inputs).governingUse?.state).toBe('represented-by-original-inputs');
       if (change === 'request') f.derivation.request = {};
       else f.derivation.contributions = [...f.derivation.contributions];
-      expect(function consumeForeignProof() { consumeSourceAssociations(f.input.inputs); })
+      expect(function consumeForeignProof() {
+        consumeSourceAssociations(f.input.inputs);
+      })
         .toThrow('Request field derivation belongs to another original request or contribution list');
     } });
   }),
