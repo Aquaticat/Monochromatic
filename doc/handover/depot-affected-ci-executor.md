@@ -8,7 +8,7 @@ Package Oxlint always receives the unchanged package task with no file arguments
 Partial waves remain partial evidence, never a complete-graph timing claim.
 
 The isolated harness is branch `trial/depot-complete-ci-20261016`.
-Its latest feature-suite harness commit is `2288fcec22`.
+Its latest shared executor harness commit is `203bef4198`.
 Manifests live under `.depot/manifests/` on that branch.
 The executor records selected and deferred checks, per-check exit status,
 source and manifest identity, expected unit files, and input hashes.
@@ -94,9 +94,19 @@ The original aggregate case record remains the reconciliation source for that at
   No guest was created. The main agent owns disposable VM fixture preparation and execution.
 - Logger static `qm7w64tmhj` reached terminal failure after completing its selected wave.
   The full aggregate record is retained for independent reconciliation.
-- Corrected native desktop `w6ln4j09fz` remains running.
-- Desktop-case Linux `t4x6r3tb5x` runs source `3434eaa455d569c18b52cf15100f77f9db251d21`
-  with harness `9b5dc7cb79`; its runtime records use the desktop manifest identity.
+- Native desktop `w6ln4j09fz` passed build, Clippy and 1406 nextest tests;
+  Slint lacked `libinput.so.10`, and the E2E control pipe lacked standard input.
+  Native replay `lvcwx21cbt` and desktop-case replay `ssvlvk57k4` verify the stdin repair,
+  but a second harness defect rejected the compositor's valid `ok wayland-1` response.
+  The source protocol at `package/cli/nested-wayland-session/src/protocol.rs:557`
+  prefixes successful data responses with `ok `.
+  Replays `nb6ptmwjs5` and `xmvgm200k5` use the corrected parser.
+- Desktop-case `ssvlvk57k4` executed 1067 of 1460 nextest cases:
+  1064 passed, three failed, one skipped, and 393 were not executed after fail-fast.
+  Failures are `watcher_drives_rescan_update_through_engine`,
+  `idle_root_emits_no_extra_queue_updates`, and
+  `a_burst_of_writes_is_one_report_naming_each_file_once`.
+  The main agent's verified in-memory no-fail-fast adapter is available for replay.
 - Expanded controls `dxk4v3s0w3` reached their expected provider statuses:
   passing and deferred-prerequisite succeeded; failure, Oxlint-argument,
   and Oxlint-scope controls failed. Terminal assertion logs remain to be reconciled.
@@ -118,6 +128,62 @@ configuration failure does not suppress independent type checks.
 
 All attempts, including setup failures, remain part of provider cost accounting.
 
+## Corrected graph and consumer evidence
+
+The authoritative logger static artifact has 718 records:
+153 passed, 171 failed and 394 skipped.
+Logger unit `xz7cchwbsk` has 718 records:
+211 passed, 15 failed and 492 skipped.
+Both used the old manifest, which declared some build requirements outside its scheduling edges.
+Those results do not establish source defects for missing build artifacts.
+
+Conservative graph commits `172f8e6ec0` and `3573bdfe2e` retain all existing prerequisites,
+consume the declared artifact prerequisites, and add the bounded Rust fuzz smoke task.
+Independent verification found 719 unique checks, no cycles and no removed prior prerequisite.
+The import/runtime audit remains open before final graph freezing.
+The static and unit closures now cover 564 checks; the remaining partitions cover 155.
+
+Each executed check now retains a dedicated output file, byte count and SHA-256.
+The executor rejects unused artifact-prerequisite metadata.
+Explicit `DEPOT_CI_CHECK_IDS` selection preserves prerequisite closure;
+control run `m00504dz4c` exercises that boundary and retained output.
+
+Native feature run `79lgpx91sf` passed all selected suites:
+default 58 tests, fingerprint 67 tests, and service 71 tests, with none skipped.
+
+WireGuard `1pfkxwlwbd` passed endpoint routing but failed the watcher process cleanup assertion.
+Replay `cwkngc2w7g` adds an init reaper and reaches a later source failure:
+the test rewrites `ExemptMark = 9999`, then `down` rejects its reserved `0x2000` bits.
+Endpoint routing passes again, and both private containers pass cleanup checks.
+The init replay stops without the prior SIGKILL fallback warning.
+
+Pi `4z014g290p` passed terminal answers/cancellation, actual notification delivery,
+and the offline tmux tests; its configured-extension prerequisite lacked clone authentication.
+Replay `04pjg1sw9j` builds that prerequisite and loads 22 configured extensions,
+with no fixture extensions, in the offline container.
+The authored serializer assertion then fails:
+`The normal native serializer must retain its original system input derivation`.
+The other consumer checks pass again; artifact ownership and container cleanup checks pass.
+
+Mutation controls preserve the original denied private-directory probe.
+`g1nngvfsrg` rejects the user-namespace approach with
+`cannot unmount /sys/kernel/debug: device or resource busy`.
+`70p38v12d7` rejects unsupported tmpfs `uid=` options.
+Run `0snqhv0rhl` tests explicit host UID/GID execution with a private writable tmpfs,
+preserving the bind directory's restrictive permissions.
+
+Private image job `wqz9h633wj` receives only the audited historical image archive,
+verifies its SHA-256 and both original image IDs, then prepares the private snapshot
+`monochromatic-trial-native-bases:20261016-v1`.
+The archive is 2329816576 bytes with SHA-256
+`c377f23ca6284f3d8020cb8697cf7654eaa7549a25c05150c6478ac139f50fb4`.
+Restoration is pending; the images cannot yet satisfy an execution prerequisite.
+
+Tracked failures are #1066 for the full-package lint panic,
+#1067 for TOML coverage, #1068 for the duplicated mutation package path,
+#1069 for the constant Clippy assertion, #1070 for container termination,
+and #1071 for the obsolete LFS endpoint.
+
 ## Queue
 
 1.  Retain terminal TOML diagnostics and check records in the audit and incident trackers.
@@ -128,10 +194,11 @@ All attempts, including setup failures, remain part of provider cost accounting.
     The coverage agent owns the offline configured-Pi extension,
     notification, terminal, and tmux consumer adapters.
 6.  Complete generated-file and container/mutation TOML evidence.
-7.  Update #339 for cycle evidence and collect terminal scheduler-control assertions.
+7.  Collect terminal scheduler-control assertions. Cycle evidence is recorded on #339.
     Deduplicate and document bootstrap, lock metadata, trust, tsgolint panic,
     coverage, rootful mutation permissions, duplicated mutation package path,
-    obsolete LFS endpoint, and desktop setup incidents separately.
+    obsolete LFS endpoint, desktop setup, configured-Pi assertion,
+    WireGuard fixture, and Linux nextest failures separately.
     Add resource metadata and event delimiter
     corrections to the existing execution-evidence issue.
 8.  Render-check this handover and all incident documentation.
