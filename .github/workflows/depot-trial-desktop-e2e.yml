@@ -39,5 +39,5 @@ jobs:
       run: mise run //package/music-player/desktop-app:trial:depot:desktop:build
     - name: Build the compositor
       run: mise run //package/cli/nested-wayland-session:build
-    - name: Capture chooser subprocess status and stderr without changing its arguments
+    - name: Verify all desktop sessions with the corrected portal Read contract
       run: mise run //package/music-player/desktop-app:trial:depot:desktop:run
