@@ -44,6 +44,12 @@ the main investigation owns the controlled linker workload and account/cost reco
 Each area must finish with an executed result or a demonstrated blocker,
 not merely a new issue or proposal.
 
+The current usage API re-probe still rejects the CLI user token and requires an organization token.
+Browser discovery through the available CLI found no running Chrome instance.
+The user said they cannot supply an organization-token file or a signed-in browser for this check.
+Continue the accessible experiments and reconcile their measured usage;
+retain account-wide billing and spending-control verification as an explicit access limitation.
+
 The user requested a GitHub issue for every discovered problem on 2026-10-15 local time.
 The [issue inventory](depot-trial-issues.md) records each distinct trial finding,
 including repaired incidents with their verification.
