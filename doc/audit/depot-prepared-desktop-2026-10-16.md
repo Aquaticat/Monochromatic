@@ -13,8 +13,9 @@ completed the native-runtime probe.
 Prepared artifact build [run `xxs92vjc25`](https://depot.dev/orgs/l4zncjjbj5/workflows/xxs92vjc25)
 and nested-boot verification [run `t7n42wkr5n`](https://depot.dev/orgs/l4zncjjbj5/workflows/t7n42wkr5n)
 completed successfully.
-The full consumer [run `p5rp4p0wvp`](https://depot.dev/orgs/l4zncjjbj5/workflows/p5rp4p0wvp)
-is running both fresh consumers.
+The first full consumer in [run `p5rp4p0wvp`](https://depot.dev/orgs/l4zncjjbj5/workflows/p5rp4p0wvp)
+passed every injectable check and its cleanup assertions.
+The second fresh consumer is running.
 
 The earlier [package snapshot experiment](depot-expanded-cost-2026-10-15.md)
 verified the installed versions of 23 packages and ImageMagick in separate fresh consumers,
@@ -138,9 +139,10 @@ installed the build toolchain,
 checked the locked workspace dependencies,
 and built the application and compositor once.
 The 16-CPU,
-64-GB job ran from `01:41:57Z` to `01:46:59Z`,
-an elapsed 302 seconds.
-The complete run took 325 seconds including orchestration.
+64-GB job ran from `01:41:57.980Z` to `01:46:59.251Z`,
+an elapsed 301.271 seconds in the metrics API.
+The complete run took 325.286 seconds from its recorded start,
+including orchestration.
 The logged snapshot capture and upload took 23.410 seconds and uploaded 4,863,229,952 bytes.
 
 The resulting image is `monochromatic-trial-desktop-ready:20261016-v1`,
@@ -176,6 +178,40 @@ The initial full consumer run `4pmthztf6p` stopped before the suite because Bash
 Snapshots preserve the executable but not the preparation step's environment.
 The corrected workflow activates the preserved `~/.local/share/mise/bin/mise` executable explicitly
 without installing it again.
+
+### First full consumer
+
+Job `n1jkfcsz5c`,
+attempt `zfwxb30f4m`,
+passed all seven sessions with 117 passed checks,
+no failures,
+and the existing held-modifier case reported as not injectable.
+The per-session results were:
+
+- `wide`: 75 passed and one not injectable.
+- `narrow`: 10 passed.
+- `dialog`: 2 passed.
+- `auto-play`: 4 passed.
+- `quit`: 1 passed.
+- `states`: 13 passed.
+- `visual`: 12 passed.
+
+The actual suite command took 218.521 seconds.
+File verification and fresh service readiness took 24.785 seconds before that command.
+The complete task,
+including cleanup,
+took 243.917 seconds.
+The 2-CPU job interval was `01:52:17.353Z` to `01:57:14.348Z`,
+or 296.995 seconds including checkout and startup overhead.
+
+Each harness session created and removed its own private audio sink.
+The wrapper then verified that only the original `auto_null` sink remained,
+no test user units were active,
+and no player process remained.
+It stopped the audio services,
+removed the container,
+verified the container no longer existed,
+and verified that its overlay marker did not reach the prepared filesystem.
 
 ## Evidence collection
 
