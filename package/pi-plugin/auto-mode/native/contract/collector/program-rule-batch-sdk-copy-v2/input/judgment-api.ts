@@ -65,6 +65,7 @@ export function createJudgmentAPI<const Source extends JudgmentPreparationSource
     claimUnitAdoption,
     requestMaterialFor,
     claimRequestMaterial,
+    claimOperationDecision,
     claimHeadingContext,
     issueBoundPolicyBatch,
     indexedRuleCandidates,
@@ -218,6 +219,10 @@ export function createJudgmentAPI<const Source extends JudgmentPreparationSource
       claimHeadingContext: guardWithInput({
         operation,
         run: claimHeadingContext
+      }),
+      claimOperationDecision: guardWithoutInput({
+        operation,
+        run: claimOperationDecision
       }),
       issueBoundPolicyBatch: guardWithInput({
         operation,

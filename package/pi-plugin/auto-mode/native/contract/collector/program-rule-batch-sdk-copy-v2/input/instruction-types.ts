@@ -69,7 +69,7 @@ type ClauseInstruction = Readonly<{
  Request claims retain occurrence identity even if another request has equal bytes.
  */
 type RequestInstruction = Readonly<{
-  kind: 'whole-request-material';
+  kind: 'whole-request-material' | 'whole-operation-decision';
   request: object;
   binding: QuestionBinding;
 }>;

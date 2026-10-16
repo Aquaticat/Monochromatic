@@ -98,6 +98,7 @@ return createJudgmentAPI({
       claimUnitAdoption:instructions.claimUnitAdoption,
       requestMaterialFor:instructions.requestMaterialFor,
       claimRequestMaterial:instructions.claimRequestMaterial,
+      claimOperationDecision:instructions.claimOperationDecision,
       claimHeadingContext:instructions.claimHeadingContext,
       issueBoundPolicyBatch:instructions.issueBoundPolicyBatch,
       indexedRuleCandidates:instructions.indexedRuleCandidates,
