@@ -16,8 +16,11 @@ The first completed-batch repository query returned 50 newly filed issues:
 Existing issues were reused for six additional discovery or process findings.
 These counts describe the filing result,
 not completed integration of the trial-only corrections.
-The resumed experiments add findings recorded in their execution reports;
-the aggregate count will be reconciled after those probes finish.
+The completed resumed experiments add 12 issues,
+including four closed after verified trial corrections.
+The aggregate repository query now returns 62 newly filed issues:
+49 open and 13 closed,
+with the six reused issues remaining separate.
 
 ## Application, harness, and runner findings
 
@@ -177,14 +180,47 @@ These warnings were visible after the chooser recovered in run `38833901553`.
 They did not fail that run's interaction assertions.
 Issue #1004 retains the verified recovery and stays open for integration of the trial-only correction.
 
-## Resumed standalone experiment
+## Resumed execution and accounting
 
+- [#1045](https://github.com/Aquaticats/Monochromatic/issues/1045):
+  the Playwright container version differs from the locked test runner.
+- [#1046](https://github.com/Aquaticats/Monochromatic/issues/1046):
+  repeated same-key Depot Test uploads duplicate stored result rows.
+- [#1047](https://github.com/Aquaticats/Monochromatic/issues/1047):
+  browser execution needs a working Podman user mapping in Depot CI.
+- [#1048](https://github.com/Aquaticats/Monochromatic/issues/1048):
+  the initial skip fixture matched no compiled Rust test;
+  closed after the corrected fixture reported the intended skip.
+- [#1049](https://github.com/Aquaticats/Monochromatic/issues/1049):
+  the split probe passed a run-only flag;
+  closed after invoking the supported split interface successfully.
+- [#1050](https://github.com/Aquaticats/Monochromatic/issues/1050):
+  the Rust timing adapter omitted an integration-test binary identity;
+  closed after every expected identity appeared exactly once across the final shards.
 - [#1051](https://github.com/Aquaticats/Monochromatic/issues/1051):
   the Sandbox SDK client intermittently remains alive after completed remote commands.
   The bounded reproduction,
   later passing control,
   and unresolved source ownership are retained in the
   [client-lifecycle record](../troubleshooting/depot-sandbox-client-exit.md).
+- [#1052](https://github.com/Aquaticats/Monochromatic/issues/1052):
+  the browser suite needs to distinguish unavailable OPFS from a logger regression.
+- [#1053](https://github.com/Aquaticats/Monochromatic/issues/1053):
+  prepared desktop execution needs verified decode-priority requests and rtkit fallback.
+- [#1054](https://github.com/Aquaticats/Monochromatic/issues/1054):
+  the prepared desktop session lacks verified analysis notifications through the built player.
+- [#1055](https://github.com/Aquaticats/Monochromatic/issues/1055):
+  compositor EGL diagnostics do not identify the affected operation.
+- [#1056](https://github.com/Aquaticats/Monochromatic/issues/1056):
+  the first expanded-cost draft used the wrong Linux runner overage rate;
+  closed after correcting the rate and independently verifying the revised replay.
+
+The [Test report](../audit/depot-test-feature-2026-10-16.md),
+[expanded execution report](../audit/depot-expanded-execution-2026-10-16.md),
+and [prepared desktop report](../audit/depot-prepared-desktop-2026-10-16.md)
+retain the corresponding probes and recovery boundaries.
+Existing issues #997 and #998 retain the successful combined desktop evidence;
+they remain open for production integration.
 
 ## Verification
 
