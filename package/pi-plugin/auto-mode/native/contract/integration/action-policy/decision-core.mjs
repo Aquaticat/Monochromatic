@@ -91,8 +91,23 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
  dl.debug('resolving captured policy before original evidence closure');
  const automaticOutcome=resolveManualReviewOutcome(compiled.program);
  recordDecision({judgment,event:'clause-outcome',details:{outcome:automaticOutcome,missingPremises:compiled.missingPremises,authorizationRequirements:compiled.program.authorizationRequirements}});
+ async function decideCompleteOperation(){
+  try{return await reviewOperationDecision(judgment);}
+  catch(error){
+   recordDecision({judgment,event:'operation-decision-failed',details:{error}});
+   try{
+    inputs.assertCurrent();
+    authorizationInputs.assertCurrent();
+    pendingSessionApproval.assertCurrent();
+    judgment.assertDependenciesCurrent();
+   }catch(currentnessFailure){
+    throw new EstablishedPolicyDecisionError('The operation or its instructions changed during decision-model review; propose the operation again',{cause:new AggregateError([error,currentnessFailure])});
+   }
+   throw error;
+  }
+ }
  const operationDecision=policy!==undefined&&(automaticOutcome.state!=='resolved'||automaticOutcome.verdict==='ask')
-  ?await reviewOperationDecision(judgment)
+  ?await decideCompleteOperation()
   :undefined;
  const outcome=operationDecision?.outcome??automaticOutcome;
  recordDecision({judgment,event:'automatic-outcome',details:{outcome,next:outcome.state!=='resolved'||outcome.verdict==='ask'?'manual-review':'terminal'}});
@@ -178,6 +193,8 @@ export function createDecisionGate({
    rl.debug('closing failed original decision');
    try{if(judgment.inspect().finalRecord===undefined)judgment.finalize();}
    catch(closureFailure){
+    if(error instanceof EstablishedPolicyDecisionError)
+     throw new EstablishedPolicyDecisionError(error.message,{cause:new AggregateError([error,closureFailure])});
     throw new AggregateError([error,closureFailure],'Original policy review and evidence closure failed',{cause:closureFailure});
    }
    throw error;
