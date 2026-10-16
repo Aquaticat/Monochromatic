@@ -1,0 +1,4 @@
+[profile.depot.junit]
+path = "junit.xml"
+report-name = "depot-audio-core-trial"
+report-skipped = "all"

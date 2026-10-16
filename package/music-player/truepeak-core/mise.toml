@@ -32,3 +32,27 @@ run = "cargo nextest run --release --all-features"
 [tasks."test:debug"]
 description = "cargo nextest run in debug mode for fast TDD iteration (all features)"
 run = "cargo nextest run --all-features"
+
+[tasks."trial:depot:results"]
+description = "Run actual audio tests and emit JUnit with a controlled failure and skipped test"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { readFileSync, writeFileSync } = await import('node:fs')
+const { spawnSync } = await import('node:child_process')
+if (!process.env.DEPOT_JOB_URL) throw new Error('The deliberate assertion mutation requires a disposable Depot CI job.')
+const path = 'src/window_tests.rs'
+const original = readFileSync(path, 'utf8')
+const assertion = 'assert_eq!(window_frames(4.0, 48000), 192000);'
+if (!original.includes(assertion)) throw new Error('The selected assertion changed.')
+const fail = process.env.DEPOT_TEST_TRIAL_MODE !== 'pass'
+console.log(JSON.stringify({ deliberateFailure: fail, runAttempt: process.env.GITHUB_RUN_ATTEMPT }))
+try {
+  if (fail) writeFileSync(path, original.replace(assertion, 'assert_eq!(window_frames(4.0, 48000), 192001);'))
+  const result = spawnSync('cargo', ['nextest', 'run', '--locked', '--config-file', 'nextest.depot.toml', '--profile', 'depot', '--no-fail-fast', '--filter-expr', 'not test(=gain_tests::silence_gives_unity_gain)'], { stdio: 'inherit' })
+  if (result.error) throw result.error
+  if (result.status === null) throw new Error(`nextest terminated by ${result.signal}`)
+  process.exitCode = result.status
+} finally {
+  writeFileSync(path, original)
+}
+'''
