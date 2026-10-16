@@ -242,7 +242,7 @@ const wrapper = [
   "const limits = command === 'run' ? ['--memory=2g', '--cpus=2', '--pids-limit=512'] : [];",
   "const mutation = command === 'run' && args.some((arg) => arg.includes(':/manifest:'));",
   "const identity = mutation ? ['--user', `${process.getuid()}:${process.getgid()}`] : [];",
-  "const mappedArgs = args.map((arg, index) => mutation && args[index - 1] === '--tmpfs' ? `${arg},uid=${process.getuid()},gid=${process.getgid()}` : arg);",
+  "const mappedArgs = args.map((arg, index) => mutation && args[index - 1] === '--tmpfs' ? `${arg},mode=1777` : arg);",
   `const result = spawnSync('sudo', ['--non-interactive', ${JSON.stringify(podman)}, command, ...limits, ...identity, ...mappedArgs], { stdio: 'inherit' });`,
   'if (result.error) throw result.error;',
   'process.exitCode = result.status ?? 1;',
