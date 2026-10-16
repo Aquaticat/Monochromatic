@@ -494,6 +494,12 @@ the later fingerprint consumer changes must not be projected backwards into this
 The documentation control has no selected package owner.
 
 The native candidate manifest retains 21 exact-head task checks and five external groups.
+Cargo path dependencies select affected consumers but do not impose separately built artifact edges.
+Desktop,
+Android native,
+and benchmark builds compile their own core dependency through their authored Cargo invocation.
+They do not wait for the standalone core build;
+that build remains an independently selected core check.
 Its desktop `test:e2e` consumes the built application,
 and Android instrumentation consumes the built APKs.
 Remaining adapters cover root file checks,
