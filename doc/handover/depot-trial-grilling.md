@@ -264,6 +264,68 @@ The remaining evaluation experiments are listed in Completed trial execution and
 Integration of trial-only corrections remains separate work.
 No production migration or plan change was adopted.
 
+### Active replay at 03:01 UTC on October 16
+
+The complete graph remains unfinished.
+The TOML core attempt `hgqj2nstwq` recorded 16 passing checks,
+5 failed checks,
+and 3 deferred checks.
+The accounting audit independently reconciled every check record with the frozen manifest.
+Its provider allocation was 229 seconds at 16 vCPUs;
+its request interval remains censored because required checks are unfinished.
+Control run `g57729x66d` observed the intended pass,
+intentional task failure,
+Oxlint argument rejection,
+and file-scoped Oxlint rejection.
+
+Native host attempt `38842242564` failed before package checks on Windows and macOS:
+the harness omitted the configured `cargo-binstall` prerequisite.
+Trial commit `87f5bf2c1f` restores the documented prerequisite sequence.
+Retry `38842787230` uses the same historical native source revision.
+Issue `#1059` tracks the setup defect until both hosts cross that boundary.
+The source trace and attempted remedy are in
+`doc/troubleshooting/mise-cargo-backend-needs-rust-installed.md`.
+Native scanner run `38842263437` passed and scanned all eight changed paths.
+
+Depot native core and Android attempt `5tbb7qftkw` stopped during an unrelated inherited Git-wrapper build.
+That historical revision already uses the published native wrapper;
+it does not use the TOML revision's JavaScript wrapper build and trust command.
+The environment owner is replacing those inherited setup steps with the source-declared published tool.
+Historical source checks remain unchanged.
+
+The logger manifest now contains 718 local checks and 19 external groups,
+including 155 full-project package Oxlint checks,
+157 type checks,
+and 1057 ordinary unit-test files.
+The added artifact graph has 165 build prerequisite edges and no cycles.
+Root owns the filesystem identity and semantic bridge host adapter at trial commit `fc236f278b`,
+awaiting its source-specific review before dispatch.
+It exercises exact source `ef01490f5e960f8ca0b424c12242caeb3c5a2b5e`
+on Linux,
+Windows,
+and macOS.
+The environment owner retains Linux runtime groups,
+including desktop,
+Electron,
+terminal,
+Pi,
+disposable VM,
+and network namespace checks.
+The accounting owner retains Scorecard and complete attempt accounting.
+No account access has been reopened.
+
+Root's Android consumer now has separate artifact-hash verification and full-suite result capture tasks
+in the private emulator harness.
+Source inspection of the exact native head found 15 instrumented tests across four classes,
+rather than the later revision's 16 tests.
+The consumer will compare every observed test name and status with that source catalog.
+Next actions remain producer APK retrieval,
+headful private AVD execution with synthetic fixtures,
+and graceful shutdown.
+The desktop platform matrix,
+logger scanner,
+and final coherent whole-case replays remain queued.
+
 ## Purpose and current state
 
 The user subsequently requested immediate execution of the agreed trial.
