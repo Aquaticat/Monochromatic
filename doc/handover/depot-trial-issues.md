@@ -14,17 +14,22 @@ No upstream issue or support message was sent.
 ## Application, harness, and runner findings
 
 - [#1002](https://github.com/Aquaticats/Monochromatic/issues/1002):
-  Android instrumentation: SessionStoreTest uses a context with null applicationContext.
+  Android instrumentation:
+  SessionStoreTest uses a context with null applicationContext.
 - [#1003](https://github.com/Aquaticats/Monochromatic/issues/1003):
   Android instrumentation can skip decoder and playback coverage when indexed audio fixtures are absent.
 - [#1004](https://github.com/Aquaticats/Monochromatic/issues/1004):
-  Desktop E2E: folder chooser never appears on the prepared Depot software-rendered runner.
+  Desktop E2E:
+  folder chooser never appears on the prepared Depot software-rendered runner.
 - [#1005](https://github.com/Aquaticats/Monochromatic/issues/1005):
-  Desktop E2E: fixed-coordinate folder selection aborts the thirty-track fallback fixture.
+  Desktop E2E:
+  fixed-coordinate folder selection aborts the thirty-track fallback fixture.
 - [#1006](https://github.com/Aquaticats/Monochromatic/issues/1006):
-  Desktop E2E: an aborted session prevents later independent sessions from reporting coverage.
+  Desktop E2E:
+  an aborted session prevents later independent sessions from reporting coverage.
 - [#1007](https://github.com/Aquaticats/Monochromatic/issues/1007):
-  Desktop E2E: nested parent compositor route fails pointer and text checks in the cloud trial.
+  Desktop E2E:
+  nested parent compositor route fails pointer and text checks in the cloud trial.
 - [#1008](https://github.com/Aquaticats/Monochromatic/issues/1008):
   Depot trial Cargo caches can return stale binaries after older source layers are restored.
 - [#1009](https://github.com/Aquaticats/Monochromatic/issues/1009):
@@ -53,13 +58,40 @@ No upstream issue or support message was sent.
 - [#1001](https://github.com/Aquaticats/Monochromatic/issues/1001):
   reconcile storage scopes and documented cache-policy limits.
 
+## Release transfer and scheduling
+
+- [#1013](https://github.com/Aquaticats/Monochromatic/issues/1013):
+  public release download depended on exhausted authenticated REST quota;
+  closed with the verified consumer repair.
+- [#1014](https://github.com/Aquaticats/Monochromatic/issues/1014):
+  GitHub CLI masks the quota error as a missing release.
+- [#1015](https://github.com/Aquaticats/Monochromatic/issues/1015):
+  transferred release provenance is missing from the repository endpoint;
+  closed with the verified original-identity bundle consumer repair.
+- [#1016](https://github.com/Aquaticats/Monochromatic/issues/1016):
+  Cargo metadata used the previous repository owner;
+  closed with the generator and managed-manifest correction.
+- [#1017](https://github.com/Aquaticats/Monochromatic/issues/1017):
+  Scorecard history amplified REST usage;
+  closed after production GraphQL verification.
+- [#1018](https://github.com/Aquaticats/Monochromatic/issues/1018):
+  Scorecard admission has no reservation before analysis starts.
+- [#1019](https://github.com/Aquaticats/Monochromatic/issues/1019):
+  Scorecard budget accounting uses workflow creation time.
+- [#1020](https://github.com/Aquaticats/Monochromatic/issues/1020):
+  cancellation can refund already-started analysis in the existing accounting.
+- [#1021](https://github.com/Aquaticats/Monochromatic/issues/1021):
+  latest-attempt history does not retain all attempted analysis work.
+- [#1022](https://github.com/Aquaticats/Monochromatic/issues/1022):
+  the GitHub CLI run-log route rejects completed-job logs while siblings run.
+
+The accounting issues describe source and fixture evidence;
+they do not assert an observed live budget overrun.
+
 ## Remaining filing work
 
-Release transfer,
-quota diagnostics,
-scheduling accounting,
-completed-job logs,
-and expanded coverage issues are being filed separately.
+Expanded coverage issues and the published scanner's separate binstall metadata path
+are being checked for existing tracking.
 Their verified links will be added to this inventory.
 
 ## Verification
