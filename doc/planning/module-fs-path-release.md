@@ -319,7 +319,23 @@ Local checks passed:
 and `lint:oxlint` (zero warnings and errors).
 [Release run 38837297263](https://github.com/Aquaticats/Monochromatic/actions/runs/38837297263)
 builds commit `704f1a1586a5ef37c8dc597d1fcb0434dfb7a71a`.
+The run succeeded and npm made `0.2.1` available at `2026-10-16T01:53:24.576Z`.
+The registry's `latest` tag resolves to `0.2.1`.
+Its publisher is GitHub Actions,
+with trusted publisher configuration `b5559568-84c4-4539-93bd-c623048cd565`.
+The SLSA provenance identifies `Aquaticats/Monochromatic`,
+`.github/workflows/npm-publish.yml`,
+and source commit `704f1a1586a5ef37c8dc597d1fcb0434dfb7a71a`.
+This successful OIDC publication exercised the newly configured publisher.
+
+A disposable consumer with its own `package.json` installed `0.2.1` from npm and passed the same runtime checks,
+plus assertions of the installed version and repository URL.
+Commit `d71ed3b6d4` records the matching version and changelog on `main`.
+Tag `@monochromatic-dev/module-fs-path@0.2.1` preserves the exact published source commit.
+The initial consumer fixture omitted its own manifest and caused npm to select the parent scratch directory;
+the affected temporary Markdown dependencies were restored and compiled successfully.
+Details:
+[npm parent prefix selection](../troubleshooting/npm-scratch-parent-prefix.md).
+
 Next action:
-verify publication and provenance,
-install `0.2.1` in a disposable consumer,
-and bring the version bump onto `main`.
+none for `0.2.1`.
