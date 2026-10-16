@@ -1,0 +1,75 @@
+# GitHub Actions rejects runner context in job environment declarations
+
+## Symptom
+
+On 2026-10-16,
+dispatching `.github/workflows/npm-publish.yml` at commit `af6cc7ad5b` returned HTTP 422:
+`Unrecognized named-value: 'runner'. Located at position 1 within expression: runner.temp`.
+The offending declarations put `${{ runner.temp }}/fs-path-pack` in `jobs.pack.env`
+and `jobs.publish.env`.
+No runner job started for the invalid workflow.
+
+## Root cause
+
+This was an error in our workflow configuration.
+The hosted service's workflow parser source and version are not available for this incident.
+GitHub's [context availability reference][contexts] excludes `runner` from `jobs.<job_id>.env`,
+but includes it for `jobs.<job_id>.steps.env` and `jobs.<job_id>.steps.with`.
+Putting the same expression in a supported step field resolved the validation error.
+
+## Verification
+
+Failing declaration:
+
+```yaml
+# .github/workflows/npm-publish.yml
+jobs:
+  pack:
+    env:
+      FS_PATH_PACK_DIR: ${{ runner.temp }}/fs-path-pack
+```
+
+Working declaration:
+
+```yaml
+# .github/workflows/npm-publish.yml
+jobs:
+  pack:
+    steps:
+      - run: mise run npm:fs-path:pack
+        env:
+          FS_PATH_PACK_DIR: ${{ runner.temp }}/fs-path-pack
+```
+
+Dispatch at the invalid revision failed before execution.
+After moving the environment declaration into the invoking step,
+GitHub accepted [run 38837217115][accepted].
+That run was cancelled to align the source checkout with the dispatched revision;
+[run 38837297263][release] uses the corrected workflow from the release branch.
+
+## Verified workaround
+
+Set runner-dependent environment values on the step that needs them.
+Use `${{ runner.temp }}` directly in artifact action inputs.
+The tradeoff is repeating the expression at the relevant steps instead of declaring it once per job.
+
+## What does not work
+
+Repeating the job-level expression in another job produces the same validation error.
+Installing tools or changing npm authentication cannot resolve an error that occurs before jobs start.
+
+## Upstream filing decision
+
+- Fault: ours; the context restriction is documented.
+- Upstream fixability: no service defect was established.
+- Supported usage: step environment and action input fields support the required expression.
+- Contribution acceptance: no contribution is proposed because the configuration correction resolves the incident.
+- Upstream direction: the published context reference explicitly describes this restriction.
+- Prototype: the consumer workflow correction was exercised through GitHub dispatch.
+
+No upstream issue or comment is warranted.
+There is no additive upstream finding or draft to file.
+
+[contexts]: https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#context-availability
+[accepted]: https://github.com/Aquaticats/Monochromatic/actions/runs/38837217115
+[release]: https://github.com/Aquaticats/Monochromatic/actions/runs/38837297263
