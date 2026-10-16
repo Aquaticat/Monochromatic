@@ -50,6 +50,27 @@ Preparation run `1v4l9tglbt` failed before checks because shallow checkout omitt
 Its setup failure and retry remain part of trial accounting;
 no check coverage is claimed from that attempt.
 
+The change replay models a push event.
+At the TOML case's exact head,
+CodeQL runs for pull requests,
+scheduled events,
+or manual requests;
+final-newline runs for pull requests,
+merge groups,
+or manual requests.
+Their event-policy exclusions remain explicit in the manifest.
+The expanded package quality gates are still required.
+The existing forbidden-strings push gate is selected.
+Its isolated harness is commit `0b8cc50c62` on `trial/depot-complete-scanner-20261016`:
+it uses the verified current scanner `0.5.0`,
+then checks out each immutable source head and scans that case's actual base/head range.
+The TOML source revision declares scanner `0.4.1`;
+this trial tests the current scanner against historical source,
+not a historical scanner performance comparison.
+The exact desktop platform ref is `trial/depot-complete-desktop-20261016`,
+pointing directly to `3434eaa455d569c18b52cf15100f77f9db251d21`.
+Neither trial ref changes production workflows.
+
 The retained job experiments provide inputs and verified execution routes;
 they do not satisfy whole-pipeline completion on their own.
 
