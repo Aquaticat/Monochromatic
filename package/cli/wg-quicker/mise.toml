@@ -66,7 +66,7 @@ const directory = join(homedir(), 'temp/agent/depot-complete-ci')
 mkdirSync(directory, { recursive: true, mode: 0o700 })
 const records = []
 function record({ id, task, result, startedAt, started, cleanupVerified }) {
-  const item = { schemaVersion: 1, event: 'check-finished', caseId: 'logger', sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(bytes).digest('hex'), checkId: id, task, args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: result.status, signal: result.signal, failure: result.error?.message, status: result.status === 0 && cleanupVerified !== false ? 'passed' : 'failed', cleanupVerified, resources: { cpus: 2, memoryGiB: 2 }, providerJobUrl: process.env.DEPOT_JOB_URL }
+  const item = { schemaVersion: 1, event: 'check-finished', caseId: 'logger', sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(bytes).digest('hex'), checkId: id, task, args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: result.status, signal: result.signal, failure: result.error?.message, status: result.status === 0 && cleanupVerified !== false ? 'passed' : 'failed', cleanupVerified, resources: cleanupVerified === undefined ? { cpus: 16, memoryGiB: 64 } : { cpus: 2, memoryGiB: 2 }, providerJobUrl: process.env.DEPOT_JOB_URL }
   records.push(item)
   writeFileSync(join(directory, 'logger-wg-results.json'), JSON.stringify(records, null, 2))
   console.log('\n' + JSON.stringify(item))
@@ -105,8 +105,12 @@ for (const kind of ['bypass', 'route']) {
     assert.equal(links.status, 0)
     assert.deepEqual(JSON.parse(links.stdout).map((link) => link.ifname), ['lo'], 'Fresh container has no host interfaces')
     result = run([...command, 'mise', 'run', task], { stdio: 'inherit', timeout: 480000 })
-    assert.equal(run([...command, 'ip', 'netns', 'list']).stdout.trim(), '', 'Authored cleanup must remove every private namespace')
-    assert.deepEqual(JSON.parse(run([...command, 'ip', '--json', 'link', 'show']).stdout).map((link) => link.ifname), ['lo'], 'Authored cleanup must remove fixture host links')
+    const namespaces = run([...command, 'ip', 'netns', 'list'])
+    assert.equal(namespaces.status, 0)
+    assert.equal(namespaces.stdout.trim(), '', 'Authored cleanup must remove every private namespace')
+    const afterLinks = run([...command, 'ip', '--json', 'link', 'show'])
+    assert.equal(afterLinks.status, 0)
+    assert.deepEqual(JSON.parse(afterLinks.stdout).map((link) => link.ifname), ['lo'], 'Authored cleanup must remove fixture host links')
     assert.equal(run([...command, 'pgrep', '--full', 'bypass-watch[.]mjs']).status, 1, 'No detached watcher may survive the suite')
   } catch (error) {
     console.error(error)
