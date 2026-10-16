@@ -172,10 +172,53 @@ impl PortalSettings {
         return self.read_setting(namespace, key);
     }
 
-    /// Serves standard XDG portal `Read` method.
+    /// Serves deprecated XDG portal `Read` with its required extra variant wrapper.
     #[zbus(name = "Read")]
     fn read(&self, namespace: &str, key: &str) -> zbus::fdo::Result<OwnedValue> {
-        return self.read_setting(namespace, key);
+        // What: `?` extracts a successful setting or returns its error immediately.
+        // Why: Unsupported settings must keep the same error as ReadOne.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const value = readSetting(namespace, key);
+        // ```
+        let value = self.read_setting(namespace, key)?;
+        // What: Value::from moves the owned setting into a serializable value.
+        // Why: The deprecated method needs to wrap that value once more.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const inner = value;
+        // ```
+        let inner = Value::from(value);
+        // What: Box::new gives this nested value one owning allocation;
+        // Rc and Arc instead allow multiple owners.
+        // Why: Value::Value requires one boxed child, with no shared ownership.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const boxed = inner;
+        // ```
+        let boxed = Box::new(inner);
+        // What: Value::Value constructs a variant containing another variant.
+        // Why: GTK's deprecated Read caller unwraps two layers on the wire.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const nested = { signature: "v", value: boxed };
+        // ```
+        let nested = Value::Value(boxed);
+        // What: try_from owns the nested value; map_err converts a conversion
+        // failure into a D-Bus error, using |error| as a closure parameter.
+        // Why: The caller must receive a failed reply if ownership conversion fails.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // try { return ownValue(nested); }
+        // catch (error) { throw new BusError(String(error)); }
+        // ```
+        return OwnedValue::try_from(nested)
+            .map_err(|error| zbus::fdo::Error::Failed(error.to_string()));
     }
 
     /// Serves standard XDG portal `ReadAll` method for appearance consumers.
