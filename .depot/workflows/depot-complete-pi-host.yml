@@ -64,6 +64,8 @@ jobs:
       run: mise run prepare:pnpm:install -- --frozen-lockfile
     - name: Prepare configured extension and host artifacts
       working-directory: harness
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: mise run //package/pi-plugin/agent-settled-notification:trial:depot:pi:prepare
     - name: Exercise configured offline Pi host boundaries
       working-directory: harness
