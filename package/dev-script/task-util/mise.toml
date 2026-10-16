@@ -108,7 +108,7 @@ assert(['toml', 'native', 'logger', 'desktop'].includes(manifestName), 'Unknown 
 const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, `harness/.depot/manifests/${manifestName}.json`))
 const manifest = JSON.parse(manifestBytes)
 const wave = process.env.DEPOT_CI_WAVE ?? 'core'
-assert(['core', 'containers', 'all', 'static', 'native-core', 'native-android', 'native-desktop'].includes(wave), `Unknown execution wave: ${wave}`)
+assert(['core', 'containers', 'all', 'static', 'unit', 'native-core', 'native-android', 'native-desktop'].includes(wave), `Unknown execution wave: ${wave}`)
 const manifestSha256 = createHash('sha256').update(manifestBytes).digest('hex')
 const sourceRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
 assert.equal(sourceRevision, manifest.sourceRevision)
@@ -138,6 +138,7 @@ const results = []
 const initialDeferred = manifest.checks.filter((check) => {
   const container = check.task.endsWith(':test:mutation') || check.task.endsWith(':test:container')
   if (wave === 'static') return !check.task.endsWith(':lint:oxlint') && !check.task.endsWith(':lint:types')
+  if (wave === 'unit') return !check.task.endsWith(':test:unit')
   if (wave === 'native-core') return !check.id.startsWith('truepeak-core.') && !check.id.startsWith('root.changed-')
   if (wave === 'native-android') return !check.id.startsWith('android-app.') || check.task.endsWith(':test:instrumented')
   if (wave === 'native-desktop') return (!check.id.startsWith('desktop-app.') && !check.id.startsWith('root.changed-')) || check.task.endsWith(':test:e2e')
@@ -527,7 +528,7 @@ try {
   failure = String(error)
   console.error(error)
 } finally {
-  run({ args: ['exec', name, 'journalctl', '--no-pager', '--unit=user@1001.service', '--lines=80'], required: false })
+  run({ args: ['exec', name, 'journalctl', '--no-pager', `--unit=user@${process.getuid()}.service`, '--lines=80'], required: false })
   run({ args: ['logs', name], required: false })
   run({ args: ['stop', '--time=10', name], required: false })
   run({ args: ['rm', name], required: false })
