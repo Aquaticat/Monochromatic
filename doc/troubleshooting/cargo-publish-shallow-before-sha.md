@@ -330,7 +330,13 @@ Its tradeoff is retrieving repository history for the ancestry check.
 Unlike the publishing check,
 this task explicitly verifies ancestry before comparing immutable inputs.
 The corrected environment-only run is `tg907s5kfs`;
-its result is pending.
+it completed successfully.
+The preparation record at `2026-10-16T02:26:38.274Z`
+reports matching hashes for all four immutable inputs,
+`elapsedMs: 22986`,
+and `checksExecuted: false`.
+The repository tracking issue is
+[1057](https://github.com/Aquaticats/Monochromatic/issues/1057).
 The original failed run executed no quality,
 build,
 or test checks and must not count as CI coverage.
