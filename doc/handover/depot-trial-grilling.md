@@ -2,6 +2,18 @@
 
 ## Active repair and remaining acceptance work
 
+The user requested a GitHub issue for every discovered problem on 2026-10-15 local time.
+Issue filing is active for each distinct trial finding,
+including repaired incidents with their verification.
+Search existing issues before creating duplicates;
+track upstream-tool findings in this repository unless separate upstream publication is requested.
+The issue inventory covers application/harness failures,
+cache and service setup,
+release transfer and quota behavior,
+scheduling,
+coverage gaps,
+and budget observability.
+
 The user asked whether package installation should also be cached.
 The desktop trial currently repeats apt provisioning on disposable GitHub runners;
 prepared installed-package reuse is an explicit remaining measurement.
