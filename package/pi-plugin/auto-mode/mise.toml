@@ -914,3 +914,11 @@ run = [
 [tasks."test:native:tool-schema-capacity"]
 description = "Retain complete native schemas and reject changed descriptors without a property ceiling"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-tool-schema-capacity.test.mjs"
+[tasks."test:native:direct-bash"]
+description = "Review complete direct Bash and mixed groups before native execution"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs permission",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs prohibition",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs unknown",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs mixed",
+]
