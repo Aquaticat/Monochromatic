@@ -124,7 +124,34 @@ Existing discovery issues #305,
 #310,
 and #603 were reused instead of duplicated.
 The [coverage issue handover](depot-coverage-issues-2026-10-15.md) records those matches.
-A final historical-incident check is in progress.
+
+## Historical setup and access incidents
+
+- [#1033](https://github.com/Aquaticats/Monochromatic/issues/1033):
+  organization action policy rejected workflow startup;
+  closed after the user's policy choice and verified startup recovery.
+- [#1034](https://github.com/Aquaticats/Monochromatic/issues/1034):
+  mise release discovery failed with HTTP 403 during setup.
+- [#1035](https://github.com/Aquaticats/Monochromatic/issues/1035):
+  the local worker task ceiling interrupted trial collection;
+  closed with the user's recovery and measured replacement limit.
+- [#1036](https://github.com/Aquaticats/Monochromatic/issues/1036):
+  a local helper/kernel update mismatch prevented execution;
+  closed with verified recovery.
+- [#1037](https://github.com/Aquaticats/Monochromatic/issues/1037):
+  the trial task was outside mise discovery roots;
+  closed after relocating it and running the discovered task.
+- [#1038](https://github.com/Aquaticats/Monochromatic/issues/1038):
+  the direct desktop trial omitted the compositor path;
+  closed with the corrected execution.
+- [#1039](https://github.com/Aquaticats/Monochromatic/issues/1039):
+  standalone SDK command execution failed to resolve bare command names.
+- [#1040](https://github.com/Aquaticats/Monochromatic/issues/1040):
+  Browser discovery returned no available browser for account inspection.
+
+Existing process issues #425 and #572 cover asking measurable interview questions
+and under-scoped completion or verification.
+The final audit reused those instead of creating duplicates.
 
 ## Verification
 
