@@ -27,7 +27,15 @@ Use the already selected Luna decision route; do not introduce another vendor or
 - [ ] Reproduce the reported commands with actual repository policy and identify admitted prerequisite evidence.
 - [ ] Add decision-model fallback before dialog selection when rule assessment cannot resolve the operation.
 - [ ] Verify permit, deny, unavailable-model, uncertain-model, cancellation, and complete-context boundaries.
+- [ ] Retain correlated clause/source references, model distributions, admission and fallback decisions in local logs;
+      reconstruct a rejected review from those logs in a built-consumer regression.
 - [ ] Activate the verified runtime and update decisions, troubleshooting, and the MiMo handoff.
+
+The user identified the absent per-clause distributions as insufficient logging on 2026-10-16.
+Logging repair is part of this task, not a reason to leave future incidents unattributable.
+The proposed tightening of the existing `LOG` rule is pending in the question tool.
+Commit `9d31943c2b` also routes recoverable initial clause-assessment failures through the decision model,
+while retaining the original currentness checks and deadline.
 
 The maintained regression `test:native:decision-fallback` first failed with one assessment instead of two.
 Candidate `native-release-duzo2x` now passes that regression:
