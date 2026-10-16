@@ -486,11 +486,11 @@ fn read(&self, namespace: &str, key: &str) -> zbus::fdo::Result<OwnedValue> {
 The existing tests converted each decoded reply directly to an integer or RGB tuple.
 Installed `zvariant` `5.14.0`,
 checksum `b5e28c25bd8bb8da5a1f3e7065d0c156b9ee9a7973adf78b0e35eaefdf3b1b5c`,
-accepts both shapes in `src/value.rs:489`,
+accepts both shapes in `src/value.rs:490`,
 inside `Value::downcast_ref`:
 
 ```rust
-// zvariant-5.14.0/src/value.rs:494
+// zvariant-5.14.0/src/value.rs:495
 if let Value::Value(v) = self {
     <T>::try_from(v)
 } else {
@@ -499,10 +499,10 @@ if let Value::Value(v) = self {
 ```
 
 This automatic unwrapping hid the protocol mismatch from value-only assertions.
-`Value::value_signature` preserves the distinction in `src/value.rs:295`:
+`Value::value_signature` preserves the distinction in `src/value.rs:296`:
 
 ```rust
-// zvariant-5.14.0/src/value.rs:295
+// zvariant-5.14.0/src/value.rs:296
 Value::Value(_) => &Signature::Variant,
 ```
 
@@ -515,14 +515,21 @@ so they verify the serialized reply rather than a helper's in-memory return valu
 
 ### Verification status
 
-The committed regression is running against the unchanged implementation using:
+The committed regression ran against the unchanged implementation using:
 
 ```sh
 # trial/depot-20261015 worktree
 mise run //package/cli/nested-wayland-session:test:all
 ```
 
-The expected failure is a deprecated `Read` contained signature of `u` or `(ddd)` instead of `v`.
+The bounded package container ran 270 tests:
+266 passed and four failed.
+The failures assert deprecated `Read` contained signatures of `u` or `(ddd)` instead of `v`:
+the accent-only portal test and the color-scheme tests for served values,
+notification-time readback,
+and environment-bus isolation.
+The command exited with status 1,
+and nextest reported no skipped tests.
 The implementation correction and the complete cloud chooser rerun remain pending.
 This section does not yet claim that changing the reply fixes the observed Zenity crash.
 
