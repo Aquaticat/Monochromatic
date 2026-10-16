@@ -29,6 +29,31 @@ Use the already selected Luna decision route; do not introduce another vendor or
 - [ ] Verify permit, deny, unavailable-model, uncertain-model, cancellation, and complete-context boundaries.
 - [ ] Activate the verified runtime and update decisions, troubleshooting, and the MiMo handoff.
 
+The maintained regression `test:native:decision-fallback` first failed with one assessment instead of two.
+Candidate `native-release-duzo2x` now passes that regression:
+an authored false prerequisite is reconsidered by a distinct whole-operation model question,
+and its approve result executes both direct Bash calls without an approval host.
+The new question retains original claim identity,
+complete prepared operations,
+selected conversation and policy,
+and the existing judgment's transport budget.
+
+The candidate also passes the live replay of the user's exact `ls` and `git rev-parse` commands
+with the actual repository working directory and complete policy.
+It makes four successful Luna HTTP calls,
+including the whole-operation fallback,
+executes both commands,
+and opens no dialog.
+Receipt: `${HOME}/temp/agent/pi-host-isolation-20261015/repo-decision-candidate.log`.
+It is not installed yet; failure-path and cancellation controls remain in progress.
+
+The first unchanged installed replay reached a dialog instead of reproducing the original prerequisite block.
+It estimated `PX2` as a prerequisite at `0.39`, below admission,
+even though that rule's destructive/external condition does not fit the proposed inspection.
+The original session logs do not retain its per-clause distributions,
+so this does not establish which clause caused the historical false positive.
+The maintained regression supplies the false-prerequisite estimate explicitly to verify routing deterministically.
+
 ### MiMo first-group correction and direct Bash review
 
 The real MiMo session at 23:29:17 UTC reached manual fallback on its first group of two Bash calls.
