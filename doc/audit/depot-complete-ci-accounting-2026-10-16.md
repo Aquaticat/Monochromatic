@@ -195,12 +195,24 @@ Neither log contains a started-check event.
 These observations remain setup usage;
 the missing dependency does not establish any native package test outcome.
 
+TOML remaining-check run `d1jgjp62lg` also terminated without a complete validation result.
+Its container job recorded four successful builds,
+three failed container/mutation checks,
+and 17 explicitly deferred checks.
+The generated-file sibling failed during fixture setup and emitted no complete check summary.
+The reconciler matched every emitted container-job result to the same frozen 26-entry manifest.
+The two provider attempts consumed 1,222.476 summed seconds,
+or 19,559.616 vCPU-seconds at 16 vCPUs each.
+The 1,153.655-second request-to-observation interval remains censored.
+These failures retain their usage and do not supply passing mutation or generated-file coverage.
+
 ### Active collection queue
 
 All four source cases remain unfinished.
 The retained case ledger names every dispatched development run;
 it does not assign a complete-pipeline cost to any case.
-The remaining TOML container and mutation wave is `d1jgjp62lg`.
+The TOML container and mutation wave `d1jgjp62lg` ended with failures;
+its corrected follow-up remains pending.
 Native collection includes GitHub retry `38842787230`,
 Depot core and Android run `j80v9dqfb4`,
 and Linux desktop run `xg3znh2j0p`.
