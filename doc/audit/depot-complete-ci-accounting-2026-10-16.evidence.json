@@ -1515,5 +1515,2380 @@
         "stderr": "[probe] $ console.log(JSON.parse(\"[{\\\"RepoDigests\\\":[\\\"example@sha256:abc\\\"]}]\")[0].RepoDigests[0]);\n"
       }
     ]
+  },
+  "developmentReconciliation": {
+    "collection": {
+      "collectedAt": "2026-10-16T02:51:26.960Z",
+      "org": "l4zncjjbj5",
+      "runId": "hgqj2nstwq",
+      "revision": "aff6a49ca796705969baf3e3c297cf7e31d1a751",
+      "status": "failed",
+      "attempts": [
+        {
+          "workflowId": "vd5q2vpx37",
+          "jobId": "mdplh5k34z",
+          "jobKey": "_inline_0.yaml:toml",
+          "attemptId": "811p86php8",
+          "attempt": 1,
+          "status": "failed",
+          "metricsPath": "metrics-811p86php8.json",
+          "logPath": "logs-811p86php8.jsonl",
+          "logSha256": "149c206dd7cc049625b43b54570771aab1f86b0df21bcbb30981969b22a2e6d8",
+          "logRecords": 1291,
+          "providerAttempt": {
+            "attempt_id": "811p86php8",
+            "attempt": 1,
+            "status": "failed",
+            "conclusion": "failure",
+            "sandbox_id": "h07sg5c9t0hjn2l1ph7q",
+            "session_id": "22c861f5-1cfe-4178-94d7-abbb284fccb5",
+            "created_at": "2026-10-16T02:43:28.843Z",
+            "started_at": "2026-10-16T02:43:32.409Z",
+            "finished_at": "2026-10-16T02:47:21.409Z"
+          }
+        }
+      ],
+      "artifactCount": 1,
+      "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation."
+    },
+    "executionReconciliation": [
+      {
+        "runId": "hgqj2nstwq",
+        "attemptId": "811p86php8",
+        "workflowRevision": "aff6a49ca796705969baf3e3c297cf7e31d1a751",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+        "completeGraph": false,
+        "outcomes": [
+          {
+            "id": "package.module.toml-edit.build",
+            "status": "passed",
+            "seconds": 2.149426119,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.dev-script.file-enforcer.build",
+            "status": "passed",
+            "seconds": 0.9339689999999996,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.dev-script.vm-builder.build",
+            "status": "passed",
+            "seconds": 0.8468735299999999,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.dev-script.file-enforcer.lint.oxlint",
+            "status": "failed",
+            "seconds": 9.867960397,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.dev-script.file-enforcer.lint.types",
+            "status": "passed",
+            "seconds": 1.6152489400000014,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.dev-script.file-enforcer.test.unit",
+            "status": "passed",
+            "seconds": 5.8324839379999975,
+            "expectedFiles": 55
+          },
+          {
+            "id": "package.dev-script.vm-builder.lint.oxlint",
+            "status": "failed",
+            "seconds": 1.067891059999998,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.dev-script.vm-builder.lint.types",
+            "status": "passed",
+            "seconds": 0.5825628499999984,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.module.toml-edit.lint.oxlint",
+            "status": "failed",
+            "seconds": 1.8998789590000016,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.module.toml-edit.lint.types",
+            "status": "passed",
+            "seconds": 0.4646848600000012,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.module.toml-edit.test.unit",
+            "status": "passed",
+            "seconds": 0.7563352899999991,
+            "expectedFiles": 37
+          },
+          {
+            "id": "package.module.toml-edit.fuzz.lint.oxlint",
+            "status": "failed",
+            "seconds": 42.554145888,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.module.toml-edit.fuzz.lint.types",
+            "status": "passed",
+            "seconds": 0.4797962300000072,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.module.toml-edit.fuzz.test.unit",
+            "status": "passed",
+            "seconds": 2.9498550889999895,
+            "expectedFiles": 7
+          },
+          {
+            "id": "package.test-fixture.file-enforcer-perf.lint.types",
+            "status": "passed",
+            "seconds": 0.4508565399999934,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.module.toml-edit.fuzz.fuzz",
+            "status": "passed",
+            "seconds": 21.544723373999993,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.dev-script.file-enforcer.fuzz",
+            "status": "passed",
+            "seconds": 21.984011404000004,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.module.toml-edit.fuzz.fuzz.coverage",
+            "status": "failed",
+            "seconds": 1.854627679000012,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.module.toml-edit.test.conformance",
+            "status": "passed",
+            "seconds": 21.293287524000014,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.dev-script.file-enforcer.test.container",
+            "status": "skipped",
+            "seconds": 0.00003415000002132729,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.module.toml-edit.test.mutation",
+            "status": "skipped",
+            "seconds": 0.00001871999999275431,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.dev-script.file-enforcer.test.mutation",
+            "status": "skipped",
+            "seconds": 0.000012199999997392297,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.oxlint-plugin.prefer-readonly-parameter-type.build",
+            "status": "passed",
+            "seconds": 0.9222583999999915,
+            "expectedFiles": null
+          },
+          {
+            "id": "package.oxlint-plugin.prefer-readonly-parameter-type.test.unit",
+            "status": "passed",
+            "seconds": 3.4602116889999888,
+            "expectedFiles": 1
+          }
+        ],
+        "externalChecks": [
+          "root.forbidden-strings",
+          "root.generated-consistency"
+        ],
+        "deferredChecks": [
+          {
+            "checkId": "package.dev-script.file-enforcer.test.container",
+            "reason": "Required check belongs to another execution wave; current wave: core"
+          },
+          {
+            "checkId": "package.module.toml-edit.test.mutation",
+            "reason": "Required check belongs to another execution wave; current wave: core"
+          },
+          {
+            "checkId": "package.dev-script.file-enforcer.test.mutation",
+            "reason": "Required check belongs to another execution wave; current wave: core"
+          }
+        ],
+        "prefixedEventLines": [
+          {
+            "timestamp": "2026-10-16T02:45:11.846Z",
+            "prefix": "TSFILE: /home/runner/work/Monochromatic/Monochromatic/source/package/dev-script/file-enforcer/.cache/typescript/tsconfig.tsbuildinfo"
+          },
+          {
+            "timestamp": "2026-10-16T02:45:19.329Z",
+            "prefix": "TSFILE: /home/runner/work/Monochromatic/Monochromatic/source/package/dev-script/vm-builder/.cache/typescript/tsconfig.tsbuildinfo"
+          },
+          {
+            "timestamp": "2026-10-16T02:45:21.695Z",
+            "prefix": "TSFILE: /home/runner/work/Monochromatic/Monochromatic/source/package/module/toml-edit/.cache/typescript/tsconfig.tsbuildinfo"
+          },
+          {
+            "timestamp": "2026-10-16T02:46:05.486Z",
+            "prefix": "TSFILE: /home/runner/work/Monochromatic/Monochromatic/source/package/module/toml-edit.fuzz/.cache/typescript/tsconfig.tsbuildinfo"
+          },
+          {
+            "timestamp": "2026-10-16T02:46:08.887Z",
+            "prefix": "TSFILE: /home/runner/work/Monochromatic/Monochromatic/source/package/test-fixture/file-enforcer-perf/.cache/typescript/tsconfig.tsbuildinfo"
+          }
+        ],
+        "limitation": "Task invocation, result identities, and log-summary equivalence verified. Individual passing case/artifact completeness is not inferred from exit codes."
+      }
+    ],
+    "normalized": {
+      "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+      "manifestComplete": false,
+      "requestedAt": "2026-10-16T02:43:19.449Z",
+      "observedAt": "2026-10-16T02:47:22.013Z",
+      "selection": {
+        "base": "cf9fcb48047d86e0af01ac9c73c1c7bf26fb277f",
+        "head": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "event": "push",
+        "changedFiles": [
+          "package/module/toml-edit/src/value-encoders.ts"
+        ],
+        "affectedPackages": [
+          "package/dev-script/file-enforcer",
+          "package/dev-script/vm-builder",
+          "package/module/toml-edit",
+          "package/module/toml-edit.fuzz",
+          "package/oxlint-plugin/prefer-readonly-parameter-type",
+          "package/test-fixture/file-enforcer-perf"
+        ],
+        "excludedPackages": [
+          "package/music-player/android-app",
+          "package/module/logger"
+        ],
+        "selectedCheckIds": [
+          "package.module.toml-edit.build",
+          "package.dev-script.file-enforcer.build",
+          "package.dev-script.vm-builder.build",
+          "package.dev-script.file-enforcer.lint.oxlint",
+          "package.dev-script.file-enforcer.lint.types",
+          "package.dev-script.file-enforcer.test.unit",
+          "package.dev-script.vm-builder.lint.oxlint",
+          "package.dev-script.vm-builder.lint.types",
+          "package.module.toml-edit.lint.oxlint",
+          "package.module.toml-edit.lint.types",
+          "package.module.toml-edit.test.unit",
+          "package.module.toml-edit.fuzz.lint.oxlint",
+          "package.module.toml-edit.fuzz.lint.types",
+          "package.module.toml-edit.fuzz.test.unit",
+          "package.test-fixture.file-enforcer-perf.lint.types",
+          "package.module.toml-edit.fuzz.fuzz",
+          "package.dev-script.file-enforcer.fuzz",
+          "package.module.toml-edit.fuzz.fuzz.coverage",
+          "package.module.toml-edit.test.conformance",
+          "package.dev-script.file-enforcer.test.container",
+          "package.module.toml-edit.test.mutation",
+          "package.dev-script.file-enforcer.test.mutation",
+          "package.oxlint-plugin.prefer-readonly-parameter-type.build",
+          "package.oxlint-plugin.prefer-readonly-parameter-type.test.unit",
+          "root.forbidden-strings",
+          "root.generated-consistency"
+        ],
+        "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+        "excludedChecks": [
+          {
+            "task": "//package/dev-script/vm-builder:test:unit",
+            "reason": "No active *.unit.test.ts files at immutable head; empty successful runner would not establish coverage."
+          },
+          {
+            "task": "//package/test-fixture/file-enforcer-perf:lint:oxlint",
+            "reason": "No such task at immutable head; perf fixture deliberately omits Oxlint under its documented configuration."
+          },
+          {
+            "task": "//package/test-fixture/file-enforcer-perf:test:unit",
+            "reason": "No active *.unit.test.ts files at immutable head; empty successful runner would not establish coverage."
+          },
+          {
+            "task": "//package/module/toml-edit.fuzz:lint:scope",
+            "reason": "Its file-scoped Oxlint invocation is superseded by full package lint:oxlint, as required by the user."
+          },
+          {
+            "task": "//package/module/toml-edit.fuzz:test:scope",
+            "reason": "Same ci-scope.unit.test.ts file is included in the complete package unit suite."
+          },
+          {
+            "task": "perf:*",
+            "reason": "Performance-fixture type checking is selected; benchmark campaigns and host capability changes are outside ordinary correctness CI."
+          },
+          {
+            "task": "browser/e2e/device/platform",
+            "reason": "None of the five selected owners has browser/e2e/device/platform test files or application consumers; browser bundle build remains selected."
+          },
+          {
+            "task": "lint:dprint",
+            "reason": "The actual changed file is TypeScript; this head disables dprint TypeScript formatting. Full package Oxlint handles it."
+          },
+          {
+            "task": "lint:markdown/lint:rust/monochromatic-lint",
+            "reason": "The actual change contains no Markdown or Rust file. No monochromatic-lint task exists at this historical head."
+          },
+          {
+            "task": "Scorecard",
+            "reason": "Scheduled repository-security workload, not a package-change gate; retain separate provider accounting."
+          },
+          {
+            "task": "CodeQL",
+            "reason": "Case event is push. Exact-head .github/workflows/codeql.yml triggers only pull_request, schedule, and workflow_dispatch."
+          },
+          {
+            "task": "final-newline",
+            "reason": "Case event is push. Exact-head .github/workflows/final-newline.yml triggers only pull_request, merge_group, and workflow_dispatch."
+          },
+          {
+            "task": "release/publish/deploy/account/provision",
+            "reason": "Release operations and account access are excluded; selected vm-builder run/import/push tasks provision or publish rather than validate."
+          }
+        ],
+        "selectionReasons": [
+          {
+            "dependency": "package/module/toml-edit",
+            "consumer": "package/dev-script/file-enforcer",
+            "evidence": "package/dev-script/file-enforcer/package.json",
+            "field": "dependencies"
+          },
+          {
+            "dependency": "package/module/toml-edit",
+            "consumer": "package/module/toml-edit.fuzz",
+            "evidence": "package/module/toml-edit.fuzz/package.json",
+            "field": "devDependencies"
+          },
+          {
+            "dependency": "package/dev-script/file-enforcer",
+            "consumer": "package/dev-script/vm-builder",
+            "evidence": "package/dev-script/vm-builder/package.json",
+            "field": "dependencies"
+          },
+          {
+            "dependency": "package/dev-script/file-enforcer",
+            "consumer": "package/test-fixture/file-enforcer-perf",
+            "evidence": "package/test-fixture/file-enforcer-perf/package.json",
+            "field": "dependencies"
+          },
+          {
+            "dependency": "package/dev-script/file-enforcer",
+            "consumer": "package/oxlint-plugin/prefer-readonly-parameter-type",
+            "evidence": "package/oxlint-plugin/prefer-readonly-parameter-type/src/workspace-source-effect.unit.test.ts",
+            "field": "test-only new URL source fixture",
+            "propagation": "Select this unit test and artifact prerequisite; test fixture dependency does not alter plugin implementation or downstream lint consumers."
+          }
+        ]
+      },
+      "manifest": [
+        {
+          "id": "package.module.toml-edit.build",
+          "needs": [],
+          "task": "//package/module/toml-edit:build",
+          "arguments": [],
+          "family": "build",
+          "scope": "package",
+          "packages": [
+            "package/module/toml-edit"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.dev-script.file-enforcer.build",
+          "needs": [
+            "package.module.toml-edit.build"
+          ],
+          "task": "//package/dev-script/file-enforcer:build",
+          "arguments": [],
+          "family": "build",
+          "scope": "package",
+          "packages": [
+            "package/dev-script/file-enforcer"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.dev-script.vm-builder.build",
+          "needs": [
+            "package.dev-script.file-enforcer.build"
+          ],
+          "task": "//package/dev-script/vm-builder:build",
+          "arguments": [],
+          "family": "build",
+          "scope": "package",
+          "packages": [
+            "package/dev-script/vm-builder"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.dev-script.file-enforcer.lint.oxlint",
+          "needs": [],
+          "task": "//package/dev-script/file-enforcer:lint:oxlint",
+          "arguments": [],
+          "family": "oxlint",
+          "scope": "package",
+          "packages": [
+            "package/dev-script/file-enforcer"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.dev-script.file-enforcer.lint.types",
+          "needs": [
+            "package.module.toml-edit.build",
+            "package.dev-script.file-enforcer.build"
+          ],
+          "task": "//package/dev-script/file-enforcer:lint:types",
+          "arguments": [],
+          "family": "lint",
+          "scope": "package",
+          "packages": [
+            "package/dev-script/file-enforcer"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.dev-script.file-enforcer.test.unit",
+          "needs": [
+            "package.module.toml-edit.build",
+            "package.dev-script.file-enforcer.build"
+          ],
+          "task": "//package/dev-script/file-enforcer:test:unit",
+          "arguments": [
+            "--all"
+          ],
+          "family": "test",
+          "scope": "package",
+          "packages": [
+            "package/dev-script/file-enforcer"
+          ],
+          "executionScope": "project",
+          "expectedFiles": [
+            "package/dev-script/file-enforcer/src/cargo/apply-plan.unit.test.ts",
+            "package/dev-script/file-enforcer/src/cli-regression.unit.test.ts",
+            "package/dev-script/file-enforcer/src/generated-policy-contracts.unit.test.ts",
+            "package/dev-script/file-enforcer/src/integration.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/cache.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/cat.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/glob.property.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/glob.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/overwrite-each-hardening.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/overwrite-if-not-exists-hardening.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/read-existing-hardening.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/staleness-destination-hardening.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/staleness-root-hardening.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/staleness-root.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/staleness-stamp-hardening.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/staleness.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/write-atomic.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/write-toml.unit.test.ts",
+            "package/dev-script/file-enforcer/src/io/write.unit.test.ts",
+            "package/dev-script/file-enforcer/src/jetbrains/lsp4ij-entries.unit.test.ts",
+            "package/dev-script/file-enforcer/src/jetbrains/lsp4ij-hardening.unit.test.ts",
+            "package/dev-script/file-enforcer/src/jetbrains/lsp4ij.unit.test.ts",
+            "package/dev-script/file-enforcer/src/jetbrains/options-dir-hardening.unit.test.ts",
+            "package/dev-script/file-enforcer/src/jetbrains/options-dir.property.unit.test.ts",
+            "package/dev-script/file-enforcer/src/jetbrains/options-dir.unit.test.ts",
+            "package/dev-script/file-enforcer/src/package/ensure-package.unit.test.ts",
+            "package/dev-script/file-enforcer/src/package/manager-defs.unit.test.ts",
+            "package/dev-script/file-enforcer/src/package/manager.unit.test.ts",
+            "package/dev-script/file-enforcer/src/package/merge.unit.test.ts",
+            "package/dev-script/file-enforcer/src/package/p.unit.test.ts",
+            "package/dev-script/file-enforcer/src/package/registry-parse.property.unit.test.ts",
+            "package/dev-script/file-enforcer/src/package/registry-parse.unit.test.ts",
+            "package/dev-script/file-enforcer/src/pipeline/exec.unit.test.ts",
+            "package/dev-script/file-enforcer/src/pipeline/inspect.unit.test.ts",
+            "package/dev-script/file-enforcer/src/pipeline/json.property.unit.test.ts",
+            "package/dev-script/file-enforcer/src/pipeline/json.unit.test.ts",
+            "package/dev-script/file-enforcer/src/pipeline/toml.property.unit.test.ts",
+            "package/dev-script/file-enforcer/src/pipeline/toml.unit.test.ts",
+            "package/dev-script/file-enforcer/src/pipeline/transform.unit.test.ts",
+            "package/dev-script/file-enforcer/src/pipeline/xml-coding.property.unit.test.ts",
+            "package/dev-script/file-enforcer/src/pipeline/xml.property.unit.test.ts",
+            "package/dev-script/file-enforcer/src/pipeline/xml.unit.test.ts",
+            "package/dev-script/file-enforcer/src/platform/evaluate-predicate.unit.test.ts",
+            "package/dev-script/file-enforcer/src/staleness-concurrency-regression.unit.test.ts",
+            "package/dev-script/file-enforcer/src/staleness-lock-owner-regression.unit.test.ts",
+            "package/dev-script/file-enforcer/src/staleness-lock-publication-contention.unit.test.ts",
+            "package/dev-script/file-enforcer/src/staleness-lock-regression.unit.test.ts",
+            "package/dev-script/file-enforcer/src/staleness-manifest-regression.unit.test.ts",
+            "package/dev-script/file-enforcer/src/tracker.unit.test.ts",
+            "package/dev-script/file-enforcer/src/watch-directory-chokidar-regression.unit.test.ts",
+            "package/dev-script/file-enforcer/src/watch-regression.unit.test.ts",
+            "package/dev-script/file-enforcer/src/watch-start-regression.unit.test.ts",
+            "package/dev-script/file-enforcer/src/watch/notify.unit.test.ts",
+            "package/dev-script/file-enforcer/src/watch/watch-filter.unit.test.ts",
+            "package/dev-script/file-enforcer/src/watch/watch-rerun-queue.unit.test.ts"
+          ],
+          "expectedFileCount": 55
+        },
+        {
+          "id": "package.dev-script.vm-builder.lint.oxlint",
+          "needs": [],
+          "task": "//package/dev-script/vm-builder:lint:oxlint",
+          "arguments": [],
+          "family": "oxlint",
+          "scope": "package",
+          "packages": [
+            "package/dev-script/vm-builder"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.dev-script.vm-builder.lint.types",
+          "needs": [
+            "package.dev-script.file-enforcer.build",
+            "package.dev-script.vm-builder.build"
+          ],
+          "task": "//package/dev-script/vm-builder:lint:types",
+          "arguments": [],
+          "family": "lint",
+          "scope": "package",
+          "packages": [
+            "package/dev-script/vm-builder"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.module.toml-edit.lint.oxlint",
+          "needs": [],
+          "task": "//package/module/toml-edit:lint:oxlint",
+          "arguments": [],
+          "family": "oxlint",
+          "scope": "package",
+          "packages": [
+            "package/module/toml-edit"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.module.toml-edit.lint.types",
+          "needs": [
+            "package.module.toml-edit.build"
+          ],
+          "task": "//package/module/toml-edit:lint:types",
+          "arguments": [],
+          "family": "lint",
+          "scope": "package",
+          "packages": [
+            "package/module/toml-edit"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.module.toml-edit.test.unit",
+          "needs": [
+            "package.module.toml-edit.build"
+          ],
+          "task": "//package/module/toml-edit:test:unit",
+          "arguments": [
+            "--all"
+          ],
+          "family": "test",
+          "scope": "package",
+          "packages": [
+            "package/module/toml-edit"
+          ],
+          "executionScope": "project",
+          "expectedFiles": [
+            "package/module/toml-edit/src/basic-escape.unit.test.ts",
+            "package/module/toml-edit/src/canonical.unit.test.ts",
+            "package/module/toml-edit/src/comments.unit.test.ts",
+            "package/module/toml-edit/src/cross-path-effective.unit.test.ts",
+            "package/module/toml-edit/src/document-state.unit.test.ts",
+            "package/module/toml-edit/src/effective-value.unit.test.ts",
+            "package/module/toml-edit/src/emit-content-node.unit.test.ts",
+            "package/module/toml-edit/src/emit-value-node.unit.test.ts",
+            "package/module/toml-edit/src/errors.unit.test.ts",
+            "package/module/toml-edit/src/fixtures.unit.test.ts",
+            "package/module/toml-edit/src/inline-entry-state.unit.test.ts",
+            "package/module/toml-edit/src/input-state.unit.test.ts",
+            "package/module/toml-edit/src/issue-252.unit.test.ts",
+            "package/module/toml-edit/src/js-value-text.unit.test.ts",
+            "package/module/toml-edit/src/keys.unit.test.ts",
+            "package/module/toml-edit/src/parse-toml-edit.unit.test.ts",
+            "package/module/toml-edit/src/parsed-comment-state.unit.test.ts",
+            "package/module/toml-edit/src/path-prefix.unit.test.ts",
+            "package/module/toml-edit/src/path.unit.test.ts",
+            "package/module/toml-edit/src/resolve.unit.test.ts",
+            "package/module/toml-edit/src/toml-clean-path.unit.test.ts",
+            "package/module/toml-edit/src/toml-comment-access.unit.test.ts",
+            "package/module/toml-edit/src/toml-delete.path.unit.test.ts",
+            "package/module/toml-edit/src/toml-delete.unit.test.ts",
+            "package/module/toml-edit/src/toml-get-comments.unit.test.ts",
+            "package/module/toml-edit/src/toml-get-node.unit.test.ts",
+            "package/module/toml-edit/src/toml-get-raw.unit.test.ts",
+            "package/module/toml-edit/src/toml-has.unit.test.ts",
+            "package/module/toml-edit/src/toml-insert-comment-after.unit.test.ts",
+            "package/module/toml-edit/src/toml-insert-comment-before.unit.test.ts",
+            "package/module/toml-edit/src/toml-keys.unit.test.ts",
+            "package/module/toml-edit/src/toml-set-diagnostics.unit.test.ts",
+            "package/module/toml-edit/src/toml-set-header-comment.unit.test.ts",
+            "package/module/toml-edit/src/toml-set.path.unit.test.ts",
+            "package/module/toml-edit/src/toml-set.unit.test.ts",
+            "package/module/toml-edit/src/value-encoders.unit.test.ts",
+            "package/module/toml-edit/src/values.unit.test.ts"
+          ],
+          "expectedFileCount": 37
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.lint.oxlint",
+          "needs": [],
+          "task": "//package/module/toml-edit.fuzz:lint:oxlint",
+          "arguments": [],
+          "family": "oxlint",
+          "scope": "package",
+          "packages": [
+            "package/module/toml-edit.fuzz"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.lint.types",
+          "needs": [
+            "package.module.toml-edit.build"
+          ],
+          "task": "//package/module/toml-edit.fuzz:lint:types",
+          "arguments": [],
+          "family": "lint",
+          "scope": "package",
+          "packages": [
+            "package/module/toml-edit.fuzz"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.test.unit",
+          "needs": [
+            "package.module.toml-edit.build"
+          ],
+          "task": "//package/module/toml-edit.fuzz:test:unit",
+          "arguments": [
+            "--all"
+          ],
+          "family": "test",
+          "scope": "package",
+          "packages": [
+            "package/module/toml-edit.fuzz"
+          ],
+          "executionScope": "project",
+          "expectedFiles": [
+            "package/module/toml-edit.fuzz/src/ci-scope.unit.test.ts",
+            "package/module/toml-edit.fuzz/src/emit.property.unit.test.ts",
+            "package/module/toml-edit.fuzz/src/generators.property.unit.test.ts",
+            "package/module/toml-edit.fuzz/src/parse-toml-edit.property.unit.test.ts",
+            "package/module/toml-edit.fuzz/src/round-trip.property.unit.test.ts",
+            "package/module/toml-edit.fuzz/src/smoke.property.unit.test.ts",
+            "package/module/toml-edit.fuzz/src/stateful.property.unit.test.ts"
+          ],
+          "expectedFileCount": 7
+        },
+        {
+          "id": "package.test-fixture.file-enforcer-perf.lint.types",
+          "needs": [
+            "package.module.toml-edit.build",
+            "package.dev-script.file-enforcer.build"
+          ],
+          "task": "//package/test-fixture/file-enforcer-perf:lint:types",
+          "arguments": [],
+          "family": "lint",
+          "scope": "package",
+          "packages": [
+            "package/test-fixture/file-enforcer-perf"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.fuzz",
+          "needs": [
+            "package.module.toml-edit.build"
+          ],
+          "task": "//package/module/toml-edit.fuzz:fuzz",
+          "arguments": [
+            "--budget",
+            "3000"
+          ],
+          "family": "test",
+          "scope": "package",
+          "packages": [
+            "package/module/toml-edit.fuzz"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.dev-script.file-enforcer.fuzz",
+          "needs": [
+            "package.module.toml-edit.build",
+            "package.dev-script.file-enforcer.build"
+          ],
+          "task": "//package/dev-script/file-enforcer:fuzz",
+          "arguments": [
+            "--budget",
+            "3000"
+          ],
+          "family": "test",
+          "scope": "package",
+          "packages": [
+            "package/dev-script/file-enforcer"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.fuzz.coverage",
+          "needs": [
+            "package.module.toml-edit.build"
+          ],
+          "task": "//package/module/toml-edit.fuzz:fuzz:coverage",
+          "arguments": [],
+          "family": "test",
+          "scope": "package",
+          "packages": [
+            "package/module/toml-edit.fuzz"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.module.toml-edit.test.conformance",
+          "needs": [
+            "package.module.toml-edit.build"
+          ],
+          "task": "//package/module/toml-edit:test:conformance",
+          "arguments": [],
+          "family": "test",
+          "scope": "package",
+          "packages": [
+            "package/module/toml-edit"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.dev-script.file-enforcer.test.container",
+          "needs": [
+            "package.module.toml-edit.build",
+            "package.dev-script.file-enforcer.build"
+          ],
+          "task": "//package/dev-script/file-enforcer:test:container",
+          "arguments": [],
+          "family": "test",
+          "scope": "package",
+          "packages": [
+            "package/dev-script/file-enforcer"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.module.toml-edit.test.mutation",
+          "needs": [
+            "package.module.toml-edit.build"
+          ],
+          "task": "//package/module/toml-edit:test:mutation",
+          "arguments": [],
+          "family": "test",
+          "scope": "package",
+          "packages": [
+            "package/module/toml-edit"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.dev-script.file-enforcer.test.mutation",
+          "needs": [
+            "package.module.toml-edit.build",
+            "package.dev-script.file-enforcer.build"
+          ],
+          "task": "//package/dev-script/file-enforcer:test:mutation",
+          "arguments": [],
+          "family": "test",
+          "scope": "package",
+          "packages": [
+            "package/dev-script/file-enforcer"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.oxlint-plugin.prefer-readonly-parameter-type.build",
+          "needs": [],
+          "task": "//package/oxlint-plugin/prefer-readonly-parameter-type:build",
+          "arguments": [],
+          "family": "build",
+          "scope": "package",
+          "packages": [
+            "package/oxlint-plugin/prefer-readonly-parameter-type"
+          ],
+          "executionScope": "project"
+        },
+        {
+          "id": "package.oxlint-plugin.prefer-readonly-parameter-type.test.unit",
+          "needs": [
+            "package.oxlint-plugin.prefer-readonly-parameter-type.build"
+          ],
+          "task": "//package/oxlint-plugin/prefer-readonly-parameter-type:test:unit",
+          "arguments": [
+            "package/oxlint-plugin/prefer-readonly-parameter-type/src/workspace-source-effect.unit.test.ts"
+          ],
+          "family": "test",
+          "scope": "package",
+          "packages": [
+            "package/oxlint-plugin/prefer-readonly-parameter-type"
+          ],
+          "executionScope": "project",
+          "expectedFiles": [
+            "package/oxlint-plugin/prefer-readonly-parameter-type/src/workspace-source-effect.unit.test.ts"
+          ],
+          "expectedFileCount": 1
+        },
+        {
+          "id": "root.forbidden-strings",
+          "needs": [],
+          "arguments": [],
+          "family": "lint",
+          "scope": "files",
+          "packages": [],
+          "files": [
+            "package/module/toml-edit/src/value-encoders.ts"
+          ],
+          "selectionReason": "Existing change gate; root orchestrator owns workflow execution and report identity.",
+          "executionScope": "files"
+        },
+        {
+          "id": "root.generated-consistency",
+          "needs": [],
+          "task": "//:sync:files",
+          "arguments": [],
+          "family": "test",
+          "scope": "project",
+          "packages": [
+            "package/dev-script/file-enforcer"
+          ],
+          "selectionReason": "Root file-enforcer.config.ts imports selected file-enforcer. Execute only in a separate disposable fixture and compare generated tracked outputs.",
+          "executionScope": "project"
+        }
+      ],
+      "checks": [
+        {
+          "id": "package.module.toml-edit.build",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:44:56.430Z",
+          "finishedAt": "2026-10-16T02:44:58.580Z",
+          "elapsedMs": 2149.426119,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/module/toml-edit:build",
+            "arguments": []
+          }
+        },
+        {
+          "id": "package.dev-script.file-enforcer.build",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:44:58.580Z",
+          "finishedAt": "2026-10-16T02:44:59.514Z",
+          "elapsedMs": 933.9689999999996,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/dev-script/file-enforcer:build",
+            "arguments": []
+          }
+        },
+        {
+          "id": "package.dev-script.vm-builder.build",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:44:59.515Z",
+          "finishedAt": "2026-10-16T02:45:00.361Z",
+          "elapsedMs": 846.8735299999998,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/dev-script/vm-builder:build",
+            "arguments": []
+          }
+        },
+        {
+          "id": "package.dev-script.file-enforcer.lint.oxlint",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:45:00.362Z",
+          "finishedAt": "2026-10-16T02:45:10.230Z",
+          "elapsedMs": 9867.960396999999,
+          "conclusion": "failure",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/dev-script/file-enforcer:lint:oxlint",
+            "arguments": [],
+            "executionScope": "project"
+          }
+        },
+        {
+          "id": "package.dev-script.file-enforcer.lint.types",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:45:10.230Z",
+          "finishedAt": "2026-10-16T02:45:11.845Z",
+          "elapsedMs": 1615.2489400000013,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/dev-script/file-enforcer:lint:types",
+            "arguments": []
+          }
+        },
+        {
+          "id": "package.dev-script.file-enforcer.test.unit",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:45:11.846Z",
+          "finishedAt": "2026-10-16T02:45:17.678Z",
+          "elapsedMs": 5832.483937999998,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/dev-script/file-enforcer:test:unit",
+            "arguments": [
+              "--all"
+            ]
+          }
+        },
+        {
+          "id": "package.dev-script.vm-builder.lint.oxlint",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:45:17.678Z",
+          "finishedAt": "2026-10-16T02:45:18.746Z",
+          "elapsedMs": 1067.891059999998,
+          "conclusion": "failure",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/dev-script/vm-builder:lint:oxlint",
+            "arguments": [],
+            "executionScope": "project"
+          }
+        },
+        {
+          "id": "package.dev-script.vm-builder.lint.types",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:45:18.747Z",
+          "finishedAt": "2026-10-16T02:45:19.329Z",
+          "elapsedMs": 582.5628499999984,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/dev-script/vm-builder:lint:types",
+            "arguments": []
+          }
+        },
+        {
+          "id": "package.module.toml-edit.lint.oxlint",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:45:19.330Z",
+          "finishedAt": "2026-10-16T02:45:21.229Z",
+          "elapsedMs": 1899.8789590000015,
+          "conclusion": "failure",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/module/toml-edit:lint:oxlint",
+            "arguments": [],
+            "executionScope": "project"
+          }
+        },
+        {
+          "id": "package.module.toml-edit.lint.types",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:45:21.230Z",
+          "finishedAt": "2026-10-16T02:45:21.694Z",
+          "elapsedMs": 464.6848600000012,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/module/toml-edit:lint:types",
+            "arguments": []
+          }
+        },
+        {
+          "id": "package.module.toml-edit.test.unit",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:45:21.695Z",
+          "finishedAt": "2026-10-16T02:45:22.451Z",
+          "elapsedMs": 756.3352899999991,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/module/toml-edit:test:unit",
+            "arguments": [
+              "--all"
+            ]
+          }
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.lint.oxlint",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:45:22.451Z",
+          "finishedAt": "2026-10-16T02:46:05.006Z",
+          "elapsedMs": 42554.145888,
+          "conclusion": "failure",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/module/toml-edit.fuzz:lint:oxlint",
+            "arguments": [],
+            "executionScope": "project"
+          }
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.lint.types",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:46:05.006Z",
+          "finishedAt": "2026-10-16T02:46:05.486Z",
+          "elapsedMs": 479.7962300000072,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/module/toml-edit.fuzz:lint:types",
+            "arguments": []
+          }
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.test.unit",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:46:05.486Z",
+          "finishedAt": "2026-10-16T02:46:08.436Z",
+          "elapsedMs": 2949.8550889999897,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/module/toml-edit.fuzz:test:unit",
+            "arguments": [
+              "--all"
+            ]
+          }
+        },
+        {
+          "id": "package.test-fixture.file-enforcer-perf.lint.types",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:46:08.436Z",
+          "finishedAt": "2026-10-16T02:46:08.887Z",
+          "elapsedMs": 450.8565399999934,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/test-fixture/file-enforcer-perf:lint:types",
+            "arguments": []
+          }
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.fuzz",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:46:08.887Z",
+          "finishedAt": "2026-10-16T02:46:30.432Z",
+          "elapsedMs": 21544.723373999994,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/module/toml-edit.fuzz:fuzz",
+            "arguments": [
+              "--budget",
+              "3000"
+            ]
+          }
+        },
+        {
+          "id": "package.dev-script.file-enforcer.fuzz",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:46:30.433Z",
+          "finishedAt": "2026-10-16T02:46:52.416Z",
+          "elapsedMs": 21984.011404000004,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/dev-script/file-enforcer:fuzz",
+            "arguments": [
+              "--budget",
+              "3000"
+            ]
+          }
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.fuzz.coverage",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:46:52.417Z",
+          "finishedAt": "2026-10-16T02:46:54.272Z",
+          "elapsedMs": 1854.627679000012,
+          "conclusion": "failure",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/module/toml-edit.fuzz:fuzz:coverage",
+            "arguments": []
+          }
+        },
+        {
+          "id": "package.module.toml-edit.test.conformance",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:46:54.272Z",
+          "finishedAt": "2026-10-16T02:47:15.565Z",
+          "elapsedMs": 21293.287524000014,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/module/toml-edit:test:conformance",
+            "arguments": []
+          }
+        },
+        {
+          "id": "package.dev-script.file-enforcer.test.container",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:47:15.566Z",
+          "finishedAt": "2026-10-16T02:47:15.566Z",
+          "elapsedMs": 0.03415000002132729,
+          "conclusion": "skipped",
+          "executed": false,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/dev-script/file-enforcer:test:container",
+            "arguments": []
+          },
+          "skipReason": "Required check belongs to another execution wave; current wave: core"
+        },
+        {
+          "id": "package.module.toml-edit.test.mutation",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:47:15.568Z",
+          "finishedAt": "2026-10-16T02:47:15.568Z",
+          "elapsedMs": 0.01871999999275431,
+          "conclusion": "skipped",
+          "executed": false,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/module/toml-edit:test:mutation",
+            "arguments": []
+          },
+          "skipReason": "Required check belongs to another execution wave; current wave: core"
+        },
+        {
+          "id": "package.dev-script.file-enforcer.test.mutation",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:47:15.569Z",
+          "finishedAt": "2026-10-16T02:47:15.569Z",
+          "elapsedMs": 0.012199999997392297,
+          "conclusion": "skipped",
+          "executed": false,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/dev-script/file-enforcer:test:mutation",
+            "arguments": []
+          },
+          "skipReason": "Required check belongs to another execution wave; current wave: core"
+        },
+        {
+          "id": "package.oxlint-plugin.prefer-readonly-parameter-type.build",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:47:15.569Z",
+          "finishedAt": "2026-10-16T02:47:16.491Z",
+          "elapsedMs": 922.2583999999915,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/oxlint-plugin/prefer-readonly-parameter-type:build",
+            "arguments": []
+          }
+        },
+        {
+          "id": "package.oxlint-plugin.prefer-readonly-parameter-type.test.unit",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "startedAt": "2026-10-16T02:47:16.492Z",
+          "finishedAt": "2026-10-16T02:47:19.952Z",
+          "elapsedMs": 3460.211688999989,
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": false,
+          "unexpectedSkips": 0,
+          "attemptIds": [
+            "811p86php8"
+          ],
+          "invocation": {
+            "task": "//package/oxlint-plugin/prefer-readonly-parameter-type:test:unit",
+            "arguments": [
+              "package/oxlint-plugin/prefer-readonly-parameter-type/src/workspace-source-effect.unit.test.ts"
+            ]
+          }
+        }
+      ],
+      "attempts": [
+        {
+          "id": "811p86php8",
+          "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "workflowRevision": "aff6a49ca796705969baf3e3c297cf7e31d1a751",
+          "startedAt": "2026-10-16T02:43:32.409Z",
+          "finishedAt": "2026-10-16T02:47:21.409Z",
+          "product": "depot-ci",
+          "vcpus": 16,
+          "resourceSource": "immutable workflow .depot/workflows/depot-complete-toml.yml"
+        }
+      ]
+    },
+    "analysis": {
+      "inputSha256": "881d1ba29276924adb8c112f6715d1264c22a3c5d6b1015ed19cc13689008f91",
+      "revision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+      "selection": {
+        "base": "cf9fcb48047d86e0af01ac9c73c1c7bf26fb277f",
+        "head": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "event": "push",
+        "changedFiles": [
+          "package/module/toml-edit/src/value-encoders.ts"
+        ],
+        "affectedPackages": [
+          "package/dev-script/file-enforcer",
+          "package/dev-script/vm-builder",
+          "package/module/toml-edit",
+          "package/module/toml-edit.fuzz",
+          "package/oxlint-plugin/prefer-readonly-parameter-type",
+          "package/test-fixture/file-enforcer-perf"
+        ],
+        "excludedPackages": [
+          "package/music-player/android-app",
+          "package/module/logger"
+        ],
+        "selectedCheckIds": [
+          "package.module.toml-edit.build",
+          "package.dev-script.file-enforcer.build",
+          "package.dev-script.vm-builder.build",
+          "package.dev-script.file-enforcer.lint.oxlint",
+          "package.dev-script.file-enforcer.lint.types",
+          "package.dev-script.file-enforcer.test.unit",
+          "package.dev-script.vm-builder.lint.oxlint",
+          "package.dev-script.vm-builder.lint.types",
+          "package.module.toml-edit.lint.oxlint",
+          "package.module.toml-edit.lint.types",
+          "package.module.toml-edit.test.unit",
+          "package.module.toml-edit.fuzz.lint.oxlint",
+          "package.module.toml-edit.fuzz.lint.types",
+          "package.module.toml-edit.fuzz.test.unit",
+          "package.test-fixture.file-enforcer-perf.lint.types",
+          "package.module.toml-edit.fuzz.fuzz",
+          "package.dev-script.file-enforcer.fuzz",
+          "package.module.toml-edit.fuzz.fuzz.coverage",
+          "package.module.toml-edit.test.conformance",
+          "package.dev-script.file-enforcer.test.container",
+          "package.module.toml-edit.test.mutation",
+          "package.dev-script.file-enforcer.test.mutation",
+          "package.oxlint-plugin.prefer-readonly-parameter-type.build",
+          "package.oxlint-plugin.prefer-readonly-parameter-type.test.unit",
+          "root.forbidden-strings",
+          "root.generated-consistency"
+        ],
+        "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+        "excludedChecks": [
+          {
+            "task": "//package/dev-script/vm-builder:test:unit",
+            "reason": "No active *.unit.test.ts files at immutable head; empty successful runner would not establish coverage."
+          },
+          {
+            "task": "//package/test-fixture/file-enforcer-perf:lint:oxlint",
+            "reason": "No such task at immutable head; perf fixture deliberately omits Oxlint under its documented configuration."
+          },
+          {
+            "task": "//package/test-fixture/file-enforcer-perf:test:unit",
+            "reason": "No active *.unit.test.ts files at immutable head; empty successful runner would not establish coverage."
+          },
+          {
+            "task": "//package/module/toml-edit.fuzz:lint:scope",
+            "reason": "Its file-scoped Oxlint invocation is superseded by full package lint:oxlint, as required by the user."
+          },
+          {
+            "task": "//package/module/toml-edit.fuzz:test:scope",
+            "reason": "Same ci-scope.unit.test.ts file is included in the complete package unit suite."
+          },
+          {
+            "task": "perf:*",
+            "reason": "Performance-fixture type checking is selected; benchmark campaigns and host capability changes are outside ordinary correctness CI."
+          },
+          {
+            "task": "browser/e2e/device/platform",
+            "reason": "None of the five selected owners has browser/e2e/device/platform test files or application consumers; browser bundle build remains selected."
+          },
+          {
+            "task": "lint:dprint",
+            "reason": "The actual changed file is TypeScript; this head disables dprint TypeScript formatting. Full package Oxlint handles it."
+          },
+          {
+            "task": "lint:markdown/lint:rust/monochromatic-lint",
+            "reason": "The actual change contains no Markdown or Rust file. No monochromatic-lint task exists at this historical head."
+          },
+          {
+            "task": "Scorecard",
+            "reason": "Scheduled repository-security workload, not a package-change gate; retain separate provider accounting."
+          },
+          {
+            "task": "CodeQL",
+            "reason": "Case event is push. Exact-head .github/workflows/codeql.yml triggers only pull_request, schedule, and workflow_dispatch."
+          },
+          {
+            "task": "final-newline",
+            "reason": "Case event is push. Exact-head .github/workflows/final-newline.yml triggers only pull_request, merge_group, and workflow_dispatch."
+          },
+          {
+            "task": "release/publish/deploy/account/provision",
+            "reason": "Release operations and account access are excluded; selected vm-builder run/import/push tasks provision or publish rather than validate."
+          }
+        ],
+        "selectionReasons": [
+          {
+            "dependency": "package/module/toml-edit",
+            "consumer": "package/dev-script/file-enforcer",
+            "evidence": "package/dev-script/file-enforcer/package.json",
+            "field": "dependencies"
+          },
+          {
+            "dependency": "package/module/toml-edit",
+            "consumer": "package/module/toml-edit.fuzz",
+            "evidence": "package/module/toml-edit.fuzz/package.json",
+            "field": "devDependencies"
+          },
+          {
+            "dependency": "package/dev-script/file-enforcer",
+            "consumer": "package/dev-script/vm-builder",
+            "evidence": "package/dev-script/vm-builder/package.json",
+            "field": "dependencies"
+          },
+          {
+            "dependency": "package/dev-script/file-enforcer",
+            "consumer": "package/test-fixture/file-enforcer-perf",
+            "evidence": "package/test-fixture/file-enforcer-perf/package.json",
+            "field": "dependencies"
+          },
+          {
+            "dependency": "package/dev-script/file-enforcer",
+            "consumer": "package/oxlint-plugin/prefer-readonly-parameter-type",
+            "evidence": "package/oxlint-plugin/prefer-readonly-parameter-type/src/workspace-source-effect.unit.test.ts",
+            "field": "test-only new URL source fixture",
+            "propagation": "Select this unit test and artifact prerequisite; test fixture dependency does not alter plugin implementation or downstream lint consumers."
+          }
+        ]
+      },
+      "manifestChecks": 26,
+      "manifestComplete": false,
+      "outcomes": [
+        {
+          "id": "package.module.toml-edit.build",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.dev-script.file-enforcer.build",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.dev-script.vm-builder.build",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.dev-script.file-enforcer.lint.oxlint",
+          "state": "failure",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.dev-script.file-enforcer.lint.types",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.dev-script.file-enforcer.test.unit",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.dev-script.vm-builder.lint.oxlint",
+          "state": "failure",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.dev-script.vm-builder.lint.types",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.module.toml-edit.lint.oxlint",
+          "state": "failure",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.module.toml-edit.lint.types",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.module.toml-edit.test.unit",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.lint.oxlint",
+          "state": "failure",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.lint.types",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.test.unit",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.test-fixture.file-enforcer-perf.lint.types",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.fuzz",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.dev-script.file-enforcer.fuzz",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.module.toml-edit.fuzz.fuzz.coverage",
+          "state": "failure",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.module.toml-edit.test.conformance",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.dev-script.file-enforcer.test.container",
+          "state": "skipped",
+          "terminal": false,
+          "accepted": false,
+          "censored": true,
+          "policyDenied": false
+        },
+        {
+          "id": "package.module.toml-edit.test.mutation",
+          "state": "skipped",
+          "terminal": false,
+          "accepted": false,
+          "censored": true,
+          "policyDenied": false
+        },
+        {
+          "id": "package.dev-script.file-enforcer.test.mutation",
+          "state": "skipped",
+          "terminal": false,
+          "accepted": false,
+          "censored": true,
+          "policyDenied": false
+        },
+        {
+          "id": "package.oxlint-plugin.prefer-readonly-parameter-type.build",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "package.oxlint-plugin.prefer-readonly-parameter-type.test.unit",
+          "state": "success",
+          "terminal": true,
+          "accepted": false,
+          "censored": false,
+          "policyDenied": false
+        },
+        {
+          "id": "root.forbidden-strings",
+          "state": "missing",
+          "terminal": false,
+          "accepted": false,
+          "censored": true,
+          "policyDenied": false
+        },
+        {
+          "id": "root.generated-consistency",
+          "state": "missing",
+          "terminal": false,
+          "accepted": false,
+          "censored": true,
+          "policyDenied": false
+        }
+      ],
+      "accepted": false,
+      "allRequiredExecutedToTerminal": false,
+      "elapsedObservationSeconds": 242.564,
+      "unfinishedRequiredUnionSeconds": 242.564,
+      "activeAttemptUnionSeconds": 229,
+      "executionDependencyPathSeconds": 42.555,
+      "compute": {
+        "depot-ci": {
+          "seconds": 229,
+          "vcpuSeconds": 3664,
+          "attempts": 1,
+          "censoredAttempts": 0
+        }
+      },
+      "limitations": [
+        "Provider execution intervals are usage proxies, not account ledger entries.",
+        "A missing, skipped, or cancelled required check remains censored at the observation boundary.",
+        "Execution dependency path excludes queue time and cannot replace observed request-to-completion time.",
+        "Selector reach is independently verified against repository changes; this reconciler validates its frozen output, not its discovery algorithm."
+      ]
+    },
+    "classification": "Development execution of an incomplete manifest, not a full pipeline baseline"
+  },
+  "executorControls": {
+    "collection": {
+      "collectedAt": "2026-10-16T02:51:35.345Z",
+      "org": "l4zncjjbj5",
+      "runId": "g57729x66d",
+      "revision": "aff6a49ca796705969baf3e3c297cf7e31d1a751",
+      "status": "failed",
+      "attempts": [
+        {
+          "workflowId": "hrl48lp6dm",
+          "jobId": "47s7b5j0rf",
+          "jobKey": "_inline_0.yaml:executor:matrix-0",
+          "attemptId": "93spv7w2xm",
+          "attempt": 1,
+          "status": "finished",
+          "metricsPath": "metrics-93spv7w2xm.json",
+          "logPath": "logs-93spv7w2xm.jsonl",
+          "logSha256": "c326f8cf55d6a1b99aea4de8a848ff9a1d8a925a8b2e5b032d9b7d7319069362",
+          "logRecords": 218,
+          "providerAttempt": {
+            "attempt_id": "93spv7w2xm",
+            "attempt": 1,
+            "status": "finished",
+            "conclusion": "success",
+            "sandbox_id": "7gpnbd7cjn41vz82bjrm",
+            "session_id": "32943c36-9f01-486b-8c46-23668bff3398",
+            "created_at": "2026-10-16T02:43:30.144Z",
+            "started_at": "2026-10-16T02:43:33.637Z",
+            "finished_at": "2026-10-16T02:44:19.084Z"
+          }
+        },
+        {
+          "workflowId": "hrl48lp6dm",
+          "jobId": "4zdrtv4jcv",
+          "jobKey": "_inline_0.yaml:executor:matrix-1",
+          "attemptId": "368qgxrl56",
+          "attempt": 1,
+          "status": "failed",
+          "metricsPath": "metrics-368qgxrl56.json",
+          "logPath": "logs-368qgxrl56.jsonl",
+          "logSha256": "039e4004c2b2938cd2dd5f7cceae70e692c4604704f333985b25de3338b3110c",
+          "logRecords": 249,
+          "providerAttempt": {
+            "attempt_id": "368qgxrl56",
+            "attempt": 1,
+            "status": "failed",
+            "conclusion": "failure",
+            "sandbox_id": "1hj08t4h1l1z7xjcq26z",
+            "session_id": "51696e33-11e9-4924-9849-1568cc1a0ee1",
+            "created_at": "2026-10-16T02:43:30.144Z",
+            "started_at": "2026-10-16T02:43:33.839Z",
+            "finished_at": "2026-10-16T02:44:19.127Z"
+          }
+        },
+        {
+          "workflowId": "hrl48lp6dm",
+          "jobId": "qzjdp1vf14",
+          "jobKey": "_inline_0.yaml:executor:matrix-2",
+          "attemptId": "7pssqzwzr7",
+          "attempt": 1,
+          "status": "failed",
+          "metricsPath": "metrics-7pssqzwzr7.json",
+          "logPath": "logs-7pssqzwzr7.jsonl",
+          "logSha256": "a45f1e111deb839fd705c4806f4a302a28bbee161d7eeb84b5be2ba5355fbdc8",
+          "logRecords": 235,
+          "providerAttempt": {
+            "attempt_id": "7pssqzwzr7",
+            "attempt": 1,
+            "status": "failed",
+            "conclusion": "failure",
+            "sandbox_id": "zkdjlwv7hsp9wr8n2z43",
+            "session_id": "e75690a5-b06c-494a-bc0e-3c3368f5c056",
+            "created_at": "2026-10-16T02:43:30.144Z",
+            "started_at": "2026-10-16T02:43:34.024Z",
+            "finished_at": "2026-10-16T02:44:18.573Z"
+          }
+        },
+        {
+          "workflowId": "hrl48lp6dm",
+          "jobId": "n2pvttq4xn",
+          "jobKey": "_inline_0.yaml:executor:matrix-3",
+          "attemptId": "mg9v3t6640",
+          "attempt": 1,
+          "status": "failed",
+          "metricsPath": "metrics-mg9v3t6640.json",
+          "logPath": "logs-mg9v3t6640.jsonl",
+          "logSha256": "91e6b2389066697fd394b56115a33b9221cc815152139bb582b0565b11ec227d",
+          "logRecords": 231,
+          "providerAttempt": {
+            "attempt_id": "mg9v3t6640",
+            "attempt": 1,
+            "status": "failed",
+            "conclusion": "failure",
+            "sandbox_id": "vv3x1f3h6mwd9mv24d09",
+            "session_id": "072696b9-9f3f-47f0-aa81-9c55595d55a6",
+            "created_at": "2026-10-16T02:43:30.144Z",
+            "started_at": "2026-10-16T02:43:33.656Z",
+            "finished_at": "2026-10-16T02:44:18.624Z"
+          }
+        }
+      ],
+      "artifactCount": 2,
+      "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation."
+    },
+    "verification": {
+      "passed": true,
+      "results": [
+        {
+          "event": "executor-control-observed",
+          "control": "passing",
+          "executorExitCode": 0,
+          "expectedFailure": false,
+          "attemptId": "93spv7w2xm",
+          "providerConclusion": "success",
+          "providerSeconds": 45.447,
+          "resources": {
+            "vcpus": 2,
+            "memoryGb": 8,
+            "source": ".depot/workflows/depot-complete-controls.yml"
+          },
+          "diagnostics": []
+        },
+        {
+          "event": "executor-control-observed",
+          "control": "failure",
+          "executorExitCode": 1,
+          "expectedFailure": true,
+          "attemptId": "368qgxrl56",
+          "providerConclusion": "failure",
+          "providerSeconds": 45.288,
+          "resources": {
+            "vcpus": 2,
+            "memoryGb": 8,
+            "source": ".depot/workflows/depot-complete-controls.yml"
+          },
+          "diagnostics": [
+            "\u001b[35m\u001b[2m[//package/control/fixture:lint:oxlint]\u001b[0m \u001b[1m$ throw new Error(\"intentional executor failure control\")\u001b[0m",
+            "throw new Error(\"intentional executor failure control\")",
+            "Error: intentional executor failure control",
+            "if (control !== 'passing') throw new Error(`Intentional negative control ${control} propagates to workflow failure`)",
+            "Error: Intentional negative control failure propagates to workflow failure"
+          ]
+        },
+        {
+          "event": "executor-control-observed",
+          "control": "oxlint-args",
+          "executorExitCode": 1,
+          "expectedFailure": true,
+          "attemptId": "7pssqzwzr7",
+          "providerConclusion": "failure",
+          "providerSeconds": 44.549,
+          "resources": {
+            "vcpus": 2,
+            "memoryGb": 8,
+            "source": ".depot/workflows/depot-complete-controls.yml"
+          },
+          "diagnostics": [
+            "AssertionError [ERR_ASSERTION]: Oxlint must retain full package reach",
+            "if (control !== 'passing') throw new Error(`Intentional negative control ${control} propagates to workflow failure`)",
+            "Error: Intentional negative control oxlint-args propagates to workflow failure"
+          ]
+        },
+        {
+          "event": "executor-control-observed",
+          "control": "oxlint-scope",
+          "executorExitCode": 1,
+          "expectedFailure": true,
+          "attemptId": "mg9v3t6640",
+          "providerConclusion": "failure",
+          "providerSeconds": 44.968,
+          "resources": {
+            "vcpus": 2,
+            "memoryGb": 8,
+            "source": ".depot/workflows/depot-complete-controls.yml"
+          },
+          "diagnostics": [
+            "AssertionError [ERR_ASSERTION]: unreviewed non-package check: control.lint.oxlint",
+            "if (control !== 'passing') throw new Error(`Intentional negative control ${control} propagates to workflow failure`)",
+            "Error: Intentional negative control oxlint-scope propagates to workflow failure"
+          ]
+        }
+      ]
+    },
+    "classification": "Four isolated controls, each actually allocated 2 vCPUs and 8 GB by the immutable workflow; executor metadata incorrectly declared 16 vCPUs and 64 GB"
+  },
+  "nativeDevelopment": {
+    "setup": {
+      "collectedAt": "2026-10-16T02:53:04.342Z",
+      "repo": "Aquaticats/Monochromatic",
+      "visibility": "public",
+      "runId": 38842242564,
+      "revision": "703aca7141f4a8b741e3408b41b3ec3363301c9e",
+      "runAttempt": 1,
+      "status": "completed",
+      "conclusion": "failure",
+      "createdAt": "2026-10-16T02:47:38Z",
+      "startedAt": "2026-10-16T02:47:38Z",
+      "updatedAt": "2026-10-16T02:49:18Z",
+      "jobs": [
+        {
+          "id": 116784746439,
+          "attempt": 1,
+          "workflow": "depot-complete-native-hosts",
+          "name": "Native package gates (macos-15-intel)",
+          "status": "completed",
+          "conclusion": "failure",
+          "headSha": "703aca7141f4a8b741e3408b41b3ec3363301c9e",
+          "startedAt": "2026-10-16T02:47:42Z",
+          "completedAt": "2026-10-16T02:48:59Z",
+          "seconds": 77,
+          "labels": [
+            "macos-15-intel"
+          ],
+          "allocation": {
+            "label": "macos-15-intel",
+            "vcpus": 4,
+            "memoryGb": 14,
+            "publicStandardComputeUsd": 0,
+            "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+          },
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-16T02:47:42Z",
+              "completed_at": "2026-10-16T02:47:44Z"
+            },
+            {
+              "name": "Checkout trial harness",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-16T02:47:44Z",
+              "completed_at": "2026-10-16T02:48:05Z"
+            },
+            {
+              "name": "Checkout immutable source",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-16T02:48:05Z",
+              "completed_at": "2026-10-16T02:48:24Z"
+            },
+            {
+              "name": "Set up mise",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-16T02:48:24Z",
+              "completed_at": "2026-10-16T02:48:30Z"
+            },
+            {
+              "name": "Install the source-declared Node and Rust prerequisites",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-16T02:48:30Z",
+              "completed_at": "2026-10-16T02:48:44Z"
+            },
+            {
+              "name": "Install source-declared native tools after Rust",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 6,
+              "started_at": "2026-10-16T02:48:44Z",
+              "completed_at": "2026-10-16T02:48:53Z"
+            },
+            {
+              "name": "Expose the source-declared Windows linker",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 7,
+              "started_at": "2026-10-16T02:48:53Z",
+              "completed_at": "2026-10-16T02:48:53Z"
+            },
+            {
+              "name": "Verify immutable source and record tools",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 8,
+              "started_at": "2026-10-16T02:48:53Z",
+              "completed_at": "2026-10-16T02:48:53Z"
+            },
+            {
+              "name": "Restore exact-source native artifacts",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9,
+              "started_at": "2026-10-16T02:48:53Z",
+              "completed_at": "2026-10-16T02:48:53Z"
+            },
+            {
+              "name": "Build release artifact through the package task",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 10,
+              "started_at": "2026-10-16T02:48:53Z",
+              "completed_at": "2026-10-16T02:48:53Z"
+            },
+            {
+              "name": "Run all-target Clippy through the package task",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 11,
+              "started_at": "2026-10-16T02:48:53Z",
+              "completed_at": "2026-10-16T02:48:53Z"
+            },
+            {
+              "name": "Run nextest through the package task",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 12,
+              "started_at": "2026-10-16T02:48:53Z",
+              "completed_at": "2026-10-16T02:48:53Z"
+            },
+            {
+              "name": "Exercise the built release command",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 13,
+              "started_at": "2026-10-16T02:48:53Z",
+              "completed_at": "2026-10-16T02:48:53Z"
+            },
+            {
+              "name": "Verify source remained immutable",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 14,
+              "started_at": "2026-10-16T02:48:53Z",
+              "completed_at": "2026-10-16T02:48:53Z"
+            },
+            {
+              "name": "Post Checkout immutable source",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 27,
+              "started_at": "2026-10-16T02:48:53Z",
+              "completed_at": "2026-10-16T02:48:55Z"
+            },
+            {
+              "name": "Post Checkout trial harness",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 28,
+              "started_at": "2026-10-16T02:48:55Z",
+              "completed_at": "2026-10-16T02:48:56Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 29,
+              "started_at": "2026-10-16T02:48:56Z",
+              "completed_at": "2026-10-16T02:48:57Z"
+            }
+          ],
+          "log": {
+            "path": "logs-116784746439.txt",
+            "bytes": 77959,
+            "sha256": "4151338602c9c088c96d2bff130435f2a1c03be2007e5fc95cc987c344a98552"
+          }
+        },
+        {
+          "id": 116784746615,
+          "attempt": 1,
+          "workflow": "depot-complete-native-hosts",
+          "name": "Native package gates (windows-2025)",
+          "status": "completed",
+          "conclusion": "failure",
+          "headSha": "703aca7141f4a8b741e3408b41b3ec3363301c9e",
+          "startedAt": "2026-10-16T02:47:42Z",
+          "completedAt": "2026-10-16T02:49:18Z",
+          "seconds": 96,
+          "labels": [
+            "windows-2025"
+          ],
+          "allocation": {
+            "label": "windows-2025",
+            "vcpus": 4,
+            "memoryGb": 16,
+            "publicStandardComputeUsd": 0,
+            "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+          },
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-16T02:47:42Z",
+              "completed_at": "2026-10-16T02:47:43Z"
+            },
+            {
+              "name": "Checkout trial harness",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-16T02:47:43Z",
+              "completed_at": "2026-10-16T02:48:10Z"
+            },
+            {
+              "name": "Checkout immutable source",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-16T02:48:10Z",
+              "completed_at": "2026-10-16T02:48:31Z"
+            },
+            {
+              "name": "Set up mise",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-16T02:48:31Z",
+              "completed_at": "2026-10-16T02:48:36Z"
+            },
+            {
+              "name": "Install the source-declared Node and Rust prerequisites",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-16T02:48:36Z",
+              "completed_at": "2026-10-16T02:48:59Z"
+            },
+            {
+              "name": "Install source-declared native tools after Rust",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 6,
+              "started_at": "2026-10-16T02:48:59Z",
+              "completed_at": "2026-10-16T02:49:12Z"
+            },
+            {
+              "name": "Expose the source-declared Windows linker",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 7,
+              "started_at": "2026-10-16T02:49:12Z",
+              "completed_at": "2026-10-16T02:49:12Z"
+            },
+            {
+              "name": "Verify immutable source and record tools",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 8,
+              "started_at": "2026-10-16T02:49:12Z",
+              "completed_at": "2026-10-16T02:49:12Z"
+            },
+            {
+              "name": "Restore exact-source native artifacts",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 9,
+              "started_at": "2026-10-16T02:49:12Z",
+              "completed_at": "2026-10-16T02:49:12Z"
+            },
+            {
+              "name": "Build release artifact through the package task",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 10,
+              "started_at": "2026-10-16T02:49:12Z",
+              "completed_at": "2026-10-16T02:49:12Z"
+            },
+            {
+              "name": "Run all-target Clippy through the package task",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 11,
+              "started_at": "2026-10-16T02:49:12Z",
+              "completed_at": "2026-10-16T02:49:12Z"
+            },
+            {
+              "name": "Run nextest through the package task",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 12,
+              "started_at": "2026-10-16T02:49:12Z",
+              "completed_at": "2026-10-16T02:49:12Z"
+            },
+            {
+              "name": "Exercise the built release command",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 13,
+              "started_at": "2026-10-16T02:49:12Z",
+              "completed_at": "2026-10-16T02:49:12Z"
+            },
+            {
+              "name": "Verify source remained immutable",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 14,
+              "started_at": "2026-10-16T02:49:12Z",
+              "completed_at": "2026-10-16T02:49:12Z"
+            },
+            {
+              "name": "Post Checkout immutable source",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 27,
+              "started_at": "2026-10-16T02:49:12Z",
+              "completed_at": "2026-10-16T02:49:14Z"
+            },
+            {
+              "name": "Post Checkout trial harness",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 28,
+              "started_at": "2026-10-16T02:49:14Z",
+              "completed_at": "2026-10-16T02:49:17Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 29,
+              "started_at": "2026-10-16T02:49:17Z",
+              "completed_at": "2026-10-16T02:49:17Z"
+            }
+          ],
+          "log": {
+            "path": "logs-116784746615.txt",
+            "bytes": 83129,
+            "sha256": "2b729449af680a82628daa1973a829570896fc636379b13b9628792e2bd91f59"
+          }
+        }
+      ],
+      "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+    },
+    "scanner": {
+      "collectedAt": "2026-10-16T02:50:37.573Z",
+      "repo": "Aquaticats/Monochromatic",
+      "visibility": "public",
+      "runId": 38842263437,
+      "revision": "703aca7141f4a8b741e3408b41b3ec3363301c9e",
+      "runAttempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "createdAt": "2026-10-16T02:47:53Z",
+      "startedAt": "2026-10-16T02:47:53Z",
+      "updatedAt": "2026-10-16T02:48:42Z",
+      "jobs": [
+        {
+          "id": 116784811807,
+          "attempt": 1,
+          "workflow": "forbidden-strings",
+          "name": "scan",
+          "status": "completed",
+          "conclusion": "success",
+          "headSha": "703aca7141f4a8b741e3408b41b3ec3363301c9e",
+          "startedAt": "2026-10-16T02:47:57Z",
+          "completedAt": "2026-10-16T02:48:42Z",
+          "seconds": 45,
+          "labels": [
+            "ubuntu-latest"
+          ],
+          "allocation": {
+            "label": "ubuntu-latest",
+            "vcpus": 4,
+            "memoryGb": 16,
+            "publicStandardComputeUsd": 0,
+            "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+          },
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-16T02:47:58Z",
+              "completed_at": "2026-10-16T02:47:59Z"
+            },
+            {
+              "name": "Checkout (full history)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-16T02:47:59Z",
+              "completed_at": "2026-10-16T02:48:32Z"
+            },
+            {
+              "name": "Download prebuilt forbidden-strings binary",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-16T02:48:32Z",
+              "completed_at": "2026-10-16T02:48:36Z"
+            },
+            {
+              "name": "Checkout immutable source for the selected change",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-16T02:48:36Z",
+              "completed_at": "2026-10-16T02:48:37Z"
+            },
+            {
+              "name": "Verify immutable source and comparison base",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-16T02:48:37Z",
+              "completed_at": "2026-10-16T02:48:38Z"
+            },
+            {
+              "name": "Materialize deny-list",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-16T02:48:38Z",
+              "completed_at": "2026-10-16T02:48:38Z"
+            },
+            {
+              "name": "Scan changed files",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-16T02:48:38Z",
+              "completed_at": "2026-10-16T02:48:38Z"
+            },
+            {
+              "name": "Post Checkout immutable source for the selected change",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13,
+              "started_at": "2026-10-16T02:48:38Z",
+              "completed_at": "2026-10-16T02:48:38Z"
+            },
+            {
+              "name": "Post Checkout (full history)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14,
+              "started_at": "2026-10-16T02:48:38Z",
+              "completed_at": "2026-10-16T02:48:38Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 15,
+              "started_at": "2026-10-16T02:48:38Z",
+              "completed_at": "2026-10-16T02:48:38Z"
+            }
+          ],
+          "log": {
+            "path": "logs-116784811807.txt",
+            "bytes": 62504,
+            "sha256": "c22be9b6cd3ec50480d69c526a22a5ebdc3cfacb63bd42e1add926fe2e3a9c1a"
+          }
+        }
+      ],
+      "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred.",
+      "excerpts": [
+        "2026-10-16T02:48:36.4412515Z forbidden-strings 0.5.0",
+        "2026-10-16T02:48:38.0044030Z source_head=cb95cf6d785c3073c192b95f0632cdae7b910894",
+        "2026-10-16T02:48:38.0044921Z source_base=45795584ff2dcf830dc505e121f0cc92c77860e5",
+        "2026-10-16T02:48:38.0519073Z Scanning 8 changed file(s) from 45795584ff2dcf830dc505e121f0cc92c77860e5..cb95cf6d785c3073c192b95f0632cdae7b910894:",
+        "2026-10-16T02:48:38.0520351Z   package/music-player/truepeak-core/Cargo.lock",
+        "2026-10-16T02:48:38.0521228Z   package/music-player/truepeak-core/Cargo.toml",
+        "2026-10-16T02:48:38.0521970Z   package/music-player/truepeak-core/src/cache.rs",
+        "2026-10-16T02:48:38.0522741Z   package/music-player/truepeak-core/src/cache_tests.rs",
+        "2026-10-16T02:48:38.0523481Z   package/music-player/truepeak-core/src/fingerprint.rs",
+        "2026-10-16T02:48:38.0524221Z   package/music-player/truepeak-core/src/fingerprint_tests.rs",
+        "2026-10-16T02:48:38.0524999Z   package/music-player/truepeak-core/src/lib.rs",
+        "2026-10-16T02:48:38.0525826Z   package/music-player/truepeak-core/src/policy.rs"
+      ]
+    },
+    "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+    "comparisonBase": "45795584ff2dcf830dc505e121f0cc92c77860e5",
+    "classification": "Both native jobs failed tool setup before validation; scanner passed independently"
   }
 }

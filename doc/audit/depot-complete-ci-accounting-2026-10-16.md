@@ -143,6 +143,46 @@ explicit live-main adaptation,
 resource bounds,
 and separate historical-policy interpretation.
 
+The TOML development run `hgqj2nstwq` emitted 24 package results:
+16 passed,
+five failed,
+and three were deferred.
+Its frozen manifest also required two external checks without results in that execution.
+Four Oxlint checks and fuzz coverage failed;
+these failures remain visible even though other tasks passed.
+Every emitted result matched the final summary and frozen manifest identity.
+The collector recovered five TypeScript completion records appended to compiler output without a separating newline;
+their exact prefixes remain in the reconciliation evidence.
+Task exits alone do not verify discovered case identities or consumer reach.
+
+Attempt `811p86php8` consumed 229 provider seconds on 16 vCPUs,
+or 3,664 vCPU-seconds.
+The 242.564 seconds from request to observation is censored because required checks remained incomplete.
+Its 42.555-second sum along recorded task dependencies excludes preparation,
+the executor's additional serialization,
+and missing checks;
+it is not a measured complete-pipeline critical path.
+The later manifest added Scorecard,
+so this original 26-entry manifest cannot establish completion of that later graph.
+
+The four executor controls in run `g57729x66d` produced the intended provider outcomes:
+the positive control succeeded,
+the explicit failure propagated,
+and both narrowed Oxlint invocations were rejected.
+The immutable workflow allocated two vCPUs and 8 GB per control.
+Its emitted executor metadata incorrectly claimed 16 vCPUs and 64 GB;
+accounting uses the actual workflow allocation.
+
+For the native source revision `cb95cf6d785c3073c192b95f0632cdae7b910894`,
+[run 38842242564](https://github.com/Aquaticats/Monochromatic/actions/runs/38842242564)
+failed both Windows and macOS jobs while installing tools,
+before native validation began.
+The independent
+[scanner run 38842263437](https://github.com/Aquaticats/Monochromatic/actions/runs/38842263437)
+passed against all eight changed paths from base `45795584ff2dcf830dc505e121f0cc92c77860e5`.
+It used 45 job seconds and 49 seconds from run creation to job completion.
+The failed setup attempts remain usage observations and cannot count as native check execution.
+
 ### Acceptance requirements
 
 Freeze one source revision and the intended manifest before each execution cell.
