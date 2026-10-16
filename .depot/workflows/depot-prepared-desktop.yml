@@ -61,3 +61,34 @@ jobs:
       run: mise run //package/cli/nested-wayland-session:build
     - name: Record prepared files and exact package versions
       run: mise run //package/music-player/desktop-app:trial:depot:prepared:manifest
+
+  consume-one:
+    runs-on:
+      size: 2x8
+      image: monochromatic-trial-desktop-ready:20261016-v1
+    timeout-minutes: 12
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        clean: false
+    - name: Verify prepared files and run every desktop session with fresh private services
+      run: mise run //package/music-player/desktop-app:trial:depot:prepared:consume
+
+  consume-two:
+    needs: consume-one
+    runs-on:
+      size: 2x8
+      image: monochromatic-trial-desktop-ready:20261016-v1
+    timeout-minutes: 12
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        clean: false
+    - name: Repeat every desktop session from the same prepared snapshot
+      run: mise run //package/music-player/desktop-app:trial:depot:prepared:consume

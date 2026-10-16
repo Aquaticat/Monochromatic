@@ -1017,3 +1017,79 @@ const source = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).
 writeFileSync(join(base, 'prepared-desktop.json'), JSON.stringify({ source, artifacts, packageManifest: packages.manifest, magickVersion: packages.magickVersion }))
 console.log(JSON.stringify({ phase: 'prepared-desktop-files', source, artifacts, packages: packages.packages.length, aptInstallInvoked: false }))
 '''
+
+[tasks."trial:depot:prepared:consume"]
+description = "Verify snapshot artifacts and run all desktop sessions inside fresh bounded user services"
+dir = "{{config_root}}/../desktop-e2e"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync, execFileSync } = await import('node:child_process')
+const { strict: assert } = await import('node:assert')
+const { readFileSync, writeFileSync, existsSync, statSync } = await import('node:fs')
+const { homedir, userInfo } = await import('node:os')
+const { join, resolve } = await import('node:path')
+const { createHash } = await import('node:crypto')
+const { wait } = await import('@monochromatic-dev/module-async-time/ts')
+const started = Date.now()
+const base = join(homedir(), 'temp/agent/depot-package-snapshot')
+const packages = JSON.parse(readFileSync(join(base, 'manifest.json'), 'utf8'))
+const prepared = JSON.parse(readFileSync(join(base, 'prepared-desktop.json'), 'utf8'))
+assert.equal(execFileSync('dpkg-query', ['--show', `--showformat=${packages.format}`, ...packages.packages], { encoding: 'utf8' }), packages.manifest)
+assert.equal(execFileSync(join(base, 'bin/magick'), ['--version'], { encoding: 'utf8' }), packages.magickVersion)
+for (const artifact of prepared.artifacts) {
+  assert.equal(statSync(artifact.path).size, artifact.bytes)
+  assert.equal(createHash('sha256').update(readFileSync(artifact.path)).digest('hex'), artifact.sha256)
+}
+const marker = join(base, 'fresh-consumer.json')
+assert.equal(existsSync(marker), false, 'A fresh image consumer must not inherit another consumer marker')
+writeFileSync(marker, JSON.stringify({ started }))
+const overlayMarker = join(base, 'overlay-only-marker')
+assert.equal(existsSync(overlayMarker), false)
+console.log(JSON.stringify({ phase: 'prepared-files-verified', source: prepared.source, artifacts: prepared.artifacts, packages: packages.packages.length, aptInstallInvoked: false, buildInvoked: false, freshConsumer: true, elapsedMs: Date.now() - started }))
+const name = `depot-desktop-consumer-${process.pid}`
+const podman = ['--non-interactive', 'podman', '--cgroup-manager=cgroupfs']
+function run({ args, required = true, inherit = false, limit = 45000 }) {
+  const result = spawnSync('sudo', [...podman, ...args], { encoding: 'utf8', timeout: limit, ...(inherit ? { stdio: 'inherit' } : {}) })
+  console.log(JSON.stringify({ phase: 'desktop-container-command', command: args[0], operation: args.includes('mise') ? 'desktop-sessions' : args.slice(-5), status: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }))
+  if (required && result.status !== 0) throw new Error(`Container operation failed: ${args[0]}`)
+  return result
+}
+try {
+  run({ args: ['run', '--detach', '--name', name, '--systemd=always', '--cgroupns=private', '--network=none', '--memory=2g', '--cpus=2', '--timeout=660', '--rootfs', '/:O', '/usr/lib/systemd/systemd', '--unit=basic.target', '--log-target=console'] })
+  let ready = false
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const result = run({ args: ['exec', name, 'systemctl', 'show', '--property=Version', '--value'], required: false })
+    if (result.status === 0 && result.stdout.trim() !== '') { ready = true; break }
+    await wait(500)
+  }
+  assert.ok(ready, 'The isolated systemd manager must answer before starting user services')
+  run({ args: ['exec', name, 'systemctl', 'start', `user@${process.getuid()}.service`] })
+  const user = ['exec', '--workdir', resolve('../desktop-app'), name, 'runuser', '--user', userInfo().username, '--', 'env', `XDG_RUNTIME_DIR=/run/user/${process.getuid()}`, `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${process.getuid()}/bus`, `PATH=${join(base, 'bin')}:${process.env.PATH}`, 'MISE_AUTO_INSTALL=false', 'LIBGL_ALWAYS_SOFTWARE=1']
+  run({ args: [...user, 'touch', overlayMarker] })
+  run({ args: [...user, 'systemd-run', '--user', '--wait', '--pipe', '--unit=depot-consumer-probe', '--property=MemoryMax=256M', '/bin/cat', '/proc/self/cgroup'] })
+  run({ args: [...user, 'systemctl', '--user', 'start', 'pipewire.socket', 'pipewire-pulse.socket', 'wireplumber.service'] })
+  run({ args: [...user, 'pactl', 'info'] })
+  const before = run({ args: [...user, 'pactl', 'list', 'short', 'sinks'] })
+  console.log(JSON.stringify({ phase: 'desktop-services-ready', elapsedMs: Date.now() - started }))
+  const suiteStarted = Date.now()
+  const suite = run({ args: [...user, 'mise', 'run', '//package/music-player/desktop-app:trial:depot:desktop:run'], required: false, inherit: true, limit: 600000 })
+  console.log(JSON.stringify({ phase: 'desktop-suite-complete', elapsedMs: Date.now() - suiteStarted, status: suite.status }))
+  const after = run({ args: [...user, 'pactl', 'list', 'short', 'sinks'] })
+  const sinkNames = text => text.trim().split('\n').filter(Boolean).map(line => line.split('\t')[1]).sort()
+  assert.deepEqual(sinkNames(after.stdout), sinkNames(before.stdout))
+  const units = run({ args: [...user, 'systemctl', '--user', 'list-units', '--state=active', '--no-legend', 'music-player-e2e*'] })
+  assert.equal(units.stdout.trim(), '')
+  const processes = run({ args: ['exec', name, 'pgrep', '--exact', 'music-player'], required: false })
+  assert.equal(processes.status, 1, 'The completed sessions must leave no application process')
+  run({ args: [...user, 'systemctl', '--user', 'stop', 'wireplumber.service', 'pipewire-pulse.service', 'pipewire-pulse.socket', 'pipewire.service', 'pipewire.socket'] })
+  assert.equal(suite.status, 0, 'Every desktop session must succeed')
+  console.log(JSON.stringify({ phase: 'desktop-consumer-verified', elapsedMs: Date.now() - started, realUserUnits: true, privateAudio: true, restoredSinkNames: sinkNames(after.stdout), activeTestUnits: 0, applicationProcesses: 0 }))
+} finally {
+  run({ args: ['logs', name], required: false })
+  run({ args: ['stop', '--time=10', name], required: false })
+  run({ args: ['rm', name], required: false })
+  assert.equal(run({ args: ['container', 'exists', name], required: false }).status, 1)
+  assert.equal(existsSync(overlayMarker), false, 'Container runtime writes must not reach the prepared filesystem')
+  console.log(JSON.stringify({ phase: 'desktop-runtime-removed', elapsedMs: Date.now() - started, overlayWritesDiscarded: true }))
+}
+'''
