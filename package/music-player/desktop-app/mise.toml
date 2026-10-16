@@ -928,14 +928,15 @@ description = "Inspect fresh snapshot init and bounded namespace support without
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { spawnSync } = await import('node:child_process')
-const { readFileSync, readlinkSync, mkdirSync, chmodSync } = await import('node:fs')
+const { readFileSync, mkdirSync, chmodSync } = await import('node:fs')
 const { homedir } = await import('node:os')
 const { join } = await import('node:path')
 const runtime = join(homedir(), 'temp/agent/depot-session-probe')
 mkdirSync(runtime, { recursive: true, mode: 0o700 })
 chmodSync(runtime, 0o700)
-console.log(JSON.stringify({ phase: 'runtime-probe', uid: process.getuid(), pidOne: readFileSync('/proc/1/comm', 'utf8').trim(), initExecutable: readlinkSync('/proc/1/exe'), cgroup: readFileSync('/proc/self/cgroup', 'utf8'), runtimeDir: process.env.XDG_RUNTIME_DIR, hasSessionBus: process.env.DBUS_SESSION_BUS_ADDRESS !== undefined }))
+console.log(JSON.stringify({ phase: 'runtime-probe', uid: process.getuid(), pidOne: readFileSync('/proc/1/comm', 'utf8').trim(), cgroup: readFileSync('/proc/self/cgroup', 'utf8'), runtimeDir: process.env.XDG_RUNTIME_DIR, hasSessionBus: process.env.DBUS_SESSION_BUS_ADDRESS !== undefined }))
 for (const [command, args] of [
+  ['sudo', ['--non-interactive', 'readlink', '/proc/1/exe']],
   ['systemd', ['--version']],
   ['findmnt', ['--target', '/sys/fs/cgroup', '--output', 'TARGET,FSTYPE,OPTIONS']],
   ['sudo', ['--non-interactive', 'capsh', '--print']],
