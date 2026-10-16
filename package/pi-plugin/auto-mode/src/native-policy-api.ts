@@ -14,6 +14,7 @@ export {
 } from './native-bypass.ts';
 export { createAssessmentSender } from './assessment-sender.ts';
 export { createNativeSemanticOperatingPolicies } from './semantic-operating-policy.ts';
+export { admitsOperatingChoice } from './semantic-operating-choice.ts';
 export { VERDICT_ENTRY_TYPE } from './types.ts';
 export { AuthorizationEvidenceError } from './authorization-evidence-data.ts';
 export {

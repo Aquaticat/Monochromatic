@@ -3,6 +3,8 @@ import {appendAdoptionQuestion} from './wire-adoption.mjs';
 import {appendRequestQuestion} from './wire-request.mjs';
 import {appendHeadingQuestion} from './wire-heading.mjs';
 import {appendClauseQuestion} from './wire-clause.mjs';
+import {appendOperationDecisionQuestion} from './wire-operation.mjs';
+import {operationDecisionDefinition} from './operation-decision-definition.ts';
 import {sourceInputLocation} from '../../lifecycle/governing-rule-candidates/input-location.mjs';
 import programCatalog from '../../lifecycle/program-rule-wire/catalog.json' with {type:'json'};
 import {questions as meaningCatalog} from '../../research/instruction-prerequisite-relation/cases.mjs';
@@ -23,7 +25,8 @@ const definitions=Object.freeze({
  clause_operation_relation:clauseOperationRelation,
  request_instruction_content:requestInstructionContent,
  heading_instruction_content:headingInstructionContent,
- unit_adoption:unitAdoptionRelation
+ unit_adoption:unitAdoptionRelation,
+ operation_decision:operationDecisionDefinition
 });
 /** Fixed bootstrap catalog, not model-authored definitions or source authority. */
 export const ruleAssessmentCatalogText=JSON.stringify(definitions);
@@ -93,7 +96,7 @@ export function bindRuleAssessmentWire(request){
    const pairs=[];
    const seen=new Set();
    const clauseRelations=new Set();
- const membership={hasHeadingContent:false,hasOperation:false,hasRequestMaterial:false,unitAdoptionCount:0};
+ const membership={hasHeadingContent:false,hasOperation:false,hasRequestMaterial:false,hasOperationDecision:false,unitAdoptionCount:0};
  for(const [index,head] of input.entries()){
   if((head?.id!==`q${
     index}`)||(!Object.hasOwn(
@@ -105,6 +108,10 @@ export function bindRuleAssessmentWire(request){
     const categorical=definition.type==='choice';
   if(JSON.stringify(head.definition)!==JSON.stringify(definition))throw new RuleAssessmentWireError('Fixed question definition changed');
   const {binding} = head;
+  if(head.definitionId==='operation_decision'){
+   appendOperationDecisionQuestion({head,binding,definition,index,membership,questions,pairs,proposedOperation});
+   continue;
+  }
   if(head.definitionId==='unit_adoption'){
    appendAdoptionQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs});
    continue;
@@ -145,11 +152,12 @@ export function bindRuleAssessmentWire(request){
    ...(membership.hasRequestMaterial?{requestInstructionDefinition:requestInstructionContent}:{}),
    ...(membership.hasHeadingContent?{headingInstructionDefinition:headingInstructionContent}:{}),
    ...(membership.unitAdoptionCount?{unitAdoptionDefinition:unitAdoptionRelation}:{}),
+   ...(membership.hasOperationDecision?{reviewPurpose:'Final decision for the complete prepared operation under current instructions and selected user authorization'}:{
    establishedEffectFacts:[],
    effectFactCoverage:'not-established',
    authority:'not-established',
    semanticQualification:'not-established',
-   permission:false
+   permission:false})
  };
  const body=JSON.stringify({
    model,
