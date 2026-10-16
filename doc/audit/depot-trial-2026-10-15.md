@@ -377,7 +377,8 @@ No account setting was changed.
 ## Monthly plan scenarios
 
 The [expanded change-stream replay](depot-expanded-cost-2026-10-15.md)
-is the current cost assessment.
+and [desktop interaction overlay](depot-desktop-cost-2026-10-15.md)
+form the current cost assessment.
 Applying five measured workloads to the pretrial change stream gives Developer monthly subtotals of
 USD 77.35 for every affected revision,
 USD 73.06 with cancellation of unfinished superseded work,
@@ -388,8 +389,18 @@ full desktop interaction,
 releases,
 agent experiments,
 and retention.
-The every-affected subtotal leaves USD 122.65 before the ceiling,
-or USD 107.65 at 100 GB average storage.
+Adding the full measured desktop interaction job while retaining container validation
+raises Developer to USD 166.56 for every affected revision,
+USD 154.54 with superseded cancellation,
+or USD 24.13 for daily-latest Depot allocation.
+The corresponding Startup scenarios are USD 211.98,
+USD 202.74,
+and USD 200 when overage is allowed.
+The first two exceed its runner allowance;
+hard-start limits would instead leave some requested work unstarted.
+These remain partial-workload scenarios and price the observed chooser failure honestly.
+The every-affected desktop-inclusive subtotal leaves USD 33.44 before the ceiling,
+or USD 18.44 at 100 GB average storage.
 The initial bundle scenarios in this section remain illustrative observations,
 not the expanded workload forecast.
 
@@ -511,12 +522,14 @@ the trial has not yet demonstrated that all desired graphical tests and experime
   not a sufficient automatic policy.
 - Developer with selective overage is the second choice.
   It allows more relevant checks without immediately paying USD $200.
-  The ten-bundle source-change scenario costs USD $48.77 before excluded costs.
+  The desktop-inclusive daily-latest scenario costs USD $24.13 before excluded work and storage.
+  Every affected revision with separate container validation costs USD $166.56 in that same measured subset.
   The disadvantage is variable charges and dependence on a verified spending safeguard.
 - Startup is the third choice for the currently measured workload.
   Its added allowances reduce allocation pressure for frequent cloud work and parallel experiments.
   The disadvantage is the USD $200 base price,
   leaving no room beneath the user's ceiling for overage.
+  Every-affected measured demand would also exceed its included runner allowance.
   The trial has not demonstrated enough additional benefit to justify that base price.
 
 Ranking:
