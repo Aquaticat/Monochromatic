@@ -296,7 +296,7 @@ dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync } = await import('node:child_process')
-const { readFileSync, writeFileSync, appendFileSync, mkdirSync, chmodSync } = await import('node:fs')
+const { readFileSync, writeFileSync, appendFileSync, mkdirSync, chmodSync, existsSync, realpathSync, symlinkSync } = await import('node:fs')
 const { homedir } = await import('node:os')
 const { join } = await import('node:path')
 const { strict: assert } = await import('node:assert')
@@ -304,7 +304,7 @@ const { createHash } = await import('node:crypto')
 const source = join(process.env.GITHUB_WORKSPACE, 'source')
 const lock = readFileSync(join(source, 'mise.lock'), 'utf8')
 const tools = new Map([...lock.matchAll(/^\[\[tools\.(?:"([^"]+)"|([^\]]+))\]\]\nversion = "([^"]+)"/gm)].map((match) => [match[1] ?? match[2], match[3]]))
-const requested = ['node', 'pnpm', 'rust', 'cargo-binstall', 'cargo:cargo-nextest', 'cargo:monochromatic-lint']
+const requested = ['node', 'pnpm', 'rust', 'cargo-binstall', 'cargo:cargo-nextest', 'cargo:monochromatic-lint', 'cargo:monochromatic-git-policy-cli']
 if (process.env.DEPOT_CI_WAVE === 'native-android') requested.push('java', 'android-sdk', 'cargo:cargo-ndk', 'cmake')
 if (process.env.DEPOT_CI_WAVE === 'native-desktop') requested.push('cargo:slint-viewer', 'cmake')
 const selected = requested.map((name) => {
@@ -317,10 +317,19 @@ const env = { ...process.env, MISE_RUST_VERSION: rust, MISE_LOCKED: '0' }
 const prerequisiteNames = new Set(['node', 'pnpm', 'rust', 'cargo-binstall'])
 execFileSync('mise', ['install', ...selected.filter(({ name }) => prerequisiteNames.has(name)).map(({ name, version }) => `${name}@${version}`)], { env, stdio: 'inherit' })
 execFileSync('mise', ['install', ...selected.filter(({ name }) => !prerequisiteNames.has(name)).map(({ name, version }) => `${name}@${version}`)], { env, stdio: 'inherit' })
+const policyRoot = execFileSync('mise', ['where', `cargo:monochromatic-git-policy-cli@${tools.get('cargo:monochromatic-git-policy-cli')}`], { env, encoding: 'utf8' }).trim()
+const policyBinary = join(policyRoot, 'bin/cli-git-native')
+assert(existsSync(policyBinary), 'Locked published Git policy binary must be installed')
+const policyDirectory = join(source, '.cache/cli-git-bin')
+mkdirSync(policyDirectory, { recursive: true })
+const policyLink = join(policyDirectory, 'git')
+if (existsSync(policyLink)) assert.equal(realpathSync(policyLink), realpathSync(policyBinary), 'Source Git policy link must resolve to the locked published binary')
+else symlinkSync(policyBinary, policyLink)
+appendFileSync(process.env.GITHUB_PATH, `${policyDirectory}\n`)
 const directory = join(homedir(), 'temp/agent/depot-complete-ci')
 mkdirSync(directory, { recursive: true, mode: 0o700 })
 chmodSync(directory, 0o700)
-const record = { source: 'cb95cf6d785c3073c192b95f0632cdae7b910894', lockSha256: createHash('sha256').update(lock).digest('hex'), tools: selected }
+const record = { source: 'cb95cf6d785c3073c192b95f0632cdae7b910894', lockSha256: createHash('sha256').update(lock).digest('hex'), tools: selected, policyBinary, policyLink }
 writeFileSync(join(directory, 'native-tools.json'), JSON.stringify(record, null, 2))
 appendFileSync(process.env.GITHUB_ENV, `MISE_RUST_VERSION=${rust}\n`)
 assert.equal(readFileSync(join(source, 'mise.lock'), 'utf8'), lock, 'Tool installation changed source lockfile')
@@ -341,7 +350,7 @@ const source = join(process.env.GITHUB_WORKSPACE, 'source')
 const record = JSON.parse(readFileSync(join(homedir(), 'temp/agent/depot-complete-ci/native-tools.json'), 'utf8'))
 const actual = JSON.parse(execFileSync('mise', ['ls', '--current', '--json'], { cwd: source, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }))
 for (const tool of record.tools) assert(actual[tool.name]?.some((entry) => entry.version === tool.version && entry.installed), `Source did not select required ${tool.name}@${tool.version}`)
-for (const [command, args] of [['node', ['--version']], ['pnpm', ['--version']], ['rustc', ['--version', '--verbose']], ['cargo', ['--version']], ['cargo', ['nextest', '--version']]]) {
+for (const [command, args] of [['node', ['--version']], ['pnpm', ['--version']], ['rustc', ['--version', '--verbose']], ['cargo', ['--version']], ['cargo', ['nextest', '--version']], ['git', ['--version']], ['git', ['cli-git', '--help']]]) {
   execFileSync('mise', ['exec', '--', command, ...args], { cwd: source, stdio: 'inherit' })
 }
 console.log("\n" + JSON.stringify({ event: 'native-tool-selection-verified', ...record }))
@@ -357,12 +366,13 @@ const { globSync, existsSync, realpathSync, readFileSync, appendFileSync } = awa
 const { basename, dirname, join } = await import('node:path')
 const { homedir } = await import('node:os')
 const { strict: assert } = await import('node:assert')
-const libraries = globSync('/usr/lib/llvm-*/lib/libclang.so*').sort()
+const candidates = globSync('/usr/lib/llvm-*/lib/libclang.so*').sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+const libraries = candidates.filter((path) => dirname(path) === dirname(candidates.at(-1) ?? ''))
 const resources = globSync('/usr/lib/llvm-*/lib/clang/*/include/stddef.h').map((path) => dirname(dirname(path))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
 assert(libraries.length > 0 && resources.length > 0, 'Prepared host must contain libclang and builtin headers')
 execFileSync('sudo', ['--non-interactive', 'mkdir', '--parents', '/usr/lib64', '/usr/lib/clang'])
 for (const source of [...libraries, resources.at(-1)]) {
-  const target = join(source.endsWith('.h') ? '/usr/lib/clang' : source === resources.at(-1) ? '/usr/lib/clang' : '/usr/lib64', basename(source))
+  const target = join(source === resources.at(-1) ? '/usr/lib/clang' : '/usr/lib64', basename(source))
   if (existsSync(target)) assert.equal(realpathSync(target), realpathSync(source), `Unexpected existing native bridge: ${target}`)
   else execFileSync('sudo', ['--non-interactive', 'ln', '--symbolic', source, target])
 }
@@ -408,8 +418,10 @@ function run({ args, required = true, inherit = false, input, limit = 45000 }) {
   return result
 }
 let suite
+let runtimeCompleted = false
+let failure
 try {
-  run({ args: ['run', '--detach', '--name', name, '--systemd=always', '--cgroupns=private', '--network=none', '--memory=2g', '--cpus=2', '--timeout=900', '--rootfs', '/:O', '/usr/lib/systemd/systemd', '--unit=basic.target', '--log-target=console'] })
+  run({ args: ['run', '--detach', '--name', name, '--systemd=always', '--cgroupns=private', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512', '--timeout=900', '--rootfs', '/:O', '/usr/lib/systemd/systemd', '--unit=basic.target', '--log-target=console'] })
   let ready = false
   for (let attempt = 0; attempt < 30; attempt += 1) {
     const result = run({ args: ['exec', name, 'systemctl', 'show', '--property=Version', '--value'], required: false })
@@ -443,15 +455,19 @@ try {
   assert.equal(units.stdout.trim(), '', 'Suite must leave no running test user units')
   assert.equal(run({ args: ['exec', name, 'pgrep', '--exact', 'music-player'], required: false }).status, 1, 'Suite must leave no application process')
   run({ args: [...user, 'systemctl', '--user', 'stop', 'depot-full-desktop-parent.service', 'wireplumber.service', 'pipewire-pulse.service', 'pipewire-pulse.socket', 'pipewire.service', 'pipewire.socket'] })
+  runtimeCompleted = true
+} catch (error) {
+  failure = String(error)
+  console.error(error)
 } finally {
   run({ args: ['logs', name], required: false })
   run({ args: ['stop', '--time=10', name], required: false })
   run({ args: ['rm', name], required: false })
-  assert.equal(run({ args: ['container', 'exists', name], required: false }).status, 1)
-  assert.equal(existsSync(marker), false, 'Runtime overlay writes must not reach the source host')
-  const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: 'desktop-app.test.e2e', task: '//package/music-player/desktop-app:test:e2e', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: suite?.status ?? null, signal: suite?.signal ?? null, status: suite?.status === 0 ? 'passed' : 'failed', sessions: ['wide', 'narrow', 'dialog', 'quit', 'states', 'visual'], resources: { cpus: 2, memoryGiB: 2 }, providerJobUrl: process.env.DEPOT_JOB_URL }
+  const cleanupVerified = run({ args: ['container', 'exists', name], required: false }).status === 1 && !existsSync(marker)
+  runtimeCompleted = runtimeCompleted && cleanupVerified
+  const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: 'desktop-app.test.e2e', task: '//package/music-player/desktop-app:test:e2e', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: suite?.status ?? null, signal: suite?.signal ?? null, status: runtimeCompleted && suite?.status === 0 ? 'passed' : 'failed', runtimeCompleted, cleanupVerified, failure, sessions: ['wide', 'narrow', 'dialog', 'quit', 'states', 'visual'], resources: { cpus: 2, memoryGiB: 2 }, providerJobUrl: process.env.DEPOT_JOB_URL }
   writeFileSync(join(directory, 'native-desktop-e2e-results.json'), JSON.stringify(record, null, 2))
   console.log('\n' + JSON.stringify(record))
 }
-assert.equal(suite?.status, 0, 'Complete desktop E2E task must pass')
+assert(runtimeCompleted && suite?.status === 0, 'Complete desktop E2E task and cleanup must pass')
 '''
