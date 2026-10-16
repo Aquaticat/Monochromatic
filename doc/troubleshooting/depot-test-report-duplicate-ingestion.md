@@ -41,7 +41,7 @@ if (response.duplicateInvocation) {
 }
 ```
 
-The [published service protocol][protocol] at `proto/depot/testresults/v1/test_results.proto:175`
+The [published service protocol][protocol] at `proto/depot/testresults/v1/test_results.proto:176`
 instead documents the duplicate indicator as always false:
 
 ```protobuf
