@@ -39,6 +39,8 @@ jobs:
         version: 2026.10.9
         working_directory: source
         install: false
+        env: false
+        export_path: false
         cache: false
     - name: Install the exact-head dependency runtimes and conformance runner
       working-directory: source

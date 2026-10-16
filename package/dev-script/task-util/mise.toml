@@ -374,7 +374,8 @@ appendFileSync(process.env.GITHUB_PATH, `${policyDirectory}\n`)
 const directory = join(homedir(), 'temp/agent/depot-complete-ci')
 mkdirSync(directory, { recursive: true, mode: 0o700 })
 chmodSync(directory, 0o700)
-const record = { source: 'cb95cf6d785c3073c192b95f0632cdae7b910894', lockSha256: createHash('sha256').update(lock).digest('hex'), tools: selected, policyBinary, policyLink }
+const selectedManifest = JSON.parse(readFileSync(join(process.env.GITHUB_WORKSPACE, `harness/.depot/manifests/${process.env.DEPOT_CI_CASE ?? 'native'}.json`), 'utf8'))
+const record = { source: selectedManifest.sourceRevision, lockSha256: createHash('sha256').update(lock).digest('hex'), tools: selected, policyBinary, policyLink }
 writeFileSync(join(directory, 'native-tools.json'), JSON.stringify(record, null, 2))
 appendFileSync(process.env.GITHUB_ENV, `MISE_RUST_VERSION=${rust}\n`)
 assert.equal(readFileSync(join(source, 'mise.lock'), 'utf8'), lock, 'Tool installation changed source lockfile')
@@ -522,3 +523,30 @@ try {
 }
 assert(runtimeCompleted && suite?.status === 0, 'Complete desktop E2E task and cleanup must pass')
 '''
+
+[tasks."trial:depot:ci:host-probe"]
+description = "Probe disposable cloud virtualization resources without creating guests"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync } = await import('node:child_process')
+const { accessSync, constants, existsSync, readdirSync, mkdirSync, writeFileSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+let kvmReadWrite = false
+try { accessSync('/dev/kvm', constants.R_OK | constants.W_OK); kvmReadWrite = true } catch (error) { console.error(error) }
+const commands = [['uname', ['--all']], ['virsh', ['--connect', 'qemu:///system', 'list', '--all']], ['virsh', ['--connect', 'qemu:///system', 'pool-list', '--all']], ['virsh', ['--connect', 'qemu:///system', 'vol-list', 'default']], ['mvm', ['--help']]]
+const results = commands.map(([command, args]) => {
+  const result = spawnSync(command, args, { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 1024 })
+  return { command, args, exitCode: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }
+})
+const record = { event: 'cloud-virtualization-probe', kvmExists: existsSync('/dev/kvm'), kvmReadWrite, imagesDirectory: existsSync('/var/lib/libvirt/images') ? readdirSync('/var/lib/libvirt/images') : null, results, guestsCreated: false, resources: { cpus: 2, memoryGiB: 8 } }
+const base = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(base, { recursive: true, mode: 0o700 })
+writeFileSync(join(base, 'host-probe-results.json'), JSON.stringify(record, null, 2))
+console.log('\n' + JSON.stringify(record))
+'''
+
+[tasks."trial:depot:ci:render-doc"]
+description = "Render requested Markdown evidence using the installed document renderer"
+run = "pandoc --from=commonmark --to=html"

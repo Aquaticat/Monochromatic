@@ -33,6 +33,8 @@ jobs:
         # Match the bootstrap under test in the affected-check jobs.
         version: 2026.10.9
         install: false
+        env: false
+        export_path: false
         cache: false
     - name: Exercise the unchanged executor against a disposable control
       run: mise run //package/dev-script/task-util:trial:depot:ci:control
