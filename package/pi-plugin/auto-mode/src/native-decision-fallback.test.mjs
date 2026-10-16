@@ -8,11 +8,13 @@ import {createRootSessionFactory} from '../dist/native/contract/integration/nati
 import {bindNativePolicyRuntime} from '../dist/native/contract/integration/native-batch/runtime.mjs';
 import {createNativeSemanticOperatingPolicies,maintainedPolicyEntry} from '../dist/native/contract/integration/maintained-policy.mjs';
 import {createDomainFixtureAssessment} from '../dist/native/contract/integration/native-batch/domain-fixture-assessment.mjs';
+import {createStartupRelevance} from '../dist/native/contract/integration/native-host/startup-relevance.mjs';
 
 //region Built native groups exhaust automatic decisions before original scoped confirmation.
 const requestedMode=process.argv[2]??'approve';
 const clauseDenial=requestedMode.startsWith('clause-deny-');
-const mode=clauseDenial?requestedMode.slice('clause-deny-'.length):requestedMode;
+const startupFailure=requestedMode.startsWith('startup-failure-');
+const mode=startupFailure?requestedMode.slice('startup-failure-'.length):clauseDenial?requestedMode.slice('clause-deny-'.length):requestedMode;
 assert.ok(['approve','deny','unknown','low','transport','malformed','initial-failure','stop','cancel','headless','stale','abort','prohibition','deadline','fresh'].includes(mode));
 const {askUser,VERDICT_ENTRY_TYPE}=await import(maintainedPolicyEntry);
 const observations={assessments:0,httpCalls:0,attempts:0,selections:0,executions:0};
@@ -26,7 +28,7 @@ logger.debug=function captureDiagnostic(message){
  if(message.includes('[auto-mode-assessment-evidence]'))assessments.push(JSON.parse(message.slice(message.indexOf('{'))));
  originalDebug(message);
 };
-const env=await createEnvironment({policyText:'RUL:\n The complete proposed local inspection is permitted.\n',useNativeProvider:true,extensionFactories:[function capturePi(pi){fixture.pi=pi;} ]});
+const env=await createEnvironment({...(startupFailure?{createRelevance:createStartupRelevance}:{}),policyText:'RUL:\n The complete proposed local inspection is permitted.\n',useNativeProvider:true,extensionFactories:[function capturePi(pi){fixture.pi=pi;} ]});
 const {createBashToolDefinition}=await import(pathToFileURL(join(env.packageRoot,'dist/core/tools/bash.js')).href);
 const originalBash=createBashToolDefinition(env.options.cwd);
 const bash={...originalBash,async execute(toolCallId,input,signal,onUpdate,context){observations.executions++;return await Reflect.apply(originalBash.execute,originalBash,[toolCallId,input,signal,onUpdate,context]);}};
@@ -38,12 +40,13 @@ const sendAssessment=createDomainFixtureAssessment({settings:{relation:'permissi
 const commands=['printf FALLBACK_A','printf FALLBACK_B'];
 const calls=commands.map(function proposedCommand(command,index){return {index,id:`fallback-${index}`,type:'function',function:{name:'bash',arguments:JSON.stringify({command})}};});
 const requests={count:0};
+const ordinaryChat={pending:startupFailure};
 const clock={offset:0};
 const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInput,rootDirectory:env.options.cwd,parsePolicy:env.parser.parse,files:[],wrapToolDefinition:env.wrapToolDefinition,readSessionDisposalState:env.readSessionDisposalState,trace(){return undefined;},...createNativeSemanticOperatingPolicies(),
  now(){return performance.now()+clock.offset;},
  approvalHost(){return {pi:fixture.pi,askUser,verdictEntryType:VERDICT_ENTRY_TYPE,trace(){return undefined;},notificationInvoker:async function ignoreNotification(){return {exitCode:0,stdout:'',stderr:''};},ctx:{hasUI:mode!=='headless',abort(){fixture.abortTask=session.abort();},ui:{async select(title,options){
   observations.selections++;
-  assert.equal(observations.attempts,2,'Dialog must follow both automatic attempts');
+  assert.equal(observations.attempts,startupFailure?0:2,'Dialog must follow the available automatic path');
   assert.deepEqual(options,['Allow','Stop']);
   for(const command of commands)assert.ok(title.includes(command));
   if(mode==='cancel'){fixture.abortTask=session.abort();return undefined;}
@@ -75,7 +78,7 @@ const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInpu
   return raw;
  },
  async terminalFetch(){
-  const proposal=requests.count++===0;
+  const proposal=!ordinaryChat.pending&&requests.count++===0;
   const chunk={id:'decision-fallback-fixture',object:'chat.completion.chunk',created:0,model:'fixture'};
   const first={...chunk,choices:[{index:0,delta:proposal?{role:'assistant',tool_calls:calls}:{role:'assistant',content:'done'},finish_reason:null}]};
   const last={...chunk,choices:[{index:0,delta:{},finish_reason:proposal?'tool_calls':'stop'}],usage:{prompt_tokens:100,completion_tokens:10,total_tokens:110}};
@@ -83,13 +86,20 @@ const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInpu
  }
 });
 await using cleanup={async [Symbol.asyncDispose](){await fixture.abortTask;session.dispose();await session.agent.waitForIdle();runtime.detach();await env.drain();await logger.flush();logger.debug=originalDebug;}};
+if(startupFailure){
+ await session.prompt('Reply without using tools.');
+ assert.equal(observations.executions,0);
+ assert.equal(observations.selections,0,'Failed startup classification must not block ordinary chat');
+ ordinaryChat.pending=false;
+}
 await session.prompt('Perform the complete proposed local inspection.');
 await fixture.abortTask;
 const allowed=['approve','unknown','low','transport','malformed','initial-failure','deadline','fresh'].includes(mode);
 assert.equal(observations.executions,allowed?2:0);
-assert.equal(observations.attempts,2);
-const manual=['unknown','low','transport','malformed','stop','cancel','deadline','fresh'].includes(mode);
+assert.equal(observations.attempts,startupFailure?0:2);
+const manual=(startupFailure&&mode!=='headless')||['unknown','low','transport','malformed','stop','cancel','deadline','fresh'].includes(mode);
 assert.equal(observations.selections,manual?1:0);
+if(!startupFailure){
 assert.ok(logs.length>0,'The actual tagged logger must receive decision evidence');
 assert.equal(new Set(logs.map(function correlation(entry){return entry.reviewId;})).size,1);
 if(mode!=='initial-failure'){
@@ -117,6 +127,7 @@ if(mode==='approve'||mode==='deny'){
  const terminal=logs.find(function finalOutcome(entry){return entry.event==='review-complete';});
  assert.equal(terminal.details.outcome.verdict,mode);
  assert.equal(terminal.details.confirmation,false);
+}
 }
 console.log(JSON.stringify({complete:true,mode:requestedMode,...observations,reconstructableDecisionLogs:true}));
 //endregion

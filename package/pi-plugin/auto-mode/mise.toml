@@ -892,7 +892,12 @@ run = [
 
 [tasks."test:native:startup-relevance"]
 description = "Verify startup, changed-rule cache reuse, uncertainty culling, and selected provider inputs"
-run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-startup-relevance.test.mjs"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-startup-relevance.test.mjs",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs startup-failure-approve",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs startup-failure-stop",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs startup-failure-headless",
+]
 
 [tasks."test:native:runtime-hooks"]
 description = "Verify native hook installation and rollback without message listeners"
