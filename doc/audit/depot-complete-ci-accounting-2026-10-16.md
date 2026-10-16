@@ -407,7 +407,12 @@ Domain lists before preparation and after cleanup were empty,
 and the lifecycle record reports no cleanup errors.
 Bootstrap retry `8wfm7bfgjv` failed before checks because its required `XDG_RUNTIME_DIR` was absent.
 Its 148.819 provider seconds and 2,381.104 vCPU-seconds remain in the usage ledger.
-The corrected environment replay `7gxcgml68r` remains pending collection.
+Replay `7gxcgml68r` started private libvirt successfully,
+then guest preparation failed because the QEMU monitor socket path under `XDG_CONFIG_HOME` was too long.
+Its original package task still failed on the relative helper path.
+The artifact confirms unchanged source inputs and empty private domain lists after cleanup.
+Its provider attempt used 165.155 seconds and 2,642.480 vCPU-seconds.
+The next environment replay `rv6hfj76w9` remains pending collection.
 Native recovery runs `38847322477` and `38847322559` also remain pending collection.
 After diagnostic issue filing settles,
 the issue-ledger totals must be reconciled against the explicit issue IDs before updating them.
