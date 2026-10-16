@@ -235,3 +235,94 @@ Nothing is filed.
   `The package monochromatic-lint v0.1.1 (x86_64-unknown-linux-gnu) has been downloaded from github.com`
   and `mise` finished in 11.5 s.
   `monochromatic-lint --version` printed `monochromatic-lint 0.1.1`.
+
+## Forbidden-strings 0.5.0 has the same unresolved metadata gap
+
+On October 15,
+2026 local time,
+or October 16 UTC,
+`cargo-binstall` 1.25.3 reproduced the tag-layout problem for `forbidden-strings@0.5.0`.
+The registry manifest checksum is
+`6ddb894f80c0b4c0d40b6582c92ae69852fda3c6a3a88c401845f138cccd1759`.
+Its normalized `Cargo.toml` has no package metadata table.
+The current repository manifest also lacks `[package.metadata.binstall]`.
+
+The release workflow creates the namespaced tag in `.github/workflows/cargo-publish.yml:321`:
+
+```sh
+# .github/workflows/cargo-publish.yml:321
+tag="forbidden-strings-v${VERSION}"
+```
+
+The read-only upstream checkout at `0c2d7a00afc5de6d5d2d5fc44922d2f6f993dda2`
+defines the default GitHub paths at `crates/binstalk-fetchers/src/gh_crate_meta/hosting.rs:34`:
+
+```rust
+// crates/binstalk-fetchers/src/gh_crate_meta/hosting.rs:34
+const GITHUB_RELEASE_PATHS: &[Template<'_>] = &[
+    template!("{ repo }/releases/download/{ version }"),
+    template!("{ repo }/releases/download/v{ version }"),
+    // %2F is escaped form of '/'
+    template!("{ repo }/releases/download/{ subcrate }%2F{ version }"),
+    template!("{ repo }/releases/download/{ subcrate }%2Fv{ version }"),
+];
+```
+
+These paths do not include the repository's `forbidden-strings-v0.5.0` tag.
+The actual registry probe's debug log used only `0.5.0` and `v0.5.0` tag directories.
+It already resolved the repository redirect to `Aquaticats/Monochromatic`,
+so the observed remaining failure is distinct from stale owner metadata.
+
+The disposable probe disabled token discovery,
+removed `GH_TOKEN` and `GITHUB_TOKEN` from its child environment,
+selected only `crate-meta-data`,
+and used `--dry-run` with a private install destination.
+Its registry case ran this invocation:
+
+```sh
+# Run from a private disposable directory; no binary installation occurs.
+cargo binstall --dry-run --no-confirm --disable-telemetry --no-discover-github-token \
+  --strategies crate-meta-data --install-path "$PWD/scanner-template-dry-run" \
+  --targets x86_64-unknown-linux-gnu --log-level debug --maximum-resolution-timeout 30 \
+  forbidden-strings@0.5.0
+```
+
+It exited `94` with `Fallback to cargo-install is disabled`.
+The positive control used the same command and version with these overrides:
+
+```text
+# Additional arguments supplied before forbidden-strings@0.5.0.
+--pkg-url https://github.com/Aquaticats/Monochromatic/releases/download/forbidden-strings-v{version}/forbidden-strings-{version}-{target}{archive-suffix}
+--bin-dir {name}-{version}-{target}/{bin}{binary-ext}
+--pkg-fmt tgz
+```
+
+The control exited `0` and reported:
+
+```text
+# cargo-binstall 1.25.3, explicit-layout dry-run
+The package forbidden-strings v0.5.0 (x86_64-unknown-linux-gnu) has been downloaded from github.com
+Dry-run: Not proceeding to install fetched binaries
+```
+
+The [retained evidence](../audit/forbidden-strings-binstall-2026-10-15.evidence.json)
+contains both statuses,
+the manifest checksum,
+the observed default tag directories,
+and selected output.
+No binary was installed,
+no crate was published,
+and this dry-run did not validate runtime behavior or provenance verification.
+
+The explicit layout is a verified discovery workaround for the tested Linux target.
+Other targets and archive formats need their own verification.
+A durable manifest repair must use the existing file-enforcer owner,
+then ship through an authorized new package publication;
+changing source cannot rewrite the published 0.5.0 manifest.
+This remains a repository metadata issue under the existing upstream filing decision,
+not a demonstrated upstream installer defect.
+
+The user-supplied forbidden-strings CI failure invoked `gh release`,
+not `cargo-binstall`.
+Its authenticated quota and transferred-provenance failures are documented separately in
+[the release-transfer record](github-release-transfer-quota.md).
