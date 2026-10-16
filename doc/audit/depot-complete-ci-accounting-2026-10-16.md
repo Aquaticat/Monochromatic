@@ -207,6 +207,12 @@ and Linux desktop run `xg3znh2j0p`.
 Logger scanner `38843463588` has been collected;
 its package and consumer graph remains separate work.
 Its three scanned paths exactly match the changed-file set from the immutable Git comparison.
+Logger host run `38843901438` exercises filesystem and semantic consumers on Linux,
+Windows,
+and macOS.
+Its filesystem checks retain Node `26.5.0` from the original workflow;
+semantic checks retain source-lock Node `26.11.1` and pnpm `12.11.2`.
+Fresh external-consumer dependency resolution is recorded separately from the frozen workspace lockfile.
 Desktop collection covers Windows run `38843524267`,
 Alpine run `38843525621`,
 macOS run `38843527788`,
@@ -348,6 +354,14 @@ and zero published compute charge;
 do not substitute private-repository or larger-runner pricing.
 This does not establish storage charges or an account invoice.
 [GitHub runner specifications][github-runners]
+
+The logger host matrix also uses `windows-latest`,
+`macos-latest`,
+and `macos-15`.
+The same official specifications give Windows four CPUs and 16 GB RAM,
+and those ARM macOS labels three CPUs and 7 GB RAM.
+The separate `macos-15-intel` native jobs have four CPUs and 14 GB RAM.
+All these observed standard labels retain zero published compute charge in this public repository.
 
 ## Keep usage and elapsed time separate
 
