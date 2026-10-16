@@ -72,9 +72,9 @@ shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync } = await import('node:child_process')
 const candidates = 'mise run --quiet //package/music-player/truepeak-core:trial:depot:candidates'
-const shared = ['--candidates-command', candidates, '--candidate-type', 'classname', '--timings-type', 'testname', '--split-key', 'rust-libraries']
-execFileSync('depot', ['tests', 'split', ...shared, '--output', 'json'], { stdio: 'inherit' })
-execFileSync('depot', ['tests', 'run', ...shared, '--command', 'mise run //package/music-player/truepeak-core:trial:depot:execute-shard', '--report-path', 'depot-test-reports/*.xml', '--report-key', 'rust-libraries'], { stdio: 'inherit' })
+const shared = ['--candidates-command', candidates, '--candidate-type', 'classname', '--timings-type', 'testname']
+execFileSync('depot', ['tests', 'split', ...shared, '--key', 'rust-libraries', '--output', 'json'], { stdio: 'inherit' })
+execFileSync('depot', ['tests', 'run', ...shared, '--split-key', 'rust-libraries', '--command', 'mise run //package/music-player/truepeak-core:trial:depot:execute-shard', '--report-path', 'depot-test-reports/*.xml', '--report-key', 'rust-libraries'], { stdio: 'inherit' })
 '''
 
 [tasks."trial:depot:execute-shard"]
