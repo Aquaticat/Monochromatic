@@ -11,6 +11,12 @@ it does not complete the experiment.
 
 Remaining evaluation work is independently verifiable:
 
+- Evaluate Depot Test with real repository test reports,
+  deliberate failure and skip controls,
+  result retrieval,
+  history or retry behavior,
+  and its contribution to usage accounting.
+  The user explicitly identified this omitted product area and authorized execution on 2026-10-15 local time.
 - Combine installed-package snapshot reuse with fresh desktop service startup,
   then run the complete interaction suite from that prepared environment.
   Current evidence proves installation reuse and passing interaction on separate execution routes.
@@ -29,6 +35,14 @@ Remaining evaluation work is independently verifiable:
 The Android instrumentation result uses cloud-built APKs on a local headed emulator;
 it does not establish Android device execution inside Depot.
 Production migration and plan changes remain separate decisions.
+
+The user explicitly authorized execution of this remaining queue.
+Depot Test,
+prepared desktop execution,
+and expanded browser/native coverage are assigned independent background investigations;
+the main investigation owns the controlled linker workload and account/cost reconciliation.
+Each area must finish with an executed result or a demonstrated blocker,
+not merely a new issue or proposal.
 
 The user requested a GitHub issue for every discovered problem on 2026-10-15 local time.
 The [issue inventory](depot-trial-issues.md) records each distinct trial finding,

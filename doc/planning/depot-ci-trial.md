@@ -150,6 +150,20 @@ so a successful empty run cannot masquerade as coverage.
 Prefer reusing task definitions locally and through agent-requested cloud execution;
 provider-specific checks remain acceptable when measured benefits justify them.
 
+### Evaluate Depot Test
+
+The user explicitly added Depot's Test feature to the execution scope.
+Run real repository tests through its reporting integration,
+including a deliberate failure and an explicit skip where supported.
+Verify reported identities,
+counts,
+failure details,
+result retrieval,
+and history or retry behavior against the original runner outputs.
+Evaluate timing-based test distribution if the current product supports it.
+Record setup effort and test-result usage separately from execution compute.
+Reporting a fabricated result is not evidence that a repository test executed.
+
 ### Preserve release and platform behavior
 
 The trial produces disposable validation artifacts without publishing releases or importing release credentials.
