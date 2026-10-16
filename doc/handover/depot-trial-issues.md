@@ -237,7 +237,7 @@ and #1065.
 Root also added replay evidence to existing issue #1002;
 that is not a newly created issue.
 
-Accounting collection is running for terminal Depot runs `79lgpx91sf`,
+Accounting collection is complete for terminal Depot runs `79lgpx91sf`,
 `lvcwx21cbt`,
 `ssvlvk57k4`,
 `1pfkxwlwbd`,
@@ -245,7 +245,10 @@ Accounting collection is running for terminal Depot runs `79lgpx91sf`,
 `xz7cchwbsk`,
 `4z014g290p`,
 and `dxk4v3s0w3`.
-Their results must be reconciled with the frozen manifests and all failed attempts retained.
+Their retained records include allocation verification and every provider attempt.
+Final source-case reconciliation still requires the corrected manifests and later recovery runs.
+Pending collection includes VM replay `7gxcgml68r`
+and native recovery runs `38847322477` and `38847322559`.
 The [accounting audit](../audit/depot-complete-ci-accounting-2026-10-16.md)
 owns the measurements and distinctions between execution completion and passing CI.
 

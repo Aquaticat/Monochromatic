@@ -318,6 +318,38 @@ and no skips.
 Its APK producer is Depot run `j80v9dqfb4`;
 local consumer time is not added to provider compute usage.
 
+The native feature-only run `79lgpx91sf` passed every numbered test in its default,
+fingerprint,
+and service configurations:
+58,
+67,
+and 71 distinct identities respectively,
+with no skips.
+Each retained check event matches its artifact,
+source revision,
+manifest hash,
+and exact nextest arguments.
+Provider stdout and stderr arrived out of execution order;
+verification therefore matches complete-suite identities and summaries independently of delivery order.
+The separate all-features core test passed in native wave `j80v9dqfb4`.
+That wave still contains failed Clippy and Rust-style checks.
+
+Linux desktop waves `lvcwx21cbt` and `ssvlvk57k4` retain their main manifest results separately
+from supplemental E2E results.
+Both supplemental E2E attempts failed a harness assertion before runtime verification completed,
+and both report successful cleanup.
+Those results do not establish application-window behavior.
+The retained usage ledger includes these waves,
+the feature matrix,
+WireGuard,
+mutation identity,
+Pi,
+logger unit execution,
+scheduler controls,
+native attempts,
+and the VM bootstrap retry.
+Each allocation is verified against its exact workflow source.
+
 ### Logger static accounting
 
 Depot run `qm7w64tmhj` used workflow revision `0886b2669dc9696b60493870f172d77269b6e854`
@@ -353,6 +385,16 @@ retains full-project Oxlint checks,
 and ignores unexecuted skip timestamps when evaluating dependency execution order.
 Positive and negative fixtures exercise those selection boundaries.
 
+Logger unit wave `xz7cchwbsk` retains 718 emitted checks:
+211 passed,
+15 failed,
+and 492 were skipped.
+All emitted check identities match the artifact and downloaded logs;
+19 external manifest checks remain outside this wave.
+Its provider attempt used 237.566 seconds and 3,801.056 vCPU-seconds.
+The manifest predates the corrected build-prerequisite graph,
+so failures and skips cannot be treated as a completed source validation.
+
 VM run `99tl7zjfgp` at harness revision
 `a0785c49e68573be8a806af33c50ab1fb1d1c7ca`,
 using the same frozen logger source,
@@ -363,7 +405,10 @@ The original package task failed on a relative helper path;
 the separate private-environment experiment failed on a Unix socket path length before guest runtime.
 Domain lists before preparation and after cleanup were empty,
 and the lifecycle record reports no cleanup errors.
-The corrected environment replay remains pending.
+Bootstrap retry `8wfm7bfgjv` failed before checks because its required `XDG_RUNTIME_DIR` was absent.
+Its 148.819 provider seconds and 2,381.104 vCPU-seconds remain in the usage ledger.
+The corrected environment replay `7gxcgml68r` remains pending collection.
+Native recovery runs `38847322477` and `38847322559` also remain pending collection.
 After diagnostic issue filing settles,
 the issue-ledger totals must be reconciled against the explicit issue IDs before updating them.
 
