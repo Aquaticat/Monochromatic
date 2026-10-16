@@ -15,20 +15,20 @@ const l=tagged({tag:'auto-mode-judgment-bundles'});
  @param accounting - shared lifetime counters
  @param checkpoint - original expiry and cancellation check
  @param signal - original cancellation source
- @param deadlineAt - unchanged preparation-inclusive expiry
+ @param targetAt - unchanged preparation-inclusive expiry
  @returns owned parallel dispatch capability
  */
-export function createBundleDispatcher({accounting, checkpoint, signal, deadlineAt}: {
+export function createBundleDispatcher({accounting, checkpoint, signal, targetAt}: {
  readonly accounting: JudgmentAccounting;
  readonly checkpoint: () => number;
  readonly signal: AbortSignal;
- readonly deadlineAt: number;
+ readonly targetAt: number;
 }): JudgmentAttempt['runBundle'] {
  /** Pending bundle excludes overlapping reservations within the active dispatch. */
  const state={running:false};
  return async function runBundle<Result>(operations: readonly ((input: {
   readonly signal: AbortSignal;
-  readonly deadlineAt: number;
+  readonly targetAt: number;
   readonly attempt: number;
  }) => Promise<Result>)[]): Promise<readonly Result[]> {
   /** Bound diagnostics describe accounting without retaining provider data. */
@@ -55,7 +55,7 @@ export function createBundleDispatcher({accounting, checkpoint, signal, deadline
    /** This ordinal counts an actual owned call across every prior bundle. */
    const attempt=accounting.calls;
    try {
-    return await operation({signal:bundleSignal,deadlineAt,attempt});
+    return await operation({signal:bundleSignal,targetAt,attempt});
    } catch(error) {
     cancellation.abort(error);
     throw error;

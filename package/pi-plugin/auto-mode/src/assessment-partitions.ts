@@ -43,7 +43,7 @@ export async function sendAssessmentPartitions({input,sendHttp,assertLifetime}: 
   const selected=partitions.slice(offset,offset+3);
   /** Owned transport callbacks receive actual call ordinals and shared cancellation. */
   const operations=selected.map(function bindPartition(partition){
-   return async function sendPartition(lifetime: {readonly signal:AbortSignal;readonly deadlineAt:number;readonly attempt:number}): Promise<string>{
+   return async function sendPartition(lifetime: {readonly signal:AbortSignal;readonly targetAt:number;readonly attempt:number}): Promise<string>{
     /** Provider bytes are decoded only while the original judgment remains live. */
     const raw=await sendHttp({...input,...lifetime,body:partition.body});
     assertLifetime(input);

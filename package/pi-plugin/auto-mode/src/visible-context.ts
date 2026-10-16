@@ -13,7 +13,6 @@
 import type {
   ImageContent,
   TextContent,
-  ThinkingContent,
   ToolCall,
 } from '@earendil-works/pi-ai';
 import type {
@@ -81,16 +80,10 @@ function visibleTextOrImageContent(
  @returns isolated visible content data.
  */
 function visibleAssistantContent(
-  block: ForeignBorrowed<TextContent | ThinkingContent | ToolCall>,
+  block: ForeignBorrowed<TextContent | ToolCall>,
 ): VisibleMessage {
   if (block.type === 'text')
     return visibleTextOrImageContent(block,);
-  if (block.type === 'thinking') {
-    return {
-      type: block.type,
-      thinking: block.thinking,
-    };
-  }
   return {
     type: block.type,
     name: block.name,
@@ -181,8 +174,11 @@ function visibleMessage(
      Complete visible assistant blocks in source order.
      */
     const content: VisibleMessage[] = [];
-    for (const block of message.content)
+    for (const block of message.content) {
+      if (block.type === 'thinking')
+        continue;
       content[content.length] = visibleAssistantContent(block,);
+    }
     /**
      Whether Pi renders stop condition as visible assistant error.
      */

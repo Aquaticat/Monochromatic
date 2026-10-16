@@ -23,7 +23,7 @@ await describe({ name: '', children: [
     const live = owner.finalize(handle);
     assert.deepEqual(f.events, finalizationEvents);
     assert.deepEqual(live, {
-      mechanicalDependenciesCurrent: true, decisionDeadlineChecked: true, unqualifiedCoverage: f.coverage,
+      mechanicalDependenciesCurrent: true, decisionClockChecked: true, unqualifiedCoverage: f.coverage,
       instructionAuthority: 'not-established', humanWitness: 'not-established',
       currentEligibilityEstablished: false, productionPermission: false, actualSDKRootAdapterQualified: false,
     });
@@ -35,7 +35,7 @@ await describe({ name: '', children: [
     assert.deepEqual(f.events, finalizationEvents.filter(function withoutClock(point) { 
       return point !== 'clock'; 
     }));
-    assert.deepEqual(retained, { ...live, decisionDeadlineChecked: false });
+    assert.deepEqual(retained, { ...live, decisionClockChecked: false });
     assert.equal(retained.unqualifiedCoverage, f.coverage);
     assert.equal(Object.isFrozen(retained), true);
     assert.notEqual(retained, live);

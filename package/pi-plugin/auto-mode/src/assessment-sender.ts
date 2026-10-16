@@ -16,13 +16,6 @@ import { sendAssessmentPartitions } from './assessment-partitions.ts';
  */
 const l = tagged({ tag: 'auto-mode-assessment-sender', },);
 
-/**
- Original preparation-inclusive budget and byte limit also bound conversion.
- */
-const conversionLimits = {
-  durationMs: 15_000,
-} as const;
-
 //region Conversion consumes the original judgment deadline and one original attempt
 
 /**
@@ -81,15 +74,13 @@ export function createAssessmentSender({
     },)
       .debug('checking original conversion lifetime',);
     /**
-     The deadline includes native preparation and every conversion step.
+     Timing remains diagnostic; only cancellation or an invalid clock prevents conversion.
      */
-    const remaining = input.deadlineAt - now();
+    const current = now();
     if (input.signal
       .aborted
-      || (!Number.isFinite(remaining,))
-      || (remaining < 1)
-      || (remaining > conversionLimits.durationMs))
-      throw new AssessmentTransportError('Luna conversion exceeded the original assessment lifetime',);
+      || (!Number.isFinite(current,)))
+      throw new AssessmentTransportError('Luna conversion was cancelled or its clock is invalid',);
   }
 
   /**

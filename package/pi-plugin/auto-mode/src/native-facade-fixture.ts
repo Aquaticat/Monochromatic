@@ -183,7 +183,7 @@ export function createFacadeFixture(): FacadeFixture {
     collector,
     rootDirectory: '/declared-dependency-fixture',
     files: [],
-    deadlineAt: 200,
+    targetAt: 200,
     now() { 
       step('clock'); 
       return state.now; 

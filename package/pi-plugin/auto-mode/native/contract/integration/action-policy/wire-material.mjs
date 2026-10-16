@@ -32,10 +32,9 @@ export function projectPolicyMaterial({sources,material,questions}){
 /** Keep visible response content and complete proposed tool arguments; omit provider-only signatures. */
 export function projectVisibleOperation(parent){
  if(!Array.isArray(parent))throw new RuleAssessmentWireError('Original enclosing response must contain native content blocks');
- return parent.map(function visibleBlock(block){
+ return parent.filter(function omitThinking(block){return block.type!=='thinking';}).map(function visibleBlock(block){
   if(block.type==='toolCall')return {type:block.type,name:block.name,arguments:block.arguments};
   if(block.type==='text')return {type:block.type,text:block.text};
-  if(block.type==='thinking')return {type:block.type,thinking:block.thinking};
   throw new RuleAssessmentWireError('Original enclosing response contains unsupported visible content');
  });
 }

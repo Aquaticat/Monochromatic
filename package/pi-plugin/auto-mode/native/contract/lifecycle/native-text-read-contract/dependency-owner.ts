@@ -20,7 +20,7 @@ import {isAbsolute} from 'node:path';
 import {
   DependencyCancellationError,
   DependencyConfigurationError,
-  DependencyDeadlineError,
+  DependencyClockError,
 } from '../external-dependency-controls/errors.ts';
 import {
   assertRetainedFile,
@@ -61,7 +61,7 @@ function checkSignal(signal: AbortSignal): void {
 
  @param rootAdapter - original root capture and finalization capabilities
 
- @param deadlineAt - fixed preparation-inclusive expiry
+ @param targetAt - fixed preparation-inclusive expiry
 
  @param rootDirectory - original file selection root
 
@@ -73,7 +73,7 @@ function checkSignal(signal: AbortSignal): void {
 
  @returns frozen dependency operations sharing original opaque records
 
- @throws DependencyDeadlineError when the original deadline or clock is invalid
+ @throws DependencyClockError when the original deadline or clock is invalid
 
  @throws DependencyConfigurationError when the original root or file profile is invalid
 
@@ -82,7 +82,7 @@ function checkSignal(signal: AbortSignal): void {
 export function createDependencyFacade<const Source extends DependencySources, const Root extends object>({
   collector,
   rootAdapter,
-  deadlineAt,
+  targetAt,
   rootDirectory,
   files,
   trace,
@@ -96,7 +96,7 @@ export function createDependencyFacade<const Source extends DependencySources, c
     l
   });
   rl.debug("binding original dependency facade");
-  if (((typeof now) !== 'function') || (!Number.isFinite(deadlineAt))) throw new DependencyDeadlineError();
+  if (((typeof now) !== 'function') || (!Number.isFinite(targetAt))) throw new DependencyClockError();
   if (((typeof rootDirectory) !== 'string') || (!isAbsolute(rootDirectory))
     || (!Array.isArray(files))
     || ((typeof trace) !== 'function')) throw new DependencyConfigurationError();
@@ -113,7 +113,7 @@ export function createDependencyFacade<const Source extends DependencySources, c
 
    @param signal - original dependency cancellation
 
-   @throws DependencyDeadlineError when the clock is non-finite or the original deadline has expired
+   @throws DependencyClockError when the clock is non-finite or the original deadline has expired
    */
   function checkpoint(signal:AbortSignal):void {
     checkSignal(signal);
@@ -121,7 +121,7 @@ export function createDependencyFacade<const Source extends DependencySources, c
      Original clock remains unread during retained-only revalidation.
      */
     const current = now();
-    if ((!Number.isFinite(current)) || (current >= deadlineAt)) throw new DependencyDeadlineError();
+    if (!Number.isFinite(current)) throw new DependencyClockError();
   }
   /**
    Observe one original file between the selected live or retained checks.
@@ -272,7 +272,7 @@ export function createDependencyFacade<const Source extends DependencySources, c
      */
     const projection = Object.freeze({
       mechanicalDependenciesCurrent: true,
-      decisionDeadlineChecked: verify === checkpoint,
+      decisionClockChecked: verify === checkpoint,
       unqualifiedCoverage: prepared.sources
         .unqualifiedCoverage,
       instructionAuthority: 'not-established',

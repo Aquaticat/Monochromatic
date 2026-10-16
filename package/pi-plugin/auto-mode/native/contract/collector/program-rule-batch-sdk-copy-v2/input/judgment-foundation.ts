@@ -122,8 +122,8 @@ rl.debug('creating original judgment foundation');
     const facade=createDependencyFacade({
       collector:sourceOwner.collector,
       rootAdapter,
-      deadlineAt:budget.diagnostics()
-        .deadlineAt,
+      targetAt:budget.diagnostics()
+        .targetAt,
       rootDirectory,
       files,
       trace,

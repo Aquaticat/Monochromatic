@@ -10,7 +10,7 @@
 type BudgetAttempt = {
   readonly runBundle: <Result>(operations: readonly ((input: {
     readonly signal: AbortSignal;
-    readonly deadlineAt: number;
+    readonly targetAt: number;
     readonly attempt: number;
   })=>Promise<Result>)[])=>Promise<readonly Result[]>;
   /**
@@ -20,7 +20,7 @@ type BudgetAttempt = {
   /**
    Original absolute deadline.
    */
-  readonly deadlineAt: number;
+  readonly targetAt: number;
   /**
    Original judgment-wide invocation ordinal.
    */

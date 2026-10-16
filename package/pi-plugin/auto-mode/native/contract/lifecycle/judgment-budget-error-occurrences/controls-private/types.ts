@@ -7,7 +7,7 @@
 /** One actual provider invocation receives the original cancellation and deadline. */
 export type JudgmentBundleOperation<Result> = (input: {
  readonly signal: AbortSignal;
- readonly deadlineAt: number;
+ readonly targetAt: number;
  readonly attempt: number;
 }) => Promise<Result>;
 /**
@@ -59,7 +59,7 @@ export type JudgmentAttempt = {
   /** Dispatch at most three parallel calls under the original shared bundle allowance. */
   readonly runBundle: <Result>(operations: readonly ((input: {
     readonly signal: AbortSignal;
-    readonly deadlineAt: number;
+    readonly targetAt: number;
     readonly attempt: number;
   }) => Promise<Result>)[]) => Promise<readonly Result[]>;
   /**
@@ -69,7 +69,7 @@ export type JudgmentAttempt = {
   /**
    Preparation-inclusive absolute deadline.
    */
-  readonly deadlineAt: number;
+  readonly targetAt: number;
   /**
    Judgment-wide client invocation ordinal.
    */
@@ -118,7 +118,7 @@ export type JudgmentBudgetSnapshot = {
   /**
    Original absolute expiry.
    */
-  readonly deadlineAt: number;
+  readonly targetAt: number;
   /**
    Consumed client invocations.
    */

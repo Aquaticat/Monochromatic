@@ -10,7 +10,7 @@ export type ConstructorFixtureView = Readonly<{
   finished: boolean;
   accounting: Readonly<{
     startedAt: number;
-    deadlineAt: number;
+    targetAt: number;
     retired: boolean
   }>;
   memberExecutions: readonly object[];

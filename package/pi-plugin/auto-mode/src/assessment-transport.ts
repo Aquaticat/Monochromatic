@@ -25,12 +25,12 @@ export type AssessmentTransportInput = {
   /** Owned judgment capability accounts for every parallel provider invocation. */
   readonly runBundle?: <Result>(operations: readonly ((input: {
     readonly signal: AbortSignal;
-    readonly deadlineAt: number;
+    readonly targetAt: number;
     readonly attempt: number;
   }) => Promise<Result>)[]) => Promise<readonly Result[]>;
   readonly body: string;
   readonly signal: AbortSignal;
-  readonly deadlineAt: number;
+  readonly targetAt: number;
   readonly attempt: number;
 };
 
@@ -42,7 +42,6 @@ const endpoint = 'https://api.llmgateway.io/v1/decisions';
  Inherited judgment and transport bounds remain fixed at bootstrap.
  */
 const limits = {
-  durationMs: 15_000,
   attempts: 9,
   successfulStatus: 200,
 } as const;
@@ -96,11 +95,9 @@ export function createAssessmentHttpSender({
 
    @param input - original judgment cancellation and deadline
 
-   @returns remaining duration for this HTTP attempt
-
-   @throws AssessmentTransportError when cancellation or the original deadline prevents dispatch
+   @throws AssessmentTransportError when cancellation or an invalid clock prevents dispatch
    */
-  function remaining(input: AssessmentTransportInput): number {
+  function remaining(input: AssessmentTransportInput): void {
     tagged({
       tag: remaining.name,
       l: rl,
@@ -110,13 +107,10 @@ export function createAssessmentHttpSender({
       .aborted)
       throw new AssessmentTransportError('Original assessment was cancelled',);
     /**
-     Preparation time has already consumed part of the original fifteen-second budget.
+     Preparation time is measured against an advisory target and never expires evidence.
      */
-    const left = input.deadlineAt - now();
-    if ((!Number.isFinite(left,)) || (left < 1)
-      || (left > limits.durationMs))
-      throw new AssessmentTransportError('Original assessment deadline is expired or outside its fifteen-second budget',);
-    return left;
+    if (!Number.isFinite(now(),))
+      throw new AssessmentTransportError('Original assessment clock is invalid',);
   }
 
   /**
@@ -200,14 +194,9 @@ export function createAssessmentHttpSender({
         .includes(key,))
         throw new AssessmentTransportError('Assessment request contains its Gateway credential and was withheld',);
       /**
-       Both native cancellation and the remaining original deadline govern fetch and body consumption.
+       Native cancellation governs fetch and body consumption without an advisory-target timer.
        */
-      const signal = AbortSignal.any([
-        input.signal,
-        AbortSignal.timeout(
-          Math.floor(remaining(input,),),
-        ),
-      ],);
+      const signal = input.signal;
       sl.debug('dispatching original assessment HTTP attempt',);
       /**
        Redirect refusal retains the fixed private-data route.

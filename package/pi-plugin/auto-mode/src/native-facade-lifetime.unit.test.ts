@@ -15,13 +15,13 @@ await describe({ name: '', children: [
     f.state.now = 200;
     assert.throws(function expired() { 
       owner.finalize(handle); 
-    }, { name: 'DependencyDeadlineError' });
+    }, { name: 'DependencyClockError' });
     assert.throws(function expiredFile() { 
       owner.originalFile({ handle, absolutePath: '/undeclared' }); 
-    }, { name: 'DependencyDeadlineError' });
+    }, { name: 'DependencyClockError' });
     f.state.fail = 'clock';
     f.events.length = 0;
-    assert.equal(owner.checkRetained(handle).decisionDeadlineChecked, false);
+    assert.equal(owner.checkRetained(handle).decisionClockChecked, false);
     assert.deepEqual(f.events, finalizationEvents.filter(function withoutClock(point) { 
       return point !== 'clock'; 
     }));
@@ -47,7 +47,7 @@ await describe({ name: '', children: [
         assert.throws(function changed() { 
           owner.prepare({ signal: f.controller.signal }); 
         }, {
-          name: mode === 'cancelled' ? 'DependencyCancellationError' : 'DependencyDeadlineError',
+          name: mode === 'cancelled' ? 'DependencyCancellationError' : 'DependencyClockError',
         });
         assert.equal(f.events.at(-1), mode === 'cancelled' ? point : 'clock');
       } });
@@ -78,12 +78,12 @@ await describe({ name: '', children: [
     /** Empty declared file profile keeps the default-clock check independent of filesystem timing. */
     const f = createFacadeFixture();
     delete f.options.now;
-    f.options.deadlineAt = Number.MAX_VALUE;
+    f.options.targetAt = Number.MAX_VALUE;
     /** No fixture clock callback is available to this original owner. */
     const owner = f.construct();
     /** Original default clock permits preparation and live finalization. */
     const handle = owner.prepare({ signal: f.controller.signal });
-    assert.equal(owner.finalize(handle).decisionDeadlineChecked, true);
+    assert.equal(owner.finalize(handle).decisionClockChecked, true);
     assert.equal(f.events.includes('clock'), false);
   } }),
 ] });

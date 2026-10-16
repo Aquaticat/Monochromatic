@@ -34,7 +34,7 @@ await describe({ name: '', children: [
     assert.deepEqual(view.memberExecutions, []);
     assert.deepEqual(view.childGroups, []);
     assert.equal(view.accounting.startedAt, 100);
-    assert.equal(view.accounting.deadlineAt, 5_100);
+    assert.equal(view.accounting.targetAt, 5_100);
     assert.deepEqual(fixture.events, constructionEvents);
     fixture.events.length = 0;
     fixture.state.clock = 201;

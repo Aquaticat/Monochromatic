@@ -33,7 +33,7 @@ const attemptLimit=3;
  
  @param records - original attempt record collection
  
- @param deadlineAt - original absolute expiry
+ @param targetAt - original absolute expiry
  
  @param signal - original cancellation
  
@@ -42,7 +42,7 @@ const attemptLimit=3;
  @example
  ```ts
  const dispatch = createJudgmentDispatcher({
-   checkpoint, isRetryableTransportFailure, accounting, records, deadlineAt, signal,
+   checkpoint, isRetryableTransportFailure, accounting, records, targetAt, signal,
  });
  await dispatch(sendOriginalRequest);
  ```
@@ -52,18 +52,18 @@ export function createJudgmentDispatcher({
   isRetryableTransportFailure,
   accounting,
   records,
-  deadlineAt,
+  targetAt,
   signal
 }: {
   readonly checkpoint: () => number;
   readonly isRetryableTransportFailure: JudgmentBudgetInput['isRetryableTransportFailure'];
   readonly accounting: JudgmentAccounting;
   readonly records: Map<number,JudgmentAttemptRecord>;
-  readonly deadlineAt: number;
+  readonly targetAt: number;
   readonly signal: AbortSignal;
 }): JudgmentBudget['dispatch'] {
   /** Original judgment counters are shared by every active dispatch capability. */
-  const runBundle=createBundleDispatcher({accounting,checkpoint,signal,deadlineAt});
+  const runBundle=createBundleDispatcher({accounting,checkpoint,signal,targetAt});
   /**
    Check lifetime after a failed attempt without replacing its original error.
    
@@ -209,7 +209,7 @@ export function createJudgmentDispatcher({
           response.value=await operation(Object.freeze({
           runBundle:ownedRunBundle,
           signal,
-          deadlineAt,
+          targetAt,
           attempt
           }));
         }

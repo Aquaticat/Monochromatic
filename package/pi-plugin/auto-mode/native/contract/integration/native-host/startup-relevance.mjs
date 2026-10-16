@@ -21,10 +21,10 @@ export function createStartupRelevance({root,parse}){
    const questions=Object.fromEntries(rules.map(function question(rule,index){
     return [`rule_${index}`,{type:'noul',instructions:{predicate:request.definition.question,selectedRule:{id:rule.id,text:rule.text,headings:rule.headings}},criteria:request.definition.criteria}];
    }));
-   const lifetime=AbortSignal.timeout(15_000);
+   const lifetime=signal??new AbortController().signal;
    const body=JSON.stringify({model:ruleAssessmentModel,state:{remit:request.definition.remit},questions});
    al.debug(`classifying ${rules.length} changed policy rules`);
-   const raw=await send({body,signal:signal?AbortSignal.any([signal,lifetime]):lifetime,deadlineAt:now()+15_000,attempt:1});
+   const raw=await send({body,signal:lifetime,targetAt:now()+15_000,attempt:1});
    const result=parseBatchAnswer({raw,plan:{model:ruleAssessmentModel,questions}});
    answers.push(...rules.map(function answer(rule,index){return {id:rule.id,probability:result.scalars[`rule_${index}`]};}));
   }
