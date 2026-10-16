@@ -224,7 +224,25 @@ Android artifact run `38826684750` built both native ABIs and the app/test APKs 
 Those APKs installed on an isolated local headed Android 37 x86_64 emulator with 16 KiB pages.
 The unfiltered instrumentation invocation reported 16 cases and two failures in `SessionStoreTest`,
 both dereferencing a null application context in `SessionStore.prefs`.
-Raw assumption-skip status and required audio fixtures are still being checked.
+The raw initial result was nine passes,
+five assumption skips,
+and two failures.
+After granting audio permission and indexing synthetic ten-second FLAC,
+Opus,
+and MP3 tracks,
+all sixteen cases executed:
+fourteen passed,
+two failed,
+and none skipped.
+The native decoder exercised all three indexed formats;
+playback advanced,
+paused at a stable position,
+sought from zero to the middle of the track,
+and advanced exactly once at natural end.
+The two storage tests still failed with their original context.
+A disposable test-context experiment is running separately;
+it does not change the application or erase these failures.
+[Device evidence](depot-android-device-2026-10-15.evidence.json)
 [Cloud APK build](https://github.com/Aquaticats/Monochromatic/actions/runs/38826684750),
 [instrumented storage tests](../../package/music-player/android-app/app/src/androidTest/kotlin/dev/monochromatic/musicplayer/SessionStoreTest.kt)
 
@@ -464,15 +482,14 @@ The passing host suites do not replace those checks.
 
 ## Unresolved acceptance gaps and retained artifacts
 
-- Desktop interaction and Android instrumented tests did not execute.
-  A suitable graphical environment remains required;
-  the preflight result must not be counted as passed behavioral coverage.
-- Aggregate storage occupancy,
-  actual account usage,
+- Desktop interaction and Android instrumented tests executed and exposed failures.
+  Desktop display isolation and the Android storage-test context are being checked in separate trial experiments.
+  Neither result is a passing full-suite claim.
+- Account usage and per-product hard-start limits are user-reported in Account evidence supplied by the user.
+  Storage-view aggregation,
   exact trial expiry,
-  and enforceable spending-cap semantics remain unverified.
-  The usage endpoint rejected the available user credential because it requires an organization token.
-  Project registry listing does not measure organization-wide snapshot or cache storage.
+  and an aggregate dollar cap remain unverified.
+  The direct usage endpoint still requires an organization credential unavailable to the CLI session.
 - The monthly figures are explicit workload scenarios,
   not a complete monthly forecast or measured cross-platform latency saving.
 - Rolling-budget fixture replay found the existing gate's query amplification and missing reservation interval.

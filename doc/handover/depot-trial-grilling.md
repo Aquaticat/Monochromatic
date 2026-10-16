@@ -726,9 +726,17 @@ Android artifact run `38826684750` passed.
 Both cloud-built APKs installed on a private headed Android 37 x86_64 emulator with 16 KiB pages.
 The unfiltered instrumented invocation reported 16 cases and two `SessionStoreTest` failures:
 `SessionStore.prefs` dereferenced a null application context from the test APK's context.
-Some other tests use assumptions to skip absent audio fixtures;
-raw instrumentation statuses and fixture preparation are the next verification step.
-No passing full-device-suite claim is made.
+The raw initial result was nine passes,
+five skips,
+and two failures.
+Synthetic audio fixtures and permission were then supplied:
+the rerun has fourteen passes,
+two failures,
+and no skips.
+The [device evidence](../audit/depot-android-device-2026-10-15.evidence.json) records individual statuses.
+An isolated test-only context experiment is running from trial commit `bf426f7c13`;
+the desktop direct-software-session comparison is run `38828362014` at `214e7fd376`.
+No passing full-device-suite claim is made for the unchanged tests.
 
 The [coverage inventory](../planning/depot-expanded-coverage.md)
 and [scheduling evaluation](../planning/depot-rolling-budget-evaluation.md) are complete.
