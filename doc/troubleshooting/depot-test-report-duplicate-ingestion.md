@@ -99,15 +99,22 @@ both responses returned false.
 The user authorized issues in the current repository only.
 No upstream issue or comment was sent.
 
-- Responsibility: repeated ingestion is observed at Depot's service boundary;
+- Responsibility:
+  repeated ingestion is observed at Depot's service boundary;
   backend cause is unverified.
-- Feasibility: no evidence establishes whether service deduplication can be repaired from public source.
-- Supported use case: the official action and documentation describe invocation keys and deduplication.
-- Contribution policy: not evaluated because external filing is outside this task's authorization.
-- Maintainer intent: not established.
-- Tested upstream patch: none;
+- Feasibility:
+  no evidence establishes whether service deduplication can be repaired from public source.
+- Supported use case:
+  the official action and documentation describe invocation keys and deduplication.
+- Contribution policy:
+  not evaluated because external filing is outside this task's authorization.
+- Maintainer intent:
+  not established.
+- Tested upstream patch:
+  none;
   the backend source was not present in the inspected action and CLI repositories.
 
+The `.out-of-scope/` inventory contained no Depot-specific exemption.
 The current-repository issue records the consumer risk and required follow-up.
 Its number will be added after filing.
 Passing-test billing may be affected by repeated ingestion,
