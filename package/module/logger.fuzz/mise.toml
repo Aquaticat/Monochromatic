@@ -151,6 +151,8 @@ if (partition.name !== 'fuzz') {
   assert(evidenceCopied, 'Fuzz records and logs must be copied before removing the overlay')
   assert.equal(suite?.status, 0, 'Fuzz partition checks failed; see retained per-check records')
 }
+const preparation = JSON.parse(readFileSync(join(directory, 'logger-remainder-preparation-results.json'), 'utf8'))
+assert(!preparation.records.some(record => record.status === 'failed'), 'Independent checks completed, but preparation failures remain infrastructure failures')
 '''
 
 [tasks."trial:depot:remainder:prepare"]
