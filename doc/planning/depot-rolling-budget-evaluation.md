@@ -411,6 +411,17 @@ and workflow-token result link.
 `git diff --check` passed.
 The isolated candidate had no tracked modifications after restoring the quota negative control.
 
+Production evidence was committed as `2ac43c7cbd` before document verification.
+Scoped `lint:monochromatic-lint` passed for this evaluation and the updated quota troubleshooting record.
+Their Pandoc-rendered production-result paragraphs,
+links,
+and query excerpt were inspected.
+The retained JSON parsed successfully;
+its runtime excerpts matched the privately downloaded complete job log,
+and the logged page count and summed costs both matched ten.
+The recorded API timestamps yielded 25 seconds.
+`git diff --check` passed.
+
 [gate-job]: https://github.com/Aquaticats/Monochromatic/actions/runs/38806855827/job/116669815274
 [github-concurrency]: https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency
 [depot-compatibility]: https://depot.dev/docs/ci/compatibility
