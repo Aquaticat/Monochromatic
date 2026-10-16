@@ -16,7 +16,7 @@ The executed scope was:
   fingerprint-only,
   service-only,
   and all features,
-  then run its existing Clippy task.
+  and its existing Clippy task.
 - The existing DOM interaction suites in Chromium and Firefox.
 - A deliberately wrong assertion in an existing browser test.
 
@@ -28,7 +28,7 @@ but retained one failing WebKit availability assertion and one skipped WebKit st
 
 `pnpm-lock.yaml` resolves `@playwright/test` to `1.64.0` at the trial base,
 while `playwright.Dockerfile` selects `1.63.0`.
-The experiment will use the published `1.64.0-noble` OCI index digest
+The experiment used the published `1.64.0-noble` OCI index digest
 `sha256:06a9939e57531807f8d5fd76ce44b53165ffb7d7501d87ab10e285c20b1e971f`.
 Registry verification required an Accept header that included OCI image indexes;
 a bare HEAD request returned 404,

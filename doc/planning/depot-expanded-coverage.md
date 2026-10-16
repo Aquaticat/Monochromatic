@@ -136,9 +136,18 @@ The discovery check must compare matching test files with the selected configura
   all 80 core tests passed in `wjr4cmpjvs`;
   its audio job interval was 136.452 seconds on four CPUs.
   Negative control `2clfb5npj3` made a real assertion fail and the run failed visibly.
-  This proves failure propagation for that test;
-  it does not substitute for consumer execution or establish the unexecuted default-feature and lint checks.
-  [Measured evidence](../audit/depot-trial-2026-10-15.md#existing-checks-newly-exercised-through-depot-ci)
+  The expanded native job then passed default,
+  fingerprint-only,
+  service-only,
+  and all-feature suites with 58,
+  67,
+  71,
+  and 80 cases respectively,
+  plus the existing all-targets Clippy task.
+  Its whole-job duration was 157.920 seconds on four CPUs.
+  This replaces the earlier core-only timing baseline when modeling the expanded job;
+  it does not substitute for consumer execution.
+  [Expanded execution evidence](../audit/depot-expanded-execution-2026-10-16.md#native-results)
 
 ### Android host and native checks
 
@@ -330,8 +339,20 @@ The discovery check must compare matching test files with the selected configura
   HTML report,
   and retry traces.
 - Completion:
-  not exercised in this Depot trial.
-  Existing selected tests are unwired trial work.
+  the prepared Depot browser image executed logger and fs-path suites in three engines:
+  67 passes,
+  one WebKit OPFS-availability assertion failure,
+  and one WebKit storage-fixture skip.
+  Chromium and Firefox each passed 23 cases.
+  The existing DOM suites passed 34 cases across Chromium and Firefox.
+  A deliberately wrong browser assertion failed at its changed source line.
+  Whole-job durations were 151.586 seconds for the failing storage suite
+  and 117.823 seconds for the passing DOM suite.
+  The three-engine storage suite is not fully green;
+  [issue #1052](https://github.com/Aquaticats/Monochromatic/issues/1052) tracks its test assumption.
+  Other selected browser packages remain unmeasured,
+  and production routing remains unwired.
+  [Expanded execution evidence](../audit/depot-expanded-execution-2026-10-16.md#browser-results)
   The [`done` task file](../../package/webapp-productivity/done/mise.toml)
   declares build/type/lint/unit tasks,
   and its discovered test file covers database migrations.
@@ -587,7 +608,8 @@ an exact expiry timestamp and aggregate dollar cap remain unverified.
 
 - Measured passing:
   representative logger host checks,
-  shared audio all-feature tests,
+  shared audio feature-matrix tests and Clippy,
+  existing DOM browser interactions in Chromium and Firefox,
   Android JVM tests/lint,
   instrumented APK construction,
   Linux build/runtime checks,
@@ -604,9 +626,11 @@ an exact expiry timestamp and aggregate dollar cap remain unverified.
   and one uninjectable check.
   Local device execution consumed [38826684750][android-apk],
   and the isolated test-context experiment subsequently passed all cases.
+  The expanded logger/fs-path browser run executed 69 cases across three engines,
+  with one WebKit assertion failure and one storage-fixture skip retained.
 - Existing but unmeasured/unwired trial checks:
-  browser suites,
-  native lint and remaining feature combinations,
+  remaining browser packages and production browser routing,
+  native checks outside the measured shared audio core,
   other desktop applications,
   fuzz/conformance campaigns,
   expensive tests,
