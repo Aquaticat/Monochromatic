@@ -20,7 +20,7 @@ The distinct application failures remain in issues `#1062` through `#1065`.
 
 ## Root cause
 
-The historical `package/music-player/desktop-app/mise.toml:186` task invokes:
+The historical `package/music-player/desktop-app/mise.toml:166` task invokes:
 
 ```javascript
 // package/music-player/desktop-app/mise.toml, historical source cb95cf6d78
