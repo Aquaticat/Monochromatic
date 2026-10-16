@@ -119,5 +119,6 @@ these searches do not establish that no related transport issue exists elsewhere
 6.  No upstream patch was prototyped because the fault has not been assigned to a deciding source path.
 
 No upstream report was sent.
-The repository issue records the observed failure and remaining diagnosis work.
+The [repository issue](https://github.com/Aquaticats/Monochromatic/issues/1051)
+records the observed failure and remaining diagnosis work.
 There is no source-grounded upstream filing draft to publish as-is.

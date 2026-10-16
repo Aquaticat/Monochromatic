@@ -11,11 +11,13 @@ and unverified policy boundaries.
 Trial-only workarounds remain open where integration or diagnosis is outstanding.
 No upstream issue or support message was sent.
 
-The final repository query returned 50 newly filed issues:
+The first completed-batch repository query returned 50 newly filed issues:
 41 open and nine closed with recovery evidence.
 Existing issues were reused for six additional discovery or process findings.
 These counts describe the filing result,
 not completed integration of the trial-only corrections.
+The resumed experiments add findings recorded in their execution reports;
+the aggregate count will be reconciled after those probes finish.
 
 ## Application, harness, and runner findings
 
@@ -174,6 +176,15 @@ The final audit reused those instead of creating duplicates.
 These warnings were visible after the chooser recovered in run `38833901553`.
 They did not fail that run's interaction assertions.
 Issue #1004 retains the verified recovery and stays open for integration of the trial-only correction.
+
+## Resumed standalone experiment
+
+- [#1051](https://github.com/Aquaticats/Monochromatic/issues/1051):
+  the Sandbox SDK client intermittently remains alive after completed remote commands.
+  The bounded reproduction,
+  later passing control,
+  and unresolved source ownership are retained in the
+  [client-lifecycle record](../troubleshooting/depot-sandbox-client-exit.md).
 
 ## Verification
 
