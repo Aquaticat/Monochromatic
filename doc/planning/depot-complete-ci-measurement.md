@@ -78,6 +78,10 @@ The existing logger and TOML workflows contain path selectors:
 `.github/workflows/logger-fuzz.yml` and `.github/workflows/toml-edit-fuzz.yml`.
 Their selectors describe their own suites,
 not all repository consumers.
+The TOML owner also has `package/module/toml-edit.fuzz/src/ci-scope.ts`:
+it validates immutable event commits,
+checks checkout identity and ancestry,
+and preserves deleted paths through a NUL-delimited diff with rename detection disabled.
 `package/dev-script/task-util/src/depends.ts` owns source/output freshness checks,
 not Git-diff consumer selection.
 
@@ -113,6 +117,9 @@ That narrower publishing graph is not a CI impact graph.
   Cargo path,
   and explicit build/configuration dependencies.
   Preserve a dependency path explaining each indirectly selected package.
+  Distinguish implementation inputs from test-only fixture inputs:
+  changing a test's fixture selects that test,
+  but does not itself change the tested tool's implementation or all its consumers.
 - [ ] Audit source imports and configuration ownership that manifests do not express.
   A root tool configuration consuming a changed package is a dependency edge,
   not an excuse to omit its consumers.
@@ -274,6 +281,16 @@ so exit zero alone is not proof of coverage.
   Regenerate in the disposable fixture and compare its resulting tracked changes.
 - [ ] Include affected CodeQL language/workflow scans and their existing selection policy.
   Distinguish source analysis from publication of its report.
+- [ ] Retain the actual event type when applying workflow policy.
+  These source cases replay push changes.
+  At the TOML head,
+  CodeQL runs on pull requests,
+  schedules,
+  or manual dispatch;
+  final-newline runs on pull requests,
+  merge groups,
+  or manual dispatch.
+  Both are explicit exclusions for that push case.
 - [ ] Preserve Scorecard's existing schedule/rate policy as a separate repository-security workload.
   Do not multiply it into every package change or erase its cost from a complete provider accounting period.
 - [ ] Exclude publishing,
@@ -311,12 +328,113 @@ it does not replace broader consumer or native cases.
   Its Cargo path consumers include desktop,
   Android,
   and the benchmark sidecar.
+- Desktop platform change:
+  base `a9b4a681d21907ecc5eb208a754e7b9a0f6e9168`,
+  head `3434eaa455d569c18b52cf15100f77f9db251d21`.
+  This actual Windows console/subsystem change retains both platform workflows
+  and the Alpine container source at its own head.
+  It complements the earlier native-core case,
+  whose head predates those platform workflows.
 - Documentation selection control:
   head `bae6ef28a183039a6c4ba509179dc4baaedeac2e` versus its first parent.
   Assert that its documentation-only diff does not select Oxlint or unrelated application checks.
 
 Also verify selection for a real shared-configuration change.
 That selection control does not require running unrelated global work merely to manufacture a whole-repository scenario.
+
+### TOML case task manifest
+
+The exact-head manifest closure selects `module/toml-edit`,
+`module/toml-edit.fuzz`,
+`dev-script/file-enforcer`,
+`dev-script/vm-builder`,
+and `test-fixture/file-enforcer-perf` under `package/`.
+The source audit adds a test-only consumer in `oxlint-plugin/prefer-readonly-parameter-type`:
+`src/workspace-source-effect.unit.test.ts` reads file-enforcer's live Cargo enforcement source
+and follows its TOML calls.
+This edge selects that unit test and its plugin build prerequisite,
+not every consumer of the plugin implementation.
+
+The package manifest has 24 checks:
+
+- `module/toml-edit`:
+  `build`,
+  `lint:oxlint`,
+  `lint:types`,
+  `test:unit --all`,
+  `test:conformance`,
+  and `test:mutation`.
+- `module/toml-edit.fuzz`:
+  `lint:oxlint`,
+  `lint:types`,
+  `test:unit --all`,
+  `fuzz --budget 3000`,
+  and `fuzz:coverage`.
+- `dev-script/file-enforcer`:
+  `build`,
+  `lint:oxlint`,
+  `lint:types`,
+  `test:unit --all`,
+  `fuzz --budget 3000`,
+  `test:container`,
+  and `test:mutation`.
+- `dev-script/vm-builder`:
+  `build`,
+  `lint:oxlint`,
+  and `lint:types`.
+  Its declared unit task has no test files at this head and cannot supply coverage.
+- `test-fixture/file-enforcer-perf`:
+  `lint:types`.
+  Its task file deliberately omits Oxlint;
+  its host benchmarking and capability-changing tasks are separate maintenance work.
+- `oxlint-plugin/prefer-readonly-parameter-type`:
+  `build`,
+  then `test:unit` selecting only `src/workspace-source-effect.unit.test.ts`.
+
+The exact source contains 55 file-enforcer unit files,
+37 TOML unit files,
+7 sidecar unit files,
+and the additional semantic-plugin consumer file.
+None of those selected package trees contains an expensive unit-test filename.
+The full sidecar unit suite already includes `ci-scope.unit.test.ts`;
+do not run `test:scope` again for separate coverage credit.
+The file-scoped `lint:scope` is superseded by full package Oxlint.
+
+Required external checks are the push forbidden-strings gate
+and generated-output consistency through root `sync:files` in a separate disposable fixture.
+The actual changed path is TypeScript,
+which this head's dprint configuration does not format;
+no changed Markdown or Rust file selects their file linters.
+No browser/device/application consumer appears in this case's audited closure.
+
+The mutation runner's source sets two containers,
+each bounded to `2g` memory,
+2 CPUs,
+512 processes,
+and a 1,800-second session timeout.
+Per-mutant timeout is three times the baseline with a 5,000-millisecond minimum,
+and a failing single-mutant shard has one retry.
+Retain survivor and timeout findings from the report:
+the CLI exit alone does not encode a mutation-score threshold.
+
+The first execution manifest still marks completion false until the root scanner
+and generated-output adapters are connected and all required checks report results.
+
+### Broader case reach
+
+The exact logger-head manifest closure contains 158 packages.
+This measured breadth follows real development/configuration dependency cycles;
+it must not be replaced by just the logger package to obtain a smaller timing.
+Source-import and task-boundary review remains part of completing its execution manifest.
+
+The exact native-core-head Cargo path closure contains four packages:
+the core,
+its benchmark sidecar,
+the desktop application,
+and the Android application.
+At that head both application manifests select the `service` feature;
+the later fingerprint consumer changes must not be projected backwards into this case.
+The documentation control has no selected package owner.
 
 ## Evidence and completion predicate
 
