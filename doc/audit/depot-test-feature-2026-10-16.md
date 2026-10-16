@@ -45,8 +45,12 @@ It matched no test,
 so this run does not establish skipped-test handling.
 The corrected fixture excludes `gain::tests::silence_gives_unity_gain`.
 
-The first retry retained the deliberate failure because a branch-scoped trial variable did not match.
-`depot ci run show` reported a SHA in `ref`.
+The first retry retained the deliberate failure after a branch-scoped trial variable was created.
+This does not isolate selector matching from the possibility of retained compiled workflow values.
+`depot ci run show` reported a SHA in `ref`,
+but the subsequent analytics query filtered by `refs/heads/trial/depot-tests-20261016`
+returned the intended failed/pass pair.
+The API source defines its requested branch ref as test-results attribution metadata.
 The retry log did establish `GITHUB_RUN_ATTEMPT=2`,
 so the subsequent fixture uses the observed attempt number directly.
 The temporary trial variable was removed.

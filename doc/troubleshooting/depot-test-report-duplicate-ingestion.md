@@ -81,12 +81,17 @@ and failed-result retrieval with the assertion text.
 The failing catalog is repeating an identical upload with an identical invocation key:
 both calls are accepted and both sets remain visible.
 
-## Workaround under verification
+## Verified workaround
 
 The clean follow-up workflow contains only one report upload per attempt.
+Attempt `n3236mwkmj` returned 58 distinct rows:
+56 passing,
+1 intentionally failing,
+and 1 skipped.
+Its same-commit retry `m02sjlh616` returned 58 distinct rows:
+57 passing and 1 skipped.
 This prevents the tested duplicate call at the workflow boundary,
 but does not provide idempotency for transport retries or other callers.
-Verification of the clean follow-up is pending.
 
 ## What did not work
 
@@ -116,7 +121,7 @@ No upstream issue or comment was sent.
 
 The `.out-of-scope/` inventory contained no Depot-specific exemption.
 The current-repository issue records the consumer risk and required follow-up.
-Its number will be added after filing.
+[Issue #1046][issue] tracks the observed behavior.
 Passing-test billing may be affected by repeated ingestion,
 but this trial has not retrieved an authenticated usage total and does not claim a charge occurred.
 
@@ -124,3 +129,4 @@ but this trial has not retrieved an authenticated usage total and does not claim
 [docs]: https://depot.dev/docs/ci/observability/depot-ci-test-results
 [action-source]: https://github.com/depot/test-report-action/blob/2ad5779840a9c63e884fa26f11d019768a27a941/src/index.ts
 [protocol]: https://github.com/depot/cli/blob/1f96d6d488f938de97ea640b115e9567ebfd6fbf/proto/depot/testresults/v1/test_results.proto
+[issue]: https://github.com/Aquaticats/Monochromatic/issues/1046
