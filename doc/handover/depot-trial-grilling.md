@@ -62,7 +62,9 @@ GLib reported a `v` variant expected but a `u` value received.
 The private appearance portal returns the same shape from `Read` and `ReadOne`,
 although the current XDG contract requires an extra variant layer for deprecated `Read`.
 Trial commit `5eb02af048` adds exact wire-value signature assertions;
-the red verification is running before an implementation change.
+the unchanged implementation failed four of 270 tests on those assertions.
+The wrapper correction in `dcaae7c673` passed all 270 tests without skips.
+Full desktop cloud run `38833901553` is verifying the consumer boundary at `93560fbb09`.
 Issue [#1004](https://github.com/Aquaticats/Monochromatic/issues/1004)
 now contains the subprocess evidence.
 The desktop cost overlay is complete:

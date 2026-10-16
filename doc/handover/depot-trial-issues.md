@@ -84,15 +84,40 @@ No upstream issue or support message was sent.
   latest-attempt history does not retain all attempted analysis work.
 - [#1022](https://github.com/Aquaticats/Monochromatic/issues/1022):
   the GitHub CLI run-log route rejects completed-job logs while siblings run.
+- [#1031](https://github.com/Aquaticats/Monochromatic/issues/1031):
+  published scanner version 0.5.0 omits the binstall release-tag template;
+  explicit download-layout dry runs succeed while registry-default dry runs fail.
 
 The accounting issues describe source and fixture evidence;
 they do not assert an observed live budget overrun.
 
-## Remaining filing work
+## Expanded coverage and routing
 
-Expanded coverage issues and the published scanner's separate binstall metadata path
-are being checked for existing tracking.
-Their verified links will be added to this inventory.
+- [#1023](https://github.com/Aquaticats/Monochromatic/issues/1023):
+  native verification routes are absent from routine orchestration.
+- [#1024](https://github.com/Aquaticats/Monochromatic/issues/1024):
+  Android host,
+  lint,
+  and ABI checks need explicit routing.
+- [#1025](https://github.com/Aquaticats/Monochromatic/issues/1025):
+  existing browser suites need CI execution.
+- [#1026](https://github.com/Aquaticats/Monochromatic/issues/1026):
+  the `done` application lacks selected browser user-flow coverage.
+- [#1027](https://github.com/Aquaticats/Monochromatic/issues/1027):
+  affected-consumer selection needs transitive workspace dependencies.
+- [#1028](https://github.com/Aquaticats/Monochromatic/issues/1028):
+  a workflow filter still names the removed ownership package.
+- [#1029](https://github.com/Aquaticats/Monochromatic/issues/1029):
+  shared lockfile and toolchain changes are missing from selected workflow triggers.
+- [#1030](https://github.com/Aquaticats/Monochromatic/issues/1030):
+  remaining expanded workloads lack measured costs and an allocation policy.
+
+Existing discovery issues #305,
+#555,
+#310,
+and #603 were reused instead of duplicated.
+The [coverage issue handover](depot-coverage-issues-2026-10-15.md) records those matches.
+A final historical-incident check is in progress.
 
 ## Verification
 
