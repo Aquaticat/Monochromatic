@@ -102,10 +102,12 @@ const { join } = await import('node:path')
 const { strict: assert } = await import('node:assert')
 assert(process.env.GITHUB_WORKSPACE, 'GITHUB_WORKSPACE is required for the isolated cloud source checkout')
 process.chdir(join(process.env.GITHUB_WORKSPACE, 'source'))
-const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/toml.json'))
+const manifestName = process.env.DEPOT_CI_CASE ?? 'toml'
+assert(['toml', 'native', 'logger', 'desktop'].includes(manifestName), 'Unknown affected-case manifest')
+const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, `harness/.depot/manifests/${manifestName}.json`))
 const manifest = JSON.parse(manifestBytes)
 const wave = process.env.DEPOT_CI_WAVE ?? 'core'
-assert(['core', 'containers', 'all'].includes(wave), `Unknown execution wave: ${wave}`)
+assert(['core', 'containers', 'all', 'static', 'native-core', 'native-android', 'native-desktop'].includes(wave), `Unknown execution wave: ${wave}`)
 const manifestSha256 = createHash('sha256').update(manifestBytes).digest('hex')
 const sourceRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
 assert.equal(sourceRevision, manifest.sourceRevision)
@@ -115,8 +117,9 @@ const catalog = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '
 const selectedPackages = new Set(manifest.selectedPackages)
 const tracked = execFileSync('git', ['ls-files'], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).trim().split('\n')
 for (const check of manifest.checks) {
-  assert.equal(check.scope, 'package', `unreviewed non-package check: ${check.id}`)
-  assert(check.packages.every((path) => selectedPackages.has(path)), `check outside affected closure: ${check.id}`)
+  const fileCheck = check.scope === 'files' && check.task === '//:lint:monochromatic-lint' && check.args.length > 0 && check.args.every((path) => manifest.changedFiles.includes(path))
+  assert(check.scope === 'package' || fileCheck, `unreviewed non-package check: ${check.id}`)
+  assert((check.packages ?? []).every((path) => selectedPackages.has(path)), `check outside affected closure: ${check.id}`)
   assert(catalog.some((task) => task.name === check.task), `missing exact-head task: ${check.task}`)
   if (check.task.endsWith(':lint:oxlint')) assert.deepEqual(check.args, [], 'Oxlint must retain full package reach')
   if (check.expectedFiles) {
@@ -133,6 +136,10 @@ const identity = { schemaVersion: 1, caseId: manifest.caseId, sourceRevision, ma
 const results = []
 const deferredChecks = manifest.checks.filter((check) => {
   const container = check.task.endsWith(':test:mutation') || check.task.endsWith(':test:container')
+  if (wave === 'static') return !check.task.endsWith(':lint:oxlint') && !check.task.endsWith(':lint:types')
+  if (wave === 'native-core') return !check.id.startsWith('truepeak-core.') && !check.id.startsWith('root.changed-')
+  if (wave === 'native-android') return !check.id.startsWith('android-app.') || check.task.endsWith(':test:instrumented')
+  if (wave === 'native-desktop') return !check.id.startsWith('desktop-app.') || check.task.endsWith(':test:e2e')
   return wave === 'core' ? container : wave === 'containers' ? !container && check.family !== 'build' : false
 }).map((check) => ({ checkId: check.id, reason: `Required check belongs to another execution wave; current wave: ${wave}` }))
 console.log(JSON.stringify({ ...identity, event: 'case-started', completeGraph: false, deferredChecks, tools: JSON.parse(execFileSync('mise', ['ls', '--current', '--json'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 })) }))
@@ -141,10 +148,10 @@ for (const check of manifest.checks) {
   const started = performance.now()
   const checkIdentity = { ...identity, checkId: check.id, task: check.task, args: check.args, startedAt, expectedFiles: check.expectedFiles }
   const deferred = deferredChecks.find((item) => item.checkId === check.id)
-  const failedPrerequisites = (check.prerequisites ?? []).filter((id) => results.find((result) => result.checkId === id)?.status !== 'passed')
+  const failedPrerequisites = (check.prerequisites ?? []).filter((id) => !deferredChecks.some((item) => item.checkId === id) && results.find((result) => result.checkId === id)?.status !== 'passed')
   const skipReason = deferred?.reason ?? (failedPrerequisites.length > 0 ? `Required builds did not pass: ${failedPrerequisites.join(', ')}` : undefined)
   console.log(JSON.stringify({ ...checkIdentity, event: 'check-started' }))
-  const result = skipReason ? undefined : spawnSync('mise', ['run', check.task, ...(check.args.length > 0 ? ['--', ...check.args] : [])], { stdio: 'inherit' })
+  const result = skipReason ? undefined : spawnSync('mise', ['run', check.task, ...(check.args.length > 0 ? ['--', ...check.args] : [])], { stdio: 'inherit', env: { ...process.env, ...(check.env ?? {}) } })
   if (result?.error) console.error(result.error)
   const record = { ...checkIdentity, event: 'check-finished', finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: result?.status ?? null, signal: result?.signal ?? null, status: skipReason ? 'skipped' : result?.status === 0 ? 'passed' : 'failed', skipReason }
   results.push(record)

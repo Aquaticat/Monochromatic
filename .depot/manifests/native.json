@@ -1,0 +1,459 @@
+{
+  "schemaVersion": 1,
+  "caseId": "native",
+  "event": "push",
+  "eventBranch": "main",
+  "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+  "baseRevision": "45795584ff2dcf830dc505e121f0cc92c77860e5",
+  "headRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+  "changedFiles": [
+    "package/music-player/truepeak-core/Cargo.lock",
+    "package/music-player/truepeak-core/Cargo.toml",
+    "package/music-player/truepeak-core/src/cache.rs",
+    "package/music-player/truepeak-core/src/cache_tests.rs",
+    "package/music-player/truepeak-core/src/fingerprint.rs",
+    "package/music-player/truepeak-core/src/fingerprint_tests.rs",
+    "package/music-player/truepeak-core/src/lib.rs",
+    "package/music-player/truepeak-core/src/policy.rs"
+  ],
+  "directlyChangedPackages": [
+    "package/music-player/truepeak-core"
+  ],
+  "selectedPackages": [
+    "package/music-player/android-app",
+    "package/music-player/desktop-app",
+    "package/music-player/truepeak-core",
+    "package/music-player/truepeak-core.bench"
+  ],
+  "selectionReasons": [
+    {
+      "dependency": "package/music-player/truepeak-core",
+      "consumer": "package/music-player/android-app",
+      "evidence": "package/music-player/android-app/rust/Cargo.toml",
+      "field": "Cargo path dependency"
+    },
+    {
+      "dependency": "package/music-player/truepeak-core",
+      "consumer": "package/music-player/desktop-app",
+      "evidence": "package/music-player/desktop-app/Cargo.toml",
+      "field": "Cargo path dependency"
+    },
+    {
+      "dependency": "package/music-player/truepeak-core",
+      "consumer": "package/music-player/truepeak-core.bench",
+      "evidence": "package/music-player/truepeak-core.bench/Cargo.toml",
+      "field": "Cargo path dependency"
+    }
+  ],
+  "tools": [
+    "node",
+    "pnpm",
+    "rust",
+    "cargo:cargo-nextest",
+    "java",
+    "android-sdk",
+    "cargo:cargo-ndk",
+    "cmake",
+    "cargo:slint-viewer",
+    "cargo:monochromatic-lint"
+  ],
+  "checks": [
+    {
+      "id": "truepeak-core.build",
+      "task": "//package/music-player/truepeak-core:build",
+      "args": [],
+      "family": "build",
+      "scope": "package",
+      "packages": [
+        "package/music-player/truepeak-core"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "truepeak-core.build.default",
+      "task": "//package/music-player/truepeak-core:build:default",
+      "args": [],
+      "family": "build",
+      "scope": "package",
+      "packages": [
+        "package/music-player/truepeak-core"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "truepeak-core.lint.clippy",
+      "task": "//package/music-player/truepeak-core:lint:clippy",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/music-player/truepeak-core"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "truepeak-core.test",
+      "task": "//package/music-player/truepeak-core:test",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/truepeak-core"
+      ],
+      "prerequisites": [
+        "truepeak-core.build"
+      ],
+      "platform": "linux"
+    },
+    {
+      "id": "truepeak-core.bench.build",
+      "task": "//package/music-player/truepeak-core.bench:build",
+      "args": [],
+      "family": "build",
+      "scope": "package",
+      "packages": [
+        "package/music-player/truepeak-core.bench"
+      ],
+      "prerequisites": [
+        "truepeak-core.build"
+      ],
+      "platform": "linux"
+    },
+    {
+      "id": "truepeak-core.bench.lint.clippy",
+      "task": "//package/music-player/truepeak-core.bench:lint:clippy",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/music-player/truepeak-core.bench"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "desktop-app.build",
+      "task": "//package/music-player/desktop-app:build",
+      "args": [],
+      "family": "build",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "prerequisites": [
+        "truepeak-core.build"
+      ],
+      "platform": "linux"
+    },
+    {
+      "id": "desktop-app.lint.clippy",
+      "task": "//package/music-player/desktop-app:lint:clippy",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "desktop-app.lint.slint",
+      "task": "//package/music-player/desktop-app:lint:slint",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "desktop-app.test",
+      "task": "//package/music-player/desktop-app:test",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "prerequisites": [
+        "desktop-app.build"
+      ],
+      "platform": "linux"
+    },
+    {
+      "id": "desktop-app.test.e2e",
+      "task": "//package/music-player/desktop-app:test:e2e",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "prerequisites": [
+        "desktop-app.build"
+      ],
+      "platform": "linux"
+    },
+    {
+      "id": "android-app.build.native",
+      "task": "//package/music-player/android-app:build:native",
+      "args": [],
+      "family": "build",
+      "scope": "package",
+      "packages": [
+        "package/music-player/android-app"
+      ],
+      "prerequisites": [
+        "truepeak-core.build"
+      ],
+      "platform": "linux"
+    },
+    {
+      "id": "android-app.build",
+      "task": "//package/music-player/android-app:build",
+      "args": [],
+      "family": "build",
+      "scope": "package",
+      "packages": [
+        "package/music-player/android-app"
+      ],
+      "prerequisites": [
+        "android-app.build.native"
+      ],
+      "platform": "linux"
+    },
+    {
+      "id": "android-app.build.release",
+      "task": "//package/music-player/android-app:build:release",
+      "args": [],
+      "family": "build",
+      "scope": "package",
+      "packages": [
+        "package/music-player/android-app"
+      ],
+      "prerequisites": [
+        "android-app.build.native"
+      ],
+      "platform": "linux"
+    },
+    {
+      "id": "android-app.lint",
+      "task": "//package/music-player/android-app:lint",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/music-player/android-app"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "android-app.lint.clippy",
+      "task": "//package/music-player/android-app:lint:clippy",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/music-player/android-app"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "android-app.lint.detekt",
+      "task": "//package/music-player/android-app:lint:detekt",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/music-player/android-app"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "android-app.test.unit",
+      "task": "//package/music-player/android-app:test:unit",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/android-app"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "android-app.test.instrumented.build",
+      "task": "//package/music-player/android-app:test:instrumented:build",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/android-app"
+      ],
+      "prerequisites": [
+        "android-app.build.native"
+      ],
+      "platform": "linux"
+    },
+    {
+      "id": "android-app.test.instrumented",
+      "task": "//package/music-player/android-app:test:instrumented",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/android-app"
+      ],
+      "prerequisites": [
+        "android-app.build",
+        "android-app.test.instrumented.build"
+      ],
+      "platform": "android-disposable-device"
+    },
+    {
+      "id": "root.changed-rust-style",
+      "task": "//:lint:monochromatic-lint",
+      "args": [
+        "package/music-player/truepeak-core/src/cache.rs",
+        "package/music-player/truepeak-core/src/cache_tests.rs",
+        "package/music-player/truepeak-core/src/fingerprint.rs",
+        "package/music-player/truepeak-core/src/fingerprint_tests.rs",
+        "package/music-player/truepeak-core/src/lib.rs",
+        "package/music-player/truepeak-core/src/policy.rs"
+      ],
+      "family": "lint",
+      "scope": "files",
+      "packages": [
+        "package/music-player/truepeak-core"
+      ],
+      "prerequisites": []
+    }
+  ],
+  "externalChecks": [
+    {
+      "id": "root.forbidden-strings",
+      "family": "lint",
+      "scope": "files",
+      "files": [
+        "package/music-player/truepeak-core/Cargo.lock",
+        "package/music-player/truepeak-core/Cargo.toml",
+        "package/music-player/truepeak-core/src/cache.rs",
+        "package/music-player/truepeak-core/src/cache_tests.rs",
+        "package/music-player/truepeak-core/src/fingerprint.rs",
+        "package/music-player/truepeak-core/src/fingerprint_tests.rs",
+        "package/music-player/truepeak-core/src/lib.rs",
+        "package/music-player/truepeak-core/src/policy.rs"
+      ],
+      "reason": "Push change gate; root owns workflow adapter."
+    },
+    {
+      "id": "root.scorecard",
+      "family": "test",
+      "scope": "repository",
+      "reason": "Exact-head workflow includes push on main and a rate-limit gate before analysis. Root must retain the gate and applicable analysis cost according to the chosen policy revision."
+    },
+    {
+      "id": "root.changed-toml-format",
+      "family": "lint",
+      "scope": "files",
+      "files": [
+        "package/music-player/truepeak-core/Cargo.toml"
+      ],
+      "task": "//:lint:dprint",
+      "reason": "Existing task hardcodes dprint check --list-different without a file-argument adapter; preserve changed-file scope through verified trial harness."
+    },
+    {
+      "id": "core.feature-test-matrix",
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/truepeak-core"
+      ],
+      "features": [
+        "default",
+        "fingerprint",
+        "service",
+        "all"
+      ],
+      "reason": "Existing test task hardcodes all-features. Default/isolated features require trial mise adapters so alternate cfg branches execute; all-feature result can deduplicate the package test."
+    },
+    {
+      "id": "desktop.native-platforms",
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "platforms": [
+        "macos",
+        "windows"
+      ],
+      "reason": "Exact-head desktop task has native non-Linux branches; preserve their intended host validation separately from Linux results. Later desktop case measures its own Windows/Alpine workflows, not this head."
+    }
+  ],
+  "excludedChecks": [
+    {
+      "task": "lint:oxlint/lint:types/browser",
+      "reason": "Native Cargo/Android owners have no TypeScript/browser correctness gates selected by the core change; desktop-e2e harness is a prerequisite consumer, not changed source."
+    },
+    {
+      "task": "build:debug/test:debug",
+      "reason": "Development aliases duplicate intended release/all-feature surfaces; desktop test uses its authored debug harness where required."
+    },
+    {
+      "task": "lint",
+      "reason": "Rust cargo-check-only tasks are subsumed by selected build plus all-target Clippy; Android lint remains a distinct selected gate."
+    },
+    {
+      "task": "*:container",
+      "reason": "Alternative dispatch path for the same Linux build/lint/test is not separately counted as another product platform. Record the actual chosen branch and container resources."
+    },
+    {
+      "task": "truepeak-core.bench:run",
+      "reason": "Benchmark corpus search is a separate performance campaign, not a correctness task; bench code build and Clippy remain selected."
+    },
+    {
+      "task": "android-app:test:instrumented:device",
+      "reason": "Single-class live-device helper is superseded by complete connected instrumented suite on a disposable device. Its adb command exit alone cannot prove success."
+    },
+    {
+      "task": "CodeQL/final-newline",
+      "reason": "Retain exact workflow event policy; this case replays push, not PR/merge-group/scheduled security events."
+    },
+    {
+      "task": "release/publish/signing/account",
+      "reason": "Publishing and account access excluded. verify:signing is a separate distribution-signing workflow, not core correctness."
+    }
+  ],
+  "completeGraph": false,
+  "remainingReview": [
+    "Root scanner and dprint file adapter",
+    "Feature matrix adapter",
+    "Native host platform dispatch",
+    "Disposable Android instrumentation prerequisites",
+    "Scorecard policy/provider accounting disposition"
+  ],
+  "selectionEvidence": {
+    "positive": [
+      "package/music-player/android-app",
+      "package/music-player/desktop-app",
+      "package/music-player/truepeak-core",
+      "package/music-player/truepeak-core.bench"
+    ],
+    "negative": [
+      "package/module/logger",
+      "package/module/toml-edit"
+    ],
+    "closureFile": "native-closure.json",
+    "closureSha256": "05d99a53619008592186033cab7ff738696a2731029a7f7308e9b52065ddcd17"
+  }
+}
