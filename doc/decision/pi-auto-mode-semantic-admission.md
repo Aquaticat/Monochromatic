@@ -22,6 +22,16 @@ removing text only from shared context would still leak excluded instructions th
 Local provenance receipts may remain for operation ownership and currentness checks.
 Their retention does not authorize transmitting them as review evidence.
 
+The user further required startup relevance selection for `AGENTS.md` and prohibited sending its complete document.
+Initialization refreshes Luna's permission-relevance classification of individual original rules.
+The existing policy-change cache direction retains unchanged classifications and reclassifies changed rules;
+later operation reviews receive only the selected rules and their needed heading context.
+Uncertain relevance remains included rather than being mistaken for definite irrelevance.
+The complete file remains local for source freshness and indexing.
+Neither relevance classification nor cache reuse grants permission to execute an operation.
+The old experimental relevance cache was not connected to the installed host and admitted no exclusions;
+its existence did not satisfy this requirement.
+
 On 2026-10-16,
 the user clarified the fallback order after ordinary repository inspection was falsely blocked:
 clause assessment first,

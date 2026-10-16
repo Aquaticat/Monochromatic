@@ -31,6 +31,19 @@ include visible conversation, proposed operation, and readable project policy fi
 exclude Pi's hidden instructions, tool metadata, and skill catalog.
 The shared permission-scope question change is committed but has not been activated.
 The collector must now select permitted source origins before clause questions are constructed.
+The user additionally required initialization-time Luna relevance selection and no complete `AGENTS.md` payload.
+The existing `native/contract/lifecycle/rule-relevance-cache` supplies original-source lifetime,
+incremental rule hashing, persistence, and concurrency checks.
+Its current request still includes `fullPolicy`, production bootstrap does not configure it,
+and its returned view deliberately admits no exclusions.
+Reuse and extend that owner rather than creating a parallel cache.
+The earlier adopted direction refreshes only changed or missing rules after startup cache lookup.
+
+- [ ] Restrict review sources to visible conversation, operation, and readable policy files.
+- [ ] Wire startup relevance refresh into the installed host; remove complete-document classifier payloads.
+- [ ] Feed selected original rules into per-operation questions and shared context, preserving source checks.
+- [ ] Reproduce the full reported conversation with live Luna and verify explicit prohibitions and consent controls.
+- [ ] Measure the resulting local CPU, memory, writes, and model usage against a controlled baseline.
 
 The exact decision log and extracted operation assessment are retained under
 `${HOME}/temp/agent/pi-manual-fallback-20261016`.
