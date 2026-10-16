@@ -945,5 +945,221 @@
     "https://github.com/Aquaticats/Monochromatic/issues/1030#issuecomment-6206595590",
     "https://github.com/Aquaticats/Monochromatic/issues/572#issuecomment-6206595886"
   ],
-  "limitation": "This verifies accounting and read-only collection, not execution of the complete selected CI graph. No new cloud run was launched."
+  "limitation": "This verifies accounting and read-only collection, not execution of the complete selected CI graph. No new cloud run was launched.",
+  "developmentObservations": {
+    "observedAt": "2026-10-16T02:34:13.771Z",
+    "preparation": [
+      {
+        "collectedAt": "2026-10-16T02:32:48.957Z",
+        "org": "l4zncjjbj5",
+        "runId": "1v4l9tglbt",
+        "revision": "50fbf6983171067eda7199bc21f5c31edfcbc5ce",
+        "status": "failed",
+        "attempts": [
+          {
+            "workflowId": "xxsc2jn45l",
+            "jobId": "0sk5swr3md",
+            "jobKey": "_inline_0.yaml:prepare",
+            "attemptId": "zrnlbjx4xr",
+            "attempt": 1,
+            "status": "failed",
+            "metricsPath": "metrics-zrnlbjx4xr.json",
+            "logPath": "logs-zrnlbjx4xr.jsonl",
+            "logSha256": "4e4ae9613bf79bd0ea2f791635658420758d847706690ae399fe853df505689f",
+            "logRecords": 252,
+            "providerAttempt": {
+              "attempt_id": "zrnlbjx4xr",
+              "attempt": 1,
+              "status": "failed",
+              "conclusion": "failure",
+              "sandbox_id": "jr3cpsc9nml5q0pnswqk",
+              "session_id": "a5fef35a-30b0-498c-9c78-530d06bd178e",
+              "created_at": "2026-10-16T02:21:40.447Z",
+              "started_at": "2026-10-16T02:21:44.510Z",
+              "finished_at": "2026-10-16T02:22:41.187Z"
+            },
+            "seconds": 56.677
+          }
+        ],
+        "artifactCount": 0,
+        "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation.",
+        "classification": "environment preparation, not validation"
+      },
+      {
+        "collectedAt": "2026-10-16T02:32:49.150Z",
+        "org": "l4zncjjbj5",
+        "runId": "tg907s5kfs",
+        "revision": "3fda67d325bc646f1c6b2cc5385542c4863bac78",
+        "status": "finished",
+        "attempts": [
+          {
+            "workflowId": "4x5p350b4z",
+            "jobId": "hkp52q2wg7",
+            "jobKey": "_inline_0.yaml:prepare",
+            "attemptId": "5947wjvb9c",
+            "attempt": 1,
+            "status": "finished",
+            "metricsPath": "metrics-5947wjvb9c.json",
+            "logPath": "logs-5947wjvb9c.jsonl",
+            "logSha256": "4ecb2a6c39a4d172565dbd271883fdcad6fd5ca16c06614e30f87e43844fac1b",
+            "logRecords": 537,
+            "providerAttempt": {
+              "attempt_id": "5947wjvb9c",
+              "attempt": 1,
+              "status": "finished",
+              "conclusion": "success",
+              "sandbox_id": "bbpdt5zlwlzzpdfs6plv",
+              "session_id": "94d64c3f-fccb-40ea-9fb3-854003087553",
+              "created_at": "2026-10-16T02:25:01.176Z",
+              "started_at": "2026-10-16T02:25:05.897Z",
+              "finished_at": "2026-10-16T02:26:48.716Z"
+            },
+            "seconds": 102.819
+          }
+        ],
+        "artifactCount": 0,
+        "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation.",
+        "classification": "environment preparation, not validation"
+      }
+    ],
+    "scanner": {
+      "collectedAt": "2026-10-16T02:32:48.393Z",
+      "repo": "Aquaticats/Monochromatic",
+      "visibility": "public",
+      "runId": 38840751221,
+      "revision": "0b8cc50c62d9b9b6f2dd853aa18a7eff85cc9e40",
+      "runAttempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "createdAt": "2026-10-16T02:30:12Z",
+      "startedAt": "2026-10-16T02:30:12Z",
+      "updatedAt": "2026-10-16T02:30:47Z",
+      "jobs": [
+        {
+          "id": 116780030044,
+          "attempt": 1,
+          "workflow": "forbidden-strings",
+          "name": "scan",
+          "status": "completed",
+          "conclusion": "success",
+          "headSha": "0b8cc50c62d9b9b6f2dd853aa18a7eff85cc9e40",
+          "startedAt": "2026-10-16T02:30:16Z",
+          "completedAt": "2026-10-16T02:30:47Z",
+          "seconds": 31,
+          "labels": [
+            "ubuntu-latest"
+          ],
+          "allocation": {
+            "label": "ubuntu-latest",
+            "vcpus": 4,
+            "memoryGb": 16,
+            "publicStandardComputeUsd": 0,
+            "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+          },
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-16T02:30:17Z",
+              "completed_at": "2026-10-16T02:30:17Z"
+            },
+            {
+              "name": "Checkout (full history)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-16T02:30:17Z",
+              "completed_at": "2026-10-16T02:30:37Z"
+            },
+            {
+              "name": "Download prebuilt forbidden-strings binary",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-16T02:30:37Z",
+              "completed_at": "2026-10-16T02:30:41Z"
+            },
+            {
+              "name": "Checkout immutable source for the selected change",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-16T02:30:41Z",
+              "completed_at": "2026-10-16T02:30:43Z"
+            },
+            {
+              "name": "Verify immutable source and comparison base",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-16T02:30:43Z",
+              "completed_at": "2026-10-16T02:30:43Z"
+            },
+            {
+              "name": "Materialize deny-list",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-16T02:30:43Z",
+              "completed_at": "2026-10-16T02:30:43Z"
+            },
+            {
+              "name": "Scan changed files",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-16T02:30:43Z",
+              "completed_at": "2026-10-16T02:30:43Z"
+            },
+            {
+              "name": "Post Checkout immutable source for the selected change",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13,
+              "started_at": "2026-10-16T02:30:43Z",
+              "completed_at": "2026-10-16T02:30:44Z"
+            },
+            {
+              "name": "Post Checkout (full history)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14,
+              "started_at": "2026-10-16T02:30:44Z",
+              "completed_at": "2026-10-16T02:30:44Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 15,
+              "started_at": "2026-10-16T02:30:44Z",
+              "completed_at": "2026-10-16T02:30:44Z"
+            }
+          ],
+          "log": {
+            "path": "logs-116780030044.txt",
+            "bytes": 65561,
+            "sha256": "df9ff21602f7fff4a0382d27a4c1aee00198c471b90297031ccd8ac506552e10"
+          }
+        }
+      ],
+      "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred.",
+      "classification": "current verified scanner 0.5.0 against immutable historical workload",
+      "workloadRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+      "comparisonBase": "cf9fcb48047d86e0af01ac9c73c1c7bf26fb277f",
+      "checkId": "root.forbidden-strings",
+      "excerpts": [
+        "2026-10-16T02:30:41.3681520Z forbidden-strings 0.5.0",
+        "2026-10-16T02:30:43.7342632Z source_head=525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "2026-10-16T02:30:43.7343708Z source_base=cf9fcb48047d86e0af01ac9c73c1c7bf26fb277f",
+        "2026-10-16T02:30:43.8290089Z Scanning 1 changed file(s) from cf9fcb48047d86e0af01ac9c73c1c7bf26fb277f..525d2e09f8168a3bdd7e513e26d4c80b363123e5:",
+        "2026-10-16T02:30:43.8293794Z   package/module/toml-edit/src/value-encoders.ts"
+      ],
+      "createdToJobFinishedSeconds": 35
+    },
+    "completeGraph": false,
+    "limitation": "Development observations are not a coherent full-graph replay and do not establish steady-state CI latency."
+  }
 }

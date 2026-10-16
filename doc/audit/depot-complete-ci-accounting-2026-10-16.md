@@ -86,6 +86,41 @@ and [partial cost replay](depot-resumed-cost-2026-10-16.md).
 
 ## Minimum completion predicate
 
+### Development execution evidence
+
+The first collected external gate is
+[GitHub run 38840751221](https://github.com/Aquaticats/Monochromatic/actions/runs/38840751221).
+Its scanner job passed on the actual TOML change from
+`cf9fcb48047d86e0af01ac9c73c1c7bf26fb277f` to `525d2e09f8168a3bdd7e513e26d4c80b363123e5`.
+The log verifies the source commits and the single changed path,
+`package/module/toml-edit/src/value-encoders.ts`.
+The workflow revision is separately recorded as `0b8cc50c62d9b9b6f2dd853aa18a7eff85cc9e40`.
+It downloaded and verified scanner `0.5.0` before checking out the historical workload,
+whose manifest declares `0.4.1`.
+This is a current-tool gate on immutable historical source,
+not a historical-tool performance comparison.
+
+The provider created the run at `2026-10-16T02:30:12Z`.
+Job `116780030044` ran from `02:30:16Z` to `02:30:47Z`,
+giving 31 job seconds and 35 seconds from provider run creation to job completion.
+The standard public `ubuntu-latest` allocation has zero published compute charge;
+the account ledger is outside this work.
+The scan step's second-resolution metadata does not support a subsecond runtime claim.
+
+The Depot preparation attempt `zrnlbjx4xr` in run `1v4l9tglbt` failed after 56.677 provider seconds.
+The repaired preparation attempt `5947wjvb9c` in run `tg907s5kfs` succeeded after 102.819 provider seconds.
+Both attempts remain setup usage;
+neither is evidence that a selected validation check ran.
+The [retained observations](depot-complete-ci-accounting-2026-10-16.evidence.json)
+preserve their workflow revisions,
+provider timestamps,
+log hashes,
+and scanner identity excerpts.
+These separately dispatched development waves do not establish complete-pipeline latency.
+The completed adapters still need a coherent graph replay with a frozen manifest.
+
+### Acceptance requirements
+
 Freeze one source revision and the intended manifest before each execution cell.
 Freeze the comparison base as well,
 retain the actual changed-file list,
