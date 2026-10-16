@@ -80,25 +80,80 @@ The issues preserve production provider selection as an unresolved trial decisio
 The original coverage issue queue is complete.
 The main trial ledger can use the linked issues to track implementation and verification.
 
-## Final completeness audit in progress
+## Final completeness audit
 
 The follow-up audit reads the full trial report,
 runner-sizing report,
 and interview handover against all-state issue history.
 Its refreshed search returned 999 issues.
-Historical setup incidents need separate tracking where their failure boundary differs from existing issues:
+The original source,
+run records,
+fix commits,
+and troubleshooting documents distinguish these additional incidents:
 
-- Organization action-policy rejection before any job started.
-- Mise release-age lookup returning HTTP 403,
-  distinct from the missing-release asset incident in issue `506`.
-- Local task-capacity exhaustion and the later kernel/helper coordination failure.
-- The initial trial task outside configured discovery roots.
-- The direct-session trial omitting its freshly built compositor path.
-- Standalone sandbox bare-command lookup failure.
-- Browser discovery returning no available browser,
-  distinct from the Depot usage endpoint's credential-type rejection.
+- [Action-policy startup rejection](https://github.com/Aquaticats/Monochromatic/issues/1033):
+  closed after the user-approved policy admitted both runner jobs.
+- [Mise release-age HTTP 403](https://github.com/Aquaticats/Monochromatic/issues/1034):
+  open;
+  the published-version workaround passed,
+  but the original response cause remains unknown.
+  Existing [issue 506](https://github.com/Aquaticats/Monochromatic/issues/506)
+  concerns a different release-asset HTTP 404.
+- [Local task-capacity exhaustion](https://github.com/Aquaticats/Monochromatic/issues/1035):
+  closed after the authorized increase and installed shell verification.
+- [Kernel/helper update mismatch](https://github.com/Aquaticats/Monochromatic/issues/1036):
+  closed after coordinated recovery;
+  distinct from exhausting a correctly enforced limit.
+- [Trial task discovery](https://github.com/Aquaticats/Monochromatic/issues/1037):
+  closed after moving the task into an existing package task file and running it successfully.
+- [Omitted compositor path](https://github.com/Aquaticats/Monochromatic/issues/1038):
+  closed after passing the freshly built executable to the real E2E runner.
+  The subsequent fixture failure remains separate.
+- [Standalone command lookup](https://github.com/Aquaticats/Monochromatic/issues/1039):
+  open;
+  the absolute-path workaround passed,
+  but the server-side bare-name lookup cause remains unknown.
+- [Unavailable browser discovery](https://github.com/Aquaticats/Monochromatic/issues/1040):
+  open;
+  distinct from the [usage API credential boundary](https://github.com/Aquaticats/Monochromatic/issues/999).
 
-Current work is to verify original source and run evidence,
-file only missing distinct incidents,
-and record already-verified recovery without inventing an upstream cause.
-Sizing tradeoffs and unchosen scheduling preferences are not defects.
+All eight additional bodies passed rendered inspection and byte-for-byte comparison with GitHub.
+All carry `needs-triage`.
+The five closed issues contain the actual recovery evidence;
+the three open issues retain their unresolved boundaries.
+The audit reread both live worker task bounds as `2048` without changing them.
+
+The coverage and final-audit passes together created 16 issues:
+11 open and five closed at verification.
+No production code or account setting changed during issue filing.
+
+## Findings that do not need another issue
+
+The trial's application,
+snapshot,
+cache,
+quota,
+scheduling,
+and budget findings are linked in the [main trial issue inventory](depot-trial-issues.md).
+The published scanner's binstall metadata has
+[issue 1031](https://github.com/Aquaticats/Monochromatic/issues/1031).
+The unrelated cause of intermittent GitHub protected-branch rejection remains
+[issue 1032](https://github.com/Aquaticats/Monochromatic/issues/1032).
+
+The interview's process corrections have related existing tracking:
+[measurable facts versus interview questions](https://github.com/Aquaticats/Monochromatic/issues/425),
+[under-scoped verification](https://github.com/Aquaticats/Monochromatic/issues/572),
+and [completion and authorization boundaries](https://github.com/Aquaticats/Monochromatic/issues/677).
+The proposed policy edits in the interview handover remain unaccepted;
+issue filing does not adopt them.
+
+Sizing tradeoffs,
+the successful build's CPU-utilization warning,
+unselected check frequencies,
+and unchosen provider allocations are not filed as bugs.
+The documented modifier-repeat limitation remains explicit in desktop coverage results;
+the pure detector has repeat-event tests,
+and the compositor does not inject repeat events for modifier keys.
+No full passing interactive claim is inferred from that separate unit coverage.
+
+The final completeness audit is complete for the trial reports and related setup incidents.
