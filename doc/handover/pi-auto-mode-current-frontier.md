@@ -24,10 +24,10 @@ Only when automatic decision paths fail should the host open a dialog.
 The agent's intervening interpretation, sending prerequisites directly to manual approval, was rejected.
 Use the already selected Luna decision route; do not introduce another vendor or weaken categorical thresholds.
 
-- [ ] Reproduce the reported commands with actual repository policy and identify admitted prerequisite evidence.
-- [ ] Add decision-model fallback before dialog selection when rule assessment cannot resolve the operation.
-- [ ] Verify permit, deny, unavailable-model, uncertain-model, cancellation, and complete-context boundaries.
-- [ ] Retain correlated clause/source references, model distributions, admission and fallback decisions in local logs;
+- [x] Replay the reported commands with actual repository policy and record the original evidence-retention limit.
+- [x] Add decision-model fallback before dialog selection when rule assessment cannot resolve the operation.
+- [x] Verify permit, deny, unavailable-model, uncertain-model, cancellation, and complete-context boundaries.
+- [x] Retain correlated clause/source references, model distributions, admission and fallback decisions in local logs;
       reconstruct a rejected review from those logs in a built-consumer regression.
 - [ ] Activate the verified runtime and update decisions, troubleshooting, and the MiMo handoff.
 
@@ -86,7 +86,32 @@ Decision logs retain source bindings, answer distributions, admission, fallback 
 The new regression reconstructs its false prerequisite from these logger records.
 The first focused lint pass found four errors;
 callback shape, parameter documentation, and the fixture's asynchronous abort type were corrected.
-Final focused lint, complete approval regressions, fresh type checking, and installed verification remain pending.
+Final candidate checks now pass:
+
+- `decision-matrix-4.log`: every fallback case, original-deadline expiry, explicit fresh confirmation,
+  and the pure review-outcome assertions.
+- `decision-approval-matrix-2.log`: original approval, native contexts, reload, fresh confirmation,
+  uncertainty, bypass, and selected conversation regressions.
+- `decision-manual-matrix-2.log`: unavailable observation and failure of both assessment paths,
+  including Allow, Stop, cancellation, and no UI.
+- `decision-fallback-types-7.log` and `decision-fallback-build-js-final.log`: successful type checking and bundle build.
+- `decision-fallback-lint-2.log`: 77 changed files, 3771 warnings, zero errors.
+  Warnings remain in the separate MiMo cleanup queue; this is not complete-package lint clearance.
+- Built `test:decision-wire`, `test:semantic-operating-policy`, and `test:assessment-bundles` pass.
+
+Final live candidate `native-release-g2QlU8` repeats the exact reported commands under actual repository policy
+with all configured metadata and opens no dialog.
+Fixture `pi-hyper-rpc-allow-5yMBCp` made four successful Luna HTTP calls and executed both commands.
+`repo-decision-candidate-final.log` retains the consumer result.
+`decision-log-file-proof.log` reconstructs its decision from the actual JSONL files:
+1043 correlated records, 518 question answers, 515 clause admissions,
+both complete assessment requests and replies, and the final approval without confirmation.
+Both `PX2` occurrences remain below admission in this new observation;
+this still does not identify the original incident's missing clause evidence.
+
+Installation is in progress through `build:native`.
+Next: exercise installed `bin/pi` with the same repository-policy replay and a live prohibition control,
+then record the active release and final artifact checks.
 
 ### MiMo first-group correction and direct Bash review
 
