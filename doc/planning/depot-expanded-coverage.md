@@ -177,7 +177,12 @@ The discovery check must compare matching test files with the selected configura
   [Measured evidence](../audit/depot-trial-2026-10-15.md#existing-checks-newly-exercised-through-depot-ci)
   Instrumented APK build [38826684750][android-apk] passed;
   the build task took 149.07 seconds in the trial's sixteen-CPU job.
-  Device execution remains pending in the trial coordinator's acceptance record.
+  Device execution completed on a disposable headed x86_64 Android 37 emulator with 16 KiB pages.
+  With audio fixtures,
+  the original tests passed 14 cases and failed two storage-context cases without skips.
+  A test-only context experiment passed all 16 cases;
+  the original failure remains recorded and no production test change is implied.
+  [Device evidence](../audit/depot-android-device-2026-10-15.evidence.json)
 
 ### Android device behavior
 
@@ -558,10 +563,11 @@ and reruns.
 Track the union of unfinished relevant CI intervals for the user's elapsed-time valuation.
 A faster Linux build may add no earlier overall completion when Windows finishes last;
 new behavioral coverage and convenient experiments remain separate benefits.
-Account-wide usage,
-storage,
-trial expiry,
-and enforceable aggregate spending controls remain unresolved in the trial report.
+The user supplied account usage and separate hard-start minute limits for all three compute products.
+The current plan is Startup at USD $200,
+with limits matching its included 5,000 container minutes and 20,000 minutes for each CI product.
+The displayed storage values use different scopes and averaging;
+an exact expiry timestamp and aggregate dollar cap remain unverified.
 
 ## Completion ledger and remaining evidence
 
@@ -574,10 +580,12 @@ and enforceable aggregate spending controls remain unresolved in the trial repor
   Alpine native/smoke checks,
   prepared Node environment,
   and standalone sandbox execution.
-- Pending terminal evidence:
-  full desktop cloud interaction in [38826827023][desktop-run]
-  and local device execution consuming [38826684750][android-apk].
-  The trial coordinator owns those final results and must update the audit before claiming closure.
+- Executed behavioral evidence:
+  desktop cloud interaction in [38826827023][desktop-run] failed;
+  a direct software-compositor run also reached the wide-session fixture timeout.
+  Independent sessions are collecting the checks hidden by that abort.
+  Local device execution consumed [38826684750][android-apk],
+  and the isolated test-context experiment subsequently passed all cases.
 - Existing but unmeasured/unwired trial checks:
   browser suites,
   native lint and remaining feature combinations,
@@ -587,7 +595,7 @@ and enforceable aggregate spending controls remain unresolved in the trial repor
   and broader packaged-consumer/platform checks.
 - Test coverage gaps requiring authoring or selection work:
   application user flows absent from selected browser suites,
-  library-dependent Android cases skipped without fixtures,
+  Android behavior beyond the existing fixture-backed instrumented cases,
   and package-consumer contracts not represented by a dedicated test.
   This inventory is not a branch-by-branch coverage audit of every package.
 - Orchestration gaps:

@@ -240,8 +240,17 @@ paused at a stable position,
 sought from zero to the middle of the track,
 and advanced exactly once at natural end.
 The two storage tests still failed with their original context.
-A disposable test-context experiment is running separately;
-it does not change the application or erase these failures.
+The isolated test-context experiment changed both tests to use instrumentation `targetContext`.
+Cloud run `38828426717` built those app/test APKs in a 195-second job;
+the build task reported 139 seconds.
+All 16 instrumented cases then passed with no skips in 5.925 seconds at the client boundary
+(5.115 seconds reported by JUnit).
+This establishes the context problem for the observed failures,
+without changing the application or replacing the original failing result.
+The experiment clears preferences in the disposable application,
+so it is not a proposed test change for a real user's installed player.
+Both APK sets and all three case-level results are retained by digest in the evidence file.
+The emulator shut down gracefully and its owning service is inactive.
 [Device evidence](depot-android-device-2026-10-15.evidence.json)
 [Cloud APK build](https://github.com/Aquaticats/Monochromatic/actions/runs/38826684750),
 [instrumented storage tests](../../package/music-player/android-app/app/src/androidTest/kotlin/dev/monochromatic/musicplayer/SessionStoreTest.kt)
@@ -482,9 +491,10 @@ The passing host suites do not replace those checks.
 
 ## Unresolved acceptance gaps and retained artifacts
 
-- Desktop interaction and Android instrumented tests executed and exposed failures.
-  Desktop display isolation and the Android storage-test context are being checked in separate trial experiments.
-  Neither result is a passing full-suite claim.
+- Desktop interaction executed and exposed failures;
+  the independent-session trial is collecting the remaining terminal results.
+  Android instrumentation passed all 16 cases in the isolated context experiment;
+  the original test source still has the two documented failures.
 - Account usage and per-product hard-start limits are user-reported in Account evidence supplied by the user.
   Storage-view aggregation,
   exact trial expiry,
