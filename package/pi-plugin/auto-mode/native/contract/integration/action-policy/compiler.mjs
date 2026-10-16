@@ -7,6 +7,7 @@ import {consumeHeadingContexts} from './heading-context.mjs';
 import {consumeSourceAssociations} from './source-association.mjs';
 import {consumeUnitAdoptions} from './unit-adoption.mjs';
 import {inspectOperationCoverage} from './operation-coverage.mjs';
+import {recordDecision} from './decision-diagnostics.ts';
 
 /**
  Compile the original whole-program clause batch under fixed bootstrap code policy.
@@ -134,6 +135,7 @@ export function compileBoundClauseProgram({
     .value
     .choice
     !=='none');
+  recordDecision({judgment,event:'clause-admission',details:{id,binding:projection,model:record.model,matchingModel,answer:record.answer,admitted,priority}});
   sourceNeedsAuthority.set(
     projection.sourceOccurrence,
     (sourceNeedsAuthority.get(projection.sourceOccurrence)??false)||needsAuthority

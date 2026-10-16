@@ -5,6 +5,7 @@ import {captureAuthorizationInputs,captureAuthorizationOwnerFactory} from './aut
 import {capturePendingSessionApproval} from './pending-session-approval.ts';
 import {compileBoundClauseProgram} from './compiler.mjs';
 import {compilation} from './compilation-result.mjs';
+import {recordDecision,recordDecisionEvidence} from './decision-diagnostics.ts';
 import {resolveManualReviewOutcome} from './review-outcome.ts';
 import {reviewOperationDecision} from './operation-decision.ts';
 import {
@@ -47,6 +48,7 @@ function captureScopes({inputs,policy,headingPolicy,unitPolicy}){
 /** The original judgment owns the budget, evidence, closure, and subsequent execution checks. */
 async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerFor,policy,headingPolicy,unitPolicy,approvalHost}){
  const dl=tagged({tag:decide.name,l});
+ recordDecision({judgment,event:'review-start',details:{members:judgment.inspect().memberExecutions}});
  dl.debug('capturing selected decision inputs');
  const inputs=await capturePolicyInputs({judgment,effectOwnerFor,sourceContext});
  const authorizationInputs=await captureAuthorizationInputs({judgment,inputs,ownerFor:authorizationOwnerFor});
@@ -62,6 +64,7 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
   await judgment.assess(batch);
   const evidence=judgment.captureBatchEvidence(batch);
   judgment.assertBatchEvidence(evidence);
+  recordDecisionEvidence({judgment,evidence});
   return evidence;
  }
  async function assessAndCompile(){
@@ -73,7 +76,7 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
    headingPolicy,headingScope,unitPolicy,unitScope
    });
   }catch(error){
-   dl.debug('clause assessment failed; checking the original lifetime before decision-model fallback',error);
+   recordDecision({judgment,event:'clause-assessment-failed',details:{error,next:'Check original currentness and budget before decision-model fallback'}});
    inputs.assertCurrent();
    authorizationInputs.assertCurrent();
    judgment.assertDependenciesCurrent();
@@ -87,10 +90,12 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
  const compiled=await assessAndCompile();
  dl.debug('resolving captured policy before original evidence closure');
  const automaticOutcome=resolveManualReviewOutcome(compiled.program);
+ recordDecision({judgment,event:'clause-outcome',details:{outcome:automaticOutcome,missingPremises:compiled.missingPremises,authorizationRequirements:compiled.program.authorizationRequirements}});
  const operationDecision=policy!==undefined&&(automaticOutcome.state!=='resolved'||automaticOutcome.verdict==='ask')
   ?await reviewOperationDecision(judgment)
   :undefined;
  const outcome=operationDecision?.outcome??automaticOutcome;
+ recordDecision({judgment,event:'automatic-outcome',details:{outcome,next:outcome.state!=='resolved'||outcome.verdict==='ask'?'manual-review':'terminal'}});
  try{
  judgment.assertDependenciesCurrent();
  judgment.checkpoint();
@@ -115,6 +120,7 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
   result.assertCurrent();
  }
  assertCurrent();
+ recordDecision({judgment,event:'review-complete',details:{outcome:result.outcome,confirmation:result.approval!==undefined}});
  dl.debug('completed original decision without replacing its execution owner');
  return Object.freeze({
    ...result,
@@ -168,6 +174,7 @@ export function createDecisionGate({
      sourceContext:{producerOwner,observer,collector,policyInput,stream,response}
    });
   }catch(error){
+   recordDecision({judgment,event:'review-failed',details:{error}});
    rl.debug('closing failed original decision');
    try{if(judgment.inspect().finalRecord===undefined)judgment.finalize();}
    catch(closureFailure){

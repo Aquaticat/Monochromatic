@@ -3,6 +3,7 @@ import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { admitsOperatingChoice } from '../maintained-policy.mjs';
 import { ruleAssessmentModel } from './assessment-model.ts';
 import { operationDecisionLabels } from './operation-decision-definition.ts';
+import { recordDecision, recordDecisionEvidence } from './decision-diagnostics.ts';
 import type { GuardOutcome } from '../../../../src/guard-outcome.ts';
 import type { JudgmentPublicAPI } from '../../collector/program-rule-batch-sdk-copy-v2/input/judgment-api-types.ts';
 import type { QuestionEvidence } from '../../lifecycle/claim-evidence-batch-selection/selection-owner-types.ts';
@@ -75,19 +76,24 @@ export async function reviewOperationDecision(judgment: Pick<JudgmentPublicAPI,
   tagged({ tag: reviewOperationDecision.name, l }).debug('asking decision model to resolve complete prepared operation');
   judgment.assertDependenciesCurrent();
   judgment.checkpoint();
+  recordDecision({ judgment, event: 'operation-decision-start', details: { model: ruleAssessmentModel } });
   /** The original declaration cannot be sampled again through a different handle. */
   const batch = judgment.issue([judgment.claimOperationDecision()]);
   await judgment.assess(batch);
   /** Original evidence is authenticated before inspecting any provider-selected value. */
   const evidence = judgment.captureBatchEvidence(batch);
   judgment.assertBatchEvidence(evidence);
+  recordDecisionEvidence({ judgment, evidence });
   if (evidence.length !== 1)
     throw new OperationDecisionEvidenceError('Whole-operation decision requires exactly its original selected claim');
   /** Array length is checked independently of the retained original member. */
   const record = evidence[0];
   if (record === undefined)
     throw new OperationDecisionEvidenceError('Whole-operation decision evidence is absent');
-  return Object.freeze({ outcome: resolveOperationDecision(record), evidence });
+  /** The log retains the cutoff result alongside the original distribution. */
+  const outcome = resolveOperationDecision(record);
+  recordDecision({ judgment, event: 'operation-decision-outcome', details: { outcome } });
+  return Object.freeze({ outcome, evidence });
 }
 
 //endregion Original model fallback
