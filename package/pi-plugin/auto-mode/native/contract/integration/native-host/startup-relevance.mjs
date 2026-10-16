@@ -14,7 +14,7 @@ export function createStartupRelevance({root,parse}){
  async function assessBatch({request,signal}){
   const al=tagged({tag:assessBatch.name,l});
   const answers=[];
-  // Each HTTP request fits the provider question limit and retains its own deadline.
+  // Each HTTP request fits the provider question limit and retains its own performance target.
   for(let offset=0;offset<request.rules.length;offset+=200){
    signal?.throwIfAborted();
    const rules=request.rules.slice(offset,offset+200);

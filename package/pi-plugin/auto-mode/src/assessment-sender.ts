@@ -16,7 +16,7 @@ import { sendAssessmentPartitions } from './assessment-partitions.ts';
  */
 const l = tagged({ tag: 'auto-mode-assessment-sender', },);
 
-//region Conversion consumes the original judgment deadline and one original attempt
+//region Conversion consumes the original judgment performance target and one original attempt
 
 /**
  Bind the selected Decisions contract without dispatching during startup.
@@ -105,7 +105,7 @@ export function createAssessmentSender({
      The HTTP sender checks the converted request's bytes before reading credentials.
      */
     /**
-     Attempt number, cancellation, and deadline pass through unchanged.
+     Attempt number, cancellation, and performance target pass through unchanged.
      */
     const decoded = await sendAssessmentPartitions({input,sendHttp,assertLifetime});
     /**

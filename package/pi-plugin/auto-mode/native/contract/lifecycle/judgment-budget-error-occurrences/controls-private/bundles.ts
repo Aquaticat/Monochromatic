@@ -10,12 +10,12 @@ const l=tagged({tag:'auto-mode-judgment-bundles'});
 
 //region Bundle admission precedes every parallel transport invocation.
 /**
- Bind shared counters to one judgment without renewing its deadline.
+ Bind shared counters to one judgment without renewing its performance target.
 
  @param accounting - shared lifetime counters
- @param checkpoint - original expiry and cancellation check
+ @param checkpoint - original performance target and cancellation check
  @param signal - original cancellation source
- @param targetAt - unchanged preparation-inclusive expiry
+ @param targetAt - unchanged preparation-inclusive performance target
  @returns owned parallel dispatch capability
  */
 export function createBundleDispatcher({accounting, checkpoint, signal, targetAt}: {
@@ -63,7 +63,7 @@ export function createBundleDispatcher({accounting, checkpoint, signal, targetAt
   }));
   /** Failed siblings retain their original rejection values in request order. */
   const failures:unknown[]=[];
-  /** Successful values remain private until all siblings and the deadline pass. */
+  /** Successful values remain private until all siblings and the performance target pass. */
   const values:Result[]=[];
   for(const outcome of outcomes){
    if(outcome.status==='rejected')failures.push(outcome.reason);

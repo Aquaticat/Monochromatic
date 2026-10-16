@@ -33,7 +33,7 @@ const attemptLimit=3;
  
  @param records - original attempt record collection
  
- @param targetAt - original absolute expiry
+ @param targetAt - original absolute performance target
  
  @param signal - original cancellation
  

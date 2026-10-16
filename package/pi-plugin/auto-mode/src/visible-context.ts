@@ -88,7 +88,10 @@ function visibleAssistantContent(
   return {
     type: block.type,
     name: block.name,
-    arguments: projectReviewInput({ name: block.name, input: block.arguments, }),
+    arguments: projectReviewInput({
+      name: block.name,
+      input: block.arguments,
+    }),
   };
 }
 
@@ -207,7 +210,10 @@ function visibleMessage(
   if (message.role === 'bashExecution') {
     return {
       role: message.role,
-      ...projectReviewInput({ name: 'bash', input: { command: message.command, }, }),
+      ...projectReviewInput({
+        name: 'bash',
+        input: { command: message.command, },
+      }),
       output: message.output,
       exitCode: message.exitCode,
       cancelled: message.cancelled,
@@ -419,7 +425,10 @@ export function buildVisibleContext({
    Complete selected visible message window.
    */
   const selectedMessages = visibleMessageWindow(
-    visibleMessages({ entries, project, },),
+    visibleMessages({
+      entries,
+      project,
+    },),
   );
   return selectedMessages.length === 0
     ? ''

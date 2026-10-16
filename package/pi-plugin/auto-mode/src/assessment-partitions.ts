@@ -9,13 +9,13 @@ import {partitionDecisionRequest,mergeDecisionResponses} from './decision-partit
 /** Assessment lifecycle logs exclude all provider and source content. */
 const l=tagged({tag:'auto-mode-assessment-partitions'});
 
-//region Every bundle retains one shared deadline and actual call accounting.
+//region Every bundle retains one shared performance target and actual call accounting.
 /**
  Send complete partitions without publishing partial assessment evidence.
 
  @param input - original lifetime and owned bundle dispatcher
  @param sendHttp - fixed provider transport
- @param assertLifetime - original conversion deadline check
+ @param assertLifetime - original conversion performance target check
  @returns complete attributed original answer map
  @throws AssessmentTransportError for missing bundle ownership or exhausted bundle allowance
  */

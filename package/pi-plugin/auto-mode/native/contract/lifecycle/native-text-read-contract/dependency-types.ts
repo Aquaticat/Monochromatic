@@ -92,6 +92,6 @@ export type DependencyRecord<Source extends DependencySources, Root extends obje
 }>;
 
 /**
- Live checks use the original deadline; retained checks observe original cancellation only.
+ Live checks use the original performance target; retained checks observe original cancellation only.
  */
 export type DependencyVerification = (signal: AbortSignal) => void;

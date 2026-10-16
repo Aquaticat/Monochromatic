@@ -19,7 +19,7 @@ export class AssessmentTransportError extends Error {
 }
 
 /**
- Original judgment supplies its already encoded body and preparation-inclusive deadline.
+ Original judgment supplies its already encoded body and preparation-inclusive performance target.
  */
 export type AssessmentTransportInput = {
   /** Owned judgment capability accounts for every parallel provider invocation. */
@@ -91,15 +91,15 @@ export function createAssessmentHttpSender({
   rl.debug('binding direct assessment transport',);
 
   /**
-   Recheck the original clock and cancellation without creating a new deadline.
+   Recheck the original clock and cancellation without creating a new performance target.
 
-   @param input - original judgment cancellation and deadline
+   @param input - original judgment cancellation and performance target
 
    @throws AssessmentTransportError when cancellation or an invalid clock prevents dispatch
    */
-  function remaining(input: AssessmentTransportInput): void {
+  function checkLifetime(input: AssessmentTransportInput): void {
     tagged({
-      tag: remaining.name,
+      tag: checkLifetime.name,
       l: rl,
     },)
       .debug('checking original assessment lifetime',);
@@ -114,15 +114,15 @@ export function createAssessmentHttpSender({
   }
 
   /**
-   Consume response bytes under the inherited limit before returning any provider content.
+   Consume complete response bytes while retaining original cancellation.
 
    @param response - original HTTP response
    
    @param input - original judgment attempt
 
-   @returns complete bounded response text
+   @returns complete response text
 
-   @throws AssessmentTransportError when response bytes or lifetime exceed the transport contract
+   @throws AssessmentTransportError when response decoding or cancellation fails
    */
   async function readResponse({
     response,
@@ -135,11 +135,11 @@ export function createAssessmentHttpSender({
       tag: readResponse.name,
       l: rl,
     },)
-      .debug('consuming bounded assessment response',);
+      .debug('consuming complete assessment response',);
     if (response.body === null)
       throw new AssessmentTransportError('Assessment HTTP response has no body',);
     /**
-     Retained chunks never exceed the inherited 64-KiB response limit.
+     Retain every received chunk without truncation.
      */
     const received: {
       chunks: Uint8Array[];
@@ -149,12 +149,12 @@ export function createAssessmentHttpSender({
       length: 0,
     };
     for await (const chunk of response.body) {
-      remaining(input,);
+      checkLifetime(input,);
       received.length += chunk.byteLength;
       received.chunks
         .push(chunk,);
     }
-    remaining(input,);
+    checkLifetime(input,);
     return new TextDecoder(
       'utf-8',
       { fatal: true, },
@@ -180,7 +180,7 @@ export function createAssessmentHttpSender({
     },);
     sl.debug('preparing original assessment HTTP attempt',);
     try {
-      remaining(input,);
+      checkLifetime(input,);
       if ((!Number.isInteger(input.attempt,)) || (input.attempt < 1)
         || (input.attempt > limits.attempts))
         throw new AssessmentTransportError('Assessment HTTP attempt is outside the original nine-call bundle budget',);
@@ -217,7 +217,7 @@ export function createAssessmentHttpSender({
       },
       );
       /**
-       The stream iterator cancels response consumption when its limit or deadline fails.
+       The stream iterator cancels response consumption when original cancellation is observed.
        */
       const raw = await readResponse({
         response,

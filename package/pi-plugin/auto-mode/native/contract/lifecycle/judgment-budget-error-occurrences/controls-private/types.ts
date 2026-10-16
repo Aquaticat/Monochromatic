@@ -4,7 +4,7 @@
  */
 
 //region Typed boundaries expose original lifetime and attempt accounting only.
-/** One actual provider invocation receives the original cancellation and deadline. */
+/** One actual provider invocation receives the original cancellation and performance target. */
 export type JudgmentBundleOperation<Result> = (input: {
  readonly signal: AbortSignal;
  readonly targetAt: number;
@@ -67,7 +67,7 @@ export type JudgmentAttempt = {
    */
   readonly signal: AbortSignal;
   /**
-   Preparation-inclusive absolute deadline.
+   Preparation-inclusive absolute performance target.
    */
   readonly targetAt: number;
   /**
@@ -116,7 +116,7 @@ export type JudgmentBudgetSnapshot = {
    */
   readonly startedAt: number;
   /**
-   Original absolute expiry.
+   Original absolute performance target.
    */
   readonly targetAt: number;
   /**

@@ -1,5 +1,5 @@
 /**
- Original dependency facade retains root, source, file, deadline, and cancellation ownership. @module
+ Original dependency facade retains root, source, file, performance target, and cancellation ownership. @module
  */
 import {tagged} from '@monochromatic-dev/module-logger/ts';
 import {nonNullishOrThrow} from '@monochromatic-dev/module-or-throw/ts';
@@ -35,7 +35,7 @@ const l=tagged({tag:'auto-mode-dependency-owner'});
 /**
  Read the original native monotonic clock when no bootstrap override is supplied.
 
- @returns native elapsed clock reading without a new deadline
+ @returns native elapsed clock reading without a new performance target
  */
 function readDependencyClock(): number {
   return performance.now();
@@ -52,16 +52,16 @@ function checkSignal(signal: AbortSignal): void {
   if (signal.aborted) throw new DependencyCancellationError();
 }
 
-//region One issuing root/deadline retains all dependencies behind opaque handles.
+//region One issuing root/performance target retains all dependencies behind opaque handles.
 /**
- Bind original root, source, file, deadline, and cancellation observers.
+ Bind original root, source, file, performance target, and cancellation observers.
  Mechanical freshness does not establish instruction authority or human permission.
 
  @param collector - original source capture and freshness capabilities
 
  @param rootAdapter - original root capture and finalization capabilities
 
- @param targetAt - fixed preparation-inclusive expiry
+ @param targetAt - fixed preparation-inclusive performance target
 
  @param rootDirectory - original file selection root
 
@@ -73,7 +73,7 @@ function checkSignal(signal: AbortSignal): void {
 
  @returns frozen dependency operations sharing original opaque records
 
- @throws DependencyClockError when the original deadline or clock is invalid
+ @throws DependencyClockError when the original performance target or clock is invalid
 
  @throws DependencyConfigurationError when the original root or file profile is invalid
 
@@ -109,11 +109,11 @@ export function createDependencyFacade<const Source extends DependencySources, c
    */
   const profile=createDependencyProfile(files);
   /**
-   Live checks observe cancellation before the fixed original deadline.
+   Live checks observe cancellation before the fixed original performance target.
 
    @param signal - original dependency cancellation
 
-   @throws DependencyClockError when the clock is non-finite or the original deadline has expired
+   @throws DependencyClockError when the clock is non-finite or the performance target is invalid
    */
   function checkpoint(signal:AbortSignal):void {
     checkSignal(signal);
@@ -132,7 +132,7 @@ export function createDependencyFacade<const Source extends DependencySources, c
 
    @param signal - original record cancellation
 
-   @param verify - original live deadline or retained cancellation verifier
+   @param verify - original live performance target or retained cancellation verifier
 
    @returns completed original descriptor-bound observation
    */
@@ -286,7 +286,7 @@ export function createDependencyFacade<const Source extends DependencySources, c
     return projection;
   }
   /**
-   Revalidate original live dependencies using the preparation-inclusive deadline.
+   Revalidate original live dependencies using the preparation-inclusive performance target.
 
    @param handle - original issued occurrence
 

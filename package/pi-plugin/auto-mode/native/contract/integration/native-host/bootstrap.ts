@@ -125,7 +125,7 @@ function rejectUnattributedAssessment(): never {
 }
 
 /**
- Read the same monotonic clock used by original judgment deadlines and HTTP requests.
+ Read the same monotonic clock used by original judgment performance targets and HTTP requests.
 
  @returns current monotonic timestamp in milliseconds
  */
