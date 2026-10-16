@@ -222,6 +222,59 @@ retain the corresponding probes and recovery boundaries.
 Existing issues #997 and #998 retain the successful combined desktop evidence;
 they remain open for production integration.
 
+## Complete-graph replay findings
+
+- [#1057](https://github.com/Aquaticats/Monochromatic/issues/1057):
+  immutable-base ancestry assertions need the base object fetched into the trial checkout.
+- [#1058](https://github.com/Aquaticats/Monochromatic/issues/1058):
+  Scorecard image inspection collided with mise template rendering;
+  closed after the corrected adapter and fixture controls passed.
+- [#1059](https://github.com/Aquaticats/Monochromatic/issues/1059):
+  native trial setup omitted the source-configured cargo-binstall prerequisite;
+  closed after Windows and macOS setup recovery.
+- [#1060](https://github.com/Aquaticats/Monochromatic/issues/1060):
+  the historical Windows workflow required unsupported GUI PowerShell redirection and skipped nextest;
+  closed with existing corrected-workflow evidence and the independent test replay.
+- [#1061](https://github.com/Aquaticats/Monochromatic/issues/1061):
+  historical Windows tests referenced a Unix-only libc CPU helper;
+  closed with the existing source fix and later passing compilation.
+- [#1062](https://github.com/Aquaticats/Monochromatic/issues/1062):
+  historical macOS change-plan fixtures generated case-colliding names;
+  closed with the existing source fix and later passing test.
+- [#1063](https://github.com/Aquaticats/Monochromatic/issues/1063):
+  macOS rename notifications use a canonical target path that differs from the fixture expectation.
+- [#1064](https://github.com/Aquaticats/Monochromatic/issues/1064):
+  macOS burst-write notifications differ in reported paths and structural flags.
+- [#1065](https://github.com/Aquaticats/Monochromatic/issues/1065):
+  macOS in-place-write notifications differ in reported path and structural flag.
+- [#1066](https://github.com/Aquaticats/Monochromatic/issues/1066):
+  full-package Oxlint panics in `no-generated-empty-object-type` at the selected TOML revision.
+- [#1067](https://github.com/Aquaticats/Monochromatic/issues/1067):
+  the TOML fuzz coverage gate reports fewer covered lines in `values.ts` than its retained baseline.
+- [#1068](https://github.com/Aquaticats/Monochromatic/issues/1068):
+  the file-enforcer mutation task resolves its repository-relative package path twice.
+- [#1069](https://github.com/Aquaticats/Monochromatic/issues/1069):
+  truepeak-core Clippy rejects the schema-version constant assertion.
+- [#1070](https://github.com/Aquaticats/Monochromatic/issues/1070):
+  file-enforcer container tests receive `SIGKILL` after a logger sink verification timeout.
+- [#1071](https://github.com/Aquaticats/Monochromatic/issues/1071):
+  historical generated-file worktree checkout references an unresolvable Git LFS endpoint.
+- [#1072](https://github.com/Aquaticats/Monochromatic/issues/1072):
+  native trial setup needs Clippy installed for the exact locked Rust toolchain.
+- [#1073](https://github.com/Aquaticats/Monochromatic/issues/1073):
+  fail-fast native replay leaves independent selected tests unexecuted after a source failure.
+- [#1074](https://github.com/Aquaticats/Monochromatic/issues/1074):
+  isolated VM preparation needs bounded libvirt and QEMU Unix socket paths.
+- [#1075](https://github.com/Aquaticats/Monochromatic/issues/1075):
+  the VM bootstrap assumed `XDG_RUNTIME_DIR` was already present.
+- [#1076](https://github.com/Aquaticats/Monochromatic/issues/1076):
+  the vmsync lifecycle package task resolves its mvm helper from the package working directory.
+
+These findings preserve source,
+harness,
+and environment boundaries.
+The macOS watch symptoms remain separate until a shared cause is verified.
+
 ## Pending final reconciliation
 
 The totals in this handover predate the latest complete-graph replays.
@@ -249,6 +302,7 @@ Their retained records include allocation verification and every provider attemp
 Final source-case reconciliation still requires the corrected manifests and later recovery runs.
 Pending collection includes VM replay `rv6hfj76w9`
 and native recovery runs `38847322477` and `38847322559`.
+Linux desktop nextest recovery `pbg4h8ww6k` also needs collection and independent full-suite reconciliation.
 The [accounting audit](../audit/depot-complete-ci-accounting-2026-10-16.md)
 owns the measurements and distinctions between execution completion and passing CI.
 
