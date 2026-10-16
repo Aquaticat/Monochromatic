@@ -433,7 +433,7 @@ The exact logger-head manifest closure contains 158 packages.
 This measured breadth follows real development/configuration dependency cycles;
 it must not be replaced by just the logger package to obtain a smaller timing.
 Source-import and task-boundary review remains part of completing its execution manifest.
-The initial task expansion contains 708 package checks and 18 external check groups,
+The revised task expansion contains 718 package checks and 19 external check groups,
 including 155 full-package Oxlint tasks,
 157 type checks,
 1,057 account-independent unit files,
@@ -448,6 +448,41 @@ Offline Pi verification,
 desktop terminals,
 disposable VM lifecycle tests,
 and network-namespace tests remain required affected consumer boundaries.
+
+The task-name audit also includes credential-free Worker deployment dry runs,
+Git policy Windows cross-target Clippy,
+old-format interoperability fixtures,
+native mutation testing,
+and the deepmerge sidecar's compiler and Bun/Deno runtime checks.
+The browser property suite needs the separately named `bundle:browser-properties` preparation task.
+Deepmerge campaigns requiring a separately selected external checkout or historical-release ledger are excluded;
+the locked dependency's ordinary,
+coverage,
+declared-type,
+compiler,
+and runtime checks remain selected.
+Intentional-invalid lint fixture helpers are diagnostic displays;
+the selected plugin unit suites assert their results.
+
+A tracked-source literal-import scan resolves package export maps and finds 165 artifact build edges,
+with no cycle in that graph and no prerequisite build owner outside the affected closure.
+The scan records 3,175 import edges;
+it is not an AST proof of dynamic import expressions.
+Outside-closure active matches are root configurations,
+the Playwright declaration file,
+an already-covered plugin fixture,
+and a documentation benchmark excluded from correctness execution.
+Paused and deprecated package matches remain separately recorded and excluded from the active workspace.
+Build and test/type prerequisites now name the relevant artifact owners;
+full-package Oxlint keeps its authored configuration bootstrap.
+
+The Git policy native container checks require locally identified base images,
+not just `podman` on `PATH`.
+The authored native gate uses image
+`6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a`.
+Its Git image builder requires Git revision `a018953688f1b10bddf91bff8747068f5f4746a4`
+and compiler image `84f24e75017a7d8afa1c69e51c52f37e7d8d644cd2597a01f4732ad0b386dc20`.
+The execution adapter must preserve or explicitly replace those prerequisites with measured identities.
 
 The exact native-core-head Cargo path closure contains four packages:
 the core,
@@ -486,6 +521,12 @@ Clippy,
 nextest,
 and the release CLI.
 The desktop `test:e2e` task already builds a fresh release executable before driving it.
+An empty `E2E_ONLY` selects every session.
+The authored harness requires a parent Wayland display,
+PipeWire,
+and a systemd user manager;
+it is not a headless command-only suite.
+Its repository fallback library removes the need for a private external generator.
 Unchanged core and compositor sources are build prerequisites;
 they do not select unrelated core or Android lint/test gates.
 
