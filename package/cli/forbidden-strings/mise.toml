@@ -123,3 +123,36 @@ if (child.exitCode !== 0) throw new Error(`forbidden-strings exited ${String(chi
 [tasks."lock:members"]
 description = "Record a changed version of a path dependency in this lockfile without moving any other locked version"
 run = "cargo update --offline --workspace"
+[tasks."inspect:release-access"]
+description = "Compare transferred release lookup with public and workflow-token requests"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync } = await import('node:child_process')
+const repository = 'Aquaticats/Monochromatic'
+const headers = { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }
+const tags = ['forbidden-strings-v0.5.0', 'monochromatic-lint-v0.1.3', 'monochromatic-git-policy-cli-v0.1.4', 'monochromatic-nested-wayland-session-v0.6.0']
+for (const authenticated of [true, false]) {
+  const requestHeaders = authenticated ? { ...headers, Authorization: `Bearer ${process.env.GH_TOKEN}` } : headers
+  const listing = await fetch(`https://api.github.com/repos/${repository}/releases?per_page=100`, { headers: requestHeaders })
+  const payload = await listing.json()
+  console.log(JSON.stringify({ authenticated, operation: 'release-list', status: listing.status }))
+  if (!Array.isArray(payload)) continue
+  for (const tag of tags) {
+    const release = payload.find(release => release.tag_name === tag)
+    if (!release) { console.log(JSON.stringify({ authenticated, tag, listed: false })); continue }
+    for (const endpoint of [`releases/tags/${tag}`, `releases/${release.id}`]) {
+      const response = await fetch(`https://api.github.com/repos/${repository}/${endpoint}`, { headers: requestHeaders })
+      console.log(JSON.stringify({ authenticated, tag, endpoint, status: response.status }))
+      await response.arrayBuffer()
+    }
+    const asset = release.assets.find(asset => asset.name.endsWith('x86_64-unknown-linux-gnu.tar.gz'))
+    if (asset) {
+      const response = await fetch(asset.url, { headers: { ...requestHeaders, Accept: 'application/octet-stream' } })
+      console.log(JSON.stringify({ authenticated, tag, operation: 'asset-download', status: response.status, bytes: (await response.arrayBuffer()).byteLength }))
+    }
+  }
+}
+const result = spawnSync('gh', ['release', 'view', tags[0], '--repo', repository, '--json', 'tagName'], { encoding: 'utf8' })
+console.log(JSON.stringify({ operation: 'original-gh-release-view', status: result.status, stdout: result.stdout, stderr: result.stderr }))
+'''
+
