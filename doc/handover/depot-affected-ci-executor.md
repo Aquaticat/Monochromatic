@@ -8,7 +8,7 @@ Package Oxlint always receives the unchanged package task with no file arguments
 Partial waves remain partial evidence, never a complete-graph timing claim.
 
 The isolated harness is branch `trial/depot-complete-ci-20261016`.
-Its latest local commit is `a65a41cd08`; the current launched jobs use `aff6a49ca7`.
+Its latest launched harness commit is `0886b2669d`.
 Manifests live under `.depot/manifests/` on that branch.
 The executor records selected and deferred checks, per-check exit status,
 source and manifest identity, expected unit files, and input hashes.
@@ -48,7 +48,14 @@ source and manifest identity, expected unit files, and input hashes.
   The `tsgolint` diagnostic includes `panic: unknown rule: no-generated-empty-object-type`.
   The coverage gate reports `src/values.ts: 332 -> 304 covered lines`.
   Builds, declared unit files, fuzz campaigns, conformance, and the live-source plugin test passed.
-- TOML remaining `d1jgjp62lg` is still being awaited by an existing terminal waiter.
+- TOML remaining `d1jgjp62lg` failed.
+  Container tests failed after 88.057 seconds.
+  TOML mutation failed after 957.015 seconds with manifest-read `EACCES` errors
+  under the rootful container bridge; it reported 3062 runtime errors.
+  File-enforcer mutation failed after 0.323 seconds because its package argument
+  was resolved beneath its package working directory a second time.
+  Generated consistency failed before generation because Git LFS tried an obsolete endpoint.
+  Retain these failures separately from product-check failures.
 - Executor controls `g57729x66d` ended with the passing fixture successful
   and the failure, Oxlint-argument, and Oxlint-scope fixtures failed as expected.
   Each terminal log confirms the intended assertion boundary:
@@ -62,22 +69,57 @@ Some TypeScript output omitted a final newline, joining an executor event to a `
 Commit `a65a41cd08` starts every structured executor event with a newline.
 The original aggregate case record remains the reconciliation source for that attempt.
 
+- Native setup `5tbb7qftkw` failed because the older JavaScript bootstrap was copied
+  to a revision using a published native Git wrapper. Its unrelated offline source build
+  lacked the `ignore` registry package. The published-tool bootstrap replaces that step.
+- Native `j80v9dqfb4` reached the selected core and Android checks.
+  Core build, default build, all-feature tests, benchmark build, and benchmark Clippy passed.
+  Core Clippy rejected `clippy::assertions_on_constants` at `cache_tests.rs:300`;
+  changed-Rust style also failed.
+  Android passed all eight selected producer checks, including both native ABIs,
+  debug/release APKs, lint, Clippy, Detekt, JVM tests, and instrumented APK assembly.
+  Its artifact is `01a142b1-8fab-7b97-a8fe-257a04d5c35d`,
+  SHA-256 `0021a6cda4b4848ec4fc96280894800b3899329f05bfe94e5bfaf58c8cf33d51`.
+- Desktop `xg3znh2j0p` failed before checks at an overly strict existing-Clang-directory assertion,
+  followed by a harness-relative import of an uninstalled workspace dependency.
+  Commit `43c0fb4e8f` verifies the existing headers using Clang
+  and resolves the utility from its installed source consumer.
+- Scheduler controls `7vqccn47nx` passed their intended boundaries:
+  independent build ran despite another check failing,
+  the failed dependency suppressed its consumer,
+  and the passing consumer read the build marker.
+- Live runs at `0886b2669d`:
+  virtualization probe `1dg9t9znbj`, logger static `qm7w64tmhj`,
+  corrected desktop `w6ln4j09fz`, and expanded scheduler controls `dxk4v3s0w3`.
+
+The executor now closes every selected wave over its prerequisites.
+Deferred checks cannot satisfy selected consumers.
+The fifth control specifically selects a type consumer whose build falls outside
+the initial static wave and requires that build's actual marker.
+The independently reviewed native manifest removes false core-build barriers:
+the app and benchmark Cargo tasks compile their path dependencies themselves.
+Logger Oxlint depends on the shared configuration build inside the graph;
+configuration failure does not suppress independent type checks.
+
 All attempts, including setup failures, remain part of provider cost accounting.
 
 ## Queue
 
 1.  Retain terminal TOML diagnostics and check records in the audit and incident trackers.
-2.  Launch reviewed native Linux core and Android jobs with tools read directly
-    from the source lockfile. The workflow is ready at `a65a41cd08`.
-    Prepare and review the Linux desktop host-library bridge and runtime adapter.
-3.  Publish Android APK evidence to the main agent for headed disposable-device validation.
+2.  Collect the running logger, desktop, virtualization, and control results.
+3.  Complete Android artifact download and give paths plus hashes to the main agent
+    for headed disposable-device validation.
 4.  Execute the native feature matrix and full desktop runtime suite.
-5.  Prepare and run bounded logger waves, including declared browser and integration surfaces.
+5.  Complete bounded logger waves, including declared browser and integration surfaces.
+    The coverage agent owns the offline configured-Pi extension,
+    notification, terminal, and tmux consumer adapters.
 6.  Complete generated-file and container/mutation TOML evidence.
 7.  Update #1030 for the prerequisite correction, #1057 for the verified fetch remedy,
     #1012 for unavailable sidecar evidence, and #339 for cycle evidence.
     Deduplicate and document bootstrap, lock metadata, trust, tsgolint panic,
-    and coverage incidents separately. Add resource metadata and event delimiter
+    coverage, rootful mutation permissions, duplicated mutation package path,
+    obsolete LFS endpoint, and desktop setup incidents separately.
+    Add resource metadata and event delimiter
     corrections to the existing execution-evidence issue.
 8.  Render-check this handover and all incident documentation.
 9.  Remove disposable catalog worktrees only after inspecting ignored files and Git-directory hazards.
@@ -99,6 +141,9 @@ Clang resources from `/usr/lib/clang/*`.
 Ubuntu preparation must bridge those filesystem paths after probing installed libraries.
 The runtime requires a disposable systemd user manager, parent Wayland compositor,
 PipeWire services, ImageMagick, and the repository compositor artifact.
+The private runtime uses 2 CPUs, 2 GiB, and a 512-process limit.
+Successful suite exit is insufficient: audio sinks, user units, processes,
+container removal, and overlay isolation must also pass before its record reports success.
 
 The main worktree's modified `mise.lock` belongs to concurrent work and must remain untouched.
 Cloud jobs are bounded to the declared `16x64` runner with a 30-minute job limit.
