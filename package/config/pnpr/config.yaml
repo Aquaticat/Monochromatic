@@ -19,12 +19,12 @@ auth:
       audience: https://pnpr.c.aquati.cat
       workloads:
         - identity:
-            subject: 'repo:Aquaticat/Monochromatic:ref:refs/heads/main'
+            subject: 'repo:Aquaticats/Monochromatic:ref:refs/heads/main'
             username: pnpr-publish-ci
             claims:
               repository_id: '710240121'
-              repository_owner_id: '66041952'
-              workflow_ref: 'Aquaticat/Monochromatic/.github/workflows/pnpr-publish.yml@refs/heads/main'
+              repository_owner_id: '343218767'
+              workflow_ref: 'Aquaticats/Monochromatic/.github/workflows/pnpr-publish.yml@refs/heads/main'
           registry: monochromatic-dev
           packages:
             - '@monochromatic-dev/agent-harness-shared-current-time-context'
