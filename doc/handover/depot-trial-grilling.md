@@ -322,9 +322,43 @@ The consumer will compare every observed test name and status with that source c
 Next actions remain producer APK retrieval,
 headful private AVD execution with synthetic fixtures,
 and graceful shutdown.
-The desktop platform matrix,
-logger scanner,
-and final coherent whole-case replays remain queued.
+The final coherent whole-case replays remain queued.
+
+Subsequent host observations:
+logger scanner `38843463588` verified three paths,
+and desktop scanner `38843587917` verified six paths.
+Each scanner job took 28 seconds.
+Logger host run `38843901438` passed all six jobs against source `ef01490`:
+filesystem identity and semantic bridge/external-consumer checks on their original operating-system matrices.
+Trial harness `3b06b44af2` explicitly disables mise-action environment export during bootstrap;
+exact tool installation and package task activation happen separately.
+Alpine run `38843525621` passed both architectures against desktop source `3434eaa455`.
+
+Desktop Windows run `38843524267` reproduced the already documented historical PowerShell assertion mismatch
+at that same source revision.
+`doc/decision/music-player-windows-gui-subsystem.md` records the original failing run at `3434eaa455`
+and the later corrected workflow at `2db98160ed`.
+This replay does not establish a new application defect.
+The failed PowerShell step skipped nextest,
+so trial harness `198a7bacb9` keeps the immutable source checkout and makes nextest independent
+of that known failure.
+Its replay remains required before accepting the Windows test coverage.
+Issue `#1060` was corrected to the historical mismatch and closed;
+the missing replay coverage remains part of `#1030`.
+
+The successful Android producer is Depot run `j80v9dqfb4`,
+job `sk8lkf9xfp`,
+attempt `s57prgfpx8`.
+Root started the private headful AVD for its consumer:
+unit `depot-trial-fold`,
+invocation `c7538398d50c4cb5994b60eaa257c8a9`.
+Boot verification returned API 37,
+`x86_64`,
+16384-byte pages,
+font scale `1.0`,
+and no forced size or density.
+APK retrieval and full-suite execution are pending;
+shutdown must use the documented sync/wait/sync/emulator-kill sequence.
 
 ## Purpose and current state
 
