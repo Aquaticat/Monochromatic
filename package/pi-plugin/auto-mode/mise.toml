@@ -123,7 +123,10 @@ run = [
 
 [tasks."test:semantic-operating-policy"]
 description = "Verify adopted native categorical admission through the built package"
-run = "node src/semantic-operating-policy.unit.test.ts"
+run = [
+  "node src/semantic-operating-policy.unit.test.ts",
+  "node src/semantic-admission-scope.unit.test.ts",
+]
 
 [tasks."test:native:semantic-operating-policy"]
 description = "Exercise the adopted policy through original SDK requests and maintained HTTP transport"
