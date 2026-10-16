@@ -163,9 +163,11 @@ struct PortalSettings {
     served_accent: Arc<AtomicU32>,
 }
 
-/// What: Converts a zvariant ownership error into the D-Bus failure type;
+/// What:
+///       Converts a zvariant ownership error into the D-Bus failure type;
 ///       `->` names the returned value's type.
-/// Why: The Settings interface must return protocol errors to its caller.
+/// Why:
+///       The Settings interface must return protocol errors to its caller.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
