@@ -1,0 +1,2028 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-16T01:41:25.508Z",
+  "complete": false,
+  "repository": "Aquaticats/Monochromatic",
+  "native": {
+    "runId": "p9sfmw70wq",
+    "jobId": "sfjhrbwvrs",
+    "attemptId": "2gv4q0p1bd",
+    "revision": "a21e6369936689a962de528dce0a0f8b9e22f4fe",
+    "status": "finished",
+    "conclusion": "success",
+    "runner": {
+      "cpus": 4,
+      "memoryGiB": 16,
+      "baseMinuteMultiplier": 2
+    },
+    "wholeJobSeconds": 157.92,
+    "normalizedBaseMinutes": 5.263999999999999,
+    "suites": [
+      {
+        "feature": "default",
+        "passed": 58,
+        "skipped": 0,
+        "harnessSeconds": 0.03,
+        "results": [
+          {
+            "name": "bones::tests::hot_frame_wins_the_bones_seed",
+            "seconds": 0.002
+          },
+          {
+            "name": "bones::tests::crc8_table_matches_check_vector",
+            "seconds": 0.002
+          },
+          {
+            "name": "bones::tests::coded_numbers_decode",
+            "seconds": 0.002
+          },
+          {
+            "name": "bones::tests::garbage_is_rejected",
+            "seconds": 0.003
+          },
+          {
+            "name": "bones::tests::walk_confirms_frames_and_byte_spans",
+            "seconds": 0.002
+          },
+          {
+            "name": "decision::tests::probe_estimate_is_sampled",
+            "seconds": 0.002
+          },
+          {
+            "name": "decision::tests::full_scans_are_exact",
+            "seconds": 0.002
+          },
+          {
+            "name": "error::tests::display_includes_cause",
+            "seconds": 0.002
+          },
+          {
+            "name": "error::tests::equality_distinguishes_variants",
+            "seconds": 0.002
+          },
+          {
+            "name": "error::tests::is_std_error",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::gain_never_exceeds_unity",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::loud_track_is_attenuated_to_ceiling",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::linear_gain_matches_db_form",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::peak_dbtp_reference_points",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::probe_margin_inflates_in_db",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::silence_gives_unity_gain",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::quiet_track_is_not_amplified",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::flac_bytes_yield_lossless_with_bones",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::broken_flac_keeps_lossless_without_bones",
+            "seconds": 0.003
+          },
+          {
+            "name": "inputs::tests::id3_prefixed_flac_sniffs",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::missing_file_stays_uninformed",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::other_bytes_stay_uninformed",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::channel_routing_survives_mid_frame_chunk_split",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::catmull_rom_reproduces_control_points",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::peak_is_at_least_max_sample",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::detects_inter_sample_peak_above_samples",
+            "seconds": 0.003
+          },
+          {
+            "name": "meter::tests::silence_is_zero_peak",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::per_sample_feeding_matches_whole_buffer",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::take_peak_segments_match_continuous_peak",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::zero_channels_is_zero_peak",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::cache_identity_keeps_decoder_independent",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::default_policy_has_decided_constants",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::meter_id_is_stable_and_nonzero",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::policy_id_is_stable",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::bones_seeds_reach_the_needle",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::policy_id_changes_with_every_parameter",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::climb_reads_the_hilltop",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::silence_probes_to_zero",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::measure_window_reads_one_window",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::full_scan_of_short_track_tags_short",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::bones_seeds_guide_the_lossless_probe",
+            "seconds": 0.003
+          },
+          {
+            "name": "resolve::tests::probe_seek_finds_a_mid_track_loud_window",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::full_scan_upgrades_a_long_track_exactly",
+            "seconds": 0.003
+          },
+          {
+            "name": "resolve::tests::long_track_probes_with_margin",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::provenance_picks_bucket_coverage",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::silence_yields_unity_gain",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::unknown_duration_full_scans",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::short_track_full_scans_exactly",
+            "seconds": 0.003
+          },
+          {
+            "name": "source::tests::boxed_source_drives_the_meter",
+            "seconds": 0.002
+          },
+          {
+            "name": "source::tests::duration_known_rejects_degenerate_values",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::zero_channels_is_unity",
+            "seconds": 0.003
+          },
+          {
+            "name": "source::tests::seek_to_frame_repositions_and_guards_end",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::degenerate_window_counts",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::placement_plan_bundles_length_and_starts",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::starts_are_monotonic_and_bounded",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::starts_cover_both_ends",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::window_frames_floors_and_clamps",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::track_shorter_than_window_starts_at_zero",
+            "seconds": 0.002
+          }
+        ]
+      },
+      {
+        "feature": "fingerprint",
+        "passed": 67,
+        "skipped": 0,
+        "harnessSeconds": 0.035,
+        "results": [
+          {
+            "name": "bones::tests::hot_frame_wins_the_bones_seed",
+            "seconds": 0.002
+          },
+          {
+            "name": "bones::tests::garbage_is_rejected",
+            "seconds": 0.002
+          },
+          {
+            "name": "bones::tests::crc8_table_matches_check_vector",
+            "seconds": 0.002
+          },
+          {
+            "name": "bones::tests::coded_numbers_decode",
+            "seconds": 0.003
+          },
+          {
+            "name": "bones::tests::walk_confirms_frames_and_byte_spans",
+            "seconds": 0.002
+          },
+          {
+            "name": "decision::tests::probe_estimate_is_sampled",
+            "seconds": 0.002
+          },
+          {
+            "name": "decision::tests::full_scans_are_exact",
+            "seconds": 0.002
+          },
+          {
+            "name": "error::tests::display_includes_cause",
+            "seconds": 0.002
+          },
+          {
+            "name": "error::tests::is_std_error",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::every_input_changes_the_key",
+            "seconds": 0.002
+          },
+          {
+            "name": "error::tests::equality_distinguishes_variants",
+            "seconds": 0.003
+          },
+          {
+            "name": "fingerprint::tests::field_boundaries_are_unambiguous",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::material_fields_sit_at_their_documented_offsets",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::material_cases_reach_the_vectorized_hash_paths",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::material_known_answers_match_the_reference",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::the_default_seed_is_zero",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::raw_xxh3_64_known_answers_match_the_reference",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::the_key_uses_all_sixty_four_bits",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::material_starts_with_the_domain_tag_and_has_the_documented_length",
+            "seconds": 0.003
+          },
+          {
+            "name": "gain::tests::linear_gain_matches_db_form",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::gain_never_exceeds_unity",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::loud_track_is_attenuated_to_ceiling",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::peak_dbtp_reference_points",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::probe_margin_inflates_in_db",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::quiet_track_is_not_amplified",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::silence_gives_unity_gain",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::flac_bytes_yield_lossless_with_bones",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::id3_prefixed_flac_sniffs",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::missing_file_stays_uninformed",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::broken_flac_keeps_lossless_without_bones",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::catmull_rom_reproduces_control_points",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::other_bytes_stay_uninformed",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::channel_routing_survives_mid_frame_chunk_split",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::detects_inter_sample_peak_above_samples",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::peak_is_at_least_max_sample",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::silence_is_zero_peak",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::per_sample_feeding_matches_whole_buffer",
+            "seconds": 0.003
+          },
+          {
+            "name": "meter::tests::take_peak_segments_match_continuous_peak",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::cache_identity_keeps_decoder_independent",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::zero_channels_is_zero_peak",
+            "seconds": 0.003
+          },
+          {
+            "name": "policy::tests::default_policy_has_decided_constants",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::meter_id_is_stable_and_nonzero",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::policy_id_changes_with_every_parameter",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::policy_id_is_stable",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::climb_reads_the_hilltop",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::measure_window_reads_one_window",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::bones_seeds_reach_the_needle",
+            "seconds": 0.003
+          },
+          {
+            "name": "probe::tests::silence_probes_to_zero",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::full_scan_of_short_track_tags_short",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::full_scan_upgrades_a_long_track_exactly",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::bones_seeds_guide_the_lossless_probe",
+            "seconds": 0.003
+          },
+          {
+            "name": "resolve::tests::long_track_probes_with_margin",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::provenance_picks_bucket_coverage",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::probe_seek_finds_a_mid_track_loud_window",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::short_track_full_scans_exactly",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::silence_yields_unity_gain",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::unknown_duration_full_scans",
+            "seconds": 0.002
+          },
+          {
+            "name": "source::tests::boxed_source_drives_the_meter",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::zero_channels_is_unity",
+            "seconds": 0.003
+          },
+          {
+            "name": "source::tests::seek_to_frame_repositions_and_guards_end",
+            "seconds": 0.002
+          },
+          {
+            "name": "source::tests::duration_known_rejects_degenerate_values",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::degenerate_window_counts",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::placement_plan_bundles_length_and_starts",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::starts_are_monotonic_and_bounded",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::starts_cover_both_ends",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::track_shorter_than_window_starts_at_zero",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::window_frames_floors_and_clamps",
+            "seconds": 0.002
+          }
+        ]
+      },
+      {
+        "feature": "service",
+        "passed": 71,
+        "skipped": 0,
+        "harnessSeconds": 0.047,
+        "results": [
+          {
+            "name": "bones::tests::coded_numbers_decode",
+            "seconds": 0.002
+          },
+          {
+            "name": "bones::tests::hot_frame_wins_the_bones_seed",
+            "seconds": 0.002
+          },
+          {
+            "name": "bones::tests::crc8_table_matches_check_vector",
+            "seconds": 0.003
+          },
+          {
+            "name": "bones::tests::garbage_is_rejected",
+            "seconds": 0.003
+          },
+          {
+            "name": "bones::tests::walk_confirms_frames_and_byte_spans",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::exact_fingerprints_lists_only_exact_rows",
+            "seconds": 0.004
+          },
+          {
+            "name": "cache::tests::exact_is_not_downgraded_by_a_probe",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::misses_on_absent_or_mismatched_key",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::probe_is_stored_after_an_exact_row_is_removed",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::probe_is_upgraded_by_an_exact",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::a_current_row_hits_after_reopen",
+            "seconds": 0.008
+          },
+          {
+            "name": "cache::tests::remove_drops_only_the_named_key",
+            "seconds": 0.005
+          },
+          {
+            "name": "cache::tests::remove_is_scoped_to_identity",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::remove_of_absent_key_reports_false",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::the_schema_version_moved_past_the_gxhash_rows",
+            "seconds": 0.002
+          },
+          {
+            "name": "cache::tests::round_trips_a_decision",
+            "seconds": 0.003
+          },
+          {
+            "name": "decision::tests::probe_estimate_is_sampled",
+            "seconds": 0.002
+          },
+          {
+            "name": "decision::tests::full_scans_are_exact",
+            "seconds": 0.003
+          },
+          {
+            "name": "error::tests::display_includes_cause",
+            "seconds": 0.002
+          },
+          {
+            "name": "cache::tests::reopen_removes_gxhash_era_rows_and_keeps_current_and_newer_rows",
+            "seconds": 0.007
+          },
+          {
+            "name": "error::tests::equality_distinguishes_variants",
+            "seconds": 0.002
+          },
+          {
+            "name": "error::tests::is_std_error",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::linear_gain_matches_db_form",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::gain_never_exceeds_unity",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::loud_track_is_attenuated_to_ceiling",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::peak_dbtp_reference_points",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::probe_margin_inflates_in_db",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::quiet_track_is_not_amplified",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::silence_gives_unity_gain",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::flac_bytes_yield_lossless_with_bones",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::broken_flac_keeps_lossless_without_bones",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::id3_prefixed_flac_sniffs",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::missing_file_stays_uninformed",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::other_bytes_stay_uninformed",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::catmull_rom_reproduces_control_points",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::channel_routing_survives_mid_frame_chunk_split",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::detects_inter_sample_peak_above_samples",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::per_sample_feeding_matches_whole_buffer",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::peak_is_at_least_max_sample",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::silence_is_zero_peak",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::take_peak_segments_match_continuous_peak",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::zero_channels_is_zero_peak",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::cache_identity_keeps_decoder_independent",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::meter_id_is_stable_and_nonzero",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::default_policy_has_decided_constants",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::policy_id_changes_with_every_parameter",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::bones_seeds_reach_the_needle",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::policy_id_is_stable",
+            "seconds": 0.003
+          },
+          {
+            "name": "probe::tests::climb_reads_the_hilltop",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::measure_window_reads_one_window",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::silence_probes_to_zero",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::bones_seeds_guide_the_lossless_probe",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::full_scan_of_short_track_tags_short",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::long_track_probes_with_margin",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::full_scan_upgrades_a_long_track_exactly",
+            "seconds": 0.003
+          },
+          {
+            "name": "resolve::tests::probe_seek_finds_a_mid_track_loud_window",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::provenance_picks_bucket_coverage",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::silence_yields_unity_gain",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::short_track_full_scans_exactly",
+            "seconds": 0.003
+          },
+          {
+            "name": "resolve::tests::unknown_duration_full_scans",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::zero_channels_is_unity",
+            "seconds": 0.003
+          },
+          {
+            "name": "source::tests::boxed_source_drives_the_meter",
+            "seconds": 0.002
+          },
+          {
+            "name": "source::tests::duration_known_rejects_degenerate_values",
+            "seconds": 0.002
+          },
+          {
+            "name": "service::tests::resolves_on_miss_then_serves_from_cache",
+            "seconds": 0.004
+          },
+          {
+            "name": "source::tests::seek_to_frame_repositions_and_guards_end",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::degenerate_window_counts",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::placement_plan_bundles_length_and_starts",
+            "seconds": 0.003
+          },
+          {
+            "name": "window::tests::starts_cover_both_ends",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::starts_are_monotonic_and_bounded",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::track_shorter_than_window_starts_at_zero",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::window_frames_floors_and_clamps",
+            "seconds": 0.002
+          }
+        ]
+      },
+      {
+        "feature": "all",
+        "passed": 80,
+        "skipped": 0,
+        "harnessSeconds": 0.053,
+        "results": [
+          {
+            "name": "bones::tests::hot_frame_wins_the_bones_seed",
+            "seconds": 0.002
+          },
+          {
+            "name": "bones::tests::coded_numbers_decode",
+            "seconds": 0.002
+          },
+          {
+            "name": "bones::tests::crc8_table_matches_check_vector",
+            "seconds": 0.002
+          },
+          {
+            "name": "bones::tests::garbage_is_rejected",
+            "seconds": 0.003
+          },
+          {
+            "name": "bones::tests::walk_confirms_frames_and_byte_spans",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::exact_fingerprints_lists_only_exact_rows",
+            "seconds": 0.004
+          },
+          {
+            "name": "cache::tests::exact_is_not_downgraded_by_a_probe",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::probe_is_upgraded_by_an_exact",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::misses_on_absent_or_mismatched_key",
+            "seconds": 0.004
+          },
+          {
+            "name": "cache::tests::probe_is_stored_after_an_exact_row_is_removed",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::remove_of_absent_key_reports_false",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::remove_is_scoped_to_identity",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::remove_drops_only_the_named_key",
+            "seconds": 0.003
+          },
+          {
+            "name": "cache::tests::the_schema_version_moved_past_the_gxhash_rows",
+            "seconds": 0.002
+          },
+          {
+            "name": "cache::tests::a_current_row_hits_after_reopen",
+            "seconds": 0.013
+          },
+          {
+            "name": "cache::tests::round_trips_a_decision",
+            "seconds": 0.003
+          },
+          {
+            "name": "decision::tests::full_scans_are_exact",
+            "seconds": 0.002
+          },
+          {
+            "name": "error::tests::display_includes_cause",
+            "seconds": 0.002
+          },
+          {
+            "name": "decision::tests::probe_estimate_is_sampled",
+            "seconds": 0.003
+          },
+          {
+            "name": "error::tests::equality_distinguishes_variants",
+            "seconds": 0.002
+          },
+          {
+            "name": "error::tests::is_std_error",
+            "seconds": 0.002
+          },
+          {
+            "name": "cache::tests::reopen_removes_gxhash_era_rows_and_keeps_current_and_newer_rows",
+            "seconds": 0.009
+          },
+          {
+            "name": "fingerprint::tests::every_input_changes_the_key",
+            "seconds": 0.003
+          },
+          {
+            "name": "fingerprint::tests::field_boundaries_are_unambiguous",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::material_cases_reach_the_vectorized_hash_paths",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::material_fields_sit_at_their_documented_offsets",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::material_known_answers_match_the_reference",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::material_starts_with_the_domain_tag_and_has_the_documented_length",
+            "seconds": 0.003
+          },
+          {
+            "name": "fingerprint::tests::raw_xxh3_64_known_answers_match_the_reference",
+            "seconds": 0.003
+          },
+          {
+            "name": "fingerprint::tests::the_default_seed_is_zero",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::gain_never_exceeds_unity",
+            "seconds": 0.002
+          },
+          {
+            "name": "fingerprint::tests::the_key_uses_all_sixty_four_bits",
+            "seconds": 0.003
+          },
+          {
+            "name": "gain::tests::linear_gain_matches_db_form",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::loud_track_is_attenuated_to_ceiling",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::probe_margin_inflates_in_db",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::quiet_track_is_not_amplified",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::silence_gives_unity_gain",
+            "seconds": 0.002
+          },
+          {
+            "name": "gain::tests::peak_dbtp_reference_points",
+            "seconds": 0.003
+          },
+          {
+            "name": "inputs::tests::flac_bytes_yield_lossless_with_bones",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::broken_flac_keeps_lossless_without_bones",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::missing_file_stays_uninformed",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::id3_prefixed_flac_sniffs",
+            "seconds": 0.002
+          },
+          {
+            "name": "inputs::tests::other_bytes_stay_uninformed",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::catmull_rom_reproduces_control_points",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::channel_routing_survives_mid_frame_chunk_split",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::detects_inter_sample_peak_above_samples",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::peak_is_at_least_max_sample",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::per_sample_feeding_matches_whole_buffer",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::silence_is_zero_peak",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::take_peak_segments_match_continuous_peak",
+            "seconds": 0.002
+          },
+          {
+            "name": "meter::tests::zero_channels_is_zero_peak",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::cache_identity_keeps_decoder_independent",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::default_policy_has_decided_constants",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::meter_id_is_stable_and_nonzero",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::policy_id_is_stable",
+            "seconds": 0.002
+          },
+          {
+            "name": "policy::tests::policy_id_changes_with_every_parameter",
+            "seconds": 0.003
+          },
+          {
+            "name": "probe::tests::bones_seeds_reach_the_needle",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::climb_reads_the_hilltop",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::silence_probes_to_zero",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::bones_seeds_guide_the_lossless_probe",
+            "seconds": 0.002
+          },
+          {
+            "name": "probe::tests::measure_window_reads_one_window",
+            "seconds": 0.003
+          },
+          {
+            "name": "resolve::tests::full_scan_of_short_track_tags_short",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::full_scan_upgrades_a_long_track_exactly",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::probe_seek_finds_a_mid_track_loud_window",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::long_track_probes_with_margin",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::provenance_picks_bucket_coverage",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::short_track_full_scans_exactly",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::unknown_duration_full_scans",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::zero_channels_is_unity",
+            "seconds": 0.002
+          },
+          {
+            "name": "resolve::tests::silence_yields_unity_gain",
+            "seconds": 0.003
+          },
+          {
+            "name": "source::tests::boxed_source_drives_the_meter",
+            "seconds": 0.002
+          },
+          {
+            "name": "service::tests::resolves_on_miss_then_serves_from_cache",
+            "seconds": 0.003
+          },
+          {
+            "name": "source::tests::duration_known_rejects_degenerate_values",
+            "seconds": 0.002
+          },
+          {
+            "name": "source::tests::seek_to_frame_repositions_and_guards_end",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::degenerate_window_counts",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::placement_plan_bundles_length_and_starts",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::starts_are_monotonic_and_bounded",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::starts_cover_both_ends",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::track_shorter_than_window_starts_at_zero",
+            "seconds": 0.002
+          },
+          {
+            "name": "window::tests::window_frames_floors_and_clamps",
+            "seconds": 0.002
+          }
+        ]
+      }
+    ],
+    "executedTestCases": 276,
+    "uniqueTestNames": 80,
+    "clippy": {
+      "conclusion": "success",
+      "command": "cargo clippy --release --all-features --all-targets -- -D warnings"
+    },
+    "rawMetrics": {
+      "type": "attempt",
+      "snapshot_at": "2026-10-16T01:39:09.101Z",
+      "run": {
+        "run_id": "p9sfmw70wq",
+        "repo": "Aquaticats/Monochromatic",
+        "ref": "a21e6369936689a962de528dce0a0f8b9e22f4fe",
+        "sha": "a21e6369936689a962de528dce0a0f8b9e22f4fe",
+        "head_sha": "a21e6369936689a962de528dce0a0f8b9e22f4fe",
+        "trigger": "api",
+        "status": "cancelled",
+        "created_at": "2026-10-16T01:35:32.622Z",
+        "started_at": "2026-10-16T01:35:32.934Z",
+        "finished_at": "2026-10-16T01:38:21.451Z"
+      },
+      "workflow": {
+        "workflow_id": "1t7fpd7b9s",
+        "name": "depot-expanded",
+        "status": "cancelled",
+        "created_at": "2026-10-16T01:35:40.207Z",
+        "started_at": "2026-10-16T01:35:40.205Z",
+        "finished_at": "2026-10-16T01:38:21.198Z"
+      },
+      "job": {
+        "job_id": "sfjhrbwvrs",
+        "job_key": "_inline_0.yaml:native",
+        "status": "finished",
+        "conclusion": "success",
+        "current_attempt": 1,
+        "created_at": "2026-10-16T01:35:40.226Z",
+        "started_at": "2026-10-16T01:35:42.943Z",
+        "finished_at": "2026-10-16T01:38:20.863Z"
+      },
+      "attempt": {
+        "attempt": {
+          "attempt_id": "2gv4q0p1bd",
+          "attempt": 1,
+          "status": "finished",
+          "conclusion": "success",
+          "sandbox_id": "cv4hgdvdjdlc85xq3915",
+          "session_id": "f872011b-b52b-4bc7-8db7-4f7a3b7a6985",
+          "created_at": "2026-10-16T01:35:41.382Z",
+          "started_at": "2026-10-16T01:35:42.943Z",
+          "finished_at": "2026-10-16T01:38:20.863Z"
+        },
+        "availability": {
+          "code": "available",
+          "reason": "available"
+        },
+        "stats": {
+          "sample_count": 33,
+          "cpu_sample_count": 32,
+          "memory_sample_count": 33,
+          "peak_cpu_utilization": 0.987987987987988,
+          "average_cpu_utilization": 0.5332700103176736,
+          "peak_memory_utilization": 0.19139371854377543,
+          "average_memory_utilization": 0.08951325810373122,
+          "observed_started_at": "2026-10-16T01:35:44Z",
+          "observed_finished_at": "2026-10-16T01:38:19Z"
+        },
+        "cap": {
+          "raw_sample_count": 33,
+          "returned_sample_count": 33,
+          "max_returned_sample_count": 5000,
+          "downsampled": false,
+          "downsample_strategy": ""
+        },
+        "samples": [
+          {
+            "timestamp": "2026-10-16T01:35:44Z",
+            "memory_utilization": 0.0263833171490463
+          },
+          {
+            "timestamp": "2026-10-16T01:35:45Z",
+            "cpu_utilization": 0.0707070707070707,
+            "memory_utilization": 0.0325931524110682
+          },
+          {
+            "timestamp": "2026-10-16T01:35:49Z",
+            "cpu_utilization": 0.00125,
+            "memory_utilization": 0.03260657829020697
+          },
+          {
+            "timestamp": "2026-10-16T01:35:54Z",
+            "cpu_utilization": 0.045705675539929685,
+            "memory_utilization": 0.03214423983404637
+          },
+          {
+            "timestamp": "2026-10-16T01:35:59Z",
+            "cpu_utilization": 0.15768463073852296,
+            "memory_utilization": 0.039094207196954715
+          },
+          {
+            "timestamp": "2026-10-16T01:36:04Z",
+            "cpu_utilization": 0.2156374501992032,
+            "memory_utilization": 0.054004744461580746
+          },
+          {
+            "timestamp": "2026-10-16T01:36:09Z",
+            "cpu_utilization": 0.10647915620291311,
+            "memory_utilization": 0.041412734470773815
+          },
+          {
+            "timestamp": "2026-10-16T01:36:14Z",
+            "cpu_utilization": 0.189,
+            "memory_utilization": 0.033690657003939396
+          },
+          {
+            "timestamp": "2026-10-16T01:36:19Z",
+            "cpu_utilization": 0.015484515484515484,
+            "memory_utilization": 0.03489630095060106
+          },
+          {
+            "timestamp": "2026-10-16T01:36:24Z",
+            "cpu_utilization": 0.344,
+            "memory_utilization": 0.045223243077250556
+          },
+          {
+            "timestamp": "2026-10-16T01:36:29Z",
+            "cpu_utilization": 0.8190621814475025,
+            "memory_utilization": 0.0682840212997911
+          },
+          {
+            "timestamp": "2026-10-16T01:36:34Z",
+            "cpu_utilization": 0.8963782696177063,
+            "memory_utilization": 0.08747716990279175
+          },
+          {
+            "timestamp": "2026-10-16T01:36:39Z",
+            "cpu_utilization": 0.9066128218071681,
+            "memory_utilization": 0.08434112864286819
+          },
+          {
+            "timestamp": "2026-10-16T01:36:44Z",
+            "cpu_utilization": 0.8977329974811084,
+            "memory_utilization": 0.05887077127525835
+          },
+          {
+            "timestamp": "2026-10-16T01:36:49Z",
+            "cpu_utilization": 0.9304785894206549,
+            "memory_utilization": 0.07227272793847335
+          },
+          {
+            "timestamp": "2026-10-16T01:36:54Z",
+            "cpu_utilization": 0.920506329113924,
+            "memory_utilization": 0.09282579604478483
+          },
+          {
+            "timestamp": "2026-10-16T01:36:59Z",
+            "cpu_utilization": 0.46893787575150303,
+            "memory_utilization": 0.1087227692657704
+          },
+          {
+            "timestamp": "2026-10-16T01:37:04Z",
+            "cpu_utilization": 0.24725274725274726,
+            "memory_utilization": 0.1255043858685543
+          },
+          {
+            "timestamp": "2026-10-16T01:37:09Z",
+            "cpu_utilization": 0.24824824824824826,
+            "memory_utilization": 0.1452133323373772
+          },
+          {
+            "timestamp": "2026-10-16T01:37:14Z",
+            "cpu_utilization": 0.34667333666833416,
+            "memory_utilization": 0.181568904296916
+          },
+          {
+            "timestamp": "2026-10-16T01:37:19Z",
+            "cpu_utilization": 0.9244622311155578,
+            "memory_utilization": 0.19139371854377543
+          },
+          {
+            "timestamp": "2026-10-16T01:37:24Z",
+            "cpu_utilization": 0.9789684526790186,
+            "memory_utilization": 0.17958895328428737
+          },
+          {
+            "timestamp": "2026-10-16T01:37:29Z",
+            "cpu_utilization": 0.8595702148925537,
+            "memory_utilization": 0.15866923662404073
+          },
+          {
+            "timestamp": "2026-10-16T01:37:34Z",
+            "cpu_utilization": 0.9545,
+            "memory_utilization": 0.15986462808117824
+          },
+          {
+            "timestamp": "2026-10-16T01:37:39Z",
+            "cpu_utilization": 0.987987987987988,
+            "memory_utilization": 0.1594027778388045
+          },
+          {
+            "timestamp": "2026-10-16T01:37:44Z",
+            "cpu_utilization": 0.853220169745382,
+            "memory_utilization": 0.15086587156169337
+          },
+          {
+            "timestamp": "2026-10-16T01:37:49Z",
+            "cpu_utilization": 0.5762118940529735,
+            "memory_utilization": 0.0629192841028315
+          },
+          {
+            "timestamp": "2026-10-16T01:37:54Z",
+            "cpu_utilization": 0.6696696696696697,
+            "memory_utilization": 0.05504244286556106
+          },
+          {
+            "timestamp": "2026-10-16T01:37:59Z",
+            "cpu_utilization": 0.7217478653942743,
+            "memory_utilization": 0.07344370870626764
+          },
+          {
+            "timestamp": "2026-10-16T01:38:04Z",
+            "cpu_utilization": 0.9128693039559339,
+            "memory_utilization": 0.07871739403197703
+          },
+          {
+            "timestamp": "2026-10-16T01:38:09Z",
+            "cpu_utilization": 0.29247633283507724,
+            "memory_utilization": 0.09671905688813509
+          },
+          {
+            "timestamp": "2026-10-16T01:38:14Z",
+            "cpu_utilization": 0.24862431215607803,
+            "memory_utilization": 0.1278282834940289
+          },
+          {
+            "timestamp": "2026-10-16T01:38:19Z",
+            "cpu_utilization": 0.2565,
+            "memory_utilization": 0.06235197968249505
+          }
+        ]
+      }
+    },
+    "logSha256": "f364ec0b39ab9a5747b4a34f12106a4451882bfd8c428297898500b8da8484ce",
+    "warningsTrackedBy": [
+      1011,
+      1012
+    ]
+  },
+  "historicalSelection": {
+    "historyPath": "doc/audit/depot-change-stream-2026-10-15.evidence.json",
+    "historySha256": "ecd67610d9171174028774160f0385cc8b437ea7f1e0ae78b26e6802a30845a9",
+    "window": {
+      "start": "2026-10-08T00:00:00Z",
+      "endExclusive": "2026-10-15T00:00:00Z",
+      "days": 7
+    },
+    "native": {
+      "selector": "Existing affectedGroups includes musicCore",
+      "count": 68,
+      "events": [
+        {
+          "runId": 37791998645,
+          "headSha": "6c0e006f4aaf40dd2857f93afaf34777bb491319",
+          "observedAt": "2026-10-08T14:23:01Z"
+        },
+        {
+          "runId": 37792902973,
+          "headSha": "04a9596c8b06483f6a07ac072fc410bd9044ad1b",
+          "observedAt": "2026-10-08T14:29:36Z"
+        },
+        {
+          "runId": 37795976366,
+          "headSha": "e36886bf203401ad79af575d6fff8e9cd20f9d17",
+          "observedAt": "2026-10-08T14:51:59Z"
+        },
+        {
+          "runId": 37799625137,
+          "headSha": "67d45a314c5933466e955df0020a5a843751aa1f",
+          "observedAt": "2026-10-08T15:18:20Z"
+        },
+        {
+          "runId": 37805563842,
+          "headSha": "7715f8b5e6c856b37a471d98d18688edf6bcba38",
+          "observedAt": "2026-10-08T16:01:51Z"
+        },
+        {
+          "runId": 37993952381,
+          "headSha": "05f551626b5e14049d2770f08552889ce8ddb016",
+          "observedAt": "2026-10-09T21:31:20Z"
+        },
+        {
+          "runId": 37994290099,
+          "headSha": "72fa358873fa415a704a93d87c1283e5ad261872",
+          "observedAt": "2026-10-09T21:34:45Z"
+        },
+        {
+          "runId": 37995034392,
+          "headSha": "aaf40a1c1ffbc5062fd9e52206cdb93446a66522",
+          "observedAt": "2026-10-09T21:42:16Z"
+        },
+        {
+          "runId": 38055691357,
+          "headSha": "3b03bcae0195aa056eb3797abaf0eb0343f03a4a",
+          "observedAt": "2026-10-10T13:26:01Z"
+        },
+        {
+          "runId": 38056014392,
+          "headSha": "e9c8871a41f5ba34bb3fb42e7ded9c8546924ed4",
+          "observedAt": "2026-10-10T13:31:02Z"
+        },
+        {
+          "runId": 38061920704,
+          "headSha": "e9f69e18ffabe4e3c89c7793470f4717699e5092",
+          "observedAt": "2026-10-10T15:01:12Z"
+        },
+        {
+          "runId": 38077279933,
+          "headSha": "b111c0ca39af91dee25c248b27153806e69fff6d",
+          "observedAt": "2026-10-10T18:48:40Z"
+        },
+        {
+          "runId": 38077820099,
+          "headSha": "e6c592ebb36c074115a7d368f8b39ebbfcba094d",
+          "observedAt": "2026-10-10T18:56:54Z"
+        },
+        {
+          "runId": 38090324218,
+          "headSha": "1b6677a9afb8982ecc3a9908646bc84f34ae9ee2",
+          "observedAt": "2026-10-10T22:09:02Z"
+        },
+        {
+          "runId": 38147186672,
+          "headSha": "1843d4f3d531216cec4f30898794624ea4c37690",
+          "observedAt": "2026-10-11T14:26:29Z"
+        },
+        {
+          "runId": 38165344690,
+          "headSha": "9b95bfb673eb5fa9cb5edb20513f48ebc050dc6c",
+          "observedAt": "2026-10-11T18:48:18Z"
+        },
+        {
+          "runId": 38165789261,
+          "headSha": "a4b08d54a0cd6c2fb80f1d3aab740786ee1f40bb",
+          "observedAt": "2026-10-11T18:54:39Z"
+        },
+        {
+          "runId": 38171335336,
+          "headSha": "a1a19ca57e6d67f21d61e250e8611cd44418764e",
+          "observedAt": "2026-10-11T20:14:05Z"
+        },
+        {
+          "runId": 38171373414,
+          "headSha": "6f82b290c22c97a92d5d1afe364978c20f3853e2",
+          "observedAt": "2026-10-11T20:14:37Z"
+        },
+        {
+          "runId": 38172309220,
+          "headSha": "86e7b2fe262e44e1a97e9c251d26ac80adf58c45",
+          "observedAt": "2026-10-11T20:27:49Z"
+        },
+        {
+          "runId": 38176320507,
+          "headSha": "440b403c2320a4c39616f59b4452d59f8cb110be",
+          "observedAt": "2026-10-11T21:25:43Z"
+        },
+        {
+          "runId": 38182208286,
+          "headSha": "2c62b1feb6502853b1c765081bbf8805a3d33dcb",
+          "observedAt": "2026-10-11T22:53:43Z"
+        },
+        {
+          "runId": 38184323032,
+          "headSha": "7f3b3520b2816f9a4db7af8f9cecd979bf4a58d5",
+          "observedAt": "2026-10-11T23:27:04Z"
+        },
+        {
+          "runId": 38185723975,
+          "headSha": "966f717dbd38a6004d3e945478befba0b8047688",
+          "observedAt": "2026-10-11T23:49:36Z"
+        },
+        {
+          "runId": 38185842894,
+          "headSha": "7fb4f43afc8142555224ad9fefdc210d2b5f5924",
+          "observedAt": "2026-10-11T23:51:31Z"
+        },
+        {
+          "runId": 38186974405,
+          "headSha": "30d4a1c79d4ed5580279d1df879535a46c7c3b88",
+          "observedAt": "2026-10-12T00:10:04Z"
+        },
+        {
+          "runId": 38190320505,
+          "headSha": "c34e4acfb56c46b53832e03f2f73132a6da61fbc",
+          "observedAt": "2026-10-12T01:02:14Z"
+        },
+        {
+          "runId": 38191740728,
+          "headSha": "843697790f6b5466b99e79ec512fd77129587cc8",
+          "observedAt": "2026-10-12T01:24:08Z"
+        },
+        {
+          "runId": 38193210226,
+          "headSha": "6a213f4470461026ca47ae66835b04bf6c565b93",
+          "observedAt": "2026-10-12T01:46:47Z"
+        },
+        {
+          "runId": 38195395493,
+          "headSha": "5d09211486d83a8d4b5371ff17ca1d7c7014bbe2",
+          "observedAt": "2026-10-12T02:20:26Z"
+        },
+        {
+          "runId": 38196074599,
+          "headSha": "1403118357eaec941c6045a32beb1d5921ffefd3",
+          "observedAt": "2026-10-12T02:30:45Z"
+        },
+        {
+          "runId": 38202566263,
+          "headSha": "d5d424f8ab0ff790e41e62eafed41b5d291e74bc",
+          "observedAt": "2026-10-12T04:08:23Z"
+        },
+        {
+          "runId": 38207750643,
+          "headSha": "3d1fc968e2fd09981ce51e6a92d41808fde7ba9a",
+          "observedAt": "2026-10-12T05:23:51Z"
+        },
+        {
+          "runId": 38222165193,
+          "headSha": "e30ace9cadae4697a5b0889acbee26ce3aba41d2",
+          "observedAt": "2026-10-12T08:12:27Z"
+        },
+        {
+          "runId": 38232134941,
+          "headSha": "2fa18ada079512305d54c3ef5f8436bbb3f68a77",
+          "observedAt": "2026-10-12T09:47:18Z"
+        },
+        {
+          "runId": 38245656960,
+          "headSha": "4219f6b819967eab648559758e533c31ba2dc76b",
+          "observedAt": "2026-10-12T11:54:20Z"
+        },
+        {
+          "runId": 38275640034,
+          "headSha": "278217291659cc1a8a666416d34f5c4803934171",
+          "observedAt": "2026-10-12T16:11:21Z"
+        },
+        {
+          "runId": 38276633679,
+          "headSha": "e64f02e07e069ca6019d26a91ca72fea363c7983",
+          "observedAt": "2026-10-12T16:19:52Z"
+        },
+        {
+          "runId": 38278398240,
+          "headSha": "a0552c4cfcccbdb7a026a919b1336d15cabc38da",
+          "observedAt": "2026-10-12T16:34:58Z"
+        },
+        {
+          "runId": 38287038982,
+          "headSha": "43b87c1ce332188e6c706597a3fbf7433657f6e8",
+          "observedAt": "2026-10-12T17:51:49Z"
+        },
+        {
+          "runId": 38325734541,
+          "headSha": "c7e7e9fe9481a0b72bd8fd14734d3d844b31d952",
+          "observedAt": "2026-10-13T00:08:13Z"
+        },
+        {
+          "runId": 38328218393,
+          "headSha": "315b77bdc13df9200f5b9d025920ca817c516465",
+          "observedAt": "2026-10-13T00:38:10Z"
+        },
+        {
+          "runId": 38377865977,
+          "headSha": "3aaa4daefd4317263a9af4a959e5fb4e1a790592",
+          "observedAt": "2026-10-13T09:39:20Z"
+        },
+        {
+          "runId": 38383454951,
+          "headSha": "ef1b2ddbc0c7b273f1030bb65e1716d78bf7b670",
+          "observedAt": "2026-10-13T10:27:15Z"
+        },
+        {
+          "runId": 38385056823,
+          "headSha": "b7a0ff30c4e55847a3db65f5107cff4f0b70837d",
+          "observedAt": "2026-10-13T10:41:11Z"
+        },
+        {
+          "runId": 38385250074,
+          "headSha": "0075df3fd382013cdd534f3ecfb6f75e13c5fa81",
+          "observedAt": "2026-10-13T10:42:53Z"
+        },
+        {
+          "runId": 38398242159,
+          "headSha": "1bb11ace0e498bfe9e5a9a7dd2c0f7d5e79d8cb1",
+          "observedAt": "2026-10-13T12:34:07Z"
+        },
+        {
+          "runId": 38430712127,
+          "headSha": "80f7a3f69a240edb3bb15072b95bd970e97fa630",
+          "observedAt": "2026-10-13T16:27:55Z"
+        },
+        {
+          "runId": 38466115472,
+          "headSha": "7a1cead3f323704a11ed1970cb9c6a120f006207",
+          "observedAt": "2026-10-13T20:51:22Z"
+        },
+        {
+          "runId": 38472078826,
+          "headSha": "9e633292e7fdc18cd43d568dfe3e7518aedda569",
+          "observedAt": "2026-10-13T21:38:08Z"
+        },
+        {
+          "runId": 38487537244,
+          "headSha": "a0a2f11da808dcb9d37ca1b57c6962c828c889de",
+          "observedAt": "2026-10-13T23:59:33Z"
+        },
+        {
+          "runId": 38487744339,
+          "headSha": "5cd5c99a678c06d55884159ce1a457ffd728a79e",
+          "observedAt": "2026-10-14T00:01:33Z"
+        },
+        {
+          "runId": 38492469232,
+          "headSha": "852d7a495f60638e923ce33b729d9b0830e50d72",
+          "observedAt": "2026-10-14T00:51:00Z"
+        },
+        {
+          "runId": 38503506875,
+          "headSha": "c567e78d96ff02591abf611ebc94b7b5c07f2e9e",
+          "observedAt": "2026-10-14T02:54:39Z"
+        },
+        {
+          "runId": 38509353406,
+          "headSha": "90f121edf5e40c3ff2726cde5ac6a12c13479b90",
+          "observedAt": "2026-10-14T04:02:34Z"
+        },
+        {
+          "runId": 38562123908,
+          "headSha": "02240f43f03ec8d1de1154b5a909efe9feb6f667",
+          "observedAt": "2026-10-14T12:12:46Z"
+        },
+        {
+          "runId": 38569887085,
+          "headSha": "a1dba4c4b2ea89df9abb3316134cd9dc1e6bc514",
+          "observedAt": "2026-10-14T13:12:36Z"
+        },
+        {
+          "runId": 38579385548,
+          "headSha": "29dfe1b93411dc1646dd6423657250bce05fa27f",
+          "observedAt": "2026-10-14T14:18:46Z"
+        },
+        {
+          "runId": 38584819405,
+          "headSha": "cc981da981150731f92dcd05ee655fbcf3194f39",
+          "observedAt": "2026-10-14T14:55:18Z"
+        },
+        {
+          "runId": 38610609934,
+          "headSha": "60537c82247d5e3bad7404bed2ee24d7ad8c3b36",
+          "observedAt": "2026-10-14T17:54:18Z"
+        },
+        {
+          "runId": 38610747949,
+          "headSha": "68cfbdc82ed442201fb44da8e627b5ff589dce77",
+          "observedAt": "2026-10-14T17:55:16Z"
+        },
+        {
+          "runId": 38628210244,
+          "headSha": "aabbddefde8e0a59fb3e122163bb1ebe98d6ffe8",
+          "observedAt": "2026-10-14T19:59:04Z"
+        },
+        {
+          "runId": 38635360769,
+          "headSha": "4e71750a221f8b1b3303f9fccf7bc9b9ae6a4322",
+          "observedAt": "2026-10-14T20:49:57Z"
+        },
+        {
+          "runId": 38639025459,
+          "headSha": "973572ea1235101f6094a2023b9db75bee5d3917",
+          "observedAt": "2026-10-14T21:16:57Z"
+        },
+        {
+          "runId": 38641256841,
+          "headSha": "d159a71d5c124fc2d81f605cdc088c959d44371b",
+          "observedAt": "2026-10-14T21:34:07Z"
+        },
+        {
+          "runId": 38649497781,
+          "headSha": "a228fca02525983f3c016ac520b7e62aedaac272",
+          "observedAt": "2026-10-14T22:42:46Z"
+        },
+        {
+          "runId": 38650684706,
+          "headSha": "b95d38a2bf72c8a68781f4a651060ecda0af5298",
+          "observedAt": "2026-10-14T22:53:48Z"
+        },
+        {
+          "runId": 38653407049,
+          "headSha": "a78327609526a620fa79ddd7901d49a355d53bab",
+          "observedAt": "2026-10-14T23:20:00Z"
+        }
+      ],
+      "accounting": "Replace the earlier core-only all-features job baseline; do not add its cost again."
+    },
+    "browser": {
+      "selector": "Root tool or TypeScript inputs, current-manifest reverse consumers reaching logger/fs-path, or browser config/Dockerfile/harness changes",
+      "packages": [
+        "package/module/logger",
+        "package/module/fs-path"
+      ],
+      "count": 50,
+      "events": [
+        {
+          "runId": 37993952381,
+          "headSha": "05f551626b5e14049d2770f08552889ce8ddb016",
+          "observedAt": "2026-10-09T21:31:20Z"
+        },
+        {
+          "runId": 37994290099,
+          "headSha": "72fa358873fa415a704a93d87c1283e5ad261872",
+          "observedAt": "2026-10-09T21:34:45Z"
+        },
+        {
+          "runId": 37995034392,
+          "headSha": "aaf40a1c1ffbc5062fd9e52206cdb93446a66522",
+          "observedAt": "2026-10-09T21:42:16Z"
+        },
+        {
+          "runId": 38056014392,
+          "headSha": "e9c8871a41f5ba34bb3fb42e7ded9c8546924ed4",
+          "observedAt": "2026-10-10T13:31:02Z"
+        },
+        {
+          "runId": 38077008557,
+          "headSha": "947e1c3c7ca373e5b1dbb02b8327f4ddbfd70c25",
+          "observedAt": "2026-10-10T18:44:39Z"
+        },
+        {
+          "runId": 38077279933,
+          "headSha": "b111c0ca39af91dee25c248b27153806e69fff6d",
+          "observedAt": "2026-10-10T18:48:40Z"
+        },
+        {
+          "runId": 38171373414,
+          "headSha": "6f82b290c22c97a92d5d1afe364978c20f3853e2",
+          "observedAt": "2026-10-11T20:14:37Z"
+        },
+        {
+          "runId": 38171894301,
+          "headSha": "53378bee465f8f546222436a17e6ee2b15ca6263",
+          "observedAt": "2026-10-11T20:21:53Z"
+        },
+        {
+          "runId": 38172309220,
+          "headSha": "86e7b2fe262e44e1a97e9c251d26ac80adf58c45",
+          "observedAt": "2026-10-11T20:27:49Z"
+        },
+        {
+          "runId": 38176320507,
+          "headSha": "440b403c2320a4c39616f59b4452d59f8cb110be",
+          "observedAt": "2026-10-11T21:25:43Z"
+        },
+        {
+          "runId": 38184323032,
+          "headSha": "7f3b3520b2816f9a4db7af8f9cecd979bf4a58d5",
+          "observedAt": "2026-10-11T23:27:04Z"
+        },
+        {
+          "runId": 38185723975,
+          "headSha": "966f717dbd38a6004d3e945478befba0b8047688",
+          "observedAt": "2026-10-11T23:49:36Z"
+        },
+        {
+          "runId": 38185842894,
+          "headSha": "7fb4f43afc8142555224ad9fefdc210d2b5f5924",
+          "observedAt": "2026-10-11T23:51:31Z"
+        },
+        {
+          "runId": 38187582330,
+          "headSha": "e801aa1e5f1ab8670472d11f442ed0e1d5b2d566",
+          "observedAt": "2026-10-12T00:19:48Z"
+        },
+        {
+          "runId": 38190320505,
+          "headSha": "c34e4acfb56c46b53832e03f2f73132a6da61fbc",
+          "observedAt": "2026-10-12T01:02:14Z"
+        },
+        {
+          "runId": 38195395493,
+          "headSha": "5d09211486d83a8d4b5371ff17ca1d7c7014bbe2",
+          "observedAt": "2026-10-12T02:20:26Z"
+        },
+        {
+          "runId": 38207750643,
+          "headSha": "3d1fc968e2fd09981ce51e6a92d41808fde7ba9a",
+          "observedAt": "2026-10-12T05:23:51Z"
+        },
+        {
+          "runId": 38245656960,
+          "headSha": "4219f6b819967eab648559758e533c31ba2dc76b",
+          "observedAt": "2026-10-12T11:54:20Z"
+        },
+        {
+          "runId": 38276633679,
+          "headSha": "e64f02e07e069ca6019d26a91ca72fea363c7983",
+          "observedAt": "2026-10-12T16:19:52Z"
+        },
+        {
+          "runId": 38430712127,
+          "headSha": "80f7a3f69a240edb3bb15072b95bd970e97fa630",
+          "observedAt": "2026-10-13T16:27:55Z"
+        },
+        {
+          "runId": 38466115472,
+          "headSha": "7a1cead3f323704a11ed1970cb9c6a120f006207",
+          "observedAt": "2026-10-13T20:51:22Z"
+        },
+        {
+          "runId": 38472020801,
+          "headSha": "89a4f72e363308e77134d59347f7b46b960146d3",
+          "observedAt": "2026-10-13T21:37:39Z"
+        },
+        {
+          "runId": 38472078826,
+          "headSha": "9e633292e7fdc18cd43d568dfe3e7518aedda569",
+          "observedAt": "2026-10-13T21:38:08Z"
+        },
+        {
+          "runId": 38483840111,
+          "headSha": "baf7da0b5a48af0b0b9582515adc244cfb7c3dd5",
+          "observedAt": "2026-10-13T23:22:25Z"
+        },
+        {
+          "runId": 38484866745,
+          "headSha": "08fdf8c0268a6a916195a2f307a81071a9b675d8",
+          "observedAt": "2026-10-13T23:32:26Z"
+        },
+        {
+          "runId": 38484966717,
+          "headSha": "c48c12ff1902f582fd5eb5087184069dbaac12e4",
+          "observedAt": "2026-10-13T23:33:27Z"
+        },
+        {
+          "runId": 38485161068,
+          "headSha": "43458868d9a0f232553a3aa7d33023b1cc36f438",
+          "observedAt": "2026-10-13T23:35:22Z"
+        },
+        {
+          "runId": 38485553786,
+          "headSha": "31586fe703853fdcabd5ef04b4c0b0ee6112ae30",
+          "observedAt": "2026-10-13T23:39:20Z"
+        },
+        {
+          "runId": 38487537244,
+          "headSha": "a0a2f11da808dcb9d37ca1b57c6962c828c889de",
+          "observedAt": "2026-10-13T23:59:33Z"
+        },
+        {
+          "runId": 38487744339,
+          "headSha": "5cd5c99a678c06d55884159ce1a457ffd728a79e",
+          "observedAt": "2026-10-14T00:01:33Z"
+        },
+        {
+          "runId": 38499513311,
+          "headSha": "372b6e3698ccfb494c11c0ee4c72532c014bd5e7",
+          "observedAt": "2026-10-14T02:09:01Z"
+        },
+        {
+          "runId": 38501988067,
+          "headSha": "4c59aacde9933bba98e91e49f20521a464aef2d6",
+          "observedAt": "2026-10-14T02:37:17Z"
+        },
+        {
+          "runId": 38503880940,
+          "headSha": "dfcf86784476eb323e79bc3e1b6c62a9ce01a93f",
+          "observedAt": "2026-10-14T02:59:02Z"
+        },
+        {
+          "runId": 38504178068,
+          "headSha": "1019171c30d92a630052916dcad90ff936be69bb",
+          "observedAt": "2026-10-14T03:02:25Z"
+        },
+        {
+          "runId": 38562123908,
+          "headSha": "02240f43f03ec8d1de1154b5a909efe9feb6f667",
+          "observedAt": "2026-10-14T12:12:46Z"
+        },
+        {
+          "runId": 38564958860,
+          "headSha": "755685da039567df5279d59b3007776f965c271f",
+          "observedAt": "2026-10-14T12:35:22Z"
+        },
+        {
+          "runId": 38569887085,
+          "headSha": "a1dba4c4b2ea89df9abb3316134cd9dc1e6bc514",
+          "observedAt": "2026-10-14T13:12:36Z"
+        },
+        {
+          "runId": 38584819405,
+          "headSha": "cc981da981150731f92dcd05ee655fbcf3194f39",
+          "observedAt": "2026-10-14T14:55:18Z"
+        },
+        {
+          "runId": 38610609934,
+          "headSha": "60537c82247d5e3bad7404bed2ee24d7ad8c3b36",
+          "observedAt": "2026-10-14T17:54:18Z"
+        },
+        {
+          "runId": 38610659292,
+          "headSha": "40ef59f7264ddc8b4568f67cb279e201771e4f62",
+          "observedAt": "2026-10-14T17:54:39Z"
+        },
+        {
+          "runId": 38610747949,
+          "headSha": "68cfbdc82ed442201fb44da8e627b5ff589dce77",
+          "observedAt": "2026-10-14T17:55:16Z"
+        },
+        {
+          "runId": 38611164997,
+          "headSha": "2b944ae9bdf743c3d778e40b117ad35ac2c320b8",
+          "observedAt": "2026-10-14T17:58:14Z"
+        },
+        {
+          "runId": 38635692058,
+          "headSha": "6b8fc21777f85e3299596d465af72a50c0207d03",
+          "observedAt": "2026-10-14T20:52:17Z"
+        },
+        {
+          "runId": 38635872860,
+          "headSha": "dfeaf675d20981fc09d53ec2a8cfbb0f5c5e9b53",
+          "observedAt": "2026-10-14T20:53:36Z"
+        },
+        {
+          "runId": 38636037147,
+          "headSha": "d939d9487248ec4d2132ac760450f542e422eb34",
+          "observedAt": "2026-10-14T20:54:47Z"
+        },
+        {
+          "runId": 38636243808,
+          "headSha": "44048642761b757c4905d857ee08e661ff04cfae",
+          "observedAt": "2026-10-14T20:56:14Z"
+        },
+        {
+          "runId": 38636456767,
+          "headSha": "c7e520ec89cdc12518c757e8c99204f1a6c2e2e9",
+          "observedAt": "2026-10-14T20:57:47Z"
+        },
+        {
+          "runId": 38636538265,
+          "headSha": "97a997a16b2013112d6ca958fccf888f2c878df2",
+          "observedAt": "2026-10-14T20:58:23Z"
+        },
+        {
+          "runId": 38636637354,
+          "headSha": "6cfa2b09f9f618efae684a7ecb08006efe5a6c41",
+          "observedAt": "2026-10-14T20:59:08Z"
+        },
+        {
+          "runId": 38636915734,
+          "headSha": "1ea159dab7a835890198a20febfcd4b43013639c",
+          "observedAt": "2026-10-14T21:01:08Z"
+        }
+      ],
+      "limitation": "Current-manifest closure from the historical audit; does not cover other browser packages or unpublished application flows."
+    }
+  },
+  "browser": {
+    "status": "in_progress",
+    "rootlessFailureRun": "t3jdjq2nd3",
+    "rootfulProbeRun": "5f1hbcxtws",
+    "imageDriftIssue": 1045
+  }
+}

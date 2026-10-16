@@ -42,13 +42,53 @@ The browser preparation job was cancelled to replace an unnecessary browser-inst
 with the verified matching image.
 No test outcome is claimed from that cancelled browser job.
 
+## Native results
+
+The native job `sfjhrbwvrs`,
+attempt `2gv4q0p1bd`,
+finished successfully in 157.920 seconds on 4 CPUs and 16 GiB RAM.
+The parent run is marked cancelled because its separate browser preparation job was cancelled;
+the native job's own terminal conclusion is success.
+
+- Default features: 58 passed,
+  zero skipped.
+- Fingerprint only: 67 passed,
+  zero skipped.
+- Service only: 71 passed,
+  zero skipped.
+- All features: 80 passed,
+  zero skipped.
+- Existing all-features,
+  all-targets Clippy task: passed with warnings denied.
+
+These are 276 test executions covering 80 distinct test names across feature configurations.
+The [companion evidence](depot-expanded-execution-2026-10-16.evidence.json)
+preserves every test name,
+raw resource samples,
+API timestamps,
+and the log hash.
+The 68 historical events already classified as `musicCore` are the corresponding workload selector.
+Use this expanded job as a replacement for the previous core all-features baseline when modeling cost;
+adding both would count the old all-features test twice.
+
+## Browser setup failure
+
+The [matching-image run][browser-rootless] stopped before browser tests.
+Podman exited 125 because `newuidmap` rejected the process identity:
+`uid:1001 pw_uid:1001 st_uid:1001, gid:1001 pw_gid:117 st_gid:1001`.
+The isolated [rootful Podman probe][browser-rootful] is testing whether the existing container tasks
+work without that rootless user-mapping step.
+The image version mismatch is tracked by [issue #1045][image-issue].
+
 ## Work remaining
 
 The jobs are in progress.
 Terminal outcomes,
-counts,
+browser counts,
 timing evidence,
-issue links,
-and the companion evidence file will replace this section after verification.
+and remaining issue links will replace this section after verification.
 
 [first-run]: https://depot.dev/orgs/l4zncjjbj5/workflows/p9sfmw70wq
+[browser-rootless]: https://depot.dev/orgs/l4zncjjbj5/workflows/t3jdjq2nd3
+[browser-rootful]: https://depot.dev/orgs/l4zncjjbj5/workflows/5f1hbcxtws
+[image-issue]: https://github.com/Aquaticats/Monochromatic/issues/1045
