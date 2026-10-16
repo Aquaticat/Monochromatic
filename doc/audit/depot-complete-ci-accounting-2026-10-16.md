@@ -339,7 +339,22 @@ and rejection of duplicate attempts,
 mixed revisions,
 unknown checks,
 and dependency cycles.
+Selection controls reject an empty manifest,
+missing selected checks,
+unrelated packages,
+and either declared or observed Oxlint changed-file narrowing.
+The selector's discovery algorithm still needs independent positive and negative controls;
+the accounting reconciler validates its frozen output rather than inventing the affected set.
 The [retained verification evidence](depot-complete-ci-accounting-2026-10-16.evidence.json)
 records these checks and the exercised collector.
+
+Scoped Markdown lint passed,
+and the report and issue comments were rendered with Pandoc and inspected.
+The scope correction is attached to
+[issue #1030](https://github.com/Aquaticats/Monochromatic/issues/1030#issuecomment-6206595590).
+The unsupported completion claim is attached to
+[issue #572](https://github.com/Aquaticats/Monochromatic/issues/572#issuecomment-6206595886),
+including a proposed tightening of the existing completion rule.
+That rule proposal is not applied.
 
 [depot-cli]: https://depot.dev/docs/cli/reference/depot-ci
