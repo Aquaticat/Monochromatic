@@ -163,6 +163,33 @@ struct PortalSettings {
     served_accent: Arc<AtomicU32>,
 }
 
+/// What: Converts a zvariant ownership error into the D-Bus failure type;
+///       `->` names the returned value's type.
+/// Why: The Settings interface must return protocol errors to its caller.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function portalValueConversionError(error): BusError { return new BusError(String(error)); }
+/// ```
+fn portal_value_conversion_error(error: zbus::zvariant::Error) -> zbus::fdo::Error {
+    // What: `.to_string()` creates owned text (`String`, rather than borrowed `&str`).
+    // Why: The returned D-Bus error owns its message after this conversion function ends.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const message = String(error);
+    // ```
+    let message = error.to_string();
+    // What: `Failed` constructs the D-Bus error carrying that owned message.
+    // Why: Preserve the conversion diagnostic in the method's failed reply.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return new BusError(message);
+    // ```
+    return zbus::fdo::Error::Failed(message);
+}
+
 /// Implements XDG Settings methods consumed by Slint and other toolkits.
 #[zbus::interface(name = "org.freedesktop.portal.Settings")]
 impl PortalSettings {
@@ -208,8 +235,8 @@ impl PortalSettings {
         // const nested = { signature: "v", value: boxed };
         // ```
         let nested = Value::Value(boxed);
-        // What: try_from owns the nested value; map_err converts a conversion
-        // failure into a D-Bus error, using |error| as a closure parameter.
+        // What: try_from owns the nested value; map_err passes any conversion
+        // failure to the named D-Bus error converter.
         // Why: The caller must receive a failed reply if ownership conversion fails.
         //
         // In TS you'd write (pseudocode):
@@ -218,7 +245,7 @@ impl PortalSettings {
         // catch (error) { throw new BusError(String(error)); }
         // ```
         return OwnedValue::try_from(nested)
-            .map_err(|error| zbus::fdo::Error::Failed(error.to_string()));
+            .map_err(portal_value_conversion_error);
     }
 
     /// Serves standard XDG portal `ReadAll` method for appearance consumers.
