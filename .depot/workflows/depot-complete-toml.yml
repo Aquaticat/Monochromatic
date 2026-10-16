@@ -45,6 +45,9 @@ jobs:
     - name: Install exact-head frozen dependencies
       working-directory: source
       run: mise run prepare:pnpm:install -- --frozen-lockfile
+    - name: Build the historical Git policy wrapper prerequisite
+      working-directory: source
+      run: mise run //package/git-policy/cli:build
     - name: Run the reviewed package checks and retain every result
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:execute
