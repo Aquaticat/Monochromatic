@@ -96,6 +96,8 @@ The isolated trial changed both the image probe/build and container-run boundary
 from `podman` to `sudo --non-interactive podman`.
 The committed patch is `c7906236c3c2c744dd79f616952a84fadd24b81c`
 on branch `trial/depot-expanded-20261016`.
+The [matching patch](depot-rootless-podman-group-identity.patch)
+preserves the exact task changes.
 
 ```text
 # Isolated trial command boundary, not a workstation account change
