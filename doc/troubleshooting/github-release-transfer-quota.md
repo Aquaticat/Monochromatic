@@ -235,6 +235,47 @@ or the full upstream suite.
 
 ## Verified workarounds
 
+### Remove Scorecard's per-run REST history requests
+
+The repository-side query repair in commit `f598404b31`
+replaces the gate's history requests with a nested GraphQL query.
+The workflow resolves its URL and requests batches of run records at
+`.github/workflows/scorecard.yml:58`:
+
+```graphql
+# .github/workflows/scorecard.yml:58, query excerpt
+resource(url: $workflowUrl) {
+  ... on Workflow {
+    runs(first: 100, after: $cursor, orderBy: {field: CREATED_AT, direction: DESC}) {
+```
+
+The complete runnable patch is the committed
+[Scorecard workflow](../../.github/workflows/scorecard.yml).
+Its [production gate][scorecard-repaired-job] succeeded,
+visited 972 historical runs with ten GraphQL requests and ten points,
+and emitted `no REST history requests`.
+It then skipped the dependent analysis at the eight-per-day count.
+The counting step ran from `00:51:04` to `00:51:29` UTC on October 16,
+2026,
+according to the jobs API.
+The [retained evidence][scorecard-production-evidence] records the complete run identity
+and selected credential-free log lines.
+
+Tradeoffs:
+the query uses GraphQL quota and refuses admission when history is incomplete,
+the page bound is reached,
+or remaining points fall below its reserve.
+It retains the old workflow-creation-time,
+latest-attempt,
+cancellation,
+and absent-analysis accounting semantics.
+The [scheduling evaluation](../planning/depot-rolling-budget-evaluation.md) records those boundaries
+and the passing policy fixtures.
+This consumer repair removes these REST history requests;
+it does not prove which consumers exhausted the original installation quota,
+eliminate every API call in the workflow,
+or establish that GitHub's quota enforcement is defective.
+
 ### Download public releases without the exhausted installation token
 
 The consumer repair in commit `e5af1daa71` uses the known public release asset URL directly.
@@ -416,3 +457,5 @@ no independent human verification is claimed.
 [success-fix]: https://github.com/cli/cli/pull/13723
 [user-attestations]: https://docs.github.com/en/rest/users/attestations
 [verify-manual]: https://cli.github.com/manual/gh_attestation_verify
+[scorecard-repaired-job]: https://github.com/Aquaticats/Monochromatic/actions/runs/38831778986/job/116751956364
+[scorecard-production-evidence]: ../audit/depot-scorecard-graphql-production-2026-10-15.evidence.json

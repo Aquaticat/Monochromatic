@@ -8,6 +8,9 @@ and queries live history without REST history calls.
 Its exact script passed with the workflow's own token in run `38831327297`.
 The user subsequently requested repair of the quota-related download failure and reiterated the REST-quota objective;
 the narrow query replacement landed in `f598404b31` under that repair request.
+The production gate then passed in [run `38831778986`][graphql-production-job],
+reading 972 historical runs with ten GraphQL requests and no REST history requests.
+It skipped analysis at the eight-per-day count.
 No migration to a different scheduler has been validated.
 This is a recommendation to defer scheduler migration,
 not a claim that the current gate correctly enforces every execution limit.
@@ -197,8 +200,22 @@ The exact candidate script then passed in
 It visited 966 historical runs using ten requests and ten GraphQL points,
 made no REST history requests,
 and correctly skipped analysis at the existing eight-per-day count.
-Production run verification follows the committed replacement;
-the cloud trial is distinct from that production outcome.
+The committed replacement then passed in [production run `38831778986`][graphql-production-job]
+at head `0baff85defe4109be16a1ba15e96712d8a85b49a`.
+The gate visited 972 historical runs using ten GraphQL requests and ten points,
+made no REST history requests,
+and skipped analysis after counting eight analyses in the day window.
+The jobs API records the counting step from `00:51:04` to `00:51:29` UTC on October 16,
+2026,
+or 25 seconds at that API's timestamp precision.
+The gate job succeeded and its dependent analysis job was skipped.
+The [retained production evidence][graphql-production-evidence] contains the run and job identifiers,
+timestamps,
+and credential-free runtime log excerpts.
+This is one production observation against changing history,
+not an unchanged-input latency comparison or proof of billed savings.
+The observed production branch is day-budget rejection;
+the local fixtures exercise admission and the other budget branches.
 The isolated candidate is not a Depot migration or a new scheduler.
 
 A stricter experimental counter used actual step activity,
@@ -369,7 +386,8 @@ The GraphQL repair has passing local policy comparisons,
 live read-only queries,
 and exact-script workflow-token execution.
 It is committed as the quota repair;
-it does not adopt a scheduler replacement or correct the separate accounting-policy gaps.
+its production gate completed successfully and skipped an over-budget analysis.
+The repair does not adopt a scheduler replacement or correct the separate accounting-policy gaps.
 The measured 331-second counting step does not justify relaxing the accepted budgets.
 
 ## Verification
@@ -401,3 +419,5 @@ The isolated candidate had no tracked modifications after restoring the quota ne
 [graphql-fixtures]: ../audit/depot-scorecard-graphql-fixtures-2026-10-15.evidence.json
 [graphql-live]: ../audit/depot-scorecard-graphql-live-2026-10-15.evidence.json
 [graphql-token-probe]: https://github.com/Aquaticats/Monochromatic/actions/runs/38830412356/job/116747659391
+[graphql-production-job]: https://github.com/Aquaticats/Monochromatic/actions/runs/38831778986/job/116751956364
+[graphql-production-evidence]: ../audit/depot-scorecard-graphql-production-2026-10-15.evidence.json
