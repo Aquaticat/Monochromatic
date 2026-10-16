@@ -957,10 +957,12 @@ for (const [command, args] of [
 
 [tasks."trial:depot:prepared:boot-probe"]
 description = "Boot systemd in a bounded disposable container and verify real user units and private audio"
+dir = "{{config_root}}/../desktop-e2e"
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { spawnSync } = await import('node:child_process')
 const { strict: assert } = await import('node:assert')
+const { wait } = await import('@monochromatic-dev/module-async-time/ts')
 const name = `depot-systemd-probe-${process.pid}`
 const podman = ['--non-interactive', 'podman', '--cgroup-manager=cgroupfs']
 function run(args, required = true) {
@@ -970,8 +972,15 @@ function run(args, required = true) {
   return result
 }
 try {
-  run(['run', '--detach', '--name', name, '--systemd=always', '--network=none', '--memory=2g', '--cpus=2', '--timeout=90', '--rootfs', '/:O', '/usr/lib/systemd/systemd', '--unit=basic.target'])
-  run(['exec', name, 'systemctl', 'is-system-running', '--wait'], false)
+  run(['run', '--detach', '--name', name, '--systemd=always', '--cgroupns=private', '--network=none', '--memory=2g', '--cpus=2', '--timeout=90', '--rootfs', '/:O', '/usr/lib/systemd/systemd', '--unit=basic.target', '--log-target=console'])
+  let ready = false
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const result = run(['exec', name, 'systemctl', 'show', '--property=Version', '--value'], false)
+    if (result.status === 0 && result.stdout.trim() !== '') { ready = true; break }
+    await wait(500)
+  }
+  assert.ok(ready, 'The nested systemd manager must answer before user-service startup')
+  run(['exec', name, 'cat', '/proc/1/comm'])
   run(['exec', name, 'systemctl', 'start', `user@${process.getuid()}.service`])
   const user = ['exec', '--user', String(process.getuid()), '--env', `XDG_RUNTIME_DIR=/run/user/${process.getuid()}`, '--env', `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${process.getuid()}/bus`, name]
   const scope = run([...user, 'systemd-run', '--user', '--wait', '--pipe', '--unit=depot-probe-unit', '--property=MemoryMax=256M', '/bin/cat', '/proc/self/cgroup'])
