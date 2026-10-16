@@ -39,6 +39,17 @@ fn client(portal: &AppearancePortal) -> anyhow::Result<zbus::blocking::Proxy<'st
 ///  `downcast_ref::<(f64, f64, f64)>()`.
 fn read_accent(proxy: &zbus::blocking::Proxy<'_>) -> anyhow::Result<(f64, f64, f64)> {
     let value: OwnedValue = proxy.call("ReadOne", &(APPEARANCE_NAMESPACE, ACCENT_COLOR_KEY))?;
+    // What: `assert_eq!` stops the test when the expressions differ; `!` denotes Rust's assertion macro.
+    //       `value_signature()` inspects the value inside the decoded reply's outer variant.
+    //       `.to_string()` makes owned text (`String`, unlike borrowed `&str`) for the comparison.
+    // Why: Printable signature text avoids retaining a reply borrow and exposes extra wrappers
+    //      that downcast_ref would otherwise unwrap before checking the three floating-point channels.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // assert.equal(value.containedSignature, '(ddd)', 'ReadOne must wrap the RGB tuple once');
+    // ```
+    assert_eq!(value.value_signature().to_string(), "(ddd)", "ReadOne must wrap accent-color exactly once");
     return Ok(value.downcast_ref::<(f64, f64, f64)>()?);
 }
 
@@ -49,10 +60,23 @@ fn accent_only_portal_serves_the_accent_and_not_the_scheme() -> anyhow::Result<(
     let proxy = client(&portal)?;
     assert_eq!(read_accent(&proxy)?, (1.0, 128.0 / 255.0, 0.0));
     let read: OwnedValue = proxy.call("Read", &(APPEARANCE_NAMESPACE, ACCENT_COLOR_KEY))?;
+    // Deprecated Read contains another variant; its typed downcast then rejects any further wrapping.
+    assert_eq!(read.value_signature().to_string(), "v", "Read must wrap accent-color exactly twice");
     assert_eq!(read.downcast_ref::<(f64, f64, f64)>()?, (1.0, 128.0 / 255.0, 0.0));
     let all: HashMap<String, HashMap<String, OwnedValue>> = proxy.call("ReadAll", &Vec::<String>::new())?;
     let appearance = all.get(APPEARANCE_NAMESPACE).context("ReadAll omitted the appearance namespace")?;
     assert!(appearance.contains_key(ACCENT_COLOR_KEY));
+    // `.context(...)` turns a missing map entry into a named error; `?` returns that error to the test runner.
+    // What: The optional borrowed entry is kept without copying the owned D-Bus value.
+    // Why: Check the dictionary value's wrapper separately from the Read and ReadOne replies.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const readAll = appearance.get(accentKey) ?? throwError('ReadAll omitted accent-color');
+    // ```
+    let read_all = appearance.get(ACCENT_COLOR_KEY).context("ReadAll omitted accent-color")?;
+    // ReadAll keeps a single variant around the RGB tuple after correcting deprecated Read.
+    assert_eq!(read_all.value_signature().to_string(), "(ddd)", "ReadAll must wrap accent-color exactly once");
     assert!(!appearance.contains_key(COLOR_SCHEME_KEY));
     let scheme = proxy.call::<_, _, OwnedValue>("ReadOne", &(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY));
     assert!(scheme.is_err(), "an accent-only portal must not invent a color scheme");

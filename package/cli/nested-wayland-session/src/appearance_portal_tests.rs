@@ -184,7 +184,20 @@ fn settings_proxy(portal: &AppearancePortal) -> anyhow::Result<zbus::blocking::P
 ///  in that order.
 fn served_values(proxy: &zbus::blocking::Proxy<'_>) -> anyhow::Result<[u32; 3]> {
     let read_one: OwnedValue = proxy.call("ReadOne", &(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY))?;
+    // What: `assert_eq!` fails the test unless both expressions match; `!` marks Rust's assertion macro.
+    //       `value_signature()` identifies the value inside the decoded reply's outer variant.
+    //       `.to_string()` creates owned text (`String`, unlike borrowed `&str`) for this comparison.
+    // Why: Compare printable signatures without retaining a borrow of the reply;
+    //      ReadOne must contain an integer directly, before downcast_ref can unwrap a nested variant.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // assert.equal(readOne.containedSignature, 'u', 'ReadOne must wrap the integer once');
+    // ```
+    assert_eq!(read_one.value_signature().to_string(), "u", "ReadOne must wrap color-scheme exactly once");
     let read: OwnedValue = proxy.call("Read", &(APPEARANCE_NAMESPACE, COLOR_SCHEME_KEY))?;
+    // The deprecated reply must retain a nested variant; downcast_ref alone also accepts the incorrect integer.
+    assert_eq!(read.value_signature().to_string(), "v", "Read must wrap color-scheme exactly twice");
     let all: HashMap<String, HashMap<String, OwnedValue>> =
         proxy.call("ReadAll", &Vec::<String>::new())?;
     let read_all = all
@@ -192,6 +205,8 @@ fn served_values(proxy: &zbus::blocking::Proxy<'_>) -> anyhow::Result<[u32; 3]> 
         .context("ReadAll omitted appearance namespace")?
         .get(COLOR_SCHEME_KEY)
         .context("ReadAll omitted color-scheme")?;
+    // The dictionary entry keeps ReadAll's single variant even though Read needs an extra wrapper.
+    assert_eq!(read_all.value_signature().to_string(), "u", "ReadAll must wrap color-scheme exactly once");
     return Ok([
         read_one.downcast_ref::<u32>()?,
         read.downcast_ref::<u32>()?,
