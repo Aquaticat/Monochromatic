@@ -277,3 +277,116 @@ No upstream issue or patch is proposed.
 4.  Contribution policy: not investigated because an upstream contribution is not proposed.
 5.  Maintainer willingness: not investigated for the same reason.
 6.  Compatible upstream prototype: inapplicable; the correction belongs to the maintained integration.
+
+## Pi SDK 1.2.0 first-group review failure with retained MCP catalogs
+
+### Symptom
+
+The MiMo session created at 2026-10-15 23:29:17 UTC displayed
+`Auto-mode could not assess this operation: Original policy review and evidence closure failed`
+for its first group of two direct Bash calls.
+The user selected Stop and both calls returned `Operation aborted`.
+The original session did not preserve its nested exception.
+
+A disposable configured-host replay reproduces the same aggregate with 40 cached Linear tool descriptions.
+The nested exception is `DependencyDeadlineError: Original dependency assessment deadline expired`.
+This reproduces the observed boundary;
+it does not establish the missing original nested exception as a historical fact.
+
+### Reproduced cause and partial correction
+
+The stack enters `bindRunMessageSources` during complete policy input capture.
+At commit `fc8b4fb6d0`,
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs:104`
+called the full parent check while constructing every binding:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs at fc8b4fb6d0
+assertCurrent(view);return Object.freeze({
+```
+
+The wrapper's `assertCurrent` delegates to `governing.assertCurrent(governing.view)`.
+The maintained regression measured 257 full parent checks for 256 retained inputs,
+compared with 2 checks for a single input.
+Commit `5a8760d15f` performs local identity checks during construction and brackets the collection
+with parent validation.
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs:112`:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs
+governing.assertCurrent(governing.view);
+return bindings;
+```
+
+The 40-tool replay then reaches ordinary uncertain-operation confirmation without the internal exception.
+Foreign views and retired parents remain rejected.
+A process-local omission of the final parent check makes the changed-during-construction control fail
+with `Missing expected exception (GoverningPolicyBindingError)`.
+
+This is not yet a complete full-catalog correction.
+After removing a separate schema ceiling,
+the 140-tool replay still reaches the deadline exception inside `bindRunMessageSources`.
+One instrumented run spent 102674.85 ms inside that binding function.
+The remaining work inside the function is under investigation;
+the candidate is not installed.
+
+### Separate request-preparation ceiling
+
+The full cache contains 66 BrowserOS and 74 Linear tools.
+Before the schema correction,
+request preparation stops before the provider call with
+`Original request tool schemas exceed the 10000-property profile`.
+At commit `5a8760d15f`,
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/tools.mjs:60` imposed this ceiling:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/native-batch/tools.mjs at 5a8760d15f
+if(schemaCapture.properties>10_000)throw new ExecutionContextOwnershipError('Original request tool schemas exceed the 10000-property profile');
+```
+
+Commit `ac68881314` removes that property count limit.
+The schema walk retains its visited set,
+ordinary-record check,
+data-descriptor check,
+and descriptor freshness checks.
+A built-consumer test captures 12,000 properties and rejects a changed last property,
+an accessor without invoking it,
+and an unexpected prototype.
+
+### Verification and rejected substitutes
+
+The bounded host fixtures retain configured extensions,
+home-discovered skills,
+the real repository's read-only context,
+and replayed MCP metadata.
+They use disposable home directories,
+fake credentials,
+authored provider responses,
+and scripted Stop.
+They do not execute external MCP operations or demonstrate live provider classifications.
+
+- Failing baseline: `mimo-mcp-forty-before.log` and `run-message-freshness-before.log`.
+- Passing candidate controls: `mimo-candidate-repro.log`, `mimo-regressions.log`, and `mimo-schema-after.log`.
+- Remaining full-catalog failure: `mimo-full-diagnostic.log`, fixture `pi-hyper-rpc-stop-GRWOl5`.
+- Guard omission: `mimo-omission-adversarial.log`.
+- Logs live under `${HOME}/temp/agent/pi-host-isolation-20261015/`;
+  the named fixture lives directly under `${HOME}/temp/agent/`.
+
+Maintained regressions run through
+`mise run //package/pi-plugin/auto-mode:test:native:run-message-freshness`
+and `mise run //package/pi-plugin/auto-mode:test:native:tool-schema-capacity`
+after building the candidate artifact.
+The configured replay tasks are `mimo-first`, `mimo-candidate`, and `mimo-diagnostic`
+in `${HOME}/temp/agent/pi-tool-call-scope-20261014/`.
+
+Disabling MCP omitted the failing surface and is not a verified repair.
+The earlier 140-tool probe with a 512 MiB heap exhausted that heap before review;
+that is a separate outcome.
+The 20-tool immediate-start probe observed source changes during confirmation;
+waiting for catalog initialization changes that experiment's inputs.
+Increasing the diagnostic fixture's heap to 1536 MiB and duration to 180 seconds exposed the remaining deadline cause;
+neither change fixes it or changes the production fifteen-second review budget.
+
+No user workaround is recommended while configured-consumer verification remains open.
+Both demonstrated mechanisms are maintained integration code,
+so the existing upstream filing decision applies and no external filing is proposed.
