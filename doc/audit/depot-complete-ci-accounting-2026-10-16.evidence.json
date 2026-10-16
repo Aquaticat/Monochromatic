@@ -1,5 +1,5 @@
 {
-  "observedAt": "2026-10-16T02:23:55.116Z",
+  "observedAt": "2026-10-16T02:30:19.040Z",
   "verification": {
     "passed": true,
     "positiveControl": {
@@ -14,7 +14,8 @@
       "missing",
       "cancelled",
       "failed",
-      "retry"
+      "retry",
+      "partial-manifest"
     ],
     "rejectedFixtures": [
       "duplicate-attempt",
@@ -86,9 +87,749 @@
     "artifactCount": 0,
     "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation."
   },
+  "githubCollectorControl": {
+    "collectedAt": "2026-10-16T02:26:39.428Z",
+    "repo": "Aquaticats/Monochromatic",
+    "visibility": "public",
+    "runId": 38778131811,
+    "revision": "29175e0d768d679fa9f3ea4d0ea8183cd871fb24",
+    "runAttempt": 1,
+    "status": "completed",
+    "conclusion": "failure",
+    "createdAt": "2026-10-15T17:32:03Z",
+    "startedAt": "2026-10-15T17:32:03Z",
+    "updatedAt": "2026-10-15T17:39:51Z",
+    "jobs": [
+      {
+        "id": 116571002987,
+        "attempt": 1,
+        "workflow": "music-player-windows",
+        "name": "gnu-x64-ucrt64",
+        "status": "completed",
+        "conclusion": "failure",
+        "headSha": "29175e0d768d679fa9f3ea4d0ea8183cd871fb24",
+        "startedAt": "2026-10-15T17:32:07Z",
+        "completedAt": "2026-10-15T17:39:39Z",
+        "seconds": 452,
+        "labels": [
+          "windows-2025"
+        ],
+        "allocation": {
+          "label": "windows-2025",
+          "vcpus": 4,
+          "memoryGb": 16,
+          "publicStandardComputeUsd": 0,
+          "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+        },
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-10-15T17:32:08Z",
+            "completed_at": "2026-10-15T17:32:08Z"
+          },
+          {
+            "name": "Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-10-15T17:32:08Z",
+            "completed_at": "2026-10-15T17:32:39Z"
+          },
+          {
+            "name": "Install the Rust toolchain pinned in mise.lock",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-10-15T17:32:39Z",
+            "completed_at": "2026-10-15T17:32:59Z"
+          },
+          {
+            "name": "Name the month for the MSYS2 cache key",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-10-15T17:32:59Z",
+            "completed_at": "2026-10-15T17:32:59Z"
+          },
+          {
+            "name": "Restore the MSYS2 package cache",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-10-15T17:32:59Z",
+            "completed_at": "2026-10-15T17:33:01Z"
+          },
+          {
+            "name": "Install MinGW-w64 with the preinstalled MSYS2",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-10-15T17:33:01Z",
+            "completed_at": "2026-10-15T17:33:41Z"
+          },
+          {
+            "name": "Put the MinGW-w64 tools first on PATH and print them",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-10-15T17:33:41Z",
+            "completed_at": "2026-10-15T17:33:41Z"
+          },
+          {
+            "name": "Install cargo-nextest",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-10-15T17:33:41Z",
+            "completed_at": "2026-10-15T17:33:42Z"
+          },
+          {
+            "name": "Decide whether this run saves caches",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9,
+            "started_at": "2026-10-15T17:33:42Z",
+            "completed_at": "2026-10-15T17:33:42Z"
+          },
+          {
+            "name": "Restore the cargo and target cache",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10,
+            "started_at": "2026-10-15T17:33:42Z",
+            "completed_at": "2026-10-15T17:34:17Z"
+          },
+          {
+            "name": "Report the cache restore",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11,
+            "started_at": "2026-10-15T17:34:17Z",
+            "completed_at": "2026-10-15T17:34:18Z"
+          },
+          {
+            "name": "Build the tests (cargo nextest)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12,
+            "started_at": "2026-10-15T17:34:18Z",
+            "completed_at": "2026-10-15T17:35:43Z"
+          },
+          {
+            "name": "Build the binary",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13,
+            "started_at": "2026-10-15T17:35:43Z",
+            "completed_at": "2026-10-15T17:36:10Z"
+          },
+          {
+            "name": "Prune this package's own artifacts from the cache directory",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 14,
+            "started_at": "2026-10-15T17:36:10Z",
+            "completed_at": "2026-10-15T17:36:10Z"
+          },
+          {
+            "name": "Save the cargo and target cache",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 15,
+            "started_at": "2026-10-15T17:36:10Z",
+            "completed_at": "2026-10-15T17:36:10Z"
+          },
+          {
+            "name": "Save the MSYS2 package cache",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 16,
+            "started_at": "2026-10-15T17:36:10Z",
+            "completed_at": "2026-10-15T17:36:10Z"
+          },
+          {
+            "name": "Print the linker rustc ran",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-10-15T17:36:10Z",
+            "completed_at": "2026-10-15T17:36:37Z"
+          },
+          {
+            "name": "Inspect the PE file",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 18,
+            "started_at": "2026-10-15T17:36:37Z",
+            "completed_at": "2026-10-15T17:36:48Z"
+          },
+          {
+            "name": "Run the binary (--version and a bad argument, bash)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 19,
+            "started_at": "2026-10-15T17:36:48Z",
+            "completed_at": "2026-10-15T17:36:49Z"
+          },
+          {
+            "name": "Run the binary (--version, PowerShell and cmd.exe)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 20,
+            "started_at": "2026-10-15T17:36:49Z",
+            "completed_at": "2026-10-15T17:37:01Z"
+          },
+          {
+            "name": "Run the binary with missing standard handles against a real console",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 21,
+            "started_at": "2026-10-15T17:37:01Z",
+            "completed_at": "2026-10-15T17:37:43Z"
+          },
+          {
+            "name": "Check console colors and the startup failure message",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 22,
+            "started_at": "2026-10-15T17:37:43Z",
+            "completed_at": "2026-10-15T17:39:21Z"
+          },
+          {
+            "name": "Launch the program and check it stays up",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 23,
+            "started_at": "2026-10-15T17:39:21Z",
+            "completed_at": "2026-10-15T17:39:36Z"
+          },
+          {
+            "name": "Run the tests (cargo nextest)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 24,
+            "started_at": "2026-10-15T17:39:36Z",
+            "completed_at": "2026-10-15T17:39:36Z"
+          },
+          {
+            "name": "Post Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 48,
+            "started_at": "2026-10-15T17:39:36Z",
+            "completed_at": "2026-10-15T17:39:38Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 49,
+            "started_at": "2026-10-15T17:39:38Z",
+            "completed_at": "2026-10-15T17:39:38Z"
+          }
+        ],
+        "log": {
+          "path": "logs-116571002987.txt",
+          "bytes": 147476,
+          "sha256": "9f92f6a665f825884ae7a99993485a13c8cef1621f1ed02915bd43dbfe56cfec"
+        }
+      },
+      {
+        "id": 116571003297,
+        "attempt": 1,
+        "workflow": "music-player-windows",
+        "name": "msvc-arm64",
+        "status": "completed",
+        "conclusion": "failure",
+        "headSha": "29175e0d768d679fa9f3ea4d0ea8183cd871fb24",
+        "startedAt": "2026-10-15T17:32:06Z",
+        "completedAt": "2026-10-15T17:39:50Z",
+        "seconds": 464,
+        "labels": [
+          "windows-11-arm"
+        ],
+        "allocation": {
+          "label": "windows-11-arm",
+          "vcpus": 4,
+          "memoryGb": 16,
+          "publicStandardComputeUsd": 0,
+          "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+        },
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-10-15T17:32:07Z",
+            "completed_at": "2026-10-15T17:32:08Z"
+          },
+          {
+            "name": "Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-10-15T17:32:08Z",
+            "completed_at": "2026-10-15T17:33:04Z"
+          },
+          {
+            "name": "Install the Rust toolchain pinned in mise.lock",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-10-15T17:33:04Z",
+            "completed_at": "2026-10-15T17:33:17Z"
+          },
+          {
+            "name": "Name the month for the MSYS2 cache key",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 4,
+            "started_at": "2026-10-15T17:33:17Z",
+            "completed_at": "2026-10-15T17:33:17Z"
+          },
+          {
+            "name": "Restore the MSYS2 package cache",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 5,
+            "started_at": "2026-10-15T17:33:17Z",
+            "completed_at": "2026-10-15T17:33:17Z"
+          },
+          {
+            "name": "Install MinGW-w64 with the preinstalled MSYS2",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 6,
+            "started_at": "2026-10-15T17:33:17Z",
+            "completed_at": "2026-10-15T17:33:17Z"
+          },
+          {
+            "name": "Put the MinGW-w64 tools first on PATH and print them",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 7,
+            "started_at": "2026-10-15T17:33:17Z",
+            "completed_at": "2026-10-15T17:33:17Z"
+          },
+          {
+            "name": "Install cargo-nextest",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-10-15T17:33:17Z",
+            "completed_at": "2026-10-15T17:33:18Z"
+          },
+          {
+            "name": "Decide whether this run saves caches",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9,
+            "started_at": "2026-10-15T17:33:18Z",
+            "completed_at": "2026-10-15T17:33:18Z"
+          },
+          {
+            "name": "Restore the cargo and target cache",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10,
+            "started_at": "2026-10-15T17:33:18Z",
+            "completed_at": "2026-10-15T17:34:16Z"
+          },
+          {
+            "name": "Report the cache restore",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11,
+            "started_at": "2026-10-15T17:34:16Z",
+            "completed_at": "2026-10-15T17:34:17Z"
+          },
+          {
+            "name": "Build the tests (cargo nextest)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12,
+            "started_at": "2026-10-15T17:34:17Z",
+            "completed_at": "2026-10-15T17:35:45Z"
+          },
+          {
+            "name": "Build the binary",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13,
+            "started_at": "2026-10-15T17:35:45Z",
+            "completed_at": "2026-10-15T17:36:17Z"
+          },
+          {
+            "name": "Prune this package's own artifacts from the cache directory",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 14,
+            "started_at": "2026-10-15T17:36:17Z",
+            "completed_at": "2026-10-15T17:36:17Z"
+          },
+          {
+            "name": "Save the cargo and target cache",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 15,
+            "started_at": "2026-10-15T17:36:17Z",
+            "completed_at": "2026-10-15T17:36:17Z"
+          },
+          {
+            "name": "Save the MSYS2 package cache",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 16,
+            "started_at": "2026-10-15T17:36:17Z",
+            "completed_at": "2026-10-15T17:36:17Z"
+          },
+          {
+            "name": "Print the linker rustc ran",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-10-15T17:36:17Z",
+            "completed_at": "2026-10-15T17:36:49Z"
+          },
+          {
+            "name": "Inspect the PE file",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 18,
+            "started_at": "2026-10-15T17:36:49Z",
+            "completed_at": "2026-10-15T17:36:57Z"
+          },
+          {
+            "name": "Run the binary (--version and a bad argument, bash)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 19,
+            "started_at": "2026-10-15T17:36:57Z",
+            "completed_at": "2026-10-15T17:36:58Z"
+          },
+          {
+            "name": "Run the binary (--version, PowerShell and cmd.exe)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 20,
+            "started_at": "2026-10-15T17:36:58Z",
+            "completed_at": "2026-10-15T17:37:10Z"
+          },
+          {
+            "name": "Run the binary with missing standard handles against a real console",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 21,
+            "started_at": "2026-10-15T17:37:10Z",
+            "completed_at": "2026-10-15T17:37:51Z"
+          },
+          {
+            "name": "Check console colors and the startup failure message",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 22,
+            "started_at": "2026-10-15T17:37:51Z",
+            "completed_at": "2026-10-15T17:39:29Z"
+          },
+          {
+            "name": "Launch the program and check it stays up",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 23,
+            "started_at": "2026-10-15T17:39:29Z",
+            "completed_at": "2026-10-15T17:39:44Z"
+          },
+          {
+            "name": "Run the tests (cargo nextest)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 24,
+            "started_at": "2026-10-15T17:39:44Z",
+            "completed_at": "2026-10-15T17:39:44Z"
+          },
+          {
+            "name": "Post Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 48,
+            "started_at": "2026-10-15T17:39:44Z",
+            "completed_at": "2026-10-15T17:39:49Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 49,
+            "started_at": "2026-10-15T17:39:49Z",
+            "completed_at": "2026-10-15T17:39:49Z"
+          }
+        ],
+        "log": {
+          "path": "logs-116571003297.txt",
+          "bytes": 143857,
+          "sha256": "bbd45b1e82f9c57a48c32d428430d9619d47865a20db8448ed407cc6a575aa8d"
+        }
+      },
+      {
+        "id": 116571003530,
+        "attempt": 1,
+        "workflow": "music-player-windows",
+        "name": "msvc-x64",
+        "status": "completed",
+        "conclusion": "failure",
+        "headSha": "29175e0d768d679fa9f3ea4d0ea8183cd871fb24",
+        "startedAt": "2026-10-15T17:32:06Z",
+        "completedAt": "2026-10-15T17:38:50Z",
+        "seconds": 404,
+        "labels": [
+          "windows-2025"
+        ],
+        "allocation": {
+          "label": "windows-2025",
+          "vcpus": 4,
+          "memoryGb": 16,
+          "publicStandardComputeUsd": 0,
+          "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+        },
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-10-15T17:32:06Z",
+            "completed_at": "2026-10-15T17:32:07Z"
+          },
+          {
+            "name": "Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-10-15T17:32:07Z",
+            "completed_at": "2026-10-15T17:32:37Z"
+          },
+          {
+            "name": "Install the Rust toolchain pinned in mise.lock",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-10-15T17:32:37Z",
+            "completed_at": "2026-10-15T17:32:51Z"
+          },
+          {
+            "name": "Name the month for the MSYS2 cache key",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 4,
+            "started_at": "2026-10-15T17:32:51Z",
+            "completed_at": "2026-10-15T17:32:51Z"
+          },
+          {
+            "name": "Restore the MSYS2 package cache",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 5,
+            "started_at": "2026-10-15T17:32:51Z",
+            "completed_at": "2026-10-15T17:32:51Z"
+          },
+          {
+            "name": "Install MinGW-w64 with the preinstalled MSYS2",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 6,
+            "started_at": "2026-10-15T17:32:51Z",
+            "completed_at": "2026-10-15T17:32:51Z"
+          },
+          {
+            "name": "Put the MinGW-w64 tools first on PATH and print them",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 7,
+            "started_at": "2026-10-15T17:32:51Z",
+            "completed_at": "2026-10-15T17:32:51Z"
+          },
+          {
+            "name": "Install cargo-nextest",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-10-15T17:32:51Z",
+            "completed_at": "2026-10-15T17:32:52Z"
+          },
+          {
+            "name": "Decide whether this run saves caches",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9,
+            "started_at": "2026-10-15T17:32:52Z",
+            "completed_at": "2026-10-15T17:32:52Z"
+          },
+          {
+            "name": "Restore the cargo and target cache",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10,
+            "started_at": "2026-10-15T17:32:52Z",
+            "completed_at": "2026-10-15T17:33:13Z"
+          },
+          {
+            "name": "Report the cache restore",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11,
+            "started_at": "2026-10-15T17:33:13Z",
+            "completed_at": "2026-10-15T17:33:14Z"
+          },
+          {
+            "name": "Build the tests (cargo nextest)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12,
+            "started_at": "2026-10-15T17:33:14Z",
+            "completed_at": "2026-10-15T17:34:51Z"
+          },
+          {
+            "name": "Build the binary",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13,
+            "started_at": "2026-10-15T17:34:51Z",
+            "completed_at": "2026-10-15T17:35:19Z"
+          },
+          {
+            "name": "Prune this package's own artifacts from the cache directory",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 14,
+            "started_at": "2026-10-15T17:35:19Z",
+            "completed_at": "2026-10-15T17:35:19Z"
+          },
+          {
+            "name": "Save the cargo and target cache",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 15,
+            "started_at": "2026-10-15T17:35:19Z",
+            "completed_at": "2026-10-15T17:35:19Z"
+          },
+          {
+            "name": "Save the MSYS2 package cache",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 16,
+            "started_at": "2026-10-15T17:35:19Z",
+            "completed_at": "2026-10-15T17:35:19Z"
+          },
+          {
+            "name": "Print the linker rustc ran",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-10-15T17:35:19Z",
+            "completed_at": "2026-10-15T17:35:47Z"
+          },
+          {
+            "name": "Inspect the PE file",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 18,
+            "started_at": "2026-10-15T17:35:47Z",
+            "completed_at": "2026-10-15T17:35:57Z"
+          },
+          {
+            "name": "Run the binary (--version and a bad argument, bash)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 19,
+            "started_at": "2026-10-15T17:35:57Z",
+            "completed_at": "2026-10-15T17:35:57Z"
+          },
+          {
+            "name": "Run the binary (--version, PowerShell and cmd.exe)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 20,
+            "started_at": "2026-10-15T17:35:57Z",
+            "completed_at": "2026-10-15T17:36:10Z"
+          },
+          {
+            "name": "Run the binary with missing standard handles against a real console",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 21,
+            "started_at": "2026-10-15T17:36:10Z",
+            "completed_at": "2026-10-15T17:36:52Z"
+          },
+          {
+            "name": "Check console colors and the startup failure message",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 22,
+            "started_at": "2026-10-15T17:36:52Z",
+            "completed_at": "2026-10-15T17:38:30Z"
+          },
+          {
+            "name": "Launch the program and check it stays up",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 23,
+            "started_at": "2026-10-15T17:38:30Z",
+            "completed_at": "2026-10-15T17:38:46Z"
+          },
+          {
+            "name": "Run the tests (cargo nextest)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 24,
+            "started_at": "2026-10-15T17:38:46Z",
+            "completed_at": "2026-10-15T17:38:46Z"
+          },
+          {
+            "name": "Post Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 48,
+            "started_at": "2026-10-15T17:38:46Z",
+            "completed_at": "2026-10-15T17:38:49Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 49,
+            "started_at": "2026-10-15T17:38:49Z",
+            "completed_at": "2026-10-15T17:38:49Z"
+          }
+        ],
+        "log": {
+          "path": "logs-116571003530.txt",
+          "bytes": 142131,
+          "sha256": "5cee32e8c20032dacbd8c1c2aead51e3009489efcbb6c4f114b59c1f4f8ece59"
+        }
+      }
+    ],
+    "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+  },
+  "manifestAdapterControl": {
+    "fixture": true,
+    "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+    "manifestSha256": "8c35d7f2d7b63203ca99a5e4c7a2635364e00b79390d836023e113b997af965f",
+    "manifestChecks": 26,
+    "externalChecks": [
+      "root.forbidden-strings",
+      "root.generated-consistency"
+    ],
+    "manifestComplete": false,
+    "emptyExecutionAccepted": false,
+    "censoredSeconds": 10
+  },
   "harness": {
     "path": "/var/mnt/encrypted/temp/agent/depot-complete-accounting-20261016/mise.toml",
-    "sha256": "74f9479711d0e7685988e1464aca6fe4ff0da006e9709c7c7cc6ddc27a56fa2c",
+    "sha256": "deeb5efb19277edbdfadb4fde1880b26a84dd317d63f6b7d006c75d510a072e7",
     "normalizedExample": {
       "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "requestedAt": "2026-10-16T00:00:00.000Z",
@@ -177,6 +918,7 @@
           "vcpus": 4
         }
       ],
+      "manifestComplete": true,
       "selection": {
         "base": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         "head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -194,10 +936,10 @@
           "lint",
           "test"
         ],
-        "selectorSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        "manifestSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
       }
     },
-    "source": "[tasks.collect]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {execFileSync} = await import('node:child_process');\nconst {mkdirSync,writeFileSync,readFileSync} = await import('node:fs');\nconst {createHash} = await import('node:crypto');\nconst {join} = await import('node:path');\nconst runId=process.env.DEPOT_ACCOUNTING_RUN;\nif(!runId || !/^[a-z0-9]+$/.test(runId))throw new Error('DEPOT_ACCOUNTING_RUN must name one run');\nconst org=process.env.DEPOT_ACCOUNTING_ORG??'l4zncjjbj5';\nconst dir=join(process.cwd(),`collected-${runId}`);\nmkdirSync(dir,{recursive:true,mode:0o700});\nconst get=(args,name)=>{\n  const raw=execFileSync('depot',[...args,'--org',org,'--output','json'],{encoding:'utf8',maxBuffer:64*1024*1024});\n  writeFileSync(join(dir,name),raw);\n  return JSON.parse(raw);\n};\nconst status=get(['ci','status',runId],'status.json');\nconst run=get(['ci','run','show',runId],'run.json');\nconst expected=process.env.DEPOT_ACCOUNTING_SHA;\nconst actual=run.head_sha??run.run?.head_sha??run.sha??run.run?.sha;\nif(expected && actual!==expected)throw new Error(`Run revision differs: expected ${expected}, got ${actual}`);\nconst attempts=[];\nfor(const workflow of status.workflows??[])for(const job of workflow.jobs??[])for(const attempt of job.attempts??[]){\n  if(attempts.some(row=>row.attemptId===attempt.attempt_id))throw new Error(`Repeated attempt ${attempt.attempt_id}`);\n  const metrics=get(['ci','metrics',attempt.attempt_id],`metrics-${attempt.attempt_id}.json`);\n  const logPath=join(dir,`logs-${attempt.attempt_id}.jsonl`);\n  execFileSync('depot',['ci','logs',attempt.attempt_id,'--org',org,'--output','json','--output-file',logPath],{encoding:'utf8',maxBuffer:1024*1024});\n  const raw=readFileSync(logPath);\n  const lines=raw.toString().split('\\n').filter(Boolean).map(line=>JSON.parse(line));\n  attempts.push({workflowId:workflow.workflow_id,jobId:job.job_id,jobKey:job.job_key,attemptId:attempt.attempt_id,attempt:attempt.attempt,status:attempt.status,metricsPath:`metrics-${attempt.attempt_id}.json`,logPath:`logs-${attempt.attempt_id}.jsonl`,logSha256:createHash('sha256').update(raw).digest('hex'),logRecords:lines.length,providerAttempt:metrics.attempt?.attempt??metrics.attempt});\n}\nconst artifacts=get(['ci','artifacts','list',runId],'artifacts.json');\nconst summary={collectedAt:new Date().toISOString(),org,runId,revision:actual,status:status.status,attempts,artifactCount:artifacts.artifacts?.length??0,scope:'Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation.'};\nwriteFileSync(join(dir,'collection.json'),JSON.stringify(summary,null,2)+'\\n');\nconsole.log(JSON.stringify({runId,revision:actual,attempts:attempts.length,artifactCount:summary.artifactCount,dir}));\n'''\n\n[tasks.analyze]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync} = await import('node:fs');\nconst {createHash} = await import('node:crypto');\nconst inputPath=process.env.DEPOT_ACCOUNTING_INPUT;\nif(!inputPath)throw new Error('DEPOT_ACCOUNTING_INPUT must name normalized evidence');\nconst raw=readFileSync(inputPath);\nconst input=JSON.parse(raw);\nconst instant=value=>{\n  const parsed=Date.parse(value);\n  if(!Number.isFinite(parsed))throw new Error(`Invalid timestamp ${value}`);\n  return parsed;\n};\nconst unique=(rows,label)=>{\n  const ids=rows.map(row=>row.id);\n  if(new Set(ids).size!==ids.length)throw new Error(`Duplicate ${label} identity`);\n};\nconst union=intervals=>{\n  const ordered=intervals.toSorted((a,b)=>a[0]-b[0]);\n  let total=0,end=-Infinity;\n  for(const [start,stop]of ordered){\n    if(stop<start)throw new Error('Negative interval');\n    total+=Math.max(0,stop-Math.max(start,end));\n    end=Math.max(end,stop);\n  }\n  return total/1000;\n};\nconst evaluate=evidence=>{\n  if(!/^[a-f0-9]{40}$/.test(evidence.revision))throw new Error('Immutable revision required');\n  if(evidence.manifest.length===0)throw new Error('Trial manifest cannot be empty');\n  unique(evidence.manifest,'manifest');unique(evidence.checks,'check');unique(evidence.attempts,'attempt');\n  const selection=evidence.selection;\n  if(!selection||!/^[a-f0-9]{40}$/.test(selection.base)||selection.head!==evidence.revision)throw new Error('Frozen change-selection base/head required');\n  if(!Array.isArray(selection.changedFiles)||!Array.isArray(selection.affectedPackages)||!Array.isArray(selection.excludedPackages))throw new Error('Selection inventory required');\n  if(!/^[a-f0-9]{64}$/.test(selection.selectorSha256))throw new Error('Selector fingerprint required');\n  if(selection.affectedPackages.some(path=>selection.excludedPackages.includes(path)))throw new Error('Affected package also excluded');\n  const actualIds=evidence.manifest.map(row=>row.id).toSorted();\n  if(JSON.stringify(actualIds)!==JSON.stringify([...selection.selectedCheckIds].toSorted()))throw new Error('Manifest differs from selected required checks');\n  for(const spec of evidence.manifest){\n    if(!selection.affectedPackages.includes(spec.packagePath))throw new Error(`Unrelated package selected ${spec.id}`);\n    if((spec.family==='oxlint'||spec.task?.endsWith(':lint:oxlint'))&&(spec.executionScope!=='project'||spec.arguments?.length!==0||!spec.task?.endsWith(':lint:oxlint')))throw new Error(`Oxlint requires whole selected project ${spec.id}`);\n  }\n  const requested=instant(evidence.requestedAt),observed=instant(evidence.observedAt);\n  if(observed<requested)throw new Error('Observation predates request');\n  const manifest=new Map(evidence.manifest.map(row=>[row.id,row]));\n  for(const row of evidence.checks)if(!manifest.has(row.id))throw new Error(`Unknown check ${row.id}`);\n  const checks=new Map(evidence.checks.map(row=>[row.id,row]));\n  const attempts=new Map(evidence.attempts.map(row=>[row.id,row]));\n  const pending=new Set(manifest.keys()),distances=new Map();\n  const outcomes=[];\n  const waitIntervals=[];\n  while(pending.size){\n    let advanced=false;\n    for(const id of pending){\n      const spec=manifest.get(id);\n      if((spec.needs??[]).some(dependency=>!manifest.has(dependency)))throw new Error(`Missing dependency for ${id}`);\n      if((spec.needs??[]).some(dependency=>!distances.has(dependency)))continue;\n      const result=checks.get(id);\n      let elapsed=0;\n      if(result){\n        if(result.revision!==evidence.revision)throw new Error(`Revision mismatch ${id}`);\n        if(spec.family==='oxlint'||spec.task?.endsWith(':lint:oxlint')){\n          if(result.invocation?.task!==spec.task||result.invocation?.executionScope!=='project'||result.invocation?.arguments?.length!==0)throw new Error(`Oxlint invocation evidence differs ${id}`);\n        }\n        for(const attemptId of result.attemptIds??[])if(!attempts.has(attemptId))throw new Error(`Unknown attempt ${attemptId}`);\n        if(result.startedAt&&result.finishedAt){\n          const started=instant(result.startedAt),finished=instant(result.finishedAt);\n          if(started<requested||finished<started||finished>observed)throw new Error(`Invalid check interval ${id}`);\n          elapsed=(finished-started)/1000;\n          for(const dependency of spec.needs??[]){\n            const prerequisite=checks.get(dependency);\n            if(!prerequisite?.finishedAt||instant(prerequisite.finishedAt)>started)throw new Error(`Dependency chronology differs ${id}`);\n          }\n        }\n      }\n      const terminal=result?.finishedAt&&['success','failure'].includes(result.conclusion)&&result.executed===true;\n      const accepted=terminal&&result.conclusion==='success'&&result.evidenceVerified===true&&(result.unexpectedSkips??0)===0;\n      const stop=terminal?instant(result.finishedAt):observed;\n      waitIntervals.push([requested,stop]);\n      outcomes.push({id,state:!result?'missing':result.conclusion,terminal:Boolean(terminal),accepted:Boolean(accepted),censored:!terminal});\n      distances.set(id,elapsed+Math.max(0,...(spec.needs??[]).map(dependency=>distances.get(dependency))));\n      pending.delete(id);advanced=true;\n    }\n    if(!advanced)throw new Error('Cyclic manifest dependencies');\n  }\n  const compute={};\n  const active=[];\n  for(const attempt of evidence.attempts){\n    if(attempt.revision!==evidence.revision)throw new Error(`Attempt revision mismatch ${attempt.id}`);\n    if(!attempt.startedAt){if(attempt.finishedAt)throw new Error('Finish without start');continue;}\n    const start=instant(attempt.startedAt),stop=attempt.finishedAt?instant(attempt.finishedAt):observed;\n    if(stop<start||stop>observed)throw new Error(`Invalid attempt interval ${attempt.id}`);\n    if(!(attempt.vcpus>0))throw new Error(`Missing resource size ${attempt.id}`);\n    const seconds=(stop-start)/1000;\n    const product=attempt.product;\n    compute[product]??={seconds:0,vcpuSeconds:0,attempts:0,censoredAttempts:0};\n    compute[product].seconds+=seconds;compute[product].vcpuSeconds+=seconds*attempt.vcpus;compute[product].attempts++;\n    if(!attempt.finishedAt)compute[product].censoredAttempts++;\n    active.push([start,stop]);\n  }\n  return {revision:evidence.revision,selection,manifestChecks:manifest.size,outcomes,accepted:outcomes.every(row=>row.accepted),allRequiredExecutedToTerminal:outcomes.every(row=>row.terminal),elapsedObservationSeconds:(observed-requested)/1000,unfinishedRequiredUnionSeconds:union(waitIntervals),activeAttemptUnionSeconds:union(active),executionDependencyPathSeconds:Math.max(0,...distances.values()),compute,limitations:['Provider execution intervals are usage proxies, not account ledger entries.','A missing, skipped, or cancelled required check remains censored at the observation boundary.','Execution dependency path excludes queue time and cannot replace observed request-to-completion time.','Selector reach is independently verified against repository changes; this reconciler validates its frozen output, not its discovery algorithm.']};\n};\nconst output={inputSha256:createHash('sha256').update(raw).digest('hex'),...evaluate(input)};\nwriteFileSync(process.env.DEPOT_ACCOUNTING_OUTPUT??'analysis.json',JSON.stringify(output,null,2)+'\\n');\nconsole.log(JSON.stringify(output));\n'''\n\n[tasks.verify]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {execFileSync} = await import('node:child_process');\nconst {writeFileSync,readFileSync,mkdirSync} = await import('node:fs');\nconst {strictEqual,deepStrictEqual,throws} = await import('node:assert');\nmkdirSync('fixtures',{recursive:true});\nconst revision='a'.repeat(40);\nconst at=seconds=>new Date(Date.UTC(2026,9,16)+seconds*1000).toISOString();\nconst base={revision,requestedAt:at(0),observedAt:at(40),manifest:[{id:'build',needs:[]},{id:'lint',needs:[]},{id:'test',needs:['build']}],checks:[{id:'build',revision,startedAt:at(5),finishedAt:at(15),conclusion:'success',executed:true,evidenceVerified:true,attemptIds:['shared']},{id:'lint',revision,startedAt:at(5),finishedAt:at(25),conclusion:'success',executed:true,evidenceVerified:true,attemptIds:['lint-job']},{id:'test',revision,startedAt:at(15),finishedAt:at(30),conclusion:'success',executed:true,evidenceVerified:true,attemptIds:['shared']}],attempts:[{id:'shared',revision,startedAt:at(3),finishedAt:at(32),product:'ci',vcpus:2},{id:'lint-job',revision,startedAt:at(4),finishedAt:at(27),product:'ci',vcpus:4}]};\nbase.selection={base:'b'.repeat(40),head:revision,changedFiles:['package/module/example/src/index.ts'],affectedPackages:['package/module/example'],excludedPackages:['package/module/unrelated'],selectedCheckIds:['build','lint','test'],selectorSha256:'c'.repeat(64)};\nbase.manifest=base.manifest.map(row=>({...row,packagePath:'package/module/example',...(row.id==='lint'?{family:'oxlint',executionScope:'project',task:'//package/module/example:lint:oxlint',arguments:[]}: {})}));\nbase.checks=base.checks.map(row=>row.id==='lint'?{...row,invocation:{task:'//package/module/example:lint:oxlint',executionScope:'project',arguments:[]}}:row);\nconst run=(name,input)=>{\n  const path=`fixtures/${name}.json`,output=`fixtures/${name}.result.json`;\n  writeFileSync(path,JSON.stringify(input,null,2));\n  execFileSync('mise',['run','analyze'],{env:{...process.env,DEPOT_ACCOUNTING_INPUT:path,DEPOT_ACCOUNTING_OUTPUT:output},stdio:'pipe'});\n  return JSON.parse(readFileSync(output,'utf8'));\n};\nconst valid=run('valid',base);\nstrictEqual(valid.accepted,true);strictEqual(valid.unfinishedRequiredUnionSeconds,30);strictEqual(valid.activeAttemptUnionSeconds,29);strictEqual(valid.executionDependencyPathSeconds,25);strictEqual(valid.compute.ci.seconds,52);strictEqual(valid.compute.ci.vcpuSeconds,150);\nconst missing=run('missing',{...base,checks:base.checks.slice(0,2)});strictEqual(missing.accepted,false);strictEqual(missing.unfinishedRequiredUnionSeconds,40);\nconst cancelled=run('cancelled',{...base,checks:base.checks.map(row=>row.id==='test'?{...row,conclusion:'cancelled'}:row)});strictEqual(cancelled.accepted,false);strictEqual(cancelled.unfinishedRequiredUnionSeconds,40);\nconst failed=run('failed',{...base,checks:base.checks.map(row=>row.id==='lint'?{...row,conclusion:'failure'}:row)});strictEqual(failed.accepted,false);strictEqual(failed.allRequiredExecutedToTerminal,true);strictEqual(failed.unfinishedRequiredUnionSeconds,30);\nconst retry=run('retry',{...base,attempts:[...base.attempts,{id:'failed-first',revision,startedAt:at(1),finishedAt:at(3),product:'ci',vcpus:4}]});strictEqual(retry.compute.ci.vcpuSeconds,158);\nconst rejected=[['duplicate-attempt',{...base,attempts:[...base.attempts,base.attempts[0]]}],['wrong-revision',{...base,checks:base.checks.map(row=>({...row,revision:'b'.repeat(40)}))}],['cyclic',{...base,manifest:base.manifest.map(row=>row.id==='build'?{...row,needs:['test']}:row)}],['unknown-check',{...base,checks:[...base.checks,{...base.checks[0],id:'unlisted'}]}]];\nrejected.push(['missing-selected-check',{...base,manifest:base.manifest.slice(0,2)}],['unrelated-package',{...base,manifest:base.manifest.map(row=>row.id==='test'?{...row,packagePath:'package/module/unrelated'}:row)}],['oxlint-file-filter',{...base,manifest:base.manifest.map(row=>row.id==='lint'?{...row,arguments:['src/index.ts']}:row)}],['oxlint-file-mode',{...base,manifest:base.manifest.map(row=>row.id==='lint'?{...row,executionScope:'file'}:row)}]);\nrejected.push(['empty-manifest',{...base,manifest:[],checks:[],selection:{...base.selection,selectedCheckIds:[]}}]);\nrejected.push(['oxlint-observed-file-filter',{...base,checks:base.checks.map(row=>row.id==='lint'?{...row,invocation:{...row.invocation,arguments:['src/index.ts']}}:row)}]);\nfor(const [name,input]of rejected)throws(()=>run(name,input));\nwriteFileSync('verification.json',JSON.stringify({passed:true,positiveControl:{providerSeconds:52,wallSeconds:30,activeUnionSeconds:29,dependencySeconds:25,vcpuSeconds:150},successfulFixtures:['valid','missing','cancelled','failed','retry'],rejectedFixtures:rejected.map(([name])=>name)},null,2)+'\\n');\nconsole.log('PASS: overlap, sequential dependencies, shared-job deduplication, missing/cancelled/failing gates, retry usage, revision and identity guards');\n'''\n\n[tasks.retain]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync} = await import('node:fs');\nconst {createHash} = await import('node:crypto');\nconst {homedir} = await import('node:os');\nconst {join} = await import('node:path');\nconst read=path=>JSON.parse(readFileSync(path,'utf8'));\nconst hash=path=>createHash('sha256').update(readFileSync(path)).digest('hex');\nconst output={observedAt:new Date().toISOString(),verification:read('verification.json'),collectorControl:read('collected-wf9xzbwfph/collection.json'),harness:{path:join(process.cwd(),'mise.toml'),sha256:hash('mise.toml'),normalizedExample:read('fixtures/valid.json'),source:readFileSync('mise.toml','utf8')},issueComments:['https://github.com/Aquaticats/Monochromatic/issues/1030#issuecomment-6206595590','https://github.com/Aquaticats/Monochromatic/issues/572#issuecomment-6206595886'],limitation:'This verifies accounting and read-only collection, not execution of the complete selected CI graph. No new cloud run was launched.'};\nwriteFileSync(join(homedir(),'Monochromatic/doc/audit/depot-complete-ci-accounting-2026-10-16.evidence.json'),JSON.stringify(output,null,2)+'\\n');\nconsole.log(JSON.stringify({fixtureCases:output.verification.successfulFixtures.length+output.verification.rejectedFixtures.length,collectorAttempts:output.collectorControl.attempts.length,harnessSha256:output.harness.sha256}));\n'''\n\n[tasks.render]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {execFileSync} = await import('node:child_process');\nconst {readFileSync} = await import('node:fs');\nconst {homedir} = await import('node:os');\nconst {join} = await import('node:path');\nfor(const [source,output] of [[join(homedir(),'Monochromatic/doc/audit/depot-complete-ci-accounting-2026-10-16.md'),'report.html'],['issue-1030-comment.md','issue-1030-comment.html'],['issue-572-comment.md','issue-572-comment.html']]){\n  execFileSync('pandoc',['--from=gfm','--to=html',source,'--output',output]);\n  const html=readFileSync(output,'utf8');\n  if(!html.includes('<h'))throw new Error(`Missing headings ${output}`);\n  console.log(JSON.stringify({source,output,bytes:Buffer.byteLength(html)}));\n}\n'''\n"
+    "source": "[tasks.collect]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {execFileSync} = await import('node:child_process');\nconst {mkdirSync,writeFileSync,readFileSync} = await import('node:fs');\nconst {createHash} = await import('node:crypto');\nconst {join} = await import('node:path');\nconst runId=process.env.DEPOT_ACCOUNTING_RUN;\nif(!runId || !/^[a-z0-9]+$/.test(runId))throw new Error('DEPOT_ACCOUNTING_RUN must name one run');\nconst org=process.env.DEPOT_ACCOUNTING_ORG??'l4zncjjbj5';\nconst dir=join(process.cwd(),`collected-${runId}`);\nmkdirSync(dir,{recursive:true,mode:0o700});\nconst get=(args,name)=>{\n  const raw=execFileSync('depot',[...args,'--org',org,'--output','json'],{encoding:'utf8',maxBuffer:64*1024*1024});\n  writeFileSync(join(dir,name),raw);\n  return JSON.parse(raw);\n};\nconst status=get(['ci','status',runId],'status.json');\nconst run=get(['ci','run','show',runId],'run.json');\nconst expected=process.env.DEPOT_ACCOUNTING_SHA;\nconst actual=run.head_sha??run.run?.head_sha??run.sha??run.run?.sha;\nif(expected && actual!==expected)throw new Error(`Run revision differs: expected ${expected}, got ${actual}`);\nconst attempts=[];\nfor(const workflow of status.workflows??[])for(const job of workflow.jobs??[])for(const attempt of job.attempts??[]){\n  if(attempts.some(row=>row.attemptId===attempt.attempt_id))throw new Error(`Repeated attempt ${attempt.attempt_id}`);\n  const metrics=get(['ci','metrics',attempt.attempt_id],`metrics-${attempt.attempt_id}.json`);\n  const logPath=join(dir,`logs-${attempt.attempt_id}.jsonl`);\n  execFileSync('depot',['ci','logs',attempt.attempt_id,'--org',org,'--output','json','--output-file',logPath],{encoding:'utf8',maxBuffer:1024*1024});\n  const raw=readFileSync(logPath);\n  const lines=raw.toString().split('\\n').filter(Boolean).map(line=>JSON.parse(line));\n  attempts.push({workflowId:workflow.workflow_id,jobId:job.job_id,jobKey:job.job_key,attemptId:attempt.attempt_id,attempt:attempt.attempt,status:attempt.status,metricsPath:`metrics-${attempt.attempt_id}.json`,logPath:`logs-${attempt.attempt_id}.jsonl`,logSha256:createHash('sha256').update(raw).digest('hex'),logRecords:lines.length,providerAttempt:metrics.attempt?.attempt??metrics.attempt});\n}\nconst artifacts=get(['ci','artifacts','list',runId],'artifacts.json');\nconst summary={collectedAt:new Date().toISOString(),org,runId,revision:actual,status:status.status,attempts,artifactCount:artifacts.artifacts?.length??0,scope:'Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation.'};\nwriteFileSync(join(dir,'collection.json'),JSON.stringify(summary,null,2)+'\\n');\nconsole.log(JSON.stringify({runId,revision:actual,attempts:attempts.length,artifactCount:summary.artifactCount,dir}));\n'''\n\n[tasks.analyze]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync} = await import('node:fs');\nconst {createHash} = await import('node:crypto');\nconst inputPath=process.env.DEPOT_ACCOUNTING_INPUT;\nif(!inputPath)throw new Error('DEPOT_ACCOUNTING_INPUT must name normalized evidence');\nconst raw=readFileSync(inputPath);\nconst input=JSON.parse(raw);\nconst instant=value=>{\n  const parsed=Date.parse(value);\n  if(!Number.isFinite(parsed))throw new Error(`Invalid timestamp ${value}`);\n  return parsed;\n};\nconst unique=(rows,label)=>{\n  const ids=rows.map(row=>row.id);\n  if(new Set(ids).size!==ids.length)throw new Error(`Duplicate ${label} identity`);\n};\nconst union=intervals=>{\n  const ordered=intervals.toSorted((a,b)=>a[0]-b[0]);\n  let total=0,end=-Infinity;\n  for(const [start,stop]of ordered){\n    if(stop<start)throw new Error('Negative interval');\n    total+=Math.max(0,stop-Math.max(start,end));\n    end=Math.max(end,stop);\n  }\n  return total/1000;\n};\nconst evaluate=evidence=>{\n  if(!/^[a-f0-9]{40}$/.test(evidence.revision))throw new Error('Immutable revision required');\n  if(evidence.manifest.length===0)throw new Error('Trial manifest cannot be empty');\n  unique(evidence.manifest,'manifest');unique(evidence.checks,'check');unique(evidence.attempts,'attempt');\n  const selection=evidence.selection;\n  if(!selection||!/^[a-f0-9]{40}$/.test(selection.base)||selection.head!==evidence.revision)throw new Error('Frozen change-selection base/head required');\n  if(!Array.isArray(selection.changedFiles)||!Array.isArray(selection.affectedPackages)||!Array.isArray(selection.excludedPackages))throw new Error('Selection inventory required');\n  if(!/^[a-f0-9]{64}$/.test(selection.manifestSha256))throw new Error('Manifest fingerprint required');\n  if(selection.affectedPackages.some(path=>selection.excludedPackages.includes(path)))throw new Error('Affected package also excluded');\n  const actualIds=evidence.manifest.map(row=>row.id).toSorted();\n  if(JSON.stringify(actualIds)!==JSON.stringify([...selection.selectedCheckIds].toSorted()))throw new Error('Manifest differs from selected required checks');\n  for(const spec of evidence.manifest){\n    const packages=spec.packages??[spec.packagePath];\n    if(spec.scope==='files'){\n      if(!spec.files?.length||spec.files.some(path=>!selection.changedFiles.includes(path)))throw new Error(`File check outside changed input ${spec.id}`);\n    }else if(!packages.length||packages.some(path=>!selection.affectedPackages.includes(path)))throw new Error(`Unrelated package selected ${spec.id}`);\n    if((spec.family==='oxlint'||spec.task?.endsWith(':lint:oxlint'))&&(spec.executionScope!=='project'||spec.arguments?.length!==0||!spec.task?.endsWith(':lint:oxlint')))throw new Error(`Oxlint requires whole selected project ${spec.id}`);\n  }\n  const requested=instant(evidence.requestedAt),observed=instant(evidence.observedAt);\n  if(observed<requested)throw new Error('Observation predates request');\n  const manifest=new Map(evidence.manifest.map(row=>[row.id,row]));\n  for(const row of evidence.checks)if(!manifest.has(row.id))throw new Error(`Unknown check ${row.id}`);\n  const checks=new Map(evidence.checks.map(row=>[row.id,row]));\n  const attempts=new Map(evidence.attempts.map(row=>[row.id,row]));\n  const pending=new Set(manifest.keys()),distances=new Map();\n  const outcomes=[];\n  const waitIntervals=[];\n  while(pending.size){\n    let advanced=false;\n    for(const id of pending){\n      const spec=manifest.get(id);\n      if((spec.needs??[]).some(dependency=>!manifest.has(dependency)))throw new Error(`Missing dependency for ${id}`);\n      if((spec.needs??[]).some(dependency=>!distances.has(dependency)))continue;\n      const result=checks.get(id);\n      let elapsed=0;\n      if(result){\n        if(result.revision!==evidence.revision)throw new Error(`Revision mismatch ${id}`);\n        if(spec.family==='oxlint'||spec.task?.endsWith(':lint:oxlint')){\n          if(result.invocation?.task!==spec.task||result.invocation?.executionScope!=='project'||result.invocation?.arguments?.length!==0)throw new Error(`Oxlint invocation evidence differs ${id}`);\n        }\n        for(const attemptId of result.attemptIds??[])if(!attempts.has(attemptId))throw new Error(`Unknown attempt ${attemptId}`);\n        if(result.startedAt&&result.finishedAt){\n          const started=instant(result.startedAt),finished=instant(result.finishedAt);\n          if(started<requested||finished<started||finished>observed)throw new Error(`Invalid check interval ${id}`);\n          elapsed=(finished-started)/1000;\n          for(const dependency of spec.needs??[]){\n            const prerequisite=checks.get(dependency);\n            if(!prerequisite?.finishedAt||instant(prerequisite.finishedAt)>started)throw new Error(`Dependency chronology differs ${id}`);\n          }\n        }\n      }\n      const terminal=result?.finishedAt&&['success','failure'].includes(result.conclusion)&&result.executed===true;\n      const accepted=terminal&&result.conclusion==='success'&&result.evidenceVerified===true&&(result.unexpectedSkips??0)===0;\n      const stop=terminal?instant(result.finishedAt):observed;\n      waitIntervals.push([requested,stop]);\n      outcomes.push({id,state:!result?'missing':result.conclusion,terminal:Boolean(terminal),accepted:Boolean(accepted),censored:!terminal});\n      distances.set(id,elapsed+Math.max(0,...(spec.needs??[]).map(dependency=>distances.get(dependency))));\n      pending.delete(id);advanced=true;\n    }\n    if(!advanced)throw new Error('Cyclic manifest dependencies');\n  }\n  const compute={};\n  const active=[];\n  for(const attempt of evidence.attempts){\n    if(attempt.revision!==evidence.revision)throw new Error(`Attempt revision mismatch ${attempt.id}`);\n    if(!attempt.startedAt){if(attempt.finishedAt)throw new Error('Finish without start');continue;}\n    const start=instant(attempt.startedAt),stop=attempt.finishedAt?instant(attempt.finishedAt):observed;\n    if(stop<start||stop>observed)throw new Error(`Invalid attempt interval ${attempt.id}`);\n    if(!(attempt.vcpus>0))throw new Error(`Missing resource size ${attempt.id}`);\n    const seconds=(stop-start)/1000;\n    const product=attempt.product;\n    compute[product]??={seconds:0,vcpuSeconds:0,attempts:0,censoredAttempts:0};\n    compute[product].seconds+=seconds;compute[product].vcpuSeconds+=seconds*attempt.vcpus;compute[product].attempts++;\n    if(!attempt.finishedAt)compute[product].censoredAttempts++;\n    active.push([start,stop]);\n  }\n  return {revision:evidence.revision,selection,manifestChecks:manifest.size,manifestComplete:evidence.manifestComplete===true,outcomes,accepted:evidence.manifestComplete===true&&outcomes.every(row=>row.accepted),allRequiredExecutedToTerminal:outcomes.every(row=>row.terminal),elapsedObservationSeconds:(observed-requested)/1000,unfinishedRequiredUnionSeconds:union(waitIntervals),activeAttemptUnionSeconds:union(active),executionDependencyPathSeconds:Math.max(0,...distances.values()),compute,limitations:['Provider execution intervals are usage proxies, not account ledger entries.','A missing, skipped, or cancelled required check remains censored at the observation boundary.','Execution dependency path excludes queue time and cannot replace observed request-to-completion time.','Selector reach is independently verified against repository changes; this reconciler validates its frozen output, not its discovery algorithm.']};\n};\nconst output={inputSha256:createHash('sha256').update(raw).digest('hex'),...evaluate(input)};\nwriteFileSync(process.env.DEPOT_ACCOUNTING_OUTPUT??'analysis.json',JSON.stringify(output,null,2)+'\\n');\nconsole.log(JSON.stringify(output));\n'''\n\n[tasks.normalize]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync} = await import('node:fs');\nconst {createHash} = await import('node:crypto');\nconst manifestPath=process.env.DEPOT_ACCOUNTING_MANIFEST,executionPath=process.env.DEPOT_ACCOUNTING_EXECUTION;\nif(!manifestPath||!executionPath||!process.env.DEPOT_ACCOUNTING_REQUESTED_AT)throw new Error('Manifest, execution, and request timestamp required');\nconst raw=readFileSync(manifestPath),manifest=JSON.parse(raw),execution=JSON.parse(readFileSync(executionPath,'utf8'));\nconst digest=createHash('sha256').update(raw).digest('hex');\nif(execution.manifestSha256!==digest)throw new Error('Executed manifest hash differs from supplied manifest');\nif(execution.sourceRevision!==manifest.sourceRevision||manifest.sourceRevision!==manifest.headRevision)throw new Error('Source revision differs');\nconst specs=[...manifest.checks,...(manifest.externalChecks??[])];\nconst normalized=specs.map(spec=>({id:spec.id,needs:spec.prerequisites??[],task:spec.task,arguments:spec.args??[],family:spec.task?.endsWith(':lint:oxlint')?'oxlint':spec.family,scope:spec.scope,packages:spec.packages??[],files:spec.files,executionScope:spec.scope==='package'||spec.scope==='project'?'project':spec.scope,expectedFiles:spec.expectedFiles,expectedFileCount:spec.expectedFileCount}));\nconst attempts=process.env.DEPOT_ACCOUNTING_ATTEMPTS?JSON.parse(readFileSync(process.env.DEPOT_ACCOUNTING_ATTEMPTS,'utf8')):[];\nconst checks=execution.results.map(row=>({id:row.checkId,revision:row.sourceRevision,startedAt:row.startedAt,finishedAt:row.finishedAt,elapsedMs:row.elapsedMs,conclusion:row.status==='passed'?'success':row.status==='failed'?'failure':row.status,executed:row.status==='passed'||row.status==='failed',evidenceVerified:row.evidenceVerified===true,unexpectedSkips:row.unexpectedSkips??0,attemptIds:row.attemptIds??execution.attemptIds??[],invocation:{task:row.task,arguments:row.args,executionScope:row.task?.endsWith(':lint:oxlint')?'project':undefined},skipReason:row.skipReason}));\nconst output={revision:manifest.headRevision,manifestComplete:manifest.completeGraph===true,requestedAt:process.env.DEPOT_ACCOUNTING_REQUESTED_AT,observedAt:process.env.DEPOT_ACCOUNTING_OBSERVED_AT??new Date().toISOString(),selection:{base:manifest.baseRevision,head:manifest.headRevision,changedFiles:manifest.changedFiles,affectedPackages:manifest.selectedPackages,excludedPackages:manifest.selectionEvidence?.negative??[],selectedCheckIds:specs.map(spec=>spec.id),manifestSha256:digest,excludedChecks:manifest.excludedChecks,selectionReasons:manifest.selectionReasons},manifest:normalized,checks,attempts};\nwriteFileSync(process.env.DEPOT_ACCOUNTING_OUTPUT??'normalized.json',JSON.stringify(output,null,2)+'\\n');\nconsole.log(JSON.stringify({revision:output.revision,selectedChecks:specs.length,recordedResults:checks.length,manifestComplete:output.manifestComplete}));\n'''\n\n[tasks.collect-github]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {execFileSync} = await import('node:child_process');\nconst {mkdirSync,writeFileSync} = await import('node:fs');\nconst {createHash} = await import('node:crypto');\nconst {join} = await import('node:path');\nconst runId=process.env.DEPOT_ACCOUNTING_GITHUB_RUN;\nif(!runId||!/^\\d+$/.test(runId))throw new Error('DEPOT_ACCOUNTING_GITHUB_RUN must name one run');\nconst repo='Aquaticats/Monochromatic';\nconst dir=join(process.cwd(),`github-${runId}`);\nmkdirSync(dir,{recursive:true,mode:0o700});\nconst get=(endpoint,name,paginate=false)=>{\n  const raw=execFileSync('gh',['api',endpoint,...(paginate?['--paginate','--slurp']:[])],{encoding:'utf8',maxBuffer:64*1024*1024});\n  writeFileSync(join(dir,name),raw);\n  return JSON.parse(raw);\n};\nconst repository=get(`repos/${repo}`,'repository.json');\nconst run=get(`repos/${repo}/actions/runs/${runId}`,'run.json');\nif(process.env.DEPOT_ACCOUNTING_SHA&&run.head_sha!==process.env.DEPOT_ACCOUNTING_SHA)throw new Error('GitHub run revision mismatch');\nconst jobs=new Map();\nfor(let attempt=1;attempt<=run.run_attempt;attempt++){\n  const pages=get(`repos/${repo}/actions/runs/${runId}/attempts/${attempt}/jobs?per_page=100`,`jobs-attempt-${attempt}.json`,true);\n  const rows=pages.flatMap(page=>page.jobs);\n  if(rows.length!==pages[0].total_count)throw new Error(`Incomplete job pagination attempt ${attempt}`);\n  for(const job of rows){\n    if(job.head_sha!==run.head_sha)throw new Error(`Job revision mismatch ${job.id}`);\n    if(jobs.has(job.id))continue;\n    const knownLabels=['ubuntu-latest','ubuntu-24.04','ubuntu-24.04-arm','windows-2025','windows-11-arm'];\n    const label=job.labels.find(candidate=>knownLabels.includes(candidate));\n    const allocation=label?{label,vcpus:repository.private?2:4,memoryGb:repository.private?8:16,publicStandardComputeUsd:repository.private?null:0,source:'https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories'}:{label:null,vcpus:null,memoryGb:null,publicStandardComputeUsd:null};\n    const record={id:job.id,attempt:job.run_attempt,workflow:run.name,name:job.name,status:job.status,conclusion:job.conclusion,headSha:job.head_sha,startedAt:job.started_at,completedAt:job.completed_at,seconds:job.completed_at&&job.started_at?(Date.parse(job.completed_at)-Date.parse(job.started_at))/1000:null,labels:job.labels,allocation,steps:job.steps};\n    if(job.status==='completed'&&job.conclusion!=='skipped'){\n      const log=execFileSync('gh',['api',`repos/${repo}/actions/jobs/${job.id}/logs`,'--allow-escape-sequences'],{encoding:'utf8',maxBuffer:64*1024*1024});\n      const name=`logs-${job.id}.txt`;\n      writeFileSync(join(dir,name),log);\n      record.log={path:name,bytes:Buffer.byteLength(log),sha256:createHash('sha256').update(log).digest('hex')};\n    }\n    jobs.set(job.id,record);\n  }\n}\nconst summary={collectedAt:new Date().toISOString(),repo,visibility:repository.visibility,runId:run.id,revision:run.head_sha,runAttempt:run.run_attempt,status:run.status,conclusion:run.conclusion,createdAt:run.created_at,startedAt:run.run_started_at,updatedAt:run.updated_at,jobs:[...jobs.values()],scope:'Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred.'};\nwriteFileSync(join(dir,'collection.json'),JSON.stringify(summary,null,2)+'\\n');\nconsole.log(JSON.stringify({runId,revision:run.head_sha,jobs:jobs.size,status:run.status,visibility:repository.visibility,dir}));\n'''\n\n[tasks.verify]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {execFileSync} = await import('node:child_process');\nconst {writeFileSync,readFileSync,mkdirSync} = await import('node:fs');\nconst {strictEqual,deepStrictEqual,throws} = await import('node:assert');\nmkdirSync('fixtures',{recursive:true});\nconst revision='a'.repeat(40);\nconst at=seconds=>new Date(Date.UTC(2026,9,16)+seconds*1000).toISOString();\nconst base={revision,requestedAt:at(0),observedAt:at(40),manifest:[{id:'build',needs:[]},{id:'lint',needs:[]},{id:'test',needs:['build']}],checks:[{id:'build',revision,startedAt:at(5),finishedAt:at(15),conclusion:'success',executed:true,evidenceVerified:true,attemptIds:['shared']},{id:'lint',revision,startedAt:at(5),finishedAt:at(25),conclusion:'success',executed:true,evidenceVerified:true,attemptIds:['lint-job']},{id:'test',revision,startedAt:at(15),finishedAt:at(30),conclusion:'success',executed:true,evidenceVerified:true,attemptIds:['shared']}],attempts:[{id:'shared',revision,startedAt:at(3),finishedAt:at(32),product:'ci',vcpus:2},{id:'lint-job',revision,startedAt:at(4),finishedAt:at(27),product:'ci',vcpus:4}]};\nbase.manifestComplete=true;\nbase.selection={base:'b'.repeat(40),head:revision,changedFiles:['package/module/example/src/index.ts'],affectedPackages:['package/module/example'],excludedPackages:['package/module/unrelated'],selectedCheckIds:['build','lint','test'],manifestSha256:'c'.repeat(64)};\nbase.manifest=base.manifest.map(row=>({...row,packagePath:'package/module/example',...(row.id==='lint'?{family:'oxlint',executionScope:'project',task:'//package/module/example:lint:oxlint',arguments:[]}: {})}));\nbase.checks=base.checks.map(row=>row.id==='lint'?{...row,invocation:{task:'//package/module/example:lint:oxlint',executionScope:'project',arguments:[]}}:row);\nconst run=(name,input)=>{\n  const path=`fixtures/${name}.json`,output=`fixtures/${name}.result.json`;\n  writeFileSync(path,JSON.stringify(input,null,2));\n  execFileSync('mise',['run','analyze'],{env:{...process.env,DEPOT_ACCOUNTING_INPUT:path,DEPOT_ACCOUNTING_OUTPUT:output},stdio:'pipe'});\n  return JSON.parse(readFileSync(output,'utf8'));\n};\nconst valid=run('valid',base);\nstrictEqual(valid.accepted,true);strictEqual(valid.unfinishedRequiredUnionSeconds,30);strictEqual(valid.activeAttemptUnionSeconds,29);strictEqual(valid.executionDependencyPathSeconds,25);strictEqual(valid.compute.ci.seconds,52);strictEqual(valid.compute.ci.vcpuSeconds,150);\nconst missing=run('missing',{...base,checks:base.checks.slice(0,2)});strictEqual(missing.accepted,false);strictEqual(missing.unfinishedRequiredUnionSeconds,40);\nconst cancelled=run('cancelled',{...base,checks:base.checks.map(row=>row.id==='test'?{...row,conclusion:'cancelled'}:row)});strictEqual(cancelled.accepted,false);strictEqual(cancelled.unfinishedRequiredUnionSeconds,40);\nconst failed=run('failed',{...base,checks:base.checks.map(row=>row.id==='lint'?{...row,conclusion:'failure'}:row)});strictEqual(failed.accepted,false);strictEqual(failed.allRequiredExecutedToTerminal,true);strictEqual(failed.unfinishedRequiredUnionSeconds,30);\nconst retry=run('retry',{...base,attempts:[...base.attempts,{id:'failed-first',revision,startedAt:at(1),finishedAt:at(3),product:'ci',vcpus:4}]});strictEqual(retry.compute.ci.vcpuSeconds,158);\nconst partial=run('partial-manifest',{...base,manifestComplete:false});strictEqual(partial.accepted,false);strictEqual(partial.allRequiredExecutedToTerminal,true);\nconst rejected=[['duplicate-attempt',{...base,attempts:[...base.attempts,base.attempts[0]]}],['wrong-revision',{...base,checks:base.checks.map(row=>({...row,revision:'b'.repeat(40)}))}],['cyclic',{...base,manifest:base.manifest.map(row=>row.id==='build'?{...row,needs:['test']}:row)}],['unknown-check',{...base,checks:[...base.checks,{...base.checks[0],id:'unlisted'}]}]];\nrejected.push(['missing-selected-check',{...base,manifest:base.manifest.slice(0,2)}],['unrelated-package',{...base,manifest:base.manifest.map(row=>row.id==='test'?{...row,packagePath:'package/module/unrelated'}:row)}],['oxlint-file-filter',{...base,manifest:base.manifest.map(row=>row.id==='lint'?{...row,arguments:['src/index.ts']}:row)}],['oxlint-file-mode',{...base,manifest:base.manifest.map(row=>row.id==='lint'?{...row,executionScope:'file'}:row)}]);\nrejected.push(['empty-manifest',{...base,manifest:[],checks:[],selection:{...base.selection,selectedCheckIds:[]}}]);\nrejected.push(['oxlint-observed-file-filter',{...base,checks:base.checks.map(row=>row.id==='lint'?{...row,invocation:{...row.invocation,arguments:['src/index.ts']}}:row)}]);\nfor(const [name,input]of rejected)throws(()=>run(name,input));\nwriteFileSync('verification.json',JSON.stringify({passed:true,positiveControl:{providerSeconds:52,wallSeconds:30,activeUnionSeconds:29,dependencySeconds:25,vcpuSeconds:150},successfulFixtures:['valid','missing','cancelled','failed','retry','partial-manifest'],rejectedFixtures:rejected.map(([name])=>name)},null,2)+'\\n');\nconsole.log('PASS: overlap, sequential dependencies, shared-job deduplication, missing/cancelled/failing gates, retry usage, revision and identity guards');\n'''\n\n[tasks.retain]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync,existsSync} = await import('node:fs');\nconst {createHash} = await import('node:crypto');\nconst {homedir} = await import('node:os');\nconst {join} = await import('node:path');\nconst read=path=>JSON.parse(readFileSync(path,'utf8'));\nconst hash=path=>createHash('sha256').update(readFileSync(path)).digest('hex');\nconst output={observedAt:new Date().toISOString(),verification:read('verification.json'),collectorControl:read('collected-wf9xzbwfph/collection.json'),githubCollectorControl:existsSync('github-38778131811/collection.json')?read('github-38778131811/collection.json'):undefined,manifestAdapterControl:existsSync('manifest-verification.json')?read('manifest-verification.json'):undefined,harness:{path:join(process.cwd(),'mise.toml'),sha256:hash('mise.toml'),normalizedExample:read('fixtures/valid.json'),source:readFileSync('mise.toml','utf8')},issueComments:['https://github.com/Aquaticats/Monochromatic/issues/1030#issuecomment-6206595590','https://github.com/Aquaticats/Monochromatic/issues/572#issuecomment-6206595886'],limitation:'This verifies accounting and read-only collection, not execution of the complete selected CI graph. No new cloud run was launched.'};\nwriteFileSync(join(homedir(),'Monochromatic/doc/audit/depot-complete-ci-accounting-2026-10-16.evidence.json'),JSON.stringify(output,null,2)+'\\n');\nconsole.log(JSON.stringify({fixtureCases:output.verification.successfulFixtures.length+output.verification.rejectedFixtures.length,collectorAttempts:output.collectorControl.attempts.length,harnessSha256:output.harness.sha256}));\n'''\n\n[tasks.verify-manifest]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync} = await import('node:fs');\nconst {createHash} = await import('node:crypto');\nconst {execFileSync} = await import('node:child_process');\nconst {strictEqual} = await import('node:assert');\nconst path=process.env.DEPOT_ACCOUNTING_MANIFEST;\nif(!path)throw new Error('DEPOT_ACCOUNTING_MANIFEST required');\nconst raw=readFileSync(path),manifest=JSON.parse(raw),digest=createHash('sha256').update(raw).digest('hex');\nwriteFileSync('fixtures/manifest-snapshot.json',raw);\nwriteFileSync('fixtures/manifest-empty-execution.json',JSON.stringify({fixture:true,sourceRevision:manifest.sourceRevision,manifestSha256:digest,results:[]}));\nexecFileSync('mise',['run','normalize'],{env:{...process.env,DEPOT_ACCOUNTING_MANIFEST:'fixtures/manifest-snapshot.json',DEPOT_ACCOUNTING_EXECUTION:'fixtures/manifest-empty-execution.json',DEPOT_ACCOUNTING_REQUESTED_AT:'2026-10-16T00:00:00Z',DEPOT_ACCOUNTING_OBSERVED_AT:'2026-10-16T00:00:10Z',DEPOT_ACCOUNTING_OUTPUT:'fixtures/manifest-normalized.json'},stdio:'pipe'});\nexecFileSync('mise',['run','analyze'],{env:{...process.env,DEPOT_ACCOUNTING_INPUT:'fixtures/manifest-normalized.json',DEPOT_ACCOUNTING_OUTPUT:'fixtures/manifest-analysis.json'},stdio:'pipe'});\nconst result=JSON.parse(readFileSync('fixtures/manifest-analysis.json','utf8'));\nstrictEqual(result.manifestChecks,manifest.checks.length+(manifest.externalChecks??[]).length);\nstrictEqual(result.accepted,false);\nstrictEqual(result.unfinishedRequiredUnionSeconds,10);\nstrictEqual(result.outcomes.every(row=>row.state==='missing'),true);\nconst output={fixture:true,sourceRevision:manifest.sourceRevision,manifestSha256:digest,manifestChecks:result.manifestChecks,externalChecks:(manifest.externalChecks??[]).map(row=>row.id),manifestComplete:result.manifestComplete,emptyExecutionAccepted:result.accepted,censoredSeconds:result.unfinishedRequiredUnionSeconds};\nwriteFileSync('manifest-verification.json',JSON.stringify(output,null,2)+'\\n');\nconsole.log(JSON.stringify(output));\n'''\n\n[tasks.render]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {execFileSync} = await import('node:child_process');\nconst {readFileSync} = await import('node:fs');\nconst {homedir} = await import('node:os');\nconst {join} = await import('node:path');\nfor(const [source,output] of [[join(homedir(),'Monochromatic/doc/audit/depot-complete-ci-accounting-2026-10-16.md'),'report.html'],['issue-1030-comment.md','issue-1030-comment.html'],['issue-572-comment.md','issue-572-comment.html']]){\n  execFileSync('pandoc',['--from=gfm','--to=html',source,'--output',output]);\n  const html=readFileSync(output,'utf8');\n  if(!html.includes('<h'))throw new Error(`Missing headings ${output}`);\n  console.log(JSON.stringify({source,output,bytes:Buffer.byteLength(html)}));\n}\n'''\n"
   },
   "issueComments": [
     "https://github.com/Aquaticats/Monochromatic/issues/1030#issuecomment-6206595590",

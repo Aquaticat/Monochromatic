@@ -178,6 +178,30 @@ and checked the expected revision.
 This verifies collection transport;
 the old run is not a complete-pipeline measurement.
 
+The GitHub collector likewise reads every run attempt's job pages,
+checks the expected revision,
+and retains job/step timestamps and completed-job logs.
+It was exercised against Windows run `38778131811`,
+retaining all three jobs at revision `29175e0d768d679fa9f3ea4d0ea8183cd871fb24`.
+Raw log retrieval follows the existing
+[GitHub CLI workaround](../troubleshooting/gh-completed-job-logs.md)
+and captures escape-containing bytes privately.
+
+On 2026-10-16,
+the repository API reported public visibility.
+The standard `windows-2025`,
+`windows-11-arm`,
+`ubuntu-latest`,
+and `ubuntu-24.04-arm` labels used by the selected desktop workflows
+have four CPUs and 16 GB RAM in public repositories.
+GitHub publishes free standard-runner execution for public repositories.
+Record those observed labels,
+their documented widths,
+and zero published compute charge;
+do not substitute private-repository or larger-runner pricing.
+This does not establish storage charges or an account invoice.
+[GitHub runner specifications][github-runners]
+
 ## Keep usage and elapsed time separate
 
 Compute usage is the sum of distinct provider attempt intervals,
@@ -343,6 +367,9 @@ Selection controls reject an empty manifest,
 missing selected checks,
 unrelated packages,
 and either declared or observed Oxlint changed-file narrowing.
+An incomplete canonical manifest also prevents acceptance,
+even if every emitted package result passes.
+External gates remain required entries rather than disappearing during adapter work.
 The selector's discovery algorithm still needs independent positive and negative controls;
 the accounting reconciler validates its frozen output rather than inventing the affected set.
 The [retained verification evidence](depot-complete-ci-accounting-2026-10-16.evidence.json)
@@ -358,3 +385,4 @@ including a proposed tightening of the existing completion rule.
 That rule proposal is not applied.
 
 [depot-cli]: https://depot.dev/docs/cli/reference/depot-ci
+[github-runners]: https://docs.github.com/en/actions/reference/runners/github-hosted-runners
