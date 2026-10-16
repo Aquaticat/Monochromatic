@@ -433,7 +433,7 @@ The exact logger-head manifest closure contains 158 packages.
 This measured breadth follows real development/configuration dependency cycles;
 it must not be replaced by just the logger package to obtain a smaller timing.
 Source-import and task-boundary review remains part of completing its execution manifest.
-The revised task expansion contains 718 package checks and 19 external check groups,
+The revised task expansion contains 719 package checks and 19 external check groups,
 including 155 full-package Oxlint tasks,
 157 type checks,
 1,057 account-independent unit files,
@@ -453,6 +453,7 @@ The task-name audit also includes credential-free Worker deployment dry runs,
 Git policy Windows cross-target Clippy,
 old-format interoperability fixtures,
 native mutation testing,
+the Git policy sidecar's bounded AddressSanitizer smoke task,
 and the deepmerge sidecar's compiler and Bun/Deno runtime checks.
 The browser property suite needs the separately named `bundle:browser-properties` preparation task.
 Deepmerge campaigns requiring a separately selected external checkout or historical-release ledger are excluded;
@@ -464,10 +465,19 @@ and runtime checks remain selected.
 Intentional-invalid lint fixture helpers are diagnostic displays;
 the selected plugin unit suites assert their results.
 
-A tracked-source literal-import scan resolves package export maps and finds 165 artifact build edges,
-with no cycle in that graph and no prerequisite build owner outside the affected closure.
-The scan records 3,175 import edges;
-it is not an AST proof of dynamic import expressions.
+A TypeScript lexical-token scan resolves package export maps and relative `dist` imports.
+It records 3,560 imports,
+12 build prerequisites,
+and 89 test/type prerequisites across package owners,
+with no build cycle and no prerequisite owner outside the affected closure.
+Comment examples and import-looking string contents do not create artifact edges.
+Literal dynamic imports are included;
+computed import expressions still need separate review.
+The first static wave exposed missing owned-artifact prerequisites:
+type checks carried an unused `artifactPrerequisites` field,
+while the earlier scanner discarded self imports and missed relative `dist` imports.
+Commit `4544076ec3` supplies these as executable `prerequisites` and removes comment-only barriers.
+The source diagnostics need replay with this corrected ordering before source-failure classification.
 Outside-closure active matches are root configurations,
 the Playwright declaration file,
 an already-covered plugin fixture,
@@ -610,7 +620,7 @@ The active queue is to finish tool and image preparation for the reviewed logger
 connect the retained external check groups,
 and execute every selected gate.
 The offline Pi host adapter is prepared on `trial/depot-pi-host-20261016`,
-through commit `7c43779e7d`,
+through commit `60a0142d87`,
 and awaits live execution by the environment agent.
 Its manifest retains the historical configured catalog's 22 extension entries,
 using exact-head repository artifacts and recorded public package versions.
