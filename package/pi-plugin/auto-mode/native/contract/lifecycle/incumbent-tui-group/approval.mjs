@@ -1,5 +1,5 @@
 import {createHash} from 'node:crypto';
-import {projectVisibleOperation} from '../../integration/action-policy/wire-material.mjs';
+import {projectOperationSummary} from '../../integration/action-policy/wire-material.mjs';
 
 import {bindPreparedTuiApproval,OriginalTuiApprovalError} from './approval-presentation.mjs';
 export {OriginalTuiApprovalError} from './approval-presentation.mjs';
@@ -50,7 +50,7 @@ export function bindOriginalTuiApproval({
   });});
   const signal=AbortSignal.any(members.map(function readPreparedSignal(value) { return (value.signal); }));
   const scope=JSON.stringify({
-    parentProgram:projectVisibleOperation(JSON.parse(closure.parentJSON)),
+    parentProgram:projectOperationSummary(JSON.parse(closure.parentJSON)),
     preparedGroup:members.map(function readPreparedOperation(value) { return (value.prepared); })
   });
   const action=`Complete prepared group:\n${scope}`;

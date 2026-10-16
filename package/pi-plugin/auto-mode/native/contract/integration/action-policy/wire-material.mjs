@@ -1,5 +1,6 @@
 import {RuleAssessmentWireError} from './wire-source.mjs';
 import {sourceInputLocation} from '../../lifecycle/governing-rule-candidates/input-location.mjs';
+import {projectReviewInput} from '../maintained-policy.mjs';
 
 //region Provider projections preserve readable material without transporting original source archives.
 /** Validate every selected excerpt against the original locally retained source. */
@@ -30,12 +31,24 @@ export function projectPolicyMaterial({sources,material,questions}){
 }
 
 /** Keep visible response content and complete proposed tool arguments; omit provider-only signatures. */
-export function projectVisibleOperation(parent){
+export function projectOperationSummary(parent){
  if(!Array.isArray(parent))throw new RuleAssessmentWireError('Original enclosing response must contain native content blocks');
  return parent.filter(function omitThinking(block){return block.type!=='thinking';}).map(function visibleBlock(block){
   if(block.type==='toolCall')return {type:block.type,name:block.name,arguments:block.arguments};
   if(block.type==='text')return {type:block.type,text:block.text};
   throw new RuleAssessmentWireError('Original enclosing response contains unsupported visible content');
+ });
+}
+/** Project model inputs separately so parser failures still permit native human review. */
+export function projectVisibleOperation(parent){
+ return projectOperationSummary(parent).map(function projectBlock(block){
+  return block.type==='toolCall'?{...block,arguments:projectReviewInput({name:block.name,input:block.arguments})}:block;
+ });
+}
+/** Original prepared ownership stays local; models receive projected arguments. */
+export function projectPreparedOperation(prepared){
+ return prepared.map(function projectMember(member){
+  return {...member,input:projectReviewInput({name:member.name,input:member.input})};
  });
 }
 //endregion

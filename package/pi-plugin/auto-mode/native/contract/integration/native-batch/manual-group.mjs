@@ -2,7 +2,7 @@ import {createHash} from 'node:crypto';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
 import {caughtValueText} from '@monochromatic-dev/module-caught-value/ts';
 import {bindPreparedTuiApproval} from '../../lifecycle/incumbent-tui-group/approval-presentation.mjs';
-import {projectVisibleOperation} from '../action-policy/wire-material.mjs';
+import {projectOperationSummary} from '../action-policy/wire-material.mjs';
 
 //region Manual approval owns prepared execution independently of automatic evidence.
 export class ManualGroupError extends Error {}
@@ -80,7 +80,7 @@ export function createManualGroup({response,stream,signal,assertOperationCurrent
   const host=captureHost();
   if(!host)throw new ManualGroupError('Automatic assessment is unavailable and this session has no manual approval interface',{cause:error});
   const members=[...byId.values()].map(function readPrepared(member){return knownMember(member).prepared;});
-  const scope=JSON.stringify({parentProgram:projectVisibleOperation(JSON.parse(parentJSON)),preparedGroup:members});
+  const scope=JSON.stringify({parentProgram:projectOperationSummary(JSON.parse(parentJSON)),preparedGroup:members});
   const action=`Complete prepared group:\n${scope}`;
   const approvalFingerprint=createHash('sha256').update(scope).digest('hex');
   const closure=Object.freeze({kind:'manual-prepared-group'});

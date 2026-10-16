@@ -23,6 +23,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { CONTEXT_MESSAGE_FLOOR, } from './constants.ts';
+import { projectReviewInput, } from './review-operation.ts';
 import { serializeUntrustedDataForJudge, } from './tool-helpers.ts';
 import {
   isVerdictEntry,
@@ -87,7 +88,7 @@ function visibleAssistantContent(
   return {
     type: block.type,
     name: block.name,
-    arguments: block.arguments,
+    arguments: projectReviewInput({ name: block.name, input: block.arguments, }),
   };
 }
 
@@ -206,7 +207,7 @@ function visibleMessage(
   if (message.role === 'bashExecution') {
     return {
       role: message.role,
-      command: message.command,
+      ...projectReviewInput({ name: 'bash', input: { command: message.command, }, }),
       output: message.output,
       exitCode: message.exitCode,
       cancelled: message.cancelled,

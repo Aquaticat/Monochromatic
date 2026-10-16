@@ -5,7 +5,7 @@ import {appendClauseQuestion} from './wire-clause.mjs';
 import {appendOperationDecisionQuestion} from './wire-operation.mjs';
 import {operationDecisionDefinition} from './operation-decision-definition.ts';
 import {captureAssessmentDiagnostics} from './assessment-diagnostics.mjs';
-import {projectPolicyMaterial,projectVisibleOperation} from './wire-material.mjs';
+import {projectPolicyMaterial,projectVisibleOperation,projectPreparedOperation} from './wire-material.mjs';
 import programCatalog from '../../lifecycle/program-rule-wire/catalog.json' with {type:'json'};
 import {questions as meaningCatalog} from '../../research/instruction-prerequisite-relation/cases.mjs';
 import {parseBatchAnswer} from '../../research/instruction-prerequisite-relation/protocol.mjs';
@@ -60,7 +60,7 @@ export function bindRuleAssessmentWire(request){
  // Keep the exact operation beside each clause so its meaning is assessed against the proposed action.
  const proposedOperation=Object.freeze({
    parent:projectVisibleOperation(JSON.parse(envelope.parentJSON)),
-   prepared:JSON.parse(envelope.preparedJSON)
+   prepared:projectPreparedOperation(JSON.parse(envelope.preparedJSON))
  });
  const sources=envelope.governingSources;
  if((!Array.isArray(sources))||(sources.length === 0)
@@ -130,7 +130,7 @@ export function bindRuleAssessmentWire(request){
  const state={
    selectedPolicyMaterial:projectPolicyMaterial({sources,material:envelope.policyMaterial,questions:input}),
    parentProgram:JSON.stringify(proposedOperation.parent),
-   preparedProgram:envelope.preparedJSON,
+   preparedProgram:JSON.stringify(proposedOperation.prepared),
    catalogSHA256:request.catalogSHA256,
    ...(membership.hasOperation?{assessmentGuidance:guidance}:{}),
    ...(clauseRelations.size > 0?{clauseRelationDefinition:clauseOperationRelation}:{}),

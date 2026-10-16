@@ -8,6 +8,7 @@
 
 export { askUser } from './ask-user.ts';
 export { buildVisibleContext } from './visible-context.ts';
+export { projectReviewInput } from './review-operation.ts';
 export {
   registerNativeBypass,
   readNativeBypassEnabled
