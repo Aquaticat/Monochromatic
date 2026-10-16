@@ -106,21 +106,27 @@ This incident is separate from the mise-cache delay.
 Depot CLI `v2.102.22`,
 `pkg/cmd/ci/run.go:601`,
 sets an injected checkout's `ref` to the local patch's merge base.
-At lines 606 to 624 it creates the patch step and inserts it after checkout:
+```go
+// depot/cli, pkg/cmd/ci/run.go:601, v2.102.22
+withMap["ref"] = mergeBase
+```
+
+The generated shell step at line 612 applies the patch:
+
+```sh
+# depot/cli, pkg/cmd/ci/run.go:612, inside the generated shell string
+git apply --allow-empty /tmp/local.patch
+```
+
+Lines 622 to 624 insert that step immediately after checkout:
 
 ```go
-// depot/cli, pkg/cmd/ci/run.go, v2.102.22
-withMap["ref"] = mergeBase
-// The generated shell step later runs:
-git apply --allow-empty /tmp/local.patch
-// The patch step is inserted immediately after checkout:
+// depot/cli, pkg/cmd/ci/run.go:622, v2.102.22
 newSteps = append(newSteps, steps[:checkoutIndex+1]...)
 newSteps = append(newSteps, patchStep)
 newSteps = append(newSteps, steps[checkoutIndex+1:]...)
 ```
 
-The shell line is part of the Go source's generated string,
-not a Go statement.
 [Tagged CLI source](https://github.com/depot/cli/blob/v2.102.22/pkg/cmd/ci/run.go#L549)
 
 The snapshot was captured after the preparation job applied that local patch.
@@ -159,9 +165,11 @@ depot ci run --workflow .depot/workflows/depot-package-snapshot.yml
 ```
 
 Repeat run `6w30pv5zds` checked out `0577b002b2` without a local-patch step.
-Its first consumer verified all 23 installed package versions and executed ImageMagick without reinstalling them.
-The consumer's workspace dependency check reported `Already up to date`.
-The second fresh consumer's result is still pending.
+Both consumers verified all 23 installed package versions and executed ImageMagick without reinstalling them.
+Their workspace dependency checks reported `Already up to date`.
+Attempts `x8b3b4xhkb` and `kpwm36f319` had distinct sandbox IDs;
+both also required a prior-consumer marker to be absent before writing their own.
+The completed run therefore verifies fresh consumers of the same prepared filesystem.
 [Patch-free repeat](https://depot.dev/orgs/l4zncjjbj5/workflows/6w30pv5zds)
 
 The tradeoff is publishing the experiment commit to the repository before this form of snapshot consumption.

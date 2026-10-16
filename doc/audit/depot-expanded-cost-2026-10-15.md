@@ -275,16 +275,29 @@ whereas the later Depot GitHub runner supplied one.
 [Environment observations](depot-trial-2026-10-15.md#existing-checks-newly-exercised-through-depot-ci),
 [Desktop consumer requirements](../../package/music-player/desktop-e2e/README.md)
 
-An isolated trial at commit `0577b002b2` prepares the installed package manifest and ImageMagick,
-then runs two sequential fresh snapshot consumers.
-Each consumer verifies the exact versions without apt installation,
-requires a prior consumer's marker to be absent,
-checks workspace dependencies,
-and records user-manager and audio-service results separately.
-The preparation job is limited to ten minutes and consumers to three minutes each on two CPUs.
-Results remain pending;
-no package-setup saving is added to the monthly replay.
-[Package snapshot run](https://depot.dev/orgs/l4zncjjbj5/workflows/341kqr5sw7)
+The isolated trial at commit `0577b002b2` verified reuse in two sequential fresh consumers.
+Preparation installed 23 requested packages and ImageMagick `7.1.2-34`;
+the measured apt phase took 10.634 seconds and total filesystem preparation 11.468 seconds.
+Both consumers matched the exact installed package manifest and executed ImageMagick without apt or downloads.
+Their distinct sandbox IDs and absent prior-consumer markers establish fresh filesystem instances.
+The version checks took 3.568 and 3.926 seconds.
+Workspace dependency checks reported `Already up to date`,
+taking 14.6 and 13.8 seconds according to pnpm.
+These are component observations,
+not a controlled end-to-end speedup or billed-duration comparison.
+[Preparation](https://depot.dev/orgs/l4zncjjbj5/workflows/341kqr5sw7),
+[Successful consumers](https://depot.dev/orgs/l4zncjjbj5/workflows/6w30pv5zds)
+
+The first attempt failed before package checks because preserved checkout files collided with Depot's local-patch step.
+Pushing the isolated experiment branch removed patch injection and verified reuse with the same image.
+The preparation job was limited to ten minutes and each consumer to three minutes on two CPUs.
+Both fresh consumers still lacked a user session bus:
+`systemctl --user` and `systemd-run --user` reported `Failed to connect to bus: No medium found`;
+`pactl info` reported a refused connection.
+Installed package reuse is therefore established,
+while desktop session startup in this Depot CI image remains unverified.
+No package-setup saving is added to the monthly replay.
+[Checkout workaround and runtime boundary](../troubleshooting/depot-snapshot-mise-cache.md#depot-cli-210222-local-patches-collide-with-files-retained-by-snapshot-checkout)
 
 ## Agent work and the unmeasured budget
 
