@@ -45,8 +45,22 @@ The user subsequently required uncertain rules to be culled too.
 The current selection retains only tagged rules scoring at least `0.60` for potential permission relevance.
 The action-approval cutoff remains `0.60` independently.
 The first candidate build completed, but type checking found missing declarations and an optional-array type mismatch.
-Those fixes and the updated selection cutoff are committed before the next verification.
-No installed-runtime verification has yet passed for this candidate.
+Those were corrected; type checking and focused lint subsequently passed.
+Built regressions verify the `0.60` relevance boundary, unchanged-cache reuse, changed-rule refresh,
+hidden-input exclusion, and full-policy-copy omission from transcript material.
+The startup-failure matrix verifies ordinary chat, scoped Allow and Stop, and headless withholding.
+The installed live replay in `pi-hyper-rpc-allow-PiFtXg` executed all nine original tool calls across six groups,
+including the reported `grep` and `sed` group, without a confirmation dialog.
+It made thirteen successful Luna calls, including startup classification of 211 tagged rules;
+25 rules remained selected.
+An earlier concurrent-verification run hit an internal review failure after automatic approval of its third group.
+That failed fixture did not retain the terminal exception before shutdown;
+do not attribute its cause to the unrelated sessionStorage warning or to model uncertainty.
+The replay harness now retains stderr and events on failure.
+Commit `747bca5544` also moves excerpt indexing to resource loading so source captures reuse the same original spans.
+Additional readable policy files now use the incumbent file observer for identity and freshness;
+callback-only content does not qualify as a readable file.
+Final verification of these subsequent changes remains pending.
 
 - [ ] Restrict review sources to visible conversation, operation, and readable policy files.
 - [ ] Wire startup relevance refresh into the installed host; remove complete-document classifier payloads.
