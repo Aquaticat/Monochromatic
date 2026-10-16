@@ -96,7 +96,7 @@ It adds no package installation:
 the container uses the snapshot filesystem as its read-only lower layer and discards its writable overlay at removal.
 Podman's systemd mode supplies private runtime mounts and a writable container cgroup hierarchy.
 The probe sets no network,
-a 2-GB memory limit,
+a 2-GiB memory limit,
 two CPUs,
 and a 90-second lifetime.
 
@@ -195,13 +195,20 @@ no failures,
 and the existing held-modifier case reported as not injectable.
 The per-session results were:
 
-- `wide`: 75 passed and one not injectable.
-- `narrow`: 10 passed.
-- `dialog`: 2 passed.
-- `auto-play`: 4 passed.
-- `quit`: 1 passed.
-- `states`: 13 passed.
-- `visual`: 12 passed.
+- `wide`:
+  75 passed and one not injectable.
+- `narrow`:
+  10 passed.
+- `dialog`:
+  2 passed.
+- `auto-play`:
+  4 passed.
+- `quit`:
+  1 passed.
+- `states`:
+  13 passed.
+- `visual`:
+  12 passed.
 
 The actual suite command took 218.521 seconds.
 File verification and fresh service readiness took 24.785 seconds before that command.
@@ -277,6 +284,8 @@ records why that distinction matters.
 ## Unverified integrations and adoption boundary
 
 The interaction result does not claim complete desktop-service integration.
+The not-injectable held-modifier case remains tracked by
+[issue 1044](https://github.com/Aquaticats/Monochromatic/issues/1044).
 The retained dialog log reports these nonfatal boundaries separately:
 
 - The decode-priority request received D-Bus `NoReply` and kept normal priority:
