@@ -31,7 +31,7 @@ The existing parser-first decision was therefore not fully implemented at the cu
 
 - [ ] Remove thinking and signatures from review context and human confirmation summaries.
 - [ ] Parse Bash locally and send only structural operation data to Luna, preserving permission-relevant details.
-- [ ] Reproduce and correct the reported deadline boundary using its preceding conversation.
+- [ ] Remove the hard fifteen-second cutoff, now explicitly a performance guideline, and replay the reported boundary.
 - [ ] Verify the installed consumer, prohibited-operation controls, and complete transmitted payloads.
 
 ### Completed permission scope, startup relevance, and resource measurement on 2026-10-16

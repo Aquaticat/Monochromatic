@@ -3,6 +3,14 @@
 ## Current Luna decision
 
 On 2026-10-16,
+the user clarified that fifteen seconds is an implementation guideline, not an enforced review deadline.
+Elapsed preparation, conversion, classification, or provider time must not alone reject evidence,
+cancel a request, or trigger manual confirmation.
+Keep the duration as a performance target and retain original cancellation, freshness,
+and actual transport-failure handling.
+This supersedes the hard preparation-inclusive fifteen-second cutoff recorded in earlier decisions.
+
+On 2026-10-16,
 the user explicitly excluded model thinking from review input.
 Thinking blocks and provider signatures must not reach Luna through either the proposed operation or conversation.
 Human confirmation summaries likewise describe the proposed tool calls without model thinking.

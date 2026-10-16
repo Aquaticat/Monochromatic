@@ -6,12 +6,11 @@ import assert from 'node:assert/strict';
 import {describe,it} from '@monochromatic-dev/module-test/ts';
 import {nativeBudget} from './native-judgment-budget-module-fixture.ts';
 
-import {captureBudgetRejection,createBudgetFixture} from './native-judgment-budget-fixture.ts';
+import {createBudgetFixture} from './native-judgment-budget-fixture.ts';
 
 const {
   JudgmentBudgetError,
-  JudgmentCancelledError,
-  JudgmentDeadlineError
+  JudgmentCancelledError
 }=nativeBudget;
 
 //region Original lifetime retirement cannot be reset by a later clock reading.
@@ -25,16 +24,11 @@ await describe({name:'',children:[
     assert.equal(budget.diagnostics().retired,true);
     return Promise.resolve();
   }}),
-  it({name:'retains deadline expiry after the clock is reset',fn:function keepOriginalRetirement() {
+  it({name:'keeps preparation eligible after the advisory time target',fn:function allowLatePreparation() {
     const {budget,clock}=createBudgetFixture();
-    clock.at=15_000;
-    assert.throws(function expiredCheckpoint() { 
-      budget.checkpoint(); 
-    },JudgmentDeadlineError);
-    clock.at=0;
-    assert.throws(function retirementCannotBeReversed() { 
-      budget.checkpoint(); 
-    },JudgmentDeadlineError);
+    clock.at=60_000;
+    budget.checkpoint();
+    assert.equal(budget.diagnostics().retired,false);
     return Promise.resolve();
   }}),
   it({name:'rejects a backwards clock',fn:function rejectClockReversal() {
@@ -46,14 +40,14 @@ await describe({name:'',children:[
     assert.equal(budget.diagnostics().retired,true);
     return Promise.resolve();
   }}),
-  it({name:'discards a response after the original deadline',fn:async function discardLateResponse() {
+  it({name:'admits a complete response after the advisory time target',fn:async function admitLateResponse() {
     const {budget,clock}=createBudgetFixture();
-    const error=await captureBudgetRejection(budget.dispatch(function completeAfterDeadline() {
-      clock.at=15_000;
+    const response=await budget.dispatch(function completeAfterTarget() {
+      clock.at=60_000;
       return Promise.resolve('late response');
-    }));
-    assert.ok(error instanceof JudgmentDeadlineError);
-    assert.equal(budget.diagnostics().records.at(0)?.state,'discarded');
+    });
+    assert.equal(response,'late response');
+    assert.equal(budget.diagnostics().records.at(0)?.state,'succeeded');
     assert.equal(budget.diagnostics().running,false);
   }})
 ]});
