@@ -20,7 +20,7 @@ The shared question scope is defined in
 `package/pi-plugin/auto-mode/native/contract/integration/action-policy/permission-review-scope.ts`.
 Both automatic review phases consume it.
 
-`package/pi-plugin/auto-mode/native/contract/integration/policy-source/decision-context.mjs:30`
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/decision-context.mjs:31`
 selects readable project policy sources and visible conversation before clause indexing:
 
 ```js
@@ -39,7 +39,7 @@ Complete root-policy copies in transcript strings are replaced with a selected-e
 
 The existing relevance cache was disconnected from production initialization and admitted no exclusions.
 Commits `d9e9771bd8`, `c35670685a`, and `22532b415e` connect initialization, selection, and wire projection.
-`package/pi-plugin/auto-mode/native/contract/integration/native-host/startup-relevance.mjs:24`
+`package/pi-plugin/auto-mode/native/contract/integration/native-host/startup-relevance.mjs:25`
 constructs requests from individual changed rules and fixed remit text:
 
 ```js

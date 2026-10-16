@@ -60,18 +60,37 @@ The replay harness now retains stderr and events on failure.
 Commit `747bca5544` also moves excerpt indexing to resource loading so source captures reuse the same original spans.
 Additional readable policy files now use the incumbent file observer for identity and freshness;
 callback-only content does not qualify as a readable file.
-Final verification of these subsequent changes remains pending.
+Final startup and readable-context regressions pass on installed `native-release-8uGKtw`.
+The relevance regression fails with culling removed in a disposable build and passes when restored.
+The live prohibition control `pi-hyper-rpc-prohibited-aar6Xn` blocks both reads without confirmation.
+All 22 decision-fallback cases pass after the final source selection changes.
+The approved `VUB` update now requires the reported interaction's preceding turns,
+retaining configured extensions, skills, and tool catalogs.
+Type checking and focused lint pass.
+The package README and Luna troubleshooting entry now describe the implemented input boundary.
 
-- [ ] Restrict review sources to visible conversation, operation, and readable policy files.
-- [ ] Wire startup relevance refresh into the installed host; remove complete-document classifier payloads.
-- [ ] Feed selected original rules into per-operation questions and shared context, preserving source checks.
-- [ ] Reproduce the full reported conversation with live Luna and verify explicit prohibitions and consent controls.
+- [x] Restrict review sources to visible conversation, operation, and readable policy files.
+- [x] Wire startup relevance refresh into the installed host; remove complete-document classifier payloads.
+- [x] Feed selected original rules into per-operation questions and shared context, preserving source checks.
+- [x] Reproduce the full reported conversation with live Luna and verify explicit prohibitions and consent controls.
 - [ ] Measure the resulting local CPU, memory, writes, and model usage against a controlled baseline.
 
 The exact decision log and extracted operation assessment are retained under
 `${HOME}/temp/agent/pi-manual-fallback-20261016`.
-Next: verify source selection and startup relevance through the built consumer,
-then qualify the captured conversation and explicit prohibition controls without weakening the approval threshold.
+Next: finish the controlled repeated resource comparison and rendered documentation check.
+Resource replays run sequentially inside a two-CPU, 2 GiB Podman container with disposable state.
+Both arms retain cold startup classification; bypass removes operation assessment only.
+Primary-model replies are the original captured tool-call sequence; Luna remains live.
+The first successful bypass replay executes every original call without confirmation,
+uses `83.96` CPU seconds, and peaks at `1774.59` MiB.
+This is a whole-process observation under the stated bounds, not isolated approval overhead.
+Repeated unchanged-input runs are still required before comparing the guarded arm.
+The private `resource-matrix` task and `resource-summary.ts` retain receipts.
+The initial harness failed before Pi started because nested Bubblewrap lacked a resolver-file source
+and could not mount `/proc`.
+Explicitly binding `/etc/resolv.conf`, using Podman's documented `unmask=/proc/*`,
+and mounting the resolved fixture path made the first replay pass.
+The original real-session memory sample and this bounded cold replay measure different workloads.
 The earlier readiness claim is retracted beyond its tested commands.
 
 The user also requested local resource drain.
