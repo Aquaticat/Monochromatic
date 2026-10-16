@@ -1,4 +1,4 @@
-name: music-player-windows
+name: depot-complete-windows-test-recovery
 
 # Builds, tests and smoke-runs the music player desktop app (package/music-player/desktop-app) on real
 # Windows runners, in three flavors that need three different toolchains. Decision and rationale:
@@ -110,6 +110,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
+        ref: 3434eaa455d569c18b52cf15100f77f9db251d21
         fetch-depth: 1
         persist-credentials: false
 
@@ -259,6 +260,7 @@ jobs:
     # The real binary and the test executables, linked for the target. The tests are built here and run
     # in a later step so that the cache below is saved even when a test fails.
     - name: Build the tests (cargo nextest)
+      id: build-tests
       working-directory: package/music-player/desktop-app
       run: cargo nextest run --locked --target "$TARGET" --no-run
 
@@ -441,5 +443,6 @@ jobs:
         head -n 40 "${RUNNER_TEMP}/launch.log"
 
     - name: Run the tests (cargo nextest)
+      if: ${{ !cancelled() && steps.build-tests.outcome == 'success' }}
       working-directory: package/music-player/desktop-app
       run: cargo nextest run --locked --target "$TARGET" --no-fail-fast
