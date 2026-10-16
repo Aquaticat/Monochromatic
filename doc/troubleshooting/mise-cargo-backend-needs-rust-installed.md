@@ -191,12 +191,25 @@ mise install --yes node@26.11.1 rust@nightly-2026-10-13 cargo-binstall@1.25.3
 mise install --yes cargo:cargo-nextest@0.9.148 cmake@4.4.4
 ```
 
-The rerun is pending verification.
-The established workaround remains the sequence in the verification section;
-the explicit version variant is not yet claimed as verified on these hosts.
+[Retry 38842787230][native-prerequisite-recovery] at `87f5bf2c1f7f4e132bd6ad12b26cd6f45f06de22`
+verified the explicit-version prerequisite sequence on both hosts.
+macOS job `116786450062` and Windows job `116786450596` completed
+`Install the source-declared Node and Cargo tool prerequisites`,
+`Install source-declared native tools after Rust`,
+and `Verify immutable source and record tools` successfully.
+Both then reached native package checks.
+The [retained accounting evidence](../audit/depot-complete-ci-accounting-2026-10-16.evidence.json)
+preserves the successful setup steps and the original failed attempts.
+[Issue #1059](https://github.com/Aquaticats/Monochromatic/issues/1059) is closed for this prerequisite omission.
+
+This verifies setup only.
+The overall retry was still running at that observation boundary,
+and its Windows Clippy step had a separate failure.
+Neither the setup repair nor the issue closure establishes complete native validation.
 Its tradeoff is an additional installer download,
 with all versions kept equal to the historical source lockfile.
 The failure does not establish any package build or test outcome.
 The upstream filing decision remains unchanged because the adapter omitted a configured prerequisite.
 
 [native-prerequisite-failure]: https://github.com/Aquaticats/Monochromatic/actions/runs/38842242564
+[native-prerequisite-recovery]: https://github.com/Aquaticats/Monochromatic/actions/runs/38842787230
