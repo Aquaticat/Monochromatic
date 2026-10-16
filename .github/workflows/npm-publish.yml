@@ -25,7 +25,6 @@ jobs:
       contents: read
     env:
       pnpm_config_dedupe_direct_deps: 'false'
-      FS_PATH_PACK_DIR: ${{ runner.temp }}/fs-path-pack
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -38,10 +37,12 @@ jobs:
       - run: mise exec node pnpm -- pnpm install --frozen-lockfile
       - run: mise run //package/module/fs-path:buildAndTest
       - run: mise run npm:fs-path:pack
+        env:
+          FS_PATH_PACK_DIR: ${{ runner.temp }}/fs-path-pack
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: module-fs-path-tarball
-          path: ${{ env.FS_PATH_PACK_DIR }}/*.tgz
+          path: ${{ runner.temp }}/fs-path-pack/*.tgz
           if-no-files-found: error
 
   publish:
@@ -50,8 +51,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    env:
-      FS_PATH_PACK_DIR: ${{ runner.temp }}/fs-path-pack
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -64,5 +63,7 @@ jobs:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: module-fs-path-tarball
-          path: ${{ env.FS_PATH_PACK_DIR }}
+          path: ${{ runner.temp }}/fs-path-pack
       - run: mise run npm:fs-path:publish
+        env:
+          FS_PATH_PACK_DIR: ${{ runner.temp }}/fs-path-pack
