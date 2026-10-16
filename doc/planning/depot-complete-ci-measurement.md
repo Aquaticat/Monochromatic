@@ -467,6 +467,36 @@ native host platforms,
 device prerequisites,
 and repository-security accounting.
 
+The desktop console case selects only `package/music-player/desktop-app`.
+Its manifest has six local checks and six external groups.
+The exact-head Windows workflow covers MSVC x64,
+MSVC arm64,
+and GNU UCRT64 x64.
+It asserts executable headers,
+redirected output,
+missing-standard-handle behavior,
+launch survival,
+and nextest results.
+The exact-head Alpine workflow covers x86_64 and aarch64,
+each with no-server,
+ALSA,
+and PipeWire smoke scenarios inside the repository's nested compositor.
+A separate native macOS adapter exercises package build,
+Clippy,
+nextest,
+and the release CLI.
+The desktop `test:e2e` task already builds a fresh release executable before driving it.
+Unchanged core and compositor sources are build prerequisites;
+they do not select unrelated core or Android lint/test gates.
+
+Native trial setup must record the actual selected tool binaries,
+not only declarations from `mise ls`.
+The root agent observed Rust selection drifting from the historical lockfile without an explicit version override.
+The source tasks retain auto-install disabled and tracked-source identity checks before and after execution.
+Tool installation belongs to a separate harness context,
+and current Scorecard gate policy is recorded separately from historical source policy.
+Detailed Rust selection diagnosis remains queued after manifest prerequisite review.
+
 ## Evidence and completion predicate
 
 Every case manifest records `baseRevision`,
@@ -514,9 +544,9 @@ Oxlint checks require package or project scope and empty file arguments.
 - [ ] Report unexercised validation families and unresolved selector edges explicitly.
   No weighted monthly projection can turn missing execution into measured coverage.
 
-The active queue is to finish the desktop case manifest,
-review logger artifact prerequisites and additional source-input edges,
+The active queue is to review logger artifact prerequisites and additional source-input edges,
 connect the retained external check groups,
-and execute every selected gate.
+execute every selected gate,
+and diagnose the observed Rust version selection drift.
 The first TOML and logger static-check waves may run while those independent reviews proceed.
 Their results must reconcile against the final frozen manifest before completion is claimed.
