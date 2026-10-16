@@ -433,6 +433,21 @@ The exact logger-head manifest closure contains 158 packages.
 This measured breadth follows real development/configuration dependency cycles;
 it must not be replaced by just the logger package to obtain a smaller timing.
 Source-import and task-boundary review remains part of completing its execution manifest.
+The initial task expansion contains 708 package checks and 18 external check groups,
+including 155 full-package Oxlint tasks,
+157 type checks,
+1,057 account-independent unit files,
+eight browser files,
+and four end-to-end files.
+These are candidate requirements,
+not passing or completed execution counts.
+Live Hetzner provisioning,
+paid image-embedding calls,
+and live OpenAI verification are explicitly excluded.
+Offline Pi verification,
+desktop terminals,
+disposable VM lifecycle tests,
+and network-namespace tests remain required affected consumer boundaries.
 
 The exact native-core-head Cargo path closure contains four packages:
 the core,
@@ -442,6 +457,15 @@ and the Android application.
 At that head both application manifests select the `service` feature;
 the later fingerprint consumer changes must not be projected backwards into this case.
 The documentation control has no selected package owner.
+
+The native candidate manifest retains 21 exact-head task checks and five external groups.
+Its desktop `test:e2e` consumes the built application,
+and Android instrumentation consumes the built APKs.
+Remaining adapters cover root file checks,
+the core feature matrix,
+native host platforms,
+device prerequisites,
+and repository-security accounting.
 
 ## Evidence and completion predicate
 
@@ -490,6 +514,9 @@ Oxlint checks require package or project scope and empty file arguments.
 - [ ] Report unexercised validation families and unresolved selector edges explicitly.
   No weighted monthly projection can turn missing execution into measured coverage.
 
-The next action is to finish the per-case dependency/task manifests,
-verify their positive and negative selection evidence,
-then execute all selected checks and reconcile their provider intervals.
+The active queue is to finish the desktop case manifest,
+review logger artifact prerequisites and additional source-input edges,
+connect the retained external check groups,
+and execute every selected gate.
+The first TOML and logger static-check waves may run while those independent reviews proceed.
+Their results must reconcile against the final frozen manifest before completion is claimed.
