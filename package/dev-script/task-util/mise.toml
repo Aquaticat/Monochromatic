@@ -549,7 +549,7 @@ const originalHome = homedir()
 const evidenceDirectory = join(originalHome, 'temp/agent/depot-complete-vm-evidence')
 mkdirSync(evidenceDirectory, { recursive: true, mode: 0o700 })
 chmodSync(evidenceDirectory, 0o700)
-const privateHome = mkdtempSync(join(evidenceDirectory, 'private-home-'))
+const privateHome = mkdtempSync(join(originalHome, 'temp/agent/depot-complete-vm-home-'))
 const runtime = join(privateHome, 'runtime')
 mkdirSync(runtime, { mode: 0o700 })
 const env = { ...process.env, HOME: privateHome, XDG_CONFIG_HOME: join(privateHome, '.config'), XDG_CACHE_HOME: join(privateHome, '.cache'), XDG_DATA_HOME: join(privateHome, '.local/share'), XDG_RUNTIME_DIR: runtime, MISE_DATA_DIR: join(originalHome, '.local/share/mise'), MISE_CONFIG_DIR: join(originalHome, '.config/mise'), MISE_CACHE_DIR: join(originalHome, '.cache/mise') }
@@ -572,22 +572,25 @@ function run({ id, command, args, timeout = 120000, commandEnv = env }) {
 function requireSuccess(result) { assert.equal(result.status, 0, result.error?.message ?? 'Subprocess failed; retained stdout and stderr identify its input') }
 const build = run({ id: 'source-build', command: 'mise', args: ['run', '//package/cli/vmsync:build:js:node'], timeout: 300000 })
 if (build.status !== 0) throw new Error('Historical vmsync bundle did not build; VM test prerequisite failed')
-const original = run({ id: 'original-package-task', command: 'mise', args: ['run', '//package/cli/vmsync:test:e2e'], timeout: 600000 })
+run({ id: 'package-task-before-environment', command: 'mise', args: ['run', '//package/cli/vmsync:test:e2e'], timeout: 600000 })
 requireSuccess(run({ id: 'apt-update', command: 'sudo', args: ['apt-get', 'update'], timeout: 300000, commandEnv: process.env }))
 requireSuccess(run({ id: 'apt-install', command: 'sudo', args: ['apt-get', 'install', '--yes', '--no-install-recommends', 'libvirt-daemon', 'libvirt-daemon-driver-qemu', 'libvirt-clients', 'qemu-system-x86', 'qemu-utils', 'virtiofsd', 'ovmf'], timeout: 300000, commandEnv: { ...process.env, DEBIAN_FRONTEND: 'noninteractive' } }))
 for (const command of ['/usr/sbin/libvirtd', '/usr/sbin/virtlogd']) requireSuccess(run({ id: `${command.split('/').at(-1)}-help`, command, args: ['--help'] }))
-requireSuccess(run({ id: 'virtlogd-start', command: '/usr/sbin/virtlogd', args: ['--daemon', '--pid-file', join(runtime, 'virtlogd.pid')] }))
-requireSuccess(run({ id: 'libvirtd-start', command: '/usr/sbin/libvirtd', args: ['--daemon', '--pid-file', join(runtime, 'libvirtd.pid')] }))
-requireSuccess(run({ id: 'private-domain-list-before', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'] }))
 const node = process.execPath
 const cli = join(source, 'package/cli/mvm/src/cli.ts')
-requireSuccess(run({ id: 'mvm-help', command: node, args: [cli, '--help'] }))
 try {
+  requireSuccess(run({ id: 'virtlogd-start', command: '/usr/sbin/virtlogd', args: ['--daemon', '--pid-file', join(runtime, 'virtlogd.pid')] }))
+  requireSuccess(run({ id: 'libvirtd-start', command: '/usr/sbin/libvirtd', args: ['--daemon', '--pid-file', join(runtime, 'libvirtd.pid')] }))
+  const before = run({ id: 'private-domain-list-before', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'] })
+  requireSuccess(before)
+  assert.equal(before.stdout.trim(), '', 'Private libvirt session must begin empty')
+  requireSuccess(run({ id: 'mvm-help', command: node, args: [cli, '--help'] }))
   for (const image of ['ubuntu', 'windows']) {
     const name = `depot-preparation-${image}`
     requireSuccess(run({ id: `prepare-${image}`, command: node, args: [cli, 'create', name, '--image', image], timeout: 3000000 }))
     requireSuccess(run({ id: `destroy-preparation-${image}`, command: node, args: [cli, 'destroy', name] }))
   }
+  const original = run({ id: 'original-package-task', command: 'mise', args: ['run', '//package/cli/vmsync:test:e2e'], timeout: 900000 })
   const test = run({ id: 'root-directory-source-suite', command: node, args: [join(source, 'package/cli/vmsync/src/lifecycle.expensive.unit.test.ts')], timeout: 900000 })
   requireSuccess(test)
   assert.equal(original.status, 0, 'Original package task failed; root-directory experiment cannot replace its result')
@@ -596,7 +599,7 @@ finally {
   const domains = run({ id: 'private-domain-list-cleanup', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'] })
   requireSuccess(domains)
   for (const domain of domains.stdout.trim().split(/\r?\n/).filter(Boolean)) {
-    assert(domain.startsWith('mvm-'), 'Unexpected domain in private libvirt session')
+    assert(['mvm-depot-preparation-ubuntu', 'mvm-depot-preparation-windows', 'mvm-vmsync-e2e-linux', 'mvm-vmsync-e2e-win', 'mvm-template'].includes(domain), 'Unexpected domain in private libvirt session')
     run({ id: `cleanup-${domain}`, command: node, args: [cli, 'destroy', domain.slice(4)] })
   }
   const remaining = run({ id: 'private-domain-list-after', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'] })
