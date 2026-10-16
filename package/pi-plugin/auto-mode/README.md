@@ -24,17 +24,28 @@ No average USD 0.001 per judgment cost limit applies.
 Question identities and complete shared context survive partitioning;
 partial answer sets cannot authorize execution.
 
-Assessment context keeps complete current instructions and the larger of the latest five visible messages
-or the complete span from the latest user message.
-Selected messages remain complete.
-Older conversation receipts stay local for provenance;
-the raw provider request is not sent as another policy source.
+Assessment concerns execution permission and required consent.
+Tool-use, formatting, naming, and workflow conventions remain agent guidance.
+Review inputs contain the proposed operation, readable project policy excerpts,
+and the larger of the latest five visible messages or the span from the latest user message.
+Pi's hidden prompts, tool metadata, and skill catalog remain outside model review.
+Complete copies of the root policy in visible messages are replaced by a reference to selected excerpts.
+Older conversation receipts stay local for provenance.
 Each clause question includes the complete proposed operation beside the selected clause.
+
+Initialization and reload consult the persistent rule-relevance cache and send only changed or missing
+tagged rules, individually with heading context, to Luna.
+Tagged root rules scoring below `0.60`, including uncertain rules, are excluded from operation review.
+Complete `AGENTS.md` documents are never sent as policy context.
+The original file and source spans remain local for freshness checks.
+Relevance estimates grant no execution permission.
+Startup classification failure preserves ordinary chat and routes tool calls to scoped confirmation;
+without a UI, execution remains withheld.
 
 Established permission allows the operation automatically.
 An established governing prohibition blocks it.
 An explicit fresh-confirmation requirement or uncertain clause assessment first reaches a whole-operation
-decision-model review using the complete current policy, selected conversation, and prepared operations.
+decision-model review using selected policy excerpts, visible conversation, and prepared operations.
 The same Luna model and `0.60` selected-probability cutoff apply.
 Only unresolved or failed automatic paths open the original operation's dialog when a UI is available.
 The dialog offers `Allow` and `Stop`.
