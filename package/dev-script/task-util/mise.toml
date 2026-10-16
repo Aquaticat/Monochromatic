@@ -91,7 +91,7 @@ console.log(JSON.stringify({ phase: 'affected-ci-tools', tools: Object.fromEntri
 
 [tasks."trial:depot:ci:execute"]
 description = "Execute explicit affected-package checks against a separate immutable checkout"
-dir = "{{env.GITHUB_WORKSPACE}}/source"
+dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync, spawnSync } = await import('node:child_process')
@@ -100,6 +100,8 @@ const { createHash } = await import('node:crypto')
 const { homedir } = await import('node:os')
 const { join } = await import('node:path')
 const { strict: assert } = await import('node:assert')
+assert(process.env.GITHUB_WORKSPACE, 'GITHUB_WORKSPACE is required for the isolated cloud source checkout')
+process.chdir(join(process.env.GITHUB_WORKSPACE, 'source'))
 const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/toml.json'))
 const manifest = JSON.parse(manifestBytes)
 const manifestSha256 = createHash('sha256').update(manifestBytes).digest('hex')
