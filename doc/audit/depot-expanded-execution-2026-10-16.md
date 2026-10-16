@@ -83,9 +83,12 @@ job `pp3m2jb9sj`,
 attempt `08s1x6qxrt`,
 executed 69 cases with retries disabled.
 
-- Chromium: 23 passed.
-- Firefox: 23 passed.
-- WebKit: 21 passed,
+- Chromium:
+  23 passed.
+- Firefox:
+  23 passed.
+- WebKit:
+  21 passed,
   one failed,
   one skipped.
 
