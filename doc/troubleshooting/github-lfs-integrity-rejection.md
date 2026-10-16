@@ -30,7 +30,7 @@ No claim about its internal validation algorithm or a local LFS defect is establ
 The local commit-preservation behavior is explicit in
 `package/git-policy/cli/src/native/auto_push.rs:265`:
 
-```rust
+```text
 // package/git-policy/cli/src/native/auto_push.rs:265
 ///   The commit has happened by the time this runs and Git ignores a post-commit hook's status,
 ///  so a failed push or a failed coordination is printed and returned as `Failed`, and never fails the commit.
@@ -118,15 +118,21 @@ but that separate incident does not establish this incident's cause.
 There is no new source diagnosis or deterministic reproduction to add.
 No upstream message was sent.
 
-1.  Fault: a remote rejection is observed;
+1.  Fault:
+    a remote rejection is observed;
     the responsible internal condition is unestablished.
-2.  Fixability: the service implementation is unavailable,
+2.  Fixability:
+    the service implementation is unavailable,
     so no specific upstream fix is established.
-3.  Supported use: an ordinary existing-branch push was attempted and subsequently accepted.
-4.  Contribution policy: no client-code contribution or new report is proposed;
+3.  Supported use:
+    an ordinary existing-branch push was attempted and subsequently accepted.
+4.  Contribution policy:
+    no client-code contribution or new report is proposed;
     the maintainer directs this diagnostic to GitHub support.
-5.  Likely correction: the available thread gives no decision about this incident.
-6.  Prototype: none;
+5.  Likely correction:
+    the available thread gives no decision about this incident.
+6.  Prototype:
+    none;
     there is no identified source defect to patch.
 
 The filing artifact is an explicit nothing-to-add record for
@@ -251,3 +257,5 @@ required-check,
 or other backend cause.
 Protection settings and history were not changed.
 This remains separate from the LFS rejection despite sharing the troubleshooting file.
+The unexplained protected-branch rejection is tracked in
+[repository issue 1032](https://github.com/Aquaticats/Monochromatic/issues/1032).
