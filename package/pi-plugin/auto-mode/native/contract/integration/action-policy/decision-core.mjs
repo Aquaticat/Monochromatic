@@ -96,10 +96,9 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
   catch(error){
    recordDecision({judgment,event:'operation-decision-failed',details:{error}});
    try{
-    inputs.assertCurrent();
-    authorizationInputs.assertCurrent();
-    pendingSessionApproval.assertCurrent();
-    judgment.assertDependenciesCurrent();
+    // Source observation has no assessment deadline; an exhausted model budget can still reach manual review.
+    sourceContext.producerOwner.assertMainAgentResponse({response:sourceContext.response,stream:sourceContext.stream});
+    sourceContext.observer.observationFor(sourceContext.response);
    }catch(currentnessFailure){
     throw new EstablishedPolicyDecisionError('The operation or its instructions changed during decision-model review; propose the operation again',{cause:new AggregateError([error,currentnessFailure])});
    }
