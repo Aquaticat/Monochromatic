@@ -104,6 +104,8 @@ assert(process.env.GITHUB_WORKSPACE, 'GITHUB_WORKSPACE is required for the isola
 process.chdir(join(process.env.GITHUB_WORKSPACE, 'source'))
 const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/toml.json'))
 const manifest = JSON.parse(manifestBytes)
+const wave = process.env.DEPOT_CI_WAVE ?? 'core'
+assert(['core', 'containers', 'all'].includes(wave), `Unknown execution wave: ${wave}`)
 const manifestSha256 = createHash('sha256').update(manifestBytes).digest('hex')
 const sourceRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
 assert.equal(sourceRevision, manifest.sourceRevision)
@@ -129,7 +131,10 @@ mkdirSync(directory, { recursive: true, mode: 0o700 })
 chmodSync(directory, 0o700)
 const identity = { schemaVersion: 1, caseId: manifest.caseId, sourceRevision, manifestSha256, providerJobUrl: process.env.DEPOT_JOB_URL, resources: { cpus: 16, memoryGiB: 64 }, selectedCheckIds: manifest.checks.map((check) => check.id) }
 const results = []
-const deferredChecks = manifest.checks.filter((check) => check.task.endsWith(':test:mutation') || check.task.endsWith(':test:container')).map((check) => ({ checkId: check.id, reason: 'Container runtime bridge remains under review; check is required and not executed in this first wave.' }))
+const deferredChecks = manifest.checks.filter((check) => {
+  const container = check.task.endsWith(':test:mutation') || check.task.endsWith(':test:container')
+  return wave === 'core' ? container : wave === 'containers' ? !container && check.family !== 'build' : false
+}).map((check) => ({ checkId: check.id, reason: `Required check belongs to another execution wave; current wave: ${wave}` }))
 console.log(JSON.stringify({ ...identity, event: 'case-started', completeGraph: false, deferredChecks, tools: JSON.parse(execFileSync('mise', ['ls', '--current', '--json'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 })) }))
 for (const check of manifest.checks) {
   const startedAt = new Date().toISOString()
@@ -149,4 +154,70 @@ for (const check of manifest.checks) {
 for (const path of inputs) assert.deepEqual(readFileSync(path), execFileSync('git', ['show', `HEAD:${path}`]), `${path} changed during checks`)
 console.log(JSON.stringify({ ...identity, event: 'case-finished', completeGraph: false, results, deferredChecks, externalChecks: manifest.externalChecks }))
 if (results.some((result) => result.status === 'failed')) throw new Error('Affected-package checks failed; see retained per-check records')
+'''
+
+[tasks."trial:depot:ci:containers"]
+description = "Activate the previously verified rootful container boundary outside the immutable source"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync, chmodSync, realpathSync, existsSync, appendFileSync } = await import('node:fs')
+const { join, delimiter } = await import('node:path')
+const { homedir } = await import('node:os')
+const { strict: assert } = await import('node:assert')
+const executable = process.env.PATH.split(delimiter).map((directory) => join(directory, 'podman')).find((path) => existsSync(path))
+assert(executable, 'Podman must exist in the prepared image')
+const podman = realpathSync(executable)
+const base = join(homedir(), 'temp/agent/depot-complete-ci/container-bin')
+mkdirSync(base, { recursive: true, mode: 0o700 })
+chmodSync(base, 0o700)
+const wrapper = [
+  '#!/usr/bin/env node',
+  "const { spawnSync } = await import('node:child_process');",
+  'const [command, ...args] = process.argv.slice(2);',
+  "const limits = command === 'run' ? ['--memory=2g', '--cpus=2', '--pids-limit=512'] : [];",
+  `const result = spawnSync('sudo', ['--non-interactive', ${JSON.stringify(podman)}, command, ...limits, ...args], { stdio: 'inherit' });`,
+  'if (result.error) throw result.error;',
+  'process.exitCode = result.status ?? 1;',
+  '',
+].join('\n')
+writeFileSync(join(base, 'podman'), wrapper, { mode: 0o700 })
+execFileSync('sudo', ['--non-interactive', podman, '--version'], { stdio: 'inherit' })
+execFileSync('sudo', ['--non-interactive', podman, 'run', '--memory=2g', '--cpus=2', '--pids-limit=512', '--rm', 'docker.io/library/alpine:3.22', 'true'], { stdio: 'inherit' })
+appendFileSync(process.env.GITHUB_PATH, `${base}\n`)
+console.log(JSON.stringify({ event: 'container-boundary-ready', executable: podman, boundary: 'sudo --non-interactive', memory: '2g', cpus: 2, pidsLimit: 512 }))
+'''
+
+[tasks."trial:depot:ci:generated"]
+description = "Run affected generator consistency against a disposable exact-head checkout"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync, spawnSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync, chmodSync } = await import('node:fs')
+const { join } = await import('node:path')
+const { homedir } = await import('node:os')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const manifest = JSON.parse(readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/toml.json')))
+const sourceRevision = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim()
+assert.equal(sourceRevision, manifest.sourceRevision)
+const base = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(base, { recursive: true, mode: 0o700 })
+chmodSync(base, 0o700)
+const fixture = join(base, `${manifest.caseId}-generated-fixture`)
+execFileSync('git', ['worktree', 'add', '--detach', fixture, sourceRevision], { cwd: source, stdio: 'inherit' })
+const env = { ...process.env, MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS ?? ''}:${fixture}` }
+execFileSync('mise', ['run', 'prepare:pnpm:install', '--', '--frozen-lockfile'], { cwd: fixture, env, stdio: 'inherit' })
+const startedAt = new Date().toISOString()
+const started = performance.now()
+const result = spawnSync('mise', ['run', 'sync:files'], { cwd: fixture, env, stdio: 'inherit' })
+if (result.error) console.error(result.error)
+const diff = execFileSync('git', ['diff', '--name-only'], { cwd: fixture, encoding: 'utf8' }).trim()
+const untracked = execFileSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: fixture, encoding: 'utf8' }).trim()
+const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision, checkId: 'root.generated-consistency', task: '//:sync:files', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: result.status, signal: result.signal, status: result.status === 0 && diff === '' && untracked === '' ? 'passed' : 'failed', changedTrackedFiles: diff, newFiles: untracked }
+writeFileSync(join(base, `${manifest.caseId}-generated-results.json`), JSON.stringify(record, null, 2))
+console.log(JSON.stringify(record))
+assert.equal(record.status, 'passed', 'Generated outputs differ or generation failed in the disposable fixture')
 '''
