@@ -3889,6 +3889,82 @@
     },
     "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
     "comparisonBase": "45795584ff2dcf830dc505e121f0cc92c77860e5",
-    "classification": "Both native jobs failed tool setup before validation; scanner passed independently"
+    "classification": "Both native jobs failed tool setup before validation; scanner passed independently",
+    "depotBootstrap": {
+      "collectedAt": "2026-10-16T03:02:36.364Z",
+      "org": "l4zncjjbj5",
+      "runId": "5tbb7qftkw",
+      "revision": "a65a41cd0853f7bda2e1412caf4dc02e93e4c6ec",
+      "status": "failed",
+      "attempts": [
+        {
+          "workflowId": "vmrq8fz4w2",
+          "jobId": "fgcjk6q7zg",
+          "jobKey": "_inline_0.yaml:native:matrix-0",
+          "attemptId": "91gqxrqdt5",
+          "attempt": 1,
+          "status": "failed",
+          "metricsPath": "metrics-91gqxrqdt5.json",
+          "logPath": "logs-91gqxrqdt5.jsonl",
+          "logSha256": "51a2d378f9abe04bbc19260a0beab1a5a7c81a0541f8876fcb2208d2887fc865",
+          "logRecords": 541,
+          "providerAttempt": {
+            "attempt_id": "91gqxrqdt5",
+            "attempt": 1,
+            "status": "failed",
+            "conclusion": "failure",
+            "sandbox_id": "nvbj5kx99phcbwvgp1xb",
+            "session_id": "e29b8267-ee41-4256-93e9-f4e4b098eecd",
+            "created_at": "2026-10-16T02:55:11.651Z",
+            "started_at": "2026-10-16T02:55:16.680Z",
+            "finished_at": "2026-10-16T02:57:39.651Z"
+          },
+          "seconds": 142.971,
+          "executedCheckEvents": 0,
+          "diagnostic": [
+            "error: no matching package named `ignore` found",
+            "note: offline mode (via `--offline`) can sometimes cause surprising resolution failures"
+          ]
+        },
+        {
+          "workflowId": "vmrq8fz4w2",
+          "jobId": "vzbhp97lxr",
+          "jobKey": "_inline_0.yaml:native:matrix-1",
+          "attemptId": "8b6t6sndtd",
+          "attempt": 1,
+          "status": "failed",
+          "metricsPath": "metrics-8b6t6sndtd.json",
+          "logPath": "logs-8b6t6sndtd.jsonl",
+          "logSha256": "b37b0a56a217b6904537ad494a08299cff253c0a9113211e38e11e29f561002e",
+          "logRecords": 553,
+          "providerAttempt": {
+            "attempt_id": "8b6t6sndtd",
+            "attempt": 1,
+            "status": "failed",
+            "conclusion": "failure",
+            "sandbox_id": "gr0pf2q9qpzr1lk8rcr4",
+            "session_id": "ad6133b2-26c1-4cd6-a2a1-8e2d6308eb52",
+            "created_at": "2026-10-16T02:55:11.651Z",
+            "started_at": "2026-10-16T02:55:16.697Z",
+            "finished_at": "2026-10-16T02:57:39.643Z"
+          },
+          "seconds": 142.946,
+          "executedCheckEvents": 0,
+          "diagnostic": [
+            "error: no matching package named `ignore` found",
+            "note: offline mode (via `--offline`) can sometimes cause surprising resolution failures"
+          ]
+        }
+      ],
+      "artifactCount": 2,
+      "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation.",
+      "resources": {
+        "vcpus": 16,
+        "memoryGb": 64,
+        "timeoutMinutes": 30,
+        "workflowPath": ".depot/workflows/depot-complete-native.yml"
+      },
+      "classification": "Native historical Git wrapper build failed offline before validation; separate from GitHub Cargo installer prerequisite"
+    }
   }
 }

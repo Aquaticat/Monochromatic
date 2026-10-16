@@ -187,6 +187,14 @@ The omitted configured Cargo installer is tracked in
 Its corrected setup is being verified in
 [retry 38842787230](https://github.com/Aquaticats/Monochromatic/actions/runs/38842787230).
 
+Depot native setup in run `5tbb7qftkw` failed at a separate boundary:
+the historical Git wrapper's offline Cargo build could not resolve package `ignore`.
+Attempts `91gqxrqdt5` and `8b6t6sndtd` used 142.971 and 142.946 provider seconds respectively,
+each on 16 vCPUs and 64 GB RAM.
+Neither log contains a started-check event.
+These observations remain setup usage;
+the missing dependency does not establish any native package test outcome.
+
 ### Acceptance requirements
 
 Freeze one source revision and the intended manifest before each execution cell.
