@@ -863,6 +863,20 @@ writeFileSync(appimage, bytes, { mode: 0o700 })
 execFileSync(appimage, ['--appimage-extract'], { cwd: base, stdio: 'ignore' })
 const bin = join(base, 'bin')
 mkdirSync(bin, { recursive: true })
+const chooserLog = join(base, 'chooser.jsonl')
+writeFileSync(join(bin, 'zenity'), `#!${process.execPath}
+const { spawnSync } = require('node:child_process')
+const { appendFileSync } = require('node:fs')
+const log = ${JSON.stringify(chooserLog)}
+const environment = Object.fromEntries(['WAYLAND_DISPLAY', 'DISPLAY', 'XDG_RUNTIME_DIR', 'GSK_RENDERER', 'GDK_BACKEND', 'LIBGL_ALWAYS_SOFTWARE'].map(key => [key, process.env[key]]))
+appendFileSync(log, JSON.stringify({ phase: 'start', at: new Date().toISOString(), args: process.argv.slice(2), environment }) + '\\n')
+const result = spawnSync('/usr/bin/zenity', process.argv.slice(2), { encoding: 'utf8' })
+appendFileSync(log, JSON.stringify({ phase: 'exit', at: new Date().toISOString(), status: result.status, signal: result.signal, stderr: result.stderr, error: result.error?.message }) + '\\n')
+if (result.stdout) process.stdout.write(result.stdout)
+if (result.stderr) process.stderr.write(result.stderr)
+if (result.signal) process.kill(process.pid, result.signal)
+else process.exitCode = result.status ?? 1
+`, { mode: 0o700 })
 symlinkSync(join(base, 'squashfs-root', 'AppRun'), join(bin, 'magick'))
 execFileSync(join(bin, 'magick'), ['--version'], { stdio: 'inherit' })
 appendFileSync(process.env.GITHUB_PATH, `${bin}\n`)
@@ -890,6 +904,8 @@ shell = "node --input-type=module-typescript -e"
 run = '''
 const { spawnSync } = await import('node:child_process')
 const { readFileSync } = await import('node:fs')
+const { existsSync } = await import('node:fs')
+const { homedir } = await import('node:os')
 const { resolve } = await import('node:path')
 const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
 const results = []
@@ -898,6 +914,8 @@ for (const session of ['dialog']) {
   results.push({ session, status: result.status, signal: result.signal, error: result.error?.message })
   console.log(JSON.stringify(results.at(-1)))
   console.log(readFileSync(resolve('target/e2e', session, 'dialog.log'), 'utf8'))
+  const chooserLog = resolve(homedir(), 'temp/agent/depot-desktop/chooser.jsonl')
+  console.log(existsSync(chooserLog) ? readFileSync(chooserLog, 'utf8') : 'No Zenity invocation was recorded')
 }
 console.log(JSON.stringify({ sessions: results }))
 if (results.some(result => result.status !== 0)) throw new Error('Desktop sessions failed; retained each independent result')
