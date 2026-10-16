@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-16T00:59:09.002Z",
+  "generatedAt": "2026-10-16T01:00:10.254Z",
   "scope": "Authorized trial cost research; not production migration or plan-change authorization.",
   "sourceJob": {
     "endpoint": "repos/Aquaticats/Monochromatic/actions/jobs/116749813259",
@@ -1374,7 +1374,7 @@
   },
   "priorFailure": {
     "path": "doc/audit/depot-desktop-interaction-2026-10-15.evidence.json",
-    "sha256": "2d6fe88a91ee2ddb201420fff739867e6eb543f188d54142af6cd63b06ca54f9",
+    "sha256": "f8ab7e2126e2c35f98c6393d6613feb32061e128fde8f0decaa2751598e1bb30",
     "run": "38830049770",
     "job": "116746502593",
     "revision": "0995d00e8d",
@@ -1437,7 +1437,7 @@
     ]
   },
   "pricing": {
-    "checkedAt": "2026-10-16T00:59:09.005Z",
+    "checkedAt": "2026-10-16T01:00:10.257Z",
     "runnerTypes": "https://depot.dev/docs/github-actions/runner-types",
     "runnerBilling": "https://depot.dev/docs/github-actions/overview#pricing",
     "plans": "https://depot.dev/pricing",
