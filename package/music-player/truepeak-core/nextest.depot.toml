@@ -2,3 +2,8 @@
 path = "junit.xml"
 report-name = "depot-audio-core-trial"
 report-skipped = "all"
+
+[profile.depot-binaries.junit]
+path = "junit.xml"
+report-name = "depot-rust-binaries-trial"
+report-skipped = "ignored"
