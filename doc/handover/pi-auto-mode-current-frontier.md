@@ -27,13 +27,24 @@ The user reiterated that accommodating Luna's interpretation failures is part of
 - [ ] Reproduce and fix concurrent JSONL record corruption;
       the incident log contains two malformed physical lines with interleaved record content.
 - [ ] Verify the installed host with the reported commands and record the final evidence.
+- [ ] Publish logger `0.4.1` through the automatic release workflows and verify the registry artifact,
+      as requested by the user.
 
 Incident log: `node_modules/.monochromatic/2026-10-16T01-17-31.942Z.log.jsonl`.
 Private inspection task: `${HOME}/temp/agent/pi-host-isolation-20261015`,
 `mise run inspect-prohibition-incident`.
 It recovered `1046` valid decision/assessment records and counted malformed lines without printing their content.
-Next: run the new authored false-prohibition regression against the installed release,
-then correct automatic review and independently reproduce the file-sink defect.
+The authored false-prohibition regression failed with zero executions instead of two before the routing fix.
+The corrected native matrix passes final approve/deny,
+unknown,
+transport failure,
+Stop,
+and headless cases after a first-pass prohibition.
+The file-sink regression also failed before serialization and passes after the fix.
+Logger's complete unit suite and type check pass;
+package lint reports zero warnings and errors across `58` files.
+The user requested the version bump for automatic publication.
+Next: finish the live clause controls and installed-host replay while the logger release runs.
 
 ### Decision-model fallback correction on 2026-10-16
 

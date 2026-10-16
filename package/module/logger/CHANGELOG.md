@@ -1,5 +1,14 @@
 # @monochromatic-dev/module-logger
 
+## 0.4.1
+
+### Patch changes
+
+- Serialize complete file-sink appends in invocation order.
+  Concurrent records exceeding a filesystem write chunk no longer interleave and corrupt JSONL.
+  Each write completion includes its queue wait,
+  preserving the existing logger flush contract.
+
 ## 0.4.0
 
 ### Minor Changes
