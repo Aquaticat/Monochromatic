@@ -51,6 +51,29 @@ Extend the complete-operation review boundary to direct Bash groups;
 retain uncertainty fallback and governing prohibitions.
 Add allowed, prohibited, and mixed-group consumer controls, then replay the original MiMo group.
 
+Commit `3827af2da9` replaces the repeated retained-origin search with a source-identity index.
+The full cached catalog generated 83,404 message inputs and 83,399 retained origins in the diagnostic fixture.
+The old search took 113190.85 ms in that run;
+the new linear-read regression and full 140-tool replay pass.
+The full-catalog receipt is `mimo-full-index-after.log`, fixture `pi-hyper-rpc-stop-fsbmtV`.
+
+Commit `427ae71387` adds direct Bash to automatic semantic review;
+`d4467e1fc3` publishes its scope matcher through the native generated adapter.
+Controlled built-consumer cases pass for allowed direct commands,
+prohibited commands,
+unknown model answers without an approval host,
+and direct Bash mixed with a supported codemode read.
+Each case sends an assessment containing both complete operations.
+Receipt: `direct-bash-after-3.log` under `${HOME}/temp/agent/pi-host-isolation-20261015/`.
+
+Live Luna has also received the direct Bash group through the configured host with all 140 cached MCP tools.
+Fixture `pi-hyper-rpc-allow-DWhbjc` received HTTP 200 for 94 questions.
+The permission clause's selected probability was 0.75;
+other clauses remained uncertain, so the original confirmation dialog appeared.
+The scripted Stop executed neither command.
+This proves live model dispatch and uncertainty fallback, not automatic approval of the complete live context.
+Live prohibition and scoped confirmation checks remain in progress before installation.
+
 ### Host-isolation replacement complete
 
 The corrected native host is installed as `native-release-Yhc7sX` and verified through the original `pi` command.
