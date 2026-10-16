@@ -599,7 +599,7 @@ finally {
   const domains = run({ id: 'private-domain-list-cleanup', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'] })
   requireSuccess(domains)
   for (const domain of domains.stdout.trim().split(/\r?\n/).filter(Boolean)) {
-    assert(['mvm-depot-preparation-ubuntu', 'mvm-depot-preparation-windows', 'mvm-vmsync-e2e-linux', 'mvm-vmsync-e2e-win', 'mvm-template'].includes(domain), 'Unexpected domain in private libvirt session')
+    assert(['mvm-depot-preparation-ubuntu', 'mvm-depot-preparation-windows', 'mvm-vmsync-e2e-linux', 'mvm-vmsync-e2e-win', 'mvm-template-setup'].includes(domain), 'Unexpected domain in private libvirt session')
     run({ id: `cleanup-${domain}`, command: node, args: [cli, 'destroy', domain.slice(4)] })
   }
   const remaining = run({ id: 'private-domain-list-after', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'] })
