@@ -532,6 +532,14 @@ The command exited with status 1,
 and nextest reported no skipped tests.
 Trial implementation commit `dcaae7c673` adds the deprecated method's extra wrapper.
 The identical command then passed all 270 tests with no skipped tests.
+After the conversion-error callback was named in trial commit `294b0db534`,
+the same tests passed again,
+and `mise run //package/cli/nested-wayland-session:lint:clippy` passed.
+The final comment-only trial commit `d6deca5fa5` also passed scoped repository lint
+for `appearance_portal.rs`,
+`appearance_portal_tests.rs`,
+and `appearance_accent_tests.rs`.
+That check retained three pre-existing `rust/no-anonymous-functions` warnings and reported no errors.
 The complete cloud chooser rerun remains pending;
 the passing protocol tests alone do not establish recovery of the observed Zenity crash.
 
