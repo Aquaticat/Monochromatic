@@ -96,3 +96,32 @@ const output = execFileSync(binary, ['--version'], { cwd: source, encoding: 'utf
 assert.equal(output, `music-player ${version}`)
 console.log(JSON.stringify({ sourceRevision: process.env.SOURCE_HEAD, output, sha256: createHash('sha256').update(readFileSync(binary)).digest('hex') }))
 '''
+
+[tasks."trial:depot:logger-host:identity"]
+description = "Record immutable logger case inputs and host tool versions"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { createHash } = await import('node:crypto')
+const { readFileSync } = await import('node:fs')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), process.env.SOURCE_HEAD)
+assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), '', 'Host checks changed tracked source')
+const inputs = Object.fromEntries(['mise.lock', 'pnpm-lock.yaml'].map(function digest(path) { return [path, createHash('sha256').update(readFileSync(join(source, path))).digest('hex')] }))
+console.log(JSON.stringify({ sourceRevision: process.env.SOURCE_HEAD, platform: process.platform, architecture: process.arch, node: process.version, inputs }))
+assert.equal(process.version, `v${process.env.MISE_NODE_VERSION}`)
+'''
+
+[tasks."trial:depot:logger-host:filesystem"]
+description = "Run the unchanged historical filesystem identity host entrypoint"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { join } = await import('node:path')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+execFileSync(process.execPath, ['package/module/fs-id/src/host-evidence.ts'], { cwd: source, stdio: 'inherit' })
+'''
