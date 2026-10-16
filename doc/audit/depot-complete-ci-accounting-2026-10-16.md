@@ -19,6 +19,14 @@ This document does not choose a smaller representative set,
 change production workflows,
 or launch new cloud work.
 
+The user clarified that checks run only for affected files or packages.
+Complete CI therefore means every applicable check for the actual change,
+not an unconditional repository-wide sweep on every push.
+For Oxlint,
+the user explicitly rejected file-scoped execution because custom rules require project context.
+The diff selects affected packages and consumers;
+Oxlint checks each selected package/project with its complete configured inputs.
+
 ## Evidence missing from the earlier completion claim
 
 - No immutable revision has a reconciled result for every required build,
@@ -79,6 +87,18 @@ and [partial cost replay](depot-resumed-cost-2026-10-16.md).
 ## Minimum completion predicate
 
 Freeze one source revision and the intended manifest before each execution cell.
+Freeze the comparison base as well,
+retain the actual changed-file list,
+and record affected packages,
+reverse consumers,
+shared configuration/toolchain effects,
+selected checks,
+and explicit exclusions for unrelated packages.
+The manifest contains the complete applicable graph for that change.
+Positive controls must select necessary owning-package and consumer checks;
+negative controls must exclude unrelated packages.
+An Oxlint control must also reject narrowed changed-file arguments,
+even when the changed package was selected correctly.
 Every required manifest entry names its existing task,
 platform and architecture,
 feature configuration,
@@ -278,7 +298,9 @@ completed,
 failed,
 cancelled,
 and unstarted checks separately.
-The monthly forecast must include every intended trigger family and its explicit routing,
+The monthly forecast must replay the actual affected-package selector,
+not charge a full repository sweep for every revision.
+It must include every intended trigger family and its explicit routing,
 plus scheduled,
 release-validation,
 retry,
