@@ -476,7 +476,15 @@ computed import expressions still need separate review.
 The first static wave exposed missing owned-artifact prerequisites:
 type checks carried an unused `artifactPrerequisites` field,
 while the earlier scanner discarded self imports and missed relative `dist` imports.
-Commit `4544076ec3` supplies these as executable `prerequisites` and removes comment-only barriers.
+Commit `4544076ec3` supplied these as executable `prerequisites` and proposed pruning lexical false matches.
+Independent review identified unresolved `require`,
+computed-import,
+URL,
+and spawned-artifact paths.
+Follow-up `ed1d31ae11` retains all prior barriers,
+folds the declared owned-artifact metadata into executable prerequisites,
+and keeps the newly found literal dependencies.
+Pruning waits for the additional source-boundary audit.
 The source diagnostics need replay with this corrected ordering before source-failure classification.
 Outside-closure active matches are root configurations,
 the Playwright declaration file,
