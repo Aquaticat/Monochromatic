@@ -27,7 +27,7 @@ The user reiterated that accommodating Luna's interpretation failures is part of
 - [ ] Reproduce and fix concurrent JSONL record corruption;
       the incident log contains two malformed physical lines with interleaved record content.
 - [ ] Verify the installed host with the reported commands and record the final evidence.
-- [ ] Publish logger `0.4.1` through the automatic release workflows and verify the registry artifact,
+- [x] Publish logger `0.4.1` through the automatic release workflows and verify the registry artifact,
       as requested by the user.
 
 Incident log: `node_modules/.monochromatic/2026-10-16T01-17-31.942Z.log.jsonl`.
@@ -64,7 +64,24 @@ the repository API confirms it and SHA pinning remains required.
 Restarted npm run `38836163322` built and packed the package,
 then failed publishing with `ERR_PNPM_FAILED_TO_PUBLISH`, HTTP `404 Not Found`.
 Its npm trusted-publisher configuration still needs inspection.
-No successful npm publication has been established.
+Resolved after the release requests:
+`npm-publish.yml` run `38838431661` published logger `0.4.1`,
+with registry provenance and a fresh consumer confirming complete ordered large JSONL records.
+The full result is recorded in [the logger release plan](../planning/module-logger-release.md).
+
+The subsequent readiness check found `bin/pi` still loading `native-release-Jg5gMF`.
+The installed first-pass prohibition regression failed at its exact-clause diagnostic assertion;
+the current source and installed decision router differ.
+The live installed replay did execute both reported commands without a dialog in fixture
+`pi-hyper-rpc-allow-kdJq9p`,
+with four successful Luna requests.
+That passing sample does not exercise recovery from an admitted false prohibition.
+The candidate's corresponding matrix and repeated live command replays passed before publication work.
+Next rebuild and activate the corrected runtime,
+then verify the installed regression and live replay.
+Receipts:
+`functional-installed-20261016.log` and `functional-installed-prohibition-regression-20261016.log`
+under `${HOME}/temp/agent/pi-host-isolation-20261015`.
 
 The private registry's `401 Unauthorized` occurred after repository transfer:
 GitHub reports repository ID `710240121`, owner `Aquaticats`, owner ID `343218767`.
