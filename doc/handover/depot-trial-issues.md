@@ -91,6 +91,13 @@ No upstream issue or support message was sent.
 The accounting issues describe source and fixture evidence;
 they do not assert an observed live budget overrun.
 
+## Repository publication
+
+- [#1032](https://github.com/Aquaticats/Monochromatic/issues/1032):
+  GitHub rejects an ordinary signed-commit push with `GH006` and no named requirement.
+  Concurrent publication delivered the commit without a protection or history change;
+  the server-side cause remains unknown.
+
 ## Expanded coverage and routing
 
 - [#1023](https://github.com/Aquaticats/Monochromatic/issues/1023):
