@@ -128,6 +128,7 @@ description = "Compare transferred release lookup with public and workflow-token
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { spawnSync } = await import('node:child_process')
+console.log(spawnSync('gh', ['--version'], { encoding: 'utf8' }).stdout)
 const repository = 'Aquaticats/Monochromatic'
 const headers = { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }
 const tags = ['forbidden-strings-v0.5.0', 'monochromatic-lint-v0.1.3', 'monochromatic-git-policy-cli-v0.1.4', 'monochromatic-nested-wayland-session-v0.6.0']
@@ -142,7 +143,7 @@ for (const authenticated of [true, false]) {
     if (!release) { console.log(JSON.stringify({ authenticated, tag, listed: false })); continue }
     for (const endpoint of [`releases/tags/${tag}`, `releases/${release.id}`]) {
       const response = await fetch(`https://api.github.com/repos/${repository}/${endpoint}`, { headers: requestHeaders })
-      console.log(JSON.stringify({ authenticated, tag, endpoint, status: response.status }))
+      console.log(JSON.stringify({ authenticated, tag, endpoint, status: response.status, remaining: response.headers.get('x-ratelimit-remaining'), reset: response.headers.get('x-ratelimit-reset') }))
       await response.arrayBuffer()
     }
     const asset = release.assets.find(asset => asset.name.endsWith('x86_64-unknown-linux-gnu.tar.gz'))
