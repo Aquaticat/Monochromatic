@@ -196,6 +196,31 @@ The repository already tracks the missing-session boundary in
 There is no upstream filing artifact to add.
 The remaining work belongs to the repository's runtime integration and consumer verification.
 
+### Fresh consumer command paths
+
+The first full-suite consumer,
+run `4pmthztf6p`,
+stopped before its task because Bash emitted `mise: command not found` with exit status 127.
+The preparation action had installed `mise` at `~/.local/share/mise/bin/mise` and added its directory to `PATH`.
+The [snapshot contract](https://depot.dev/docs/ci/how-to-guides/custom-images)
+preserves filesystem contents without preserving step environment changes.
+The executable therefore needs activation in each fresh consumer.
+
+Commit `36d48d72ef` invokes that preserved executable explicitly:
+
+```sh
+# .depot/workflows/depot-prepared-desktop.yml, prepared consumer
+PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/music-player/desktop-app:trial:depot:prepared:consume
+```
+
+Run `p5rp4p0wvp` reached artifact verification,
+service startup,
+and application interaction through this invocation.
+The consumer did not run a mise installation or cache restore.
+This path belongs to the tested preparation action configuration;
+a different installation location must update the activation path as well.
+No upstream defect or upstream patch is established.
+
 ## Depot CLI 2.102.22 local patches collide with files retained by snapshot checkout
 
 ### Symptom
