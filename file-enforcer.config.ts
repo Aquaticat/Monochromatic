@@ -1406,7 +1406,7 @@ const CARGO_CANONICAL_LICENSE = 'LGPL-3.0-or-later';
  console.log(CARGO_REPOSITORY_URL);
  ```
  */
-const CARGO_REPOSITORY_URL = 'https://github.com/Aquaticat/Monochromatic.git';
+const CARGO_REPOSITORY_URL = 'https://github.com/Aquaticats/Monochromatic.git';
 
 /**
  GitHub tree base used to derive each published crate's homepage from its path.
@@ -1416,7 +1416,7 @@ const CARGO_REPOSITORY_URL = 'https://github.com/Aquaticat/Monochromatic.git';
  console.log(CARGO_HOMEPAGE_TREE_BASE);
  ```
  */
-const CARGO_HOMEPAGE_TREE_BASE = 'https://github.com/Aquaticat/Monochromatic/tree/main';
+const CARGO_HOMEPAGE_TREE_BASE = 'https://github.com/Aquaticats/Monochromatic/tree/main';
 
 /**
  Canonical readme filename for published crates.
