@@ -75,7 +75,7 @@ jobs:
         persist-credentials: false
         clean: false
     - name: Verify prepared files and run every desktop session with fresh private services
-      run: mise run //package/music-player/desktop-app:trial:depot:prepared:consume
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/music-player/desktop-app:trial:depot:prepared:consume
 
   consume-two:
     needs: consume-one
@@ -91,4 +91,4 @@ jobs:
         persist-credentials: false
         clean: false
     - name: Repeat every desktop session from the same prepared snapshot
-      run: mise run //package/music-player/desktop-app:trial:depot:prepared:consume
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/music-player/desktop-app:trial:depot:prepared:consume
