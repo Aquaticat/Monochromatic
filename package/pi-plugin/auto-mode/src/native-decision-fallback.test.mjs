@@ -104,7 +104,8 @@ const inputRecords=assessments.filter(function requestRecord(entry){return entry
 assert.equal(inputRecords.length,observations.attempts);
 assert.equal(new Set(inputRecords.map(function operationId(entry){return entry.operationId;})).size,1);
 for(const record of inputRecords){
- assert.ok(record.state.fullPolicy.includes('RUL:'));
+ assert.equal(Object.hasOwn(record.state,'fullPolicy'),false);
+ assert.ok(record.state.selectedPolicyMaterial[0].fragments.some(function policyRule(span){return span.text.startsWith('RUL:');}));
  assert.equal(Object.hasOwn(record.state,'originalRequestBody'),false);
  for(const command of commands)assert.ok(record.state.parentProgram.includes(command));
 }

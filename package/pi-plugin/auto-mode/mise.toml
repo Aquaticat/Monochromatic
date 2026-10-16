@@ -879,7 +879,7 @@ run = [
 ]
 
 [tasks."test:native:decision-context"]
-description = "Verify selected conversation and complete current policy in actual native assessment requests"
+description = "Verify selected conversation and readable policy excerpts in actual native assessment requests"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/decision-context.test.mjs satisfied --native-context --reload-context"
 
 [tasks."test:native:prompt-capacity"]
@@ -889,6 +889,10 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/prompt-capacity.test.mjs",
   "node --max-old-space-size=512 src/input-receipt-budget.unit.test.ts",
 ]
+
+[tasks."test:native:startup-relevance"]
+description = "Verify startup, changed-rule cache reuse, uncertainty culling, and selected provider inputs"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-startup-relevance.test.mjs"
 
 [tasks."test:native:runtime-hooks"]
 description = "Verify native hook installation and rollback without message listeners"

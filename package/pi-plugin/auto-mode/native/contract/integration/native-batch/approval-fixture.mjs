@@ -203,7 +203,8 @@ export const runtime=bindNativePolicyRuntime({
   fixtureState.assessments++;const wire=JSON.parse(body);
   fixtureState.wires.push(wire);
   assert.equal(Object.hasOwn(wire.state,'originalRequestBody'),false);
-  assert.equal(wire.state.fullPolicy,policyText);
+  assert.equal(Object.hasOwn(wire.state,'fullPolicy'),false);
+  assert.ok(wire.state.selectedPolicyMaterial[0].fragments.every(function originalExcerpt(span){return policyText.includes(span.text);}));
   const answers=Object.fromEntries(Object.entries(wire.questions)
     .map(function answerAuthoredApprovalQuestion([slot,question]) {
    const id=question.instructions

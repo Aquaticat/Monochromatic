@@ -16,7 +16,9 @@ const messages=[
 
 /** Inspect exactly what the assessment consumer receives, including every question. */
 function conversation(wire){
- assert.equal(wire.state.fullPolicy,policyText);
+ assert.equal(Object.hasOwn(wire.state,'fullPolicy'),false);
+ assert.ok(wire.state.selectedPolicyMaterial[0].fragments.every(function originalExcerpt(span){return policyText.includes(span.text);}));
+ assert.ok(!JSON.stringify(wire).includes('Fixture background.'),'Hidden host prompt must not become a policy question');
  assert.equal(Object.hasOwn(wire.state,'originalRequestBody'),false);
  const body=JSON.stringify(wire);
  assert.equal(body.includes(oldMarker),false);
@@ -28,7 +30,7 @@ function conversation(wire){
    prepared:JSON.parse(wire.state.preparedProgram)
   });
  }
- const selected=wire.state.additionalPolicies.filter(function selectedConversation(source){
+ const selected=wire.state.selectedPolicyMaterial.filter(function selectedConversation(source){
    return source.inputLocation?.field==='visibleConversation';
  });
  assert.equal(selected.length,1);
@@ -84,6 +86,6 @@ function userText(message){
  assert.equal(conversation(fixtureState.wires[5]).length,5);
  assert.equal(fixtureState.executions,18);
  assert.equal(fixtureState.selections,0);
- console.log(JSON.stringify({complete:true,fullPolicy:true,oldPrefixAbsent:true,hiddenAbsent:true,completeSelectedMessage:true,fiveMessageFloor:true,latestUserSpan:true,followup:true,reload:true,assessments:6,executions:18,providerRequests:0}));
+ console.log(JSON.stringify({complete:true,policyExcerpts:true,oldPrefixAbsent:true,hiddenAbsent:true,completeSelectedMessage:true,fiveMessageFloor:true,latestUserSpan:true,followup:true,reload:true,assessments:6,executions:18,providerRequests:0}));
 }
 //endregion Consumer context checks
