@@ -219,6 +219,9 @@ async function runSessions(
     sink,
   };
   for (const name of sessionsFor({ only: config.only, },)) {
+    // Isolated Depot trial: run each full session even when another session aborts.
+    if (process.env.DEPOT_TRIAL_SESSION && process.env.DEPOT_TRIAL_SESSION !== name)
+      continue;
     rl.info(`running the ${name} session`,);
     // oxlint-disable-next-line eslint/no-await-in-loop -- the sessions must not overlap: one compositor and one app at a time
     await SESSION_RUNNERS[name](context,);
