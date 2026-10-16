@@ -68,6 +68,7 @@ export function matchesSemanticOperationProfile({
   readonly configured: string;
   readonly effect: SemanticAdmissionInputs['effects'][number];
 },): boolean {
+  /** Scope matching logs no command text or original source content. */
   const rl = tagged({ tag: matchesSemanticOperationProfile.name, l, },);
   rl.debug('matching original prepared operation to fixed semantic scope',);
   if ((configured === 'native-inspected-programs-v2') && (effect.prepared?.name === 'bash'))

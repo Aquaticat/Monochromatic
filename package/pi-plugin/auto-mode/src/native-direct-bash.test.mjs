@@ -24,7 +24,7 @@ const sendAssessment=createDomainFixtureAssessment({settings,observations});
 const commands=['printf NATIVE_DIRECT_BASH_A','printf NATIVE_DIRECT_BASH_B'];
 const calls=commands.map(function proposedCommand(command,index){return {index,id:`bash-${index}`,type:'function',function:{name:mode==='mixed'&&index===1?'codemode':'bash',arguments:JSON.stringify(mode==='mixed'&&index===1?{code:`return await tools.bash(${JSON.stringify({command})});`}:{command})}};});
 const requests={count:0};
-const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInput,rootDirectory:env.options.cwd,parsePolicy:env.parser.parse,files:[],wrapToolDefinition:env.wrapToolDefinition,readSessionDisposalState:env.readSessionDisposalState,trace(){},...createNativeSemanticOperatingPolicies(),
+const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInput,rootDirectory:env.options.cwd,parsePolicy:env.parser.parse,files:[],wrapToolDefinition:env.wrapToolDefinition,readSessionDisposalState:env.readSessionDisposalState,trace(){return undefined;},...createNativeSemanticOperatingPolicies(),
  sendWire(input){for(const command of commands)assert.ok(input.body.includes(command),'Every assessment retains both complete commands');return sendAssessment(input);},
  async terminalFetch(){
   const proposal=requests.count++===0;
@@ -34,14 +34,14 @@ const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInpu
   return new Response(`data: ${JSON.stringify(first)}\n\ndata: ${JSON.stringify(last)}\n\ndata: [DONE]\n\n`,{headers:{'content-type':'text/event-stream'}});
  }
 });
-try{
+await using cleanup={async [Symbol.asyncDispose](){session.dispose();await session.agent.waitForIdle();runtime.detach();await env.drain();}};
  await session.prompt('Review and perform the complete proposed shell operation.');
  const review=runtime.inspect().lastReview;
  assert.ok(review,'Original direct calls must reach policy review');
  assert.equal(review.semanticAdmission.state,'matching');
  assert.ok(observations.assessments>0,'Direct Bash must reach automatic assessment');
  assert.equal(review.outcome.state,permitted?'allowed':mode==='prohibition'?'blocked':'unresolved');
- const results=session.messages.filter(message=>message.role==='toolResult');
+ const results=session.messages.filter(function toolResult(message){return message.role==='toolResult';});
  assert.equal(results.length,2);
  for(const [index,result] of results.entries()){
   assert.equal(result.isError,!permitted);
@@ -49,5 +49,4 @@ try{
   assert.equal(text.includes(index===0?'NATIVE_DIRECT_BASH_A':'NATIVE_DIRECT_BASH_B'),permitted);
  }
  console.log(JSON.stringify({complete:true,mode,assessments:observations.assessments,automaticExecutions:permitted?2:0,completeCommands:true}));
-}finally{session.dispose();await session.agent.waitForIdle();runtime.detach();await env.drain();}
 //endregion
