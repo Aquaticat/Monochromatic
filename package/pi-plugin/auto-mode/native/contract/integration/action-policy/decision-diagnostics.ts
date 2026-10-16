@@ -13,18 +13,6 @@ const l = tagged({ tag: 'auto-mode-decision-evidence' });
 //region Original judgment identity correlates all decision paths without granting authority.
 
 /**
- Preserve nested error diagnostics that ordinary JSON serialization would discard.
-
- @param key - serializer field name
- @param value - diagnostic value before serialization
- @returns error inspection or original serializable diagnostic
- */
-function describeDiagnosticValue(key: string, value: unknown): unknown {
-  if (value instanceof Error) return { field: key, error: inspect(value, { depth: 8 }) };
-  return value;
-}
-
-/**
  Publish reconstructable evidence through the existing local logger.
 
  @param judgment - original operation owner used only for correlation
@@ -39,7 +27,12 @@ export function recordDecision({ judgment, event, details }: {
   /** Repeated records for the same owner retain the original correlation identifier. */
   const reviewId = reviewIds.get(judgment) ?? randomUUID();
   reviewIds.set(judgment, reviewId);
-  tagged({ tag: recordDecision.name, l }).debug(JSON.stringify({ reviewId, event, details }, describeDiagnosticValue));
+  /** JSON supplies positional fields to its callback; nested Error properties need explicit inspection. */
+  const serialized = JSON.stringify({ reviewId, event, details }, function describeDiagnosticValue(key: string, value: unknown): unknown {
+    if (value instanceof Error) return { field: key, error: inspect(value, { depth: 8 }) };
+    return value;
+  });
+  tagged({ tag: recordDecision.name, l }).debug(serialized);
 }
 
 /**

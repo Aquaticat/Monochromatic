@@ -13,7 +13,9 @@ const l = tagged({ tag: 'auto-mode-operation-decision-claim' });
 /**
  Bind a final operation decision to the original judgment occurrence.
 
- @param context - original request, claim selection, and private binding owner
+ @param input - original request and claim selection capabilities
+
+ @param state - private binding owner retaining canonical request identity
 
  @returns canonical whole-operation claim declaration
  */

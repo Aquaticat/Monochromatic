@@ -14,6 +14,7 @@ const mode=process.argv[2]??'approve';
 assert.ok(['approve','deny','unknown','low','transport','malformed','initial-failure','stop','cancel','headless','stale','abort','prohibition','deadline','fresh'].includes(mode));
 const {askUser,VERDICT_ENTRY_TYPE}=await import(maintainedPolicyEntry);
 const observations={assessments:0,httpCalls:0,attempts:0,selections:0,executions:0};
+/** @type {{pi:unknown,abortTask:Promise<void>|undefined}} */
 const fixture={pi:undefined,abortTask:undefined};
 const logs=[];
 const assessments=[];
