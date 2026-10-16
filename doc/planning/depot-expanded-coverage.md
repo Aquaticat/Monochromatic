@@ -659,12 +659,14 @@ an exact expiry timestamp and aggregate dollar cap remain unverified.
 Review the proposed triggers,
 platform boundaries,
 and completion criteria as the engineering recommendation.
-The selected trial execution and cost replay are finished;
+The selected trial execution and cost replay are finished,
+but the complete intended CI pipeline remains unmeasured.
+Oxlint and the other applicable quality gates belong in that pipeline.
 the [resumed cost report](../audit/depot-resumed-cost-2026-10-16.md)
 includes revision-specific preparation,
 expanded browser/native execution,
 and test/standalone usage sensitivities.
-The named unmeasured checks remain broader rollout gaps tracked in the
+The named unmeasured checks are tracked in the
 [issue inventory](../handover/depot-trial-issues.md).
 Further account inspection is intentionally excluded by the user's decision,
 not unfinished trial work.

@@ -236,13 +236,27 @@ unverified invoice and spending-control claims remain limits on the recommendati
 
 ## Result and adoption boundary
 
+Completion requires an executed complete intended CI graph,
+including Oxlint and applicable TypeScript,
+formatting,
+Rust,
+Kotlin,
+and Android quality gates alongside builds and tests.
+The user explicitly corrected the earlier selected-job completion claim.
+One immutable source revision must identify every required check,
+its outcome,
+resource use,
+and contribution to the total unfinished-CI interval.
+Account access is deliberately excluded;
+that exclusion does not waive pipeline measurement.
+
 The [trial report](../audit/depot-trial-2026-10-15.md) distinguishes measured savings,
 newly exercised checks,
 remaining gaps,
 and unverified claims.
 It recommends check frequency and an execution arrangement using the user's combined cost objective.
 Selected execution experiments and the representative change-stream replay have finished.
-The agreed trial evaluation is complete with account inspection intentionally excluded.
+Those selected results do not complete the full intended CI measurement.
 The resumed batch includes combined prepared desktop execution,
 representative browser/native checks,
 Depot Tests,

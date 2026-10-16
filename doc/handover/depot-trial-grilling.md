@@ -2,6 +2,30 @@
 
 ## Completed trial execution and remaining acceptance gaps
 
+The overall evaluation is not complete.
+The user corrected the completion claim:
+measuring selected jobs does not measure complete intended CI,
+which also includes Oxlint and the other quality gates.
+The completion claim in `bae6ef28a1` was incorrect.
+Account access remains deliberately excluded and is unrelated to this missing work.
+
+Active work:
+
+- Enumerate the full intended CI task graph from root and package tasks,
+  including quality gates,
+  builds,
+  unit/native/browser/device checks,
+  and required platform boundaries.
+  Prove package discovery and report every omitted or inapplicable task explicitly.
+- Execute that graph in an isolated trial on one immutable source revision,
+  retaining actual check outcomes and setup/service dependencies.
+  Early failures must not silently omit independent checks.
+- Measure whole-pipeline usage and elapsed time until every required check reaches a terminal state.
+  Reconcile those measurements with the cost model and the user's overlap-aware time objective.
+
+The retained job experiments provide inputs and verified execution routes;
+they do not satisfy whole-pipeline completion on their own.
+
 The user's completion question exposed unfinished experiments in the broader brief.
 The user then explicitly authorized executing that queue and added Depot Test.
 The resumed execution now has results for each accessible experiment:
@@ -49,13 +73,13 @@ The Android instrumentation result uses cloud-built APKs on a local headed emula
 it does not establish Android device execution inside Depot.
 Production migration and plan changes remain separate decisions.
 
-The executable resumed queue is complete at its documented representative scope.
+The selected experiments in the resumed queue have completed.
 The user explicitly excluded further account-access work on 2026-10-15 local time.
 Account-wide reconciliation is excluded by that decision,
 not a pending completion requirement.
 Other packages and platforms remain unpriced limits on a broader rollout forecast.
-The agreed trial includes representative repository execution;
-it does not require executing every package or fixing every discovered issue.
+The complete intended CI measurement remains required;
+fixing every discovered application issue is separate from measuring and reporting its check outcome.
 Filing an issue does not count as executing an experiment or completing production integration.
 
 The current usage API re-probe still rejects the CLI user token and requires an organization token.

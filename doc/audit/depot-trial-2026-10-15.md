@@ -9,9 +9,13 @@ representative browser suites and native feature checks,
 and a controlled standalone linker workload.
 The [completion record](../handover/depot-trial-grilling.md#completed-trial-execution-and-remaining-acceptance-gaps)
 links each executed result and distinguishes production integration from evaluation.
-The agreed trial evaluation is complete.
+The overall evaluation is not complete:
+the intended CI pipeline,
+including Oxlint and the other quality gates,
+has not yet been executed and measured as a whole.
+The earlier completion claim was incorrect.
 Further account access is deliberately excluded by the user's decision;
-other packages and platforms remain unpriced limits on a broader rollout forecast.
+that decision is separate from the missing pipeline measurement.
 All ten corrected runner configurations passed,
 as did the default-container-builder concurrency repetitions.
 The [sizing report](depot-runner-sizing-2026-10-15.md) records the measured results and allocation recommendation.
