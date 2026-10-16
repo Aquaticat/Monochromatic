@@ -73,6 +73,7 @@ jobs:
         name: native-${{ matrix.wave }}-evidence
         path: |
           ~/temp/agent/depot-complete-ci/*-results.json
+          ~/temp/agent/depot-complete-ci/check-logs/*.log
           ~/temp/agent/depot-complete-ci/native-tools.json
           source/package/music-player/android-app/app/build/outputs/apk/**/*.apk
           source/package/music-player/android-app/app/build/test-results/**/*.xml

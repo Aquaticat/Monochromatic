@@ -96,7 +96,7 @@ shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync, spawn } = await import('node:child_process')
 const { once } = await import('node:events')
-const { readFileSync, writeFileSync, mkdirSync, chmodSync } = await import('node:fs')
+const { readFileSync, writeFileSync, mkdirSync, chmodSync, openSync, closeSync, statSync } = await import('node:fs')
 const { createHash } = await import('node:crypto')
 const { homedir } = await import('node:os')
 const { join } = await import('node:path')
@@ -135,6 +135,8 @@ mkdirSync(directory, { recursive: true, mode: 0o700 })
 chmodSync(directory, 0o700)
 const identity = { schemaVersion: 1, caseId: manifest.caseId, sourceRevision, manifestSha256, providerJobUrl: process.env.DEPOT_JOB_URL, resources: { cpus: Number(process.env.DEPOT_CI_CPUS ?? 16), memoryGiB: Number(process.env.DEPOT_CI_MEMORY_GIB ?? 64) }, selectedCheckIds: manifest.checks.map((check) => check.id) }
 const results = []
+const logDirectory = join(directory, 'check-logs')
+mkdirSync(logDirectory, { recursive: true, mode: 0o700 })
 const initialDeferred = manifest.checks.filter((check) => {
   const container = check.task.endsWith(':test:mutation') || check.task.endsWith(':test:container')
   if (wave === 'static') return !check.task.endsWith(':lint:oxlint') && !check.task.endsWith(':lint:types')
@@ -168,15 +170,27 @@ async function execute(check) {
   console.log("\n" + JSON.stringify({ ...checkIdentity, event: 'check-started' }))
   let exitCode = null
   let signal = null
+  let outputLog
+  let outputSha256
+  let outputBytes
   if (!skipReason) {
+    assert(/^[a-zA-Z0-9._-]+$/.test(check.id), 'Check ID must be safe as an evidence filename')
+    outputLog = join(logDirectory, `${check.id}.log`)
+    const descriptor = openSync(outputLog, 'w', 0o600)
     try {
-      const child = spawn('mise', ['run', check.task, ...(check.args.length > 0 ? ['--', ...check.args] : [])], { stdio: 'inherit', env: { ...process.env, ...(check.env ?? {}) } })
+      const child = spawn('mise', ['run', check.task, ...(check.args.length > 0 ? ['--', ...check.args] : [])], { stdio: ['ignore', descriptor, descriptor], env: { ...process.env, ...(check.env ?? {}) } })
       ;[exitCode, signal] = await once(child, 'exit')
     } catch (error) {
       console.error(error)
+    } finally {
+      closeSync(descriptor)
     }
+    const output = readFileSync(outputLog)
+    outputSha256 = createHash('sha256').update(output).digest('hex')
+    outputBytes = statSync(outputLog).size
+    if (exitCode !== 0) console.error(JSON.stringify({ event: 'check-diagnostic-tail', checkId: check.id, output: output.subarray(-16000).toString() }))
   }
-  const record = { ...checkIdentity, event: 'check-finished', finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode, signal, status: skipReason ? 'skipped' : exitCode === 0 ? 'passed' : 'failed', skipReason }
+  const record = { ...checkIdentity, event: 'check-finished', finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode, signal, status: skipReason ? 'skipped' : exitCode === 0 ? 'passed' : 'failed', skipReason, outputLog, outputSha256, outputBytes }
   results.push(record)
   console.log("\n" + JSON.stringify(record))
   writeFileSync(join(directory, `${manifest.caseId}-results.json`), JSON.stringify({ ...identity, event: 'case-finished', completeGraph: false, results, deferredChecks, externalChecks: manifest.externalChecks }, null, 2))

@@ -75,6 +75,7 @@ jobs:
         name: pi-host-evidence
         path: |
           ~/temp/agent/depot-complete-ci/*-results.json
+          ~/temp/agent/depot-complete-ci/check-logs/*.log
           ~/temp/agent/depot-complete-ci/native-tools.json
           ~/temp/agent/depot-complete-ci/pi-host/*.json
           ~/temp/agent/depot-complete-ci/pi-host/*.log

@@ -72,6 +72,7 @@ jobs:
         name: logger-${{ matrix.wave }}-evidence
         path: |
           ~/temp/agent/depot-complete-ci/*-results.json
+          ~/temp/agent/depot-complete-ci/check-logs/*.log
           ~/temp/agent/depot-complete-ci/native-tools.json
 
         if-no-files-found: ignore

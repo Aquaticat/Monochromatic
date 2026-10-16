@@ -69,5 +69,6 @@ jobs:
         name: toml-${{ github.job }}-evidence
         path: |
           ~/temp/agent/depot-complete-ci/*-results.json
+          ~/temp/agent/depot-complete-ci/check-logs/*.log
           ~/temp/agent/depot-complete-ci/*.patch
         if-no-files-found: ignore
