@@ -37,10 +37,18 @@ The queued source-change cases are the first-parent diffs ending at:
   logger source/tests with its actual broader consumer closure.
 - `cb95cf6d785c3073c192b95f0632cdae7b910894`:
   native audio feature/source change and affected applications.
+- `3434eaa455d569c18b52cf15100f77f9db251d21`:
+  desktop source change with the Windows and Alpine workflows present at that exact revision.
+  The earlier native case predates those workflows and `Containerfile.alpine`;
+  it cannot supply their current platform evidence.
 
 Each execution must use that case's immutable head and dependency graph.
 A documentation-only selection control must prove unrelated package checks are absent.
 The initial smaller case does not replace the broader logger and native cases.
+The desktop case also measures its applicable Linux gates alongside the existing Windows and Alpine jobs.
+Preparation run `1v4l9tglbt` failed before checks because shallow checkout omitted the asserted base commit.
+Its setup failure and retry remain part of trial accounting;
+no check coverage is claimed from that attempt.
 
 The retained job experiments provide inputs and verified execution routes;
 they do not satisfy whole-pipeline completion on their own.
