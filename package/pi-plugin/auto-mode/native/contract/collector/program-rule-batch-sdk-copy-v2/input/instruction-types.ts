@@ -69,7 +69,14 @@ type ClauseInstruction = Readonly<{
  Request claims retain occurrence identity even if another request has equal bytes.
  */
 type RequestInstruction = Readonly<{
-  kind: 'whole-request-material' | 'whole-operation-decision';
+  kind: 'whole-request-material';
+  request: object;
+  binding: QuestionBinding;
+}>;
+
+/** Whole-operation decisions retain original request identity without selecting its archived body. */
+type OperationDecisionInstruction = Readonly<{
+  kind: 'whole-operation-decision';
   request: object;
   binding: QuestionBinding;
 }>;
@@ -90,7 +97,7 @@ type AdoptionInstruction = Readonly<{
 /**
  Private instruction records determine which original dependencies must still match.
  */
-export type InstructionRecord = ClauseInstruction | RequestInstruction | AdoptionInstruction;
+export type InstructionRecord = ClauseInstruction | RequestInstruction | OperationDecisionInstruction | AdoptionInstruction;
 
 /**
  Lazy owner state preserves publication timing and separate meaning versus member identities.

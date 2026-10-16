@@ -15,7 +15,7 @@ const ownerKeys = {
   lifecycle: ['captureClaimEvidence', 'assertClaimEvidence', 'captureBatchEvidence', 'assertBatchEvidence',
     'issue', 'assess', 'finalize', 'operation'],
   instructions: ['claim', 'claimInstruction', 'indexedUnitAdoptionPairs', 'claimUnitAdoption', 'requestMaterialFor',
-    'claimRequestMaterial', 'claimHeadingContext', 'issueBoundPolicyBatch', 'indexedRuleCandidates',
+    'claimRequestMaterial', 'claimHeadingContext', 'claimOperationDecision', 'issueBoundPolicyBatch', 'indexedRuleCandidates',
     'indexedInstructionCandidates', 'indexedHeadingContextCandidates', 'inspectRuleSources', 'readPolicySelection',
     'issueRuleAssessmentBatch', 'readRuleCandidate', 'claimRuleCandidate', 'claimProgramRuleCandidate', 'issueProgramRuleBatch'],
   inspection: ['originalFileFor', 'preparedMemberFor', 'inspect'],

@@ -9,6 +9,7 @@ export {
   readNativeBypassEnabled,
   createAssessmentSender,
   createNativeSemanticOperatingPolicies,
+  admitsOperatingChoice,
   VERDICT_ENTRY_TYPE,
   AuthorizationEvidenceError,
   captureAuthorizationInputs,
