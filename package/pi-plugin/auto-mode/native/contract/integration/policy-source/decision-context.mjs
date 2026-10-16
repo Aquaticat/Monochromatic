@@ -1,10 +1,11 @@
 import {createHash} from 'node:crypto';
 import {buildVisibleContext} from '../maintained-policy.mjs';
 import {sessionEntryToContextMessages} from '../native-batch/generated/session-manager.mjs';
+import {captureDecisionMaterial} from './decision-material.mjs';
 
 //region Current policy and visible conversation are selected before semantic candidates.
 /** Retained callback receipts authenticate inputs locally; they are not additional current instructions. */
-export function captureDecisionContext({snapshot,session}){
+export function captureDecisionContext({snapshot,session,input}){
  const content=session?buildVisibleContext({
    entries:session.sessionManager.buildContextEntries(),
    project:sessionEntryToContextMessages
@@ -22,7 +23,8 @@ export function captureDecisionContext({snapshot,session}){
    ...snapshot.contextPromptInputs.filter(function independentContext(source){return source.carrier===undefined;}),
    ...(conversation?[conversation]:[])
  ]);
- return Object.freeze({sources,conversation});
+ const selection=captureDecisionMaterial({sources,input});
+ return Object.freeze({sources,conversation,selection});
 }
 
 /** The collector owns this projection; conversation content does not acquire instruction authority from a saved role. */

@@ -15,7 +15,7 @@ import type { InstructionMember } from './instruction-types.ts';
 export type JudgmentPreparationSources = Readonly<{
   mandatoryPolicy?: Readonly<{ content?: unknown }>;
   governingSources?: unknown;
-  decisionContext?: Readonly<{ sources: unknown }>;
+  decisionContext?: Readonly<{ sources: unknown;selection?:Readonly<{material?:unknown;failure?:unknown}> }>;
 }>;
 
 /**

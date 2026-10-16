@@ -133,6 +133,7 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
        Frozen selection context preserves original serialized inputs and source projections.
        */
       const sources=readJudgmentSources();
+      if(sources.decisionContext?.selection?.failure)throw new JudgmentConstructionError('Project policy relevance could not be classified; this operation needs manual review',{cause:sources.decisionContext.selection.failure});
       /** Current assessment sources retain the same original read and snapshot identity. */
       const envelope = Object.freeze({
         parentJSON,
@@ -141,6 +142,7 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
           .body,
         mandatoryPolicy,
         governingSources: sources.decisionContext?.sources ?? sources.governingSources,
+        policyMaterial:sources.decisionContext?.selection?.material,
         instructionAuthority: 'not-established',
       });
       state.selection = createQuestionSelection({
