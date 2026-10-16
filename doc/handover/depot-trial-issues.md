@@ -303,6 +303,13 @@ Final source-case reconciliation still requires the corrected manifests and late
 Pending collection includes VM replay `rv6hfj76w9`
 and native recovery runs `38847322477` and `38847322559`.
 Linux desktop nextest recovery `pbg4h8ww6k` also needs collection and independent full-suite reconciliation.
+The next terminal batch contains mutation attempts `70p38v12d7` and `0snqhv0rhl`,
+scheduler controls `m00504dz4c`,
+desktop E2E attempts `nb6ptmwjs5` and `xmvgm200k5`,
+WireGuard `cwkngc2w7g`,
+Pi `04pjg1sw9j`,
+and prepared-image import `wqz9h633wj`.
+The desktop artifacts need application-stderr inspection before classifying their startup timeout.
 The [accounting audit](../audit/depot-complete-ci-accounting-2026-10-16.md)
 owns the measurements and distinctions between execution completion and passing CI.
 
