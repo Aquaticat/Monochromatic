@@ -214,7 +214,7 @@ export const runtime=bindNativePolicyRuntime({
        .selectedMaterial,
      'originalRequestBody'
    );
-   const choice=id==='UNK'?'unknown':id==='CNF'?(freshSessionApproval?'fresh-session-approval':'prerequisite'):id==='RUL'?(mode==='bare'?'none':mode==='prohibited'?'prohibition':'permission'):'none';
+   const choice=Object.hasOwn(question.criteria,'approve')?'unknown':id==='UNK'?'unknown':id==='CNF'?(freshSessionApproval?'fresh-session-approval':'prerequisite'):id==='RUL'?(mode==='bare'?'none':mode==='prohibited'?'prohibition':'permission'):'none';
    assert.ok(Object.hasOwn(
      question.criteria,
      choice

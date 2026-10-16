@@ -51,15 +51,14 @@ session.agent
    lastReview:review,
    lastJudgment:judgment
  }=runtime.inspect();
- const independentUnresolved=(!freshSessionApproval)&&['missing','unsupported','unresolved'].includes(mode);
- const eligible=(!headless)&&(!independentUnresolved)&&(![
+ const eligible=(!headless)&&(![
    'prohibited',
    ...(uncertainContext?[]:['satisfied'])
  ].includes(mode));
  assert.equal(
    fixtureState.selections,
    eligible?1:0,
-   `Confirmation requires no prohibition, independent unresolved prerequisite, or unavailable UI: ${inspect(
+   `Confirmation follows unresolved automatic review with no established prohibition and an available UI: ${inspect(
      {
        authorizationCaptures: fixtureState.authorizationCaptures,
        handlerFailure: fixtureState.handlerFailure,
@@ -132,10 +131,10 @@ session.agent
       .length,
     1
   );
- const unresolved=independentUnresolved||(headless&&(![
+ const unresolved=headless&&(![
    'prohibited',
    'satisfied'
- ].includes(mode)));
+ ].includes(mode));
   assert.equal(
     review.outcome
       .state,
