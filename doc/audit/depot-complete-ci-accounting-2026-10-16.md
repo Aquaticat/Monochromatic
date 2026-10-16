@@ -206,10 +206,17 @@ Depot core and Android run `j80v9dqfb4`,
 and Linux desktop run `xg3znh2j0p`.
 Logger scanner `38843463588` has been collected;
 its package and consumer graph remains separate work.
+Its three scanned paths exactly match the changed-file set from the immutable Git comparison.
 Desktop collection covers Windows run `38843524267`,
 Alpine run `38843525621`,
 macOS run `38843527788`,
 and scanner run `38843587917`.
+The desktop scanner also passed,
+and its six scanned paths exactly match the immutable Git comparison.
+Both scanner jobs used 28 provider seconds,
+with 32 seconds from run creation to completion;
+these are individual observations,
+not repeated latency measurements.
 These independently dispatched observations still need immutable-manifest reconciliation
 and a coherent graph replay before complete-pipeline latency or cost can be reported.
 

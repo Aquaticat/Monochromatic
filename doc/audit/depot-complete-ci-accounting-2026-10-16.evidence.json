@@ -3968,7 +3968,7 @@
     }
   },
   "caseLedger": {
-    "observedAt": "2026-10-16T03:04:41.989Z",
+    "observedAt": "2026-10-16T03:05:31.306Z",
     "allCasesComplete": false,
     "completePipelineCostEstablished": false,
     "cases": [
@@ -4203,7 +4203,8 @@
             ],
             "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
           }
-        ]
+        ],
+        "scannerVerifications": []
       },
       {
         "id": "native",
@@ -4692,7 +4693,8 @@
             ],
             "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
           }
-        ]
+        ],
+        "scannerVerifications": []
       },
       {
         "id": "logger",
@@ -4828,6 +4830,29 @@
               }
             ],
             "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+          }
+        ],
+        "scannerVerifications": [
+          {
+            "runId": "38843463588",
+            "workflowRevision": "fc236f278b08017df0cb673432c5f71525ea31fa",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "baseRevision": "20dbaca6c2bb39d5d7e51fac447d76393c21a32e",
+            "scannerVersion": "forbidden-strings 0.5.0",
+            "scannedFiles": [
+              "package/module/logger/src/sink/file-append.ts",
+              "package/module/logger/src/sink/file-concurrency.unit.test.ts",
+              "package/module/logger/src/sink/file.ts"
+            ],
+            "gitChangedFiles": [
+              "package/module/logger/src/sink/file-append.ts",
+              "package/module/logger/src/sink/file-concurrency.unit.test.ts",
+              "package/module/logger/src/sink/file.ts"
+            ],
+            "allChangedFilesScanned": true,
+            "jobSeconds": 28,
+            "createdToJobFinishedSeconds": 32,
+            "publicStandardComputeUsd": 0
           }
         ]
       },
@@ -4968,6 +4993,35 @@
               }
             ],
             "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+          }
+        ],
+        "scannerVerifications": [
+          {
+            "runId": "38843587917",
+            "workflowRevision": "fc236f278b08017df0cb673432c5f71525ea31fa",
+            "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+            "baseRevision": "a9b4a681d21907ecc5eb208a754e7b9a0f6e9168",
+            "scannerVersion": "forbidden-strings 0.5.0",
+            "scannedFiles": [
+              "package/music-player/desktop-app/Cargo.toml",
+              "package/music-player/desktop-app/src/console_attach.rs",
+              "package/music-player/desktop-app/src/console_attach_tests.rs",
+              "package/music-player/desktop-app/src/console_attach_win32.rs",
+              "package/music-player/desktop-app/src/lib.rs",
+              "package/music-player/desktop-app/src/main.rs"
+            ],
+            "gitChangedFiles": [
+              "package/music-player/desktop-app/Cargo.toml",
+              "package/music-player/desktop-app/src/console_attach.rs",
+              "package/music-player/desktop-app/src/console_attach_tests.rs",
+              "package/music-player/desktop-app/src/console_attach_win32.rs",
+              "package/music-player/desktop-app/src/lib.rs",
+              "package/music-player/desktop-app/src/main.rs"
+            ],
+            "allChangedFilesScanned": true,
+            "jobSeconds": 28,
+            "createdToJobFinishedSeconds": 32,
+            "publicStandardComputeUsd": 0
           }
         ]
       }
