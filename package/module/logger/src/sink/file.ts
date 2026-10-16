@@ -133,9 +133,9 @@ export async function findNodeModulesUp(
  `node_modules/.monochromatic/{timestamp}.log.jsonl` (resolved once during
  verification). The resolved path and the verification memo live in this
  instance's closure (no module-global state), so independent loggers and
- tests never share a log file or need a reset hook. No `flush` hook: each
- `write` awaits `appendFile` directly, so there is no buffered state to
- drain.
+ tests retain their own append ordering. Each `write` awaits preceding writes
+ and its complete `appendFile`, so the logger's pending-write tracking also
+ covers queued records without a separate `flush` hook.
  
  @returns Sink backed by `node:fs/promises`.
  
@@ -156,6 +156,7 @@ export function createFileSink(): Sink {
   const state: {
     filePath?: string;
     verifyPromise?: Promise<boolean>;
+    writePromise?: Promise<void>;
   } = {};
 
   /**
@@ -257,6 +258,30 @@ export function createFileSink(): Sink {
   }
 
   /**
+   Wait for the preceding complete append before issuing another record's filesystem writes.
+
+   @param previous - preceding append, including its handled failure
+   @param filePath - verified destination for this sink
+   @param line - complete serialized record captured at invocation
+
+   @returns completion after the record is persisted or its write failure is reported
+   */
+  async function appendAfter({ previous, filePath, line, }: {
+    readonly previous: Promise<void> | undefined;
+    readonly filePath: string;
+    readonly line: string;
+  },): Promise<void> {
+    if (previous !== undefined)
+      await previous;
+    try {
+      await appendFile(filePath, line,);
+    }
+    catch (error: unknown) {
+      reportLoggerInternalError({ context: 'file sink record append failed', error, },);
+    }
+  }
+
+  /**
    Writes a single record as a JSONL line to the resolved log file.
    
    @param record - Log record to write.
@@ -272,10 +297,14 @@ export function createFileSink(): Sink {
       return;
 
     try {
-      await appendFile(
+      /** Queue publication occurs before awaiting, preventing overlapping chunked appends. */
+      const pending = appendAfter({
+        previous: state.writePromise,
         filePath,
-        `${JSON.stringify(record,)}\n`,
-      );
+        line: `${JSON.stringify(record,)}\n`,
+      },);
+      state.writePromise = pending;
+      await pending;
     }
     catch (error: unknown) {
       reportLoggerInternalError({
