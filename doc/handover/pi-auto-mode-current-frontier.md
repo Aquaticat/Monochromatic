@@ -9,6 +9,31 @@ Updated 2026-10-16.
 
 ## Active work on 2026-10-15
 
+### Reopened review deadline and operation projection on 2026-10-16
+
+Session `2026-10-16T03-32-01-642Z_01a142c4-45e9-75fa-b579-ea10d43323ae`
+reached `Original policy review and evidence closure failed` for tool calls
+`chatcmpl-tool-a23317ad323e080b` and `chatcmpl-tool-9328d924e6057489`.
+Review `01906150-53fc-4313-94ad-0c7ae40d26df` retains a nested `JudgmentDeadlineError`.
+The first assessment request appears `9772` milliseconds after review start;
+its response arrives `1050` milliseconds later.
+The whole-operation request is recorded at timestamp `1792121942107`,
+and its failure at `1792121942542`.
+The preparation-inclusive budget begins before the review-start record.
+The final request has no retained model answer.
+This is a separate deadline incident, not evidence of a low-confidence final answer.
+The exact log is retained privately under `${HOME}/temp/agent/pi-bash-bones-20261016/session.log.jsonl`.
+
+The user additionally requires no model thinking in Luna inputs and parser-derived Bash structure only.
+The installed projection currently retains thinking text and raw Bash strings;
+the confirmation dialog also displays the unprojected parent response and its thinking signature.
+The existing parser-first decision was therefore not fully implemented at the current wire boundary.
+
+- [ ] Remove thinking and signatures from review context and human confirmation summaries.
+- [ ] Parse Bash locally and send only structural operation data to Luna, preserving permission-relevant details.
+- [ ] Reproduce and correct the reported deadline boundary using its preceding conversation.
+- [ ] Verify the installed consumer, prohibited-operation controls, and complete transmitted payloads.
+
 ### Completed permission scope, startup relevance, and resource measurement on 2026-10-16
 
 The earlier installed release failed ordinary inspection across a real conversation.

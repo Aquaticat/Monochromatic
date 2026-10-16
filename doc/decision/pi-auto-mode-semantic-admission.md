@@ -3,6 +3,19 @@
 ## Current Luna decision
 
 On 2026-10-16,
+the user explicitly excluded model thinking from review input.
+Thinking blocks and provider signatures must not reach Luna through either the proposed operation or conversation.
+Human confirmation summaries likewise describe the proposed tool calls without model thinking.
+Original responses remain local where required for operation ownership and currentness.
+
+The user also reaffirmed parsing Bash locally and sending only its structural operation data to Luna.
+The incumbent shell parser owns quoting, substitution, command boundaries, and shell control structure.
+Review projections must preserve arguments, paths, redirections, nested execution, and unresolved syntax facts
+needed to assess permission without asking Luna to parse a raw Bash script.
+Source text remains local for execution and original-operation identity.
+This implements the previously recorded parser-first boundary at the current native request path.
+
+On 2026-10-16,
 the user limited automatic approval review to permission boundaries.
 Tool-use, formatting, naming, and workflow conventions remain instructions for the coding agent;
 violating such a convention alone does not require consent or prohibit an otherwise authorized operation.
