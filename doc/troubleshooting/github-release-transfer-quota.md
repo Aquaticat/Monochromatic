@@ -2,18 +2,21 @@
 
 ## Symptom
 
-On 2026-10-15 local time, or 2026-10-16 UTC,
+On 2026-10-15 local time,
+or 2026-10-16 UTC,
 the repository's first Depot-backed forbidden-strings scan failed while installing its published scanner.
 The repository had moved from `Aquaticat/Monochromatic` to `Aquaticats/Monochromatic` on 2026-10-15.
 These are separate failures at different boundaries:
 
 - `gh release view forbidden-strings-v0.5.0 --repo Aquaticats/Monochromatic` returned
-  `release not found` and exit status `1`, although the public release and asset were present.
+  `release not found` and exit status `1`,
+  although the public release and asset were present.
 - Repository-scoped attestation discovery returned HTTP `404` for the scanner archive,
   while the former owner's user-scoped endpoint still returned its signed bundles.
 
 The [diagnostic cloud job][diagnostic-job] used `gh version 2.102.0 (2026-09-30)`.
-Its retained log, `completed-116744386136.log:425` through `439`
+Its retained log,
+`completed-116744386136.log:425` through `439`
 under the session's `depot-trial-2026-10-15` scratch directory,
 records authenticated release listing returning `403`,
 anonymous listing returning `200`,
@@ -23,8 +26,10 @@ and the original `gh release view` invocation still returning `release not found
 
 The contemporaneous Scorecard job emitted
 `RequestError [HttpError]: API rate limit exceeded for installation`.
-Its response had `x-ratelimit-limit: 5000`, `x-ratelimit-used: 5000`,
-`x-ratelimit-remaining: 0`, and `x-ratelimit-resource: core`.
+Its response had `x-ratelimit-limit: 5000`,
+`x-ratelimit-used: 5000`,
+`x-ratelimit-remaining: 0`,
+and `x-ratelimit-resource: core`.
 The recorded request was
 `GET /repos/Aquaticats/Monochromatic/actions/runs/38828872347/jobs?filter=latest`.
 This proves exhausted installation REST quota at that time.
@@ -47,8 +52,8 @@ the published lookup uses the REST release-by-tag route:
 publishedPath, err := safeurl.JoinPath("repos", repo.RepoOwner(), repo.RepoName(), "releases", "tags", tagName)
 ```
 
-The two calls at `pkg/cmd/release/shared/fetch.go:194` and `200`
-start the published and draft lookups concurrently:
+The calls at `pkg/cmd/release/shared/fetch.go:194` and `200`
+invoke the published and draft lookups:
 
 ```go
 // pkg/cmd/release/shared/fetch.go:194, 200
@@ -99,7 +104,8 @@ if errors.Is(second.error, ErrReleaseNotFound) {
 return nil, first.error
 ```
 
-Consequently, REST `403` plus draft not-found becomes `release not found` in either completion order.
+Consequently,
+REST `403` plus draft not-found becomes `release not found` in either completion order.
 The prototype demonstrates this error-selection defect directly.
 The cloud incident is consistent with that path,
 but the retained cloud probe did not capture both internal responses from the same `gh release view` call.
@@ -127,7 +133,8 @@ The verified statement identifies repository `710240121`,
 source commit `22a1ff40b3d2a0a649507d01924e26a5e2720d6f`,
 and the original signer
 `Aquaticat/Monochromatic/.github/workflows/cargo-publish.yml@refs/heads/main`.
-Its invocation was run `38410341575`, attempt `1`.
+Its invocation was run `38410341575`,
+attempt `1`.
 The original name remains part of that signed historical identity;
 the repository's current name is `Aquaticats/Monochromatic` after the 2026-10-15 transfer.
 
@@ -142,8 +149,10 @@ The backend reason for the differing endpoint results remains unproven.
 - Public anonymous release-by-tag lookup,
   release-by-ID lookup,
   and asset download returned `200` for
-  `forbidden-strings-v0.5.0`, `monochromatic-lint-v0.1.3`,
-  `monochromatic-git-policy-cli-v0.1.4`, and `monochromatic-nested-wayland-session-v0.6.0`.
+  `forbidden-strings-v0.5.0`,
+  `monochromatic-lint-v0.1.3`,
+  `monochromatic-git-policy-cli-v0.1.4`,
+  and `monochromatic-nested-wayland-session-v0.6.0`.
 - Authenticated release listing returned `403` in the same diagnostic job.
   The original `gh release view` returned `release not found`.
 - Original scanner bytes plus the recovered bundle and original signer policy verified successfully.
@@ -163,9 +172,12 @@ The generator extracts the actual production selector before and after the patch
 removing only channel receive and cancellation statements so fixtures can supply both completion orders.
 Generated Go programs retain the source's success and failure selection branches.
 
-The test environment used Node `24.21.0`, Go `1.27.2`,
+The test environment used Node `24.21.0`,
+Go `1.27.2`,
 and the existing `node:24-trixie-slim` container image.
-Each container had no network, a `2 GiB` memory limit, and a `2 CPU` limit.
+Each container had no network,
+a `2 GiB` memory limit,
+and a `2 CPU` limit.
 Only the Go installation and generated fixture directory were mounted read-only.
 No repository credentials or this repository's working tree were mounted.
 The tasks disable SELinux labeling for these read-only mounts;
@@ -212,11 +224,14 @@ PASS different failures preserve first
 ```
 
 The fix switches the sentinel test from `second.error` to `first.error`.
-If the first error is only not-found, the second error is retained;
+If the first error is only not-found,
+the second error is retained;
 otherwise the first error is retained.
 Success precedence and the both-not-found case remain covered by controls.
 This verifies selector behavior,
-not a complete patched CLI build, HTTP transport integration, or the full upstream suite.
+not a complete patched CLI build,
+HTTP transport integration,
+or the full upstream suite.
 
 ## Verified workarounds
 
@@ -257,7 +272,10 @@ The local `verify:provenance` task in the session's `binstall-org-repair` scratc
 recorded the positive and negative results in `provenance-controls.json`.
 
 Tradeoffs:
-the exception is tied to this archive version, target, digest, and historical signer.
+the exception is tied to this archive version,
+target,
+digest,
+and historical signer.
 It does not authorize arbitrary old-owner artifacts or replace signature verification with endpoint success.
 The negative controls demonstrate that changed bytes and unrelated signer identity remain rejected.
 
@@ -266,7 +284,8 @@ The negative controls demonstrate that changed bytes and unrelated signer identi
 - Interpreting `release not found` as proof that the release or tag was deleted.
   Anonymous tag lookup and asset retrieval succeeded during the same cloud probe.
 - Renaming the attestation repository argument to the current repository name alone.
-  The tested repository endpoints returned `404`, while the original user's endpoint returned the bundles.
+  The tested repository endpoints returned `404`,
+  while the original user's endpoint returned the bundles.
 - Concluding that repository transfer destroyed attestations.
   The recovered original bundle verified against the actual archive.
 - Treating upstream [PR `#13723`][success-fix] as an absent fix for this incident.
@@ -274,37 +293,59 @@ The negative controls demonstrate that changed bytes and unrelated signer identi
   It addresses one lookup succeeding while the other fails;
   this prototype addresses two failed lookups with different information.
 - Inferring the server-side transfer cause from CLI route construction.
-  The source establishes the request paths, not GitHub's backend indexing behavior.
+  The source establishes the request paths,
+  not GitHub's backend indexing behavior.
 
 ## Upstream filing artifact
 
 ### Upstream filing decision
 
 The `.out-of-scope/` inventory was searched for GitHub CLI,
-release, and attestation exemptions; none matched this incident.
+release,
+and attestation exemptions;
+none matched this incident.
 Upstream searches covered open and closed issues and pull requests using
-`"release not found"`, `"release not found" "rate"`, `release "403"`,
-`"release" "rate limit"`, and `attestation transfer`.
-The related [PR `#13723`][success-fix], including its comments and reviews, was read in full.
+`"release not found"`,
+`"release not found" "rate"`,
+`release "403"`,
+`"release" "rate limit"`,
+and `attestation transfer`.
+The related [PR `#13723`][success-fix],
+including its comments and reviews,
+was read in full.
 Its discussion does not contain the both-failed quota-error reproduction.
 No matching attestation-transfer issue or pull request was returned by those scoped searches.
 That result does not establish absence of private GitHub support incidents.
 
-1.  Upstream fault: yes for discarding an actionable error in the release selector.
+1.  Upstream fault:
+    yes for discarding an actionable error in the release selector.
     The attestation backend explanation is unproven and is not folded into this finding.
-2.  Fixable: yes; the local selector change preserves the informative error in both completion orders.
-3.  Supported use case: yes; `FetchRelease` explicitly supports published and draft lookup,
+2.  Fixable:
+    yes;
+    the local selector change preserves the informative error in both completion orders.
+3.  Supported use case:
+    yes;
+    `FetchRelease` explicitly supports published and draft lookup,
     and PR `#13723` documents public release downloads and CI use.
-4.  Contribution welcome: yes for an issue or additive discussion comment.
+4.  Contribution welcome:
+    yes for an issue or additive discussion comment.
     `.github/CONTRIBUTING.md:5` encourages those contributions,
     while restricting external pull requests to `help wanted` issues with acceptance criteria.
-    The README, bug template, PR template, `AGENTS.md`, and related maintainer discussion were checked.
+    The README,
+    bug template,
+    PR template,
+    `AGENTS.md`,
+    and related maintainer discussion were checked.
     No ban on AI-assisted reports was found.
     The PR template explicitly includes agent-authored contributions;
-    its human follow-up question concerns PR creation, which is not being performed here.
-5.  Likely fix: soft yes; maintainers accepted the related selector repair in PR `#13723`.
+    its human follow-up question concerns PR creation,
+    which is not being performed here.
+5.  Likely fix:
+    soft yes;
+    maintainers accepted the related selector repair in PR `#13723`.
     No documented refusal of this failure-selection behavior was found.
-6.  Prototype: yes for the isolated selector.
+6.  Prototype:
+    yes for the isolated selector.
     The patch and eight-case reproduction demonstrate the defect and correction;
     full CLI integration remains outside the measured prototype.
 
@@ -312,6 +353,13 @@ The artifact is an additive comment for the existing related PR,
 not a proposed unsolicited pull request.
 Nothing was posted externally.
 The attestation endpoint discrepancy has no separate fileable source-level defect claim in this document.
+
+The relevant contribution policy at `.github/CONTRIBUTING.md:5` says:
+
+```text
+# .github/CONTRIBUTING.md:5, cli/cli v2.102.0
+We encourage issues and discussion posts for all other contributions.
+```
 
 ### Additive comment draft for PR `#13723`
 
