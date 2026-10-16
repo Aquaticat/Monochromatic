@@ -400,6 +400,31 @@ Daemon termination requests alone are not evidence that the processes exited.
 Android issue `#1002` now includes the exact-source replay evidence in comment `6207416475`.
 Its scope and open status are unchanged.
 
+VM run `99tl7zjfgp` failed after the source bundle built successfully.
+The original package task resolved its relative `mvm` entrypoint beneath `package/cli/vmsync`
+and failed with `MODULE_NOT_FOUND` before creating a guest.
+The separate environment probe installed libvirt,
+started its private daemons,
+verified an empty domain list,
+and ran the source `mvm --help`.
+Ubuntu template preparation then failed because the generated Unix socket path exceeded its length limit.
+No guest execution is claimed.
+Trial commit `906bf436de` moves private runtime sockets beneath the cloud user's runtime directory;
+its retry and incident documentation remain queued.
+
+Windows recovery `38844610546` completed all three nextest targets:
+each reports 1432 passes and one ignored test,
+while preserving the historical PowerShell assertion failure.
+Native host `38842787230` and desktop macOS `38843527788` reached package checks.
+Their Clippy steps lacked the locked toolchain's Clippy component.
+The native Windows source additionally fails test compilation on unresolved `libc`;
+that historical source defect was fixed later.
+macOS tests failed and nextest's default fail-fast behavior left remaining cases unexecuted.
+Root owns the explicit Clippy prerequisite and fail-fast adapter recovery;
+the accounting owner retains the separate historical source findings.
+Current nextest `0.9.148` source and CLI help confirm `--no-fail-fast` support.
+No application or historical test source change is authorized by this trial recovery.
+
 ## Purpose and current state
 
 The user subsequently requested immediate execution of the agreed trial.
