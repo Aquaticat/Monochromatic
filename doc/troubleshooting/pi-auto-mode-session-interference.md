@@ -387,6 +387,7 @@ They do not execute external MCP operations or claim physical human input.
 - Final guard omission: `mimo-omission-final.log`.
 - Installed regressions: `direct-installed-regressions.log` and `direct-installed-additional.log`.
 - Installed live Luna confirmation: `direct-installed-allow.log`, fixture `pi-hyper-rpc-allow-LuIIFZ`.
+- Installed live Luna prohibition: `direct-installed-prohibit.log`, fixture `pi-hyper-rpc-prohibited-QwVjXt`.
 - Logs live under `${HOME}/temp/agent/pi-host-isolation-20261015/`;
   the named fixture lives directly under `${HOME}/temp/agent/`.
 
@@ -427,7 +428,7 @@ The matcher adds no program-inspection facts or permission.
 `test:native:direct-bash` verifies permission, prohibition, unknown answers, and mixed groups.
 Each assessment contains both complete proposed operations.
 
-The live candidate prohibition check returned HTTP 200 and blocked both commands without a dialog.
+The live candidate and installed prohibition checks returned HTTP 200 and blocked both commands without a dialog.
 The live installed permission fixture returned HTTP 200 for 94 questions,
 but unrelated clauses remained uncertain.
 Scoped scripted Allow then executed both commands successfully.

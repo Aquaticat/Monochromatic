@@ -84,6 +84,9 @@ Fixture `pi-hyper-rpc-allow-LuIIFZ` sent 94 questions to live Luna,
 received HTTP 200,
 and executed both native Bash commands after one scripted Allow.
 This is automatic review with uncertainty fallback, not a claim that the model automatically approved the group.
+The installed prohibition fixture `pi-hyper-rpc-prohibited-QwVjXt` also received HTTP 200 for 94 questions,
+blocked both commands,
+and opened no confirmation dialog.
 New Pi processes load the new release; existing processes retain their loaded release.
 
 Final built policy and scope units pass,
@@ -103,11 +106,12 @@ These are focused checks and do not claim the package is lint-clean.
 Receipts live under `${HOME}/temp/agent/pi-host-isolation-20261015/`:
 `direct-final-semantic.log`, `direct-final-types.log`, `direct-installed-regressions.log`,
 `direct-installed-additional.log`, `mimo-omission-final.log`, `direct-final-lint.log`,
-`direct-test-final-lint.log`, and `direct-installed-allow.log`.
+`direct-test-final-lint.log`, `direct-installed-allow.log`, and `direct-installed-prohibit.log`.
 The warning queue is ready for the [MiMo cleanup prompt](pi-auto-mode-mimo-lint-prompt.md).
 
 The user accepted the VUB clarification requiring configured extensions, skills, and tool catalogs in consumer checks.
 `AGENTS.md` is updated and `CLAUDE.md` regenerated through file-enforcer.
+The revised rule has 197 normalized characters and 26 words.
 
 ### Host-isolation replacement complete
 
