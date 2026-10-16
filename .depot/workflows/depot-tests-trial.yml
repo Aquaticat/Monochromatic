@@ -37,7 +37,6 @@ jobs:
     timeout-minutes: 10
     env:
       MISE_AUTO_INSTALL: 'false'
-      DEPOT_TEST_TRIAL_MODE: ${{ vars.DEPOT_TEST_TRIAL_MODE_20261016 }}
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
@@ -52,12 +51,6 @@ jobs:
     - name: Run real tests with a controlled assertion and one skipped test
       run: mise run //package/music-player/truepeak-core:trial:depot:results
     - name: Report the actual nextest JUnit output
-      if: ${{ !cancelled() }}
-      uses: depot/test-report-action@2ad5779840a9c63e884fa26f11d019768a27a941
-      with:
-        key: audio-core
-        path: package/music-player/truepeak-core/target/nextest/depot/junit.xml
-    - name: Verify a repeated upload is deduplicated
       if: ${{ !cancelled() }}
       uses: depot/test-report-action@2ad5779840a9c63e884fa26f11d019768a27a941
       with:

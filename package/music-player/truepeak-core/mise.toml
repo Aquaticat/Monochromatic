@@ -44,7 +44,8 @@ const path = 'src/window_tests.rs'
 const original = readFileSync(path, 'utf8')
 const assertion = 'assert_eq!(window_frames(4.0, 48000), 192000);'
 if (!original.includes(assertion)) throw new Error('The selected assertion changed.')
-const fail = process.env.DEPOT_TEST_TRIAL_MODE !== 'pass'
+const fail = process.env.GITHUB_RUN_ATTEMPT === '1'
+if (!process.env.GITHUB_RUN_ATTEMPT) throw new Error('Depot did not supply the verified run attempt variable.')
 console.log(JSON.stringify({ deliberateFailure: fail, runAttempt: process.env.GITHUB_RUN_ATTEMPT }))
 try {
   if (fail) writeFileSync(path, original.replace(assertion, 'assert_eq!(window_frames(4.0, 48000), 192001);'))
