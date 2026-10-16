@@ -55,7 +55,8 @@ so a rustup toolchain already on the runner is not what the check looks for.
 
 The workflow also installs `cargo-binstall` in the first command because `cargo:` tools resolve through it
 (see the comment on `cargo-binstall` in the root `mise.toml`).
-Whether the failure needed `cargo-binstall` too was not tested separately.
+The October 16 trial separately exercised the missing `cargo-binstall` precondition,
+as recorded in the native trial section.
 
 ## Verification
 
@@ -106,3 +107,65 @@ returned no matches.
 6.  Prototype: not applicable.
 
 Nothing is filed and no draft is kept: the behavior is intended and documented by its own diagnostic.
+
+## Native trial also needs the configured optional Cargo installer
+
+GitHub Actions run [38842242564][native-prerequisite-failure] used mise `2026.10.9`
+on `windows-2025` and `macos-15-intel`.
+Both jobs successfully installed Node `26.11.1` and Rust `nightly-2026-10-13`,
+then failed before package checks when installing `cargo:cargo-nextest@0.9.148`:
+
+```text
+tool 'cargo:cargo-nextest@0.9.148' requires configured install dependency 'cargo-binstall@latest', but its selected version is not installed
+```
+
+This is a distinct prerequisite from Rust.
+The trial adapter had omitted `cargo-binstall` from the documented preparation command.
+The source revision `cb95cf6d785c3073c192b95f0632cdae7b910894` declares `cargo-binstall = "latest"`
+and locks its resolved version to `1.25.3`.
+
+In the same mise source commit,
+`src/backend/cargo.rs:172` declares the additional dependency:
+
+```rust
+// src/backend/cargo.rs:172
+fn get_optional_dependencies(&self) -> eyre::Result<Vec<&str>> {
+    Ok(vec!["cargo-binstall", "sccache"])
+}
+```
+
+Optional backend dependencies still participate when the repository configures them.
+`src/install_context.rs:61` selects configured requests matching those declarations:
+
+```rust
+// src/install_context.rs:61
+fn matching_requests(&self, requests: &ToolRequestSet) -> ToolRequestSet {
+    requests
+        .iter()
+        .filter(|(ba, ..)| self.matches(ba))
+        .map(|(ba, requests, source)| (ba.clone(), requests.clone(), source.clone()))
+        .collect()
+}
+```
+
+Those requests reach the installed-version guard at `src/install_context.rs:136`,
+which emits the diagnostic quoted in the root cause section.
+Installing Rust alone therefore satisfies only the Rust prerequisite.
+
+Trial commit `87f5bf2c1f` corrects the preparation sequence in the disposable harness checkout:
+
+```bash
+# Trial harness checkout, before immutable source checks.
+mise install --yes node@26.11.1 rust@nightly-2026-10-13 cargo-binstall@1.25.3
+mise install --yes cargo:cargo-nextest@0.9.148 cmake@4.4.4
+```
+
+The rerun is pending verification.
+The established workaround remains the sequence in the verification section;
+the explicit version variant is not yet claimed as verified on these hosts.
+Its tradeoff is an additional installer download,
+with all versions kept equal to the historical source lockfile.
+The failure does not establish any package build or test outcome.
+The upstream filing decision remains unchanged because the adapter omitted a configured prerequisite.
+
+[native-prerequisite-failure]: https://github.com/Aquaticats/Monochromatic/actions/runs/38842242564
