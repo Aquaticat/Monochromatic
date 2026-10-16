@@ -1871,9 +1871,9 @@ const PNPR_PACKAGE_NAME_CHARACTERS: ReadonlySet<string> = new Set('abcdefghijklm
  ```
  */
 const PNPR_GITHUB_IDENTITY = {
-  repository: 'Aquaticat/Monochromatic',
+  repository: 'Aquaticats/Monochromatic',
   repositoryId: '710240121',
-  repositoryOwnerId: '66041952',
+  repositoryOwnerId: '343218767',
   workflowPath: '.github/workflows/pnpr-publish.yml',
   ref: 'refs/heads/main',
 } as const;
