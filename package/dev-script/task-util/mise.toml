@@ -533,6 +533,84 @@ try {
 assert(runtimeCompleted && suite?.status === 0, 'Complete desktop E2E task and cleanup must pass')
 '''
 
+[tasks."trial:depot:vm"]
+description = "Exercise immutable logger-source VM tests with disposable guest and libvirt state"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync, spawnSync } = await import('node:child_process')
+const { mkdirSync, chmodSync, mkdtempSync, readFileSync, writeFileSync, existsSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { createHash } = await import('node:crypto')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const originalHome = homedir()
+const evidenceDirectory = join(originalHome, 'temp/agent/depot-complete-vm-evidence')
+mkdirSync(evidenceDirectory, { recursive: true, mode: 0o700 })
+chmodSync(evidenceDirectory, 0o700)
+const privateHome = mkdtempSync(join(evidenceDirectory, 'private-home-'))
+const runtime = join(privateHome, 'runtime')
+mkdirSync(runtime, { mode: 0o700 })
+const env = { ...process.env, HOME: privateHome, XDG_CONFIG_HOME: join(privateHome, '.config'), XDG_CACHE_HOME: join(privateHome, '.cache'), XDG_DATA_HOME: join(privateHome, '.local/share'), XDG_RUNTIME_DIR: runtime, MISE_DATA_DIR: join(originalHome, '.local/share/mise'), MISE_CONFIG_DIR: join(originalHome, '.config/mise'), MISE_CACHE_DIR: join(originalHome, '.cache/mise') }
+const results = []
+const sourceRevision = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim()
+assert.equal(sourceRevision, 'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e')
+const inputs = ['mise.lock', 'pnpm-lock.yaml', 'package/cli/vmsync/src/lifecycle.expensive.unit.test.ts'].map(function input(path) { return { path, sha256: createHash('sha256').update(readFileSync(join(source, path))).digest('hex') } })
+function run({ id, command, args, timeout = 120000, commandEnv = env }) {
+  const startedAt = new Date().toISOString()
+  const result = spawnSync(command, args, { cwd: source, env: commandEnv, encoding: 'utf8', timeout, maxBuffer: 32 * 1024 * 1024 })
+  writeFileSync(join(evidenceDirectory, `${id}.stdout.log`), result.stdout ?? '')
+  writeFileSync(join(evidenceDirectory, `${id}.stderr.log`), result.stderr ?? '')
+  const record = { id, command, args, startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, signal: result.signal, error: result.error?.message }
+  results.push(record)
+  writeFileSync(join(evidenceDirectory, 'results.json'), JSON.stringify({ sourceRevision, inputs, providerJobUrl: process.env.DEPOT_JOB_URL, resources: { cpus: 16, memoryGiB: 64 }, results }, null, 2))
+  console.log(JSON.stringify(record))
+  if (result.status !== 0) console.error((result.stderr ?? '').slice(-12000))
+  return result
+}
+function requireSuccess(result) { assert.equal(result.status, 0, result.error?.message ?? 'Subprocess failed; retained stdout and stderr identify its input') }
+const build = run({ id: 'source-build', command: 'mise', args: ['run', '//package/cli/vmsync:build:js:node'], timeout: 300000 })
+if (build.status !== 0) throw new Error('Historical vmsync bundle did not build; VM test prerequisite failed')
+const original = run({ id: 'original-package-task', command: 'mise', args: ['run', '//package/cli/vmsync:test:e2e'], timeout: 600000 })
+requireSuccess(run({ id: 'apt-update', command: 'sudo', args: ['apt-get', 'update'], timeout: 300000, commandEnv: process.env }))
+requireSuccess(run({ id: 'apt-install', command: 'sudo', args: ['apt-get', 'install', '--yes', '--no-install-recommends', 'libvirt-daemon', 'libvirt-daemon-driver-qemu', 'libvirt-clients', 'qemu-system-x86', 'qemu-utils', 'virtiofsd', 'ovmf'], timeout: 300000, commandEnv: { ...process.env, DEBIAN_FRONTEND: 'noninteractive' } }))
+for (const command of ['/usr/sbin/libvirtd', '/usr/sbin/virtlogd']) requireSuccess(run({ id: `${command.split('/').at(-1)}-help`, command, args: ['--help'] }))
+requireSuccess(run({ id: 'virtlogd-start', command: '/usr/sbin/virtlogd', args: ['--daemon', '--pid-file', join(runtime, 'virtlogd.pid')] }))
+requireSuccess(run({ id: 'libvirtd-start', command: '/usr/sbin/libvirtd', args: ['--daemon', '--pid-file', join(runtime, 'libvirtd.pid')] }))
+requireSuccess(run({ id: 'private-domain-list-before', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'] }))
+const node = process.execPath
+const cli = join(source, 'package/cli/mvm/src/cli.ts')
+requireSuccess(run({ id: 'mvm-help', command: node, args: [cli, '--help'] }))
+try {
+  for (const image of ['ubuntu', 'windows']) {
+    const name = `depot-preparation-${image}`
+    requireSuccess(run({ id: `prepare-${image}`, command: node, args: [cli, 'create', name, '--image', image], timeout: 3000000 }))
+    requireSuccess(run({ id: `destroy-preparation-${image}`, command: node, args: [cli, 'destroy', name] }))
+  }
+  const test = run({ id: 'root-directory-source-suite', command: node, args: [join(source, 'package/cli/vmsync/src/lifecycle.expensive.unit.test.ts')], timeout: 900000 })
+  requireSuccess(test)
+  assert.equal(original.status, 0, 'Original package task failed; root-directory experiment cannot replace its result')
+}
+finally {
+  const domains = run({ id: 'private-domain-list-cleanup', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'] })
+  requireSuccess(domains)
+  for (const domain of domains.stdout.trim().split(/\r?\n/).filter(Boolean)) {
+    assert(domain.startsWith('mvm-'), 'Unexpected domain in private libvirt session')
+    run({ id: `cleanup-${domain}`, command: node, args: [cli, 'destroy', domain.slice(4)] })
+  }
+  const remaining = run({ id: 'private-domain-list-after', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'] })
+  requireSuccess(remaining)
+  assert.equal(remaining.stdout.trim(), '')
+  for (const name of ['libvirtd', 'virtlogd']) {
+    const pidFile = join(runtime, `${name}.pid`)
+    if (existsSync(pidFile)) process.kill(Number(readFileSync(pidFile, 'utf8').trim()), 'SIGTERM')
+  }
+  for (const input of inputs) assert.equal(createHash('sha256').update(readFileSync(join(source, input.path))).digest('hex'), input.sha256)
+  assert.equal(execFileSync('git', ['diff', '--name-only'], { cwd: source, encoding: 'utf8' }).trim(), '')
+}
+'''
+
 [tasks."trial:depot:ci:host-probe"]
 description = "Probe disposable cloud virtualization resources without creating guests"
 dir = "{{config_root}}/../../.."
