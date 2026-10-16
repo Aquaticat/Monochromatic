@@ -223,5 +223,9 @@ The [current runner documentation](https://depot.dev/docs/github-actions/runner-
 specifies USD 0.006 per base minute.
 The corrected model uses that rate and the two-consumer mean;
 the earlier cost report already used the correct rate.
+The [independent verification](depot-resumed-cost-verification-2026-10-16.evidence.json)
+checks every allocated stage,
+source hash,
+and duration sensitivity.
 
 [pricing]: https://depot.dev/pricing
