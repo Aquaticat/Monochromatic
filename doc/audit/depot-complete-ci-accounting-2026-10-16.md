@@ -119,6 +119,15 @@ and scanner identity excerpts.
 These separately dispatched development waves do not establish complete-pipeline latency.
 The completed adapters still need a coherent graph replay with a frozen manifest.
 
+Scorecard is also selected by pushes to `main`,
+in addition to its schedule and branch-protection events.
+The historical TOML source predates its rate-limit gate;
+the current [workflow](../../.github/workflows/scorecard.yml) includes that gate.
+Retain historical event policy separately from the current policy used by a disposable trial.
+A measured current-policy denial does not establish that the historical unthrottled analysis ran.
+Scorecard's remote repository analysis also observes live repository metadata,
+so its observed commit and timestamps remain separate from an immutable historical package workload.
+
 ### Acceptance requirements
 
 Freeze one source revision and the intended manifest before each execution cell.
