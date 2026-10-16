@@ -539,7 +539,7 @@ dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync, spawnSync } = await import('node:child_process')
-const { mkdirSync, chmodSync, mkdtempSync, readFileSync, writeFileSync, existsSync } = await import('node:fs')
+const { mkdirSync, chmodSync, mkdtempSync, readFileSync, writeFileSync, existsSync, readdirSync, copyFileSync } = await import('node:fs')
 const { homedir } = await import('node:os')
 const { join } = await import('node:path')
 const { createHash } = await import('node:crypto')
@@ -615,6 +615,23 @@ catch (error) {
 finally {
   const cleanupErrors = []
   let finalIdentity
+  try {
+    const logDirectory = join(privateHome, '.cache/libvirt/qemu/log')
+    const retained = []
+    if (existsSync(logDirectory)) {
+      for (const entry of readdirSync(logDirectory, { withFileTypes: true })) {
+        if (entry.isFile() && entry.name.endsWith('.log')) {
+          copyFileSync(join(logDirectory, entry.name), join(evidenceDirectory, `daemon-${entry.name}`))
+          retained.push(entry.name)
+        }
+      }
+    }
+    writeFileSync(join(evidenceDirectory, 'daemon-log-inventory.json'), JSON.stringify({ retained }, null, 2))
+  }
+  catch (error) {
+    cleanupErrors.push(error)
+    console.error(error)
+  }
   try {
     const domains = run({ id: 'private-domain-list-cleanup', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'], cleanup: true })
     requireSuccess(domains)
