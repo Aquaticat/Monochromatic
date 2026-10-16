@@ -306,6 +306,7 @@ const lock = readFileSync(join(source, 'mise.lock'), 'utf8')
 const tools = new Map([...lock.matchAll(/^\[\[tools\.(?:"([^"]+)"|([^\]]+))\]\]\nversion = "([^"]+)"/gm)].map((match) => [match[1] ?? match[2], match[3]]))
 const requested = ['node', 'pnpm', 'rust', 'cargo-binstall', 'cargo:cargo-nextest', 'cargo:monochromatic-lint']
 if (process.env.DEPOT_CI_WAVE === 'native-android') requested.push('java', 'android-sdk', 'cargo:cargo-ndk', 'cmake')
+if (process.env.DEPOT_CI_WAVE === 'native-desktop') requested.push('cargo:slint-viewer', 'cmake')
 const selected = requested.map((name) => {
   assert(tools.has(name), `Required tool missing from exact source lockfile: ${name}`)
   return { name, version: tools.get(name) }
@@ -344,4 +345,113 @@ for (const [command, args] of [['node', ['--version']], ['pnpm', ['--version']],
   execFileSync('mise', ['exec', '--', command, ...args], { cwd: source, stdio: 'inherit' })
 }
 console.log("\n" + JSON.stringify({ event: 'native-tool-selection-verified', ...record }))
+'''
+
+[tasks."trial:depot:ci:desktop-host"]
+description = "Bridge discovered Ubuntu Clang paths for unchanged historical native tasks"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { globSync, existsSync, realpathSync, readFileSync, appendFileSync } = await import('node:fs')
+const { basename, dirname, join } = await import('node:path')
+const { homedir } = await import('node:os')
+const { strict: assert } = await import('node:assert')
+const libraries = globSync('/usr/lib/llvm-*/lib/libclang.so*').sort()
+const resources = globSync('/usr/lib/llvm-*/lib/clang/*/include/stddef.h').map((path) => dirname(dirname(path))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+assert(libraries.length > 0 && resources.length > 0, 'Prepared host must contain libclang and builtin headers')
+execFileSync('sudo', ['--non-interactive', 'mkdir', '--parents', '/usr/lib64', '/usr/lib/clang'])
+for (const source of [...libraries, resources.at(-1)]) {
+  const target = join(source.endsWith('.h') ? '/usr/lib/clang' : source === resources.at(-1) ? '/usr/lib/clang' : '/usr/lib64', basename(source))
+  if (existsSync(target)) assert.equal(realpathSync(target), realpathSync(source), `Unexpected existing native bridge: ${target}`)
+  else execFileSync('sudo', ['--non-interactive', 'ln', '--symbolic', source, target])
+}
+const base = join(homedir(), 'temp/agent/depot-package-snapshot')
+const snapshot = JSON.parse(readFileSync(join(base, 'manifest.json'), 'utf8'))
+assert.equal(execFileSync('dpkg-query', ['--show', `--showformat=${snapshot.format}`, ...snapshot.packages], { encoding: 'utf8' }), snapshot.manifest)
+assert.equal(execFileSync(join(base, 'bin/magick'), ['--version'], { encoding: 'utf8' }), snapshot.magickVersion)
+appendFileSync(process.env.GITHUB_PATH, `${join(base, 'bin')}\n`)
+execFileSync('pkg-config', ['--exists', 'libpipewire-0.3', 'fontconfig', 'freetype2', 'wayland-server', 'xkbcommon', 'libdrm'], { stdio: 'inherit' })
+console.log('\n' + JSON.stringify({ event: 'desktop-host-verified', libraries, resources, preparedPackageCount: snapshot.packages.length }))
+'''
+
+[tasks."trial:depot:ci:desktop-runtime"]
+description = "Run the complete unchanged desktop E2E task in private user services and a software parent display"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync } = await import('node:child_process')
+const { strict: assert } = await import('node:assert')
+const { existsSync, mkdirSync, readFileSync, writeFileSync } = await import('node:fs')
+const { homedir, userInfo } = await import('node:os')
+const { join } = await import('node:path')
+const { createHash } = await import('node:crypto')
+const { wait } = await import('@monochromatic-dev/module-async-time/ts')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const app = join(source, 'package/music-player/desktop-app')
+const compositor = join(source, 'package/cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
+assert(existsSync(compositor), 'The exact-head repository compositor must be built before runtime validation')
+const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/native.json'))
+const manifest = JSON.parse(manifestBytes)
+const startedAt = new Date().toISOString()
+const started = performance.now()
+const name = `depot-full-desktop-${process.pid}`
+const parentSocket = join(directory, 'desktop-parent.sock')
+const marker = join(directory, 'desktop-overlay-only')
+assert.equal(existsSync(marker), false, 'Fresh desktop runtime must not inherit another overlay marker')
+const podman = ['--non-interactive', 'podman', '--cgroup-manager=cgroupfs']
+function run({ args, required = true, inherit = false, input, limit = 45000 }) {
+  const result = spawnSync('sudo', [...podman, ...args], { encoding: 'utf8', timeout: limit, input, ...(inherit ? { stdio: 'inherit' } : {}) })
+  console.log('\n' + JSON.stringify({ event: 'desktop-runtime-operation', operation: args[0], tail: args.slice(-5), status: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }))
+  if (required && result.status !== 0) throw new Error(`Desktop runtime operation failed: ${args[0]}`)
+  return result
+}
+let suite
+try {
+  run({ args: ['run', '--detach', '--name', name, '--systemd=always', '--cgroupns=private', '--network=none', '--memory=2g', '--cpus=2', '--timeout=900', '--rootfs', '/:O', '/usr/lib/systemd/systemd', '--unit=basic.target', '--log-target=console'] })
+  let ready = false
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const result = run({ args: ['exec', name, 'systemctl', 'show', '--property=Version', '--value'], required: false })
+    if (result.status === 0 && result.stdout.trim() !== '') { ready = true; break }
+    await wait(500)
+  }
+  assert(ready, 'Isolated systemd manager must answer before user services start')
+  run({ args: ['exec', name, 'systemctl', 'start', `user@${process.getuid()}.service`] })
+  const user = ['exec', '--workdir', app, name, 'runuser', '--user', userInfo().username, '--', 'env', `XDG_RUNTIME_DIR=/run/user/${process.getuid()}`, `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${process.getuid()}/bus`, `PATH=${process.env.PATH}`, 'MISE_AUTO_INSTALL=false', 'MISE_LOCKED=1', `MISE_RUST_VERSION=${process.env.MISE_RUST_VERSION}`, `MISE_TRUSTED_CONFIG_PATHS=${source}`, 'LIBGL_ALWAYS_SOFTWARE=1', 'E2E_ONLY=', `E2E_COMPOSITOR=${compositor}`]
+  run({ args: [...user, 'touch', marker] })
+  run({ args: [...user, 'systemd-run', '--user', '--wait', '--pipe', '--unit=depot-full-desktop-probe', '--property=MemoryMax=256M', '/bin/cat', '/proc/self/cgroup'] })
+  run({ args: [...user, 'systemctl', '--user', 'start', 'pipewire.socket', 'pipewire-pulse.socket', 'wireplumber.service'] })
+  run({ args: [...user, 'pactl', 'info'] })
+  const before = run({ args: [...user, 'pactl', 'list', 'short', 'sinks'] })
+  run({ args: [...user, 'systemd-run', '--user', '--unit=depot-full-desktop-parent', '--property=MemoryMax=1G', '--setenv=LIBGL_ALWAYS_SOFTWARE=1', `--setenv=XDG_RUNTIME_DIR=/run/user/${process.getuid()}`, compositor, '--headless', '--gpu', 'software', '--socket', parentSocket, '--size', '1920x1080', '--', '/usr/bin/sleep', '850'] })
+  let display = ''
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const reply = run({ args: [...user, 'socat', '-', `UNIX-CONNECT:${parentSocket}`], input: 'display\n', required: false })
+    if (reply.status === 0 && /^wayland-\d+$/.test(reply.stdout.trim())) { display = reply.stdout.trim(); break }
+    await wait(500)
+  }
+  assert(display, 'Parent compositor must publish a real Wayland display before E2E starts')
+  suite = run({ args: [...user, `WAYLAND_DISPLAY=${display}`, 'mise', 'run', '//package/music-player/desktop-app:test:e2e'], required: false, inherit: true, limit: 780000 })
+  const output = join(directory, 'desktop-e2e')
+  mkdirSync(output, { recursive: true, mode: 0o700 })
+  run({ args: ['cp', `${name}:${app}/target/e2e/.`, output], required: false })
+  const after = run({ args: [...user, 'pactl', 'list', 'short', 'sinks'] })
+  const names = (text) => text.trim().split('\n').filter(Boolean).map((line) => line.split('\t')[1]).sort()
+  assert.deepEqual(names(after.stdout), names(before.stdout), 'Suite must restore private audio sinks')
+  const units = run({ args: [...user, 'systemctl', '--user', 'list-units', '--state=active', '--no-legend', 'music-player-e2e*'] })
+  assert.equal(units.stdout.trim(), '', 'Suite must leave no running test user units')
+  assert.equal(run({ args: ['exec', name, 'pgrep', '--exact', 'music-player'], required: false }).status, 1, 'Suite must leave no application process')
+  run({ args: [...user, 'systemctl', '--user', 'stop', 'depot-full-desktop-parent.service', 'wireplumber.service', 'pipewire-pulse.service', 'pipewire-pulse.socket', 'pipewire.service', 'pipewire.socket'] })
+} finally {
+  run({ args: ['logs', name], required: false })
+  run({ args: ['stop', '--time=10', name], required: false })
+  run({ args: ['rm', name], required: false })
+  assert.equal(run({ args: ['container', 'exists', name], required: false }).status, 1)
+  assert.equal(existsSync(marker), false, 'Runtime overlay writes must not reach the source host')
+  const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: 'desktop-app.test.e2e', task: '//package/music-player/desktop-app:test:e2e', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: suite?.status ?? null, signal: suite?.signal ?? null, status: suite?.status === 0 ? 'passed' : 'failed', sessions: ['wide', 'narrow', 'dialog', 'quit', 'states', 'visual'], resources: { cpus: 2, memoryGiB: 2 }, providerJobUrl: process.env.DEPOT_JOB_URL }
+  writeFileSync(join(directory, 'native-desktop-e2e-results.json'), JSON.stringify(record, null, 2))
+  console.log('\n' + JSON.stringify(record))
+}
+assert.equal(suite?.status, 0, 'Complete desktop E2E task must pass')
 '''
