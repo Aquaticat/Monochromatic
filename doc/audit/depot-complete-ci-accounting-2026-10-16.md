@@ -350,6 +350,30 @@ native attempts,
 and the VM bootstrap retry.
 Each allocation is verified against its exact workflow source.
 
+Later Linux repeats `nb6ptmwjs5` and `xmvgm200k5` passed all 1,406 and 1,460 nonignored tests respectively,
+with one unnamed skip each.
+Every numbered identity and the retained per-check log hash was verified.
+The later desktop pass does not establish a fix for the earlier watch failures;
+the unchanged source produced different outcomes.
+The original rescan,
+idle-queue,
+and extra burst-report failures are tracked separately in
+[issue #1079](https://github.com/Aquaticats/Monochromatic/issues/1079),
+[issue #1080](https://github.com/Aquaticats/Monochromatic/issues/1080),
+and [issue #1081](https://github.com/Aquaticats/Monochromatic/issues/1081).
+
+Both later E2E invocations still timed out during the first session.
+Their systemd journals report that session's service exiting with status 101,
+but the downloaded artifacts omit the scratch session log that contains the application and compositor output.
+The harness copied `target/e2e`,
+while the frozen session implementation writes its log under the separate scratch run directory.
+The result's `sessions` array lists configured sessions;
+it is not evidence that those sessions executed.
+Similarly,
+`runtimeCompleted: true` records a returned invocation,
+not successful user-flow coverage.
+The failure needs retained session diagnostics before assigning a product cause.
+
 ### Logger static accounting
 
 Depot run `qm7w64tmhj` used workflow revision `0886b2669dc9696b60493870f172d77269b6e854`
@@ -412,7 +436,14 @@ then guest preparation failed because the QEMU monitor socket path under `XDG_CO
 Its original package task still failed on the relative helper path.
 The artifact confirms unchanged source inputs and empty private domain lists after cleanup.
 Its provider attempt used 165.155 seconds and 2,642.480 vCPU-seconds.
-The next environment replay `rv6hfj76w9` remains pending collection.
+Replay `rv6hfj76w9` booted the template guest:
+its guest agent became ready,
+the guest shut down,
+and the standalone template image was saved.
+Final guest startup then failed when QEMU could not connect to the virtiofs socket.
+Cleanup destroyed the defined private guest and the final domain list was empty.
+This attempt used 189.342 provider seconds and 3,029.472 vCPU-seconds.
+The next diagnostic replay must retain libvirt and virtiofs logs before cleanup.
 Native recovery runs `38847322477` and `38847322559` also remain pending collection.
 After diagnostic issue filing settles,
 the issue-ledger totals must be reconciled against the explicit issue IDs before updating them.

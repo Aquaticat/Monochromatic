@@ -269,6 +269,12 @@ they remain open for production integration.
   the VM bootstrap assumed `XDG_RUNTIME_DIR` was already present.
 - [#1076](https://github.com/Aquaticats/Monochromatic/issues/1076):
   the vmsync lifecycle package task resolves its mvm helper from the package working directory.
+- [#1079](https://github.com/Aquaticats/Monochromatic/issues/1079):
+  the Linux rescan watcher test does not receive its expected initial queue before the rescan assertion.
+- [#1080](https://github.com/Aquaticats/Monochromatic/issues/1080):
+  the Linux idle watcher test does not receive its expected initial queue before the idle assertion.
+- [#1081](https://github.com/Aquaticats/Monochromatic/issues/1081):
+  the Linux burst-write test receives an extra report after the first correct report.
 
 These findings preserve source,
 harness,
@@ -300,16 +306,19 @@ Accounting collection is complete for terminal Depot runs `79lgpx91sf`,
 and `dxk4v3s0w3`.
 Their retained records include allocation verification and every provider attempt.
 Final source-case reconciliation still requires the corrected manifests and later recovery runs.
-Pending collection includes VM replay `rv6hfj76w9`
-and native recovery runs `38847322477` and `38847322559`.
+VM replay `rv6hfj76w9` is collected with proof of template boot and a separate final-guest virtiofs failure.
+Its next diagnostic retry remains queued for collection after dispatch.
+Native recovery runs `38847322477` and `38847322559` remain pending collection.
 Linux desktop nextest recovery `pbg4h8ww6k` also needs collection and independent full-suite reconciliation.
-The next terminal batch contains mutation attempts `70p38v12d7` and `0snqhv0rhl`,
+The next terminal batch has been collected:
+mutation attempts `70p38v12d7` and `0snqhv0rhl`,
 scheduler controls `m00504dz4c`,
 desktop E2E attempts `nb6ptmwjs5` and `xmvgm200k5`,
 WireGuard `cwkngc2w7g`,
 Pi `04pjg1sw9j`,
 and prepared-image import `wqz9h633wj`.
-The desktop artifacts need application-stderr inspection before classifying their startup timeout.
+Artifact inspection found that the desktop attempts omit scratch session logs;
+their next diagnostic replay must retain those logs before classifying the startup timeout.
 The [accounting audit](../audit/depot-complete-ci-accounting-2026-10-16.md)
 owns the measurements and distinctions between execution completion and passing CI.
 
