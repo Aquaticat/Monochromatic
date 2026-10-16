@@ -77,5 +77,28 @@ Their fetched GitHub body bytes match the reviewed local bodies.
 GitHub reports each issue open with the `needs-triage` label.
 The issues preserve production provider selection as an unresolved trial decision.
 
-This coverage issue queue is complete.
+The original coverage issue queue is complete.
 The main trial ledger can use the linked issues to track implementation and verification.
+
+## Final completeness audit in progress
+
+The follow-up audit reads the full trial report,
+runner-sizing report,
+and interview handover against all-state issue history.
+Its refreshed search returned 999 issues.
+Historical setup incidents need separate tracking where their failure boundary differs from existing issues:
+
+- Organization action-policy rejection before any job started.
+- Mise release-age lookup returning HTTP 403,
+  distinct from the missing-release asset incident in issue `506`.
+- Local task-capacity exhaustion and the later kernel/helper coordination failure.
+- The initial trial task outside configured discovery roots.
+- The direct-session trial omitting its freshly built compositor path.
+- Standalone sandbox bare-command lookup failure.
+- Browser discovery returning no available browser,
+  distinct from the Depot usage endpoint's credential-type rejection.
+
+Current work is to verify original source and run evidence,
+file only missing distinct incidents,
+and record already-verified recovery without inventing an upstream cause.
+Sizing tradeoffs and unchosen scheduling preferences are not defects.
