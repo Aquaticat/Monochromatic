@@ -211,6 +211,8 @@ The trial did not change billing settings or resource caps.
   and the final run verified exact binary coverage.
 
 The isolated workflow and TOML files passed scoped dprint verification.
+The audit and troubleshooting Markdown passed scoped repository lint
+and rendered inspection through Pandoc.
 The evidence summarizer checked complete pagination,
 duplicate counts,
 same-commit failure/pass identity equality,
@@ -219,6 +221,10 @@ analytics links,
 candidate coverage,
 and the final 375-case identity set.
 No production workflow or test source was changed in the main worktree.
+The disposable worktree was removed after checking its tracked state,
+ignored cache entries,
+and absence of stray git-directory files.
+The pushed trial branch retains the executable reproduction.
 
 The trial did not exercise errored JUnit cases,
 test-runner-internal retry extensions,
