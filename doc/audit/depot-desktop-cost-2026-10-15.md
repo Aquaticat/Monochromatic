@@ -2,6 +2,23 @@
 
 ## Result and scope
 
+The subsequent successful desktop run took 410 seconds and passed 117 checks,
+with no failures and one uninjectable check.
+Its separate [recovery replay](depot-desktop-recovery-2026-10-15.evidence.json)
+gives Developer USD 160.28 for every affected revision with container validation retained,
+USD 149.33 with superseded cancellation,
+and USD 23.38 for daily-latest Depot allocation.
+Startup's corresponding totals are USD 205.71,
+USD 200,
+and USD 200 if overage is allowed.
+Replacing the separate container workload gives Developer USD 135.28,
+USD 126.83,
+and USD 23.38 respectively;
+the coverage-equivalence limitation still applies.
+The portal correction changes the input,
+so this is a new scenario rather than a timing-improvement estimate.
+The original failed-run measurement and calculations are retained in this document.
+
 Adding the measured desktop interaction job to every affected revision produces a
 **USD 166.56 monthly Developer subtotal** when the separate desktop container build remains.
 Replacing that container workload with the interaction job produces **USD 141.55**.

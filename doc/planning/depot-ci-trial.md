@@ -212,11 +212,16 @@ not the scope of these trial measurements.
 
 ## Result and adoption boundary
 
-The trial report will distinguish measured savings,
+The [trial report](../audit/depot-trial-2026-10-15.md) distinguishes measured savings,
 newly exercised checks,
 remaining gaps,
 and unverified claims.
-It will recommend check frequency and an execution arrangement using the user's combined cost objective.
+It recommends check frequency and an execution arrangement using the user's combined cost objective.
+Selected execution experiments and the representative change-stream replay have finished.
+The report explicitly retains unpriced workloads,
+storage reconciliation,
+and account-control gaps;
+it does not establish a complete monthly bill.
 Unchanged-input variation and coverage parity must support any claimed improvement.
 Adoption,
 repository ownership changes,

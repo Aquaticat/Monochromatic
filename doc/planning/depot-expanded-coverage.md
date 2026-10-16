@@ -291,8 +291,13 @@ The discovery check must compare matching test files with the selected configura
   and aborted the wide session.
   Direct software rendering and keyboard fixture selection allowed every session to finish in run `38831098294`:
   116 checks passed and the folder-dialog check failed.
-  Installing Zenity did not resolve that failure;
-  application-output diagnosis is running separately.
+  Installing Zenity did not resolve that failure.
+  Correcting the deprecated portal `Read` response recovered the chooser in `38833901553`:
+  117 checks passed with no failures across all seven sessions.
+  The full job took 410 seconds,
+  including setup and builds.
+  The correction is trial-only;
+  [recovery evidence](../audit/depot-desktop-recovery-2026-10-15.evidence.json) preserves the original boundary.
   The suite explicitly records held-modifier repeat as not injectable.
   Neither a screenshot nor passing harness unit tests proves the real interaction suite ran.
 
@@ -542,6 +547,8 @@ verify output identity,
 and retain a cold reconstruction path.
 Prepared environments must include the actual graphical/user-service prerequisites when their tasks need them.
 The trial's successful Node snapshot and standalone sandbox execution establish concrete reuse routes.
+Two fresh snapshot consumers also verified all 23 installed package versions and ImageMagick without installation.
+Their absent user-session services remain a separate runtime preparation gap.
 The Cargo source-timestamp failure demonstrates why a successful cache restore is not enough.
 [Prepared-environment evidence](../audit/depot-trial-2026-10-15.md#prepared-environments-and-non-ci-work),
 [cache correctness investigation](../troubleshooting/cargo-buildkit-source-timestamps.md)
@@ -590,7 +597,11 @@ an exact expiry timestamp and aggregate dollar cap remain unverified.
 - Executed behavioral evidence:
   desktop cloud interaction in [38826827023][desktop-run] failed;
   a direct software-compositor run also reached the wide-session fixture timeout.
-  Independent sessions are collecting the checks hidden by that abort.
+  Independent sessions subsequently exposed the chooser crash.
+  The portal correction recovered all injectable checks in `38833901553`:
+  117 passes,
+  no failures,
+  and one uninjectable check.
   Local device execution consumed [38826684750][android-apk],
   and the isolated test-context experiment subsequently passed all cases.
 - Existing but unmeasured/unwired trial checks:
@@ -619,6 +630,9 @@ an exact expiry timestamp and aggregate dollar cap remain unverified.
 Review the proposed triggers,
 platform boundaries,
 and completion criteria as the engineering recommendation.
+The selected trial execution and cost replay are finished;
+the named unmeasured checks remain acceptance gaps tracked in the
+[issue inventory](../handover/depot-trial-issues.md).
 Production implementation and provider adoption remain a separate action request.
 
 [android-apk]: https://github.com/Aquaticats/Monochromatic/actions/runs/38826684750

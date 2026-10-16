@@ -1,9 +1,9 @@
 # Depot trial interview
 
-## Active repair and remaining acceptance work
+## Completed trial execution and remaining acceptance gaps
 
 The user requested a GitHub issue for every discovered problem on 2026-10-15 local time.
-Issue filing is active for each distinct trial finding,
+The [issue inventory](depot-trial-issues.md) records each distinct trial finding,
 including repaired incidents with their verification.
 Search existing issues before creating duplicates;
 track upstream-tool findings in this repository unless separate upstream publication is requested.
@@ -64,22 +64,32 @@ although the current XDG contract requires an extra variant layer for deprecated
 Trial commit `5eb02af048` adds exact wire-value signature assertions;
 the unchanged implementation failed four of 270 tests on those assertions.
 The wrapper correction in `dcaae7c673` passed all 270 tests without skips.
-Full desktop cloud run `38833901553` is verifying the consumer boundary at `93560fbb09`.
+Full desktop cloud run `38833901553` verified the consumer boundary at `93560fbb09`:
+117 checks passed,
+none failed,
+and one held-modifier check remained uninjectable.
+Zenity opened and cancellation restored focus without a crash.
+Final trial source `d6deca5fa5` also passes Clippy and scoped lint;
+its cleanup only names the error converter and wraps comments.
 Issue [#1004](https://github.com/Aquaticats/Monochromatic/issues/1004)
 now contains the subprocess evidence.
-The desktop cost overlay is complete:
-daily-latest Depot allocation is USD 24.13 for the measured subset,
-while every-affected allocation retaining the container build is USD 166.56 on Developer.
-Startup's equivalent demand exceeds its included runner allowance.
-Remaining work is the chooser diagnosis,
-the requested issue inventory,
-and final reconciliation of the coverage recommendation with these measurements.
+The successful job took 410 seconds including setup and builds.
+Its additional cost replay gives USD 23.38 for daily-latest Depot allocation
+or USD 160.28 for every affected revision with separate container validation retained.
+These are measured-subset Developer scenarios,
+not complete monthly bills or controlled timing improvements.
+Startup's every-affected equivalent exceeds its included runner allowance.
+The execution and recommendation queue is complete;
+remaining acceptance gaps concern account controls,
+unmeasured workloads,
+and integration of trial-only corrections.
+No production migration or plan change was adopted.
 
 ## Purpose and current state
 
 The user subsequently requested immediate execution of the agreed trial.
 The interview and runner-sizing follow-up are complete.
-The agreed broader evaluation remains open.
+The selected broader evaluation experiments and recommendation are recorded with their acceptance gaps.
 The [trial report](../audit/depot-trial-2026-10-15.md)
 records remaining coverage and account-access limits.
 The user explicitly clarified that this is not an apples-to-apples migration.
@@ -749,6 +759,10 @@ Evidence and a positive control for the upper-bound calculation are recorded in 
 
 ## Completion audit
 
+This section preserves the completion audit that reopened execution work.
+The current terminal results and unresolved adoption gaps are recorded in
+Completed trial execution and remaining acceptance gaps.
+
 The user asked whether everything was done.
 Comparing the agreed brief with the results showed that closing the entire trial queue was premature.
 The runner measurements and policy edit are complete;
@@ -831,15 +845,16 @@ ten points,
 and zero REST requests,
 rejecting the event at the eight-analysis day limit.
 The single live sample took 33.2418 seconds and is not a controlled latency comparison.
-The query passed with the workflow's own token in run `38830412356`;
-execution of the exact candidate script with that token remains the adoption check.
+The query passed with the workflow's own token in run `38830412356`.
+The exact candidate then passed `38831327297` and production verification `38831778986`.
 The candidate retains the existing creation-time,
 latest-attempt,
 cancellation,
 and absent-analysis accounting boundaries.
 This is a narrow history-query repair,
 not adoption of a Depot scheduler.
-The seven-day target-workload replay remains active.
+The seven-day target-workload replay subsequently completed,
+including the failed and successful full-desktop duration scenarios.
 
 The user supplied account settings after browser discovery again returned no available browser.
 The USD $200 plan reports 36 container minutes,

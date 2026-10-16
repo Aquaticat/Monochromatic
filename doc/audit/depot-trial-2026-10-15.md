@@ -3,15 +3,18 @@
 ## Status and decision being tested
 
 The compilation measurements and runner-size follow-up have finished.
-The agreed broader evaluation remains open.
+The selected execution experiments,
+coverage inventory,
+and change-stream replay are complete;
+the account and unmeasured-workload acceptance gaps remain explicit.
 All ten corrected runner configurations passed,
 as did the default-container-builder concurrency repetitions.
 The [sizing report](depot-runner-sizing-2026-10-15.md) records the measured results and allocation recommendation.
 Full desktop interaction and Android instrumentation have now executed.
 The Android test-context experiment passed all 16 cases;
-the complete desktop run passed 116 checks and failed its folder-dialog check.
+the recovered desktop run passed 117 checks with no failures and one uninjectable check.
 Two fresh Depot CI consumers verified installed-package snapshot reuse;
-the chooser's subprocess diagnostics are still being investigated.
+the chooser recovered after correcting the private portal's deprecated `Read` response.
 The user supplied the account's usage and selected hard-start limits.
 Storage views still need their different scopes reconciled.
 This report follows the [confirmed trial brief](../planning/depot-ci-trial.md).
@@ -31,7 +34,7 @@ Existing-job timings isolate performance effects;
 they do not price the value of additional capabilities or define the target workload.
 The [confirmed brief](../planning/depot-ci-trial.md) preserves that distinction.
 
-Developer with selective routing remains the first arrangement to evaluate for that expanded workload.
+Developer with selective routing is the recommended arrangement for that expanded workload.
 This is a provisional allocation recommendation,
 not a complete technology-adoption verdict.
 The container build,
@@ -256,11 +259,27 @@ GLib reported a variant-format mismatch:
 `v` was expected but `u` was received.
 The private appearance portal's deprecated `Read` method currently returns the same shape as `ReadOne`,
 while the XDG contract documents an additional variant layer for `Read`.
-Exact signature tests are being checked against the existing implementation before a trial correction.
-The subprocess failure is observed;
-recovery from the proposed contract correction remains unverified.
+Exact signature assertions failed in four of 270 tests before the correction.
+The corrected implementation passed all 270 tests and Clippy.
+Cloud run `38833901553` then passed all seven desktop sessions:
+117 checks passed,
+none failed,
+and one held-modifier check remained uninjectable.
+The chooser opened and returned keyboard focus after cancellation;
+Zenity exited with cancellation status `1` and no signal.
+The full job took 410 seconds and its interaction step took 185 seconds.
+These changed inputs do not establish a speedup or unchanged-input timing spread.
+The original failures remain retained separately,
+and this compositor correction remains on the trial branch.
 [Chooser issue and diagnostic](https://github.com/Aquaticats/Monochromatic/issues/1004#issuecomment-6205699992),
 [Settings contract](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html)
+
+The [successful recovery evidence](depot-desktop-recovery-2026-10-15.evidence.json)
+retains every check and the complete job interval.
+The passing chooser still emitted accessibility-bus,
+dconf,
+and transient-parent warnings;
+passing interaction assertions do not establish those integrations.
 
 Android artifact run `38826684750` built both native ABIs and the app/test APKs successfully.
 Those APKs installed on an isolated local headed Android 37 x86_64 emulator with 16 KiB pages.
@@ -386,6 +405,20 @@ without an exact timestamp.
 No account setting was changed.
 
 ## Monthly plan scenarios
+
+The successful 410-second desktop run provides an additional scenario input.
+With the separate container validation retained,
+the measured-subset Developer totals are USD 160.28 for every affected revision,
+USD 149.33 with superseded cancellation,
+and USD 23.38 for daily-latest Depot allocation with routine GitHub validation retained.
+The corresponding Startup totals are USD 205.71,
+USD 200,
+and USD 200 if overage is permitted.
+These supersede the failed-run duration only for the new scenario;
+they do not establish lower typical runtime or a complete monthly bill.
+[Successful-run replay](depot-desktop-recovery-2026-10-15.evidence.json)
+
+The following retained scenarios document the earlier measured inputs.
 
 The [expanded change-stream replay](depot-expanded-cost-2026-10-15.md)
 and [desktop interaction overlay](depot-desktop-cost-2026-10-15.md)
@@ -533,8 +566,8 @@ the trial has not yet demonstrated that all desired graphical tests and experime
   not a sufficient automatic policy.
 - Developer with selective overage is the second choice.
   It allows more relevant checks without immediately paying USD $200.
-  The desktop-inclusive daily-latest scenario costs USD $24.13 before excluded work and storage.
-  Every affected revision with separate container validation costs USD $166.56 in that same measured subset.
+  The successful desktop-inclusive daily-latest scenario costs USD $23.38 before excluded work and storage.
+  Every affected revision with separate container validation costs USD $160.28 in that same measured subset.
   The disadvantage is variable charges and dependence on a verified spending safeguard.
 - Startup is the third choice for the currently measured workload.
   Its added allowances reduce allocation pressure for frequent cloud work and parallel experiments.
@@ -558,13 +591,24 @@ Android host tests and lint for Android changes,
 and a packaged Linux build for release candidates or native dependency/toolchain changes.
 Keep the proposed superseded-intermediate cancellation policy separate from explicit releases.
 Do not gate every early commit on a new release build.
-Graphical and device checks need a working environment and measured runtime before choosing their frequency.
+Run the complete desktop suite before accepting UI,
+input,
+playback,
+or compositor changes and before releases;
+use named subsets during iteration.
+Run fixture-backed Android instrumentation for device-facing changes and before Android releases.
+The demonstrated device route uses an isolated local headed emulator;
+its availability and additional workloads still constrain recurring automation.
+Keep ordinary affected-revision checks on GitHub when Depot allocation is exhausted,
+and use the daily-latest model as a cost scenario rather than a silently adopted cadence.
 The passing host suites do not replace those checks.
 
 ## Unresolved acceptance gaps and retained artifacts
 
-- Desktop interaction completed every session with 116 passes and one chooser failure;
-  a separate diagnostic run retains the application's chooser output.
+- Desktop interaction recovered with 117 passes,
+  no failures,
+  and one uninjectable check after the isolated portal correction.
+  Integrating the trial corrections remains separate work.
   Android instrumentation passed all 16 cases in the isolated context experiment;
   the original test source still has the two documented failures.
 - Account usage and per-product hard-start limits are user-reported in Account evidence supplied by the user.
@@ -587,6 +631,9 @@ job intervals,
 fixture outcomes,
 and cost calculations.
 The trial branch retains the build definitions and runnable tasks for review.
+The [issue inventory](../handover/depot-trial-issues.md) tracks discovered defects,
+repaired incidents,
+and remaining acceptance gaps.
 All standalone SDK sandboxes were stopped.
 The dedicated project cache and reusable CI snapshot remain available during the trial;
 no recurring jobs were installed.
