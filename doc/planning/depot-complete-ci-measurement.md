@@ -432,7 +432,7 @@ and Scorecard accounting dispositions are connected and all required checks repo
 The exact logger-head manifest closure contains 158 packages.
 This measured breadth follows real development/configuration dependency cycles;
 it must not be replaced by just the logger package to obtain a smaller timing.
-Source-import and task-boundary review remains part of completing its execution manifest.
+Source-import and task-boundary review supplies the conservative execution manifest.
 The revised task expansion contains 719 package checks and 19 external check groups,
 including 155 full-package Oxlint tasks,
 157 type checks,
@@ -465,14 +465,21 @@ and runtime checks remain selected.
 Intentional-invalid lint fixture helpers are diagnostic displays;
 the selected plugin unit suites assert their results.
 
-A TypeScript lexical-token scan resolves package export maps and relative `dist` imports.
-It records 3,560 imports,
-12 build prerequisites,
-and 89 test/type prerequisites across package owners,
-with no build cycle and no prerequisite owner outside the affected closure.
-Comment examples and import-looking string contents do not create artifact edges.
-Literal dynamic imports are included;
-computed import expressions still need separate review.
+A Rolldown AST parse resolves package export maps and relative `dist` imports.
+It parsed the tracked JavaScript and TypeScript inputs without parser errors
+and found 3,555 real imports.
+Positive and negative controls cover static imports,
+literal dynamic imports,
+`require` calls,
+comments,
+string contents,
+and regular expressions.
+The AST graph has no build cycle or prerequisite owner outside the affected closure.
+The runtime-path audit resolved 596 artifact strings.
+The unmatched cross-package candidates are Git self-shim markers and test stack-frame filters,
+which compare text rather than load those artifacts.
+Computed Pi paths remain owned by the native preparation task;
+extension verifiers retain their package builds.
 The first static wave exposed missing owned-artifact prerequisites:
 type checks carried an unused `artifactPrerequisites` field,
 while the earlier scanner discarded self imports and missed relative `dist` imports.
@@ -484,7 +491,26 @@ and spawned-artifact paths.
 Follow-up `ed1d31ae11` retains all prior barriers,
 folds the declared owned-artifact metadata into executable prerequisites,
 and keeps the newly found literal dependencies.
-Pruning waits for the additional source-boundary audit.
+The AST audit adds no prerequisites beyond that conservative graph.
+It retains 772 barriers absent from the narrower AST projection;
+no prerequisite is removed for this measurement.
+The frozen manifest has SHA-256
+`f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3`.
+Adapter commit `d4a082cd47` partitions the remaining checks into container,
+fuzz,
+mutation,
+native mutation,
+Pi regression,
+regular,
+and Rust groups.
+Its partition identity and prerequisite closure checks cover every selected check exactly once
+between the prior static/unit assignment and the remainder assignments.
+The fuzz group executes inside a network-free Podman overlay limited to 2 GiB and 2 CPUs.
+Task parsing,
+JavaScript syntax,
+partition coverage,
+and manifest digest checks pass locally;
+the cloud consumer execution remains required.
 The source diagnostics need replay with this corrected ordering before source-failure classification.
 Outside-closure active matches are root configurations,
 the Playwright declaration file,
@@ -500,7 +526,17 @@ The authored native gate uses image
 `6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a`.
 Its Git image builder requires Git revision `a018953688f1b10bddf91bff8747068f5f4746a4`
 and compiler image `84f24e75017a7d8afa1c69e51c52f37e7d8d644cd2597a01f4732ad0b386dc20`.
-The execution adapter must preserve or explicitly replace those prerequisites with measured identities.
+The execution adapter preserves that Git image and Rust image
+`62ba2f7ce22ba9bc501110d3452c7ae814fba367c46f7eea3629a79286353884`.
+The locally exported Docker archive measures 2,329,816,576 bytes with SHA-256
+`c377f23ca6284f3d8020cb8697cf7654eaa7549a25c05150c6478ac139f50fb4`.
+Its custom layers contain Rust sources,
+upstream Git sources,
+and compiled Git outputs;
+the inspected image configuration and custom-layer paths contain no user credentials.
+Transfer uses authenticated Depot sandbox stdin streaming into a disposable runner.
+The importer checks the archive digest and exact loaded image IDs before creating the private CI snapshot.
+Successful transfer and snapshot creation remain pending.
 
 The exact native-core-head Cargo path closure contains four packages:
 the core,
