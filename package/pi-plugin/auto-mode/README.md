@@ -33,8 +33,10 @@ Each clause question includes the complete proposed operation beside the selecte
 
 Established permission allows the operation automatically.
 An established governing prohibition blocks it.
-An explicit fresh-confirmation requirement or uncertain assessment opens the original operation's dialog
-when an interactive approval channel is available.
+An explicit fresh-confirmation requirement or uncertain clause assessment first reaches a whole-operation
+decision-model review using the complete current policy, selected conversation, and prepared operations.
+The same Luna model and `0.60` selected-probability cutoff apply.
+Only unresolved or failed automatic paths open the original operation's dialog when a UI is available.
 The dialog offers `Allow` and `Stop`.
 `Allow` authorizes only that prepared group;
 `Stop`,
@@ -43,17 +45,22 @@ and a legacy denial response abort the current run.
 An unavailable approval channel leaves an uncertain operation blocked.
 
 Manual confirmation cannot override an established prohibition at the strongest known applicable priority.
-It also cannot satisfy an independent authorization requirement whose channel does not accept that confirmation.
-Allow re-resolves the captured policy with only the original prepared group's confirmation added.
+An unresolved prerequisite estimate is reconsidered by the decision model before manual review.
+Last-resort Allow authorizes the original prepared group while retaining the original prerequisite diagnostics;
+it does not assert that an external approval was obtained.
 Original source,
 operation,
 authorization,
 and cancellation checks remain active.
-Missing observation evidence, malformed assessments, transport failures, and expired assessment deadlines
+Recoverable clause-assessment failures try the decision model within the original deadline and transport allowance.
+Missing observation evidence, exhausted automatic review, and unresolved final decisions
 fall back to manual approval of the complete prepared operation.
 This fallback retains native operation identity, tool and argument checks, and cancellation.
 It does not create automatic evidence or replace an established policy decision after its dependencies change.
 Without a usable approval interface, execution remains withheld.
+The local tagged logs correlate complete assessment inputs and replies with per-clause admission,
+source references, errors, fallback choices, and the final verdict.
+`test:native:decision-fallback` exercises these paths and verifies reconstructable diagnostic records.
 Provider request metadata supplies context and is not independently subject to tool-call approval.
 
 Provider switching, retries, navigation, reload, and ordinary chat remain owned by Pi.

@@ -197,7 +197,7 @@ for(const premises of ['complete','incomplete']){
   const confirmed=resolveConfirmedOutcome(program);
   assert.equal(confirmed.state,'resolved');
   assert.equal(confirmed.verdict,'approve');
-  assert.equal(confirmed.authorizationRequirements.state,'unresolved');
+  assert.equal(confirmed.authorizationRequirements.state,channel==='incumbent-approval'?'requires-approval':'unresolved');
   assert.equal(program.authorizationRequirements[0].satisfaction,'unsatisfied');
  }
  const mixed={

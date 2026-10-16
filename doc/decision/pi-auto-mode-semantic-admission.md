@@ -2,9 +2,37 @@
 
 ## Current Luna decision
 
+On 2026-10-16,
+the user clarified the fallback order after ordinary repository inspection was falsely blocked:
+clause assessment first,
+then Luna reviews the complete prepared operation,
+then the original confirmation dialog only if automatic review cannot resolve it.
+The second model question retains complete current instructions,
+selected conversation,
+every prepared command and argument,
+and the original assessment budget.
+It uses the existing `0.60` selected-option cutoff for `approve` and `deny`;
+`unknown`, invalid responses, and unavailable assessments leave manual review as the last fallback.
+A clause's unresolved prerequisite estimate is not an established missing authorization.
+The final model must apply the actual conditions of each rule to the user's actual operation.
+Established governing prohibitions remain terminal.
+Changed or cancelled operations cannot receive a replacement approval for their old evidence.
+
+This supersedes direct clause-uncertainty-to-dialog routing and terminal withholding based solely on
+unresolved prerequisite estimates.
+After both automatic paths fail,
+an authenticated Allow authorizes the exact prepared group without rewriting retained prerequisite estimates
+as satisfied external facts.
+Local decision logs retain correlated model inputs,
+source spans,
+answer distributions,
+admission choices,
+errors,
+and final routing so a future rejection can be reconstructed.
+
 On 2026-10-14,
 the user selected manual confirmation when automatic tool-call assessment remains uncertain.
-The native host must offer `Allow` and `Stop` for unresolved or unspecified assessments when its UI is available.
+The native host must offer `Allow` and `Stop` after the automatic paths remain unresolved when its UI is available.
 An established applicable prohibition still blocks.
 Only an original Allow for the exact prepared operation permits execution;
 denial,

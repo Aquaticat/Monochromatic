@@ -59,7 +59,8 @@ Invoke package tasks as `mise run //package/pi-plugin/auto-mode:<task>`.
 Pi owns ordinary chat, provider switching, retries, navigation, reload, and native callback effects.
 Auto-mode starts the judgment at complete-group dispatch and captures operation-local native currentness.
 Preserve passive prompt, event, and transport observation when capture fails.
-Unavailable observation or assessment evidence falls back to manual approval of the exact prepared group.
+Unresolved or failed clause assessment first reaches Luna's complete-operation decision question.
+Only exhausted automatic paths or unavailable original inputs fall back to manual approval of the exact group.
 An established policy decision or approval remains binding when its dependencies become stale;
 the fallback must not open a second dialog that bypasses it.
 Use `test:native:session-actions`, `test:native:host-isolation`, and `test:native:manual-group`
@@ -85,9 +86,12 @@ retained archives and the raw provider request must not return as additional mod
 Each clause question also carries the complete proposed operation.
 The regression is `test:native:decision-context`.
 
-Allow re-resolves captured policy and satisfies only requirements accepting current-session confirmation.
-Independent missing or unsatisfied authorization must remain blocked.
+Unresolved prerequisite estimates must reach the decision model rather than becoming terminal restrictions.
+Last-resort Allow authorizes the exact group without rewriting those estimates as satisfied external facts.
+Established prohibitions and final model denials remain terminal.
+Retain correlated assessment inputs, source references, distributions, admission, and fallback reasons in logs.
 Use `test:native:approval` and `test:native:manual-review` when changing this boundary.
+Use `test:native:decision-fallback` for model-before-dialog routing and diagnostic reconstruction.
 
 Native builds stage immutable releases, including their matching maintained policy bundle,
 and validate CLI loading before changing the active link.

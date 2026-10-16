@@ -480,7 +480,9 @@ The pending original channel supplies code-owned facts for an admitted `fresh-se
 those facts remain unsatisfied until the original user response arrives.
 Generic prerequisites retain their separate fact owner.
 
-Unresolved and unspecified automatic assessments also reach the original dialog when a UI is available.
+Unresolved and unspecified clause assessments first reach the whole-operation Luna decision question.
+It retains the original operation, selected conversation, policy, deadline, and transport allowance.
+Only unresolved or failed automatic paths reach the original dialog when a UI is available.
 An established prohibition at the strongest known applicable tier blocks even when other premises are uncertain.
 Headless uncertainty remains blocked.
 The dialog offers `Allow` and `Stop`;
@@ -490,11 +492,17 @@ aborts the current run.
 Source freshness,
 exact prepared-group identity,
 and cancellation remain checked during and after approval.
-Transport failures, malformed responses, expired assessment budgets, and unavailable observation evidence
+Recoverable initial transport or assessment failures also try whole-operation review first.
+Exhausted automatic review, uncertain final decisions, and unavailable observation evidence
 fall back to manual approval of the complete prepared operation.
 The independent manual group owns its original native signal, branch, prepared members, and execution tokens.
 It does not fabricate an automatic assessment receipt.
 An already established policy decision or approval cannot be replaced after its dependencies change.
+A policy change during whole-operation review invalidates that operation instead of opening another dialog.
+Decision logs retain source spans, distributions, admission results, fallback errors, and final outcomes.
+Assessment logs retain the complete selected inputs and replies under a shared operation digest.
+`test:native:decision-fallback` verifies final approval and denial, model failures, cancellation,
+source changes, and reconstruction of the falsely admitted prerequisite from logger records.
 Primary prompt and request observation stays passive when capture fails;
 Pi retains its callbacks, errors, retry settings, and transport.
 `test:native:session-actions` exercises native navigation and provider lifecycle behavior.
