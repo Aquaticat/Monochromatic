@@ -182,6 +182,10 @@ The independent
 passed against all eight changed paths from base `45795584ff2dcf830dc505e121f0cc92c77860e5`.
 It used 45 job seconds and 49 seconds from run creation to job completion.
 The failed setup attempts remain usage observations and cannot count as native check execution.
+The omitted configured Cargo installer is tracked in
+[issue #1059](https://github.com/Aquaticats/Monochromatic/issues/1059).
+Its corrected setup is being verified in
+[retry 38842787230](https://github.com/Aquaticats/Monochromatic/actions/runs/38842787230).
 
 ### Acceptance requirements
 
