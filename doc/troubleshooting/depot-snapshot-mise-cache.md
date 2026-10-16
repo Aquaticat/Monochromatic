@@ -83,3 +83,123 @@ this is not an exhaustive duplicate search.
 
 There is no actionable upstream filing to add.
 No external report was sent.
+
+## Depot CLI 2.102.22 local patches collide with files retained by snapshot checkout
+
+### Symptom
+
+Run `341kqr5sw7` created the desktop-package snapshot successfully,
+then failed its first consumer during `Apply local patch from Depot Cache`:
+
+```text
+# git apply diagnostic in the first snapshot consumer
+error: .depot/workflows/depot-package-snapshot.yml: already exists in working directory
+```
+
+The same diagnostic named other files introduced on the unpublished trial branch.
+No package verification task had run yet.
+This incident is separate from the mise-cache delay.
+[Failed consumer](https://depot.dev/orgs/l4zncjjbj5/workflows/341kqr5sw7)
+
+### Source trace and scope
+
+Depot CLI `v2.102.22`,
+`pkg/cmd/ci/run.go:601`,
+sets an injected checkout's `ref` to the local patch's merge base.
+At lines 606 to 624 it creates the patch step and inserts it after checkout:
+
+```go
+// depot/cli, pkg/cmd/ci/run.go, v2.102.22
+withMap["ref"] = mergeBase
+// The generated shell step later runs:
+git apply --allow-empty /tmp/local.patch
+// The patch step is inserted immediately after checkout:
+newSteps = append(newSteps, steps[:checkoutIndex+1]...)
+newSteps = append(newSteps, patchStep)
+newSteps = append(newSteps, steps[checkoutIndex+1:]...)
+```
+
+The shell line is part of the Go source's generated string,
+not a Go statement.
+[Tagged CLI source](https://github.com/depot/cli/blob/v2.102.22/pkg/cmd/ci/run.go#L549)
+
+The snapshot was captured after the preparation job applied that local patch.
+Its newly added files remained on disk.
+The consumer intentionally used `clean: false` to retain installed workspace dependencies,
+then checked out the merge base and attempted the same add-file patch.
+Git rejected the paths already present.
+This identifies the checkout/patch interaction;
+it does not establish damaged snapshot contents or failed package installation.
+[Snapshot checkout guidance](https://depot.dev/docs/ci/how-to-guides/custom-images#best-practices)
+
+### Verification and workaround
+
+The reproduction lives on `trial/depot-package-snapshot-20261016`,
+commit `0577b002b2`,
+in `.depot/workflows/depot-package-snapshot.yml`.
+Its tasks are in `package/music-player/desktop-app/mise.toml`.
+Before that branch was pushed,
+the following invocation uploaded a local patch relative to `origin/main`:
+
+```sh
+# Isolated trial worktree with the committed branch still unpublished
+depot ci run --workflow .depot/workflows/depot-package-snapshot.yml
+```
+
+The failure catalog is a snapshot captured from locally patched checkout files,
+followed by a `clean: false` consumer with an injected add-file patch.
+The working catalog uses the same snapshot and files with a pushed commit,
+so the CLI has no local patch to inject.
+The tested boundary change was:
+
+```sh
+# Same isolated trial worktree, publishing only the experiment branch
+git push --set-upstream origin trial/depot-package-snapshot-20261016
+depot ci run --workflow .depot/workflows/depot-package-snapshot.yml
+```
+
+Repeat run `6w30pv5zds` checked out `0577b002b2` without a local-patch step.
+Its first consumer verified all 23 installed package versions and executed ImageMagick without reinstalling them.
+The consumer's workspace dependency check reported `Already up to date`.
+The second fresh consumer's result is still pending.
+[Patch-free repeat](https://depot.dev/orgs/l4zncjjbj5/workflows/6w30pv5zds)
+
+The tradeoff is publishing the experiment commit to the repository before this form of snapshot consumption.
+`clean: false` also preserves other untracked files,
+so dependency reuse must include explicit lockfile and tool-version checks.
+The image tag still needs refresh when its preparation inputs change.
+
+### What does not establish a workaround
+
+Reusing the same image with the same locally injected add-file patch already failed.
+Enabling checkout cleaning was not tested here;
+it would remove the untracked workspace dependencies whose reuse this trial measures.
+Skipping an arbitrary failed patch is not verified and could leave the wrong source revision.
+
+The separate fresh-session probe reported `Failed to connect to bus: No medium found`
+from `systemctl --user` and `systemd-run --user`.
+`pactl info` reported `Connection failure: Connection refused`.
+Those commands ran after package verification passed;
+installed files do not establish a running user manager or audio service.
+This probe did not attempt to create a replacement session manager.
+
+### Upstream filing decision for the patch interaction
+
+No `.out-of-scope/` entry names Depot.
+Issue and pull-request searches for `"snapshot" "patch"` in `depot/cli` returned no matches.
+That search is bounded evidence,
+not a claim that no related report exists.
+
+1.  An upstream defect is not established:
+    the trial deliberately retained untracked files and then reapplied an add-file patch.
+2.  CLI handling can be changed in principle,
+    but the correct ownership and cleanup contract has not been established.
+3.  Local patches and preserving snapshot dependencies are separately documented;
+    this exact repeated-patch combination has not been shown to have a supported contract.
+4.  Contribution policy was not evaluated because no upstream filing or patch is proposed.
+5.  The searches found no maintainer decision on this combination.
+6.  The repository-side pushed-commit workaround was exercised;
+    no upstream fix was prototyped or claimed.
+
+There is no upstream filing artifact to add at this stage.
+No external report was sent.
