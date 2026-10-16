@@ -84,14 +84,22 @@ not the result of a hypothetical expanded suite.
 
 Direct changes appear in overlapping groups:
 
-- Music-player desktop application or its end-to-end harness: 30 events.
-- Android application: 33 events.
-- Shared audio core or its benchmark sidecar: 7 events.
-- Logger or its fuzz sidecar: no direct events.
-- Root/repository configuration: 44 events.
-- Other packages: 496 events.
-- Documentation-classified paths only: 545 events.
-- No tree change from the preceding observed head: 10 events.
+- Music-player desktop application or its end-to-end harness:
+  30 events.
+- Android application:
+  33 events.
+- Shared audio core or its benchmark sidecar:
+  7 events.
+- Logger or its fuzz sidecar:
+  no direct events.
+- Root/repository configuration:
+  44 events.
+- Other packages:
+  496 events.
+- Documentation-classified paths only:
+  545 events.
+- No tree change from the preceding observed head:
+  10 events.
 
 An event can affect more than one runtime group,
 so the group counts must not be added to obtain push count.
@@ -104,7 +112,7 @@ not proof that documentation never affects a package's behavior.
 The tree comparison uses consecutive observed main heads,
 including deletions and without rename collapsing.
 It does not use first-parent commit counts as a substitute for pushes.
-One hundred observations introduce more than one reachable commit relative to the preceding head.
+100 observations introduce more than one reachable commit relative to the preceding head.
 A pushed merge can therefore aggregate changes from several commits into one arrival.
 Each event retains `introducedCommitCount`,
 `removedCommitCount`,
@@ -166,13 +174,16 @@ Each of the three workflow endpoints returned zero runs for every requested day.
 An independent unfiltered query then returned each workflow's complete history,
 with returned counts equal to total counts:
 
-- Windows: 33 runs;
+- Windows:
+  33 runs;
   earliest run created October 15 at `01:54:11Z`.
   [Earliest Windows run](https://github.com/Aquaticats/Monochromatic/actions/runs/38668138999)
-- Alpine: 13 runs;
+- Alpine:
+  13 runs;
   earliest run created October 15 at `03:13:45Z`.
   [Earliest Alpine run](https://github.com/Aquaticats/Monochromatic/actions/runs/38675162941)
-- Release: 29 runs;
+- Release:
+  29 runs;
   earliest run created October 15 at `00:03:20Z`.
   [Earliest release run](https://github.com/Aquaticats/Monochromatic/actions/runs/38657771731)
 
@@ -254,6 +265,28 @@ reruns,
 storage,
 and agent-requested experiments.
 Neither the observed push count nor a direct music-player count alone prices the repository-wide target.
+
+## Verification
+
+Validation matched every retained run ID against the collected API rows,
+recounted every daily direct/projected group,
+checked chronological head continuity and consecutive run numbers,
+and checked all 28 daily query totals against their returned pages.
+An independent `git diff --name-status --no-renames` extraction matched 21 selected tree transitions,
+covering daily boundaries,
+each observed direct category,
+and a push introducing multiple commits.
+The three nonempty unfiltered workflow histories provide controls for the empty date-filtered results.
+Interval-union controls returned the expected durations for overlapping,
+disjoint,
+and contained intervals,
+as well as zero for the empty set.
+These controls validate calculation behavior;
+they do not create missing historical job observations.
+
+The evidence JSON was formatted with the repository's dprint configuration.
+The Markdown report was rendered through Pandoc's CommonMark reader,
+with its lists and links inspected in the resulting HTML.
 
 [runs-api]: https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-workflow
 [jobs-api]: https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run
