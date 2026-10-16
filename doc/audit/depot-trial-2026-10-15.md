@@ -345,6 +345,23 @@ No account setting was changed.
 
 ## Monthly plan scenarios
 
+The [expanded change-stream replay](depot-expanded-cost-2026-10-15.md)
+is the current cost assessment.
+Applying five measured workloads to the pretrial change stream gives Developer monthly subtotals of
+USD 77.35 for every affected revision,
+USD 73.06 with cancellation of unfinished superseded work,
+and USD 20 for daily-latest Depot allocation with affected-push validation retained on GitHub.
+Startup costs USD 200 before excluded charges.
+These subtotals exclude unmeasured browser and other-package work,
+full desktop interaction,
+releases,
+agent experiments,
+and retention.
+The every-affected subtotal leaves USD 122.65 before the ceiling,
+or USD 107.65 at 100 GB average storage.
+The initial bundle scenarios in this section remain illustrative observations,
+not the expanded workload forecast.
+
 Prices are published provider rates checked on October 15,
 not an account invoice.
 Developer includes 500 container minutes,

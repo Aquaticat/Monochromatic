@@ -16,8 +16,14 @@ The contemporaneous Scorecard log explicitly reports installation quota exhausti
 The scanner's old provenance returns HTTP 404 through repository endpoints,
 but `users/Aquaticat/attestations/<digest>` retains its signed bundles.
 Verification using the downloaded bundle and original repository identity passed locally.
-The consumer repair is being verified before closure;
-the scheduling investigation is prototyping a GraphQL gate that preserves rolling admission semantics.
+The consumer repair passed production run `38830142505`,
+including provenance verification and the scan.
+Positive and negative controls accept the original archive and reject altered bytes and an unrelated signer identity.
+The Cargo metadata generator and its eight managed manifests now use the organization URLs;
+already published manifests are immutable and were not republished.
+The scheduling investigation is preparing a GraphQL query replacement that preserves the existing gate policy.
+The live prototype inspected 954 runs with 10 requests and no REST requests;
+the actual workflow-token query also passed in run `38830412356`.
 
 The Android context experiment completed with 16 passes and no failures or skips,
 and its disposable visible emulator was shut down.
@@ -25,7 +31,7 @@ The full desktop suite reached the wide-session folder fixture failure under dir
 trial commit `0995d00e8d` runs every session independently so that failure cannot hide later sessions.
 Remaining work is to collect those results,
 update the Android evidence,
-finish the expanded monthly cost report and account-limit interpretation,
+reconcile the completed expanded monthly cost report and account-limit interpretation,
 and reconcile the coverage proposal with these measurements.
 
 ## Purpose and current state
@@ -762,8 +768,11 @@ the rerun has fourteen passes,
 two failures,
 and no skips.
 The [device evidence](../audit/depot-android-device-2026-10-15.evidence.json) records individual statuses.
-An isolated test-only context experiment is running from trial commit `bf426f7c13`;
-the desktop direct-software-session comparison is run `38828362014` at `214e7fd376`.
+The isolated test-only context experiment from trial commit `bf426f7c13`
+passed all 16 cases without skips and its emulator was shut down.
+The initial desktop direct-session run `38828362014` failed before E2E execution because the compositor path was absent.
+The corrected run `38828801464` exercised the software-rendered app and reached the wide-session folder fixture timeout.
+Run `38830049770` collects every session independently.
 No passing full-device-suite claim is made for the unchanged tests.
 
 The [coverage inventory](../planning/depot-expanded-coverage.md)
