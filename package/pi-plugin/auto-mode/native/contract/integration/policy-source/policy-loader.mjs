@@ -8,6 +8,7 @@ import {copyOptions} from '../../collector/resource-input-custody/values.ts';
 import {createGoverningContextEmitter} from './context-emission.mjs';
 import {readBoundResourceFrame} from '../../collector/rule-relevance-sdk-copy/input/resource-owner.mjs';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
+import {captureDecisionMaterial} from './decision-material.mjs';
 
 //region The loader owns mutable input publication and its exact native resource binding.
 /**
@@ -193,10 +194,14 @@ export function createPolicyLoaderState({
       priorContext:inputState.contextPublication?.prior
     })
   });
+  const decisionSelection=policy.relevance?captureDecisionMaterial({
+   sources:Object.freeze([source,...contextInputs.filter(function independent(source){return source.carrier===undefined;})]),
+   input:{parsePolicy:policy.relevance.parse,relevance,relevanceFailure}
+  }):undefined;
   inputState.binding=Object.freeze({
+    decisionSelection,
     relevance,
     relevanceFailure,
-    parsePolicy:policy.relevance?.parse,
     resourceReceiptInputs:inputState.retainedResourceReceipts,
     source,
     frame,

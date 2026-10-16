@@ -1,7 +1,6 @@
 import {createHash} from 'node:crypto';
 import {buildVisibleContext} from '../maintained-policy.mjs';
 import {sessionEntryToContextMessages} from '../native-batch/generated/session-manager.mjs';
-import {captureDecisionMaterial} from './decision-material.mjs';
 
 //region Current policy and visible conversation are selected before semantic candidates.
 /** Retained callback receipts authenticate inputs locally; they are not additional current instructions. */
@@ -23,7 +22,11 @@ export function captureDecisionContext({snapshot,session,input}){
    ...snapshot.contextPromptInputs.filter(function independentContext(source){return source.carrier===undefined;}),
    ...(conversation?[conversation]:[])
  ]);
- const selection=input?.parsePolicy?captureDecisionMaterial({sources,input}):undefined;
+ const original=input?.decisionSelection;
+ const selection=original?.material?Object.freeze({
+  ...original,
+  material:Object.freeze([...original.material,...(conversation?[Object.freeze({sourceOrdinal:sources.length-1,content:conversation.content})]:[])])
+ }):original;
  return Object.freeze({sources,conversation,selection});
 }
 

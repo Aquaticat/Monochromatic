@@ -11,7 +11,7 @@ import {projectPolicyMaterial,projectVisibleOperation} from '../dist/native/cont
 const policyText='# Fixture permission rules\n\nRUL: Never read restricted.txt.\n\nUNK: Uncertain fixture rule.\n\nFMT: Use sentence case.\n\nEDG: Ask before publishing.\n';
 const requests=[];
 const scores={RUL:0.9,UNK:0.59,FMT:0.1,EDG:0.6};
-const state={fail:false};
+const state={fail:false,parses:0};
 const env=await createEnvironment({policyText,createRelevance({root,parse}){
  process.env.AUTO_MODE_LLMGATEWAY_API_KEY='synthetic-startup-fixture';
  globalThis.fetch=async function authoredClassifier(url,init){
@@ -27,7 +27,7 @@ const env=await createEnvironment({policyText,createRelevance({root,parse}){
    return {name:question.name,type:'predicate',probability:scores[selected.id]};
   }),usage:{input_tokens:100,output_tokens:0}});
  };
- return createStartupRelevance({root,parse});
+ return createStartupRelevance({root,parse(input){state.parses++;return parse(input);}});
 }});
 await using cleanup={async [Symbol.asyncDispose](){await env.drain();}};
 assert.equal(requests.length,1,'Initialization must classify missing rules before the first tool call');
@@ -36,7 +36,10 @@ const first=env.policyInput.readCurrent();
 assert.equal(first.relevanceFailure,undefined);
 const hidden=Object.freeze({content:'HIDDEN_TOOL_PROMPT',occurrence:Object.freeze({})});
 const snapshot={hostGoverningPolicy:first.source,contextPromptInputs:[],hostPromptInput:hidden,resourceSystemInput:hidden,appendPromptInputs:[hidden],forcedPromptInput:hidden,toolGuidelineInputs:[hidden],skillDescriptionInputs:[hidden],builtInPromptInputs:[hidden]};
+const parsesBeforeCapture=state.parses;
 const decision=captureDecisionContext({snapshot,input:first});
+captureDecisionContext({snapshot,input:first});
+assert.equal(state.parses,parsesBeforeCapture,'Repeated source captures must reuse the loader-owned excerpts without parsing policy again');
 assert.deepEqual(decision.sources,[first.source]);
 const excludedRules=decision.selection.excluded.map(function excluded(rule){return {...rule,sourceOrdinal:0};});
 const bindings=createGoverningRuleSet({parse:env.parser.parse,readSources(){return decision.sources;},excludedRules});
