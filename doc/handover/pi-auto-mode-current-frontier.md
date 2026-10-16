@@ -9,6 +9,43 @@ Updated 2026-10-16.
 
 ## Active work on 2026-10-15
 
+### Reopened manual fallback and resource measurement on 2026-10-16
+
+The installed release remains incomplete for ordinary inspection across a real conversation.
+The earlier passing initial-command replay did not establish that broader claim.
+Session `2026-10-16T02-17-34-349Z_01a14280-1b8c-7186-9ebb-fc9c2e546e0c`
+reached manual approval for the group inspecting task headings with `grep` and reading this document with `sed`.
+Review `51396c5c-31bb-476b-bac9-ded1c23150be` admitted `RGP` and `CM3` as prohibitions at `0.64` and `0.70`.
+Its whole-operation answer was `deny: 0.57`, `approve: 0.41`, `unknown: 0.02`;
+the existing `0.60` cutoff correctly routed that uncertain answer to manual review.
+This establishes a semantic-review failure, not a timeout.
+The user explicitly excluded the concurrent sessionStorage warning from investigation.
+
+The exact decision log and extracted operation assessment are retained under
+`${HOME}/temp/agent/pi-manual-fallback-20261016`.
+Next: replay the saved assessment, measure unchanged-input variation, and qualify a remedy against
+the actual conversation and explicit prohibition controls without weakening the adopted threshold.
+The earlier readiness claim is retracted beyond its tested commands.
+
+The user also requested local resource drain.
+Read-only `/proc` samples of live Pi PID `2545748` at uptime `193399.71` and `193421.52` seconds
+recorded `5022` and `5473` CPU ticks at `100` ticks per second:
+`4.51` CPU seconds over `21.81` elapsed seconds, or `20.7%` of one core.
+The later `ps` RSS was `639128` KiB, approximately `624` MiB;
+the earlier RSS was `690656` KiB.
+OS write counters increased from `61661184` to `62574592` bytes.
+These measurements cover the whole Pi process, exclude child processes,
+and do not isolate approval overhead or measure power consumption.
+The process exited before further sampling.
+
+The earlier disposable two-command replay `pi-hyper-rpc-allow-JPMcvY`
+reported `771295` input tokens, zero cached tokens, `518` questions,
+and `3958323` request bytes across four Luna calls.
+Individual calls took `3418.46`, `2670.05`, `2032.04`, and `683.05` milliseconds;
+these overlap and must not be summed as elapsed latency.
+Its log directory occupied `28163758` apparent bytes including directory metadata.
+These are one-run observations, not stable averages or isolated approval CPU measurements.
+
 ### Completed false prohibition and log corruption correction on 2026-10-16
 
 The MiMo session `2026-10-16T01-17-32-548Z` rejected a group containing repository inspection commands.
