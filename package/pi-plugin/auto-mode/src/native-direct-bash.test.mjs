@@ -10,8 +10,8 @@ import {createOwnedCodemodeDefinition} from '../dist/native/contract/integration
 
 //region Original direct shell groups receive complete-operation estimates before native execution.
 const mode=process.argv[2]??'permission';
-assert.ok(['permission','prohibition','unknown','mixed'].includes(mode));
-const permitted=mode==='permission'||mode==='mixed';
+assert.ok(['permission','prohibition','unknown','mixed','misclassified-prerequisite'].includes(mode));
+const permitted=mode==='permission'||mode==='mixed'||mode==='misclassified-prerequisite';
 const relation=mode==='prohibition'?'prohibition':'permission';
 const env=await createEnvironment({policyText:`RUL:\n The complete proposed operation is ${relation==='permission'?'permitted':'prohibited'}.\n`,hostPrompt:'Fixture background.',useNativeProvider:true});
 const {createBashToolDefinition}=await import(pathToFileURL(join(env.packageRoot,'dist/core/tools/bash.js')).href);
@@ -21,7 +21,7 @@ const bash={...originalBash,async execute(toolCallId,input,signal,onUpdate,conte
 const {session,root,lifecycle}=await createRootSessionFactory(env).create({options:{...env.options,tools:['bash','codemode','read'],customTools:[bash,env.createReadToolDefinition(env.options.cwd),createOwnedCodemodeDefinition()]}});
 session.agent.getApiKey=function fixtureKey(){return process.env.FIXTURE_API_KEY;};
 const observations={assessments:0,httpCalls:0};
-const settings={relation,operatingPolicy:true,httpTransport:true,unresolvedClause:mode==='unknown'?'unknown':undefined};
+const settings={relation,operatingPolicy:true,httpTransport:true,unresolvedClause:mode==='unknown'?'unknown':mode==='misclassified-prerequisite'?'prerequisite':undefined,operationDecision:mode==='misclassified-prerequisite'?'approve':'unknown'};
 const sendAssessment=createDomainFixtureAssessment({settings,observations});
 const commands=['printf NATIVE_DIRECT_BASH_A','printf NATIVE_DIRECT_BASH_B'];
 const calls=commands.map(function proposedCommand(command,index){return {index,id:`bash-${index}`,type:'function',function:{name:mode==='mixed'&&index===1?'codemode':'bash',arguments:JSON.stringify(mode==='mixed'&&index===1?{code:'return await tools.read({path:"AGENTS.md"});'}:{command})}};});
@@ -42,6 +42,7 @@ await using cleanup={async [Symbol.asyncDispose](){session.dispose();await sessi
  assert.ok(review,'Original direct calls must reach policy review');
  assert.equal(review.semanticAdmission.state,'matching');
  assert.ok(observations.assessments>0,'Direct Bash must reach automatic assessment');
+ if(mode==='misclassified-prerequisite')assert.equal(observations.assessments,2,'An unresolved prerequisite must reach the whole-operation decision model before manual fallback');
  assert.equal(review.outcome.state,mode==='unknown'?'unresolved':'resolved');
  if(mode!=='unknown')assert.equal(review.outcome.verdict,permitted?'approve':'deny');
  assert.equal(executions.count,mode==='mixed'?1:permitted?2:0);

@@ -31,7 +31,8 @@ function authoredWireAnswer({body}){
      2,
      'Later receipts must not revise the first assessment'
    );observations.nextInputQuestions++;}
-   const choice=laterInstruction?'prohibition':selectedClause?(unresolvedClause??relation):'none';
+   const operationDecision=Object.hasOwn(question.criteria,'approve');
+   const choice=operationDecision?(settings.operationDecision??'unknown'):laterInstruction?'prohibition':selectedClause?(unresolvedClause??relation):'none';
    const score=operatingPolicy?(selectedClause&&lowConfidenceClause?0.599999:(choice==='unknown')||(choice==='unsupported')?1:0.6):1;
    assert.ok(Object.hasOwn(
      question.criteria,

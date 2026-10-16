@@ -925,3 +925,7 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs unknown",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs mixed",
 ]
+
+[tasks."test:native:decision-fallback"]
+description = "Reconsider unresolved clause prerequisites through the whole-operation model before manual review"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs misclassified-prerequisite"
