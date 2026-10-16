@@ -113,15 +113,21 @@ The `.out-of-scope/` search found no Scorecard-specific exemption.
 The source establishes an intentional context restriction;
 this investigation has not established an upstream defect.
 
-1.   Upstream fault: not established.
+1.   Upstream fault:
+     not established.
      The adapter needs explicit default-branch semantics.
-2.   Fix feasibility: branch selection is configurable in principle,
+2.   Fix feasibility:
+     branch selection is configurable in principle,
      but changing its supported contract is outside this trial.
-3.   Supported use case: the README labels manual dispatch experimental;
+3.   Supported use case:
+     the README labels manual dispatch experimental;
      it does not promise arbitrary non-default-branch remote analysis.
-4.   Contribution policy: not evaluated because no upstream defect is proposed.
-5.   Maintainer disposition: not evaluated for the same reason.
-6.   Upstream prototype: none.
+4.   Contribution policy:
+     not evaluated because no upstream defect is proposed.
+5.   Maintainer disposition:
+     not evaluated for the same reason.
+6.   Upstream prototype:
+     none.
      The consumer adaptation is isolated and has not yet executed its conditional analysis path.
 
 ## Local task-template collision
@@ -152,6 +158,8 @@ No Docker command executes in those template fixtures.
 This is a consumer syntax error,
 not an upstream `mise` defect;
 no upstream change or filing is proposed.
+The repository tracks the corrected adapter error in
+[issue #1058](https://github.com/Aquaticats/Monochromatic/issues/1058).
 
 [action-metadata]: https://github.com/ossf/scorecard-action/blob/f49aabe0b5af0936a0987cfb85d86b75731b0186/action.yaml
 [action-options]: https://github.com/ossf/scorecard-action/blob/f49aabe0b5af0936a0987cfb85d86b75731b0186/options/options.go
