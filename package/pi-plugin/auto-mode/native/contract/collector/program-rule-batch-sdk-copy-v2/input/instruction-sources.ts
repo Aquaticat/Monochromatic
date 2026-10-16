@@ -87,7 +87,7 @@ export function createInstructionSources({
       function createRuleBindings(): GoverningRuleSet {
         return createGoverningRuleSet({
           parse,
-          excludedRules:readJudgmentSources().decisionContext?.selection?.excluded?.map(function excludedRootRule(rule){return {...rule,sourceOrdinal:0};}),
+          excludedRules:readJudgmentSources().decisionContext?.selection?.excluded?.map(function excludedRootRule(rule){return {...rule,sourceOrdinal:0};})??[],
           readSources: readGoverningSources
         });
       }

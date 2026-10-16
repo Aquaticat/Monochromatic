@@ -26,7 +26,10 @@ The user further required startup relevance selection for `AGENTS.md` and prohib
 Initialization refreshes Luna's permission-relevance classification of individual original rules.
 The existing policy-change cache direction retains unchanged classifications and reclassifies changed rules;
 later operation reviews receive only the selected rules and their needed heading context.
-Uncertain relevance remains included rather than being mistaken for definite irrelevance.
+The user subsequently directed that uncertain rules also be culled.
+Only tagged rules with relevance probability at least `0.60` remain selected;
+lower scores are excluded from both action questions and shared context.
+This selection cutoff does not change the separate action-approval cutoff.
 The complete file remains local for source freshness and indexing.
 Neither relevance classification nor cache reuse grants permission to execute an operation.
 The old experimental relevance cache was not connected to the installed host and admitted no exclusions;

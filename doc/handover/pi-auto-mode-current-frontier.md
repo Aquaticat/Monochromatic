@@ -29,15 +29,24 @@ The accepted scope is recorded in `doc/decision/pi-auto-mode-semantic-admission.
 The user then corrected the source boundary:
 include visible conversation, proposed operation, and readable project policy files;
 exclude Pi's hidden instructions, tool metadata, and skill catalog.
-The shared permission-scope question change is committed but has not been activated.
-The collector must now select permitted source origins before clause questions are constructed.
+The shared permission-scope question change is committed.
+Collector selection now excludes hidden Pi inputs before clause indexing.
 The user additionally required initialization-time Luna relevance selection and no complete `AGENTS.md` payload.
 The existing `native/contract/lifecycle/rule-relevance-cache` supplies original-source lifetime,
 incremental rule hashing, persistence, and concurrency checks.
-Its current request still includes `fullPolicy`, production bootstrap does not configure it,
-and its returned view deliberately admits no exclusions.
-Reuse and extend that owner rather than creating a parallel cache.
+The initial inspection found that its requests included `fullPolicy`, production bootstrap did not configure it,
+and its returned view deliberately admitted no exclusions.
+Commits `d9e9771bd8`, `c35670685a`, and `22532b415e` connect that owner to startup and reload,
+filter original clause handles, and transmit selected source excerpts instead of complete policy documents.
+The cache continues to publish estimates without permission;
+the decision consumer applies the user's selected relevance cutoff.
 The earlier adopted direction refreshes only changed or missing rules after startup cache lookup.
+The user subsequently required uncertain rules to be culled too.
+The current selection retains only tagged rules scoring at least `0.60` for potential permission relevance.
+The action-approval cutoff remains `0.60` independently.
+The first candidate build completed, but type checking found missing declarations and an optional-array type mismatch.
+Those fixes and the updated selection cutoff are committed before the next verification.
+No installed-runtime verification has yet passed for this candidate.
 
 - [ ] Restrict review sources to visible conversation, operation, and readable policy files.
 - [ ] Wire startup relevance refresh into the installed host; remove complete-document classifier payloads.
@@ -47,8 +56,8 @@ The earlier adopted direction refreshes only changed or missing rules after star
 
 The exact decision log and extracted operation assessment are retained under
 `${HOME}/temp/agent/pi-manual-fallback-20261016`.
-Next: correct collector source selection, prove exclusion and policy-file retention with positive controls,
-then qualify the captured conversation and explicit prohibition controls without weakening the threshold.
+Next: verify source selection and startup relevance through the built consumer,
+then qualify the captured conversation and explicit prohibition controls without weakening the approval threshold.
 The earlier readiness claim is retracted beyond its tested commands.
 
 The user also requested local resource drain.

@@ -34,7 +34,7 @@ export function createStartupRelevance({root,parse}){
   directory:join(homedir(),'.cache','monochromatic','pi-rule-relevance'),
   namespace:{repository:root,primaryBranch:'project-policy'},
   parse,
-  profile:{model:ruleAssessmentModel,questionVersion:'permission-boundaries-2',remitVersion:'human-readable-inputs-1',qualificationVersion:'retain-uncertain-1'},
+  profile:{model:ruleAssessmentModel,questionVersion:'permission-boundaries-2',remitVersion:'human-readable-inputs-1',qualificationVersion:'positive-relevance-0.60-1'},
   assessBatch,
   trace(event){tagged({tag:'relevance-cache',l}).debug(JSON.stringify(event));}
  });
