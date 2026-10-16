@@ -7,8 +7,12 @@ and the existing seven-session interaction suite.
 It runs on the isolated `trial/depot-prepared-desktop-20261016` branch,
 starting from the verified trial source `d6deca5fa5`.
 Production workflows and subscription settings are unchanged.
-The experiment is in progress;
-the initial runtime probe is [Depot run `bm8l40jmnp`](https://depot.dev/orgs/l4zncjjbj5/workflows/bm8l40jmnp).
+The experiment is in progress.
+[Depot run `9jfk6fsklc`](https://depot.dev/orgs/l4zncjjbj5/workflows/9jfk6fsklc)
+completed the native-runtime probe.
+Prepared artifact build [run `xxs92vjc25`](https://depot.dev/orgs/l4zncjjbj5/workflows/xxs92vjc25)
+and nested-boot verification [run `t7n42wkr5n`](https://depot.dev/orgs/l4zncjjbj5/workflows/t7n42wkr5n)
+are the current dependent experiments.
 
 The earlier [package snapshot experiment](depot-expanded-cost-2026-10-15.md)
 verified the installed versions of 23 packages and ImageMagick in separate fresh consumers,
@@ -39,8 +43,8 @@ Consequently this experiment checks installed files separately from live service
 Upstream systemd tag `v255`,
 commit `db11bab38ccf1ed257f310d29070843d4c58ea01`,
 rejects a user-manager startup when `sd_booted()` reports that the host was not booted with systemd.
-This is a source finding,
-not yet a claim about the exact installed version in the Depot consumer.
+The consumer reports Ubuntu package version `255.4-1ubuntu8.18`;
+its actual direct-start diagnostic matches this upstream guard.
 [Systemd `src/core/main.c`](https://github.com/systemd/systemd/blob/v255/src/core/main.c#L2650)
 contains:
 
@@ -59,6 +63,50 @@ and delegated cgroup hierarchy.
 The runtime probe checks the actual snapshot's namespace support and available container tools
 before attempting that route.
 No host-runtime marker is fabricated to bypass `sd_booted()`.
+
+### Native snapshot findings
+
+[Run `9jfk6fsklc`](https://depot.dev/orgs/l4zncjjbj5/workflows/9jfk6fsklc)
+reports UID 1001,
+PID 1 executable `/init`,
+no session-bus environment,
+and writable cgroup v2 with `nsdelegate`.
+Both an unprivileged user/PID namespace probe and a privileged mount/PID namespace probe exit successfully.
+Direct `systemd --user` exits with status 1 and:
+
+```text
+# Actual systemd diagnostic from the fresh Depot consumer
+Trying to run as user instance, but the system has not been booted with systemd.
+```
+
+Podman `5.8.4` and Docker `28.0.4` are already installed.
+The selected next probe uses Podman's documented
+[external root filesystem overlay and systemd mode](https://docs.podman.io/en/latest/markdown/podman-run.1.html).
+It adds no package installation:
+the container uses the snapshot filesystem as its read-only lower layer and discards its writable overlay at removal.
+Podman's systemd mode supplies private runtime mounts and a writable container cgroup hierarchy.
+The probe sets no network,
+a 2-GB memory limit,
+two CPUs,
+and a 90-second lifetime.
+
+### Probe corrections
+
+The initial [run `bm8l40jmnp`](https://depot.dev/orgs/l4zncjjbj5/workflows/bm8l40jmnp)
+stopped at an optional unprivileged `/proc/1/exe` read with `EACCES`.
+That was a probe error,
+not evidence that the later namespace or service checks failed.
+The corrected probe records a privileged `readlink` result independently;
+it returned `/init`.
+
+The first nested-boot [run `nj4x2frgwk`](https://depot.dev/orgs/l4zncjjbj5/workflows/nj4x2frgwk)
+created the container successfully,
+but immediately querying its systemd manager returned
+`Failed to connect to bus: No such file or directory`.
+The container was stopped and removed.
+The follow-up probe waits for an actual manager response before starting user services
+and captures console boot diagnostics.
+The first result alone does not distinguish delayed readiness from a failed boot.
 
 ## Evidence collection
 
