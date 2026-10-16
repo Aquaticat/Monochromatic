@@ -44,7 +44,40 @@ The file-sink regression also failed before serialization and passes after the f
 Logger's complete unit suite and type check pass;
 package lint reports zero warnings and errors across `58` files.
 The user requested the version bump for automatic publication.
-Next: finish the live clause controls and installed-host replay while the logger release runs.
+The unchanged live DCB replay repeated prohibition scores `0.62` and `0.63` across three runs.
+Reducing the batch to the DCB questions left those answers unchanged.
+Local choice rubrics changed the choices to `none` but did not reach admission.
+Full local interpretation instructions distinguishing rule examples from proposed invocations
+produced six `none` answers above `0.60` in the next repeated replay.
+The candidate retains complete shared context and now also supplies local instructions and rubrics.
+Broader semantic controls still exposed uncertain first-pass answers for printed command data,
+reading under a modification restriction,
+and an inapplicable approval requirement.
+Those controls have not passed the predeclared first-pass cutoff;
+do not describe the prompt change as universal semantic qualification.
+Next verify those cases through whole-operation recovery and finish the installed-host replay.
+
+Logger release commit `f6c406c1c2` bumps `0.4.0` to `0.4.1`.
+The initial npm run `38835764830` failed startup because the Actions allowlist excluded Changesets.
+The user added `changesets/*` at the organization;
+the repository API confirms it and SHA pinning remains required.
+Restarted npm run `38836163322` built and packed the package,
+then failed publishing with `ERR_PNPM_FAILED_TO_PUBLISH`, HTTP `404 Not Found`.
+Its npm trusted-publisher configuration still needs inspection.
+No successful npm publication has been established.
+
+The private registry's `401 Unauthorized` occurred after repository transfer:
+GitHub reports repository ID `710240121`, owner `Aquaticats`, owner ID `343218767`.
+The user approved updating the corresponding trust identity.
+Commits `39fc0da926` and `15e8a365d1` update the generator and regenerated config;
+only subject, owner ID, and workflow reference changed.
+Private publish run `38836247574` still returned `401`.
+The configured deployment's adoption of the new identity is unverified.
+The existing registry runbook records withheld host SSH and Coolify API access;
+honor that boundary when checking deployment.
+Next inspect npm trust through available authenticated tools,
+finish model/host verification,
+and ask for the remaining deployment action only if the authorized bridges cannot perform it.
 
 ### Decision-model fallback correction on 2026-10-16
 
