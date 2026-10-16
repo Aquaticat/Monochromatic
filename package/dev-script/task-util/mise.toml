@@ -138,7 +138,14 @@ const identity = { schemaVersion: 1, caseId: manifest.caseId, sourceRevision, ma
 const results = []
 const logDirectory = join(directory, 'check-logs')
 mkdirSync(logDirectory, { recursive: true, mode: 0o700 })
+const requestedIds = process.env.DEPOT_CI_CHECK_IDS ? JSON.parse(process.env.DEPOT_CI_CHECK_IDS) : undefined
+if (requestedIds) {
+  assert(Array.isArray(requestedIds) && requestedIds.length > 0, 'Explicit check selection must be a nonempty JSON array')
+  assert.equal(new Set(requestedIds).size, requestedIds.length, 'Explicit check selection must not repeat IDs')
+  for (const id of requestedIds) assert(typeof id === 'string' && manifest.checks.some((check) => check.id === id), `Unknown explicitly selected check: ${id}`)
+}
 const initialDeferred = manifest.checks.filter((check) => {
+  if (requestedIds) return !requestedIds.includes(check.id)
   const container = check.task.endsWith(':test:mutation') || check.task.endsWith(':test:container')
   if (wave === 'static') return !check.task.endsWith(':lint:oxlint') && !check.task.endsWith(':lint:types')
   if (wave === 'unit') return !check.task.endsWith(':test:unit')
@@ -160,7 +167,7 @@ for (let index = 0; index < prerequisiteQueue.length; index += 1) {
 }
 const deferredChecks = manifest.checks.filter((check) => !activeIds.has(check.id)).map((check) => ({ checkId: check.id, reason: `Required check belongs to another execution wave; current wave: ${wave}` }))
 for (const check of manifest.checks.filter((item) => activeIds.has(item.id))) assert((check.prerequisites ?? []).every((id) => activeIds.has(id)), `Selected check has a deferred prerequisite: ${check.id}`)
-console.log("\n" + JSON.stringify({ ...identity, event: 'case-started', completeGraph: false, deferredChecks, tools: JSON.parse(execFileSync('mise', ['ls', '--current', '--json'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 })) }))
+console.log("\n" + JSON.stringify({ ...identity, event: 'case-started', completeGraph: false, requestedCheckIds: requestedIds, activeCheckIds: [...activeIds], deferredChecks, tools: JSON.parse(execFileSync('mise', ['ls', '--current', '--json'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 })) }))
 async function execute(check) {
   const startedAt = new Date().toISOString()
   const started = performance.now()
