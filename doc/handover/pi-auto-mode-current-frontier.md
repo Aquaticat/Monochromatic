@@ -112,6 +112,10 @@ The warning queue is ready for the [MiMo cleanup prompt](pi-auto-mode-mimo-lint-
 The user accepted the VUB clarification requiring configured extensions, skills, and tool catalogs in consumer checks.
 `AGENTS.md` is updated and `CLAUDE.md` regenerated through file-enforcer.
 The revised rule has 197 normalized characters and 26 words.
+Pandoc CommonMark rendering and inspection pass for the rule sources,
+package READMEs,
+troubleshooting record,
+and MiMo handoff documents.
 
 ### Host-isolation replacement complete
 
