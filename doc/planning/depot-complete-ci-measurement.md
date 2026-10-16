@@ -586,12 +586,23 @@ Oxlint checks require package or project scope and empty file arguments.
   retries,
   and final verification in cost accounting.
   Separate additive resource consumption from elapsed wall-clock unions.
-- [ ] Require every selected gate to reach its accepted terminal result on the immutable source.
-  A started,
-  skipped,
-  failed,
+- [ ] Reconcile every eligible immutable-source command with a terminal attempt
+  or a verified failed-prerequisite disposition.
+  Preserve historical source failures as failed outcomes,
+  and execute independent checks despite those failures.
+  Harness omissions,
+  deferred waves,
+  wrong working directories or toolchains,
+  and unverified dependency blocks remain incomplete execution.
+  A skipped record does not establish a verified prerequisite failure by itself.
+- [ ] Report passing CI separately from completed execution/accounting.
+  Passing CI requires every required gate to succeed
+  or its existing policy to permit nonexecution.
+  A failed,
   cancelled,
-  or unobserved required gate does not establish completed CI.
+  or unobserved required gate cannot establish passing CI.
+  Successful-pipeline latency requires a complete passing replay;
+  a diagnosed failure supplies only the observed failed-pipeline timeline.
 - [ ] Report unexercised validation families and unresolved selector edges explicitly.
   No weighted monthly projection can turn missing execution into measured coverage.
 
