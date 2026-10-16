@@ -9,7 +9,7 @@ Updated 2026-10-16.
 
 ## Active work on 2026-10-15
 
-### Active false prohibition and log corruption correction on 2026-10-16
+### Completed false prohibition and log corruption correction on 2026-10-16
 
 The MiMo session `2026-10-16T01-17-32-548Z` rejected a group containing repository inspection commands.
 Its decision evidence identifies `DCB` as the blocking clause at prohibition scores `0.62` and `0.63`.
@@ -21,12 +21,12 @@ when both automatic reviews fail,
 and requested fixes for every issue shown.
 The user reiterated that accommodating Luna's interpretation failures is part of the product requirement.
 
-- [ ] Reproduce and correct clause-denial routing, retaining whole-operation denials and original ownership checks.
-- [ ] Measure the actual DCB clause interpretation against inspection and restricted-operation controls;
+- [x] Reproduce and correct clause-denial routing, retaining whole-operation denials and original ownership checks.
+- [x] Measure the actual DCB clause interpretation against inspection and restricted-operation controls;
       correct the assessment path rather than treating the false classification as an acceptable vendor quirk.
-- [ ] Reproduce and fix concurrent JSONL record corruption;
+- [x] Reproduce and fix concurrent JSONL record corruption;
       the incident log contains two malformed physical lines with interleaved record content.
-- [ ] Verify the installed host with the reported commands and record the final evidence.
+- [x] Verify the installed host with the reported commands and record the final evidence.
 - [x] Publish logger `0.4.1` through the automatic release workflows and verify the registry artifact,
       as requested by the user.
 
@@ -55,7 +55,11 @@ reading under a modification restriction,
 and an inapplicable approval requirement.
 Those controls have not passed the predeclared first-pass cutoff;
 do not describe the prompt change as universal semantic qualification.
-Next verify those cases through whole-operation recovery and finish the installed-host replay.
+The installed recovery matrix now verifies reconsideration after an admitted first-pass denial,
+including uncertainty and failure in the whole-operation decision.
+The live installed replay also passes;
+this establishes recovery and the reported operation boundary,
+not universal first-pass semantic accuracy across the broader controls.
 
 Logger release commit `f6c406c1c2` bumps `0.4.0` to `0.4.1`.
 The initial npm run `38835764830` failed startup because the Actions allowlist excluded Changesets.
@@ -77,10 +81,35 @@ The live installed replay did execute both reported commands without a dialog in
 with four successful Luna requests.
 That passing sample does not exercise recovery from an admitted false prohibition.
 The candidate's corresponding matrix and repeated live command replays passed before publication work.
-Next rebuild and activate the corrected runtime,
-then verify the installed regression and live replay.
+The full package build then staged and activated `native-release-ikWviS`.
+All 22 installed `test:native:decision-fallback` cases pass,
+including false-prohibition approval and denial,
+uncertainty,
+transport failure,
+Allow/Stop,
+headless withholding,
+source changes,
+and cancellation.
+The live installed replay `pi-hyper-rpc-allow-JPMcvY` executes both reported Bash commands,
+makes four successful Luna requests,
+and opens no dialog.
+Its persisted log check parses 142509 physical JSONL lines with zero malformed lines,
+including 1043 correlated diagnostic records,
+two complete assessment requests and responses,
+and 518 question-evidence records.
+The live prohibition control `pi-hyper-rpc-prohibited-adEoOO` blocks both reads,
+makes two successful Luna requests,
+and opens no dialog.
+New Pi processes load the corrected runtime;
+already-running processes retain their loaded modules.
 Receipts:
-`functional-installed-20261016.log` and `functional-installed-prohibition-regression-20261016.log`
+`functional-installed-20261016.log`,
+`functional-installed-prohibition-regression-20261016.log`,
+`functional-native-build-20261016.log`,
+`functional-installed-matrix-20261016.log`,
+`functional-installed-live-final-20261016.log`,
+`functional-installed-log-integrity-20261016.log`,
+and `functional-installed-prohibit-final-20261016.log`
 under `${HOME}/temp/agent/pi-host-isolation-20261015`.
 
 The private registry's `401 Unauthorized` occurred after repository transfer:
@@ -92,9 +121,9 @@ Private publish run `38836247574` still returned `401`.
 The configured deployment's adoption of the new identity is unverified.
 The existing registry runbook records withheld host SSH and Coolify API access;
 honor that boundary when checking deployment.
-Next inspect npm trust through available authenticated tools,
-finish model/host verification,
-and ask for the remaining deployment action only if the authorized bridges cannot perform it.
+The npm publication and installed-host checks are now complete.
+The private registry deployment remains a separate unresolved boundary;
+ask for its remaining deployment action only if the authorized bridges cannot perform it.
 
 ### Decision-model fallback correction on 2026-10-16
 

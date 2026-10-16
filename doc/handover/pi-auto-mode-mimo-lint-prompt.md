@@ -86,9 +86,10 @@ retained archives and the raw provider request must not return as additional mod
 Each clause question also carries the complete proposed operation.
 The regression is `test:native:decision-context`.
 
-Unresolved prerequisite estimates must reach the decision model rather than becoming terminal restrictions.
+Prerequisite estimates and first-pass prohibition estimates must reach the decision model
+rather than becoming terminal restrictions.
 Last-resort Allow authorizes the exact group without rewriting those estimates as satisfied external facts.
-Established prohibitions and final model denials remain terminal.
+Final whole-operation model denials remain terminal.
 Retain correlated assessment inputs, source references, distributions, admission, and fallback reasons in logs.
 Use `test:native:approval` and `test:native:manual-review` when changing this boundary.
 Use `test:native:decision-fallback` for model-before-dialog routing and diagnostic reconstruction.
@@ -97,6 +98,14 @@ Native builds stage immutable releases, including their matching maintained poli
 and validate CLI loading before changing the active link.
 Use `test:native:build-activation` for changes to build publication.
 Do not relocate or delete a release referenced by a running process.
+
+The corrected installed release is `native-release-ikWviS` as of 2026-10-16.
+Its 22 fallback cases,
+live reported-command replay,
+live prohibition control,
+and persisted JSONL integrity check passed.
+Fresh Pi sessions load this release;
+already-running processes retain their loaded modules.
 
 Normal prompt capture retains complete text, source lists, tool metadata, and follow-up history
 without fixture-derived byte or occurrence ceilings.
