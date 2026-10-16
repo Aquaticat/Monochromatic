@@ -6,6 +6,7 @@ import { createQuestionSelection } from '../../../lifecycle/claim-evidence-batch
 import { JudgmentConstructionError } from './judgment-error.ts';
 import { capturePreparedJudgmentJSON } from './judgment-prepared-input.ts';
 import { publishJudgmentMembers } from './judgment-preparation-publication.ts';
+import {captureDecisionMaterial} from '../../../integration/policy-source/decision-material.mjs';
 import type {
   JudgmentPreparationInput,
   JudgmentPreparationState,
@@ -142,7 +143,7 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
           .body,
         mandatoryPolicy,
         governingSources: sources.decisionContext?.sources ?? sources.governingSources,
-        policyMaterial:sources.decisionContext?.selection?.material,
+        policyMaterial:sources.decisionContext?.selection?.material??captureDecisionMaterial({sources:sources.decisionContext?.sources??sources.governingSources,input:{parsePolicy:input.parsePolicy}})?.material,
         instructionAuthority: 'not-established',
       });
       state.selection = createQuestionSelection({

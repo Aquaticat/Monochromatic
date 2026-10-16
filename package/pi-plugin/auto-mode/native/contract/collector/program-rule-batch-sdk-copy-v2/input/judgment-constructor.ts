@@ -216,6 +216,7 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
      Original preparation remains lazy until native members are complete.
      */
     const preparation=createJudgmentPreparation({
+      parsePolicy,
       active,
       budget,
       declaredNames,

@@ -1,12 +1,11 @@
 import {RuleAssessmentWireError,sha} from './wire-source.mjs';
 import {appendAdoptionQuestion} from './wire-adoption.mjs';
-import {appendRequestQuestion} from './wire-request.mjs';
 import {appendHeadingQuestion} from './wire-heading.mjs';
 import {appendClauseQuestion} from './wire-clause.mjs';
 import {appendOperationDecisionQuestion} from './wire-operation.mjs';
 import {operationDecisionDefinition} from './operation-decision-definition.ts';
 import {captureAssessmentDiagnostics} from './assessment-diagnostics.mjs';
-import {sourceInputLocation} from '../../lifecycle/governing-rule-candidates/input-location.mjs';
+import {projectPolicyMaterial,projectVisibleOperation} from './wire-material.mjs';
 import programCatalog from '../../lifecycle/program-rule-wire/catalog.json' with {type:'json'};
 import {questions as meaningCatalog} from '../../research/instruction-prerequisite-relation/cases.mjs';
 import {parseBatchAnswer} from '../../research/instruction-prerequisite-relation/protocol.mjs';
@@ -47,10 +46,12 @@ if(!definitions.operation_violates_rule
  */
 export function bindRuleAssessmentWire(request){
  const envelope=request?.envelope;
- if((!envelope)||(Object.keys(envelope)
+ if((!envelope)||(![
+   'governingSources,instructionAuthority,mandatoryPolicy,parentJSON,preparedJSON,requestBody',
+   'governingSources,instructionAuthority,mandatoryPolicy,parentJSON,policyMaterial,preparedJSON,requestBody'
+ ].includes(Object.keys(envelope)
    .toSorted()
-   .join(',')
-   !=='governingSources,instructionAuthority,mandatoryPolicy,parentJSON,preparedJSON,requestBody'))throw new RuleAssessmentWireError('Mixed assessment requires the original multi-source envelope');
+   .join(','))))throw new RuleAssessmentWireError('Mixed assessment requires the original multi-source envelope');
  for(const field of [
    'parentJSON',
    'preparedJSON',
@@ -58,7 +59,7 @@ export function bindRuleAssessmentWire(request){
  ])if((typeof envelope[field])!=='string')throw new RuleAssessmentWireError(`Original complete operation field is missing: ${field}`);
  // Keep the exact operation beside each clause so its meaning is assessed against the proposed action.
  const proposedOperation=Object.freeze({
-   parent:JSON.parse(envelope.parentJSON),
+   parent:projectVisibleOperation(JSON.parse(envelope.parentJSON)),
    prepared:JSON.parse(envelope.preparedJSON)
  });
  const sources=envelope.governingSources;
@@ -118,8 +119,7 @@ export function bindRuleAssessmentWire(request){
    continue;
   }
   if(head.definitionId==='request_instruction_content'){
-   appendRequestQuestion({envelope,head,binding,definition,index,membership,questions,pairs});
-   continue;
+   throw new RuleAssessmentWireError('Complete hidden provider requests are outside human-readable approval inputs');
   }
   if(head.definitionId==='heading_instruction_content'){
    appendHeadingQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs});
@@ -128,25 +128,9 @@ export function bindRuleAssessmentWire(request){
   appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question,proposedOperation});
  }
  const state={
-   fullPolicy:sources[0]
-     .content,
-   policySourceSHA256:sources[0]
-     .sha256,
-   policyInputLocation:sourceInputLocation(sources[0])
-     .inputLocation,
-   additionalPolicies:sources.slice(1)
-     .map(function describeAdditionalPolicy(
-       source,
-       index
-     ) { return (({
-       sourceOrdinal:index+1,
-       content:source.content,
-       sourceSHA256:source.sha256,
-       ...sourceInputLocation(source)
-     })); }),
-   parentProgram:envelope.parentJSON,
+   selectedPolicyMaterial:projectPolicyMaterial({sources,material:envelope.policyMaterial,questions:input}),
+   parentProgram:JSON.stringify(proposedOperation.parent),
    preparedProgram:envelope.preparedJSON,
-   ...(membership.hasRequestMaterial?{originalRequestBody:envelope.requestBody}:{}),
    catalogSHA256:request.catalogSHA256,
    ...(membership.hasOperation?{assessmentGuidance:guidance}:{}),
    ...(clauseRelations.size > 0?{clauseRelationDefinition:clauseOperationRelation}:{}),
