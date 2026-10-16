@@ -313,3 +313,30 @@ Agent work done:
  #306,
  #307,
  #338) and the legacy plan rewrite.
+
+## Serialized file writes release, 2026-10-16
+
+The owner requested publication of the logger's pending `0.4.1` release.
+This version serializes complete file-sink appends so concurrently queued records larger than a filesystem write chunk
+remain valid JSONL in invocation order.
+The registry still served `0.4.0` when this request arrived.
+The existing `npm-release.yml` attempt
+[38837664209](https://github.com/Aquaticats/Monochromatic/actions/runs/38837664209)
+failed with `ERR_PNPM_FAILED_TO_PUBLISH` and HTTP 404 for `0.4.1`.
+That failure alone does not establish the authentication cause.
+
+The previously verified `npm-publish.yml` workflow now accepts a `module` choice,
+`fs-path` or `logger`,
+and builds and tests the selected module before packing it with pnpm.
+The separate publish job uses npm OIDC and provenance.
+Logger repository metadata now points to `Aquaticats/Monochromatic`.
+The release version remains `0.4.1` because it has not been published.
+
+Commit `61d38bd7041443b236eea75b0a7f00da7e0d53bc` is the source for
+[release run 38838431661](https://github.com/Aquaticats/Monochromatic/actions/runs/38838431661).
+Local `lint:types` and `lint:oxlint` passed with zero warnings and errors.
+The disposable npm consumer has its own private manifest and an explicit installation prefix.
+Next action:
+verify the release run,
+registry provenance,
+and complete ordered records through the installed file sink.
