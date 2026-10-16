@@ -10,7 +10,8 @@ The [sizing report](depot-runner-sizing-2026-10-15.md) records the measured resu
 Full desktop interaction and Android instrumentation have now executed.
 The Android test-context experiment passed all 16 cases;
 the complete desktop run passed 116 checks and failed its folder-dialog check.
-Package snapshot reuse and chooser diagnostics are being verified.
+Two fresh Depot CI consumers verified installed-package snapshot reuse;
+the chooser's subprocess diagnostics are still being investigated.
 The user supplied the account's usage and selected hard-start limits.
 Storage views still need their different scopes reconciled.
 This report follows the [confirmed trial brief](../planning/depot-ci-trial.md).
@@ -39,6 +40,14 @@ and standalone sandbox routes have executed real work.
 The Depot GitHub runner retry also completed the same build and runtime check.
 
 ## Compilation and cache behavior
+
+The later package snapshot trial verified all 23 requested package versions and ImageMagick
+in two fresh consumers without apt installation or downloads.
+The snapshot preserves files;
+both consumers still lacked a working user session bus and PipeWire service.
+This establishes reusable installation,
+not a complete prepared desktop runtime.
+[Package reuse evidence](depot-expanded-cost-2026-10-15.md#reusing-installed-desktop-dependencies)
 
 The later runner-sizing experiment exposed a correctness gap in the original cache design:
 replaying changed source through an older BuildKit layer can return an unchanged Cargo executable.

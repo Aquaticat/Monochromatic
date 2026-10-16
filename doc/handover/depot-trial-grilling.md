@@ -15,12 +15,12 @@ coverage gaps,
 and budget observability.
 
 The user asked whether package installation should also be cached.
-The desktop trial currently repeats apt provisioning on disposable GitHub runners;
-prepared installed-package reuse is an explicit remaining measurement.
-Research found a Depot CI filesystem-snapshot route,
-but the desktop suite's user-session prerequisites need their own probe.
-The authorized trial will measure installed-package reuse in fresh consumers
-and keep service startup distinct from filesystem reuse.
+The desktop trial repeats apt provisioning on disposable GitHub runners.
+Depot CI snapshot run `6w30pv5zds` now proves installed-package reuse in two fresh consumers:
+23 exact package versions and ImageMagick execute without apt or downloads.
+Both consumers still report `Failed to connect to bus: No medium found` for user services;
+filesystem reuse does not establish desktop runtime startup.
+The expanded cost report and snapshot troubleshooting record retain this boundary.
 The user chose to leave `EVL` unchanged and retain this requirement in the trial documents.
 
 On 2026-10-15 the user requested repair of organization-transfer download failures for all tools,
@@ -56,11 +56,15 @@ one folder-dialog check failed,
 and held-modifier repeat remained not injectable.
 Keyboard selection recovered the thirty-track fixture;
 installing Zenity did not recover the chooser check.
-Trial run `38832349057` retains application output to distinguish dialog environment failures.
-Remaining work is that diagnosis,
-fresh-consumer package snapshot verification,
-the desktop cost overlay,
-and reconciliation of the coverage recommendation with these measurements.
+Trial run `38832349057` reproduced the chooser failure while proving the shortcut reached the application.
+Run `38832874391` captures the chooser subprocess exit and stderr without changing its arguments.
+The desktop cost overlay is complete:
+daily-latest Depot allocation is USD 24.13 for the measured subset,
+while every-affected allocation retaining the container build is USD 166.56 on Developer.
+Startup's equivalent demand exceeds its included runner allowance.
+Remaining work is the chooser diagnosis,
+the requested issue inventory,
+and final reconciliation of the coverage recommendation with these measurements.
 
 ## Purpose and current state
 
