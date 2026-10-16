@@ -159,6 +159,19 @@ Existing process issues #425 and #572 cover asking measurable interview question
 and under-scoped completion or verification.
 The final audit reused those instead of creating duplicates.
 
+## Warnings exposed by successful chooser verification
+
+- [#1041](https://github.com/Aquaticats/Monochromatic/issues/1041):
+  the private desktop session does not provide the accessibility bus requested by GTK.
+- [#1042](https://github.com/Aquaticats/Monochromatic/issues/1042):
+  GTK cannot commit dconf changes in the private desktop session.
+- [#1043](https://github.com/Aquaticats/Monochromatic/issues/1043):
+  the folder dialog maps without a transient parent.
+
+These warnings were visible after the chooser recovered in run `38833901553`.
+They did not fail that run's interaction assertions.
+Issue #1004 retains the verified recovery and stays open for integration of the trial-only correction.
+
 ## Verification
 
 The application and harness issue bodies were rendered before submission.
