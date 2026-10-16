@@ -2,6 +2,7 @@
 import { randomUUID } from 'node:crypto';
 import { inspect } from 'node:util';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
+import { operationDiagnosticId } from './assessment-diagnostics.mjs';
 import type { QuestionEvidence } from '../../lifecycle/claim-evidence-batch-selection/selection-owner-types.ts';
 
 /** Weak ownership preserves correlation without retaining completed judgments. */
@@ -54,7 +55,7 @@ export function recordDecisionEvidence({ judgment, evidence }: {
   for (const [index, record] of evidence.entries()) {
     recordDecision({ judgment, event: 'question-evidence', details: {
       index, definitionId: record.definitionId, binding: record.binding,
-      answer: record.answer, model: record.model,
+      answer: record.answer, model: record.model, operationId: operationDiagnosticId(record.envelope),
     } });
   }
 }

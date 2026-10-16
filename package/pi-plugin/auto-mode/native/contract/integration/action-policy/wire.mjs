@@ -5,6 +5,7 @@ import {appendHeadingQuestion} from './wire-heading.mjs';
 import {appendClauseQuestion} from './wire-clause.mjs';
 import {appendOperationDecisionQuestion} from './wire-operation.mjs';
 import {operationDecisionDefinition} from './operation-decision-definition.ts';
+import {captureAssessmentDiagnostics} from './assessment-diagnostics.mjs';
 import {sourceInputLocation} from '../../lifecycle/governing-rule-candidates/input-location.mjs';
 import programCatalog from '../../lifecycle/program-rule-wire/catalog.json' with {type:'json'};
 import {questions as meaningCatalog} from '../../research/instruction-prerequisite-relation/cases.mjs';
@@ -164,14 +165,20 @@ export function bindRuleAssessmentWire(request){
    state,
    questions
  });
+ const recordResponse=captureAssessmentDiagnostics({request:{...request,model},state,questions});
  function answerText(raw){
-  const parsed=parseBatchAnswer({
+  function parseOriginalResponse(){
+   try{return parseBatchAnswer({
     raw,
     plan:{
       model,
       questions
     }
-  });
+   });}
+   catch(error){recordResponse({error,raw});throw error;}
+  }
+  const parsed=parseOriginalResponse();
+  recordResponse({parsed});
   return JSON.stringify(pairs.map(function projectOriginalAnswer({
     slot,
     id,
