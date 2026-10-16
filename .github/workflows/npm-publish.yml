@@ -4,14 +4,24 @@ name: npm-publish
 # trusted publisher, without publishing unrelated pending package versions.
 on:
   workflow_dispatch:
+    inputs:
+      module:
+        description: 'Module to publish from the selected revision'
+        type: choice
+        required: true
+        default: fs-path
+        options:
+          - fs-path
+          - logger
 
 permissions: {}
 
 env:
   MISE_AUTO_INSTALL: 'false'
+  NPM_MODULE: ${{ inputs.module }}
 
 concurrency:
-  group: npm-publish-module-fs-path
+  group: npm-publish-module-${{ inputs.module }}
   cancel-in-progress: false
 
 jobs:
@@ -29,14 +39,15 @@ jobs:
           install: false
       - run: mise install node pnpm
       - run: mise exec node pnpm -- pnpm install --frozen-lockfile
-      - run: mise run //package/module/fs-path:buildAndTest
-      - run: mise run npm:fs-path:pack
+      - run: mise run "//package/module/$NPM_MODULE:build"
+      - run: mise run "//package/module/$NPM_MODULE:test:unit"
+      - run: mise run npm:module:pack
         env:
-          FS_PATH_PACK_DIR: ${{ runner.temp }}/fs-path-pack
+          NPM_PACK_DIR: ${{ runner.temp }}/npm-pack
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: module-fs-path-tarball
-          path: ${{ runner.temp }}/fs-path-pack/*.tgz
+          name: module-tarball
+          path: ${{ runner.temp }}/npm-pack/*.tgz
           if-no-files-found: error
 
   publish:
@@ -54,8 +65,8 @@ jobs:
       - run: mise install node
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: module-fs-path-tarball
-          path: ${{ runner.temp }}/fs-path-pack
-      - run: mise run npm:fs-path:publish
+          name: module-tarball
+          path: ${{ runner.temp }}/npm-pack
+      - run: mise run npm:module:publish
         env:
-          FS_PATH_PACK_DIR: ${{ runner.temp }}/fs-path-pack
+          NPM_PACK_DIR: ${{ runner.temp }}/npm-pack
