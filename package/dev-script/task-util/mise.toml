@@ -439,6 +439,9 @@ const base = join(homedir(), 'temp/agent/depot-package-snapshot')
 const snapshot = JSON.parse(readFileSync(join(base, 'manifest.json'), 'utf8'))
 assert.equal(execFileSync('dpkg-query', ['--show', `--showformat=${snapshot.format}`, ...snapshot.packages], { encoding: 'utf8' }), snapshot.manifest)
 assert.equal(execFileSync(join(base, 'bin/magick'), ['--version'], { encoding: 'utf8' }), snapshot.magickVersion)
+execFileSync('sudo', ['--non-interactive', 'apt-get', 'update'], { stdio: 'inherit' })
+execFileSync('sudo', ['--non-interactive', 'apt-get', 'install', '--yes', '--no-install-recommends', 'libinput10'], { stdio: 'inherit' })
+execFileSync('slint-viewer', ['--version'], { stdio: 'inherit' })
 appendFileSync(process.env.GITHUB_PATH, `${join(base, 'bin')}\n`)
 execFileSync('pkg-config', ['--exists', 'libpipewire-0.3', 'fontconfig', 'freetype2', 'wayland-server', 'xkbcommon', 'libdrm'], { stdio: 'inherit' })
 console.log('\n' + JSON.stringify({ event: 'desktop-host-verified', libraries, resources, preparedPackageCount: snapshot.packages.length }))
@@ -474,7 +477,8 @@ const marker = join(directory, 'desktop-overlay-only')
 assert.equal(existsSync(marker), false, 'Fresh desktop runtime must not inherit another overlay marker')
 const podman = ['--non-interactive', 'podman', '--cgroup-manager=cgroupfs']
 function run({ args, required = true, inherit = false, input, limit = 45000 }) {
-  const result = spawnSync('sudo', [...podman, ...args], { encoding: 'utf8', timeout: limit, input, ...(inherit ? { stdio: 'inherit' } : {}) })
+  const inputArgs = args[0] === 'exec' && input !== undefined ? ['exec', '--interactive', ...args.slice(1)] : args
+  const result = spawnSync('sudo', [...podman, ...inputArgs], { encoding: 'utf8', timeout: limit, input, ...(inherit ? { stdio: 'inherit' } : {}) })
   console.log('\n' + JSON.stringify({ event: 'desktop-runtime-operation', operation: args[0], tail: args.slice(-5), status: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }))
   if (required && result.status !== 0) throw new Error(`Desktop runtime operation failed: ${args[0]}`)
   return result
@@ -494,6 +498,7 @@ try {
   run({ args: ['exec', name, 'systemctl', 'start', `user@${process.getuid()}.service`] })
   const user = ['exec', '--workdir', app, name, 'runuser', '--user', userInfo().username, '--', 'env', `XDG_RUNTIME_DIR=/run/user/${process.getuid()}`, `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${process.getuid()}/bus`, `PATH=${process.env.PATH}`, 'MISE_AUTO_INSTALL=false', 'MISE_LOCKED=1', `MISE_RUST_VERSION=${process.env.MISE_RUST_VERSION}`, `MISE_TRUSTED_CONFIG_PATHS=${source}`, 'LIBGL_ALWAYS_SOFTWARE=1', 'E2E_ONLY=', `E2E_COMPOSITOR=${compositor}`]
   run({ args: [...user, 'touch', marker] })
+  assert.equal(run({ args: [...user, 'cat'], input: 'container-stdin-positive-control\n' }).stdout, 'container-stdin-positive-control\n')
   run({ args: [...user, 'systemd-run', '--user', '--wait', '--pipe', '--unit=depot-full-desktop-probe', '--property=MemoryMax=256M', '/bin/cat', '/proc/self/cgroup'] })
   run({ args: [...user, 'systemctl', '--user', 'start', 'pipewire.socket', 'pipewire-pulse.socket', 'wireplumber.service'] })
   run({ args: [...user, 'pactl', 'info'] })
@@ -522,6 +527,7 @@ try {
   failure = String(error)
   console.error(error)
 } finally {
+  run({ args: ['exec', name, 'journalctl', '--no-pager', '--unit=user@1001.service', '--lines=80'], required: false })
   run({ args: ['logs', name], required: false })
   run({ args: ['stop', '--time=10', name], required: false })
   run({ args: ['rm', name], required: false })
