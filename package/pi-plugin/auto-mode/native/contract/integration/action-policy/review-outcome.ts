@@ -82,10 +82,10 @@ export function resolveManualReviewOutcome(program: CompiledProgram): GuardOutco
    */
   const authorization = inspectAuthorizationRequirements(program.authorizationRequirements ?? []);
   if (authorization.state === 'unresolved') {
-    rl.debug('withholding original confirmation for independent unresolved prerequisites');
+    rl.debug('retaining unresolved clause prerequisites for whole-operation model review');
     return Object.freeze({
       state: 'unresolved',
-      reason: 'An independent authorization prerequisite remains unsatisfied or unresolved; session confirmation cannot satisfy it',
+      reason: 'Clause assessment left authorization requirements unresolved; the complete operation needs decision-model review',
       authorizationRequirements: authorization,
       resolution
     });
@@ -95,9 +95,8 @@ export function resolveManualReviewOutcome(program: CompiledProgram): GuardOutco
 }
 
 /**
- Re-resolve captured policy after the host authenticates Allow for the exact prepared group.
- Confirmation satisfies only requirements whose established channel accepts that response.
- The existing manual fallback may resolve semantic uncertainty, never an independent prerequisite.
+ Preserve established prohibitions after automatic decision paths fail and the host authenticates exact-group Allow.
+ Manual authorization does not assert that an estimated external prerequisite was satisfied.
 
  @param program - original compiled facts retained through native confirmation
 
@@ -113,22 +112,13 @@ export function resolveConfirmedOutcome(program: CompiledProgram): GuardOutcome 
   const automatic = resolveManualReviewOutcome(program);
   if ((automatic.state === 'resolved') && (automatic.verdict === 'deny')) return automatic;
   /**
-   This channel cannot resolve unknown applicability or establish external authorization.
+   Retain prerequisite estimates for diagnostics without promoting them into an established terminal restriction.
    */
-  const requirements = (program.authorizationRequirements ?? []).map(function confirmEligible(requirement) {
-    if ((requirement.applicability !== 'applies') || (requirement.satisfaction !== 'unsatisfied')
-      || (requirement.channel !== 'incumbent-approval')) return requirement;
-    return Object.freeze({ ...requirement, satisfaction: 'satisfied' as const });
-  });
-  /**
-   Recompute every prerequisite after adding the authenticated confirmation fact.
-   */
-  const authorization = inspectAuthorizationRequirements(requirements);
-  if (authorization.state !== 'satisfied') return automatic;
+  const authorization = inspectAuthorizationRequirements(program.authorizationRequirements ?? []);
   return Object.freeze({
     state: 'resolved',
     verdict: 'approve',
-    reason: 'The user approved the original prepared group and its independent prerequisites are satisfied',
+    reason: 'The user approved this exact prepared operation after automatic review could not resolve it',
     ...(automatic.resolution === undefined ? {} : { resolution: automatic.resolution }),
     authorizationRequirements: authorization
   });

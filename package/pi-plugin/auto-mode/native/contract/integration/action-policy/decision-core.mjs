@@ -5,6 +5,7 @@ import {captureAuthorizationInputs,captureAuthorizationOwnerFactory} from './aut
 import {capturePendingSessionApproval} from './pending-session-approval.ts';
 import {compileBoundClauseProgram} from './compiler.mjs';
 import {resolveManualReviewOutcome} from './review-outcome.ts';
+import {reviewOperationDecision} from './operation-decision.ts';
 import {
  captureSemanticAdmissionPolicy,
  captureHeadingContextAdmissionPolicy,
@@ -69,7 +70,11 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
    headingPolicy,headingScope,unitPolicy,unitScope
  });
  dl.debug('resolving captured policy before original evidence closure');
- const outcome=resolveManualReviewOutcome(compiled.program);
+ const automaticOutcome=resolveManualReviewOutcome(compiled.program);
+ const operationDecision=policy!==undefined&&automaticOutcome.state!=='resolved'
+  ?await reviewOperationDecision(judgment)
+  :undefined;
+ const outcome=operationDecision?.outcome??automaticOutcome;
  try{
  judgment.assertDependenciesCurrent();
  judgment.checkpoint();
@@ -84,7 +89,7 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
  }):undefined;
  const result=await finishWithApproval({
    judgment,
-   decision:Object.freeze({outcome,closure,program:compiled.program}),
+   decision:Object.freeze({outcome,automaticOutcome,operationDecision,closure,program:compiled.program}),
    approvalContext
  });
  function assertCurrent(){

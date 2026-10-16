@@ -88,10 +88,6 @@ export async function finishWithApproval({
   judgment.assertDependenciesCurrent();
  }
  current();
- if(decision.outcome.authorizationRequirements?.state==='unresolved')return Object.freeze({
-   ...decision,
-   assertCurrent:current
- });
  const uncertain=decision.outcome
    .state
    !=='resolved';
