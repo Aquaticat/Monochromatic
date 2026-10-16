@@ -255,10 +255,11 @@ const base = join(homedir(), 'temp/agent/depot-complete-ci')
 mkdirSync(base, { recursive: true, mode: 0o700 })
 chmodSync(base, 0o700)
 const fixture = join(base, `${manifest.caseId}-generated-fixture`)
-execFileSync('git', ['worktree', 'add', '--detach', fixture, sourceRevision], { cwd: source, stdio: 'inherit' })
-const env = { ...process.env, MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS ?? ''}:${fixture}` }
+const env = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1', MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS ?? ''}:${fixture}` }
+execFileSync('git', ['worktree', 'add', '--detach', fixture, sourceRevision], { cwd: source, env, stdio: 'inherit' })
 execFileSync('mise', ['run', 'prepare:pnpm:install', '--', '--frozen-lockfile'], { cwd: fixture, env, stdio: 'inherit' })
 execFileSync('mise', ['run', '//package/git-policy/cli:build'], { cwd: fixture, env, stdio: 'inherit' })
+execFileSync('git', ['cli-git', 'trust', '--yes'], { cwd: fixture, env, stdio: 'inherit' })
 const startedAt = new Date().toISOString()
 const started = performance.now()
 const result = spawnSync('mise', ['run', 'sync:files'], { cwd: fixture, env, stdio: 'inherit' })
@@ -417,7 +418,11 @@ assert(libraries.length > 0 && resources.length > 0, 'Prepared host must contain
 execFileSync('sudo', ['--non-interactive', 'mkdir', '--parents', '/usr/lib64', '/usr/lib/clang'])
 for (const source of [...libraries, resources.at(-1)]) {
   const target = join(source === resources.at(-1) ? '/usr/lib/clang' : '/usr/lib64', basename(source))
-  if (existsSync(target)) assert.equal(realpathSync(target), realpathSync(source), `Unexpected existing native bridge: ${target}`)
+  if (existsSync(target) && source === resources.at(-1)) {
+    assert(existsSync(join(target, 'include/stddef.h')), 'Existing Clang resource directory must contain builtin headers')
+    execFileSync('clang', [`-resource-dir=${target}`, '-fsyntax-only', '-x', 'c', '-'], { input: '#include <stddef.h>\nsize_t value;\n', stdio: ['pipe', 'inherit', 'inherit'] })
+  }
+  else if (existsSync(target)) assert.equal(realpathSync(target), realpathSync(source), `Unexpected existing native bridge: ${target}`)
   else execFileSync('sudo', ['--non-interactive', 'ln', '--symbolic', source, target])
 }
 const base = join(homedir(), 'temp/agent/depot-package-snapshot')
@@ -440,8 +445,10 @@ const { existsSync, mkdirSync, readFileSync, writeFileSync } = await import('nod
 const { homedir, userInfo } = await import('node:os')
 const { join } = await import('node:path')
 const { createHash } = await import('node:crypto')
-const { wait } = await import('@monochromatic-dev/module-async-time/ts')
 const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const { createRequire } = await import('node:module')
+const require = createRequire(join(source, 'package/music-player/desktop-e2e/package.json'))
+const { wait } = await import(require.resolve('@monochromatic-dev/module-async-time/ts'))
 const app = join(source, 'package/music-player/desktop-app')
 const compositor = join(source, 'package/cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
 assert(existsSync(compositor), 'The exact-head repository compositor must be built before runtime validation')
