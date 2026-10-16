@@ -357,8 +357,32 @@ Boot verification returned API 37,
 16384-byte pages,
 font scale `1.0`,
 and no forced size or density.
-APK retrieval and full-suite execution are pending;
-shutdown must use the documented sync/wait/sync/emulator-kill sequence.
+The installed debug and test APK hashes matched the producer's recorded hashes.
+The unfiltered run matched every test name from the historical source catalog:
+15 executed,
+13 passed,
+two failed,
+and none skipped.
+Both `SessionStoreTest` cases reported the previously documented null-context exception.
+No application or test source was changed.
+Execution took 6.041 seconds from instrumentation launch to command return;
+this is a functional result,
+not a performance comparison.
+The emulator completed sync/wait/sync/emulator-kill shutdown and its unit is inactive.
+The [exact-source Android evidence](../audit/depot-complete-android-2026-10-16.evidence.json)
+retains the source catalog,
+artifact hashes,
+per-test statuses,
+and complete instrumentation output.
+
+Root next owns the disposable VM adapter for the logger case.
+Cloud probe `1dg9t9znbj` found readable and writable `/dev/kvm`,
+but no `virsh` or prepared VM image directory.
+No VM was created by that probe.
+The next step is to prepare isolated libvirt and guest prerequisites,
+then execute the unchanged historical `vmsync` lifecycle task.
+This remains required work;
+the probe does not establish that cloud VM execution is unavailable.
 
 ## Purpose and current state
 
