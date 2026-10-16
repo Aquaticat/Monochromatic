@@ -19,15 +19,7 @@ export function captureDecisionContext({snapshot,session}){
  });
  const sources=Object.freeze([
    snapshot.hostGoverningPolicy,
-   ...(snapshot.hostPromptInput?[snapshot.hostPromptInput]:[]),
-   ...(snapshot.resourceSystemInput?[snapshot.resourceSystemInput]:[]),
-   ...snapshot.appendPromptInputs,
    ...snapshot.contextPromptInputs.filter(function independentContext(source){return source.carrier===undefined;}),
-   ...(snapshot.forcedPromptInput?[snapshot.forcedPromptInput]:[]),
-   ...(snapshot.promptGuidelineInputs??[]),
-   ...(snapshot.toolGuidelineInputs??[]),
-   ...(snapshot.skillDescriptionInputs??[]),
-   ...(snapshot.builtInPromptInputs??[]),
    ...(conversation?[conversation]:[])
  ]);
  return Object.freeze({sources,conversation});
