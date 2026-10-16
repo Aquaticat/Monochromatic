@@ -230,6 +230,62 @@ They also exclude optional paid registry transfer.
 [Sensitivity calculation][replay],
 [storage and transfer pricing][registry-pricing]
 
+## Reusing installed desktop dependencies
+
+Installed packages should be reused where the execution route supports it.
+Depot CI snapshots preserve installed system packages and other filesystem changes.
+The snapshot action does not run on GitHub Actions.
+Fresh consumers must restore environment variables and `PATH`;
+pre-cloned workspace dependencies require checkout with `clean: false`.
+[Custom image behavior][custom-images]
+
+Depot GitHub runners use a fresh instance per job.
+Their documented custom images with preinstalled software are a Business-plan feature,
+so that route is not established for the Developer or Startup comparison.
+[Runner lifecycle and custom images][runner-overview]
+
+Durable Depot CI cache disks support reusable dependency directories,
+but do not by themselves capture package installation's changes across the system filesystem.
+Their names are organization-wide and concurrent writers need separate directories or a single writer.
+They remain a separate option for build caches after the prepared-image probe.
+[Cache disks](https://depot.dev/docs/ci/how-to-guides/cache-disks),
+[System installation and snapshots][custom-images]
+
+The initial desktop runner's complete prerequisite step took 11 seconds,
+from `2026-10-16T00:32:59Z` to `00:33:10Z`;
+workspace installation then took three seconds.
+The prerequisite interval includes package handling,
+ImageMagick download and extraction,
+and audio-service startup.
+It is not an isolated apt duration or a measured saving from caching.
+The base image already supplied some requested packages.
+[Observed runner steps](https://github.com/Aquaticats/Monochromatic/actions/runs/38830049770)
+
+The trial task `trial:depot:desktop:prepare` combines reusable files with live session startup.
+A prepared desktop image needs those responsibilities separated:
+install build libraries,
+PipeWire tools,
+the chooser,
+ImageMagick,
+and locked workspace dependencies once;
+start and verify the user manager and audio services in each consumer.
+Preserved files do not establish working session services.
+The earlier Depot CI prerequisite probe lacked a running user manager,
+whereas the later Depot GitHub runner supplied one.
+[Environment observations](depot-trial-2026-10-15.md#existing-checks-newly-exercised-through-depot-ci),
+[Desktop consumer requirements](../../package/music-player/desktop-e2e/README.md)
+
+An isolated trial at commit `0577b002b2` prepares the installed package manifest and ImageMagick,
+then runs two sequential fresh snapshot consumers.
+Each consumer verifies the exact versions without apt installation,
+requires a prior consumer's marker to be absent,
+checks workspace dependencies,
+and records user-manager and audio-service results separately.
+The preparation job is limited to ten minutes and consumers to three minutes each on two CPUs.
+Results remain pending;
+no package-setup saving is added to the monthly replay.
+[Package snapshot run](https://depot.dev/orgs/l4zncjjbj5/workflows/341kqr5sw7)
+
 ## Agent work and the unmeasured budget
 
 The expanded target includes prepared development environments,
@@ -387,3 +443,5 @@ or spending-limit change is adopted by this report.
 [ci-pricing]: https://depot.dev/docs/ci/overview#pricing
 [container-pricing]: https://depot.dev/docs/container-builds/overview#pricing
 [registry-pricing]: https://depot.dev/docs/registry/overview#pricing
+[custom-images]: https://depot.dev/docs/ci/how-to-guides/custom-images
+[runner-overview]: https://depot.dev/docs/github-actions/overview
