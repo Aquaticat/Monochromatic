@@ -50,16 +50,21 @@ finished successfully in 157.920 seconds on 4 CPUs and 16 GiB RAM.
 The parent run is marked cancelled because its separate browser preparation job was cancelled;
 the native job's own terminal conclusion is success.
 
-- Default features: 58 passed,
+- Default features:
+  58 passed,
   zero skipped.
-- Fingerprint only: 67 passed,
+- Fingerprint only:
+  67 passed,
   zero skipped.
-- Service only: 71 passed,
+- Service only:
+  71 passed,
   zero skipped.
-- All features: 80 passed,
+- All features:
+  80 passed,
   zero skipped.
 - Existing all-features,
-  all-targets Clippy task: passed with warnings denied.
+  all-targets Clippy task:
+  passed with warnings denied.
 
 These are 276 test executions covering 80 distinct test names across feature configurations.
 The [companion evidence](depot-expanded-execution-2026-10-16.evidence.json)
