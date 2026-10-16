@@ -2,6 +2,15 @@
 
 ## Active repair and remaining acceptance work
 
+The user asked whether package installation should also be cached.
+The desktop trial currently repeats apt provisioning on disposable GitHub runners;
+prepared installed-package reuse is an explicit remaining measurement.
+Research found a Depot CI filesystem-snapshot route,
+but the desktop suite's user-session prerequisites need their own probe.
+The authorized trial will measure installed-package reuse in fresh consumers
+and keep service startup distinct from filesystem reuse.
+The user chose to leave `EVL` unchanged and retain this requirement in the trial documents.
+
 On 2026-10-15 the user requested repair of organization-transfer download failures for all tools,
 then reiterated that avoiding the shared 5,000-request REST quota remains a Depot objective.
 The supplied failure is run `38828960531`,

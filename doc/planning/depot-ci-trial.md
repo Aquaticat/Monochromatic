@@ -98,6 +98,13 @@ This makes compilation and dependency reuse a separate measurement from tool ins
 
 Measure unchanged repetitions before comparing providers,
 so ordinary runtime variation is visible.
+Package installation is part of the reuse target:
+distinguish packages already present in the runner image,
+cached download archives,
+and a prepared filesystem containing installed dependencies.
+Measure provisioning separately from the services that must start in each fresh execution.
+The user reiterated this requirement after the desktop runner repeated its apt installation.
+They chose to retain it in the trial documents and leave `AGENTS.md` rule `EVL` unchanged.
 Then exercise cold state,
 warm state,
 a source change,
