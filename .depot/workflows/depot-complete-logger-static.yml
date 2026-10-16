@@ -62,9 +62,6 @@ jobs:
     - name: Install exact-head frozen dependencies
       working-directory: source
       run: mise run prepare:pnpm:install -- --frozen-lockfile
-    - name: Prepare the shared Oxlint configuration before concurrent consumers
-      working-directory: source
-      run: mise run //package/config/oxlint:build
     - name: Execute unchanged historical package checks
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:execute

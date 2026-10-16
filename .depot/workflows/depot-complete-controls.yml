@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        control: [passing, failure, oxlint-args, oxlint-scope]
+        control: [passing, failure, oxlint-args, oxlint-scope, deferred-prerequisite]
     env:
       CI: 'true'
       MISE_AUTO_INSTALL: 'false'
