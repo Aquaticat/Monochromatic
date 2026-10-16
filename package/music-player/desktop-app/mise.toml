@@ -922,3 +922,34 @@ for (const session of ['wide', 'narrow', 'dialog', 'auto-play', 'quit', 'states'
 console.log(JSON.stringify({ sessions: results }))
 if (results.some(result => result.status !== 0)) throw new Error('Desktop sessions failed; retained each independent result')
 '''
+
+[tasks."trial:depot:prepared:probe"]
+description = "Inspect fresh snapshot init and bounded namespace support without installing packages"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync } = await import('node:child_process')
+const { readFileSync, readlinkSync, mkdirSync, chmodSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const runtime = join(homedir(), 'temp/agent/depot-session-probe')
+mkdirSync(runtime, { recursive: true, mode: 0o700 })
+chmodSync(runtime, 0o700)
+console.log(JSON.stringify({ phase: 'runtime-probe', uid: process.getuid(), pidOne: readFileSync('/proc/1/comm', 'utf8').trim(), initExecutable: readlinkSync('/proc/1/exe'), cgroup: readFileSync('/proc/self/cgroup', 'utf8'), runtimeDir: process.env.XDG_RUNTIME_DIR, hasSessionBus: process.env.DBUS_SESSION_BUS_ADDRESS !== undefined }))
+for (const [command, args] of [
+  ['systemd', ['--version']],
+  ['findmnt', ['--target', '/sys/fs/cgroup', '--output', 'TARGET,FSTYPE,OPTIONS']],
+  ['sudo', ['--non-interactive', 'capsh', '--print']],
+  ['systemd-detect-virt', []],
+  ['systemd', ['--user']],
+  ['unshare', ['--user', '--map-root-user', '--pid', '--fork', 'true']],
+  ['sudo', ['--non-interactive', 'unshare', '--mount', '--pid', '--fork', 'true']],
+  ['systemd-nspawn', ['--version']],
+  ['podman', ['--version']],
+  ['docker', ['--version']],
+  ['qemu-system-x86_64', ['--version']],
+  ['ls', ['--long', '/dev/kvm']],
+]) {
+  const result = spawnSync(command, args, { encoding: 'utf8', timeout: 5000, env: { ...process.env, XDG_RUNTIME_DIR: runtime } })
+  console.log(JSON.stringify({ command, args, status: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }))
+}
+'''
