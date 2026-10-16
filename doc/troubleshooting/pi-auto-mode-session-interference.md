@@ -293,7 +293,7 @@ The nested exception is `DependencyDeadlineError: Original dependency assessment
 This reproduces the observed boundary;
 it does not establish the missing original nested exception as a historical fact.
 
-### Reproduced cause and partial correction
+### Reproduced causes and corrections
 
 The stack enters `bindRunMessageSources` during complete policy input capture.
 At commit `fc8b4fb6d0`,
@@ -310,7 +310,7 @@ The maintained regression measured 257 full parent checks for 256 retained input
 compared with 2 checks for a single input.
 Commit `5a8760d15f` performs local identity checks during construction and brackets the collection
 with parent validation.
-`package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs:112`:
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs:118`:
 
 ```js
 // package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs
@@ -323,12 +323,27 @@ Foreign views and retired parents remain rejected.
 A process-local omission of the final parent check makes the changed-during-construction control fail
 with `Missing expected exception (GoverningPolicyBindingError)`.
 
-This is not yet a complete full-catalog correction.
-After removing a separate schema ceiling,
-the 140-tool replay still reaches the deadline exception inside `bindRunMessageSources`.
-One instrumented run spent 102674.85 ms inside that binding function.
-The remaining work inside the function is under investigation;
-the candidate is not installed.
+The 140-tool replay exposed a second source-binding problem after removing the schema ceiling:
+each input searched the entire retained-origin array.
+The traced fixture contained 83,404 inputs and 83,399 retained origins.
+One instrumented search took 113190.85 ms;
+this is a diagnostic observation, not a repeated-run benchmark.
+Commit `3827af2da9` builds a source-identity index once,
+retaining the first origin for duplicate source identities.
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs:28`:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs
+const retainedBySource=new Map();
+for(const origin of run?.retainedMessageOrigins??snapshot.nativeConstructedInputs??[]){
+ const {source}=origin;
+ if(!retainedBySource.has(source))retainedBySource.set(source,origin);
+}
+```
+
+The complete cached-catalog replay then passes without the internal exception.
+The regression counts origin-source reads to detect a return to repeated linear searches.
+The corrected release is installed as `native-release-tmMxY3`.
 
 ### Separate request-preparation ceiling
 
@@ -359,16 +374,19 @@ The bounded host fixtures retain configured extensions,
 home-discovered skills,
 the real repository's read-only context,
 and replayed MCP metadata.
-They use disposable home directories,
-fake credentials,
-authored provider responses,
-and scripted Stop.
-They do not execute external MCP operations or demonstrate live provider classifications.
+They use disposable home directories and authored primary responses.
+Offline cases use fake credentials and scripted Stop.
+Separate live Luna checks bridge assessment requests to the real decision service,
+retaining offline MCP metadata and scripted confirmation.
+They do not execute external MCP operations or claim physical human input.
 
 - Failing baseline: `mimo-mcp-forty-before.log` and `run-message-freshness-before.log`.
 - Passing candidate controls: `mimo-candidate-repro.log`, `mimo-regressions.log`, and `mimo-schema-after.log`.
-- Remaining full-catalog failure: `mimo-full-diagnostic.log`, fixture `pi-hyper-rpc-stop-GRWOl5`.
-- Guard omission: `mimo-omission-adversarial.log`.
+- Intermediate full-catalog failure: `mimo-full-diagnostic.log`, fixture `pi-hyper-rpc-stop-GRWOl5`.
+- Passing full-catalog candidate: `mimo-full-index-after.log`, fixture `pi-hyper-rpc-stop-fsbmtV`.
+- Final guard omission: `mimo-omission-final.log`.
+- Installed regressions: `direct-installed-regressions.log` and `direct-installed-additional.log`.
+- Installed live Luna confirmation: `direct-installed-allow.log`, fixture `pi-hyper-rpc-allow-LuIIFZ`.
 - Logs live under `${HOME}/temp/agent/pi-host-isolation-20261015/`;
   the named fixture lives directly under `${HOME}/temp/agent/`.
 
@@ -387,6 +405,31 @@ waiting for catalog initialization changes that experiment's inputs.
 Increasing the diagnostic fixture's heap to 1536 MiB and duration to 180 seconds exposed the remaining deadline cause;
 neither change fixes it or changes the production fifteen-second review budget.
 
-No user workaround is recommended while configured-consumer verification remains open.
-Both demonstrated mechanisms are maintained integration code,
+The corrected runtime preserves the production fifteen-second review budget.
+All demonstrated mechanisms are maintained integration code,
 so the existing upstream filing decision applies and no external filing is proposed.
+
+### Direct Bash automatic review
+
+The user also required direct Bash calls to receive automatic review.
+Commit `427ae71387` extends operation matching to native `bash` calls with string commands;
+`d4467e1fc3` exports that matcher through the generated native adapter.
+`package/pi-plugin/auto-mode/src/semantic-admission-scope.ts:74` checks the prepared operation:
+
+```ts
+// package/pi-plugin/auto-mode/src/semantic-admission-scope.ts
+if ((configured === 'native-inspected-programs-v2') && (effect.prepared?.name === 'bash'))
+  return typeof effect.prepared.input.command === 'string';
+```
+
+Native ownership and currentness checks still authenticate the operation.
+The matcher adds no program-inspection facts or permission.
+`test:native:direct-bash` verifies permission, prohibition, unknown answers, and mixed groups.
+Each assessment contains both complete proposed operations.
+
+The live candidate prohibition check returned HTTP 200 and blocked both commands without a dialog.
+The live installed permission fixture returned HTTP 200 for 94 questions,
+but unrelated clauses remained uncertain.
+Scoped scripted Allow then executed both commands successfully.
+That establishes live automatic review and confirmation behavior;
+it does not establish automatic approval of that complete live context.
