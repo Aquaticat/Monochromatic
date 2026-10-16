@@ -838,12 +838,14 @@ LN7:
 ### Logging and diagnostics
 
 LOG:
- Log extensively:
- entry points,
- branch decisions,
- error paths,
- async lifecycle;
- never remove logging to "clean up".
+ Log entry points,
+ branches,
+ errors,
+ and async lifecycle.
+Decision logs retain correlated inputs,
+ clause/source references,
+ model scores,
+ and fallback reasons sufficient to reconstruct a verdict.
 
 TLG:
  Production code logs only via tagged loggers from `@monochromatic-dev/module-logger`;
