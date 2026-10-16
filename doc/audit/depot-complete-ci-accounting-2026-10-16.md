@@ -230,7 +230,17 @@ Windows,
 and macOS.
 Its filesystem checks retain Node `26.5.0` from the original workflow;
 semantic checks retain source-lock Node `26.11.1` and pnpm `12.11.2`.
-Fresh external-consumer dependency resolution is recorded separately from the frozen workspace lockfile.
+All six host jobs passed.
+Their before/after source identities and both lockfile hashes match the immutable Git objects.
+The filesystem probes verified preferred stable identifiers and explicitly unstable fallbacks on each host.
+Semantic logs retain the bridge,
+UTF-16 offset,
+and packed external-consumer passing groups on each host.
+The authored external-consumer test resolves fresh dependency ranges,
+captures pnpm output,
+and deletes its fixture;
+these logs do not retain the resulting consumer lockfile or exact external dependency versions.
+That evidence limitation is separate from the verified frozen workspace inputs.
 Desktop collection covers Windows run `38843524267`,
 Alpine run `38843525621`,
 macOS run `38843527788`,
@@ -243,6 +253,29 @@ these are individual observations,
 not repeated latency measurements.
 These independently dispatched observations still need immutable-manifest reconciliation
 and a coherent graph replay before complete-pipeline latency or cost can be reported.
+
+Both Alpine jobs passed with the same 1,461 executed test identities,
+verified individually against their numbered nextest output and final summaries.
+Each summary reports one skipped test without naming it.
+The frozen package has one ignored real-library refresh benchmark;
+the retained evidence distinguishes that source annotation from the unnamed runtime skip.
+Both jobs also reported successful no-audio,
+ALSA,
+and PipeWire window scenarios,
+including the PipeWire stream connection to the null sink.
+Their full job durations were 318 seconds on ARM64 and 393 seconds on x86-64.
+
+All three original Windows jobs failed the direct PowerShell file-redirection assertion,
+after pipeline capture and the independent bash checks succeeded.
+This reproduces the already documented historical result at the selected source;
+the [GUI-subsystem decision](../decision/music-player-windows-gui-subsystem.md)
+records the accepted limitation and later corrected workflow checks.
+[Issue #1060](https://github.com/Aquaticats/Monochromatic/issues/1060)
+is closed as that historical assertion finding,
+not classified as a new application defect.
+The original replay skipped nextest after the failed assertion.
+Recovery run `38844610546` keeps the application and assertion unchanged,
+while allowing independent tests after successful test compilation.
 
 ### Acceptance requirements
 
