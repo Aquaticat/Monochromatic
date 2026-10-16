@@ -9,7 +9,9 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
  Incomplete syntax cannot silently become an empty reviewed operation.
  */
 export class ShellReviewSyntaxError extends Error {
-  /** Identify incomplete syntax at the model-input boundary. */
+  /**
+   Identify incomplete syntax at the model-input boundary.
+   */
   override readonly name = 'ShellReviewSyntaxError';
 }
 
@@ -86,7 +88,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  */
 function projectNode(value: unknown): unknown {
   if (!isRecord(value)) return value;
-  /** Parser node kind determines which syntax fields require special handling. */
+  /**
+   Parser node kind determines which syntax fields require special handling.
+   */
   const { type, } = value;
   if (type === 'Unknown')
     throw new ShellReviewSyntaxError('Bash review encountered an unsupported parameter operation');
@@ -145,9 +149,9 @@ function projectNode(value: unknown): unknown {
     command: value.command,
   };
   if (((type === 'CommandExpansion') || (type === 'ProcessSubstitution')
-    || (type === 'ArithmeticCommandExpansion')) && value.script === undefined)
+    || (type === 'ArithmeticCommandExpansion')) && (value.script === undefined))
       throw new ShellReviewSyntaxError('Bash nested execution has no complete parsed script');
-  if (((type === 'ArithmeticExpansion') || (type === 'ArithmeticCommand')) && value.expression === undefined)
+  if (((type === 'ArithmeticExpansion') || (type === 'ArithmeticCommand')) && (value.expression === undefined))
       throw new ShellReviewSyntaxError('Bash arithmetic has no complete parsed expression');
   return Object.fromEntries(Object.entries(value)
     .filter(function structuralField([field,]) {
@@ -171,14 +175,21 @@ function projectNode(value: unknown): unknown {
  ```
  */
 export function parseShellReviewStructure(command: string): Readonly<Record<string, unknown>> {
-  /** Function-scoped logs omit the original command text. */
+  /**
+   Function-scoped logs omit the original command text.
+   */
   const l = tagged({ tag: parseShellReviewStructure.name, });
   l.debug('parsing shell structure for permission review');
   try {
-    /** JSON serialization materializes the parser's lazy word and nested-script fields. */
+    /**
+     JSON serialization materializes the parser's lazy word and nested-script fields.
+     */
     const syntax: unknown = JSON.parse(JSON.stringify(
       parse(command),
-      function projectMaterializedNode(_key: string, value: unknown) { return projectNode(value); }
+      function projectMaterializedNode(
+        _key: string,
+        value: unknown
+      ) { return projectNode(value); }
     ));
     if (!isRecord(syntax)) throw new ShellReviewSyntaxError('Bash parser did not produce a structural script');
     l.debug('prepared shell structure without source scripts');

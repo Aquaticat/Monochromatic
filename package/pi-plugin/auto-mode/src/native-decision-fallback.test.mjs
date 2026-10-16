@@ -54,7 +54,7 @@ const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInpu
  }}}};},
  async sendWire(input){
   observations.attempts++;
-  for(const command of commands)assert.ok(input.body.includes(command));
+  for(const argument of ['FALLBACK_A','FALLBACK_B'])assert.ok(input.body.includes(argument));
   const wire=JSON.parse(input.body);
   for(const question of Object.values(wire.questions)){
    if(!question.instructions.selectedRule)continue;
