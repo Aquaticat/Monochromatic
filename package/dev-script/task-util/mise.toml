@@ -297,7 +297,9 @@ writeFileSync(join(source, 'pnpm-lock.yaml'), '{}\n')
 writeFileSync(join(source, 'pnpm-workspace.yaml'), '{}\n')
 writeFileSync(join(source, 'package.json'), '{"private":true,"type":"module"}\n')
 const command = control === 'failure' ? 'throw new Error("intentional executor failure control")' : 'console.log("executor passing control")'
-writeFileSync(join(packageRoot, 'mise.toml'), `[tasks."lint:oxlint"]\nshell = "node --input-type=module-typescript -e"\nrun = ${JSON.stringify(command)}\n`)
+const buildCommand = 'const {writeFileSync}=await import("node:fs");writeFileSync("build.marker","ready")'
+const typesCommand = 'const {readFileSync}=await import("node:fs");const {strict:assert}=await import("node:assert");assert.equal(readFileSync("build.marker","utf8"),"ready")'
+writeFileSync(join(packageRoot, 'mise.toml'), `[tasks."lint:oxlint"]\nshell = "node --input-type=module-typescript -e"\nrun = ${JSON.stringify(command)}\n[tasks.build]\nshell = "node --input-type=module-typescript -e"\nrun = ${JSON.stringify(buildCommand)}\n[tasks."lint:types"]\nshell = "node --input-type=module-typescript -e"\nrun = ${JSON.stringify(typesCommand)}\n`)
 writeFileSync(join(packageRoot, 'input.txt'), 'base\n')
 const git = (args) => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()
 git(['init', '--initial-branch=fixture'])
@@ -312,17 +314,21 @@ git(['add', '--', 'package/control/fixture/input.txt'])
 git(['commit', '--message', 'test(fixture): change selected input', '--', 'package/control/fixture/input.txt'])
 const sourceRevision = git(['rev-parse', 'HEAD'])
 const check = { id: 'control.lint.oxlint', task: '//package/control/fixture:lint:oxlint', args: control === 'oxlint-args' ? ['input.txt'] : [], family: 'lint', scope: control === 'oxlint-scope' ? 'files' : 'package', packages: ['package/control/fixture'], prerequisites: [] }
-const manifest = { schemaVersion: 1, caseId: `control-${control}`, sourceRevision, baseRevision, headRevision: sourceRevision, changedFiles: ['package/control/fixture/input.txt'], selectedPackages: ['package/control/fixture'], checks: [check], externalChecks: [], completeGraph: false }
+const build = { ...check, id: 'control.build', task: '//package/control/fixture:build', family: 'build', scope: 'package', args: [] }
+const types = { ...build, id: 'control.types', task: '//package/control/fixture:lint:types', family: 'lint', prerequisites: [control === 'failure' ? check.id : build.id] }
+const manifest = { schemaVersion: 1, caseId: `control-${control}`, sourceRevision, baseRevision, headRevision: sourceRevision, changedFiles: ['package/control/fixture/input.txt'], selectedPackages: ['package/control/fixture'], checks: [check, types, build], externalChecks: [], completeGraph: false }
 writeFileSync(join(manifestRoot, 'toml.json'), JSON.stringify(manifest, null, 2))
-const env = { ...process.env, GITHUB_WORKSPACE: base, MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS ?? ''}:${base}`, DEPOT_CI_WAVE: 'all', DEPOT_CI_CPUS: '2', DEPOT_CI_MEMORY_GIB: '8' }
+const env = { ...process.env, GITHUB_WORKSPACE: base, MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS ?? ''}:${base}`, DEPOT_CI_WAVE: 'all', DEPOT_CI_CPUS: '2', DEPOT_CI_MEMORY_GIB: '8', DEPOT_CI_WORKERS: '4' }
 const result = spawnSync('mise', ['run', '//package/dev-script/task-util:trial:depot:ci:execute'], { env, stdio: 'inherit' })
 if (result.error) throw result.error
 if (control === 'passing') assert.equal(result.status, 0, 'Passing control must succeed')
 else assert.notEqual(result.status, 0, 'Negative control must fail the executor')
 if (control === 'failure') {
   const report = JSON.parse(readFileSync(join(homedir(), 'temp/agent/depot-complete-ci/control-failure-results.json')))
-  assert.equal(report.results[0].status, 'failed')
-  assert.equal(report.results[0].exitCode, 1)
+  assert.equal(report.results.find((item) => item.checkId === check.id).status, 'failed')
+  assert.equal(report.results.find((item) => item.checkId === check.id).exitCode, 1)
+  assert.equal(report.results.find((item) => item.checkId === types.id).status, 'skipped')
+  assert.equal(report.results.find((item) => item.checkId === build.id).status, 'passed')
 }
 console.log("\n" + JSON.stringify({ event: 'executor-control-observed', control, executorExitCode: result.status, expectedFailure: control !== 'passing' }))
 if (control !== 'passing') throw new Error(`Intentional negative control ${control} propagates to workflow failure`)
