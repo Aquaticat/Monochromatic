@@ -31,7 +31,7 @@ export function createStartupRelevance({root,parse}){
   return answers;
  }
  return Object.freeze({
-  directory:join(homedir(),'.cache','monochromatic','pi-rule-relevance'),
+  directory:join(process.env.PI_CODING_AGENT_DIR??join(homedir(),'.pi','agent'),'rule-relevance'),
   namespace:{repository:root,primaryBranch:'project-policy'},
   parse,
   profile:{model:ruleAssessmentModel,questionVersion:'permission-boundaries-2',remitVersion:'human-readable-inputs-1',qualificationVersion:'positive-relevance-0.60-1'},
