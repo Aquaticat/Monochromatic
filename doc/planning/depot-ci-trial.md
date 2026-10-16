@@ -242,6 +242,11 @@ formatting,
 Rust,
 Kotlin,
 and Android quality gates alongside builds and tests.
+Only checks applicable to affected files or packages and their affected consumers run.
+Shared configuration and lockfile changes widen selection according to their demonstrated impact.
+Oxlint always uses the selected package's complete configured project context;
+the custom rules prohibit changed-file-only Oxlint invocation.
+Selection controls must demonstrate both included affected checks and excluded unrelated checks.
 The user explicitly corrected the earlier selected-job completion claim.
 One immutable source revision must identify every required check,
 its outcome,

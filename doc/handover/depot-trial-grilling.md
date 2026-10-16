@@ -11,6 +11,12 @@ Account access remains deliberately excluded and is unrelated to this missing wo
 
 Active work:
 
+- Select checks only for affected files or packages and their affected consumers.
+  The user explicitly requires change-aware selection.
+  Oxlint must retain each selected package's complete configured project context:
+  the custom rules make changed-file-only Oxlint invalid.
+  Changed files select packages;
+  they are never passed as an Oxlint narrowing filter.
 - Enumerate the full intended CI task graph from root and package tasks,
   including quality gates,
   builds,
@@ -22,6 +28,19 @@ Active work:
   Early failures must not silently omit independent checks.
 - Measure whole-pipeline usage and elapsed time until every required check reaches a terminal state.
   Reconcile those measurements with the cost model and the user's overlap-aware time objective.
+
+The queued source-change cases are the first-parent diffs ending at:
+
+- `525d2e09f8168a3bdd7e513e26d4c80b363123e5`:
+  TOML-edit source change for initial pipeline verification.
+- `ef01490f5e960f8ca0b424c12242caeb3c5a2b5e`:
+  logger source/tests with its actual broader consumer closure.
+- `cb95cf6d785c3073c192b95f0632cdae7b910894`:
+  native audio feature/source change and affected applications.
+
+Each execution must use that case's immutable head and dependency graph.
+A documentation-only selection control must prove unrelated package checks are absent.
+The initial smaller case does not replace the broader logger and native cases.
 
 The retained job experiments provide inputs and verified execution routes;
 they do not satisfy whole-pipeline completion on their own.
