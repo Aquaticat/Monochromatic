@@ -148,6 +148,10 @@ That startup buffer holds at most `STARTUP_BUFFER_CAP` records (10000,
    then appends JSONL records to
   `<that dir>/node_modules/.monochromatic/{timestamp}.log.jsonl` via
   `node:fs/promises`.
+  Appends run in invocation order within each sink;
+  a large record finishes every filesystem write before the next record starts.
+  Each returned write completion includes that wait,
+  so `logger.flush()` also covers queued records.
    When no ancestor `node_modules/` exists,
    the sink
   is marked unavailable rather than creating one at cwd;
