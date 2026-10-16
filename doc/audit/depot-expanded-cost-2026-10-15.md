@@ -13,7 +13,7 @@ browser suites,
 other packages,
 platform releases,
 and recurring agent experiments are not priced.
-[Replay calculations](depot-expanded-cost-2026-10-15.evidence.json)
+[Replay calculations][replay]
 
 The objective is broader coverage and useful cloud execution,
 not just faster copies of today's GitHub jobs.
@@ -23,8 +23,8 @@ The current evidence does not justify a paid plan change or production adoption.
 The user accepts deeper Depot dependence when measured benefits justify it,
 prefers the USD 20 plan when convenient,
 and sets USD 200 as a ceiling rather than a spending target.
-[Confirmed trial brief](../planning/depot-ci-trial.md),
-[expanded coverage proposal](../planning/depot-expanded-coverage.md)
+[Confirmed trial brief][brief],
+[expanded coverage proposal][coverage]
 
 ## What the replay measures
 
@@ -70,7 +70,7 @@ The priced workloads are:
   Client elapsed time includes artifact download and is a billing proxy,
   not a provider-reported billed duration.
 
-[Replay inputs](depot-expanded-cost-2026-10-15.evidence.json),
+[Replay inputs][replay],
 [host-suite observations](depot-trial-2026-10-15.md#existing-checks-newly-exercised-through-depot-ci),
 [APK run](https://github.com/Aquaticats/Monochromatic/actions/runs/38826684750),
 [container repetitions](depot-container-concurrency-2026-10-15.evidence.json)
@@ -85,7 +85,7 @@ The calculation therefore provides scenarios,
 not a statistical forecast or a full cold/warm/dependency/toolchain mix.
 Its positive control consumes 120 seconds without cancellation and 70 with cancellation;
 the exact-completion-boundary control preserves both completed jobs.
-[Assumptions and controls](depot-expanded-cost-2026-10-15.evidence.json)
+[Assumptions and controls][replay]
 
 ## Monthly compute subtotals
 
@@ -95,7 +95,7 @@ Developer's USD 20 subscription includes 500 container minutes,
 and 25 GB combined storage.
 Startup costs USD 200 with ten times those allowances.
 Both include one million passing test results.
-[Published plans](https://depot.dev/pricing)
+[Published plans][pricing]
 
 CI and Linux runner minutes are normalized for machine size.
 Four CPUs consume twice the two-CPU allowance;
@@ -103,9 +103,9 @@ the sixteen-CPU APK runner consumes eight times the base allowance.
 Extra CI or base Linux runner usage costs USD 0.006 per normalized minute.
 The default sixteen-CPU container builder costs USD 0.04 per additional container minute.
 Unused minutes in one product are not treated as credit for another.
-[CI billing](https://depot.dev/docs/ci/overview#pricing),
+[CI billing][ci-pricing],
 [runner sizes](https://depot.dev/docs/github-actions/runner-types),
-[container billing](https://depot.dev/docs/container-builds/overview#pricing)
+[container billing][container-pricing]
 
 - Every affected revision on Depot:
   2,262.105 base CI minutes,
@@ -130,9 +130,9 @@ Unused minutes in one product are not treated as credit for another.
   Affected-push validation still needs GitHub placement;
   release and agent-requested runs are additional demand.
 
-[Complete scenario rows](depot-expanded-cost-2026-10-15.evidence.json)
+[Complete scenario rows][replay]
 
-For the first scenario,
+For the every-affected scenario,
 the Developer calculation is USD 20 base,
 USD 1.573 CI overage,
 USD 30.768 runner overage,
@@ -140,7 +140,7 @@ and USD 25.006 container overage.
 Cancelling superseded jobs saves USD 4.286 in this replay.
 That saving does not establish cancellation as the dominant budget control;
 allocation frequency changes the measured subtotal more.
-[Calculation inputs](depot-expanded-cost-2026-10-15.evidence.json)
+[Calculation inputs][replay]
 
 ## Account snapshot and stopping behavior
 
@@ -163,7 +163,7 @@ not an independently queried invoice or current remaining balance.
 Further trial work can change them.
 The account's projected next-bill usage includes the runner-sizing experiment
 and is not the proposed steady workload.
-[Account record](depot-trial-2026-10-15.md#account-evidence-supplied-by-the-user)
+[Account record][account]
 
 The selected hard-limit behavior says new builds or workflows fail to start at the limit.
 This establishes three separate product-minute admission controls in the supplied account view.
@@ -174,7 +174,7 @@ registry transfer,
 test results,
 and every sandbox product share an aggregate USD 200 cap.
 Those boundaries still need verification before production allocation relies on them.
-[Account record](depot-trial-2026-10-15.md#account-evidence-supplied-by-the-user)
+[Account record][account]
 
 The direct usage API probe remains a separate limitation:
 the stored user token could list organizations,
@@ -195,8 +195,8 @@ and 2 GB billing view need not be equal.
 Their different scopes and averaging can explain a difference,
 but no hourly export was obtained to reconcile these exact observations.
 [Cache accounting](https://depot.dev/docs/cache/overview#pricing),
-[shared registry allowance](https://depot.dev/docs/registry/overview#pricing),
-[account observations](depot-trial-2026-10-15.md#account-evidence-supplied-by-the-user)
+[shared registry allowance][registry-pricing],
+[account observations][account]
 
 Organization cache retention does not apply to Docker layer entries.
 Docker retention is configured per project;
@@ -227,8 +227,8 @@ the replay's storage sensitivities are:
 These are hypothetical monthly averages,
 not conversions of the instantaneous 25.1 GB observation into a monthly bill.
 They also exclude optional paid registry transfer.
-[Sensitivity calculation](depot-expanded-cost-2026-10-15.evidence.json),
-[storage and transfer pricing](https://depot.dev/docs/registry/overview#pricing)
+[Sensitivity calculation][replay],
+[storage and transfer pricing][registry-pricing]
 
 ## Agent work and the unmeasured budget
 
@@ -250,7 +250,7 @@ These descriptions must not be silently combined into one meter:
 the SDK rate is the relevant documented rate for the tested route,
 while its account allowance attribution and hard-limit enforcement were not independently verified.
 [SDK billing](https://depot.dev/docs/api/overview#sandbox-api),
-[general product pricing](https://depot.dev/pricing)
+[general product pricing][pricing]
 
 Using the every-affected subtotal and no storage overage,
 Developer has **USD 122.653** remaining before the USD 200 ceiling.
@@ -259,7 +259,7 @@ At 100 GB average storage it becomes USD 107.653;
 at 250 GB it becomes USD 77.653.
 These are budget breakpoints,
 not claims that the missing work fits.
-[Subtotal and storage inputs](depot-expanded-cost-2026-10-15.evidence.json)
+[Subtotal and storage inputs][replay]
 
 For scale,
 if every remaining dollar went only to extra CI-rate SDK execution after included minutes were exhausted,
@@ -272,8 +272,8 @@ machine sizes,
 retained storage,
 and refresh/retry frequency before dividing that remainder among them.
 [CI rates](https://depot.dev/docs/ci/overview#depot-ci-sandboxes),
-[container rates](https://depot.dev/docs/container-builds/overview#pricing),
-[replay base](depot-expanded-cost-2026-10-15.evidence.json)
+[container rates][container-pricing],
+[replay base][replay]
 
 Startup has no dollar headroom below USD 200,
 but its unused included capacity is not zero.
@@ -285,7 +285,7 @@ not the current trial balance.
 Storage,
 other metered products,
 and taxes can still exceed the ceiling.
-[Replay and plan inputs](depot-expanded-cost-2026-10-15.evidence.json)
+[Replay and plan inputs][replay]
 
 A single-workload crossover illustrates why product mix matters.
 Holding the modeled CI and runner work fixed,
@@ -295,9 +295,9 @@ Adding only CI work instead does not produce that same crossover:
 Developer is about USD 183.77 when Startup exhausts its 20,000 CI minutes,
 after which both pay the same marginal CI rate.
 No universal run-count threshold can choose a plan for the unmeasured workload.
-[Base quantities](depot-expanded-cost-2026-10-15.evidence.json),
-[CI billing](https://depot.dev/docs/ci/overview#pricing),
-[container billing](https://depot.dev/docs/container-builds/overview#pricing)
+[Base quantities][replay],
+[CI billing][ci-pricing],
+[container billing][container-pricing]
 
 ## Coverage and allocation still to measure
 
@@ -324,8 +324,8 @@ not optional work removed to make the subtotal attractive:
   optional test-result uploads,
   and taxes.
 
-[Expanded target](../planning/depot-expanded-coverage.md),
-[explicit replay exclusions](depot-expanded-cost-2026-10-15.evidence.json)
+[Expanded target][coverage],
+[explicit replay exclusions][replay]
 
 The repository is public at this check.
 Standard GitHub-hosted runner compute is free for public repositories;
@@ -371,10 +371,19 @@ Broader Developer execution ranks ahead of Startup because the measured subtotal
 while preserving the same tested execution routes.
 Startup can move ahead if the completed target workload crosses a relevant cost breakpoint
 or demonstrates enough additional value within verified spending controls.
-[User constraints and proposal status](../planning/depot-ci-trial.md),
-[replay evidence](depot-expanded-cost-2026-10-15.evidence.json)
+[User constraints and proposal status][brief],
+[replay evidence][replay]
 
 No plan change,
 production routing rule,
 recurring job,
 or spending-limit change is adopted by this report.
+
+[replay]: depot-expanded-cost-2026-10-15.evidence.json
+[account]: depot-trial-2026-10-15.md#account-evidence-supplied-by-the-user
+[brief]: ../planning/depot-ci-trial.md
+[coverage]: ../planning/depot-expanded-coverage.md
+[pricing]: https://depot.dev/pricing
+[ci-pricing]: https://depot.dev/docs/ci/overview#pricing
+[container-pricing]: https://depot.dev/docs/container-builds/overview#pricing
+[registry-pricing]: https://depot.dev/docs/registry/overview#pricing
