@@ -900,3 +900,84 @@ for (const session of ['wide', 'narrow', 'dialog', 'auto-play', 'quit', 'states'
 console.log(JSON.stringify({ sessions: results }))
 if (results.some(result => result.status !== 0)) throw new Error('Desktop sessions failed; retained each independent result')
 '''
+
+[tasks."trial:depot:packages:prepare"]
+description = "Install desktop files once and snapshot their exact package versions"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync, spawnSync } = await import('node:child_process')
+const { mkdirSync, chmodSync, writeFileSync, symlinkSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { createHash } = await import('node:crypto')
+const started = performance.now()
+const packages = ['build-essential', 'cmake', 'clang', 'libclang-dev', 'pkg-config', 'libpipewire-0.3-dev', 'libfontconfig-dev', 'libfreetype-dev', 'libwayland-dev', 'libxkbcommon-dev', 'libdrm-dev', 'libegl1-mesa-dev', 'libgl1-mesa-dri', 'pipewire', 'pipewire-pulse', 'wireplumber', 'pulseaudio-utils', 'wl-clipboard', 'socat', 'fonts-noto-cjk', 'fonts-dejavu-core', 'zenity', 'dbus-user-session']
+const format = '${Package}\t${Version}\t${Status}\n'
+const before = spawnSync('dpkg-query', ['--show', `--showformat=${format}`, ...packages], { encoding: 'utf8' })
+console.log(JSON.stringify({ phase: 'before-install', status: before.status, stdout: before.stdout, stderr: before.stderr }))
+execFileSync('sudo', ['--non-interactive', 'apt-get', 'update'], { stdio: 'inherit' })
+execFileSync('sudo', ['--non-interactive', 'apt-get', 'install', '--yes', ...packages], { stdio: 'inherit' })
+const aptSeconds = (performance.now() - started) / 1000
+const base = join(homedir(), 'temp', 'agent', 'depot-package-snapshot')
+mkdirSync(base, { recursive: true, mode: 0o700 })
+chmodSync(base, 0o700)
+const response = await fetch('https://api.github.com/repos/ImageMagick/ImageMagick/releases/latest')
+if (!response.ok) throw new Error(`ImageMagick release lookup: ${response.status}`)
+const release = await response.json()
+const asset = release.assets.find(item => item.name.endsWith('gcc-x86_64.AppImage'))
+if (!asset) throw new Error('ImageMagick has no gcc x86_64 AppImage asset')
+const download = await fetch(asset.browser_download_url)
+if (!download.ok) throw new Error(`ImageMagick download: ${download.status}`)
+const bytes = Buffer.from(await download.arrayBuffer())
+if (`sha256:${createHash('sha256').update(bytes).digest('hex')}` !== asset.digest) throw new Error('ImageMagick download digest mismatch')
+const appimage = join(base, asset.name)
+writeFileSync(appimage, bytes, { mode: 0o700 })
+execFileSync(appimage, ['--appimage-extract'], { cwd: base, stdio: 'ignore' })
+const bin = join(base, 'bin')
+mkdirSync(bin, { recursive: true })
+symlinkSync(join(base, 'squashfs-root', 'AppRun'), join(bin, 'magick'))
+const manifest = execFileSync('dpkg-query', ['--show', `--showformat=${format}`, ...packages], { encoding: 'utf8' })
+const magickVersion = execFileSync(join(bin, 'magick'), ['--version'], { encoding: 'utf8' })
+writeFileSync(join(base, 'manifest.json'), JSON.stringify({ packages, format, manifest, magickVersion, imageMagickDigest: asset.digest }))
+console.log(JSON.stringify({ phase: 'snapshot-files-ready', aptSeconds, totalSeconds: (performance.now() - started) / 1000, packages: packages.length, manifest, magickVersion }))
+'''
+
+[tasks."trial:depot:packages:verify"]
+description = "Verify snapshot package versions and ImageMagick without installing anything"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { readFileSync, existsSync, writeFileSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const started = performance.now()
+const base = join(homedir(), 'temp', 'agent', 'depot-package-snapshot')
+const expected = JSON.parse(readFileSync(join(base, 'manifest.json'), 'utf8'))
+assert.equal(existsSync(join(base, 'consumer-marker')), false, 'Consumer writes must not appear in another fresh sandbox')
+const manifest = execFileSync('dpkg-query', ['--show', `--showformat=${expected.format}`, ...expected.packages], { encoding: 'utf8' })
+assert.equal(manifest, expected.manifest)
+assert.ok(manifest.trim().split('\n').every(line => line.endsWith('install ok installed')))
+const magickVersion = execFileSync(join(base, 'bin', 'magick'), ['--version'], { encoding: 'utf8' })
+assert.equal(magickVersion, expected.magickVersion)
+writeFileSync(join(base, 'consumer-marker'), process.env.DEPOT_JOB_URL ?? 'fresh consumer')
+console.log(JSON.stringify({ phase: 'snapshot-consumer-verified', seconds: (performance.now() - started) / 1000, packages: expected.packages.length, freshConsumer: true, manifest, magickVersion }))
+'''
+
+[tasks."trial:depot:packages:session"]
+description = "Probe the fresh user manager and audio session independently of file reuse"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync } = await import('node:child_process')
+const { readFileSync } = await import('node:fs')
+console.log(JSON.stringify({ pidOne: readFileSync('/proc/1/comm', 'utf8').trim(), runtimeDir: process.env.XDG_RUNTIME_DIR, hasSessionBus: process.env.DBUS_SESSION_BUS_ADDRESS !== undefined }))
+for (const [command, args] of [
+  ['systemctl', ['--user', 'daemon-reload']],
+  ['systemctl', ['--user', 'start', 'pipewire.socket', 'pipewire-pulse.socket', 'wireplumber.service']],
+  ['systemd-run', ['--user', '--wait', '--pipe', 'true']],
+  ['pactl', ['info']],
+]) {
+  const result = spawnSync(command, args, { encoding: 'utf8', timeout: 10000 })
+  console.log(JSON.stringify({ command, args, status: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }))
+}
+'''

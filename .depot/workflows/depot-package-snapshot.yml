@@ -1,0 +1,80 @@
+name: depot-package-snapshot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 10
+    snapshot: monochromatic-trial-desktop-packages:20261016-v1
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        minimum_release_age: 1d
+        install: false
+        cache: false
+    - name: Install snapshot runtimes
+      run: mise install node pnpm
+    - name: Install desktop filesystem dependencies and record package manifest
+      run: mise run //package/music-player/desktop-app:trial:depot:packages:prepare
+    - name: Install workspace dependencies
+      run: mise run //package/music-player/desktop-app:trial:depot:dependencies
+
+  consume-one:
+    needs: prepare
+    runs-on:
+      size: 2x8
+      image: monochromatic-trial-desktop-packages:20261016-v1
+    timeout-minutes: 3
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        minimum_release_age: 1d
+        install: false
+        cache: false
+    - name: Verify installed files without package installation
+      run: mise run //package/music-player/desktop-app:trial:depot:packages:verify
+    - name: Check workspace dependency reuse
+      run: mise run //package/music-player/desktop-app:trial:depot:dependencies
+    - name: Probe fresh user session separately
+      run: mise run //package/music-player/desktop-app:trial:depot:packages:session
+
+  consume-two:
+    needs: consume-one
+    runs-on:
+      size: 2x8
+      image: monochromatic-trial-desktop-packages:20261016-v1
+    timeout-minutes: 3
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        minimum_release_age: 1d
+        install: false
+        cache: false
+    - name: Verify installed files without package installation
+      run: mise run //package/music-player/desktop-app:trial:depot:packages:verify
+    - name: Check workspace dependency reuse
+      run: mise run //package/music-player/desktop-app:trial:depot:dependencies
+    - name: Probe fresh user session separately
+      run: mise run //package/music-player/desktop-app:trial:depot:packages:session
