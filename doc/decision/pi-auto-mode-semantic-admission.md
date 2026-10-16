@@ -14,6 +14,14 @@ Both clause interpretation and complete-operation review must apply this distinc
 This supersedes treating every instruction-compliance defect as an execution-permission defect.
 It does not change the selected model, score cutoff, operation identity, currentness, or cancellation checks.
 
+The user also limited Luna's input to the visible conversation, proposed operation,
+and readable project policy files even when those files have not appeared in the transcript.
+Pi's hidden system prompts, tool metadata, tool-use guidance, and skill catalog are excluded from model review.
+Selection follows original source provenance before clause indexing;
+removing text only from shared context would still leak excluded instructions through individual questions.
+Local provenance receipts may remain for operation ownership and currentness checks.
+Their retention does not authorize transmitting them as review evidence.
+
 On 2026-10-16,
 the user clarified the fallback order after ordinary repository inspection was falsely blocked:
 clause assessment first,

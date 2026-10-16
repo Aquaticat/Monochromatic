@@ -26,11 +26,16 @@ That convention is relevant to the proposed command but is not itself an access 
 The user explicitly selected permission-boundary review:
 tool-use conventions remain agent guidance while actual restrictions and missing consent remain enforced.
 The accepted scope is recorded in `doc/decision/pi-auto-mode-semantic-admission.md`.
+The user then corrected the source boundary:
+include visible conversation, proposed operation, and readable project policy files;
+exclude Pi's hidden instructions, tool metadata, and skill catalog.
+The shared permission-scope question change is committed but has not been activated.
+The collector must now select permitted source origins before clause questions are constructed.
 
 The exact decision log and extracted operation assessment are retained under
 `${HOME}/temp/agent/pi-manual-fallback-20261016`.
-Next: implement the accepted scope in clause and complete-operation questions, then qualify the actual
-conversation and explicit prohibition controls without weakening the adopted threshold.
+Next: correct collector source selection, prove exclusion and policy-file retention with positive controls,
+then qualify the captured conversation and explicit prohibition controls without weakening the threshold.
 The earlier readiness claim is retracted beyond its tested commands.
 
 The user also requested local resource drain.
