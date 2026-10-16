@@ -1179,14 +1179,14 @@ CXL:
 ### Verify at the user boundary
 
 VUB:
- After building,
- deploying,
- or installing,
- verify the artifact as its consumer uses it,
- retaining configured extensions,
+ After build,
+ deployment,
+ or install,
+ verify the consumer with configured extensions,
  skills,
- and tool catalogs;
- compilation or installation alone is insufficient.
+ tool catalogs,
+ and the reported interaction's preceding turns;
+ compilation alone is insufficient.
 
 VB1:
  Servers:
