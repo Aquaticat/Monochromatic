@@ -27,7 +27,7 @@ const commands=['printf NATIVE_DIRECT_BASH_A','printf NATIVE_DIRECT_BASH_B'];
 const calls=commands.map(function proposedCommand(command,index){return {index,id:`bash-${index}`,type:'function',function:{name:mode==='mixed'&&index===1?'codemode':'bash',arguments:JSON.stringify(mode==='mixed'&&index===1?{code:'return await tools.read({path:"AGENTS.md"});'}:{command})}};});
 const requests={count:0};
 const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInput,rootDirectory:env.options.cwd,parsePolicy:env.parser.parse,files:[],wrapToolDefinition:env.wrapToolDefinition,readSessionDisposalState:env.readSessionDisposalState,trace(){return undefined;},...createNativeSemanticOperatingPolicies(),
- sendWire(input){for(const command of mode==='mixed'?[commands[0],'AGENTS.md']:commands)assert.ok(input.body.includes(command),'Every assessment retains both complete operations');return sendAssessment(input);},
+ sendWire(input){for(const argument of mode==='mixed'?['NATIVE_DIRECT_BASH_A','AGENTS.md']:['NATIVE_DIRECT_BASH_A','NATIVE_DIRECT_BASH_B'])assert.ok(input.body.includes(argument),'Every assessment retains the parsed operation arguments');return sendAssessment(input);},
  async terminalFetch(){
   const proposal=requests.count++===0;
   const chunk={id:'direct-bash-fixture',object:'chat.completion.chunk',created:0,model:'fixture'};
