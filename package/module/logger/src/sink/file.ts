@@ -12,6 +12,7 @@ import {
 import { reportLoggerInternalError, } from '../error-format.ts';
 
 import type { Sink, } from '../types.ts';
+import { appendAfter, } from './file-append.ts';
 
 //region Ancestor search
 // Locates the project the process belongs to so log files land beside its
@@ -156,8 +157,8 @@ export function createFileSink(): Sink {
   const state: {
     filePath?: string;
     verifyPromise?: Promise<boolean>;
-    writePromise?: Promise<void>;
-  } = {};
+    writePromise: Promise<void>;
+  } = { writePromise: Promise.resolve(), };
 
   /**
    Actual verification work, invoked exactly once via the memoized
@@ -258,30 +259,6 @@ export function createFileSink(): Sink {
   }
 
   /**
-   Wait for the preceding complete append before issuing another record's filesystem writes.
-
-   @param previous - preceding append, including its handled failure
-   @param filePath - verified destination for this sink
-   @param line - complete serialized record captured at invocation
-
-   @returns completion after the record is persisted or its write failure is reported
-   */
-  async function appendAfter({ previous, filePath, line, }: {
-    readonly previous: Promise<void> | undefined;
-    readonly filePath: string;
-    readonly line: string;
-  },): Promise<void> {
-    if (previous !== undefined)
-      await previous;
-    try {
-      await appendFile(filePath, line,);
-    }
-    catch (error: unknown) {
-      reportLoggerInternalError({ context: 'file sink record append failed', error, },);
-    }
-  }
-
-  /**
    Writes a single record as a JSONL line to the resolved log file.
    
    @param record - Log record to write.
@@ -297,7 +274,9 @@ export function createFileSink(): Sink {
       return;
 
     try {
-      /** Queue publication occurs before awaiting, preventing overlapping chunked appends. */
+      /**
+       Queue publication occurs before awaiting, preventing overlapping chunked appends.
+       */
       const pending = appendAfter({
         previous: state.writePromise,
         filePath,

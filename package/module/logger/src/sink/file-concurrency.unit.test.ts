@@ -41,7 +41,7 @@ await describe({
         const logDirectory = join(directory, 'node_modules/.monochromatic',);
         const filenames = await readdir(logDirectory,);
         expect(filenames,).toHaveLength(1,);
-        const filename = filenames[0];
+        const [filename,] = filenames;
         if (filename === undefined)
           throw new Error('The verified sink did not create its log file',);
         const persisted = await readFile(join(logDirectory, filename,), 'utf8',);
@@ -56,7 +56,9 @@ await describe({
             throw new Error(`Malformed JSONL record at index ${index}`, { cause: error, },);
           }
         },);
-        expect(records.slice(1,).map(function recordTime(entry,) { return entry.timestamp; },),)
+        expect(records.slice(1,).map(function recordTime(entry,) {
+          return entry.timestamp;
+        },),)
           .toEqual([-1, 0, 1,],);
         expect(records[2]?.message === messages[0],).toBe(true,);
         expect(records[3]?.message === messages[1],).toBe(true,);
