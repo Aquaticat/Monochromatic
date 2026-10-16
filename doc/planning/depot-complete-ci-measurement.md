@@ -291,8 +291,13 @@ so exit zero alone is not proof of coverage.
   merge groups,
   or manual dispatch.
   Both are explicit exclusions for that push case.
-- [ ] Preserve Scorecard's existing schedule/rate policy as a separate repository-security workload.
-  Do not multiply it into every package change or erase its cost from a complete provider accounting period.
+- [ ] Preserve Scorecard's push-on-main,
+  branch-protection,
+  schedule,
+  and rate-limit policy as a separate repository-security workload.
+  The TOML head predates its rate gate;
+  the logger and native heads contain one.
+  State the policy revision used by the trial and account for gate/analysis attempts accordingly.
 - [ ] Exclude publishing,
   deployment,
   account login,
@@ -400,8 +405,9 @@ The full sidecar unit suite already includes `ci-scope.unit.test.ts`;
 do not run `test:scope` again for separate coverage credit.
 The file-scoped `lint:scope` is superseded by full package Oxlint.
 
-Required external checks are the push forbidden-strings gate
-and generated-output consistency through root `sync:files` in a separate disposable fixture.
+Required external dispositions are the push forbidden-strings gate,
+generated-output consistency through root `sync:files` in a separate disposable fixture,
+and Scorecard's repository-event accounting under the chosen policy revision.
 The actual changed path is TypeScript,
 which this head's dprint configuration does not format;
 no changed Markdown or Rust file selects their file linters.
@@ -417,8 +423,9 @@ and a failing single-mutant shard has one retry.
 Retain survivor and timeout findings from the report:
 the CLI exit alone does not encode a mutation-score threshold.
 
-The first execution manifest still marks completion false until the root scanner
-and generated-output adapters are connected and all required checks report results.
+The first execution manifest still marks completion false until the root scanner,
+generated-output,
+and Scorecard accounting dispositions are connected and all required checks report results.
 
 ### Broader case reach
 
