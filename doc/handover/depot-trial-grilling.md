@@ -2,53 +2,63 @@
 
 ## Completed trial execution and remaining acceptance gaps
 
-The user's completion question prompted a comparison with the full trial brief.
-The selected execution batch is complete,
-but the broader evaluation still has useful experiments to perform.
-The earlier statement that the execution queue was complete was too broad.
-Filing an issue records unfinished work;
-it does not complete the experiment.
+The user's completion question exposed unfinished experiments in the broader brief.
+The user then explicitly authorized executing that queue and added Depot Test.
+The resumed execution now has results for each accessible experiment:
 
-Remaining evaluation work is independently verifiable:
-
-- Evaluate Depot Test with real repository test reports,
-  deliberate failure and skip controls,
-  result retrieval,
-  history or retry behavior,
-  and its contribution to usage accounting.
-  The user explicitly identified this omitted product area and authorized execution on 2026-10-15 local time.
-- Combine installed-package snapshot reuse with fresh desktop service startup,
-  then run the complete interaction suite from that prepared environment.
-  Current evidence proves installation reuse and passing interaction on separate execution routes.
-- Run representative existing browser suites and remaining native check families through Depot,
-  recording setup,
-  results,
-  and usage for the broader cost estimate.
-- Execute a useful agent-requested experiment with retained inputs and outputs,
-  such as the discussed controlled linker comparison.
-  Standalone command execution and overlapping sandboxes establish access,
-  not the usefulness or cost of that workflow.
-- Reconcile account storage and usage scopes,
-  verify spending-control coverage with the necessary account access,
-  and extend the monthly model beyond its measured subset.
+- [Depot Test](../audit/depot-test-feature-2026-10-16.md):
+  real nextest JUnit ingestion,
+  controlled failure and skip,
+  same-commit retry,
+  analytics,
+  and timing-based splitting verified.
+  The final split returns 375 unique identities,
+  with 374 passes and one existing ignored case.
+  Repeated report upload duplicates rows and remains an integration risk.
+- [Prepared desktop](../audit/depot-prepared-desktop-2026-10-16.md):
+  two fresh consumers reuse installed packages and exact built artifacts,
+  start real user services,
+  and each pass 117 interaction checks with no failures and one uninjectable check.
+  Both verify cleanup.
+- [Expanded execution](../audit/depot-expanded-execution-2026-10-16.md):
+  native feature coverage and Clippy pass;
+  276 native executions cover 80 unique names.
+  DOM browser checks pass 34 cases.
+  Logger/filesystem browser checks pass 67 cases,
+  retaining one WebKit failure and one skip.
+- [Standalone linker workload](../audit/depot-linker-experiment-2026-10-16.md):
+  identical compiled inputs,
+  unchanged-input baselines,
+  alternating linkers,
+  and 160 consumer invocations completed.
+  Artifacts were retrieved and the sandbox stopped.
+  The difference is smaller than baseline spread;
+  no linker winner is established.
+- [Broader cost replay](../audit/depot-resumed-cost-2026-10-16.md):
+  prepared source rebuilds and consumers,
+  native coverage,
+  browser checks,
+  test reporting,
+  and standalone sensitivities are included explicitly.
+  Developer measured-workload subtotals are USD 133.33 for every affected revision,
+  USD 125.01 with immediate superseded cancellation,
+  or USD 20 with daily Depot selection and GitHub push validation retained.
+  These are not complete account forecasts.
 
 The Android instrumentation result uses cloud-built APKs on a local headed emulator;
 it does not establish Android device execution inside Depot.
 Production migration and plan changes remain separate decisions.
 
-The user explicitly authorized execution of this remaining queue.
-Depot Test,
-prepared desktop execution,
-and expanded browser/native coverage are assigned independent background investigations;
-the main investigation owns the controlled linker workload and account/cost reconciliation.
-Each area must finish with an executed result or a demonstrated blocker,
-not merely a new issue or proposal.
+The executable resumed queue is complete at its documented representative scope.
+Account-wide reconciliation remains blocked by unavailable account access;
+other packages and platforms remain explicitly unpriced acceptance gaps.
+Filing an issue does not count as executing an experiment or completing production integration.
 
 The current usage API re-probe still rejects the CLI user token and requires an organization token.
 Browser discovery through the available CLI found no running Chrome instance.
 The user said they cannot supply an organization-token file or a signed-in browser for this check.
-Continue the accessible experiments and reconcile their measured usage;
-retain account-wide billing and spending-control verification as an explicit access limitation.
+The accessible experiments and their measured usage are now reconciled.
+Account-wide billing and spending-control verification remain an explicit access limitation.
 
 The user requested a GitHub issue for every discovered problem on 2026-10-15 local time.
 The [issue inventory](depot-trial-issues.md) records each distinct trial finding,
@@ -67,7 +77,8 @@ The desktop trial repeats apt provisioning on disposable GitHub runners.
 Depot CI snapshot run `6w30pv5zds` now proves installed-package reuse in two fresh consumers:
 23 exact package versions and ImageMagick execute without apt or downloads.
 Both consumers still report `Failed to connect to bus: No medium found` for user services;
-filesystem reuse does not establish desktop runtime startup.
+That first filesystem-only trial did not establish desktop runtime startup.
+The resumed prepared desktop trial subsequently combined both successfully.
 The expanded cost report and snapshot troubleshooting record retain this boundary.
 The user chose to leave `EVL` unchanged and retain this requirement in the trial documents.
 

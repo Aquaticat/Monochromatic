@@ -164,6 +164,13 @@ Evaluate timing-based test distribution if the current product supports it.
 Record setup effort and test-result usage separately from execution compute.
 Reporting a fabricated result is not evidence that a repository test executed.
 
+The [executed Test trial](../audit/depot-test-feature-2026-10-16.md)
+verifies those reporting paths and timing-based splitting.
+The final split contains 375 unique identities:
+374 passing and one existing ignored test.
+Repeated same-key uploads duplicate rows,
+so exactly-once report submission remains an integration requirement.
+
 ### Preserve release and platform behavior
 
 The trial produces disposable validation artifacts without publishing releases or importing release credentials.
@@ -232,6 +239,12 @@ remaining gaps,
 and unverified claims.
 It recommends check frequency and an execution arrangement using the user's combined cost objective.
 Selected execution experiments and the representative change-stream replay have finished.
+The resumed batch includes combined prepared desktop execution,
+representative browser/native checks,
+Depot Tests,
+and a controlled standalone linker workload.
+The [broader cost replay](../audit/depot-resumed-cost-2026-10-16.md)
+charges source-specific snapshot rebuilding and records additional usage sensitivities.
 The report explicitly retains unpriced workloads,
 storage reconciliation,
 and account-control gaps;

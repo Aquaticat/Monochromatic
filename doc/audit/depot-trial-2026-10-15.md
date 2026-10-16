@@ -3,16 +3,14 @@
 ## Status and decision being tested
 
 The compilation measurements and runner-size follow-up have finished.
-The selected execution experiments,
-coverage inventory,
-and change-stream replay are complete;
-the account and unmeasured-workload acceptance gaps remain explicit.
-This does not complete every desired Depot experiment.
-Prepared desktop execution still needs installation reuse and runtime service startup combined in one route;
-representative browser and remaining native workloads need execution measurements;
-useful standalone agent experiments and complete account-cost reconciliation remain outstanding.
-The [remaining evaluation record](../handover/depot-trial-grilling.md#completed-trial-execution-and-remaining-acceptance-gaps)
-distinguishes these experiments from production integration.
+The resumed execution now covers Depot Tests,
+combined prepared desktop execution,
+representative browser suites and native feature checks,
+and a controlled standalone linker workload.
+The [completion record](../handover/depot-trial-grilling.md#completed-trial-execution-and-remaining-acceptance-gaps)
+links each executed result and distinguishes production integration from evaluation.
+Account-wide billing verification is blocked by unavailable account access;
+other packages and platforms remain explicitly unpriced acceptance gaps.
 All ten corrected runner configurations passed,
 as did the default-container-builder concurrency repetitions.
 The [sizing report](depot-runner-sizing-2026-10-15.md) records the measured results and allocation recommendation.
@@ -40,6 +38,23 @@ Existing-job timings isolate performance effects;
 they do not price the value of additional capabilities or define the target workload.
 The [confirmed brief](../planning/depot-ci-trial.md) preserves that distinction.
 
+The [Depot Test trial](depot-test-feature-2026-10-16.md) verifies reporting,
+failure and skip details,
+same-commit retry history,
+analytics,
+and timing-based splitting with real nextest output.
+Its final split returns 374 passes and one existing ignored case,
+with every expected identity present exactly once.
+Repeated same-key upload duplicates rows and needs integration care.
+The [expanded native/browser runs](depot-expanded-execution-2026-10-16.md)
+pass native feature checks,
+Clippy,
+and DOM interactions;
+the logger/filesystem browser run retains one WebKit failure and one skip.
+The [standalone linker experiment](depot-linker-experiment-2026-10-16.md)
+completes with retained inputs and verified outputs,
+but its timing difference is smaller than baseline variation.
+
 Developer with selective routing is the recommended arrangement for that expanded workload.
 This is a provisional allocation recommendation,
 not a complete technology-adoption verdict.
@@ -54,8 +69,12 @@ The later package snapshot trial verified all 23 requested package versions and 
 in two fresh consumers without apt installation or downloads.
 The snapshot preserves files;
 both consumers still lacked a working user session bus and PipeWire service.
-This establishes reusable installation,
-not a complete prepared desktop runtime.
+That filesystem-only experiment established reusable installation.
+The subsequent [prepared desktop trial](depot-prepared-desktop-2026-10-16.md)
+combines reused packages and built artifacts with fresh real user services.
+Both consumers pass 117 checks,
+retain one uninjectable check,
+and verify cleanup.
 [Package reuse evidence](depot-expanded-cost-2026-10-15.md#reusing-installed-desktop-dependencies)
 
 The later runner-sizing experiment exposed a correctness gap in the original cache design:
@@ -412,6 +431,23 @@ No account setting was changed.
 
 ## Monthly plan scenarios
 
+The [resumed execution replay](depot-resumed-cost-2026-10-16.md)
+is the latest measured-workload allocation.
+It replaces the earlier desktop routes with source-specific preparation plus one fresh consumer,
+replaces the core baseline with its feature matrix,
+and adds representative browser jobs.
+Developer subtotals are USD 133.33 for every affected revision,
+USD 125.01 with immediate superseded cancellation,
+or USD 20 with daily Depot selection and GitHub push validation retained.
+Startup remains USD 200 for those measured compute totals.
+Storage,
+other packages,
+extra retries,
+and account-wide usage remain outside these subtotals.
+Standalone experiment frequency and image refreshes have separate sensitivities.
+
+The retained scenarios in this section document the preceding execution routes.
+
 The successful 410-second desktop run provides an additional scenario input.
 With the separate container validation retained,
 the measured-subset Developer totals are USD 160.28 for every affected revision,
@@ -428,7 +464,7 @@ The following retained scenarios document the earlier measured inputs.
 
 The [expanded change-stream replay](depot-expanded-cost-2026-10-15.md)
 and [desktop interaction overlay](depot-desktop-cost-2026-10-15.md)
-form the current cost assessment.
+record the preceding cost assessment.
 Applying five measured workloads to the pretrial change stream gives Developer monthly subtotals of
 USD 77.35 for every affected revision,
 USD 73.06 with cancellation of unfinished superseded work,

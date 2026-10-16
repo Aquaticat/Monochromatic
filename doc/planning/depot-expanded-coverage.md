@@ -615,7 +615,9 @@ an exact expiry timestamp and aggregate dollar cap remain unverified.
   Linux build/runtime checks,
   Alpine native/smoke checks,
   prepared Node environment,
-  and standalone sandbox execution.
+  combined prepared desktop execution in two fresh consumers,
+  Depot Tests reporting and timing-based splitting,
+  and a controlled standalone linker workload with retained artifacts.
 - Executed behavioral evidence:
   desktop cloud interaction in [38826827023][desktop-run] failed;
   a direct software-compositor run also reached the wide-session fixture timeout.
@@ -628,6 +630,9 @@ an exact expiry timestamp and aggregate dollar cap remain unverified.
   and the isolated test-context experiment subsequently passed all cases.
   The expanded logger/fs-path browser run executed 69 cases across three engines,
   with one WebKit assertion failure and one storage-fixture skip retained.
+  The [prepared desktop follow-up](../audit/depot-prepared-desktop-2026-10-16.md)
+  combines snapshot reuse with fresh user services;
+  both consumers pass 117 checks and verify cleanup.
 - Existing but unmeasured/unwired trial checks:
   remaining browser packages and production browser routing,
   native checks outside the measured shared audio core,
@@ -655,6 +660,10 @@ Review the proposed triggers,
 platform boundaries,
 and completion criteria as the engineering recommendation.
 The selected trial execution and cost replay are finished;
+the [resumed cost report](../audit/depot-resumed-cost-2026-10-16.md)
+includes revision-specific preparation,
+expanded browser/native execution,
+and test/standalone usage sensitivities.
 the named unmeasured checks remain acceptance gaps tracked in the
 [issue inventory](../handover/depot-trial-issues.md).
 Production implementation and provider adoption remain a separate action request.
