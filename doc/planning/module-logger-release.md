@@ -330,13 +330,31 @@ The previously verified `npm-publish.yml` workflow now accepts a `module` choice
 and builds and tests the selected module before packing it with pnpm.
 The separate publish job uses npm OIDC and provenance.
 Logger repository metadata now points to `Aquaticats/Monochromatic`.
-The release version remains `0.4.1` because it has not been published.
+The release kept the pending version `0.4.1`.
 
 Commit `61d38bd7041443b236eea75b0a7f00da7e0d53bc` is the source for
 [release run 38838431661](https://github.com/Aquaticats/Monochromatic/actions/runs/38838431661).
 Local `lint:types` and `lint:oxlint` passed with zero warnings and errors.
 The disposable npm consumer has its own private manifest and an explicit installation prefix.
+The workflow succeeded,
+including the build and unit tests.
+npm accepted the upload,
+then made `0.4.1` available at `2026-10-16T02:06:06.290Z`;
+the registry's `latest` tag now resolves to it.
+The registry identifies GitHub Actions as publisher and
+`80363e5d-aede-4258-81ca-d4ee414a90a5` as the trusted publisher configuration.
+Its SLSA provenance names `Aquaticats/Monochromatic`,
+`.github/workflows/npm-publish.yml`,
+and source commit `61d38bd7041443b236eea75b0a7f00da7e0d53bc`.
+Tag `@monochromatic-dev/module-logger@0.4.1` preserves that revision.
+
+A fresh npm installation passed version and repository URL assertions.
+The installed `createLogger`,
+`tagged`,
+and `createFileSink` queued four records with 600000-character payloads,
+flushed them,
+and produced complete JSONL in exact invocation order.
+The `/ts` entry remained unavailable to registry consumers as intended.
+
 Next action:
-verify the release run,
-registry provenance,
-and complete ordered records through the installed file sink.
+none for `0.4.1`.

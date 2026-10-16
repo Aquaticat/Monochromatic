@@ -31,6 +31,10 @@ jobs:
 
 Working declaration:
 
+The task was renamed from `npm:fs-path:pack` to `npm:module:pack` on 2026-10-16
+when the workflow gained a logger choice;
+the historical declaration retains the task name used during the fix.
+
 ```yaml
 # .github/workflows/npm-publish.yml
 jobs:
