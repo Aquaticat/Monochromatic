@@ -558,7 +558,9 @@ assert(existsSync(runtimeRoot), 'Disposable runner user runtime directory must e
 const runtime = mkdtempSync(join(runtimeRoot, 'v-'))
 chmodSync(runtime, 0o700)
 assert(Buffer.byteLength(`${runtime}/libvirt/qemu/run/channel/999-mvm-depot-preparation-windows/org.qemu.guest_agent.0`) < 108, 'Full private guest-agent socket path must fit Linux sockaddr_un')
-const env = { ...process.env, HOME: privateHome, XDG_CONFIG_HOME: join(privateHome, '.config'), XDG_CACHE_HOME: join(privateHome, '.cache'), XDG_DATA_HOME: join(privateHome, '.local/share'), XDG_RUNTIME_DIR: runtime, MISE_DATA_DIR: join(originalHome, '.local/share/mise'), MISE_CONFIG_DIR: join(originalHome, '.config/mise'), MISE_CACHE_DIR: join(originalHome, '.cache/mise') }
+const privateConfig = join(runtime, 'c')
+assert(Buffer.byteLength(`${privateConfig}/libvirt/qemu/lib/domain-999-mvm-depot-preparation-windows/monitor.sock`) < 108, 'Full private QEMU monitor socket path must fit Linux sockaddr_un')
+const env = { ...process.env, HOME: privateHome, XDG_CONFIG_HOME: privateConfig, XDG_CACHE_HOME: join(privateHome, '.cache'), XDG_DATA_HOME: join(privateHome, '.local/share'), XDG_RUNTIME_DIR: runtime, MISE_DATA_DIR: join(originalHome, '.local/share/mise'), MISE_CONFIG_DIR: join(originalHome, '.config/mise'), MISE_CACHE_DIR: join(originalHome, '.cache/mise') }
 const results = []
 const sourceRevision = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim()
 assert.equal(sourceRevision, 'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e')
