@@ -361,6 +361,7 @@ const types = { ...build, id: 'control.types', task: '//package/control/fixture:
 const manifest = { schemaVersion: 1, caseId: `control-${control}`, sourceRevision, baseRevision, headRevision: sourceRevision, changedFiles: ['package/control/fixture/input.txt'], selectedPackages: ['package/control/fixture'], checks: [check, types, build], externalChecks: [], completeGraph: false }
 writeFileSync(join(manifestRoot, 'toml.json'), JSON.stringify(manifest, null, 2))
 const env = { ...process.env, GITHUB_WORKSPACE: base, MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS ?? ''}:${base}`, DEPOT_CI_WAVE: control === 'deferred-prerequisite' ? 'static' : 'all', DEPOT_CI_CPUS: '2', DEPOT_CI_MEMORY_GIB: '8', DEPOT_CI_WORKERS: '4' }
+if (control === 'deferred-prerequisite') env.DEPOT_CI_CHECK_IDS = JSON.stringify(['control.types'])
 const result = spawnSync('mise', ['run', '//package/dev-script/task-util:trial:depot:ci:execute'], { env, stdio: 'inherit' })
 if (result.error) throw result.error
 const passing = control === 'passing' || control === 'deferred-prerequisite'

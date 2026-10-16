@@ -43,5 +43,7 @@ jobs:
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: executor-${{ matrix.control }}-evidence
-        path: ~/temp/agent/depot-complete-ci/control-*-results.json
+        path: |
+          ~/temp/agent/depot-complete-ci/control-*-results.json
+          ~/temp/agent/depot-complete-ci/check-logs/*.log
         if-no-files-found: ignore
