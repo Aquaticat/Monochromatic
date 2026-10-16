@@ -1,0 +1,45 @@
+name: depot-complete-controls
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  executor:
+    name: Executor control ${{ matrix.control }}
+    runs-on:
+      size: 2x8
+      image: monochromatic-trial-typescript:20261015-v1
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        control: [passing, failure, oxlint-args, oxlint-scope]
+    env:
+      CI: 'true'
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      DEPOT_CI_CONTROL_CASE: ${{ matrix.control }}
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Match the bootstrap under test in the affected-check jobs.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - name: Exercise the unchanged executor against a disposable control
+      run: mise run //package/dev-script/task-util:trial:depot:ci:control
+    - name: Preserve control results even when the expected failure reaches the workflow
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: executor-${{ matrix.control }}-evidence
+        path: ~/temp/agent/depot-complete-ci/control-*-results.json
+        if-no-files-found: ignore
