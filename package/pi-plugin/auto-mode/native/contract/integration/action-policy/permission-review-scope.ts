@@ -1,4 +1,6 @@
-/** Shared scope keeps both automatic review phases focused on execution permission. @module */
+/**
+ Shared scope keeps both automatic review phases focused on execution permission. @module
+ */
 
 //region Agent guidance and operation authorization remain separate responsibilities.
 
