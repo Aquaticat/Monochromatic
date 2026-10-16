@@ -4,7 +4,7 @@ import {PolicySlotBindingError} from './system-slot-error.mjs';
 //region Original source spans remain local while selected excerpts cross the provider boundary.
 /** Materialize exact excerpts; tagged root rules require admitted positive relevance. */
 export function captureDecisionMaterial({sources,input}){
- if(!input?.parsePolicy)return undefined;
+ if(!input?.parsePolicy)throw new PolicySlotBindingError('Selected policy excerpts require the original Markdown parser');
  if(input.relevanceFailure)return Object.freeze({failure:input.relevanceFailure});
  const relevance=input.relevance;
  if(relevance&&relevance.sourceSHA256!==sources[0].sha256)throw new PolicySlotBindingError('Policy relevance does not belong to the current readable project policy');

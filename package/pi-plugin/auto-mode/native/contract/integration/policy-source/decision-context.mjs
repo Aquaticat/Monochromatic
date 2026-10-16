@@ -23,7 +23,7 @@ export function captureDecisionContext({snapshot,session,input}){
    ...snapshot.contextPromptInputs.filter(function independentContext(source){return source.carrier===undefined;}),
    ...(conversation?[conversation]:[])
  ]);
- const selection=captureDecisionMaterial({sources,input});
+ const selection=input?.parsePolicy?captureDecisionMaterial({sources,input}):undefined;
  return Object.freeze({sources,conversation,selection});
 }
 

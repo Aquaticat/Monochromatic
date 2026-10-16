@@ -49,7 +49,9 @@ export type NativePolicyDesignation = {
     readonly root: string;
     readonly relativePath: string;
     readonly requiredMode: number;
-    /** Startup and reload classify changed policy rules through the existing cache owner. */
+    /**
+     Startup and reload classify changed policy rules through the existing cache owner.
+     */
     readonly relevance?:Omit<RelevanceCacheInput,'selection'>;
   };
   /**

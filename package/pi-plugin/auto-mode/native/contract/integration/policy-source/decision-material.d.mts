@@ -8,4 +8,4 @@ export function captureDecisionMaterial(input:Readonly<{
   excluded?:readonly PolicySourceSpan[];
   material?:unknown;
   failure?:unknown;
-}>|undefined;
+}>;

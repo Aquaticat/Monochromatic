@@ -27,8 +27,15 @@ export type GoverningSetSnapshot = GoverningBindingSnapshot & Readonly<{
 export type GoverningSetInput = Readonly<{
   readSources: () => readonly GoverningSource[];
   parse: GoverningBindingInput['parse'];
-  /** Owner-selected original spans omitted from semantic questions, without changing source custody. */
-  excludedRules?:readonly Readonly<{sourceOrdinal:number;start:number;end:number;text:string}>[];
+  /**
+   Owner-selected original spans omitted from semantic questions, without changing source custody.
+   */
+  excludedRules?:readonly Readonly<{
+    sourceOrdinal:number;
+    start:number;
+    end:number;
+    text:string
+  }>[];
 }>;
 
 /**

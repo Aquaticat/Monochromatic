@@ -144,8 +144,10 @@ export function createGoverningRuleSet({
        Preserve the exact source-owned projection before augmenting its source ordinal.
        */
       const original = index.read(handle);
-      if(original.kind!=='source-heading-context'&&excludedRules.some(function excluded(rule){
-        return rule.sourceOrdinal===sourceOrdinal&&rule.start===original.start&&rule.end===original.end&&rule.text===original.text;
+      if((original.kind!=='source-heading-context')&&excludedRules.some(function excluded(rule){
+        return (rule.sourceOrdinal===sourceOrdinal)&&(rule.start===original.start)
+          &&(rule.end===original.end)
+          &&(rule.text===original.text);
       }))continue;
       /**
        Ordinal augmentation does not replace original clause or source identity.

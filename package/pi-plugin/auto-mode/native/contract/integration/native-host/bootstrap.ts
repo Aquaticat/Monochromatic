@@ -103,7 +103,10 @@ async function designatePolicy({cwd}: {readonly cwd:string}): Promise<NativePoli
       root: cwd,
       relativePath,
       requiredMode,
-      relevance:createStartupRelevance({root:cwd,parse:parser.parse})
+      relevance:createStartupRelevance({
+        root:cwd,
+        parse:parser.parse
+      })
     },
     authority: {
       tier: 'user' as const,

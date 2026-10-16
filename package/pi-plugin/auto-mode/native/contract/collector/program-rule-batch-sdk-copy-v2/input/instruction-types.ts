@@ -42,7 +42,11 @@ export type JudgmentInstructionsInput = Readonly<{
     governingSources: ReturnType<GoverningSetInput['readSources']>;
     decisionContext?: Readonly<{
       sources: ReturnType<GoverningSetInput['readSources']>;
-      selection?:Readonly<{excluded?:readonly Readonly<{start:number;end:number;text:string}>[]}>;
+      selection?:Readonly<{excluded?:readonly Readonly<{
+        start:number;
+        end:number;
+        text:string
+      }>[]}>;
     }>;
   }>;
   declaredNames: readonly Readonly<{
@@ -77,7 +81,9 @@ type RequestInstruction = Readonly<{
   binding: QuestionBinding;
 }>;
 
-/** Whole-operation decisions retain original request identity without selecting its archived body. */
+/**
+ Whole-operation decisions retain original request identity without selecting its archived body.
+ */
 type OperationDecisionInstruction = Readonly<{
   kind: 'whole-operation-decision';
   request: object;

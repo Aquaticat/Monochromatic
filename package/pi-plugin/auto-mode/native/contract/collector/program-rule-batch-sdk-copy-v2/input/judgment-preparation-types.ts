@@ -7,7 +7,10 @@ import type { QuestionSelectionInput } from '../../../lifecycle/claim-evidence-b
 import type { JudgmentDeclaredMember } from './judgment-member-types.ts';
 import type { ProgramPreparedMember } from './program-declaration-types.ts';
 import type { ProgramMemberRecord } from './program-state-types.ts';
-import type { InstructionMember,InstructionParserOptions } from './instruction-types.ts';
+import type {
+  InstructionMember,
+  InstructionParserOptions
+} from './instruction-types.ts';
 
 /**
  Source sealing retains policy and governing projections without adding authority.
@@ -15,7 +18,13 @@ import type { InstructionMember,InstructionParserOptions } from './instruction-t
 export type JudgmentPreparationSources = Readonly<{
   mandatoryPolicy?: Readonly<{ content?: unknown }>;
   governingSources?: unknown;
-  decisionContext?: Readonly<{ sources: unknown;selection?:Readonly<{material?:unknown;failure?:unknown}> }>;
+  decisionContext?: Readonly<{
+    sources: unknown;
+    selection?:Readonly<{
+      material?:unknown;
+      failure?:unknown
+    }>
+  }>;
 }>;
 
 /**

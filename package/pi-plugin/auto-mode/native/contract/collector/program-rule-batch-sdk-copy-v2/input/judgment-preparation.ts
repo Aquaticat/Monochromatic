@@ -134,16 +134,37 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
        Frozen selection context preserves original serialized inputs and source projections.
        */
       const sources=readJudgmentSources();
-      if(sources.decisionContext?.selection?.failure)throw new JudgmentConstructionError('Project policy relevance could not be classified; this operation needs manual review',{cause:sources.decisionContext.selection.failure});
-      /** Current assessment sources retain the same original read and snapshot identity. */
+      if(sources.decisionContext
+        ?.selection
+        ?.failure
+        !==undefined)throw new JudgmentConstructionError(
+        'Project policy relevance could not be classified; this operation needs manual review',
+        {cause:sources.decisionContext
+          .selection
+          .failure}
+      );
+      /**
+       Current assessment sources retain the same original read and snapshot identity.
+       */
       const envelope = Object.freeze({
         parentJSON,
         preparedJSON,
         requestBody: receipt.request
           .body,
         mandatoryPolicy,
-        governingSources: sources.decisionContext?.sources ?? sources.governingSources,
-        policyMaterial:sources.decisionContext?.selection?.material??captureDecisionMaterial({sources:sources.decisionContext?.sources??sources.governingSources,input:{parsePolicy:input.parsePolicy}})?.material,
+        governingSources: sources.decisionContext
+          ?.sources
+          ?? sources.governingSources,
+        policyMaterial:sources.decisionContext
+          ?.selection
+          ?.material
+          ??(input.parsePolicy!==undefined?captureDecisionMaterial({
+            sources:sources.decisionContext
+              ?.sources
+              ??sources.governingSources,
+            input:{parsePolicy:input.parsePolicy}
+          })
+            .material:undefined),
         instructionAuthority: 'not-established',
       });
       state.selection = createQuestionSelection({
