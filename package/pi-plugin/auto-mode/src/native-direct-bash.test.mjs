@@ -18,16 +18,16 @@ const {createBashToolDefinition}=await import(pathToFileURL(join(env.packageRoot
 const originalBash=createBashToolDefinition(env.options.cwd);
 const executions={count:0};
 const bash={...originalBash,async execute(...args){executions.count++;return await Reflect.apply(originalBash.execute,originalBash,args);}};
-const {session,root,lifecycle}=await createRootSessionFactory(env).create({options:{...env.options,tools:['bash','codemode'],customTools:[bash,createOwnedCodemodeDefinition()]}});
+const {session,root,lifecycle}=await createRootSessionFactory(env).create({options:{...env.options,tools:['bash','codemode','read'],customTools:[bash,env.createReadToolDefinition(env.options.cwd),createOwnedCodemodeDefinition()]}});
 session.agent.getApiKey=function fixtureKey(){return process.env.FIXTURE_API_KEY;};
 const observations={assessments:0,httpCalls:0};
 const settings={relation,operatingPolicy:true,httpTransport:true,unresolvedClause:mode==='unknown'?'unknown':undefined};
 const sendAssessment=createDomainFixtureAssessment({settings,observations});
 const commands=['printf NATIVE_DIRECT_BASH_A','printf NATIVE_DIRECT_BASH_B'];
-const calls=commands.map(function proposedCommand(command,index){return {index,id:`bash-${index}`,type:'function',function:{name:mode==='mixed'&&index===1?'codemode':'bash',arguments:JSON.stringify(mode==='mixed'&&index===1?{code:`return await tools.bash(${JSON.stringify({command})});`}:{command})}};});
+const calls=commands.map(function proposedCommand(command,index){return {index,id:`bash-${index}`,type:'function',function:{name:mode==='mixed'&&index===1?'codemode':'bash',arguments:JSON.stringify(mode==='mixed'&&index===1?{code:'return await tools.read({path:"AGENTS.md"});'}:{command})}};});
 const requests={count:0};
 const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInput,rootDirectory:env.options.cwd,parsePolicy:env.parser.parse,files:[],wrapToolDefinition:env.wrapToolDefinition,readSessionDisposalState:env.readSessionDisposalState,trace(){return undefined;},...createNativeSemanticOperatingPolicies(),
- sendWire(input){for(const command of commands)assert.ok(input.body.includes(command),'Every assessment retains both complete commands');return sendAssessment(input);},
+ sendWire(input){for(const command of mode==='mixed'?[commands[0],'AGENTS.md']:commands)assert.ok(input.body.includes(command),'Every assessment retains both complete operations');return sendAssessment(input);},
  async terminalFetch(){
   const proposal=requests.count++===0;
   const chunk={id:'direct-bash-fixture',object:'chat.completion.chunk',created:0,model:'fixture'};
@@ -44,13 +44,13 @@ await using cleanup={async [Symbol.asyncDispose](){session.dispose();await sessi
  assert.ok(observations.assessments>0,'Direct Bash must reach automatic assessment');
  assert.equal(review.outcome.state,mode==='unknown'?'unresolved':'resolved');
  if(mode!=='unknown')assert.equal(review.outcome.verdict,permitted?'approve':'deny');
- assert.equal(executions.count,permitted?2:0);
+ assert.equal(executions.count,mode==='mixed'?1:permitted?2:0);
  const results=session.messages.filter(function toolResult(message){return message.role==='toolResult';});
  assert.equal(results.length,2);
  for(const [index,result] of results.entries()){
   assert.equal(result.isError,!permitted);
   const text=JSON.stringify(result.content);
-  if(permitted)assert.ok(text.includes(index===0?'NATIVE_DIRECT_BASH_A':'NATIVE_DIRECT_BASH_B'));
+  if(permitted)assert.ok(text.includes(index===0?'NATIVE_DIRECT_BASH_A':mode==='mixed'?'RUL':'NATIVE_DIRECT_BASH_B'));
  }
  console.log(JSON.stringify({complete:true,mode,assessments:observations.assessments,automaticExecutions:permitted?2:0,completeCommands:true}));
 //endregion
