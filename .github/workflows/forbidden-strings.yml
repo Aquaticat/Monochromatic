@@ -1,16 +1,20 @@
 name: forbidden-strings
 
 on:
-  pull_request:
-    branches: ['main']
-  merge_group:
-    branches: ['main']
-  push:
-    branches: ['main']
+  workflow_dispatch:
+    inputs:
+      source_head:
+        description: Immutable source revision to scan
+        required: true
+        type: string
+      source_base:
+        description: Immutable comparison base
+        required: true
+        type: string
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.source_head }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -19,11 +23,13 @@ permissions:
 jobs:
   scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
     - name: Checkout (full history)
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
         fetch-depth: 0
+        persist-credentials: false
 
     - name: Download prebuilt forbidden-strings binary
       # The cargo-publish.yml workflow uploads SLSA-attested binaries for
@@ -91,6 +97,25 @@ jobs:
         echo "$bin_dir" >> "$GITHUB_PATH"
         "$bin_dir/forbidden-strings" --version
 
+    - name: Checkout immutable source for the selected change
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        ref: ${{ inputs.source_head }}
+        fetch-depth: 0
+        persist-credentials: false
+
+    - name: Verify immutable source and comparison base
+      env:
+        SOURCE_HEAD: ${{ inputs.source_head }}
+        SOURCE_BASE: ${{ inputs.source_base }}
+      run: |
+        set -euo pipefail
+        [[ "$SOURCE_HEAD" =~ ^[0-9a-f]{40}$ ]]
+        [[ "$SOURCE_BASE" =~ ^[0-9a-f]{40}$ ]]
+        test "$(git rev-parse HEAD)" = "$SOURCE_HEAD"
+        git merge-base --is-ancestor "$SOURCE_BASE" "$SOURCE_HEAD"
+        printf 'source_head=%s\nsource_base=%s\n' "$SOURCE_HEAD" "$SOURCE_BASE"
+
     - name: Materialize deny-list
       # De-root design (commit 58995afff): no root example file and no root
       # rules file exist anymore. Compose the runtime rules file from the
@@ -124,9 +149,9 @@ jobs:
       # their merge-base comparison with main. Replaces both the old full-tree
       # push scan and the earlier `mise exec -- hk check` step.
       env:
-        EVENT_NAME: ${{ github.event_name }}
-        HEAD_SHA: ${{ github.sha }}
-        PUSH_BASE_SHA: ${{ github.event.before }}
+        EVENT_NAME: push
+        HEAD_SHA: ${{ inputs.source_head }}
+        PUSH_BASE_SHA: ${{ inputs.source_base }}
       run: |
         set -euo pipefail
         if [ "$EVENT_NAME" = 'push' ]; then
