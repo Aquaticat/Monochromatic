@@ -1,0 +1,84 @@
+name: depot-complete-desktop-case-linux
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: Exact-head native ${{ matrix.wave }}
+    strategy:
+      fail-fast: false
+      matrix:
+        wave: [native-desktop]
+    runs-on:
+      size: 16x64
+      image: monochromatic-trial-desktop-ready:20261016-v1
+    timeout-minutes: 30
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      CI: 'true'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      DEPOT_CI_CASE: desktop
+      DEPOT_CI_WAVE: ${{ matrix.wave }}
+      DEPOT_CI_CPUS: '16'
+      DEPOT_CI_MEMORY_GIB: '64'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: harness
+        persist-credentials: false
+        clean: false
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: source
+        ref: 3434eaa455d569c18b52cf15100f77f9db251d21
+        fetch-depth: 2
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Retain the preparation bootstrap already exercised by the TOML wave.
+        version: 2026.10.9
+        working_directory: harness
+        install: false
+        env: false
+        export_path: false
+        cache: false
+    - name: Install exact lockfile tool versions outside source
+      working-directory: harness
+      env:
+        MISE_LOCKED: '0'
+      run: mise run //package/dev-script/task-util:trial:depot:ci:native-tools
+    - name: Verify selected source tools and frozen dependency inputs
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:native-tool-gate
+    - name: Install exact-head frozen dependencies
+      working-directory: source
+      run: mise run prepare:pnpm:install -- --frozen-lockfile
+    - name: Verify prepared host and bridge authored Clang paths
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:desktop-host
+    - name: Build exact-head compositor prerequisite
+      working-directory: source
+      run: mise run //package/cli/nested-wayland-session:build
+    - name: Execute unchanged historical package checks
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:execute
+    - name: Exercise every desktop runtime session
+      if: always()
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:desktop-runtime
+    - name: Preserve native check evidence and APKs
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: desktop-${{ matrix.wave }}-evidence
+        path: |
+          ~/temp/agent/depot-complete-ci/*-results.json
+          ~/temp/agent/depot-complete-ci/native-tools.json
+          ~/temp/agent/depot-complete-ci/desktop-e2e/**/*
+        if-no-files-found: ignore

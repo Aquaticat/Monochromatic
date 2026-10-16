@@ -140,7 +140,7 @@ const initialDeferred = manifest.checks.filter((check) => {
   if (wave === 'static') return !check.task.endsWith(':lint:oxlint') && !check.task.endsWith(':lint:types')
   if (wave === 'native-core') return !check.id.startsWith('truepeak-core.') && !check.id.startsWith('root.changed-')
   if (wave === 'native-android') return !check.id.startsWith('android-app.') || check.task.endsWith(':test:instrumented')
-  if (wave === 'native-desktop') return !check.id.startsWith('desktop-app.') || check.task.endsWith(':test:e2e')
+  if (wave === 'native-desktop') return (!check.id.startsWith('desktop-app.') && !check.id.startsWith('root.changed-')) || check.task.endsWith(':test:e2e')
   return wave === 'core' ? container : wave === 'containers' ? !container && check.family !== 'build' : false
 }).map((check) => check.id)
 const activeIds = new Set(manifest.checks.filter((check) => !initialDeferred.includes(check.id)).map((check) => check.id))
@@ -463,7 +463,8 @@ const app = join(source, 'package/music-player/desktop-app')
 const compositor = join(source, 'package/cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
 assert(existsSync(compositor), 'The exact-head repository compositor must be built before runtime validation')
 const directory = join(homedir(), 'temp/agent/depot-complete-ci')
-const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/native.json'))
+const manifestName = process.env.DEPOT_CI_CASE ?? 'native'
+const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, `harness/.depot/manifests/${manifestName}.json`))
 const manifest = JSON.parse(manifestBytes)
 const startedAt = new Date().toISOString()
 const started = performance.now()
@@ -527,7 +528,7 @@ try {
   const cleanupVerified = run({ args: ['container', 'exists', name], required: false }).status === 1 && !existsSync(marker)
   runtimeCompleted = runtimeCompleted && cleanupVerified
   const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: 'desktop-app.test.e2e', task: '//package/music-player/desktop-app:test:e2e', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: suite?.status ?? null, signal: suite?.signal ?? null, status: runtimeCompleted && suite?.status === 0 ? 'passed' : 'failed', runtimeCompleted, cleanupVerified, failure, sessions: ['wide', 'narrow', 'dialog', 'quit', 'states', 'visual'], resources: { cpus: 2, memoryGiB: 2 }, providerJobUrl: process.env.DEPOT_JOB_URL }
-  writeFileSync(join(directory, 'native-desktop-e2e-results.json'), JSON.stringify(record, null, 2))
+  writeFileSync(join(directory, `${manifestName}-desktop-e2e-results.json`), JSON.stringify(record, null, 2))
   console.log('\n' + JSON.stringify(record))
 }
 assert(runtimeCompleted && suite?.status === 0, 'Complete desktop E2E task and cleanup must pass')
