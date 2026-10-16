@@ -2,6 +2,10 @@
 description = "Reconcile retained source manifests with current compiled inputs without hiding mismatches"
 run = "node bin/verify-evidence.mjs"
 
+[tasks."inspect:analysis-history"]
+description = "Probe GraphQL analysis history using the actual GitHub workflow token"
+run = "gh api graphql --field query=@../../../.github/analysis.graphql"
+
 [tasks."verify:markdown"]
 description = "Render scanner READMEs and native-verification evidence through the installed CommonMark HTML-tree pipeline"
 run = "node bin/render-docs.mjs"

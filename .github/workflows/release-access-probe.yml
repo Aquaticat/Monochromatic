@@ -9,6 +9,8 @@ on:
 permissions:
   contents: read
   attestations: read
+  actions: read
+  checks: read
 
 jobs:
   probe:
@@ -27,7 +29,7 @@ jobs:
         install: false
         cache: false
     - run: mise install node
-    - name: Compare public and workflow-token release access
+    - name: Check GraphQL analysis history with the workflow token
       env:
         GH_TOKEN: ${{ github.token }}
-      run: mise run //package/cli/forbidden-strings:inspect:release-access
+      run: mise run //package/cli/forbidden-strings:inspect:analysis-history

@@ -1,0 +1,31 @@
+query {
+  node(id: "W_kwDOKlVnec4KXN-e") {
+    ... on Workflow {
+      name
+      runs(first: 100, orderBy: {field: CREATED_AT, direction: DESC}) {
+        totalCount
+        pageInfo { hasNextPage endCursor }
+        nodes {
+          databaseId
+          createdAt
+          updatedAt
+          runAttempt
+          checkSuite {
+            checkRuns(first: 1, filterBy: {checkName: "Scorecard analysis", checkType: ALL}) {
+              totalCount
+              pageInfo { hasNextPage endCursor }
+              nodes {
+                databaseId name status conclusion startedAt completedAt
+                steps(first: 10) {
+                  nodes { name startedAt status conclusion }
+                  pageInfo { hasNextPage }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  rateLimit { cost remaining resetAt }
+}
