@@ -300,7 +300,7 @@ const env = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1', MISE_TRUSTED_CONFIG_PATH
 execFileSync('git', ['worktree', 'add', '--detach', fixture, sourceRevision], { cwd: source, env, stdio: 'inherit' })
 execFileSync('mise', ['run', 'prepare:pnpm:install', '--', '--frozen-lockfile'], { cwd: fixture, env, stdio: 'inherit' })
 execFileSync('mise', ['run', '//package/git-policy/cli:build'], { cwd: fixture, env, stdio: 'inherit' })
-execFileSync('git', ['cli-git', 'trust', '--yes'], { cwd: fixture, env, stdio: 'inherit' })
+execFileSync('mise', ['exec', '--', 'node', join(fixture, 'package/git-policy/cli/dist/final/node/index.mjs'), 'cli-git', 'trust', '--yes'], { cwd: fixture, env, stdio: 'inherit' })
 const startedAt = new Date().toISOString()
 const started = performance.now()
 const result = spawnSync('mise', ['run', 'sync:files'], { cwd: fixture, env, stdio: 'inherit' })
@@ -515,6 +515,7 @@ const started = performance.now()
 const name = `depot-full-desktop-${process.pid}`
 const parentSocket = join(directory, 'desktop-parent.sock')
 const marker = join(directory, 'desktop-overlay-only')
+const scratch = join(directory, 'desktop-runtime-scratch')
 assert.equal(existsSync(marker), false, 'Fresh desktop runtime must not inherit another overlay marker')
 const podman = ['--non-interactive', 'podman', '--cgroup-manager=cgroupfs']
 function run({ args, required = true, inherit = false, input, limit = 45000 }) {
@@ -553,7 +554,7 @@ try {
     await wait(500)
   }
   assert(display, 'Parent compositor must publish a real Wayland display before E2E starts')
-  suite = run({ args: [...user, `WAYLAND_DISPLAY=${display}`, 'mise', 'run', '//package/music-player/desktop-app:test:e2e'], required: false, inherit: true, limit: 780000 })
+  suite = run({ args: [...user, `WAYLAND_DISPLAY=${display}`, `E2E_TMP=${scratch}`, 'mise', 'run', '//package/music-player/desktop-app:test:e2e'], required: false, inherit: true, limit: 780000 })
   const output = join(directory, 'desktop-e2e')
   mkdirSync(output, { recursive: true, mode: 0o700 })
   run({ args: ['cp', `${name}:${app}/target/e2e/.`, output], required: false })
@@ -569,6 +570,11 @@ try {
   failure = String(error)
   console.error(error)
 } finally {
+  const retained = join(directory, 'desktop-runtime-logs')
+  mkdirSync(retained, { recursive: true, mode: 0o700 })
+  run({ args: ['cp', `${name}:${scratch}/.`, retained], required: false })
+  const ownership = spawnSync('sudo', ['--non-interactive', 'chown', '--recursive', `${process.getuid()}:${process.getgid()}`, retained], { encoding: 'utf8' })
+  if (ownership.status !== 0) console.error(ownership.stderr)
   run({ args: ['exec', name, 'journalctl', '--no-pager', `--unit=user@${process.getuid()}.service`, '--lines=80'], required: false })
   run({ args: ['logs', name], required: false })
   run({ args: ['stop', '--time=10', name], required: false })
@@ -679,4 +685,15 @@ const restored = expected.images.map((id) => {
 const record = { event: 'private-image-transfer-verified', sha256: expected.sha256, images: restored }
 writeFileSync(join(directory, 'private-image-transfer-results.json'), JSON.stringify(record, null, 2))
 console.log(JSON.stringify(record))
+'''
+
+[tasks."trial:depot:ci:trust-source"]
+description = "Trust reviewed historical policy through its explicit built executable and selected source runtime"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { join } = await import('node:path')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+execFileSync('mise', ['exec', '--', 'node', join(source, 'package/git-policy/cli/dist/final/node/index.mjs'), 'cli-git', 'trust', '--yes'], { cwd: source, stdio: 'inherit' })
 '''

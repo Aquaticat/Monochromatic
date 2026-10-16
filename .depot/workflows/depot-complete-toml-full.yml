@@ -57,8 +57,8 @@ jobs:
       working-directory: source
       run: mise run //package/git-policy/cli:build
     - name: Trust the reviewed exact-head repository policy
-      working-directory: source
-      run: git cli-git trust --yes
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:trust-source
     - name: Run the reviewed package checks and retain every result
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:execute
@@ -127,8 +127,8 @@ jobs:
       working-directory: source
       run: mise run //package/git-policy/cli:build
     - name: Trust the reviewed exact-head repository policy
-      working-directory: source
-      run: git cli-git trust --yes
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:trust-source
     - name: Run the reviewed package checks and retain every result
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:execute
@@ -193,8 +193,8 @@ jobs:
       working-directory: source
       run: mise run //package/git-policy/cli:build
     - name: Trust the reviewed exact-head repository policy
-      working-directory: source
-      run: git cli-git trust --yes
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:trust-source
     - name: Run the reviewed package checks and retain every result
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:generated
