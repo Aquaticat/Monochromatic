@@ -29,13 +29,13 @@ await describe({
         const sink = createFileSink();
         expect(await sink.verify(),).toBe(true,);
         cwd.restore();
-        await sink.write({ id: 'control', message: 'ordinary record', },);
+        await sink.write({ level: 'info', timestamp: -1, message: 'ordinary record', },);
         /** Each payload crosses the filesystem helper's chunk boundary and includes JSON escapes. */
         const messages = ['a', 'b',].map(function largeMessage(marker,) {
           return `${marker}${'"\\\n世界'.repeat(150_000,)}`;
         },);
         await Promise.all(messages.map(async function appendLargeRecord(message, index,) {
-          await sink.write({ id: index, message, },);
+          await sink.write({ level: 'info', timestamp: index, message, },);
         },),);
         /** Read the persisted artifact rather than inspecting append calls. */
         const logDirectory = join(directory, 'node_modules/.monochromatic',);
@@ -50,14 +50,14 @@ await describe({
         /** Parsing errors report their location without including the full record. */
         const records = rows.map(function parseRecord(row, index,) {
           try {
-            return JSON.parse(row,) as { readonly id?: string | number; readonly message?: string; };
+            return JSON.parse(row,) as { readonly timestamp: number; readonly message?: string; };
           }
           catch (error) {
             throw new Error(`Malformed JSONL record at index ${index}`, { cause: error, },);
           }
         },);
-        expect(records.map(function recordId(entry,) { return entry.id; },),)
-          .toEqual([undefined, 'control', 0, 1,],);
+        expect(records.slice(1,).map(function recordTime(entry,) { return entry.timestamp; },),)
+          .toEqual([-1, 0, 1,],);
         expect(records[2]?.message === messages[0],).toBe(true,);
         expect(records[3]?.message === messages[1],).toBe(true,);
       },
