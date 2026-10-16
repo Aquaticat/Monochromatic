@@ -948,9 +948,42 @@ for (const [command, args] of [
   ['podman', ['--version']],
   ['docker', ['--version']],
   ['qemu-system-x86_64', ['--version']],
-  ['ls', ['--long', '/dev/kvm']],
+  ['stat', ['--format=%F %a', '/dev/kvm']],
 ]) {
   const result = spawnSync(command, args, { encoding: 'utf8', timeout: 5000, env: { ...process.env, XDG_RUNTIME_DIR: runtime } })
   console.log(JSON.stringify({ command, args, status: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }))
+}
+'''
+
+[tasks."trial:depot:prepared:boot-probe"]
+description = "Boot systemd in a bounded disposable container and verify real user units and private audio"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync } = await import('node:child_process')
+const { strict: assert } = await import('node:assert')
+const name = `depot-systemd-probe-${process.pid}`
+const podman = ['--non-interactive', 'podman', '--cgroup-manager=cgroupfs']
+function run(args, required = true) {
+  const result = spawnSync('sudo', [...podman, ...args], { encoding: 'utf8', timeout: 45000 })
+  console.log(JSON.stringify({ phase: 'systemd-container-probe', args, status: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }))
+  if (required && result.status !== 0) throw new Error(`Container probe failed: ${args.join(' ')}`)
+  return result
+}
+try {
+  run(['run', '--detach', '--name', name, '--systemd=always', '--network=none', '--memory=2g', '--cpus=2', '--timeout=90', '--rootfs', '/:O', '/usr/lib/systemd/systemd', '--unit=basic.target'])
+  run(['exec', name, 'systemctl', 'is-system-running', '--wait'], false)
+  run(['exec', name, 'systemctl', 'start', `user@${process.getuid()}.service`])
+  const user = ['exec', '--user', String(process.getuid()), '--env', `XDG_RUNTIME_DIR=/run/user/${process.getuid()}`, '--env', `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${process.getuid()}/bus`, name]
+  const scope = run([...user, 'systemd-run', '--user', '--wait', '--pipe', '--unit=depot-probe-unit', '--property=MemoryMax=256M', '/bin/cat', '/proc/self/cgroup'])
+  assert.ok(scope.stdout.includes('/depot-probe-unit.service'))
+  run([...user, 'systemctl', '--user', 'start', 'pipewire.socket', 'pipewire-pulse.socket', 'wireplumber.service'])
+  run([...user, 'pactl', 'info'])
+  run([...user, 'pw-dump'])
+  run([...user, 'systemctl', '--user', 'stop', 'wireplumber.service', 'pipewire-pulse.service', 'pipewire-pulse.socket', 'pipewire.service', 'pipewire.socket'])
+  console.log(JSON.stringify({ phase: 'systemd-container-ready', realUserUnit: true, privateAudio: true }))
+} finally {
+  run(['logs', name], false)
+  run(['stop', '--time=10', name], false)
+  run(['rm', name], false)
 }
 '''

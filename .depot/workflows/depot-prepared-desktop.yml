@@ -27,3 +27,5 @@ jobs:
         cache: false
     - name: Probe snapshot runtime and namespace capabilities
       run: mise run //package/music-player/desktop-app:trial:depot:prepared:probe
+    - name: Boot an isolated systemd runtime from the unchanged installed filesystem
+      run: mise run //package/music-player/desktop-app:trial:depot:prepared:boot-probe
