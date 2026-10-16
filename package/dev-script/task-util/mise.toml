@@ -88,3 +88,62 @@ writeFileSync(join(base, 'prepared.json'), JSON.stringify(record, null, 2))
 console.log(JSON.stringify({ phase: 'affected-ci-dependencies-prepared', ...record }))
 console.log(JSON.stringify({ phase: 'affected-ci-tools', tools: Object.fromEntries(Object.entries(before).map(([name, versions]) => [name, versions.map(({ version, installed }) => ({ version, installed }))])) }))
 '''
+
+[tasks."trial:depot:ci:execute"]
+description = "Execute explicit affected-package checks against a separate immutable checkout"
+dir = "{{env.GITHUB_WORKSPACE}}/source"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync, spawnSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync, chmodSync } = await import('node:fs')
+const { createHash } = await import('node:crypto')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/toml.json'))
+const manifest = JSON.parse(manifestBytes)
+const manifestSha256 = createHash('sha256').update(manifestBytes).digest('hex')
+const sourceRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+assert.equal(sourceRevision, manifest.sourceRevision)
+const changedFiles = execFileSync('git', ['diff', '--name-only', manifest.baseRevision, sourceRevision], { encoding: 'utf8' }).trim().split('\n').sort()
+assert.deepEqual(changedFiles, [...manifest.changedFiles].sort())
+const catalog = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }))
+const selectedPackages = new Set(manifest.selectedPackages)
+const tracked = execFileSync('git', ['ls-files'], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).trim().split('\n')
+for (const check of manifest.checks) {
+  assert.equal(check.scope, 'package', `unreviewed non-package check: ${check.id}`)
+  assert(check.packages.every((path) => selectedPackages.has(path)), `check outside affected closure: ${check.id}`)
+  assert(catalog.some((task) => task.name === check.task), `missing exact-head task: ${check.task}`)
+  if (check.task.endsWith(':lint:oxlint')) assert.deepEqual(check.args, [], 'Oxlint must retain full package reach')
+  if (check.expectedFiles) {
+    const actual = tracked.filter((path) => check.packages.some((pkg) => path.startsWith(`${pkg}/`)) && path.endsWith('.unit.test.ts')).sort()
+    assert.deepEqual(actual, [...check.expectedFiles].sort(), `unit input identity mismatch: ${check.id}`)
+  }
+}
+const inputs = ['mise.lock', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'package.json']
+for (const path of inputs) assert.deepEqual(readFileSync(path), execFileSync('git', ['show', `HEAD:${path}`]), `${path} changed during setup`)
+const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(directory, { recursive: true, mode: 0o700 })
+chmodSync(directory, 0o700)
+const identity = { schemaVersion: 1, caseId: manifest.caseId, sourceRevision, manifestSha256, providerJobUrl: process.env.DEPOT_JOB_URL, resources: { cpus: 16, memoryGiB: 64 }, selectedCheckIds: manifest.checks.map((check) => check.id) }
+const results = []
+const deferredChecks = manifest.checks.filter((check) => check.task.endsWith(':test:mutation') || check.task.endsWith(':test:container')).map((check) => ({ checkId: check.id, reason: 'Container runtime bridge remains under review; check is required and not executed in this first wave.' }))
+console.log(JSON.stringify({ ...identity, event: 'case-started', completeGraph: false, deferredChecks, tools: JSON.parse(execFileSync('mise', ['ls', '--current', '--json'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 })) }))
+for (const check of manifest.checks) {
+  const startedAt = new Date().toISOString()
+  const started = performance.now()
+  const checkIdentity = { ...identity, checkId: check.id, task: check.task, args: check.args, startedAt, expectedFiles: check.expectedFiles }
+  const deferred = deferredChecks.find((item) => item.checkId === check.id)
+  const failedPrerequisites = (check.prerequisites ?? []).filter((id) => results.find((result) => result.checkId === id)?.status !== 'passed')
+  const skipReason = deferred?.reason ?? (failedPrerequisites.length > 0 ? `Required builds did not pass: ${failedPrerequisites.join(', ')}` : undefined)
+  console.log(JSON.stringify({ ...checkIdentity, event: 'check-started' }))
+  const result = skipReason ? undefined : spawnSync('mise', ['run', check.task, ...(check.args.length > 0 ? ['--', ...check.args] : [])], { stdio: 'inherit' })
+  if (result?.error) console.error(result.error)
+  const record = { ...checkIdentity, event: 'check-finished', finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: result?.status ?? null, signal: result?.signal ?? null, status: skipReason ? 'skipped' : result?.status === 0 ? 'passed' : 'failed', skipReason }
+  results.push(record)
+  console.log(JSON.stringify(record))
+  writeFileSync(join(directory, `${manifest.caseId}-results.json`), JSON.stringify({ ...identity, event: 'case-finished', completeGraph: false, results, deferredChecks, externalChecks: manifest.externalChecks }, null, 2))
+}
+for (const path of inputs) assert.deepEqual(readFileSync(path), execFileSync('git', ['show', `HEAD:${path}`]), `${path} changed during checks`)
+if (results.some((result) => result.status === 'failed')) throw new Error('Affected-package checks failed; see retained per-check records')
+'''

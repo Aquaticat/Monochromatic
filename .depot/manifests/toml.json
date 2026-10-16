@@ -1,0 +1,601 @@
+{
+  "schemaVersion": 1,
+  "caseId": "toml",
+  "event": "push",
+  "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+  "baseRevision": "cf9fcb48047d86e0af01ac9c73c1c7bf26fb277f",
+  "headRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+  "changedFiles": [
+    "package/module/toml-edit/src/value-encoders.ts"
+  ],
+  "directlyChangedPackages": [
+    "package/module/toml-edit"
+  ],
+  "selectedPackages": [
+    "package/dev-script/file-enforcer",
+    "package/dev-script/vm-builder",
+    "package/module/toml-edit",
+    "package/module/toml-edit.fuzz",
+    "package/test-fixture/file-enforcer-perf"
+  ],
+  "selectionReasons": [
+    {
+      "dependency": "package/module/toml-edit",
+      "consumer": "package/dev-script/file-enforcer",
+      "evidence": "package/dev-script/file-enforcer/package.json",
+      "field": "dependencies"
+    },
+    {
+      "dependency": "package/module/toml-edit",
+      "consumer": "package/module/toml-edit.fuzz",
+      "evidence": "package/module/toml-edit.fuzz/package.json",
+      "field": "devDependencies"
+    },
+    {
+      "dependency": "package/dev-script/file-enforcer",
+      "consumer": "package/dev-script/vm-builder",
+      "evidence": "package/dev-script/vm-builder/package.json",
+      "field": "dependencies"
+    },
+    {
+      "dependency": "package/dev-script/file-enforcer",
+      "consumer": "package/test-fixture/file-enforcer-perf",
+      "evidence": "package/test-fixture/file-enforcer-perf/package.json",
+      "field": "dependencies"
+    }
+  ],
+  "tools": [
+    "node",
+    "pnpm",
+    "github:toml-lang/toml-test"
+  ],
+  "checks": [
+    {
+      "id": "package.module.toml-edit.build",
+      "task": "//package/module/toml-edit:build",
+      "args": [],
+      "family": "build",
+      "scope": "package",
+      "packages": [
+        "package/module/toml-edit"
+      ],
+      "prerequisites": []
+    },
+    {
+      "id": "package.dev-script.file-enforcer.build",
+      "task": "//package/dev-script/file-enforcer:build",
+      "args": [],
+      "family": "build",
+      "scope": "package",
+      "packages": [
+        "package/dev-script/file-enforcer"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build"
+      ]
+    },
+    {
+      "id": "package.dev-script.vm-builder.build",
+      "task": "//package/dev-script/vm-builder:build",
+      "args": [],
+      "family": "build",
+      "scope": "package",
+      "packages": [
+        "package/dev-script/vm-builder"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build"
+      ]
+    },
+    {
+      "id": "package.dev-script.file-enforcer.lint.oxlint",
+      "task": "//package/dev-script/file-enforcer:lint:oxlint",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/dev-script/file-enforcer"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.dev-script.file-enforcer.lint.types",
+      "task": "//package/dev-script/file-enforcer:lint:types",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/dev-script/file-enforcer"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.dev-script.file-enforcer.test.unit",
+      "task": "//package/dev-script/file-enforcer:test:unit",
+      "args": [
+        "--all"
+      ],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/dev-script/file-enforcer"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ],
+      "expectedFiles": [
+        "package/dev-script/file-enforcer/src/cargo/apply-plan.unit.test.ts",
+        "package/dev-script/file-enforcer/src/cli-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/generated-policy-contracts.unit.test.ts",
+        "package/dev-script/file-enforcer/src/integration.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/cache.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/cat.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/glob.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/glob.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/overwrite-each-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/overwrite-if-not-exists-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/read-existing-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/staleness-destination-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/staleness-root-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/staleness-root.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/staleness-stamp-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/staleness.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/write-atomic.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/write-toml.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/write.unit.test.ts",
+        "package/dev-script/file-enforcer/src/jetbrains/lsp4ij-entries.unit.test.ts",
+        "package/dev-script/file-enforcer/src/jetbrains/lsp4ij-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/jetbrains/lsp4ij.unit.test.ts",
+        "package/dev-script/file-enforcer/src/jetbrains/options-dir-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/jetbrains/options-dir.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/jetbrains/options-dir.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/ensure-package.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/manager-defs.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/manager.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/merge.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/p.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/registry-parse.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/registry-parse.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/exec.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/inspect.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/json.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/json.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/toml.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/toml.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/transform.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/xml-coding.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/xml.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/xml.unit.test.ts",
+        "package/dev-script/file-enforcer/src/platform/evaluate-predicate.unit.test.ts",
+        "package/dev-script/file-enforcer/src/staleness-concurrency-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/staleness-lock-owner-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/staleness-lock-publication-contention.unit.test.ts",
+        "package/dev-script/file-enforcer/src/staleness-lock-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/staleness-manifest-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/tracker.unit.test.ts",
+        "package/dev-script/file-enforcer/src/watch-directory-chokidar-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/watch-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/watch-start-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/watch/notify.unit.test.ts",
+        "package/dev-script/file-enforcer/src/watch/watch-filter.unit.test.ts",
+        "package/dev-script/file-enforcer/src/watch/watch-rerun-queue.unit.test.ts"
+      ],
+      "expectedFileCount": 55
+    },
+    {
+      "id": "package.dev-script.vm-builder.lint.oxlint",
+      "task": "//package/dev-script/vm-builder:lint:oxlint",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/dev-script/vm-builder"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.dev-script.vm-builder.lint.types",
+      "task": "//package/dev-script/vm-builder:lint:types",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/dev-script/vm-builder"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.module.toml-edit.lint.oxlint",
+      "task": "//package/module/toml-edit:lint:oxlint",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/module/toml-edit"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.module.toml-edit.lint.types",
+      "task": "//package/module/toml-edit:lint:types",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/module/toml-edit"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.module.toml-edit.test.unit",
+      "task": "//package/module/toml-edit:test:unit",
+      "args": [
+        "--all"
+      ],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/module/toml-edit"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ],
+      "expectedFiles": [
+        "package/module/toml-edit/src/basic-escape.unit.test.ts",
+        "package/module/toml-edit/src/canonical.unit.test.ts",
+        "package/module/toml-edit/src/comments.unit.test.ts",
+        "package/module/toml-edit/src/cross-path-effective.unit.test.ts",
+        "package/module/toml-edit/src/document-state.unit.test.ts",
+        "package/module/toml-edit/src/effective-value.unit.test.ts",
+        "package/module/toml-edit/src/emit-content-node.unit.test.ts",
+        "package/module/toml-edit/src/emit-value-node.unit.test.ts",
+        "package/module/toml-edit/src/errors.unit.test.ts",
+        "package/module/toml-edit/src/fixtures.unit.test.ts",
+        "package/module/toml-edit/src/inline-entry-state.unit.test.ts",
+        "package/module/toml-edit/src/input-state.unit.test.ts",
+        "package/module/toml-edit/src/issue-252.unit.test.ts",
+        "package/module/toml-edit/src/js-value-text.unit.test.ts",
+        "package/module/toml-edit/src/keys.unit.test.ts",
+        "package/module/toml-edit/src/parse-toml-edit.unit.test.ts",
+        "package/module/toml-edit/src/parsed-comment-state.unit.test.ts",
+        "package/module/toml-edit/src/path-prefix.unit.test.ts",
+        "package/module/toml-edit/src/path.unit.test.ts",
+        "package/module/toml-edit/src/resolve.unit.test.ts",
+        "package/module/toml-edit/src/toml-clean-path.unit.test.ts",
+        "package/module/toml-edit/src/toml-comment-access.unit.test.ts",
+        "package/module/toml-edit/src/toml-delete.path.unit.test.ts",
+        "package/module/toml-edit/src/toml-delete.unit.test.ts",
+        "package/module/toml-edit/src/toml-get-comments.unit.test.ts",
+        "package/module/toml-edit/src/toml-get-node.unit.test.ts",
+        "package/module/toml-edit/src/toml-get-raw.unit.test.ts",
+        "package/module/toml-edit/src/toml-has.unit.test.ts",
+        "package/module/toml-edit/src/toml-insert-comment-after.unit.test.ts",
+        "package/module/toml-edit/src/toml-insert-comment-before.unit.test.ts",
+        "package/module/toml-edit/src/toml-keys.unit.test.ts",
+        "package/module/toml-edit/src/toml-set-diagnostics.unit.test.ts",
+        "package/module/toml-edit/src/toml-set-header-comment.unit.test.ts",
+        "package/module/toml-edit/src/toml-set.path.unit.test.ts",
+        "package/module/toml-edit/src/toml-set.unit.test.ts",
+        "package/module/toml-edit/src/value-encoders.unit.test.ts",
+        "package/module/toml-edit/src/values.unit.test.ts"
+      ],
+      "expectedFileCount": 37
+    },
+    {
+      "id": "package.module.toml-edit.fuzz.lint.oxlint",
+      "task": "//package/module/toml-edit.fuzz:lint:oxlint",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/module/toml-edit.fuzz"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.module.toml-edit.fuzz.lint.types",
+      "task": "//package/module/toml-edit.fuzz:lint:types",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/module/toml-edit.fuzz"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.module.toml-edit.fuzz.test.unit",
+      "task": "//package/module/toml-edit.fuzz:test:unit",
+      "args": [
+        "--all"
+      ],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/module/toml-edit.fuzz"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ],
+      "expectedFiles": [
+        "package/module/toml-edit.fuzz/src/ci-scope.unit.test.ts",
+        "package/module/toml-edit.fuzz/src/emit.property.unit.test.ts",
+        "package/module/toml-edit.fuzz/src/generators.property.unit.test.ts",
+        "package/module/toml-edit.fuzz/src/parse-toml-edit.property.unit.test.ts",
+        "package/module/toml-edit.fuzz/src/round-trip.property.unit.test.ts",
+        "package/module/toml-edit.fuzz/src/smoke.property.unit.test.ts",
+        "package/module/toml-edit.fuzz/src/stateful.property.unit.test.ts"
+      ],
+      "expectedFileCount": 7
+    },
+    {
+      "id": "package.test-fixture.file-enforcer-perf.lint.types",
+      "task": "//package/test-fixture/file-enforcer-perf:lint:types",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/test-fixture/file-enforcer-perf"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.module.toml-edit.fuzz.fuzz",
+      "task": "//package/module/toml-edit.fuzz:fuzz",
+      "args": [
+        "--budget",
+        "3000"
+      ],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/module/toml-edit.fuzz"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.dev-script.file-enforcer.fuzz",
+      "task": "//package/dev-script/file-enforcer:fuzz",
+      "args": [
+        "--budget",
+        "3000"
+      ],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/dev-script/file-enforcer"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.module.toml-edit.fuzz.fuzz.coverage",
+      "task": "//package/module/toml-edit.fuzz:fuzz:coverage",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/module/toml-edit.fuzz"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.module.toml-edit.test.conformance",
+      "task": "//package/module/toml-edit:test:conformance",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/module/toml-edit"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.dev-script.file-enforcer.test.container",
+      "task": "//package/dev-script/file-enforcer:test:container",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/dev-script/file-enforcer"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.module.toml-edit.test.mutation",
+      "task": "//package/module/toml-edit:test:mutation",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/module/toml-edit"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    },
+    {
+      "id": "package.dev-script.file-enforcer.test.mutation",
+      "task": "//package/dev-script/file-enforcer:test:mutation",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/dev-script/file-enforcer"
+      ],
+      "prerequisites": [
+        "package.module.toml-edit.build",
+        "package.dev-script.file-enforcer.build",
+        "package.dev-script.vm-builder.build"
+      ]
+    }
+  ],
+  "externalChecks": [
+    {
+      "id": "root.forbidden-strings",
+      "family": "lint",
+      "scope": "files",
+      "files": [
+        "package/module/toml-edit/src/value-encoders.ts"
+      ],
+      "reason": "Existing change gate; root orchestrator owns workflow execution and report identity."
+    },
+    {
+      "id": "root.generated-consistency",
+      "family": "test",
+      "scope": "project",
+      "packages": [
+        "package/dev-script/file-enforcer"
+      ],
+      "task": "//:sync:files",
+      "reason": "Root file-enforcer.config.ts imports selected file-enforcer. Execute only in a separate disposable fixture and compare generated tracked outputs."
+    }
+  ],
+  "excludedChecks": [
+    {
+      "task": "//package/dev-script/vm-builder:test:unit",
+      "reason": "No active *.unit.test.ts files at immutable head; empty successful runner would not establish coverage."
+    },
+    {
+      "task": "//package/test-fixture/file-enforcer-perf:lint:oxlint",
+      "reason": "No such task at immutable head; perf fixture deliberately omits Oxlint under its documented configuration."
+    },
+    {
+      "task": "//package/test-fixture/file-enforcer-perf:test:unit",
+      "reason": "No active *.unit.test.ts files at immutable head; empty successful runner would not establish coverage."
+    },
+    {
+      "task": "//package/module/toml-edit.fuzz:lint:scope",
+      "reason": "Its file-scoped Oxlint invocation is superseded by full package lint:oxlint, as required by the user."
+    },
+    {
+      "task": "//package/module/toml-edit.fuzz:test:scope",
+      "reason": "Same ci-scope.unit.test.ts file is included in the complete package unit suite."
+    },
+    {
+      "task": "perf:*",
+      "reason": "Performance-fixture type checking is selected; benchmark campaigns and host capability changes are outside ordinary correctness CI."
+    },
+    {
+      "task": "browser/e2e/device/platform",
+      "reason": "None of the five selected owners has browser/e2e/device/platform test files or application consumers; browser bundle build remains selected."
+    },
+    {
+      "task": "lint:dprint",
+      "reason": "The actual changed file is TypeScript; this head disables dprint TypeScript formatting. Full package Oxlint handles it."
+    },
+    {
+      "task": "lint:markdown/lint:rust/monochromatic-lint",
+      "reason": "The actual change contains no Markdown or Rust file. No monochromatic-lint task exists at this historical head."
+    },
+    {
+      "task": "Scorecard",
+      "reason": "Scheduled repository-security workload, not a package-change gate; retain separate provider accounting."
+    },
+    {
+      "task": "CodeQL",
+      "reason": "Case event is push. Exact-head .github/workflows/codeql.yml triggers only pull_request, schedule, and workflow_dispatch."
+    },
+    {
+      "task": "final-newline",
+      "reason": "Case event is push. Exact-head .github/workflows/final-newline.yml triggers only pull_request, merge_group, and workflow_dispatch."
+    },
+    {
+      "task": "release/publish/deploy/account/provision",
+      "reason": "Release operations and account access are excluded; selected vm-builder run/import/push tasks provision or publish rather than validate."
+    }
+  ],
+  "completeGraph": false,
+  "remainingReview": [
+    "Forbidden-strings adapter",
+    "Generated-output comparison adapter"
+  ],
+  "mutationBounds": {
+    "containers": 2,
+    "memoryPerContainer": "2g",
+    "cpusPerContainer": 2,
+    "pidsPerContainer": 512,
+    "sessionTimeoutSeconds": 1800,
+    "timeoutFloorMs": 5000,
+    "timeoutFactor": 3,
+    "singleShardRetries": 1,
+    "evidence": "package/cli/mutation-test/src/host/cli-options.ts and orchestrate.ts at sourceRevision"
+  },
+  "selectionEvidence": {
+    "positive": [
+      "package/module/toml-edit",
+      "package/dev-script/file-enforcer"
+    ],
+    "negative": [
+      "package/music-player/android-app",
+      "package/module/logger"
+    ],
+    "sourceImportAudit": "toml-import-reach.txt",
+    "closureFile": "toml-closure.json",
+    "closureSha256": "66189ad89d606b2779b72504a64e34f20180e239300e306090e3f2fbd5ab06e7"
+  }
+}

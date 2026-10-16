@@ -1,0 +1,50 @@
+name: depot-complete-toml
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  toml:
+    name: Exact-head affected TOML checks, first wave
+    runs-on:
+      size: 16x64
+      image: monochromatic-trial-typescript:20261015-v1
+    timeout-minutes: 30
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      CI: 'true'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      OXLINT_THREADS: '1'
+      TSC_SINGLE_THREADED: '1'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: harness
+        persist-credentials: false
+        clean: false
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: source
+        ref: 525d2e09f8168a3bdd7e513e26d4c80b363123e5
+        fetch-depth: 2
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Match the already exercised preparation bootstrap.
+        version: 2026.10.9
+        working_directory: source
+        install: false
+        cache: false
+    - name: Install the exact-head dependency runtimes and conformance runner
+      working-directory: source
+      run: mise install node pnpm github:toml-lang/toml-test
+    - name: Install exact-head frozen dependencies
+      working-directory: source
+      run: mise run prepare:pnpm:install -- --frozen-lockfile
+    - name: Run the reviewed package checks and retain every result
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:execute
