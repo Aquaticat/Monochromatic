@@ -3,9 +3,11 @@
 ## Recommendation and scope
 
 Keep Scorecard scheduling in its existing GitHub workflow during the Depot trial.
-An isolated GraphQL candidate now preserves the current admission decisions in supplied fixtures
+The GraphQL repair preserves the current admission decisions in supplied fixtures
 and queries live history without REST history calls.
-Recommend this query repair after its exact script passes with the workflow's own token.
+Its exact script passed with the workflow's own token in run `38831327297`.
+The user subsequently requested repair of the quota-related download failure and reiterated the REST-quota objective;
+the narrow query replacement landed in `f598404b31` under that repair request.
 No migration to a different scheduler has been validated.
 This is a recommendation to defer scheduler migration,
 not a claim that the current gate correctly enforces every execution limit.
@@ -190,8 +192,13 @@ A separate [workflow-token query probe][graphql-token-probe] passed with `action
 `checks: read`,
 and `contents: read`.
 The candidate uses those same permissions.
-The remaining adoption check is the exact candidate script running in GitHub Actions with its own workflow token;
-the query-only probe does not substitute for that consumer-boundary check.
+The exact candidate script then passed in
+[the consumer-boundary trial](https://github.com/Aquaticats/Monochromatic/actions/runs/38831327297/job/116750532503).
+It visited 966 historical runs using ten requests and ten GraphQL points,
+made no REST history requests,
+and correctly skipped analysis at the existing eight-per-day count.
+Production run verification follows the committed replacement;
+the cloud trial is distinct from that production outcome.
 The isolated candidate is not a Depot migration or a new scheduler.
 
 A stricter experimental counter used actual step activity,
@@ -358,8 +365,11 @@ and actual billed usage before describing the replacement as inexpensive.
 
 Until that evidence exists,
 the scheduling portion of the trial concludes **no validated scheduler replacement**.
-The GraphQL repair has passing local policy comparisons and a live read-only query;
-its exact workflow-token execution remains the next check before adoption.
+The GraphQL repair has passing local policy comparisons,
+live read-only queries,
+and exact-script workflow-token execution.
+It is committed as the quota repair;
+it does not adopt a scheduler replacement or correct the separate accounting-policy gaps.
 The measured 331-second counting step does not justify relaxing the accepted budgets.
 
 ## Verification
