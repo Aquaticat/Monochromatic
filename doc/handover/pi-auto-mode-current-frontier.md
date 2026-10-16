@@ -62,6 +62,32 @@ The original session logs do not retain its per-clause distributions,
 so this does not establish which clause caused the historical false positive.
 The maintained regression supplies the false-prerequisite estimate explicitly to verify routing deterministically.
 
+The current built matrix passes automatic approve and deny,
+unknown and lower-scoring answers,
+initial and final transport failure,
+malformed replies,
+manual Allow and Stop,
+dismissal,
+headless withholding,
+source changes,
+cancellation,
+and established prohibition.
+Receipt: `decision-matrix-2.log` under the same scratch parent.
+Its final pure-review assertion needed correction because incumbent-channel diagnostics retain
+`requires-approval` while unsupported channels retain `unresolved` after scoped Allow.
+The deadline extension then exposed a separate distinction:
+assessment-budget expiry must allow unchanged operations to reach manual review,
+while source changes must not.
+The source-observer check now handles that distinction; final deadline and fresh-confirmation runs remain pending.
+
+Local assessment logs now retain complete selected inputs, replies, and malformed responses.
+Decision logs retain source bindings, answer distributions, admission, fallback errors, and final outcomes.
+`operationId` joins model exchanges to the `reviewId` used throughout the original judgment.
+The new regression reconstructs its false prerequisite from these logger records.
+The first focused lint pass found four errors;
+callback shape, parameter documentation, and the fixture's asynchronous abort type were corrected.
+Final focused lint, complete approval regressions, fresh type checking, and installed verification remain pending.
+
 ### MiMo first-group correction and direct Bash review
 
 The real MiMo session at 23:29:17 UTC reached manual fallback on its first group of two Bash calls.

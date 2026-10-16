@@ -1,5 +1,135 @@
 # LLM Gateway Luna Decisions returns complete answers without complete native admission
 
+## Repository inspection blocked by unresolved prerequisites on 2026-10-16
+
+### Symptom and retained evidence
+
+Installed auto-mode release `native-release-tmMxY3` blocked a handover-directory listing
+and `pwd` plus `git rev-parse --show-toplevel` with:
+
+> An independent authorization prerequisite remains unsatisfied or unresolved;
+> session confirmation cannot satisfy it
+
+The original session beginning `2026-10-16T00-30-17-591Z` retains both tool calls and their rejected results.
+Neither proposed operation required another authorization under the reported task.
+The original local logs omitted per-clause distributions,
+so the exact clause causing that incident is unknown.
+An unchanged installed replay subsequently reached a dialog;
+its `PX2` prerequisite score was `0.39`, below admission.
+That replay does not establish that `PX2` caused this incident.
+The separate 2026-10-15 `proof.txt` incident has its own retained `0.60` evidence.
+
+### Source trace and repair
+
+Before commit `ad6d59cb92`,
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/review-outcome.ts:84`
+converted unresolved authorization requirements into the quoted terminal explanation:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/review-outcome.ts, before ad6d59cb92
+if (authorization.state === 'unresolved') {
+```
+
+The agent's initial interpretation, routing those estimates directly to a dialog, was rejected.
+The user required the decision model to reconsider the complete operation first.
+Current `package/pi-plugin/auto-mode/native/contract/integration/action-policy/decision-core.mjs:108`
+now selects that path before native confirmation:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/decision-core.mjs:108
+const operationDecision=policy!==undefined&&(automaticOutcome.state!=='resolved'||automaticOutcome.verdict==='ask')
+  ?await decideCompleteOperation()
+  :undefined;
+```
+
+The new question retains complete selected context and every original prepared tool operation.
+It shares the existing model, categorical cutoff, deadline, and transport allowance.
+A recoverable clause-assessment failure also reaches this model question.
+An established governing prohibition remains terminal.
+Unresolved or failed final review reaches scoped confirmation when available.
+Allow authorizes the exact operation without rewriting prerequisite estimates as satisfied external facts.
+
+The source-change control exposed another failure:
+changing `AGENTS.md` during final model review initially entered the independent manual fallback and executed.
+Commit `8854618f2a` prevents replacing that stale review with a new dialog.
+The subsequent deadline control distinguishes source freshness from an exhausted assessment budget,
+so a model timeout can still reach last-resort manual review for an unchanged operation.
+
+### Reconstructable diagnostics
+
+The user identified missing decision evidence as a logging defect.
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/compiler.mjs:138`
+records each selected clause, distribution, serving model, priority, and admission result:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/compiler.mjs:138
+recordDecision({judgment,event:'clause-admission',details:{id,binding:projection,model:record.model,matchingModel,answer:record.answer,admitted,priority}});
+```
+
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/decision-diagnostics.ts:28`
+retains one local identifier for the original judgment:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/decision-diagnostics.ts:28
+const reviewId = reviewIds.get(judgment) ?? randomUUID();
+```
+
+Assessment records include complete selected model input and parsed replies under `assessmentId` and `operationId`.
+Question evidence joins those records to `reviewId` through the same operation digest.
+Decision records retain routing, model outcomes, scoped confirmation, and nested failures.
+Invalid reply records retain the malformed reply.
+Transport credentials and the archived primary-provider request are excluded from assessment records.
+These local logs contain command and policy contents and are not public issue attachments.
+
+### Verification and limitations
+
+The original routing regression failed because only one assessment ran.
+The candidate then passed an authored false-prerequisite response followed by final-model approval.
+The live candidate replay uses the user's exact commands,
+the actual repository working directory and policy,
+17 configured packages,
+27 home-discovered skills,
+and all 140 cached MCP tool definitions.
+It made four successful Luna calls,
+executed both commands,
+and opened no dialog.
+Receipt: `${HOME}/temp/agent/pi-host-isolation-20261015/repo-decision-candidate.log`.
+
+The built consumer regression covers automatic approve and deny,
+unknown and lower-scoring answers,
+malformed replies,
+initial and final transport failures,
+Allow and Stop,
+dismissal,
+missing UI,
+source changes,
+cancellation,
+original-deadline expiry,
+and explicit fresh confirmation.
+It reconstructs the authored false prerequisite from the actual tagged logger's records.
+
+```sh
+# Repository root; authored provider replies and disposable native sessions
+mise run //package/pi-plugin/auto-mode:test:native:decision-fallback
+```
+
+The earlier synthetic working-directory policy did not establish behavior under the real repository policy.
+The older original logs cannot be repaired retroactively.
+Authored cases establish routing and retention;
+live results establish the named observed operations, not general model accuracy.
+Final activation and installed-consumer receipts are tracked in
+[the current handover](../handover/pi-auto-mode-current-frontier.md).
+
+### Upstream filing decision
+
+Nothing to add upstream for this incident:
+the demonstrated missing fallback and diagnostics are owned application behavior.
+The original model interpretation cannot be attributed to a specific clause from its retained logs.
+The upstream-fault gate therefore fails;
+upstream fixability, contribution acceptance, maintainer intent, and an upstream prototype do not arise.
+The existing provider supports the Decisions request shape exercised by the retained live HTTP 200 receipts.
+No upstream message or speculative provider patch is prepared.
+
 ## Local read falsely acquires an unrelated prerequisite on 2026-10-15
 
 After restoring selected conversation context,
