@@ -1,5 +1,104 @@
 # LLM Gateway Luna Decisions returns complete answers without complete native admission
 
+## Permission review receives unrelated agent guidance on 2026-10-16
+
+### Symptom and evidence
+
+Session `2026-10-16T02-17-34-349Z` reached manual approval while inspecting task headings with `grep`
+and reading the handover with `sed`, after preceding inspection calls succeeded.
+The installed whole-operation request included the full root policy and Pi's hidden tool-use guidance.
+Three identical live requests returned `deny: 0.57`, `approve: 0.41`, and `unknown: 0.02`.
+The `0.60` action cutoff correctly withheld automatic approval.
+The defect was the selected review scope and inputs, not a transport timeout.
+The concurrent sessionStorage warning is explicitly outside this incident's investigation.
+
+### Source trace and correction
+
+The accepted scope is execution permission and required consent.
+Tool-use and implementation conventions remain coding-agent guidance.
+The shared question scope is defined in
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/permission-review-scope.ts`.
+Both automatic review phases consume it.
+
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/decision-context.mjs:30`
+selects readable project policy sources and visible conversation before clause indexing:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/policy-source/decision-context.mjs
+const sources=Object.freeze([
+  snapshot.hostGoverningPolicy,
+  ...(snapshot.readablePolicySources??[]),
+  ...(conversation?[conversation]:[])
+]);
+```
+
+Hidden prompts, tool metadata, and skill descriptions remain local provenance inputs.
+They do not become review questions or shared model context.
+Additional policy inputs must bind to actual readable files through the incumbent observer.
+Complete root-policy copies in transcript strings are replaced with a selected-excerpt reference.
+
+The existing relevance cache was disconnected from production initialization and admitted no exclusions.
+Commits `d9e9771bd8`, `c35670685a`, and `22532b415e` connect initialization, selection, and wire projection.
+`package/pi-plugin/auto-mode/native/contract/integration/native-host/startup-relevance.mjs:24`
+constructs requests from individual changed rules and fixed remit text:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/native-host/startup-relevance.mjs
+const body=JSON.stringify({model:ruleAssessmentModel,state:{remit:request.definition.remit},questions});
+```
+
+No complete policy field accompanies those questions.
+Unchanged classifications persist across owners; changed rule text or classifier profile requires fresh estimates.
+The user's subsequent instruction to cull uncertain rules is implemented in
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/decision-material.mjs:11`:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/policy-source/decision-material.mjs
+const excluded=Object.freeze((relevance?.rules??[]).filter(function notAdmitted(rule){return rule.probability<0.6;}));
+```
+
+Selected excerpts retain original source spans and freshness checks.
+Relevance selection does not grant execution permission.
+Startup classification failure preserves chat; tool calls require scoped confirmation or remain withheld without UI.
+
+### Verification and limits
+
+Installed release `native-release-8uGKtw` passes built startup and readable-context regressions.
+The relevance boundary includes `0.60` and excludes lower estimates.
+Cold, warm, and changed-rule fixtures request four, zero, and one classifications respectively.
+A disposable build fails the regression with culling removed and passes when restored.
+The startup failure matrix covers chat, Allow, Stop, and headless withholding.
+
+```sh
+# Repository root; built consumer tests with disposable fixtures
+mise run //package/pi-plugin/auto-mode:test:native:startup-relevance
+mise run //package/pi-plugin/auto-mode:test:native:decision-context
+mise run //package/pi-plugin/auto-mode:test:native:decision-fallback
+```
+
+The full reported conversation replay executes nine original calls across six groups without confirmation.
+The live explicit prohibited-read control blocks both calls without confirmation.
+Receipts and the resource comparison are indexed in
+[the current handover](../handover/pi-auto-mode-current-frontier.md).
+These observations establish the exercised interactions, not universal classifier accuracy.
+Removing uncertain rules can omit a relevant restriction when its relevance estimate is low;
+that tradeoff follows the user's explicit selection policy.
+
+### Rejected approaches
+
+- Raising or lowering the action cutoff does not repair unrelated review inputs.
+- Filtering only shared context still exposes omitted instructions in per-clause questions.
+- An initial-command replay does not establish behavior after the reported preceding turns.
+- Keeping uncertain rules contradicts the subsequent explicit selection instruction.
+
+### Upstream filing decision
+
+Nothing to add upstream: source selection, permission scope, and disconnected cache integration are application defects.
+The upstream-fault gate fails.
+The Decisions route supports the requests exercised here; upstream fixability, contribution policy,
+maintainer intent, and prototype gates do not justify a provider report for these local corrections.
+No external issue or message is prepared.
+
 ## Repository inspection blocked by unresolved prerequisites on 2026-10-16
 
 ### Symptom and retained evidence
