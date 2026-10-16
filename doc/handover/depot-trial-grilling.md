@@ -2,6 +2,34 @@
 
 ## Completed trial execution and remaining acceptance gaps
 
+The user's completion question prompted a comparison with the full trial brief.
+The selected execution batch is complete,
+but the broader evaluation still has useful experiments to perform.
+The earlier statement that the execution queue was complete was too broad.
+Filing an issue records unfinished work;
+it does not complete the experiment.
+
+Remaining evaluation work is independently verifiable:
+
+- Combine installed-package snapshot reuse with fresh desktop service startup,
+  then run the complete interaction suite from that prepared environment.
+  Current evidence proves installation reuse and passing interaction on separate execution routes.
+- Run representative existing browser suites and remaining native check families through Depot,
+  recording setup,
+  results,
+  and usage for the broader cost estimate.
+- Execute a useful agent-requested experiment with retained inputs and outputs,
+  such as the discussed controlled linker comparison.
+  Standalone command execution and overlapping sandboxes establish access,
+  not the usefulness or cost of that workflow.
+- Reconcile account storage and usage scopes,
+  verify spending-control coverage with the necessary account access,
+  and extend the monthly model beyond its measured subset.
+
+The Android instrumentation result uses cloud-built APKs on a local headed emulator;
+it does not establish Android device execution inside Depot.
+Production migration and plan changes remain separate decisions.
+
 The user requested a GitHub issue for every discovered problem on 2026-10-15 local time.
 The [issue inventory](depot-trial-issues.md) records each distinct trial finding,
 including repaired incidents with their verification.
@@ -79,10 +107,9 @@ or USD 160.28 for every affected revision with separate container validation ret
 These are measured-subset Developer scenarios,
 not complete monthly bills or controlled timing improvements.
 Startup's every-affected equivalent exceeds its included runner allowance.
-The execution and recommendation queue is complete;
-remaining acceptance gaps concern account controls,
-unmeasured workloads,
-and integration of trial-only corrections.
+The selected execution batch and provisional recommendation are complete.
+The remaining evaluation experiments are listed in Completed trial execution and remaining acceptance gaps.
+Integration of trial-only corrections remains separate work.
 No production migration or plan change was adopted.
 
 ## Purpose and current state

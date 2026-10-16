@@ -7,6 +7,12 @@ The selected execution experiments,
 coverage inventory,
 and change-stream replay are complete;
 the account and unmeasured-workload acceptance gaps remain explicit.
+This does not complete every desired Depot experiment.
+Prepared desktop execution still needs installation reuse and runtime service startup combined in one route;
+representative browser and remaining native workloads need execution measurements;
+useful standalone agent experiments and complete account-cost reconciliation remain outstanding.
+The [remaining evaluation record](../handover/depot-trial-grilling.md#completed-trial-execution-and-remaining-acceptance-gaps)
+distinguishes these experiments from production integration.
 All ten corrected runner configurations passed,
 as did the default-container-builder concurrency repetitions.
 The [sizing report](depot-runner-sizing-2026-10-15.md) records the measured results and allocation recommendation.
