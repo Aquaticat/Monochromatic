@@ -7,6 +7,7 @@ import {assertOriginalInputBudget} from './input-budget.mjs';
 import {copyOptions} from '../../collector/resource-input-custody/values.ts';
 import {createGoverningContextEmitter} from './context-emission.mjs';
 import {readBoundResourceFrame} from '../../collector/rule-relevance-sdk-copy/input/resource-owner.mjs';
+import {tagged} from '@monochromatic-dev/module-logger/ts';
 
 //region The loader owns mutable input publication and its exact native resource binding.
 /**
@@ -116,6 +117,16 @@ export function createPolicyLoaderState({
      .content)throw new PolicySlotBindingError('Published system input differs from the owner-captured policy');
   }
   const source=systemSlot?inputState.emission.source:owner.captureGoverningPolicy(inputState.loader);
+  let relevance;
+  let relevanceFailure;
+  if(policy.relevance){
+   try{
+    relevance=await owner.refreshGoverningRelevance({loader:inputState.loader,signal:AbortSignal.timeout(45_000)});
+   }catch(error){
+    relevanceFailure={cause:error};
+    tagged({tag:'reload-policy-relevance'}).error(error);
+   }
+  }
   const system=frame.stages
     .find(function isResourceSystemStage(value) { return (value.kind==='system'); });
   const resourceSystemInput=systemSlot||hostPrompt
@@ -183,6 +194,9 @@ export function createPolicyLoaderState({
     })
   });
   inputState.binding=Object.freeze({
+    relevance,
+    relevanceFailure,
+    parsePolicy:policy.relevance?.parse,
     resourceReceiptInputs:inputState.retainedResourceReceipts,
     source,
     frame,

@@ -91,7 +91,7 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
      runInputCarriers,
      governingSources
    };
-   const decisionContext=captureDecisionContext({snapshot:captured,session});
+   const decisionContext=captureDecisionContext({snapshot:captured,session,input});
    const snapshot=Object.freeze({...captured,decisionContext});
    if(constructedInputs(original.nativeRunComposition)!==nativeConstructedInputs)throw new PolicySlotBindingError('Original constructed inputs changed during source capture');
    if(resourceInputs()!==nativeResourceToolInputs)throw new PolicySlotBindingError('Resource tool inputs changed during source capture');

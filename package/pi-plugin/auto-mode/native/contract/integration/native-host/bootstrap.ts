@@ -6,6 +6,7 @@
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { wrapToolDefinition } from './bootstrap-dependencies.ts';
+import { createStartupRelevance } from './startup-relevance.mjs';
 import { readSessionDisposalState } from './session-disposal.mjs';
 import type {
   NativeHostSessionInput,
@@ -101,7 +102,8 @@ async function designatePolicy({cwd}: {readonly cwd:string}): Promise<NativePoli
     policy: {
       root: cwd,
       relativePath,
-      requiredMode
+      requiredMode,
+      relevance:createStartupRelevance({root:cwd,parse:parser.parse})
     },
     authority: {
       tier: 'user' as const,
