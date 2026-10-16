@@ -118,6 +118,7 @@ const catalog = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '
 const selectedPackages = new Set(manifest.selectedPackages)
 const tracked = execFileSync('git', ['ls-files'], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).trim().split('\n')
 for (const check of manifest.checks) {
+  assert((check.artifactPrerequisites ?? []).every((id) => check.prerequisites.includes(id)), `Artifact prerequisites must participate in scheduling: ${check.id}`)
   const fileCheck = check.scope === 'files' && check.task === '//:lint:monochromatic-lint' && check.args.length > 0 && check.args.every((path) => manifest.changedFiles.includes(path))
   assert(check.scope === 'package' || fileCheck, `unreviewed non-package check: ${check.id}`)
   assert((check.packages ?? []).every((path) => selectedPackages.has(path)), `check outside affected closure: ${check.id}`)
@@ -632,3 +633,41 @@ assert(records.every((record) => record.status === 'passed'), 'All individual fe
 [tasks."trial:depot:ci:render-doc"]
 description = "Render requested Markdown evidence using the installed document renderer"
 run = "pandoc --from=commonmark --to=html"
+
+[tasks."trial:depot:ci:import-native-images"]
+description = "Restore audited exact historical container images through the authenticated private sandbox stream"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { mkdirSync, readFileSync, existsSync, createReadStream, writeFileSync } = await import('node:fs')
+const { createHash } = await import('node:crypto')
+const { execFileSync } = await import('node:child_process')
+const { setTimeout } = await import('node:timers/promises')
+const { join } = await import('node:path')
+const { homedir } = await import('node:os')
+const { strict: assert } = await import('node:assert')
+const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(directory, { recursive: true, mode: 0o700 })
+const marker = join(directory, 'native-base-transfer.ready')
+const deadline = Date.now() + 1200000
+console.log(JSON.stringify({ event: 'private-image-transfer-ready', directory, maximumWaitMs: 1200000 }))
+while (!existsSync(marker) && Date.now() < deadline) await setTimeout(1000)
+assert(existsSync(marker), 'Audited private image transfer did not arrive before the bounded deadline')
+const expected = JSON.parse(readFileSync(marker, 'utf8'))
+assert(/^[a-f0-9]{64}$/.test(expected.sha256), 'Transfer manifest must contain a complete SHA256')
+assert(Array.isArray(expected.images) && expected.images.length === 2, 'Transfer must name the reviewed historical image pair')
+for (const id of expected.images) assert(/^sha256:[a-f0-9]{64}$/.test(id), 'Image identity must be a complete content hash')
+const archive = join(directory, 'native-base-images.tar')
+const hash = createHash('sha256')
+for await (const chunk of createReadStream(archive)) hash.update(chunk)
+assert.equal(hash.digest('hex'), expected.sha256, 'Received private archive must match the audited local bytes')
+execFileSync('sudo', ['--non-interactive', 'podman', 'load', '--input', archive], { stdio: 'inherit', timeout: 300000 })
+const restored = expected.images.map((id) => {
+  const image = JSON.parse(execFileSync('sudo', ['--non-interactive', 'podman', 'image', 'inspect', id], { encoding: 'utf8' }))[0]
+  assert.equal(image.Id.replace(/^sha256:/, ''), id.slice(7), 'Restored image differs from historical source identity')
+  return { id, tags: image.RepoTags, size: image.Size }
+})
+const record = { event: 'private-image-transfer-verified', sha256: expected.sha256, images: restored }
+writeFileSync(join(directory, 'private-image-transfer-results.json'), JSON.stringify(record, null, 2))
+console.log(JSON.stringify(record))
+'''

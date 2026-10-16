@@ -1,0 +1,39 @@
+name: depot-complete-native-images
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on:
+      size: 16x64
+      image: monochromatic-trial-desktop-ready:20261016-v1
+    snapshot: monochromatic-trial-native-bases:20261016-v1
+    timeout-minutes: 30
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        version: 2026.10.9
+        install: false
+        env: false
+        export_path: false
+        cache: false
+    - name: Verify and load audited historical image stream
+      run: mise run //package/dev-script/task-util:trial:depot:ci:import-native-images
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: private-image-transfer-evidence
+        path: ~/temp/agent/depot-complete-ci/private-image-transfer-results.json
+        if-no-files-found: ignore
