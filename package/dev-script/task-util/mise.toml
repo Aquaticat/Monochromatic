@@ -52,3 +52,44 @@ run = "node src/tsc-failure.unit.test.ts"
 [tasks.buildAndTest]
 description = "Build the seven node entries, then run unit tests against the built testing seam"
 run = ["mise run build", "mise run test:unit"]
+
+[tasks."trial:depot:native:identity"]
+description = "Verify native trial source identity and record installed tool versions"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { createHash } = await import('node:crypto')
+const { readFileSync } = await import('node:fs')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const run = args => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()
+assert.match(process.env.SOURCE_HEAD, /^[0-9a-f]{40}$/)
+assert.equal(run(['rev-parse', 'HEAD']), process.env.SOURCE_HEAD)
+assert.equal(run(['diff', '--name-only', 'HEAD']), '', 'Native checks changed tracked source')
+const paths = ['mise.lock', 'package/music-player/desktop-app/Cargo.lock', 'package/music-player/truepeak-core/Cargo.lock']
+const inputs = Object.fromEntries(paths.map(path => [path, createHash('sha256').update(readFileSync(join(source, path))).digest('hex')]))
+console.log(JSON.stringify({ sourceRevision: process.env.SOURCE_HEAD, platform: process.platform, architecture: process.arch, inputs }))
+execFileSync('mise', ['ls', '--current', '--json'], { cwd: source, stdio: 'inherit' })
+'''
+
+[tasks."trial:depot:native:smoke"]
+description = "Call the immutable-head release artifact as a CLI consumer"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { createHash } = await import('node:crypto')
+const { readFileSync } = await import('node:fs')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source/package/music-player/desktop-app')
+const manifest = readFileSync(join(source, 'Cargo.toml'), 'utf8')
+const version = /^version = "([^"]+)"$/m.exec(manifest)?.[1]
+assert(version, 'Package version is required')
+const binary = join(source, 'target/release', process.platform === 'win32' ? 'music-player.exe' : 'music-player')
+const output = execFileSync(binary, ['--version'], { cwd: source, encoding: 'utf8', timeout: 30_000 }).trim()
+assert.equal(output, `music-player ${version}`)
+console.log(JSON.stringify({ sourceRevision: process.env.SOURCE_HEAD, output, sha256: createHash('sha256').update(readFileSync(binary)).digest('hex') }))
+'''
