@@ -118,7 +118,7 @@ for (const check of manifest.checks) {
   assert(catalog.some((task) => task.name === check.task), `missing exact-head task: ${check.task}`)
   if (check.task.endsWith(':lint:oxlint')) assert.deepEqual(check.args, [], 'Oxlint must retain full package reach')
   if (check.expectedFiles) {
-    const actual = tracked.filter((path) => check.packages.some((pkg) => path.startsWith(`${pkg}/`)) && path.endsWith('.unit.test.ts')).sort()
+    const actual = tracked.filter((path) => check.packages.some((pkg) => path.startsWith(`${pkg}/`)) && path.endsWith('.unit.test.ts') && (check.args.includes('--all') || check.args.includes(path))).sort()
     assert.deepEqual(actual, [...check.expectedFiles].sort(), `unit input identity mismatch: ${check.id}`)
   }
 }
@@ -147,5 +147,6 @@ for (const check of manifest.checks) {
   writeFileSync(join(directory, `${manifest.caseId}-results.json`), JSON.stringify({ ...identity, event: 'case-finished', completeGraph: false, results, deferredChecks, externalChecks: manifest.externalChecks }, null, 2))
 }
 for (const path of inputs) assert.deepEqual(readFileSync(path), execFileSync('git', ['show', `HEAD:${path}`]), `${path} changed during checks`)
+console.log(JSON.stringify({ ...identity, event: 'case-finished', completeGraph: false, results, deferredChecks, externalChecks: manifest.externalChecks }))
 if (results.some((result) => result.status === 'failed')) throw new Error('Affected-package checks failed; see retained per-check records')
 '''

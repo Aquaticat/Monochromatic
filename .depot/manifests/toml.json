@@ -16,6 +16,7 @@
     "package/dev-script/vm-builder",
     "package/module/toml-edit",
     "package/module/toml-edit.fuzz",
+    "package/oxlint-plugin/prefer-readonly-parameter-type",
     "package/test-fixture/file-enforcer-perf"
   ],
   "selectionReasons": [
@@ -42,6 +43,13 @@
       "consumer": "package/test-fixture/file-enforcer-perf",
       "evidence": "package/test-fixture/file-enforcer-perf/package.json",
       "field": "dependencies"
+    },
+    {
+      "dependency": "package/dev-script/file-enforcer",
+      "consumer": "package/oxlint-plugin/prefer-readonly-parameter-type",
+      "evidence": "package/oxlint-plugin/prefer-readonly-parameter-type/src/workspace-source-effect.unit.test.ts",
+      "field": "test-only new URL source fixture",
+      "propagation": "Select this unit test and artifact prerequisite; test fixture dependency does not alter plugin implementation or downstream lint consumers."
     }
   ],
   "tools": [
@@ -84,7 +92,6 @@
         "package/dev-script/vm-builder"
       ],
       "prerequisites": [
-        "package.module.toml-edit.build",
         "package.dev-script.file-enforcer.build"
       ]
     },
@@ -97,11 +104,7 @@
       "packages": [
         "package/dev-script/file-enforcer"
       ],
-      "prerequisites": [
-        "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
-      ]
+      "prerequisites": []
     },
     {
       "id": "package.dev-script.file-enforcer.lint.types",
@@ -114,8 +117,7 @@
       ],
       "prerequisites": [
         "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.dev-script.file-enforcer.build"
       ]
     },
     {
@@ -131,8 +133,7 @@
       ],
       "prerequisites": [
         "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.dev-script.file-enforcer.build"
       ],
       "expectedFiles": [
         "package/dev-script/file-enforcer/src/cargo/apply-plan.unit.test.ts",
@@ -202,11 +203,7 @@
       "packages": [
         "package/dev-script/vm-builder"
       ],
-      "prerequisites": [
-        "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
-      ]
+      "prerequisites": []
     },
     {
       "id": "package.dev-script.vm-builder.lint.types",
@@ -218,7 +215,6 @@
         "package/dev-script/vm-builder"
       ],
       "prerequisites": [
-        "package.module.toml-edit.build",
         "package.dev-script.file-enforcer.build",
         "package.dev-script.vm-builder.build"
       ]
@@ -232,11 +228,7 @@
       "packages": [
         "package/module/toml-edit"
       ],
-      "prerequisites": [
-        "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
-      ]
+      "prerequisites": []
     },
     {
       "id": "package.module.toml-edit.lint.types",
@@ -248,9 +240,7 @@
         "package/module/toml-edit"
       ],
       "prerequisites": [
-        "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.module.toml-edit.build"
       ]
     },
     {
@@ -265,9 +255,7 @@
         "package/module/toml-edit"
       ],
       "prerequisites": [
-        "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.module.toml-edit.build"
       ],
       "expectedFiles": [
         "package/module/toml-edit/src/basic-escape.unit.test.ts",
@@ -319,11 +307,7 @@
       "packages": [
         "package/module/toml-edit.fuzz"
       ],
-      "prerequisites": [
-        "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
-      ]
+      "prerequisites": []
     },
     {
       "id": "package.module.toml-edit.fuzz.lint.types",
@@ -335,9 +319,7 @@
         "package/module/toml-edit.fuzz"
       ],
       "prerequisites": [
-        "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.module.toml-edit.build"
       ]
     },
     {
@@ -352,9 +334,7 @@
         "package/module/toml-edit.fuzz"
       ],
       "prerequisites": [
-        "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.module.toml-edit.build"
       ],
       "expectedFiles": [
         "package/module/toml-edit.fuzz/src/ci-scope.unit.test.ts",
@@ -378,8 +358,7 @@
       ],
       "prerequisites": [
         "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.dev-script.file-enforcer.build"
       ]
     },
     {
@@ -395,9 +374,7 @@
         "package/module/toml-edit.fuzz"
       ],
       "prerequisites": [
-        "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.module.toml-edit.build"
       ]
     },
     {
@@ -414,8 +391,7 @@
       ],
       "prerequisites": [
         "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.dev-script.file-enforcer.build"
       ]
     },
     {
@@ -428,9 +404,7 @@
         "package/module/toml-edit.fuzz"
       ],
       "prerequisites": [
-        "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.module.toml-edit.build"
       ]
     },
     {
@@ -443,9 +417,7 @@
         "package/module/toml-edit"
       ],
       "prerequisites": [
-        "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.module.toml-edit.build"
       ]
     },
     {
@@ -459,8 +431,7 @@
       ],
       "prerequisites": [
         "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.dev-script.file-enforcer.build"
       ]
     },
     {
@@ -473,9 +444,7 @@
         "package/module/toml-edit"
       ],
       "prerequisites": [
-        "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.module.toml-edit.build"
       ]
     },
     {
@@ -489,9 +458,39 @@
       ],
       "prerequisites": [
         "package.module.toml-edit.build",
-        "package.dev-script.file-enforcer.build",
-        "package.dev-script.vm-builder.build"
+        "package.dev-script.file-enforcer.build"
       ]
+    },
+    {
+      "id": "package.oxlint-plugin.prefer-readonly-parameter-type.build",
+      "task": "//package/oxlint-plugin/prefer-readonly-parameter-type:build",
+      "args": [],
+      "family": "build",
+      "scope": "package",
+      "packages": [
+        "package/oxlint-plugin/prefer-readonly-parameter-type"
+      ],
+      "prerequisites": []
+    },
+    {
+      "id": "package.oxlint-plugin.prefer-readonly-parameter-type.test.unit",
+      "task": "//package/oxlint-plugin/prefer-readonly-parameter-type:test:unit",
+      "args": [
+        "package/oxlint-plugin/prefer-readonly-parameter-type/src/workspace-source-effect.unit.test.ts"
+      ],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/oxlint-plugin/prefer-readonly-parameter-type"
+      ],
+      "prerequisites": [
+        "package.oxlint-plugin.prefer-readonly-parameter-type.build"
+      ],
+      "expectedFiles": [
+        "package/oxlint-plugin/prefer-readonly-parameter-type/src/workspace-source-effect.unit.test.ts"
+      ],
+      "expectedFileCount": 1,
+      "selectionRole": "test-only source consumer"
     }
   ],
   "externalChecks": [
@@ -588,7 +587,8 @@
   "selectionEvidence": {
     "positive": [
       "package/module/toml-edit",
-      "package/dev-script/file-enforcer"
+      "package/dev-script/file-enforcer",
+      "package/oxlint-plugin/prefer-readonly-parameter-type"
     ],
     "negative": [
       "package/music-player/android-app",
