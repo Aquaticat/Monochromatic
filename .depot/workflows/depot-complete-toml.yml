@@ -51,3 +51,12 @@ jobs:
     - name: Run the reviewed package checks and retain every result
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:execute
+    - name: Preserve check evidence and generated diffs
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: toml-${{ github.job }}-evidence
+        path: |
+          ~/temp/agent/depot-complete-ci/*-results.json
+          ~/temp/agent/depot-complete-ci/*.patch
+        if-no-files-found: ignore
