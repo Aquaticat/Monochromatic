@@ -54,6 +54,31 @@ export function matchesSemanticProgramProfile({
 }
 
 /**
+ Select complete direct Bash commands or inspected programs for the configured estimate consumer.
+ Native callers authenticate prepared membership; matching supplies no implementation facts or permission.
+
+ @param configured - fixed bootstrap scope
+ @param effect - original prepared operation and optional program inspection
+ @returns whether the complete operation has an adopted semantic consumer
+ */
+export function matchesSemanticOperationProfile({
+  configured,
+  effect,
+}: {
+  readonly configured: string;
+  readonly effect: SemanticAdmissionInputs['effects'][number];
+},): boolean {
+  const rl = tagged({ tag: matchesSemanticOperationProfile.name, l, },);
+  rl.debug('matching original prepared operation to fixed semantic scope',);
+  if ((configured === 'native-inspected-programs-v2') && (effect.prepared?.name === 'bash'))
+    return typeof effect.prepared.input.command === 'string';
+  return matchesSemanticProgramProfile({
+    configured,
+    inspected: effect.programInspection?.declaration.profile,
+  },);
+}
+
+/**
  Determine whether the existing original inspections have a configured semantic consumer.
  The native adapter fixes expectedModel from its actual wire contract, never from action input.
  Shape alone authenticates no owner; native callers keep original identity and currentness checks.
@@ -114,16 +139,14 @@ export function inspectSemanticAdmissionScope(
     === 0)
     || inputs.effects
     .some(function incomplete(effect,) {
-    return !matchesSemanticProgramProfile({
+    return !matchesSemanticOperationProfile({
       configured: policy.programProfile,
-      inspected: effect.programInspection
-        ?.declaration
-        .profile,
+      effect,
     },);
   },)) {
     return Object.freeze({
       state: 'out-of-profile',
-      reason: 'The original operation is not completely represented by the configured inspected program profile.',
+      reason: 'The original operation is not completely represented by the configured direct-command or inspected-program scope.',
     },);
   }
   if (requireCandidates && ((inputs.instructionCandidates ?? inputs.ruleCandidates).length === 0)) {

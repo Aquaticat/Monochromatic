@@ -140,6 +140,7 @@ export { copySemanticAdmissionPolicy, } from './semantic-admission-policy.ts';
 export {
   inspectSemanticAdmissionScope,
   matchesSemanticProgramProfile,
+  matchesSemanticOperationProfile,
 } from './semantic-admission-scope.ts';
 export type {
   SemanticAcceptance,

@@ -28,6 +28,7 @@ export {
   copySemanticAdmissionPolicy,
   inspectSemanticAdmissionScope,
   matchesSemanticProgramProfile,
+  matchesSemanticOperationProfile,
   consumeHeadingContexts,
   consumeUnitAdoptions,
   selectUnitAdoptionPairs,

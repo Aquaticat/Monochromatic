@@ -47,7 +47,8 @@ export { SemanticAdmissionPolicyError } from './semantic-admission-error.ts';
 export { copySemanticAdmissionPolicy } from './semantic-admission-policy.ts';
 export {
   inspectSemanticAdmissionScope,
-  matchesSemanticProgramProfile
+  matchesSemanticProgramProfile,
+  matchesSemanticOperationProfile
 } from './semantic-admission-scope.ts';
 export { consumeHeadingContexts } from './heading-context.ts';
 export { consumeUnitAdoptions } from './unit-adoption.ts';
