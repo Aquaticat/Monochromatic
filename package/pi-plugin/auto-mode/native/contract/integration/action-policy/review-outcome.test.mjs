@@ -195,8 +195,9 @@ for(const premises of ['complete','incomplete']){
     }]
   };
   const confirmed=resolveConfirmedOutcome(program);
-  assert.equal(confirmed.state,channel==='incumbent-approval'?'resolved':'unresolved');
-  assert.equal(confirmed.verdict,channel==='incumbent-approval'?'approve':undefined);
+  assert.equal(confirmed.state,'resolved');
+  assert.equal(confirmed.verdict,'approve');
+  assert.equal(confirmed.authorizationRequirements.state,'unresolved');
   assert.equal(program.authorizationRequirements[0].satisfaction,'unsatisfied');
  }
  const mixed={
@@ -208,7 +209,7 @@ for(const premises of ['complete','incomplete']){
    ]
  };
  assert.equal(resolveManualReviewOutcome(mixed).authorizationRequirements.state,'unresolved');
- assert.equal(resolveConfirmedOutcome(mixed).state,'unresolved');
+ assert.equal(resolveConfirmedOutcome(mixed).verdict,'approve');
  assert.equal(resolveConfirmedOutcome({
    ...mixed,rules:[rule({id:'deny',effect:'prohibit'})]
  }).verdict,'deny');

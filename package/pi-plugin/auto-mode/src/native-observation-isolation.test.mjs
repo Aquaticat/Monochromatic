@@ -45,7 +45,7 @@ await session.prompt('Propose the tool while automatic assessment is unavailable
 await fixture.abortTask;
 assert.equal(observations.selections,mode==='headless'?0:1);
 assert.equal(observations.executions,mode==='allow'?1:0);
-assert.equal(observations.assessments,failure==='assessment'?1:0);
+assert.equal(observations.assessments,failure==='assessment'?2:0);
 if(mode==='allow')assert.equal(runtime.inspect().lastReview.manualFallback,true);
 console.log(JSON.stringify({complete:true,failure,manual:mode,chatSurvived:true,selections:observations.selections,executions:observations.executions}));
 //endregion

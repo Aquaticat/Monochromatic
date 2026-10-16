@@ -4,6 +4,7 @@ import {capturePolicyInputs} from './inputs.mjs';
 import {captureAuthorizationInputs,captureAuthorizationOwnerFactory} from './authorization-inputs.mjs';
 import {capturePendingSessionApproval} from './pending-session-approval.ts';
 import {compileBoundClauseProgram} from './compiler.mjs';
+import {compilation} from './compilation-result.mjs';
 import {resolveManualReviewOutcome} from './review-outcome.ts';
 import {reviewOperationDecision} from './operation-decision.ts';
 import {
@@ -63,15 +64,30 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
   judgment.assertBatchEvidence(evidence);
   return evidence;
  }
- const evidence=await assessSelectedInputs();
- inputs.assertCurrent();
- const compiled=compileBoundClauseProgram({
+ async function assessAndCompile(){
+  try{
+   const evidence=await assessSelectedInputs();
+   inputs.assertCurrent();
+   return compileBoundClauseProgram({
    judgment,inputs,authorizationInputs,pendingSessionApproval,policy,scope,evidence,
    headingPolicy,headingScope,unitPolicy,unitScope
- });
+   });
+  }catch(error){
+   dl.debug('clause assessment failed; checking the original lifetime before decision-model fallback',error);
+   inputs.assertCurrent();
+   authorizationInputs.assertCurrent();
+   judgment.assertDependenciesCurrent();
+   judgment.checkpoint();
+   return compilation({
+    issues:[Object.freeze({premise:'qualified-rule-interpretation',kind:'clause-assessment-failure',reason:'Clause assessment failed before a policy decision was established',error})],
+    rules:[],authorizationRequirements:[],clauses:[],scope,sourceUses:{issues:[],uses:[]}
+   });
+  }
+ }
+ const compiled=await assessAndCompile();
  dl.debug('resolving captured policy before original evidence closure');
  const automaticOutcome=resolveManualReviewOutcome(compiled.program);
- const operationDecision=policy!==undefined&&automaticOutcome.state!=='resolved'
+ const operationDecision=policy!==undefined&&(automaticOutcome.state!=='resolved'||automaticOutcome.verdict==='ask')
   ?await reviewOperationDecision(judgment)
   :undefined;
  const outcome=operationDecision?.outcome??automaticOutcome;
