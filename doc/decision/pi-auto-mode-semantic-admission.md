@@ -3,6 +3,18 @@
 ## Current Luna decision
 
 On 2026-10-16,
+the user limited automatic approval review to permission boundaries.
+Tool-use, formatting, naming, and workflow conventions remain instructions for the coding agent;
+violating such a convention alone does not require consent or prohibit an otherwise authorized operation.
+For example, preferring `read` over `sed` does not turn local file inspection into an approval request.
+Explicit restrictions on access or effects, destructive or external actions outside existing authorization,
+and genuinely required consent remain approval concerns.
+An explicit prohibition on reading a named file remains enforceable even though reading is ordinarily benign.
+Both clause interpretation and complete-operation review must apply this distinction to the actual operation.
+This supersedes treating every instruction-compliance defect as an execution-permission defect.
+It does not change the selected model, score cutoff, operation identity, currentness, or cancellation checks.
+
+On 2026-10-16,
 the user clarified the fallback order after ordinary repository inspection was falsely blocked:
 clause assessment first,
 then Luna reviews the complete prepared operation,

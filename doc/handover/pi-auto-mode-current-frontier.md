@@ -20,11 +20,17 @@ Its whole-operation answer was `deny: 0.57`, `approve: 0.41`, `unknown: 0.02`;
 the existing `0.60` cutoff correctly routed that uncertain answer to manual review.
 This establishes a semantic-review failure, not a timeout.
 The user explicitly excluded the concurrent sessionStorage warning from investigation.
+Three identical live replays of the saved whole-operation request return the same `0.57` denial distribution.
+The full request also contains Pi's instruction to use `read` instead of `cat` or `sed`.
+That convention is relevant to the proposed command but is not itself an access restriction.
+The user explicitly selected permission-boundary review:
+tool-use conventions remain agent guidance while actual restrictions and missing consent remain enforced.
+The accepted scope is recorded in `doc/decision/pi-auto-mode-semantic-admission.md`.
 
 The exact decision log and extracted operation assessment are retained under
 `${HOME}/temp/agent/pi-manual-fallback-20261016`.
-Next: replay the saved assessment, measure unchanged-input variation, and qualify a remedy against
-the actual conversation and explicit prohibition controls without weakening the adopted threshold.
+Next: implement the accepted scope in clause and complete-operation questions, then qualify the actual
+conversation and explicit prohibition controls without weakening the adopted threshold.
 The earlier readiness claim is retracted beyond its tested commands.
 
 The user also requested local resource drain.
