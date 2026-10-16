@@ -11,6 +11,12 @@ and unverified policy boundaries.
 Trial-only workarounds remain open where integration or diagnosis is outstanding.
 No upstream issue or support message was sent.
 
+The final repository query returned 46 newly filed issues:
+37 open and nine closed with recovery evidence.
+Existing issues were reused for six additional discovery or process findings.
+These counts describe the filing result,
+not completed integration of the trial-only corrections.
+
 ## Application, harness, and runner findings
 
 - [#1002](https://github.com/Aquaticats/Monochromatic/issues/1002):
