@@ -46,3 +46,79 @@ run = ["mise run build", "node src/tunnel-bypass.integration.test.ts"]
 [tasks."test:integration:route"]
 description = "Build wg-quicker and verify endpoint routing in disposable root network namespaces"
 run = ["mise run build", "node src/tunnel-route.integration.test.ts"]
+
+[tasks."trial:depot:wg"]
+description = "Run unchanged integration tasks in a bounded disposable cloud network namespace"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync, execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync, existsSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { createHash } = await import('node:crypto')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const bytes = readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/logger.json'))
+const manifest = JSON.parse(bytes)
+assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), manifest.sourceRevision)
+const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(directory, { recursive: true, mode: 0o700 })
+const records = []
+function record({ id, task, result, startedAt, started, cleanupVerified }) {
+  const item = { schemaVersion: 1, event: 'check-finished', caseId: 'logger', sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(bytes).digest('hex'), checkId: id, task, args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: result.status, signal: result.signal, failure: result.error?.message, status: result.status === 0 && cleanupVerified !== false ? 'passed' : 'failed', cleanupVerified, resources: { cpus: 2, memoryGiB: 2 }, providerJobUrl: process.env.DEPOT_JOB_URL }
+  records.push(item)
+  writeFileSync(join(directory, 'logger-wg-results.json'), JSON.stringify(records, null, 2))
+  console.log('\n' + JSON.stringify(item))
+}
+execFileSync('sudo', ['--non-interactive', 'apt-get', 'update'], { stdio: 'inherit' })
+execFileSync('sudo', ['--non-interactive', 'apt-get', 'install', '--yes', '--no-install-recommends', 'wireguard-tools', 'iproute2', 'iputils-ping'], { stdio: 'inherit' })
+for (const id of ['package.module.caught-value.build', 'package.cli.wg-quicker.build']) {
+  const check = manifest.checks.find((item) => item.id === id)
+  assert(check)
+  const startedAt = new Date().toISOString()
+  const started = performance.now()
+  const result = spawnSync('mise', ['run', check.task], { cwd: source, stdio: 'inherit', timeout: 180000 })
+  record({ id, task: check.task, result, startedAt, started })
+}
+const podman = ['--non-interactive', 'podman', '--cgroup-manager=cgroupfs']
+function run(args, options = {}) {
+  const result = spawnSync('sudo', [...podman, ...args], { encoding: 'utf8', timeout: 45000, ...options })
+  console.log('\n' + JSON.stringify({ event: 'wg-container-operation', operation: args[0], exitCode: result.status, signal: result.signal, stdout: result.stdout, stderr: result.stderr, failure: result.error?.message }))
+  return result
+}
+for (const kind of ['bypass', 'route']) {
+  const id = `package.cli.wg-quicker.test.integration.${kind}`
+  const task = `//package/cli/wg-quicker:test:integration:${kind}`
+  const name = `depot-wg-${kind}-${process.pid}`
+  const marker = join(directory, `${name}-private-marker`)
+  assert(!existsSync(marker))
+  const startedAt = new Date().toISOString()
+  const started = performance.now()
+  let result = { status: null, signal: null }
+  let cleanupVerified = false
+  try {
+    assert.equal(run(['run', '--detach', '--name', name, '--privileged', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512', '--timeout=600', '--rootfs', '/:O', '/usr/bin/sleep', '550']).status, 0)
+    const command = ['exec', '--user', `${process.getuid()}:${process.getgid()}`, '--workdir', source, name, 'env', `HOME=${homedir()}`, `PATH=${process.env.PATH}`, 'MISE_AUTO_INSTALL=false', 'MISE_LOCKED=1', `MISE_RUST_VERSION=${process.env.MISE_RUST_VERSION}`, `MISE_TRUSTED_CONFIG_PATHS=${process.env.GITHUB_WORKSPACE}`]
+    assert.equal(run([...command, 'touch', marker]).status, 0)
+    const links = run([...command, 'ip', '--json', 'link', 'show'])
+    assert.equal(links.status, 0)
+    assert.deepEqual(JSON.parse(links.stdout).map((link) => link.ifname), ['lo'], 'Fresh container has no host interfaces')
+    result = run([...command, 'mise', 'run', task], { stdio: 'inherit', timeout: 480000 })
+    assert.equal(run([...command, 'ip', 'netns', 'list']).stdout.trim(), '', 'Authored cleanup must remove every private namespace')
+    assert.deepEqual(JSON.parse(run([...command, 'ip', '--json', 'link', 'show']).stdout).map((link) => link.ifname), ['lo'], 'Authored cleanup must remove fixture host links')
+    assert.equal(run([...command, 'pgrep', '--full', 'bypass-watch[.]mjs']).status, 1, 'No detached watcher may survive the suite')
+  } catch (error) {
+    console.error(error)
+    result = { ...result, status: result.status === 0 ? 1 : result.status, error }
+  } finally {
+    run(['logs', name])
+    run(['stop', '--time=10', name])
+    run(['rm', name])
+    cleanupVerified = run(['container', 'exists', name]).status === 1 && !existsSync(marker)
+    record({ id, task, result, startedAt, started, cleanupVerified })
+  }
+}
+assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), '')
+assert(records.every((item) => item.status === 'passed'), 'WireGuard builds, both integration suites, and cleanup must pass')
+'''
