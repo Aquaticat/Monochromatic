@@ -557,6 +557,40 @@ writeFileSync(join(base, 'host-probe-results.json'), JSON.stringify(record, null
 console.log('\n' + JSON.stringify(record))
 '''
 
+[tasks."trial:depot:ci:native-features"]
+description = "Exercise default and individual truepeak features against unchanged historical source"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync, execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')
+const { createHash } = await import('node:crypto')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/native.json'))
+const manifest = JSON.parse(manifestBytes)
+assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), manifest.sourceRevision)
+const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(directory, { recursive: true, mode: 0o700 })
+const files = ['mise.lock', 'pnpm-lock.yaml', 'package/music-player/truepeak-core/Cargo.toml', 'package/music-player/truepeak-core/Cargo.lock']
+const hashes = Object.fromEntries(files.map((file) => [file, createHash('sha256').update(readFileSync(join(source, file))).digest('hex')]))
+const records = []
+for (const feature of ['default', 'fingerprint', 'service']) {
+  const args = ['nextest', 'run', '--release', '--no-default-features', ...(feature === 'default' ? [] : ['--features', feature])]
+  const startedAt = new Date().toISOString()
+  const started = performance.now()
+  const result = spawnSync('cargo', args, { cwd: join(source, 'package/music-player/truepeak-core'), stdio: 'inherit', timeout: 1200000 })
+  const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: `truepeak-core.test.feature.${feature}`, task: 'cargo', args, startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: result.status, signal: result.signal, failure: result.error?.message, status: result.status === 0 ? 'passed' : 'failed', resources: { cpus: 16, memoryGiB: 64 }, providerJobUrl: process.env.DEPOT_JOB_URL }
+  records.push(record)
+  writeFileSync(join(directory, 'native-features-results.json'), JSON.stringify(records, null, 2))
+  console.log('\n' + JSON.stringify(record))
+}
+for (const file of files) assert.equal(createHash('sha256').update(readFileSync(join(source, file))).digest('hex'), hashes[file], `Feature tests changed ${file}`)
+assert(records.every((record) => record.status === 'passed'), 'All individual feature test suites must pass')
+'''
+
 [tasks."trial:depot:ci:render-doc"]
 description = "Render requested Markdown evidence using the installed document renderer"
 run = "pandoc --from=commonmark --to=html"
