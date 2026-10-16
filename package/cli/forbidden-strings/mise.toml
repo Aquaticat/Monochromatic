@@ -160,4 +160,3 @@ for (const authenticated of [true, false]) {
 const result = spawnSync('gh', ['release', 'view', tags[0], '--repo', repository, '--json', 'tagName'], { encoding: 'utf8' })
 console.log(JSON.stringify({ operation: 'original-gh-release-view', status: result.status, stdout: result.stdout, stderr: result.stderr }))
 '''
-
