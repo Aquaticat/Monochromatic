@@ -8,7 +8,7 @@ Package Oxlint always receives the unchanged package task with no file arguments
 Partial waves remain partial evidence, never a complete-graph timing claim.
 
 The isolated harness is branch `trial/depot-complete-ci-20261016`.
-Its latest launched harness commit is `0886b2669d`.
+Its latest feature-suite harness commit is `2288fcec22`.
 Manifests live under `.depot/manifests/` on that branch.
 The executor records selected and deferred checks, per-check exit status,
 source and manifest identity, expected unit files, and input hashes.
@@ -88,9 +88,24 @@ The original aggregate case record remains the reconciliation source for that at
   independent build ran despite another check failing,
   the failed dependency suppressed its consumer,
   and the passing consumer read the build marker.
-- Live runs at `0886b2669d`:
-  virtualization probe `1dg9t9znbj`, logger static `qm7w64tmhj`,
-  corrected desktop `w6ln4j09fz`, and expanded scheduler controls `dxk4v3s0w3`.
+- Virtualization probe `1dg9t9znbj` passed its read-only probe.
+  `/dev/kvm` exists and is readable/writable; `virsh` and guest images are absent.
+  The `mvm` executable resolves to an unbuilt historical workspace entry point.
+  No guest was created. The main agent owns disposable VM fixture preparation and execution.
+- Logger static `qm7w64tmhj` reached terminal failure after completing its selected wave.
+  The full aggregate record is retained for independent reconciliation.
+- Corrected native desktop `w6ln4j09fz` remains running.
+- Desktop-case Linux `t4x6r3tb5x` runs source `3434eaa455d569c18b52cf15100f77f9db251d21`
+  with harness `9b5dc7cb79`; its runtime records use the desktop manifest identity.
+- Expanded controls `dxk4v3s0w3` reached their expected provider statuses:
+  passing and deferred-prerequisite succeeded; failure, Oxlint-argument,
+  and Oxlint-scope controls failed. Terminal assertion logs remain to be reconciled.
+
+The Android archive was downloaded and its provider SHA-256 verified.
+The main agent received debug, release, and instrumentation APK paths plus their individual hashes
+for the disposable headed emulator consumer check.
+Issue comments now record the ancestry remedy on #1057,
+graph and metadata corrections on #1030, and sidecar-ignore evidence on #1012.
 
 The executor now closes every selected wave over its prerequisites.
 Deferred checks cannot satisfy selected consumers.
@@ -107,15 +122,13 @@ All attempts, including setup failures, remain part of provider cost accounting.
 
 1.  Retain terminal TOML diagnostics and check records in the audit and incident trackers.
 2.  Collect the running logger, desktop, virtualization, and control results.
-3.  Complete Android artifact download and give paths plus hashes to the main agent
-    for headed disposable-device validation.
+3.  Collect the main agent's headed Android consumer result.
 4.  Execute the native feature matrix and full desktop runtime suite.
 5.  Complete bounded logger waves, including declared browser and integration surfaces.
     The coverage agent owns the offline configured-Pi extension,
     notification, terminal, and tmux consumer adapters.
 6.  Complete generated-file and container/mutation TOML evidence.
-7.  Update #1030 for the prerequisite correction, #1057 for the verified fetch remedy,
-    #1012 for unavailable sidecar evidence, and #339 for cycle evidence.
+7.  Update #339 for cycle evidence and collect terminal scheduler-control assertions.
     Deduplicate and document bootstrap, lock metadata, trust, tsgolint panic,
     coverage, rootful mutation permissions, duplicated mutation package path,
     obsolete LFS endpoint, and desktop setup incidents separately.
