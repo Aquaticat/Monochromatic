@@ -1,0 +1,84 @@
+name: depot-complete-native
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: Exact-head native ${{ matrix.wave }}
+    strategy:
+      fail-fast: false
+      matrix:
+        wave: [native-core, native-android]
+    runs-on:
+      size: 16x64
+      image: monochromatic-trial-desktop-ready:20261016-v1
+    timeout-minutes: 30
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      CI: 'true'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      DEPOT_CI_CASE: native
+      DEPOT_CI_WAVE: ${{ matrix.wave }}
+      DEPOT_CI_CPUS: '16'
+      DEPOT_CI_MEMORY_GIB: '64'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: harness
+        persist-credentials: false
+        clean: false
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: source
+        ref: cb95cf6d785c3073c192b95f0632cdae7b910894
+        fetch-depth: 2
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Retain the preparation bootstrap already exercised by the TOML wave.
+        version: 2026.10.9
+        working_directory: source
+        install: false
+        cache: false
+    - name: Install exact lockfile tool versions outside source
+      working-directory: harness
+      env:
+        MISE_LOCKED: '0'
+      run: mise run //package/dev-script/task-util:trial:depot:ci:native-tools
+    - name: Verify selected source tools and frozen dependency inputs
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:native-tool-gate
+    - name: Install exact-head frozen dependencies
+      working-directory: source
+      run: mise run prepare:pnpm:install -- --frozen-lockfile
+    - name: Build the historical Git policy wrapper prerequisite
+      working-directory: source
+      run: mise run //package/git-policy/cli:build
+    - name: Trust the reviewed exact-head repository policy
+      working-directory: source
+      run: git cli-git trust --yes
+    - name: Prepare Android SDK components and target toolchains
+      if: matrix.wave == 'native-android'
+      working-directory: source
+      run: mise run prepare:android
+    - name: Execute unchanged historical package checks
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:execute
+    - name: Preserve native check evidence and APKs
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: native-${{ matrix.wave }}-evidence
+        path: |
+          ~/temp/agent/depot-complete-ci/*-results.json
+          ~/temp/agent/depot-complete-ci/native-tools.json
+          source/package/music-player/android-app/app/build/outputs/apk/**/*.apk
+          source/package/music-player/android-app/app/build/test-results/**/*.xml
+          source/package/music-player/android-app/app/build/reports/lint-results-debug.xml
+        if-no-files-found: ignore

@@ -132,7 +132,7 @@ for (const path of inputs) assert.deepEqual(readFileSync(path), execFileSync('gi
 const directory = join(homedir(), 'temp/agent/depot-complete-ci')
 mkdirSync(directory, { recursive: true, mode: 0o700 })
 chmodSync(directory, 0o700)
-const identity = { schemaVersion: 1, caseId: manifest.caseId, sourceRevision, manifestSha256, providerJobUrl: process.env.DEPOT_JOB_URL, resources: { cpus: 16, memoryGiB: 64 }, selectedCheckIds: manifest.checks.map((check) => check.id) }
+const identity = { schemaVersion: 1, caseId: manifest.caseId, sourceRevision, manifestSha256, providerJobUrl: process.env.DEPOT_JOB_URL, resources: { cpus: Number(process.env.DEPOT_CI_CPUS ?? 16), memoryGiB: Number(process.env.DEPOT_CI_MEMORY_GIB ?? 64) }, selectedCheckIds: manifest.checks.map((check) => check.id) }
 const results = []
 const deferredChecks = manifest.checks.filter((check) => {
   const container = check.task.endsWith(':test:mutation') || check.task.endsWith(':test:container')
@@ -276,7 +276,7 @@ const sourceRevision = git(['rev-parse', 'HEAD'])
 const check = { id: 'control.lint.oxlint', task: '//package/control/fixture:lint:oxlint', args: control === 'oxlint-args' ? ['input.txt'] : [], family: 'lint', scope: control === 'oxlint-scope' ? 'files' : 'package', packages: ['package/control/fixture'], prerequisites: [] }
 const manifest = { schemaVersion: 1, caseId: `control-${control}`, sourceRevision, baseRevision, headRevision: sourceRevision, changedFiles: ['package/control/fixture/input.txt'], selectedPackages: ['package/control/fixture'], checks: [check], externalChecks: [], completeGraph: false }
 writeFileSync(join(manifestRoot, 'toml.json'), JSON.stringify(manifest, null, 2))
-const env = { ...process.env, GITHUB_WORKSPACE: base, MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS ?? ''}:${base}`, DEPOT_CI_WAVE: 'all' }
+const env = { ...process.env, GITHUB_WORKSPACE: base, MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS ?? ''}:${base}`, DEPOT_CI_WAVE: 'all', DEPOT_CI_CPUS: '2', DEPOT_CI_MEMORY_GIB: '8' }
 const result = spawnSync('mise', ['run', '//package/dev-script/task-util:trial:depot:ci:execute'], { env, stdio: 'inherit' })
 if (result.error) throw result.error
 if (control === 'passing') assert.equal(result.status, 0, 'Passing control must succeed')
@@ -288,4 +288,58 @@ if (control === 'failure') {
 }
 console.log(JSON.stringify({ event: 'executor-control-observed', control, executorExitCode: result.status, expectedFailure: control !== 'passing' }))
 if (control !== 'passing') throw new Error(`Intentional negative control ${control} propagates to workflow failure`)
+'''
+
+[tasks."trial:depot:ci:native-tools"]
+description = "Install exact native tool versions read from the immutable source lockfile"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, appendFileSync, mkdirSync, chmodSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const { createHash } = await import('node:crypto')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const lock = readFileSync(join(source, 'mise.lock'), 'utf8')
+const tools = new Map([...lock.matchAll(/^\[\[tools\.(?:"([^"]+)"|([^\]]+))\]\]\nversion = "([^"]+)"/gm)].map((match) => [match[1] ?? match[2], match[3]]))
+const requested = ['node', 'pnpm', 'rust', 'cargo:cargo-nextest', 'cargo:monochromatic-lint']
+if (process.env.DEPOT_CI_WAVE === 'native-android') requested.push('java', 'android-sdk', 'cargo:cargo-ndk', 'cmake')
+const selected = requested.map((name) => {
+  assert(tools.has(name), `Required tool missing from exact source lockfile: ${name}`)
+  return { name, version: tools.get(name) }
+})
+const rust = tools.get('rust')
+assert(/^nightly-\d{4}-\d{2}-\d{2}$/.test(rust), 'Expected dated historical Rust nightly')
+const env = { ...process.env, MISE_RUST_VERSION: rust, MISE_LOCKED: '0' }
+execFileSync('mise', ['install', ...selected.map(({ name, version }) => `${name}@${version}`)], { env, stdio: 'inherit' })
+const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(directory, { recursive: true, mode: 0o700 })
+chmodSync(directory, 0o700)
+const record = { source: 'cb95cf6d785c3073c192b95f0632cdae7b910894', lockSha256: createHash('sha256').update(lock).digest('hex'), tools: selected }
+writeFileSync(join(directory, 'native-tools.json'), JSON.stringify(record, null, 2))
+appendFileSync(process.env.GITHUB_ENV, `MISE_RUST_VERSION=${rust}\n`)
+assert.equal(readFileSync(join(source, 'mise.lock'), 'utf8'), lock, 'Tool installation changed source lockfile')
+console.log(JSON.stringify({ event: 'native-tools-installed', ...record }))
+'''
+
+[tasks."trial:depot:ci:native-tool-gate"]
+description = "Reject source tool selection that differs from the exact historical lockfile"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { readFileSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const record = JSON.parse(readFileSync(join(homedir(), 'temp/agent/depot-complete-ci/native-tools.json'), 'utf8'))
+const actual = JSON.parse(execFileSync('mise', ['ls', '--current', '--json'], { cwd: source, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }))
+for (const tool of record.tools) assert(actual[tool.name]?.some((entry) => entry.version === tool.version && entry.installed), `Source did not select required ${tool.name}@${tool.version}`)
+for (const [command, args] of [['node', ['--version']], ['pnpm', ['--version']], ['rustc', ['--version', '--verbose']], ['cargo', ['--version']], ['cargo', ['nextest', '--version']]]) {
+  execFileSync('mise', ['exec', '--', command, ...args], { cwd: source, stdio: 'inherit' })
+}
+console.log(JSON.stringify({ event: 'native-tool-selection-verified', ...record }))
 '''
