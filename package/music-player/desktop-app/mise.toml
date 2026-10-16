@@ -696,6 +696,11 @@ description = "Run the disposable Depot CI repository-access check"
 dir = "{{config_root}}/../../.."
 run = "depot ci run --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-trial.yml --job connection"
 
+[tasks."trial:depot:expanded"]
+description = "Run isolated browser and native feature coverage measurements"
+dir = "{{config_root}}/../../.."
+run = "depot ci run --org l4zncjjbj5 --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-expanded.yml"
+
 [tasks."trial:depot:dependencies"]
 description = "Install the locked workspace dependencies in a disposable trial sandbox"
 dir = "{{config_root}}/../../.."
