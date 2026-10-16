@@ -12,7 +12,9 @@ The experiment is in progress.
 completed the native-runtime probe.
 Prepared artifact build [run `xxs92vjc25`](https://depot.dev/orgs/l4zncjjbj5/workflows/xxs92vjc25)
 and nested-boot verification [run `t7n42wkr5n`](https://depot.dev/orgs/l4zncjjbj5/workflows/t7n42wkr5n)
-are the current dependent experiments.
+completed successfully.
+The full consumer [run `4pmthztf6p`](https://depot.dev/orgs/l4zncjjbj5/workflows/4pmthztf6p)
+is running both fresh consumers.
 
 The earlier [package snapshot experiment](depot-expanded-cost-2026-10-15.md)
 verified the installed versions of 23 packages and ImageMagick in separate fresh consumers,
@@ -80,7 +82,7 @@ Trying to run as user instance, but the system has not been booted with systemd.
 ```
 
 Podman `5.8.4` and Docker `28.0.4` are already installed.
-The selected next probe uses Podman's documented
+The successful boot probe uses Podman's documented
 [external root filesystem overlay and systemd mode](https://docs.podman.io/en/latest/markdown/podman-run.1.html).
 It adds no package installation:
 the container uses the snapshot filesystem as its read-only lower layer and discards its writable overlay at removal.
@@ -107,6 +109,59 @@ The container was stopped and removed.
 The follow-up probe waits for an actual manager response before starting user services
 and captures console boot diagnostics.
 The first result alone does not distinguish delayed readiness from a failed boot.
+
+### Successful fresh runtime
+
+[Run `t7n42wkr5n`](https://depot.dev/orgs/l4zncjjbj5/workflows/t7n42wkr5n)
+waited for the system manager to answer,
+started `user@1001.service`,
+and ran an actual transient user service with a `MemoryMax=256M` limit.
+That process reported its cgroup under
+`user@1001.service/app.slice/depot-probe-unit.service`.
+The same fresh runtime started PipeWire,
+its PulseAudio socket,
+and WirePlumber.
+`pactl info` returned `PulseAudio (on PipeWire 1.0.5)` with the private `auto_null` default sink.
+The probe stopped the audio units and removed the container successfully.
+
+This supplies a measured runtime bridge for the existing systemd-based harness.
+It does not change the native Depot sandbox's init system.
+The first manager query at `01:44:18.992Z` failed before readiness;
+the query at `01:44:19.666Z` returned version `255.4-1ubuntu8.18`.
+The transient user unit succeeded at `01:44:26.758Z`.
+
+### Prepared artifact build
+
+[Run `xxs92vjc25`](https://depot.dev/orgs/l4zncjjbj5/workflows/xxs92vjc25)
+reused the installed-package snapshot,
+installed the build toolchain,
+checked the locked workspace dependencies,
+and built the application and compositor once.
+The 16-CPU,
+64-GB job ran from `01:41:57Z` to `01:46:59Z`,
+an elapsed 302 seconds.
+The complete run took 325 seconds including orchestration.
+The logged snapshot capture and upload took 23.410 seconds and uploaded 4,863,229,952 bytes.
+
+The resulting image is `monochromatic-trial-desktop-ready:20261016-v1`,
+digest `sha256:75254e66e4b87526db5fee48ae4c921d27669f3ced6dfbf97b42e3d73aea36b3`.
+Its manifest records build source `7b31a6eebec64e193e4165cf7125f781daebf719`,
+the exact installed package versions,
+and these release artifacts:
+
+- `music-player`: 53,790,520 bytes;
+  SHA-256 `59e365a380f5a92f2057db7f10b8cb027d15cd8857fa8b1975145e353b1e1da3`.
+- `monochromatic-nested-wayland-session`: 9,191,840 bytes;
+  SHA-256 `6b112ddb63bde429c9b85ea13eb2d27f839323e1e0a4549f742dbb57995adf23`.
+
+Both consumer jobs use this image with a 2-CPU,
+8-GB sandbox.
+Their isolated service runtime has a 2-GiB memory limit,
+two CPUs,
+no network,
+and a 660-second maximum lifetime.
+The consumer verifies package and artifact identity before booting services.
+It runs no package installation or compilation.
 
 ## Evidence collection
 
@@ -137,8 +192,6 @@ records why that distinction matters.
 
 ## Remaining verification
 
-- Match the installed systemd version to the deciding source.
-- Establish a real fresh session manager and private audio services without reinstalling the desktop packages.
 - Execute all seven sessions in separate fresh consumers and retain their individual results.
 - Verify package manifests,
   consumer isolation,
