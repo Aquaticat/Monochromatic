@@ -19,10 +19,10 @@ and source hash.
 Repeating the observed seven-day change stream for a 30-day month gives these measured-workload subtotals:
 
 - Run every affected revision:
-  Developer USD **123.33**;
+  Developer USD **133.33**;
   Startup USD **200.00**.
 - Immediately cancel superseded work within its workload:
-  Developer USD **115.46**;
+  Developer USD **125.01**;
   Startup USD **200.00**.
 - Run the newest affected revision each UTC day on Depot,
   retaining push validation on GitHub:
@@ -65,7 +65,9 @@ not every push for every job.
 - Prepared desktop execution replaces both the separate container compilation
   and the earlier full-suite GitHub-runner job.
   Each selected desktop revision pays for 301.271 seconds of preparation on 16 vCPUs,
-  then one 296.995-second fresh consumer on 2 vCPUs.
+  then one fresh consumer on 2 vCPUs.
+  The consumer baseline is the 286.550-second mean of two unchanged-input runs,
+  observed at 296.995 and 276.105 seconds.
   The source snapshot must be rebuilt for each selected revision;
   installed base packages are reusable.
   Desktop selection contains 59 events.
@@ -90,6 +92,11 @@ An independent control includes cancellation before preparation finishes,
 during consumption,
 and a complete pipeline.
 The new replay also reproduces all 15 workload totals from the earlier model.
+The observed consumer spread is 20.890 seconds.
+Using either consumer observation instead of their mean gives every-affected Developer subtotals
+from USD 133.06 to USD 133.59.
+This is observed sample sensitivity,
+not a confidence interval for future jobs.
 
 ## Published rates and additional usage
 
@@ -102,12 +109,12 @@ and 1,000,000 passing test results.
 Startup costs USD 200 with ten times those compute and storage allowances;
 its passing-test allowance remains 1,000,000.
 Compute overages are USD 0.006 per CI base minute,
-USD 0.004 per GitHub-runner base minute,
+USD 0.006 per GitHub-runner base minute,
 and USD 0.04 per container-build minute.
 
-The measured every-affected workload uses 15,803.759 CI base minutes
+The measured every-affected workload uses 15,759.741 CI base minutes
 and 7,128 GitHub-runner base minutes per modeled month.
-The daily selection uses 1,862.252 CI base minutes and 924 GitHub-runner base minutes.
+The daily selection uses 1,857.029 CI base minutes and 924 GitHub-runner base minutes.
 The source-specific desktop preparation accounts for most of the additional CI usage.
 These numbers do not include unrelated account workloads.
 
@@ -183,7 +190,7 @@ Developer with intentional GitHub routing > Developer with broader paid executio
 Routing ranks first because daily Depot selection fits the measured compute allowances
 while preserving push validation on GitHub.
 Broader Developer execution ranks ahead of Startup because the measured every-affected subtotal
-is USD 123.33 before the explicitly unpriced work,
+is USD 133.33 before the explicitly unpriced work,
 below Startup's subscription alone.
 The ranking remains provisional until the omitted workload and account scopes are priced.
 It is not a claim that daily Depot checks provide the same feedback timing as per-push Depot checks.
@@ -195,7 +202,7 @@ combined storage scope,
 standalone sandbox allowance attribution,
 or an aggregate spending cap.
 The existing per-product hard-start limits are not evidence of an aggregate USD 200 safeguard.
-The [account findings](../handover/depot-trial-issues.md#package-reuse-account-visibility-and-storage)
+The [account findings](../handover/depot-trial-issues.md#package-reuse-and-account-observability)
 retain this access boundary.
 
 Other packages,
@@ -210,5 +217,11 @@ No historical equivalent music workflow exists for this source window,
 so the report cannot convert the new coverage into a measured monthly latency saving.
 The added execution evidence improves allocation planning;
 it does not erase those limits.
+
+Independent review found that this follow-up's initial draft used USD 0.004 for Linux runner overage.
+The [current runner documentation](https://depot.dev/docs/github-actions/runner-types)
+specifies USD 0.006 per base minute.
+The corrected model uses that rate and the two-consumer mean;
+the earlier cost report already used the correct rate.
 
 [pricing]: https://depot.dev/pricing

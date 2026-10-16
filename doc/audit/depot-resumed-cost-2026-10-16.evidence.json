@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-16T02:01:50.590Z",
+  "generatedAt": "2026-10-16T02:04:20.852Z",
   "periodDays": 7,
   "projectedMonthDays": 30,
   "prices": {
@@ -23,14 +23,90 @@
     },
     "overageUsd": {
       "ci": 0.006,
-      "runner": 0.004,
+      "runner": 0.006,
       "container": 0.04,
       "storageGb": 0.2,
       "passingTest": 0.000001
     }
   },
-  "consumerSeconds": 296.995,
+  "consumerSeconds": 286.55,
+  "consumerObservationsSeconds": [
+    296.995,
+    276.105
+  ],
   "prepSeconds": 301.271,
+  "desktopDurationSensitivity": [
+    {
+      "consumerSeconds": 296.995,
+      "scenarios": [
+        {
+          "mode": "every-affected",
+          "monthlyMinutes": {
+            "ci": 15803.759214285725,
+            "runner": 7128,
+            "container": 0
+          },
+          "developerMeasuredSubtotalUsd": 133.59055528571434,
+          "startupMeasuredSubtotalUsd": 200
+        },
+        {
+          "mode": "cancel-superseded",
+          "monthlyMinutes": {
+            "ci": 14657.948214285723,
+            "runner": 6877.142857142857,
+            "container": 0
+          },
+          "developerMeasuredSubtotalUsd": 125.21054642857149,
+          "startupMeasuredSubtotalUsd": 200
+        },
+        {
+          "mode": "daily-latest",
+          "monthlyMinutes": {
+            "ci": 1862.251642857143,
+            "runner": 924,
+            "container": 0
+          },
+          "developerMeasuredSubtotalUsd": 20,
+          "startupMeasuredSubtotalUsd": 200
+        }
+      ]
+    },
+    {
+      "consumerSeconds": 276.105,
+      "scenarios": [
+        {
+          "mode": "every-affected",
+          "monthlyMinutes": {
+            "ci": 15715.722785714293,
+            "runner": 7128,
+            "container": 0
+          },
+          "developerMeasuredSubtotalUsd": 133.06233671428578,
+          "startupMeasuredSubtotalUsd": 200
+        },
+        {
+          "mode": "cancel-superseded",
+          "monthlyMinutes": {
+            "ci": 14590.801785714295,
+            "runner": 6877.142857142857,
+            "container": 0
+          },
+          "developerMeasuredSubtotalUsd": 124.80766785714292,
+          "startupMeasuredSubtotalUsd": 200
+        },
+        {
+          "mode": "daily-latest",
+          "monthlyMinutes": {
+            "ci": 1851.806642857143,
+            "runner": 924,
+            "container": 0
+          },
+          "developerMeasuredSubtotalUsd": 20,
+          "startupMeasuredSubtotalUsd": 200
+        }
+      ]
+    }
+  ],
   "inputEvidence": [
     {
       "path": "doc/audit/depot-change-stream-2026-10-15.evidence.json",
@@ -51,6 +127,10 @@
     {
       "path": "doc/audit/depot-linker-experiment-2026-10-16.evidence.json",
       "sha256": "2d240d9597bec5dfada15c13f70d0433a0ad5731b38e6136babe8045d3087d44"
+    },
+    {
+      "path": "doc/audit/depot-prepared-desktop-2026-10-16.evidence.json",
+      "sha256": "6f5fcaf0b9711284fd6dd669e624b3324a6b2dd2f13957519f3a8a2fa5059910"
     }
   ],
   "scenarios": [
@@ -5894,14 +5974,14 @@
             },
             {
               "name": "fresh-consumer-full-suite",
-              "seconds": 296.995,
+              "seconds": 286.55,
               "multiplier": 1,
               "product": "ci",
               "passingCases": 117,
               "starts": 59,
               "completions": 59,
-              "consumedSeconds": 17522.705000000016,
-              "monthlyBaseMinutes": 1251.6217857142867
+              "consumedSeconds": 16906.449999999983,
+              "monthlyBaseMinutes": 1207.603571428572
             }
           ],
           "attempts": [
@@ -5922,14 +6002,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -5950,14 +6030,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -5978,14 +6058,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6006,14 +6086,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6034,14 +6114,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6062,14 +6142,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6090,14 +6170,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6118,14 +6198,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6146,14 +6226,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6174,14 +6254,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6202,14 +6282,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6230,14 +6310,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6258,14 +6338,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6286,14 +6366,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6314,14 +6394,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6342,14 +6422,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6370,14 +6450,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6398,14 +6478,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6426,14 +6506,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6454,14 +6534,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6482,14 +6562,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6510,14 +6590,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6538,14 +6618,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6566,14 +6646,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6594,14 +6674,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6622,14 +6702,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6650,14 +6730,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6678,14 +6758,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6706,14 +6786,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6734,14 +6814,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6762,14 +6842,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6790,14 +6870,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6818,14 +6898,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6846,14 +6926,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6874,14 +6954,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6902,14 +6982,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6930,14 +7010,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6958,14 +7038,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -6986,14 +7066,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7014,14 +7094,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7042,14 +7122,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7070,14 +7150,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7098,14 +7178,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7126,14 +7206,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7154,14 +7234,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7182,14 +7262,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7210,14 +7290,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7238,14 +7318,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7266,14 +7346,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7294,14 +7374,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7322,14 +7402,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7350,14 +7430,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7378,14 +7458,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7406,14 +7486,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7434,14 +7514,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7462,14 +7542,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7490,14 +7570,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7518,14 +7598,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -7546,14 +7626,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             }
@@ -7561,12 +7641,12 @@
         }
       ],
       "monthlyMinutes": {
-        "ci": 15803.759214285725,
+        "ci": 15759.741000000009,
         "runner": 7128,
         "container": 0
       },
       "knownPassingResults": 131661.42857142858,
-      "developerMeasuredSubtotalUsd": 123.33455528571434,
+      "developerMeasuredSubtotalUsd": 133.32644600000006,
       "startupMeasuredSubtotalUsd": 200
     },
     {
@@ -13409,14 +13489,14 @@
             },
             {
               "name": "fresh-consumer-full-suite",
-              "seconds": 296.995,
+              "seconds": 286.55,
               "multiplier": 1,
               "product": "ci",
               "passingCases": 117,
               "starts": 53,
               "completions": 45,
-              "consumedSeconds": 14433.607000000009,
-              "monthlyBaseMinutes": 1030.9719285714293
+              "consumedSeconds": 13963.581999999986,
+              "monthlyBaseMinutes": 997.3987142857147
             }
           ],
           "attempts": [
@@ -13437,14 +13517,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13465,14 +13545,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13493,14 +13573,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13521,14 +13601,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13549,7 +13629,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -13577,7 +13657,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -13605,14 +13685,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13633,14 +13713,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13661,14 +13741,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13689,14 +13769,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13717,14 +13797,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13745,7 +13825,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -13773,14 +13853,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13801,7 +13881,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -13829,14 +13909,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13857,14 +13937,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13885,7 +13965,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -13913,14 +13993,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13941,14 +14021,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13969,14 +14049,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -13997,7 +14077,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -14025,14 +14105,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14053,14 +14133,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14081,14 +14161,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14109,14 +14189,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14137,14 +14217,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14165,14 +14245,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14193,14 +14273,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14221,14 +14301,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14249,14 +14329,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14277,14 +14357,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14305,14 +14385,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14333,14 +14413,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14361,7 +14441,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -14389,14 +14469,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14417,14 +14497,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14445,14 +14525,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14473,14 +14553,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14501,14 +14581,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14529,14 +14609,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14557,14 +14637,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14585,14 +14665,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14613,7 +14693,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -14641,14 +14721,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14669,14 +14749,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14697,14 +14777,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14725,7 +14805,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -14753,7 +14833,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -14781,7 +14861,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -14809,7 +14889,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -14837,14 +14917,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14865,7 +14945,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -14893,14 +14973,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14921,7 +15001,7 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
@@ -14949,14 +15029,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -14977,14 +15057,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -15005,14 +15085,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -15033,14 +15113,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -15061,14 +15141,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             }
@@ -15076,12 +15156,12 @@
         }
       ],
       "monthlyMinutes": {
-        "ci": 14657.948214285723,
+        "ci": 14624.37500000001,
         "runner": 6877.142857142857,
         "container": 0
       },
       "knownPassingResults": 112958.57142857142,
-      "developerMeasuredSubtotalUsd": 115.45626071428578,
+      "developerMeasuredSubtotalUsd": 125.0091071428572,
       "startupMeasuredSubtotalUsd": 200
     },
     {
@@ -15896,14 +15976,14 @@
             },
             {
               "name": "fresh-consumer-full-suite",
-              "seconds": 296.995,
+              "seconds": 286.55,
               "multiplier": 1,
               "product": "ci",
               "passingCases": 117,
               "starts": 7,
               "completions": 7,
-              "consumedSeconds": 2078.9649999999997,
-              "monthlyBaseMinutes": 148.4975
+              "consumedSeconds": 2005.85,
+              "monthlyBaseMinutes": 143.275
             }
           ],
           "attempts": [
@@ -15924,14 +16004,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -15952,14 +16032,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -15980,14 +16060,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -16008,14 +16088,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -16036,14 +16116,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -16064,14 +16144,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             },
@@ -16092,14 +16172,14 @@
                 },
                 {
                   "name": "fresh-consumer-full-suite",
-                  "seconds": 296.995,
+                  "seconds": 286.55,
                   "multiplier": 1,
                   "product": "ci",
                   "passingCases": 117,
-                  "consumedSeconds": 296.995,
+                  "consumedSeconds": 286.55,
                   "completed": true,
                   "started": true,
-                  "monthlyBaseMinutes": 21.21392857142857
+                  "monthlyBaseMinutes": 20.467857142857145
                 }
               ]
             }
@@ -16107,7 +16187,7 @@
         }
       ],
       "monthlyMinutes": {
-        "ci": 1862.251642857143,
+        "ci": 1857.0291428571431,
         "runner": 924,
         "container": 0
       },
@@ -16303,7 +16383,7 @@
     "earlierModelReproduced": true
   },
   "assumptions": [
-    "Repeat the October8 through14 event mix for30 days; scenario, not account forecast.",
+    "Repeat the October 8 through 14 event mix for 30 days; scenario, not account forecast.",
     "Prepared desktop replaces the old separate container build and GitHub-runner desktop suite; source snapshot rebuilt once per selected desktop revision, one fresh consumer follows.",
     "Cancellation immediately stops all stages in the superseded workload. A consumer starts only after preparation finishes; no cancellation lag, startup minima, or queue delay.",
     "Core feature matrix replaces prior core-only baseline. Browser jobs add to retained logger types/unit job. Android host and cloud APK creation retained; Android device execution remains local.",
