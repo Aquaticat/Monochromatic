@@ -886,4 +886,10 @@ execFileSync('cargo', ['build', '--release', '--locked'], { stdio: 'inherit', en
 
 [tasks."trial:depot:desktop:run"]
 description = "Exercise each desktop session directly with the software compositor"
-run = "mise run //package/music-player/desktop-e2e:run"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { resolve } = await import('node:path')
+const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
+execFileSync('mise', ['run', '//package/music-player/desktop-e2e:run'], { stdio: 'inherit', env: { ...process.env, E2E_COMPOSITOR: compositor } })
+'''

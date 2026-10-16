@@ -39,5 +39,5 @@ jobs:
       run: mise run //package/music-player/desktop-app:trial:depot:desktop:build
     - name: Build the compositor
       run: mise run //package/cli/nested-wayland-session:build
-    - name: Exercise the desktop suite with direct software rendering
+    - name: Exercise the desktop suite with the built software compositor
       run: mise run //package/music-player/desktop-app:trial:depot:desktop:run
