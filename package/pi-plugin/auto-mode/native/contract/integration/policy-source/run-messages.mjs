@@ -25,12 +25,16 @@ export function bindRunMessageSources({governing}){
    value.occurrence,
    value
  ]); }));
+ const retainedBySource=new Map();
+ for(const origin of run?.retainedMessageOrigins??snapshot.nativeConstructedInputs??[]){
+  const {source}=origin;
+  if(!retainedBySource.has(source))retainedBySource.set(source,origin);
+ }
  const bindings=sources.map(function bindOriginalRunMessage(source) {
   const publication=publications.get(source.runOccurrence);
     const expanded=source.kind==='native-run-expanded-prompt-input';
     const handlerOptions=source.kind==='native-run-handler-options-input';
-  const retained=(run?.retainedMessageOrigins??snapshot.nativeConstructedInputs
-    ??[]).find(function matchesOriginalMessageSource(origin) { return (origin.source===source); });
+  const retained=retainedBySource.get(source);
     const toolDescription=source.kind==='native-tool-description-input';
     const loadoutOutput=source.kind==='native-tool-loadout-output';
     const loadoutInput=source.kind==='native-tool-loadout-input';
