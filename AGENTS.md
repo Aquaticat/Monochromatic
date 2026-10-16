@@ -1131,8 +1131,11 @@ VUB:
  After building,
  deploying,
  or installing,
- verify the artifact the way its consumer uses it;
- compiling or installing alone isn't verification.
+ verify the artifact as its consumer uses it,
+ retaining configured extensions,
+ skills,
+ and tool catalogs;
+ compilation or installation alone is insufficient.
 
 VB1:
  Servers:
