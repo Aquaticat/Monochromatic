@@ -15,6 +15,7 @@ jobs:
     timeout-minutes: 30
     env:
       MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
       CI: 'true'
       MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
       OXLINT_THREADS: '1'
@@ -41,13 +42,21 @@ jobs:
         cache: false
     - name: Install the exact-head dependency runtimes and conformance runner
       working-directory: source
-      run: mise install node pnpm github:toml-lang/toml-test
+      run: mise install node pnpm
+    - name: Install conformance runner outside immutable source
+      working-directory: harness
+      env:
+        MISE_LOCKED: '0'
+      run: mise install github:toml-lang/toml-test
     - name: Install exact-head frozen dependencies
       working-directory: source
       run: mise run prepare:pnpm:install -- --frozen-lockfile
     - name: Build the historical Git policy wrapper prerequisite
       working-directory: source
       run: mise run //package/git-policy/cli:build
+    - name: Trust the reviewed exact-head repository policy
+      working-directory: source
+      run: git cli-git trust --yes
     - name: Run the reviewed package checks and retain every result
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:execute
