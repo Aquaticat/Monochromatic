@@ -885,32 +885,5 @@ execFileSync('cargo', ['build', '--release', '--locked'], { stdio: 'inherit', en
 '''
 
 [tasks."trial:depot:desktop:run"]
-description = "Run the unchanged keyboard suite inside a software-rendered parent compositor"
-shell = "node --input-type=module-typescript -e"
-run = '''
-const { spawn, execFileSync, spawnSync } = await import('node:child_process')
-const { mkdirSync, openSync, existsSync, readFileSync } = await import('node:fs')
-const { homedir } = await import('node:os')
-const { resolve, join } = await import('node:path')
-const { setTimeout: wait } = await import('node:timers/promises')
-const base = join(homedir(), 'temp', 'agent', 'depot-desktop')
-mkdirSync(base, { recursive: true, mode: 0o700 })
-const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
-const socket = join(base, 'parent.sock')
-const log = join(base, 'parent.log')
-const descriptor = openSync(log, 'a')
-const parent = spawn(compositor, ['--headless', '--gpu', 'software', '--size', '1920x1440', '--socket', socket, '--', '/usr/bin/sleep', '3000'], { stdio: ['ignore', descriptor, descriptor] })
-try {
-  for (let attempt = 0; !existsSync(socket) && attempt < 100; attempt++) {
-    if (parent.exitCode !== null) throw new Error(`Parent compositor exited ${parent.exitCode}: ${readFileSync(log, 'utf8')}`)
-    await wait(100)
-  }
-  const display = execFileSync('socat', ['-', `UNIX-CONNECT:${socket}`], { input: 'display\n', encoding: 'utf8' }).trim().replace(/^ok\s+/, '')
-  console.log(JSON.stringify({ parentDisplay: display, compositor }))
-  execFileSync('mise', ['run', '//package/music-player/desktop-e2e:run'], { stdio: 'inherit', env: { ...process.env, WAYLAND_DISPLAY: display, E2E_COMPOSITOR: compositor } })
-} finally {
-  const stopped = spawnSync('socat', ['-', `UNIX-CONNECT:${socket}`], { input: 'quit\n', encoding: 'utf8' })
-  console.log(JSON.stringify({ parentStopStatus: stopped.status, stderr: stopped.stderr }))
-  console.log(readFileSync(log, 'utf8'))
-}
-'''
+description = "Exercise each desktop session directly with the software compositor"
+run = "mise run //package/music-player/desktop-e2e:run"

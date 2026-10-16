@@ -229,6 +229,10 @@ export function systemdRunArguments(
       return `--setenv=${key}=${value}`;
     },),
     compositorPath,
+    // Trial-only: render each session directly at its requested dimensions.
+    '--headless',
+    '--gpu',
+    'software',
     '--socket',
     socket,
     '--size',
