@@ -16,8 +16,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        gate: [filesystem, semantic]
-        os: [ubuntu-latest, macos-15, windows-latest]
+        include:
+        - gate: filesystem
+          os: ubuntu-latest
+        - gate: filesystem
+          os: macos-latest
+        - gate: filesystem
+          os: windows-latest
+        - gate: semantic
+          os: ubuntu-latest
+        - gate: semantic
+          os: macos-15
+        - gate: semantic
+          os: windows-latest
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     defaults:
@@ -51,6 +62,8 @@ jobs:
         working_directory: harness
         install: false
         cache: false
+        env: false
+        export_path: false
     - name: Install exact workflow tools outside source
       working-directory: harness
       run: mise install --yes "node@$MISE_NODE_VERSION" pnpm@12.11.2
