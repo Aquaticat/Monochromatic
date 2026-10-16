@@ -30,7 +30,7 @@ export function captureDecisionContext({snapshot,session,input}){
  });
  const sources=Object.freeze([
    snapshot.hostGoverningPolicy,
-   ...snapshot.contextPromptInputs.filter(function independentContext(source){return source.carrier===undefined;}),
+   ...(snapshot.readablePolicySources??[]),
    ...(conversation?[conversation]:[])
  ]);
  const original=input?.decisionSelection;

@@ -9,6 +9,7 @@ import {createGoverningContextEmitter} from './context-emission.mjs';
 import {readBoundResourceFrame} from '../../collector/rule-relevance-sdk-copy/input/resource-owner.mjs';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
 import {captureDecisionMaterial} from './decision-material.mjs';
+import {bindReadablePolicyFiles} from './readable-policy-files.mjs';
 
 //region The loader owns mutable input publication and its exact native resource binding.
 /**
@@ -93,6 +94,7 @@ export function createPolicyLoaderState({
    })!==inputState.binding.frame)throw new PolicySlotBindingError('Original resource input frame changed');
    if(owner.captureGoverningPolicy(inputState.loader)!==inputState.binding.source)throw new PolicySlotBindingError('Original selected policy capture changed');
    inputState.contextPublication?.assertCurrent();
+   inputState.binding.readablePolicies.assertCurrent();
    if(hostPrompt){
     const system=inputState.binding.frame
       .stages
@@ -194,11 +196,13 @@ export function createPolicyLoaderState({
       priorContext:inputState.contextPublication?.prior
     })
   });
+  const readablePolicies=bindReadablePolicyFiles(contextInputs);
   const decisionSelection=policy.relevance?captureDecisionMaterial({
-   sources:Object.freeze([source,...contextInputs.filter(function independent(source){return source.carrier===undefined;})]),
+   sources:Object.freeze([source,...readablePolicies.sources]),
    input:{parsePolicy:policy.relevance.parse,relevance,relevanceFailure}
   }):undefined;
   inputState.binding=Object.freeze({
+    readablePolicies,
     decisionSelection,
     relevance,
     relevanceFailure,

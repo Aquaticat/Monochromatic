@@ -78,6 +78,7 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
      resourceSystemInput:input.resourceSystemInput,
      appendPromptInputs:input.appendInputs,
      contextPromptInputs:input.contextInputs,
+     readablePolicySources:input.readablePolicies.sources,
      governingContextCarriers:input.contextCarriers,
      priorContextPublication:input.priorContext,
      forcedPromptInput,

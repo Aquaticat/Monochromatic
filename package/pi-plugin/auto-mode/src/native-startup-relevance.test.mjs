@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
+import {writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {createEnvironment} from '../dist/native/contract/integration/native-batch/environment.mjs';
 import {createStartupRelevance} from '../dist/native/contract/integration/native-host/startup-relevance.mjs';
@@ -11,8 +12,11 @@ import {projectPolicyMaterial,projectVisibleOperation} from '../dist/native/cont
 const policyText='# Fixture permission rules\n\nRUL: Never read restricted.txt.\n\nUNK: Uncertain fixture rule.\n\nFMT: Use sentence case.\n\nEDG: Ask before publishing.\n';
 const requests=[];
 const scores={RUL:0.9,UNK:0.59,FMT:0.1,EDG:0.6};
-const state={fail:false,parses:0};
-const env=await createEnvironment({policyText,createRelevance({root,parse}){
+const state={fail:false,parses:0,extraPath:''};
+const extraText='XTR: Do not modify the protected fixture file.\n';
+const env=await createEnvironment({policyText,agentsFilesOverride({agentsFiles}){return {agentsFiles:[...agentsFiles,{path:state.extraPath,content:extraText},{path:state.extraPath+'.absent',content:'PHANTOM_POLICY_MUST_STAY_LOCAL'}]};},createRelevance({root,parse}){
+ state.extraPath=join(root,'extra-policy.md');
+ writeFileSync(state.extraPath,extraText,{mode:0o600});
  process.env.AUTO_MODE_LLMGATEWAY_API_KEY='synthetic-startup-fixture';
  globalThis.fetch=async function authoredClassifier(url,init){
   assert.equal(String(url),'https://api.llmgateway.io/v1/decisions');
@@ -35,24 +39,27 @@ assert.equal(requests[0].questions.length,4);
 const first=env.policyInput.readCurrent();
 assert.equal(first.relevanceFailure,undefined);
 const hidden=Object.freeze({content:'HIDDEN_TOOL_PROMPT',occurrence:Object.freeze({})});
-const snapshot={hostGoverningPolicy:first.source,contextPromptInputs:[],hostPromptInput:hidden,resourceSystemInput:hidden,appendPromptInputs:[hidden],forcedPromptInput:hidden,toolGuidelineInputs:[hidden],skillDescriptionInputs:[hidden],builtInPromptInputs:[hidden]};
+const snapshot={hostGoverningPolicy:first.source,contextPromptInputs:first.contextInputs,readablePolicySources:first.readablePolicies.sources,hostPromptInput:hidden,resourceSystemInput:hidden,appendPromptInputs:[hidden],forcedPromptInput:hidden,toolGuidelineInputs:[hidden],skillDescriptionInputs:[hidden],builtInPromptInputs:[hidden]};
 const parsesBeforeCapture=state.parses;
 const decision=captureDecisionContext({snapshot,input:first});
 captureDecisionContext({snapshot,input:first});
 assert.equal(state.parses,parsesBeforeCapture,'Repeated source captures must reuse the loader-owned excerpts without parsing policy again');
-assert.deepEqual(decision.sources,[first.source]);
+assert.deepEqual(decision.sources,[first.source,...first.readablePolicies.sources]);
+assert.equal(first.readablePolicies.sources.length,1,'Only actual readable context policy files qualify');
 const excludedRules=decision.selection.excluded.map(function excluded(rule){return {...rule,sourceOrdinal:0};});
 const bindings=createGoverningRuleSet({parse:env.parser.parse,readSources(){return decision.sources;},excludedRules});
 const selectedCodes=bindings.indexedCandidates().map(function code(handle){return bindings.read(handle).code;});
-assert.deepEqual(selectedCodes,['RUL','EDG'],'Both certain irrelevance and uncertain relevance must be culled; 0.60 is included');
+assert.deepEqual(selectedCodes,['RUL','EDG','XTR'],'Both certain irrelevance and uncertain relevance must be culled; 0.60 and additional readable policy remain included');
 const control=createGoverningRuleSet({parse:env.parser.parse,readSources(){return decision.sources;}});
-assert.equal(control.indexedCandidates().length,4,'Positive control: the unfiltered index sees every original rule');
+assert.equal(control.indexedCandidates().length,5,'Positive control: the unfiltered index sees every original rule');
 const wire=JSON.stringify(projectPolicyMaterial({sources:decision.sources,material:decision.selection.material,questions:[]}));
 assert.ok(wire.includes('Never read restricted.txt.'));
 assert.ok(wire.includes('Ask before publishing.'));
 assert.equal(wire.includes('Uncertain fixture rule.'),false);
 assert.equal(wire.includes('Use sentence case.'),false);
 assert.equal(wire.includes('HIDDEN_TOOL_PROMPT'),false);
+assert.equal(wire.includes('PHANTOM_POLICY_MUST_STAY_LOCAL'),false);
+assert.ok(wire.includes('Do not modify the protected fixture file.'));
 const copied=captureDecisionContext({snapshot,input:first,session:{sessionManager:{buildContextEntries(){return [{type:'message',message:{role:'toolResult',toolName:'read',toolCallId:'read-policy',content:[{type:'text',text:policyText}],isError:false,timestamp:1}}];}}}});
 assert.equal(copied.conversation.content.includes('Uncertain fixture rule.'),false,'Reading the full policy must not bypass excerpt selection through transcript content');
 assert.ok(copied.conversation.content.includes('selected original rule excerpts'));
@@ -68,5 +75,7 @@ state.fail=true;
 await writeFile(join(env.options.cwd,'AGENTS.md'),policyText.replace('Uncertain fixture rule.','Failure fixture rule.'));
 await env.policyInput.reload();
 assert.ok(env.policyInput.readCurrent().relevanceFailure,'Failed relevance must remain explicit without blocking resource initialization');
+await writeFile(state.extraPath,'XTR: Changed readable policy.\n');
+assert.throws(function changedReadableFile(){env.policyInput.readCurrent();},/eligibility|changed|differs/,'Additional policy files retain their original file-currentness guard');
 console.log(JSON.stringify({complete:true,coldRules:4,warmRules:0,changedRules:1,selectedRules:selectedCodes,uncertainCulled:true,hiddenInputsAbsent:true,fullPolicyAbsent:true,startupFailureRetained:true}));
 //endregion
