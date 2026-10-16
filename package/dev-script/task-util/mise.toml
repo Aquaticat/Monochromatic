@@ -226,3 +226,59 @@ writeFileSync(join(base, `${manifest.caseId}-generated-results.json`), JSON.stri
 console.log(JSON.stringify(record))
 assert.equal(record.status, 'passed', 'Generated outputs differ or generation failed in the disposable fixture')
 '''
+
+[tasks."trial:depot:ci:control"]
+description = "Exercise the actual CI executor against isolated passing, failing, and invalid-scope fixtures"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync, spawnSync } = await import('node:child_process')
+const { mkdirSync, chmodSync, writeFileSync, readFileSync } = await import('node:fs')
+const { join } = await import('node:path')
+const { homedir } = await import('node:os')
+const { strict: assert } = await import('node:assert')
+const control = process.env.DEPOT_CI_CONTROL_CASE
+assert(['passing', 'failure', 'oxlint-args', 'oxlint-scope'].includes(control), 'Unknown executor control')
+const base = join(homedir(), 'temp/agent/depot-complete-ci', `control-${control}`)
+const source = join(base, 'source')
+const packageRoot = join(source, 'package/control/fixture')
+const manifestRoot = join(base, 'harness/.depot/manifests')
+mkdirSync(packageRoot, { recursive: true, mode: 0o700 })
+mkdirSync(manifestRoot, { recursive: true, mode: 0o700 })
+chmodSync(base, 0o700)
+writeFileSync(join(source, 'mise.toml'), 'monorepo_root = true\n[monorepo]\nconfig_roots = ["package/*/*"]\n')
+writeFileSync(join(source, 'mise.lock'), '[]\n')
+writeFileSync(join(source, 'pnpm-lock.yaml'), '{}\n')
+writeFileSync(join(source, 'pnpm-workspace.yaml'), '{}\n')
+writeFileSync(join(source, 'package.json'), '{"private":true,"type":"module"}\n')
+const command = control === 'failure' ? 'throw new Error("intentional executor failure control")' : 'console.log("executor passing control")'
+writeFileSync(join(packageRoot, 'mise.toml'), `[tasks."lint:oxlint"]\nshell = "node --input-type=module-typescript -e"\nrun = ${JSON.stringify(command)}\n`)
+writeFileSync(join(packageRoot, 'input.txt'), 'base\n')
+const git = (args) => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()
+git(['init', '--initial-branch=fixture'])
+git(['config', 'user.name', 'Executor fixture'])
+git(['config', 'user.email', 'executor-fixture@example.invalid'])
+const paths = ['mise.toml', 'mise.lock', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'package.json', 'package/control/fixture/mise.toml', 'package/control/fixture/input.txt']
+git(['add', '--', ...paths])
+git(['commit', '--message', 'test(fixture): initialize executor control', '--', ...paths])
+const baseRevision = git(['rev-parse', 'HEAD'])
+writeFileSync(join(packageRoot, 'input.txt'), 'head\n')
+git(['add', '--', 'package/control/fixture/input.txt'])
+git(['commit', '--message', 'test(fixture): change selected input', '--', 'package/control/fixture/input.txt'])
+const sourceRevision = git(['rev-parse', 'HEAD'])
+const check = { id: 'control.lint.oxlint', task: '//package/control/fixture:lint:oxlint', args: control === 'oxlint-args' ? ['input.txt'] : [], family: 'lint', scope: control === 'oxlint-scope' ? 'files' : 'package', packages: ['package/control/fixture'], prerequisites: [] }
+const manifest = { schemaVersion: 1, caseId: `control-${control}`, sourceRevision, baseRevision, headRevision: sourceRevision, changedFiles: ['package/control/fixture/input.txt'], selectedPackages: ['package/control/fixture'], checks: [check], externalChecks: [], completeGraph: false }
+writeFileSync(join(manifestRoot, 'toml.json'), JSON.stringify(manifest, null, 2))
+const env = { ...process.env, GITHUB_WORKSPACE: base, MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS ?? ''}:${base}`, DEPOT_CI_WAVE: 'all' }
+const result = spawnSync('mise', ['run', '//package/dev-script/task-util:trial:depot:ci:execute'], { env, stdio: 'inherit' })
+if (result.error) throw result.error
+if (control === 'passing') assert.equal(result.status, 0, 'Passing control must succeed')
+else assert.notEqual(result.status, 0, 'Negative control must fail the executor')
+if (control === 'failure') {
+  const report = JSON.parse(readFileSync(join(homedir(), 'temp/agent/depot-complete-ci/control-failure-results.json')))
+  assert.equal(report.results[0].status, 'failed')
+  assert.equal(report.results[0].exitCode, 1)
+}
+console.log(JSON.stringify({ event: 'executor-control-observed', control, executorExitCode: result.status, expectedFailure: control !== 'passing' }))
+if (control !== 'passing') throw new Error(`Intentional negative control ${control} propagates to workflow failure`)
+'''
