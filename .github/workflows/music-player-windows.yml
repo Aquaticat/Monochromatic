@@ -39,6 +39,10 @@ jobs:
     env:
       MISE_AUTO_INSTALL: 'false'
       MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      # Both reviewed source revisions declare these exact tool versions.
+      MISE_NODE_VERSION: '26.11.1'
+      MISE_RUST_VERSION: nightly-2026-10-13
+      MISE_CMAKE_VERSION: '4.4.4'
       CARGO_INCREMENTAL: '0'
       CARGO_PROFILE_DEV_DEBUG: '0'
       SOURCE_HEAD: ${{ inputs.source_head }}
@@ -59,12 +63,16 @@ jobs:
       with:
         # Bootstrap version already verified in this trial.
         version: 2026.10.9
-        working_directory: source
+        working_directory: harness
         install: false
         cache: false
-    - name: Install source-declared native tools
+    - name: Install the source-declared Node and Rust prerequisites
+      working-directory: harness
+      run: mise install --yes node@26.11.1 rust@nightly-2026-10-13
+    - name: Install source-declared native tools after Rust
       id: tools
-      run: mise install node rust cargo:cargo-nextest cmake
+      working-directory: harness
+      run: mise install --yes cargo:cargo-nextest@0.9.148 cmake@4.4.4
     - name: Expose the source-declared Windows linker
       if: ${{ runner.os == 'Windows' }}
       run: echo 'C:\Program Files\LLVM\bin' >> "$GITHUB_PATH"

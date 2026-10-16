@@ -72,6 +72,9 @@ const paths = ['mise.lock', 'package/music-player/desktop-app/Cargo.lock', 'pack
 const inputs = Object.fromEntries(paths.map(path => [path, createHash('sha256').update(readFileSync(join(source, path))).digest('hex')]))
 console.log(JSON.stringify({ sourceRevision: process.env.SOURCE_HEAD, platform: process.platform, architecture: process.arch, inputs }))
 execFileSync('mise', ['ls', '--current', '--json'], { cwd: source, stdio: 'inherit' })
+for (const [program, args] of [['node', ['--version']], ['rustc', ['--version', '--verbose']], ['cargo', ['nextest', '--version']], ['cmake', ['--version']]]) {
+  console.log(JSON.stringify({ program, output: execFileSync(program, args, { cwd: source, encoding: 'utf8' }).trim() }))
+}
 '''
 
 [tasks."trial:depot:native:smoke"]
