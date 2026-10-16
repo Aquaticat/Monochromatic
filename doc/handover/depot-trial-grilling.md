@@ -71,6 +71,51 @@ The exact desktop platform ref is `trial/depot-complete-desktop-20261016`,
 pointing directly to `3434eaa455d569c18b52cf15100f77f9db251d21`.
 Neither trial ref changes production workflows.
 
+The candidate manifests now retain these separate execution queues:
+
+- TOML:
+  24 package checks across six owners,
+  including a test-only live-source consumer of file-enforcer.
+  The initial five-owner manifest omitted that consumer and was corrected before the complete replay.
+- Logger:
+  708 package checks across 158 affected owners;
+  artifact prerequisites and external execution adapters remain under review.
+- Native core:
+  21 package checks across four owners,
+  with native host consumers,
+  feature-matrix checks,
+  and Android device execution tracked explicitly.
+- Desktop:
+  six package checks plus Windows,
+  Alpine,
+  macOS,
+  and repository-gate adapters.
+
+Every candidate still declares `completeGraph: false`.
+Development waves must be followed by a coherent replay with a frozen complete manifest;
+manual adapter-development gaps cannot be presented as steady-state CI latency.
+The [accounting audit](../audit/depot-complete-ci-accounting-2026-10-16.md)
+retains failed preparation and cancelled attempts.
+TOML scanner run `38840751221` passed the exact changed-file gate.
+Scorecard run `38841678032` completed the current rate-limit gate and correctly denied analysis:
+four analyses had already executed in the preceding hour.
+The earlier schedule-only description of Scorecard was incorrect:
+its workflow also triggers on main pushes.
+
+Native host run `38842242564` uses harness `703aca7141` to check source `cb95cf6d78`
+on isolated Windows and macOS runners.
+Native scanner run `38842263437` checks the same source change.
+The native Linux checks and APK producers remain queued with the cloud executor.
+The private headed Android emulator passed its resource-readiness probe:
+API 37,
+x86_64,
+16 KiB pages,
+font scale `1.0`,
+and no forced density or display-size settings.
+It was shut down gracefully and its unit is inactive.
+This proves resource readiness,
+not execution of the native case's still-pending APK consumer.
+
 The retained job experiments provide inputs and verified execution routes;
 they do not satisfy whole-pipeline completion on their own.
 
