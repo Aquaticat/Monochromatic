@@ -75,27 +75,32 @@ The discovery check must compare matching test files with the selected configura
 
 ### TypeScript libraries and shared tooling
 
-- Tasks: each affected package's existing `build`,
+- Tasks:
+  each affected package's existing `build`,
   `lint:types`,
   `lint:oxlint`,
   and `test:unit`,
   where declared.
   [`module/logger`](../../package/module/logger/mise.toml) is the initial representative.
-- Trigger: newest relevant source change,
+- Trigger:
+  newest relevant source change,
   shared package change,
   configuration change,
   dependency update,
   or an agent request naming a revision and task.
-- Platform and route: prepared Linux Node/dependency environment on Depot for requested iterations;
+- Platform and route:
+  prepared Linux Node/dependency environment on Depot for requested iterations;
   GitHub for routine checks according to measured usage.
   Preserve dedicated host-platform tests when package behavior depends on the operating system.
-- Output: task exit status,
+- Output:
+  task exit status,
   discovered test files,
   test results,
   compiler/linter diagnostics,
   and the source revision.
   Build outputs alone do not prove the consumer surface.
-- Completion: logger build,
+- Completion:
+  logger build,
   type check,
   and unit suite passed in Depot run `wjr4cmpjvs`.
   Its job interval was 45.918 seconds on two CPUs,
@@ -105,25 +110,30 @@ The discovery check must compare matching test files with the selected configura
 
 ### Shared audio core and native consumers
 
-- Tasks: [`truepeak-core`](../../package/music-player/truepeak-core/mise.toml)
+- Tasks:
+  [`truepeak-core`](../../package/music-player/truepeak-core/mise.toml)
   `build:default`,
   `lint:clippy`,
   and `test`;
   the latter runs nextest with all features.
   Add desktop tests and Android native build/device checks when this shared crate changes.
-- Trigger: core source,
+- Trigger:
+  core source,
   Cargo dependencies/toolchain,
   or a consumer integration change.
   The [desktop manifest](../../package/music-player/desktop-app/Cargo.toml)
   and [Android native manifest](../../package/music-player/android-app/rust/Cargo.toml)
   both depend on this crate with `service` and `fingerprint` features.
-- Platform and route: Linux core tests in Depot CI or GitHub;
+- Platform and route:
+  Linux core tests in Depot CI or GitHub;
   consuming application checks on their own platform routes.
-- Output: nextest totals and named failures,
+- Output:
+  nextest totals and named failures,
   default-feature build result,
   Clippy diagnostics,
   and separate consumer results.
-- Completion: all 80 core tests passed in `wjr4cmpjvs`;
+- Completion:
+  all 80 core tests passed in `wjr4cmpjvs`;
   its audio job interval was 136.452 seconds on four CPUs.
   Negative control `2clfb5npj3` made a real assertion fail and the run failed visibly.
   This proves failure propagation for that test;
@@ -132,7 +142,8 @@ The discovery check must compare matching test files with the selected configura
 
 ### Android host and native checks
 
-- Tasks: [`android-app`](../../package/music-player/android-app/mise.toml)
+- Tasks:
+  [`android-app`](../../package/music-player/android-app/mise.toml)
   `test:unit`,
   `lint`,
   `lint:detekt`,
@@ -140,22 +151,26 @@ The discovery check must compare matching test files with the selected configura
   `build:native`,
   and `test:instrumented:build`.
   Native builds target arm64-v8a and x86_64.
-- Trigger: Kotlin,
+- Trigger:
+  Kotlin,
   Gradle,
   manifest/resources,
   native Rust,
   shared audio core,
   or Android toolchain changes.
-- Platform and route: Linux JDK/SDK/NDK prepared environment on Depot;
+- Platform and route:
+  Linux JDK/SDK/NDK prepared environment on Depot;
   GitHub is an intentional alternate allocation for routine runs.
   No emulator is necessary to compile the test APKs or run host JVM tests.
-- Output: JVM XML reports,
+- Output:
+  JVM XML reports,
   Android lint report,
   Kotlin/Clippy diagnostics,
   native libraries for both ABIs,
   application APK,
   and test APK.
-- Completion: host JVM tests and Android lint passed in `3tvq2wvskh`.
+- Completion:
+  host JVM tests and Android lint passed in `3tvq2wvskh`.
   The counted follow-up inspected 127 XML suites and 1,289 cases;
   cache-restored reports retain their original execution timestamps.
   Host success does not claim `lint:detekt` or native Clippy success.
@@ -166,27 +181,32 @@ The discovery check must compare matching test files with the selected configura
 
 ### Android device behavior
 
-- Tasks: `test:instrumented` selects the connected suite;
+- Tasks:
+  `test:instrumented` selects the connected suite;
   `test:instrumented:device` is a separate device helper whose default class is only `PeakSweepWorkerTest`.
   A default helper invocation must not be labeled the full suite.
   [Task definitions](../../package/music-player/android-app/mise.toml)
-- Trigger: device-facing behavior,
+- Trigger:
+  device-facing behavior,
   JNI/native changes,
   shared audio changes,
   release candidates,
   and explicit agent requests.
-- Platform and route: cloud-built APKs consumed on a disposable local emulator or authorized test device.
+- Platform and route:
+  cloud-built APKs consumed on a disposable local emulator or authorized test device.
   The [emulator skill](../../.agents/skills/android-emulator/SKILL.md)
   requires a headed host-GPU launch in a systemd user unit and prohibits headless/container launches.
   A cloud KVM probe alone does not satisfy that requirement.
-- Output: installed artifact hashes,
+- Output:
+  installed artifact hashes,
   Android/API/ABI and page-size evidence,
   selected test classes,
   instrumentation result totals,
   skips,
   logcat failure context,
   and cleanup evidence.
-- Completion: pending local execution of the cloud-built artifacts.
+- Completion:
+  pending local execution of the cloud-built artifacts.
   Existing classes are `NativeBridgeTest`,
   `SessionStoreTest`,
   `PeakSweepWorkerTest`,
@@ -198,27 +218,32 @@ The discovery check must compare matching test files with the selected configura
 
 ### Desktop native and Alpine smoke checks
 
-- Tasks: [`desktop-app`](../../package/music-player/desktop-app/mise.toml)
+- Tasks:
+  [`desktop-app`](../../package/music-player/desktop-app/mise.toml)
   `test`,
   `lint:clippy`,
   `lint:slint`,
   `test:alpine`,
   and platform build tasks.
-- Trigger: desktop source/UI,
+- Trigger:
+  desktop source/UI,
   shared audio core,
   native dependency/toolchain,
   or compositor changes affecting the harness.
-- Platform and route: Linux compilation with Depot prepared environments or container builds;
+- Platform and route:
+  Linux compilation with Depot prepared environments or container builds;
   keep platform-native execution for Windows and macOS.
   The production [Alpine workflow](../../.github/workflows/music-player-alpine.yml)
   already tests x86_64 and aarch64 on relevant pull requests,
   main pushes,
   and manual requests.
-- Output: nextest results,
+- Output:
+  nextest results,
   linter diagnostics,
   executable runtime checks,
   and no-audio/ALSA/PipeWire smoke evidence.
-- Completion: [38820372915][alpine-run] passed 1,461 tests with one skipped
+- Completion:
+  [38820372915][alpine-run] passed 1,461 tests with one skipped
   and all Alpine smoke scenarios on a Depot GitHub runner.
   This trial result does not prove both Alpine architectures or the full interactive suite.
   Compilation sizing recommends sixteen CPUs with sixteen Cargo jobs for the measured cold workload,
@@ -227,28 +252,33 @@ The discovery check must compare matching test files with the selected configura
 
 ### Desktop interaction and graphics environment
 
-- Tasks: desktop-app `test:e2e` builds then calls
+- Tasks:
+  desktop-app `test:e2e` builds then calls
   [`desktop-e2e:run`](../../package/music-player/desktop-e2e/mise.toml).
   Its own `test:unit` and `lint:types` verify harness logic separately.
-- Trigger: UI,
+- Trigger:
+  UI,
   input,
   playback integration,
   compositor controls,
   or a release candidate;
   use named subsets during agent iteration and the complete suite before accepting that revision.
-- Platform and route: prepared Linux graphical session with isolated PipeWire routing and user services.
+- Platform and route:
+  prepared Linux graphical session with isolated PipeWire routing and user services.
   The [suite requirements](../../package/music-player/desktop-e2e/README.md)
   require a parent Wayland session and the named utilities.
   Physical GPU hardware is not inherently required for desktop cloud execution:
   the repository [compositor](../../package/cli/nested-wayland-session/README.md#choosing-the-gpu)
   supports software rendering.
   This differs from the Android emulator's current launch constraint.
-- Output: per-check `PASS`/`FAIL`/`SKIP`,
+- Output:
+  per-check `PASS`/`FAIL`/`SKIP`,
   `e2e-summary.json`,
   screenshots,
   application logs,
   and proof that audio stayed on the private null sink.
-- Completion: full desktop cloud run [38826827023][desktop-run] is pending at this inventory checkpoint.
+- Completion:
+  full desktop cloud run [38826827023][desktop-run] is pending at this inventory checkpoint.
   Environment preparation and build succeeded;
   the trial coordinator must record the terminal interaction result.
   The suite explicitly records held-modifier repeat as not injectable.
@@ -256,7 +286,8 @@ The discovery check must compare matching test files with the selected configura
 
 ### Browser applications and browser-dependent libraries
 
-- Tasks: root `test:browser` and `test:e2e` with explicit selection,
+- Tasks:
+  root `test:browser` and `test:e2e` with explicit selection,
   plus each affected package's build,
   type check,
   and unit tasks.
@@ -265,20 +296,24 @@ The discovery check must compare matching test files with the selected configura
   the test harness,
   and the wc page.
   Existing end-to-end files are under [`module/dom`](../../package/module/dom/src).
-- Trigger: selected browser package,
+- Trigger:
+  selected browser package,
   DOM/shared helper,
   browser tooling/configuration,
   or lockfile changes;
   broader browser project coverage before release and in the scheduled sweep.
-- Platform and route: the existing Podman/Playwright environment on Linux,
+- Platform and route:
+  the existing Podman/Playwright environment on Linux,
   first on GitHub unless a prepared Depot environment yields measured benefit.
   Browser-engine projects do not replace host operating-system checks.
-- Output: discovered test names,
+- Output:
+  discovered test names,
   project names,
   assertion results,
   HTML report,
   and retry traces.
-- Completion: not exercised in this Depot trial.
+- Completion:
+  not exercised in this Depot trial.
   Existing selected tests are unwired trial work.
   The [`done` task file](../../package/webapp-productivity/done/mise.toml)
   declares build/type/lint/unit tasks,
@@ -289,7 +324,8 @@ The discovery check must compare matching test files with the selected configura
 
 ### Other native applications and desktop infrastructure
 
-- Tasks: [`terminal`](../../package/desktop-app/terminal/mise.toml)
+- Tasks:
+  [`terminal`](../../package/desktop-app/terminal/mise.toml)
   `build`,
   `test`,
   `lint:clippy`,
@@ -305,24 +341,29 @@ The discovery check must compare matching test files with the selected configura
   clipboard,
   rendering,
   and desktop-service inspection tasks.
-- Trigger: the owning component,
+- Trigger:
+  the owning component,
   shared native libraries,
   Slint/runtime assets,
   or a compositor change affecting its consumers.
-- Platform and route: bounded Linux build/test environments;
+- Platform and route:
+  bounded Linux build/test environments;
   graphical and desktop-service probes require their documented environment rather than an assumed generic sandbox.
-- Output: nextest results,
+- Output:
+  nextest results,
   packaged-binary consumer assertions,
   guard-control failures,
   interaction evidence,
   and clean child-process shutdown.
-- Completion: inspected task definitions only in this inventory;
+- Completion:
+  inspected task definitions only in this inventory;
   these are existing checks not measured in the Depot trial.
   The music-player pilot cannot establish their execution cost or behavioral completeness.
 
 ### Fuzzing, conformance, and expensive checks
 
-- Tasks: existing sidecar `test:unit`,
+- Tasks:
+  existing sidecar `test:unit`,
   `fuzz`,
   `fuzz:coverage`,
   and conformance tasks where declared.
@@ -330,25 +371,30 @@ The discovery check must compare matching test files with the selected configura
   and [TOML workflow](../../.github/workflows/toml-edit-fuzz.yml)
   already run bounded campaigns and coverage gates;
   TOML also runs conformance.
-- Trigger: relevant runtime/sidecar/fixture changes for bounded smoke checks;
+- Trigger:
+  relevant runtime/sidecar/fixture changes for bounded smoke checks;
   dependency/toolchain changes and a weekly unchanged-input baseline for broader campaigns;
   explicit agent requests for experiments.
-- Platform and route: keep existing GitHub smoke routes;
+- Platform and route:
+  keep existing GitHub smoke routes;
   use bounded Depot jobs for requested larger campaigns only after recording their cost and resource limits.
-- Output: seed,
+- Output:
+  seed,
   budget,
   corpus/coverage reach,
   reproducer,
   and any failing input.
   Expensive tests involving real infrastructure require their own disposable-resource conditions.
-- Completion: logger's ordinary unit result does not establish fuzz or browser-fuzz success.
+- Completion:
+  logger's ordinary unit result does not establish fuzz or browser-fuzz success.
   These workloads were inventoried but not executed for the Depot comparison.
   Root unit discovery deliberately excludes expensive tests;
   that exclusion must remain visible in completion summaries.
 
 ### Cross-platform and package-consumer contracts
 
-- Tasks: retain the Windows music-player workflow's nextest,
+- Tasks:
+  retain the Windows music-player workflow's nextest,
   PE/linker,
   console-redirection,
   and launch checks;
@@ -358,24 +404,29 @@ The discovery check must compare matching test files with the selected configura
   Those host matrices cover Linux,
   macOS,
   and Windows where configured.
-- Trigger: owning package,
+- Trigger:
+  owning package,
   native bridge,
   packaging/export configuration,
   relevant dependency,
   and release candidate.
-- Platform and route: preserve existing GitHub platform jobs initially.
+- Platform and route:
+  preserve existing GitHub platform jobs initially.
   Depot runner placement requires separate workload evidence before changing these routes.
-- Output: consumer import/execution from the built artifact,
+- Output:
+  consumer import/execution from the built artifact,
   correct native binary loading,
   lifecycle diagnostics,
   and platform-specific assertions.
-- Completion: the trial measured Linux routes and historical Windows overlap,
+- Completion:
+  the trial measured Linux routes and historical Windows overlap,
   not new Windows/macOS consumer runs for every package.
   A source-level test import is not evidence that a published artifact installs and works.
 
 ### Releases and repository policy checks
 
-- Tasks: preserve the existing music-player,
+- Tasks:
+  preserve the existing music-player,
   npm,
   Cargo,
   Kotlin,
@@ -384,20 +435,24 @@ The discovery check must compare matching test files with the selected configura
   Existing [music-player release workflow](../../.github/workflows/music-player-release.yml)
   distinguishes dry runs and release publication,
   and serializes releases without cancelling the running release.
-- Trigger: explicit release request/version rules for publication;
+- Trigger:
+  explicit release request/version rules for publication;
   affected packaging changes for disposable validation.
   Keep [CodeQL](../../.github/workflows/codeql.yml),
   [Scorecard](../../.github/workflows/scorecard.yml),
   and [forbidden strings](../../.github/workflows/forbidden-strings.yml)
   as independently reported policy checks.
-- Platform and route: existing GitHub release and policy routes.
+- Platform and route:
+  existing GitHub release and policy routes.
   Trial builds contain no production publication credentials.
-- Output: artifact hashes,
+- Output:
+  artifact hashes,
   target/architecture,
   consumer result,
   signing/metadata checks where applicable,
   and separate policy reports.
-- Completion: Linux executable loading passed in trial builds;
+- Completion:
+  Linux executable loading passed in trial builds;
   this is not complete release validation across platforms.
   Scorecard fixture replay exposed sequential history-query amplification and an unreserved admission interval.
   Moving that gate unchanged does not solve rolling-budget admission.
@@ -488,7 +543,8 @@ Selective overage offers more execution without immediately paying USD $200,
 but charges vary and spending controls remain unverified.
 Startup reduces allowance pressure,
 but its USD $200 base leaves no room under the ceiling for overage.
-Ranking: routed Developer > selective-overage Developer > Startup,
+Ranking:
+routed Developer > selective-overage Developer > Startup,
 because the user values the base-price saving and accepts hybrid routing;
 selective overage outranks Startup while measured expanded usage remains cheaper.
 [Cost observations and limitations](../audit/depot-trial-2026-10-15.md#monthly-plan-scenarios)
@@ -509,7 +565,8 @@ and enforceable aggregate spending controls remain unresolved in the trial repor
 
 ## Completion ledger and remaining evidence
 
-- Measured passing: representative logger host checks,
+- Measured passing:
+  representative logger host checks,
   shared audio all-feature tests,
   Android JVM tests/lint,
   instrumented APK construction,
@@ -517,25 +574,30 @@ and enforceable aggregate spending controls remain unresolved in the trial repor
   Alpine native/smoke checks,
   prepared Node environment,
   and standalone sandbox execution.
-- Pending terminal evidence: full desktop cloud interaction in [38826827023][desktop-run]
+- Pending terminal evidence:
+  full desktop cloud interaction in [38826827023][desktop-run]
   and local device execution consuming [38826684750][android-apk].
   The trial coordinator owns those final results and must update the audit before claiming closure.
-- Existing but unmeasured/unwired trial checks: browser suites,
+- Existing but unmeasured/unwired trial checks:
+  browser suites,
   native lint and remaining feature combinations,
   other desktop applications,
   fuzz/conformance campaigns,
   expensive tests,
   and broader packaged-consumer/platform checks.
-- Test coverage gaps requiring authoring or selection work: application user flows absent from selected browser suites,
+- Test coverage gaps requiring authoring or selection work:
+  application user flows absent from selected browser suites,
   library-dependent Android cases skipped without fixtures,
   and package-consumer contracts not represented by a dedicated test.
   This inventory is not a branch-by-branch coverage audit of every package.
-- Orchestration gaps: reverse-consumer selection,
+- Orchestration gaps:
+  reverse-consumer selection,
   explicit discovery/skip reporting,
   corrected stale path filters,
   independently enumerated Rust/Gradle coverage,
   and measured daily/release workload costs.
-- Operational gaps: aggregate billing visibility and spending controls,
+- Operational gaps:
+  aggregate billing visibility and spending controls,
   retention policy validated against actual storage,
   and rolling-budget admission if Scorecard execution moves.
 
