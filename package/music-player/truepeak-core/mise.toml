@@ -32,3 +32,15 @@ run = "cargo nextest run --release --all-features"
 [tasks."test:debug"]
 description = "cargo nextest run in debug mode for fast TDD iteration (all features)"
 run = "cargo nextest run --all-features"
+
+[tasks."trial:default"]
+description = "Measure the default native feature surface in an isolated Depot trial"
+run = "cargo nextest run --release"
+
+[tasks."trial:fingerprint"]
+description = "Measure the fingerprint-only native feature surface in an isolated Depot trial"
+run = "cargo nextest run --release --features fingerprint"
+
+[tasks."trial:service"]
+description = "Measure the service-only native feature surface in an isolated Depot trial"
+run = "cargo nextest run --release --features service"

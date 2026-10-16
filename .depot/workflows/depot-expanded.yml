@@ -1,0 +1,86 @@
+name: depot-expanded
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    name: Native audio feature matrix and Clippy
+    runs-on: depot-ubuntu-24.04-4
+    timeout-minutes: 25
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Avoid release-age API lookup failures already reproduced in the trial.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - name: Install selected native tools
+      run: mise install node rust cargo-binstall cargo:cargo-nextest
+    - name: Default feature tests
+      run: mise run //package/music-player/truepeak-core:trial:default
+    - name: Fingerprint feature tests
+      run: mise run //package/music-player/truepeak-core:trial:fingerprint
+    - name: Service feature tests
+      run: mise run //package/music-player/truepeak-core:trial:service
+    - name: All feature tests
+      run: mise run //package/music-player/truepeak-core:test
+    - name: All feature Clippy
+      run: mise run //package/music-player/truepeak-core:lint:clippy
+
+  browser-prepare:
+    name: Prepare matching browser binaries and dependencies
+    runs-on:
+      size: 4x16
+      image: monochromatic-trial-typescript:20261015-v1
+    snapshot: monochromatic-trial-browser:20261016-v1
+    timeout-minutes: 20
+    env:
+      MISE_AUTO_INSTALL: 'false'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Match the native trial's proven mise bootstrap.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - name: Check locked dependencies
+      run: mise run //package/music-player/desktop-app:trial:depot:dependencies
+    - name: Prepare browser container
+      run: mise run prepare:playwright
+
+  browser:
+    name: Logger and filesystem browser suites
+    needs: browser-prepare
+    runs-on:
+      size: 4x16
+      image: monochromatic-trial-browser:20261016-v1
+    timeout-minutes: 15
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      CI: 'true'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        version: 2026.10.9
+        install: false
+        cache: false
+    - name: Build logger browser artifacts
+      run: mise run //package/module/logger:build
+    - name: Build filesystem browser artifacts
+      run: mise run //package/module/fs-path:build
+    - name: Run existing suites in every configured browser
+      run: mise run test:browser -- package/module/logger/src package/module/fs-path/src --workers 4 --retries 0 --reporter json --global-timeout 300000

@@ -17,4 +17,7 @@ RUN apt-get update && apt-get install -y unzip && rm -rf /var/lib/apt/lists/*
 ENV BUN_INSTALL="/usr/local"
 RUN curl -fsSL https://bun.sh/install | bash
 
+# This isolated trial matches pnpm-lock.yaml's runner while the 1.64.0 base tag is unavailable.
+RUN npm install --prefix /opt/playwright @playwright/test@1.64.0 && /opt/playwright/node_modules/.bin/playwright install --with-deps
+
 WORKDIR /work
