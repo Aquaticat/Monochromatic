@@ -8,7 +8,7 @@ Package Oxlint always receives the unchanged package task with no file arguments
 Partial waves remain partial evidence, never a complete-graph timing claim.
 
 The isolated harness is branch `trial/depot-complete-ci-20261016`.
-Its latest local commit is `faab5b65fb`; the current launched jobs use `aff6a49ca7`.
+Its latest local commit is `a65a41cd08`; the current launched jobs use `aff6a49ca7`.
 Manifests live under `.depot/manifests/` on that branch.
 The executor records selected and deferred checks, per-check exit status,
 source and manifest identity, expected unit files, and input hashes.
@@ -42,26 +42,43 @@ source and manifest identity, expected unit files, and input hashes.
   mise changed historical lock metadata, and a generated-file fixture needed policy trust.
   The next harness uses `MISE_LOCKED=1` for source commands and explicitly trusts
   the reviewed historical repository policy after building its executable.
-- TOML core `hgqj2nstwq` has failed; inspect attempt `811p86php8` before retrying.
+- TOML core `hgqj2nstwq`, attempt `811p86php8`, completed every selected core check:
+  16 passed, 5 failed, and 3 container/mutation checks were explicitly deferred.
+  All four full-package Oxlint checks failed.
+  The `tsgolint` diagnostic includes `panic: unknown rule: no-generated-empty-object-type`.
+  The coverage gate reports `src/values.ts: 332 -> 304 covered lines`.
+  Builds, declared unit files, fuzz campaigns, conformance, and the live-source plugin test passed.
 - TOML remaining `d1jgjp62lg` is still being awaited by an existing terminal waiter.
 - Executor controls `g57729x66d` ended with the passing fixture successful
   and the failure, Oxlint-argument, and Oxlint-scope fixtures failed as expected.
-  Inspect each terminal log to confirm the intended assertion caused its outcome.
+  Each terminal log confirms the intended assertion boundary:
+  passing task exit 0, deliberate task exit 1, forbidden Oxlint arguments,
+  and forbidden Oxlint file scope.
+
+The control result metadata incorrectly reported 16 CPUs and 64 GiB;
+its immutable workflow allocates 2 CPUs and 8 GiB.
+Use workflow allocation for accounting. Commit `e84911e320` corrects future control records.
+Some TypeScript output omitted a final newline, joining an executor event to a `TSFILE` path.
+Commit `a65a41cd08` starts every structured executor event with a newline.
+The original aggregate case record remains the reconciliation source for that attempt.
 
 All attempts, including setup failures, remain part of provider cost accounting.
 
 ## Queue
 
-1.  Inspect terminal TOML and control logs, retaining exact diagnostics and check records.
-2.  Prepare native Linux core, Android, and desktop jobs with tools read directly
-    from each source lockfile. Review concrete workflows with the main agent before launch.
+1.  Retain terminal TOML diagnostics and check records in the audit and incident trackers.
+2.  Launch reviewed native Linux core and Android jobs with tools read directly
+    from the source lockfile. The workflow is ready at `a65a41cd08`.
+    Prepare and review the Linux desktop host-library bridge and runtime adapter.
 3.  Publish Android APK evidence to the main agent for headed disposable-device validation.
 4.  Execute the native feature matrix and full desktop runtime suite.
 5.  Prepare and run bounded logger waves, including declared browser and integration surfaces.
 6.  Complete generated-file and container/mutation TOML evidence.
 7.  Update #1030 for the prerequisite correction, #1057 for the verified fetch remedy,
     #1012 for unavailable sidecar evidence, and #339 for cycle evidence.
-    Deduplicate and document bootstrap, lock metadata, and trust incidents separately.
+    Deduplicate and document bootstrap, lock metadata, trust, tsgolint panic,
+    and coverage incidents separately. Add resource metadata and event delimiter
+    corrections to the existing execution-evidence issue.
 8.  Render-check this handover and all incident documentation.
 9.  Remove disposable catalog worktrees only after inspecting ignored files and Git-directory hazards.
 
@@ -71,6 +88,17 @@ The source `mise.lock` resolves Rust `nightly-2026-10-13`, but mise's installed-
 selection probe chose `nightly-2026-10-15` without an explicit override.
 The main agent verified `MISE_RUST_VERSION=nightly-2026-10-13` selects the required toolchain.
 Install exact versions outside source, then verify actual executable versions inside source.
+The native workflow installs Rust and `cargo-binstall` before dependent Cargo tools.
+The mise action runs in the harness directory because its environment activation
+must not alter historical source lock metadata.
+
+The `cb95cf6` desktop E2E source selects six sessions when `E2E_ONLY` is empty:
+wide, narrow, dialog, quit, states, and visual.
+Its authored host build overrides `LIBCLANG_PATH` to `/usr/lib64` and chooses
+Clang resources from `/usr/lib/clang/*`.
+Ubuntu preparation must bridge those filesystem paths after probing installed libraries.
+The runtime requires a disposable systemd user manager, parent Wayland compositor,
+PipeWire services, ImageMagick, and the repository compositor artifact.
 
 The main worktree's modified `mise.lock` belongs to concurrent work and must remain untouched.
 Cloud jobs are bounded to the declared `16x64` runner with a 30-minute job limit.
