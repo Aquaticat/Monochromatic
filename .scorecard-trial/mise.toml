@@ -23,7 +23,7 @@ const before=await api(`repos/${repository}/commits/main`);
 writeFileSync(join(directory,'event.json'),JSON.stringify({repository:{full_name:repository,default_branch:'main',fork:metadata.fork,private:metadata.private}}));
 const image='ghcr.io/ossf/scorecard-action:v2.4.1';
 execFileSync('docker',['pull',image],{stdio:'inherit'});
-const digest=JSON.parse(execFileSync('docker',['image','inspect',image,'--format','{{json .RepoDigests}}'],{encoding:'utf8'}));
+const digest=JSON.parse(execFileSync('docker',['image','inspect',image],{encoding:'utf8'}))[0].RepoDigests;
 const startedAt=new Date().toISOString();
 const start=performance.now();
 const containerName=`scorecard-trial-${process.env.GITHUB_RUN_ID}`;
