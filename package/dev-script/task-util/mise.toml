@@ -240,8 +240,9 @@ const wrapper = [
   'const [command, ...args] = process.argv.slice(2);',
   "const limits = command === 'run' ? ['--memory=2g', '--cpus=2', '--pids-limit=512'] : [];",
   "const mutation = command === 'run' && args.some((arg) => arg.includes(':/manifest:'));",
-  "const identity = mutation ? ['--uidmap', `0:${process.getuid()}:1`, '--gidmap', `0:${process.getgid()}:1`] : [];",
-  `const result = spawnSync('sudo', ['--non-interactive', ${JSON.stringify(podman)}, command, ...limits, ...identity, ...args], { stdio: 'inherit' });`,
+  "const identity = mutation ? ['--user', `${process.getuid()}:${process.getgid()}`] : [];",
+  "const mappedArgs = args.map((arg, index) => mutation && args[index - 1] === '--tmpfs' ? `${arg},uid=${process.getuid()},gid=${process.getgid()}` : arg);",
+  `const result = spawnSync('sudo', ['--non-interactive', ${JSON.stringify(podman)}, command, ...limits, ...identity, ...mappedArgs], { stdio: 'inherit' });`,
   'if (result.error) throw result.error;',
   'process.exitCode = result.status ?? 1;',
   '',
@@ -257,7 +258,7 @@ const controlArgs = ['run', '--rm', '--network=none', '--read-only', '--cap-drop
 const denied = spawnSync('sudo', ['--non-interactive', podman, ...controlArgs, 'docker.io/library/alpine:3.22', 'cat', '/manifest/shard-manifest.json'], { encoding: 'utf8', timeout: 45000 })
 assert.notEqual(denied.status, 0, 'Unmapped root without capabilities must demonstrate the private-directory permission boundary')
 assert(denied.stderr.includes('Permission denied'), 'Negative control must fail on fixture access')
-const allowed = spawnSync(join(base, 'podman'), [...controlArgs, 'docker.io/library/alpine:3.22', 'cp', '/manifest/shard-manifest.json', '/manifest/result.json'], { encoding: 'utf8', timeout: 45000 })
+const allowed = spawnSync(join(base, 'podman'), [...controlArgs, '--tmpfs', '/work:rw,exec,size=1m', 'docker.io/library/alpine:3.22', 'sh', '-c', 'cp /manifest/shard-manifest.json /work/input && cp /work/input /manifest/result.json'], { encoding: 'utf8', timeout: 45000 })
 console.log('\n' + JSON.stringify({ event: 'mutation-identity-control', deniedStatus: denied.status, deniedError: denied.stderr, mappedStatus: allowed.status, mappedError: allowed.stderr, uid: process.getuid(), gid: process.getgid() }))
 assert.equal(allowed.status, 0, allowed.stderr)
 assert.equal(readFileSync(join(fixture, 'result.json'), 'utf8'), 'mutation-private-input\n')
@@ -537,7 +538,8 @@ try {
   let display = ''
   for (let attempt = 0; attempt < 30; attempt += 1) {
     const reply = run({ args: [...user, 'socat', '-', `UNIX-CONNECT:${parentSocket}`], input: 'display\n', required: false })
-    if (reply.status === 0 && /^wayland-\d+$/.test(reply.stdout.trim())) { display = reply.stdout.trim(); break }
+    const matched = /^ok (wayland-\d+)$/.exec(reply.stdout.trim())
+    if (reply.status === 0 && matched) { display = matched[1]; break }
     await wait(500)
   }
   assert(display, 'Parent compositor must publish a real Wayland display before E2E starts')

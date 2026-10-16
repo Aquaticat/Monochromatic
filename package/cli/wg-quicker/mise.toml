@@ -98,7 +98,7 @@ for (const kind of ['bypass', 'route']) {
   let result = { status: null, signal: null }
   let cleanupVerified = false
   try {
-    assert.equal(run(['run', '--detach', '--name', name, '--privileged', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512', '--timeout=600', '--rootfs', '/:O', '/usr/bin/sleep', '550']).status, 0)
+    assert.equal(run(['run', '--detach', '--init', '--name', name, '--privileged', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512', '--timeout=600', '--rootfs', '/:O', '/usr/bin/sleep', '550']).status, 0)
     const command = ['exec', '--user', `${process.getuid()}:${process.getgid()}`, '--workdir', source, name, 'env', `HOME=${homedir()}`, `PATH=${process.env.PATH}`, 'MISE_AUTO_INSTALL=false', 'MISE_LOCKED=1', `MISE_RUST_VERSION=${process.env.MISE_RUST_VERSION}`, `MISE_TRUSTED_CONFIG_PATHS=${process.env.GITHUB_WORKSPACE}`]
     assert.equal(run([...command, 'touch', marker]).status, 0)
     const links = run([...command, 'ip', '--json', 'link', 'show'])
