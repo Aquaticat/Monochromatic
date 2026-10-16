@@ -84,8 +84,18 @@ then allocates a unique `v-` directory inside it.
 Only sockets and daemon PID files use that runtime path.
 Images and configuration remain in the private home under `temp/agent`.
 The full channel address must still fit the byte-length assertion.
-The real verification run is `7gxcgml68r`;
-its result is pending at this checkpoint.
+Run `7gxcgml68r` crossed the runtime setup gate,
+then exposed another long socket under the private configuration directory:
+the QEMU `monitor.sock`.
+Harness `0bcfa40820` also moves private configuration into the short runtime directory
+and checks that complete monitor address.
+Run `rv6hfj76w9` crossed both socket-length gates and progressed through template preparation.
+The final prepared guest then failed with a different diagnostic:
+QEMU could not connect to its virtiofs socket because the connection was refused.
+That result does not establish why virtiofsd exited.
+The next diagnostic harness retains private QEMU and virtiofs daemon logs before cleanup.
+Both socket failures are tracked in issue `#1074`;
+the independently verified missing-runtime repair is closed in `#1075`.
 
 The recipe is for a disposable runner with sudo,
 not a request to change the user's real libvirt state.

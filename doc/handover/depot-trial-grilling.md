@@ -290,6 +290,33 @@ VM socket/runtime setup,
 and the original vmsync task's relative command path.
 The final coherent whole-case replays remain required after adapter development.
 
+The native Clippy setup repair passed both hosts and is closed as issue `#1072`.
+The full-suite coverage gap remains issue `#1073`.
+Linux desktop test recovery `pbg4h8ww6k` uses additive harness `af3ccd254d`,
+retaining complete test logs and source identity while disabling only nextest fail-fast.
+The distinct Linux initial-queue and extra-burst-report observations are issues `#1079`,
+`#1080`,
+and `#1081`.
+
+VM run `7gxcgml68r` verified the missing-runtime repair,
+closed as issue `#1075`,
+but exposed a long QEMU monitor socket.
+Harness `0bcfa40820` shortened private configuration paths as well.
+Its run `rv6hfj76w9` progressed beyond socket-length checks,
+then failed when QEMU could not connect to its virtiofs socket.
+Root's next diagnostic replay retains private daemon logs before cleanup.
+The original package task path defect remains issue `#1076`;
+socket layout is issue `#1074`.
+None of these failures counts as passing VM lifecycle coverage.
+
+The reviewed logger graph is frozen at 719 checks,
+with manifest SHA-256 `f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3`.
+The independent AST/runtime audit found no additional edges and retained all conservative barriers.
+Coherent TOML replay `55gv2bqvll` starts its core,
+container/mutation,
+and generated-consistency branches together.
+The environment owner is assembling the coherent logger dispatch from that frozen graph.
+
 The complete graph remains unfinished.
 The TOML core attempt `hgqj2nstwq` recorded 16 passing checks,
 5 failed checks,

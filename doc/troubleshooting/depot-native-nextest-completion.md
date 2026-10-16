@@ -104,7 +104,10 @@ Harness `32a9250add` records installed components,
 runs `rustup component add clippy --toolchain nightly-2026-10-13`,
 records them again,
 and requires `cargo clippy --version` before package lint.
-The cloud recovery must cross that gate before this incident is closed.
+Run `38847322477` passed component installation and `cargo clippy --version`
+on both native hosts;
+the prerequisite incident is closed in issue `#1072`.
+The full test coverage recovery remains open in issue `#1073`.
 Installing the component adds setup work;
 it cannot turn source Clippy diagnostics into passing lint.
 
