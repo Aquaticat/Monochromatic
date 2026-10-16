@@ -33,7 +33,7 @@ Use the already selected Luna decision route; do not introduce another vendor or
 
 The user identified the absent per-clause distributions as insufficient logging on 2026-10-16.
 Logging repair is part of this task, not a reason to leave future incidents unattributable.
-The proposed tightening of the existing `LOG` rule is pending in the question tool.
+The user accepted tightening the existing `LOG` rule to require reconstructable decision evidence.
 Commit `9d31943c2b` also routes recoverable initial clause-assessment failures through the decision model,
 while retaining the original currentness checks and deadline.
 
