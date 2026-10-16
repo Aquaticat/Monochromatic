@@ -128,6 +128,21 @@ A measured current-policy denial does not establish that the historical unthrott
 Scorecard's remote repository analysis also observes live repository metadata,
 so its observed commit and timestamps remain separate from an immutable historical package workload.
 
+[Scorecard run 38841678032](https://github.com/Aquaticats/Monochromatic/actions/runs/38841678032)
+executed the unchanged repaired gate under the intended current policy.
+Its gate passed after inspecting 63 historical runs using one GraphQL request and one point,
+then denied analysis because four runs had already executed in the last hour.
+The gate job used six provider seconds;
+provider creation to completion was nine seconds.
+The analysis job was policy-skipped with no executed steps.
+This completes this development cell's conditional gate disposition,
+while leaving the prepared analysis adapter unexercised.
+The [context investigation](../troubleshooting/scorecard-trial-context.md)
+records the default-branch restriction,
+explicit live-main adaptation,
+resource bounds,
+and separate historical-policy interpretation.
+
 ### Acceptance requirements
 
 Freeze one source revision and the intended manifest before each execution cell.
