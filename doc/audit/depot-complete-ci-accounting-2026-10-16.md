@@ -195,6 +195,24 @@ Neither log contains a started-check event.
 These observations remain setup usage;
 the missing dependency does not establish any native package test outcome.
 
+### Active collection queue
+
+All four source cases remain unfinished.
+The retained case ledger names every dispatched development run;
+it does not assign a complete-pipeline cost to any case.
+The remaining TOML container and mutation wave is `d1jgjp62lg`.
+Native collection includes GitHub retry `38842787230`,
+Depot core and Android run `j80v9dqfb4`,
+and Linux desktop run `xg3znh2j0p`.
+Logger scanner `38843463588` has been collected;
+its package and consumer graph remains separate work.
+Desktop collection covers Windows run `38843524267`,
+Alpine run `38843525621`,
+macOS run `38843527788`,
+and scanner run `38843587917`.
+These independently dispatched observations still need immutable-manifest reconciliation
+and a coherent graph replay before complete-pipeline latency or cost can be reported.
+
 ### Acceptance requirements
 
 Freeze one source revision and the intended manifest before each execution cell.

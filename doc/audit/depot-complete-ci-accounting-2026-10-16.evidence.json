@@ -3966,5 +3966,1011 @@
       },
       "classification": "Native historical Git wrapper build failed offline before validation; separate from GitHub Cargo installer prerequisite"
     }
+  },
+  "caseLedger": {
+    "observedAt": "2026-10-16T03:04:41.989Z",
+    "allCasesComplete": false,
+    "completePipelineCostEstablished": false,
+    "cases": [
+      {
+        "id": "toml",
+        "source": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "depotRuns": [
+          "hgqj2nstwq",
+          "d1jgjp62lg"
+        ],
+        "githubRuns": [
+          "38840751221",
+          "38841678032"
+        ],
+        "complete": false,
+        "reason": "Applicable checks and final coherent graph replay remain unfinished",
+        "githubCollections": [
+          {
+            "collectedAt": "2026-10-16T02:32:48.393Z",
+            "repo": "Aquaticats/Monochromatic",
+            "visibility": "public",
+            "runId": 38840751221,
+            "revision": "0b8cc50c62d9b9b6f2dd853aa18a7eff85cc9e40",
+            "runAttempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "createdAt": "2026-10-16T02:30:12Z",
+            "startedAt": "2026-10-16T02:30:12Z",
+            "updatedAt": "2026-10-16T02:30:47Z",
+            "jobs": [
+              {
+                "id": 116780030044,
+                "attempt": 1,
+                "workflow": "forbidden-strings",
+                "name": "scan",
+                "status": "completed",
+                "conclusion": "success",
+                "headSha": "0b8cc50c62d9b9b6f2dd853aa18a7eff85cc9e40",
+                "startedAt": "2026-10-16T02:30:16Z",
+                "completedAt": "2026-10-16T02:30:47Z",
+                "seconds": 31,
+                "labels": [
+                  "ubuntu-latest"
+                ],
+                "allocation": {
+                  "label": "ubuntu-latest",
+                  "vcpus": 4,
+                  "memoryGb": 16,
+                  "publicStandardComputeUsd": 0,
+                  "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+                },
+                "steps": [
+                  {
+                    "name": "Set up job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 1,
+                    "started_at": "2026-10-16T02:30:17Z",
+                    "completed_at": "2026-10-16T02:30:17Z"
+                  },
+                  {
+                    "name": "Checkout (full history)",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 2,
+                    "started_at": "2026-10-16T02:30:17Z",
+                    "completed_at": "2026-10-16T02:30:37Z"
+                  },
+                  {
+                    "name": "Download prebuilt forbidden-strings binary",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 3,
+                    "started_at": "2026-10-16T02:30:37Z",
+                    "completed_at": "2026-10-16T02:30:41Z"
+                  },
+                  {
+                    "name": "Checkout immutable source for the selected change",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 4,
+                    "started_at": "2026-10-16T02:30:41Z",
+                    "completed_at": "2026-10-16T02:30:43Z"
+                  },
+                  {
+                    "name": "Verify immutable source and comparison base",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 5,
+                    "started_at": "2026-10-16T02:30:43Z",
+                    "completed_at": "2026-10-16T02:30:43Z"
+                  },
+                  {
+                    "name": "Materialize deny-list",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 6,
+                    "started_at": "2026-10-16T02:30:43Z",
+                    "completed_at": "2026-10-16T02:30:43Z"
+                  },
+                  {
+                    "name": "Scan changed files",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 7,
+                    "started_at": "2026-10-16T02:30:43Z",
+                    "completed_at": "2026-10-16T02:30:43Z"
+                  },
+                  {
+                    "name": "Post Checkout immutable source for the selected change",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 13,
+                    "started_at": "2026-10-16T02:30:43Z",
+                    "completed_at": "2026-10-16T02:30:44Z"
+                  },
+                  {
+                    "name": "Post Checkout (full history)",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 14,
+                    "started_at": "2026-10-16T02:30:44Z",
+                    "completed_at": "2026-10-16T02:30:44Z"
+                  },
+                  {
+                    "name": "Complete job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 15,
+                    "started_at": "2026-10-16T02:30:44Z",
+                    "completed_at": "2026-10-16T02:30:44Z"
+                  }
+                ],
+                "log": {
+                  "path": "logs-116780030044.txt",
+                  "bytes": 65561,
+                  "sha256": "df9ff21602f7fff4a0382d27a4c1aee00198c471b90297031ccd8ac506552e10"
+                }
+              }
+            ],
+            "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+          },
+          {
+            "collectedAt": "2026-10-16T02:42:11.117Z",
+            "repo": "Aquaticats/Monochromatic",
+            "visibility": "public",
+            "runId": 38841678032,
+            "revision": "e5869e93d837922d62be470be974d94c39177619",
+            "runAttempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "createdAt": "2026-10-16T02:41:03Z",
+            "startedAt": "2026-10-16T02:41:03Z",
+            "updatedAt": "2026-10-16T02:41:12Z",
+            "jobs": [
+              {
+                "id": 116782975984,
+                "attempt": 1,
+                "workflow": "Scorecard supply-chain security",
+                "name": "Scorecard rate limit",
+                "status": "completed",
+                "conclusion": "success",
+                "headSha": "e5869e93d837922d62be470be974d94c39177619",
+                "startedAt": "2026-10-16T02:41:06Z",
+                "completedAt": "2026-10-16T02:41:12Z",
+                "seconds": 6,
+                "labels": [
+                  "ubuntu-latest"
+                ],
+                "allocation": {
+                  "label": "ubuntu-latest",
+                  "vcpus": 4,
+                  "memoryGb": 16,
+                  "publicStandardComputeUsd": 0,
+                  "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+                },
+                "steps": [
+                  {
+                    "name": "Set up job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 1,
+                    "started_at": "2026-10-16T02:41:07Z",
+                    "completed_at": "2026-10-16T02:41:08Z"
+                  },
+                  {
+                    "name": "Count recent analysis runs",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 2,
+                    "started_at": "2026-10-16T02:41:08Z",
+                    "completed_at": "2026-10-16T02:41:10Z"
+                  },
+                  {
+                    "name": "Complete job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 3,
+                    "started_at": "2026-10-16T02:41:10Z",
+                    "completed_at": "2026-10-16T02:41:10Z"
+                  }
+                ],
+                "log": {
+                  "path": "logs-116782975984.txt",
+                  "bytes": 14637,
+                  "sha256": "7905edad608f137898e75cae7b19bcd1ae4da93b77a428a8911dd4745059f783"
+                }
+              },
+              {
+                "id": 116783010249,
+                "attempt": 1,
+                "workflow": "Scorecard supply-chain security",
+                "name": "Scorecard analysis",
+                "status": "completed",
+                "conclusion": "skipped",
+                "headSha": "e5869e93d837922d62be470be974d94c39177619",
+                "startedAt": "2026-10-16T02:41:12Z",
+                "completedAt": "2026-10-16T02:41:12Z",
+                "seconds": 0,
+                "labels": [
+                  "ubuntu-latest"
+                ],
+                "allocation": {
+                  "label": "ubuntu-latest",
+                  "vcpus": 4,
+                  "memoryGb": 16,
+                  "publicStandardComputeUsd": 0,
+                  "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+                },
+                "steps": []
+              }
+            ],
+            "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+          }
+        ]
+      },
+      {
+        "id": "native",
+        "source": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+        "depotRuns": [
+          "5tbb7qftkw",
+          "j80v9dqfb4",
+          "xg3znh2j0p"
+        ],
+        "githubRuns": [
+          "38842242564",
+          "38842263437",
+          "38842787230"
+        ],
+        "complete": false,
+        "reason": "Applicable checks and final coherent graph replay remain unfinished",
+        "githubCollections": [
+          {
+            "collectedAt": "2026-10-16T02:53:04.342Z",
+            "repo": "Aquaticats/Monochromatic",
+            "visibility": "public",
+            "runId": 38842242564,
+            "revision": "703aca7141f4a8b741e3408b41b3ec3363301c9e",
+            "runAttempt": 1,
+            "status": "completed",
+            "conclusion": "failure",
+            "createdAt": "2026-10-16T02:47:38Z",
+            "startedAt": "2026-10-16T02:47:38Z",
+            "updatedAt": "2026-10-16T02:49:18Z",
+            "jobs": [
+              {
+                "id": 116784746439,
+                "attempt": 1,
+                "workflow": "depot-complete-native-hosts",
+                "name": "Native package gates (macos-15-intel)",
+                "status": "completed",
+                "conclusion": "failure",
+                "headSha": "703aca7141f4a8b741e3408b41b3ec3363301c9e",
+                "startedAt": "2026-10-16T02:47:42Z",
+                "completedAt": "2026-10-16T02:48:59Z",
+                "seconds": 77,
+                "labels": [
+                  "macos-15-intel"
+                ],
+                "allocation": {
+                  "label": "macos-15-intel",
+                  "vcpus": 4,
+                  "memoryGb": 14,
+                  "publicStandardComputeUsd": 0,
+                  "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+                },
+                "steps": [
+                  {
+                    "name": "Set up job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 1,
+                    "started_at": "2026-10-16T02:47:42Z",
+                    "completed_at": "2026-10-16T02:47:44Z"
+                  },
+                  {
+                    "name": "Checkout trial harness",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 2,
+                    "started_at": "2026-10-16T02:47:44Z",
+                    "completed_at": "2026-10-16T02:48:05Z"
+                  },
+                  {
+                    "name": "Checkout immutable source",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 3,
+                    "started_at": "2026-10-16T02:48:05Z",
+                    "completed_at": "2026-10-16T02:48:24Z"
+                  },
+                  {
+                    "name": "Set up mise",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 4,
+                    "started_at": "2026-10-16T02:48:24Z",
+                    "completed_at": "2026-10-16T02:48:30Z"
+                  },
+                  {
+                    "name": "Install the source-declared Node and Rust prerequisites",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 5,
+                    "started_at": "2026-10-16T02:48:30Z",
+                    "completed_at": "2026-10-16T02:48:44Z"
+                  },
+                  {
+                    "name": "Install source-declared native tools after Rust",
+                    "status": "completed",
+                    "conclusion": "failure",
+                    "number": 6,
+                    "started_at": "2026-10-16T02:48:44Z",
+                    "completed_at": "2026-10-16T02:48:53Z"
+                  },
+                  {
+                    "name": "Expose the source-declared Windows linker",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 7,
+                    "started_at": "2026-10-16T02:48:53Z",
+                    "completed_at": "2026-10-16T02:48:53Z"
+                  },
+                  {
+                    "name": "Verify immutable source and record tools",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 8,
+                    "started_at": "2026-10-16T02:48:53Z",
+                    "completed_at": "2026-10-16T02:48:53Z"
+                  },
+                  {
+                    "name": "Restore exact-source native artifacts",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 9,
+                    "started_at": "2026-10-16T02:48:53Z",
+                    "completed_at": "2026-10-16T02:48:53Z"
+                  },
+                  {
+                    "name": "Build release artifact through the package task",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 10,
+                    "started_at": "2026-10-16T02:48:53Z",
+                    "completed_at": "2026-10-16T02:48:53Z"
+                  },
+                  {
+                    "name": "Run all-target Clippy through the package task",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 11,
+                    "started_at": "2026-10-16T02:48:53Z",
+                    "completed_at": "2026-10-16T02:48:53Z"
+                  },
+                  {
+                    "name": "Run nextest through the package task",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 12,
+                    "started_at": "2026-10-16T02:48:53Z",
+                    "completed_at": "2026-10-16T02:48:53Z"
+                  },
+                  {
+                    "name": "Exercise the built release command",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 13,
+                    "started_at": "2026-10-16T02:48:53Z",
+                    "completed_at": "2026-10-16T02:48:53Z"
+                  },
+                  {
+                    "name": "Verify source remained immutable",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 14,
+                    "started_at": "2026-10-16T02:48:53Z",
+                    "completed_at": "2026-10-16T02:48:53Z"
+                  },
+                  {
+                    "name": "Post Checkout immutable source",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 27,
+                    "started_at": "2026-10-16T02:48:53Z",
+                    "completed_at": "2026-10-16T02:48:55Z"
+                  },
+                  {
+                    "name": "Post Checkout trial harness",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 28,
+                    "started_at": "2026-10-16T02:48:55Z",
+                    "completed_at": "2026-10-16T02:48:56Z"
+                  },
+                  {
+                    "name": "Complete job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 29,
+                    "started_at": "2026-10-16T02:48:56Z",
+                    "completed_at": "2026-10-16T02:48:57Z"
+                  }
+                ],
+                "log": {
+                  "path": "logs-116784746439.txt",
+                  "bytes": 77959,
+                  "sha256": "4151338602c9c088c96d2bff130435f2a1c03be2007e5fc95cc987c344a98552"
+                }
+              },
+              {
+                "id": 116784746615,
+                "attempt": 1,
+                "workflow": "depot-complete-native-hosts",
+                "name": "Native package gates (windows-2025)",
+                "status": "completed",
+                "conclusion": "failure",
+                "headSha": "703aca7141f4a8b741e3408b41b3ec3363301c9e",
+                "startedAt": "2026-10-16T02:47:42Z",
+                "completedAt": "2026-10-16T02:49:18Z",
+                "seconds": 96,
+                "labels": [
+                  "windows-2025"
+                ],
+                "allocation": {
+                  "label": "windows-2025",
+                  "vcpus": 4,
+                  "memoryGb": 16,
+                  "publicStandardComputeUsd": 0,
+                  "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+                },
+                "steps": [
+                  {
+                    "name": "Set up job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 1,
+                    "started_at": "2026-10-16T02:47:42Z",
+                    "completed_at": "2026-10-16T02:47:43Z"
+                  },
+                  {
+                    "name": "Checkout trial harness",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 2,
+                    "started_at": "2026-10-16T02:47:43Z",
+                    "completed_at": "2026-10-16T02:48:10Z"
+                  },
+                  {
+                    "name": "Checkout immutable source",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 3,
+                    "started_at": "2026-10-16T02:48:10Z",
+                    "completed_at": "2026-10-16T02:48:31Z"
+                  },
+                  {
+                    "name": "Set up mise",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 4,
+                    "started_at": "2026-10-16T02:48:31Z",
+                    "completed_at": "2026-10-16T02:48:36Z"
+                  },
+                  {
+                    "name": "Install the source-declared Node and Rust prerequisites",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 5,
+                    "started_at": "2026-10-16T02:48:36Z",
+                    "completed_at": "2026-10-16T02:48:59Z"
+                  },
+                  {
+                    "name": "Install source-declared native tools after Rust",
+                    "status": "completed",
+                    "conclusion": "failure",
+                    "number": 6,
+                    "started_at": "2026-10-16T02:48:59Z",
+                    "completed_at": "2026-10-16T02:49:12Z"
+                  },
+                  {
+                    "name": "Expose the source-declared Windows linker",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 7,
+                    "started_at": "2026-10-16T02:49:12Z",
+                    "completed_at": "2026-10-16T02:49:12Z"
+                  },
+                  {
+                    "name": "Verify immutable source and record tools",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 8,
+                    "started_at": "2026-10-16T02:49:12Z",
+                    "completed_at": "2026-10-16T02:49:12Z"
+                  },
+                  {
+                    "name": "Restore exact-source native artifacts",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 9,
+                    "started_at": "2026-10-16T02:49:12Z",
+                    "completed_at": "2026-10-16T02:49:12Z"
+                  },
+                  {
+                    "name": "Build release artifact through the package task",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 10,
+                    "started_at": "2026-10-16T02:49:12Z",
+                    "completed_at": "2026-10-16T02:49:12Z"
+                  },
+                  {
+                    "name": "Run all-target Clippy through the package task",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 11,
+                    "started_at": "2026-10-16T02:49:12Z",
+                    "completed_at": "2026-10-16T02:49:12Z"
+                  },
+                  {
+                    "name": "Run nextest through the package task",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 12,
+                    "started_at": "2026-10-16T02:49:12Z",
+                    "completed_at": "2026-10-16T02:49:12Z"
+                  },
+                  {
+                    "name": "Exercise the built release command",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 13,
+                    "started_at": "2026-10-16T02:49:12Z",
+                    "completed_at": "2026-10-16T02:49:12Z"
+                  },
+                  {
+                    "name": "Verify source remained immutable",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "number": 14,
+                    "started_at": "2026-10-16T02:49:12Z",
+                    "completed_at": "2026-10-16T02:49:12Z"
+                  },
+                  {
+                    "name": "Post Checkout immutable source",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 27,
+                    "started_at": "2026-10-16T02:49:12Z",
+                    "completed_at": "2026-10-16T02:49:14Z"
+                  },
+                  {
+                    "name": "Post Checkout trial harness",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 28,
+                    "started_at": "2026-10-16T02:49:14Z",
+                    "completed_at": "2026-10-16T02:49:17Z"
+                  },
+                  {
+                    "name": "Complete job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 29,
+                    "started_at": "2026-10-16T02:49:17Z",
+                    "completed_at": "2026-10-16T02:49:17Z"
+                  }
+                ],
+                "log": {
+                  "path": "logs-116784746615.txt",
+                  "bytes": 83129,
+                  "sha256": "2b729449af680a82628daa1973a829570896fc636379b13b9628792e2bd91f59"
+                }
+              }
+            ],
+            "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+          },
+          {
+            "collectedAt": "2026-10-16T02:50:37.573Z",
+            "repo": "Aquaticats/Monochromatic",
+            "visibility": "public",
+            "runId": 38842263437,
+            "revision": "703aca7141f4a8b741e3408b41b3ec3363301c9e",
+            "runAttempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "createdAt": "2026-10-16T02:47:53Z",
+            "startedAt": "2026-10-16T02:47:53Z",
+            "updatedAt": "2026-10-16T02:48:42Z",
+            "jobs": [
+              {
+                "id": 116784811807,
+                "attempt": 1,
+                "workflow": "forbidden-strings",
+                "name": "scan",
+                "status": "completed",
+                "conclusion": "success",
+                "headSha": "703aca7141f4a8b741e3408b41b3ec3363301c9e",
+                "startedAt": "2026-10-16T02:47:57Z",
+                "completedAt": "2026-10-16T02:48:42Z",
+                "seconds": 45,
+                "labels": [
+                  "ubuntu-latest"
+                ],
+                "allocation": {
+                  "label": "ubuntu-latest",
+                  "vcpus": 4,
+                  "memoryGb": 16,
+                  "publicStandardComputeUsd": 0,
+                  "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+                },
+                "steps": [
+                  {
+                    "name": "Set up job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 1,
+                    "started_at": "2026-10-16T02:47:58Z",
+                    "completed_at": "2026-10-16T02:47:59Z"
+                  },
+                  {
+                    "name": "Checkout (full history)",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 2,
+                    "started_at": "2026-10-16T02:47:59Z",
+                    "completed_at": "2026-10-16T02:48:32Z"
+                  },
+                  {
+                    "name": "Download prebuilt forbidden-strings binary",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 3,
+                    "started_at": "2026-10-16T02:48:32Z",
+                    "completed_at": "2026-10-16T02:48:36Z"
+                  },
+                  {
+                    "name": "Checkout immutable source for the selected change",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 4,
+                    "started_at": "2026-10-16T02:48:36Z",
+                    "completed_at": "2026-10-16T02:48:37Z"
+                  },
+                  {
+                    "name": "Verify immutable source and comparison base",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 5,
+                    "started_at": "2026-10-16T02:48:37Z",
+                    "completed_at": "2026-10-16T02:48:38Z"
+                  },
+                  {
+                    "name": "Materialize deny-list",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 6,
+                    "started_at": "2026-10-16T02:48:38Z",
+                    "completed_at": "2026-10-16T02:48:38Z"
+                  },
+                  {
+                    "name": "Scan changed files",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 7,
+                    "started_at": "2026-10-16T02:48:38Z",
+                    "completed_at": "2026-10-16T02:48:38Z"
+                  },
+                  {
+                    "name": "Post Checkout immutable source for the selected change",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 13,
+                    "started_at": "2026-10-16T02:48:38Z",
+                    "completed_at": "2026-10-16T02:48:38Z"
+                  },
+                  {
+                    "name": "Post Checkout (full history)",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 14,
+                    "started_at": "2026-10-16T02:48:38Z",
+                    "completed_at": "2026-10-16T02:48:38Z"
+                  },
+                  {
+                    "name": "Complete job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 15,
+                    "started_at": "2026-10-16T02:48:38Z",
+                    "completed_at": "2026-10-16T02:48:38Z"
+                  }
+                ],
+                "log": {
+                  "path": "logs-116784811807.txt",
+                  "bytes": 62504,
+                  "sha256": "c22be9b6cd3ec50480d69c526a22a5ebdc3cfacb63bd42e1add926fe2e3a9c1a"
+                }
+              }
+            ],
+            "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+          }
+        ]
+      },
+      {
+        "id": "logger",
+        "sourcePrefix": "ef014",
+        "base": "20dbaca6c2bb39d5d7e51fac447d76393c21a32e",
+        "githubRuns": [
+          "38843463588"
+        ],
+        "complete": false,
+        "reason": "Applicable checks and final coherent graph replay remain unfinished",
+        "githubCollections": [
+          {
+            "collectedAt": "2026-10-16T03:03:37.603Z",
+            "repo": "Aquaticats/Monochromatic",
+            "visibility": "public",
+            "runId": 38843463588,
+            "revision": "fc236f278b08017df0cb673432c5f71525ea31fa",
+            "runAttempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "createdAt": "2026-10-16T03:02:03Z",
+            "startedAt": "2026-10-16T03:02:03Z",
+            "updatedAt": "2026-10-16T03:02:36Z",
+            "jobs": [
+              {
+                "id": 116788568017,
+                "attempt": 1,
+                "workflow": "forbidden-strings",
+                "name": "scan",
+                "status": "completed",
+                "conclusion": "success",
+                "headSha": "fc236f278b08017df0cb673432c5f71525ea31fa",
+                "startedAt": "2026-10-16T03:02:07Z",
+                "completedAt": "2026-10-16T03:02:35Z",
+                "seconds": 28,
+                "labels": [
+                  "ubuntu-latest"
+                ],
+                "allocation": {
+                  "label": "ubuntu-latest",
+                  "vcpus": 4,
+                  "memoryGb": 16,
+                  "publicStandardComputeUsd": 0,
+                  "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+                },
+                "steps": [
+                  {
+                    "name": "Set up job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 1,
+                    "started_at": "2026-10-16T03:02:08Z",
+                    "completed_at": "2026-10-16T03:02:08Z"
+                  },
+                  {
+                    "name": "Checkout (full history)",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 2,
+                    "started_at": "2026-10-16T03:02:08Z",
+                    "completed_at": "2026-10-16T03:02:26Z"
+                  },
+                  {
+                    "name": "Download prebuilt forbidden-strings binary",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 3,
+                    "started_at": "2026-10-16T03:02:26Z",
+                    "completed_at": "2026-10-16T03:02:30Z"
+                  },
+                  {
+                    "name": "Checkout immutable source for the selected change",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 4,
+                    "started_at": "2026-10-16T03:02:30Z",
+                    "completed_at": "2026-10-16T03:02:32Z"
+                  },
+                  {
+                    "name": "Verify immutable source and comparison base",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 5,
+                    "started_at": "2026-10-16T03:02:32Z",
+                    "completed_at": "2026-10-16T03:02:32Z"
+                  },
+                  {
+                    "name": "Materialize deny-list",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 6,
+                    "started_at": "2026-10-16T03:02:32Z",
+                    "completed_at": "2026-10-16T03:02:32Z"
+                  },
+                  {
+                    "name": "Scan changed files",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 7,
+                    "started_at": "2026-10-16T03:02:32Z",
+                    "completed_at": "2026-10-16T03:02:32Z"
+                  },
+                  {
+                    "name": "Post Checkout immutable source for the selected change",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 13,
+                    "started_at": "2026-10-16T03:02:32Z",
+                    "completed_at": "2026-10-16T03:02:32Z"
+                  },
+                  {
+                    "name": "Post Checkout (full history)",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 14,
+                    "started_at": "2026-10-16T03:02:32Z",
+                    "completed_at": "2026-10-16T03:02:32Z"
+                  },
+                  {
+                    "name": "Complete job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 15,
+                    "started_at": "2026-10-16T03:02:32Z",
+                    "completed_at": "2026-10-16T03:02:32Z"
+                  }
+                ],
+                "log": {
+                  "path": "logs-116788568017.txt",
+                  "bytes": 64220,
+                  "sha256": "7d5aba125d1d8a77c1da398952711416a3cee6771ab191df188155d0e3efafb7"
+                }
+              }
+            ],
+            "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+          }
+        ]
+      },
+      {
+        "id": "desktop",
+        "source": "3434eaa455d569c18b52cf15100f77f9db251d21",
+        "base": "a9b4a681d21907ecc5eb208a754e7b9a0f6e9168",
+        "githubRuns": [
+          "38843524267",
+          "38843525621",
+          "38843527788",
+          "38843587917"
+        ],
+        "complete": false,
+        "reason": "Applicable checks and final coherent graph replay remain unfinished",
+        "githubCollections": [
+          {
+            "collectedAt": "2026-10-16T03:04:09.977Z",
+            "repo": "Aquaticats/Monochromatic",
+            "visibility": "public",
+            "runId": 38843587917,
+            "revision": "fc236f278b08017df0cb673432c5f71525ea31fa",
+            "runAttempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "createdAt": "2026-10-16T03:03:30Z",
+            "startedAt": "2026-10-16T03:03:30Z",
+            "updatedAt": "2026-10-16T03:04:03Z",
+            "jobs": [
+              {
+                "id": 116788962005,
+                "attempt": 1,
+                "workflow": "forbidden-strings",
+                "name": "scan",
+                "status": "completed",
+                "conclusion": "success",
+                "headSha": "fc236f278b08017df0cb673432c5f71525ea31fa",
+                "startedAt": "2026-10-16T03:03:34Z",
+                "completedAt": "2026-10-16T03:04:02Z",
+                "seconds": 28,
+                "labels": [
+                  "ubuntu-latest"
+                ],
+                "allocation": {
+                  "label": "ubuntu-latest",
+                  "vcpus": 4,
+                  "memoryGb": 16,
+                  "publicStandardComputeUsd": 0,
+                  "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+                },
+                "steps": [
+                  {
+                    "name": "Set up job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 1,
+                    "started_at": "2026-10-16T03:03:35Z",
+                    "completed_at": "2026-10-16T03:03:35Z"
+                  },
+                  {
+                    "name": "Checkout (full history)",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 2,
+                    "started_at": "2026-10-16T03:03:35Z",
+                    "completed_at": "2026-10-16T03:03:53Z"
+                  },
+                  {
+                    "name": "Download prebuilt forbidden-strings binary",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 3,
+                    "started_at": "2026-10-16T03:03:53Z",
+                    "completed_at": "2026-10-16T03:03:57Z"
+                  },
+                  {
+                    "name": "Checkout immutable source for the selected change",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 4,
+                    "started_at": "2026-10-16T03:03:57Z",
+                    "completed_at": "2026-10-16T03:03:59Z"
+                  },
+                  {
+                    "name": "Verify immutable source and comparison base",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 5,
+                    "started_at": "2026-10-16T03:03:59Z",
+                    "completed_at": "2026-10-16T03:03:59Z"
+                  },
+                  {
+                    "name": "Materialize deny-list",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 6,
+                    "started_at": "2026-10-16T03:03:59Z",
+                    "completed_at": "2026-10-16T03:03:59Z"
+                  },
+                  {
+                    "name": "Scan changed files",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 7,
+                    "started_at": "2026-10-16T03:03:59Z",
+                    "completed_at": "2026-10-16T03:04:00Z"
+                  },
+                  {
+                    "name": "Post Checkout immutable source for the selected change",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 13,
+                    "started_at": "2026-10-16T03:04:00Z",
+                    "completed_at": "2026-10-16T03:04:00Z"
+                  },
+                  {
+                    "name": "Post Checkout (full history)",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 14,
+                    "started_at": "2026-10-16T03:04:00Z",
+                    "completed_at": "2026-10-16T03:04:00Z"
+                  },
+                  {
+                    "name": "Complete job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 15,
+                    "started_at": "2026-10-16T03:04:00Z",
+                    "completed_at": "2026-10-16T03:04:00Z"
+                  }
+                ],
+                "log": {
+                  "path": "logs-116788962005.txt",
+                  "bytes": 65158,
+                  "sha256": "1f07b4cf13d94c76e7d71862d53ec79b29fe732e24ccce7995079e367dc150c8"
+                }
+              }
+            ],
+            "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+          }
+        ]
+      }
+    ]
   }
 }
